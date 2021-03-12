@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+data-spata-objects
+scripts
+data-cell-data-sets
+data-gene-sets
+data-seurat-objects
