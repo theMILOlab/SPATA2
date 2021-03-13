@@ -7,3 +7,5 @@ scripts
 data-cell-data-sets
 data-gene-sets
 data-seurat-objects
+vignettes
+_pkgdown.yml
