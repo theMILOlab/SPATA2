@@ -11,8 +11,8 @@ discardFeatures(object, feature_names, of_sample = NA)
 
 \item{feature_names}{Character vector. Specifies the features to be discarded.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 An updated spata-object.

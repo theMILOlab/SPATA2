@@ -92,7 +92,7 @@ Collate:
     'spatial-correlation.R'
     'trajectory-analysis.R'
     'transform-family.R'
-    'update-spata-objects.R'
+    'update-spata-object.R'
     'valid-input-options.R'
     'validation.R'
 Depends: 

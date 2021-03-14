@@ -34,8 +34,8 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 \item{smooth_span}{The amount of smoothing specified as a single numeric value.
 displayed.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \description{
 Displays the spatial dimension of the sample and colors the

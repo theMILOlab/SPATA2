@@ -12,8 +12,8 @@ setSpCorResults(object, sp_cor_list, of_sample = "")
 \item{sp_cor_list}{The list of information and results the
 function \code{runSpatialCorrelationAnalysis()} returns.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 A spata object containing the set input.

@@ -15,8 +15,8 @@ column names correspond to the barcode-spots.}
 \item{mtr_name}{A character value that denotes the name of the exprssion matrix with
 which one can refer to it in subsequent functions.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 An updated spata-object.

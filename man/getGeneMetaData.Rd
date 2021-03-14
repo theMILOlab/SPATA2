@@ -18,8 +18,8 @@ the currently active matrix is chosen.}
 \item{only_df}{Logical. If set to TRUE only the data.frame is returned.
 If set to FALSE (the default) the whole list is returned.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.

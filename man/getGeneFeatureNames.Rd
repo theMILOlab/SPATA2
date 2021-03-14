@@ -12,8 +12,8 @@ getGeneFeatureNames(object, mtr_name = NULL, of_sample = NA)
 \item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
 the currently active matrix is chosen.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \description{
 Convenient way to obtain the column names of the output data.frame

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Update a spata object — updateSpataObject • SPATA2</title>
+<title>Update Spata-Object from SPATA to SPATA2 — updateSpataObject • SPATA2</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,10 @@
 
 
 
-<meta property="og:title" content="Update a spata object — updateSpataObject" />
-<meta property="og:description" content="Checks if the provided spata object needs any updates regarding
-it's structure by comparing it's @version to the newest one." />
+<meta property="og:title" content="Update Spata-Object from SPATA to SPATA2 — updateSpataObject" />
+<meta property="og:description" content="A convenient function that takes the spata-object you
+have initiated with the package SPATA and adjusts it's architecture
+to the new version. All features remain." />
 
 
 
@@ -158,30 +159,62 @@ it's structure by comparing it's @version to the newest one." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Update a spata object</h1>
+    <h1>Update Spata-Object from SPATA to SPATA2</h1>
     
     <div class="hidden name"><code>updateSpataObject.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Checks if the provided spata object needs any updates regarding
-it's structure by comparing it's @version to the newest one.</p>
+    <p>A convenient function that takes the spata-object you
+have initiated with the package SPATA and adjusts it's architecture
+to the new version. All features remain.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>updateSpataObject</span><span class='op'>(</span><span class='va'>object</span>, verbose <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>updateSpataObject</span><span class='op'>(</span>
+  <span class='va'>old_object</span>,
+  <span class='va'>sample_name</span>,
+  chr_to_fct <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  n_pcs <span class='op'>=</span> <span class='fl'>60</span>,
+  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>object</th>
-      <td><p>A valid spata-object.</p></td>
+      <th>old_object</th>
+      <td><p>A spata-object that has been created within the package SPATA.</p></td>
+    </tr>
+    <tr>
+      <th>sample_name</th>
+      <td><p>Character value. Denotes the sample name. Must be one of
+<code><a href='getSampleNames.html'>getSampleNames()</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>chr_to_fct</th>
+      <td><p>Logical. SPATA2 recommends to store grouping variables as factors
+in the slot @fdata. If set to TRUE, character variables (apart from <em>barcodes, sample, segmentation</em>)
+of the old obejct's feature data are converted to factors.</p></td>
+    </tr>
+    <tr>
+      <th>n_pcs</th>
+      <td><p>Numeric value. Denotes the number of principal components to be computed.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.</p>
+<p>(Warning messages will always be printed.)</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A valid spata object.</p>
+    <p>An updated spata-object.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Apart from transferring the data and the progress from the old object
+to the new one principal component analysis (PCA) is run via the function <code><a href='runPca.html'>runPca()</a></code>.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
