@@ -28,8 +28,8 @@ the currently active matrix is chosen.}
 
 \item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 A tidy spata-data.frame containing the cluster variables.

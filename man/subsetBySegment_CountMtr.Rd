@@ -75,8 +75,8 @@ subsetByBarcodes_ExprMtr(
 \item{segment_name}{Character value. The segment according to which the spata-object is
 to be subsetted.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 
 \item{SCTransform}{A named list of arguments given to \code{Seurat::SCTransform()}, TRUE or FALSE.}
 

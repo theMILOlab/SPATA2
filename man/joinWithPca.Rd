@@ -34,8 +34,8 @@ the computational progress will be printed.
 already contains the variables that would be added with the function.
 If set to TRUE, the variables are added anyway.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 
 \item{...}{Addtional arguments given to \code{dplyr::left_join()}.}
 }

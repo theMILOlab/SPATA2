@@ -15,8 +15,8 @@ runUmap2(object, n_pcs = 20, of_sample = NA, ...)
 \item{n_pcs}{Numeric value. Denotes the number of principal components used. Must be
 smaller or equal to the number of principal components the pca data.frame contains.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{umap::umap()}.}
 }

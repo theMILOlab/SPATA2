@@ -9,8 +9,8 @@ getGeneCounts(object, of_sample = NA, return = "tibble")
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 
 \item{return}{Character value. One of \emph{'data.frame', 'tibble' or 'vector'}.
 Specifies the output class.}

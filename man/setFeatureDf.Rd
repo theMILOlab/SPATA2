@@ -11,8 +11,8 @@ setFeatureDf(object, feature_df, of_sample = "")
 
 \item{feature_df}{A data.frame that contains the feature and the key-variables.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 set_dummy return details

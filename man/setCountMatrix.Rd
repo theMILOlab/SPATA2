@@ -18,8 +18,8 @@ setScaledMatrix(object, scaled_mtr, of_sample = NA)
 \item{count_mtr, scaled_mtr, denoised_mtr}{Matrices whose column names refer
 to the barcodes and whose rownames refer to the gene names.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 }
 \value{
 A spata object containing the set input.

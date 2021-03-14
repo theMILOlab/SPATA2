@@ -18,8 +18,8 @@ smaller or equal to the number of principal components the pca data.frame contai
 \item{tsne_perplexity}{Numeric value. Given to argument \code{perplexity} of
 \code{Rtsne::Rtsne()}.}
 
-\item{of_sample}{The sample(s) of interest specified as a single character value or vector.
-If set to \emph{""} (the default) the first sample is chosen.}
+\item{of_sample}{This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{Rtsne::Rtsne()}.}
 }
