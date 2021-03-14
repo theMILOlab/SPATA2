@@ -182,8 +182,8 @@ syntax: <em>'new_feature_name'</em> <code><a href='https://rdrr.io/r/base/assign
     </tr>
     <tr>
       <th>of_sample</th>
-      <td><p>The sample(s) of interest specified as a single character value or vector.
-If set to <em>""</em> (the default) the first sample is chosen.</p></td>
+      <td><p>This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.</p></td>
     </tr>
     </table>
 
@@ -195,7 +195,7 @@ If set to <em>""</em> (the default) the first sample is chosen.</p></td>
     <pre class="examples"><div class='input'><span class='co'>#Not run:</span>
 
  <span class='va'>object</span> <span class='op'>&lt;-</span> <span class='fu'>renameFeatures</span><span class='op'>(</span><span class='va'>object</span>, <span class='st'>"seurat_clusters_new"</span> <span class='op'>=</span> <span class='st'>"seurat_clusters"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in is(object = x, class2 = "spata"): object 'object' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in if (base::is.null(fdata) | base::nrow(fdata) == 0) {    base::stop(glue::glue("Could not find feature data for sample '{of_sample}'."))}: argument is of length zero</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
