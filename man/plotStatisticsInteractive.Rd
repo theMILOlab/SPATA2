@@ -7,7 +7,7 @@
 plotStatisticsInteractive(spata_df)
 }
 \arguments{
-\item{spata_df}{A spata}
+\item{spata_df}{A spata data.frame}
 }
 \description{
 Opens an interactive application in wihch the variables of

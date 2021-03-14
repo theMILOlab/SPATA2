@@ -314,7 +314,7 @@ plotPca <- function(object,
                      normalize = normalize,
                      verbose = verbose)
 
-  ggplot(data = plot_list$data, mapping = ggplot2::aes(x = x, y = y)) +
+  ggplot2::ggplot(data = plot_list$data, mapping = ggplot2::aes(x = x, y = y)) +
     plot_list$add_on +
     confuns::call_flexibly(fn = "facet_wrap", fn.ns = "ggplot2", verbose = verbose, v.fail = ggplot2::facet_wrap(facets = . ~ pc_pairs),
                            default = list(facets = stats::as.formula(. ~ pc_pairs))) +
@@ -838,7 +838,7 @@ plotFourStates2 <- function(data,
 #' Apart from variables named \emph{barcodes, sample, x} and \emph{y} all variables
 #' are considered.
 #'
-#' @param spata_df A spata
+#' @param spata_df A spata data.frame
 #'
 #' @export
 

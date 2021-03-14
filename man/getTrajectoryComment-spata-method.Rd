@@ -4,7 +4,7 @@
 \alias{getTrajectoryComment,spata-method}
 \title{Obtain a trajectory comment}
 \usage{
-\S4method{getTrajectoryComment}{spata}(object, trajectory_name, of_sample = "")
+\S4method{getTrajectoryComment}{spata}(object, trajectory_name, of_sample = NA)
 }
 \arguments{
 \item{object}{A valid spata-object or a valid spatialTrajectory-object.}

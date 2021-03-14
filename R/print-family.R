@@ -93,7 +93,7 @@ printDefaultInstructions <- function(object){
 
 # Slot: used_genesets -----------------------------------------------------
 
-#' @title Overview about the current gene sets
+#' @title Print overview about the current gene sets
 #'
 #' @inherit check_sample params
 #'

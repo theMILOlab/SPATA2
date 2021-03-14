@@ -7,7 +7,6 @@
 #' use with caution.
 #'
 #' @return A spata object containing the set input.
-#' @export
 
 set_dummy <- function(){}
 

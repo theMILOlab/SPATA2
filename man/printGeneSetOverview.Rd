@@ -2,7 +2,7 @@
 % Please edit documentation in R/print-family.R
 \name{printGeneSetOverview}
 \alias{printGeneSetOverview}
-\title{Overview about the current gene sets}
+\title{Print overview about the current gene sets}
 \usage{
 printGeneSetOverview(object)
 }
@@ -13,5 +13,5 @@ printGeneSetOverview(object)
 A human readable report of the issue of interest.
 }
 \description{
-Overview about the current gene sets
+Print overview about the current gene sets
 }

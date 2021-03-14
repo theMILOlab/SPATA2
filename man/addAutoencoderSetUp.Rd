@@ -2,7 +2,7 @@
 % Please edit documentation in R/add-family.R
 \name{addAutoencoderSetUp}
 \alias{addAutoencoderSetUp}
-\title{Title}
+\title{Add the set up of a neural network}
 \usage{
 addAutoencoderSetUp(object, mtr_name, set_up_list, of_sample = NA)
 }
@@ -15,5 +15,5 @@ addAutoencoderSetUp(object, mtr_name, set_up_list, of_sample = NA)
 A spata-object.
 }
 \description{
-Title
+Add the set up of a neural network
 }

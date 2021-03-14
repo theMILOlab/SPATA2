@@ -166,7 +166,7 @@ discardGenes <- function(object,
 
 # Slot: autoencoder -------------------------------------------------------
 
-#' Title
+#' @title Add the set up of a neural network
 #'
 #' @inherit check_object params
 #' @param set_up_list A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.
