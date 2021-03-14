@@ -486,8 +486,8 @@ check_pattern <- function(object, patterns = "", method_pr = "hotspot", of_sampl
 #'
 #' Returns an adjusted sample-vector or raises an error.
 #' @param object A valid spata-object.
-#' @param of_sample The sample(s) of interest specified as a single character value or vector.
-#'  If set to \emph{""} (the default) the first sample is chosen.
+#' @param of_sample This argument is currently inactive. It might be reactivated when
+#' spata-objects can store more than one sample.
 #' @param desired_length The length the input must have.
 #'
 #' @inherit adjusting_check_dummy return details
