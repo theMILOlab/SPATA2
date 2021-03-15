@@ -26,7 +26,7 @@ setGeneric(name = "getTrajectoryComment", def = function(object, ...){
 # Methods -----------------------------------------------------------------
 
 #' @export
-setMethod(f = "show", signature = "spata", definition = function(object){
+setMethod(f = "show", signature = "spata2", definition = function(object){
 
   num_samples <- base::length(getSampleNames(object))
   samples <- stringr::str_c( getSampleNames(object), collapse = "', '")
@@ -46,7 +46,7 @@ setMethod(f = "show", signature = "spata", definition = function(object){
 #' @export
 #'
 
-setMethod(f = "getTrajectoryComment", signature = "spata", definition = function(object, trajectory_name, of_sample = NA){
+setMethod(f = "getTrajectoryComment", signature = "spata2", definition = function(object, trajectory_name, of_sample = NA){
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
   check_trajectory(object, trajectory_name, of_sample)

@@ -17,7 +17,7 @@ initiateSpataObject_Empty <- function(sample_name){
 
   confuns::is_value("sample_name",  mode = "character")
 
-  class_string <- "spata"
+  class_string <- "spata2"
 
   base::attr(class_string, which = "package") <- "SPATA2"
 

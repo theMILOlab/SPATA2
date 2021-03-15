@@ -88,9 +88,9 @@ loadSpataObject <- function(directory_spata, verbose = TRUE){
 
   spata_obj <- base::readRDS(file = directory_spata)
 
-  if(!methods::is(spata_obj, "spata")){
+  if(!methods::is(spata_obj, "spata2")){
 
-    base::warning("Loaded object is not of class 'spata'!")
+    base::warning("Loaded object is not of class 'spata2'!")
 
   }
 

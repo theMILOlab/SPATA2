@@ -144,7 +144,7 @@ hlpr_assign_arguments <- function(object){
 
   cargs <- rlang::fn_fmls_names(fn = cfn)
 
-  default_args <- cargs[cargs %in% methods::slotNames(default_instructions)]
+  default_args <- cargs[cargs %in% methods::slotNames(default_instructions_object)]
 
   for(arg in default_args){
 
