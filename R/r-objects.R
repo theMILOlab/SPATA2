@@ -150,7 +150,7 @@ plot_types_in_functions <-
 
 seurat_assay_data_slots <- c("data", "scale.data")
 
-seurat_coords_from_opts <- c("umap", "tsne")
+seurat_coords_from_opts <- c("pca", "umap", "tsne")
 
 seurat_methods <- c("spatial", "single_cell")
 

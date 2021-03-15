@@ -158,7 +158,8 @@ pheatmap <- function(de_df){}
 print_family <- function(){}
 
 #' @title sample_name
-#' @param sample_name Character value. The future input for SPATA's \code{of_sample}-argument.
+#' @param sample_name Character value. Denotes the name of the sample you are
+#' analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.
 
 sample_name <- function(sample_name){}
 
