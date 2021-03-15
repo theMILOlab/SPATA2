@@ -536,7 +536,7 @@ transformSeuratToSpata <- function(seurat_object,
   spata_object <-
     setActiveExpressionMatrix(spata_object, mtr_name = "scaled")
   
-  if(RunFeatures = TRUE){
+  if(RunFeatures == TRUE){
     
       confuns::give_feedback(
         msg = "Calculating gene meta data.",
