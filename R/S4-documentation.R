@@ -121,29 +121,7 @@ spatial_trajectory <- setClass("spatial_trajectory",
 #'
 #' @return S4 object
 #' @export
-#'
 
-spata <- setClass("spata",
-                   slots = c(autoencoder = "list",
-                             compatibility = "list",
-                             coordinates ="list", #coordinates: bc, x, y, sample
-                             data = "list",
-                             dea = "list",
-                             dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
-                             fdata = "list", #fdata : bc, ...
-                             gdata = "list",
-                             images = "list",
-                             information = "list",
-                             samples = "character",
-                             spatial = "list",
-                             scvelo = "list",
-                             trajectories = "list",
-                             used_genesets = "data.frame",
-                             version = "list")
-)
-
-#' @rdname spata
-#' @export
 spata2 <- setClass("spata2",
                   slots = c(autoencoder = "list",
                             compatibility = "list",
@@ -167,7 +145,7 @@ spata2 <- setClass("spata2",
 
 
 #' default instructions
-
+#' @export
 default_instructions <- methods::setClass(Class = "default_instructions",
                                           slots = c(
                                             average_genes = "logical",
