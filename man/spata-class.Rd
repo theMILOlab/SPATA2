@@ -4,12 +4,12 @@
 \name{spata-class}
 \alias{spata-class}
 \alias{spata}
-\title{spata object}
+\title{The spata-object}
 \value{
 S4 object
 }
 \description{
-spata object
+The spata-object
 }
 \section{Slots}{
 
