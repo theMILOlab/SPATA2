@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiate-family.R
 \name{initiateSpataObject_Empty}
 \alias{initiateSpataObject_Empty}
-\title{Initiate an empty object}
+\title{Initiate an empty spata-object}
 \usage{
 initiateSpataObject_Empty(sample_name)
 }
@@ -14,5 +14,5 @@ analyzing with the spata-object. The future input for SPATA's \code{of_sample}-a
 An empty spata-object.
 }
 \description{
-Initiate an empty object
+Initiate an empty spata-object
 }

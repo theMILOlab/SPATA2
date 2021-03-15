@@ -3,7 +3,7 @@
 
 # Test functions --------------------------------------------------------
 
-#' @title Initiate an empty object
+#' @title Initiate an empty spata-object
 #'
 #' @inherit initiateSpataObject_ExprMtr params
 #'

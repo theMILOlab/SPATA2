@@ -153,11 +153,7 @@ updateSpataObject <- function(old_object,
 
   confuns::give_feedback(msg = "Transferring data.", verbose = verbose)
 
-  class_string <- "spata"
-
-  base::attr(class_string, which = "package") <- "SPATA2"
-
-  object_new <- methods::new(Class = class_string)
+  object_new <- initiateSpataObject_Empty(sample_name = sample_name)
 
   object_new@samples <- sample_name
   object_new@used_genesets <- gene_set_df
