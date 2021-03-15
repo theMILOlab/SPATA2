@@ -106,7 +106,6 @@ surface plot is generated colored by the gene's average expression score." />
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Around the Spata-Object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
@@ -116,7 +115,6 @@ surface plot is generated colored by the gene's average expression score." />
     <li>
       <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
     <li>
       <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
     </li>
@@ -129,7 +127,6 @@ surface plot is generated colored by the gene's average expression score." />
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
     </li>
-    <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
@@ -235,7 +232,7 @@ spata-objects can store more than one sample.</p></td>
 
 <span class='fu'>plotSurfaceAverage</span><span class='op'>(</span>object <span class='op'>=</span> <span class='va'>spata_obj</span>,
                    color_by <span class='op'>=</span> <span class='va'>color_by_list</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>00:31:57 Averaging and joining 3 genes.</span></div><div class='output co'>#&gt; <span class='message'>00:31:57 Normalizing values.</span></div><div class='output co'>#&gt; <span class='message'>00:31:57 Done.</span></div><div class='output co'>#&gt; <span class='message'>00:31:57 Averaging and joining 2 genes.</span></div><div class='output co'>#&gt; <span class='message'>00:31:57 Normalizing values.</span></div><div class='output co'>#&gt; <span class='message'>00:31:57 Done.</span></div><div class='output co'>#&gt; <span class='error'>Error in if (clrsp %in% confuns::sequential_multi_hue | clrsp %in% confuns::sequential_single_hue) {    if (aes == "fill") {        if (clrsp %in% viridis_options) {            add_on &lt;- ggplot2::scale_fill_viridis_c(option = clrsp,                 ...)        }        else {            add_on &lt;- colorspace::scale_fill_continuous_sequential(clrsp,                 ...)        }    }    else {        if (clrsp %in% viridis_options) {            add_on &lt;- ggplot2::scale_color_viridis_c(option = clrsp,                 ...)        }        else {            add_on &lt;- colorspace::scale_color_continuous_sequential(clrsp,                 ...)        }    }} else if (clrsp %in% confuns::diverging) {    if (aes == "fill") {        add_on &lt;- colorspace::scale_fill_continuous_diverging(clrsp,             ...)    }    else {        add_on &lt;- colorspace::scale_color_continuous_diverging(clrsp,             ...)    }} else {    base::stop("Invalid input for argument 'clrsp'.")}: argument is of length zero</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in is(object = x, class2 = "spata"): object 'spata_obj' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
