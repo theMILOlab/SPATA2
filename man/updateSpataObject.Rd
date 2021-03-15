@@ -2,7 +2,7 @@
 % Please edit documentation in R/update-spata-object.R
 \name{updateSpataObject}
 \alias{updateSpataObject}
-\title{Update Spata-Object from SPATA to SPATA2}
+\title{Update spata-object from SPATA to SPATA2}
 \usage{
 updateSpataObject(
   old_object,

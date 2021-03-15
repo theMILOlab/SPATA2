@@ -8,12 +8,13 @@ transformSeuratToSpata(
   seurat_object,
   sample_name,
   method = "spatial",
+  coords_from = "pca",
   assay_name = NULL,
   assay_slot = NULL,
   image_name = NULL,
-  coords_from = "umap",
   gene_set_path = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  RunFeatures = FALSE
 )
 }
 \arguments{
@@ -28,10 +29,11 @@ transformSeuratToSpata(
   \item{\emph{'single_cell'}}{Denotes that the data to be used derived from single cell experiments.}
  }}
 
-\item{coords_from}{Character value. Either \emph{'umap'} or \emph{'tsne'}.
+\item{coords_from}{Character value. Either \emph{'pca', 'tsne'} or \emph{'umap'}.
 
  Only relevant if \code{method} was set to \emph{'single_cell'}. Denotes the slot from which to
- take the surrogate coordinates.}
+ take the surrogate coordinates. If the specified data ist not found the slot @coordinates will contain an
+ empty data.frame and has to be set manually with \code{setCoordsDf()}.}
 
 \item{gene_set_path}{Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.
