@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Plot the p-value and log fold change distribution of de-analysis results — plotDeaPvalues • SPATA2</title>
+<title>Obtain a trajectory comment — getTrajectoryComment,spata2-method • SPATA2</title>
 
 
 <!-- jquery -->
@@ -39,11 +39,8 @@
 
 
 
-<meta property="og:title" content="Plot the p-value and log fold change distribution of de-analysis results — plotDeaPvalues" />
-<meta property="og:description" content="Use argument across to specify the grouping
-variable of interest across which the de-analysis has been conducted.
-Valid input options for plot_type are 'density' and
- 'histogram'." />
+<meta property="og:title" content="Obtain a trajectory comment — getTrajectoryComment,spata2-method" />
+<meta property="og:description" content="Obtain a trajectory comment" />
 
 
 
@@ -160,132 +157,35 @@ Valid input options for plot_type are 'density' and
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Plot the p-value and log fold change distribution of de-analysis results</h1>
+    <h1>Obtain a trajectory comment</h1>
     
-    <div class="hidden name"><code>plotDeaPvalues.Rd</code></div>
+    <div class="hidden name"><code>getTrajectoryComment-spata2-method.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Use argument <code>across</code> to specify the grouping
-variable of interest across which the de-analysis has been conducted.</p>
-<p>Valid input options for <code>plot_type</code> are <em>'density'</em> and
- <em>'histogram'</em>.</p>
+    <p>Obtain a trajectory comment</p>
     </div>
 
-    <pre class="usage"><span class='fu'>plotDeaPvalues</span><span class='op'>(</span>
-  <span class='va'>object</span>,
-  across <span class='op'>=</span> <span class='cn'>NULL</span>,
-  across_subset <span class='op'>=</span> <span class='cn'>NULL</span>,
-  relevel <span class='op'>=</span> <span class='cn'>NULL</span>,
-  method_de <span class='op'>=</span> <span class='cn'>NULL</span>,
-  max_adj_pval <span class='op'>=</span> <span class='cn'>NULL</span>,
-  binwidth <span class='op'>=</span> <span class='cn'>NULL</span>,
-  clrp <span class='op'>=</span> <span class='cn'>NULL</span>,
-  plot_type <span class='op'>=</span> <span class='st'>"histogram"</span>,
-  scales <span class='op'>=</span> <span class='cn'>NULL</span>,
-  limits_x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='cn'>NA</span><span class='op'>)</span>,
-  display_title <span class='op'>=</span> <span class='cn'>NULL</span>,
-  of_sample <span class='op'>=</span> <span class='cn'>NA</span>,
-  <span class='va'>...</span>
-<span class='op'>)</span>
-
-<span class='fu'>plotDeaLogFC</span><span class='op'>(</span>
-  <span class='va'>object</span>,
-  across <span class='op'>=</span> <span class='cn'>NULL</span>,
-  across_subset <span class='op'>=</span> <span class='cn'>NULL</span>,
-  relevel <span class='op'>=</span> <span class='cn'>NULL</span>,
-  method_de <span class='op'>=</span> <span class='cn'>NULL</span>,
-  max_adj_pval <span class='op'>=</span> <span class='cn'>NULL</span>,
-  binwidth <span class='op'>=</span> <span class='cn'>NULL</span>,
-  clrp <span class='op'>=</span> <span class='cn'>NULL</span>,
-  plot_type <span class='op'>=</span> <span class='st'>"histogram"</span>,
-  scales <span class='op'>=</span> <span class='cn'>NULL</span>,
-  limits_x <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='cn'>NA</span><span class='op'>)</span>,
-  display_title <span class='op'>=</span> <span class='cn'>NULL</span>,
-  of_sample <span class='op'>=</span> <span class='cn'>NA</span>,
-  <span class='va'>...</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='co'># S4 method for spata2</span>
+<span class='fu'><a href='getTrajectoryComment.html'>getTrajectoryComment</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>trajectory_name</span>, of_sample <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>object</th>
-      <td><p>A valid spata-object.</p></td>
+      <td><p>A valid spata-object or a valid spatialTrajectory-object.</p></td>
     </tr>
     <tr>
-      <th>across</th>
-      <td><p>Character value or NULL. Specifies the grouping variable of interest.</p>
-<p>Use <code><a href='getGroupingOptions.html'>getGroupingOptions()</a></code> to obtain all variable names that group the
-barcode spots of your object in a certain manner.</p></td>
-    </tr>
-    <tr>
-      <th>across_subset</th>
-      <td><p>Character vector or NULL. Specifies the particular groups
-of interest the grouping variable specified in argument <code>across</code> contains.</p>
-<p>If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
-with a <em>'-'</em>. (Saves writing if there are more groups you are interested in
-than groups you are not interested in.)</p>
-<p>Use <code><a href='getGroupNames.html'>getGroupNames()</a></code> to obtain all valid input options.</p></td>
-    </tr>
-    <tr>
-      <th>relevel</th>
-      <td><p>Logical value. If set to TRUE the input order of <code>across_subset</code>
-determines the order in which the groups of interest are displayed. Groups that
-are not included are dropped which affects the colors with which they are displayed.</p></td>
-    </tr>
-    <tr>
-      <th>method_de</th>
-      <td><p>Character value. Denotes the method to according to which the de-analysis is performed.
-Given to argument <code>test.use</code> of the <code><a href='https://satijalab.org/seurat/reference/FindAllMarkers.html'>Seurat::FindAllMarkers()</a></code>-function. Run <code>SPATA::dea_methods</code>
-to obtain all valid input options.</p></td>
-    </tr>
-    <tr>
-      <th>max_adj_pval</th>
-      <td><p>Numeric value. Sets the maximal threshold for adjusted p-values allowed. All genes
-with adjusted p-values above that threshold are ignored.</p></td>
-    </tr>
-    <tr>
-      <th>binwidth</th>
-      <td><p>Numeric value. Denotes the binwidth to use for the histogram.</p></td>
-    </tr>
-    <tr>
-      <th>clrp</th>
-      <td><p>Character value. Specifies the color palette to be used to represent
-groups of discrete variables. Run <code><a href='validActivationFunctions.html'>validColorPalettes()</a></code> to obtain valid
-input options.</p></td>
-    </tr>
-    <tr>
-      <th>plot_type</th>
-      <td><p>Character value. Specifies the type of plot to use to
-visualize the results. If valid input options are not mentioned in the
-description use <code>validPlotTypess()</code> to obtain all valid input options.</p></td>
-    </tr>
-    <tr>
-      <th>scales</th>
-      <td><p>Given to <code><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>ggplot2::facet_wrap()</a></code>. Affects the way the subplots
-are displayed.</p></td>
-    </tr>
-    <tr>
-      <th>limits_x</th>
-      <td><p>Numeric vector of length two. Specify the limits
-of the x-axis.</p></td>
-    </tr>
-    <tr>
-      <th>display_title</th>
-      <td><p>Logical value. If set to TRUE an informative title is displayed.</p></td>
+      <th>trajectory_name</th>
+      <td><p>The trajectory specified as a character value.</p></td>
     </tr>
     <tr>
       <th>of_sample</th>
-      <td><p>This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.</p></td>
+      <td><p>The sample from which to extract the content.</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
