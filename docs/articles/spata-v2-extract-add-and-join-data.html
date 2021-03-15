@@ -11450,16 +11450,16 @@
 <pre><code>## # A tibble: 3,734 x 3
 ##    barcodes           sample new_cluster_variable
 ##    &lt;chr&gt;              &lt;chr&gt;  &lt;fct&gt;               
-##  1 AAACAAGTATCTCCCA-1 T275   Cluster_4           
-##  2 AAACACCAATAACTGC-1 T275   Cluster_5           
-##  3 AAACAGAGCGACTCCT-1 T275   Cluster_7           
+##  1 AAACAAGTATCTCCCA-1 T275   Cluster_3           
+##  2 AAACACCAATAACTGC-1 T275   Cluster_3           
+##  3 AAACAGAGCGACTCCT-1 T275   Cluster_2           
 ##  4 AAACAGCTTTCAGAAG-1 T275   Cluster_1           
-##  5 AAACAGGGTCTATATT-1 T275   Cluster_3           
-##  6 AAACAGTGTTCCTGGG-1 T275   Cluster_5           
-##  7 AAACATTTCCCGGATT-1 T275   Cluster_4           
-##  8 AAACCGGGTAGGTACC-1 T275   Cluster_3           
-##  9 AAACCGTTCGTCCAGG-1 T275   Cluster_1           
-## 10 AAACCTAAGCAGCCGG-1 T275   Cluster_4           
+##  5 AAACAGGGTCTATATT-1 T275   Cluster_5           
+##  6 AAACAGTGTTCCTGGG-1 T275   Cluster_4           
+##  7 AAACATTTCCCGGATT-1 T275   Cluster_3           
+##  8 AAACCGGGTAGGTACC-1 T275   Cluster_5           
+##  9 AAACCGTTCGTCCAGG-1 T275   Cluster_3           
+## 10 AAACCTAAGCAGCCGG-1 T275   Cluster_3           
 ## # ... with 3,724 more rows</code></pre>
 <p>It carries a new calculated feature that gives additional information about every barcode-spot. Whatever your analysis results in, as long as it is a variable in a data.frame that additionally contains the barcodes of your spata-object in a <em>‘barcodes’</em>-variable you can add that variable to your spata-object to make it universally accessible for all <strong>SPATA2</strong>-functions. Use <code><a href="../reference/addFeatures.html">addFeatures()</a></code>for that matter.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
