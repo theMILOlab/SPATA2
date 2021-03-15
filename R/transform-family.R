@@ -105,7 +105,8 @@ transformSeuratToSpata <- function(seurat_object,
                                    image_name = NULL,
                                    coords_from = "umap",
                                    gene_set_path = NULL,
-                                   verbose = TRUE){
+                                   verbose = TRUE,
+                                   RunFeatures = FALSE){
 
 # 0. Set up empty spata-object --------------------------------------------
 
@@ -534,14 +535,17 @@ transformSeuratToSpata <- function(seurat_object,
 
   spata_object <-
     setActiveExpressionMatrix(spata_object, mtr_name = "scaled")
+  
+  if(RunFeatures = TRUE){
+    
+      confuns::give_feedback(
+        msg = "Calculating gene meta data.",
+        verbose = verbose
+         )
 
-  confuns::give_feedback(
-    msg = "Calculating gene meta data.",
-    verbose = verbose
-  )
-
-  spata_object <- computeGeneMetaData(object = spata_object, verbose = verbose)
-
+        spata_object <- computeGeneMetaData(object = spata_object, verbose = verbose)
+  }
+    
   spata_object@spatial <-
     magrittr::set_names(x = list(list()), value = sample_name)
 
