@@ -62,10 +62,11 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 #'   \item{\emph{'single_cell'}}{Denotes that the data to be used derived from single cell experiments.}
 #'  }
 #'
-#' @param coords_from Character value. Either \emph{'umap'} or \emph{'tsne'}.
+#' @param coords_from Character value. Either \emph{'pca', 'tsne'} or \emph{'umap'}.
 #'
 #'  Only relevant if \code{method} was set to \emph{'single_cell'}. Denotes the slot from which to
-#'  take the surrogate coordinates.
+#'  take the surrogate coordinates. If the specified data ist not found the slot @@coordinates will contain an
+#'  empty data.frame and has to be set manually with \code{setCoordsDf()}.
 #'
 #' @param sample_name Character value. Future input for SPATA's \code{of_sample}-argument.
 #'
@@ -100,18 +101,16 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 transformSeuratToSpata <- function(seurat_object,
                                    sample_name,
                                    method = "spatial",
+                                   coords_from = "pca",
                                    assay_name = NULL,
                                    assay_slot = NULL,
                                    image_name = NULL,
-                                   coords_from = "umap",
                                    gene_set_path = NULL,
                                    verbose = TRUE){
 
 # 0. Set up empty spata-object --------------------------------------------
 
-  confuns::give_feedback(msg = "Setting up new spata-object.", verbose = verbose)
-
-  spata_object <- methods::new(Class = "spata", samples = sample_name)
+  spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
 
   if(base::is.null(gene_set_path) | base::is.character(gene_set_path)){
 
@@ -126,7 +125,6 @@ transformSeuratToSpata <- function(seurat_object,
 
   confuns::check_one_of(input = method, against = seurat_methods, ref.input = "input for argument 'method'")
 
-  confuns::is_value("sample_name",  mode = "character")
   confuns::are_values(c("assay_name", "assay_slot", "image_name"), mode = "character", skip.allow = TRUE, skip.val = NULL)
 
   # spatial image check
@@ -321,45 +319,40 @@ transformSeuratToSpata <- function(seurat_object,
   } else if(method == "single_cell") {
 
     confuns::is_value(x = coords_from, mode = "character", ref = "coords_from")
+
     confuns::check_one_of(input = coords_from, against = seurat_coords_from_opts, ref.input = "input for argument 'coords_from'")
 
-    first_choice <- coords_from
-    second_choice <- seurat_coords_from_opts[seurat_coords_from_opts != coords_from]
 
     # get coordinates/ umap cell embedding
     coords_df <-
       getFromSeurat(
-        return_value = base::as.data.frame(seurat_object@reductions[[first_choice]]@cell.embeddings),
+        return_value = base::as.data.frame(seurat_object@reductions[[coords_from]]@cell.embeddings[, 1:2]),
         error_handling = "warning",
         error_value = NULL,
-        error_ref = glue::glue("coordinates/{first_choice} cell embedding")
+        error_ref = glue::glue("coordinates/{coords_from} cell embedding")
       )
 
     # try tsne if umap did not work
     if(base::is.null(coords_df)){
 
-      msg <- glue::glue("Trying to extract surrogate coordinates from slot {second_choice}.")
+      msg <- glue::glue("Trying to extract surrogate coordinates from slot {coords_from} failed. Please
+                        set the coordinates manually with 'setCoordsDf()'.")
 
       confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
+      coords_df <- base::data.frame()
+
+    } else {
+
       coords_df <-
-        getFromSeurat(
-          return_value = base::as.data.frame(seurat_object@reductions[[second_choice]]@cell.embeddings),
-          error_handling = "stop",
-          error_value = NULL,
-          error_ref = glue::glue("coordinates/{second_choice} cell embedding")
-        )
+        tibble::rownames_to_column(.data = coords_df, var = "barcodes") %>%
+        magrittr::set_colnames(value = c("barcodes", "x", "y")) %>%
+        dplyr::mutate(sample = {{sample_name}}) %>%
+        dplyr::select(barcodes, sample, x, y)
 
     }
 
-    coords_df <-
-      tibble::rownames_to_column(.data = coords_df, var = "barcodes") %>%
-      magrittr::set_colnames(value = c("barcodes", "x", "y")) %>%
-      dplyr::mutate(sample = {{sample_name}}) %>%
-      dplyr::select(barcodes, sample, x, y)
-
     # get scaled matrix
-
     assay <- seurat_object@assays[[assay_name]]
 
     scaled_mtr <-

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Update Spata-Object from SPATA to SPATA2 — updateSpataObject • SPATA2</title>
+<title>Initiate an empty object — initiateSpataObject_Empty • SPATA2</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,8 @@
 
 
 
-<meta property="og:title" content="Update Spata-Object from SPATA to SPATA2 — updateSpataObject" />
-<meta property="og:description" content="A convenient function that takes the spata-object you
-have initiated with the package SPATA and adjusts it's architecture
-to the new version. All features remain." />
+<meta property="og:title" content="Initiate an empty object — initiateSpataObject_Empty" />
+<meta property="og:description" content="Initiate an empty object" />
 
 
 
@@ -159,63 +157,30 @@ to the new version. All features remain." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Update Spata-Object from SPATA to SPATA2</h1>
+    <h1>Initiate an empty object</h1>
     
-    <div class="hidden name"><code>updateSpataObject.Rd</code></div>
+    <div class="hidden name"><code>initiateSpataObject_Empty.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>A convenient function that takes the spata-object you
-have initiated with the package SPATA and adjusts it's architecture
-to the new version. All features remain.</p>
+    <p>Initiate an empty object</p>
     </div>
 
-    <pre class="usage"><span class='fu'>updateSpataObject</span><span class='op'>(</span>
-  <span class='va'>old_object</span>,
-  <span class='va'>sample_name</span>,
-  chr_to_fct <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  n_pcs <span class='op'>=</span> <span class='fl'>60</span>,
-  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>initiateSpataObject_Empty</span><span class='op'>(</span><span class='va'>sample_name</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>old_object</th>
-      <td><p>A spata-object that has been created within the package SPATA.</p></td>
-    </tr>
-    <tr>
       <th>sample_name</th>
-      <td><p>Character value. Denotes the sample name. Must be one of
-<code><a href='getSampleNames.html'>getSampleNames()</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>chr_to_fct</th>
-      <td><p>Logical. SPATA2 recommends to store grouping variables as factors
-in the slot @fdata. If set to TRUE, character variables (apart from <em>barcodes, sample, segmentation</em>)
-of the old obejct's feature data are converted to factors.</p></td>
-    </tr>
-    <tr>
-      <th>n_pcs</th>
-      <td><p>Numeric value. Denotes the number of principal components to be computed.</p></td>
-    </tr>
-    <tr>
-      <th>verbose</th>
-      <td><p>Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.</p>
-<p>(Warning messages will always be printed.)</p></td>
+      <td><p>Character value. Denotes the name of the sample you are
+analyzing with the spata-object. The future input for SPATA's <code>of_sample</code>-argument.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An updated spata-object.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>Apart from transferring the data and the progress from the old object
-to the new one principal component analysis (PCA) is run via the function <code><a href='runPca.html'>runPca()</a></code> and
-gene meta data is compuated via <code><a href='computeGeneMetaData.html'>computeGeneMetaData()</a></code>.</p>
+    <p>An empty spata-object.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

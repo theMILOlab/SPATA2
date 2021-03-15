@@ -3,6 +3,30 @@
 
 # Test functions --------------------------------------------------------
 
+#' @title Initiate an empty object
+#'
+#' @inherit initiateSpataObject_ExprMtr params
+#'
+#' @return An empty spata-object.
+#' @export
+#'
+
+initiateSpataObject_Empty <- function(sample_name){
+
+  confuns::give_feedback(msg = "Setting up new spata-object.", verbose = TRUE)
+
+  confuns::is_value("sample_name",  mode = "character")
+
+  class_string <- "spata"
+
+  base::attr(class_string, which = "package") <- "SPATA2"
+
+  object <-
+    methods::new(Class = class_string, samples = sample_name)
+
+}
+
+
 #' @title Initiate a spata-object from MALDI Experiments
 #'
 #' @inherit initiateSpataObject_ExprMtr params
@@ -519,7 +543,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
   confuns::give_feedback(msg = "Setting up spata-object.", verbose = verbose)
 
-  spata_object <- methods::new(Class = "spata", samples = sample_name)
+  spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
 
   # data matrices
 
@@ -548,7 +572,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
     dplyr::select(barcodes, sample, segmentation)
 
   gene_set_df <-
-    loadGSDF(gene_set_path = gene_set_path, verbose = verbose)
+    loadGeneSetDf(gene_set_path = gene_set_path, verbose = verbose)
 
   spata_object <-
     setCoordsDf(object = spata_object, coords_df = coords_df) %>%

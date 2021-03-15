@@ -26,7 +26,8 @@ of the input matrix (\code{expr_mtr}).}
 \item{intensity_mtr}{A numeric matrix to be used as the expression matrix. Rownames must
 correspond to the genes and column names must correspond to the barcodes.}
 
-\item{sample_name}{Character value. The future input for SPATA's \code{of_sample}-argument.}
+\item{sample_name}{Character value. Denotes the name of the sample you are
+analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.}
 
 \item{gene_set_path}{Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.
