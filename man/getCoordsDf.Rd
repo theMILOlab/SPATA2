@@ -5,7 +5,7 @@
 \alias{getSegmentDf}
 \title{Obtain spatial coordinates}
 \usage{
-getCoordsDf(object, of_sample = NA, return = "tibble")
+getCoordsDf(object, of_sample = NA)
 
 getSegmentDf(object, segment_names, of_sample = NA)
 }

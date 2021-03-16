@@ -445,7 +445,7 @@ setInitiationInfo <- function(object,
     purrr::set_names(nm = init_args)
 
   init_args_input <-
-    init_args_input[!base::names(init_args_input) %in% c("cds",  "coords_df", "count_mtr", "expr_mtr","seurat_object")]
+    init_args_input[!base::names(init_args_input) %in% c("cds",  "coords_df", "count_mtr", "expr_mtr", "object", "seurat_object")]
 
   init_args_input <-
     c(init_args_input, additional_input)

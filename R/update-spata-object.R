@@ -8,7 +8,7 @@
 #' @inherit runPca params
 #' @inherit argument_dummy params
 #'
-#' @param old_object A spata-object that has been created within the package SPATA.
+#' @param object A spata-object that has been created within the package SPATA.
 #' @param sample_name Character value. Denotes the sample name. Must be one of
 #' \code{getSampleNames()}.
 #' @param chr_to_fct Logical. SPATA2 recommends to store grouping variables as factors
@@ -23,17 +23,13 @@
 #' @export
 #'
 
-updateSpataObject <- function(old_object,
+updateSpataObject <- function(object,
                               sample_name,
                               chr_to_fct = TRUE,
                               n_pcs = 60,
                               verbose = TRUE){
 
   # 1. Control  -------------------------------------------------------------
-
-  object <- old_object
-
-  base::rm(old_object)
 
   # is old object from SPATA
   object_class <- base::class(object)

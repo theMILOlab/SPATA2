@@ -5,7 +5,7 @@
 \title{Update spata-object from SPATA to SPATA2}
 \usage{
 updateSpataObject(
-  old_object,
+  object,
   sample_name,
   chr_to_fct = TRUE,
   n_pcs = 60,
@@ -13,7 +13,7 @@ updateSpataObject(
 )
 }
 \arguments{
-\item{old_object}{A spata-object that has been created within the package SPATA.}
+\item{object}{A spata-object that has been created within the package SPATA.}
 
 \item{sample_name}{Character value. Denotes the sample name. Must be one of
 \code{getSampleNames()}.}
