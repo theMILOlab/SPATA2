@@ -55,6 +55,7 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 #' @inherit loadGSDF params
 #'
 #' @param seurat_object A valid seurat object.
+#' @param sample_name Character value. Future input for SPATA's \code{of_sample}-argument.
 #' @param method Character value. Determines the data slots from which to compile the spata-object.
 #'
 #'  \describe{
@@ -67,8 +68,6 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 #'  Only relevant if \code{method} was set to \emph{'single_cell'}. Denotes the slot from which to
 #'  take the surrogate coordinates. If the specified data ist not found the slot @@coordinates will contain an
 #'  empty data.frame and has to be set manually with \code{setCoordsDf()}.
-#'
-#' @param sample_name Character value. Future input for SPATA's \code{of_sample}-argument.
 #'
 #' @details This function assembles a spata-object from the data it finds in the provided
 #' seurat-object. This always includes gene count- and expression-matrices as well as
@@ -106,8 +105,7 @@ transformSeuratToSpata <- function(seurat_object,
                                    assay_slot = NULL,
                                    image_name = NULL,
                                    gene_set_path = NULL,
-                                   verbose = TRUE,
-                                   RunFeatures = FALSE){
+                                   verbose = TRUE){
 
 # 0. Set up empty spata-object --------------------------------------------
 
@@ -528,17 +526,10 @@ transformSeuratToSpata <- function(seurat_object,
 
   spata_object <-
     setActiveExpressionMatrix(spata_object, mtr_name = "scaled")
-  
-  if(RunFeatures == TRUE){
-    
-      confuns::give_feedback(
-        msg = "Calculating gene meta data.",
-        verbose = verbose
-         )
 
-        spata_object <- computeGeneMetaData(object = spata_object, verbose = verbose)
-  }
-    
+  spata_object <-
+    computeGeneMetaData(object = spata_object, verbose = verbose)
+
   spata_object@spatial <-
     magrittr::set_names(x = list(list()), value = sample_name)
 

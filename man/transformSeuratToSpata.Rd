@@ -13,8 +13,7 @@ transformSeuratToSpata(
   assay_slot = NULL,
   image_name = NULL,
   gene_set_path = NULL,
-  verbose = TRUE,
-  RunFeatures = FALSE
+  verbose = TRUE
 )
 }
 \arguments{

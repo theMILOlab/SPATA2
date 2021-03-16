@@ -55,7 +55,6 @@ Collate:
     'check-family-lazy.R'
     'check-family-validation.R'
     'checkpoint.R'
-    'compile-family.R'
     'compute-family.R'
     'create_family.R'
     'data.R'

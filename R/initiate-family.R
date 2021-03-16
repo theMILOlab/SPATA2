@@ -27,43 +27,6 @@ initiateSpataObject_Empty <- function(sample_name){
 }
 
 
-#' @title Initiate a spata-object from MALDI Experiments
-#'
-#' @inherit initiateSpataObject_ExprMtr params
-#' @param intensity_mtr A numeric matrix to be used as the expression matrix. Rownames must
-#' correspond to the genes and column names must correspond to the barcodes.
-#'
-#' @return A spata-object.
-#'
-
-initiateSpataObject_MALDI <- function(coords_df,
-                                      intensity_mtr,
-                                      sample_name,
-                                      gene_set_path = NULL,
-                                      output_path = NULL,
-                                      file_name = NULL,
-                                      pca_comp = 30,
-                                      nn = 50,
-                                      tsne_perplexity = 30,
-                                      verbose = TRUE){
-
-  initiateSpataObject_ExprMtr(coords_df = coords_df,
-                              expr_mtr = intensity_mtr,
-                              ref_expr_mtr = "intensity_mtr",
-                              image = image,
-                              sample_name = sample_name,
-                              gene_set_path = gene_set_path,
-                              output_path = output_path,
-                              file_name = file_name,
-                              pca_comp = pca_comp,
-                              nn = nn,
-                              tsne_perplexity = tsne_perplexity,
-                              verbose = verbose
-                              )
-
-}
-
-
 # Exported functions ------------------------------------------------------
 
 #' @title Initiate a spata-object from a raw count matrix
