@@ -225,7 +225,8 @@ Figure 2.1 Visualization of total variance of different autoencoder set ups
 
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
             color_by <span class="op">=</span> <span class="st">"MARCH6"</span>, 
-            smooth <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span> 
+            smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
+            pt_size <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
@@ -233,7 +234,8 @@ Figure 2.1 Visualization of total variance of different autoencoder set ups
 
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
             color_by <span class="op">=</span> <span class="st">"MARCH6"</span>, 
-            smooth <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span> 
+            smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
+            pt_size <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-autoencoder_files/figure-html/example-surface-1.png" alt="Figure 3.1 First visual demonstration of scaled vs. denoised data" width="50%"><img src="spata-v2-autoencoder_files/figure-html/example-surface-2.png" alt="Figure 3.1 First visual demonstration of scaled vs. denoised data" width="50%"><p class="caption">
@@ -249,7 +251,8 @@ Figure 3.1 First visual demonstration of scaled vs. denoised data
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">spata_obj</span>,
   color_by <span class="op">=</span> <span class="va">example_genes</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,
-  smooth <span class="op">=</span> <span class="cn">FALSE</span>
+  smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
+  pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
@@ -257,7 +260,8 @@ Figure 3.1 First visual demonstration of scaled vs. denoised data
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">spata_obj</span>,
   color_by <span class="op">=</span> <span class="va">example_genes</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,
-  smooth <span class="op">=</span> <span class="cn">FALSE</span>
+  smooth <span class="op">=</span> <span class="cn">FALSE</span>,
+  pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
@@ -272,7 +276,8 @@ Figure 3.2 Not denoised expression of genes AIF1 and CD68
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">spata_obj</span>,
   color_by <span class="op">=</span> <span class="va">example_genes</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,
-  smooth <span class="op">=</span> <span class="cn">FALSE</span>
+  smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
+  pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span> 
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
@@ -280,7 +285,8 @@ Figure 3.2 Not denoised expression of genes AIF1 and CD68
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">spata_obj</span>,
   color_by <span class="op">=</span> <span class="va">example_genes</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,
-  smooth <span class="op">=</span> <span class="cn">FALSE</span>
+  smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
+  pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span>
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
 <div class="figure">

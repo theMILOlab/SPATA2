@@ -152,14 +152,14 @@
   <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>,
               color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>,
               pt_clrp <span class="op">=</span> <span class="st">"npg"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span>
+              pt_size <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"Clusters"</span><span class="op">)</span>
 
 <span class="co"># plot gene expression </span>
 <span class="va">p2</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
               color_by <span class="op">=</span> <span class="st">"CARTPT"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.5</span>,
+              pt_size <span class="op">=</span> <span class="fl">1.2</span>,
               pt_clrsp <span class="op">=</span> <span class="st">"magma"</span><span class="op">)</span>
 
 <span class="co"># combine with patchwork </span>
@@ -191,7 +191,7 @@ Figure 1.1. Basic surface plots
 <span class="va">p1</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
               color_by <span class="op">=</span> <span class="st">"CARTPT"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.5</span>,
+              pt_size <span class="op">=</span> <span class="fl">1.2</span>,
               pt_clrsp <span class="op">=</span> <span class="st">"magma"</span>
               <span class="op">)</span>
 
@@ -199,7 +199,7 @@ Figure 1.1. Basic surface plots
 <span class="va">p2</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
               color_by <span class="op">=</span> <span class="st">"CARTPT"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.5</span>,
+              pt_size <span class="op">=</span> <span class="fl">1.2</span>,
               pt_clrsp <span class="op">=</span> <span class="st">"magma"</span>,
               smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
               smooth_span <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
@@ -259,7 +259,7 @@ Figure 3.2 Plots derived from plotSurfaceInteractive()
                       color_by <span class="op">=</span> <span class="va">genes_b</span>,
                       smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
                       smooth_span <span class="op">=</span> <span class="fl">0.2</span>, 
-                      pt_size <span class="op">=</span> <span class="fl">1</span>, 
+                      pt_size <span class="op">=</span> <span class="fl">0.6</span>, 
                       pt_clrsp <span class="op">=</span> <span class="st">"inferno"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-plotting-surface_files/figure-html/plotSurfaceComparison-demo-1.png" alt="Figure 4.1 A quick way to compare several variables" width="100%"><p class="caption">
@@ -277,7 +277,7 @@ Figure 4.1 A quick way to compare several variables
 <span class="fu"><a href="../reference/plotSurfaceAverage.html">plotSurfaceAverage</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_gbm</span>, 
                    color_by <span class="op">=</span> <span class="va">input_list</span>, 
                    smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
-                   pt_size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></code></pre></div>
+                   pt_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-plotting-surface_files/figure-html/plotSurfaceAverage()-1.png" alt="Figure 4.2 Average the expression of several genes" width="100%"><p class="caption">
 Figure 4.2 Average the expression of several genes

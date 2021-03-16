@@ -232,9 +232,9 @@
 <span class="va">spata_obj_mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initiateSpataObject_Examples.html">initiateSpataObject_Examples</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></code></pre></div>
 <p>Spata-objects generated this way are compatible with all functions in <strong>SPATA2</strong>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj_mc</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj_mc</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>, pt_size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj_mc</span>, color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, smooth_span <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj_mc</span>, color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, smooth_span <span class="op">=</span> <span class="fl">0.1</span>, pt_size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-examples-1.png" alt="Figure 1.1 Surface plots of an example data set." width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-examples-2.png" alt="Figure 1.1 Surface plots of an example data set." width="50%"><p class="caption">
 Figure 1.1 Surface plots of an example data set.
@@ -311,7 +311,7 @@ Figure 1.1 Surface plots of an example data set.
 ## pt_clrsp = inferno
 ## pt_fill = black
 ## pt_shape = 21
-## pt_size = 2.3
+## pt_size = 1.8
 ## relevel = FALSE
 ## scales = free
 ## sgmt_clr = black

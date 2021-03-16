@@ -12,7 +12,7 @@
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, of_sample = NA, return = "tibble"){
+getCoordsDf <- function(object, of_sample = NA){
 
   # 1. Control --------------------------------------------------------------
 
@@ -27,13 +27,8 @@ getCoordsDf <- function(object, of_sample = NA, return = "tibble"){
   # 2. Data wrangling -------------------------------------------------------
 
   coords_df <-
-    object@coordinates[[of_sample]]
-
-  if(return == "tibble"){
-
-    coords_df <- tibble::as_tibble(coords_df)
-
-  }
+    object@coordinates[[of_sample]] %>%
+    tibble::as_tibble()
 
   # -----
 
@@ -63,7 +58,8 @@ getSegmentDf <- function(object, segment_names, of_sample = NA){
       spata_df = getCoordsDf(object, of_sample = of_sample),
       features = "segmentation"
     ) %>%
-    dplyr::filter(segmentation %in% {{segment_names}})
+    dplyr::filter(segmentation %in% {{segment_names}}) %>%
+    tibble::as_tibble()
 
   base::return(res_df)
 
@@ -166,7 +162,8 @@ getDeaResultsDf <- function(object,
                             max_adj_pval = max_adj_pval,
                             n_highest_lfc = n_highest_lfc,
                             n_lowest_pval = n_lowest_pval,
-                            return = "data.frame")
+                            return = "data.frame") %>%
+    tibble::as_tibble()
 
   # 3. Return ---------------------------------------------------------------
 
@@ -371,7 +368,8 @@ getSpataDf <- function(object, of_sample = NA){
   check_object(object)
   of_sample <- check_sample(object, of_sample)
 
-  getCoordsDf(object, of_sample)[,c("barcodes", "sample")]
+  getCoordsDf(object, of_sample)[,c("barcodes", "sample")] %>%
+    tibble::as_tibble()
 
 }
 
@@ -412,7 +410,8 @@ getDimRedDf <- function(object,
   # 2. Data extraction ------------------------------------------------------
 
   dim_red_df <-
-    object@dim_red[[of_sample]][[method_dr]]
+    object@dim_red[[of_sample]][[method_dr]] %>%
+    tibble::as_tibble()
 
   # -----
 
@@ -640,7 +639,9 @@ getFeatureDf <- function(object, of_sample = NA){
   check_object(object)
   of_sample <- check_sample(object, of_sample)
 
-  fdata <- object@fdata[[of_sample]]
+  fdata <-
+    object@fdata[[of_sample]] %>%
+    tibble::as_tibble()
 
   if(base::is.null(fdata) | base::nrow(fdata) == 0){
 
@@ -700,7 +701,8 @@ getFeatureVariables <- function(object,
 
     res <-
       getFeatureDf(object, of_sample = of_sample) %>%
-      dplyr::select(barcodes, sample, dplyr::all_of(features))
+      dplyr::select(barcodes, sample, dplyr::all_of(features)) %>%
+      tibble::as_tibble()
 
   } else if(return == "list"){
 
@@ -1265,7 +1267,8 @@ getGeneDistMtr <- function(object, of_sample = NA){
 getGeneDistDf <- function(object, of_sample = NA){
 
   getGeneDistMtr(object = object, of_sample = of_sample) %>%
-    hlpr_dist_mtr_to_df()
+    hlpr_dist_mtr_to_df() %>%
+    tibble::as_tibble()
 
 }
 
@@ -1518,7 +1521,8 @@ getTrajectoryDf <- function(object,
                                  variables = variables,
                                  method_gs = method_gs,
                                  verbose = verbose,
-                                 normalize = normalize)
+                                 normalize = normalize) %>%
+    tibble::as_tibble()
 
   if(base::isTRUE(shift_wider)){
 
@@ -1750,7 +1754,8 @@ getGeneSetDf <- function(object){
 
   check_object(object)
 
-  object@used_genesets
+  object@used_genesets %>%
+    tibble::as_tibble()
 
 }
 
