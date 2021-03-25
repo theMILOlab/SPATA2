@@ -294,6 +294,8 @@ subsetBySegment_ExprMtr <- function(object,
   spata_object <- setInitiationInfo(object = spata_object)
 
   spata_object@information$old_coordinates <- old_coords_df
+  
+  base::return(spata_object)
 
 }
 
@@ -366,7 +368,7 @@ subsetByBarcodes_ExprMtr <- function(object,
       image = image,
       directory_spata = directory_spata,
       combine_with_wd = combine_with_wd,
-      gene_set_path = NA,
+      gene_set_path = NULL,
       k = k,
       nn = nn,
       runPca = runPca,
@@ -380,6 +382,8 @@ subsetByBarcodes_ExprMtr <- function(object,
   spata_object <- setInitiationInfo(object = spata_object)
 
   spata_object@information$old_coordinates <- old_coords_df
+  
+  base::return(spata_object)
 
 }
 
