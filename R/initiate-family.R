@@ -565,7 +565,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   confuns::give_feedback(msg = "Running PCA.", verbose = verbose)
 
   spata_object <- confuns::call_flexibly(fn = "runPca",
-                                         fn.ns = "SPATA",
+                                         fn.ns = "SPATA2",
                                          default = list(object = spata_object),
                                          v.fail = spata_object,
                                          v.skip = spata_object,
