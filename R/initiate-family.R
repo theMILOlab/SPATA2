@@ -594,7 +594,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   confuns::give_feedback(msg = "Running TSNE.", verbose = verbose)
 
   spata_object <- confuns::call_flexibly(fn = "runTsne",
-                                         fn.ns = "SPATA",
+                                         fn.ns = "SPATA2",
                                          default = list(object = spata_object),
                                          v.fail = spata_object,
                                          v.skip = spata_object,
@@ -604,7 +604,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   confuns::give_feedback(msg = "Running UMAP.", verbose = verbose)
 
   spata_object <- confuns::call_flexibly(fn = "runUmap",
-                                         fn.ns = "SPATA",
+                                         fn.ns = "SPATA2",
                                          default = list(object = spata_object),
                                          v.fail = spata_object,
                                          v.skip = spata_object,
