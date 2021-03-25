@@ -49,8 +49,8 @@ joinWith <- function(object,
   confuns::check_data_frame(
     df = spata_df,
     var.class = list(
-      "barcodes" = "character",
-      "sample" = "character"),
+      "barcodes" = "character"
+      ),
     ref = "spata_df")
 
   input_list <- list("gene_sets" = gene_sets,

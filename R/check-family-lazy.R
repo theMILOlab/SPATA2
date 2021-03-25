@@ -146,8 +146,7 @@ check_spata_df <- function(spata_df){
   confuns::check_data_frame(
     df = spata_df,
     var.class = list(
-      barcodes = c("character"),
-      sample = c("character")
+      barcodes = c("character")
     ),
     ref = "spata_df"
   )

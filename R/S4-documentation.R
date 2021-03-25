@@ -11,9 +11,9 @@
 #' @export
 #'
 
-data_counts <- setClass("data_counts",
-                        slots = c(counts = "Matrix",
-                                  norm_exp  = "matrix"))
+data_counts <- methods::setClass("data_counts",
+                                  slots = c(counts = "Matrix",
+                                            norm_exp  = "matrix"))
 
 
 
@@ -28,9 +28,9 @@ data_counts <- setClass("data_counts",
 #' @export
 #'
 
-dim_red <- setClass("dim_red",
-                    slots = c(UMAP =  "data.frame",
-                              TSNE ="data.frame"))
+dim_red <- methods::setClass("dim_red",
+                              slots = c(UMAP =  "data.frame",
+                                        TSNE ="data.frame"))
 
 
 
@@ -67,19 +67,21 @@ dim_red <- setClass("dim_red",
 #' @export
 #'
 
-spatial_trajectory <- setClass("spatial_trajectory",
-                                slots = c(
-                                  compiled_trajectory_df = "data.frame",
-                                  segment_trajectory_df = "data.frame",
-                                  comment = "character",
-                                  name = "character",
-                                  sample = "character"))
+spatial_trajectory <- methods::setClass("spatial_trajectory",
+                                        slots = c(
+                                          compiled_trajectory_df = "data.frame",
+                                          segment_trajectory_df = "data.frame",
+                                          comment = "character",
+                                          name = "character",
+                                          sample = "character"))
 
 
 
 # spata object ------------------------------------------------------------
 
 #' @title The spata-object
+#'
+#' @slot autoencoder A list in which the results of neural network denoising is stored.
 #'
 #' @slot coordinates A data.frame containing information about every barcode-spot. Must contain the variables:
 #'
@@ -124,6 +126,7 @@ spatial_trajectory <- setClass("spatial_trajectory",
 
 spata2 <- setClass("spata2",
                   slots = c(autoencoder = "list",
+                            cnv = "list",
                             compatibility = "list",
                             coordinates ="list", #coordinates: bc, x, y, sample
                             data = "list",

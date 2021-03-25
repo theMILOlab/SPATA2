@@ -183,4 +183,4 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 1, patch = 0)
+current_spata_version <- list(major = 1, minor = 2, patch = 0)

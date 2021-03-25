@@ -10,3 +10,6 @@ data-seurat-objects
 vignettes
 _pkgdown.yml
 data-samples
+R-development
+data-development
+gene-positions-df.csv
