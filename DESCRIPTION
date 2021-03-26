@@ -42,6 +42,7 @@ Imports:
     tibble,
     tidyr,
     tidytext,
+    viridis,
     umap
 Collate: 
     'S4-documentation.R'
