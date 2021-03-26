@@ -17,7 +17,6 @@ Imports:
     concaveman,
     colorspace,
     dplyr,
-    EBImage,
     ggalt,
     ggforce,
     ggplot2,
