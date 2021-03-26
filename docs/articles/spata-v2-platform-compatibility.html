@@ -174,7 +174,7 @@
 <span class="va">cortex_cds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadCorrespondingCDS</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span> </code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">spata_plot</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>, pt_clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>, pt_clrp <span class="op">=</span> <span class="st">"npg"</span>, pt_size <span class="op">=</span> <span class="fl">1.4</span><span class="op">)</span> <span class="op">+</span> 
       <span class="fu"><a href="../reference/legendBottom.html">legendBottom</a></span><span class="op">(</span><span class="op">)</span>
 
 
@@ -252,7 +252,7 @@ Figure 2.1 SPATA’s and monocle3’ basic plotting results
 <p>The feature <em>Pseudotime</em> is now a valid feature in our spata-object and thus accessible via all functions in <strong>SPATA2</strong> that take numeric features as an input option.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># visualize pseudotime on the surface</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"Pseudotime"</span>, smooth <span class="op">=</span> <span class="cn">TRUE</span>, smooth_span <span class="op">=</span> <span class="fl">0.2</span>, pt_size <span class="op">=</span> <span class="fl">2.3</span><span class="op">)</span> </code></pre></div>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span><span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"Pseudotime"</span>, smooth <span class="op">=</span> <span class="cn">TRUE</span>, smooth_span <span class="op">=</span> <span class="fl">0.2</span>, pt_size <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> </code></pre></div>
 <div class="figure">
 <img src="spata-v2-platform-compatibility_files/figure-html/demonstrate-ptime-1.png" alt="Figure 3.2 Visualizing monocle3-pseudotime results with SPATA" width="100%"><p class="caption">
 Figure 3.2 Visualizing monocle3-pseudotime results with SPATA
