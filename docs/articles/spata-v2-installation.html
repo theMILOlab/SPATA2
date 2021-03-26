@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.2.0</span>
       </span>
     </div>
 
@@ -126,17 +126,17 @@
     
 <p>In order to install <strong>SPATA2</strong> with all its dependencies in the right order enter the following commands.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">base</span><span class="fu">::</span><span class="fu">install.packages</span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 
 <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
-      <span class="fu">base</span><span class="fu">::</span><span class="fu">install.packages</span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span>
+      <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span>
   <span class="op">}</span>
 
 <span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'BiocGenerics'</span>, <span class="st">'DelayedArray'</span>, <span class="st">'DelayedMatrixStats'</span>,
                        <span class="st">'limma'</span>, <span class="st">'S4Vectors'</span>, <span class="st">'SingleCellExperiment'</span>,
-                       <span class="st">'SummarizedExperiment'</span>, <span class="st">'batchelor'</span>, <span class="st">'Matrix.utils'</span><span class="op">)</span><span class="op">)</span>
+                       <span class="st">'SummarizedExperiment'</span>, <span class="st">'batchelor'</span>, <span class="st">'Matrix.utils'</span>, <span class="st">'EBImage'</span><span class="op">)</span><span class="op">)</span>
 
-<span class="fu">base</span><span class="fu">::</span><span class="fu">install.packages</span><span class="op">(</span><span class="st">"Seurat"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"Seurat"</span><span class="op">)</span>
 
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"kueckelj/confuns"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"theMILOlab/SPATA2"</span><span class="op">)</span>
