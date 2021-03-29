@@ -57,23 +57,25 @@ joinWith <- function(object,
                      "genes" = genes,
                      "features" = features)
 
-  input_list <-
-    purrr::map2(.x = input_list,
-                .y = c("gene_sets", "genes", "features"),
-                .f = function(input, type){
+  input_list <- purrr::discard(input_list, .p = base::is.null)
 
-                  if(!base::is.null(input)){
+  if(base::is.character(input_list[["gene_sets"]])){
 
-                    confuns::is_vec(x = input, mode = "character", ref = type)
+    input_list$gene_sets <- check_gene_sets(object, input_list$gene_sets)
 
-                    fn <- stringr::str_c("check", type, sep = "_")
-                    input <- base::do.call(fn, list(object, input))
+  }
 
-                    base::return(input)
+  if(base::is.character(input_list[["genes"]])){
 
-                  }
+    input_list$genes <- check_genes(object, input_list$genes)
 
-                }) %>% purrr::discard(.p = base::is.null)
+  }
+
+  if(base::is.character(input_list[["features"]])){
+
+    input_list$features <- check_features(object, input_list$features)
+
+  }
 
   # -----
 

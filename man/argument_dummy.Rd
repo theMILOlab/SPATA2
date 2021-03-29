@@ -30,7 +30,7 @@ to display the results.}
 \item{display_facets}{Logical value. If set to TRUE the plot is split via
 \code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
 
-\item{scales, ncol, nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+\item{scales, ncol, nrow}{Affects the way the subplots
 are displayed.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -47,6 +47,12 @@ represent the group.}
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
+
+\item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
+the dendrogom is cut.}
+
+\item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
+in which the hierarchical tree is supposed to be split.}
 
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}

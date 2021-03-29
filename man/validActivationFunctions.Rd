@@ -2,12 +2,14 @@
 % Please edit documentation in R/valid-input-options.R
 \name{validActivationFunctions}
 \alias{validActivationFunctions}
+\alias{validAgglomerationMethods}
 \alias{validColorPalettes}
 \alias{validColorSpectra}
 \alias{validDeAnalysisMethods}
 \alias{validDefaultInstructionSlots}
 \alias{validDimRedMethods}
 \alias{validDirectoryInstructionSlots}
+\alias{validDistanceMethods}
 \alias{validHierarchicalClusterMethods}
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
@@ -15,6 +17,8 @@
 \title{Obtain valid argument inputs}
 \usage{
 validActivationFunctions()
+
+validAgglomerationMethods()
 
 validColorPalettes()
 
@@ -27,6 +31,8 @@ validDefaultInstructionSlots()
 validDimRedMethods()
 
 validDirectoryInstructionSlots()
+
+validDistanceMethods()
 
 validHierarchicalClusterMethods()
 

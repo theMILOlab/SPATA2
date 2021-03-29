@@ -185,13 +185,13 @@ input lowers the position.}
 \item{display_facets}{Logical value. If set to TRUE the plot is split via
 \code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
 
-\item{scales}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+\item{scales}{Affects the way the subplots
 are displayed.}
 
-\item{nrow}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+\item{nrow}{Affects the way the subplots
 are displayed.}
 
-\item{ncol}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+\item{ncol}{Affects the way the subplots
 are displayed.}
 
 \item{display_points}{Logical value. If set to TRUE points are used additionally

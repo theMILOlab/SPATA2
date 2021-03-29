@@ -5,8 +5,10 @@
 \title{Check method input}
 \usage{
 check_method(
+  method_aggl = NULL,
   method_csr = NULL,
   method_de = NULL,
+  method_dist = NULL,
   method_dr = NULL,
   method_gs = NULL,
   method_hclust = NULL,
@@ -15,8 +17,14 @@ check_method(
 )
 }
 \arguments{
+\item{method_aggl}{Character value or vector (see details for more). Denotes the agglomerative methods (e.g. \emph{'ward.D'}) to be used. Run \code{validAgglomerativeMethods()}
+to obtain all valid input options.}
+
 \item{method_de}{Character value. Denotes the method to according to which the de-analysis is performed.
 Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
+to obtain all valid input options.}
+
+\item{method_dist}{Character value or vector (see details for more). Denotes the distance methods (e.g. \emph{'euclidean'}) to be used. Run \code{validDistanceMethods()}
 to obtain all valid input options.}
 
 \item{method_dr}{Character value. The dimensional reduction method of

@@ -193,7 +193,7 @@ moduleSurfacePlotServer <- function(id,
                                   choices = c("Gene set" = "gene_sets",
                                               "Genes" = "genes",
                                               "Feature" = "feature"),
-                                  selected = "features")
+                                  selected = "feature")
 
       })
 

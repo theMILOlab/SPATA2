@@ -19,8 +19,7 @@ numeric \emph{x}- and \emph{y}-variables.}
 \item{smooth}{Logical. If set to TRUE values will be smoothed according to the
 \code{smoooth_}-parameters.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.
-displayed.}
+\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
 \item{smooth_method}{The smoothing method that will be used specified as a
 single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}

@@ -61,8 +61,7 @@ of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given 
 \item{smooth}{Logical. If set to TRUE values will be smoothed according to the
 \code{smoooth_}-parameters.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.
-displayed.}
+\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

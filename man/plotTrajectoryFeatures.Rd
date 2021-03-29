@@ -69,8 +69,7 @@ single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.
-displayed.}
+\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the

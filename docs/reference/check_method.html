@@ -118,6 +118,9 @@
       <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
@@ -167,8 +170,10 @@
     </div>
 
     <pre class="usage"><span class='fu'>check_method</span><span class='op'>(</span>
+  method_aggl <span class='op'>=</span> <span class='cn'>NULL</span>,
   method_csr <span class='op'>=</span> <span class='cn'>NULL</span>,
   method_de <span class='op'>=</span> <span class='cn'>NULL</span>,
+  method_dist <span class='op'>=</span> <span class='cn'>NULL</span>,
   method_dr <span class='op'>=</span> <span class='cn'>NULL</span>,
   method_gs <span class='op'>=</span> <span class='cn'>NULL</span>,
   method_hclust <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -180,9 +185,19 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>method_aggl</th>
+      <td><p>Character value or vector (see details for more). Denotes the agglomerative methods (e.g. <em>'ward.D'</em>) to be used. Run <code>validAgglomerativeMethods()</code>
+to obtain all valid input options.</p></td>
+    </tr>
+    <tr>
       <th>method_de</th>
       <td><p>Character value. Denotes the method to according to which the de-analysis is performed.
 Given to argument <code>test.use</code> of the <code><a href='https://satijalab.org/seurat/reference/FindAllMarkers.html'>Seurat::FindAllMarkers()</a></code>-function. Run <code>SPATA::dea_methods</code>
+to obtain all valid input options.</p></td>
+    </tr>
+    <tr>
+      <th>method_dist</th>
+      <td><p>Character value or vector (see details for more). Denotes the distance methods (e.g. <em>'euclidean'</em>) to be used. Run <code><a href='validActivationFunctions.html'>validDistanceMethods()</a></code>
 to obtain all valid input options.</p></td>
     </tr>
     <tr>

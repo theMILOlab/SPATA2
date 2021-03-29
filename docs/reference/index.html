@@ -117,6 +117,9 @@
       <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
@@ -351,6 +354,12 @@
           <p><code><a href="setAutoencoderAssessment.html">setAutoencoderAssessment()</a></code> </p>
         </td>
         <td><p>Set results of autoencoder assessment</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="setCnvResults.html">setCnvResults()</a></code> </p>
+        </td>
+        <td><p>Set cnv-results</p></td>
       </tr><tr>
         
         <td>
@@ -634,6 +643,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="getCnvFeatureNames.html">getCnvFeatureNames()</a></code> </p>
+        </td>
+        <td><p>Obtain features names under which cnv-analysis results are stored.</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="getFeatureDf.html">getFeatureDf()</a></code> </p>
         </td>
         <td><p>Obtain feature data</p></td>
@@ -824,6 +839,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="getCnvResults.html">getCnvResults()</a></code> </p>
+        </td>
+        <td><p>Obtain copy-number-variations results</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="getDeaOverview.html">getDeaOverview()</a></code> </p>
         </td>
         <td><p>Obtain info on de-analysis storage</p></td>
@@ -968,9 +989,21 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="runCnvAnalysis.html">runCnvAnalysis()</a></code> </p>
+        </td>
+        <td><p>Identify large-scale chromosomal copy number variations</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="runDeAnalysis.html">runDeAnalysis()</a></code> </p>
         </td>
         <td><p>Find differently expressed genes</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="runHclust.html">runHclust()</a></code> <code><a href="runHclust.html">runHclustCnv()</a></code> </p>
+        </td>
+        <td><p>Run hierarchical clustering</p></td>
       </tr><tr>
         
         <td>
@@ -1019,7 +1052,7 @@
       
       <tr>
         <th colspan="2">
-          <h3 id="section-miscellaneous" class="hasAnchor"><a href="#section-miscellaneous" class="anchor"></a>Miscellaneous</h3>
+          <h3 id="section-clustering" class="hasAnchor"><a href="#section-clustering" class="anchor"></a>Clustering</h3>
           <p class="section-desc"></p>
         </th>
       </tr>
@@ -1028,6 +1061,12 @@
       
       
       <tr>
+        
+        <td>
+          <p><code><a href="findHierarchicalCluster.html">findHierarchicalCluster()</a></code> <code><a href="findHierarchicalCluster.html">findHierarchicalClusterCnv()</a></code> </p>
+        </td>
+        <td><p>Cluster sample via hclust</p></td>
+      </tr><tr>
         
         <td>
           <p><code><a href="findMonocleClusters.html">findMonocleClusters()</a></code> </p>
@@ -1087,7 +1126,7 @@
       <tr>
         <th colspan="2">
           <h2 id="section-visualization" class="hasAnchor"><a href="#section-visualization" class="anchor"></a>Visualization</h2>
-          <p class="section-desc"><p>The plot-family ist agains splitted in several subfamilies.</p></p>
+          <p class="section-desc"><p>The plot-family is again split in several subfamilies.</p></p>
         </th>
       </tr>
       
@@ -1284,6 +1323,18 @@
       
       
       <tr>
+        
+        <td>
+          <p><code><a href="plotCnvResults.html">plotCnvResults()</a></code> </p>
+        </td>
+        <td><p>Visualize copy-number-variations results</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="plotDendrogram.html">plotDendrogram()</a></code> <code><a href="plotDendrogram.html">plotDendrogramCnv()</a></code> </p>
+        </td>
+        <td><p>Visualize hierarchical clustering results</p></td>
+      </tr><tr>
         
         <td>
           <p><code><a href="plotGeneMetaData.html">plotGeneMetaData()</a></code> </p>

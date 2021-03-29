@@ -53,8 +53,7 @@ will be displayed at the rownames of the heatmap.}
 \item{split_columns}{Logial. If set to TRUE the heatmap is vertically
 splitted according to the trajectory parts.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.
-displayed.}
+\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

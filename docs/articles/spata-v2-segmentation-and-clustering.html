@@ -77,6 +77,9 @@
       <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
@@ -309,8 +312,10 @@ Figure 2.5 The current segmentation
 <span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span><span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
 <pre><code>##            numeric            integer            numeric            numeric 
 ##   "nCount_Spatial" "nFeature_Spatial"       "percent.mt"       "percent.RB" 
-##             factor          character             factor 
-##  "seurat_clusters"     "segmentation"      "Leiden_UMAP"</code></pre>
+##             factor          character             factor             factor 
+##  "seurat_clusters"     "segmentation"      "Leiden_UMAP"          "cluster" 
+##            logical 
+##             "keep"</code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># add the cluster results</span>
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> 
@@ -326,10 +331,10 @@ Figure 2.5 The current segmentation
 ##         "nCount_Spatial"       "nFeature_Spatial"             "percent.mt" 
 ##                  numeric                   factor                character 
 ##             "percent.RB"        "seurat_clusters"           "segmentation" 
-##                   factor                character                character 
-##            "Leiden_UMAP" "cluster_leiden_UMAP_k5" "cluster_leiden_tSNE_k5" 
-##                character 
-## "cluster_louvain_PCA_k5"</code></pre>
+##                   factor                   factor                  logical 
+##            "Leiden_UMAP"                "cluster"                   "keep" 
+##                character                character                character 
+## "cluster_leiden_UMAP_k5" "cluster_leiden_tSNE_k5" "cluster_louvain_PCA_k5"</code></pre>
 <p>Continue by visualizing your results or by investigating their properties (e.g. <a href="spata-v2-de-analysis.html">differentially expressed genes</a>).</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
@@ -375,8 +380,10 @@ Figure 3.3 Easy visualization of different clustering results - Louvain PCA
 ##         "nCount_Spatial"       "nFeature_Spatial"             "percent.mt" 
 ##                  numeric                   factor                character 
 ##             "percent.RB"        "seurat_clusters"           "segmentation" 
-##                   factor                character                character 
-##            "Leiden_UMAP" "cluster_leiden_tSNE_k5" "cluster_louvain_PCA_k5"</code></pre>
+##                   factor                   factor                  logical 
+##            "Leiden_UMAP"                "cluster"                   "keep" 
+##                character                character 
+## "cluster_leiden_tSNE_k5" "cluster_louvain_PCA_k5"</code></pre>
 </div>
   </div>
 

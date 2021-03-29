@@ -534,6 +534,13 @@ check_feature_df <- function(feature_name,
 
 #' @title Check method input
 #'
+#' @param method_aggl Character value or vector (see details for more). Denotes the agglomerative methods (e.g. \emph{'ward.D'}) to be used. Run \code{validAgglomerativeMethods()}
+#' to obtain all valid input options.
+#' @param method_de Character value. Denotes the method to according to which the de-analysis is performed.
+#' Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
+#' to obtain all valid input options.
+#' @param method_dist Character value or vector (see details for more). Denotes the distance methods (e.g. \emph{'euclidean'}) to be used. Run \code{validDistanceMethods()}
+#' to obtain all valid input options.
 #' @param method_dr Character value. The dimensional reduction method of
 #' interest specified as a single character value. (Currently
 #' either \emph{'pca'}, \emph{'umap'} or \emph{'tsne'}).
@@ -544,19 +551,18 @@ check_feature_df <- function(feature_name,
 #' @param method_hclust Character value. Denotes the hierarchical clustering method  according
 #' to which the clustering is performed. Valid input options are \emph{'ward.D', 'ward.D2', 'single',
 #'  'complete', 'average', 'mcquitty', 'median'} and \emph{'centroid'}.
+#' @param method_ovl Character value. One of \emph{'classic', 'bayesian'}. Decides
+#' according to which method the spatial overlap is calculated.
 #' @param method_padj Character value. The method according to which the adjusted p-values will
 #' be calculated. Given to \code{stats::p.adjust()}. Run \code{stats::p.adjust.methods} to obtain
 #' all valid input options.
-#' @param method_de Character value. Denotes the method to according to which the de-analysis is performed.
-#' Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
-#' to obtain all valid input options.
-#' @param method_ovl Character value. One of \emph{'classic', 'bayesian'}. Decides
-#' according to which method the spatial overlap is calculated.
 #' @inherit lazy_check_dummy description details return
 #' @export
 
-check_method <- function(method_csr = NULL,
+check_method <- function(method_aggl = NULL,
+                         method_csr = NULL,
                          method_de = NULL,
+                         method_dist = NULL,
                          method_dr = NULL,
                          method_gs = NULL,
                          method_hclust = NULL,
@@ -884,7 +890,6 @@ check_pt <- function(pt_size = NULL,
 #' single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).
 #' @param smooth_se Logical. If set to TRUE the confidence interval will be
 #' @param smooth_span The amount of smoothing specified as a single numeric value.
-#' displayed.
 #'
 #' @inherit lazy_check_dummy description details return
 

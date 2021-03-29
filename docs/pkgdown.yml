@@ -3,6 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   spata-v2-autoencoder: spata-v2-autoencoder.html
+  spata-v2-cnv-analysis: spata-v2-cnv-analysis.html
   spata-v2-de-analysis: spata-v2-de-analysis.html
   spata-v2-extract-add-and-join-data: spata-v2-extract-add-and-join-data.html
   spata-v2-genes-gene-sets-and-features: spata-v2-genes-gene-sets-and-features.html
@@ -17,5 +18,5 @@ articles:
   spata-v2-segmentation-and-clustering: spata-v2-segmentation-and-clustering.html
   spata-v2-terminology: spata-v2-terminology.html
   spata-v2-trajectory-analysis: spata-v2-trajectory-analysis.html
-last_built: 2021-03-15T16:00Z
+last_built: 2021-03-29T11:21Z
 

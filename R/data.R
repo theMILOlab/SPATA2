@@ -32,3 +32,16 @@
 #' @usage data(gsdf)
 #'
 "gsdf"
+
+
+
+#' A data.frame necessary for cnv-analysis. Gives information about start and
+#' end points of chromosomes.
+#'
+#' @docType data
+#' @usage data(cnv_regions_df)
+#'
+"cnv_regions_df"
+
+
+

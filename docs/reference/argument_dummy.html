@@ -118,6 +118,9 @@
       <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
@@ -204,7 +207,7 @@ to display the results.</p></td>
     </tr>
     <tr>
       <th>scales, ncol, nrow</th>
-      <td><p>Given to <code><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>ggplot2::facet_wrap()</a></code>. Affects the way the subplots
+      <td><p>Affects the way the subplots
 are displayed.</p></td>
     </tr>
     <tr>
@@ -228,6 +231,16 @@ of interest. Use <code><a href='getGroupingOptions.html'>getGroupingOptions()</a
     <tr>
       <th>display_title</th>
       <td><p>Logical value. If set to TRUE an informative title is displayed.</p></td>
+    </tr>
+    <tr>
+      <th>h</th>
+      <td><p>Numeric value or vector or NULL (see details for more). Denotes the height at which
+the dendrogom is cut.</p></td>
+    </tr>
+    <tr>
+      <th>k</th>
+      <td><p>Numeric value or vector or NULL (see details for more). Denotes the number of clusters
+in which the hierarchical tree is supposed to be split.</p></td>
     </tr>
     <tr>
       <th>n_bcsp</th>

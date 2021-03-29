@@ -273,7 +273,7 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 
       confuns::give_feedback(msg = "Argument 'force' has been set to TRUE. Installing package 'SeuratData'.")
 
-      utils::install.packages(pkgs = "SeuratData")
+       devtools::install_github(repo = "satijalab/seurat-data")
 
     } else {
 
@@ -444,7 +444,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   # deprecated arguments
   if(!base::is.null(nn)){
 
-    base::warning("Argument 'nn' is deprecated. Please use argument 'k' in the future.")
+    base::warning("Argument 'nn' is deprecated. Please use argument 'k'.")
 
     confuns::is_value(x = nn, mode = "numeric")
 

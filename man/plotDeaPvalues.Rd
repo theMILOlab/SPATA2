@@ -77,7 +77,7 @@ input options.}
 visualize the results. If valid input options are not mentioned in the
 description use \code{validPlotTypess()} to obtain all valid input options.}
 
-\item{scales}{Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+\item{scales}{Affects the way the subplots
 are displayed.}
 
 \item{limits_x}{Numeric vector of length two. Specify the limits

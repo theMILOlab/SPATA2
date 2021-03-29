@@ -14,6 +14,8 @@ The spata-object
 \section{Slots}{
 
 \describe{
+\item{\code{autoencoder}}{A list in which the results of neural network denoising is stored.}
+
 \item{\code{coordinates}}{A data.frame containing information about every barcode-spot. Must contain the variables:
 
  \describe{

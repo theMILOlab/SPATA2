@@ -15,6 +15,15 @@ validActivationFunctions <- function(){
 
 }
 
+
+#' @rdname validActivationFunctions
+#' @export
+validAgglomerationMethods <- function(){
+
+  confuns::valid_methods_aggl
+
+}
+
 #' @rdname validActivationFunctions
 #' @export
 validColorPalettes <- function(){
@@ -65,11 +74,20 @@ validDirectoryInstructionSlots <- function(){
 
 #' @rdname validActivationFunctions
 #' @export
+validDistanceMethods <- function(){
+
+  confuns::valid_methods_dist
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
 validHierarchicalClusterMethods <- function(){
 
   base::return(hclust_methods)
 
 }
+
 
 #' @rdname validActivationFunctions
 #' @export

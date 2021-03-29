@@ -283,6 +283,8 @@ updateSpataObject <- function(object,
 
   object@version <- current_spata_version
 
+  object <- setDefaultInstructions(object)
+
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 
   base::return(object)

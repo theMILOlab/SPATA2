@@ -238,10 +238,16 @@ seurat_object_dummy <- function(seurat_object){}
 #' to display the results.
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
 #'
+#' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
+#' the dendrogom is cut.
+#'
+#' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
+#' in which the hierarchical tree is supposed to be split.
+#'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
 #'
-#' @param scales,ncol,nrow Given to \code{ggplot2::facet_wrap()}. Affects the way the subplots
+#' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
 #'
 #' @param simplify Logical. If set to TRUE the output list is simplified to a vector if possible. If set

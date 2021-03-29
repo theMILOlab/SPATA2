@@ -34,8 +34,7 @@ single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.
-displayed.}
+\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

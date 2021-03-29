@@ -6,7 +6,7 @@
 \usage{
 updateSpataObject(
   object,
-  sample_name,
+  sample_name = NULL,
   chr_to_fct = TRUE,
   n_pcs = 60,
   verbose = TRUE

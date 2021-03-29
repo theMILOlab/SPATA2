@@ -256,7 +256,7 @@ discardExpressionMatrix <- function(object, mtr_name, of_sample = NA){
   # feedback if discarded matrix was denoted as active matrix
   if(mtr_name == getActiveMatrixName(object, of_sample = of_sample)){
 
-    base::warning(glue::glue("Expression matrix '{mtr_name}' was set as the active matrix. Make sure to denote set new one with 'setActiveExpressionMatrix()'"))
+    base::warning(glue::glue("Expression matrix '{mtr_name}' was set as the active matrix. Make sure to denote a new one with 'setActiveExpressionMatrix()'"))
 
   }
 

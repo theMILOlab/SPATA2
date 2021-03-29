@@ -206,8 +206,8 @@ check_features <- function(object,
       valid_classes <- stringr::str_c(valid_classes, collapse = "', '")
 
       base::stop(glue::glue("All features are of invalid classes. Valid classes are: '",
-                                valid_classes, "'. \n  Supplied features: '",
-                                stringr::str_c(features, collapse = "', '"), "'."))
+                            valid_classes, "'. \n  Supplied features: '",
+                            stringr::str_c(features, collapse = "', '"), "'."))
 
     } else if(base::length(fnames) != base::length(valid_fnames)){
 

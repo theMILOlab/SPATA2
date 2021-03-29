@@ -121,6 +121,9 @@ clusterSpCorResults(), getGenes() or getSpCorResults()." />
       <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
@@ -227,6 +230,11 @@ p-value lower or equal to <code>threshold_stpv</code>.</p></td>
       <th>with_ties</th>
       <td><p>Logical. If set to TRUE (the default) genes with equal
 variances are kept even if the total number of genes</p></td>
+    </tr>
+    <tr>
+      <th>method_dist</th>
+      <td><p>Character value or vector (see details for more). Denotes the distance methods (e.g. <em>'euclidean'</em>) to be used. Run <code><a href='validActivationFunctions.html'>validDistanceMethods()</a></code>
+to obtain all valid input options.</p></td>
     </tr>
     <tr>
       <th>mtr_name</th>
