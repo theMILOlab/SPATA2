@@ -214,7 +214,7 @@ runCnvAnalysis <- function(object,
                            directory_regions_df = NULL, # chromosome positions
                            n_pcs = 30,
                            cnv_prefix = "Chr",
-                           save_infercnv_object = FALSE,
+                           save_infercnv_object = TRUE,
                            verbose = NULL,
                            of_sample = NA,
                            CreateInfercnvObject = list(ref_group_names = "ref"),
@@ -233,7 +233,6 @@ runCnvAnalysis <- function(object,
                            define_signif_tumor_subclusters = list(p_val = 0.05, hclust_method = "ward.D2", cluster_by_groups = TRUE, partition_method = "qnorm"),
                            plot_cnv = list(k_obs_groups = 5, cluster_by_groups = TRUE, output_filename = "infercnv.outliers_removed", color_safe_pal = FALSE,
                                            x.range = "auto", x.center = 1, output_format = "pdf", title = "Outliers Removed")
-
                            ){
 
   # 1. Control --------------------------------------------------------------
@@ -241,7 +240,6 @@ runCnvAnalysis <- function(object,
   hlpr_assign_arguments(object)
   of_sample <- check_sample(object = object, of_sample = of_sample, of.lenght = 1)
 
-  confuns::are_values(c("cutoff", "min_n_bcsp_per_gene"), mode = "numeric")
   confuns::are_values(c("save_infercnv_object"), mode = "logical")
 
   confuns::check_directories(directories = directory_cnv_folder, type = "folders")
@@ -268,8 +266,6 @@ runCnvAnalysis <- function(object,
 
   # reading and preparing reference data
   confuns::give_feedback(msg = "Checking input for reference data.", verbose = verbose)
-
-  ref <- base::readRDS(file = directory_reference_list)
 
   if(base::is.character(ref_mtr)){
 
@@ -306,7 +302,7 @@ runCnvAnalysis <- function(object,
 
   } else if(base::is.data.frame(ref_anno)){
 
-    ref_anno <- ref_ann
+    ref_anno <- ref_anno
 
   } else {
 
@@ -364,7 +360,7 @@ runCnvAnalysis <- function(object,
     )
 
 
-  confuns::give_feedback(msg = glue::glue("Removing genes from matrix with mean expression below threshold of {cutoff}."), verbose = verbose)
+  confuns::give_feedback(msg = glue::glue("Removing genes from matrix with mean expression below threshold."), verbose = verbose)
 
   infercnv_obj <-
     confuns::call_flexibly(
@@ -517,6 +513,16 @@ runCnvAnalysis <- function(object,
 
   confuns::give_feedback(msg = "Copy number variation pipeline completed.", verbose = verbose)
 
+  if(base::isTRUE(save_infercnv_object)){
+
+    confuns::give_feedback(msg = glue::glue("Saving infercnv-object under '{ref_dir}'.",
+                                            ref_dir = stringr::str_c(directory_cnv_folder, "infercnv-obj.RDS", sep = "/")),
+                           verbose = verbose)
+
+    base::saveRDS(infercnv_obj, file = "infercnv-obj.RDS")
+
+  }
+
   confuns::give_feedback(msg = "Plotting results.", verbose = verbose)
 
   infercnv_obj <-
@@ -528,21 +534,14 @@ runCnvAnalysis <- function(object,
       v.fail = infercnv_obj
     )
 
+  infercnv_obj <- infercnv::plot_cnv(infercnv_obj = infercnv_obj)
+
   # ----
 
 
 
   # 4. Storing results ------------------------------------------------------
 
-  if(base::isTRUE(save_infercnv_object)){
-
-    confuns::give_feedback(msg = glue::glue("Saving infercnv-object under '{ref_dir}'.",
-                                            ref_dir = stringr::str_c(base::getwd(), "infercnv-obj.RDS", sep = "/")),
-                           verbose = verbose)
-
-    base::saveRDS(infercnv_obj, file = "infercnv-obj.RDS")
-
-  }
 
   results <- utils::read.table(plot_cnv$output_filename)
 
