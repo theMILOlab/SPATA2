@@ -245,6 +245,16 @@ getActiveMatrixName <- function(object, of_sample = NA){
 #' @return The active expression or count matrix of the specified object and sample(s).
 #' @export
 
+getMatrix <- function(object, mtr_name, of_sample = NA){
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  object@data[[of_sample]][[mtr_name]]
+
+}
+
+#' @rdname getMatrix
+#' @export
 getExpressionMatrix <- function(object,
                                 mtr_name = NULL,
                                 verbose = FALSE,
@@ -290,7 +300,7 @@ getExpressionMatrix <- function(object,
 
 }
 
-#' @rdname getExpressionMatrix
+#' @rdname getMatrix
 #' @export
 getCountMatrix <- function(object, of_sample = NA){
 

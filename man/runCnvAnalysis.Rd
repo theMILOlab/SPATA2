@@ -12,7 +12,7 @@ runCnvAnalysis(
   directory_regions_df = NULL,
   n_pcs = 30,
   cnv_prefix = "Chr",
-  save_infercnv_object = FALSE,
+  save_infercnv_object = TRUE,
   verbose = NULL,
   of_sample = NA,
   CreateInfercnvObject = list(ref_group_names = "ref"),

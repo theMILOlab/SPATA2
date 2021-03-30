@@ -742,7 +742,7 @@ plotCnvResults <- function(object,
       ) %>%
       dplyr::ungroup() %>%
       dplyr::group_by(!!rlang::sym(x = across)) %>%
-      dplyr::mutate(x_axis = dplyr::row_number())
+      dplyr::mutate(x_axis = dplyr::row_number(), across = !!rlang::sym(across))
 
     line_df <-
       dplyr::count(x = summarized_df, chromosome_name) %>%
@@ -766,7 +766,7 @@ plotCnvResults <- function(object,
         data = line_df,
         mapping = ggplot2::aes(xintercept = line_pos), linetype = "dashed", alpha = 0.5
       ) +
-      ggplot2::facet_wrap(facets = ~ seurat_clusters, nrow = nrow, ncol = ncol) +
+      ggplot2::facet_wrap(facets = ~ across, nrow = nrow, ncol = ncol) +
       ggplot2::theme_classic() +
       ggplot2::theme(strip.background = ggplot2::element_blank()) +
       ggplot2::scale_x_continuous(breaks = line_df$label_breaks, labels = line_df$chromosome_name) +
