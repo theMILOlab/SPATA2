@@ -59,47 +59,17 @@ computeGeneMetaData <- function(object, mtr_name = NULL, verbose = TRUE, of_samp
 #' @export
 computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
-  pb <-
-    progress::progress_bar$new(
-      format = "Progress: [:bar] :percent eta: :eta",
-      total = base::nrow(expr_mtr), clear = FALSE, width = 100)
-
-  confuns::give_feedback(
-    msg = glue::glue("Performing shapiro test on {base::nrow(expr_mtr)} genes"),
-    verbose = verbose
-  )
-
-  shapiro_df <-
-    base::apply(X = expr_mtr,
-                MARGIN = 1,
-                verbose = verbose,
-                pb = pb,
-                FUN = function(variable, verbose, pb){
-
-                  if(base::isTRUE(verbose)){ pb$tick() }
-
-                  shapiro_res <- stats::shapiro.test(x = variable)
-
-                  base::data.frame(stw = shapiro_res$statistic,
-                                   stpv = shapiro_res$p.value,
-                                   var = stats::var(x = variable))
-
-                }) %>%
-    purrr::map_dfr(.x = ., .f = ~ .x) %>%
-    dplyr::mutate(genes = base::rownames(expr_mtr))
 
   confuns::give_feedback(
     msg = glue::glue("Calculating summary statistics for {base::nrow(expr_mtr)} genes"),
     verbose = verbose
   )
 
-  describe_df <-
+  res_df <-
     psych::describe(x = base::t(expr_mtr)) %>%
     base::as.data.frame() %>%
     dplyr::select(-vars) %>%
     tibble::rownames_to_column(var = "genes")
-
-  res_df <- dplyr::left_join(x = describe_df, y = shapiro_df, by = "genes")
 
   res_list <- list("df" = res_df, "describe_args" = list(...))
 
