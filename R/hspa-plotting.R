@@ -8,8 +8,6 @@
 #'
 #' @return
 #' @export
-#'
-
 plotCsrCutoffSimulations <- function(object, of_sample = NA){
 
   check_object(object)
@@ -53,8 +51,6 @@ plotCsrCutoffSimulations <- function(object, of_sample = NA){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotCsrResults <- function(object, of_sample){
 
   hlpr_assign_arguments(object)
@@ -102,8 +98,6 @@ plotCsrResults <- function(object, of_sample){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotGenePatterns <- function(object,
                              genes = NULL,
                              gene_patterns = NULL,
@@ -187,8 +181,6 @@ plotGenePatterns <- function(object,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotGenePatternCluster <- function(object,
                                   method_dist = "euclidean",
                                   method_aggl = "ward.D",
@@ -310,8 +302,6 @@ plotGenePatternCluster <- function(object,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotGenePatternDendrogram <- function(object,
                                       method_dist = "euclidean",
                                       method_aggl = "ward.D",
@@ -360,8 +350,6 @@ plotGenePatternDendrogram <- function(object,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotGenePatternHeatmap <- function(object,
                                    threshold_sim = 0.25,
                                    verbose = NULL,
@@ -400,8 +388,6 @@ plotGenePatternHeatmap <- function(object,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotHspaSummary <- function(object,
                             plot_type = "histogram",
                             of_sample = NA,
@@ -466,8 +452,6 @@ plotHspaSummary <- function(object,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plotSurfaceHotspots <- function(object, plot_type = "density_2d", clrp = "inferno", of_sample = NA, ...){
 
   hlpr_assign_arguments(object)

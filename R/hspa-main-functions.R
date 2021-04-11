@@ -715,7 +715,6 @@ hspaClusterGenePatterns <- function(object,
 #' @return
 #' @export
 #'
-#' @examples
 runHspa <- function(object,
                     genes_subset = NULL,
                     mtr_name = "scaled",

@@ -15,7 +15,6 @@ plotGenePatterns(
   hull_clrp = "milo",
   hull_expand = 1,
   hull_size = 1,
-  split_by = "genes",
   pt_clrsp = "inferno",
   pt_size = 2.3,
   geom_mark_hull = list(),
