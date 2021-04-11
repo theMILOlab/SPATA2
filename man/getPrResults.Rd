@@ -5,7 +5,7 @@
 \alias{getPatternNames}
 \title{Obtain pattern recognition results}
 \usage{
-getPrResults(object, method_pr = "hpa", of_sample = NA)
+getPrResults(object, method_pr = "hspa", of_sample = NA)
 
 getPatternNames(object, method_pr = "hotspot", of_sample = NA)
 }

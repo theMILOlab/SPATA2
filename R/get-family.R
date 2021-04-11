@@ -1217,7 +1217,7 @@ getInitiationInput <- function(object, verbose = NULL){
 #'  \item{\code{getPrSuggestion()}: List containing the actual pattern suggestions.}
 #'  \item{\code{getPatternNames()}: Character vector of pattern names.}}
 
-getPrResults <- function(object, method_pr = "hpa", of_sample = NA){
+getPrResults <- function(object, method_pr = "hspa", of_sample = NA){
 
   check_object(object)
 

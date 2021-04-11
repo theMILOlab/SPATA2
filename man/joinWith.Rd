@@ -13,14 +13,14 @@ joinWith(
   spata_df = getCoordsDf(object),
   features = NULL,
   gene_sets = NULL,
-  method_gs = "mean",
+  method_gs = NULL,
   genes = NULL,
-  average_genes = FALSE,
-  uniform_genes = "discard",
-  smooth = FALSE,
-  smooth_span = 0.02,
-  verbose = TRUE,
-  normalize = TRUE
+  average_genes = NULL,
+  uniform_genes = NULL,
+  smooth = NULL,
+  smooth_span = NULL,
+  verbose = NULL,
+  normalize = NULL
 )
 
 joinWithFeatures(
