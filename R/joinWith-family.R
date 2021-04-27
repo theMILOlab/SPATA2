@@ -426,7 +426,8 @@ joinWithGeneSets <- function(object,
                              smooth = FALSE,
                              smooth_span = 0.02,
                              normalize = TRUE,
-                             verbose = TRUE){
+                             verbose = TRUE,
+                             ignore = T){
 
   # 1. Control --------------------------------------------------------------
 
@@ -514,6 +515,7 @@ joinWithGeneSets <- function(object,
     p_found_genes <- base::round(n_found_genes/n_genes, digits = 2)
 
     # make sure that percentage is equal to or higher than the threshold
+    if(ignore == T){
     if(p_found_genes >= filter_gs){
 
       # apply specified method to handle gene sets
@@ -539,6 +541,14 @@ joinWithGeneSets <- function(object,
           magrittr::set_colnames(value = gene_sets[i]) %>%
           tibble::rownames_to_column(var = "barcodes")
 
+      }
+      }else{
+      
+      geneset_vls <-
+          base::colMeans(rna_assay[genes, ]) %>%
+          base::as.data.frame() %>%
+          magrittr::set_colnames(value = gene_sets[i]) %>%
+          tibble::rownames_to_column(var = "barcodes")
       }
 
       # smoothing
