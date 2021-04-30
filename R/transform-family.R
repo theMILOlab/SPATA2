@@ -258,12 +258,35 @@ transformSeuratToSpata <- function(seurat_object,
         error_handling = "stop",
         error_ref = "coordinates",
         error_value = NULL
-      )
+      ) %>%
+      confuns::keep_named() %>%
+      tibble::rownames_to_column(var = "barcodes")
+
+    c_cnames <- base::colnames(coords_df)
+
+    if("imagecol" %in% c_cnames){
+
+      coords_df <- dplyr::rename(coords_df, x = imagecol)
+
+    }
+
+    if("imagerow" %in% c_cnames){
+
+      coords_df <- dplyr::rename(coords_df, y = imagerow)
+
+    }
+
+    if(!base::all(c("x", "y") %in% base::colnames(coords_df))){
+
+      msg <- "Dont know which columns refer to x and y coordinates. Please check the coordinate data.frame in the seurat-object's image slot and make sure that it has columns either named 'imagerow' and 'imagecol' or 'x' and 'y'."
+
+      confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+    }
+
 
     coords_df <-
-      tibble::rownames_to_column(.data = coords_df, var = "barcodes") %>%
-      dplyr::rename("x" = "imagecol", "y" = "imagerow") %>%
-      dplyr::mutate(sample = {{sample_name}}) %>%
+      dplyr::mutate(coords_df, sample = {{sample_name}}) %>%
       dplyr::select(barcodes, sample, x, y)
 
     slice <-
@@ -379,6 +402,11 @@ transformSeuratToSpata <- function(seurat_object,
 
 # 3. Postprocess ----------------------------------------------------------
 
+  confuns::give_feedback(
+    msg = "Transferring feature and dimensional reduction data.",
+    verbose = verbose
+  )
+
   # check if barcodes are identical
   barcodes_matrix <- base::colnames(scaled_mtr) %>% base::sort()
   barcodes_coordinates <- dplyr::pull(coords_df, var = "barcodes") %>% base::sort()
@@ -439,7 +467,7 @@ transformSeuratToSpata <- function(seurat_object,
 
   )
 
-  spata_object <- setPcaDf(object = spata_object, pca_df = pca_df)
+  spata_object <- setPcaDf(object = spata_object, pca_df = pca_df, fdb_fn = "warning")
 
 
   # dimensional reduction: umap

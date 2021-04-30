@@ -115,6 +115,7 @@ hspaDataBinarization <- function(object,
 #'
 hspaCsrTesting <- function(object,
                            method_csr = "MonteCarlo",
+                           n_quadrats = 10,
                            method_padj = "fdr",
                            verbose = NULL,
                            of_sample = NA){
@@ -143,6 +144,9 @@ hspaCsrTesting <- function(object,
     msg = glue::glue("Testing {n_genes} genes against complete spatial randomness using method '{method_csr}'."),
     verbose = verbose
   )
+
+  start <- base::Sys.time()
+
   csr_test_res <-
     purrr::map(.x = nested_df$data,
                method_csr = method_csr,
@@ -159,12 +163,16 @@ hspaCsrTesting <- function(object,
 
                  test_res <- spatstat::quadrat.test(X = pp_obj,
                                                     method = method_csr,
-                                                    alternative = "clustered")
+                                                    alternative = "clustered",
+                                                    nx = n_quadrats,
+                                                    nsim = 1000)
 
                  base::return(test_res[c("p.value", "statistic")])
 
                })
 
+
+  end <- base::Sys.time()
 
   # 4. Store results
   confuns::give_feedback(msg = "Setting HSPA csr-testing results.", verbose = verbose)
@@ -193,9 +201,12 @@ hspaCsrTesting <- function(object,
 
   hspa_list$csr_testing <-
     list(
+      n_quadrats = n_quadrats,
       method_csr = method_csr,
       method_padj = method_padj,
-      results_df = csr_evaluation
+      results_df = csr_evaluation,
+      start = start,
+      end = end
       )
 
   object <- setHspaResults(object, of_sample = of_sample, hspa_list = hspa_list)
@@ -417,7 +428,6 @@ hspaPatternIdentification <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-
   # 2. Extract and prepare data ---------------------------------------------
 
   confuns::give_feedback(
@@ -540,7 +550,10 @@ hspaPatternSimilarity <- function(object,
   all_gene_patterns <- pattern_evaluation_df$gene_patterns
 
   gene_pattern_combinations <-
-    tidyr::expand_grid(x = all_gene_patterns, y = all_gene_patterns) %>%
+    utils::combn(x = all_gene_patterns, m = 2) %>%
+    base::t() %>%
+    base::as.data.frame() %>%
+    magrittr::set_names(value = c("x", "y")) %>%
     dplyr::left_join(
       y = dplyr::select(pattern_evaluation_df, gene_patterns, barcodes_x = remaining_barcodes),
       by = c("x" = "gene_patterns")
@@ -548,29 +561,34 @@ hspaPatternSimilarity <- function(object,
     dplyr::left_join(
       y = dplyr::select(pattern_evaluation_df, gene_patterns, barcodes_y = remaining_barcodes),
       by = c("y" = "gene_patterns")
-    )
+    ) %>%
+    tibble::as_tibble()
 
   n_pattern_combinations <- base::nrow(gene_pattern_combinations)
 
-  pb_sim <- confuns::create_progress_bar(total = n_pattern_combinations)
+  pb <- confuns::create_progress_bar(total = n_pattern_combinations)
 
   confuns::give_feedback(
     msg = glue::glue("Calculating similarity between {n_pattern_combinations} pattern combinations."),
     verbose = verbose
   )
 
+  gene_pattern_relation <-
+    purrr::pmap_df(
+      .l = list(
+        bcx = gene_pattern_combinations$barcodes_x,
+        bcy = gene_pattern_combinations$barcodes_y,
+        x = gene_pattern_combinations$x,
+        y = gene_pattern_combinations$y
+      ),
+      pb = pb,
+      .f = compute_pattern_relation
+    )
+
   # iterate over all gene pattern combinations
   gene_pattern_similarities <-
-    dplyr::mutate(
-      .data = gene_pattern_combinations,
-      sim = purrr::pmap_dbl(.l = list(barcodes_x, barcodes_y),
-                            pb = pb_sim,
-                            verbose = verbose,
-                            .f = compute_pattern_similarity),
-      dist = 1 - sim
-    ) %>%
-    dplyr::select(x, y, sim, dist) %>%
-    dplyr::filter(x != y) %>%
+    base::cbind(gene_pattern_combinations, gene_pattern_relation) %>%
+    dplyr::mutate(dist = 1 - sim) %>%
     dplyr::group_by(x)
 
 
@@ -584,6 +602,112 @@ hspaPatternSimilarity <- function(object,
     msg = "Calculating correlation between similarity scores.",
     verbose = verbose
     )
+
+  dist_mtr <- getGenePatternDistances(object, of_sample = of_sample, threshold_dist = 1)
+
+  dist_mtr[base::is.na(dist_mtr)] <- 0
+
+  corr_mtr <- stats::cor(x = dist_mtr)
+
+  hspa_list$gene_patterns$correlation_mtr <- corr_mtr
+
+  object <- setHspaResults(object, of_sample = of_sample, hspa_list = hspa_list)
+
+  # ----
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  base::return(object)
+
+
+}
+
+#' @rdname hspaPatternSimilarity
+#' @export
+hspaPatternSimilarity_future <- function(object,
+                                  verbose = NULL,
+                                  of_sample = NA){
+
+  # 1. Control
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  # 2. Extract data and compute pattern similarity
+
+  hspa_list <- getHspaResults(object, of_sample = of_sample)
+
+  pattern_evaluation_df <- hspa_list$gene_patterns$evaluation_df
+
+  all_gene_patterns <- pattern_evaluation_df$gene_patterns
+
+  gene_pattern_combinations <-
+    tidyr::expand_grid(x = all_gene_patterns, y = all_gene_patterns) %>%
+    dplyr::left_join(
+      y = dplyr::select(pattern_evaluation_df, gene_patterns, barcodes_x = remaining_barcodes),
+      by = c("x" = "gene_patterns")
+    ) %>%
+    dplyr::left_join(
+      y = dplyr::select(pattern_evaluation_df, gene_patterns, barcodes_y = remaining_barcodes),
+      by = c("y" = "gene_patterns")
+    ) %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(x != y)
+
+  n_pattern_combinations <- base::nrow(gene_pattern_combinations)
+
+  #pb_sim <- confuns::create_progress_bar(total = n_pattern_combinations)
+
+  confuns::give_feedback(
+    msg = glue::glue("Calculating similarity between {n_pattern_combinations} pattern combinations."),
+    verbose = verbose
+  )
+
+
+  future::plan("multisession")
+
+    relation <-
+      furrr::future_pmap_dbl(
+        .l = list(gene_pattern_combinations$barcodes_x,
+                  gene_pattern_combinations$barcodes_y),
+        .f = compute_pattern_relation_future,
+        .progress = TRUE
+      )
+
+
+
+
+  # iterate over all gene pattern combinations
+  gene_pattern_similarities <-
+    dplyr::mutate(
+      gene_pattern_combinations,
+      sim = furrr::future_pmap_dbl(
+        .l = list(gene_pattern_combinations$barcodes_x,
+                  gene_pattern_combinations$barcodes_y),
+        .f = compute_pattern_relation_future,
+        pb = pb,
+        .progress = FALSE
+        ),
+      dist = 1 - sim
+    ) %>%
+    dplyr::select(x, y, sim, dist) %>%
+    dplyr::group_by(x)
+
+
+  # 3. Store results
+
+  hspa_list$gene_patterns$similarity_df <- gene_pattern_similarities
+
+  object <- setHspaResults(object, hspa_list = hspa_list)
+
+  confuns::give_feedback(
+    msg = "Calculating correlation between similarity scores.",
+    verbose = verbose
+  )
 
   dist_mtr <- getGenePatternDistances(object, of_sample = of_sample, threshold_dist = 1)
 
@@ -633,11 +757,24 @@ hspaClusterGenePatterns <- function(object,
   # -----
 
 
-  # 2. Extract data and cluster patterns hierarchically ---------------------
+
+  # 2. Extract data and perform clustering ----------------------------------
 
   hspa_list <- getHspaResults(object, of_sample)
 
-  hcl_obj <- hspa_list$clustering$object
+  corr_mtr <- getGenePatternCorrelations(object = object,
+                                         threshold_sim = threshold_sim,
+                                         of_sample = of_sample,
+                                         verbose = verbose
+  )
+
+  hspa_list$clustering$correlated <- correlated
+
+  hspa_list$clustering$minimum_similarity <- threshold_sim
+
+  # 2.1 Hierarchical clustering ---------------------------------------------
+
+  hcl_obj <- hspa_list$clustering$hierarchical
 
   if(base::is.null(hcl_obj) || base::class(hcl_obj) != "hclust_conv" || base::isTRUE(force)){
 
@@ -645,16 +782,6 @@ hspaClusterGenePatterns <- function(object,
       msg = "Initiating hierarchical clustering.",
       verbose = verbose
     )
-
-    corr_mtr <- getGenePatternCorrelations(object = object,
-                                           threshold_sim = threshold_sim,
-                                           of_sample = of_sample,
-                                           verbose = verbose
-                                           )
-
-    hspa_list$clustering$correlated <- correlated
-
-    hspa_list$clustering$minimum_similarity <- threshold_sim
 
     hcl_obj <- confuns::initiate_hclust_object(
       hclust.data = corr_mtr,
@@ -666,21 +793,75 @@ hspaClusterGenePatterns <- function(object,
   hcl_obj <- confuns::compute_distance_matrices(
     hcl.obj = hcl_obj,
     methods.dist = method_dist,
-    force = force
+    force = force,
+    verbose = verbose
   )
 
   hcl_obj <- confuns::compute_hierarchical_cluster(
     hcl.obj = hcl_obj,
     methods.dist = method_dist,
-    methods.aggl = method_aggl
+    methods.aggl = method_aggl,
+    verbose = verbose
   )
 
+  hspa_list$clustering$hierarchical <- hcl_obj
+
   # -----
+
+  # 2.2 Kmeans clustering ---------------------------------------------------
+
+  kmeans_obj <- hspa_list$clustering$kmeans
+
+  if(base::is.null(kmeans_obj) || base::class(kmeans_obj) != "kmeans_conv" || base::isTRUE(force)){
+
+    confuns::give_feedback(
+      msg = "Initiating kmeans clustering.",
+      verbose = verbose
+    )
+
+    kmeans_obj <- confuns::initiate_kmeans_object(
+      kmeans.data = corr_mtr,
+      key.name = "gene_pattern"
+    )
+
+    kmeans_obj <- confuns::perform_kmeans_clustering(
+      kmeans.obj = kmeans_obj,
+      centers = 2:25
+    )
+
+    hspa_list$clustering$kmeans <- kmeans_obj
+
+  }
+
+  # 2.3 Pam clustering ------------------------------------------------------
+
+  pam_obj <- hspa_list$clustering$pam
+
+  if(base::is.null(pam_obj) || base::class(pam_obj) != "pam_conv" || base::isTRUE(force)){
+
+    confuns::give_feedback(
+      msg = "Initiating pam clustering.",
+      verbose = verbose
+    )
+
+    pam_obj <- confuns::initiate_pam_object(
+      pam.data = corr_mtr,
+      key.name = "gene_pattern"
+    )
+
+    pam_obj <- confuns::perform_pam_clustering(pam_obj, k = 2:25)
+
+    hspa_list$clustering$pam <- pam_obj
+
+  }
+
+
+
 
 
   # 3. Pass to object -------------------------------------------------------
 
-  hspa_list$clustering$object <- hcl_obj
+
 
   object <- setHspaResults(object, of_sample = of_sample, hspa_list = hspa_list)
 
@@ -722,7 +903,9 @@ runHspa <- function(object,
                     method_kmeans = "Hartigan-Wong",
                     kmeans = list(),
                     method_csr = "MonteCarlo",
+                    n_quadrats = 10,
                     method_padj = "fdr",
+                    save_intermediate_results = TRUE,
                     verbose = NULL,
                     of_sample = NA){
 
@@ -737,23 +920,54 @@ runHspa <- function(object,
                                  of_sample = of_sample,
                                  verbose = verbose)
 
+  if(base::isTRUE(save_intermediate_results)){
+
+    saveSpataObject(object = object)
+
+  }
+
   object <- hspaCsrTesting(object = object,
                            method_csr = method_csr,
                            method_padj = method_padj,
+                           n_quadrats = n_quadrats,
                            of_sample = of_sample,
                            verbose = verbose)
+
+  if(base::isTRUE(save_intermediate_results)){
+
+    saveSpataObject(object = object)
+
+  }
 
   object <- hspaCsrCutoff(object = object,
                           of_sample = of_sample,
                           verbose = verbose)
 
+  if(base::isTRUE(save_intermediate_results)){
+
+    saveSpataObject(object = object)
+
+  }
+
   object <- hspaSelectGenes(object = object,
                             of_sample = of_sample,
                             verbose = verbose)
 
+  if(base::isTRUE(save_intermediate_results)){
+
+    saveSpataObject(object = object)
+
+  }
+
   object <- hspaPatternIdentification(object = object,
                                       verbose = verbose,
                                       of_sample = of_sample)
+
+  if(base::isTRUE(save_intermediate_results)){
+
+    saveSpataObject(object = object)
+
+  }
 
   object <- hspaPatternSimilarity(object = object,
                                   verbose = verbose,

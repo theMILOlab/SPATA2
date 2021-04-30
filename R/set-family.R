@@ -207,7 +207,7 @@ setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
 #' @export
 #'
 
-setPcaDf <- function(object, pca_df, of_sample = ""){
+setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 
   check_object(object)
 
@@ -217,7 +217,7 @@ setPcaDf <- function(object, pca_df, of_sample = ""){
 
     confuns::give_feedback(
       msg = "Input data.frame for PCA is empty.",
-      fdb.fn = "stop"
+      fdb.fn = fdb_fn
     )
 
   } else {

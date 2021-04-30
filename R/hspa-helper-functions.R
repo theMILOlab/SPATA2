@@ -36,7 +36,7 @@ getGenePatternCluster <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-  hcl_obj <- getHspaResults(object, of_sample)$clustering$object
+  hcl_obj <- getHspaResults(object, of_sample)$clustering$hierarchical
 
   if(base::all(base::is.null(c(k, h)))){
 
@@ -319,7 +319,8 @@ getGenePatternDistances <- function(object,
     dplyr::group_by(pattern_similarities, x) %>%
     dplyr::mutate(min_dist = base::min(dist, na.rm = TRUE)) %>%
     dplyr::filter(min_dist <= {{threshold_dist}}) %>%
-    dplyr::pull(x)
+    dplyr::pull(x) %>%
+    base::unique()
 
   pattern_dist_flt <-
     dplyr::filter(pattern_similarities,
@@ -353,6 +354,7 @@ getGenePatternDistances <- function(object,
 getGenePatternSimilarities <- function(object,
                                        return = "matrix",
                                        threshold_sim = 0.5,
+                                       arrange = TRUE,
                                        of_sample = NA){
 
   check_object(object)
@@ -367,14 +369,22 @@ getGenePatternSimilarities <- function(object,
     dplyr::group_by(pattern_similarities, x) %>%
     dplyr::mutate(max_sim = base::max(sim, na.rm = TRUE)) %>%
     dplyr::filter(max_sim >= {{threshold_sim}}) %>%
-    dplyr::pull(x)
+    dplyr::pull(x) %>%
+    base::unique()
 
   pattern_similarities_flt <-
     dplyr::filter(pattern_similarities,
                   x %in% {{gene_patterns_keep}} & y %in% {{gene_patterns_keep}}
-    ) %>%
-    dplyr::group_by(x) %>%
-    dplyr::arrange(y, .by_group = TRUE)
+    )
+
+  if(base::isTRUE(arrange)){
+
+    pattern_similarities_flt <-
+      dplyr::group_by(pattern_similarities_flt, x) %>%
+      dplyr::arrange(y, .by_group = TRUE)
+
+  }
+
 
   if(return == "matrix"){
 

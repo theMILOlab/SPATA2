@@ -46,6 +46,8 @@ binarize_matrix <- function(object,
 
   # binarize in for loop
 
+  mtr <- base::as.matrix(mtr) # make sure that mtr is a base R matrix
+
   n_genes <- base::nrow(mtr)
 
   pb <- confuns::create_progress_bar(total = n_genes)
@@ -66,8 +68,7 @@ binarize_matrix <- function(object,
       stats::kmeans(
         x = temp_df,
         centers = 2,
-        algorithm = method_kmeans,
-        ...
+        algorithm = method_kmeans#, ...
       )
 
     kmeans_res <-
@@ -210,3 +211,73 @@ compute_pattern_similarity <- function(bcx, bcy, pb = NULL, verbose = TRUE){
   return(similarity)
 
 }
+
+
+
+#' @rdname compute_pattern_similarity
+#' @export
+compute_pattern_relation <- function(bcx, bcy, x, y, pb = NULL){
+
+  bc_x <- dplyr::pull(bcx, var = "barcodes")
+  bc_y <- dplyr::pull(bcy, var = "barcodes")
+
+  pb$tick()
+
+  if(base::all(bc_x %in% bc_y) && base::all(bc_y %in% bc_x)){
+
+    res <-
+      tibble::tibble(
+        from = "equal",
+        to = "equal"
+      )
+
+  } else if(base::all(bc_x %in% bc_y)){
+
+    res <-
+      tibble::tibble(
+        from = {{y}},
+        to = {{x}}
+      )
+
+  } else if(base::all(bc_y %in% bc_x)){
+
+    res <-
+      tibble::tibble(
+        from = {{x}},
+        to = {{y}}
+      )
+
+  } else {
+
+    res <-
+      tibble::tibble(
+        from = "neither",
+        to = "nor"
+      )
+
+  }
+
+  all_bcs <- base::unique(x = c(bc_x, bc_y))
+
+  overlapping_bcs <- base::intersect(x = bc_x, y = bc_y)
+
+  sim <- base::length(overlapping_bcs) / base::length(all_bcs)
+
+  res$sim <- sim
+
+  base::return(res)
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

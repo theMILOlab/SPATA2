@@ -165,6 +165,132 @@ plotGenePatterns <- function(object,
 #' Title
 #'
 #' @param object
+#' @param genes
+#' @param pt_clr
+#' @param pt_clrsp
+#' @param pt_alpha
+#' @param pt_size
+#' @param ncol
+#' @param nrow
+#' @param verbose
+#' @param of_sample
+#'
+#' @return
+#' @export
+#'
+plotGenePatternBinarized <- function(object,
+                                     genes,
+                                     pt_clr = "forestgreen",
+                                     pt_clrsp = NA, # add option to display expr by color
+                                     pt_alpha = NULL,
+                                     pt_size = NULL,
+                                     ncol = NULL,
+                                     nrow = NULL,
+                                     verbose = NULL,
+                                     of_sample = NA){
+
+
+  hlpr_assign_arguments(object)
+
+  of_saple <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  hspa_list <- getHspaResults(object, of_sample = of_sample)
+
+  nested_df <- hspa_list$binarization$nested_df
+
+  filtered_df <-
+    dplyr::filter(nested_df, genes %in% {{genes}}) %>%
+    tidyr::unnest(cols = "data") %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-n_bcsp, -sample) %>%
+    purrr::map_df(.x = genes,
+                  df = .,
+                  coords_df = getCoordsDf(object, of_sample = of_sample),
+                  .f = function(gene, df, coords_df){
+
+                    df <-
+                      dplyr::filter(df, genes == {{gene}}) %>%
+                      dplyr::left_join(x = coords_df, y = .[, c("barcodes", "counts")], by = "barcodes") %>%
+                      dplyr::mutate(
+                        bin_res = dplyr::if_else(base::is.na(counts), "Removed", "Kept"),
+                        variables = {{gene}}
+                      ) %>%
+                      dplyr::select(-counts, -sample)
+
+                    base::return(df)
+
+                  })
+
+  ggplot2::ggplot(data = filtered_df, mapping = ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_point(alpha = pt_alpha, size = pt_size, mapping = ggplot2::aes(color = bin_res)) +
+    ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
+    ggplot2::theme_void() +
+    ggplot2::labs(color = NULL) +
+    scale_color_add_on(aes = "color", variable = filtered_df$bin_res,
+                       clrp = "milo", clrp.adjust = c("Removed" = "lightgrey", "Kept" = pt_clr))
+
+}
+
+#' @rdname plotGenePatternBinarized
+#' @export
+plotGenePatternDenoised <- function(object,
+                                    genes,
+                                    pt_clr = "forestgreen",
+                                    pt_clrp = NA, # add option to display the gene patterns by color
+                                    pt_alpha = NULL,
+                                    pt_size = NULL,
+                                    ncol = NULL,
+                                    nrow = NULL,
+                                    verbose = NULL,
+                                    of_sample = NA){
+
+  hlpr_assign_arguments(object)
+
+  of_saple <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  hspa_list <- getHspaResults(object, of_sample = of_sample)
+
+  nested_df <- hspa_list$gene_patterns$evaluation_df
+
+  filtered_df <-
+    dplyr::filter(nested_df, genes %in% {{genes}}) %>%
+    tidyr::unnest(cols = "remaining_barcodes") %>%
+    dplyr::ungroup() %>%
+    dplyr::select(genes, barcodes) %>%
+    purrr::map_df(.x = genes,
+                  df = .,
+                  coords_df = getCoordsDf(object, of_sample = of_sample),
+                  .f = function(gene, df, coords_df){
+
+                    df_res <-
+                      dplyr::filter(df, genes == {{gene}}) %>%
+                      dplyr::mutate(
+                        bin_res = "Kept"
+                      ) %>%
+                      dplyr::left_join(x = coords_df, y = .[, c("barcodes", "bin_res")], by = "barcodes") %>%
+                      dplyr::mutate(
+                        bin_res = dplyr::if_else(base::is.na(bin_res), "Removed", bin_res),
+                        variables = {{gene}}
+                      ) %>%
+                      dplyr::select(variables, barcodes, x, y, bin_res)
+
+                    base::return(df_res)
+
+                  })
+
+  ggplot2::ggplot(data = filtered_df, mapping = ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_point(alpha = pt_alpha, size = pt_size, mapping = ggplot2::aes(color = bin_res)) +
+    ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
+    ggplot2::theme_void() +
+    ggplot2::labs(color = NULL) +
+    scale_color_add_on(aes = "color", variable = filtered_df$bin_res,
+                       clrp = "milo", clrp.adjust = c("Removed" = "lightgrey", "Kept" = pt_clr))
+
+}
+
+#' Title
+#'
+#' @param object
 #' @param method_dist
 #' @param method_aggl
 #' @param k
@@ -184,8 +310,9 @@ plotGenePatterns <- function(object,
 plotGenePatternCluster <- function(object,
                                   method_dist = "euclidean",
                                   method_aggl = "ward.D",
-                                  k = NULL,
                                   h = NULL,
+                                  k = NULL,
+                                  cluster_subset = NULL,
                                   ncol = NULL,
                                   nrow = NULL,
                                   pt_alpha = NULL,
@@ -202,7 +329,7 @@ plotGenePatternCluster <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-  hcl_obj <- getHspaResults(object, of_sample)$clustering$object
+  hcl_obj <- getHspaResults(object, of_sample)$clustering$hierarchical
 
   if(base::all(base::is.null(c(k, h)))){
 
@@ -222,6 +349,13 @@ plotGenePatternCluster <- function(object,
                             h = h) %>%
     magrittr::set_colnames(value = c("gene_patterns", "cluster"))
 
+  if(base::is.numeric(cluster_subset)){
+
+    clust_df <-
+      dplyr::filter(clust_df, cluster %in% base::as.character(cluster_subset))
+
+  }
+
 
   pattern_extent_df <-
     getGenePatternExtentDf(
@@ -236,7 +370,7 @@ plotGenePatternCluster <- function(object,
     dplyr::left_join(inside_pattern, clust_df, by = "gene_patterns") %>%
     dplyr::rename(cluster = cluster)
 
-  cluster_names <- base::levels(joined_with_cluster$cluster)
+  cluster_names <- base::unique(base::as.character(joined_with_cluster$cluster))
 
   # 3. Summarise extent
 
@@ -312,7 +446,7 @@ plotGenePatternDendrogram <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-  hcl_obj <- getHspaResults(object, of_sample = of_sample)$clustering$object
+  hcl_obj <- getHspaResults(object, of_sample = of_sample)$clustering$hierarchical
 
   if(base::length(method_dist) * base::length(method_aggl) > 1){
 
@@ -417,9 +551,7 @@ plotHspaSummary <- function(object,
       ...
     )
 
-  sim_df <- getGenePatternSimilarities(object = object,
-                                       return = "tibble",
-                                       threshold_sim = 0)
+  sim_df <- hspa_list$gene_patterns$similarity_df
 
   plot_df <-
     dplyr::group_by(sim_df, x) %>%

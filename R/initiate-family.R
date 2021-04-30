@@ -146,7 +146,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
     spata_object <-
       transformSeuratToSpata(
         seurat_object = processed_seurat_object,
-        assay = "RNA",
+        assay_name = "RNA",
         sample_name = sample_name,
         gene_set_path = gene_set_path,
         method = "single_cell",
