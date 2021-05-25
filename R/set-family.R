@@ -148,7 +148,7 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
   ###### New for Test
   
   #New argument potentially rising probmens in linux 
-  if(!class(object@data[[of_sample]])=="list"){ object@data[[of_sample]]=list() }
+  #if(!class(object@data[[of_sample]])=="list"){ object@data[[of_sample]]=list() }
   
   ########
   
