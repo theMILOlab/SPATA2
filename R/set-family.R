@@ -144,7 +144,15 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
   check_object(object)
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
+  
+  ###### New for Test
+  
+  #New argument potentially rising probmens in linux 
+  if(!class(object@data[[of_sample]])=="list"){ object@data[[of_sample]]=as.list() }
+  
+  ########
+  
+  
   object@data[[of_sample]][["counts"]] <- count_mtr
 
   base::return(object)
