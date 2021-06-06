@@ -300,9 +300,9 @@ runCnvAnalysis <- function(object,
 
     confuns::give_feedback(msg = "Done.", verbose = verbose)
 
-  } else if(base::is.data.frame(ref_anno)){
+  } else if(base::is.data.frame(ref_annotation)){
 
-    ref_anno <- ref_anno
+    ref_anno <- ref_annotation
 
   } else {
 
