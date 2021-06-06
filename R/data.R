@@ -43,5 +43,10 @@
 #'
 "cnv_regions_df"
 
-
+#' A list of reference data of a Visium 10X stRNA-seq from the temporal lobe (epi-surgery) [[1]] and the annotations [[2]]
+#'
+#' @docType data
+#' @usage data(Ref.RDS)
+#'
+"Ref.RDS"
 
