@@ -315,7 +315,7 @@ runCnvAnalysis <- function(object,
   confuns::give_feedback(msg = "Combining input and reference data.", verbose = verbose)
 
   genes_inter <-
-    base::intersect(x = base::rownames(count_mtr), y = base::rownames(ref_mtr))
+    base::intersect(x = base::rownames(count_mtr), y = base::rownames(ref_mtr)) %>% base::unique()
   
   if(length(genes_inter)<500) stop (confuns::give_feedback(msg = "Less than 500 genes match ref and count matrix", verbose = verbose))
   
