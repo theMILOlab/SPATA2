@@ -316,7 +316,9 @@ runCnvAnalysis <- function(object,
 
   genes_inter <-
     base::intersect(x = base::rownames(count_mtr), y = base::rownames(ref_mtr))
-
+  
+  if(length(genes_inter)<500) stop (confuns::give_feedback(msg = "Less than 500 genes match ref and count matrix", verbose = verbose))
+  
   expr_inter <- base::cbind(count_mtr[genes_inter, ], ref_mtr[genes_inter, ])
 
   anno_inter <- base::rbind(obj_anno, ref_anno)
