@@ -234,13 +234,24 @@ updateSpataObject <- function(object,
 
     object <- object_new
 
-    object@version <- list(major = 1, minor = 1, patch = 0)
+    object@version <- current_spata_version
 
     base::rm(object_new)
+
+  } else if(package == "SPATA2"){
+
+    if(base::identical(object@version, current_spata_version)){
+
+      base::message("Provided spata-object is up to date. Returning input object.")
+
+      base::return(object)
+
+    }
 
   }
 
   # -----
+
 
 
 
@@ -265,7 +276,7 @@ updateSpataObject <- function(object,
 
     }
 
-    sample_names <- getSampleNames(object)
+    sample_names <- object@samples
 
     cnv_list <-
       purrr::map(.x = sample_names, .f = ~ base::return(list())) %>%
@@ -275,11 +286,15 @@ updateSpataObject <- function(object,
 
     object <- object_new
 
+    # set version to next version not to current version as subsequent updating steps each refer
+    # to the next version
     object@version <- list(major = 1, minor = 2, patch = 0)
 
     base::rm(object_new)
 
   }
+
+  # Return updated object ---------------------------------------------------
 
   object@version <- current_spata_version
 

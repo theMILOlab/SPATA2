@@ -2,9 +2,12 @@
 % Please edit documentation in R/hspa-main-functions.R
 \name{hspaPatternSimilarity}
 \alias{hspaPatternSimilarity}
+\alias{hspaPatternSimilarity_future}
 \title{Title}
 \usage{
 hspaPatternSimilarity(object, verbose = NULL, of_sample = NA)
+
+hspaPatternSimilarity_future(object, verbose = NULL, of_sample = NA)
 }
 \arguments{
 \item{of_sample}{}

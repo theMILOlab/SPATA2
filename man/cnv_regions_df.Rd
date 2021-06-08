@@ -3,7 +3,7 @@
 \docType{data}
 \name{cnv_regions_df}
 \alias{cnv_regions_df}
-\title{A data.frame necessary for cnv-analysis. Gives information about start and
+\title{A data.frame necessary for cnv-analysis. Contains information about start and
 end points of chromosomes.}
 \format{
 An object of class \code{data.frame} with 44 rows and 4 columns.
@@ -12,7 +12,7 @@ An object of class \code{data.frame} with 44 rows and 4 columns.
 data(cnv_regions_df)
 }
 \description{
-A data.frame necessary for cnv-analysis. Gives information about start and
+A data.frame necessary for cnv-analysis. Contains information about start and
 end points of chromosomes.
 }
 \keyword{datasets}

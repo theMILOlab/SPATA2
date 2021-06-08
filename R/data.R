@@ -15,7 +15,8 @@
 #'   \item{MF.GO: Molecular functions - gene-ontology}
 #'   \item{HM: Hallmark gene sets}
 #'   \item{BC: Biocarta gene sets}
-#'   \item{RCTM: Reactome gene sets}}
+#'   \item{RCTM: Reactome gene sets}
+#'   }
 #'
 #' @source \url{https://www.gsea-msigdb.org/gsea/index.jsp}
 #'
@@ -35,7 +36,7 @@
 
 
 
-#' A data.frame necessary for cnv-analysis. Gives information about start and
+#' A data.frame necessary for cnv-analysis. Contains information about start and
 #' end points of chromosomes.
 #'
 #' @docType data
@@ -43,10 +44,18 @@
 #'
 "cnv_regions_df"
 
-#' A list of reference data of a Visium 10X stRNA-seq from the temporal lobe (epi-surgery) [[1]] and the annotations [[2]]
+#' A list of reference data for copy number variation analysis (CNV)
+#'
+#' The list contains three named slots:
+#'
+#'  \describe{
+#'    \item{\emph{annotation}:}{ A data.frame denoting the barcodes of the count matrix in slot \emph{mtr} as reference barcodes.}
+#'    \item{\emph{mtr}:}{ A count matrix that can be used as reference data for cnv analysis. The data derived from stRNA-seq of healthy human brain tissue.}
+#'    \item{\emph{regions}:}{ A data.frame containing information about start and end points of chromosomes.}
+#'  }
 #'
 #' @docType data
-#' @usage data(Ref)
+#' @usage data(cnv_ref)
 #'
-"Ref"
+"cnv_ref"
 

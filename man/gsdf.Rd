@@ -37,6 +37,7 @@ Gene set classes:
   \item{MF.GO: Molecular functions - gene-ontology}
   \item{HM: Hallmark gene sets}
   \item{BC: Biocarta gene sets}
-  \item{RCTM: Reactome gene sets}}
+  \item{RCTM: Reactome gene sets}
+  }
 }
 \keyword{datasets}

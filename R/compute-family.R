@@ -61,7 +61,7 @@ computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
 
   confuns::give_feedback(
-    msg = glue::glue("Calculating summary statistics for {base::nrow(expr_mtr)} genes"),
+    msg = glue::glue("Calculating summary statistics for {base::nrow(expr_mtr)} genes."),
     verbose = verbose
   )
 

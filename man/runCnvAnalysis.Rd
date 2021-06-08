@@ -6,10 +6,11 @@
 \usage{
 runCnvAnalysis(
   object,
-  ref_mtr = "data-development/cnv-ref-mtr.RDS",
-  ref_annotation = "data-development/cnv-ref-annotation.RDS",
+  ref_annotation = cnv_ref[["annotation"]],
+  ref_mtr = cnv_ref[["mtr"]],
+  ref_regions = cnv_ref[["regions"]],
   directory_cnv_folder = "data-development/cnv-results",
-  directory_regions_df = NULL,
+  directory_regions_df = NA,
   n_pcs = 30,
   cnv_prefix = "Chr",
   save_infercnv_object = TRUE,
@@ -38,9 +39,23 @@ runCnvAnalysis(
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{ref_mtr}{The expression matrix that is supposed to be used as the reference.
+\item{ref_mtr}{The count matrix that is supposed to be used as the reference.
 Row names must refer to the gene names and column names must refer to
-the barcodes. Alternatively a directory leading to a .RDS-file can be specfied.}
+the barcodes. Barcodes must be identical to the row names of the data.frame
+provided in argument \code{ref_annotation.}
+
+Defaults to the count matrix stored in slot \code{$mtr} of list \code{SPATA2::cnv_ref}.
+
+If you provide your own reference, make sure that barcodes of the reference
+input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+exemplified in the default list \code{SPATA2::cnv_ref}.)}
+
+\item{ref_regions}{A data.frame that contains information about chromosome positions.
+
+Defaults to the data.frame stored in slot \code{$regions} of list \code{SPATA2::cnv_ref}.
+
+If you provide your own regions reference, make sure that the data.frame has equal column names
+and row names as the default input.}
 
 \item{directory_cnv_folder}{Character value. A directory that leads to the folder
 in which to store temporary files, the infercnv-object as well as the output
@@ -123,26 +138,41 @@ to be called. Make sure that your input does not conflict with downstream functi
 calls. Input for argument \code{infercnv_obj} and  must not be specified. Input for argument
 \code{out_dir} is taken from argument \code{directory_cnv_folder}.}
 
-\item{ref_annotaion}{A data.frame in which the row names refer to the barcodes
-and a column named \emph{sample} refers to the reference group names.
-Alternatively a directory leading to a .RDS-file can be specfied.}
+\item{ref_annotaion}{A data.frame in which the row names refer to the barcodes of
+the reference matrix provided in argument \code{ref_mtr} and
+and a column named \emph{sample} that refers to the reference group names.
+
+Defaults to the data.frame stored in slot \code{$annotation} of list \code{SPATA2::cnv_ref}.
+
+If you provide your own reference, make sure that barcodes of the reference
+input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+exemplified in the default list \code{SPATA2::cnv_ref}.)}
 }
 \value{
 An updated spata-object containg the results in the respective slot.
 }
 \description{
 This functions integrates large-scale copy number variations analysis
-using the inferncnv-package.
+using the inferncnv-package. For more detailed information about infercnv works
+visit \emph{\link{https://github.com/broadinstitute/inferCNV/wiki}}.
 }
 \details{
-\code{runCnvAnalysis} is a wrapper around all functions the infercnv-pipeline
+\code{runCnvAnalysis()} is a wrapper around all functions the infercnv-pipeline
 is composed of. Argument \code{directory_cnv_folder} should lead to an empty folder as
 temporary files as well as the output heatmap and the infercnv-object are stored
-there which can lead to overwriting due to naming issues.
+there without asking for permission which can lead to overwriting due to naming issues.
 
 Results (including a PCA) are stored in the slot @cnv of the spata-object
 which can be obtained via \code{getCnvResults()}. Additionally, the variables
 that store the copy-number-variations for each barcode-spot are added to
 the spata-object's feature data. The corresponding feature variables are named according
 to the chromosome's number and the prefix denoted with the argument \code{cnv_prefix.}
+
+Regarding the reference data:
+In the list \code{SPATA2::cnv_ref} we offer reference data including a count matrix
+that results from stRNA-seq of healthy human brain tissue, an annotation data.frame as
+well as a data.frame containing information regarding the chromosome positions.
+You can choose to provide your own reference data by specifying the \code{ref_*}-arguments.
+Check out the content of list \code{SPATA2::cnv_ref} and make sure that your own
+reference input is of similiar structure regarding column names, rownames, etc.
 }

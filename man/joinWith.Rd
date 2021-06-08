@@ -52,7 +52,8 @@ joinWithGeneSets(
   smooth = FALSE,
   smooth_span = 0.02,
   normalize = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  ignore = T
 )
 
 joinWithVariables(

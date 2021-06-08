@@ -12,7 +12,9 @@ runHspa(
   method_kmeans = "Hartigan-Wong",
   kmeans = list(),
   method_csr = "MonteCarlo",
+  n_quadrats = 10,
   method_padj = "fdr",
+  save_intermediate_results = TRUE,
   verbose = NULL,
   of_sample = NA
 )

@@ -19,3 +19,8 @@ all_color_spectra <- confuns::all_color_spectra
 #'@export
 
 scale_color_add_on <- confuns::scale_color_add_on
+
+
+#' @importFrom magrittr %>%
+#'
+NULL

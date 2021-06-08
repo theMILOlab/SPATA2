@@ -16,6 +16,7 @@ getGenePatternSimilarities(
   object,
   return = "matrix",
   threshold_sim = 0.5,
+  arrange = TRUE,
   of_sample = NA
 )
 }

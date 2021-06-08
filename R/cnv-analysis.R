@@ -44,7 +44,7 @@ getCnvResults <- function(object, of_sample = NA){
 
   check_availability(test = !base::identical(x = res_list, y = list()),
                      ref_x = "CNV results",
-                     ref_fns = "function 'runCNVAnalysis()")
+                     ref_fns = "function 'runCnvAnalysis()")
 
   base::return(res_list)
 
@@ -123,18 +123,39 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' @title Identify large-scale chromosomal copy number variations
 #'
 #' @description This functions integrates large-scale copy number variations analysis
-#' using the inferncnv-package.
+#' using the inferncnv-package. For more detailed information about infercnv works
+#' visit \emph{\link{https://github.com/broadinstitute/inferCNV/wiki}}.
 #'
 #' @inherit argument_dummy params
 #' @inherit check_sample params
 #'
-#' @param ref_mtr The expression matrix that is supposed to be used as the reference.
-#' Row names must refer to the gene names and column names must refer to
-#' the barcodes. Alternatively a directory leading to a .RDS-file can be specfied.
+#' @param ref_annotaion A data.frame in which the row names refer to the barcodes of
+#' the reference matrix provided in argument \code{ref_mtr} and
+#' and a column named \emph{sample} that refers to the reference group names.
 #'
-#' @param ref_annotaion A data.frame in which the row names refer to the barcodes
-#' and a column named \emph{sample} refers to the reference group names.
-#' Alternatively a directory leading to a .RDS-file can be specfied.
+#' Defaults to the data.frame stored in slot \code{$annotation} of list \code{SPATA2::cnv_ref}.
+#'
+#' If you provide your own reference, make sure that barcodes of the reference
+#' input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+#' exemplified in the default list \code{SPATA2::cnv_ref}.)
+#'
+#' @param ref_mtr The count matrix that is supposed to be used as the reference.
+#' Row names must refer to the gene names and column names must refer to
+#' the barcodes. Barcodes must be identical to the row names of the data.frame
+#' provided in argument \code{ref_annotation.}
+#'
+#' Defaults to the count matrix stored in slot \code{$mtr} of list \code{SPATA2::cnv_ref}.
+#'
+#' If you provide your own reference, make sure that barcodes of the reference
+#' input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+#' exemplified in the default list \code{SPATA2::cnv_ref}.)
+#'
+#' @param ref_regions A data.frame that contains information about chromosome positions.
+#'
+#' Defaults to the data.frame stored in slot \code{$regions} of list \code{SPATA2::cnv_ref}.
+#'
+#' If you provide your own regions reference, make sure that the data.frame has equal column names
+#' and row names as the default input.
 #'
 #' @param directory_cnv_folder Character value. A directory that leads to the folder
 #' in which to store temporary files, the infercnv-object as well as the output
@@ -192,10 +213,10 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' calls. Input for argument \code{infercnv_obj} and  must not be specified. Input for argument
 #' \code{out_dir} is taken from argument \code{directory_cnv_folder}.
 #'
-#' @details \code{runCnvAnalysis} is a wrapper around all functions the infercnv-pipeline
+#' @details \code{runCnvAnalysis()} is a wrapper around all functions the infercnv-pipeline
 #' is composed of. Argument \code{directory_cnv_folder} should lead to an empty folder as
 #' temporary files as well as the output heatmap and the infercnv-object are stored
-#' there which can lead to overwriting due to naming issues.
+#' there without asking for permission which can lead to overwriting due to naming issues.
 #'
 #' Results (including a PCA) are stored in the slot @@cnv of the spata-object
 #' which can be obtained via \code{getCnvResults()}. Additionally, the variables
@@ -203,15 +224,24 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' the spata-object's feature data. The corresponding feature variables are named according
 #' to the chromosome's number and the prefix denoted with the argument \code{cnv_prefix.}
 #'
+#' Regarding the reference data:
+#' In the list \code{SPATA2::cnv_ref} we offer reference data including a count matrix
+#' that results from stRNA-seq of healthy human brain tissue, an annotation data.frame as
+#' well as a data.frame containing information regarding the chromosome positions.
+#' You can choose to provide your own reference data by specifying the \code{ref_*}-arguments.
+#' Check out the content of list \code{SPATA2::cnv_ref} and make sure that your own
+#' reference input is of similiar structure regarding column names, rownames, etc.
+#'
 #' @return An updated spata-object containg the results in the respective slot.
 #' @export
 #'
 
 runCnvAnalysis <- function(object,
-                           ref_mtr = "data-development/cnv-ref-mtr.RDS",
-                           ref_annotation = "data-development/cnv-ref-annotation.RDS",
+                           ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
+                           ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
+                           ref_regions = cnv_ref[["regions"]], # chromosome positions
                            directory_cnv_folder = "data-development/cnv-results", # output folder
-                           directory_regions_df = NULL, # chromosome positions
+                           directory_regions_df = NA, # deprecated (chromosome positions)
                            n_pcs = 30,
                            cnv_prefix = "Chr",
                            save_infercnv_object = TRUE,
@@ -244,9 +274,19 @@ runCnvAnalysis <- function(object,
 
   confuns::check_directories(directories = directory_cnv_folder, type = "folders")
 
-  if(base::is.character(directory_regions_df)){
+  if(!base::is.na(directory_regions_df)){
 
-    confuns::check_directories(directories = directory_regions_df, type = "files")
+    base::message(
+      "Redirecting input for argument 'directory_regions_df' (deprecated) to ",
+      "argument 'ref_regions'. Please use 'ref_regions' instead."
+    )
+
+    ref_regions <- directory_regions_df
+
+    base::warning(
+      "The argument 'directory_regions_df' is deprecated in favor of 'ref_regions'. ",
+      "See documentation for more details."
+      )
 
   }
 
@@ -263,11 +303,10 @@ runCnvAnalysis <- function(object,
     dplyr::select(barcodes, sample) %>%
     tibble::column_to_rownames(var = "barcodes")
 
-
   # reading and preparing reference data
   confuns::give_feedback(msg = "Checking input for reference data.", verbose = verbose)
 
-  if(base::is.character(ref_mtr)){
+  if(base::is.character(ref_mtr) && stringr::str_detect(ref_mtr, pattern = "\\.RDS$")){
 
     confuns::give_feedback(
       msg = glue::glue("Reading in reference matrix from directory '{ref_mtr}'."),
@@ -289,7 +328,7 @@ runCnvAnalysis <- function(object,
   }
 
 
-  if(base::is.character(ref_annotation)){
+  if(base::is.character(ref_annotation) && stringr::str_detect(ref_annotation, pattern = "\\.RDS$")){
 
     confuns::give_feedback(
       msg = glue::glue("Reading in reference annotation from directory '{ref_annotation}'."),
@@ -316,9 +355,15 @@ runCnvAnalysis <- function(object,
 
   genes_inter <-
     base::intersect(x = base::rownames(count_mtr), y = base::rownames(ref_mtr)) %>% base::unique()
-  
-  if(length(genes_inter)<500) stop (confuns::give_feedback(msg = "Less than 500 genes match ref and count matrix", verbose = verbose))
-  
+
+  if(base::length(genes_inter) < 500){
+
+    msg <- "Less than 500 genes match ref and count matrix."
+
+    confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+
+  }
+
   expr_inter <- base::cbind(count_mtr[genes_inter, ], ref_mtr[genes_inter, ])
 
   anno_inter <- base::rbind(obj_anno, ref_anno)
@@ -326,13 +371,17 @@ runCnvAnalysis <- function(object,
   # read and process gene positions
   confuns::give_feedback(msg = "Getting gene positions.", verbose = verbose)
 
-  if(base::is.character(directory_regions_df)){
+  if(base::is.character(ref_regions) && stringr::str_detect(ref_regions, pattern = "\\.RDS$")){
 
-    regions_df <- base::readRDS(file = directory_regions_df)
+    regions_df <- base::readRDS(file = ref_regions)
+
+  } else if(base::is.data.frame(ref_regions)) {
+
+    regions_df <- ref_regions
 
   } else {
 
-    regions_df <- cnv_regions_df
+    base::stop("Input for argument 'ref_regions' must either be a directory leading to an .RDS-file or a data.frame")
 
   }
 
@@ -517,42 +566,103 @@ runCnvAnalysis <- function(object,
 
   if(base::isTRUE(save_infercnv_object)){
 
-    confuns::give_feedback(msg = glue::glue("Saving infercnv-object under '{ref_dir}'.",
-                                            ref_dir = stringr::str_c(directory_cnv_folder, "infercnv-obj.RDS", sep = "/")),
-                           verbose = verbose)
+    save_dir <- stringr::str_c(directory_cnv_folder, "infercnv-obj.RDS", sep = "/")
 
-    base::saveRDS(infercnv_obj, file = "infercnv-obj.RDS")
+    msg <- glue::glue("Saving infercnv-object under '{save_dir}'.")
+
+    confuns::give_feedback(msg = msg, verbose = verbose)
+
+    base::saveRDS(infercnv_obj, file = save_dir)
 
   }
 
   confuns::give_feedback(msg = "Plotting results.", verbose = verbose)
 
-  infercnv_obj <-
+  plot_results <-
     confuns::call_flexibly(
       fn = "plot_cnv",
       fn.ns = "infercnv",
       fn.ns.sep = ":::",
       default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder),
-      v.fail = infercnv_obj
+      v.fail = NULL
     )
 
-  infercnv_obj <- infercnv::plot_cnv(infercnv_obj = infercnv_obj)
+
+  # work around a weird error in plot_cnv()
+  if(base::is.null(plot_results)){
+
+    confuns::give_feedback(
+      msg = "infercnv:::plot_cnv() failed. Attempting to plot with default setting.",
+      verbose = TRUE
+    )
+
+    plot_results <-
+      base::tryCatch({
+
+        infercnv::plot_cnv(infercnv_obj = infercnv_obj, out_dir = directory_cnv_folder)
+
+      }, error = function(error){
+
+        NULL
+
+      })
+
+    if(base::is.null(plot_results)){
+
+      confuns::give_feedback(
+        msg = "inferncnv::plot_cnv() failed with default setting, too.",
+        verbose = TRUE
+      )
+
+    }
+
+    if(base::isTRUE(save_infercnv_object)){
+
+      msg <-
+        glue::glue(
+          "The infercnv-object has been saved under '{save_dir}'.",
+          "Please try to plot the heatmap manually."
+          )
+
+      confuns::give_feedback(msg = msg, verbose = TRUE)
+
+    } else {
+
+      msg <-
+        glue::glue(
+          "Please consider to run runCnvAnalysis() again with argument 'save_infercnv_object' set to TRUE.",
+          "This way you can plot the results manually."
+        )
+
+      confuns::give_feedback(msg = msg, verbose = TRUE)
+
+    }
+
+    msg <- "If the error in infercnv:::plot_cnv() persists, consider to open an issue at https://github.com/theMILOlab/SPATA2/issues."
+
+    confuns::give_feedback(msg = msg, verbose = TRUE)
+
+  }
 
   # ----
 
 
-
   # 4. Storing results ------------------------------------------------------
 
+  result_dir <-
+    stringr::str_c(directory_cnv_folder, "/", plot_cnv$output_filename, ".observations.txt")
 
-  results <- utils::read.table(plot_cnv$output_filename)
+  results <- utils::read.table(result_dir)
 
   barcodes <- base::colnames(results)
 
+  confuns::give_feedback(msg = "Summarizing cnv-results by chromosome.", verbose = verbose)
+
+  # join cnv results (per gene) with chromosome positions and summarize by chromosome
   ordered_cnv_df <-
     base::as.data.frame(results) %>%
     tibble::rownames_to_column("hgnc_symbol") %>%
-    dplyr::left_join(., gene_pos_df, by="hgnc_symbol") %>%
+    dplyr::left_join(., gene_pos_df, by = "hgnc_symbol") %>%
     dplyr::group_by(chromosome_name) %>%
     dplyr::select(chromosome_name, dplyr::any_of(barcodes)) %>%
     dplyr::summarise_all(base::mean) %>%
@@ -577,25 +687,37 @@ runCnvAnalysis <- function(object,
   confuns::give_feedback(msg = "Adding results to the spata-object's feature data.", verbose = verbose)
 
   # feature variables
-  object <- addFeatures(object = object,
-                        feature_df = ordered_cnv_df2,
-                        overwrite = TRUE)
+  object <-
+    addFeatures(
+      object = object,
+      feature_df = ordered_cnv_df2,
+      overwrite = TRUE
+      )
 
   # cnv matrix
-  base::colnames(results) <- stringr::str_replace_all(string = base::colnames(results), pattern = "\\.", replacement = "-")
+  base::colnames(results) <-
+    stringr::str_replace_all(
+      string = base::colnames(results),
+      pattern = "\\.",
+      replacement = "-"
+      )
+
   cnv_mtr <- base::as.matrix(results)
 
   # cnv list
-  cnv_list <- list(prefix = cnv_prefix,
-                   clustering = clustering_list,
-                   cnv_df = ordered_cnv_df2,
-                   cnv_mtr = cnv_mtr,
-                   gene_pos_df = gene_pos_df,
-                   regions_df = regions_df
-                   )
+  cnv_list <-
+    list(
+      prefix = cnv_prefix,
+      cnv_df = ordered_cnv_df2,
+      cnv_mtr = cnv_mtr,
+      gene_pos_df = gene_pos_df,
+      regions_df = regions_df
+      )
 
   object <-
     setCnvResults(object = object, cnv_list = cnv_list, of_sample = of_sample)
+
+  confuns::give_feedback(msg = "Computing PCA based on cnv results.", verbose = verbose)
 
   object <-
     hlpr_run_cnva_pca(object, n_pcs = n_pcs, of_sample = of_sample)
@@ -607,14 +729,11 @@ runCnvAnalysis <- function(object,
 
   cnv_hclust <-
     confuns::initiate_hclust_object(
-      hclust_data = tibble::column_to_rownames(cnv_pca_df, var = "barcodes"),
-      key_name = "barcodes"
+      hclust.data = tibble::column_to_rownames(cnv_pca_df, var = "barcodes"),
+      key.name = "barcodes"
       )
 
-  clustering_list <-
-    list(
-      hierarchical = cnv_hclust
-    )
+  clustering_list <- list(hierarchical = cnv_hclust)
 
   cnv_res$clustering <- clustering_list
 
@@ -642,7 +761,6 @@ runCnvAnalysis <- function(object,
 #' @inherit ggplot_family return
 #'
 #' @export
-
 plotCnvResults <- function(object,
                            across = NULL,
                            across_subset = NULL,
@@ -720,7 +838,7 @@ plotCnvResults <- function(object,
       base::t() %>%
       base::as.data.frame() %>%
       tibble::rownames_to_column(var = "barcodes") %>%
-      joinWith(object = object, spata_df = ., features = across) %>%
+      joinWith(object = object, spata_df = ., features = across, smooth = FALSE) %>%
       confuns::check_across_subset(df = ., across = across, across.subset = across_subset, relevel = relevel) %>%
       tidyr::pivot_longer(
         cols = dplyr::all_of(gene_names),

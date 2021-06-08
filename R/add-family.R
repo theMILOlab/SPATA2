@@ -180,6 +180,8 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
+  # check hierarchically if list structures exist
+
   object@autoencoder[[of_sample]][["nn_set_ups"]][[mtr_name]] <- set_up_list
 
   base::return(object)

@@ -7,6 +7,7 @@
 hspaCsrTesting(
   object,
   method_csr = "MonteCarlo",
+  n_quadrats = 10,
   method_padj = "fdr",
   verbose = NULL,
   of_sample = NA

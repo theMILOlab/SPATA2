@@ -6,7 +6,7 @@
 \alias{setUmapDf}
 \title{Set dimensional reductions data.frames}
 \usage{
-setPcaDf(object, pca_df, of_sample = "")
+setPcaDf(object, pca_df, of_sample = "", fdb_fn = "stop")
 
 setTsneDf(object, tsne_df, of_sample = "")
 
