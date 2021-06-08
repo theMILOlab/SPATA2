@@ -48,6 +48,8 @@ variables and joins them over the barcode variable with the provided data.frame.
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -59,9 +61,16 @@ variables and joins them over the barcode variable with the provided data.frame.
 
 
 
+
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -82,12 +91,6 @@ variables and joins them over the barcode variable with the provided data.frame.
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
@@ -175,19 +178,19 @@ input that contains at least the variables <em>barcodes</em> and <em>sample</em>
 variables and joins them over the barcode variable with the provided data.frame.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>joinWith</span><span class='op'>(</span>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>joinWith</span><span class='op'>(</span>
   <span class='va'>object</span>,
   spata_df <span class='op'>=</span> <span class='fu'><a href='getCoordsDf.html'>getCoordsDf</a></span><span class='op'>(</span><span class='va'>object</span><span class='op'>)</span>,
   features <span class='op'>=</span> <span class='cn'>NULL</span>,
   gene_sets <span class='op'>=</span> <span class='cn'>NULL</span>,
-  method_gs <span class='op'>=</span> <span class='st'>"mean"</span>,
+  method_gs <span class='op'>=</span> <span class='cn'>NULL</span>,
   genes <span class='op'>=</span> <span class='cn'>NULL</span>,
-  average_genes <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  uniform_genes <span class='op'>=</span> <span class='st'>"discard"</span>,
-  smooth <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  smooth_span <span class='op'>=</span> <span class='fl'>0.02</span>,
-  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  normalize <span class='op'>=</span> <span class='cn'>TRUE</span>
+  average_genes <span class='op'>=</span> <span class='cn'>NULL</span>,
+  uniform_genes <span class='op'>=</span> <span class='cn'>NULL</span>,
+  smooth <span class='op'>=</span> <span class='cn'>NULL</span>,
+  smooth_span <span class='op'>=</span> <span class='cn'>NULL</span>,
+  verbose <span class='op'>=</span> <span class='cn'>NULL</span>,
+  normalize <span class='op'>=</span> <span class='cn'>NULL</span>
 <span class='op'>)</span>
 
 <span class='fu'>joinWithFeatures</span><span class='op'>(</span>
@@ -219,7 +222,8 @@ variables and joins them over the barcode variable with the provided data.frame.
   smooth <span class='op'>=</span> <span class='cn'>FALSE</span>,
   smooth_span <span class='op'>=</span> <span class='fl'>0.02</span>,
   normalize <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
+  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  ignore <span class='op'>=</span> <span class='cn'>T</span>
 <span class='op'>)</span>
 
 <span class='fu'>joinWithVariables</span><span class='op'>(</span>
@@ -233,7 +237,7 @@ variables and joins them over the barcode variable with the provided data.frame.
   smooth_span <span class='op'>=</span> <span class='fl'>0.02</span>,
   normalize <span class='op'>=</span> <span class='cn'>TRUE</span>,
   verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span></pre>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -323,11 +327,11 @@ the specified features, genes and gene-sets are overwritten!</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -335,6 +339,8 @@ the specified features, genes and gene-sets are overwritten!</p>
 
   
 
+
+  
 
   </body>
 </html>

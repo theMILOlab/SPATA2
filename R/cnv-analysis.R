@@ -124,7 +124,7 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #'
 #' @description This functions integrates large-scale copy number variations analysis
 #' using the inferncnv-package. For more detailed information about infercnv works
-#' visit \emph{\link{https://github.com/broadinstitute/inferCNV/wiki}}.
+#' visit \emph{https://github.com/broadinstitute/inferCNV/wiki}.
 #'
 #' @inherit argument_dummy params
 #' @inherit check_sample params

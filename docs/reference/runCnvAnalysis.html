@@ -41,7 +41,10 @@
 
 <meta property="og:title" content="Identify large-scale chromosomal copy number variations — runCnvAnalysis" />
 <meta property="og:description" content="This functions integrates large-scale copy number variations analysis
-using the inferncnv-package." />
+using the inferncnv-package. For more detailed information about infercnv works
+visit https://github.com/broadinstitute/inferCNV/wiki." />
+
+
 
 
 
@@ -57,9 +60,16 @@ using the inferncnv-package." />
 
 
 
+
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -80,12 +90,6 @@ using the inferncnv-package." />
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
@@ -168,18 +172,20 @@ using the inferncnv-package." />
 
     <div class="ref-description">
     <p>This functions integrates large-scale copy number variations analysis
-using the inferncnv-package.</p>
+using the inferncnv-package. For more detailed information about infercnv works
+visit <em>https://github.com/broadinstitute/inferCNV/wiki</em>.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>runCnvAnalysis</span><span class='op'>(</span>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>runCnvAnalysis</span><span class='op'>(</span>
   <span class='va'>object</span>,
-  ref_mtr <span class='op'>=</span> <span class='st'>"data-development/cnv-ref-mtr.RDS"</span>,
-  ref_annotation <span class='op'>=</span> <span class='st'>"data-development/cnv-ref-annotation.RDS"</span>,
+  ref_annotation <span class='op'>=</span> <span class='va'>cnv_ref</span><span class='op'>[[</span><span class='st'>"annotation"</span><span class='op'>]</span><span class='op'>]</span>,
+  ref_mtr <span class='op'>=</span> <span class='va'>cnv_ref</span><span class='op'>[[</span><span class='st'>"mtr"</span><span class='op'>]</span><span class='op'>]</span>,
+  ref_regions <span class='op'>=</span> <span class='va'>cnv_ref</span><span class='op'>[[</span><span class='st'>"regions"</span><span class='op'>]</span><span class='op'>]</span>,
   directory_cnv_folder <span class='op'>=</span> <span class='st'>"data-development/cnv-results"</span>,
-  directory_regions_df <span class='op'>=</span> <span class='cn'>NULL</span>,
+  directory_regions_df <span class='op'>=</span> <span class='cn'>NA</span>,
   n_pcs <span class='op'>=</span> <span class='fl'>30</span>,
   cnv_prefix <span class='op'>=</span> <span class='st'>"Chr"</span>,
-  save_infercnv_object <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  save_infercnv_object <span class='op'>=</span> <span class='cn'>TRUE</span>,
   verbose <span class='op'>=</span> <span class='cn'>NULL</span>,
   of_sample <span class='op'>=</span> <span class='cn'>NA</span>,
   CreateInfercnvObject <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>ref_group_names <span class='op'>=</span> <span class='st'>"ref"</span><span class='op'>)</span>,
@@ -200,7 +206,7 @@ using the inferncnv-package.</p>
   plot_cnv <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>k_obs_groups <span class='op'>=</span> <span class='fl'>5</span>, cluster_by_groups <span class='op'>=</span> <span class='cn'>TRUE</span>, output_filename <span class='op'>=</span>
     <span class='st'>"infercnv.outliers_removed"</span>, color_safe_pal <span class='op'>=</span> <span class='cn'>FALSE</span>, x.range <span class='op'>=</span> <span class='st'>"auto"</span>, x.center <span class='op'>=</span> <span class='fl'>1</span>,
     output_format <span class='op'>=</span> <span class='st'>"pdf"</span>, title <span class='op'>=</span> <span class='st'>"Outliers Removed"</span><span class='op'>)</span>
-<span class='op'>)</span></pre>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -211,9 +217,21 @@ using the inferncnv-package.</p>
     </tr>
     <tr>
       <th>ref_mtr</th>
-      <td><p>The expression matrix that is supposed to be used as the reference.
+      <td><p>The count matrix that is supposed to be used as the reference.
 Row names must refer to the gene names and column names must refer to
-the barcodes. Alternatively a directory leading to a .RDS-file can be specfied.</p></td>
+the barcodes. Barcodes must be identical to the row names of the data.frame
+provided in argument <code>ref_annotation.</code></p>
+<p>Defaults to the count matrix stored in slot <code>$mtr</code> of list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code>.</p>
+<p>If you provide your own reference, make sure that barcodes of the reference
+input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+exemplified in the default list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code>.)</p></td>
+    </tr>
+    <tr>
+      <th>ref_regions</th>
+      <td><p>A data.frame that contains information about chromosome positions.</p>
+<p>Defaults to the data.frame stored in slot <code>$regions</code> of list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code>.</p>
+<p>If you provide your own regions reference, make sure that the data.frame has equal column names
+and row names as the default input.</p></td>
     </tr>
     <tr>
       <th>directory_cnv_folder</th>
@@ -337,9 +355,13 @@ calls. Input for argument <code>infercnv_obj</code> and  must not be specified. 
     </tr>
     <tr>
       <th>ref_annotaion</th>
-      <td><p>A data.frame in which the row names refer to the barcodes
-and a column named <em>sample</em> refers to the reference group names.
-Alternatively a directory leading to a .RDS-file can be specfied.</p></td>
+      <td><p>A data.frame in which the row names refer to the barcodes of
+the reference matrix provided in argument <code>ref_mtr</code> and
+and a column named <em>sample</em> that refers to the reference group names.</p>
+<p>Defaults to the data.frame stored in slot <code>$annotation</code> of list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code>.</p>
+<p>If you provide your own reference, make sure that barcodes of the reference
+input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+exemplified in the default list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code>.)</p></td>
     </tr>
     </table>
 
@@ -348,15 +370,22 @@ Alternatively a directory leading to a .RDS-file can be specfied.</p></td>
     <p>An updated spata-object containg the results in the respective slot.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><code>runCnvAnalysis</code> is a wrapper around all functions the infercnv-pipeline
+    <p><code>runCnvAnalysis()</code> is a wrapper around all functions the infercnv-pipeline
 is composed of. Argument <code>directory_cnv_folder</code> should lead to an empty folder as
 temporary files as well as the output heatmap and the infercnv-object are stored
-there which can lead to overwriting due to naming issues.</p>
+there without asking for permission which can lead to overwriting due to naming issues.</p>
 <p>Results (including a PCA) are stored in the slot @cnv of the spata-object
 which can be obtained via <code><a href='getCnvResults.html'>getCnvResults()</a></code>. Additionally, the variables
 that store the copy-number-variations for each barcode-spot are added to
 the spata-object's feature data. The corresponding feature variables are named according
 to the chromosome's number and the prefix denoted with the argument <code>cnv_prefix.</code></p>
+<p>Regarding the reference data:
+In the list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code> we offer reference data including a count matrix
+that results from stRNA-seq of healthy human brain tissue, an annotation data.frame as
+well as a data.frame containing information regarding the chromosome positions.
+You can choose to provide your own reference data by specifying the <code>ref_*</code>-arguments.
+Check out the content of list <code><a href='cnv_ref.html'>SPATA2::cnv_ref</a></code> and make sure that your own
+reference input is of similiar structure regarding column names, rownames, etc.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -369,11 +398,11 @@ to the chromosome's number and the prefix denoted with the argument <code>cnv_pr
 
       <footer>
       <div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -381,6 +410,8 @@ to the chromosome's number and the prefix denoted with the argument <code>cnv_pr
 
   
 
+
+  
 
   </body>
 </html>

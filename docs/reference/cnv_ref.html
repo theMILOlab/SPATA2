@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes. — cnv_regions_df • SPATA2</title>
+<title>A list of reference data for copy number variation analysis (CNV) — cnv_ref • SPATA2</title>
 
 
 <!-- jquery -->
@@ -40,10 +39,8 @@ end points of chromosomes. — cnv_regions_df • SPATA2</title>
 
 
 
-<meta property="og:title" content="A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes. — cnv_regions_df" />
-<meta property="og:description" content="A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes." />
+<meta property="og:title" content="A list of reference data for copy number variation analysis (CNV) — cnv_ref" />
+<meta property="og:description" content="The list contains three named slots:" />
 
 
 
@@ -166,23 +163,31 @@ end points of chromosomes." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes.</h1>
+    <h1>A list of reference data for copy number variation analysis (CNV)</h1>
     
-    <div class="hidden name"><code>cnv_regions_df.Rd</code></div>
+    <div class="hidden name"><code>cnv_ref.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes.</p>
+    <p>The list contains three named slots:</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>cnv_regions_df</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>cnv_ref</span><span class='op'>)</span></code></pre></div>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>An object of class <code>data.frame</code> with 44 rows and 4 columns.</p>
+    <p>An object of class <code>list</code> of length 3.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    
+<dl>
+   <dt><em>annotation</em>:</dt><dd><p>A data.frame denoting the barcodes of the count matrix in slot <em>mtr</em> as reference barcodes.</p></dd>
+   <dt><em>mtr</em>:</dt><dd><p>A count matrix that can be used as reference data for cnv analysis. The data derived from stRNA-seq of healthy human brain tissue.</p></dd>
+   <dt><em>regions</em>:</dt><dd><p>A data.frame containing information about start and end points of chromosomes.</p></dd>
+ 
+</dl>
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

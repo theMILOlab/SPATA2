@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes. — cnv_regions_df • SPATA2</title>
+<title>Obtain count and expression matrix — getMatrix • SPATA2</title>
 
 
 <!-- jquery -->
@@ -40,10 +39,8 @@ end points of chromosomes. — cnv_regions_df • SPATA2</title>
 
 
 
-<meta property="og:title" content="A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes. — cnv_regions_df" />
-<meta property="og:description" content="A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes." />
+<meta property="og:title" content="Obtain count and expression matrix — getMatrix" />
+<meta property="og:description" content="Obtain count and expression matrix" />
 
 
 
@@ -166,23 +163,43 @@ end points of chromosomes." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes.</h1>
+    <h1>Obtain count and expression matrix</h1>
     
-    <div class="hidden name"><code>cnv_regions_df.Rd</code></div>
+    <div class="hidden name"><code>getMatrix.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes.</p>
+    <p>Obtain count and expression matrix</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>cnv_regions_df</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>getMatrix</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>mtr_name</span>, of_sample <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span>
 
+<span class='fu'>getExpressionMatrix</span><span class='op'>(</span><span class='va'>object</span>, mtr_name <span class='op'>=</span> <span class='cn'>NULL</span>, verbose <span class='op'>=</span> <span class='cn'>FALSE</span>, of_sample <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span>
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+<span class='fu'>getCountMatrix</span><span class='op'>(</span><span class='va'>object</span>, of_sample <span class='op'>=</span> <span class='cn'>NA</span><span class='op'>)</span></code></pre></div>
 
-    <p>An object of class <code>data.frame</code> with 44 rows and 4 columns.</p>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>object</th>
+      <td><p>A valid spata-object.</p></td>
+    </tr>
+    <tr>
+      <th>mtr_name</th>
+      <td><p>Character value. The name of the expression matrix of interest. If set to NULL
+the currently active matrix is chosen.</p></td>
+    </tr>
+    <tr>
+      <th>of_sample</th>
+      <td><p>This argument is currently inactive. It might be reactivated when
+spata-objects can store more than one sample.</p></td>
+    </tr>
+    </table>
+
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>The active expression or count matrix of the specified object and sample(s).</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

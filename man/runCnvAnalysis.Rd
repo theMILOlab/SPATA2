@@ -154,7 +154,7 @@ An updated spata-object containg the results in the respective slot.
 \description{
 This functions integrates large-scale copy number variations analysis
 using the inferncnv-package. For more detailed information about infercnv works
-visit \emph{\link{https://github.com/broadinstitute/inferCNV/wiki}}.
+visit \emph{https://github.com/broadinstitute/inferCNV/wiki}.
 }
 \details{
 \code{runCnvAnalysis()} is a wrapper around all functions the infercnv-pipeline
