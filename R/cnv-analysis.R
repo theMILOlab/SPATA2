@@ -160,6 +160,15 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' @param directory_cnv_folder Character value. A directory that leads to the folder
 #' in which to store temporary files, the infercnv-object as well as the output
 #' heatmap.
+#'
+#' @param gene_pos_df Either NULL or a data.frame. If data.frame, it replaces
+#' the output of \code{CONICsmat::getGenePositions()}. Must contain three
+#' character variables \emph{ensembl_gene_id}, \emph{hgnc_symbol}, \emph{chromosome_name}
+#' and two numeric variables \emph{start_position} and \emph{end_position.}.
+#'
+#' If NULL the data.frame is created via \code{CONICsmat::getGenePositions()} using
+#' all gene names that appear in the count matrix and in the reference matrix.
+#'
 #' @param cnv_prefix Character value. Denotes the string with which the
 #' the feature variables in which the information about the chromosomal gains and
 #' losses are stored are prefixed.
@@ -240,6 +249,7 @@ runCnvAnalysis <- function(object,
                            ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
                            ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
                            ref_regions = cnv_ref[["regions"]], # chromosome positions
+                           gene_pos_df = NULL,
                            directory_cnv_folder = "data-development/cnv-results", # output folder
                            directory_regions_df = NA, # deprecated (chromosome positions)
                            n_pcs = 30,
@@ -385,8 +395,27 @@ runCnvAnalysis <- function(object,
 
   }
 
-  gene_pos_df <-
-    CONICSmat::getGenePositions(gene_names = base::rownames(expr_inter))
+  if(base::is.data.frame(gene_pos_df)){
+
+    confuns::check_data_frame(
+      df = gene_pos_df,
+      var.class = list(
+        ensembl_gene_id = "character",
+        hgnc_symbol = "character",
+        chromosome_name = "character",
+        start_position = "integer",
+        end_position = "integer"
+      )
+    )
+
+
+  } else {
+
+    gene_pos_df <-
+      CONICSmat::getGenePositions(gene_names = base::rownames(expr_inter))
+
+  }
+
 
   # -----
 

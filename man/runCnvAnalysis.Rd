@@ -9,6 +9,7 @@ runCnvAnalysis(
   ref_annotation = cnv_ref[["annotation"]],
   ref_mtr = cnv_ref[["mtr"]],
   ref_regions = cnv_ref[["regions"]],
+  gene_pos_df = NULL,
   directory_cnv_folder = "data-development/cnv-results",
   directory_regions_df = NA,
   n_pcs = 30,
@@ -56,6 +57,14 @@ Defaults to the data.frame stored in slot \code{$regions} of list \code{SPATA2::
 
 If you provide your own regions reference, make sure that the data.frame has equal column names
 and row names as the default input.}
+
+\item{gene_pos_df}{Either NULL or a data.frame. If data.frame, it replaces
+the output of \code{CONICsmat::getGenePositions()}. Must contain three
+character variables \emph{ensembl_gene_id}, \emph{hgnc_symbol}, \emph{chromosome_name}
+and two numeric variables \emph{start_position} and \emph{end_position.}.
+
+If NULL the data.frame is created via \code{CONICsmat::getGenePositions()} using
+all gene names that appear in the count matrix and in the reference matrix.}
 
 \item{directory_cnv_folder}{Character value. A directory that leads to the folder
 in which to store temporary files, the infercnv-object as well as the output
