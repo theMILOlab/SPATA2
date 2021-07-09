@@ -24,6 +24,10 @@ initiateSpataObject_Empty <- function(sample_name){
   object <-
     methods::new(Class = class_string, samples = sample_name)
 
+  object@version <- current_spata_version
+
+  return(object)
+
 }
 
 

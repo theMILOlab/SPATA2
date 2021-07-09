@@ -34,6 +34,17 @@ transformSeuratToSpata(
  take the surrogate coordinates. If the specified data ist not found the slot @coordinates will contain an
  empty data.frame and has to be set manually with \code{setCoordsDf()}.}
 
+\item{assay_name}{Character value. Denotes the assay from which to transfer
+the data. If the seurat-object contains only one assay \code{assay_name} = NULL
+makes \code{transformSeuratToSpata()} choose the only one found.}
+
+\item{assay_slot}{Character value. Denotes the slot of the seurat-object's
+assay object from which to transfer the expression matrix (the count matrix
+is always taken from slot \code{@counts}). Either \emph{'data'}
+or \emph{'scale.data'}. If set to NULL the functions checks both options
+for validity. If both slots contain valid expression matrix candidates it
+defaults to \emph{'scale.data'}.}
+
 \item{gene_set_path}{Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.
 
@@ -71,7 +82,7 @@ If your seurat-object contains more than one assay-object or more than one
 SpatialImage-object you need to specify the respective objects by name using the arguments
 \code{assay_name} and \code{image_name}. If the assay you denoted with \code{assay_name}
 contains more than one valid expression matrix you need to specify the one you
-want to use as the spata-object's \emph{scaled_mtr}.
+want to use as the spata-object's \emph{scaled_mtr} using the argument \code{assay_slot}.
 
 Seurat-objects containing data derived from spatial experiments (\code{method} = \emph{'spatial'}):
 
