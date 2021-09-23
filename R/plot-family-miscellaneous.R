@@ -1856,14 +1856,17 @@ plotDeaHeatmap <- function(object,
 
   } else {
 
-    de_df <- getDeaResultsDf(object = object,
-                             across = across,
-                             across_subset = across_subset,
-                             relevel = relevel,
-                             of_sample = of_sample,
-                             max_adj_pval = max_adj_pval,
-                             n_highest_lfc = n_highest_lfc,
-                             n_lowest_pval = n_lowest_pval)
+    de_df <-
+      getDeaResultsDf(
+        object = object,
+        across = across,
+        across_subset = across_subset,
+        relevel = relevel,
+        of_sample = of_sample,
+        max_adj_pval = max_adj_pval,
+        n_highest_lfc = n_highest_lfc,
+        n_lowest_pval = n_lowest_pval
+      )
 
     # save the remaining groups (if 'across' is a factor 'unique_groups' is a factor)
     unique_groups <- base::unique(de_df[[across]])

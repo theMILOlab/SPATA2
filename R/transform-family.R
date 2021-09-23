@@ -218,7 +218,7 @@ transformSeuratToSpata <- function(seurat_object,
         verbose = verbose
       )
 
-    } else if(lenght(assay_names) > 1) {
+    } else if(length(assay_names) > 1) {
 
       msg <-
         glue::glue(
