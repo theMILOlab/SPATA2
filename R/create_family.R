@@ -563,10 +563,12 @@ createTrajectories <- function(object){
 #'
 #' @inherit argument_dummy params
 #'
+#' @param trajectory_name Character value. The name of the new trajectory.
+#'
 #' @param start,end Numeric vectors of length two. Defining start and endpoint
 #' of the trajectory. First value of each vector is used as the respective
 #' x-coordinate. Second value of each vector is used as the respective y-coordinate.
-#' @param width Numeric value. Defines the trajectory width.
+#' @param width Numeric value. Denotes the trajectory width.
 #' @param vertices List. Optional if you want to specify additional vertices
 #' between start and endpoint to split the trajectory into parts.
 #'

@@ -20,11 +20,13 @@ createTrajectoryManually(
 \arguments{
 \item{object}{A valid spata-object.}
 
+\item{trajectory_name}{Character value. The name of the new trajectory.}
+
 \item{start, end}{Numeric vectors of length two. Defining start and endpoint
 of the trajectory. First value of each vector is used as the respective
 x-coordinate. Second value of each vector is used as the respective y-coordinate.}
 
-\item{width}{Numeric value. Defines the trajectory width.}
+\item{width}{Numeric value. Denotes the trajectory width.}
 
 \item{vertices}{List. Optional if you want to specify additional vertices
 between start and endpoint to split the trajectory into parts.
