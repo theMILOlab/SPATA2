@@ -18,6 +18,8 @@ plotCnvResults(
 )
 }
 \arguments{
+\item{object}{A valid spata-object.}
+
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
 Use \code{getGroupingOptions()} to obtain all variable names that group the

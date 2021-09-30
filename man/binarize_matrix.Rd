@@ -16,6 +16,8 @@ binarize_matrix(
 )
 }
 \arguments{
+\item{object}{A valid spata-object.}
+
 \item{genes_subset}{Chararcter vector or NULL. If character, the matrix is subsetted by
 this vector such that only genes of the input are kept before the binarization process
 starts.}

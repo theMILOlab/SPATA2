@@ -347,8 +347,6 @@ createTrajectories <- function(object){
 
           })
 
-
-
           # trjectory add ons
           trajectory_segment_add_on <- shiny::reactive({
 
@@ -450,7 +448,7 @@ createTrajectories <- function(object){
                 xend = numeric(0),
                 yend = numeric(0),
                 part = character(0),
-                stringsAsFactors = F))
+                stringsAsFactors = FALSE))
 
             }
 
@@ -556,6 +554,167 @@ createTrajectories <- function(object){
 
 
 
+
+#' @title Create spatial trajectories manually
+#'
+#' @description Manual version of \code{createTrajectories()}. Instead of
+#' drawing them interactively you can provide the coordinates via the
+#' arguments \code{width}, \code{vertices}, \code{start} and \code{end}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @param start,end Numeric vectors of length two. Defining start and endpoint
+#' of the trajectory. First value of each vector is used as the respective
+#' x-coordinate. Second value of each vector is used as the respective y-coordinate.
+#' @param width Numeric value. Defines the trajectory width.
+#' @param vertices List. Optional if you want to specify additional vertices
+#' between start and endpoint to split the trajectory into parts.
+#'
+#' Every slot of the input list must be a numeric vector which
+#' is then handled in the same way that the input of arguments \code{start} and \code{end}
+#' is handled - first value is taken for x- and second value for y-coordinate.
+#'
+#' Ignored if not a list or a list of length 0.
+#'
+#' @param comment Character value. Optional if you want to provide a reasoning
+#' why you have drawn the trajectory.
+#' @param plot Logical value. If set to TRUE the created trajectory is plotted
+#' via \code{plotTrajectory()}.
+#'
+#' @return An updated spata-object.
+#' @export
+#'
+#' @examples
+#'
+#'
+#'  object <-
+#'   createTrajectoryManually(
+#'      object = object,
+#'      trajectory_name = "my_trajectory",
+#'      start = c(x = 136, y = 181),
+#'      end = c(x = 381, y = 398),
+#'      vertices = list(va = c(x = 251, y = 283), vb = c(x = 344, y = 356)),
+#'      width = 25,
+#'      comment = 'This serves as an example.'
+#'        )
+#'
+createTrajectoryManually <- function(object,
+                                     trajectory_name,
+                                     start,
+                                     end,
+                                     width,
+                                     vertices = list(),
+                                     comment = "",
+                                     plot = FALSE,
+                                     verbose = NULL,
+                                     of_sample = NA){
+
+  check_object(object)
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
+
+  # extract coords
+  coords_df <- getCoordsDf(object)
+
+  x_range <- base::range(coords_df$x)
+  y_range <- base::range(coords_df$y)
+
+  coords_range <- base::max(c(x_range, y_range)) - base::min(c(x_range, y_range))
+
+  # input check
+  confuns::are_vectors(c("start", "end"), mode = "numeric", of.length = 2)
+
+  confuns::is_value(x = width, mode = "numeric")
+
+  confuns::is_value(x = comment, mode = "character")
+
+  confuns::check_none_of(
+    input = trajectory_name,
+    against = getTrajectoryNames(object, of_sample = of_sample),
+    ref.against = "trajectory names"
+  )
+
+  # compile trajectory
+  segment_trajectory_df <-
+    base::data.frame(
+      x = start[1],
+      y = start[2],
+      xend = end[1],
+      yend = end[2],
+      part = "part_1",
+      stringsAsFactors = FALSE
+    )
+
+  if(confuns::is_list(vertices) & base::length(vertices) >= 1){
+
+    for(nth in base::seq_along(vertices)){
+
+      if(!confuns::is_vec(x = vertices[[nth]], mode = "numeric", of.length = 2, verbose = FALSE)){
+
+        stop("Every slot of input list for argument 'vertices' must be a numeric vector of length 2.")
+
+      }
+
+      segment_trajectory_df$xend[nth] <- vertices[[nth]][1]
+      segment_trajectory_df$yend[nth] <- vertices[[nth]][2]
+
+      segment_trajectory_df <-
+        dplyr::add_row(
+          .data = segment_trajectory_df,
+          x = vertices[[nth]][1],
+          y = vertices[[nth]][2],
+          xend = end[1],
+          yend = end[2],
+          part = stringr::str_c("part", i+1, sep = "_")
+        )
+
+    }
+
+  }
+
+  compiled_trajectory_df <-
+    hlpr_compile_trajectory(
+      segment_trajectory_df = segment_trajectory_df,
+      trajectory_width = width,
+      object = object,
+      sample = of_sample
+    )
+
+  trajectory_object <-
+    methods::new(
+      Class = "spatial_trajectory",
+      compiled_trajectory_df = compiled_trajectory_df,
+      segment_trajectory_df = segment_trajectory_df,
+      comment = comment,
+      name = trajectory_name,
+      sample = of_sample
+    )
+
+  object <-
+    addTrajectoryObject(
+      object = object,
+      trajectory_name = trajectory_name,
+      trajectory_object = trajectory_object,
+      of_sample = of_sample
+    )
+
+  if(base::isTRUE(plot)){
+
+    p <- plotTrajectory(object, trajectory_name = trajectory_name)
+
+    plot(p)
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Created trajectory '{trajectory_name}' for sample {of_sample}."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
 
 
 

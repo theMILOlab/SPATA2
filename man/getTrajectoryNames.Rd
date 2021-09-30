@@ -4,7 +4,13 @@
 \alias{getTrajectoryNames}
 \title{Obtain trajectory names}
 \usage{
-getTrajectoryNames(object, simplify = TRUE, of_sample = NA, ...)
+getTrajectoryNames(
+  object,
+  simplify = TRUE,
+  of_sample = NA,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -14,6 +20,11 @@ to FALSE a list is returned.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 A list named according to the \code{of_sample} in which each element is

@@ -57,6 +57,8 @@ in which the hierarchical tree is supposed to be split.}
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}
 
+\item{object}{A valid spata-object.}
+
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}
 }

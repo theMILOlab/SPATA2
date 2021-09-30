@@ -247,6 +247,8 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
 #'
+#' @param object A valid spata-object.
+#'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
 #'

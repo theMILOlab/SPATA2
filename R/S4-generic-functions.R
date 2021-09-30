@@ -32,7 +32,7 @@ setMethod(f = "show", signature = "spata2", definition = function(object){
   samples <- stringr::str_c( getSampleNames(object), collapse = "', '")
   sample_ref <- base::ifelse(num_samples > 1, "samples", "sample")
 
-  base::print(glue::glue("An object of class 'spata' that contains {num_samples} {sample_ref} named '{samples}'."))
+  base::print(glue::glue("An object of class 'spata2' that contains {num_samples} {sample_ref} named '{samples}'."))
 
 })
 

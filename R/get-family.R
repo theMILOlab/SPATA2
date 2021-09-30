@@ -1427,7 +1427,7 @@ getTrajectoryLength <- function(object,
 #'
 #' @export
 
-getTrajectoryNames <- function(object, simplify = TRUE, of_sample = NA, ...){
+getTrajectoryNames <- function(object, simplify = TRUE, of_sample = NA, verbose = FALSE, ...){
 
   # lazy check
   check_object(object)

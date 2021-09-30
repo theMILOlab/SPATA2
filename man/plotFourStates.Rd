@@ -32,6 +32,8 @@ plotFourStates2(
 )
 }
 \arguments{
+\item{object}{A valid spata-object.}
+
 \item{states}{The gene sets defining the four states specified as a character vector
 of length 4.}
 
