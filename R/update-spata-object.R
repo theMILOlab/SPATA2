@@ -257,6 +257,17 @@ updateSpataObject <- function(object,
 
   # 1.1.0 -> 1.2.0 ----------------------------------------------------------
 
+  if(purrr::is_empty(x = object@version) | !base::all(c("major", "minor") %in% base::names(object@version))){
+
+    confuns::give_feedback(
+      msg = "Invalid or empty slot @version. Setting version major = 1, minor = 1, patch = 0.",
+      verbose = verbose
+    )
+
+    object@version <- list(major = 1, minor = 1, patch = 0)
+
+  }
+
   major <- object@version$major
   minor <- object@version$minor
 
