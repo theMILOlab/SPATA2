@@ -5,7 +5,7 @@ For detailed tutorials and examples click on the link below:
 
 https://themilolab.github.io/SPATA2/
 
-If you have used SPATA2 for your analysis pleaes consider citing: 
+If you have used SPATA2 for your analysis please consider citing: 
 
 Inferring spatially transient gene expression pattern from spatial transcriptomic studies,
 Jan Kueckelhaus, Jasmin von Ehr, Vidhya M. Ravi, Paulina Will, Kevin Joseph, Juergen Beck, Ulrich G. Hofmann, Daniel Delev, Oliver Schnell, Dieter Henrik Heiland
