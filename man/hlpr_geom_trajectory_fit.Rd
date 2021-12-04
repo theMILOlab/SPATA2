@@ -4,7 +4,15 @@
 \alias{hlpr_geom_trajectory_fit}
 \title{Easy switch between geom line and and geom smooth}
 \usage{
-hlpr_geom_trajectory_fit(smooth, smooth_span, plot_df)
+hlpr_geom_trajectory_fit(
+  smooth,
+  smooth_span,
+  plot_df,
+  ref_model,
+  ref_variable,
+  linesize,
+  linealpha
+)
 }
 \description{
 To be used in plotTrajectoryFit()/-Customized()

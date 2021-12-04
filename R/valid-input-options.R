@@ -44,7 +44,7 @@ validColorSpectra <- function(){
 #' @export
 validDeAnalysisMethods <- function(){
 
-  base::return(de_methods)
+  return(de_methods)
 
 }
 

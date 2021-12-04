@@ -57,7 +57,16 @@ in which the hierarchical tree is supposed to be split.}
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}
 
+\item{n_gsets}{Numeric value. Maximal number of gene sets whose results are included.
+The first \code{n_gsets} are included starting with the one with the lowest significance value.}
+
 \item{object}{A valid spata-object.}
+
+\item{signif_val}{Character value. Determines what to be considered while checking
+for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
+
+\item{signif_threshold}{Numeric value. Significance values below \code{signif_threshold}
+are not included.}
 
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}

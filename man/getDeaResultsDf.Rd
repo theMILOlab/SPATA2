@@ -14,7 +14,8 @@ getDeaResultsDf(
   max_adj_pval = NULL,
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
-  of_sample = NA
+  of_sample = NA,
+  stop_if_null = TRUE
 )
 
 getDeaGenes(

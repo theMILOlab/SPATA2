@@ -1011,7 +1011,14 @@ plotTrajectoryFit <- function(object,
                               method_gs = NULL,
                               smooth = NULL,
                               smooth_span = NULL,
+                              linealpha = 0.75,
+                              linesize = 1,
                               display_residuals = NULL,
+                              display_auc = FALSE,
+                              auc_alpha = 0.5,
+                              auc_linetype = "dotted",
+                              colors = c("forestgreen", "blue4", "tomato"),
+                              ref_model = "Model",
                               verbose = NULL,
                               of_sample = NA,
                               ...){
@@ -1025,14 +1032,19 @@ plotTrajectoryFit <- function(object,
   check_method(method_gs = method_gs)
   check_trajectory_binwidth(binwidth)
 
+  confuns::is_value(x = "ref_model", mode = "character")
+  confuns::is_vec(x = colors, mode = "character", of.length = 3)
+
   # adjusting check
   of_sample <- check_sample(object, of_sample, 1)
 
-  variable <- check_variables(variables = variable,
-                              all_gene_sets = getGeneSets(object),
-                              all_genes = getGenes(object, in_sample = of_sample),
-                              max_length = 1,
-                              max_slots = 1) %>%
+  variable <- check_variables(
+    variables = variable,
+    all_gene_sets = getGeneSets(object),
+    all_genes = getGenes(object, in_sample = of_sample),
+    max_length = 1,
+    max_slots = 1
+  ) %>%
     base::unlist(use.names = FALSE)
 
   # -----
@@ -1048,14 +1060,15 @@ plotTrajectoryFit <- function(object,
                           verbose = verbose,
                           normalize = TRUE)
 
+  ref_var <- stringr::str_c("values", variable, sep = "_")
 
-  data <- dplyr::select(.data = stdf, trajectory_order, values_Expression = values)
+  data <- dplyr::select(.data = stdf, trajectory_order, {{ref_var}} := values)
 
   models <-
     tidyr::pivot_longer(
       data = hlpr_add_models(stdf),
       cols = dplyr::starts_with("p_"),
-      values_to = "values_Fitted curve",
+      values_to = stringr::str_c("values", ref_model, sep = "_"),
       names_to = "pattern",
       names_prefix = "p_"
     )
@@ -1076,9 +1089,11 @@ plotTrajectoryFit <- function(object,
       )
 
     joined_df <-
-      dplyr::left_join(x = joined_df,
-                       y = residuals,
-                       by = c("trajectory_order", "pattern"))
+      dplyr::left_join(
+        x = joined_df,
+        y = residuals,
+        by = c("trajectory_order", "pattern")
+      )
 
   }
 
@@ -1097,26 +1112,70 @@ plotTrajectoryFit <- function(object,
 
   # -----
 
+  color_values <- purrr::set_names(x = colors, nm = c(variable, ref_model, "Residuals"))
+
+  linetype_values <- purrr::set_names(x = c("solid", "solid", auc_linetype), nm = c(variable, ref_model, "Residuals"))
+
   add_on_list <-
-    hlpr_geom_trajectory_fit(smooth = smooth,
-                             smooth_span = smooth_span,
-                             plot_df = plot_df)
+    hlpr_geom_trajectory_fit(
+      smooth = smooth,
+      smooth_span = smooth_span,
+      plot_df = plot_df,
+      ref_model = ref_model,
+      ref_variable = variable,
+      linesize = linesize,
+      linealpha = linealpha
+      )
+
+  if(base::isTRUE(display_auc) && base::isTRUE(display_residuals)){
+
+    auc_df <- dplyr::filter(plot_df, origin == "Residuals")
+
+    if(base::isTRUE(smooth)){
+
+      auc_df <-
+        dplyr::group_by(auc_df, pattern) %>%
+        dplyr::mutate(
+          all_values = {
+            stats::loess(formula = all_values ~ trajectory_order, span = smooth_span) %>%
+            stats::predict(object = .)
+            }
+        )
+
+    }
+
+    auc_add_on <-
+      list(
+        ggplot2::geom_area(
+          mapping = ggplot2::aes(x = trajectory_order, y = all_values, fill = origin),
+          data = auc_df, alpha = auc_alpha, show.legend = FALSE
+        ),
+        ggplot2::scale_fill_manual(values = color_values, guide = FALSE)
+      )
+
+  } else {
+
+    auc_add_on <- NULL
+
+  }
 
   ggplot2::ggplot(mapping = ggplot2::aes(x = trajectory_order, y = all_values, color = origin)) +
     add_on_list +
-    ggplot2::facet_wrap(~ pattern, ...) +
-    ggplot2::scale_color_manual(values = c("Expression" = "forestgreen",
-                                           "Residuals" = "tomato",
-                                           "Fitted curve" = "blue4")) +
-    ggplot2::scale_linetype_discrete(c("Residuals"= "dotted", "Expression" = "solid"), guide = FALSE) +
+    auc_add_on +
+    ggplot2::facet_wrap(~ pattern) +
+    ggplot2::scale_color_manual(values = color_values) +
+    ggplot2::scale_linetype_discrete(linetype_values, guide = FALSE) +
     ggplot2::theme_classic() +
-    ggplot2::theme(panel.grid = ggplot2::element_blank(),
-                   axis.text = ggplot2::element_blank(),
-                   axis.ticks = ggplot2::element_blank(),
-                   axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"))),
-                   strip.background = ggplot2::element_blank(),
-                   strip.text = ggplot2::element_text(color = "black", size = 11)) +
-    ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL, caption = variable)
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"))),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(color = "black", size = 11)
+    ) +
+    ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL) +
+    ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 2.5)))
 
 }
 
@@ -1131,7 +1190,14 @@ plotTrajectoryFitCustomized <- function(object,
                                         method_gs = NULL,
                                         smooth = NULL,
                                         smooth_span = NULL,
+                                        linealpha = 0.75,
+                                        linesize = 1,
                                         display_residuals = NULL,
+                                        display_auc = FALSE,
+                                        auc_alpha = 0.5,
+                                        auc_linetype = "dotted",
+                                        colors = c("forestgreen", "blue4", "tomato"),
+                                        ref_model = "Model",
                                         verbose = NULL,
                                         of_sample = NA,
                                         ...){
@@ -1144,14 +1210,20 @@ plotTrajectoryFitCustomized <- function(object,
   check_method(method_gs = method_gs)
   check_trajectory_binwidth(binwidth)
 
+  confuns::is_value(x = "ref_model", mode = "character")
+  confuns::is_vec(x = colors, mode = "character", of.length = 3)
+
   # adjusting check
   of_sample <- check_sample(object, of_sample, 1)
 
-  variable <- check_variables(variables = variable,
-                              all_gene_sets = getGeneSets(object),
-                              all_genes = getGenes(object, in_sample = of_sample),
-                              max_length = 1,
-                              max_slots = 1) %>%
+  variable <-
+    check_variables(
+      variables = variable,
+      all_gene_sets = getGeneSets(object),
+      all_genes = getGenes(object, in_sample = of_sample),
+      max_length = 1,
+      max_slots = 1
+    ) %>%
     base::unlist(use.names = FALSE)
 
   # -----
@@ -1160,16 +1232,21 @@ plotTrajectoryFitCustomized <- function(object,
   # 2. Data wrangling -------------------------------------------------------
 
   # get expresion dynamic of variable of interest
-  stdf <- getTrajectoryDf(object = object,
-                          trajectory_name = trajectory_name,
-                          of_sample = of_sample,
-                          variables = variable,
-                          method_gs = method_gs,
-                          binwidth = binwidth,
-                          verbose = verbose,
-                          normalize = TRUE)
+  stdf <-
+    getTrajectoryDf(
+      object = object,
+      trajectory_name = trajectory_name,
+      of_sample = of_sample,
+      variables = variable,
+      method_gs = method_gs,
+      binwidth = binwidth,
+      verbose = verbose,
+      normalize = TRUE
+    )
 
-  data <- dplyr::select(.data = stdf, trajectory_order, values_Expression = values)
+  ref_variable <- stringr::str_c("values", variable, sep = "_")
+
+  data <- dplyr::select(.data = stdf, trajectory_order, {{ref_variable}} := values)
 
   # ---
 
@@ -1177,8 +1254,10 @@ plotTrajectoryFitCustomized <- function(object,
   length_trajectory <- base::nrow(data)
 
   customized_trends <-
-    check_customized_trends(length_trajectory = length_trajectory,
-                            customized_trends = customized_trends)
+    check_customized_trends(
+      length_trajectory = length_trajectory,
+      customized_trends = customized_trends
+      )
 
   trend_names <-
     base::names(customized_trends)
@@ -1197,7 +1276,7 @@ plotTrajectoryFitCustomized <- function(object,
     dplyr::left_join(x = ., y = stdf, by = c("trajectory_order")) %>%
     tidyr::pivot_longer(
       cols = dplyr::all_of(c(trend_names, "values")),
-      values_to = "values_Customized",
+      values_to = stringr::str_c("values", ref_model, sep = "_"),
       names_to = "pattern",
       names_prefix = "p_"
     )
@@ -1219,9 +1298,11 @@ plotTrajectoryFitCustomized <- function(object,
       )
 
     joined_df <-
-      dplyr::left_join(x = joined_df,
-                       y = residuals,
-                       by = c("trajectory_order", "pattern"))
+      dplyr::left_join(
+        x = joined_df,
+        y = residuals,
+        by = c("trajectory_order", "pattern")
+        )
 
   }
 
@@ -1244,24 +1325,69 @@ plotTrajectoryFitCustomized <- function(object,
 
   # 3. Plotting -------------------------------------------------------------
 
+  color_values <- purrr::set_names(x = colors, nm = c(variable, ref_model, "Residuals"))
+
+  linetype_values <- purrr::set_names(x = c("solid", "solid", auc_linetype), nm = c(variable, ref_model, "Residuals"))
+
   add_on_list <-
-    hlpr_geom_trajectory_fit(smooth = smooth, smooth_span = smooth_span, plot_df = plot_df)
+    hlpr_geom_trajectory_fit(
+      smooth = smooth,
+      smooth_span = smooth_span,
+      plot_df = plot_df,
+      ref_model = ref_model,
+      ref_variable = variable,
+      linesize = linesize,
+      linealpha = linealpha
+    )
+
+  if(base::isTRUE(display_auc) && base::isTRUE(display_residuals)){
+
+    auc_df <- dplyr::filter(plot_df, origin == "Residuals")
+
+    if(base::isTRUE(smooth)){
+
+      auc_df <-
+        dplyr::group_by(auc_df, pattern) %>%
+        dplyr::mutate(
+          all_values = {
+            stats::loess(formula = all_values ~ trajectory_order, span = smooth_span) %>%
+              stats::predict(object = .)
+          }
+        )
+
+    }
+
+    auc_add_on <-
+      list(
+        ggplot2::geom_area(
+          mapping = ggplot2::aes(x = trajectory_order, y = all_values, fill = origin),
+          data = auc_df, alpha = auc_alpha, show.legend = FALSE
+        ),
+        ggplot2::scale_fill_manual(values = color_values, guide = FALSE)
+      )
+
+  } else {
+
+    auc_add_on <- NULL
+
+  }
 
   ggplot2::ggplot(mapping = ggplot2::aes(x = trajectory_order, y = all_values, color = origin)) +
     add_on_list +
+    auc_add_on +
     ggplot2::facet_wrap(~ pattern) +
-    ggplot2::scale_color_manual(values = c("Expression" = "forestgreen",
-                                           "Residuals" = "tomato",
-                                           "Customized" = "blue4")) +
-    ggplot2::scale_linetype_discrete(c("Residuals"= "dotted", "Expression" = "solid"), guide = FALSE) +
+    ggplot2::scale_color_manual(values = color_values) +
+    ggplot2::scale_linetype_discrete(linetype_values, guide = FALSE) +
     ggplot2::theme_classic() +
-    ggplot2::theme(panel.grid = ggplot2::element_blank(),
-                   axis.text = ggplot2::element_blank(),
-                   axis.ticks = ggplot2::element_blank(),
-                   axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"))),
-                   strip.background = ggplot2::element_blank(),
-                   strip.text = ggplot2::element_text(color = "black", size = 11)) +
-    ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL, caption = variable)
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"))),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(color = "black", size = 11)
+    ) +
+    ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL)
 
 }
 

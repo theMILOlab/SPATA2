@@ -408,12 +408,12 @@ hlpr_gene_set_name <- function(string){
 #'
 #' @description To be used in plotTrajectoryFit()/-Customized()
 
-hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df){
+hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, ref_variable, linesize, linealpha){
 
-  argument_list <- list(size = 1, alpha = 0.75)
+  argument_list <- list( size = linesize, alpha = linealpha)
 
-  customized_df <- dplyr::filter(.data = plot_df, origin %in% c("Customized", "Fitted curve"))
-  expression_df <- dplyr::filter(.data = plot_df, origin %in% c("Residuals", "Expression"))
+  customized_df <- dplyr::filter(.data = plot_df, origin %in% c("Customized", ref_model))
+  expression_df <- dplyr::filter(.data = plot_df, origin %in% c("Residuals", ref_variable))
 
   # construct add on
   if(base::isTRUE(smooth)){
@@ -421,8 +421,7 @@ hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df){
     argument_list <-
       base::append(
         x = argument_list,
-        values = list(span = smooth_span, formula = as.formula(y ~ x),
-                      se = FALSE, method = "loess")
+        values = list(span = smooth_span, formula = as.formula(y ~ x), se = FALSE, method = "loess")
       )
 
     fn_to_call <-
@@ -469,7 +468,7 @@ hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df){
 
   }
 
-  base::return(list(customized_add_on, expression_add_on))
+  return(list(customized_add_on, expression_add_on))
 
 }
 

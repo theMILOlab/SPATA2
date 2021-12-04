@@ -135,7 +135,8 @@ getDeaResultsDf <- function(object,
                             max_adj_pval = NULL,
                             n_highest_lfc = NULL,
                             n_lowest_pval = NULL,
-                            of_sample = NA){
+                            of_sample = NA,
+                            stop_if_null = TRUE){
 
   # 1. Control --------------------------------------------------------------
 
@@ -152,22 +153,33 @@ getDeaResultsDf <- function(object,
 
   if(base::is.null(de_result_list)){
 
-    base::stop(glue::glue("No de-analysis results found across '{across}' computed via method '{method_de}'."))
+    if(base::isTRUE(stop_if_null)){
+
+      stop(glue::glue("No de-analysis results found across '{across}' computed via method '{method_de}'."))
+
+    }
+
+    de_results <- NULL
+
+  } else if(!base::is.null(de_result_list)){
+
+    de_results <-
+      filterDeaDf(
+        dea_df = de_result_list[["data"]],
+        across_subset = across_subset,
+        relevel = relevel,
+        max_adj_pval = max_adj_pval,
+        n_highest_lfc = n_highest_lfc,
+        n_lowest_pval = n_lowest_pval,
+        return = "data.frame"
+      ) %>%
+      tibble::as_tibble()
 
   }
 
-  de_results <- filterDeaDf(dea_df = de_result_list[["data"]],
-                            across_subset = across_subset,
-                            relevel = relevel,
-                            max_adj_pval = max_adj_pval,
-                            n_highest_lfc = n_highest_lfc,
-                            n_lowest_pval = n_lowest_pval,
-                            return = "data.frame") %>%
-    tibble::as_tibble()
-
   # 3. Return ---------------------------------------------------------------
 
-  base::return(de_results)
+  return(de_results)
 
 }
 
@@ -1769,6 +1781,46 @@ getGeneSetDf <- function(object){
 
 }
 
+#' @title Overview about the current gene sets
+#'
+#' @param object A valid spata-object.
+#'
+#' @return A data.frame with two variables \emph{Class} and \emph{Available Gene
+#' Sets} indicating the number of different gene sets the classes contain.
+#'
+#' @export
+
+getGeneSetOverview <- function(object){
+
+  # lazy check
+  check_object(object)
+
+  # main part
+  gene_sets_df <- dplyr::ungroup(object@used_genesets)
+
+  gene_sets <- object@used_genesets$ont
+
+  if(base::nrow(gene_sets_df) == 0){
+
+    base::message("Gene-set data.frame is empty.")
+    return(data.frame())
+
+  } else {
+
+    gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
+
+    dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
+      dplyr::select(-gene) %>%
+      dplyr::distinct() %>%
+      dplyr::pull(gs_type) %>%
+      base::table() %>%
+      base::as.data.frame() %>%
+      magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
+
+  }
+
+
+}
 
 #' @title Obtain gene names
 #'
@@ -1851,8 +1903,7 @@ getGenes <- function(object,
     expr_mtr <- getExpressionMatrix(object = object, of_sample = of_sample)
 
     genes_list <-
-      purrr::map(.x = of_gene_sets,
-                 .f = function(i){
+      purrr::map(.x = of_gene_sets, .f = function(i){
 
                      genes <-
                        dplyr::filter(gene_set_df, ont == i) %>%

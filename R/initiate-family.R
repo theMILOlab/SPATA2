@@ -578,12 +578,14 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   confuns::give_feedback(msg = "Running SNN-Cluster Analysis.", verbose = verbose)
 
   cluster_df <-
-    findNearestNeighbourClusters(object = spata_object,
-                                 k = k,
-                                 searchtype = "priority",
-                                 treetype = "bd",
-                                 eps = 0,
-                                 radius = 0)
+    findNearestNeighbourClusters(
+      object = spata_object,
+      k = k,
+      searchtype = "priority",
+      treetype = "bd",
+      eps = 0,
+      radius = 0
+    )
 
   feature_names <-
     dplyr::select_if(cluster_df, .predicate = base::is.factor) %>%
