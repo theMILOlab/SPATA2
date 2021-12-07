@@ -101,7 +101,6 @@ Collate:
     'spata-object-manipulation.R'
     'spatial-correlation.R'
     'trajectory-analysis.R'
-    'tranform-df.R'
     'transform-family.R'
     'update-spata-object.R'
     'valid-input-options.R'

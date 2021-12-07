@@ -2025,6 +2025,8 @@ plotDeaHeatmap <- function(object,
 #' @description Visualizes results of DE analysis with
 #' dot plots.
 #'
+#' @param x Character value. Specifies what is plotted on the x-axis.
+#' If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.
 #' @inherit check_method params
 #' @inherit check_pt params
 #' @inherit argument_dummy params
@@ -2047,9 +2049,11 @@ plotDeaDotPlot <- function(object,
                            min_lfc = NULL,
                            n_highest_lfc = NULL,
                            n_lowest_pval = NULL,
+                           x = c("avg_logFC", "p_val_adj")[1],
                            alpha_by = NULL,
                            alpha_trans = "identity",
                            color_by = "avg_logFC",
+                           color_trans = "identity",
                            size_by = "p_val_adj",
                            size_trans = "reverse",
                            pt_alpha = 0.9,
@@ -2059,6 +2063,7 @@ plotDeaDotPlot <- function(object,
                            scales = "free",
                            nrow = NULL,
                            ncol = NULL,
+                           transform_with = NULL,
                            ...){
 
   check_object(object)
@@ -2083,6 +2088,25 @@ plotDeaDotPlot <- function(object,
 
   if(base::isTRUE(by_group)){
 
+    check_one_of(
+      input = x,
+      against = c("avg_logFC", "p_val_adj")
+    )
+
+    if(x == "avg_logFC"){
+
+      x_add_on <- NULL
+
+    } else if(x == "p_val_adj") {
+
+      x_add_on <-
+        ggplot2::scale_x_continuous(
+          labels = function(x){ base::format(x, scientific = TRUE)},
+          trans = "reverse"
+        )
+
+    }
+
     out_plot <-
       plot_dot_plot_1d(
         df = df,
@@ -2094,6 +2118,7 @@ plotDeaDotPlot <- function(object,
         alpha.by = alpha_by,
         alpha.trans = alpha_trans,
         color.by = color_by,
+        color.trans = color_trans,
         shape.by = NULL,
         size.by = size_by,
         size.trans = size_trans,
@@ -2104,10 +2129,9 @@ plotDeaDotPlot <- function(object,
         scales = scales,
         nrow = nrow,
         ncol = ncol,
+        transform.with = transform_with,
         ...
-      ) +
-      ggplot2::scale_x_continuous(labels = function(x){ base::format(x, scientific = TRUE) }) +
-      ggplot2::labs(x = "Adj. p-value")
+      )
 
   } else {
 
@@ -2119,6 +2143,7 @@ plotDeaDotPlot <- function(object,
         alpha.by = alpha_by,
         alpha.trans = alpha_trans,
         color.by = color_by,
+        color.trans = color_trans,
         shape.by = NULL,
         size.by = size_by,
         size.trans = size_trans,

@@ -15,9 +15,11 @@ plotDeaDotPlot(
   min_lfc = NULL,
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
+  x = c("avg_logFC", "p_val_adj")[1],
   alpha_by = NULL,
   alpha_trans = "identity",
   color_by = "avg_logFC",
+  color_trans = "identity",
   size_by = "p_val_adj",
   size_trans = "reverse",
   pt_alpha = 0.9,
@@ -27,6 +29,7 @@ plotDeaDotPlot(
   scales = "free",
   nrow = NULL,
   ncol = NULL,
+  transform_with = NULL,
   ...
 )
 }
@@ -52,6 +55,9 @@ to obtain all valid input options.}
 variable a single dot plot is created. If FALSE one plot for all groups and all
 gene sets is created.}
 
+\item{x}{Character value. Specifies what is plotted on the x-axis.
+If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.}
+
 \item{alpha_by}{Character
 value or NULL. If character, specifies the variable that is mapped to the respective
 aesthetic of the plot.}
@@ -62,6 +68,10 @@ for no transformation.}
 
 \item{color_by}{Character value or NULL. If character, specifies the
 variable that is displayed by color.}
+
+\item{color_trans}{Character value. Name of the transformation method applied to the continuous scale. Use
+\code{validScaleTransformations()} to obtain all valid input options. Use \emph{'identity'}
+for no transformation.}
 
 \item{size_by}{Character
 value or NULL. If character, specifies the variable that is mapped to the respective
@@ -88,6 +98,15 @@ are displayed.}
 
 \item{ncol}{Affects the way the subplots
 are displayed.}
+
+\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
+Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
+Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
+Or it can be a list of functions (and function names).
+
+Useful if you want to apply more than one transformation on variables mapped to
+plotting aesthetics. Input for \code{transform_with} is applied before the
+respective \code{<aes>_trans} argument.}
 
 \item{...}{Additional arguments given to \code{scale_color_add_on()}.}
 }
