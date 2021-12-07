@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -80,10 +76,13 @@
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/sapta-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
@@ -128,18 +127,18 @@
     
     
 <p><strong>SPATA2</strong> - <strong>SPA</strong>tial <strong>T</strong>ranscriptomic <strong>A</strong>nalysis 2 - provides a toolkit of R-functions and interactive applications to enable and facilitate the analysis of spatial transcription data. This includes easy to use interfaces, straightforward R-functions to easily visualize your data as well as more sophisticated ones for more experienced R users. The tutorials you’ll find on this website will guide you through everything <strong>SPATA2</strong> provides. For more detailed information of whatever part you are interested in run <code>?SPATA2::function-name</code> in your R console.</p>
-<div id="spata2-philosophy" class="section level2">
-<h2 class="hasAnchor">
-<a href="#spata2-philosophy" class="anchor"></a>1. SPATA2 Philosophy</h2>
+<div class="section level2">
+<h2 id="spata2-philosophy">1. SPATA2 Philosophy<a class="anchor" aria-label="anchor" href="#spata2-philosophy"></a>
+</h2>
 <p>Several R-packages that specialize on the analysis and visualization of spatial transcriptomic data have been released ever since the first paper on this approach has been published. Though all these packages come along with their own strengths and weaknesses we found it consistently difficult to integrate our own ideas into their predefined workflows which eventually motivated us to create <strong>SPATA2</strong>. While <strong>SPATA2</strong> (as well as it’s predecessor <strong>SPATA</strong>) introduces it’s own new spatial analysis aspects - such as spatial trajectory modeling - as well as it provides established visualization tools - such as surface plotting - it actually considers itself to be a more general framework that allows for easy integration of individual ideas and features. By providing such a framework and at the same time easy to use, interactive applications, full insight into functions and approaches we hope to speak to as many enthusiastic researchers as possible irrespective of their R-programming skills. Straightforward object-converting functions allow to switch from <strong>SPATA2</strong> to different platforms such as <code>Seurat</code> or <code>monocle3</code> (and vice versa) at any timepoint, making it easy to leverage and integrate the advantages of all packages.</p>
 </div>
-<div id="spata2-concept" class="section level2">
-<h2 class="hasAnchor">
-<a href="#spata2-concept" class="anchor"></a>2. SPATA2 Concept</h2>
-<p>Throughout all functions and applications <strong>SPATA2</strong> implements the <a href="https://vita.had.co.nz/papers/tidy-data.pdf">tidy-data</a>-concept and draws it’s main power from the <a href="https://www.tidyverse.org/">tidyverse</a>. With respect to the integration of individual analysis concepts this means in particular that all data.frames in <strong>SPATA2</strong> are oriented towards the tidy-data <a href="spata-terminology.html#2-data-input">structure</a> in which each row represents an observation and every column represents a variable (information) of that observation. A consistent output and a consistent terminology facilitates the application of individual ideas via powerful tidyverse- and tidymodelling functions.</p>
-<div id="tidy-spata2-data-frames" class="section level3">
-<h3 class="hasAnchor">
-<a href="#tidy-spata2-data-frames" class="anchor"></a>2.1 Tidy SPATA2 data.frames</h3>
+<div class="section level2">
+<h2 id="spata2-concept">2. SPATA2 Concept<a class="anchor" aria-label="anchor" href="#spata2-concept"></a>
+</h2>
+<p>Throughout all functions and applications <strong>SPATA2</strong> implements the <a href="https://vita.had.co.nz/papers/tidy-data.pdf" class="external-link">tidy-data</a>-concept and draws it’s main power from the <a href="https://www.tidyverse.org/" class="external-link">tidyverse</a>. With respect to the integration of individual analysis concepts this means in particular that all data.frames in <strong>SPATA2</strong> are oriented towards the tidy-data <a href="spata-terminology.html#2-data-input">structure</a> in which each row represents an observation and every column represents a variable (information) of that observation. A consistent output and a consistent terminology facilitates the application of individual ideas via powerful tidyverse- and tidymodelling functions.</p>
+<div class="section level3">
+<h3 id="tidy-spata2-data-frames">2.1 Tidy SPATA2 data.frames<a class="anchor" aria-label="anchor" href="#tidy-spata2-data-frames"></a>
+</h3>
 <p>With respect to the analysis of spatial transcriptomic data every observation in a what we call the spata-data.frame represents <em>one barcode-spot</em> and the belonging variables (columns) represent additional information related to these spots.</p>
 <div class="figure">
 <img src="spata-v2-introduction-and-philosophy_files/figure-html/barcode-spot-1.png" alt="Figure 1. Examples of two barcode-spots" width="700"><p class="caption">
@@ -157,28 +156,28 @@ Figure 1. Examples of two barcode-spots
 </ol>
 <p>Speaking of variables in subsequent tutorials, we refer to the latter three if not otherwise explained. The example data.frame below contains variables of all six types.</p>
 <p>(To learn how to extract these data.frames from your spata-object see <a href="spata-extern-analysis.html">Extract, join &amp; add data</a>.)</p>
-<pre><code>## # A tibble: 3,676 x 10
-##    barcodes   sample     x     y seurat_clusters  GFAP SLC35E2A HM_HYPOXIA umap1
-##    &lt;chr&gt;      &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;           &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;
-##  1 AAACAAGTA~ C265    444.  374. 2               0        0          0.346 -5.99
-##  2 AAACACCAA~ C265    132.  434. 5               0.513    0          0.363 19.0 
-##  3 AAACAGTGT~ C265    223.  525. 4               0.623    0          0.499 19.6 
-##  4 AAACATTTC~ C265    425.  446. 2               0.162    0          0.358 -5.00
-##  5 AAACCCGAA~ C265    492.  341. 0               0.221    0.223      0.340 -8.30
-##  6 AAACCGGAA~ C265    527.  400. 0               0.217    0          0.364 -8.63
-##  7 AAACCGGGT~ C265    166.  323. 5               0.521    0          0.264 19.1 
-##  8 AAACCGTTC~ C265    218.  388. 4               0.611    0          0.422 19.2 
-##  9 AAACCTAAG~ C265    373.  472. 1               0.204    0          0.297 -3.21
-## 10 AAACCTCAT~ C265    132.  290. 5               0.212    0          0.369 17.0 
-## # ... with 3,666 more rows, and 1 more variable: umap2 &lt;dbl&gt;</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 3,676 x 10</span></span>
+<span class="co">##    barcodes   sample     x     y seurat_clusters  GFAP SLC35E2A HM_HYPOXIA umap1</span>
+<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>      </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>  </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;fct&gt;</span><span>           </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>    </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>      </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> AAACAAGTA~ C265    444.  374. 2               0.145    0.466      0.699 -</span><span style="color: #BB0000;">5.99</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> AAACACCAA~ C265    132.  434. 5               0.524    0.341      0.782 19.0 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> AAACAGTGT~ C265    223.  525. 4               0.623    0.358      0.806 19.6 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> AAACATTTC~ C265    425.  446. 2               0.240    0.398      0.786 -</span><span style="color: #BB0000;">5.00</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> AAACCCGAA~ C265    492.  341. 0               0.180    0.361      0.716 -</span><span style="color: #BB0000;">8.30</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> AAACCGGAA~ C265    527.  400. 0               0.205    0.473      0.706 -</span><span style="color: #BB0000;">8.63</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> AAACCGGGT~ C265    166.  323. 5               0.542    0.452      0.814 19.1 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> AAACCGTTC~ C265    218.  388. 4               0.582    0.394      0.920 19.2 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> AAACCTAAG~ C265    373.  472. 1               0.253    0.442      0.824 -</span><span style="color: #BB0000;">3.21</span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> AAACCTCAT~ C265    132.  290. 5               0.399    0.439      0.714 17.0 </span></span>
+<span class="co">## <span style="color: #949494;"># ... with 3,666 more rows, and 1 more variable: umap2 &lt;dbl&gt;</span></span></code></pre>
 <p>Here every observation refers to one particular barcode spot. E.g. the first barcode-spot is labeled with the barcode <em>‘AAACAAGTATCTCCCA-1’</em>, belongs to sample <em>‘265_C’</em>, it’s coordinates on the spatial transcriptomic slide are 443.77 (x) and 373.901 (y). The clustering-algorithm has assigned it to cluster <em>‘0’</em>, the gene expression level of this barcode-spot for gene <em>SLC35E2A</em> is 0.00 etc.</p>
 </div>
-<div id="informative-variables-vs--key-variables" class="section level3">
-<h3 class="hasAnchor">
-<a href="#informative-variables-vs--key-variables" class="anchor"></a>2.2 Informative variables vs. key variables</h3>
+<div class="section level3">
+<h3 id="informative-variables-vs--key-variables">2.2 Informative variables vs. key variables<a class="anchor" aria-label="anchor" href="#informative-variables-vs--key-variables"></a>
+</h3>
 <p>Features or gene- and gene-set expression usually vary (at least slightly) across barcode-spots but they are rarely unique across all of them. Barcode-spot’s barcode-sequences as well as their individual combination of x- and y-coordinates are <strong>always unique</strong> and we shall refer to these three variables from now on as <em>key-variables</em> in contrast to <em>informative variables</em>.</p>
 <p>The fact that barcodes and coordinates uniquely identify each barcode-spot might sound obvious and barely of interest to anybody at first sight. From a data science perspective however, it harbors an immense power as these <strong>key-variables allow to integrate a potentially infinite number of dimensions to your analysis with ease</strong>. While the barcode-sequences allow for the integration of thousands of gene- and gene-set expression levels the coordinates allow to integrate all kinds of data coming along along with coordinates such as imaging data, spatial cytof data etc.</p>
-<p>Though spatial transriptomic experiments come along with a spatial dimension gene- and gene-set expression data still resembles data of any other sequencing technique in a way that methods for the one technique are applicable to the other. The excellent R-package <a href="https://satijalab.org/seurat/vignettes.html"><code>Seurat</code></a> leverages that and provides a variety of tools to integrate spatial and single-cell data. Apart from it’s own new visualization- and analysis tools <strong>SPATA2</strong> attempts to allow for easy integration of all kinds of data that come along with coordinates. Moreover it allows you to subsequently integrate this data in your <code>Seurat</code>- as well as in your <a href="https://cole-trapnell-lab.github.io/monocle3/">`<code>Monocle3</code></a>-workflow with convenient object-transforming functions.</p>
+<p>Though spatial transriptomic experiments come along with a spatial dimension gene- and gene-set expression data still resembles data of any other sequencing technique in a way that methods for the one technique are applicable to the other. The excellent R-package <a href="https://satijalab.org/seurat/vignettes.html" class="external-link"><code>Seurat</code></a> leverages that and provides a variety of tools to integrate spatial and single-cell data. Apart from it’s own new visualization- and analysis tools <strong>SPATA2</strong> attempts to allow for easy integration of all kinds of data that come along with coordinates. Moreover it allows you to subsequently integrate this data in your <code>Seurat</code>- as well as in your <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link">`<code>Monocle3</code></a>-workflow with convenient object-transforming functions.</p>
 </div>
 </div>
   </div>
@@ -194,11 +193,13 @@ Figure 1. Examples of two barcode-spots
 
 
       <footer><div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -206,6 +207,8 @@ Figure 1. Examples of two barcode-spots
 
   
 
+
+  
 
   </body>
 </html>

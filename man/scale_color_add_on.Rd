@@ -10,6 +10,7 @@ scale_color_add_on(
   clrsp = NULL,
   clrp = NULL,
   clrp.adjust = NULL,
+  color.trans = "identity",
   ...
 )
 }
@@ -34,6 +35,10 @@ Run \code{confuns::all_color_palettes()} to see all valid input choices.
 colors that are used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{color.trans}{Character value. If the variable displayed by color is continuous (numeric)
+\code{color.trans} is given to argument \code{trans} of the respective \code{scale_<aes>_*()}
+function.}
 
 \item{...}{Additional arguments given to the respective function.
 

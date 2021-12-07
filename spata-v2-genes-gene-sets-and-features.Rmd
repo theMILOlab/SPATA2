@@ -1,0 +1,387 @@
+---
+title: "Genes-, Gene-sets & Features"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, eval = TRUE, echo = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, rows.print = 6, class.source = "code-chunk", message = FALSE, warning = FALSE, out.width = "100%")
+
+```
+
+Genes and gene-sets are of major importance when it comes to the analysis of every RNA sequencing results. The average count-matrix contains information of these expression levels for more than 20.000 genes. While referring to a few of them by entering their names manually might be tolerable things can get cumbersome rapidly once the number of genes of interest  becomes double- or tripple digit. Still, the majority of functions in **SPATA2** needs information about the genes, gene-sets and features of interest in form of character vectors. The following tutorial introduces important helper functions that make living easier when it comes to working in **SPATA2** and working with these informative variables in general. 
+
+```{r setup-invis, eval = TRUE, echo = FALSE}
+
+library(magrittr)
+devtools::load_all()
+
+spata_obj <- loadSpataObject("data/spata-obj-gbm275.RDS")
+#saveSpataObject(spata_obj, "data/spata-obj-gbm275.RDS")
+
+fdata <- 
+  getFeatureDf(spata_obj) %>% 
+  dplyr::select(barcodes, sample, nCount_Spatial, nFeature_Spatial, percent.mt, percent.RB, seurat_clusters, segmentation)
+
+spata_obj <- setFeatureDf(spata_obj, feature_df = fdata)
+
+```
+
+
+```{r setup-vis, eval = FALSE, echo = TRUE}
+
+# load packages
+library(SPATA2)
+library(tidyverse)
+
+# load object
+spata_obj <- loadSpataObject("data/spata-obj-gbm275.RDS")
+
+```
+
+
+# 1. Genes and gene-sets
+
+## 1.1 Setting up a gene-set data.frame
+
+The term gene-set refers to a collection of several genes that are known to interact with each other or being co-expressed together under certain conditions.
+Information about the gene-sets defined in your spata-object is stored in the slot `@used_genesets` which contains a data.frame of two character-variables. 
+
+1. *ont*: The name of the gene-sets.
+2. *gene*: The belonging genes. 
+
+```{r gene-set data.frame example, eval = TRUE, echo = FALSE}
+
+spata_obj@used_genesets
+
+```
+
+In **SPATA2** gene-set names are functionally divided into their class and their actual name. The class is determined by the character string that comes before the first *_*, the name refers to the rest. Subsequent chapters will highlight why this functional separation is useful as well as why it is useful to really think about the way you name your personally defined gene-sets. In order to obtain an overview of your saved gene-sets run `printGeneSetOverview()`.
+
+```{r pre-process, eval = TRUE, echo = TRUE}
+
+printGeneSetOverview(spata_obj)
+
+```
+
+By default any `initiateSpataObject_*()`-function assigns a gene-set data.frame to your spata-object containing a variety of predefined gene-sets from 
+the [Molecular Signature Database](https://www.gsea-msigdb.org/gsea/index.jsp). Run `data(gsdf)` to load and `?gsdf` to get information about it and what the class-names stand for. If you want to add new ones you can do that via `addGeneSet()`.
+
+```{r addGeneSets(), eval = TRUE, echo = TRUE}
+
+# add a new gene-set of three genes
+spata_obj <- 
+  addGeneSet(object = spata_obj,
+             class_name = "New", 
+             gs_name = "example_1", 
+             genes = c('SLC35E2A', 'NADK', 'GFAP')) # genes that exist in your expression matrix
+
+printGeneSetOverview(spata_obj)
+
+```
+
+A more convenient way would be to open an interactive application via `addGeneSetsInteracive()` as displayed below. Make sure to close the application via the respective button and to store the resulting object in the same object in order to overwrite it and not to overcrowd your global environment with spata-objects that only differ in a few gene-sets.
+
+```{r addGeneSetsInteractiv(), eval = FALSE, echo = TRUE}
+
+spata_obj <- addGeneSetsInteractive(spata_obj)
+
+```
+
+```{r addGeneSetsInteractive()-interface, eval = TRUE, echo = FALSE, fig.align = "left",fig.cap = "Figure 1.1 Interface of addGeneSetsInteractive()"}
+
+knitr::include_graphics(path = "images/genes-and-gene-sets-fig-1.png")
+
+```
+
+The gene-set data.frame is infinitely expandable. If you want to discard gene-sets or alter them you can either use `addGeneSet()` with argument `overwrite` set to TRUE in order to overwrite existing ones or `discardGeneSets()` as shown below.
+
+```{r prep1, eval = TRUE, echo = FALSE}
+
+spata_obj <- addGeneSet(spata_obj, "New", "example_2", genes = c("GFAP", "NADK"))
+
+```
+
+```{r discardGeneSets(), eval = TRUE, echo = TRUE}
+
+# discard gene-sets by name 
+spata_obj <- discardGeneSets(object = spata_obj, gs_names = c("New_example_2"))
+
+# display updated overview
+printGeneSetOverview(spata_obj)
+
+```
+
+In order to save the gene-set data.frame of one particular spata-object for further use with other spata-objects use `saveGeneSetDf()` which saves the `@used_genesets` slot of the specified object as a .RDS-file.
+
+```{r saveGeneSetDf(), eval = FALSE, echo = TRUE}
+
+saveGeneSetDf(object = spata_obj, directory = "data/gene-set-df.RDS") 
+
+```
+
+If you want to set your gene-set data.frame manually use `setGeneSetDf()`. 
+
+## 1.2 Adjusting a gene-set data.frame 
+
+Given the nature of your sample it will happen that your expression matrix does not contain genes (0 reads across all barcode-spots) although
+they appear in certain gene-sets. `joinWithGeneSets()` which works under the hood of a variety of functions does not allow for gene-sets to join your data if less than 25% of the genes needed to form that gene-set are found. If this threshold is to loose to you you can use `adjustGeneSetDf()` to set the limit yourself. It will then discard all gene-sets whoose belonging genes are found to a percentage lower than the threshold you set. (Discarding gene-sets from your gene-set data.frame effectively makes it impossible to work with them within **SPATA2**.)
+
+## 1.3 Referring to genes and gene-sets
+
+`getGenes()` and `getGeneSets()` return character vectors which are valid inputs for all **SPATA2**-functions in which one has to refer to genes or gene-sets in any way. 
+
+### 1.3.1 Obtaining gene-set names
+
+As we have seen above gene-sets are a set of genes that are functionally gathered under a certain name. `getGeneSets()` **does not** return the genes of certain gene-sets **but** the gene-set-names as strings  It does that either as a single character vector or as a named list. 
+
+```{r getGeneSets()-1, eval = TRUE, echo = TRUE}
+
+# to get all gene-set names set 'of_class' to 'all'
+all_gs <- getGeneSets(spata_obj, of_class = "all")
+
+length(all_gs)
+head(all_gs, 10)
+
+# get gene-set names of certain classes 
+getGeneSets(spata_obj,
+            of_class = c("HM", "New"),
+            simplify = TRUE # as a single vector 
+            ) %>% tail() # show last six 
+
+
+# get gene-set names of certain classes 
+getGeneSets(spata_obj,
+            of_class = c("HM", "New"),
+            simplify = FALSE # as a named list
+            ) %>% lapply(head) #show first six
+
+```
+
+To subset your gene-sets of interest additionally make use of the argument `index` which takes a character string as a regular expression and filters the gene-sets to be returned again according to it. 
+
+```{r getGeneSets()-2, eval = TRUE, echo = TRUE}
+
+# get all gene-sets of class HALLMARK referring to something specific
+getGeneSets(spata_obj,
+            of_class = "HM",
+            index = "ESTROGEN|ANDROGEN")
+
+```
+
+If you want to skim your gene-sets interactively use `getGeneSetsInteractive()` which opens an application in your R-Studio's viewer pane and returns a vector of chosen gene-sets.
+
+### 1.3.2 Obtaining gene names
+
+Eventually expression matrices contain information about gene expression levels and not gene-set expression levels. If you are looking for genes of certain gene-sets `getGenes()` provides an easy we to do just that. 
+
+```{r getGenes(), eval = TRUE, echo = TRUE}
+
+# getGenes() without any further specification will return all genes found
+# in your expression matrix ...
+all_genes <- getGenes(spata_obj)
+
+# ... which can be quite a lot
+length(all_genes)
+
+# with regards to gene-sets it makes more sense to break genes down by 
+# their gene-set belonging
+estrogen_gs <- 
+  getGeneSets(spata_obj,
+              of_class = "HM",
+              index = "ESTROGEN")
+
+estrogen_genes <- 
+  getGenes(spata_obj, 
+           of_gene_sets = estrogen_gs,
+           simplify = FALSE) # to return them sorted in a list
+
+#hint: "..." was added manually for visualization purpose as these gene-sets contain 
+# more than 150 genes 
+```
+
+```{r post-process2, eval = TRUE, echo = FALSE}
+
+list <- 
+  lapply(estrogen_genes, 
+         function(i){
+           
+           x <- c(i[1:20], "...")
+           
+           return(x)
+           
+         })
+
+print(list)
+
+```
+
+If you want to work with genes manually and skim them interactively use `getGenesInteractive()` which opens an application in your R-Studio's viewer pane.
+
+# 2. Features
+
+In **SPATA2** features refer to all kinds of information of barcode-spots that do not fall explicitly under gene- or gene-set expression levels. This includes in particular group belonging such as clustering or spatial segmentation. But additional numeric features such as monocle3-pseudotime or everything else that has been computed is considered to be a feature as well. Feature information is stored - in a tidy data fashion - in the slot `@fdata`.
+
+## 2.1 Obtain feature data
+
+To obtain all feature information use `getFeatureDf()`. 
+
+```{r feature-examples, eval = TRUE, echo = FALSE}
+
+fdata <- getFeatureDf(spata_obj)
+
+fdata <- 
+  dplyr::mutate(.data = fdata, 
+                igraph_clusters = sample(x = paste0("Cluster ", 1:7), replace = T, size = nrow(fdata)))
+
+spata_obj <- setFeatureDf(spata_obj, feature_df = fdata)
+
+```
+
+
+```{r getFeatureData()}
+
+getFeatureDf(object = spata_obj)
+
+```
+
+## 2.2 Obtain feature names, variables and values
+
+In order to specify features of interest as input in functions you need to specify the name that particular feature variable carries. Several functions only work with feature data of one kind - either numeric features or discrete/categorical features. The function `getFeatureNames()` provides you with information about all currently available features in your spata-object as well as about the class they belong to. 
+
+```{r getFeatureNames()}
+
+# get all feature names
+getFeatureNames(object = spata_obj)
+
+# get only names of numeric features
+numeric_features <- 
+  getFeatureNames(object = spata_obj, of_class = c("numeric"))
+
+# output
+numeric_features
+
+# get only names of discrete features
+discrete_features <- 
+  getFeatureNames(object = spata_obj, of_class = c("character", "factor"))
+
+# output
+discrete_features
+
+```
+
+Additionally `getFeatureValues()` allows to quickly access the unique values of discrete feature variables such as clusters. 
+
+```{r getFeatureValues()}
+
+getFeatureValues(object = spata_obj, features = discrete_features)
+
+```
+
+When it comes to grouping variables such as clusters a more intuitive approach is offered by the two functions `getGroupingOptions()` and `getGroupNames()`. 
+
+```{r getGroupNames()-getGroupingOptions()}
+
+# obtain all variables that group the sample's barcode-spots in a certain way
+getGroupingOptions(object = spata_obj)
+
+
+# obtain the names of the groups a certain grouping variable contains 
+getGroupNames(object = spata_obj, discrete_feature = "seurat_clusters")
+
+```
+
+
+## 2.3 Alter features
+
+### 2.3.1 Change feature names
+
+If you want to change the name of a feature variable you can do so with `renameFeatures()`. 
+
+```{r renameFeatures()}
+
+# old feature names
+getFeatureNames(object = spata_obj)
+
+# change some names
+spata_obj <- renameFeatures(object = spata_obj, 
+                            "seurat_cl" = "seurat_clusters", 
+                            "nCount" = "nCount_Spatial"
+                            )
+
+# new feature names
+getFeatureNames(object = spata_obj)
+
+```
+
+### 2.3.2 Change feature values (group names)
+
+Referring to clusters/groups with numbers is often suboptimal. Once your differential gene expression analysis has given you insight in what constitutes certain group of barcode-spots you might want to give it a more informative name. You can do so with `renameGroups()`. 
+
+```{r renameGroups()}
+
+# old group names
+getGroupNames(object = spata_obj, discrete_feature = "seurat_cl")
+
+# rename cluster 
+spata_obj <- renameGroups(object = spata_obj,
+                          discrete_feature = "seurat_cl",
+                          "reactive-inflammatory" = "3",
+                          "reactive-hypoxia" = "4"
+                          )
+
+# visualize renamed clustering
+plotSurface(object = spata_obj, color_by = "seurat_cl")
+
+```
+
+
+Whenever a warning message appears telling you that a certain gene, gene-set or feature was not found this means that the character string provided was not found throughout your spata-object. Check for typos in this case. The same is true for gene-set names with regards to the *ont*-variable in the gene-set data.frame.
+
+# 3. Example
+
+The output vectors of `getGenes()`, `getGeneSets()` and `getFeatureNames()` are a perfectly valid inputs for arguments like `color_by` or `variables`. 
+
+```{r application-demo-1}
+
+hallmark_gs <- getGeneSets(object = spata_obj, of_class = "HM")
+
+# output
+hallmark_gs[1:10]
+
+
+# create a spata-data.frame
+joined_df <- joinWith(object = spata_obj, 
+                      spata_df = getCoordsDf(spata_obj), 
+                      gene_sets = hallmark_gs, 
+                      features = discrete_features)
+
+#output
+joined_df
+
+```
+With our vector `hallmark_gs` containing our gene-sets of interest we can work throughout our R-session. 
+
+```{r application-demo-2, fig.cap = "Figure 3.1. Example plot on how to use getGeneSets()"}
+
+plotRidgeplot(object = spata_obj,
+              variables = hallmark_gs[1:8],
+              across = "seurat_cl",
+              across_subset = c("reactive-hypoxia", "reactive-inflammatory"),
+              ncol = 2
+              )
+
+```
+
+
+
+
+
+

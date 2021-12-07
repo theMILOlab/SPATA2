@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -80,10 +76,13 @@
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/sapta-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
@@ -127,17 +126,17 @@
 
     
     
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>1. Introduction</h2>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
 <p>Differential expression analysis aims to discover quantitative changes in gene-expression levels between defined experimental groups. In <strong>SPATA2</strong> these experimental groups are defined inside the feature data. More precisely: Every discrete variable that is part of the spata-object’s feature data assigns every sample’s barcode-spot to such an experimental group. This includes all spata-intern generated groups such as <em>segmentation</em> and <em>clustering</em> as well as any other discrete feature of your own extracted analysis that has been added via <code><a href="../reference/addFeatures.html">addFeatures()</a></code>. See <a href="spata-v2-extern-analysis.html">Extract, Add &amp; Join data</a> to learn how to do that with ease.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load packages </span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/">SPATA2</a></span><span class="op">)</span> 
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span> 
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadSpataObject</a></span><span class="op">(</span><span class="st">"data/spata-obj-gbm275.RDS"</span><span class="op">)</span></code></pre></div>
-<p>As mentioned in previous chapters <strong>SPATA2</strong> makes use of some well written functions of the package <a href="https://satijalab.org/seurat/"><code>Seurat</code></a> which currently define the <em>gold-standard</em> of statistical scRNA-seq analysis in R. The function <code><a href="../reference/runDeAnalysis.html">runDeAnalysis()</a></code>is a wrapper around <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html">Seurat::FindAllMarkers()</a></code> which finds the marker genes of the identity groups you denote with the <code>across</code>-argument. In the tutorial on <a href="spata-v2-segmentation-and-clustering.html">segmentation and clustering</a> in <em>SPATA</em> we created several grouping variables. Throughout this example we will try and find the differently expressed genes across the clusters of the <em>"“Leiden_UMAP”"</em> variable.</p>
+<p>As mentioned in previous chapters <strong>SPATA2</strong> makes use of some well written functions of the package <a href="https://satijalab.org/seurat/" class="external-link"><code>Seurat</code></a> which currently define the <em>gold-standard</em> of statistical scRNA-seq analysis in R. The function <code><a href="../reference/runDeAnalysis.html">runDeAnalysis()</a></code>is a wrapper around <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">Seurat::FindAllMarkers()</a></code> which finds the marker genes of the identity groups you denote with the <code>across</code>-argument. In the tutorial on <a href="spata-v2-segmentation-and-clustering.html">segmentation and clustering</a> in <em>SPATA</em> we created several grouping variables. Throughout this example we will try and find the differently expressed genes across the clusters of the <em>"“Leiden_UMAP”"</em> variable.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
             color_by <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, 
@@ -150,90 +149,91 @@ Figure 1.1 The chosen algorithm grouped the barcode spots in seven different clu
 </p>
 </div>
 </div>
-<div id="running-the-analysis" class="section level2">
-<h2 class="hasAnchor">
-<a href="#running-the-analysis" class="anchor"></a>2. Running the analysis</h2>
-<p>The output of <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html">Seurat::FindAllMarkers()</a></code> is a data.frame in which each row corresponds to a gene that turned out to be a marker gene for one of the identity groups. Additional variables provide information about it’s p-value, adjusted p-value, logFold change etc. <code><a href="../reference/runDeAnalysis.html">runDeAnalysis()</a></code> does not alter that output but stores it in the spata-object, more precisely in the <code>@dea</code> slot, short form for differential-expression-analysis. This feature allows to conveniently iterate over several methods like <em>‘wilcox’</em> or <em>‘bimod’</em> without loosing track of the results nor of the object- or variable-belonging. With <code><a href="../reference/printDeaOverview.html">printDeaOverview()</a></code> you can check across which groups and according to which method de-analysis has already been conducted.</p>
+<div class="section level2">
+<h2 id="running-the-analysis">2. Running the analysis<a class="anchor" aria-label="anchor" href="#running-the-analysis"></a>
+</h2>
+<p>The output of <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">Seurat::FindAllMarkers()</a></code> is a data.frame in which each row corresponds to a gene that turned out to be a marker gene for one of the identity groups. Additional variables provide information about it’s p-value, adjusted p-value, logFold change etc. <code><a href="../reference/runDeAnalysis.html">runDeAnalysis()</a></code> does not alter that output but stores it in the spata-object, more precisely in the <code>@dea</code> slot, short form for differential-expression-analysis. This feature allows to conveniently iterate over several methods like <em>‘wilcox’</em> or <em>‘bimod’</em> without loosing track of the results nor of the object- or variable-belonging. With <code><a href="../reference/printDeaOverview.html">printDeaOverview()</a></code> you can check across which groups and according to which method de-analysis has already been conducted.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">spata_obj</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/runDeAnalysis.html">runDeAnalysis</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
                 across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, <span class="co"># across which identity groups</span>
-                method_de <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"wilcox"</span>, <span class="st">"bimod"</span><span class="op">)</span> <span class="co"># with which methods</span>
+                method_de <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wilcox"</span>, <span class="st">"bimod"</span><span class="op">)</span> <span class="co"># with which methods</span>
                 <span class="op">)</span>
 
 <span class="co"># get an overview about the de-analysis results stored in your object</span>
 <span class="fu"><a href="../reference/printDeaOverview.html">printDeaOverview</a></span><span class="op">(</span><span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code>## De-analysis has been performed on grouping variables:
-## 
-## - 'segmentation' with methods: wilcox
-## - 'seurat_clusters' with methods: wilcox
-## - 'Leiden_UMAP' with methods: wilcox' and 'bimod</code></pre>
+<pre><code><span class="co">## De-analysis has been performed on grouping variables:</span>
+<span class="co">## </span>
+<span class="co">## - 'segmentation' with methods: wilcox</span>
+<span class="co">## - 'seurat_clusters' with methods: wilcox</span>
+<span class="co">## - 'Leiden_UMAP' with methods: wilcox' and 'bimod</span></code></pre>
 </div>
-<div id="extracting-results" class="section level2">
-<h2 class="hasAnchor">
-<a href="#extracting-results" class="anchor"></a>3. Extracting results</h2>
-<p>There are two main functions with which you can manually extract the de-analysis results desired. First, <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code> returns the original resulting data.frame of <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html">Seurat::FindAllMarkers()</a></code>.</p>
+<div class="section level2">
+<h2 id="extracting-results">3. Extracting results<a class="anchor" aria-label="anchor" href="#extracting-results"></a>
+</h2>
+<p>There are two main functions with which you can manually extract the de-analysis results desired. First, <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code> returns the original resulting data.frame of <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">Seurat::FindAllMarkers()</a></code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getDeaResultsDf.html">getDeaResultsDf</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
                 across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, 
                 method_de <span class="op">=</span> <span class="st">"wilcox"</span><span class="op">)</span></code></pre></div>
-<pre><code>## # A tibble: 5,971 x 7
-##        p_val avg_logFC pct.1 pct.2 p_val_adj Leiden_UMAP gene  
-##        &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;fct&gt;       &lt;chr&gt; 
-##  1 1.66e-  4     299.  0.151 0.105 1.00e+  0 Cluster 1   NPY   
-##  2 3.26e- 57     264.  0.3   0.093 7.03e- 53 Cluster 1   TAC1  
-##  3 7.68e- 34      92.6 0.173 0.05  1.66e- 29 Cluster 1   SST   
-##  4 2.84e- 17      79.6 1     0.999 6.12e- 13 Cluster 1   GFAP  
-##  5 1.38e- 12      36.3 1     0.999 2.97e-  8 Cluster 1   S100A6
-##  6 1.86e-195      28.4 0.964 0.761 4.02e-191 Cluster 1   UCHL1 
-##  7 0.             17.1 0.966 0.461 0.        Cluster 1   SNAP25
-##  8 1.99e- 49      16.5 0.927 0.845 4.28e- 45 Cluster 1   TUBB2A
-##  9 5.72e- 14      15.7 0.993 0.982 1.23e-  9 Cluster 1   TUBA1B
-## 10 3.98e- 23      15.6 0.988 0.967 8.57e- 19 Cluster 1   UBB   
-## # ... with 5,961 more rows</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 5,971 x 7</span></span>
+<span class="co">##        p_val avg_logFC pct.1 pct.2 p_val_adj Leiden_UMAP gene  </span>
+<span class="co">##        <span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>     </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>     </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;fct&gt;</span><span>       </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span> </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> 1.66</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-  4</span><span>     299.  0.151 0.105 1   </span><span style="color: #949494;">e</span><span>+  0 Cluster 1   NPY   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> 3.26</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 57</span><span>     264.  0.3   0.093 7.03</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 53</span><span> Cluster 1   TAC1  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> 7.68</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 34</span><span>      92.6 0.173 0.05  1.66</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 29</span><span> Cluster 1   SST   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> 2.84</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 17</span><span>      79.6 1     0.999 6.12</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 13</span><span> Cluster 1   GFAP  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> 1.38</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 12</span><span>      36.3 1     0.999 2.97</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-  8</span><span> Cluster 1   S100A6</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> 1.86</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-195</span><span>      28.4 0.964 0.761 4.02</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-191</span><span> Cluster 1   UCHL1 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> 0   </span><span style="color: #949494;"> </span><span>          17.1 0.966 0.461 0   </span><span style="color: #949494;"> </span><span>     Cluster 1   SNAP25</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> 1.99</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 49</span><span>      16.5 0.927 0.845 4.28</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 45</span><span> Cluster 1   TUBB2A</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> 5.72</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 14</span><span>      15.7 0.993 0.982 1.23</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-  9</span><span> Cluster 1   TUBA1B</span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> 3.98</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 23</span><span>      15.6 0.988 0.967 8.57</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 19</span><span> Cluster 1   UBB   </span></span>
+<span class="co">## <span style="color: #949494;"># ... with 5,961 more rows</span></span></code></pre>
 <p>The de-data.frame can be additionally processed such that the following steps are performed for every identity group. <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code> does that by calling the function <code><a href="../reference/filterDeaDf.html">filterDeaDf()</a></code> which</p>
 <ol style="list-style-type: decimal">
 <li><p>discards genes with avg_logFC-values that are either infinite or negative</p></li>
 <li><p>discards genes with adjusted p-values above the threshold set with <code>max_adj_pval</code></p></li>
+<li><p>discard genes with log fold changes below the threshold set with <code>min_lfc</code></p></li>
 <li><p>slices the data.frame in order that for every unique cluster of the cluster-variable:</p></li>
 </ol>
 <ul>
 <li><p>the n genes with the highest avg_logFC-values are kept where n = <code>n_highest_lfc</code></p></li>
 <li><p>the n genes with the lowest p_val_adj-values are kept where n = <code>n_lowest_pval</code></p></li>
 </ul>
-<ol start="4" style="list-style-type: decimal">
+<ol start="5" style="list-style-type: decimal">
 <li>arranges the genes according to the highest avg_logFC-values</li>
 </ol>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getDeaResultsDf.html">getDeaResultsDf</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
                 across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, 
                 method_de <span class="op">=</span> <span class="st">"wilcox"</span>, 
-                max_adj_pval <span class="op">=</span> <span class="fl">0.025</span>, <span class="co"># of every cluser take genes with an adj. p-value of 0.025 or lower</span>
+                max_adj_pval <span class="op">=</span> <span class="fl">0.025</span>, <span class="co"># of every cluster take genes with an adj. p-value of 0.025 or lower</span>
                 n_lowest_pval <span class="op">=</span> <span class="fl">20</span><span class="op">)</span> <span class="co"># from the remaining genes take only to 'top 20')</span></code></pre></div>
-<pre><code>## # A tibble: 105 x 7
-##        p_val avg_logFC pct.1 pct.2 p_val_adj Leiden_UMAP gene   
-##        &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;fct&gt;       &lt;chr&gt;  
-##  1 1.86e-195     28.4  0.964 0.761 4.02e-191 Cluster 1   UCHL1  
-##  2 0.            17.1  0.966 0.461 0.        Cluster 1   SNAP25 
-##  3 1.35e-263     15.0  0.805 0.229 2.91e-259 Cluster 1   SYT1   
-##  4 1.88e-165     13.6  0.9   0.619 4.05e-161 Cluster 1   ENC1   
-##  5 4.46e-267     12.2  0.809 0.232 9.61e-263 Cluster 1   VSNL1  
-##  6 3.03e-187     11.7  0.877 0.458 6.54e-183 Cluster 1   OLFM1  
-##  7 5.72e-182     11.6  0.552 0.112 1.23e-177 Cluster 1   HPCA   
-##  8 2.35e-139     11.4  0.895 0.608 5.07e-135 Cluster 1   YWHAH  
-##  9 6.61e-191     10.0  0.911 0.511 1.42e-186 Cluster 1   RTN1   
-## 10 5.66e-219      9.74 0.715 0.196 1.22e-214 Cluster 1   SLC17A7
-## # ... with 95 more rows</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 105 x 7</span></span>
+<span class="co">##        p_val avg_logFC pct.1 pct.2 p_val_adj Leiden_UMAP gene   </span>
+<span class="co">##        <span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>     </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>     </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;fct&gt;</span><span>       </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> 1.86</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-195</span><span>     28.4  0.964 0.761 4.02</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-191</span><span> Cluster 1   UCHL1  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> 0   </span><span style="color: #949494;"> </span><span>         17.1  0.966 0.461 0   </span><span style="color: #949494;"> </span><span>     Cluster 1   SNAP25 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> 1.35</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-263</span><span>     15.0  0.805 0.229 2.91</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-259</span><span> Cluster 1   SYT1   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> 1.88</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-165</span><span>     13.6  0.9   0.619 4.05</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-161</span><span> Cluster 1   ENC1   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> 4.46</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-267</span><span>     12.2  0.809 0.232 9.61</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-263</span><span> Cluster 1   VSNL1  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> 3.03</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-187</span><span>     11.7  0.877 0.458 6.54</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-183</span><span> Cluster 1   OLFM1  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> 5.72</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-182</span><span>     11.6  0.552 0.112 1.23</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-177</span><span> Cluster 1   HPCA   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> 2.35</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-139</span><span>     11.4  0.895 0.608 5.07</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-135</span><span> Cluster 1   YWHAH  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> 6.61</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-191</span><span>     10.0  0.911 0.511 1.42</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-186</span><span> Cluster 1   RTN1   </span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> 5.66</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-219</span><span>      9.74 0.715 0.196 1.22</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-214</span><span> Cluster 1   SLC17A7</span></span>
+<span class="co">## <span style="color: #949494;"># ... with 95 more rows</span></span></code></pre>
 </div>
-<div id="plotting-results" class="section level2">
-<h2 class="hasAnchor">
-<a href="#plotting-results" class="anchor"></a>4. Plotting results</h2>
-<div id="heatmap" class="section level3">
-<h3 class="hasAnchor">
-<a href="#heatmap" class="anchor"></a>4.1 Heatmap</h3>
+<div class="section level2">
+<h2 id="plotting-results">4. Plotting results<a class="anchor" aria-label="anchor" href="#plotting-results"></a>
+</h2>
+<div class="section level3">
+<h3 id="heatmap">4.1 Heatmap<a class="anchor" aria-label="anchor" href="#heatmap"></a>
+</h3>
 <p>The gold standard of gene expression visualization is the classical heatmap. <code><a href="../reference/plotDeaHeatmap.html">plotDeaHeatmap()</a></code> does just that: visualizing the results of your de-analysis by refering to the results you would extract with <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code>. If you don’t want to refer to de-analysis results and just wish to plot certain genes of interest you can do that by passing them to the <code>genes</code>-argument.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cluster_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cluster 2"</span>, <span class="st">"Cluster 3"</span>, <span class="st">"Cluster 6"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">cluster_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cluster 2"</span>, <span class="st">"Cluster 3"</span>, <span class="st">"Cluster 6"</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/plotDeaHeatmap.html">plotDeaHeatmap</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
                across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, <span class="co"># the grouping variable</span>
@@ -250,11 +250,48 @@ Figure 4.1 Heatmap visualizing the differentially expressed genes
 </p>
 </div>
 </div>
-<div id="statistic-related-plots" class="section level3">
-<h3 class="hasAnchor">
-<a href="#statistic-related-plots" class="anchor"></a>4.2 Statistic related plots</h3>
-<p>There are additional ways to visualize the results of your de-analysis. As with almost all plotting functions in <strong>SPATA2</strong> a vector of gene names is necessary for the function to know which genes to plot. <code><a href="../reference/getDeaResultsDf.html">getDeaGenes()</a></code> is the second function to extract de-analysis results and a wrapper around <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code> that returns a vector gene names.</p>
+<div class="section level3">
+<h3 id="dot-plots">4.2 Dot plots<a class="anchor" aria-label="anchor" href="#dot-plots"></a>
+</h3>
+<p>An alternative are dot plots. These can be used to visualize differentially expressed genes with the function <code><a href="../reference/plotDeaDotPlot.html">plotDeaDotPlot()</a></code>. There are two main types between which can be switched using the argument <code>by_group</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotDeaDotPlot.html">plotDeaDotPlot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">spata_obj</span>, 
+  across <span class="op">=</span> <span class="st">"seurat_clusters"</span>, 
+  across_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span><span class="op">)</span>,
+  color_by <span class="op">=</span> <span class="st">"avg_logFC"</span>,
+  trans <span class="op">=</span> <span class="st">"log10"</span>, <span class="co"># transform color scale with log10</span>
+  n_highest_lfc <span class="op">=</span> <span class="fl">7</span>,
+  by_group <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># create separate plots for each specified group</span>
+  nrow <span class="op">=</span> <span class="fl">2</span> <span class="co"># make sure that subplot are displayed in two rows</span>
+<span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="spata-v2-de-analysis_files/figure-html/by_group-1.png" alt="Figure 4.2 Dot plot visualizing differentially expressed genes by group" width="100%"><p class="caption">
+Figure 4.2 Dot plot visualizing differentially expressed genes by group
+</p>
+</div>
+<p>Using <code>by_group</code> = FALSE the results are merged to one plot.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotDeaDotPlot.html">plotDeaDotPlot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">spata_obj</span>, 
+  across <span class="op">=</span> <span class="st">"seurat_clusters"</span>, 
+  across_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span><span class="op">)</span>, 
+  n_highest_lfc <span class="op">=</span> <span class="fl">7</span>,
+  color_by <span class="op">=</span> <span class="st">"avg_logFC"</span>,
+  trans <span class="op">=</span> <span class="st">"log"</span>,
+  by_group <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># merge in one plot</span>
+<span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="spata-v2-de-analysis_files/figure-html/no_by_group-1.png" alt="Figure 4.3 Dot plot visualizing differentially expressed genes" width="100%"><p class="caption">
+Figure 4.3 Dot plot visualizing differentially expressed genes
+</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="statistic-related-plots">4.3 Statistic related plots<a class="anchor" aria-label="anchor" href="#statistic-related-plots"></a>
+</h3>
+<p>There are additional ways to visualize the results of your de-analysis. As with almost all plotting functions in <strong>SPATA2</strong> a vector of gene names is necessary for the function to know which genes to plot. <code><a href="../reference/getDeaResultsDf.html">getDeaGenes()</a></code> is the second function to extract de-analysis results and a wrapper around <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code> that returns a vector gene names.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">genes_of_interest</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="../reference/getDeaResultsDf.html">getDeaGenes</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
               across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, <span class="co"># the grouping variable</span>
@@ -266,15 +303,15 @@ Figure 4.1 Heatmap visualizing the differentially expressed genes
               <span class="op">)</span>
 
 
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">genes_of_interest</span><span class="op">)</span> <span class="co"># first six</span></code></pre></div>
-<pre><code>## Cluster 2 Cluster 2 Cluster 2 Cluster 2 Cluster 2 Cluster 2 
-##   "POSTN"  "TMSB4X"   "FABP7"   "RAMP1"  "PTPRZ1"   "S100B"</code></pre>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">genes_of_interest</span><span class="op">)</span> <span class="co"># last six</span></code></pre></div>
-<pre><code>## Cluster 6 Cluster 6 Cluster 6 Cluster 6 Cluster 6 Cluster 6 
-##  "EEF1A1"     "ADM"  "CHI3L1"     "CLU"  "TMSB10"     "UBC"</code></pre>
-<p>A vector of gene names as returned by <code><a href="../reference/getDeaResultsDf.html">getDeaGenes()</a></code> (or <code><a href="../reference/getGenes.html">getGenes()</a></code> for that matter) is a perfectly valid input for other plotting functions.</p>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">genes_of_interest</span><span class="op">)</span> <span class="co"># first six</span></code></pre></div>
+<pre><code><span class="co">## Cluster 2 Cluster 2 Cluster 2 Cluster 2 Cluster 2 Cluster 2 </span>
+<span class="co">##   "POSTN"  "TMSB4X"   "FABP7"   "RAMP1"  "PTPRZ1"   "S100B"</span></code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">genes_of_interest</span><span class="op">)</span> <span class="co"># last six</span></code></pre></div>
+<pre><code><span class="co">## Cluster 6 Cluster 6 Cluster 6 Cluster 6 Cluster 6 Cluster 6 </span>
+<span class="co">##  "EEF1A1"     "ADM"  "CHI3L1"     "CLU"  "TMSB10"     "UBC"</span></code></pre>
+<p>A vector of gene names as returned by <code><a href="../reference/getDeaResultsDf.html">getDeaGenes()</a></code> (or <code><a href="../reference/getGenes.html">getGenes()</a></code> for that matter) is a perfectly valid input for other plotting functions.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">high_threshold_markers</span> <span class="op">&lt;-</span> 
     <span class="fu"><a href="../reference/getDeaResultsDf.html">getDeaGenes</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
                 across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, 
@@ -285,11 +322,11 @@ Figure 4.1 Heatmap visualizing the differentially expressed genes
 
 <span class="co"># print genes</span>
 <span class="va">high_threshold_markers</span></code></pre></div>
-<pre><code>## Cluster 2 Cluster 2 Cluster 2 Cluster 3 Cluster 3 Cluster 3 Cluster 6 Cluster 6 
-##   "POSTN"   "RAMP1"  "LANCL2"     "B2M"  "HSPA1A"  "MARCH6"     "ADM"   "VEGFA" 
-## Cluster 6 
-##  "HILPDA"</code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<pre><code><span class="co">## Cluster 2 Cluster 2 Cluster 2 Cluster 3 Cluster 3 Cluster 3 Cluster 6 Cluster 6 </span>
+<span class="co">##   "POSTN"   "RAMP1"  "LANCL2"     "B2M"  "HSPA1A"  "MARCH6"     "ADM"   "VEGFA" </span>
+<span class="co">## Cluster 6 </span>
+<span class="co">##  "HILPDA"</span></code></pre>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># visualize statistics</span>
 <span class="fu"><a href="../reference/plotBoxplot.html">plotBoxplot</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
             variables <span class="op">=</span> <span class="va">high_threshold_markers</span>, 
@@ -300,16 +337,16 @@ Figure 4.1 Heatmap visualizing the differentially expressed genes
             <span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendTop</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-de-analysis_files/figure-html/plotBoxplot()-1.png" alt="Figure 3.2 Plotting descriptive statistics with the analysis results" width="100%"><p class="caption">
-Figure 3.2 Plotting descriptive statistics with the analysis results
+<img src="spata-v2-de-analysis_files/figure-html/plotBoxplot()-1.png" alt="Figure 4.4 Plotting descriptive statistics with the analysis results" width="100%"><p class="caption">
+Figure 4.4 Plotting descriptive statistics with the analysis results
 </p>
 </div>
 </div>
-<div id="surface-plots" class="section level3">
-<h3 class="hasAnchor">
-<a href="#surface-plots" class="anchor"></a>4.3 Surface plots</h3>
+<div class="section level3">
+<h3 id="surface-plots">4.3 Surface plots<a class="anchor" aria-label="anchor" href="#surface-plots"></a>
+</h3>
 <p>Another way to visualize your results would be to deploy <code><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison()</a></code>.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, 
                       color_by <span class="op">=</span> <span class="va">high_threshold_markers</span>, 
                       smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
@@ -322,30 +359,30 @@ Figure 3.2 Plotting descriptive statistics with the analysis results
             pt_clrp <span class="op">=</span> <span class="st">"jama"</span>
             <span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-de-analysis_files/figure-html/de-surface-1.png" alt="Figure 3.3 Surfaceplots visualizing the differentially expressed genes" width="50%"><img src="spata-v2-de-analysis_files/figure-html/de-surface-2.png" alt="Figure 3.3 Surfaceplots visualizing the differentially expressed genes" width="50%"><p class="caption">
-Figure 3.3 Surfaceplots visualizing the differentially expressed genes
+<img src="spata-v2-de-analysis_files/figure-html/de-surface-1.png" alt="Figure 4.5 Surfaceplots visualizing the differentially expressed genes" width="50%"><img src="spata-v2-de-analysis_files/figure-html/de-surface-2.png" alt="Figure 4.5 Surfaceplots visualizing the differentially expressed genes" width="50%"><p class="caption">
+Figure 4.5 Surfaceplots visualizing the differentially expressed genes
 </p>
 </div>
 </div>
-<div id="basic-overview" class="section level3">
-<h3 class="hasAnchor">
-<a href="#basic-overview" class="anchor"></a>4.4 Basic overview</h3>
+<div class="section level3">
+<h3 id="basic-overview">4.4 Basic overview<a class="anchor" aria-label="anchor" href="#basic-overview"></a>
+</h3>
 <p>To obtain a basic overview of the qualities and quantities of your analysis results use <code><a href="../reference/plotDeaGeneCount.html">plotDeaGeneCount()</a></code>, <code><a href="../reference/plotDeaPvalues.html">plotDeaLogFC()</a></code> and <code><a href="../reference/plotDeaPvalues.html">plotDeaPvalues()</a></code>.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotDeaGeneCount.html">plotDeaGeneCount</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, method_de <span class="op">=</span> <span class="st">"wilcox"</span>, clrp <span class="op">=</span> <span class="st">"jama"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-de-analysis_files/figure-html/plotDeaSummary()-1.png" alt="Figure 3.4 Basic summary of your analysis results" width="100%"><p class="caption">
-Figure 3.4 Basic summary of your analysis results
+<img src="spata-v2-de-analysis_files/figure-html/plotDeaSummary()-1.png" alt="Figure 4.6 Basic summary of your analysis results" width="100%"><p class="caption">
+Figure 4.6 Basic summary of your analysis results
 </p>
 </div>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotDeaPvalues.html">plotDeaLogFC</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>, method_de <span class="op">=</span> <span class="st">"wilcox"</span>, clrp <span class="op">=</span> <span class="st">"jama"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-de-analysis_files/figure-html/plotDeaSummary()-2.png" alt="Figure 3.4 Basic summary of your analysis results" width="100%"><p class="caption">
-Figure 3.4 Basic summary of your analysis results
+<img src="spata-v2-de-analysis_files/figure-html/plotDeaSummary()-2.png" alt="Figure 4.6 Basic summary of your analysis results" width="100%"><p class="caption">
+Figure 4.6 Basic summary of your analysis results
 </p>
 </div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotDeaPvalues.html">plotDeaPvalues</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
                across <span class="op">=</span> <span class="st">"Leiden_UMAP"</span>,
                method_de <span class="op">=</span> <span class="st">"wilcox"</span>,
@@ -353,8 +390,8 @@ Figure 3.4 Basic summary of your analysis results
                plot_type <span class="op">=</span> <span class="st">"density"</span>, 
                scales <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-de-analysis_files/figure-html/plotDeaSummary()-3.png" alt="Figure 3.4 Basic summary of your analysis results" width="100%"><p class="caption">
-Figure 3.4 Basic summary of your analysis results
+<img src="spata-v2-de-analysis_files/figure-html/plotDeaSummary()-3.png" alt="Figure 4.6 Basic summary of your analysis results" width="100%"><p class="caption">
+Figure 4.6 Basic summary of your analysis results
 </p>
 </div>
 </div>
@@ -372,11 +409,13 @@ Figure 3.4 Basic summary of your analysis results
 
 
       <footer><div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -384,6 +423,8 @@ Figure 3.4 Basic summary of your analysis results
 
   
 
+
+  
 
   </body>
 </html>

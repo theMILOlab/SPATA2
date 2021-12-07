@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -80,10 +76,13 @@
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/sapta-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
@@ -127,28 +126,28 @@
 
     
     
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>1. Introduction</h2>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
 <p>Apart from <strong>SPATA2</strong> there have been published several packages that devote themself to the analysis of sequencing data. Two of them are <code>monocle3</code> and <code>seurat</code>. This article demonstrates how to leverage <strong>SPATA2</strong>’s compatibility.</p>
 </div>
-<div id="monocle3" class="section level2">
-<h2 class="hasAnchor">
-<a href="#monocle3" class="anchor"></a>2. Monocle3</h2>
-<p>The package <a href="https://cole-trapnell-lab.github.io/monocle3/"><code>monocle3</code></a> provides a variety of tools to analyze and visualize single-cell-sequencing data. Though spatial transcriptomic experiments do not reach the resolution of single-cell-sequencing yet you can leverage a variety of monocle3’s functions for your analysis and easily integrate the results back to your spata-object.</p>
+<div class="section level2">
+<h2 id="monocle3">2. Monocle3<a class="anchor" aria-label="anchor" href="#monocle3"></a>
+</h2>
+<p>The package <a href="https://cole-trapnell-lab.github.io/monocle3/" class="external-link"><code>monocle3</code></a> provides a variety of tools to analyze and visualize single-cell-sequencing data. Though spatial transcriptomic experiments do not reach the resolution of single-cell-sequencing yet you can leverage a variety of monocle3’s functions for your analysis and easily integrate the results back to your spata-object.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load packages</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/">SPATA2</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org">magrittr</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span>
 
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span>
 
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">monocle3</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">monocle3</span><span class="op">)</span>
 
 <span class="co"># load example of human brain cortex</span>
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadSpataObject</a></span><span class="op">(</span><span class="st">"data/spata-obj-cortex265.RDS"</span><span class="op">)</span> <span class="co"># new</span></code></pre></div>
-<p>In order to work with the functions of <code>monocle3</code> you need to compile it’s core object: the cell_data-set. You can do that with ease with <code><a href="../reference/transformSpataToCDS.html">transformSpataToCDS()</a></code>. It is a wrapper around all of <code>monocle3</code>’s pre processing functions, takes your spata-object of interest and creates a cell_data_set from it’s count matrix. Convenient argument input via named lists and defensive error handling via <code><a href="https://rdrr.io/r/base/conditions.html">base::tryCatch()</a></code> allow more experienced users to tweak the pre processing results. For the sake of simplicity we stick to the default options throughout this example.</p>
+<p>In order to work with the functions of <code>monocle3</code> you need to compile it’s core object: the cell_data-set. You can do that with ease with <code><a href="../reference/transformSpataToCDS.html">transformSpataToCDS()</a></code>. It is a wrapper around all of <code>monocle3</code>’s pre processing functions, takes your spata-object of interest and creates a cell_data_set from it’s count matrix. Convenient argument input via named lists and defensive error handling via <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">base::tryCatch()</a></code> allow more experienced users to tweak the pre processing results. For the sake of simplicity we stick to the default options throughout this example.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compile a cell-data-set</span>
 <span class="va">cortex_cds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transformSpataToCDS.html">transformSpataToCDS</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
@@ -160,14 +159,14 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain the directories that are currently stored in the spata-object</span>
 <span class="fu"><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code>## $cell_data_set
-## [1] "data/cds-cortex265.RDS"
-## 
-## $seurat_object
-## [1] "data/seurat-obj-cortex265.RDS"
-## 
-## $spata_object
-## [1] "data/spata-obj-cortex265.RDS"</code></pre>
+<pre><code><span class="co">## $cell_data_set</span>
+<span class="co">## [1] "data/cds-cortex265.RDS"</span>
+<span class="co">## </span>
+<span class="co">## $seurat_object</span>
+<span class="co">## [1] "data/seurat-obj-cortex265.RDS"</span>
+<span class="co">## </span>
+<span class="co">## $spata_object</span>
+<span class="co">## [1] "data/spata-obj-cortex265.RDS"</span></code></pre>
 <p>To save or load a corresponding cell_data_set under the default directory stored in the spata-object use <code><a href="../reference/saveSpataObject.html">saveCorrespondingCDS()</a></code> and <code><a href="../reference/loadSpataObject.html">loadCorrespondingCDS()</a></code></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># use the directory information of the spata-object to conveniently save the cell_data_set</span>
@@ -184,7 +183,7 @@
 <span class="co"># SPATAS transform functions pass the feature data to the compiled object which makes </span>
 <span class="co"># all features computed by yourself available, e.g. for monocle3::plot_cells()</span>
 <span class="va">monocle_plot</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/plot_cells.html">plot_cells</a></span><span class="op">(</span><span class="va">cortex_cds</span>,
+  <span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/plot_cells.html" class="external-link">plot_cells</a></span><span class="op">(</span><span class="va">cortex_cds</span>,
              reduction_method <span class="op">=</span> <span class="st">"UMAP"</span>,
              color_cells_by <span class="op">=</span> <span class="st">"seurat_clusters"</span> <span class="co"># visualize a transferred variable</span>
              <span class="op">)</span> <span class="op">+</span>
@@ -200,52 +199,52 @@
 Figure 2.1 SPATA’s and monocle3’ basic plotting results
 </p>
 </div>
-<div id="example-pseudotime" class="section level3">
-<h3 class="hasAnchor">
-<a href="#example-pseudotime" class="anchor"></a>Example: Pseudotime</h3>
-<p>If you haven’t done it already during <code>cortex_cds</code>’s compilation you can use <code>moncle3::order_cells()</code> to work with <a href="https://cole-trapnell-lab.github.io/monocle3/docs/trajectories/">pseudotime</a> - a measurement of how much progress cells have made through a process such as cell differentiation.</p>
+<div class="section level3">
+<h3 id="example-pseudotime">Example: Pseudotime<a class="anchor" aria-label="anchor" href="#example-pseudotime"></a>
+</h3>
+<p>If you haven’t done it already during <code>cortex_cds</code>’s compilation you can use <code>moncle3::order_cells()</code> to work with <a href="https://cole-trapnell-lab.github.io/monocle3/docs/trajectories/" class="external-link">pseudotime</a> - a measurement of how much progress cells have made through a process such as cell differentiation.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># the pseudotime values for all cells/barcode-spots are obtained via</span>
-<span class="va">pseudotime_vec</span> <span class="op">&lt;-</span> <span class="fu">monocle3</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/pseudotime.html">pseudotime</a></span><span class="op">(</span><span class="va">cortex_cds</span><span class="op">)</span>
+<span class="va">pseudotime_vec</span> <span class="op">&lt;-</span> <span class="fu">monocle3</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/monocle3/man/pseudotime.html" class="external-link">pseudotime</a></span><span class="op">(</span><span class="va">cortex_cds</span><span class="op">)</span>
 
 <span class="co"># subset output</span>
 <span class="va">pseudotime_vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span></code></pre></div>
-<pre><code>## AAACAAGTATCTCCCA-1 AAACACCAATAACTGC-1 AAACAGTGTTCCTGGG-1 AAACATTTCCCGGATT-1 
-##        17.99675712         0.05947085         0.05946980        13.00497429 
-## AAACCCGAACGAAATC-1 AAACCGGAAATGTTAA-1 AAACCGGGTAGGTACC-1 AAACCGTTCGTCCAGG-1 
-##        19.24685707        18.82008481         1.21056350         0.05946874 
-## AAACCTAAGCAGCCGG-1 AAACCTCATGAAGTTG-1 
-##         9.59278155         8.54330799</code></pre>
-<p>The output of <code><a href="https://rdrr.io/pkg/monocle3/man/pseudotime.html">monocle3::pseudotime()</a></code> is a named vector of numeric values. The numeric value refers to a barcode-spot’s pseudotime value and the name to it’s barcode. We can easily join this information to our original spata-object with a little bit of data wrangling and the <code><a href="../reference/addFeatures.html">addFeatures()</a></code>-function.</p>
+<pre><code><span class="co">## AAACAAGTATCTCCCA-1 AAACACCAATAACTGC-1 AAACAGTGTTCCTGGG-1 AAACATTTCCCGGATT-1 </span>
+<span class="co">##        17.99675712         0.05947085         0.05946980        13.00497429 </span>
+<span class="co">## AAACCCGAACGAAATC-1 AAACCGGAAATGTTAA-1 AAACCGGGTAGGTACC-1 AAACCGTTCGTCCAGG-1 </span>
+<span class="co">##        19.24685707        18.82008481         1.21056350         0.05946874 </span>
+<span class="co">## AAACCTAAGCAGCCGG-1 AAACCTCATGAAGTTG-1 </span>
+<span class="co">##         9.59278155         8.54330799</span></code></pre>
+<p>The output of <code><a href="https://rdrr.io/pkg/monocle3/man/pseudotime.html" class="external-link">monocle3::pseudotime()</a></code> is a named vector of numeric values. The numeric value refers to a barcode-spot’s pseudotime value and the name to it’s barcode. We can easily join this information to our original spata-object with a little bit of data wrangling and the <code><a href="../reference/addFeatures.html">addFeatures()</a></code>-function.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 1. convert to data.frame </span>
 <span class="va">pseudotime_df</span> <span class="op">&lt;-</span> 
-  <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">pseudotime_vec</span><span class="op">)</span>
+  <span class="fu">base</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">pseudotime_vec</span><span class="op">)</span>
 
 <span class="co"># output</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">pseudotime_df</span><span class="op">)</span></code></pre></div>
-<pre><code>##                    pseudotime_vec
-## AAACAAGTATCTCCCA-1    17.99675712
-## AAACACCAATAACTGC-1     0.05947085
-## AAACAGTGTTCCTGGG-1     0.05946980
-## AAACATTTCCCGGATT-1    13.00497429
-## AAACCCGAACGAAATC-1    19.24685707
-## AAACCGGAAATGTTAA-1    18.82008481</code></pre>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pseudotime_df</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">##                    pseudotime_vec</span>
+<span class="co">## AAACAAGTATCTCCCA-1    17.99675712</span>
+<span class="co">## AAACACCAATAACTGC-1     0.05947085</span>
+<span class="co">## AAACAGTGTTCCTGGG-1     0.05946980</span>
+<span class="co">## AAACATTTCCCGGATT-1    13.00497429</span>
+<span class="co">## AAACCCGAACGAAATC-1    19.24685707</span>
+<span class="co">## AAACCGGAAATGTTAA-1    18.82008481</span></code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 2. create a barcodes-key variable and rename the pseudotime variable </span>
 <span class="va">feature_df</span> <span class="op">&lt;-</span> 
-  <span class="fu">magrittr</span><span class="fu">::</span><span class="fu"><a href="https://magrittr.tidyverse.org/reference/aliases.html">set_colnames</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">pseudotime_df</span>, value <span class="op">=</span> <span class="st">"Pseudotime"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"barcodes"</span><span class="op">)</span>
+  <span class="fu">magrittr</span><span class="fu">::</span><span class="fu"><a href="https://magrittr.tidyverse.org/reference/aliases.html" class="external-link">set_colnames</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">pseudotime_df</span>, value <span class="op">=</span> <span class="st">"Pseudotime"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
+  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"barcodes"</span><span class="op">)</span>
 
 <span class="co"># output</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">feature_df</span><span class="op">)</span></code></pre></div>
-<pre><code>##             barcodes  Pseudotime
-## 1 AAACAAGTATCTCCCA-1 17.99675712
-## 2 AAACACCAATAACTGC-1  0.05947085
-## 3 AAACAGTGTTCCTGGG-1  0.05946980
-## 4 AAACATTTCCCGGATT-1 13.00497429
-## 5 AAACCCGAACGAAATC-1 19.24685707
-## 6 AAACCGGAAATGTTAA-1 18.82008481</code></pre>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">feature_df</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">##             barcodes  Pseudotime</span>
+<span class="co">## 1 AAACAAGTATCTCCCA-1 17.99675712</span>
+<span class="co">## 2 AAACACCAATAACTGC-1  0.05947085</span>
+<span class="co">## 3 AAACAGTGTTCCTGGG-1  0.05946980</span>
+<span class="co">## 4 AAACATTTCCCGGATT-1 13.00497429</span>
+<span class="co">## 5 AAACCCGAACGAAATC-1 19.24685707</span>
+<span class="co">## 6 AAACCGGAAATGTTAA-1 18.82008481</span></code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># 3. add to spata-object via </span>
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/addFeatures.html">addFeatures</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
@@ -263,16 +262,16 @@ Figure 3.2 Visualizing monocle3-pseudotime results with SPATA
 </div>
 </div>
 </div>
-<div id="seurat" class="section level2">
-<h2 class="hasAnchor">
-<a href="#seurat" class="anchor"></a>3. Seurat</h2>
-<p><a href="https://satijalab.org/seurat/vignettes.html"><code>seurat</code></a> provides a variety of computational tools. Initiating a <strong>SPATA2</strong>-object currently relies on most of it’s pre processing functions. If you want to switch from <strong>SPATA2</strong> to <code>Seurat</code> make use of <code><a href="../reference/transformSpataToSeurat.html">transformSpataToSeurat()</a></code>. Similarly to <code><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X()</a></code> and <code><a href="../reference/initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr()</a></code> it is a wrapper around several preprocessing functions although it passes the feature-data of your spata-object to it in order not to loose your progress. It works in a similar fashion as <code><a href="../reference/transformSpataToCDS.html">transformSpataToCDS()</a></code>.</p>
+<div class="section level2">
+<h2 id="seurat">3. Seurat<a class="anchor" aria-label="anchor" href="#seurat"></a>
+</h2>
+<p><a href="https://satijalab.org/seurat/vignettes.html" class="external-link"><code>seurat</code></a> provides a variety of computational tools. Initiating a <strong>SPATA2</strong>-object currently relies on most of it’s pre processing functions. If you want to switch from <strong>SPATA2</strong> to <code>Seurat</code> make use of <code><a href="../reference/transformSpataToSeurat.html">transformSpataToSeurat()</a></code>. Similarly to <code><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X()</a></code> and <code><a href="../reference/initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr()</a></code> it is a wrapper around several preprocessing functions although it passes the feature-data of your spata-object to it in order not to loose your progress. It works in a similar fashion as <code><a href="../reference/transformSpataToCDS.html">transformSpataToCDS()</a></code>.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cortex_seurat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transformSpataToSeurat.html">transformSpataToSeurat</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
 <p>You can now continue your analysis with Seurat. Note that <strong>SPATA2</strong> handles the image plotting differently which results in mirror-inverted plots.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># continue analysis adn plotting with seurat</span>
-<span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html">SpatialFeaturePlot</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">cortex_seurat</span>, features <span class="op">=</span> <span class="st">"Pseudotime"</span><span class="op">)</span></code></pre></div>
+<span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.org/seurat/reference/SpatialPlot.html" class="external-link">SpatialFeaturePlot</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">cortex_seurat</span>, features <span class="op">=</span> <span class="st">"Pseudotime"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-platform-compatibility_files/figure-html/seurat-spatial-plot-1.png" alt="Figure 4.1 Continue plotting and analysis with Seurat" width="100%"><p class="caption">
 Figure 4.1 Continue plotting and analysis with Seurat
@@ -281,28 +280,28 @@ Figure 4.1 Continue plotting and analysis with Seurat
 <p>Note that the meta.data slot of the seurat-object contains the barcodes- and the sample-variable of the spata-object it originally derived from.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># output</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">cortex_seurat</span><span class="op">@</span><span class="va">meta.data</span><span class="op">)</span></code></pre></div>
-<pre><code>##                       orig.ident nCount_Spatial nFeature_Spatial sample
-## AAACAAGTATCTCCCA-1 SeuratProject           1809             1287   C265
-## AAACACCAATAACTGC-1 SeuratProject           1772             1235   C265
-## AAACAGTGTTCCTGGG-1 SeuratProject           1445             1057   C265
-## AAACATTTCCCGGATT-1 SeuratProject           2198             1476   C265
-## AAACCCGAACGAAATC-1 SeuratProject           2814             1811   C265
-## AAACCGGAAATGTTAA-1 SeuratProject           2900             1880   C265
-##                    percent.mt percent.RB Spatial_snn_res.0.8 seurat_clusters
-## AAACAAGTATCTCCCA-1   1.492537          0                   2               2
-## AAACACCAATAACTGC-1   1.523702          0                   5               5
-## AAACAGTGTTCCTGGG-1   1.453287          0                   4               4
-## AAACATTTCCCGGATT-1   1.865332          0                   2               2
-## AAACCCGAACGAAATC-1   1.279318          0                   0               0
-## AAACCGGAAATGTTAA-1   1.586207          0                   0               0
-##                    segmentation  Pseudotime mncl_cluster_umap
-## AAACAAGTATCTCCCA-1         none 17.99675712                 1
-## AAACACCAATAACTGC-1         none  0.05947085                 1
-## AAACAGTGTTCCTGGG-1         none  0.05946980                 1
-## AAACATTTCCCGGATT-1         none 13.00497429                 1
-## AAACCCGAACGAAATC-1         none 19.24685707                 1
-## AAACCGGAAATGTTAA-1         none 18.82008481                 1</code></pre>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cortex_seurat</span><span class="op">@</span><span class="va">meta.data</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">##                       orig.ident nCount_Spatial nFeature_Spatial sample</span>
+<span class="co">## AAACAAGTATCTCCCA-1 SeuratProject           1809             1287   C265</span>
+<span class="co">## AAACACCAATAACTGC-1 SeuratProject           1772             1235   C265</span>
+<span class="co">## AAACAGTGTTCCTGGG-1 SeuratProject           1445             1057   C265</span>
+<span class="co">## AAACATTTCCCGGATT-1 SeuratProject           2198             1476   C265</span>
+<span class="co">## AAACCCGAACGAAATC-1 SeuratProject           2814             1811   C265</span>
+<span class="co">## AAACCGGAAATGTTAA-1 SeuratProject           2900             1880   C265</span>
+<span class="co">##                    percent.mt percent.RB Spatial_snn_res.0.8 seurat_clusters</span>
+<span class="co">## AAACAAGTATCTCCCA-1   1.492537          0                   2               2</span>
+<span class="co">## AAACACCAATAACTGC-1   1.523702          0                   5               5</span>
+<span class="co">## AAACAGTGTTCCTGGG-1   1.453287          0                   4               4</span>
+<span class="co">## AAACATTTCCCGGATT-1   1.865332          0                   2               2</span>
+<span class="co">## AAACCCGAACGAAATC-1   1.279318          0                   0               0</span>
+<span class="co">## AAACCGGAAATGTTAA-1   1.586207          0                   0               0</span>
+<span class="co">##                    segmentation  Pseudotime mncl_cluster_umap</span>
+<span class="co">## AAACAAGTATCTCCCA-1         none 17.99675712                 1</span>
+<span class="co">## AAACACCAATAACTGC-1         none  0.05947085                 1</span>
+<span class="co">## AAACAGTGTTCCTGGG-1         none  0.05946980                 1</span>
+<span class="co">## AAACATTTCCCGGATT-1         none 13.00497429                 1</span>
+<span class="co">## AAACCCGAACGAAATC-1         none 19.24685707                 1</span>
+<span class="co">## AAACCGGAAATGTTAA-1         none 18.82008481                 1</span></code></pre>
 </div>
   </div>
 
@@ -317,11 +316,13 @@ Figure 4.1 Continue plotting and analysis with Seurat
 
 
       <footer><div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -329,6 +330,8 @@ Figure 4.1 Continue plotting and analysis with Seurat
 
   
 
+
+  
 
   </body>
 </html>

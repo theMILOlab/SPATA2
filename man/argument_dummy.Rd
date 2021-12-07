@@ -62,7 +62,7 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 
 \item{object}{A valid spata-object.}
 
-\item{signif_val}{Character value. Determines what to be considered while checking
+\item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
 
 \item{signif_threshold}{Numeric value. Significance values below \code{signif_threshold}
@@ -70,6 +70,15 @@ are not included.}
 
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}
+
+\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
+Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
+Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
+Or it can be a list of functions (and function names).
+
+Useful if you want to apply more than one transformation on variables mapped to
+plotting aesthetics. Input for \code{transform_with} is applied before the
+respective \code{<aes>_trans} argument.}
 }
 \description{
 Argument dummy

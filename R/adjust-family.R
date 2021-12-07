@@ -1,4 +1,52 @@
 
+
+adjustGseaDf <- function(df,
+                         signif_var,
+                         signif_threshold,
+                         remove,
+                         remove_gsets,
+                         replace,
+                         n_gsets,
+                         digits){
+
+  if(base::is.character(remove_gsets)){
+
+    df <- dplyr::filter(df, !stringr::str_detect(label, pattern = {{remove_gsets}}))
+
+  }
+
+  df <-
+    dplyr::group_by(df, label) %>%
+    dplyr::filter(!!rlang::sym(signif_var) < {{signif_threshold}}) %>%
+    dplyr::arrange({{signif_var}}, .by_group = TRUE) %>%
+    dplyr::slice_head(n = n_gsets)
+
+  if(base::is.character(remove)){
+
+    is_value(remove, mode = "character")
+
+    df[["label"]] <-
+      stringr::str_remove(string = df[["label"]], pattern = remove) %>%
+      base::as.factor()
+
+  }
+
+  if(is_vec(x = replace, mode = "character", of.length = 2, fdb.fn = "message", verbose = FALSE)){
+
+    df[["label"]] <-
+      stringr::str_replace_all(string = df[["label"]], pattern = replace[1], replacement = replace[2]) %>%
+      base::as.factor()
+
+  }
+
+  df <- dplyr::mutate(df, overlap_perc = base::round(overlap_perc, digits = digits))
+
+  return(df)
+
+}
+
+
+
 #' @title Filter gene-set data.frame
 #'
 #' @description Checks the objects gene-set data.frame for gene-sets that

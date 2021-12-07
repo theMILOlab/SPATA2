@@ -74,7 +74,7 @@ loadGeneSetDf <- loadGSDF
 #'
 #' @export
 
-loadSpataObject <- function(directory_spata, verbose = TRUE){
+loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
 
   confuns::check_directories(
     directories = directory_spata,
@@ -88,18 +88,22 @@ loadSpataObject <- function(directory_spata, verbose = TRUE){
 
   spata_obj <- base::readRDS(file = directory_spata)
 
-  if(!methods::is(spata_obj, "spata2")){
-
-    base::warning("Loaded object is not of class 'spata2'!")
-
-  }
-
   confuns::give_feedback(
     msg = "Done.",
     verbose = verbose
   )
 
-  base::return(spata_obj)
+  if(!methods::is(spata_obj, "spata2")){
+
+    base::warning("Loaded object is not of class 'spata2'!")
+
+  } else if(base::isTRUE(update)){
+
+    spata_obj <- updateSpataObject(object = spata_obj)
+
+  }
+
+  return(spata_obj)
 
 
 }

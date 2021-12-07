@@ -183,7 +183,19 @@ renameGroups <- function(object, discrete_feature, ..., of_sample = NA){
               {{discrete_feature}} := forcats::fct_recode(.f = !!rlang::sym(discrete_feature), !!!rename_input)
             )
 
-          list(data = new_df, adjustments = method$adjustments)
+          out <- list(data = new_df, adjustments = method$adjustments)
+
+          gsea <- method$hypeR_gsea
+
+          if(base::is.list(gsea)){
+
+            gsea <- lrename(lst = gsea, !!!rename_input)
+
+            out$hypeR_gsea <- gsea
+
+          }
+
+          return(out)
 
         }
       ) %>%

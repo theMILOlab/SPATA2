@@ -1,4 +1,7 @@
 
+#' @include S4-documentation.R
+NULL
+
 # Autoencoder -------------------------------------------------------------
 
 activation_fns <- c("relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu")
@@ -89,6 +92,7 @@ default_instructions_object <-
                method_hclust = "complete",
                method_ovl = "classic",
                method_padj = "fdr",
+               min_lfc = 0,
                normalize = TRUE,
                n_highest_lfc = 50,
                n_lowest_pval = 50,
@@ -186,4 +190,4 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 2, patch = 0)
+current_spata_version <- list(major = 1, minor = 3, patch = 0)

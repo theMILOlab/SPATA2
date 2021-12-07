@@ -64,7 +64,7 @@ are not included are dropped which affects the colors with which they are displa
 Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
 to obtain all valid input options.}
 
-\item{max_adj_pval}{Numeric value. Sets the maximal threshold for adjusted p-values allowed. All genes
+\item{max_adj_pval}{Numeric value. Sets the threshold for adjusted p-values. All genes
 with adjusted p-values above that threshold are ignored.}
 
 \item{binwidth}{Numeric value. Denotes the binwidth to use for the histogram.}

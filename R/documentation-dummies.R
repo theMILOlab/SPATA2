@@ -253,12 +253,21 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
-#' @param signif_val Character value. Determines what to be considered while checking
+#' @param signif_var Character value. Determines what to be considered while checking
 #' for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).
 #' @param signif_threshold Numeric value. Significance values below \code{signif_threshold}
 #' are not included.
 #' @param simplify Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 #' to FALSE a list is returned.
+#'
+#' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.
+#' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
+#' Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
+#' Or it can be a list of functions (and function names).
+#'
+#' Useful if you want to apply more than one transformation on variables mapped to
+#' plotting aesthetics. Input for \code{transform_with} is applied before the
+#' respective \code{<aes>_trans} argument.
 #'
 #' @param verbose Logical. If set to TRUE informative messages regarding
 #' the computational progress will be printed.

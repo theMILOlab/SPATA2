@@ -242,18 +242,15 @@ updateSpataObject <- function(object,
 
     if(base::identical(object@version, current_spata_version)){
 
-      base::message("Provided spata-object is up to date. Returning input object.")
+      message("Object is up to date.")
 
-      base::return(object)
+      return(object)
 
     }
 
   }
 
   # -----
-
-
-
 
   # 1.1.0 -> 1.2.0 ----------------------------------------------------------
 
@@ -304,6 +301,29 @@ updateSpataObject <- function(object,
     base::rm(object_new)
 
   }
+
+  # 1.2.0 -> 1.3.0 ----------------------------------------------------------
+
+  if(major == 1 & minor == 2){
+
+    give_feedback(msg = "Adding default for argument  'min_lfc' = 0.", verbose = verbose)
+
+    object@version <- list(major = 1, minor = 3, patch = 0)
+
+  }
+
+  # default adjustment ------------------------------------------------------
+
+  old_default <- getDefaultInstructions(object)
+
+  new_default <-
+    transfer_slot_content(
+      recipient = default_instructions_object,
+      donor = old_default,
+      verbose = FALSE
+    )
+
+  object@information$instructions$default <- new_default
 
   # Return updated object ---------------------------------------------------
 

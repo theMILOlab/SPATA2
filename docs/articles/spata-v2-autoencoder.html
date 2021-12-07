@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -80,10 +76,13 @@
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/sapta-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
@@ -127,23 +126,23 @@
 
     
     
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>1. Introduction</h2>
-<p>Sequencing data from single-cell RNA sequencing (scRNA-seq) and from spatial transcriptomic experiments alike are prone to noise and technical artifacts that might obstruct downstram analysis. As recently proposed by <a href="https://www.nature.com/articles/s41467-018-07931-2">Gökcen et al., 2019</a> autoencoder networks work against that. <strong>SPATA2</strong> offers a similar approach to denoise data. Apart from data that makes more sense (see Figure 3.2 and 3.3) denoising your data often results in more insightful visualization.</p>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>Sequencing data from single-cell RNA sequencing (scRNA-seq) and from spatial transcriptomic experiments alike are prone to noise and technical artifacts that might obstruct downstram analysis. As recently proposed by <a href="https://www.nature.com/articles/s41467-018-07931-2" class="external-link">Gökcen et al., 2019</a> autoencoder networks work against that. <strong>SPATA2</strong> offers a similar approach to denoise data. Apart from data that makes more sense (see Figure 3.2 and 3.3) denoising your data often results in more insightful visualization.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/">SPATA2</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span>
 
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadSpataObject</a></span><span class="op">(</span>directory_spata <span class="op">=</span> <span class="st">"data/spata-obj-gbm275.RDS"</span><span class="op">)</span></code></pre></div>
-<p>Note: Before you use the functions <strong>SPATA2</strong> provides please make sure that the R-packages <code>keras</code> and <code>tensorflow</code> are installed on your device. Installing both packages requires some steps in addition to what R does by default. Therefore the installation of <strong>SPATA2</strong> does not include these two packages. Click <a href="https://keras.rstudio.com/reference/install_keras.html">here</a> for a guide on how to setup both packages.</p>
+<p>Note: Before you use the functions <strong>SPATA2</strong> provides please make sure that the R-packages <code>keras</code> and <code>tensorflow</code> are installed on your device. Installing both packages requires some steps in addition to what R does by default. Therefore the installation of <strong>SPATA2</strong> does not include these two packages. Click <a href="https://keras.rstudio.com/reference/install_keras.html" class="external-link">here</a> for a guide on how to setup both packages.</p>
 </div>
-<div id="denoising-your-data" class="section level2">
-<h2 class="hasAnchor">
-<a href="#denoising-your-data" class="anchor"></a>2. Denoising your data</h2>
+<div class="section level2">
+<h2 id="denoising-your-data">2. Denoising your data<a class="anchor" aria-label="anchor" href="#denoising-your-data"></a>
+</h2>
 <p>Although there es only one function needed to denoise your data, namely <code><a href="../reference/runAutoencoderDenoising.html">runAutoencoderDenoising()</a></code>, you might want to assess how you set up the neural network that does the denoising - see chapter 2.2 for that matter.</p>
-<div id="using-the-neural-network" class="section level3">
-<h3 class="hasAnchor">
-<a href="#using-the-neural-network" class="anchor"></a>2.1 Using the neural network</h3>
+<div class="section level3">
+<h3 id="using-the-neural-network">2.1 Using the neural network<a class="anchor" aria-label="anchor" href="#using-the-neural-network"></a>
+</h3>
 <p>Denoising your data in <strong>SPATA2</strong> is as simple as it gets. The function <code>runAutoenconderDenoising()</code> constructs the neural network according to your adjustments (see Chapter 2.2 on how to optimize that) and stores the resulting denoised expression matrix named <em>denoised</em> next to the already existing expression matrix named <em>scaled</em> by using the function <code><a href="../reference/addExpressionMatrix.html">addExpressionMatrix()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># all expression matrices before denoising</span>
@@ -151,8 +150,8 @@
 
 <span class="co"># active expression matrix before denoising</span>
 <span class="fu"><a href="../reference/getActiveMatrixName.html">getActiveMatrixName</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] "scaled"</code></pre>
-<pre><code>## [1] "scaled"</code></pre>
+<pre><code><span class="co">## [1] "scaled"</span></code></pre>
+<pre><code><span class="co">## [1] "scaled"</span></code></pre>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># denoising your data </span>
 <span class="va">spata_obj</span> <span class="op">&lt;-</span>
@@ -161,7 +160,7 @@
     activation <span class="op">=</span> <span class="st">"selu"</span>, 
     bottleneck <span class="op">=</span> <span class="fl">56</span>, 
     epochs <span class="op">=</span> <span class="fl">20</span>, 
-    layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">128</span>, <span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span>, 
+    layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">128</span>, <span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span>, 
     dropout <span class="op">=</span> <span class="fl">0.1</span>
     <span class="op">)</span>
 
@@ -170,42 +169,42 @@
 
 <span class="co"># active expression matrix after denoising</span>
 <span class="fu"><a href="../reference/getActiveMatrixName.html">getActiveMatrixName</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] "scaled"   "denoised"</code></pre>
-<pre><code>## [1] "denoised"</code></pre>
+<pre><code><span class="co">## [1] "scaled"   "denoised"</span></code></pre>
+<pre><code><span class="co">## [1] "denoised"</span></code></pre>
 <p>Use <code><a href="../reference/printAutoencoderSummary.html">printAutoencoderSummary()</a></code> if you want to recall the way you set up the neural network that denoised your scaled data.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># print a summary </span>
 <span class="fu"><a href="../reference/printAutoencoderSummary.html">printAutoencoderSummary</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code>## The neural network that generated matrix 'denoised' was constructed with the following adjustments: 
-## 
-## Activation function: selu
-## Bottleneck neurons: 56
-## Dropout: 0.1
-## Epochs: 20
-## Layers: 128, 64 and 32</code></pre>
+<pre><code><span class="co">## The neural network that generated matrix 'denoised' was constructed with the following adjustments: </span>
+<span class="co">## </span>
+<span class="co">## Activation function: selu</span>
+<span class="co">## Bottleneck neurons: 56</span>
+<span class="co">## Dropout: 0.1</span>
+<span class="co">## Epochs: 20</span>
+<span class="co">## Layers: 128, 64 and 32</span></code></pre>
 <p>By default all functions in <strong>SPATA2</strong> (like <code><a href="../reference/plotSurface.html">plotSurface()</a></code> for example) use the expression matrix that is set to the active expression matrix. Use <code><a href="../reference/setActiveExpressionMatrix.html">setActiveExpressionMatrix()</a></code> to switch between the expression matrices that are currently stored inside your spata-object.</p>
 </div>
-<div id="the-optimal-neural-network-set-up" class="section level3">
-<h3 class="hasAnchor">
-<a href="#the-optimal-neural-network-set-up" class="anchor"></a>2.2 The optimal neural network set up</h3>
+<div class="section level3">
+<h3 id="the-optimal-neural-network-set-up">2.2 The optimal neural network set up<a class="anchor" aria-label="anchor" href="#the-optimal-neural-network-set-up"></a>
+</h3>
 <p>How neural networks are set up and how they work in detail is beyond the scope of this tutorial. Among other things they differ in the number of <em>bottleneck neurons</em> as well as in the <em>activation function</em> they use. With <code><a href="../reference/runAutoencoderAssessment.html">runAutoencoderAssessment()</a></code> you can iterate over all combinations you are interested in and assess the results by the total variance of the principal component analysis results.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">spata_obj</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="../reference/runAutoencoderAssessment.html">runAutoencoderAssessment</a></span><span class="op">(</span>
     object <span class="op">=</span> <span class="va">spata_obj</span>,
-    activations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"relu"</span>, <span class="st">"selu"</span>, <span class="st">"sigmoid"</span><span class="op">)</span>, 
-    bottlenecks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">40</span>, <span class="fl">48</span>, <span class="fl">56</span>, <span class="fl">64</span><span class="op">)</span>,
+    activations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"relu"</span>, <span class="st">"selu"</span>, <span class="st">"sigmoid"</span><span class="op">)</span>, 
+    bottlenecks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">40</span>, <span class="fl">48</span>, <span class="fl">56</span>, <span class="fl">64</span><span class="op">)</span>,
     epochs <span class="op">=</span> <span class="fl">20</span>, 
-    layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">128</span>, <span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span>, 
+    layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">128</span>, <span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span>, 
     dropout <span class="op">=</span> <span class="fl">0.1</span>
     <span class="op">)</span>
 
 <span class="fu"><a href="../reference/plotAutoencoderAssessment.html">plotAutoencoderAssessment</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code>## Additional set up of neural network: 
-## 
-## Epochs: 20
-## Dropout: 0.1
-## Layers: 128, 64 and 32</code></pre>
+<pre><code><span class="co">## Additional set up of neural network: </span>
+<span class="co">## </span>
+<span class="co">## Epochs: 20</span>
+<span class="co">## Dropout: 0.1</span>
+<span class="co">## Layers: 128, 64 and 32</span></code></pre>
 <div class="figure">
 <img src="spata-v2-autoencoder_files/figure-html/runAutoencoderAssessment()-invis-1.png" alt="Figure 2.1 Visualization of total variance of different autoencoder set ups" width="100%"><p class="caption">
 Figure 2.1 Visualization of total variance of different autoencoder set ups
@@ -213,15 +212,15 @@ Figure 2.1 Visualization of total variance of different autoencoder set ups
 </div>
 <p>Sticking to the set up that resulted in the highest total variance is a good start. If you want to extract the assessment results use <code><a href="../reference/getAutoencoderAssessment.html">getAutoencoderAssessment()</a></code>. It returns a list of the total variance results as well as the components the neural networks were composed of.</p>
 </div>
-<div id="storing-several-expression-matrices" class="section level3">
-<h3 class="hasAnchor">
-<a href="#storing-several-expression-matrices" class="anchor"></a>3.3 Storing several expression matrices</h3>
+<div class="section level3">
+<h3 id="storing-several-expression-matrices">3.3 Storing several expression matrices<a class="anchor" aria-label="anchor" href="#storing-several-expression-matrices"></a>
+</h3>
 <p>You can store as many denoised expression matrices as you want in your spata-object. Use the argument <code>mtr_name_output</code> for that matter. This makes <code><a href="../reference/runAutoencoderDenoising.html">runAutoencoderDenoising()</a></code> add the denoised expression matrix under the name you specified instead of the default name <em>denoised</em>. Keep in mind that the size of your spata-object is mainly determined by the data matrices it contains and that it can quickly grow to several gigabytes which might considerably affect the speed with which your R session runs.</p>
 </div>
 </div>
-<div id="examples" class="section level2">
-<h2 class="hasAnchor">
-<a href="#examples" class="anchor"></a>3. Examples</h2>
+<div class="section level2">
+<h2 id="examples">3. Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+</h2>
 <p>Figure 3.1 exemplifies how autoencoder denoising captures the main pattern and how this pattern is emphasized in the surface plot using the expression of gene <em>MARCH6</em>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setActiveExpressionMatrix.html">setActiveExpressionMatrix</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, mtr_name <span class="op">=</span> <span class="st">"scaled"</span><span class="op">)</span>
@@ -230,7 +229,7 @@ Figure 2.1 Visualization of total variance of different autoencoder set ups
             color_by <span class="op">=</span> <span class="st">"MARCH6"</span>, 
             smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
             pt_size <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setActiveExpressionMatrix.html">setActiveExpressionMatrix</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, mtr_name <span class="op">=</span> <span class="st">"denoised"</span><span class="op">)</span>
@@ -239,7 +238,7 @@ Figure 2.1 Visualization of total variance of different autoencoder set ups
             color_by <span class="op">=</span> <span class="st">"MARCH6"</span>, 
             smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
             pt_size <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-autoencoder_files/figure-html/example-surface-1.png" alt="Figure 3.1 First visual demonstration of scaled vs. denoised data" width="50%"><img src="spata-v2-autoencoder_files/figure-html/example-surface-2.png" alt="Figure 3.1 First visual demonstration of scaled vs. denoised data" width="50%"><p class="caption">
 Figure 3.1 First visual demonstration of scaled vs. denoised data
@@ -247,7 +246,7 @@ Figure 3.1 First visual demonstration of scaled vs. denoised data
 </div>
 <p>Both, Figure 3.2 and Figure 3.3 go one step further. The example genes <em>AIF1</em> and <em>CD68</em> are both expressed in macrophages which, logically, should result in an almost perfect spatial overlap of both genes. Still, technical artifacts might interfere.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">example_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"AIF1"</span>, <span class="st">"CD68"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">example_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AIF1"</span>, <span class="st">"CD68"</span><span class="op">)</span>
 
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setActiveExpressionMatrix.html">setActiveExpressionMatrix</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, mtr_name <span class="op">=</span> <span class="st">"scaled"</span><span class="op">)</span>
 
@@ -257,7 +256,7 @@ Figure 3.1 First visual demonstration of scaled vs. denoised data
   smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
   pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
@@ -266,7 +265,7 @@ Figure 3.1 First visual demonstration of scaled vs. denoised data
   smooth <span class="op">=</span> <span class="cn">FALSE</span>,
   pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span></code></pre></div>
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-autoencoder_files/figure-html/example-surface2-1.png" alt="Figure 3.2 Not denoised expression of genes AIF1 and CD68" width="50%"><img src="spata-v2-autoencoder_files/figure-html/example-surface2-2.png" alt="Figure 3.2 Not denoised expression of genes AIF1 and CD68" width="50%"><p class="caption">
 Figure 3.2 Not denoised expression of genes AIF1 and CD68
@@ -282,7 +281,7 @@ Figure 3.2 Not denoised expression of genes AIF1 and CD68
   smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
   pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span> <span class="op">+</span> 
   <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
@@ -291,7 +290,7 @@ Figure 3.2 Not denoised expression of genes AIF1 and CD68
   smooth <span class="op">=</span> <span class="cn">FALSE</span>, 
   pt_size <span class="op">=</span> <span class="fl">1.8</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-autoencoder_files/figure-html/example_genes-surface3-1.png" alt="Figure 3.3 Denoised expression of genes AIF1 and CD68" width="50%"><img src="spata-v2-autoencoder_files/figure-html/example_genes-surface3-2.png" alt="Figure 3.3 Denoised expression of genes AIF1 and CD68" width="50%"><p class="caption">
 Figure 3.3 Denoised expression of genes AIF1 and CD68
@@ -306,7 +305,7 @@ Figure 3.3 Denoised expression of genes AIF1 and CD68
   variables <span class="op">=</span> <span class="va">example_genes</span>,
   display_facets <span class="op">=</span> <span class="cn">FALSE</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span>
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaled (not denoised)"</span><span class="op">)</span>
 
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setActiveExpressionMatrix.html">setActiveExpressionMatrix</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, mtr_name <span class="op">=</span> <span class="st">"denoised"</span><span class="op">)</span>
 
@@ -315,7 +314,7 @@ Figure 3.3 Denoised expression of genes AIF1 and CD68
   variables <span class="op">=</span> <span class="va">example_genes</span>,
   display_facets <span class="op">=</span> <span class="cn">FALSE</span>
   <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
+  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Denoised"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-autoencoder_files/figure-html/example_genes-distribution-1.png" alt="Figure 3.4 Differences in distribution between scaled and denoised expression (violinplot)" width="50%"><img src="spata-v2-autoencoder_files/figure-html/example_genes-distribution-2.png" alt="Figure 3.4 Differences in distribution between scaled and denoised expression (violinplot)" width="50%"><p class="caption">
 Figure 3.4 Differences in distribution between scaled and denoised expression (violinplot)
@@ -347,11 +346,13 @@ Figure 3.5 Differences in distribution between scaled and denoised expression (s
 
 
       <footer><div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -359,6 +360,8 @@ Figure 3.5 Differences in distribution between scaled and denoised expression (s
 
   
 
+
+  
 
   </body>
 </html>

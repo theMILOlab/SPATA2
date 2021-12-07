@@ -1782,6 +1782,8 @@ plotPseudotime <- function(object,
 # Differential gene expression --------------------------------------------
 
 
+
+
 #' @title Plot differentially expressed genes
 #'
 #' @description Visualizes the expression of genes across subgroups in a heatmap. It either takes the results
@@ -1815,6 +1817,7 @@ plotDeaHeatmap <- function(object,
                            relevel = NULL,
                            method_de = NULL,
                            max_adj_pval = NULL,
+                           min_lfc = NULL,
                            n_highest_lfc = NULL,
                            n_lowest_pval = NULL,
                            breaks = NULL,
@@ -1864,6 +1867,7 @@ plotDeaHeatmap <- function(object,
         relevel = relevel,
         of_sample = of_sample,
         max_adj_pval = max_adj_pval,
+        min_lfc = min_lfc,
         n_highest_lfc = n_highest_lfc,
         n_lowest_pval = n_lowest_pval
       )
@@ -2015,6 +2019,122 @@ plotDeaHeatmap <- function(object,
                      )
 
 }
+
+#' @title Plot differentially expressed genes
+#'
+#' @description Visualizes results of DE analysis with
+#' dot plots.
+#'
+#' @inherit check_method params
+#' @inherit check_pt params
+#' @inherit argument_dummy params
+#' @inherit confuns::across_vis1 params
+#' @inherit confuns::argument_dummy params
+#' @inherit confuns::plot_gsea_dot params return
+#'
+#' @param by_group Logical value. If TRUE for every group in the grouping
+#' variable a single dot plot is created. If FALSE one plot for all groups and all
+#' gene sets is created.
+#'
+#' @export
+plotDeaDotPlot <- function(object,
+                           across,
+                           across_subset = NULL,
+                           relevel = NULL,
+                           method_de = NULL,
+                           by_group = TRUE,
+                           max_adj_pval = NULL,
+                           min_lfc = NULL,
+                           n_highest_lfc = NULL,
+                           n_lowest_pval = NULL,
+                           alpha_by = NULL,
+                           alpha_trans = "identity",
+                           color_by = "avg_logFC",
+                           size_by = "p_val_adj",
+                           size_trans = "reverse",
+                           pt_alpha = 0.9,
+                           pt_size = 2,
+                           pt_color = "blue4",
+                           pt_clrsp = "plasma",
+                           scales = "free",
+                           nrow = NULL,
+                           ncol = NULL,
+                           ...){
+
+  check_object(object)
+  hlpr_assign_arguments(object)
+
+  df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      across_subset = across_subset,
+      relevel = relevel,
+      method_de = method_de,
+      max_adj_pval = max_adj_pval,
+      min_lfc = min_lfc,
+      n_highest_lfc = n_highest_lfc,
+      n_lowest_pval = n_lowest_pval
+    ) %>%
+    dplyr::mutate(
+      gene = base::as.factor(gene),
+      avg_logFC = base::round(avg_logFC, digits = 2)
+      )
+
+  if(base::isTRUE(by_group)){
+
+    out_plot <-
+      plot_dot_plot_1d(
+        df = df,
+        x = "avg_logFC",
+        y = "gene",
+        across = across,
+        across.subset = across_subset,
+        relevel = relevel,
+        alpha.by = alpha_by,
+        alpha.trans = alpha_trans,
+        color.by = color_by,
+        shape.by = NULL,
+        size.by = size_by,
+        size.trans = size_trans,
+        pt.alpha = pt_alpha,
+        pt.color = pt_color,
+        pt.clrsp = pt_clrsp,
+        pt.size = pt_size,
+        scales = scales,
+        nrow = nrow,
+        ncol = ncol,
+        ...
+      ) +
+      ggplot2::scale_x_continuous(labels = function(x){ base::format(x, scientific = TRUE) }) +
+      ggplot2::labs(x = "Adj. p-value")
+
+  } else {
+
+    out_plot <-
+      plot_dot_plot_2d(
+        df = df,
+        x = across,
+        y = "gene",
+        alpha.by = alpha_by,
+        alpha.trans = alpha_trans,
+        color.by = color_by,
+        shape.by = NULL,
+        size.by = size_by,
+        size.trans = size_trans,
+        pt.alpha = pt_alpha,
+        pt.color = pt_color,
+        pt.clrsp = pt_clrsp,
+        pt.size = pt_size,
+        ...
+      )
+
+  }
+
+  return(out_plot)
+
+}
+
 
 # -----
 

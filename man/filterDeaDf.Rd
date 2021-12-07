@@ -7,6 +7,7 @@
 filterDeaDf(
   dea_df,
   max_adj_pval = 0.05,
+  min_lfc = 0,
   n_highest_lfc = 25,
   n_lowest_pval = 25,
   across_subset = NULL,
@@ -27,8 +28,11 @@ filterDeaDf(
 
 Hint: Use the resulting data.frame of \code{SPATA::findDE()} or it's descendants as input.}
 
-\item{max_adj_pval}{Numeric value. Sets the maximal threshold for adjusted p-values allowed. All genes
+\item{max_adj_pval}{Numeric value. Sets the threshold for adjusted p-values. All genes
 with adjusted p-values above that threshold are ignored.}
+
+\item{min_lfc}{Numeric value. Sets the threshold for average log fold change. All genes
+with an average log fold change below that threshold are ignored.}
 
 \item{n_highest_lfc}{Numeric value. Affects the total number of genes that are kept. See details.}
 
@@ -70,6 +74,7 @@ group.
 \enumerate{
  \item{Discards genes with \emph{avg_logFC}-values that are either infinite or negative}
  \item{Discards genes with adjusted p-values above the threshold set with \code{max_adj_pval}}
+ \item{Discard genes with average log fold change below the treshold set with \code{min_lfc}}
  \item{Slices the data.frame in order that for every experimental group:}
  \enumerate{
   \item{the n genes with the highest \emph{avg_logFC}-values are kept where n = \code{n_highest_lfc}}

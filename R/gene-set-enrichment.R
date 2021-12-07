@@ -13,9 +13,10 @@
 #' @param methods_de Character vector. All differential expression methods
 #' of interest.
 #' @inherit runDeAnalysis params
+#' @inherit getDeaResultsDf params
 #' @inherit argument_dummy params
 #' @inherit hypeR::hypeR params
-#' @param gene_sets A named list of character vectors. Names of slots correspond to the
+#' @param gene_set_list A named list of character vectors. Names of slots correspond to the
 #' gene set names. The slot contains the genes of the gene sets.Holds priority over
 #' \code{gene_set_names}.
 #' @param gene_set_names Character vector of gene set names that are taken
@@ -26,11 +27,11 @@
 #' grow the spata-objects size quickly!
 #'
 #' @details Computes gene set enrichment analysis using \code{hypeR::hypeR()}.
-#' It does so in a iterating about all possible combinations of \code{across} and
+#' It does so by iterating about all possible combinations of \code{across} and
 #' \code{methods_de}. Combinations for which no DE-results are found are silently
 #' skipped.
 #'
-#' If gene sets are provided via \code{gene_sets} argument \code{gene_set_names}
+#' If gene sets are provided via \code{gene_set_list} argument \code{gene_set_names}
 #' is ignored. Else the latter determines the gene sets used which are then taken
 #' from the spata-objects gene set data.frame.
 #'
@@ -39,22 +40,24 @@
 #' @export
 #'
 
-computeSignatureEnrichment <- function(object,
-                                       across,
-                                       methods_de = NULL,
-                                       max_adj_pval = NULL,
-                                       n_highest_lfc = NULL,
-                                       n_lowest_pval = NULL,
-                                       gene_sets = NULL,
-                                       gene_set_names = NULL,
-                                       test = c("hypergeometric", "kstest"),
-                                       background = nGenes(object),
-                                       absolute = FALSE,
-                                       pval = 1,
-                                       fdr = 1,
-                                       reduce = TRUE,
-                                       quiet = TRUE,
-                                       verbose = NULL){
+runGSEA <- function(object,
+                    across,
+                    methods_de = NULL,
+                    max_adj_pval = NULL,
+                    min_lfc = NULL,
+                    n_highest_lfc = NULL,
+                    n_lowest_pval = NULL,
+                    gene_set_list = NULL,
+                    gene_set_names = NULL,
+                    test = c("hypergeometric", "kstest"),
+                    background = nGenes(object),
+                    absolute = FALSE,
+                    pval = 1,
+                    fdr = 1,
+                    reduce = TRUE,
+                    quiet = TRUE,
+                    chr_to_fct = TRUE,
+                    verbose = NULL){
 
   check_object(object)
   hlpr_assign_arguments(object)
@@ -79,9 +82,8 @@ computeSignatureEnrichment <- function(object,
     against = validDeAnalysisMethods()
   )
 
-
   # prepare gene set list
-  if(base::is.list(gene_sets) && confuns::is_named(gene_sets)){
+  if(base::is.list(gene_set_list) && confuns::is_named(gene_set_list)){
 
     give_feedback(msg = "Using input gene set list.", verbose = verbose)
 
@@ -104,7 +106,7 @@ computeSignatureEnrichment <- function(object,
 
     }
 
-    gene_sets <- getGenes(object, of_gene_sets = gene_set_names, simplify = FALSE)
+    gene_set_list <- getGenes(object, of_gene_sets = gene_set_names, simplify = FALSE)
 
   }
 
@@ -118,6 +120,7 @@ computeSignatureEnrichment <- function(object,
           across = across_value,
           method_de = method_de,
           max_adj_pval = max_adj_pval,
+          min_lfc = min_lfc,
           n_highest_lfc = n_highest_lfc,
           n_lowest_pval = n_lowest_pval
         )
@@ -154,7 +157,7 @@ computeSignatureEnrichment <- function(object,
               out <-
                 hypeR::hypeR(
                   signature = signature,
-                  genesets = gene_sets,
+                  genesets = gene_set_list,
                   test = test,
                   background = background,
                   power = power,
@@ -166,9 +169,16 @@ computeSignatureEnrichment <- function(object,
 
               if(base::isTRUE(reduce)){
 
-                out <- confuns::lselect(lst = base::as.list(out), args, data, info)
+                out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
 
               }
+
+              out$data <-
+                dplyr::mutate(
+                  .data = out$data,
+                  overlap_perc = overlap/geneset,
+                  label = base::as.factor(label)
+                  )
 
               return(out)
 
@@ -199,20 +209,21 @@ computeSignatureEnrichment <- function(object,
 #'
 #' @inherit across_dummy params
 #' @inherit check_method params
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame that contains results of gene set enrichment
 #' analysis.
 #'
 #' @export
 #'
-getEnrichmentDf <- function(object,
-                            across,
-                            across_subset = NULL ,
-                            method_de = NULL,
-                            n_gsets = Inf,
-                            signif_val = "fdr",
-                            signif_threshold = 1,
-                            stop_if_null = TRUE){
+getGseaDf <- function(object,
+                      across,
+                      across_subset = NULL ,
+                      method_de = NULL,
+                      n_gsets = Inf,
+                      signif_var = "fdr",
+                      signif_threshold = 1,
+                      stop_if_null = TRUE      ){
 
   check_object(object)
 
@@ -221,7 +232,7 @@ getEnrichmentDf <- function(object,
   of_sample <- check_sample(object)
 
   df <-
-    getEnrichmentResults(
+    getGseaResults(
       object = object,
       across = across,
       across_subset = across_subset,
@@ -239,7 +250,7 @@ getEnrichmentDf <- function(object,
     ) %>%
     dplyr::mutate({{across}} := base::factor(x = !!rlang::sym(across))) %>%
     dplyr::select({{across}}, dplyr::everything()) %>%
-    dplyr::filter(!!rlang::sym(signif_val) <= {{signif_threshold}}) %>%
+    dplyr::filter(!!rlang::sym(signif_var) <= {{signif_threshold}}) %>%
     dplyr::group_by(!!rlang::sym(across)) %>%
     dplyr::slice_head(n = n_gsets)
 
@@ -259,17 +270,17 @@ getEnrichmentDf <- function(object,
 #' in form of either a list (if \code{reduce} was set to TRUE) or
 #' an object of class \code{hyp} (if \code{reduce was set to FALSE}).
 #'
-#' @inherit getEnrichmentDf params
+#' @inherit getGseaDf params
 #'
 #' @return A list or an object of class \code{hyp}.
 #' @export
 #'
-getEnrichmentResults <- function(object,
-                                 across,
-                                 across_subset = NULL,
-                                 method_de = NULL,
-                                 flatten = TRUE,
-                                 stop_if_null = TRUE){
+getGseaResults <- function(object,
+                           across,
+                           across_subset = NULL,
+                           method_de = NULL,
+                           flatten = TRUE,
+                           stop_if_null = TRUE){
 
   check_object(object)
   hlpr_assign_arguments(object)
@@ -290,6 +301,13 @@ getEnrichmentResults <- function(object,
   }
 
   if(base::is.character(across_subset)){
+
+    across_subset <-
+      check_across_subset_negate(
+        across = across,
+        across.subset = across_subset,
+        all.groups = getGroupNames(object, across)
+      )
 
     check_one_of(
       input = across_subset,
@@ -312,16 +330,28 @@ getEnrichmentResults <- function(object,
 
 
 
+#' @title Obtain signature enrichment
+#'
+#' @description Extracts the names of enriched gene sets by cluster signature.
+#'
+#' @inherit argument_dummy params
+#' @inherit getGseaResults params
+#' @inherit check_method params
+#'
+#' @return A named list of character vectors.
+#' @export
+#'
+
 getSignatureEnrichment <- function(object,
                                    across,
                                    across_subset = NULL,
                                    n_gsets = 10,
-                                   signif_val = "fdr",
+                                   signif_var = "fdr",
                                    signif_threshold = 0.05,
                                    method_de = NULL){
 
   res <-
-    getEnrichmentResults(
+    getGseaResults(
       object = object,
       across = across,
       across_subset = across_subset,
@@ -336,8 +366,8 @@ getSignatureEnrichment <- function(object,
 
       hyp_obj$data %>%
         tibble::as_tibble() %>%
-        dplyr::filter(!!rlang::sym(signif_val) <= {{signif_threshold}}) %>%
-        dplyr::arrange({{signif_val}}) %>%
+        dplyr::filter(!!rlang::sym(signif_var) <= {{signif_threshold}}) %>%
+        dplyr::arrange({{signif_var}}) %>%
         dplyr::slice_head(n = n_gsets) %>%
         dplyr:::pull(label)
 
@@ -365,101 +395,157 @@ getSignatureEnrichment <- function(object,
 #' @inherit confuns::across_vis1 params
 #' @inherit confuns::argument_dummy params
 #' @inherit confuns::plot_gsea_dot params return
+#' @param remove_gsets Character value or NULL. If character, regular expression.
+#' All gene set names that match the regular expression are not included in
+#' the plot.
+#'
+#' @param by_group Logical value. If TRUE for every group in the grouping
+#' variable a single dot plot is created. If FALSE one plot for all groups and all
+#' gene sets is created.
 #'
 #' @export
 plotGseaDotPlot <- function(object,
                             across,
-                            across_subset = getGroupNames(object, across)[1],
+                            across_subset = NULL,
                             relevel = NULL,
                             method_de = NULL,
+                            by_group = TRUE,
                             n_gsets = 20,
-                            signif_val = "fdr",
+                            signif_var = "fdr",
                             signif_threshold = 0.05,
+                            alpha_by = NULL,
+                            alpha_trans = "reverse",
                             color_by = "fdr",
-                            size_by = "geneset",
+                            color_trans = "reverse",
+                            size_by = "fdr",
+                            size_trans = "reverse",
+                            pt_alpha = 0.9,
                             pt_size = 2,
                             pt_color = "blue4",
                             pt_clrsp = "plasma",
-                            remove = "^.*_",
+                            remove = "^.+?(?=_)",
+                            remove_gsets = NULL,
                             replace = c("_", " "),
-                            do_plot = TRUE,
+                            scientific = TRUE,
+                            scales = "free",
                             nrow = NULL,
                             ncol = NULL,
-                            add_ons = list(),
+                            transform_with = NULL,
+                            verbose = NULL,
                             ...){
 
+  check_object(object)
+  hlpr_assign_arguments(object)
+
   df <-
-    getEnrichmentDf(
+    getGseaDf(
       object = object,
       across = across,
       across_subset = across_subset,
       method_de = method_de,
       n_gsets = n_gsets,
-      signif_val = signif_val,
+      signif_var = signif_var,
       signif_threshold = signif_threshold,
       stop_if_null = TRUE
     )
 
+  df <-
+    adjustGseaDf(
+      df = df,
+      signif_var = signif_var,
+      signif_threshold = signif_threshold,
+      remove = remove,
+      remove_gs = remove_gsets,
+      replace = replace,
+      n_gsets = n_gsets,
+      digits = 2
+    )
 
-  if(base::length(across_subset) == 1){
+  groups_with_enrichment <-
+    df[[across]] %>%
+    base::unique() %>%
+    base::as.character()
 
+  groups_wo_enrichment <- across_subset[!across_subset %in% groups_with_enrichment]
 
-    out <-
-      confuns::plot_gsea_dot(
-        object = df,
-        n.gsets = n_gsets,
+  if(base::length(groups_wo_enrichment) >= 1){
+
+    ref <- scollapse(groups_wo_enrichment)
+    ref2 <- adapt_reference(input = groups_wo_enrichment, sg = "group")
+
+    msg <- glue::glue("No enrichment for {ref2} '{ref}'. Adjust parameters.")
+
+    give_feedback(msg = msg, verbose = verbose)
+
+    across_subset <- across_subset[!across_subset %in% groups_wo_enrichment]
+
+  }
+
+  df <-
+    check_across_subset(
+      df = df,
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel
+    )
+
+  if(base::isTRUE(by_group)){
+
+    out_plot <-
+      plot_dot_plot_1d(
+        df = df,
+        x = signif_var,
+        y = "label",
+        reorder = TRUE,
+        reorder.rev = TRUE,
+        across = across,
+        across.subset = across_subset,
+        relevel = relevel,
+        alpha.by = alpha_by,
+        alpha.trans = alpha_trans,
         color.by = color_by,
+        color.trans = color_trans,
+        shape.by = NULL,
         size.by = size_by,
-        pt.size = pt_size,
+        size.trans = size_trans,
+        pt.alpha = pt_alpha,
         pt.color = pt_color,
         pt.clrsp = pt_clrsp,
-        remove = remove,
-        replace = replace
-      )
-
-    return(out)
+        pt.size = pt_size,
+        scales = scales,
+        nrow = nrow,
+        ncol = ncol,
+        transform.with = transform_with,
+        ...
+      ) +
+      ggplot2::scale_x_reverse(labels = function(x){ base::format(x, scientific = TRUE) }) +
+      ggplot2::labs(y = NULL)
 
   } else {
 
-    out <-
-      purrr::map(
-        .x = across_subset,
-        .f = function(group){
-
-          dplyr::filter(df, !!rlang::sym(across) == {{group}}) %>%
-            confuns::plot_gsea_dot(
-              object = .,
-              n.gsets = n_gsets,
-              color.by = color_by,
-              size.by = size_by,
-              pt.size = pt_size,
-              pt.color = pt_color,
-              pt.clrsp = pt_clrsp,
-              remove = remove,
-              replace = replace
-            ) +
-            ggplot2::guides(
-              size = ggplot2::guide_legend(order = 2)
-            ) +
-            ggplot2::facet_wrap(
-              facets = stringr::str_c(". ~ ", across) %>% stats::as.formula()
-            ) +
-            add_ons
-
-        }
-      ) %>%
-      purrr::set_names(nm = across_subset)
-
-    if(base::isTRUE(do_plot)){
-
-      gridExtra::grid.arrange(grobs = out, nrow = nrow, ncol = ncol)
-
-    } else {
-
-      return(out)
-
-    }
+    out_plot <-
+      plot_dot_plot_2d(
+        df = df,
+        x = across,
+        y = "label",
+        alpha.by = alpha_by,
+        alpha.trans = alpha_trans,
+        color.by = color_by,
+        color.trans = color_trans,
+        shape.by = NULL,
+        size.by = size_by,
+        size.trans = size_trans,
+        pt.alpha = pt_alpha,
+        pt.color = pt_color,
+        pt.clrsp = pt_clrsp,
+        pt.size = pt_size,
+        transform.with = transform_with,
+        ...
+      ) +
+      ggplot2::labs(x = NULL, y = NULL)
 
   }
+
+  return(out_plot)
 
 }

@@ -1,5 +1,5 @@
 pandoc: 2.7.3
-pkgdown: 1.6.1
+pkgdown: 2.0.1
 pkgdown_sha: ~
 articles:
   spata-v2-autoencoder: spata-v2-autoencoder.html
@@ -7,6 +7,7 @@ articles:
   spata-v2-de-analysis: spata-v2-de-analysis.html
   spata-v2-extract-add-and-join-data: spata-v2-extract-add-and-join-data.html
   spata-v2-genes-gene-sets-and-features: spata-v2-genes-gene-sets-and-features.html
+  spata-v2-gsea: spata-v2-gsea.html
   spata-v2-installation: spata-v2-installation.html
   spata-v2-introduction-and-philosophy: spata-v2-introduction-and-philosophy.html
   spata-v2-object-initiation-and-manipulation: spata-v2-object-initiation-and-manipulation.html
@@ -18,5 +19,5 @@ articles:
   spata-v2-segmentation-and-clustering: spata-v2-segmentation-and-clustering.html
   spata-v2-terminology: spata-v2-terminology.html
   spata-v2-trajectory-analysis: spata-v2-trajectory-analysis.html
-last_built: 2021-03-29T11:21Z
+last_built: 2021-12-07T02:03Z
 

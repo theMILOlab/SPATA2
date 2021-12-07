@@ -141,8 +141,10 @@ runDeAnalysis <- function(object,
 #'
 #' @inherit across_dummy params
 #' @inherit check_dea_df params
-#' @param max_adj_pval Numeric value. Sets the maximal threshold for adjusted p-values allowed. All genes
+#' @param max_adj_pval Numeric value. Sets the threshold for adjusted p-values. All genes
 #' with adjusted p-values above that threshold are ignored.
+#' @param min_lfc Numeric value. Sets the threshold for average log fold change. All genes
+#' with an average log fold change below that threshold are ignored.
 #' @param n_highest_lfc Numeric value. Affects the total number of genes that are kept. See details.
 #' @param n_lowest_pval Numeric value. Affects the total number of genes that are kept. See details.
 #' @param return Character value. Denotes the output type. One of \emph{'data.frame', 'vector'} or \emph{'list}
@@ -152,6 +154,7 @@ runDeAnalysis <- function(object,
 #' \enumerate{
 #'  \item{Discards genes with \emph{avg_logFC}-values that are either infinite or negative}
 #'  \item{Discards genes with adjusted p-values above the threshold set with \code{max_adj_pval}}
+#'  \item{Discard genes with average log fold change below the treshold set with \code{min_lfc}}
 #'  \item{Slices the data.frame in order that for every experimental group:}
 #'  \enumerate{
 #'   \item{the n genes with the highest \emph{avg_logFC}-values are kept where n = \code{n_highest_lfc}}
@@ -175,6 +178,7 @@ runDeAnalysis <- function(object,
 
 filterDeaDf <- function(dea_df,
                         max_adj_pval = 0.05,
+                        min_lfc = 0,
                         n_highest_lfc = 25,
                         n_lowest_pval = 25,
                         across_subset = NULL,
@@ -183,7 +187,7 @@ filterDeaDf <- function(dea_df,
 
   # 1. Control --------------------------------------------------------------
 
-  confuns::are_values(c("max_adj_pval", "n_highest_lfc", "n_lowest_pval"),
+  confuns::are_values(c("max_adj_pval", "min_lfc", "n_highest_lfc", "n_lowest_pval"),
                       mode = "numeric", skip.allow = TRUE, skip.val = NULL)
 
   confuns::check_one_of(input = return,
@@ -214,6 +218,13 @@ filterDeaDf <- function(dea_df,
 
     dea_df <-
       dplyr::filter(.data = dea_df, p_val_adj <= {{max_adj_pval}})
+
+  }
+
+  if(!base::is.null(min_lfc)){
+
+    dea_df <-
+      dplyr::filter(.data = dea_df, avg_logFC >= {{min_lfc}})
 
   }
 

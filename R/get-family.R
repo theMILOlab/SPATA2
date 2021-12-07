@@ -98,7 +98,7 @@ getDeaOverview <- function(object){
 
   }
 
-  base::return(final_results)
+  return(final_results)
 
 }
 
@@ -133,6 +133,7 @@ getDeaResultsDf <- function(object,
                             relevel = FALSE,
                             method_de = "wilcox",
                             max_adj_pval = NULL,
+                            min_lfc = NULL,
                             n_highest_lfc = NULL,
                             n_lowest_pval = NULL,
                             of_sample = NA,
@@ -169,6 +170,7 @@ getDeaResultsDf <- function(object,
         across_subset = across_subset,
         relevel = relevel,
         max_adj_pval = max_adj_pval,
+        min_lfc = min_lfc,
         n_highest_lfc = n_highest_lfc,
         n_lowest_pval = n_lowest_pval,
         return = "data.frame"
@@ -190,6 +192,7 @@ getDeaGenes <- function(object,
                         across_subset = NULL,
                         method_de = "wilcox",
                         max_adj_pval = NULL,
+                        min_lfc = NULL,
                         n_highest_lfc = 50,
                         n_lowest_pval = 50,
                         of_sample = NA){
@@ -209,20 +212,21 @@ getDeaGenes <- function(object,
 
   if(base::is.null(de_result_list)){
 
-    base::stop(glue::glue("No de-analysis results found across '{across}' computed via method '{method_de}'."))
+    stop(glue::glue("No de-analysis results found across '{across}' computed via method '{method_de}'."))
 
   }
 
   dea_results <- filterDeaDf(dea_df = de_result_list[["data"]],
                              across_subset = across_subset,
                              max_adj_pval = max_adj_pval,
+                             min_lfc = min_lfc,
                              n_highest_lfc = n_highest_lfc,
                              n_lowest_pval = n_lowest_pval,
                              return = "vector")
 
   # 3. Return ---------------------------------------------------------------
 
-  base::return(dea_results)
+  return(dea_results)
 
 }
 

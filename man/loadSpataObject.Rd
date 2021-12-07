@@ -6,7 +6,7 @@
 \alias{loadCorrespondingSeuratObject}
 \title{Load corresponding objects}
 \usage{
-loadSpataObject(directory_spata, verbose = TRUE)
+loadSpataObject(directory_spata, verbose = TRUE, update = TRUE)
 
 loadCorrespondingCDS(object, verbose = NULL)
 

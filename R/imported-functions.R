@@ -51,6 +51,10 @@ are_values <- confuns::are_values
 
 # c -----------------------------------------------------------------------
 
+check_across_subset <- confuns::check_across_subset
+check_across_subset2 <- confuns::check_across_subset2
+check_across_subset_negate <- confuns::check_across_subset_negate
+
 check_data_frame <- confuns::check_data_frame
 
 check_none_of <- confuns::check_none_of
@@ -87,6 +91,8 @@ make_pretty_name <- confuns::make_pretty_name
 
 plot_barchart <- confuns::plot_barplot
 plot_boxplot <- confuns::plot_boxplot
+plot_dot_plot_1d <- confuns::plot_dot_plot_1d
+plot_dot_plot_2d <- confuns::plot_dot_plot_2d
 plot_density <- confuns::plot_density
 plot_histogram <- confuns::plot_histogram
 plot_ridgeplot <- confuns::plot_ridgeplot
