@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -80,10 +76,13 @@
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
@@ -127,14 +126,14 @@
 
     
     
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>1. Introduction</h2>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
 <p>In order to make working with the <strong>SPATA2</strong>*-package as easy and as intuitive as possible it’s functions are divided into families with respect to what they do. Their main functionality is described by the first verb their name is composed of which means that you can easily skim through all of them by typing <code>SPATA::</code> into your console.</p>
 </div>
-<div id="functions" class="section level2">
-<h2 class="hasAnchor">
-<a href="#functions" class="anchor"></a>2. Functions</h2>
+<div class="section level2">
+<h2 id="functions">2. Functions<a class="anchor" aria-label="anchor" href="#functions"></a>
+</h2>
 <ol style="list-style-type: decimal">
 <li>
 <strong>create</strong>-functions make you create new content and then add it immediately to your spata-object. They return an updated version of your spata-object. (e.g. <code><a href="../reference/createSegmentation.html">createSegmentation()</a></code>, <code><a href="../reference/createTrajectories.html">createTrajectories()</a></code>)</li>
@@ -161,120 +160,120 @@
 <strong>run</strong>/<strong>compute</strong>-functions cover computationally more intensive topics and store the results in the spata-object. They return an updated version of your spata-object. (e.g. <code><a href="../reference/computeGeneMetaData.html">computeGeneMetaData()</a></code>, <code>runDeAnalsis()</code>, <code><a href="../reference/runAutoencoderDenoising.html">runAutoencoderDenoising()</a></code>)</li>
 </ol>
 </div>
-<div id="arguments" class="section level2">
-<h2 class="hasAnchor">
-<a href="#arguments" class="anchor"></a>3. Arguments</h2>
+<div class="section level2">
+<h2 id="arguments">3. Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a>
+</h2>
 <p>As every function accomplishes something unique every function has it’s own special arguments. Still, we attempted to create argument-families that usually refer to the same aspects.</p>
-<div id="spata-object" class="section level4">
-<h4 class="hasAnchor">
-<a href="#spata-object" class="anchor"></a>1. SPATA-object</h4>
+<div class="section level4">
+<h4 id="spata-object">1. SPATA-object<a class="anchor" aria-label="anchor" href="#spata-object"></a>
+</h4>
 <ol style="list-style-type: decimal">
 <li>
 <code>object</code> takes your spata-object from which it gets all the information. It is the most frequent argument used and usually the first one of every function that needs it.</li>
 </ol>
 </div>
-<div id="data-input" class="section level4">
-<h4 class="hasAnchor">
-<a href="#data-input" class="anchor"></a>2. Data input</h4>
+<div class="section level4">
+<h4 id="data-input">2. Data input<a class="anchor" aria-label="anchor" href="#data-input"></a>
+</h4>
 <p>As <strong>SPATA2</strong>* draws it’s main power from the tidyverse data.frames are a vital part of the communication between functions and of the framework we attempt to provide. Whenever a function takes a data.frame as an input it will contain an argument of the <code>df</code>-family.</p>
 <ol style="list-style-type: decimal">
 <li>
 <code>spata_df</code> refers to data.frames that contain at least the variables <em>barcodes</em> and <em>sample</em> (obtained by e.g. <code><a href="../reference/getSpataDf.html">getSpataDf()</a></code>*).</li>
 </ol>
-<pre><code>## # A tibble: 3,734 x 2
-##    barcodes           sample
-##    &lt;chr&gt;              &lt;chr&gt; 
-##  1 AAACAAGTATCTCCCA-1 T275  
-##  2 AAACACCAATAACTGC-1 T275  
-##  3 AAACAGAGCGACTCCT-1 T275  
-##  4 AAACAGCTTTCAGAAG-1 T275  
-##  5 AAACAGGGTCTATATT-1 T275  
-##  6 AAACAGTGTTCCTGGG-1 T275  
-##  7 AAACATTTCCCGGATT-1 T275  
-##  8 AAACCGGGTAGGTACC-1 T275  
-##  9 AAACCGTTCGTCCAGG-1 T275  
-## 10 AAACCTAAGCAGCCGG-1 T275  
-## # ... with 3,724 more rows</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 3,734 x 2</span></span>
+<span class="co">##    barcodes           sample</span>
+<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>              </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span> </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> AAACAAGTATCTCCCA-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> AAACACCAATAACTGC-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> AAACAGAGCGACTCCT-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> AAACAGCTTTCAGAAG-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> AAACAGGGTCTATATT-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> AAACAGTGTTCCTGGG-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> AAACATTTCCCGGATT-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> AAACCGGGTAGGTACC-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> AAACCGTTCGTCCAGG-1 T275  </span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> AAACCTAAGCAGCCGG-1 T275  </span></span>
+<span class="co">## <span style="color: #949494;"># ... with 3,724 more rows</span></span></code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>
 <code>coords_df</code> refers to <em>coordinate data.frames</em> which contain at least the variables <em>barcodes</em>, <em>sample</em>, <em>x</em> and <em>y</em> (obtained by e.g.<code><a href="../reference/getCoordsDf.html">getCoordsDf()</a></code>*).</li>
 </ol>
-<pre><code>## # A tibble: 3,734 x 4
-##    barcodes           sample     x     y
-##    &lt;chr&gt;              &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt;
-##  1 AAACAAGTATCTCCCA-1 T275    435.  374.
-##  2 AAACACCAATAACTGC-1 T275    132.  429.
-##  3 AAACAGAGCGACTCCT-1 T275    407.  145.
-##  4 AAACAGCTTTCAGAAG-1 T275     96   327 
-##  5 AAACAGGGTCTATATT-1 T275    110.  353.
-##  6 AAACAGTGTTCCTGGG-1 T275    219.  518.
-##  7 AAACATTTCCCGGATT-1 T275    416.  443.
-##  8 AAACCGGGTAGGTACC-1 T275    165.  321.
-##  9 AAACCGTTCGTCCAGG-1 T275    216.  385.
-## 10 AAACCTAAGCAGCCGG-1 T275    365.  468.
-## # ... with 3,724 more rows</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 3,734 x 4</span></span>
+<span class="co">##    barcodes           sample     x     y</span>
+<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>              </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>  </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> AAACAAGTATCTCCCA-1 T275    435.  374.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> AAACACCAATAACTGC-1 T275    132.  429.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> AAACAGAGCGACTCCT-1 T275    407.  145.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> AAACAGCTTTCAGAAG-1 T275     96   327 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> AAACAGGGTCTATATT-1 T275    110.  353.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> AAACAGTGTTCCTGGG-1 T275    219.  518.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> AAACATTTCCCGGATT-1 T275    416.  443.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> AAACCGGGTAGGTACC-1 T275    165.  321.</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> AAACCGTTCGTCCAGG-1 T275    216.  385.</span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> AAACCTAAGCAGCCGG-1 T275    365.  468.</span></span>
+<span class="co">## <span style="color: #949494;"># ... with 3,724 more rows</span></span></code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li>
 <code>dea_df</code> refers to <em>differential expression data.frames</em> which contain the results of differential gene expression analysis. (obtained by e.g. <code><a href="../reference/getDeaResultsDf.html">getDeaResultsDf()</a></code>).</li>
 </ol>
-<pre><code>## # A tibble: 6,441 x 7
-##       p_val avg_logFC pct.1 pct.2 p_val_adj seurat_clusters gene   
-##       &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;fct&gt;           &lt;chr&gt;  
-##  1 1.20e- 3      6.68 0.965 0.96   1.00e+ 0 0               DPYSL2 
-##  2 3.27e- 5      4.66 0.984 0.988  7.05e- 1 0               AQP4   
-##  3 1.31e-40      3.57 0.909 0.8    2.82e-36 0               VOPP1  
-##  4 2.01e- 9      3.44 0.842 0.883  4.34e- 5 0               PON2   
-##  5 7.85e- 5      2.88 0.721 0.76   1.00e+ 0 0               RHBDD2 
-##  6 1.57e-33      2.75 0.86  0.931  3.38e-29 0               UBL5   
-##  7 6.54e- 9      2.34 0.794 0.855  1.41e- 4 0               ARL6IP1
-##  8 1.64e- 5      2.14 0.633 0.679  3.53e- 1 0               DDX17  
-##  9 7.89e-10      2.14 0.862 0.773  1.70e- 5 0               MAOB   
-## 10 4.84e- 7      2.03 0.509 0.588  1.04e- 2 0               PSMC5  
-## # ... with 6,431 more rows</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 6,441 x 7</span></span>
+<span class="co">##       p_val avg_logFC pct.1 pct.2 p_val_adj seurat_clusters gene   </span>
+<span class="co">##       <span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>     </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span>     </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;fct&gt;</span><span>           </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> 1.20</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 3</span><span>      6.68 0.965 0.96   1   </span><span style="color: #949494;">e</span><span>+ 0 0               DPYSL2 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> 3.27</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 5</span><span>      4.66 0.984 0.988  7.05</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span><span> 0               AQP4   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> 1.31</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-40</span><span>      3.57 0.909 0.8    2.82</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-36</span><span> 0               VOPP1  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> 2.01</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 9</span><span>      3.44 0.842 0.883  4.34</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 5</span><span> 0               PON2   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> 7.85</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 5</span><span>      2.88 0.721 0.76   1   </span><span style="color: #949494;">e</span><span>+ 0 0               RHBDD2 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> 1.57</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-33</span><span>      2.75 0.86  0.931  3.38</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-29</span><span> 0               UBL5   </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> 6.54</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 9</span><span>      2.34 0.794 0.855  1.41</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 4</span><span> 0               ARL6IP1</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> 1.64</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 5</span><span>      2.14 0.633 0.679  3.53</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 1</span><span> 0               DDX17  </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> 7.89</span><span style="color: #949494;">e</span><span style="color: #BB0000;">-10</span><span>      2.14 0.862 0.773  1.70</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 5</span><span> 0               MAOB   </span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> 4.84</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 7</span><span>      2.03 0.509 0.588  1.04</span><span style="color: #949494;">e</span><span style="color: #BB0000;">- 2</span><span> 0               PSMC5  </span></span>
+<span class="co">## <span style="color: #949494;"># ... with 6,431 more rows</span></span></code></pre>
 <ol start="4" style="list-style-type: decimal">
 <li>
 <code>stdf</code> refers to <em>summarized trajectory data.frames</em> which contain information about spatial trajectories drawn with <code><a href="../reference/createTrajectories.html">createTrajectories()</a></code> (obtained by e.g.<code><a href="../reference/getTrajectoryDf.html">getTrajectoryDf()</a></code>).</li>
 </ol>
-<pre><code>## # A tibble: 45 x 5
-##    trajectory_part trajectory_part_order trajectory_order variables values
-##    &lt;chr&gt;                           &lt;int&gt;            &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
-##  1 Part 1                              1                1 GFAP       1    
-##  2 Part 1                              2                2 GFAP       0.972
-##  3 Part 1                              3                3 GFAP       0.997
-##  4 Part 1                              4                4 GFAP       0.932
-##  5 Part 1                              5                5 GFAP       0.923
-##  6 Part 1                              6                6 GFAP       0.904
-##  7 Part 1                              7                7 GFAP       0.908
-##  8 Part 1                              8                8 GFAP       0.968
-##  9 Part 1                              9                9 GFAP       0.969
-## 10 Part 1                             10               10 GFAP       0.824
-## # ... with 35 more rows</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 45 x 5</span></span>
+<span class="co">##    trajectory_part trajectory_part_order trajectory_order variables values</span>
+<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>                           </span><span style="color: #949494;font-style: italic;">&lt;int&gt;</span><span>            </span><span style="color: #949494;font-style: italic;">&lt;int&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>      </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> Part 1                              1                1 GFAP       1    </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> Part 1                              2                2 GFAP       0.972</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> Part 1                              3                3 GFAP       0.997</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> Part 1                              4                4 GFAP       0.932</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> Part 1                              5                5 GFAP       0.923</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> Part 1                              6                6 GFAP       0.904</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> Part 1                              7                7 GFAP       0.908</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> Part 1                              8                8 GFAP       0.968</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> Part 1                              9                9 GFAP       0.969</span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> Part 1                             10               10 GFAP       0.824</span></span>
+<span class="co">## <span style="color: #949494;"># ... with 35 more rows</span></span></code></pre>
 <ol start="5" style="list-style-type: decimal">
 <li>
 <code>atdf</code> refers to <em>assessd trajectory data.frames</em> which contain the results spatial trajectory modelling. (obtained by e.g. <code><a href="../reference/assessTrajectoryTrends.html">assessTrajectoryTrends()</a></code>)</li>
 </ol>
-<pre><code>## # A tibble: 14 x 3
-## # Groups:   variables [1]
-##    variables  pattern                  auc
-##    &lt;chr&gt;      &lt;chr&gt;                  &lt;dbl&gt;
-##  1 HM_HYPOXIA Linear ascending        1.70
-##  2 HM_HYPOXIA Gradient ascending      1.80
-##  3 HM_HYPOXIA Sinus (reversed)        2.87
-##  4 HM_HYPOXIA Late peak               3.45
-##  5 HM_HYPOXIA One peak (reversed)     7.08
-##  6 HM_HYPOXIA Logarithmic ascending   8.76
-##  7 HM_HYPOXIA Two peaks               9.61
-##  8 HM_HYPOXIA Logarithmic descending 10.5 
-##  9 HM_HYPOXIA Two peaks (reversed)   10.7 
-## 10 HM_HYPOXIA One peak               13.2 
-## 11 HM_HYPOXIA Early peak             15.0 
-## 12 HM_HYPOXIA Linear descending      15.1 
-## 13 HM_HYPOXIA Sinus                  17.4 
-## 14 HM_HYPOXIA Gradient descending    18.5</code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 14 x 3</span></span>
+<span class="co">## <span style="color: #949494;"># Groups:   variables [1]</span></span>
+<span class="co">##    variables  pattern                  auc</span>
+<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>      </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>                  </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> HM_HYPOXIA Linear ascending        1.70</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> HM_HYPOXIA Gradient ascending      1.80</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> HM_HYPOXIA Sinus (reversed)        2.87</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> HM_HYPOXIA Late peak               3.45</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> HM_HYPOXIA One peak (reversed)     7.08</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> HM_HYPOXIA Logarithmic ascending   8.76</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> HM_HYPOXIA Two peaks               9.61</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> HM_HYPOXIA Logarithmic descending 10.5 </span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> HM_HYPOXIA Two peaks (reversed)   10.7 </span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> HM_HYPOXIA One peak               13.2 </span></span>
+<span class="co">## <span style="color: #BCBCBC;">11</span><span> HM_HYPOXIA Early peak             15.0 </span></span>
+<span class="co">## <span style="color: #BCBCBC;">12</span><span> HM_HYPOXIA Linear descending      15.1 </span></span>
+<span class="co">## <span style="color: #BCBCBC;">13</span><span> HM_HYPOXIA Sinus                  17.4 </span></span>
+<span class="co">## <span style="color: #BCBCBC;">14</span><span> HM_HYPOXIA Gradient descending    18.5</span></span></code></pre>
 </div>
-<div id="informative-variables" class="section level4">
-<h4 class="hasAnchor">
-<a href="#informative-variables" class="anchor"></a>4. Informative variables</h4>
+<div class="section level4">
+<h4 id="informative-variables">4. Informative variables<a class="anchor" aria-label="anchor" href="#informative-variables"></a>
+</h4>
 <p>These are variables of the data.frame you specify as input of the <code>df</code>-argument family or of the data.frame that is generated from scratch in the background. Depending on what the function does they come along with different names but work in a similar fashion.</p>
 <ol style="list-style-type: decimal">
 <li><p><code>variables</code> refer to all types of informative variables as well and is used if more than one variable can be specified.</p></li>
@@ -283,18 +282,18 @@
 </ol>
 <p>(See <a href="spata-v2-genes-gene-sets-and-features.html">Genes-, Gene-sets &amp; Features</a> for more information.)</p>
 </div>
-<div id="comparing-arguments" class="section level4">
-<h4 class="hasAnchor">
-<a href="#comparing-arguments" class="anchor"></a>5. Comparing arguments</h4>
+<div class="section level4">
+<h4 id="comparing-arguments">5. Comparing arguments<a class="anchor" aria-label="anchor" href="#comparing-arguments"></a>
+</h4>
 <ol style="list-style-type: decimal">
 <li><p><code>across</code> takes one discrtete feature that denotes group belonging such as <em>clusters</em> or <em>segments</em> and is found in functions that compare certain aspects across these groups.</p></li>
 <li><p><code>across_subset</code> takes specific values of the specified categorical feature variable in <code>across</code>.</p></li>
 </ol>
-<p>E.g. <code><a href="../reference/plotBoxplot.html">plotViolinplot()</a></code> with the following argument input <code>variables</code> = <code>c(*'GFAP'*, *'GAPDH'*)</code> <code>across</code> = <em>seurat_clusters</em> and <code>across_subset</code> = <code><a href="https://rdrr.io/r/base/c.html">c('0', '1', '2')</a></code> would compare the expression of the genes <em>GFAP</em> and <em>GAPDH</em> across the clusters named <em>0</em>, <em>1</em>, <em>2</em> of the clustering results that are stored in your feature data under the variable <em>seurat_clusters</em>.</p>
+<p>E.g. <code><a href="../reference/plotBoxplot.html">plotViolinplot()</a></code> with the following argument input <code>variables</code> = <code>c(*'GFAP'*, *'GAPDH'*)</code> <code>across</code> = <em>seurat_clusters</em> and <code>across_subset</code> = <code>c('0', '1', '2')</code> would compare the expression of the genes <em>GFAP</em> and <em>GAPDH</em> across the clusters named <em>0</em>, <em>1</em>, <em>2</em> of the clustering results that are stored in your feature data under the variable <em>seurat_clusters</em>.</p>
 </div>
-<div id="plotting" class="section level4">
-<h4 class="hasAnchor">
-<a href="#plotting" class="anchor"></a>6. Plotting</h4>
+<div class="section level4">
+<h4 id="plotting">6. Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
+</h4>
 <p>Behind the scenes surface plots are scatterplots where the barcode-spots x- and y-coordinates are mapped onto the respective x- and y-aesthetic of the plot. These dots representing the barcode spots can be visually customized with the <code>pt_*</code>-arguments.</p>
 <p>E.g. <code><a href="../reference/plotSurface.html">plotSurface()</a></code>with arguments <code>pt_size</code> = <em>2</em> and <code>pt_clrsp</code> = <em>‘inferno’</em> would generate a surfaceplot with dots of size 2 and with the colorspectrum <em>‘inferno’</em> used to display a continuous informative variable specified by <code>color_by</code> such as <em>‘GFAP’</em> expression levels.</p>
 </div>
@@ -312,11 +311,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>
@@ -324,6 +325,8 @@
 
   
 
+
+  
 
   </body>
 </html>

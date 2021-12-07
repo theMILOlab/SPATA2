@@ -72,44 +72,49 @@ plotBoxplot <- function(object,
   all_gene_sets <- getGeneSets(object)
 
   variables <-
-    check_variables(variables = c(variables, across),
-                    all_features = all_features,
-                    all_gene_sets = all_gene_sets,
-                    all_genes = all_genes,
-                    simplify = FALSE)
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
 
   spata_df <-
     joinWithVariables(
       object = object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
-      method_gs = method_gs
+      method_gs = method_gs,
+      smooth = FALSE
     ) %>%
     dplyr::select(-barcodes, -sample)
 
-  confuns::plot_boxplot(df = spata_df,
-                        across = across,
-                        across.subset = across_subset,
-                        relevel = relevel,
-                        test.pairwise = test_pairwise,
-                        test.groupwise = test_groupwise,
-                        ref.group = ref_group,
-                        step.increase = step_increase,
-                        vjust = vjust,
-                        scales = scales,
-                        nrow = nrow,
-                        ncol = ncol,
-                        display.facets = display_facets,
-                        display.points = display_points,
-                        pt.alpha = pt_alpha,
-                        pt.color = pt_clr,
-                        pt.num = n_bcsp,
-                        pt.shape = pt_shape,
-                        pt.size = pt_size,
-                        clrp = clrp,
-                        clrp.adjust = clrp_adjust,
-                        verbose = verbose,
-                        ...)
+  confuns::plot_boxplot(
+    df = spata_df,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    test.pairwise = test_pairwise,
+    test.groupwise = test_groupwise,
+    ref.group = ref_group,
+    step.increase = step_increase,
+    vjust = vjust,
+    scales = scales,
+    nrow = nrow,
+    ncol = ncol,
+    display.facets = display_facets,
+    display.points = display_points,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.num = n_bcsp,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
 
 }
 
@@ -156,18 +161,20 @@ plotDensityplot <- function(object,
     ) %>%
     dplyr::select(-barcodes, -sample)
 
-  confuns::plot_density(df = spata_df,
-                        across = across,
-                        across.subset = across_subset,
-                        relevel = relevel,
-                        scales = scales,
-                        display.facets = display_facets,
-                        nrow = nrow,
-                        ncol = ncol,
-                        clrp = clrp,
-                        clrp.adjust = clrp_adjust,
-                        verbose = verbose,
-                        ...)
+  confuns::plot_density(
+    df = spata_df,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    scales = scales,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
 
 }
 
@@ -199,32 +206,37 @@ plotHistogram <- function(object,
   all_gene_sets <- getGeneSets(object)
 
   variables <-
-    check_variables(variables = c(variables, across),
-                    all_features = all_features,
-                    all_gene_sets = all_gene_sets,
-                    all_genes = all_genes,
-                    simplify = FALSE)
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
 
   spata_df <-
     joinWithVariables(
       object = object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
-      method_gs = method_gs
+      method_gs = method_gs,
+      smooth = FALSE
     ) %>%
     dplyr::select(-barcodes, -sample)
 
-  confuns::plot_histogram(df = spata_df,
-                          across = across,
-                          across.subset = across_subset,
-                          relevel = relevel,
-                          scales = scales,
-                          nrow = nrow,
-                          ncol = ncol,
-                          clrp = clrp,
-                          clrp.adjust = clrp_adjust,
-                          verbose = verbose,
-                          ...)
+  confuns::plot_histogram(
+    df = spata_df,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    scales = scales,
+    nrow = nrow,
+    ncol = ncol,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
 
 }
 
@@ -257,33 +269,38 @@ plotRidgeplot <- function(object,
   all_gene_sets <- getGeneSets(object)
 
   variables <-
-    check_variables(variables = c(variables, across),
-                    all_features = all_features,
-                    all_gene_sets = all_gene_sets,
-                    all_genes = all_genes,
-                    simplify = FALSE)
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
 
   spata_df <-
     joinWithVariables(
       object = object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
-      method_gs = method_gs
+      method_gs = method_gs,
+      smooth = FALSE
     ) %>%
     dplyr::select(-barcodes, -sample)
 
-  confuns::plot_ridgeplot(df = spata_df,
-                          across = across,
-                          across.subset = across_subset,
-                          relevel = relevel,
-                          display_facets = display_facets,
-                          scales = scales,
-                          nrow = nrow,
-                          ncol = ncol,
-                          alpha = alpha,
-                          clrp = clrp,
-                          clrp.adjust = clrp_adjust,
-                          verbose = verbose)
+  confuns::plot_ridgeplot(
+    df = spata_df,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    display_facets = display_facets,
+    scales = scales,
+    nrow = nrow,
+    ncol = ncol,
+    alpha = alpha,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose
+  )
 
 }
 
@@ -326,44 +343,49 @@ plotViolinplot <- function(object,
   all_gene_sets <- getGeneSets(object)
 
   variables <-
-    check_variables(variables = c(variables, across),
-                    all_features = all_features,
-                    all_gene_sets = all_gene_sets,
-                    all_genes = all_genes,
-                    simplify = FALSE)
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+)
 
   spata_df <-
     joinWithVariables(
       object = object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
-      method_gs = method_gs
+      method_gs = method_gs,
+      smooth = FALSE
     ) %>%
     dplyr::select(-barcodes, -sample)
 
-  confuns::plot_violin(df = spata_df,
-                       across = across,
-                       across.subset = across_subset,
-                       relevel = relevel,
-                       test.pairwise = test_pairwise,
-                       test.groupwise = test_groupwise,
-                       ref.group = ref_group,
-                       step.increase = step_increase,
-                       vjust = vjust,
-                       scales = scales,
-                       display.facets = display_facets,
-                       nrow = nrow,
-                       ncol = ncol,
-                       display.points = display_points,
-                       pt.alpha = pt_alpha,
-                       pt.color = pt_clr,
-                       pt.num = n_bcsp,
-                       pt.shape = pt_shape,
-                       pt.size = pt_size,
-                       clrp = clrp,
-                       clrp.adjust = clrp_adjust,
-                       verbose = verbose,
-                       ...)
+  confuns::plot_violin(
+    df = spata_df,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    test.pairwise = test_pairwise,
+    test.groupwise = test_groupwise,
+    ref.group = ref_group,
+    step.increase = step_increase,
+    vjust = vjust,
+    scales = scales,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    display.points = display_points,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.num = n_bcsp,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
 
 }
 
@@ -399,13 +421,19 @@ plotBarchart <- function(object,
   of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
 
   features <-
-    check_features(object = object,
-                   features = c(variables, across),
-                   valid_classes = c("character", "factor")
-                   )
+    check_features(
+      object = object,
+      features = c(variables, across),
+      valid_classes = c("character", "factor")
+      )
 
   spata_df <-
-    joinWith(object, spata_df = getSpataDf(object, of_sample), features = features) %>%
+    joinWith(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      features = features,
+      smooth = FALSE
+      ) %>%
     dplyr::select(-barcodes, -sample)
 
 
