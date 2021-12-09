@@ -35,7 +35,7 @@ joinWith <- function(object,
                      genes = NULL,
                      average_genes = NULL,
                      uniform_genes = NULL,
-                     smooth = NULL,
+                     smooth = FALSE,
                      smooth_span = NULL,
                      verbose = NULL,
                      normalize = NULL){
@@ -543,7 +543,7 @@ joinWithGeneSets <- function(object,
 
       }
       }else{
-      
+
       geneset_vls <-
           base::colMeans(rna_assay[genes, ]) %>%
           base::as.data.frame() %>%

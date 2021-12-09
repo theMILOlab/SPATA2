@@ -17,7 +17,7 @@ joinWith(
   genes = NULL,
   average_genes = NULL,
   uniform_genes = NULL,
-  smooth = NULL,
+  smooth = FALSE,
   smooth_span = NULL,
   verbose = NULL,
   normalize = NULL

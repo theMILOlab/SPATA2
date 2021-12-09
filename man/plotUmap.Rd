@@ -9,29 +9,47 @@
 plotUmap(
   object,
   color_by = NULL,
+  color_aes = "color",
+  color_trans = "identity",
+  alpha_by = NULL,
+  order_by = NULL,
+  order_desc = FALSE,
+  shape_by = NULL,
   method_gs = NULL,
+  pt_shape = 19,
   pt_size = NULL,
   pt_alpha = NULL,
   pt_clrsp = NULL,
   pt_clrp = NULL,
   pt_clr = NULL,
+  clrp_adjust = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA
+  of_sample = NA,
+  ...
 )
 
 plotTsne(
   object,
   color_by = NULL,
+  color_aes = "color",
+  color_trans = "identity",
+  alpha_by = NULL,
+  order_by = NULL,
+  order_desc = FALSE,
+  pt_shape = 19,
+  shape_by = NULL,
   method_gs = NULL,
   pt_size = NULL,
   pt_alpha = NULL,
   pt_clrsp = NULL,
   pt_clrp = NULL,
   pt_clr = NULL,
+  clrp_adjust = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA
+  of_sample = NA,
+  ...
 )
 
 plotPca(
@@ -62,10 +80,33 @@ plotPca(
   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
   }}
 
+\item{color_aes}{Either \emph{'color'} or \emph{'fill'}. Specifies the
+aesthetic that is used to visualize the variable that is specified in \code{color_by}.
+Ignored if \code{color_by} is NULL.}
+
+\item{color_trans}{Character value. Name of the transformation method applied to the continuous scale. Use
+\code{validScaleTransformations()} to obtain all valid input options. Use \emph{'identity'}
+for no transformation.}
+
+\item{alpha_by}{Character
+value or NULL. If character, specifies the variable that is mapped to the respective
+aesthetic of the plot.}
+
+\item{order_by}{Character value or NULL. If character, specifies the
+numeric variable by which the points are arranged before plotting.}
+
+\item{shape_by}{Character
+value or NULL. If character, specifies the variable that is mapped to the respective
+aesthetic of the plot.}
+
 \item{method_gs}{Character value. The method according to which gene sets will be handled
 specified as a character of length one. This can be either \emph{'mean'} or one
 of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
 \code{gsva::GSVA()}.}
+
+\item{pt_shape}{Numeric or character value. If numeric, the respective
+shape is taken for all points. If character, the respective variable is
+mapped to the shape-aesthetic.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
@@ -78,6 +119,11 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
 
 \item{pt_clr}{Character value. Specifies the color of all points.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -42,17 +42,28 @@ plotGeneDendrogram <- function(object,
 plotDimRed <- function(object,
                        method_dr,
                        color_by = NULL,
+                       color_aes = "color",
+                       color_trans = "identity",
+                       alpha_by = NULL,
+                       order_by = NULL,
+                       order_desc = FALSE,
+                       shape_by = NULL,
                        method_gs = "mean",
                        pt_size = 2,
+                       pt_shape = 19,
                        pt_alpha = 1,
                        pt_clrsp = "inferno",
                        pt_clrp = "milo",
                        pt_clr = "black",
+                       clrp_adjust = NULL,
                        normalize = TRUE,
+                       transform_with = NULL,
                        verbose = TRUE,
-                       of_sample = NA){
+                       of_sample = NA,
+                       ...){
 
   # 1. Control --------------------------------------------------------------
+
 
   # lazy check
   hlpr_assign_arguments(object)
@@ -61,38 +72,26 @@ plotDimRed <- function(object,
   # adjusting check
   of_sample <- check_sample(object = object, of_sample = of_sample)
 
-  if(!base::is.null(color_by)){
-
-    color_by <- check_color_to(color_to = color_by,
-                               all_genes = getGenes(object, in_sample = of_sample),
-                               all_gene_sets = getGeneSets(object),
-                               all_features = getFeatureNames(object))
-
-  } else {
-
-    color_by <- list("color" = pt_clr)
-
-  }
-
   # -----
 
 
   # 2. Data extraction and plot preparation ---------------------------------
 
-  dim_red_df <-
-    getDimRedDf(object, method_dr = method_dr, of_sample = of_sample)
+  df <- getDimRedDf(object, method_dr = method_dr, of_sample = of_sample)
 
-  plot_list <-
-    hlpr_scatterplot(object = object,
-                     spata_df = dim_red_df,
-                     color_to = color_by,
-                     pt_size = pt_size,
-                     pt_alpha = pt_alpha,
-                     pt_clrp = pt_clrp,
-                     pt_clrsp = pt_clrsp,
-                     method_gs = method_gs,
-                     normalize = normalize,
-                     verbose = verbose)
+  if(isGene(object, color_by)){
+
+    df <- joinWith(object, df, genes = color_by)
+
+  } else if(isGeneSet(object, color_by)){
+
+    df <- joinWith(object, df, gene_set = color_by)
+
+  } else if(isFeature(object, color_by)) {
+
+    df <- joinWith(objec, df, features = color_by)
+
+  }
 
   # -----
 
@@ -101,16 +100,28 @@ plotDimRed <- function(object,
   x <- stringr::str_c(method_dr, 1, sep = "")
   y <- stringr::str_c(method_dr, 2, sep = "")
 
-  ggplot2::ggplot(data = plot_list$data, mapping = ggplot2::aes_string(x = x, y = y)) +
-    plot_list$add_on +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-      axis.title = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_blank(),
-      panel.grid.minor = ggplot2::element_blank()
-    )
+  confuns::plot_scatterplot(
+    df = df,
+    x = x,
+    y = y,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.clrp = pt_clrp,
+    pt.fill = pt_clr,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    color.aes = color_aes,
+    color.by = color_by,
+    color.trans = color_trans,
+    shape.by = shape_by,
+    clrp = pt_clrp,
+    clrp.adjust = clrp_adjust,
+    clrsp = pt_clrsp,
+    order.by = order_by,
+    order.desc = order_desc,
+    transform.with = transform_with,
+    ...
+  )
 
   # -----
 
@@ -129,6 +140,7 @@ plotDimRed <- function(object,
 #' @param n_pcs Numeric value. Determines the number of principal components to be plotted.
 #' Must be an even number.
 #' @inherit check_pt params
+#' @inherit confuns::argument_dummy params
 #'
 #' @inherit ggplot_family return
 #'
@@ -137,30 +149,50 @@ plotDimRed <- function(object,
 
 plotUmap <- function(object,
                      color_by = NULL,
+                     color_aes = "color",
+                     color_trans = "identity",
+                     alpha_by = NULL,
+                     order_by = color_by,
+                     order_desc = FALSE,
+                     shape_by = NULL,
                      method_gs = NULL,
+                     pt_shape = 19,
                      pt_size = NULL,
                      pt_alpha = NULL,
                      pt_clrsp = NULL,
                      pt_clrp = NULL,
                      pt_clr = NULL,
+                     clrp_adjust = NULL,
                      normalize = NULL,
                      verbose = NULL,
-                     of_sample = NA){
+                     of_sample = NA,
+                     ...){
 
   hlpr_assign_arguments(object)
 
-  plotDimRed(object = object,
-             method_dr = "umap",
-             of_sample = of_sample,
-             color_by = color_by,
-             method_gs = method_gs,
-             pt_size = pt_size,
-             pt_alpha = pt_alpha,
-             pt_clrsp = pt_clrsp,
-             pt_clrp = pt_clrp,
-             pt_clr = pt_clr,
-             normalize = normalize,
-             verbose = verbose)
+  plotDimRed(
+    object = object,
+    method_dr = "umap",
+    color_aes = color_aes,
+    color_trans = color_trans,
+    alpha_by = alpha_by,
+    order_by = order_by,
+    order_desc = order_desc,
+    shape_by = shape_by,
+    of_sample = of_sample,
+    color_by = color_by,
+    clrp_adjust = clrp_adjust,
+    method_gs = method_gs,
+    pt_shape = pt_shape,
+    pt_size = pt_size,
+    pt_alpha = pt_alpha,
+    pt_clrsp = pt_clrsp,
+    pt_clrp = pt_clrp,
+    pt_clr = pt_clr,
+    normalize = normalize,
+    verbose = verbose,
+    ...
+  )
 
 }
 
@@ -168,30 +200,50 @@ plotUmap <- function(object,
 #' @export
 plotTsne <- function(object,
                      color_by = NULL,
+                     color_aes = "color",
+                     color_trans = "identity",
+                     alpha_by = NULL,
+                     order_by = color_by,
+                     order_desc = FALSE,
+                     pt_shape = 19,
+                     shape_by = NULL,
                      method_gs = NULL,
                      pt_size = NULL,
                      pt_alpha = NULL,
                      pt_clrsp = NULL,
                      pt_clrp = NULL,
                      pt_clr = NULL,
+                     clrp_adjust = NULL,
                      normalize = NULL,
                      verbose = NULL,
-                     of_sample = NA){
+                     of_sample = NA,
+                     ...){
 
   hlpr_assign_arguments(object)
 
-  plotDimRed(object = object,
-             method_dr = "tsne",
-             of_sample = of_sample,
-             color_by = color_by,
-             method_gs = method_gs,
-             pt_size = pt_size,
-             pt_alpha = pt_alpha,
-             pt_clrsp = pt_clrsp,
-             pt_clrp = pt_clrp,
-             pt_clr = pt_clr,
-             normalize = normalize,
-             verbose = verbose)
+  plotDimRed(
+    object = object,
+    method_dr = "tsne",
+    color_aes = color_aes,
+    color_trans = color_trans,
+    alpha_by = alpha_by,
+    order_by = order_by,
+    order_desc = order_desc,
+    shape_by = shape_by,
+    of_sample = of_sample,
+    clrp_adjust = clrp_adjust,
+    color_by = color_by,
+    method_gs = method_gs,
+    pt_shape = pt_shape,
+    pt_size = pt_size,
+    pt_alpha = pt_alpha,
+    pt_clrsp = pt_clrsp,
+    pt_clrp = pt_clrp,
+    pt_clr = pt_clr,
+    normalize = normalize,
+    verbose = verbose,
+    ...
+  )
 
 }
 
@@ -226,10 +278,12 @@ plotPca <- function(object,
   if(!base::is.null(color_by)){
 
     color_by <-
-      check_color_to(color_to = color_by,
-                     all_features = getFeatureNames(object),
-                     all_genes = getGenes(object),
-                     all_gene_sets = getGeneSets(object))
+      check_color_to(
+        color_to = color_by,
+        all_features = getFeatureNames(object),
+        all_genes = getGenes(object),
+        all_gene_sets = getGeneSets(object)
+      )
 
   } else {
 
