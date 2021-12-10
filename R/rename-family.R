@@ -77,9 +77,14 @@ renameFeatures <- function(object, ..., of_sample = NA){
 
               base::names(df)[base::names(df) == dea_name] <- new_name
 
-              res_list <- list( data = df, adjustments = method$adjustments)
+              res_list <-
+                list(
+                  data = df,
+                  adjustments = method$adjustments,
+                  hypeR_gsea = method$hypeR_gsea
+                  )
 
-              base::return(res_list)
+              return(res_list)
 
             }
             )
