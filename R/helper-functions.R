@@ -563,6 +563,30 @@ hlpr_image_add_on2 <- function(image){
 
 
 
+#' @title Join with single value
+#'
+#' @export
+hlpr_join_with_color_by <- function(object, df, color_by, ...){
+
+  if(isGene(object, color_by)){
+
+    df <- joinWith(object, df, genes = color_by, ...)
+
+  } else if(isGeneSet(object, color_by)){
+
+    df <- joinWith(object, df, gene_set = color_by, ...)
+
+  } else if(isFeature(object, color_by)) {
+
+    df <- joinWith(object, df, features = color_by, ...)
+
+  }
+
+  return(df)
+
+}
+
+
 #' @title Return customized ggplot:labs()
 #'
 #' @description Helper function
@@ -1254,6 +1278,7 @@ hlpr_summarize_trajectory_df <- function(object,
                                          ctdf,
                                          binwidth = 5,
                                          variables,
+                                         whole_sample = FALSE,
                                          method_gs = "mean",
                                          verbose = TRUE,
                                          normalize = FALSE){
@@ -1278,6 +1303,8 @@ hlpr_summarize_trajectory_df <- function(object,
                                max_slots = 3,
                                max_length = Inf)
 
+  variables_list <- variables
+
   if("features" %in% base::names(variables)){
 
     variables[["features"]] <- check_features(object = object,
@@ -1290,20 +1317,33 @@ hlpr_summarize_trajectory_df <- function(object,
 
   # 2. Summarize and join compiled trajectory data.frame --------------------
 
+  var_df <-
+    joinWithVariables(
+      object = object,
+      variables = variables,
+      method_gs = method_gs,
+      average_genes = FALSE,
+      smooth = FALSE,
+      normalize = FALSE,
+      verbose = verbose
+    )
+
   # join data.frame with variables
   joined_df <-
-    dplyr::mutate(.data = ctdf,
-                  order_binned = plyr::round_any(x = projection_length,
-                                                 accuracy = binwidth,
-                                                 f = base::floor)) %>%
-    joinWithVariables(object = object,
-                      spata_df = .,
-                      variables = variables,
-                      method_gs = method_gs,
-                      average_genes = FALSE,
-                      smooth = FALSE,
-                      normalize = FALSE,
-                      verbose = verbose)
+    dplyr::mutate(
+      .data = ctdf,
+      order_binned = plyr::round_any(
+        x = projection_length,
+        accuracy = binwidth,
+        f = base::floor
+        )
+      ) %>%
+    dplyr::left_join(
+      x = .,
+      y = var_df %>% dplyr::select(-x, -y, -sample),
+      by = "barcodes"
+    )
+
 
   # keep only variables that were successfully joined
   variables <- base::unlist(variables, use.names = FALSE)
@@ -1323,22 +1363,61 @@ hlpr_summarize_trajectory_df <- function(object,
     dplyr::mutate(trajectory_part_order = dplyr::row_number()) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
-    dplyr::select(-order_binned) %>%
-    tidyr::pivot_longer(cols = dplyr::all_of(x = variables),
-                        names_to = "variables",
-                        values_to = "values")
+    dplyr::select(-order_binned)
 
   if(base::isTRUE(normalize)){
 
-    confuns::give_feedback(
-      msg = "Normalizing values.",
-      verbose = verbose
-    )
+    if(base::isTRUE(whole_sample)){
 
-    summarized_df <-
-      dplyr::group_by(.data = summarized_df, variables) %>%
-      dplyr::mutate(values = confuns::normalize(x = values)) %>%
-      dplyr::ungroup()
+      confuns::give_feedback(
+        msg = "Normalizing values by 'whole sample'.",
+        verbose = verbose
+      )
+
+      pb <- confuns::create_progress_bar(total = base::length(variables))
+
+      for(var_name in variables){
+
+        if(base::isTRUE(verbose)){ pb$tick() }
+
+        range_var <- base::range(var_df[[var_name]], na.rm = TRUE)
+
+        var <- summarized_df[[var_name]]
+
+        ref_min <- base::min(range_var)
+        ref_max <- base::max(range_var)
+
+        summarized_df[[var_name]] <- (var - ref_min)/(ref_max - ref_min)
+
+      }
+
+      shifted_df <-
+        tidyr::pivot_longer(
+          data = summarized_df,
+          cols = dplyr::all_of(x = variables),
+          names_to = "variables",
+          values_to = "values"
+        )
+
+    } else {
+
+      confuns::give_feedback(
+        msg = "Normalizing values by 'trajectory'.",
+        verbose = verbose
+      )
+
+      shifted_df <-
+        tidyr::pivot_longer(
+          data = summarized_df,
+          cols = dplyr::all_of(x = variables),
+          names_to = "variables",
+          values_to = "values"
+        ) %>%
+        dplyr::group_by(variables) %>%
+        dplyr::mutate(values = confuns::normalize(x = values)) %>%
+        dplyr::ungroup()
+
+    }
 
   }
 
@@ -1346,7 +1425,7 @@ hlpr_summarize_trajectory_df <- function(object,
 
   # -----
 
-  base::return(summarized_df)
+  base::return(shifted_df)
 
 }
 
@@ -1473,22 +1552,24 @@ hlpr_add_residuals <- function(df, pb = NULL, custom_fit = NULL){
 
   }
 
-    dplyr::transmute(.data = df,
-                     trajectory_order = trajectory_order,
-                     p_one_peak =  (values - confuns::fit_curve(trajectory_order, "one_peak"))^2,
-                     p_one_peak_rev = (values - confuns::fit_curve(trajectory_order, "one_peak", rev = TRUE))^2,
-                     p_two_peaks = (values - confuns::fit_curve(trajectory_order, "two_peaks"))^2,
-                     p_two_peaks_rev = (values - confuns::fit_curve(trajectory_order, "two_peaks", rev = TRUE))^2,
-                     p_gradient_desc = (values - confuns::fit_curve(trajectory_order, "gradient"))^2,
-                     p_gradient_asc = (values - confuns::fit_curve(trajectory_order, "gradient", rev = TRUE))^2,
-                     p_log_asc = (values - confuns::fit_curve(trajectory_order, "log"))^2,
-                     p_log_desc = (values - confuns::fit_curve(trajectory_order, "log", rev = TRUE))^2,
-                     p_lin_asc = (values - confuns::fit_curve(trajectory_order, "linear"))^2,
-                     p_lin_desc = (values - confuns::fit_curve(trajectory_order, "linear", rev = TRUE))^2,
-                     p_sin = (values - confuns::fit_curve(trajectory_order, "sinus"))^2,
-                     p_sin_rev = (values - confuns::fit_curve(trajectory_order, "sinus", rev = TRUE))^2,
-                     p_early_peak = (values - confuns::fit_curve(trajectory_order, "early_peak"))^2,
-                     p_late_peak = (values - confuns::fit_curve(trajectory_order, "late_peak"))^2)
+    dplyr::transmute(
+      .data = df,
+      trajectory_order = trajectory_order,
+      p_one_peak =  (values - confuns::fit_curve(trajectory_order, "one_peak"))^2,
+      p_one_peak_rev = (values - confuns::fit_curve(trajectory_order, "one_peak", rev = TRUE))^2,
+      p_two_peaks = (values - confuns::fit_curve(trajectory_order, "two_peaks"))^2,
+      p_two_peaks_rev = (values - confuns::fit_curve(trajectory_order, "two_peaks", rev = TRUE))^2,
+      p_gradient_desc = (values - confuns::fit_curve(trajectory_order, "gradient"))^2,
+      p_gradient_asc = (values - confuns::fit_curve(trajectory_order, "gradient", rev = TRUE))^2,
+      p_log_asc = (values - confuns::fit_curve(trajectory_order, "log"))^2,
+      p_log_desc = (values - confuns::fit_curve(trajectory_order, "log", rev = TRUE))^2,
+      p_lin_asc = (values - confuns::fit_curve(trajectory_order, "linear"))^2,
+      p_lin_desc = (values - confuns::fit_curve(trajectory_order, "linear", rev = TRUE))^2,
+      p_sin = (values - confuns::fit_curve(trajectory_order, "sinus"))^2,
+      p_sin_rev = (values - confuns::fit_curve(trajectory_order, "sinus", rev = TRUE))^2,
+      p_early_peak = (values - confuns::fit_curve(trajectory_order, "early_peak"))^2,
+      p_late_peak = (values - confuns::fit_curve(trajectory_order, "late_peak"))^2
+    )
 
 }
 

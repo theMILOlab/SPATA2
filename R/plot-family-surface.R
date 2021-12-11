@@ -43,6 +43,7 @@ plotSurface <- function(object,
                         pt_clrp = NULL,
                         pt_clrsp = NULL,
                         pt_size = NULL,
+                        pt_size_fixed = NULL,
                         clrp_adjust = NULL,
                         display_image = NULL,
                         display_title = NULL,
@@ -86,37 +87,65 @@ plotSurface <- function(object,
 
   # 2. Data extraction and plot preparation ---------------------------------
 
-  coords_df <- getCoordsDf(object, of_sample = of_sample)
-
-  plot_list <-
-    hlpr_scatterplot(object = object,
-                     spata_df = coords_df,
-                     color_to = color_to,
-                     pt_size = pt_size,
-                     pt_alpha = pt_alpha,
-                     pt_clrp = pt_clrp,
-                     pt_clrsp = pt_clrsp,
-                     method_gs = method_gs,
-                     normalize = normalize,
-                     smooth = smooth,
-                     smooth_span = smooth_span,
-                     verbose = verbose,
-                     complete = complete,
-                     clrp.adjust = c("subs.by.segm" = "lightgrey", clrp_adjust),
-                     display_title = display_title,
-                     ...)
+  coords_df <-
+    getCoordsDf(object, of_sample = of_sample) %>%
+    hlpr_join_with_color_by(
+      object = object,
+      df = .,
+      color_by = color_by,
+      method_gs = method_gs,
+      normalize = normalize,
+      smooth = smooth,
+      smooth_span = smooth_span,
+      verbose = verbose
+    )
 
   # -----
 
 
   # 5. Plotting --------------------------------------------------------------
 
-  ggplot2::ggplot(data = plot_list$data, mapping = ggplot2::aes(x = x, y = y)) +
+  pt_color <- pt_clr
+
+  params <-
+    adjust_ggplot_params(
+      params = list(color = pt_color, size = pt_size, alpha = pt_alpha)
+      )
+
+  if(base::isTRUE(pt_size_fixed)){
+
+    point_add_on <- geom_point_fixed(params)
+
+  } else {
+
+    point_add_on <-
+      ggplot2::layer(
+        geom = "point",
+        stat = "identity",
+        position = "identity",
+        params = params
+      )
+
+  }
+
+  ggplot2::ggplot(
+    data = coords_df,
+    mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by)
+    ) +
     hlpr_image_add_on(object, display_image, of_sample) +
-    plot_list$add_on +
+    point_add_on +
+    scale_color_add_on(
+      aes = "color",
+      variable = pull_var(coords_df, color_by),
+      clrp = pt_clrp,
+      clrsp = pt_clrsp,
+      clrp.adjust = clrp_adjust
+    ) +
+    ggplot2::guides(
+      color = ggplot2::guide_legend(override.aes = list(size = 8))
+    ) +
     ggplot2::coord_equal() +
     ggplot2::theme_void()
-
 
   # -----
 
@@ -403,7 +432,7 @@ plotSurfaceAverage <- function(object,
     )
 
   ggplot2::ggplot(plot_df, mapping = ggplot2::aes(x = x, y = y, color = mean_genes)) +
-    ggplot2::geom_point(alpha = pt_alpha, size = pt_size) +
+    geom_point_fixed(alpha = pt_alpha, size = pt_size) +
     ggplot2::theme_void() +
     ggplot2::facet_wrap(. ~ name) +
     scale_color_add_on(clrsp = pt_clrsp) +
@@ -507,10 +536,13 @@ plotSurfaceComparison <- function(object,
 
   ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x, y = y)) +
     hlpr_image_add_on(object, display_image, of_sample) +
-    ggplot2::geom_point(mapping = ggplot2::aes(color = values),
-                        size = pt_size, alpha = pt_alpha) +
+    geom_point_fixed(
+      mapping = ggplot2::aes(color = values),
+      size = pt_size, alpha = pt_alpha
+      ) +
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
     ggplot2::theme_void() +
+    ggplot2::coord_equal() +
     ggplot2::facet_wrap(facets = ~ variables, ...) +
     ggplot2::labs(color = NULL)
 
@@ -548,8 +580,10 @@ plotSurfaceComparison2 <- function(coords_df,
 
     ggplot2::ggplot(data = shifted_df, mapping = ggplot2::aes(x = x, y = y)) +
       hlpr_image_add_on2(image) +
-      ggplot2::geom_point(mapping = ggplot2::aes(color = values),
-                          size = pt_size, alpha = pt_alpha) +
+      geom_point_fixed(
+        mapping = ggplot2::aes(color = values),
+        size = pt_size, alpha = pt_alpha
+        ) +
       confuns::scale_color_add_on(variable = shifted_df$values, clrsp = pt_clrsp) +
       ggplot2::theme_void() +
       ggplot2::facet_wrap(facets = ~ variables, ...) +

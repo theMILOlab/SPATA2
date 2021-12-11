@@ -35,7 +35,7 @@ moduleSurfacePlotUI <- function(id){
                                       ),
                                     shiny::fluidRow(
                                       shiny::column(width = 6,
-                                                    shiny::sliderInput(ns("pt_size"), label = "Size of points:", min = 1, max = 10, step = 0.05, value = 2.75),
+                                                    shiny::uiOutput(ns("pt_size")),
                                                     shiny::sliderInput(ns("pt_alpha"), label = "Transparency of points:", min = 0.01, max = 0.99, step = 0.01, value = 0.15),
                                                     shiny::uiOutput(ns("pt_smooth"))
                                       ),
@@ -197,6 +197,21 @@ moduleSurfacePlotServer <- function(id,
 
       })
 
+      output$pt_size <- shiny::renderUI({
+
+        ns <- session$ns
+
+        shiny::sliderInput(
+          ns("pt_size"),
+          label = "Size of points:",
+          min = 1,
+          max = 10,
+          step = 0.01,
+          value = getDefault(object, "pt_size")
+          )
+
+      })
+
       select_gene_sets <- shiny::eventReactive(reset_select_gene_sets(),{
 
         ns <- session$ns
@@ -249,15 +264,15 @@ moduleSurfacePlotServer <- function(id,
 
         if(input$aes_clr_opts == "gene_sets"){
 
-          base::return(select_gene_sets())
+          return(select_gene_sets())
 
         } else if(input$aes_clr_opts == "genes"){
 
-          base::return(select_genes())
+          return(select_genes())
 
         } else if(input$aes_clr_opts == "feature"){
 
-          base::return(select_features())
+          return(select_features())
 
         }
 
@@ -440,7 +455,7 @@ moduleSurfacePlotServer <- function(id,
         sample_coords <-
           getCoordsDf(object = object, of_sample = current$sample)
 
-        base::return(sample_coords)
+        return(sample_coords)
 
       })
 
@@ -450,7 +465,7 @@ moduleSurfacePlotServer <- function(id,
         rna_assay <-
           getExpressionMatrix(object = object, of_sample = current$sample)
 
-        base::return(rna_assay)
+        return(rna_assay)
 
       })
 
@@ -478,7 +493,7 @@ moduleSurfacePlotServer <- function(id,
           magrittr::set_colnames(value = "expr_score") %>%
           tibble::rownames_to_column(var = "barcodes")
 
-        base::return(gene_vls)
+        return(gene_vls)
 
       })
 
@@ -518,7 +533,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(geneset_vls)
+        return(geneset_vls)
 
 
       })
@@ -529,7 +544,7 @@ moduleSurfacePlotServer <- function(id,
         fdata <-
           getFeatureDf(object = object, of_sample = current$sample)[, c("barcodes", current$feature)]
 
-        base::return(fdata)
+        return(fdata)
 
       })
 
@@ -553,7 +568,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(joined_df)
+        return(joined_df)
 
       })
 
@@ -570,7 +585,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(variable)
+        return(variable)
 
       })
 
@@ -626,7 +641,7 @@ moduleSurfacePlotServer <- function(id,
 
           }
 
-          base::return(smoothed_df)
+          return(smoothed_df)
 
         } else {
 
@@ -638,13 +653,13 @@ moduleSurfacePlotServer <- function(id,
                               aspect = "",
                               subset = variable())
 
-            base::return(smoothed_df)
+            return(smoothed_df)
 
           } else {
 
             smoothed_df <- joined_df()
 
-            base::return(smoothed_df)
+            return(smoothed_df)
 
           }
 
@@ -659,13 +674,15 @@ moduleSurfacePlotServer <- function(id,
 
         add_on <-
           list(
-            ggplot2::geom_point(data = smoothed_df(),
-                                mapping = ggplot2::aes(x = x, y = y, color = .data[[variable()]]),
-                                size = input$pt_size,
-                                alpha = (1-input$pt_alpha))
+            geom_point_fixed(
+              data = smoothed_df(),
+              mapping = ggplot2::aes(x = x, y = y, color = .data[[variable()]]),
+              size = input$pt_size,
+              alpha = (1-input$pt_alpha)
+            )
           )
 
-        base::return(add_on)
+        return(add_on)
 
       })
 
@@ -706,7 +723,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(add_on)
+        return(add_on)
 
       })
 
@@ -730,7 +747,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(add_on)
+        return(add_on)
 
       })
 
@@ -758,7 +775,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(add_on)
+        return(add_on)
 
 
       })
@@ -803,7 +820,7 @@ moduleSurfacePlotServer <- function(id,
 
         }
 
-        base::return(add_on)
+        return(add_on)
 
 
       })
@@ -815,7 +832,7 @@ moduleSurfacePlotServer <- function(id,
           if(nrow(segmentation_df()) == 0){
 
             shiny::showNotification(ui = stringr::str_c("Sample", current$sample, "has not been segmented so far.", sep = " "))
-            base::return(list())
+            return(list())
 
           } else {
 
@@ -827,13 +844,13 @@ moduleSurfacePlotServer <- function(id,
 
               )
 
-            base::return(segm_layer)
+            return(segm_layer)
 
           }
 
         } else {
 
-          base::return(list())
+          return(list())
 
         }
 
@@ -847,7 +864,7 @@ moduleSurfacePlotServer <- function(id,
                             verbose = FALSE) %>%
           dplyr::filter(!segmentation %in% c("none", ""))
 
-        base::return(segm_df)
+        return(segm_df)
 
       })
 
@@ -927,7 +944,7 @@ moduleSurfacePlotServer <- function(id,
       })
 
 
-      base::return(return_list)
+      return(return_list)
 
       # -----
 

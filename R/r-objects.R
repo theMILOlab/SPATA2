@@ -105,6 +105,7 @@ default_instructions_object <-
                pt_fill = "black",
                pt_shape = 21,
                pt_size = 2,
+               pt_size_fixed = TRUE,
                relevel = FALSE,
                scales = "free",
                sgmt_clr = "black",
@@ -190,4 +191,4 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 3, patch = 0)
+current_spata_version <- list(major = 1, minor = 4, patch = 0)

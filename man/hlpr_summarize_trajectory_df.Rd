@@ -9,6 +9,7 @@ hlpr_summarize_trajectory_df(
   ctdf,
   binwidth = 5,
   variables,
+  whole_sample = FALSE,
   method_gs = "mean",
   verbose = TRUE,
   normalize = FALSE
@@ -31,6 +32,9 @@ chosen trajectory's direction.#'}
  \item{ \strong{Genes}: Must be in \code{getGenes()}}
  \item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
  }}
+
+\item{whole_sample}{Logical. If TRUE, normalization of the values used
+takes place in the light of the complete sample.}
 
 \item{method_gs}{Character value. The method according to which gene sets will be handled
 specified as a character of length one. This can be either \emph{'mean'} or one

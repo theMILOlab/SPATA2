@@ -11,6 +11,7 @@ getTrajectoryDf(
   method_gs = "mean",
   binwidth = 5,
   normalize = TRUE,
+  whole_sample = FALSE,
   shift_wider = FALSE,
   verbose = TRUE,
   of_sample = NA
@@ -42,6 +43,9 @@ chosen trajectory's direction.#'}
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
+\item{whole_sample}{Logical. If TRUE, normalization of the values used
+takes place in the light of the complete sample.}
 
 \item{shift_wider}{Logical. If set to TRUE the trajectory data.frame is
 shifted to it's wider format. Formats can be changed via \code{shiftTrajectoryDf()}.}

@@ -18,6 +18,7 @@ plotSurface(
   pt_clrp = NULL,
   pt_clrsp = NULL,
   pt_size = NULL,
+  pt_size_fixed = NULL,
   clrp_adjust = NULL,
   display_image = NULL,
   display_title = NULL,
