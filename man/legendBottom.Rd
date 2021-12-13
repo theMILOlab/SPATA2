@@ -5,6 +5,7 @@
 \alias{legendNone}
 \alias{legendRight}
 \alias{legendTop}
+\alias{legendColor}
 \title{Ggplot add on wrapper}
 \usage{
 legendBottom(...)
@@ -14,6 +15,8 @@ legendNone(...)
 legendRight(...)
 
 legendTop(...)
+
+legendColor(...)
 }
 \description{
 Ggplot add on wrapper

@@ -14,6 +14,7 @@
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
 \alias{validPlotTypes}
+\alias{validTrajectoryTrends}
 \title{Obtain valid argument inputs}
 \usage{
 validActivationFunctions()
@@ -41,6 +42,8 @@ validPatternRecognitionMethods()
 validPadjMethods()
 
 validPlotTypes(fn_name)
+
+validTrajectoryTrends()
 }
 \value{
 Character vectors or named lists of such.

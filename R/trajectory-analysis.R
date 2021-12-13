@@ -55,8 +55,7 @@ hlpr_rank_trajectory_trends <- function(stdf, verbose = TRUE){
   # nest data.frame
   nested_df <-
     dplyr::group_by(.data = stdf, !!rlang::sym(var)) %>%
-      dplyr::mutate(values = confuns::normalize(x = values)) %>%
-      tidyr::nest()
+    tidyr::nest()
 
 
   # add residuals to data.frame
@@ -78,8 +77,10 @@ hlpr_rank_trajectory_trends <- function(stdf, verbose = TRUE){
   }
 
   w_residuals <-
-    dplyr::mutate(.data = nested_df,
-                  residuals = purrr::map(.x = data, .f = hlpr_add_residuals, pb = pb_add))
+    dplyr::mutate(
+      .data = nested_df,
+      residuals = purrr::map(.x = data, .f = hlpr_add_residuals, pb = pb_add)
+      )
 
   # rank data.frame
   if(base::isTRUE(verbose)){
@@ -100,8 +101,10 @@ hlpr_rank_trajectory_trends <- function(stdf, verbose = TRUE){
   }
 
   ranked_df <-
-    dplyr::mutate(.data = w_residuals,
-                  auc = purrr::map(.x = residuals, .f = hlpr_summarize_residuals, pb = pb_calc))
+    dplyr::mutate(
+      .data = w_residuals,
+      auc = purrr::map(.x = residuals, .f = hlpr_summarize_residuals, pb = pb_calc)
+      )
 
   # -----
 
@@ -476,6 +479,7 @@ assessTrajectoryTrends <- function(object,
                                    trajectory_name,
                                    variables,
                                    binwidth = 5,
+                                   whole_sample = FALSE,
                                    verbose = TRUE,
                                    of_sample = NA){
 
@@ -495,12 +499,16 @@ assessTrajectoryTrends <- function(object,
 
   # get trajectory data.frame
 
-    stdf <- getTrajectoryDf(object = object,
-                           trajectory_name = trajectory_name,
-                           of_sample = of_sample,
-                           variables = variables,
-                           binwidth = binwidth,
-                           verbose = verbose)
+  stdf <-
+    getTrajectoryDf(
+      object = object,
+      trajectory_name = trajectory_name,
+      of_sample = of_sample,
+      variables = variables,
+      binwidth = binwidth,
+      whole_sample = whole_sample,
+      verbose = verbose
+      )
 
   rtdf <- hlpr_rank_trajectory_trends(stdf = stdf, verbose = verbose)
 

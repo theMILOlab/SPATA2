@@ -12,6 +12,7 @@ assessTrajectoryTrends(
   trajectory_name,
   variables,
   binwidth = 5,
+  whole_sample = FALSE,
   verbose = TRUE,
   of_sample = NA
 )
@@ -43,6 +44,9 @@ as a single character value.}
  \item{ \strong{Genes}: Must be in \code{getGenes()}}
  \item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
  }}
+
+\item{whole_sample}{Logical. If TRUE, normalization of the values used
+takes place in the light of the complete sample.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

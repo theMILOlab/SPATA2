@@ -242,15 +242,22 @@ updateSpataObject <- function(object,
 
     if(base::identical(object@version, current_spata_version)){
 
-      message("Object is up to date.")
+      give_feedback(msg = "Object is up to date.", verbose = verbose)
 
       return(object)
+
+    } else {
+
+      give_feedback(msg = "Updating spata2 object.", verbose = verbose)
 
     }
 
   }
 
   # -----
+
+
+  # Tests for spata2
 
   # 1.1.0 -> 1.2.0 ----------------------------------------------------------
 
@@ -265,10 +272,7 @@ updateSpataObject <- function(object,
 
   }
 
-  major <- object@version$major
-  minor <- object@version$minor
-
-  if(major == 1 & minor == 1){
+  if(object@version$major == 1 & object@version$minor == 1){
 
     confuns::give_feedback(msg = "Adding slot 'cnv'.", verbose = verbose)
 
@@ -304,11 +308,19 @@ updateSpataObject <- function(object,
 
   # 1.2.0 -> 1.3.0 ----------------------------------------------------------
 
-  if(major == 1 & minor == 2){
+  if(object@version$major == 1 & object@version$minor == 2){
 
-    give_feedback(msg = "Adding default for argument  'min_lfc' = 0.", verbose = verbose)
+    give_feedback(msg = "Adding default for argument  'min_lfc' = 0.", verbose = verbose) # below at 'default adjustment'
 
     object@version <- list(major = 1, minor = 3, patch = 0)
+
+  }
+
+  if(object@version$major == 1 & object@version$minor == 3){
+
+    give_feedback(msg = "Adding default for argument  'pt_size_fixed' = TRUE.", verbose = verbose) # below at 'default adjustment'
+
+    object@version <- list(major = 1, minor = 4, patch = 0)
 
   }
 

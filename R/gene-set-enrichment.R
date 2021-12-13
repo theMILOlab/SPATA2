@@ -519,7 +519,7 @@ plotGseaDotPlot <- function(object,
         ...
       ) +
       ggplot2::scale_x_reverse(labels = function(x){ base::format(x, scientific = TRUE) }) +
-      ggplot2::labs(y = NULL)
+      ggplot2::labs(y = NULL, x = signif_var)
 
   } else {
 

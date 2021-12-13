@@ -95,7 +95,7 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
 
   if(!methods::is(spata_obj, "spata2")){
 
-    base::warning("Loaded object is not of class 'spata2'!")
+    warning("Loaded object is not of class 'spata2'!")
 
   } else if(base::isTRUE(update)){
 

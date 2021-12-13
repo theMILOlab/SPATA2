@@ -273,6 +273,10 @@ seurat_object_dummy <- function(seurat_object){}
 #' the computational progress will be printed.
 #'
 #' (Warning messages will always be printed.)
+#'
+#' @param whole_sample Logical. If TRUE, normalization of the values used
+#' takes place in the light of the complete sample.
+#'
 
 argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}
 

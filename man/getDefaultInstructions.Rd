@@ -2,10 +2,13 @@
 % Please edit documentation in R/get-family.R
 \name{getDefaultInstructions}
 \alias{getDefaultInstructions}
+\alias{getDefault}
 \alias{getDirectoryInstructions}
 \title{Obtain default argument inputs}
 \usage{
 getDefaultInstructions(object)
+
+getDefault(object, arg)
 
 getDirectoryInstructions(
   object,
@@ -16,7 +19,8 @@ getDirectoryInstructions(
 \item{object}{A valid spata-object.}
 }
 \value{
-S4 object containing all default argument inputs.
+S4 object containing all default argument inputs. Or the respective
+default in case of \code{getDefault()}.
 }
 \description{
 Obtain default argument inputs

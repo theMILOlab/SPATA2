@@ -79,6 +79,8 @@ plotCustomizedTrajectoryTrends <- function(customized_trends,
 #' drawn with \code{SPATA::createTrajectories()}. Increase the transparency
 #' via argument \code{pt_alpha} to highlight the trajectory's course.
 #'
+#' @inherit pt_alpha2 Numeric value. Specifies the transperancy of the spots
+#' that fall into the trajectory's reach.
 #' @inherit argument_dummy params
 #' @inherit check_color_to params
 #' @inherit check_display params
@@ -104,6 +106,7 @@ plotTrajectory <- function(object,
                            smooth_span = NULL,
                            pt_size = NULL,
                            pt_alpha = NULL,
+                           pt_alpha2 = 0.9,
                            pt_clr = NULL,
                            pt_clrp = NULL,
                            pt_clrsp = NULL,
@@ -229,10 +232,10 @@ plotTrajectory <- function(object,
                         verbose = verbose)
 
     ggplot_add_on <- list(
-      ggplot2::geom_point(data = background_df, size = pt_size,
+      geom_point_fixed(data = background_df, size = pt_size,
                           mapping = ggplot2::aes(x = x,  y = y, alpha = trajectory,
                                                  color = .data[[color_by_value]])),
-      ggplot2::scale_alpha_manual(values = c("yes" = 1, "no" = pt_alpha), guide = FALSE),
+      ggplot2::scale_alpha_manual(values = c("yes" = pt_alpha2, "no" = pt_alpha), guide = FALSE),
       confuns::scale_color_add_on(aes = "color",
                                   clrsp = pt_clrsp,
                                   clrp = pt_clrp,
@@ -1018,6 +1021,7 @@ plotTrajectoryFit <- function(object,
                               auc_alpha = 0.5,
                               auc_linetype = "dotted",
                               colors = c("forestgreen", "blue4", "tomato"),
+                              model_subset = validTrajectoryTrends(),
                               ref_model = "Model",
                               verbose = NULL,
                               of_sample = NA,
@@ -1112,6 +1116,9 @@ plotTrajectoryFit <- function(object,
 
   # -----
 
+  plot_df <-
+    dplyr::filter(plot_df, pattern %in% {{model_subset}})
+
   color_values <- purrr::set_names(x = colors, nm = c(variable, ref_model, "Residuals"))
 
   linetype_values <- purrr::set_names(x = c("solid", "solid", auc_linetype), nm = c(variable, ref_model, "Residuals"))
@@ -1170,7 +1177,8 @@ plotTrajectoryFit <- function(object,
       panel.grid = ggplot2::element_blank(),
       axis.text = ggplot2::element_blank(),
       axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"))),
+      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"),
+                                                                 type = "closed")),
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_text(color = "black", size = 11)
     ) +

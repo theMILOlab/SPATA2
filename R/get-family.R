@@ -32,7 +32,7 @@ getCoordsDf <- function(object, of_sample = NA){
 
   # -----
 
-  base::return(coords_df)
+  return(coords_df)
 
 }
 
@@ -61,7 +61,7 @@ getSegmentDf <- function(object, segment_names, of_sample = NA){
     dplyr::filter(segmentation %in% {{segment_names}}) %>%
     tibble::as_tibble()
 
-  base::return(res_df)
+  return(res_df)
 
 }
 
@@ -312,7 +312,7 @@ getExpressionMatrix <- function(object,
     object@data[[of_sample]][[active_mtr]] %>%
     base::as.matrix()
 
-  base::return(expr_mtr)
+  return(expr_mtr)
 
 }
 
@@ -334,7 +334,7 @@ getCountMatrix <- function(object, of_sample = NA){
 
   }
 
-  base::return(count_mtr)
+  return(count_mtr)
 
 }
 
@@ -362,7 +362,7 @@ getExpressionMatrixNames <- function(object, of_sample = NA){
 
   } else {
 
-    base::return(mtr_names)
+    return(mtr_names)
 
   }
 
@@ -456,7 +456,7 @@ getDimRedDf <- function(object,
     ref_fns = ref_fns
   )
 
-  base::return(dim_red_df)
+  return(dim_red_df)
 
 }
 
@@ -479,7 +479,7 @@ getPcaDf <- function(object,
   subsetted_pca_df <-
     dplyr::select(pca_df, barcodes, sample, dplyr::all_of(subset_pcs))
 
-  base::return(subsetted_pca_df)
+  return(subsetted_pca_df)
 
 }
 
@@ -592,7 +592,7 @@ getBarcodes <- function(object,
           base::names(group_members) <-
             base::rep(group, base::length(group_members))
 
-          base::return(group_members)
+          return(group_members)
 
         }
       )
@@ -611,7 +611,7 @@ getBarcodes <- function(object,
 
   }
 
-  base::return(res_barcodes)
+  return(res_barcodes)
 
 }
 
@@ -648,7 +648,7 @@ getFeatureNames <- function(object, of_class = NULL, of_sample = NA){
     feature_names <- feature_names[classes %in% of_class]
   }
 
-  base::return(feature_names[!feature_names %in% c("barcodes", "sample")])
+  return(feature_names[!feature_names %in% c("barcodes", "sample")])
 
 }
 
@@ -675,7 +675,7 @@ getFeatureDf <- function(object, of_sample = NA){
 
   }
 
-  base::return(fdata)
+  return(fdata)
 
 }
 
@@ -744,7 +744,7 @@ getFeatureVariables <- function(object,
 
   }
 
-  base::return(res)
+  return(res)
 
 }
 
@@ -779,7 +779,7 @@ getFeatureValues <- function(object, features, of_sample = NA){
       dplyr::pull(var = {{features}}) %>%
       base::unique()
 
-    base::return(values)
+    return(values)
 
   } else {
 
@@ -791,12 +791,12 @@ getFeatureValues <- function(object, features, of_sample = NA){
                      dplyr::pull(var = {{f}}) %>%
                      base::unique()
 
-                   base::return(res)
+                   return(res)
 
                  }) %>%
       magrittr::set_names(features)
 
-    base::return(values)
+    return(values)
   }
 
 
@@ -862,11 +862,11 @@ getGroupNames <- function(object, discrete_feature, of_sample = NA){
 
     res_groups <- base::levels(res_groups)
 
-    base::return(res_groups)
+    return(res_groups)
 
   } else {
 
-    base::return(res_groups)
+    return(res_groups)
 
   }
 
@@ -924,7 +924,7 @@ getSegmentNames <- function(object,
 
                  } else {
 
-                   base::return(segment_names[!segment_names %in% c("none", "")])
+                   return(segment_names[!segment_names %in% c("none", "")])
 
                  }
 
@@ -938,11 +938,11 @@ getSegmentNames <- function(object,
 
     res_list <- base::unlist(res_list, use.names = FALSE)
 
-    base::return(res_list)
+    return(res_list)
 
   } else {
 
-    base::return(res_list)
+    return(res_list)
 
   }
 
@@ -1008,7 +1008,7 @@ getGeneCounts <- function(object, of_sample = NA, return = "tibble"){
 
   }
 
-  base::return(gene_counts)
+  return(gene_counts)
 
 }
 
@@ -1032,7 +1032,7 @@ getGeneFeatureNames <- function(object, mtr_name = NULL, of_sample = NA){
 
   gf_names <- base::colnames(gmdf)
 
-  base::return(gf_names)
+  return(gf_names)
 
 }
 
@@ -1067,11 +1067,11 @@ getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, of_sample 
 
   if(base::isTRUE(only_df)){
 
-    base::return(gdata$df)
+    return(gdata$df)
 
   } else {
 
-    base::return(gdata)
+    return(gdata)
 
   }
 
@@ -1117,14 +1117,27 @@ getImage <- function(object, of_sample = NA){
 #'
 #' @inherit check_object params
 #'
-#' @return S4 object containing all default argument inputs.
+#' @return S4 object containing all default argument inputs. Or the respective
+#' default in case of \code{getDefault()}.
 #' @export
 
 getDefaultInstructions <- function(object){
 
   check_object(object)
 
-  base::return(object@information$instructions$default)
+  return(object@information$instructions$default)
+
+}
+
+#' @rdname getDefaultInstructions
+#' @export
+getDefault <- function(object, arg){
+
+  default <- getDefaultInstructions(object)
+
+  out <- methods::slot(default, name = arg)
+
+  return(out)
 
 }
 
@@ -1142,13 +1155,13 @@ getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_obj
 
   if(base::length(directory_list) > 1){
 
-    base::return(directory_list)
+    return(directory_list)
 
   } else {
 
     dir <- base::unlist(directory_list, use.names = FALSE)
 
-    base::return(dir)
+    return(dir)
 
   }
 
@@ -1185,7 +1198,7 @@ getInitiationInfo <- function(object){
 
   info <- object@information$initiation
 
-  base::return(info)
+  return(info)
 
 }
 
@@ -1205,7 +1218,7 @@ getInitiationInput <- function(object, verbose = NULL){
     with.time = FALSE
   )
 
-  base::return(info$input)
+  return(info$input)
 
 }
 
@@ -1248,7 +1261,7 @@ getPrResults <- function(object, method_pr = "hspa", of_sample = NA){
     ref_fns = glue::glue("function runPatternRecognition(..., method_pr = '{method_pr}')")
   )
 
-  base::return(pr_list)
+  return(pr_list)
 
 }
 
@@ -1286,7 +1299,7 @@ getGeneDistMtr <- function(object, of_sample = NA){
 
   sp_cor <- getSpCorResults(object, of_sample = of_sample)
 
-  base::return(sp_cor$dist_mtr)
+  return(sp_cor$dist_mtr)
 
 }
 
@@ -1325,7 +1338,7 @@ getSpCorCluster <- function(object, method_hclust = "complete", of_sample = NA){
     ref_fns = "function runSpatialCorrelationAnaylsis() first"
   )
 
-  base::return(cor_clusters[[method_hclust]])
+  return(cor_clusters[[method_hclust]])
 
 }
 
@@ -1347,7 +1360,7 @@ getSpCorClusterNames <- function(object, of_sample = NA){
     ref_fns = "function clusterSpCorResults() first"
   )
 
-  base::return(cluster_names)
+  return(cluster_names)
 
 }
 
@@ -1374,7 +1387,7 @@ getSpCorResults <- function(object, of_sample = NA){
     ref_fns = "function runSpatialCorrelationAnalysis() first"
   )
 
-  base::return(corr_assessment)
+  return(corr_assessment)
 
 }
 
@@ -1472,11 +1485,11 @@ getTrajectoryNames <- function(object, simplify = TRUE, of_sample = NA, verbose 
           verbose = verbose
         )
 
-        base::return(NULL)
+        return(NULL)
 
       } else {
 
-        base::return(t_names)
+        return(t_names)
 
       }
 
@@ -1494,11 +1507,11 @@ getTrajectoryNames <- function(object, simplify = TRUE, of_sample = NA, verbose 
 
   if(!base::length(t_names_list) == 0){
 
-    base::return(t_names_list)
+    return(t_names_list)
 
   } else {
 
-    base::return(base::invisible(NULL))
+    return(base::invisible(NULL))
 
   }
 
@@ -1530,6 +1543,7 @@ getTrajectoryDf <- function(object,
                             method_gs = "mean",
                             binwidth = 5,
                             normalize = TRUE,
+                            whole_sample = FALSE,
                             shift_wider = FALSE,
                             verbose = TRUE,
                             of_sample = NA){
@@ -1541,13 +1555,16 @@ getTrajectoryDf <- function(object,
     getTrajectoryObject(object, trajectory_name, of_sample)
 
   stdf <-
-    hlpr_summarize_trajectory_df(object,
-                                 ctdf = tobj@compiled_trajectory_df,
-                                 binwidth = binwidth,
-                                 variables = variables,
-                                 method_gs = method_gs,
-                                 verbose = verbose,
-                                 normalize = normalize) %>%
+    hlpr_summarize_trajectory_df(
+      object,
+      ctdf = tobj@compiled_trajectory_df,
+      binwidth = binwidth,
+      variables = variables,
+      method_gs = method_gs,
+      verbose = verbose,
+      normalize = normalize,
+      whole_sample = whole_sample
+    ) %>%
     tibble::as_tibble()
 
   if(base::isTRUE(shift_wider)){
@@ -1556,7 +1573,7 @@ getTrajectoryDf <- function(object,
 
   }
 
-  base::return(stdf)
+  return(stdf)
 
 }
 
@@ -1643,11 +1660,11 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
 
           base::warning(stringr::str_c("Could not find any gene set of class:", i, sep = " "))
 
-          base::return(NULL)
+          return(NULL)
 
         } else {
 
-          base::return(subset)
+          return(subset)
 
         }
 
@@ -1697,7 +1714,7 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
 
   } else {
 
-    base::return(res_list)
+    return(res_list)
 
   }
 
@@ -1764,7 +1781,7 @@ getGeneSetsInteractive <- function(object){
       )
     )
 
-  base::return(gene_sets)
+  return(gene_sets)
 
 }
 
@@ -1892,7 +1909,7 @@ getGenes <- function(object,
 
     expr_mtr <- getExpressionMatrix(object = object, of_sample = of_sample)
 
-    base::return(base::rownames(expr_mtr))
+    return(base::rownames(expr_mtr))
 
   }
 
@@ -1957,7 +1974,7 @@ getGenes <- function(object,
   }
 
 
-  base::return(res_genes)
+  return(res_genes)
 
   # -----
 
@@ -2021,7 +2038,7 @@ getGenesInteractive <- function(object){
       )
     )
 
-  base::return(genes)
+  return(genes)
 
 }
 

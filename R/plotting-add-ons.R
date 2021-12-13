@@ -15,6 +15,18 @@ legendRight <- purrr::partial(.f = ggplot2::theme, legend.position = "right")
 #' @export
 legendTop <- purrr::partial(.f = ggplot2::theme, legend.position = "top")
 
+#' @rdname legendBottom
+#' @export
+legendColor <- function(...){
+
+  ggplot2::guides(
+    color = ggplot2::guide_legend(override.aes = list(...))
+  )
+
+}
+
+
+
 
 #' @title Add frame of the sample
 #'
