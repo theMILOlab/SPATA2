@@ -418,24 +418,6 @@ hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, re
   # construct add on
   if(base::isTRUE(smooth)){
 
-    argument_list <-
-      base::append(
-        x = argument_list,
-        values = list(span = smooth_span, formula = as.formula(y ~ x), se = FALSE, method = "loess")
-      )
-
-    fn_to_call <-
-      base::parse(text = "ggplot2::geom_smooth") %>%
-      base::eval()
-
-    customized_add_on <-
-      rlang::invoke(
-        .fn = fn_to_call,
-        .args = base::append(
-          x = list(data = customized_df, linetype = "solid"),
-          values = argument_list)
-      )
-
     customized_add_on <-
       rlang::invoke(
         .f = ggplot2::geom_line,
@@ -444,9 +426,15 @@ hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, re
           values = argument_list)
       )
 
+    argument_list <-
+      base::append(
+        x = argument_list,
+        values = list(span = smooth_span, formula = as.formula(y ~ x), se = FALSE, method = "loess")
+      )
+
     expression_add_on <-
       rlang::invoke(
-        .fn = fn_to_call,
+        .fn = ggplot2::geom_smooth,
         .args = base::append(
           x = list(data = expression_df, mapping = ggplot2::aes(linetype = origin)),
           values = argument_list)
