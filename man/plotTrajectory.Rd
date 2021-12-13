@@ -55,6 +55,9 @@ of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given 
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
+\item{pt_alpha2}{Numeric value. Specifies the transperancy of the spots
+that fall into the trajectory's reach.}
+
 \item{pt_clr}{Character value. Specifies the color of all points.}
 
 \item{pt_clrp}{The color palette to be used if the specified variable displayed by

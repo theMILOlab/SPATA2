@@ -169,6 +169,8 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' If NULL the data.frame is created via \code{CONICsmat::getGenePositions()} using
 #' all gene names that appear in the count matrix and in the reference matrix.
 #'
+#' Defaults to the SPATA2 intern data.frame \code{SPATA2::gene_pos_df}.
+#'
 #' @param cnv_prefix Character value. Denotes the string with which the
 #' the feature variables in which the information about the chromosomal gains and
 #' losses are stored are prefixed.
@@ -249,7 +251,7 @@ runCnvAnalysis <- function(object,
                            ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
                            ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
                            ref_regions = cnv_ref[["regions"]], # chromosome positions
-                           gene_pos_df = NULL,
+                           gene_pos_df = gene_pos_df,
                            directory_cnv_folder = "data-development/cnv-results", # output folder
                            directory_regions_df = NA, # deprecated (chromosome positions)
                            n_pcs = 30,

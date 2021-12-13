@@ -79,7 +79,7 @@ plotCustomizedTrajectoryTrends <- function(customized_trends,
 #' drawn with \code{SPATA::createTrajectories()}. Increase the transparency
 #' via argument \code{pt_alpha} to highlight the trajectory's course.
 #'
-#' @inherit pt_alpha2 Numeric value. Specifies the transperancy of the spots
+#' @param pt_alpha2 Numeric value. Specifies the transperancy of the spots
 #' that fall into the trajectory's reach.
 #' @inherit argument_dummy params
 #' @inherit check_color_to params
