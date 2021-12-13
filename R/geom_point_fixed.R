@@ -2,7 +2,7 @@
 #' inspired from https://github.com/tidyverse/ggplot2/blob/main/R/geom-point.r
 translate_shape_string <- function(shape_string) {
   # strings of length 0 or 1 are interpreted as symbols by grid
-  if (nchar(shape_string[1]) <= 1) {
+  if (base::nchar(shape_string[1]) <= 1) {
     return(shape_string)
   }
 
@@ -120,7 +120,7 @@ GeomPointFixed <- ggplot2::ggproto("GeomPointFixed", Geom,
                        )
 
                      },
-                     draw_key = draw_key_point
+                     draw_key = ggplot2::draw_key_point
 )
 
 
