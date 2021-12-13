@@ -1055,14 +1055,17 @@ plotTrajectoryFit <- function(object,
 
   # 2. Data wrangling -------------------------------------------------------
 
-  stdf <- getTrajectoryDf(object = object,
-                          trajectory_name = trajectory_name,
-                          of_sample = of_sample,
-                          variables = variable,
-                          method_gs = method_gs,
-                          binwidth = binwidth,
-                          verbose = verbose,
-                          normalize = TRUE)
+  stdf <-
+    getTrajectoryDf(
+      object = object,
+      trajectory_name = trajectory_name,
+      of_sample = of_sample,
+      variables = variable,
+      method_gs = method_gs,
+      binwidth = binwidth,
+      verbose = verbose,
+      normalize = TRUE
+    )
 
   ref_var <- stringr::str_c("values", variable, sep = "_")
 
@@ -1183,7 +1186,9 @@ plotTrajectoryFit <- function(object,
       strip.text = ggplot2::element_text(color = "black", size = 11)
     ) +
     ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL) +
-    ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 2.5)))
+    ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 2.5))) +
+    ggplot2::scale_y_continuous(limit=c(0,1),oob=scales::squish) +
+    ggplot2::coord_cartesian(ylim = c(0,1))
 
 }
 
@@ -1395,7 +1400,9 @@ plotTrajectoryFitCustomized <- function(object,
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_text(color = "black", size = 11)
     ) +
-    ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL)
+    ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL) +
+    ggplot2::scale_y_continuous(limit=c(0,1),oob=scales::squish) +
+    ggplot2::coord_cartesian(ylim = c(0,1))
 
 }
 
