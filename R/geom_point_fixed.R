@@ -90,7 +90,7 @@ translate_shape_string <- function(shape_string) {
 GeomPointFixed <- ggplot2::ggproto("GeomPointFixed", Geom,
                      required_aes = c("x", "y"),
                      non_missing_aes = c("size", "shape", "colour"),
-                     default_aes = aes(
+                     default_aes = ggplot2::aes(
                        shape = 19, colour = "black", size = 0.15, fill = NA,
                        alpha = NA, stroke = 0.5
                      ),
