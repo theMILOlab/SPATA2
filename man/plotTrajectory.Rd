@@ -13,6 +13,7 @@ plotTrajectory(
   smooth_span = NULL,
   pt_size = NULL,
   pt_alpha = NULL,
+  pt_alpha2 = 0.9,
   pt_clr = NULL,
   pt_clrp = NULL,
   pt_clrsp = NULL,

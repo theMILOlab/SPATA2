@@ -49,6 +49,7 @@ plotSurface <- function(object,
                         display_title = NULL,
                         complete = NULL,
                         verbose = NULL,
+                        highlight_groups = NULL,
                         of_sample = NA,
                         ...){
 
@@ -56,7 +57,6 @@ plotSurface <- function(object,
 
   # lazy check
   hlpr_assign_arguments(object)
-
 
   check_pt(pt_size, pt_alpha, pt_clrsp)
   check_display(display_title, display_image)
@@ -114,7 +114,8 @@ plotSurface <- function(object,
 
   if(base::isTRUE(pt_size_fixed)){
 
-    point_add_on <- geom_point_fixed(params)
+    point_add_on <-
+      geom_point_fixed(params, mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by))
 
   } else {
 
@@ -123,15 +124,36 @@ plotSurface <- function(object,
         geom = "point",
         stat = "identity",
         position = "identity",
-        params = params
+        params = params,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by)
       )
 
   }
 
-  ggplot2::ggplot(
-    data = coords_df,
-    mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by)
-    ) +
+  color_var <- pull_var(coords_df, color_by)
+
+  if(base::is.numeric(color_var)){
+
+    coords_df <- dplyr::arrange(coords_df, {{color_by}})
+
+  } else if(!base::is.null(color_by) & base::is.character(highlight_groups)){
+
+    all_groups <- getGroupNames(object, discrete_feature = color_by)
+
+    check_one_of(
+      input = highlight_groups,
+      against = all_groups
+    )
+
+    grey_out <-
+      all_groups[!all_groups %in% highlight_groups] %>%
+      purrr::set_names(x = base::rep("lightgrey", base::length(.)), nm = .)
+
+    clrp_adjust <- c(clrp_adjust, grey_out)
+
+  }
+
+  ggplot2::ggplot(data = coords_df) +
     hlpr_image_add_on(object, display_image, of_sample) +
     point_add_on +
     scale_color_add_on(
@@ -140,9 +162,6 @@ plotSurface <- function(object,
       clrp = pt_clrp,
       clrsp = pt_clrsp,
       clrp.adjust = clrp_adjust
-    ) +
-    ggplot2::guides(
-      color = ggplot2::guide_legend(override.aes = list(size = 8))
     ) +
     ggplot2::coord_equal() +
     ggplot2::theme_void()

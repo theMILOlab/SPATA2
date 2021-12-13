@@ -410,7 +410,7 @@ hlpr_gene_set_name <- function(string){
 
 hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, ref_variable, linesize, linealpha){
 
-  argument_list <- list( size = linesize, alpha = linealpha)
+  argument_list <- list(size = linesize, alpha = linealpha)
 
   customized_df <- dplyr::filter(.data = plot_df, origin %in% c("Customized", ref_model))
   expression_df <- dplyr::filter(.data = plot_df, origin %in% c("Residuals", ref_variable))
@@ -431,6 +431,14 @@ hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, re
     customized_add_on <-
       rlang::invoke(
         .fn = fn_to_call,
+        .args = base::append(
+          x = list(data = customized_df, linetype = "solid"),
+          values = argument_list)
+      )
+
+    customized_add_on <-
+      rlang::invoke(
+        .f = ggplot2::geom_line,
         .args = base::append(
           x = list(data = customized_df, linetype = "solid"),
           values = argument_list)

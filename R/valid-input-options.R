@@ -122,4 +122,12 @@ validPlotTypes <- function(fn_name){
 }
 
 
+#' @rdname validActivationFunctions
+validTrajectoryTrends <- function(){
+
+  return(trajectory_patterns)
+
+}
+
+
 

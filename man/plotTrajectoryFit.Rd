@@ -20,6 +20,7 @@ plotTrajectoryFit(
   auc_alpha = 0.5,
   auc_linetype = "dotted",
   colors = c("forestgreen", "blue4", "tomato"),
+  model_subset = validTrajectoryTrends(),
   ref_model = "Model",
   verbose = NULL,
   of_sample = NA,

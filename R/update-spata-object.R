@@ -272,10 +272,7 @@ updateSpataObject <- function(object,
 
   }
 
-  major <- object@version$major
-  minor <- object@version$minor
-
-  if(major == 1 & minor == 1){
+  if(object@version$major == 1 & object@version$minor == 1){
 
     confuns::give_feedback(msg = "Adding slot 'cnv'.", verbose = verbose)
 
@@ -311,7 +308,7 @@ updateSpataObject <- function(object,
 
   # 1.2.0 -> 1.3.0 ----------------------------------------------------------
 
-  if(major == 1 & minor == 2){
+  if(object@version$major == 1 & object@version$minor == 2){
 
     give_feedback(msg = "Adding default for argument  'min_lfc' = 0.", verbose = verbose) # below at 'default adjustment'
 
@@ -319,7 +316,7 @@ updateSpataObject <- function(object,
 
   }
 
-  if(major == 1 & minor == 3){
+  if(object@version$major == 1 & object@version$minor == 3){
 
     give_feedback(msg = "Adding default for argument  'pt_size_fixed' = TRUE.", verbose = verbose) # below at 'default adjustment'
 

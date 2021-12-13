@@ -668,7 +668,7 @@ createTrajectoryManually <- function(object,
           y = vertices[[nth]][2],
           xend = end[1],
           yend = end[2],
-          part = stringr::str_c("part", i+1, sep = "_")
+          part = stringr::str_c("part", nth+1, sep = "_")
         )
 
     }

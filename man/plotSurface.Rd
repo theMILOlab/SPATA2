@@ -24,6 +24,7 @@ plotSurface(
   display_title = NULL,
   complete = NULL,
   verbose = NULL,
+  highlight_groups = NULL,
   of_sample = NA,
   ...
 )
