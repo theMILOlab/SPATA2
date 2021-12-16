@@ -79,6 +79,10 @@ is_value <- confuns::is_value
 is_vec <- confuns::is_vec
 
 
+# l -----------------------------------------------------------------------
+
+lrename <- confuns::lrename
+
 # m -----------------------------------------------------------------------
 
 make_capital_letters <- confuns::make_capital_letters

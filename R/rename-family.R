@@ -203,7 +203,7 @@ renameGroups <- function(object, discrete_feature, ..., of_sample = NA){
 
           if(base::is.list(gsea)){
 
-            gsea <- lrename(lst = gsea, !!!rename_input)
+            gsea <- confuns::lrename(lst = gsea, !!!rename_input)
 
             out$hypeR_gsea <- gsea
 

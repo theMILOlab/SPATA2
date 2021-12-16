@@ -66,6 +66,9 @@
       <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
     </li>
     <li>
+      <a href="../articles/">Genes, Gene Sets and Features</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
     </li>
     <li class="dropdown-header">Analysis &amp; Computation</li>
@@ -183,10 +186,12 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># add a new gene-set of three genes</span>
 <span class="va">spata_obj</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/addGeneSet.html">addGeneSet</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>,
-             class_name <span class="op">=</span> <span class="st">"New"</span>, 
-             gs_name <span class="op">=</span> <span class="st">"example_1"</span>, 
-             genes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'SLC35E2A'</span>, <span class="st">'NADK'</span>, <span class="st">'GFAP'</span><span class="op">)</span><span class="op">)</span> <span class="co"># genes that exist in your expression matrix</span>
+  <span class="fu"><a href="../reference/addGeneSet.html">addGeneSet</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">spata_obj</span>,
+    class_name <span class="op">=</span> <span class="st">"New"</span>, 
+    gs_name <span class="op">=</span> <span class="st">"example_1"</span>, 
+    genes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'SLC35E2A'</span>, <span class="st">'NADK'</span>, <span class="st">'GFAP'</span><span class="op">)</span>
+  <span class="op">)</span> <span class="co"># genes that exist in your expression matrix</span>
 
 <span class="fu"><a href="../reference/printGeneSetOverview.html">printGeneSetOverview</a></span><span class="op">(</span><span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##    Class Available Gene Sets</span>
@@ -255,10 +260,11 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="co">##  [9] "BC_AGR_PATHWAY"          "BC_AKAP95_PATHWAY"</span></code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get gene-set names of certain classes </span>
-<span class="fu"><a href="../reference/getGeneSets.html">getGeneSets</a></span><span class="op">(</span><span class="va">spata_obj</span>,
-            of_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HM"</span>, <span class="st">"New"</span><span class="op">)</span>,
-            simplify <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># as a single vector </span>
-            <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># show last six </span></code></pre></div>
+<span class="fu"><a href="../reference/getGeneSets.html">getGeneSets</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">spata_obj</span>,
+  of_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HM"</span>, <span class="st">"New"</span><span class="op">)</span>,
+  simplify <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># as a single vector</span>
+  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># show last six </span></code></pre></div>
 <pre><code><span class="co">## [1] "HM_ALLOGRAFT_REJECTION" "HM_SPERMATOGENESIS"     "HM_KRAS_SIGNALING_UP"  </span>
 <span class="co">## [4] "HM_KRAS_SIGNALING_DN"   "HM_PANCREAS_BETA_CELLS" "New_example_1"</span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
@@ -350,7 +356,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="co">## <span style="color: #BCBCBC;"> 9</span><span> AAACCGTTCGTCCAG~ T275             </span><span style="text-decoration: underline;">4</span><span>688             </span><span style="text-decoration: underline;">2</span><span>318       8.79       4.69</span></span>
 <span class="co">## <span style="color: #BCBCBC;">10</span><span> AAACCTAAGCAGCCG~ T275             </span><span style="text-decoration: underline;">9</span><span>070             </span><span style="text-decoration: underline;">3</span><span>909       9.18       3.78</span></span>
 <span class="co">## <span style="color: #949494;"># ... with 3,724 more rows, and 3 more variables: seurat_clusters &lt;fct&gt;,</span></span>
-<span class="co">## <span style="color: #949494;">#   segmentation &lt;chr&gt;, igraph_clusters &lt;chr&gt;</span></span></code></pre>
+<span class="co">## <span style="color: #949494;">#   segmentation &lt;fct&gt;, igraph_clusters &lt;chr&gt;</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="obtain-feature-names-variables-and-values">2.2 Obtain feature names, variables and values<a class="anchor" aria-label="anchor" href="#obtain-feature-names-variables-and-values"></a>
@@ -361,7 +367,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##            numeric            integer            numeric            numeric </span>
 <span class="co">##   "nCount_Spatial" "nFeature_Spatial"       "percent.mt"       "percent.RB" </span>
-<span class="co">##             factor          character          character </span>
+<span class="co">##             factor             factor          character </span>
 <span class="co">##  "seurat_clusters"     "segmentation"  "igraph_clusters"</span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># get only names of numeric features</span>
@@ -379,7 +385,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 
 <span class="co"># output</span>
 <span class="va">discrete_features</span></code></pre></div>
-<pre><code><span class="co">##            factor         character         character </span>
+<pre><code><span class="co">##            factor            factor         character </span>
 <span class="co">## "seurat_clusters"    "segmentation" "igraph_clusters"</span></code></pre>
 <p>Additionally <code><a href="../reference/getFeatureValues.html">getFeatureValues()</a></code> allows to quickly access the unique values of discrete feature variables such as clusters.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
@@ -389,16 +395,17 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="co">## Levels: 0 1 2 3 4 5 6 7 8</span>
 <span class="co">## </span>
 <span class="co">## $segmentation</span>
-<span class="co">## [1] "none"             "oxid-phosph-high"</span>
+<span class="co">## [1] none             oxid-phosph-high</span>
+<span class="co">## Levels: none oxid-phosph-high</span>
 <span class="co">## </span>
 <span class="co">## $igraph_clusters</span>
-<span class="co">## [1] "Cluster 5" "Cluster 7" "Cluster 1" "Cluster 4" "Cluster 6" "Cluster 2"</span>
-<span class="co">## [7] "Cluster 3"</span></code></pre>
+<span class="co">## [1] "Cluster 1" "Cluster 3" "Cluster 4" "Cluster 7" "Cluster 6" "Cluster 2"</span>
+<span class="co">## [7] "Cluster 5"</span></code></pre>
 <p>When it comes to grouping variables such as clusters a more intuitive approach is offered by the two functions <code><a href="../reference/getGroupingOptions.html">getGroupingOptions()</a></code> and <code><a href="../reference/getGroupNames.html">getGroupNames()</a></code>.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain all variables that group the sample's barcode-spots in a certain way</span>
 <span class="fu"><a href="../reference/getGroupingOptions.html">getGroupingOptions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##            factor         character         character </span>
+<pre><code><span class="co">##            factor            factor         character </span>
 <span class="co">## "seurat_clusters"    "segmentation" "igraph_clusters"</span></code></pre>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># obtain the names of the groups a certain grouping variable contains </span>
@@ -417,7 +424,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##            numeric            integer            numeric            numeric </span>
 <span class="co">##   "nCount_Spatial" "nFeature_Spatial"       "percent.mt"       "percent.RB" </span>
-<span class="co">##             factor          character          character </span>
+<span class="co">##             factor             factor          character </span>
 <span class="co">##  "seurat_clusters"     "segmentation"  "igraph_clusters"</span></code></pre>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># change some names</span>
@@ -430,13 +437,13 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##            numeric            integer            numeric            numeric </span>
 <span class="co">##           "nCount" "nFeature_Spatial"       "percent.mt"       "percent.RB" </span>
-<span class="co">##             factor          character          character </span>
+<span class="co">##             factor             factor          character </span>
 <span class="co">##        "seurat_cl"     "segmentation"  "igraph_clusters"</span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="change-feature-values-group-names">2.3.2 Change feature values (group names)<a class="anchor" aria-label="anchor" href="#change-feature-values-group-names"></a>
 </h3>
-<p>Referring to clusters/groups with numbers is often suboptimal. Once your differential gene expression analysis has given you insight in what constitutes certain group of barcode-spots you might want to give it a more informative name. You can do so with <code><a href="../reference/renameGroups.html">renameGroups()</a></code>.</p>
+<p>Referring to clusters/groups with numbers is often suboptimal. Once your differential gene expression analysis has given you insight in what constitutes certain groups of barcode-spots you might want to give it a more informative name. You can do so with <code><a href="../reference/renameGroups.html">renameGroups()</a></code>.</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># old group names</span>
 <span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, discrete_feature <span class="op">=</span> <span class="st">"seurat_cl"</span><span class="op">)</span></code></pre></div>
@@ -449,9 +456,10 @@ Figure 1.1 Interface of addGeneSetsInteractive()
                           <span class="st">"reactive-hypoxia"</span> <span class="op">=</span> <span class="st">"4"</span>
                           <span class="op">)</span>
 
-<span class="co"># visualize renamed clustering</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_cl"</span><span class="op">)</span></code></pre></div>
-<p><img src="spata-v2-genes-gene-sets-and-features_files/figure-html/renameGroups()-1.png" width="100%"></p>
+<span class="fu"><a href="../reference/getGroupNames.html">getGroupNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, discrete_feature <span class="op">=</span> <span class="st">"seurat_cl"</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## [1] "0"                     "1"                     "2"                    </span>
+<span class="co">## [4] "reactive-inflammatory" "reactive-hypoxia"      "5"                    </span>
+<span class="co">## [7] "6"                     "7"                     "8"</span></code></pre>
 <p>Whenever a warning message appears telling you that a certain gene, gene-set or feature was not found this means that the character string provided was not found throughout your spata-object. Check for typos in this case. The same is true for gene-set names with regards to the <em>ont</em>-variable in the gene-set data.frame.</p>
 </div>
 </div>
@@ -460,7 +468,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <h1 id="example">3. Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h1>
 <p>The output vectors of <code><a href="../reference/getGenes.html">getGenes()</a></code>, <code><a href="../reference/getGeneSets.html">getGeneSets()</a></code> and <code><a href="../reference/getFeatureNames.html">getFeatureNames()</a></code> are a perfectly valid inputs for arguments like <code>color_by</code> or <code>variables</code>.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">hallmark_gs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getGeneSets.html">getGeneSets</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, of_class <span class="op">=</span> <span class="st">"HM"</span><span class="op">)</span>
 
 <span class="co"># output</span>
@@ -470,7 +478,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="co">##  [5] "HM_WNT_BETA_CATENIN_SIGNALING" "HM_TGF_BETA_SIGNALING"        </span>
 <span class="co">##  [7] "HM_IL6_JAK_STAT3_SIGNALING"    "HM_DNA_REPAIR"                </span>
 <span class="co">##  [9] "HM_G2M_CHECKPOINT"             "HM_APOPTOSIS"</span></code></pre>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># create a spata-data.frame</span>
 <span class="va">joined_df</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/joinWith.html">joinWith</a></span><span class="op">(</span>
@@ -484,27 +492,27 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">joined_df</span>, <span class="fl">20</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## <span style="color: #949494;"># A tibble: 20 x 56</span></span>
 <span class="co">##    barcodes   sample     x     y segmentation  igraph_clusters HM_TNFA_SIGNALIN~</span>
-<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>      </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>  </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>         </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>                       </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> AAACAAGTA~ T275   435.  374.  none          Cluster 5                   0.201</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> AAACACCAA~ T275   132.  429.  oxid-phosph-~ Cluster 5                   0.178</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> AAACAGAGC~ T275   407.  145.  none          Cluster 7                   0.341</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> AAACAGCTT~ T275    96   327   none          Cluster 7                   0.616</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> AAACAGGGT~ T275   110.  353.  none          Cluster 1                   0.440</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> AAACAGTGT~ T275   219.  518.  oxid-phosph-~ Cluster 1                   0.195</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> AAACATTTC~ T275   416.  443.  none          Cluster 5                   0.234</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> AAACCGGGT~ T275   165.  321.  none          Cluster 4                   0.598</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> AAACCGTTC~ T275   216.  385.  oxid-phosph-~ Cluster 5                   0.213</span></span>
-<span class="co">## <span style="color: #BCBCBC;">10</span><span> AAACCTAAG~ T275   365.  468.  none          Cluster 5                   0.280</span></span>
-<span class="co">## <span style="color: #BCBCBC;">11</span><span> AAACCTCAT~ T275   133.  289.  none          Cluster 6                   0.702</span></span>
-<span class="co">## <span style="color: #BCBCBC;">12</span><span> AAACGAAGA~ T275   298.   93.7 none          Cluster 2                   0.358</span></span>
-<span class="co">## <span style="color: #BCBCBC;">13</span><span> AAACGAAGA~ T275    77.2 422.  oxid-phosph-~ Cluster 1                   0.145</span></span>
-<span class="co">## <span style="color: #BCBCBC;">14</span><span> AAACGAGAC~ T275   352.  278.  none          Cluster 3                   0.478</span></span>
-<span class="co">## <span style="color: #BCBCBC;">15</span><span> AAACGGGCG~ T275   394.  469.  none          Cluster 6                   0.272</span></span>
-<span class="co">## <span style="color: #BCBCBC;">16</span><span> AAACGGTTG~ T275   277.  480.  none          Cluster 1                   0.295</span></span>
-<span class="co">## <span style="color: #BCBCBC;">17</span><span> AAACTCGGT~ T275   317.  474.  none          Cluster 6                   0.291</span></span>
-<span class="co">## <span style="color: #BCBCBC;">18</span><span> AAACTGCTG~ T275   307.  341.  none          Cluster 6                   0.464</span></span>
-<span class="co">## <span style="color: #BCBCBC;">19</span><span> AAACTTAAT~ T275   106.  460.  oxid-phosph-~ Cluster 5                   0.135</span></span>
-<span class="co">## <span style="color: #BCBCBC;">20</span><span> AAACTTGCA~ T275   132.  340.  none          Cluster 5                   0.487</span></span>
+<span class="co">##    <span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>      </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>  </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span><span> </span><span style="color: #949494;font-style: italic;">&lt;fct&gt;</span><span>         </span><span style="color: #949494;font-style: italic;">&lt;chr&gt;</span><span>                       </span><span style="color: #949494;font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span><span> AAACAAGTA~ T275   435.  374.  none          Cluster 1                   0.289</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span><span> AAACACCAA~ T275   132.  429.  oxid-phosph-~ Cluster 3                   0.243</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span><span> AAACAGAGC~ T275   407.  145.  none          Cluster 3                   0.384</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span><span> AAACAGCTT~ T275    96   327   none          Cluster 1                   0.583</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span><span> AAACAGGGT~ T275   110.  353.  none          Cluster 3                   0.518</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span><span> AAACAGTGT~ T275   219.  518.  oxid-phosph-~ Cluster 4                   0.282</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span><span> AAACATTTC~ T275   416.  443.  none          Cluster 3                   0.344</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span><span> AAACCGGGT~ T275   165.  321.  none          Cluster 7                   0.540</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span><span> AAACCGTTC~ T275   216.  385.  oxid-phosph-~ Cluster 7                   0.316</span></span>
+<span class="co">## <span style="color: #BCBCBC;">10</span><span> AAACCTAAG~ T275   365.  468.  none          Cluster 6                   0.346</span></span>
+<span class="co">## <span style="color: #BCBCBC;">11</span><span> AAACCTCAT~ T275   133.  289.  none          Cluster 4                   0.595</span></span>
+<span class="co">## <span style="color: #BCBCBC;">12</span><span> AAACGAAGA~ T275   298.   93.7 none          Cluster 7                   0.263</span></span>
+<span class="co">## <span style="color: #BCBCBC;">13</span><span> AAACGAAGA~ T275    77.2 422.  oxid-phosph-~ Cluster 4                   0.328</span></span>
+<span class="co">## <span style="color: #BCBCBC;">14</span><span> AAACGAGAC~ T275   352.  278.  none          Cluster 1                   0.482</span></span>
+<span class="co">## <span style="color: #BCBCBC;">15</span><span> AAACGGGCG~ T275   394.  469.  none          Cluster 2                   0.400</span></span>
+<span class="co">## <span style="color: #BCBCBC;">16</span><span> AAACGGTTG~ T275   277.  480.  none          Cluster 3                   0.281</span></span>
+<span class="co">## <span style="color: #BCBCBC;">17</span><span> AAACTCGGT~ T275   317.  474.  none          Cluster 6                   0.305</span></span>
+<span class="co">## <span style="color: #BCBCBC;">18</span><span> AAACTGCTG~ T275   307.  341.  none          Cluster 6                   0.338</span></span>
+<span class="co">## <span style="color: #BCBCBC;">19</span><span> AAACTTAAT~ T275   106.  460.  oxid-phosph-~ Cluster 4                   0.305</span></span>
+<span class="co">## <span style="color: #BCBCBC;">20</span><span> AAACTTGCA~ T275   132.  340.  none          Cluster 1                   0.578</span></span>
 <span class="co">## <span style="color: #949494;"># ... with 49 more variables: HM_HYPOXIA &lt;dbl&gt;,</span></span>
 <span class="co">## <span style="color: #949494;">#   HM_CHOLESTEROL_HOMEOSTASIS &lt;dbl&gt;, HM_MITOTIC_SPINDLE &lt;dbl&gt;,</span></span>
 <span class="co">## <span style="color: #949494;">#   HM_WNT_BETA_CATENIN_SIGNALING &lt;dbl&gt;, HM_TGF_BETA_SIGNALING &lt;dbl&gt;,</span></span>
@@ -529,7 +537,7 @@ Figure 1.1 Interface of addGeneSetsInteractive()
 <span class="co">## <span style="color: #949494;">#   HM_SPERMATOGENESIS &lt;dbl&gt;, HM_KRAS_SIGNALING_UP &lt;dbl&gt;,</span></span>
 <span class="co">## <span style="color: #949494;">#   HM_KRAS_SIGNALING_DN &lt;dbl&gt;, HM_PANCREAS_BETA_CELLS &lt;dbl&gt;</span></span></code></pre>
 <p>With our vector <code>hallmark_gs</code> containing our gene-sets of interest we can work throughout our R-session.</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotBoxplot.html">plotRidgeplot</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">spata_obj</span>,
   variables <span class="op">=</span> <span class="va">hallmark_gs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,
