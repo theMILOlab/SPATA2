@@ -2,6 +2,7 @@
 % Please edit documentation in R/plot-family-trajectory.R
 \name{plotTrajectory}
 \alias{plotTrajectory}
+\alias{plotTrajectories}
 \title{Plot trajectory}
 \usage{
 plotTrajectory(
@@ -12,7 +13,7 @@ plotTrajectory(
   smooth = NULL,
   smooth_span = NULL,
   pt_size = NULL,
-  pt_alpha = NULL,
+  pt_alpha = 0.5,
   pt_alpha2 = 0.9,
   pt_clr = NULL,
   pt_clrp = NULL,
@@ -24,6 +25,31 @@ plotTrajectory(
   uniform_genes = NULL,
   verbose = NULL,
   of_sample = NA
+)
+
+plotTrajectories(
+  object,
+  trajectory_names = getTrajectoryNames(object),
+  color_by = NULL,
+  method_gs = NULL,
+  smooth = NULL,
+  smooth_span = NULL,
+  pt_size = NULL,
+  pt_alpha = 0.5,
+  pt_alpha2 = 0.9,
+  pt_clr = NULL,
+  pt_clrp = NULL,
+  pt_clrsp = NULL,
+  sgmt_clr = NULL,
+  sgmt_size = NULL,
+  display_image = NULL,
+  display_title = NULL,
+  uniform_genes = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  verbose = NULL,
+  of_sample = NA,
+  ...
 )
 }
 \arguments{
@@ -55,7 +81,7 @@ of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given 
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
-\item{pt_alpha2}{Numeric value. Specifies the transperancy of the spots
+\item{pt_alpha2}{Numeric value. Specifies the transparency of the spots
 that fall into the trajectory's reach.}
 
 \item{pt_clr}{Character value. Specifies the color of all points.}
@@ -84,6 +110,12 @@ the computational progress will be printed.
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
+
+\item{nrow}{Affects the way the subplots
+are displayed.}
+
+\item{ncol}{Affects the way the subplots
+are displayed.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

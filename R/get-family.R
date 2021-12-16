@@ -1577,6 +1577,28 @@ getTrajectoryDf <- function(object,
 
 }
 
+#' @title Obtain trjectory course
+#'
+#' @description Extracts data.frame that contains the course
+#' of a spatial trajectory.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame.
+#' @export
+getTrajectorySegmentDf <- function(object, trajectory_name){
+
+  traj_obj <- getTrajectoryObject(object, trajectory_name)
+
+  out <-
+    dplyr::mutate(
+      .data = traj_obj@segment_trajectory_df,
+      trajectory = {{trajectory_name}}
+    )
+
+  return(out)
+
+}
 
 #' @title Obtain trajectory object
 #'

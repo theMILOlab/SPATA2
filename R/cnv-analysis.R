@@ -76,7 +76,8 @@ getCnvFeatureNames <- function(object, of_sample = NA){
   chromosomes <-
     cnv_results$regions_df %>%
     base::rownames() %>%
-    stringr::str_remove_all(pattern = "p$|q$")
+    stringr::str_remove_all(pattern = "p$|q$") %>%
+    base::unique()
 
   cnv_feature_names <- stringr::str_c(prefix, chromosomes)
 

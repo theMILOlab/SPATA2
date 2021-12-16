@@ -23,6 +23,47 @@ validation <- function(x){
 }
 
 
+
+
+validate_only_one_arg_specified <- function(input){
+
+  arg_names <- base:::names(input)
+
+  arg_spec <- purrr::discard(.x = input, .p = base::is.null)
+
+  if(base::length(arg_spec) > 1){
+
+    spec_names <- base::names(arg_spec)
+
+    spec_ref <- scollapse(spec_names)
+
+    msg <- glue::glue("Only one of arguments '{spec_ref}' must be specified.")
+
+    give_feedback(
+      msg = msg,
+      with.time = FALSE,
+      fdb.fn = "stop"
+    )
+
+  } else if(base::length(arg_spec) == 0) {
+
+    arg_ref <- scollapse(arg_names, last = "' or '")
+
+    msg <- glue::glue("You must specify one of the arguments '{arg_ref}'.")
+
+    give_feedback(
+      msg = msg,
+      with.time = FALSE,
+      fdb.fn = "stop"
+    )
+
+  }
+
+  return(TRUE)
+
+}
+
+
 version_string <- function(v){
 
   stringr::str_c(v$major, v$minor, v$patch, sep = ".")

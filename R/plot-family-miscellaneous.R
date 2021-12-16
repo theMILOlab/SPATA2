@@ -2238,6 +2238,7 @@ plotDeaDotPlot <- function(object,
 
 plotSegmentation <- function(object,
                              encircle = TRUE,
+                             params_encircle = list(),
                              segment_subset = NULL,
                              pt_size = NULL,
                              pt_clrp = NULL,
@@ -2280,6 +2281,15 @@ plotSegmentation <- function(object,
     encircle_add_on <-
       ggforce::geom_mark_hull(data = segment_df, mapping = ggplot2::aes(x = x, y = y, color = segmentation, fill = segmentation))
 
+    encircle_add_on <-
+      ggplot2::layer(
+        geom = ggforce::GeomMarkHull,
+        data = segment_df,
+        stat = "identity",
+        mapping = ggplot2::aes(x = x, y = y, color = segmentation, fill = segmentation),
+        position = "identity",
+        params = params_encircle
+      )
 
   } else {
 

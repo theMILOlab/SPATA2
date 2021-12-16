@@ -72,7 +72,7 @@ createSegmentation <- function(object){
               dplyr::filter(!segmentation %in% c("", "none")) %>%
               dplyr::select(barcodes, segmentation)
 
-            base::return(segm_df)
+            return(segm_df)
 
           })
 
@@ -181,7 +181,9 @@ createSegmentation <- function(object){
               getFeatureDf(spata_obj, of_sample = current()$sample) %>%
               dplyr::mutate(
                 positions = positions,
-                segmentation = dplyr::if_else(condition = positions %in% c(1,2,3), true = input$name_segment, false = segmentation)
+                segmentation = base::as.character(segmentation),
+                segmentation = dplyr::if_else(condition = positions %in% c(1,2,3), true = input$name_segment, false = segmentation),
+                segmentation = base::factor(segmentation),
               ) %>%
               dplyr::select(-positions)
 
@@ -212,7 +214,12 @@ createSegmentation <- function(object){
             checkpoint(evaluate = input$name_segment_rmv %in% base::unique(fdata$segmentation), case_false = "segment_name_not_found")
 
             fdata_new <-
-              dplyr::mutate(.data = fdata, segmentation = dplyr::if_else(segmentation == input$name_segment_rmv, true = "none", false = segmentation))
+              dplyr::mutate(
+                .data = fdata,
+                segmentation = base::as.character(segmentation),
+                segmentation = dplyr::if_else(segmentation == input$name_segment_rmv, true = "none", false = segmentation),
+                segmentation = base::factor(segmentation)
+                )
 
             spata_obj <- setFeatureDf(spata_obj, feature_df = fdata_new, of_sample = current()$sample)
 

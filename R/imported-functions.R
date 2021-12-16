@@ -68,6 +68,8 @@ create_progress_bar <- confuns::create_progress_bar
 
 give_feedback <- confuns::give_feedback
 
+pull_var <- confuns::pull_var
+
 
 
 # i -----------------------------------------------------------------------

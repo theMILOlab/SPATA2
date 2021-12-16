@@ -7,6 +7,7 @@
 plotSegmentation(
   object,
   encircle = TRUE,
+  params_encircle = list(),
   segment_subset = NULL,
   pt_size = NULL,
   pt_clrp = NULL,

@@ -261,6 +261,8 @@ updateSpataObject <- function(object,
 
   # 1.1.0 -> 1.2.0 ----------------------------------------------------------
 
+  sample_name <- object@samples[1]
+
   if(purrr::is_empty(x = object@version) | !base::all(c("major", "minor") %in% base::names(object@version))){
 
     confuns::give_feedback(
@@ -324,9 +326,31 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 && object@version$minor == 4){
+
+    fdf <- object@fdata[[sample_name]]
+
+    if(!"segmentation" %in% base::names(fdf)){
+
+      give_feedback(msg = "Creating variable 'segmentation'.", verbose = verbose)
+
+      object@fdata[[sample_name]]$segmentation <- base::factor(x = "none")
+
+    } else {
+
+      give_feedback(msg = "Converting variable 'segmentation' to factor.", verbose = verbose)
+
+      object@fdata[[sample_name]] <- dplyr::mutate(fdf, segmentation = base::factor(segmentation))
+
+    }
+
+    object@version <- list(major = 1, minor = 5, patch = 0)
+
+  }
+
   # default adjustment ------------------------------------------------------
 
-  old_default <- getDefaultInstructions(object)
+  old_default <- object@information$instructions$default
 
   new_default <-
     transfer_slot_content(

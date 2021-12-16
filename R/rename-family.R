@@ -100,7 +100,7 @@ renameFeatures <- function(object, ..., of_sample = NA){
 
   object <- setFeatureDf(object, feature_df = feature_df, of_sample = of_sample)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -163,7 +163,16 @@ renameGroups <- function(object, discrete_feature, ..., of_sample = NA){
       ref.against = glue::glue("all groups of feature '{discrete_feature}'. ({renaming_hint})")
     )
 
+  group_names <- getGroupNames(object, discrete_feature)
+
   rename_input <- rename_input[rename_input %in% valid_rename_input]
+
+  if(base::any(base::table(base::names(rename_input)) > 1) |
+     base::any(base::names(rename_input) %in% group_names)){
+
+    stop("Every new name must be unique and must not exist in the current naming. Use mergeGroups() to merge groups.")
+
+  }
 
   # rename feature
   renamed_feature_df <-
@@ -211,7 +220,7 @@ renameGroups <- function(object, discrete_feature, ..., of_sample = NA){
 
   object <- setFeatureDf(object, feature_df = renamed_feature_df, of_sample = of_sample)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -252,9 +261,7 @@ renameSegments <- function(object, ..., of_sample = NA){
   renamed_feature_df <-
     dplyr::mutate(
       .data = feature_df,
-      segmentation = base::factor(x = segmentation),
-      segmentation = forcats::fct_recode(.f = segmentation, !!!rename_input),
-      segmentation = base::as.character(x = segmentation)
+      segmentation = forcats::fct_recode(.f = segmentation, !!!rename_input)
     )
 
   # rename dea list
@@ -283,7 +290,7 @@ renameSegments <- function(object, ..., of_sample = NA){
 
   object <- setFeatureDf(object, feature_df = renamed_feature_df, of_sample = of_sample)
 
-  base::return(object)
+  return(object)
 
 }
 

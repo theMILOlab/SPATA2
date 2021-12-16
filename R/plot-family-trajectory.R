@@ -79,7 +79,7 @@ plotCustomizedTrajectoryTrends <- function(customized_trends,
 #' drawn with \code{SPATA::createTrajectories()}. Increase the transparency
 #' via argument \code{pt_alpha} to highlight the trajectory's course.
 #'
-#' @param pt_alpha2 Numeric value. Specifies the transperancy of the spots
+#' @param pt_alpha2 Numeric value. Specifies the transparency of the spots
 #' that fall into the trajectory's reach.
 #' @inherit argument_dummy params
 #' @inherit check_color_to params
@@ -105,7 +105,7 @@ plotTrajectory <- function(object,
                            smooth = NULL,
                            smooth_span = NULL,
                            pt_size = NULL,
-                           pt_alpha = NULL,
+                           pt_alpha = 0.5,
                            pt_alpha2 = 0.9,
                            pt_clr = NULL,
                            pt_clrp = NULL,
@@ -259,6 +259,99 @@ plotTrajectory <- function(object,
     labs_add_on
 
 }
+
+#' @rdname plotTrajectory
+#' @export
+plotTrajectories <- function(object,
+                             trajectory_names = getTrajectoryNames(object),
+                             color_by = NULL,
+                             method_gs = NULL,
+                             smooth = NULL,
+                             smooth_span = NULL,
+                             pt_size = NULL,
+                             pt_alpha = 0.5,
+                             pt_alpha2 = 0.9,
+                             pt_clr = NULL,
+                             pt_clrp = NULL,
+                             pt_clrsp = NULL,
+                             sgmt_clr = NULL,
+                             sgmt_size = NULL,
+                             display_image = NULL,
+                             display_title = NULL,
+                             uniform_genes = NULL,
+                             nrow = NULL,
+                             ncol = NULL,
+                             verbose = NULL,
+                             of_sample = NA,
+                             ...){
+
+  check_object(object)
+  hlpr_assign_arguments(object)
+
+  df <-
+    purrr::map_df(
+      .x = trajectory_names,
+      .f = function(traj_name){
+
+        traj_obj <- getTrajectoryObject(object, traj_name)
+
+        ctdf <- traj_obj@compiled_trajectory_df
+
+        background_df <-
+          getCoordsDf(object = object) %>%
+          dplyr::mutate(
+            trajectory = {{traj_name}},
+            in_traj = dplyr::if_else(barcodes %in% ctdf$barcodes, true = "yes", false = "no")
+          )
+
+        if(base::is.character(color_by)){
+
+          background_df <-
+            hlpr_join_with_color_by(
+              object = object,
+              df = background_df,
+              color_by = color_by,
+              smooth = smooth,
+              smooth_span = smooth_span,
+              method_gs = method_gs,
+              verbose = FALSE
+            )
+
+        }
+
+        return(background_df)
+
+      }
+    )
+
+  params <- adjust_ggplot_params(params = list(color = pt_clr, size = pt_size))
+
+  ggplot2::ggplot(data = df, mapping = ggplot2::aes_string(x = "x", y = "y")) +
+    geom_point_fixed(
+      params,
+      data = df,
+      mapping = ggplot2::aes_string(x = "x", y = "y", alpha = "in_traj", color = color_by)
+    ) +
+    layerTrajectory(
+      object = object,
+      trajectories = trajectory_names,
+      size = sgmt_size,
+      color = sgmt_clr
+    ) +
+    ggplot2::facet_wrap(facets = . ~ trajectory, nrow = nrow, ncol = ncol) +
+    ggplot2::theme_void() +
+    ggplot2::scale_alpha_manual(values = c("yes" = pt_alpha2, "no" = pt_alpha), guide = FALSE) +
+    scale_color_add_on(
+      aes = "color",
+      variable = pull_var(df, color_by),
+      clrp = pt_clrp,
+      clrsp = pt_clrsp,
+      ...
+    )
+
+}
+
+
 
 
 #' @title Plot continuous trajectory dynamics in lineplots
