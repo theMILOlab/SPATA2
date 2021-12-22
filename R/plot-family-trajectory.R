@@ -347,7 +347,8 @@ plotTrajectories <- function(object,
       clrp = pt_clrp,
       clrsp = pt_clrsp,
       ...
-    )
+    ) +
+    ggplot2::coord_equal()
 
 }
 

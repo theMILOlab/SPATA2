@@ -34,6 +34,7 @@
 
 plotSurface <- function(object,
                         color_by = NULL,
+                        alpha_by = NULL,
                         method_gs = NULL,
                         normalize = NULL,
                         smooth = NULL,
@@ -66,39 +67,28 @@ plotSurface <- function(object,
                             of_sample = of_sample,
                             desired_length = 1)
 
-
-  if(!base::is.null(color_by)){
-
-    color_to <- check_color_to(
-      color_to = color_by,
-      all_genes = getGenes(object, of_sample = of_sample),
-      all_gene_sets = getGeneSets(object),
-      all_features = getFeatureNames(object, of_sample = of_sample)
-      )
-
-  } else {
-
-    color_to <- list("color" = pt_clr)
-
-  }
-
-
   # -----
 
   # 2. Data extraction and plot preparation ---------------------------------
 
   coords_df <-
     getCoordsDf(object, of_sample = of_sample) %>%
-    hlpr_join_with_color_by(
+    hlpr_join_with_aes(
       object = object,
       df = .,
-      color_by = color_by,
+      variables = c(alpha_by, color_by),
       method_gs = method_gs,
       normalize = normalize,
       smooth = smooth,
       smooth_span = smooth_span,
       verbose = verbose
     )
+
+  if(base::is.character(alpha_by) && !base::is.numeric(coords_df[[alpha_by]])){
+
+    stop("Variable specified in argument 'alpha_by' must be numeric.")
+
+  }
 
   # -----
 
@@ -115,7 +105,10 @@ plotSurface <- function(object,
   if(base::isTRUE(pt_size_fixed)){
 
     point_add_on <-
-      geom_point_fixed(params, mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by))
+      geom_point_fixed(
+        params,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+        )
 
   } else {
 
@@ -125,7 +118,7 @@ plotSurface <- function(object,
         stat = "identity",
         position = "identity",
         params = params,
-        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by)
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
       )
 
   }

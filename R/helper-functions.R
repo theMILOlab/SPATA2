@@ -652,25 +652,42 @@ hlpr_image_add_on2 <- function(image){
 #' @title Join with single value
 #'
 #' @export
-hlpr_join_with_color_by <- function(object, df, color_by, ...){
+hlpr_join_with_color_by <- function(object, df, color_by = NULL, variables = NULL, ...){
 
-  if(isGene(object, color_by)){
+  if(!base::is.null(color_by)){
 
-    df <- joinWith(object, df, genes = color_by, ...)
+    variables <- color_by
 
-  } else if(isGeneSet(object, color_by)){
+  }
 
-    df <- joinWith(object, df, gene_set = color_by, ...)
+  if(base::length(variables) >= 1){
 
-  } else if(isFeature(object, color_by)) {
+    for(var in variables){
 
-    df <- joinWith(object, df, features = color_by, ...)
+      if(isGene(object, var)){
+
+        df <- joinWith(object, spata_df = df, genes = var, ...)
+
+      } else if(isGeneSet(object, var)){
+
+        df <- joinWith(object, spata_df = df, gene_set = var, ...)
+
+      } else if(isFeature(object, var)) {
+
+        df <- joinWith(object, spata_df = df, features = var, ...)
+
+      }
+
+    }
 
   }
 
   return(df)
 
 }
+
+#' @export
+hlpr_join_with_aes <- hlpr_join_with_color_by
 
 
 #' @title Return customized ggplot:labs()

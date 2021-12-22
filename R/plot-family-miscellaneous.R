@@ -79,19 +79,16 @@ plotDimRed <- function(object,
 
   df <- getDimRedDf(object, method_dr = method_dr, of_sample = of_sample)
 
-  if(isGene(object, color_by)){
+  df <-
+    hlpr_join_with_aes(
+      object = object,
+      df = df,
+      variables = c(color_by, alpha_by),
+      normalize = normalize,
+      method_gs = method_gs,
+      smooth = FALSE,
+    )
 
-    df <- joinWith(object, df, genes = color_by)
-
-  } else if(isGeneSet(object, color_by)){
-
-    df <- joinWith(object, df, gene_set = color_by)
-
-  } else if(isFeature(object, color_by)) {
-
-    df <- joinWith(objec, df, features = color_by)
-
-  }
 
   # -----
 
@@ -110,6 +107,7 @@ plotDimRed <- function(object,
     pt.fill = pt_clr,
     pt.shape = pt_shape,
     pt.size = pt_size,
+    alpha.by = alpha_by,
     color.aes = color_aes,
     color.by = color_by,
     color.trans = color_trans,
@@ -164,6 +162,7 @@ plotUmap <- function(object,
                      pt_clr = NULL,
                      clrp_adjust = NULL,
                      normalize = NULL,
+                     transform_with = list(),
                      verbose = NULL,
                      of_sample = NA,
                      ...){
@@ -190,6 +189,7 @@ plotUmap <- function(object,
     pt_clrp = pt_clrp,
     pt_clr = pt_clr,
     normalize = normalize,
+    transform_with = transform_with,
     verbose = verbose,
     ...
   )

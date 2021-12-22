@@ -111,7 +111,6 @@ plot_violinplot <- confuns::plot_violinplot
 scollapse <- confuns::scollapse
 
 
-
 # v -----------------------------------------------------------------------
 
 vselect <- confuns::vselect
