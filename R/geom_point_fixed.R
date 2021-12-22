@@ -116,8 +116,8 @@ GeomPointFixed <- ggplot2::ggproto(
       gp = grid::gpar(
         col = scales::alpha(coords$colour, coords$alpha),
         fill = scales::alpha(coords$fill, coords$alpha),
-        fontsize = coords$size * .pt + stroke_size * .stroke / 2,
-        lwd = coords$stroke * .stroke / 2
+        fontsize = coords$size * ggplot2::.pt + stroke_size * ggplot2::.stroke / 2,
+        lwd = coords$stroke * ggplot2::.stroke / 2
       )
     )
 
