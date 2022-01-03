@@ -804,6 +804,7 @@ plotTrajectoryFeaturesDiscrete <- function(object,
                                            clrp = NULL,
                                            clrp_adjust = NULL,
                                            display_trajectory_parts = NULL,
+                                           position = "fill",
                                            verbose = NULL,
                                            of_sample = NA,
                                            ...){
@@ -857,7 +858,10 @@ plotTrajectoryFeaturesDiscrete <- function(object,
   # -----
 
   ggplot2::ggplot(data = plot_df) +
-    ggplot2::geom_bar(mapping = ggplot2::aes(x = trajectory_order, fill = .data[[feature]]), position = "fill", width = 0.9) +
+    ggplot2::geom_bar(
+      mapping = ggplot2::aes(x = trajectory_order, fill = .data[[feature]]),
+      position = position,
+      width = 0.9) +
     confuns::scale_color_add_on(aes = "fill", variable = plot_df[[feature]], clrp = clrp, clrp.adjust = clrp_adjust) +
     facet_add_on +
     ggplot2::theme_minimal() +

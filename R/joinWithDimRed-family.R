@@ -26,8 +26,7 @@ joinWithPca <- function(object,
                         n_pcs = NULL,
                         verbose = NULL,
                         force = FALSE,
-                        of_sample = NA,
-                        ...){
+                        of_sample = NA){
 
   hlpr_assign_arguments(object = object)
 
@@ -38,7 +37,7 @@ joinWithPca <- function(object,
   pca_df <- getPcaDf(object = object,
                      n_pcs = n_pcs,
                      of_sample = of_sample) %>%
-    dplyr::select(-sample)
+    dplyr::select(-dplyr::any_of("sample"))
 
   cnames_pca <-
     dplyr::select(pca_df, -barcodes) %>%
@@ -62,7 +61,7 @@ joinWithPca <- function(object,
   }
 
   joined_df <-
-    dplyr::left_join(x = spata_df, y = pca_df, by = "barcodes", ...)
+    dplyr::left_join(x = spata_df, y = pca_df, by = "barcodes")
 
   base::return(joined_df)
 
@@ -84,14 +83,14 @@ joinWithTsne <- function(object,
 
   tsne_df <-
     getTsneDf(object = object, of_sample = of_sample)%>%
-    dplyr::select(-sample)
+    dplyr::select(-dplyr::any_of("sample"))
 
   cnames_tsne <-
-    dplyr::select(tsne_df, -barcodes, -sample) %>%
+    dplyr::select(tsne_df, -barcodes) %>%
     base::colnames()
 
   cnames_input <-
-    dplyr::select(spata_df, -barcodes, -sample) %>%
+    dplyr::select(spata_df, -barcodes, -dplyr::any_of("sample")) %>%
     base::colnames()
 
   doubled_variables <- base::intersect(x = cnames_tsne, y = cnames_input)
@@ -107,7 +106,7 @@ joinWithTsne <- function(object,
   }
 
   joined_df <-
-    dplyr::left_join(x = spata_df, y = tsne_df, by = "barcodes", ...)
+    dplyr::left_join(x = spata_df, y = tsne_df, by = "barcodes")
 
   base::return(joined_df)
 
@@ -130,14 +129,14 @@ joinWithUmap <- function(object,
 
   umap_df <-
     getUmapDf(object = object, of_sample = of_sample) %>%
-    dplyr::select(-sample)
+    dplyr::select(-dplyr::any_of("sample"))
 
   cnames_umap <-
-    dplyr::select(umap_df, -barcodes, -sample) %>%
+    dplyr::select(umap_df, -barcodes) %>%
     base::colnames()
 
   cnames_input <-
-    dplyr::select(spata_df, -barcodes, -sample) %>%
+    dplyr::select(spata_df, -barcodes, -dplyr::any_of("sample")) %>%
     base::colnames()
 
   doubled_variables <- base::intersect(x = cnames_umap, y = cnames_input)
@@ -153,7 +152,7 @@ joinWithUmap <- function(object,
   }
 
   joined_df <-
-    dplyr::left_join(x = spata_df, y = umap_df, by = "barcodes", ...)
+    dplyr::left_join(x = spata_df, y = umap_df, by = "barcodes")
 
   base::return(joined_df)
 

@@ -89,7 +89,6 @@ plotDimRed <- function(object,
       smooth = FALSE,
     )
 
-
   # -----
 
   # 3. Plotting -------------------------------------------------------------

@@ -8,7 +8,8 @@
 #' @export
 trajectory_patterns <- c("Linear descending", "Linear ascending", "Gradient descending", "Logarithmic descending",
                          "Logarithmic ascending", "Gradient ascending","Sinus",  "Sinus (reversed)", "One peak",
-                         "One peak (reversed)", "Two peaks (reversed)", "Two peaks", "Early peak", "Late peak")
+                         "One peak (reversed)", "Two peaks (reversed)", "Two peaks", "Early peak", "Late peak",
+                         "Abrupt ascending", "Abrupt descending")
 #' @export
 linear_trends <- c("Linear descending", "Linear ascending")
 

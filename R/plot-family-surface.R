@@ -168,7 +168,9 @@ plotSurface <- function(object,
 #' @export
 plotSurface2 <- function(coords_df,
                          color_by,
+                         alpha_by = NULL,
                          pt_alpha = 0.9,
+                         pt_clr = "lightgrey",
                          pt_clrp = "milo",
                          pt_clrsp = "inferno",
                          pt_size = 2,
@@ -190,11 +192,16 @@ plotSurface2 <- function(coords_df,
 
   # 2. Plotting -------------------------------------------------------------
 
+  pt_color <- pt_clr
+
+  params <- adjust_ggplot_params(params = list(alpha = pt_alpha, color = pt_color, size = pt_size))
+
   ggplot2::ggplot(data = coords_df) +
     hlpr_image_add_on2(image) +
-    ggplot2::geom_point(mapping = ggplot2::aes(x = x, y = y,
-                                               color = .data[[color_by]]),
-                        size = pt_size, alpha = pt_alpha) +
+    geom_point_fixed(
+      params,
+      mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+    ) +
     confuns::scale_color_add_on(
       clrp = pt_clrp,
       clrsp = pt_clrsp,
@@ -205,7 +212,8 @@ plotSurface2 <- function(coords_df,
     ggplot2::theme(
       panel.grid = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = NULL, y = NULL)
+    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::coord_equal()
 
   # -----
 

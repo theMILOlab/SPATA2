@@ -1640,6 +1640,8 @@ hlpr_add_models <- function(df, custom_fit = NULL){
                    p_sin_rev = confuns::fit_curve(trajectory_order, "sinus", rev = TRUE),
                    p_early_peak = confuns::fit_curve(trajectory_order, "early_peak"),
                    p_late_peak = confuns::fit_curve(trajectory_order, "late_peak"),
+                   p_abrupt_asc = confuns::fit_abrupt_ascending(trajectory_order),
+                   p_abrupt_desc = confuns::fit_abrupt_descending(trajectory_order),
                    p_custom = custom_fit
   )
 
@@ -1647,7 +1649,7 @@ hlpr_add_models <- function(df, custom_fit = NULL){
 
 #' @rdname hlpr_add_models
 #' @export
-hlpr_add_residuals <- function(df, pb = NULL, custom_fit = NULL){
+hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL){
 
   if(!base::is.null(pb)){
 
@@ -1671,7 +1673,9 @@ hlpr_add_residuals <- function(df, pb = NULL, custom_fit = NULL){
       p_sin = (values - confuns::fit_curve(trajectory_order, "sinus"))^2,
       p_sin_rev = (values - confuns::fit_curve(trajectory_order, "sinus", rev = TRUE))^2,
       p_early_peak = (values - confuns::fit_curve(trajectory_order, "early_peak"))^2,
-      p_late_peak = (values - confuns::fit_curve(trajectory_order, "late_peak"))^2
+      p_late_peak = (values - confuns::fit_curve(trajectory_order, "late_peak"))^2,
+      p_abrupt_asc = (values - confuns::fit_abrupt_ascending(trajectory_order))^2,
+      p_abrupt_desc = (values - confuns::fit_abrupt_descending(trajectory_order))^2
     )
 
 }
@@ -1722,6 +1726,8 @@ hlpr_name_models <- function(names){
   stringr::str_replace_all(
     string = names,
     pattern = c(
+      "abrupt_desc" = "Abrupt descending",
+      "abrupt_asc" = "Abrupt ascending",
       "gradient_desc" = "Gradient descending",
       "gradient_asc" = "Gradient ascending",
       "lin_desc" = "Linear descending",
