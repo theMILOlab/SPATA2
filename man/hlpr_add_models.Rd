@@ -11,7 +11,7 @@
 \usage{
 hlpr_add_models(df, custom_fit = NULL)
 
-hlpr_add_residuals(df, pb = NULL, custom_fit = NULL)
+hlpr_add_residuals(df, pb = NULL, curves = NULL, custom_fit = NULL)
 
 hlpr_add_residuals_customized(df, customized_trends_df, pb = NULL)
 

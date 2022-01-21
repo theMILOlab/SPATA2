@@ -480,6 +480,46 @@ hlpr_dist_mtr_to_df <- function(dist_mtr, varnames = c("gene1", "gene2")){
 
 }
 
+
+hlpr_drop_all_na <- function(df, ref_var = "variables", na_var = "values", verbose = TRUE){
+
+  traj_length <- df$trajectory_order %>% base::unique() %>% base::length()
+
+  if(base::any(base::is.na(df$values))){
+
+    remove_vars <-
+      dplyr::mutate(df, boolean_na = base::is.na(!!rlang::sym(na_var))) %>%
+      dplyr::group_by(!!rlang::sym(ref_var)) %>%
+      dplyr::summarise(total_na = base::sum(boolean_na)) %>%
+      dplyr::filter(total_na == {{traj_length}}) %>%
+      dplyr::pull(var = {{ref_var}})
+
+    n_rv <- base::length(remove_vars)
+
+    if(n_rv >= 1){
+
+      ref1 <- adapt_reference(input = remove_vars, sg = "variable")
+      ref2 <- scollapse(string = remove_vars, width = 100)
+
+      msg <-
+        glue::glue(
+          "Discarding {n_rv} {ref1} as no changes between bins have been detected. Discarded {ref1}: '{ref2}'"
+        )
+
+      give_feedback(
+        msg = msg,
+        verbose = verbose
+      )
+
+      df <- dplyr::filter(df, !{{ref_var}} %in% remove_vars)
+
+    }
+  }
+
+  return(df)
+
+}
+
 #' Removes the class part of a gene set string
 #'
 #' @param string Gene sets as a character vector
@@ -498,63 +538,41 @@ hlpr_gene_set_name <- function(string){
 #'
 #' @description To be used in plotTrajectoryFit()/-Customized()
 
-hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, ref_variable, linesize, linealpha){
+hlpr_geom_trajectory_fit <- function(smooth, smooth_span, plot_df, ref_model, ref_variable, linesize, linealpha, smooth_se = FALSE){
 
   argument_list <- list(size = linesize, alpha = linealpha)
 
-  customized_df <- dplyr::filter(.data = plot_df, origin %in% c("Customized", ref_model))
-  expression_df <- dplyr::filter(.data = plot_df, origin %in% c("Residuals", ref_variable))
+  #customized_df <- dplyr::filter(.data = plot_df, origin %in% c("Customized", ref_model))
+  #expression_df <- dplyr::filter(.data = plot_df, origin %in% c("Residuals", ref_variable))
 
   # construct add on
   if(base::isTRUE(smooth)){
 
-    customized_add_on <-
-      rlang::invoke(
-        .f = ggplot2::geom_line,
-        .args = base::append(
-          x = list(data = customized_df, linetype = "solid"),
-          values = argument_list)
-      )
-
-    argument_list <-
-      base::append(
-        x = argument_list,
-        values = list(span = smooth_span, formula = as.formula(y ~ x), se = FALSE, method = "loess")
-      )
-
-    expression_add_on <-
-      rlang::invoke(
-        .fn = ggplot2::geom_smooth,
-        .args = base::append(
-          x = list(data = expression_df, mapping = ggplot2::aes(linetype = origin)),
-          values = argument_list)
+    out <-
+      ggplot2::geom_smooth(
+        data = plot_df,
+        mapping = ggplot2::aes(linetype = origin),
+        size = linesize,
+        alpha = linealpha,
+        method = "loess",
+        span = smooth_span,
+        formula = as.formula(y ~ x),
+        se = smooth_se
       )
 
   } else {
 
-    fn_to_call <-
-      base::parse(text = "ggplot2::geom_line") %>%
-      base::eval()
-
-    customized_add_on <-
-      rlang::invoke(
-        .f = fn_to_call,
-        .args = base::append(
-          x = list(data = customized_df, linetype = "solid"),
-          values = argument_list)
-      )
-
-    expression_add_on <-
-      rlang::invoke(
-        .f = fn_to_call,
-        .args = base::append(
-          x = list(data = expression_df, mapping = ggplot2::aes(linetype = origin)),
-          values = argument_list)
+    out <-
+      ggplot2::geom_line(
+        data = plot_df,
+        mapping = ggplot2::aes(linetype = origin),
+        size = linesize,
+        alpha = linealpha
       )
 
   }
 
-  return(list(customized_add_on, expression_add_on))
+  return(out)
 
 }
 
@@ -1384,6 +1402,9 @@ hlpr_summarize_trajectory_df <- function(object,
                                          whole_sample = FALSE,
                                          method_gs = "mean",
                                          verbose = TRUE,
+                                         summarize_with = c("mean"),
+                                         with_sd = TRUE,
+                                         drop_all_na = TRUE,
                                          normalize = FALSE){
 
 
@@ -1454,19 +1475,28 @@ hlpr_summarize_trajectory_df <- function(object,
 
   # summarize data.frame
   confuns::give_feedback(
-    msg = "Summarizing trajectory data.frame. (This might take a few moments.)",
+    msg = glue::glue("Summarizing trajectory data.frame with {summarize_with}."),
     verbose = verbose
   )
 
   summarized_df <-
     dplyr::group_by(.data = joined_df, trajectory_part, order_binned) %>%
-    dplyr::summarise(dplyr::across(.cols = dplyr::all_of(x = variables),
-                                   .fns = ~ mean(., na.rm = TRUE)),
-                     .groups = "drop_last") %>%
+    dplyr::summarise(
+      dplyr::across(
+        .cols = dplyr::all_of(x = variables),
+        .fns = list(
+          mean = ~ mean(.x, na.rm = TRUE),
+          median = ~ median(.x, na.rm = TRUE)
+        )[[summarize_with]]
+      ),
+      .groups = "drop_last") %>%
     dplyr::mutate(trajectory_part_order = dplyr::row_number()) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
     dplyr::select(-order_binned)
+
+
+  assign("summarized_df", summarized_df, envir = .GlobalEnv)
 
   if(base::isTRUE(normalize)){
 
@@ -1522,7 +1552,59 @@ hlpr_summarize_trajectory_df <- function(object,
 
     }
 
+  } else {
+
+    shifted_df <-
+      tidyr::pivot_longer(
+        data = summarized_df,
+        cols = dplyr::all_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      )
+
   }
+
+  if(base::isTRUE(with_sd)){
+
+    give_feedback(
+      msg = "Summarizing standard deviation.",
+      verbose = verbose
+    )
+
+    sd_df <-
+      dplyr::group_by(.data = joined_df, trajectory_part, order_binned) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of(x = variables),
+          .fns = ~ stats::sd(.x, na.rm = TRUE)
+        ),
+        .groups = "drop_last"
+      ) %>%
+      dplyr::mutate(trajectory_part_order = dplyr::row_number()) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
+      dplyr::select(-order_binned) %>%
+      tidyr::pivot_longer(
+        cols = dplyr::all_of(variables),
+        names_to = "variables",
+        values_to = "values_sd"
+      )
+
+    shifted_df <-
+      dplyr::left_join(
+        x = shifted_df,
+        y = sd_df[,c("trajectory_order", "variables", "values_sd")],
+        by = c("trajectory_order", "variables")
+      )
+
+  }
+
+  if(base::isTRUE(drop_all_na)){
+
+    df <- hlpr_drop_all_na(df = shifted_df, verbose= verbose)
+
+  }
+
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 
@@ -1626,22 +1708,25 @@ hlpr_add_models <- function(df, custom_fit = NULL){
 
   dplyr::transmute(.data = df,
                    trajectory_order = trajectory_order,
-                   p_one_peak = confuns::fit_curve(trajectory_order, "one_peak"),
-                   p_one_peak_rev = confuns::fit_curve(trajectory_order, "one_peak", rev = TRUE),
-                   p_two_peaks = confuns::fit_curve(trajectory_order, "two_peaks"),
-                   p_two_peaks_rev = confuns::fit_curve(trajectory_order, "two_peaks", rev = TRUE),
-                   p_gradient_desc = confuns::fit_curve(trajectory_order, "gradient"),
-                   p_gradient_asc = confuns::fit_curve(trajectory_order, "gradient", rev = TRUE),
-                   p_log_asc = confuns::fit_curve(trajectory_order, "log"),
-                   p_log_desc = confuns::fit_curve(trajectory_order, "log", rev = TRUE),
-                   p_lin_asc = confuns::fit_curve(trajectory_order, "linear"),
-                   p_lin_desc = confuns::fit_curve(trajectory_order, "linear", rev = TRUE),
-                   p_sin = confuns::fit_curve(trajectory_order, "sinus"),
-                   p_sin_rev = confuns::fit_curve(trajectory_order, "sinus", rev = TRUE),
-                   p_early_peak = confuns::fit_curve(trajectory_order, "early_peak"),
-                   p_late_peak = confuns::fit_curve(trajectory_order, "late_peak"),
-                   p_abrupt_asc = confuns::fit_abrupt_ascending(trajectory_order),
-                   p_abrupt_desc = confuns::fit_abrupt_descending(trajectory_order),
+                   p_one_peak = confuns::fit_curve(trajectory_order, fn = "one_peak"),
+                   p_one_peak_rev = confuns::fit_curve(trajectory_order, fn = "one_peak", rev = "y"),
+                   p_two_peaks = confuns::fit_curve(trajectory_order, fn = "two_peaks"),
+                   p_two_peaks_rev = confuns::fit_curve(trajectory_order, fn = "two_peaks", rev = "y"),
+                   p_gradient_desc = confuns::fit_curve(trajectory_order, fn = "gradient"),
+                   p_gradient_asc = confuns::fit_curve(trajectory_order, fn = "gradient", rev = "x"),
+                   p_log_desc = confuns::fit_curve(trajectory_order, fn = "log", rev = "y"),
+                   p_log_asc = base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "y")),
+                   p_log_desc_rev = confuns::fit_curve(trajectory_order, fn = "log", rev = "x"),
+                   p_log_asc_rev = base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "x")),
+                   p_lin_asc = confuns::fit_curve(trajectory_order, fn = "linear"),
+                   p_lin_desc = confuns::fit_curve(trajectory_order, fn = "linear", rev = "x"),
+                   p_sin = confuns::fit_curve(trajectory_order, fn = "sinus"),
+                   p_sin_rev = confuns::fit_curve(trajectory_order, fn = "sinus", rev = "x"),
+                   p_sharp_peak = confuns::fit_curve(trajectory_order, fn = "sharp_peak"),
+                   p_early_peak = confuns::fit_curve(trajectory_order, fn = "early_peak"),
+                   p_late_peak = confuns::fit_curve(trajectory_order, fn = "late_peak"),
+                   p_abrupt_asc = confuns::fit_curve(trajectory_order, fn = "abrupt_ascending"),
+                   p_abrupt_desc = confuns::fit_curve(trajectory_order, fn = "abrupt_descending"),
                    p_custom = custom_fit
   )
 
@@ -1660,22 +1745,25 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL){
     dplyr::transmute(
       .data = df,
       trajectory_order = trajectory_order,
-      p_one_peak =  (values - confuns::fit_curve(trajectory_order, "one_peak"))^2,
-      p_one_peak_rev = (values - confuns::fit_curve(trajectory_order, "one_peak", rev = TRUE))^2,
-      p_two_peaks = (values - confuns::fit_curve(trajectory_order, "two_peaks"))^2,
-      p_two_peaks_rev = (values - confuns::fit_curve(trajectory_order, "two_peaks", rev = TRUE))^2,
-      p_gradient_desc = (values - confuns::fit_curve(trajectory_order, "gradient"))^2,
-      p_gradient_asc = (values - confuns::fit_curve(trajectory_order, "gradient", rev = TRUE))^2,
-      p_log_asc = (values - confuns::fit_curve(trajectory_order, "log"))^2,
-      p_log_desc = (values - confuns::fit_curve(trajectory_order, "log", rev = TRUE))^2,
-      p_lin_asc = (values - confuns::fit_curve(trajectory_order, "linear"))^2,
-      p_lin_desc = (values - confuns::fit_curve(trajectory_order, "linear", rev = TRUE))^2,
-      p_sin = (values - confuns::fit_curve(trajectory_order, "sinus"))^2,
-      p_sin_rev = (values - confuns::fit_curve(trajectory_order, "sinus", rev = TRUE))^2,
-      p_early_peak = (values - confuns::fit_curve(trajectory_order, "early_peak"))^2,
-      p_late_peak = (values - confuns::fit_curve(trajectory_order, "late_peak"))^2,
-      p_abrupt_asc = (values - confuns::fit_abrupt_ascending(trajectory_order))^2,
-      p_abrupt_desc = (values - confuns::fit_abrupt_descending(trajectory_order))^2
+      p_one_peak =  (values - confuns::fit_curve(trajectory_order, fn = "one_peak"))^2,
+      p_one_peak_rev = (values - confuns::fit_curve(trajectory_order, fn = "one_peak", rev = "y"))^2,
+      p_two_peaks = (values - confuns::fit_curve(trajectory_order, fn = "two_peaks"))^2,
+      p_two_peaks_rev = (values - confuns::fit_curve(trajectory_order, fn = "two_peaks", rev = "y"))^2,
+      p_gradient_desc = (values - confuns::fit_curve(trajectory_order, fn = "gradient"))^2,
+      p_gradient_asc = (values - confuns::fit_curve(trajectory_order, fn = "gradient", rev = "x"))^2,
+      p_log_desc = (values - confuns::fit_curve(trajectory_order, fn = "log", rev = "y"))^2,
+      p_log_asc = (values - base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "y")))^2,
+      p_log_desc_rev = (values - confuns::fit_curve(trajectory_order, fn = "log", rev = "x"))^2,
+      p_log_asc_rev = (values - base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "x")))^2,
+      p_lin_asc = (values - confuns::fit_curve(trajectory_order, fn = "linear"))^2,
+      p_lin_desc = (values - confuns::fit_curve(trajectory_order, fn = "linear", rev = "x"))^2,
+      p_sharp_peak = (values - confuns::fit_curve(trajectory_order, fn = "sharp_peak"))^2,
+      p_sin = (values - confuns::fit_curve(trajectory_order, fn = "sinus"))^2,
+      p_sin_rev = (values - confuns::fit_curve(trajectory_order, fn = "sinus", rev = "x"))^2,
+      p_early_peak = (values - confuns::fit_curve(trajectory_order, fn = "early_peak"))^2,
+      p_late_peak = (values - confuns::fit_curve(trajectory_order, fn = "late_peak"))^2,
+      p_abrupt_asc = (values - confuns::fit_curve(trajectory_order, fn = "abrupt_ascending"))^2,
+      p_abrupt_desc = (values - confuns::fit_curve(trajectory_order, fn = "abrupt_descending"))^2
     )
 
 }
@@ -1732,7 +1820,9 @@ hlpr_name_models <- function(names){
       "gradient_asc" = "Gradient ascending",
       "lin_desc" = "Linear descending",
       "lin_asc" = "Linear ascending",
-      "log_desc" = "Logarithmic descending",
+      "log_desc_rev" = "Logarithmic descending",
+      "log_asc_rev" = "Immediate ascending",
+      "log_desc" = "Immediate descending",
       "log_asc" = "Logarithmic ascending",
       "one_peak_rev" = "One peak (reversed)",
       "one_peak" = "One peak",
@@ -1741,6 +1831,7 @@ hlpr_name_models <- function(names){
       "two_peaks_rev" = "Two peaks (reversed)",
       "two_peaks" = "Two peaks",
       "early_peak" = "Early peak",
+      "sharp_peak" = "Sharp peak",
       "late_peak" = "Late peak",
       "custom_fit" = "Custom fit"
     )

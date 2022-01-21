@@ -5,7 +5,12 @@
 \alias{hlpr_assess_trajectory_trends_customized}
 \title{Assess trajectory ranking.}
 \usage{
-hlpr_assess_trajectory_trends(rtdf, verbose = TRUE)
+hlpr_assess_trajectory_trends(
+  rtdf,
+  trajectory_length,
+  summarize_with = "mean",
+  verbose = TRUE
+)
 
 hlpr_assess_trajectory_trends_customized(rtdf, verbose = TRUE)
 }

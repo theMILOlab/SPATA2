@@ -86,7 +86,8 @@ plotBoxplot <- function(object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
       method_gs = method_gs,
-      smooth = FALSE
+      smooth = FALSE,
+      normalize = FALSE
     ) %>%
     dplyr::select(-barcodes, -sample)
 
@@ -157,7 +158,9 @@ plotDensityplot <- function(object,
       object = object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
-      method_gs = method_gs
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
     ) %>%
     dplyr::select(-barcodes, -sample)
 
@@ -220,7 +223,8 @@ plotHistogram <- function(object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
       method_gs = method_gs,
-      smooth = FALSE
+      smooth = FALSE,
+      normalize = normalize
     ) %>%
     dplyr::select(-barcodes, -sample)
 
@@ -283,7 +287,8 @@ plotRidgeplot <- function(object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
       method_gs = method_gs,
-      smooth = FALSE
+      smooth = FALSE,
+      normalize = normalize
     ) %>%
     dplyr::select(-barcodes, -sample)
 
@@ -357,7 +362,8 @@ plotViolinplot <- function(object,
       spata_df = getSpataDf(object, of_sample),
       variables = variables,
       method_gs = method_gs,
-      smooth = FALSE
+      smooth = FALSE,
+      normalize = normalize
     ) %>%
     dplyr::select(-barcodes, -sample)
 

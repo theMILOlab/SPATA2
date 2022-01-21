@@ -4,7 +4,11 @@
 \alias{getTrajectoryObject}
 \title{Obtain trajectory object}
 \usage{
-getTrajectoryObject(object, trajectory_name, of_sample = NA)
+getTrajectoryObject(
+  object,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
+  of_sample = NA
+)
 }
 \arguments{
 \item{object}{A valid spata-object.}

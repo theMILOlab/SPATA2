@@ -130,6 +130,7 @@ plotDimRed <- function(object,
 #' @description Displays the dimensional reduction and maps gene, gene-set
 #' or feature information onto the color-aesthetic.
 #'
+#' @param add_ons A list of ggplot add ons to add to each plot.
 #' @inherit argument_dummy
 #' @inherit check_color_to params
 #' @inherit check_method params
@@ -141,6 +142,10 @@ plotDimRed <- function(object,
 #'
 #' @inherit ggplot_family return
 #'
+#' @details The comparison version of each function take a vector of variables
+#' to color by. A list of plots is created that is arranged via \code{grid.arrange()}.
+#'
+#'
 #' @export
 #'
 
@@ -149,7 +154,7 @@ plotUmap <- function(object,
                      color_aes = "color",
                      color_trans = "identity",
                      alpha_by = NULL,
-                     order_by = color_by,
+                     order_by = NULL,
                      order_desc = FALSE,
                      shape_by = NULL,
                      method_gs = NULL,
@@ -197,12 +202,55 @@ plotUmap <- function(object,
 
 #' @rdname plotUmap
 #' @export
+plotUmapComparison <- function(object,
+                               color_by,
+                               add_ons = list(),
+                               display_title = FALSE,
+                               nrow = NULL,
+                               ncol = NULL,
+                               ...){
+
+  hlpr_assign_arguments(object)
+
+  grid_of_plots <-
+    purrr::map(
+      .x = color_by,
+      ...,
+      .f = function(cb, ...){
+
+        out <-
+          plotUmap(object, color_by = cb, ...) +
+          add_ons
+
+        if(base::isTRUE(display_title)){
+
+          out <-
+            out +
+            list(
+              ggplot2::labs(title = cb),
+              ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+            )
+
+        }
+
+        return(out)
+
+      }
+    ) %>%
+      gridExtra::grid.arrange(grobs = ., nrow = nrow, ncol = ncol)
+
+  plot(grid_of_plots)
+
+}
+
+#' @rdname plotUmap
+#' @export
 plotTsne <- function(object,
                      color_by = NULL,
                      color_aes = "color",
                      color_trans = "identity",
                      alpha_by = NULL,
-                     order_by = color_by,
+                     order_by = NULL,
                      order_desc = FALSE,
                      pt_shape = 19,
                      shape_by = NULL,
@@ -246,6 +294,45 @@ plotTsne <- function(object,
 
 }
 
+#' @rdname plotUmap
+#' @export
+plotTsneComparison <- function(object,
+                               color_by,
+                               add_ons = list(),
+                               display_title = FALSE,
+                               nrow = NULL,
+                               ncol = NULL,
+                               ...){
+
+  hlpr_assign_arguments(object)
+
+  purrr::map(
+    .x = color_by,
+    ...,
+    .f = function(cb, ...){
+
+      out <-
+        plotTsne(object, color_by = cb, ...) +
+        add_ons
+
+      if(base::isTRUE(display_title)){
+
+        out <-
+          out +
+          list(
+            ggplot2::labs(title = cb),
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+          )
+
+      }
+
+      return(out)
+
+    }
+  ) %>%
+    gridExtra::grid.arrange(grobs = ., nrow = nrow, ncol = ncol)
+
+}
 
 
 #' @rdname plotUmap
@@ -2080,6 +2167,9 @@ plotDeaHeatmap <- function(object,
 #'
 #' @param x Character value. Specifies what is plotted on the x-axis.
 #' If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.
+#' @param genes Character vector or NULL. If character, vector of gene names
+#' that determines which genes are included. If NULL, genes are taken according
+#' to the threshold input for average log fold change and adjusted p-value.
 #' @inherit check_method params
 #' @inherit check_pt params
 #' @inherit argument_dummy params
@@ -2102,6 +2192,7 @@ plotDeaDotPlot <- function(object,
                            min_lfc = NULL,
                            n_highest_lfc = NULL,
                            n_lowest_pval = NULL,
+                           genes = NULL,
                            x = c("avg_logFC", "p_val_adj")[1],
                            alpha_by = NULL,
                            alpha_trans = "identity",
@@ -2119,25 +2210,59 @@ plotDeaDotPlot <- function(object,
                            transform_with = NULL,
                            ...){
 
-  check_object(object)
   hlpr_assign_arguments(object)
+  check_object(object)
 
-  df <-
-    getDeaResultsDf(
-      object = object,
-      across = across,
-      across_subset = across_subset,
-      relevel = relevel,
-      method_de = method_de,
-      max_adj_pval = max_adj_pval,
-      min_lfc = min_lfc,
-      n_highest_lfc = n_highest_lfc,
-      n_lowest_pval = n_lowest_pval
-    ) %>%
-    dplyr::mutate(
-      gene = base::as.factor(gene),
-      avg_logFC = base::round(avg_logFC, digits = 2)
+  if(base::is.character(genes)){
+
+    df <-
+      getDeaResultsDf(
+        object = object,
+        across = across,
+        across_subset = across_subset,
+        method_de = method_de,
+        max_adj_pval = max_adj_pval,
+        min_lfc = min_lfc,
+        n_highest_lfc = n_highest_lfc,
+        n_lowest_pval = n_lowest_pval
       )
+
+    genes <-
+      check_vector(
+        input = genes,
+        against = base::unique(df$gene) %>% base::as.character(),
+        ref.against = "differentially expressed genes",
+        ref.input = "input genes"
+      )
+
+    df <-
+      dplyr::filter(df, gene %in% genes) %>%
+      dplyr::mutate(
+        gene = base::factor(gene, levels = genes),
+        avg_logFC = base::round(avg_logFC, digits = 2)
+      )
+
+  } else {
+
+    df <-
+      getDeaResultsDf(
+        object = object,
+        across = across,
+        across_subset = across_subset,
+        relevel = relevel,
+        method_de = method_de,
+        max_adj_pval = max_adj_pval,
+        min_lfc = min_lfc,
+        n_highest_lfc = n_highest_lfc,
+        n_lowest_pval = n_lowest_pval
+      ) %>%
+      dplyr::mutate(
+        gene = base::as.factor(gene),
+        avg_logFC = base::round(avg_logFC, digits = 2)
+      )
+
+  }
+
 
   if(base::isTRUE(by_group)){
 
@@ -2204,6 +2329,7 @@ plotDeaDotPlot <- function(object,
         pt.color = pt_color,
         pt.clrsp = pt_clrsp,
         pt.size = pt_size,
+        transform.with = transform_with,
         ...
       )
 
@@ -2227,6 +2353,7 @@ plotDeaDotPlot <- function(object,
 #' @inherit check_sample params
 #' @inherit check_pt params
 #' @param encircle Logical. If set to TRUE the segments are enclosed in a polygon.
+#' @param params_encircle Named list of arguments given to \code{ggforce::geom_mark_hull()}.
 #' @param segment_subset Character vector or NULL. If character vector, denotes
 #' the segments that are supposed to be highlighted.
 #' @param ... Additional arguments given to \code{confuns::scale_color_add_on()}.
@@ -2239,9 +2366,12 @@ plotSegmentation <- function(object,
                              encircle = TRUE,
                              params_encircle = list(),
                              segment_subset = NULL,
+                             pt_alpha = NULL,
                              pt_size = NULL,
                              pt_clrp = NULL,
                              clrp_adjust = NULL,
+                             pt_size_fixed = TRUE,
+                             color_by = "segmentation",
                              of_sample = NA,
                              ...){
 
@@ -2250,6 +2380,11 @@ plotSegmentation <- function(object,
 
   of_sample <- check_sample(object, of_sample, desired_length = 1)
   check_pt(pt_size = pt_size)
+
+  check_one_of(
+    input = color_by,
+    against = getFeatureNames(object, of_class = "factor")
+  )
 
   # data extraction
   plot_df <-
@@ -2296,13 +2431,55 @@ plotSegmentation <- function(object,
 
   }
 
+
+  pt_color <- "lightgrey"
+
+  params <- list(size = pt_size, alpha = pt_alpha, color = pt_color)
+
+  if(base::isTRUE(pt_size_fixed)){
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        mapping = ggplot2::aes_string(x = "x", y = "y"),
+        data = plot_df
+      )
+
+    params_no_color <- lselect(params, -color)
+
+    segment_add_on <-
+      geom_point_fixed(
+        params_no_color,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by),
+        data = segment_df
+      )
+
+  } else {
+
+    point_add_on <-
+      ggplot2::geom_point(
+        params,
+        mapping = ggplot2::aes_string(x = "x", y = "y"),
+        data = plot_df
+      )
+
+    segment_add_on <-
+      ggplot2::geom_point(
+        lselect(params, -color),
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by),
+        data = segment_df
+      )
+
+  }
+
+
   # plotting
   ggplot2::ggplot() +
-    ggplot2::geom_point(data = plot_df, mapping = ggplot2::aes(x = x, y = y), size = pt_size, color = "lightgrey") +
-    ggplot2::geom_point(data = segment_df, size = pt_size, mapping = ggplot2::aes(x = x, y = y, color = segmentation)) +
+    point_add_on +
+    segment_add_on +
     encircle_add_on +
-    confuns::scale_color_add_on(aes = "fill", variable = segment_df$segmentation, clrp = pt_clrp, clrp.adjust = clrp_adjust, ...) +
-    confuns::scale_color_add_on(aes = "color", variable = segment_df$segmentation, clrp = pt_clrp, clrp.adjust = clrp_adjust, ...) +
+    confuns::scale_color_add_on(aes = "fill", variable = segment_df[[color_by]], clrp = pt_clrp, clrp.adjust = clrp_adjust, ...) +
+    confuns::scale_color_add_on(aes = "color", variable = segment_df[[color_by]], clrp = pt_clrp, clrp.adjust = clrp_adjust, ...) +
     ggplot2::theme_void() +
     ggplot2::labs(fill = "Segments", color = "Segments")
 

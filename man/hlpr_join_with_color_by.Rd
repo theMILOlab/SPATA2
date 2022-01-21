@@ -4,7 +4,7 @@
 \alias{hlpr_join_with_color_by}
 \title{Join with single value}
 \usage{
-hlpr_join_with_color_by(object, df, color_by, ...)
+hlpr_join_with_color_by(object, df, color_by = NULL, variables = NULL, ...)
 }
 \description{
 Join with single value

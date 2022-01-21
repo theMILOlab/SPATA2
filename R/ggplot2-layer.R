@@ -3,7 +3,7 @@
 
 
 
-layerTrajectory <- function(object, trajectories, ...){
+layerTrajectory <- function(object, trajectories, arrow, ...){
 
   segment_df <-
     purrr::map_df(
@@ -23,7 +23,7 @@ layerTrajectory <- function(object, trajectories, ...){
       ggplot2::geom_segment(
         data = segment_df,
         mapping = ggplot2::aes(x = x, y= y, xend = xend, yend = yend),
-        arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
+        arrow = arrow,
         ...
       )
     )

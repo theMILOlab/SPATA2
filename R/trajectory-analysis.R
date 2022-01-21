@@ -9,7 +9,10 @@
 trajectory_patterns <- c("Linear descending", "Linear ascending", "Gradient descending", "Logarithmic descending",
                          "Logarithmic ascending", "Gradient ascending","Sinus",  "Sinus (reversed)", "One peak",
                          "One peak (reversed)", "Two peaks (reversed)", "Two peaks", "Early peak", "Late peak",
-                         "Abrupt ascending", "Abrupt descending")
+                         "Abrupt ascending", "Abrupt descending",
+                         "Immediate descending", "Immediate ascending",
+                         "Sharp peak"
+                         ) %>% base::sort()
 #' @export
 linear_trends <- c("Linear descending", "Linear ascending")
 
@@ -100,6 +103,10 @@ hlpr_rank_trajectory_trends <- function(stdf, verbose = TRUE){
     pb_calc <- NULL
 
   }
+
+  trajectory_length <-
+    base::unique(stdf$trajectory_order) %>%
+    base::length()
 
   ranked_df <-
     dplyr::mutate(
@@ -211,7 +218,7 @@ hlpr_rank_trajectory_trends_customized <- function(stdf, verbose = TRUE, customi
 #' @return A data.frame arranged by the residuals area-under-the-curve-values describing
 #' how well a model fitted the expression trend of a gene or gene set.
 
-hlpr_assess_trajectory_trends <- function(rtdf, verbose = TRUE){
+hlpr_assess_trajectory_trends <- function(rtdf, trajectory_length, summarize_with = "mean", verbose = TRUE){
 
   # 1. Control --------------------------------------------------------------
 
@@ -222,7 +229,7 @@ hlpr_assess_trajectory_trends <- function(rtdf, verbose = TRUE){
   # 2. Data wrangling -------------------------------------------------------
 
   confuns::give_feedback(
-    msg = "Assessing trajectory trends." ,
+    msg = "Assessing trajectory trends.",
     verbose = verbose
   )
 
@@ -236,7 +243,26 @@ hlpr_assess_trajectory_trends <- function(rtdf, verbose = TRUE){
       values_to = "auc"
     ) %>%
     dplyr::arrange(auc) %>%
-    dplyr::mutate(pattern = hlpr_name_models(pattern))
+    dplyr::mutate(
+      pattern = hlpr_name_models(pattern),
+      auc_residuals = auc,
+      auc_residuals_scaled = auc / trajectory_length
+      )
+
+  sd_df <-
+    dplyr::select(rtdf, variables, data) %>%
+    dplyr::mutate(auc_sd = purrr::map_dbl(.x = data, .f = function(df){
+
+      out <- pracma::trapz(x = df$trajectory_order, y = df$values_sd)
+
+      return(out)
+
+    })) %>%
+    dplyr::select(variables, auc_sd)
+
+  arranged_df <-
+    dplyr::left_join(x = arranged_df, y = sd_df, by = "variables") %>%
+    dplyr::select(dplyr::everything(), auc)
 
   # -----
 
@@ -464,6 +490,11 @@ shiftTrajectoryDf <- function(stdf, shift = "wider"){
 #'  models against which to fit the variables.}
 #'  }
 #'
+#' @param binwidth Numeric value. Specifies the accuracy with which the transcriptomic spots
+#' are binned based on their projection length on the trajectory. Given to argument
+#' \code{accuracy} of \code{base::floor()}.
+#' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}. Specifies the
+#' function with which the numeric values of each variable are summarized by bin.
 #' @inherit argument_dummy params
 #' @inherit check_customized_trends params
 #' @inherit check_sample params
@@ -481,6 +512,7 @@ assessTrajectoryTrends <- function(object,
                                    variables,
                                    binwidth = 5,
                                    whole_sample = FALSE,
+                                   summarize_with = "mean",
                                    verbose = TRUE,
                                    of_sample = NA){
 
@@ -508,12 +540,16 @@ assessTrajectoryTrends <- function(object,
       variables = variables,
       binwidth = binwidth,
       whole_sample = whole_sample,
-      verbose = verbose
+      verbose = verbose,
+      with_sd = TRUE,
+      summarize_with = summarize_with
       )
 
   rtdf <- hlpr_rank_trajectory_trends(stdf = stdf, verbose = verbose)
 
-  atdf <- hlpr_assess_trajectory_trends(rtdf = rtdf, verbose = verbose)
+  tlength <- dplyr::n_distinct(stdf$trajectory_order)
+
+  atdf <- hlpr_assess_trajectory_trends(rtdf = rtdf, verbose = verbose, trajectory_length = tlength)
 
   # -----
 
@@ -529,9 +565,11 @@ assessTrajectoryTrends2 <- function(stdf, verbose = TRUE){
 
   check_stdf(stdf = stdf)
 
+  tlength <- dplyr::n_distinct(stdf$trajectory_order)
+
   rtdf <- hlpr_rank_trajectory_trends(stdf = stdf, verbose = verbose)
 
-  atdf <- hlpr_assess_trajectory_trends(rtdf = rtdf, verbose = verbose)
+  atdf <- hlpr_assess_trajectory_trends(rtdf = rtdf, verbose = verbose, trajectory_length = tlength)
 
   # -----
 
@@ -547,6 +585,8 @@ assessTrajectoryTrendsCustomized <- function(object,
                                              customized_trends,
                                              variables,
                                              binwidth = 5,
+                                             whole_sample = FALSE,
+                                             summarize_with = "mean",
                                              verbose = TRUE,
                                              of_sample = NA){
 
@@ -581,6 +621,9 @@ assessTrajectoryTrendsCustomized <- function(object,
                           trajectory_name = trajectory_name,
                           of_sample = of_sample,
                           variables = variables,
+                          whole_sample = whole_sample,
+                          summarize_with = summarize_with,
+                          with_sd = TRUE,
                           binwidth = binwidth,
                           verbose = verbose)
 
@@ -591,7 +634,10 @@ assessTrajectoryTrendsCustomized <- function(object,
       customized_trends_df = customized_trends_df
     )
 
-  atdf <- hlpr_assess_trajectory_trends_customized(rtdf = rtdf, verbose = verbose)
+  tlength <- dplyr::n_distinct(stdf$trajectory_order)
+
+  atdf <- hlpr_assess_trajectory_trends_customized(rtdf = rtdf, verbose = verbose,
+                                                   trajectory_length = tlength)
 
   # -----
 
@@ -622,8 +668,11 @@ assessTrajectoryTrendsCustomized2 <- function(stdf, customized_trends, verbose =
                                            verbose = verbose,
                                            customized_trends_df = customized_trends)
 
+  tlength <- dplyr::n_distinct(stdf$trajectory_order)
+
   atdf <- hlpr_assess_trajectory_trends_customized(rtdf = rtdf,
-                                                   verbose = verbose)
+                                                   verbose = verbose,
+                                                   trajectory_length = tlength)
 
   # -----
 

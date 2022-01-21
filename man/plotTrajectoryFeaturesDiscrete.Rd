@@ -6,12 +6,14 @@
 \usage{
 plotTrajectoryFeaturesDiscrete(
   object,
-  trajectory_name,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
   discrete_feature,
   binwidth = 10,
   clrp = NULL,
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,
+  position = "fill",
+  scales = "free_x",
   verbose = NULL,
   of_sample = NA,
   ...
@@ -38,6 +40,9 @@ represent the group.}
 \item{display_trajectory_parts}{Logical. If set to TRUE the returned plot
 visualizes the parts in which the trajectory has been partitioned while beeing
 drawn.}
+
+\item{scales}{Affects the way the subplots
+are displayed.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

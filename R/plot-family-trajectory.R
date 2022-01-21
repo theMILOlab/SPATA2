@@ -99,7 +99,7 @@ plotCustomizedTrajectoryTrends <- function(customized_trends,
 #'
 
 plotTrajectory <- function(object,
-                           trajectory_name,
+                           trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                            color_by = NULL,
                            method_gs = NULL,
                            smooth = NULL,
@@ -115,6 +115,7 @@ plotTrajectory <- function(object,
                            display_image = NULL,
                            display_title = NULL,
                            uniform_genes = NULL,
+                           arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
                            verbose = NULL,
                            of_sample = NA){
 
@@ -253,7 +254,7 @@ plotTrajectory <- function(object,
     ggplot2::geom_segment(data = trajectory_sgmt_df,
                           mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
                           color = sgmt_clr, size = sgmt_size,
-                          arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches"))) +
+                          arrow = arrow) +
     ggplot2::theme_void() +
     ggplot2::coord_equal() +
     labs_add_on
@@ -279,6 +280,7 @@ plotTrajectories <- function(object,
                              display_image = NULL,
                              display_title = NULL,
                              uniform_genes = NULL,
+                             arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
                              nrow = NULL,
                              ncol = NULL,
                              verbose = NULL,
@@ -335,6 +337,7 @@ plotTrajectories <- function(object,
     layerTrajectory(
       object = object,
       trajectories = trajectory_names,
+      arrow = arrow,
       size = sgmt_size,
       color = sgmt_clr
     ) +
@@ -384,7 +387,7 @@ plotTrajectories <- function(object,
 #' @export
 
 plotTrajectoryFeatures <- function(object,
-                                   trajectory_name,
+                                   trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                    features = NULL,
                                    smooth_method = NULL,
                                    smooth_se = NULL,
@@ -493,7 +496,7 @@ plotTrajectoryFeatures <- function(object,
 #' @rdname plotTrajectoryFeatures
 #' @export
 plotTrajectoryGenes <- function(object,
-                                trajectory_name,
+                                trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                 genes,
                                 average_genes = FALSE,
                                 binwidth = 5,
@@ -671,7 +674,7 @@ plotTrajectoryGenes <- function(object,
 #' @rdname plotTrajectoryFeatures
 #' @export
 plotTrajectoryGeneSets <- function(object,
-                                   trajectory_name,
+                                   trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                    gene_sets,
                                    binwidth = 5,
                                    method_gs = NULL,
@@ -682,6 +685,10 @@ plotTrajectoryGeneSets <- function(object,
                                    clrp_adjust = NULL,
                                    display_trajectory_parts = NULL,
                                    display_facets = NULL,
+                                   linesize = 1.5,
+                                   vlinecolor = "grey",
+                                   vlinesize = 1,
+                                   vlinetype = "dashed",
                                    verbose = NULL,
                                    of_sample = NA,
                                    ...){
@@ -734,7 +741,9 @@ plotTrajectoryGeneSets <- function(object,
 
     trajectory_part_add_on <- list(
       ggplot2::geom_vline(data = vline_df,
-                          mapping = ggplot2::aes(xintercept = trajectory_order), linetype = "dashed", color = "grey")
+                          mapping = ggplot2::aes(xintercept = trajectory_order),
+                          size = vlinesize, color = vlinecolor, linetype = vlinetype
+                          )
     )
 
   } else {
@@ -762,9 +771,9 @@ plotTrajectoryGeneSets <- function(object,
                                                            y = values,
                                                            color = variables)) +
     trajectory_part_add_on +
-    ggplot2::geom_smooth(size = 1.5, span = smooth_span, method = smooth_method, formula = y ~ x,
+    ggplot2::geom_smooth(size = linesize, span = smooth_span, method = smooth_method, formula = y ~ x,
                          se = smooth_se) +
-    confuns::scale_color_add_on(variable = "discrete", clrp = clrp, clrp.adjust = clrp_adjust) +
+    confuns::scale_color_add_on(variable = result_df$variables, clrp = clrp, clrp.adjust = clrp_adjust) +
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
     ggplot2::theme_classic() +
     ggplot2::theme(
@@ -798,13 +807,14 @@ plotTrajectoryGeneSets <- function(object,
 #' @export
 
 plotTrajectoryFeaturesDiscrete <- function(object,
-                                           trajectory_name,
+                                           trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                            discrete_feature,
                                            binwidth = 10,
                                            clrp = NULL,
                                            clrp_adjust = NULL,
                                            display_trajectory_parts = NULL,
                                            position = "fill",
+                                           scales = "free_x",
                                            verbose = NULL,
                                            of_sample = NA,
                                            ...){
@@ -824,10 +834,10 @@ plotTrajectoryFeaturesDiscrete <- function(object,
 
   # 2. Data wrangling -------------------------------------------------------
 
-  cns_trajectory <-
+  tobj <-
     getTrajectoryObject(object, trajectory_name = trajectory_name)
 
-  compiled_trajectory_df <- cns_trajectory@compiled_trajectory_df
+  compiled_trajectory_df <- tobj@compiled_trajectory_df
 
   joined_df <- joinWith(object,
                         spata_df = compiled_trajectory_df,
@@ -847,7 +857,7 @@ plotTrajectoryFeaturesDiscrete <- function(object,
   if(base::isTRUE(display_trajectory_parts)){
 
     facet_add_on <-
-      ggplot2::facet_wrap(. ~ trajectory_part, scales = "free_x", ...)
+      ggplot2::facet_wrap(. ~ trajectory_part, scales = scales, ...)
 
   } else {
 
@@ -904,15 +914,23 @@ plotTrajectoryFeaturesDiscrete <- function(object,
 #' will be displayed at the rownames of the heatmap.
 #' @param split_columns Logial. If set to TRUE the heatmap is vertically
 #' splitted according to the trajectory parts.
+#' @param with_ggplot Logical value. If set to TRUE the heatmap is plotted with
+#' \code{ggplot2::geom_tile()} and a ggplot is returned.
+#' @param display_trajectory_parts Logical value. If TRUE and the trajectory
+#' contains more than one part the parts are displayed by facetting the plot
+#' or by adding vertical lines.
+#' @param display_parts_with Character value. Either \emph{'facets'} or \emph{'lines'}.
 #' @param colors A vector of colors to be used.
-#' @param ... Additional parameters given to \code{pheatmap::pheatmap()}
+#' @param ... Additional parameters given to \code{pheatmap::pheatmap()}. If argument
+#' \code{with_ggplot} is TRUE given to \code{scale_color_add_on()}.
+#' @inherit confuns::argument_dummy params
 #'
-#' @return A heatmap of class 'pheatmap'.
+#' @return A heatmap of class 'pheatmap' or a ggplot.
 #' @export
 #'
 
 plotTrajectoryHeatmap <- function(object,
-                                  trajectory_name,
+                                  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                   variables,
                                   binwidth = 5,
                                   arrange_rows = "none",
@@ -922,6 +940,17 @@ plotTrajectoryHeatmap <- function(object,
                                   show_colnames = NULL,
                                   split_columns = NULL,
                                   smooth_span = NULL,
+                                  multiplier = 10,
+                                  with_ggplot = FALSE,
+                                  display_trajectory_parts = FALSE,
+                                  display_parts_with = "lines",
+                                  linealpha = 1,
+                                  linecolor = "red",
+                                  linesize = 1,
+                                  linetype = "dashed",
+                                  clrsp = NULL,
+                                  .f = NULL,
+                                  .cols = dplyr::everything(),
                                   verbose = NULL,
                                   of_sample = NA,
                                   ...){
@@ -938,6 +967,13 @@ plotTrajectoryHeatmap <- function(object,
 
   check_trajectory(object, trajectory_name = trajectory_name, of_sample = of_sample)
   check_method(method_gs = method_gs)
+
+  input_levels <- base::unique(variables)
+
+  check_one_of(
+    input = display_parts_with,
+    against = c("lines", "facets")
+  )
 
   variables <- check_variables(variables = variables,
                                all_gene_sets = getGeneSets(object),
@@ -981,20 +1017,20 @@ plotTrajectoryHeatmap <- function(object,
   # if the heatmap is to be splitted into the trajectory parts
   n_parts <- base::length(base::unique(trajectory_object@compiled_trajectory_df$trajectory_part))
 
-  if(base::isTRUE(split_columns) && n_parts > 1){
+  if(base::isTRUE(split_columns) | base::isTRUE(display_trajectory_parts) && n_parts > 1){
 
-    gaps_col <-
+    gaps <-
       dplyr::select(.data = stdf, trajectory_part, trajectory_part_order) %>%
       dplyr::distinct() %>%
       dplyr::group_by(trajectory_part) %>%
       dplyr::summarise(count = dplyr::n()) %>%
-      dplyr::mutate(positions = base::cumsum(count) * 10) %>%
+      dplyr::mutate(positions = base::cumsum(count) * multiplier) %>%
       dplyr::pull(positions) %>%
       base::as.numeric()
 
   } else {
 
-    gaps_col <- NULL
+    gaps <- NULL
 
   }
 
@@ -1027,8 +1063,10 @@ plotTrajectoryHeatmap <- function(object,
 
   }
 
-  mtr_smoothed <- matrix(0, nrow = nrow(mtr), ncol = ncol(mtr) * 10)
+  mtr_smoothed <- matrix(0, nrow = nrow(mtr), ncol = ncol(mtr) * multiplier)
+
   base::rownames(mtr_smoothed) <- base::rownames(mtr)
+  base::colnames(mtr_smoothed) <- stringr::str_c("V", 1:base::ncol(mtr_smoothed))
 
   if(base::isTRUE(smooth)){
 
@@ -1047,7 +1085,7 @@ plotTrajectoryHeatmap <- function(object,
 
       model <- stats::loess(formula = y ~ x, span = smooth_span)
 
-      mtr_smoothed[i,] <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*10))
+      mtr_smoothed[i,] <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*multiplier))
 
     }
 
@@ -1061,22 +1099,150 @@ plotTrajectoryHeatmap <- function(object,
                             according.to = arrange_rows,
                             verbose = verbose) %>% base::as.matrix()
 
+  } else if(arrange_rows == "input"){
+
+    mtr_smoothed <-
+      base::as.data.frame(mtr_smoothed) %>%
+      tibble::rownames_to_column(var = "vars") %>%
+      dplyr::mutate(vars = base::factor(x = vars, levels = input_levels)) %>%
+      tibble::as_tibble() %>%
+      dplyr::arrange(vars) %>%
+      base::as.data.frame() %>%
+      tibble::column_to_rownames(var = "vars") %>%
+      base::as.matrix()
+
   }
 
   # -----
 
   # Plot heatmap ------------------------------------------------------------
 
-  pheatmap::pheatmap(
-    mat = mtr_smoothed,
-    cluster_cols = FALSE,
-    cluster_rows = FALSE,
-    color = colors,
-    gaps_col = gaps_col[1:(base::length(gaps_col)-1)],
-    show_colnames = show_colnames,
-    show_rownames = show_rownames,
-    ...
-  )
+
+  if(base::isTRUE(with_ggplot)){
+
+    traj_levels <- base::colnames(mtr_smoothed)
+    var_levels <- base::rownames(mtr_smoothed) %>% base::rev()
+
+    df_smoothed <-
+      base::as.data.frame(mtr_smoothed) %>%
+      tibble::rownames_to_column(var = "variables") %>%
+      tidyr::pivot_longer(
+        cols = dplyr::all_of(traj_levels),
+        values_to = "values",
+        names_to = "trajectory_order"
+      ) %>%
+      dplyr::mutate(
+        traj_order = base::factor(x = trajectory_order, levels = traj_levels),
+        variables = base::factor(x = variables, levels = var_levels),
+        traj_ord_num = base::as.character(trajectory_order) %>% stringr::str_remove("^V") %>% base::as.numeric(),
+        traj_part = "none"
+      )
+
+    if(base::isTRUE(display_trajectory_parts)){
+
+      gap_seq <- base::seq_along(gaps)
+
+      if(display_parts_with == "facets"){
+
+        for(i in gap_seq){
+
+          threshold <- gaps[i]
+
+          val <-
+            english::ordinal(i) %>%
+            base::as.character()
+
+          df_smoothed <-
+            df_smoothed %>%
+            dplyr::mutate(
+              traj_part = dplyr::if_else(
+                condition = traj_ord_num <= {{threshold}} & traj_part == "none",
+                true = val,
+                false = traj_part
+              )
+            )
+
+        }
+
+        traj_part_levels <-
+          english::ordinal(x = gap_seq) %>%
+          base::as.character()
+
+        df_smoothed$traj_part <-
+          base::factor(x = df_smoothed$traj_part, levels = traj_part_levels)
+
+        traj_part_add_on <- ggplot2::facet_wrap(facets = . ~ traj_part, nrow = 1, scales = "free_x")
+
+      } else {
+
+        df_line <-
+          base::data.frame(x = gaps) %>%
+          dplyr::filter(x != base::max(x))
+
+        traj_part_add_on <-
+          ggplot2::geom_vline(
+            data = df_line,
+            mapping = ggplot2::aes(xintercept = x),
+            color = linecolor,
+            alpha = linealpha,
+            size = linesize,
+            linetype = linetype
+            )
+
+      }
+
+    } else {
+
+      traj_part_add_on <- NULL
+
+    }
+
+    if(!base::is.null(.f)){
+
+      df_smoothed$variables <-
+        confuns::vredefine_with(
+          df_smoothed$variables,
+          .f = .f,
+          .cols = .cols
+        )
+
+    }
+
+    out <-
+      ggplot2::ggplot(data = df_smoothed, mapping = ggplot2::aes(x = traj_ord_num, y = variables, fill = values)) +
+      ggplot2::geom_tile() +
+      traj_part_add_on +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = NULL, y = NULL, fill = NULL) +
+      ggplot2::theme(
+        axis.ticks = ggplot2::element_blank(),
+        axis.line.x = ggplot2::element_blank(),
+        axis.line.y = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        strip.background = ggplot2::element_blank(),
+        strip.text = ggplot2::element_blank()
+      ) +
+      scale_color_add_on(aes = "fill", clrsp = clrsp)
+
+  } else {
+
+    out <-
+      pheatmap::pheatmap(
+        mat = mtr_smoothed,
+        cluster_cols = FALSE,
+        cluster_rows = FALSE,
+        color = colors,
+        gaps_col = gaps[1:(base::length(gaps)-1)],
+        show_colnames = show_colnames,
+        show_rownames = show_rownames,
+        ...
+      )
+
+  }
+
+  return(out)
+
+
 
   # -----
 
@@ -1106,21 +1272,26 @@ plotTrajectoryHeatmap <- function(object,
 #' @export
 
 plotTrajectoryFit <- function(object,
-                              trajectory_name,
+                              trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                               variable,
                               binwidth = 5,
                               method_gs = NULL,
                               smooth = NULL,
                               smooth_span = NULL,
+                              smooth_se = FALSE,
                               linealpha = 0.75,
                               linesize = 1,
+                              lineorder = c(1,2,3),
                               display_residuals = NULL,
                               display_auc = FALSE,
                               auc_alpha = 0.5,
                               auc_linetype = "dotted",
-                              colors = c("forestgreen", "blue4", "tomato"),
+                              display_auc_text = FALSE,
+                              colors = c("forestgreen", "blue4", "red3"),
                               model_subset = validTrajectoryTrends(),
                               ref_model = "Model",
+                              nrow = NULL,
+                              ncol = NULL,
                               verbose = NULL,
                               of_sample = NA,
                               ...){
@@ -1218,7 +1389,8 @@ plotTrajectoryFit <- function(object,
   # -----
 
   plot_df <-
-    dplyr::filter(plot_df, pattern %in% {{model_subset}})
+    dplyr::filter(plot_df, pattern %in% {{model_subset}}) %>%
+    dplyr::mutate(origin = base::factor(origin, levels = c("Model", "Residuals", variable)[lineorder]))
 
   color_values <- purrr::set_names(x = colors, nm = c(variable, ref_model, "Residuals"))
 
@@ -1228,6 +1400,7 @@ plotTrajectoryFit <- function(object,
     hlpr_geom_trajectory_fit(
       smooth = smooth,
       smooth_span = smooth_span,
+      smooth_se = smooth_se,
       plot_df = plot_df,
       ref_model = ref_model,
       ref_variable = variable,
@@ -1267,26 +1440,18 @@ plotTrajectoryFit <- function(object,
 
   }
 
-  ggplot2::ggplot(mapping = ggplot2::aes(x = trajectory_order, y = all_values, color = origin)) +
+  ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = trajectory_order, y = all_values, color = origin, linetype = origin)) +
     add_on_list +
     auc_add_on +
-    ggplot2::facet_wrap(~ pattern) +
+    ggplot2::facet_wrap(~ pattern, nrow = nrow, ncol = ncol) +
     ggplot2::scale_color_manual(values = color_values) +
-    ggplot2::scale_linetype_discrete(linetype_values, guide = FALSE) +
+    ggplot2::scale_linetype_manual(values = linetype_values, guide = FALSE) +
     ggplot2::theme_classic() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"),
-                                                                 type = "closed")),
-      strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(color = "black", size = 11)
-    ) +
+    theme_trajectory_fit() +
     ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL) +
     ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = 2.5))) +
-    ggplot2::scale_y_continuous(limit=c(0,1),oob=scales::squish) +
-    ggplot2::coord_cartesian(ylim = c(0,1))
+    ggplot2::scale_y_continuous(limit = c(0, 1), oob = scales::squish) +
+    ggplot2::coord_cartesian( ylim = c(0, 1))
 
 }
 
@@ -1294,7 +1459,7 @@ plotTrajectoryFit <- function(object,
 #' @rdname plotTrajectoryFit
 #' @export
 plotTrajectoryFitCustomized <- function(object,
-                                        trajectory_name,
+                                        trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                         variable,
                                         customized_trends,
                                         binwidth = 5,
@@ -1303,6 +1468,7 @@ plotTrajectoryFitCustomized <- function(object,
                                         smooth_span = NULL,
                                         linealpha = 0.75,
                                         linesize = 1,
+                                        lineorder = c(1,2,3),
                                         display_residuals = NULL,
                                         display_auc = FALSE,
                                         auc_alpha = 0.5,
@@ -1429,7 +1595,8 @@ plotTrajectoryFitCustomized <- function(object,
       values_to = "all_values",
       names_prefix = "values_"
     ) %>%
-    dplyr::filter(pattern != "values")
+    dplyr::filter(pattern != "values") %>%
+    dplyr::mutate(origin = base::factor(origin, levels = c("Model", "Residuals", variable)[lineorder]))
 
   # ---
 
@@ -1488,16 +1655,9 @@ plotTrajectoryFitCustomized <- function(object,
     auc_add_on +
     ggplot2::facet_wrap(~ pattern) +
     ggplot2::scale_color_manual(values = color_values) +
-    ggplot2::scale_linetype_discrete(linetype_values, guide = FALSE) +
+    ggplot2::scale_linetype_manual(values = linetype_values, guide = FALSE) +
     ggplot2::theme_classic() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"))),
-      strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(color = "black", size = 11)
-    ) +
+    theme_trajectory_fit() +
     ggplot2::labs(x = "Trajectory direction", y = NULL, color = NULL) +
     ggplot2::scale_y_continuous(limit=c(0,1),oob=scales::squish) +
     ggplot2::coord_cartesian(ylim = c(0,1))
@@ -1505,7 +1665,23 @@ plotTrajectoryFitCustomized <- function(object,
 }
 
 
+#' @export
+theme_trajectory_fit <- function(){
 
+  list(
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.title = ggplot2::element_text(size = 10),
+      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"),
+                                                                 type = "closed")),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(color = "black", size = 10)
+    )
+  )
+
+}
 
 
 

@@ -6,13 +6,15 @@
 \usage{
 getTrajectoryDf(
   object,
-  trajectory_name,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
   variables,
   method_gs = "mean",
   binwidth = 5,
   normalize = TRUE,
   whole_sample = FALSE,
   shift_wider = FALSE,
+  summarize_with = c("mean"),
+  with_sd = FALSE,
   verbose = TRUE,
   of_sample = NA
 )

@@ -13,6 +13,7 @@ assessTrajectoryTrends(
   variables,
   binwidth = 5,
   whole_sample = FALSE,
+  summarize_with = "mean",
   verbose = TRUE,
   of_sample = NA
 )
@@ -25,6 +26,8 @@ assessTrajectoryTrendsCustomized(
   customized_trends,
   variables,
   binwidth = 5,
+  whole_sample = FALSE,
+  summarize_with = "mean",
   verbose = TRUE,
   of_sample = NA
 )
@@ -45,8 +48,15 @@ as a single character value.}
  \item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
  }}
 
+\item{binwidth}{Numeric value. Specifies the accuracy with which the transcriptomic spots
+are binned based on their projection length on the trajectory. Given to argument
+\code{accuracy} of \code{base::floor()}.}
+
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
+
+\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}. Specifies the
+function with which the numeric values of each variable are summarized by bin.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

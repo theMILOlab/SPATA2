@@ -7,7 +7,7 @@
 \usage{
 getDeaResultsDf(
   object,
-  across,
+  across = getDefaultGrouping(object, verbose = TRUE, "across"),
   across_subset = NULL,
   relevel = FALSE,
   method_de = "wilcox",
@@ -21,7 +21,7 @@ getDeaResultsDf(
 
 getDeaGenes(
   object,
-  across,
+  across = getDefaultGrouping(object, verbose = TRUE, "across"),
   across_subset = NULL,
   method_de = "wilcox",
   max_adj_pval = NULL,

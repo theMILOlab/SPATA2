@@ -6,7 +6,7 @@
 \usage{
 plotTrajectoryHeatmap(
   object,
-  trajectory_name,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
   variables,
   binwidth = 5,
   arrange_rows = "none",
@@ -16,6 +16,17 @@ plotTrajectoryHeatmap(
   show_colnames = NULL,
   split_columns = NULL,
   smooth_span = NULL,
+  multiplier = 10,
+  with_ggplot = FALSE,
+  display_trajectory_parts = FALSE,
+  display_parts_with = "lines",
+  linealpha = 1,
+  linecolor = "red",
+  linesize = 1,
+  linetype = "dashed",
+  clrsp = NULL,
+  .f = NULL,
+  .cols = dplyr::everything(),
   verbose = NULL,
   of_sample = NA,
   ...
@@ -55,6 +66,19 @@ splitted according to the trajectory parts.}
 
 \item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
+\item{with_ggplot}{Logical value. If set to TRUE the heatmap is plotted with
+\code{ggplot2::geom_tile()} and a ggplot is returned.}
+
+\item{display_trajectory_parts}{Logical value. If TRUE and the trajectory
+contains more than one part the parts are displayed by facetting the plot
+or by adding vertical lines.}
+
+\item{display_parts_with}{Character value. Either \emph{'facets'} or \emph{'lines'}.}
+
+\item{clrsp}{Character value. Specifies the color spectrum to be used to represent
+continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
+valid input options.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -63,10 +87,11 @@ the computational progress will be printed.
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 
-\item{...}{Additional parameters given to \code{pheatmap::pheatmap()}}
+\item{...}{Additional parameters given to \code{pheatmap::pheatmap()}. If argument
+\code{with_ggplot} is TRUE given to \code{scale_color_add_on()}.}
 }
 \value{
-A heatmap of class 'pheatmap'.
+A heatmap of class 'pheatmap' or a ggplot.
 }
 \description{
 Displays variable-expression values along a trajectory

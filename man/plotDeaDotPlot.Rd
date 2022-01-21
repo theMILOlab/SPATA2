@@ -15,6 +15,7 @@ plotDeaDotPlot(
   min_lfc = NULL,
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
+  genes = NULL,
   x = c("avg_logFC", "p_val_adj")[1],
   alpha_by = NULL,
   alpha_trans = "identity",
@@ -54,6 +55,10 @@ to obtain all valid input options.}
 \item{by_group}{Logical value. If TRUE for every group in the grouping
 variable a single dot plot is created. If FALSE one plot for all groups and all
 gene sets is created.}
+
+\item{genes}{Character vector or NULL. If character, vector of gene names
+that determines which genes are included. If NULL, genes are taken according
+to the threshold input for average log fold change and adjusted p-value.}
 
 \item{x}{Character value. Specifies what is plotted on the x-axis.
 If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.}

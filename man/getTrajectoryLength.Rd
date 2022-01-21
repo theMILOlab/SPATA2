@@ -4,7 +4,12 @@
 \alias{getTrajectoryLength}
 \title{Obtain the length of a trajectory}
 \usage{
-getTrajectoryLength(object, trajectory_name, binwidth = 5, of_sample = NA)
+getTrajectoryLength(
+  object,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
+  binwidth = 5,
+  of_sample = NA
+)
 }
 \arguments{
 \item{object}{A valid spata-object.}

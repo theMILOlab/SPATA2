@@ -51,6 +51,7 @@ plotSurface <- function(object,
                         complete = NULL,
                         verbose = NULL,
                         highlight_groups = NULL,
+                        transform_with = NULL,
                         of_sample = NA,
                         ...){
 
@@ -82,6 +83,10 @@ plotSurface <- function(object,
       smooth = smooth,
       smooth_span = smooth_span,
       verbose = verbose
+    ) %>%
+    confuns::transform_df(
+      df = .,
+      transform.with = transform_with
     )
 
   if(base::is.character(alpha_by) && !base::is.numeric(coords_df[[alpha_by]])){
@@ -146,6 +151,7 @@ plotSurface <- function(object,
 
   }
 
+
   ggplot2::ggplot(data = coords_df) +
     hlpr_image_add_on(object, display_image, of_sample) +
     point_add_on +
@@ -154,7 +160,8 @@ plotSurface <- function(object,
       variable = pull_var(coords_df, color_by),
       clrp = pt_clrp,
       clrsp = pt_clrsp,
-      clrp.adjust = clrp_adjust
+      clrp.adjust = clrp_adjust,
+      ...
     ) +
     ggplot2::coord_equal() +
     ggplot2::theme_void()

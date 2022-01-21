@@ -4,7 +4,10 @@
 \alias{getTrajectorySegmentDf}
 \title{Obtain trjectory course}
 \usage{
-getTrajectorySegmentDf(object, trajectory_name)
+getTrajectorySegmentDf(
+  object,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name")
+)
 }
 \arguments{
 \item{object}{A valid spata-object.}

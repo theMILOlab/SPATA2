@@ -128,7 +128,7 @@ getDeaOverview <- function(object){
 #' @export
 
 getDeaResultsDf <- function(object,
-                            across,
+                            across = getDefaultGrouping(object, verbose = TRUE, "across"),
                             across_subset = NULL,
                             relevel = FALSE,
                             method_de = "wilcox",
@@ -188,7 +188,7 @@ getDeaResultsDf <- function(object,
 #' @rdname getDeaResultsDf
 #' @export
 getDeaGenes <- function(object,
-                        across,
+                        across = getDefaultGrouping(object, verbose = TRUE, "across"),
                         across_subset = NULL,
                         method_de = "wilcox",
                         max_adj_pval = NULL,
@@ -1414,7 +1414,7 @@ getSpCorResults <- function(object, of_sample = NA){
 #'
 
 getTrajectoryLength <- function(object,
-                                trajectory_name,
+                                trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                 binwidth = 5,
                                 of_sample = NA){
 
@@ -1538,18 +1538,25 @@ getTrajectoryNames <- function(object, simplify = TRUE, of_sample = NA, verbose 
 #' @export
 
 getTrajectoryDf <- function(object,
-                            trajectory_name,
+                            trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                             variables,
                             method_gs = "mean",
                             binwidth = 5,
                             normalize = TRUE,
                             whole_sample = FALSE,
                             shift_wider = FALSE,
+                            summarize_with = c("mean"),
+                            with_sd = FALSE,
                             verbose = TRUE,
                             of_sample = NA){
 
 
-  confuns::are_values(c("normalize", "shift_wider", "verbose"), mode = "logical")
+  confuns::are_values(c("normalize", "shift_wider", "with_sd", "verbose"), mode = "logical")
+
+  check_one_of(
+    input= summarize_with,
+    against = c("mean", "median")
+  )
 
   tobj <-
     getTrajectoryObject(object, trajectory_name, of_sample)
@@ -1563,7 +1570,9 @@ getTrajectoryDf <- function(object,
       method_gs = method_gs,
       verbose = verbose,
       normalize = normalize,
-      whole_sample = whole_sample
+      whole_sample = whole_sample,
+      summarize_with = summarize_with,
+      with_sd = with_sd
     ) %>%
     tibble::as_tibble()
 
@@ -1586,7 +1595,7 @@ getTrajectoryDf <- function(object,
 #'
 #' @return Data.frame.
 #' @export
-getTrajectorySegmentDf <- function(object, trajectory_name){
+getTrajectorySegmentDf <- function(object, trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name")){
 
   traj_obj <- getTrajectoryObject(object, trajectory_name)
 
@@ -1608,7 +1617,9 @@ getTrajectorySegmentDf <- function(object, trajectory_name){
 #' @return An object of class \code{spatialTrajectory}.
 #' @export
 
-getTrajectoryObject <- function(object, trajectory_name, of_sample = NA){
+getTrajectoryObject <- function(object,
+                                trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
+                                of_sample = NA){
 
   check_trajectory(object = object,
                    trajectory_name = trajectory_name,

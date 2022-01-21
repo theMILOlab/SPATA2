@@ -2,7 +2,9 @@
 % Please edit documentation in R/plot-family-miscellaneous.R
 \name{plotUmap}
 \alias{plotUmap}
+\alias{plotUmapComparison}
 \alias{plotTsne}
+\alias{plotTsneComparison}
 \alias{plotPca}
 \title{Plot dimensional reduction}
 \usage{
@@ -12,11 +14,45 @@ plotUmap(
   color_aes = "color",
   color_trans = "identity",
   alpha_by = NULL,
-  order_by = color_by,
+  order_by = NULL,
   order_desc = FALSE,
   shape_by = NULL,
   method_gs = NULL,
   pt_shape = 19,
+  pt_size = NULL,
+  pt_alpha = NULL,
+  pt_clrsp = NULL,
+  pt_clrp = NULL,
+  pt_clr = NULL,
+  clrp_adjust = NULL,
+  normalize = NULL,
+  transform_with = list(),
+  verbose = NULL,
+  of_sample = NA,
+  ...
+)
+
+plotUmapComparison(
+  object,
+  color_by,
+  add_ons = list(),
+  display_title = FALSE,
+  nrow = NULL,
+  ncol = NULL,
+  ...
+)
+
+plotTsne(
+  object,
+  color_by = NULL,
+  color_aes = "color",
+  color_trans = "identity",
+  alpha_by = NULL,
+  order_by = NULL,
+  order_desc = FALSE,
+  pt_shape = 19,
+  shape_by = NULL,
+  method_gs = NULL,
   pt_size = NULL,
   pt_alpha = NULL,
   pt_clrsp = NULL,
@@ -29,26 +65,13 @@ plotUmap(
   ...
 )
 
-plotTsne(
+plotTsneComparison(
   object,
-  color_by = NULL,
-  color_aes = "color",
-  color_trans = "identity",
-  alpha_by = NULL,
-  order_by = color_by,
-  order_desc = FALSE,
-  pt_shape = 19,
-  shape_by = NULL,
-  method_gs = NULL,
-  pt_size = NULL,
-  pt_alpha = NULL,
-  pt_clrsp = NULL,
-  pt_clrp = NULL,
-  pt_clr = NULL,
-  clrp_adjust = NULL,
-  normalize = NULL,
-  verbose = NULL,
-  of_sample = NA,
+  color_by,
+  add_ons = list(),
+  display_title = FALSE,
+  nrow = NULL,
+  ncol = NULL,
   ...
 )
 
@@ -125,6 +148,15 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
+Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
+Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
+Or it can be a list of functions (and function names).
+
+Useful if you want to apply more than one transformation on variables mapped to
+plotting aesthetics. Input for \code{transform_with} is applied before the
+respective \code{<aes>_trans} argument.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -132,6 +164,16 @@ the computational progress will be printed.
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
+
+\item{add_ons}{A list of ggplot add ons to add to each plot.}
+
+\item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
+
+\item{nrow}{Affects the way the subplots
+are displayed.}
+
+\item{ncol}{Affects the way the subplots
+are displayed.}
 
 \item{n_pcs}{Numeric value. Determines the number of principal components to be plotted.
 Must be an even number.}
@@ -143,4 +185,8 @@ to the rules of the ggplot2-framework.
 \description{
 Displays the dimensional reduction and maps gene, gene-set
 or feature information onto the color-aesthetic.
+}
+\details{
+The comparison version of each function take a vector of variables
+to color by. A list of plots is created that is arranged via \code{grid.arrange()}.
 }

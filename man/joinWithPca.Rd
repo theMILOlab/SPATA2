@@ -12,8 +12,7 @@ joinWithPca(
   n_pcs = NULL,
   verbose = NULL,
   force = FALSE,
-  of_sample = NA,
-  ...
+  of_sample = NA
 )
 
 joinWithTsne(object, spata_df, verbose = NULL, force = FALSE, of_sample = NA)

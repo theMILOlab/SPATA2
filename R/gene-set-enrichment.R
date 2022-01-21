@@ -217,7 +217,7 @@ runGSEA <- function(object,
 #' @export
 #'
 getGseaDf <- function(object,
-                      across,
+                      across = getDefaultGrouping(object, verbose = TRUE, "across"),
                       across_subset = NULL ,
                       method_de = NULL,
                       n_gsets = Inf,
@@ -276,7 +276,7 @@ getGseaDf <- function(object,
 #' @export
 #'
 getGseaResults <- function(object,
-                           across,
+                           across = getDefaultGrouping(object, verbose = TRUE, "across"),
                            across_subset = NULL,
                            method_de = NULL,
                            flatten = TRUE,
@@ -343,7 +343,7 @@ getGseaResults <- function(object,
 #'
 
 getSignatureEnrichment <- function(object,
-                                   across,
+                                   across = getDefaultGrouping(object, verbose = TRUE, "across"),
                                    across_subset = NULL,
                                    n_gsets = 10,
                                    signif_var = "fdr",
@@ -369,7 +369,8 @@ getSignatureEnrichment <- function(object,
         dplyr::filter(!!rlang::sym(signif_var) <= {{signif_threshold}}) %>%
         dplyr::arrange({{signif_var}}) %>%
         dplyr::slice_head(n = n_gsets) %>%
-        dplyr:::pull(label)
+        dplyr:::pull(label) %>%
+        base::as.character()
 
     }) %>%
     purrr::set_names(names_groups)
@@ -405,7 +406,7 @@ getSignatureEnrichment <- function(object,
 #'
 #' @export
 plotGseaDotPlot <- function(object,
-                            across,
+                            across = getDefaultGrouping(object, verbose = TRUE, "across"),
                             across_subset = NULL,
                             relevel = NULL,
                             method_de = NULL,

@@ -12,6 +12,9 @@ hlpr_summarize_trajectory_df(
   whole_sample = FALSE,
   method_gs = "mean",
   verbose = TRUE,
+  summarize_with = c("mean"),
+  with_sd = TRUE,
+  drop_all_na = TRUE,
   normalize = FALSE
 )
 }

@@ -6,7 +6,7 @@
 \usage{
 getSignatureEnrichment(
   object,
-  across,
+  across = getDefaultGrouping(object, verbose = TRUE, "across"),
   across_subset = NULL,
   n_gsets = 10,
   signif_var = "fdr",

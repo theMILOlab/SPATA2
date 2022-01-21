@@ -9,6 +9,7 @@
 plotSurface(
   object,
   color_by = NULL,
+  alpha_by = NULL,
   method_gs = NULL,
   normalize = NULL,
   smooth = NULL,
@@ -25,6 +26,7 @@ plotSurface(
   complete = NULL,
   verbose = NULL,
   highlight_groups = NULL,
+  transform_with = NULL,
   of_sample = NA,
   ...
 )
@@ -32,7 +34,9 @@ plotSurface(
 plotSurface2(
   coords_df,
   color_by,
+  alpha_by = NULL,
   pt_alpha = 0.9,
+  pt_clr = "lightgrey",
   pt_clrp = "milo",
   pt_clrsp = "inferno",
   pt_size = 2,
@@ -95,6 +99,15 @@ spots.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
+Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
+Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
+Or it can be a list of functions (and function names).
+
+Useful if you want to apply more than one transformation on variables mapped to
+plotting aesthetics. Input for \code{transform_with} is applied before the
+respective \code{<aes>_trans} argument.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}

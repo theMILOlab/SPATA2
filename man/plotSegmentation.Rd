@@ -9,9 +9,12 @@ plotSegmentation(
   encircle = TRUE,
   params_encircle = list(),
   segment_subset = NULL,
+  pt_alpha = NULL,
   pt_size = NULL,
   pt_clrp = NULL,
   clrp_adjust = NULL,
+  pt_size_fixed = TRUE,
+  color_by = "segmentation",
   of_sample = NA,
   ...
 )
@@ -21,8 +24,12 @@ plotSegmentation(
 
 \item{encircle}{Logical. If set to TRUE the segments are enclosed in a polygon.}
 
+\item{params_encircle}{Named list of arguments given to \code{ggforce::geom_mark_hull()}.}
+
 \item{segment_subset}{Character vector or NULL. If character vector, denotes
 the segments that are supposed to be highlighted.}
+
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 

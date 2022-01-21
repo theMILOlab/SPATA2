@@ -11,7 +11,8 @@ hlpr_geom_trajectory_fit(
   ref_model,
   ref_variable,
   linesize,
-  linealpha
+  linealpha,
+  smooth_se = FALSE
 )
 }
 \description{

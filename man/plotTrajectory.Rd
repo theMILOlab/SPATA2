@@ -7,7 +7,7 @@
 \usage{
 plotTrajectory(
   object,
-  trajectory_name,
+  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
   color_by = NULL,
   method_gs = NULL,
   smooth = NULL,
@@ -23,6 +23,7 @@ plotTrajectory(
   display_image = NULL,
   display_title = NULL,
   uniform_genes = NULL,
+  arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
   verbose = NULL,
   of_sample = NA
 )
@@ -45,6 +46,7 @@ plotTrajectories(
   display_image = NULL,
   display_title = NULL,
   uniform_genes = NULL,
+  arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
   nrow = NULL,
   ncol = NULL,
   verbose = NULL,

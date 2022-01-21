@@ -6,7 +6,7 @@
 \usage{
 getGseaDf(
   object,
-  across,
+  across = getDefaultGrouping(object, verbose = TRUE, "across"),
   across_subset = NULL,
   method_de = NULL,
   n_gsets = Inf,

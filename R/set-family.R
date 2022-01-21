@@ -144,15 +144,15 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
   check_object(object)
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-  
+
   ###### New for Test
-  
-  #New argument potentially rising probmens in linux 
+
+  #New argument potentially rising probmens in linux
   #if(!class(object@data[[of_sample]])=="list"){ object@data[[of_sample]]=list() }
-  
+
   ########
-  
-  
+
+
   object@data[[of_sample]][["counts"]] <- count_mtr
 
   base::return(object)
@@ -377,6 +377,65 @@ setActiveExpressionMatrix <- function(object, mtr_name, of_sample = NA){
 
 }
 
+#' @title Default grouping
+#'
+#' @description Sets and extracts the default grouping. Useful to save typing
+#' in functions that require a grouping variable as input.
+#'
+#' @param grouping_variable Character value. The grouping variable that is
+#' used by default within all functions that need one.
+#'
+#' @return \code{setDefaultGrouping()}: Updated spata object. \code{getDefaultGrouping()}: Character value. Name
+#' of the default grouping variable.
+#' @export
+#'
+setDefaultGrouping <- function(object, grouping_variable, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  is_value(x = grouping_variable, mode = "character")
+
+  check_one_of(
+    input = grouping_variable,
+    against = getFeatureNames(object, of_class = "factor")
+  )
+
+  object@information$default_grouping <- grouping_variable
+
+  give_feedback(msg = glue::glue("Default grouping: '{grouping_variable}'"), verbose = verbose)
+
+  return(object)
+
+}
+
+#' @rdname setDefaultGrouping
+#' @export
+getDefaultGrouping <- function(object, verbose = FALSE, ...){
+
+  g <- object@information$default_grouping
+
+  x <- c(...)
+
+  if(!base::is.character(g)){
+
+    if(base::is.character(x)){
+
+      stop(glue::glue("Default grouping is not set. Set it with 'setDefaultGrouping()' or specify with argument '{x}'."))
+
+    } else {
+
+      stop("Default grouping is not set. Set it with 'setDefaultGrouping()'.")
+
+    }
+
+  }
+
+  give_feedback(msg = glue::glue("Using default grouping: '{g}'"))
+
+  return(g)
+
+}
+
 
 #' @title Set default instructions
 #'
@@ -411,6 +470,67 @@ setDirectoryInstructions <- function(object){
   base::return(object)
 
 }
+
+
+#' @title Default trajecotry
+#'
+#' @description Sets and extracts the default trajecotry Useful to save typing
+#' in functions that require a trajectory name as input.
+#'
+#' @param trajectory_name Character value. The trajectory that is
+#' used by default within all functions that need one.
+#'
+#' @return \code{setDefaultTrajectory()}: Updated spata object. \code{getDefaultTrajectory()}: Character value. Name
+#' of the default trajectory.
+#' @export
+#'
+setDefaultTrajectory <- function(object, trajectory_name, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  is_value(x = trajectory_name, mode = "character")
+
+  check_one_of(
+    input = trajectory_name,
+    against = getTrajectoryNames(object)
+  )
+
+  object@information$default_trajectory <- trajectory_name
+
+  give_feedback(msg = glue::glue("Default trajectory: '{trajectory_name}'"), verbose = verbose)
+
+  return(object)
+
+}
+
+#' @rdname setDefaultTrajectory
+#' @export
+getDefaultTrajectory <- function(object, verbose = FALSE, ...){
+
+  t <- object@information$default_trajectory
+
+  x <- c(...)
+
+  if(!base::is.character(t)){
+
+    if(base::is.character(x)){
+
+      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectory()' or specify with argument '{x}'."))
+
+    } else {
+
+      stop("Default trajectory is not set. Set it with 'setDefaultTrajectory()'.")
+
+    }
+
+  }
+
+  give_feedback(msg = glue::glue("Using default trajectory: '{t}'"))
+
+  return(t)
+
+}
+
 
 
 #' @title Set initiation information

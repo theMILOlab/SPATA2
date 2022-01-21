@@ -6,7 +6,7 @@
 \usage{
 plotGseaDotPlot(
   object,
-  across,
+  across = getDefaultGrouping(object, verbose = TRUE, "across"),
   across_subset = NULL,
   relevel = NULL,
   method_de = NULL,
