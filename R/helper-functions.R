@@ -1522,6 +1522,16 @@ hlpr_summarize_trajectory_df <- function(object,
 
     }
 
+  } else {
+
+    shifted_df <-
+      tidyr::pivot_longer(
+        data = summarized_df,
+        cols = dplyr::all_of(x = variables),
+        names_to = "variables",
+        values_to = "values"
+      )
+
   }
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
