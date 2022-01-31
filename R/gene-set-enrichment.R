@@ -198,7 +198,9 @@ runGSEA <- function(object,
 
 }
 
-
+#' @rdname runGSEA
+#' @export
+runGsea <- runGSEA
 
 # g -----------------------------------------------------------------------
 
