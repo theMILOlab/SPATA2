@@ -50,6 +50,7 @@ runGSEA <- function(object,
                     gene_set_list = NULL,
                     gene_set_names = NULL,
                     test = c("hypergeometric", "kstest"),
+                    power = 1,
                     background = nGenes(object),
                     absolute = FALSE,
                     pval = 1,
@@ -154,6 +155,8 @@ runGSEA <- function(object,
                 verbose = verbose
               )
 
+              message("Step 1")
+
               out <-
                 hypeR::hypeR(
                   signature = signature,
@@ -167,11 +170,15 @@ runGSEA <- function(object,
                   quiet = quiet
                 )
 
+              message("Step 2")
+
               if(base::isTRUE(reduce)){
 
                 out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
 
               }
+
+              message("Step 3")
 
               out$data <-
                 dplyr::mutate(
