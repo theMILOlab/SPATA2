@@ -42,7 +42,7 @@
 
 runGSEA <- function(object,
                     across,
-                    methods_de = NULL,
+                    methods_de,
                     max_adj_pval = NULL,
                     min_lfc = NULL,
                     n_highest_lfc = NULL,
