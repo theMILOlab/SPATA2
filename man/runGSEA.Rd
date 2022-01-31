@@ -2,12 +2,34 @@
 % Please edit documentation in R/gene-set-enrichment.R
 \name{runGSEA}
 \alias{runGSEA}
+\alias{runGsea}
 \title{Compute gene set enrichment}
 \usage{
 runGSEA(
   object,
   across,
-  methods_de = NULL,
+  methods_de,
+  max_adj_pval = NULL,
+  min_lfc = NULL,
+  n_highest_lfc = NULL,
+  n_lowest_pval = NULL,
+  gene_set_list = NULL,
+  gene_set_names = NULL,
+  test = c("hypergeometric", "kstest"),
+  background = nGenes(object),
+  absolute = FALSE,
+  pval = 1,
+  fdr = 1,
+  reduce = TRUE,
+  quiet = TRUE,
+  chr_to_fct = TRUE,
+  verbose = NULL
+)
+
+runGsea(
+  object,
+  across,
+  methods_de,
   max_adj_pval = NULL,
   min_lfc = NULL,
   n_highest_lfc = NULL,

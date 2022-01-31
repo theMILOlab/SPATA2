@@ -9,6 +9,7 @@
 plotSurface(
   object,
   color_by = NULL,
+  alpha_by = NULL,
   method_gs = NULL,
   normalize = NULL,
   smooth = NULL,
