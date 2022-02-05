@@ -12,15 +12,17 @@ checkpoint(
     insufficient_n_vertices = "Please determine at least three vertices.",
     insufficient_n_vertices2 =
     "Please determine at least two vertices and highlight the trajectory.",
-    invalid_segment_name = "Please enter a valid name for the segment.", not_highlighted
-    = "Please highlight the region with a click on 'Highlight'.", not_zoomed_in =
-    "Completely zoomed out.",      segment_name_not_found =
+    invalid_segment_name = "Please enter a valid name for the segment.",
+    no_ann_var_chosen = "Please create an annotation variable first.", no_chosen_name =
+    "There are no names to choose from.",      not_highlighted =
+    "Please highlight the region with a click on 'Highlight'.", not_zoomed_in =
+    "Completely zoomed out.", segment_name_not_found =
     "Could not find the specified segment.", occupied_segment_name =
     "This segment name is already taken.", occupied_trajectory_name =
     "This trajectory name is already taken.", invalid_trajectory_name =
     "Please enter a valid name for the trajectory.", insufficient_n_genes =
     "Please determine at least two genes.", invalid_gs_string1 =
-    "The class-prefix must not contain '_'.", invalid_gs_string2 =
+    "The class-prefix must not contain '_'.",      invalid_gs_string2 =
     "Please enter a valid string for the class-prefix and the gene-set name.",
     occupied_gs_name = "This gene-set name is already taken."),
   warning_notifications = list(),

@@ -60,7 +60,7 @@ Collate:
     'cnv-analysis.R'
     'compute-family.R'
     'createAnnoation.R'
-    'create_annotation.R'
+    'create_annotation_ui.R'
     'create_family.R'
     'data.R'
     'dimensional-reduction.R'
