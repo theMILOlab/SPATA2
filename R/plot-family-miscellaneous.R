@@ -2396,7 +2396,7 @@ plotSegmentation <- function(object,
     tidyr::drop_na() %>%
     dplyr::mutate(segmentation = base::factor(segmentation))
 
-  if(base::nrow(segment_df) == 0){base::stop(glue::glue("Sample {of_sample} has not been segmented yet."))}
+  #if(base::nrow(segment_df) == 0){base::stop(glue::glue("Sample {of_sample} has not been segmented yet."))}
 
   if(base::is.character(segment_subset)){
 

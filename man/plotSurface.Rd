@@ -27,6 +27,7 @@ plotSurface(
   verbose = NULL,
   highlight_groups = NULL,
   transform_with = NULL,
+  na_rm = FALSE,
   of_sample = NA,
   ...
 )

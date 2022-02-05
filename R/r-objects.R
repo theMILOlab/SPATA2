@@ -166,7 +166,34 @@ seurat_process_fns <- c("SCTransform","NormalizeData", "FindVariableFeatures", "
                         "RunPCA", "FindNeighbors", "FindClusters", "RunTSNE", "RunUMAP" )
 
 
+# shiny -------------------------------------------------------------------
 
+helper_content <- list(
+
+  overview =
+  c( "Choose the annotation variable that you want to alter. If you want to create a new one
+     click on 'New annotation variable' and you are prompted to enter the name the new annotation will carry.
+     It can then be selected. The surface plot below shows the annotation variable you are currently working on
+     and colors it according to the regions you have named.",
+    "",
+    "('unnamed' is the default group name that is assigned to every transcriptomic spot by creating a new annotation variable.)"),
+  interaction =
+    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
+      "",
+      "Encircling: By doubleckling consecutively on the plot you can draw polygons around the region you want to annotate To highlight
+       the region click on 'Highlight'. This connects the beginning and the end of the drawn line and hihglights the area it covers.",
+      "",
+      " Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate. If so, click on 'Annotate'.
+       You are then prompted to choose the name you want to annotate the transcriptomic spots with that fall into this area.
+       This can either be a new name or one that has already been assigned within the variable. Then click on the respective 'Save annotation'-button.
+       The 'Overview'-plot on the left should now display the annoated region. Note that the higlighted region will stay until you click on
+      reset. (If you notice a typo in the annotation you can repeat the naming process.)"),
+  orientation =
+    c(" This plot mainly stays as is. Once you start zooming in on the interactive plot a rectangle is drawn to visualize where you currently are.")
+
+)
 
 # Trajectory analysis -----------------------------------------------------
 
@@ -192,3 +219,4 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 # Version  ----------------------------------------------------------------
 
 current_spata_version <- list(major = 1, minor = 5, patch = 0)
+

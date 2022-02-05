@@ -729,6 +729,50 @@ createTrajectoryManually <- function(object,
 
 
 
+# helper ------------------------------------------------------------------
+
+
+create_encircling_add_on <- function(df, color, pt_size, linesize){
+
+  if(base::nrow(df) == 0){
+
+    out <- list()
+
+  } else {
+
+    out <-
+      list(
+        ggplot2::geom_point(
+          data = df,
+          mapping = ggplot2::aes(x = x, y = y),
+          color = "orange",
+          size = pt_size,
+          alpha = 1
+        )
+      )
+
+    if(base::nrow(df) > 1){
+
+      out <-
+        c(
+          out,
+          ggplot2::geom_path(
+            data = df,
+            mapping = ggplot2::aes(x = x, y = y, group = 1),
+            color = "orange",
+            size = linesize,
+            alpha = 1
+          )
+        )
+
+
+    }
+
+  }
+
+  return(out)
+
+}
 
 
 

@@ -938,3 +938,23 @@ addTrajectoryObject <- function(object,
 
 
 # ------
+
+
+
+# helper
+
+add_helper <- function(shiny_tag, content, title = "What do I have to do here?", type = "inline", size = "s", ...){
+
+
+  res <-
+    shinyhelper::helper(shiny_tag = shiny_tag,
+                        content = content,
+                        title = title,
+                        size = size,
+                        type = type,
+                        ...)
+
+  base::return(res)
+
+}
+

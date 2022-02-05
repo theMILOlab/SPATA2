@@ -52,6 +52,7 @@ plotSurface <- function(object,
                         verbose = NULL,
                         highlight_groups = NULL,
                         transform_with = NULL,
+                        na_rm = FALSE,
                         of_sample = NA,
                         ...){
 
@@ -112,6 +113,7 @@ plotSurface <- function(object,
     point_add_on <-
       geom_point_fixed(
         params,
+        na.rm = na_rm,
         mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
         )
 

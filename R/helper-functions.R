@@ -1209,10 +1209,6 @@ hlpr_smooth <- function(variable,
 
     }
 
-    msg <- stringr::str_c("Skip smoothing of ", aspect, " '", var_name, "' as it is of class '", base::class(dplyr::pull(data, rv)), "'.")
-
-    confuns::give_feedback(msg = msg)
-
     base::return(variable)
 
   } else if(base::any(base::is.na(data$rv)) |

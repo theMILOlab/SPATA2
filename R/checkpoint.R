@@ -24,9 +24,14 @@ checkpoint <- function(evaluate = TRUE,
                          no_name = "Could not save. Please enter a valid name",
 
                          # segmentation
+                         ann_var_already_exists = "This name is already used by another annotation variable.",
                          insufficient_n_vertices = "Please determine at least three vertices.",
                          insufficient_n_vertices2 = "Please determine at least two vertices and highlight the trajectory.",
                          invalid_segment_name = "Please enter a valid name for the segment.",
+                         no_ann_var_chosen = "Please create an annotation variable first.",
+                         no_chosen_name = "There are no names to choose from.",
+                         not_highlighted = "Please highlight the region with a click on 'Highlight'.",
+                         not_zoomed_in = "Completely zoomed out.",
                          segment_name_not_found = "Could not find the specified segment.",
                          occupied_segment_name = "This segment name is already taken.",
 

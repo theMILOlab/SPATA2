@@ -1113,6 +1113,124 @@ getImage <- function(object, of_sample = NA){
 # -----
 # Slot: information -------------------------------------------------------
 
+
+
+#' @title Obtain annotation names
+#'
+#' @description Extracts tha names of the variables that have been created
+#' via \code{addAnnotationInteractively()}.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#' @export
+#'
+getAnnotationNames <- function(object, fdb_fn = "message", ...){
+
+  out <- object@information$annotation_variable_names
+
+  if(!base::length(out) >= 1){
+
+    msg <- "No annotation variables have been added. Use 'addAnnotationInteractively()' for that matter."
+
+    give_feedback(
+      msg = msg,
+      fdb.fn = fdb_fn,
+      with.time = FALSE,
+      ...
+    )
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname getAnnotationNames
+#' @export
+addAnnotationVariable <- function(object, name, verbose = NULL, ...){
+
+  hlpr_assign_arguments(object)
+
+  confuns::is_value(x = name, mode = "character")
+
+  ann_names <-
+    getAnnotationNames(object, verbose = FALSE, fdb_fn = "message")
+
+  feature_names <-
+    getFeatureNames(object)
+
+  gene_names <- getGenes(object)
+
+  gs_names <- getGeneSets(object)
+
+  if(base::is.character(ann_names)){
+
+    new <- !name %in% c(feature_names, gene_names, gs_names)
+
+    if(base::isFALSE(new)){
+
+      give_feedback(
+        msg = glue::glue("Name '{name}' is already used by a feature, gene or gene set.."),
+        fdb.fn = "stop",
+        with.time = FALSE,
+        ...
+      )
+
+    }
+
+  }
+
+  object@information$annotation_variable_names <-
+    c(object@information$annotation_variable_names, name)
+
+  fdata <- getFeatureDf(object)
+
+  fdata[[name]] <- base::factor(x = "unnamed")
+
+  object <- setFeatureDf(object, feature_df = fdata)
+
+  give_feedback(
+    msg = glue::glue("Added annotation variable '{name}'."),
+    verbose = verbose,
+    with.time = FALSE,
+    ...
+  )
+
+  return(object)
+
+}
+
+#' @rdname getAnnotationNames
+#' @export
+discardAnnotationVariable <- function(object, name, verbose = NULL, ...){
+
+  hlpr_assign_arguments(object)
+
+  confuns::is_value(x = name, mode = "character")
+
+  confuns::check_one_of(
+    input = name,
+    against = getAnnotationNames(object, fdb_fn = "stop", ...)
+  )
+
+  object@information$annotation_variable_names <-
+    object@information$annotation_variable_names[object@information$annotation_variable_names != name]
+
+  object <- discardFeatures(object, feature_names = name)
+
+  give_feedback(
+    msg = glue::glue("Annotation variable '{name}' discarded."),
+    verbose = verbose,
+    ...
+  )
+
+  return(object)
+
+}
+
+
+
 #' @title Obtain default argument inputs
 #'
 #' @inherit check_object params
