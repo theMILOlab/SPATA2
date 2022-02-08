@@ -244,6 +244,7 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
 #'
+#'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
 #' @param n_gsets Numeric value. Maximal number of gene sets whose results are included.

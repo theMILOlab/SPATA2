@@ -907,8 +907,9 @@ plotTrajectoryFeaturesDiscrete <- function(object,
 #' gene sets or to genes.
 #' @inherit check_trajectory_binwidth params
 #' @param arrange_rows Alter the way the rows of the heatmap
-#' are displayed in order to highlight patterns. Currently either \emph{'maxima'}
-#' or \emph{'minima'}.
+#' are displayed in order to highlight patterns. Currently either \emph{'maxima'},
+#' \emph{'minima'} or \emph{'input'}. If \emph{'input'}, variables are displayed
+#' in the same order as they are provided in the argument \code{variables}.
 #'
 #' @param show_rownames Logical. If set to TRUE the variable elements
 #' will be displayed at the rownames of the heatmap.
@@ -923,6 +924,10 @@ plotTrajectoryFeaturesDiscrete <- function(object,
 #' @param colors A vector of colors to be used.
 #' @param ... Additional parameters given to \code{pheatmap::pheatmap()}. If argument
 #' \code{with_ggplot} is TRUE given to \code{scale_color_add_on()}.
+#' @param line_alpha Numeric value. Specifies the transparency of the lines.
+#' @param multiplier Numeric value. For better visualization the transient pattern
+#' is smoothed with a loess fit. The total number of predicted values (via \code{stats::predict()})
+#' is the number of bins multiplied with the input for this argument.
 #' @inherit confuns::argument_dummy params
 #'
 #' @return A heatmap of class 'pheatmap' or a ggplot.
@@ -944,10 +949,10 @@ plotTrajectoryHeatmap <- function(object,
                                   with_ggplot = FALSE,
                                   display_trajectory_parts = FALSE,
                                   display_parts_with = "lines",
-                                  linealpha = 1,
-                                  linecolor = "red",
-                                  linesize = 1,
-                                  linetype = "dashed",
+                                  line_alpha = 1,
+                                  line_color = "red",
+                                  line_size = 1,
+                                  line_type = "dashed",
                                   clrsp = NULL,
                                   .f = NULL,
                                   .cols = dplyr::everything(),
@@ -1095,9 +1100,12 @@ plotTrajectoryHeatmap <- function(object,
   if(base::all(arrange_rows == "maxima") | base::all(arrange_rows == "minima")){
 
     mtr_smoothed <-
-      confuns::arrange_rows(df = base::as.data.frame(mtr_smoothed),
-                            according.to = arrange_rows,
-                            verbose = verbose) %>% base::as.matrix()
+      confuns::arrange_rows(
+        df = base::as.data.frame(mtr_smoothed),
+        according.to = arrange_rows,
+        verbose = verbose
+        ) %>%
+      base::as.matrix()
 
   } else if(arrange_rows == "input"){
 
@@ -1183,10 +1191,10 @@ plotTrajectoryHeatmap <- function(object,
           ggplot2::geom_vline(
             data = df_line,
             mapping = ggplot2::aes(xintercept = x),
-            color = linecolor,
-            alpha = linealpha,
-            size = linesize,
-            linetype = linetype
+            color = line_color,
+            alpha = line_alpha,
+            size = line_size,
+            linetype = line_type
             )
 
       }
@@ -1213,7 +1221,7 @@ plotTrajectoryHeatmap <- function(object,
       ggplot2::geom_tile() +
       traj_part_add_on +
       ggplot2::theme_classic() +
-      ggplot2::labs(x = NULL, y = NULL, fill = NULL) +
+      ggplot2::labs(x = NULL, y = NULL, fill = "Expr.") +
       ggplot2::theme(
         axis.ticks = ggplot2::element_blank(),
         axis.line.x = ggplot2::element_blank(),

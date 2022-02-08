@@ -110,8 +110,7 @@ process_seurat_object <- function(seurat_object,
 
       if(fn == "ScaleData"){
 
-        args <- base::append(x = args,
-                             values = list("features" = base::rownames(seurat_object)))
+        args <- base::append(x = args, values = list("features" = base::rownames(seurat_object)))
 
       }
 

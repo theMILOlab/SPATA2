@@ -5,7 +5,7 @@
 \alias{setDirectoryInstructions}
 \title{Set default instructions}
 \usage{
-setDefaultInstructions(object)
+setDefaultInstructions(object, ...)
 
 setDirectoryInstructions(object)
 }

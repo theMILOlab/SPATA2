@@ -19,5 +19,6 @@ of the default grouping variable.
 }
 \description{
 Sets and extracts the default grouping. Useful to save typing
-in functions that require a grouping variable as input.
+in functions that require a grouping variable as input. (Usually referred to
+via arguments \code{across} or \code{grouping_variable}).
 }

@@ -1491,9 +1491,6 @@ hlpr_summarize_trajectory_df <- function(object,
     dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
     dplyr::select(-order_binned)
 
-
-  assign("summarized_df", summarized_df, envir = .GlobalEnv)
-
   if(base::isTRUE(normalize)){
 
     if(base::isTRUE(whole_sample)){
@@ -1595,7 +1592,7 @@ hlpr_summarize_trajectory_df <- function(object,
 
   }
 
-  if(base::isTRUE(drop_all_na)){
+  if(base::isTRUE(FALSE)){
 
     df <- hlpr_drop_all_na(df = shifted_df, verbose= verbose)
 

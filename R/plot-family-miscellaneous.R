@@ -2501,3 +2501,104 @@ plotSegmentation <- function(object,
 
 
 
+
+# Miscellaneous -----------------------------------------------------------
+
+
+#' @title Plot riverplots
+#'
+#' @description Visualizes overlapping proportions of multiple grouping variables.
+#' See details for more information.
+#'
+#' @param grouping_variables Character vector. Names of the grouping variables
+#' you want to include in the riverplot.
+#' @param fill_by Character value or NULL. If character, denotes the grouping
+#' variable that is visualized by color (fill) of the streamlines (alluvias)
+#' between the stratas.
+#' @param strata_alpha Numeric value. Denotes transparency of the stratas.
+#' @param strata_color Character value. Denotes the color used for the borders
+#' of all strata.
+#' @param strata_fill Character value. Denotes the color used to fill all
+#' strata.
+#' @param strata_width,allv_width Numeric value. Denotes the width of each stratum, as a proportion of the distance between axes.
+#' @param allv_type Character value. Denotes the type of the curve used to produce flows. Use \code{validAlluvialTypes()}
+#' to obtain all valid input options.
+#' @param ... Additional arguments given to \code{scale_color_add_on()}.
+#' @inherit argument_dummy params
+#'
+#' @details For an explanation of the vocabulary and essentials of
+#' riverplots check out the website of the package \code{ggalluvial} at
+#' \emph{https://corybrunson.github.io/ggalluvial/articles/ggalluvial.html}.
+#'
+#' @return A ggplot.
+#' @export
+#'
+plotRiverplot <- function(object,
+                          grouping_variables,
+                          fill_by = NULL,
+                          strata_alpha = 0,
+                          strata_color = "white",
+                          strata_fill = "white",
+                          strata_width = 1/3,
+                          allv_type = "xspline",
+                          allv_width = 1/3,
+                          clrp = NULL,
+                          clrp_adjust = NULL,
+                          ...){
+
+  hlpr_assign_arguments(object)
+
+  all_vars <- c(grouping_variables, fill_by)
+
+  confuns::check_one_of(
+    input = all_vars,
+    against = getFeatureNames(object, of_class = "factor")
+  )
+
+  confuns::check_one_of(
+    input = allv_type,
+    against = validAlluvialTypes()
+  )
+
+  plot_df <-
+    getFeatureDf(object) %>%
+    dplyr::select(dplyr::all_of(all_vars)) %>%
+    dplyr::group_by_all() %>%
+    dplyr::summarize(n = dplyr::n(), .groups = "keep")
+
+  arg_list <-
+    purrr::set_names(
+      x = base::as.list(x = grouping_variables),
+      nm = stringr::str_c("axis", 1:base::length(grouping_variables))
+    ) %>%
+    base::append(values = c("y" = "n"))
+
+  aes_fn <- rlang::exec(.fn = ggplot2::aes_string, !!!arg_list)
+
+  ggplot2::ggplot(data = plot_df, mapping = aes_fn) +
+    ggalluvial::geom_alluvium(
+      width = strata_width,
+      curve_type = allv_type,
+      color = allv_color,
+      mapping = ggplot2::aes_string(fill = fill_by)
+    ) +
+    ggalluvial::geom_stratum(
+      width = strata_width,
+      alpha = strata_alpha,
+      color = strata_color
+    ) +
+    ggplot2::geom_text(stat = "stratum", ggplot2::aes(label = ggplot2::after_stat(stratum))) +
+    ggplot2::scale_x_discrete(limits = grouping_variables) +
+    scale_color_add_on(
+      aes = "fill",
+      variable = pull_var(df = plot_df, var = fill_by),
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      ...
+    ) +
+    ggplot2::theme_void()
+
+}
+
+
+# -----

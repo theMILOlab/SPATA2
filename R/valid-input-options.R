@@ -26,6 +26,14 @@ validAgglomerationMethods <- function(){
 
 #' @rdname validActivationFunctions
 #' @export
+validAlluvialTypes <- function(){
+
+  return(valid_alluvial_types)
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
 validColorPalettes <- function(){
 
  confuns::all_color_palettes()

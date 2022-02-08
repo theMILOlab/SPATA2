@@ -399,10 +399,15 @@ getSignatureEnrichment <- function(object,
 #' @param remove_gsets Character value or NULL. If character, regular expression.
 #' All gene set names that match the regular expression are not included in
 #' the plot.
-#'
 #' @param by_group Logical value. If TRUE for every group in the grouping
 #' variable a single dot plot is created. If FALSE one plot for all groups and all
 #' gene sets is created.
+#' @param arrange_gsets Logical. If TRUE gene sets are arranged by their group
+#' belonging. Making the appearance of the plots tidier.
+#' @param reverse Logical. If TRUE the gene sets are arranged from top to bottom.
+#' If FALSE they are arranged from bottom to top.
+#' @param reverse_whitin Logical. If TRUE the gene sets are displayed in a reversed
+#' order within the groups.
 #'
 #' @export
 plotGseaDotPlot <- function(object,
@@ -427,6 +432,9 @@ plotGseaDotPlot <- function(object,
                             remove = "^.+?(?=_)",
                             remove_gsets = NULL,
                             replace = c("_", " "),
+                            arrange_gsets = TRUE,
+                            reverse = TRUE,
+                            reverse_within = FALSE,
                             scientific = TRUE,
                             scales = "free",
                             nrow = NULL,
@@ -541,6 +549,10 @@ plotGseaDotPlot <- function(object,
         pt.clrsp = pt_clrsp,
         pt.size = pt_size,
         transform.with = transform_with,
+        arrange.y = arrange_gsets,
+        reverse.all = reverse,
+        reverse.within = reverse_within,
+        arrange.by = signif_var,
         ...
       ) +
       ggplot2::labs(x = NULL, y = NULL)

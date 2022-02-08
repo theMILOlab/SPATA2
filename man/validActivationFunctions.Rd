@@ -3,6 +3,7 @@
 \name{validActivationFunctions}
 \alias{validActivationFunctions}
 \alias{validAgglomerationMethods}
+\alias{validAlluvialTypes}
 \alias{validColorPalettes}
 \alias{validColorSpectra}
 \alias{validDeAnalysisMethods}
@@ -20,6 +21,8 @@
 validActivationFunctions()
 
 validAgglomerationMethods()
+
+validAlluvialTypes()
 
 validColorPalettes()
 

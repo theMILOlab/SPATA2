@@ -18,6 +18,6 @@ used by default within all functions that need one.}
 of the default trajectory.
 }
 \description{
-Sets and extracts the default trajecotry Useful to save typing
+Sets and extracts the default trajectory. Useful to save typing
 in functions that require a trajectory name as input.
 }

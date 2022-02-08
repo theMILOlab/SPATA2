@@ -274,7 +274,7 @@ hlpr_assess_trajectory_trends <- function(rtdf, trajectory_length, summarize_wit
 
 
 #' @rdname hlpr_assess_trajectory_trends
-hlpr_assess_trajectory_trends_customized <- function(rtdf, verbose = TRUE){
+hlpr_assess_trajectory_trends_customized <- function(rtdf, trajectory_length,  summarize_with = "mean",  verbose = TRUE){
 
   # 1. Control --------------------------------------------------------------
 
@@ -296,9 +296,28 @@ hlpr_assess_trajectory_trends_customized <- function(rtdf, verbose = TRUE){
       values_to = "auc"
     ) %>%
     dplyr::arrange(auc) %>%
-    dplyr::mutate(pattern = stringr::str_remove_all(string = pattern, pattern = "^p_"))
+    dplyr::mutate(
+      pattern = stringr::str_remove_all(string = pattern, pattern = "^p_"),
+      auc_residuals = auc,
+      auc_residuals_scaled = auc / trajectory_length
+      )
 
   # -----
+
+  sd_df <-
+    dplyr::select(rtdf, variables, data) %>%
+    dplyr::mutate(auc_sd = purrr::map_dbl(.x = data, .f = function(df){
+
+      out <- pracma::trapz(x = df$trajectory_order, y = df$values_sd)
+
+      return(out)
+
+    })) %>%
+    dplyr::select(variables, auc_sd)
+
+  arranged_df <-
+    dplyr::left_join(x = arranged_df, y = sd_df, by = "variables") %>%
+    dplyr::select(dplyr::everything(), auc)
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 

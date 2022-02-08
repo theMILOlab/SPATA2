@@ -145,6 +145,13 @@ hp_analysis_list <-
   )
 
 
+
+
+# Plotting misc -----------------------------------------------------------
+
+valid_alluvial_types <-
+  c("linear", "cubic", "quintic", "sine", "arctangent", "sigmoid", "xspline")
+
 # Plot types --------------------------------------------------------------
 
 plot_types_in_functions <-

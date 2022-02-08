@@ -380,7 +380,8 @@ setActiveExpressionMatrix <- function(object, mtr_name, of_sample = NA){
 #' @title Default grouping
 #'
 #' @description Sets and extracts the default grouping. Useful to save typing
-#' in functions that require a grouping variable as input.
+#' in functions that require a grouping variable as input. (Usually referred to
+#' via arguments \code{across} or \code{grouping_variable}).
 #'
 #' @param grouping_variable Character value. The grouping variable that is
 #' used by default within all functions that need one.
@@ -447,7 +448,9 @@ getDefaultGrouping <- function(object, verbose = FALSE, ...){
 #'
 #' @export
 
-setDefaultInstructions <- function(object){
+setDefaultInstructions <- function(object, ...){
+
+  x <- list(...)
 
   object@information$instructions$default <-
     default_instructions_object
@@ -474,7 +477,7 @@ setDirectoryInstructions <- function(object){
 
 #' @title Default trajecotry
 #'
-#' @description Sets and extracts the default trajecotry Useful to save typing
+#' @description Sets and extracts the default trajectory. Useful to save typing
 #' in functions that require a trajectory name as input.
 #'
 #' @param trajectory_name Character value. The trajectory that is

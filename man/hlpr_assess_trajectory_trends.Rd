@@ -12,7 +12,12 @@ hlpr_assess_trajectory_trends(
   verbose = TRUE
 )
 
-hlpr_assess_trajectory_trends_customized(rtdf, verbose = TRUE)
+hlpr_assess_trajectory_trends_customized(
+  rtdf,
+  trajectory_length,
+  summarize_with = "mean",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{rtdf}{A ranked trajectory data.frame.}

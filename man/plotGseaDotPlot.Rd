@@ -27,6 +27,9 @@ plotGseaDotPlot(
   remove = "^.+?(?=_)",
   remove_gsets = NULL,
   replace = c("_", " "),
+  arrange_gsets = TRUE,
+  reverse = TRUE,
+  reverse_within = FALSE,
   scientific = TRUE,
   scales = "free",
   nrow = NULL,
@@ -110,6 +113,12 @@ the plot.}
 First value is given to argument \code{pattern} and second is given to argument \code{replacement}
 of \code{stringr::str_replace_all()}. Used to adjust gene set names.}
 
+\item{arrange_gsets}{Logical. If TRUE gene sets are arranged by their group
+belonging. Making the appearance of the plots tidier.}
+
+\item{reverse}{Logical. If TRUE the gene sets are arranged from top to bottom.
+If FALSE they are arranged from bottom to top.}
+
 \item{scales}{Affects the way the subplots
 are displayed.}
 
@@ -134,6 +143,9 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Additional arguments given to \code{scale_color_add_on()}.}
+
+\item{reverse_whitin}{Logical. If TRUE the gene sets are displayed in a reversed
+order within the groups.}
 }
 \value{
 A ggplot.

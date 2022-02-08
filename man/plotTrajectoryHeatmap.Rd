@@ -20,10 +20,10 @@ plotTrajectoryHeatmap(
   with_ggplot = FALSE,
   display_trajectory_parts = FALSE,
   display_parts_with = "lines",
-  linealpha = 1,
-  linecolor = "red",
-  linesize = 1,
-  linetype = "dashed",
+  line_alpha = 1,
+  line_color = "red",
+  line_size = 1,
+  line_type = "dashed",
   clrsp = NULL,
   .f = NULL,
   .cols = dplyr::everything(),
@@ -53,8 +53,9 @@ relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
 
 \item{arrange_rows}{Alter the way the rows of the heatmap
-are displayed in order to highlight patterns. Currently either \emph{'maxima'}
-or \emph{'minima'}.}
+are displayed in order to highlight patterns. Currently either \emph{'maxima'},
+\emph{'minima'} or \emph{'input'}. If \emph{'input'}, variables are displayed
+in the same order as they are provided in the argument \code{variables}.}
 
 \item{colors}{A vector of colors to be used.}
 
@@ -66,6 +67,10 @@ splitted according to the trajectory parts.}
 
 \item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
+\item{multiplier}{Numeric value. For better visualization the transient pattern
+is smoothed with a loess fit. The total number of predicted values (via \code{stats::predict()})
+is the number of bins multiplied with the input for this argument.}
+
 \item{with_ggplot}{Logical value. If set to TRUE the heatmap is plotted with
 \code{ggplot2::geom_tile()} and a ggplot is returned.}
 
@@ -74,6 +79,16 @@ contains more than one part the parts are displayed by facetting the plot
 or by adding vertical lines.}
 
 \item{display_parts_with}{Character value. Either \emph{'facets'} or \emph{'lines'}.}
+
+\item{line_alpha}{Numeric value. Specifies the transparency of the lines.}
+
+\item{line_color}{Character value. Specifies the color of lines in the plot.}
+
+\item{line_size}{Numeric value. Specifies the transperancy
+and the thickness of lines in the plot.}
+
+\item{line_type}{Character value. Specifies the type of the lines. Use
+\code{validLineTypes()} to obtain all valid input options.}
 
 \item{clrsp}{Character value. Specifies the color spectrum to be used to represent
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
