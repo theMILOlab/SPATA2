@@ -29,7 +29,6 @@ hspaDataBinarization <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-
   # 2. Binarization
   if(method_binarization == "kmeans"){
 
@@ -137,7 +136,7 @@ hspaCsrTesting <- function(object,
 
   pb_csr <- confuns::create_progress_bar(total = n_genes)
 
-  sample_frame <- spatstat::convexhull.xy(x = coords_df$x, y = coords_df$y)
+  sample_frame <- spatstat.geom::convexhull.xy(x = coords_df$x, y = coords_df$y)
 
   # 3. Testing - loop
   confuns::give_feedback(
@@ -157,15 +156,21 @@ hspaCsrTesting <- function(object,
 
                  if(base::isTRUE(verbose)){ pb$tick() }
 
-                 pp_obj <- spatstat::ppp(x = df$x,
-                                         y = df$y,
-                                         window = sample_frame)
+                 pp_obj <-
+                   spatstat.geom::ppp(
+                     x = df$x,
+                     y = df$y,
+                     window = sample_frame
+                     )
 
-                 test_res <- spatstat::quadrat.test(X = pp_obj,
-                                                    method = method_csr,
-                                                    alternative = "clustered",
-                                                    nx = n_quadrats,
-                                                    nsim = 1000)
+                 test_res <-
+                   spatstat.core::quadrat.test(
+                     X = pp_obj,
+                     method = method_csr,
+                     alternative = "clustered",
+                     nx = n_quadrats,
+                     nsim = 1000
+                     )
 
                  base::return(test_res[c("p.value", "statistic")])
 
@@ -442,7 +447,6 @@ hspaPatternIdentification <- function(object,
   ngc_df <-
     hspa_list$binarization$nested_df %>%
     dplyr::filter(genes %in% {{selected_genes}})
-
 
   # 3. Run pattern identification
 

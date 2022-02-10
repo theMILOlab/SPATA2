@@ -1,8 +1,9 @@
 #' @title Binarize expression matrix
 #'
 #' @description Uses kmeans algorithm of choice on every gene expression variable
-#' with k = 2. To observations belonging to the cluster with the higher mean 1 is assigned
-#' to observations belonging to the other cluseter 0 is assigned.
+#' with k = 2. The value 1 is assigned to observations that belong to the cluster
+#' with the higher mean. The value 0 is assigned to observations that belong to the
+#' cluster with the lower mean.
 #'
 #' @inherit argument_dummy params
 #' @inherit check_method
@@ -100,7 +101,7 @@ binarize_matrix <- function(object,
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 
-  base::return(mtr)
+  return(mtr)
 
 
 }
@@ -122,15 +123,21 @@ identify_gene_patterns_dbscan <- function(marked_df, #!!! changed center_df comp
   if(base::isTRUE(verbose)){ pb$tick() }
 
   {
+
+    # dropped df: df that underwent binarization. cluster 0 (lower mean) has been removed
     dropped_df <- marked_df
 
     size_total <- base::nrow(dropped_df)
+
+    threshold_eps <-
+      dbscan::kNNdist(x = base::as.matrix(dropped_df[,c("x", "y")]), k = 3) %>%
+      base::mean()
 
     # use density based clustering to filter out noisy points
     dbc_res <-
       dbscan::dbscan(
         x = base::as.matrix(dropped_df[,c("x", "y")]),
-        eps = dbscan::kNNdist(x = base::as.matrix(dropped_df[,c("x", "y")]), k = 3) %>% base::mean(), # arbitry threshold
+        eps = threshold_eps, # arbitrary threshold
         minPts = 3
       )
 
@@ -141,6 +148,7 @@ identify_gene_patterns_dbscan <- function(marked_df, #!!! changed center_df comp
     n_bcsp <- base::nrow(dropped_df)
     n_clusters <- dplyr::n_distinct(dropped_df$cluster)
 
+    # if many clusters/pattern remove very small ones
     if(n_clusters != 1){
 
       cluster_count <-
@@ -179,7 +187,7 @@ identify_gene_patterns_dbscan <- function(marked_df, #!!! changed center_df comp
 
   }
 
-  base::return(pattern_df)
+  return(pattern_df)
 
 }
 
@@ -265,7 +273,7 @@ compute_pattern_relation <- function(bcx, bcy, x, y, pb = NULL){
 
   res$sim <- sim
 
-  base::return(res)
+  return(res)
 
 }
 

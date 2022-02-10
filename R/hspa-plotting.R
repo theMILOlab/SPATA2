@@ -109,8 +109,11 @@ plotGenePatterns <- function(object,
                              hull_expand = 1,
                              hull_size = 1,
                              pt_clrsp = "inferno",
-                             pt_size = 2.3,
+                             pt_alpha = NULL,
+                             pt_size = NULL,
+                             pt_size_fixed = NULL,
                              geom_mark_hull = list(),
+                             na_rm = TRUE,
                              of_sample = NA,
                              ...){
 
@@ -128,10 +131,34 @@ plotGenePatterns <- function(object,
 
   area_df <- gpdf %>% dplyr::filter(area == "inside") %>% dplyr::distinct()
 
+  params <- adjust_ggplot_params(params = list(size = pt_size, alpha = pt_alpha))
+
+  if(base::isTRUE(pt_size_fixed)){
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        na.rm = na_rm,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = "expr")
+      )
+
+  } else {
+
+    point_add_on <-
+      ggplot2::layer(
+        geom = "point",
+        stat = "identity",
+        position = "identity",
+        params = params,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = "expr")
+      )
+
+  }
+
   p <-
     ggplot2::ggplot(data = gpdf, mapping = ggplot2::aes(x = x, y = y)) +
     ggplot2::theme_void() +
-    ggplot2::geom_point(mapping = ggplot2::aes(color = expr), size = pt_size) +
+    point_add_on +
     confuns::call_flexibly(fn = "geom_mark_hull",
                            fn.ns = "ggforce",
                            default = list(data = area_df,
@@ -180,15 +207,18 @@ plotGenePatterns <- function(object,
 #'
 plotGenePatternBinarized <- function(object,
                                      genes,
+                                     dbscan_display = FALSE,
+                                     dbscan_remove = FALSE,
                                      pt_clr = "forestgreen",
                                      pt_clrsp = NA, # add option to display expr by color
                                      pt_alpha = NULL,
                                      pt_size = NULL,
+                                     pt_size_fixed = NULL,
                                      ncol = NULL,
                                      nrow = NULL,
+                                     na_rm = TRUE,
                                      verbose = NULL,
                                      of_sample = NA){
-
 
   hlpr_assign_arguments(object)
 
@@ -198,6 +228,8 @@ plotGenePatternBinarized <- function(object,
 
   nested_df <- hspa_list$binarization$nested_df
 
+  coords_df <- getCoordsDf(object, of_sample = of_sample)
+
   filtered_df <-
     dplyr::filter(nested_df, genes %in% {{genes}}) %>%
     tidyr::unnest(cols = "data") %>%
@@ -205,8 +237,7 @@ plotGenePatternBinarized <- function(object,
     dplyr::select(-n_bcsp, -sample) %>%
     purrr::map_df(.x = genes,
                   df = .,
-                  coords_df = getCoordsDf(object, of_sample = of_sample),
-                  .f = function(gene, df, coords_df){
+                  .f = function(gene, df){
 
                     df <-
                       dplyr::filter(df, genes == {{gene}}) %>%
@@ -217,17 +248,81 @@ plotGenePatternBinarized <- function(object,
                       ) %>%
                       dplyr::select(-counts, -sample)
 
+                    if(base::any(c(dbscan_display, dbscan_remove))){
+
+                      dbscan_kept <-
+                        getGenePatternExtentDf(object, genes = gene) %>%
+                        dplyr::filter(area == "inside") %>%
+                        dplyr::pull(barcodes)
+
+                      binarized_kept <-
+                        dplyr::filter(df, bin_res == "Kept") %>%
+                        dplyr::pull(barcodes)
+
+                      dbscan_removed <-
+                        binarized_kept[!binarized_kept %in% dbscan_kept]
+
+                      if(base::isTRUE(dbscan_display)){
+
+                        val <- "Removed (DBSCAN)"
+
+                      } else {
+
+                        val <- "Removed"
+
+                      }
+
+                      df <-
+                        dplyr::mutate(
+                          .data = df,
+                          bin_res = dplyr::if_else(
+                            condition = barcodes %in% dbscan_removed,
+                            true = {{val}},
+                            false = bin_res
+                            )
+                        )
+
+                    }
+
                     base::return(df)
 
-                  })
+                  }) %>%
+    dplyr::mutate(bin_res = base::factor(bin_res))
+
+  params <-
+    adjust_ggplot_params(
+      params = list(size = pt_size, alpha = pt_alpha)
+    )
+
+  if(base::isTRUE(pt_size_fixed)){
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        na.rm = na_rm,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = "bin_res")
+      )
+
+  } else {
+
+    point_add_on <-
+      ggplot2::layer(
+        geom = "point",
+        stat = "identity",
+        position = "identity",
+        params = params,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = "bin_res")
+      )
+
+  }
 
   ggplot2::ggplot(data = filtered_df, mapping = ggplot2::aes(x = x, y = y)) +
-    ggplot2::geom_point(alpha = pt_alpha, size = pt_size, mapping = ggplot2::aes(color = bin_res)) +
+    point_add_on +
     ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
     ggplot2::theme_void() +
     ggplot2::labs(color = NULL) +
     scale_color_add_on(aes = "color", variable = filtered_df$bin_res,
-                       clrp = "milo", clrp.adjust = c("Removed" = "lightgrey", "Kept" = pt_clr))
+                       clrp = "milo", clrp.adjust = c("Removed" = "lightgrey", "Removed (DBSCAN)" = "tomato", "Kept" = pt_clr))
 
 }
 

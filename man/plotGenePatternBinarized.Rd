@@ -8,12 +8,16 @@
 plotGenePatternBinarized(
   object,
   genes,
+  dbscan_display = FALSE,
+  dbscan_remove = FALSE,
   pt_clr = "forestgreen",
   pt_clrsp = NA,
   pt_alpha = NULL,
   pt_size = NULL,
+  pt_size_fixed = NULL,
   ncol = NULL,
   nrow = NULL,
+  na_rm = TRUE,
   verbose = NULL,
   of_sample = NA
 )

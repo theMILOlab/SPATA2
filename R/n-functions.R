@@ -15,3 +15,16 @@ nGenes <- function(object, mtr_name = NULL){
     base:::nrow()
 
 }
+
+
+#' @title Number of counts
+#' @export
+nCounts <- function(object, gene){
+
+  counts <- getCountMatrix(object)
+
+  out <- base::sum(counts[gene,])
+
+  return(out)
+
+}

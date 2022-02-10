@@ -16,8 +16,11 @@ plotGenePatterns(
   hull_expand = 1,
   hull_size = 1,
   pt_clrsp = "inferno",
-  pt_size = 2.3,
+  pt_alpha = NULL,
+  pt_size = NULL,
+  pt_size_fixed = NULL,
   geom_mark_hull = list(),
+  na_rm = TRUE,
   of_sample = NA,
   ...
 )

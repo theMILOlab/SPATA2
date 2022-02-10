@@ -32,8 +32,9 @@ A binarized matrix.
 }
 \description{
 Uses kmeans algorithm of choice on every gene expression variable
-with k = 2. To observations belonging to the cluster with the higher mean 1 is assigned
-to observations belonging to the other cluseter 0 is assigned.
+with k = 2. The value 1 is assigned to observations that belong to the cluster
+with the higher mean. The value 0 is assigned to observations that belong to the
+cluster with the lower mean.
 }
 \details{
 Members of the \code{lazy-check_*()}-family take the arguments
