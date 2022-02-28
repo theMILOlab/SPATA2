@@ -2,9 +2,21 @@
 % Please edit documentation in R/get-family.R
 \name{getImage}
 \alias{getImage}
+\alias{getImageDims}
+\alias{getImageRange}
+\alias{getImageRaster}
+\alias{getImageRasterInfo}
 \title{Obtain histology image}
 \usage{
-getImage(object, of_sample = NA)
+getImage(object, of_sample = NA, xrange = NULL, yrange = NULL, padding = 0)
+
+getImageDims(object, xrange = NULL, yrange = NULL)
+
+getImageRange(object, xrange = NULL, yrange = NULL)
+
+getImageRaster(object, xrange = NULL, yrange = NULL, padding = 0)
+
+getImageRasterInfo(object, xrange = NULL, yrange = NULL)
 }
 \arguments{
 \item{object}{A valid spata-object.}

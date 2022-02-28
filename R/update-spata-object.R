@@ -348,6 +348,40 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 && object@version$minor == 5){
+
+    object@version <- list(major = 1, minor = 6, patch = 0)
+
+    give_feedback(msg = "Creating new object of class `Visium`.", verbose = verbose)
+
+    new_image <- Visium()
+
+    object <- flipCoords(object)
+
+    new_image@coordinates <- getCoordsDf(object)
+
+    if(base::class(object@images[[1]]) == "Image"){
+
+      new_image@image <- object@images[[1]]
+
+    }
+
+    msg <-
+      c("We have aligned the surface plotting to the mechanism used by other packages.
+         So far, plotting surface plots with SPATA2 has resulted in mirror inverted plots.
+         This is no longer the case.
+         You can use the functions `flipCoords()`, `flipImage()` and `flipImageAndCoords()`
+         to manually align coordinates and image as well as the 'plotting direction'.")
+
+    give_feedback(
+      msg = msg,
+      verbose = verbose
+      )
+
+    object@images[[sample_name]] <- new_image
+
+  }
+
   # default adjustment ------------------------------------------------------
 
   old_default <- object@information$instructions$default

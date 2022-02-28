@@ -4,7 +4,12 @@
 \alias{identify_gene_patterns_dbscan}
 \title{Title}
 \usage{
-identify_gene_patterns_dbscan(marked_df, verbose = TRUE, pb = NULL)
+identify_gene_patterns_dbscan(
+  marked_df,
+  verbose = TRUE,
+  pb = NULL,
+  object = NULL
+)
 }
 \arguments{
 \item{pb}{}

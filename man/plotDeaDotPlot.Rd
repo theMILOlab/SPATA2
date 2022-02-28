@@ -6,7 +6,7 @@
 \usage{
 plotDeaDotPlot(
   object,
-  across,
+  across = getDefaultGrouping(object, verbose = T, "across"),
   across_subset = NULL,
   relevel = NULL,
   method_de = NULL,

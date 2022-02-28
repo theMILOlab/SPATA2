@@ -76,7 +76,7 @@ default_instructions_object <-
                colors = default_colors,
                complete = TRUE,
                display_facets = TRUE,
-               display_image = FALSE,
+               display_image = TRUE,
                display_labels = TRUE,
                display_legend = TRUE,
                display_points = FALSE,
@@ -144,6 +144,10 @@ hp_analysis_list <-
     similarity_threshold = base::numeric()
   )
 
+gene_pattern_suf_regex <- "_\\d*\\.\\d*$"
+
+hspa_status_levels <- c("Kmeans", "DBSCAN", "Additionally", "Kept")
+
 
 
 
@@ -189,8 +193,9 @@ helper_content <- list(
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
-      "Encircling: By doubleckling consecutively on the plot you can draw polygons around the region you want to annotate To highlight
-       the region click on 'Highlight'. This connects the beginning and the end of the drawn line and hihglights the area it covers.",
+      "Encircling: By doubleckling on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
+      the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
+      starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
       "",
       " Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate. If so, click on 'Annotate'.
        You are then prompted to choose the name you want to annotate the transcriptomic spots with that fall into this area.
@@ -225,5 +230,5 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 5, patch = 0)
+current_spata_version <- list(major = 1, minor = 6, patch = 0)
 

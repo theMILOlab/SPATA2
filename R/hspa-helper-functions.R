@@ -139,44 +139,146 @@ getGenePatternCorrelations <- function(object,
 #' @return
 #' @export
 #'
-getGenePatternEvalDf <- function(object,
-                             genes = NULL,
-                             gene_patterns = NULL,
+getGenePatternDf <- function(object,
+                             genes_subset = NULL,
                              pattern_subset = NULL,
-                             of_sample = NA){
+                             barcode_info = TRUE,
+                             unnest = TRUE,
+                             verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+  hspa_list <- getHspaResults(object)
 
-  hspa_list <- getHspaResults(object, of_sample)
+  df_extended <- hspa_list$gene_patterns$df_extended
 
-  eval_df <- hspa_list$gene_patterns$evaluation_df
+  if(base::is.null(df_extended)){
 
-  # filter for genes
-  if(base::is.character(genes)){
+    all_genes <- base::unique(hspa_list$gene_patterns$df_minimal$genes)
 
-    eval_df <- dplyr::filter(eval_df, genes %in% {{genes}})
+    if(!base::is.character(genes_subset)){
+
+      genes <- all_genes
+
+    } else {
+
+      confuns::check_one_of(
+        input = genes_subset,
+        against = all_genes,
+        fdb.opt = 2,
+        ref.opt.2 = "genes for which pattern information are present"
+      )
+
+      genes <- genes_subset
+
+    }
+
+    eval_df <- hspa_list$gene_patterns$eval_df
+
+    if(base::is.null(eval_df)){
+
+      coords_df <- getCoordsDf(object)
+
+      msg <- glue::glue(
+        "Extending gene pattern information for {base::length(genes)} gene(s)."
+      )
+
+      give_feedback(msg = msg, verbose = verbose)
+
+      pb <- confuns::create_progress_bar(total = base::length(genes))
+
+      df_extended <-
+        purrr::map_df(
+          .x = genes,
+          .f = function(gene){
+
+            if(base::isTRUE(verbose)){ pb$tick() }
+
+            extended_list <-
+              hspa_list$gene_patterns$df_minimal %>%
+              tidyr::unnest(cols = dplyr::everything()) %>%
+              dplyr::filter(genes == {{gene}}) %>%
+              extent_gene_pattern_info(
+                minimal_df = .,
+                coords_df = coords_df,
+                barcode_info = barcode_info
+              )
+
+            out <- extended_list$gene_df
+
+            pattern_df <- extended_list$gene_pattern_df
+
+            if(base::is.character(pattern_subset)){
+
+              pattern_df <- dplyr::filter(pattern_df, gene_pattern %in% {{pattern_subset}})
+
+            } else if(base::is.numeric(pattern_subset)){
+
+              pattern_df <- dplyr::filter(pattern_df, index_pattern %in% {{pattern_subset}})
+
+            }
+
+            out$pattern_info <- list(pattern_df)
+
+
+            return(out)
+
+          }
+        )
+
+    }
+
+  } else {
+
+    if(base::is.character(genes_subset)){
+
+      confuns::check_one_of(
+        input = genes_subset,
+        against = df_extended$genes
+      )
+
+      df_extended <- dplyr::filter(df_extended, genes %in% genes_subset)
+
+    }
+
+    if(base::is.character(pattern_subset)){
+
+      df_extended <- dplyr::filter(df_extended, gene_pattern %in% {{pattern_subset}})
+
+    } else if(base::is.numeric(pattern_subset)){
+
+      df_extended <- dplyr::filter(df_extended, index_pattern %in% {{pattern_subset}})
+
+    }
 
   }
 
-  # filter for gene patterns
-  if(base::is.character(gene_patterns)){
+  if(base::isTRUE(unnest)){
 
-    eval_df <- dplyr::filter(eval_df, gene_patterns %in% {{gene_patterns}})
-
-  }
-
-  # filter for specific patterns
-  if(base::is.numeric(pattern_subset)){
-
-    pattern_subset <- base::as.character(pattern_subset)
-
-    eval_df <- dplyr::filter(eval_df, pattern %in% {{pattern_subset}})
+    df_extended <- tidyr::unnest(df_extended, cols = dplyr::everything())
 
   }
 
-  base::return(eval_df)
+  return(dplyr::ungroup(df_extended))
+
+}
+
+
+#' @rdname getGenePatternDf
+#' @export
+getGenePatternCoordsDf <- function(object,
+                                   genes = NULL,
+                                   verbose = NULL){
+
+  getGenePatternDf(
+    object = object,
+    genes = genes,
+    verbose = verbose
+  ) %>%
+    dplyr::select(
+      genes, gene_pattern, index_pattern, center_x, center_y, coords_pattern
+    ) %>%
+    tidyr::unnest(cols = dplyr::everything())
 
 }
 
@@ -192,14 +294,16 @@ getGenePatternEvalDf <- function(object,
 #' @export
 #'
 getGenePatternExtentDf <- function(object,
-                               genes = NULL,
-                               gene_patterns = NULL,
-                               pattern_subset = NULL,
-                               join_with_expr = TRUE,
-                               smooth = NULL,
-                               smooth_span = NULL,
-                               verbose = NULL,
-                               of_sample = NA){
+                                   genes = NULL,
+                                   gene_patterns = NULL,
+                                   pattern_subset = NULL,
+                                   join_with_expr = TRUE,
+                                   smooth = NULL,
+                                   smooth_span = NULL,
+                                   verbose = NULL,
+                                   dbscan_display = FALSE,
+                                   dbscan_remove = FALSE,
+                                   of_sample = NA){
 
   hlpr_assign_arguments(object)
 
@@ -212,10 +316,12 @@ getGenePatternExtentDf <- function(object,
   }
 
   eval_df <-
-    getGenePatternEvalDf(object,
-                     genes = genes,
-                     gene_patterns = gene_patterns,
-                     pattern_subset = pattern_subset)
+    getGenePatternEvalDf(
+      object,
+      genes = genes,
+      gene_patterns = gene_patterns,
+      pattern_subset = pattern_subset
+    )
 
   coords_df <- getCoordsDf(object)
 
@@ -225,45 +331,86 @@ getGenePatternExtentDf <- function(object,
 
   genes <- base::unique(unnested_eval_df$genes)
 
+  if(base::any(c(dbscan_display, dbscan_remove))){
+
+    dbscan_kept <-
+      dplyr::filter(df, area == "inside") %>%
+      dplyr::pull(barcodes)
+
+    binarized_kept <-
+      dplyr::filter(df, bin_res == "Kept") %>%
+      dplyr::pull(barcodes)
+
+    dbscan_removed <-
+      binarized_kept[!binarized_kept %in% dbscan_kept]
+
+    if(base::isTRUE(dbscan_display)){
+
+      val <- "Removed (DBSCAN)"
+
+    } else {
+
+      val <- "Removed"
+
+    }
+
+    df <-
+      dplyr::mutate(
+        .data = df,
+        bin_res = dplyr::if_else(
+          condition = barcodes %in% dbscan_removed,
+          true = {{val}},
+          false = bin_res
+        )
+      )
+
+  }
+
+
   gene_patterns <- base::unique(unnested_eval_df$gene_patterns)
 
   pb <- confuns::create_progress_bar(total = base::length(gene_patterns))
 
   confuns::give_feedback(
-    msg = glue::glue("Joining pattern extent information with coordinates{ref}.",
-                     ref = base::ifelse(base::isTRUE(join_with_expr),
-                                        yes = " and expression data",
-                                        no = "")),
+    msg = glue::glue(
+      "Joining pattern extent information with coordinates{ref}.",
+      ref = base::ifelse(
+        base::isTRUE(join_with_expr),
+        yes = " and expression data",
+        no = ""
+      )
+    ),
     verbose = verbose
   )
 
   res_df <-
-    purrr::map_df(.x = gene_patterns,
-                  .f = function(gp){
+    purrr::map_df(
+      .x = gene_patterns,
+      .f = function(gp){
 
-                    if(base::isTRUE(verbose)){ pb$tick() }
+        if(base::isTRUE(verbose)){ pb$tick() }
 
-                    gene <- stringr::str_remove(gp, pattern = "_.+$")
+        gene <- stringr::str_remove(gp, pattern = "_.+$")
 
-                    df <-
-                      dplyr::filter(unnested_eval_df, gene_patterns == {{gp}}) %>%
-                      dplyr::left_join(x = coords_df, y = ., by = "barcodes") %>%
-                      dplyr::select(barcodes, sample, gene_patterns, x, y) %>%
-                      dplyr::mutate(
-                        area = dplyr::if_else(base::is.na(gene_patterns), true = "outside", false = "inside"),
-                        gene_patterns = {{gp}}
-                      )
+        df <-
+          dplyr::filter(unnested_eval_df, gene_patterns == {{gp}}) %>%
+          dplyr::left_join(x = coords_df, y = ., by = "barcodes") %>%
+          dplyr::select(barcodes, sample, gene_patterns, x, y) %>%
+          dplyr::mutate(
+            area = dplyr::if_else(base::is.na(gene_patterns), true = "outside", false = "inside"),
+            gene_patterns = {{gp}}
+          )
 
-                    if(base::isTRUE(join_with_expr)){
+        if(base::isTRUE(join_with_expr)){
 
-                      df <-
-                        joinWith(object = object, spata_df = df, genes = gene, smooth = smooth, smooth_span = smooth_span, verbose = FALSE)
+          df <-
+            joinWith(object = object, spata_df = df, genes = gene, smooth = smooth, smooth_span = smooth_span, verbose = FALSE)
 
-                    }
+        }
+        base::return(df)
 
-                    base::return(df)
-
-                  })
+      }
+    )
 
 
   if(base::isTRUE(join_with_expr)){

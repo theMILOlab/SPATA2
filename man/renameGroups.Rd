@@ -5,7 +5,7 @@
 \alias{renameSegments}
 \title{Rename cluster/group names}
 \usage{
-renameGroups(object, discrete_feature, ..., of_sample = NA)
+renameGroups(object, discrete_feature, ..., keep_levels = NULL, of_sample = NA)
 
 renameSegments(object, ..., of_sample = NA)
 }

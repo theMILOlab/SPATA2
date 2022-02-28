@@ -30,3 +30,26 @@ isFeature <- function(object, feature){
   base::isTRUE(out)
 
 }
+
+#' @export
+isFlipped <- function(object){
+
+  out <- getImageObject(object)@info$flipped
+
+  base::isTRUE(out)
+
+}
+
+
+#' @export
+containsImage <- function(object){
+
+  img <- object@images[[1]]
+
+  out <- base::class(img) == "Image"
+
+  return(out)
+
+}
+
+

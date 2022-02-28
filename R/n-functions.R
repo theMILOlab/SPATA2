@@ -1,4 +1,32 @@
 
+#' @title Number of barcodes
+#'
+#' @description Returns the number of barcodes in the sample.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeriv value.
+#'
+#' @export
+nBarcodes <- function(object){
+
+  getCoordsDf(object) %>%
+    base::nrow()
+
+}
+
+
+#' @title Number of counts
+#' @export
+nCounts <- function(object, gene){
+
+  counts <- getCountMatrix(object)
+
+  out <- base::sum(counts[gene,])
+
+  return(out)
+
+}
 
 #' @title Number of genes
 #'
@@ -17,14 +45,3 @@ nGenes <- function(object, mtr_name = NULL){
 }
 
 
-#' @title Number of counts
-#' @export
-nCounts <- function(object, gene){
-
-  counts <- getCountMatrix(object)
-
-  out <- base::sum(counts[gene,])
-
-  return(out)
-
-}

@@ -51,6 +51,11 @@ of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
 
+\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
+interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
+
+\item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
+
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
 
@@ -61,6 +66,9 @@ can be set to prevent overplotting.}
 The first \code{n_gsets} are included starting with the one with the lowest significance value.}
 
 \item{object}{A valid spata-object.}
+
+\item{padding}{Numeric value. If bigger than 0 creates a padding around the cropped image that never
+exceeds the actual limits of the image. Barcode spots are not affected.}
 
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
@@ -82,6 +90,10 @@ respective \code{<aes>_trans} argument.}
 
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
+
+\item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
+with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
+from x-coordinate 200 up to x-coordinate 500.}
 }
 \description{
 Argument dummy

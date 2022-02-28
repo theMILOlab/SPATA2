@@ -13,6 +13,8 @@ getGenePatternExtentDf(
   smooth = NULL,
   smooth_span = NULL,
   verbose = NULL,
+  dbscan_display = FALSE,
+  dbscan_remove = FALSE,
   of_sample = NA
 )
 }

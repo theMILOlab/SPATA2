@@ -62,6 +62,7 @@ hspaDataBinarization <- function(object,
       dplyr::filter(counts == 1) %>%
       dplyr::group_by(genes) %>%
       dplyr::mutate(n_bcsp = dplyr::n()) %>%
+      dplyr::select(-sample, -x, -y, -counts) %>%
       tibble::as_tibble() %>%
       dplyr::group_by(genes, n_bcsp) %>%
       tidyr::nest()
@@ -156,6 +157,12 @@ hspaCsrTesting <- function(object,
 
                  if(base::isTRUE(verbose)){ pb$tick() }
 
+                 df <-
+                   barcodes_to_coords_df(
+                     object = object,
+                     barcodes = df$barcodes
+                   )
+
                  pp_obj <-
                    spatstat.geom::ppp(
                      x = df$x,
@@ -172,7 +179,7 @@ hspaCsrTesting <- function(object,
                      nsim = 1000
                      )
 
-                 base::return(test_res[c("p.value", "statistic")])
+                 return(test_res[c("p.value", "statistic")])
 
                })
 
@@ -255,14 +262,12 @@ hspaCsrCutoff <- function(object, # currently replaces run_csr_test_threshold()
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-
   # 2. Extract data
-  hspa_list <- getPrResults(object, of_sample = of_sample, method_pr = "hspa")
+  hspa_list <- getHspaResults(object)
 
   csr_list <- hspa_list$csr_testing
 
   csr_df <- dplyr::filter(csr_list$results_df, adj_p_values < 0.05)
-
 
   # 3. Simulate
   confuns::give_feedback(msg = glue::glue("Simulating {n_sim} csr-cutoffs."), verbose = verbose)
@@ -293,12 +298,13 @@ hspaCsrCutoff <- function(object, # currently replaces run_csr_test_threshold()
 
   # normalize cutoff
   simulated_cutoff_dfn <-
-    dplyr::mutate(simulated_cutoff_df,
-                  n = confuns::normalize(n), # rescale to 0-1
-                  cutoff = confuns::normalize(cutoff), # rescale to 0-1
-                  straight_line = dplyr::row_number() %>% confuns::normalize(), #
-                  residuals = n - straight_line,
-                  res_pos = base::abs(residuals) # residuals positive
+    dplyr::mutate(
+      .data = simulated_cutoff_df,
+      n = confuns::normalize(n), # rescale to 0-1
+      cutoff = confuns::normalize(cutoff), # rescale to 0-1
+      straight_line = dplyr::row_number() %>% confuns::normalize(), #
+      residuals = n - straight_line,
+      res_pos = base::abs(residuals) # residuals positive
     )
 
   min_res <- base::min(simulated_cutoff_dfn$res_pos)
@@ -351,6 +357,7 @@ hspaCsrCutoff <- function(object, # currently replaces run_csr_test_threshold()
 #'
 hspaSelectGenes <- function(object,
                             csr_cutoff = NULL,
+                            include_genes = NULL,
                             of_sample = NA,
                             verbose = NULL){
 
@@ -375,17 +382,48 @@ hspaSelectGenes <- function(object,
   hspa_list <- getHspaResults(object, of_sample = of_sample)
 
   # filter genes with cluster tendency bigger than the threshold
-  csr_results_df <- hspa_list$csr_testing$results_df
+  csr_results_df <-
+    hspa_list$csr_testing$results_df %>%
+    dplyr::filter(adj_p_values <= 0.05)
+
+  if(base::is.character(include_genes)){
+
+    removed_genes <-
+      include_genes[!include_genes %in% csr_results_df$genes]
+
+    n_removed <- base::length(removed_genes)
+
+    if(n_removed != 0){
+
+      ref <- confuns::scollapse(removed_genes)
+
+      ref2 <- confuns::adapt_reference(removed_genes, sg = "gene")
+
+      ref3 <- confuns::adapt_reference(removed_genes, sg = "has", pl = "have")
+
+      confuns::give_feedback(
+        msg = glue::glue("{n_removed} {ref2} of genes to include {ref3} an adjusted
+                          p-value of >0.05 and are excluded."),
+        verbose = TRUE,
+        fdb.fn = "warning"
+      )
+
+    }
+
+  }
 
   csr_cutoff <- hspa_list$csr_testing$cutoff$value
 
   genes_to_be_tested <-
     csr_results_df %>%
-    dplyr::filter(adj_p_values <= 0.05) %>%
     dplyr::filter(cluster_tendency > {{csr_cutoff}}) %>%
     dplyr::pull(genes)
 
-  n_remaining <- base::length(genes_to_be_tested)
+  hspa_list$selected_genes <-
+    c(include_genes, genes_to_be_tested) %>%
+    base::unique()
+
+  n_remaining <- base::length(hspa_list$selected_genes)
 
   if(n_remaining <= 1){
 
@@ -396,13 +434,11 @@ hspaSelectGenes <- function(object,
 
   } else {
 
-    msg <- glue::glue("A total of {n_remaining} genes have been selected as candidates for pattern identification algorithm.")
+    msg <- glue::glue("A total of {n_remaining} genes has been selected as candidates for pattern identification algorithm.")
 
     confuns::give_feedback(msg = msg, verbose = verbose)
 
   }
-
-  hspa_list$selected_genes <- genes_to_be_tested
 
   object <- setHspaResults(object, of_sample = of_sample, hspa_list = hspa_list)
 
@@ -461,8 +497,11 @@ hspaPatternIdentification <- function(object,
     purrr::map(
       .x = ngc_df$data,
       pb = pb_flt,
+      object = object,
       verbose = TRUE,
-      .f = purrr::safely(.f = identify_gene_patterns_dbscan, otherwise = NA))
+      .f = purrr::safely(.f = identify_gene_patterns_dbscan, otherwise = NA)
+      ) %>%
+    purrr::set_names(nm = ngc_df$genes)
 
   # lgl vector where evaluation failed
   failed_evaluation <-
@@ -485,21 +524,13 @@ hspaPatternIdentification <- function(object,
   }
 
   # keep only successful evaluations
-  successful_identifications <-
-    purrr::map(.x = pattern_identification_list[!failed_evaluation], .f = "result")
-
-  pattern_identification_df <-
-    tibble::as_tibble(x = ngc_df[!failed_evaluation, ]) %>%
-    dplyr::mutate(pattern_identicication = successful_identifications) %>%
-    tidyr::unnest(cols = "pattern_identicication") %>%
-    dplyr::select(-data) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(
-      gene_patterns = stringr::str_c(genes, pattern, sep = "_"),
-      gene_patterns = stringr::str_c(gene_patterns, n_pattern, sep = ".")
-      ) %>%
-    dplyr::select(gene_patterns, dplyr::everything())
-
+  pattern_df_minimal <-
+    purrr::map(.x = pattern_identification_list[!failed_evaluation], .f = "result") %>%
+    purrr::imap_dfr(.f = ~ dplyr::mutate(.data = .x, genes = .y)) %>%
+    dplyr::select(genes, dplyr::everything()) %>%
+    dplyr::group_by(genes) %>%
+    tidyr::nest() %>%
+    dplyr::ungroup()
 
   # -----
 
@@ -510,7 +541,7 @@ hspaPatternIdentification <- function(object,
 
   hspa_list$discarded_genes <- failed_genes
 
-  hspa_list$gene_patterns$evaluation_df <- pattern_identification_df
+  hspa_list$gene_patterns$df_minimal <- pattern_df_minimal
 
   object <- setHspaResults(object, of_sample = of_sample,  hspa_list = hspa_list)
 
@@ -549,24 +580,40 @@ hspaPatternSimilarity <- function(object,
 
   hspa_list <- getHspaResults(object, of_sample = of_sample)
 
-  pattern_evaluation_df <- hspa_list$gene_patterns$evaluation_df
+  df_extended <- getGenePatternDf(object, barcode_info = TRUE)
 
-  all_gene_patterns <- pattern_evaluation_df$gene_patterns
+  hspa_list$gene_patterns$df_extended <-
+    dplyr::group_by(df_extended, genes) %>%
+    tidyr::nest()
+
+  distance_df <-
+    getBarcodeSpotDistances(object, verbose = verbose) %>%
+    dplyr::rename(bcx = bc_origin, bcy = bc_destination)
+
+  all_gene_patterns <-
+    df_extended$gene_pattern %>%
+    str_subset(pattern = str_c(c("ATP5F1A", "SNX3", "ACTB"), collapse = "|")) %>%
+    base::unique()
 
   gene_pattern_combinations <-
     utils::combn(x = all_gene_patterns, m = 2) %>%
     base::t() %>%
     base::as.data.frame() %>%
     magrittr::set_names(value = c("x", "y")) %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate(x_gene = pattern_to_gene(x), y_gene = pattern_to_gene(y)) %>%
+    dplyr::filter(x_gene != y_gene) %>%
+    dplyr::select(-x_gene, -y_gene) %>%
     dplyr::left_join(
-      y = dplyr::select(pattern_evaluation_df, gene_patterns, barcodes_x = remaining_barcodes),
-      by = c("x" = "gene_patterns")
+      y = dplyr::select(df_extended, gene_pattern, barcodes_x = coords_pattern),
+      by = c("x" = "gene_pattern")
     ) %>%
     dplyr::left_join(
-      y = dplyr::select(pattern_evaluation_df, gene_patterns, barcodes_y = remaining_barcodes),
-      by = c("y" = "gene_patterns")
-    ) %>%
-    tibble::as_tibble()
+      y = dplyr::select(df_extended, gene_pattern, barcodes_y = coords_pattern),
+      by = c("y" = "gene_pattern")
+    )
+
+  #base::rm(df_extended)
 
   n_pattern_combinations <- base::nrow(gene_pattern_combinations)
 
@@ -577,43 +624,77 @@ hspaPatternSimilarity <- function(object,
     verbose = verbose
   )
 
-  gene_pattern_relation <-
-    purrr::pmap_df(
-      .l = list(
-        bcx = gene_pattern_combinations$barcodes_x,
-        bcy = gene_pattern_combinations$barcodes_y,
-        x = gene_pattern_combinations$x,
-        y = gene_pattern_combinations$y
-      ),
-      pb = pb,
-      .f = compute_pattern_relation
+  pb <- confuns::create_progress_bar(total = n_pattern_combinations)
+
+  sim_df <-
+    gene_pattern_combinations %>%
+    dplyr::mutate(
+      perc_ovlp = purrr::pmap_dbl(
+        .l = list(
+          bc_x_df = gene_pattern_combinations$barcodes_x,
+          bc_y_df = gene_pattern_combinations$barcodes_y
+        ),
+        pb = pb,
+        .f = compute_pattern_similarity
+      )
+    ) %>%
+    dplyr::select(x, y, perc_ovlp)
+
+  gene_pattern_combinations <-
+    dplyr::left_join(
+      x = gene_pattern_combinations,
+      y = sim_df,
+      by = c("x", "y")
     )
 
-  # iterate over all gene pattern combinations
-  gene_pattern_similarities <-
-    base::cbind(gene_pattern_combinations, gene_pattern_relation) %>%
-    dplyr::mutate(dist = 1 - sim) %>%
-    dplyr::group_by(x)
+  #assign(x = "sim_df", value = sim_df, envir = .GlobalEnv)
 
+  #saveRDS(sim_df, file = "sim_df.RDS")
+
+  further_testing_small <-
+    dplyr::filter(gene_pattern_combinations, perc_ovlp < 0.2) %>%
+    dplyr::slice_sample(n = 1000)
+
+  further_testing <-
+    dplyr::filter(gene_pattern_combinations, perc_ovlp >= 0.4) %>%
+    base::rbind(., further_testing_small)
+
+  pb <- confuns::create_progress_bar(total = base::nrow(further_testing))
+
+  gene_pattern_relation <-
+    purrr::pmap_dfr(
+      .l = list(
+        bc_x_df = further_testing$barcodes_x,
+        bc_y_df = further_testing$barcodes_y,
+        x = further_testing$x,
+        y = further_testing$y
+      ),
+      distance_df = distance_df,
+      pb = pb,
+      .f = compute_pattern_relation
+    ) %>%
+    dplyr::left_join(y = sim_df, by = c("x", "y"))
+
+  saveRDS(object = gene_pattern_relation, file = "gene_pattern_relation.RDS")
 
   # 3. Store results
 
-  hspa_list$gene_patterns$similarity_df <- gene_pattern_similarities
+  hspa_list$gene_patterns$similarity_df <- gene_pattern_relation
 
   object <- setHspaResults(object, hspa_list = hspa_list)
 
   confuns::give_feedback(
     msg = "Calculating correlation between similarity scores.",
-    verbose = verbose
+    verbose = FALSE
     )
 
   dist_mtr <- getGenePatternDistances(object, of_sample = of_sample, threshold_dist = 1)
 
-  dist_mtr[base::is.na(dist_mtr)] <- 0
+  #dist_mtr[base::is.na(dist_mtr)] <- 0
 
-  corr_mtr <- stats::cor(x = dist_mtr)
+  #corr_mtr <- stats::cor(x = dist_mtr)
 
-  hspa_list$gene_patterns$correlation_mtr <- corr_mtr
+  #hspa_list$gene_patterns$correlation_mtr <- corr_mtr
 
   object <- setHspaResults(object, of_sample = of_sample, hspa_list = hspa_list)
 
@@ -671,16 +752,6 @@ hspaPatternSimilarity_future <- function(object,
     verbose = verbose
   )
 
-
-  future::plan("multisession")
-
-    relation <-
-      furrr::future_pmap_dbl(
-        .l = list(gene_pattern_combinations$barcodes_x,
-                  gene_pattern_combinations$barcodes_y),
-        .f = compute_pattern_relation_future,
-        .progress = TRUE
-      )
 
 
 
@@ -859,10 +930,6 @@ hspaClusterGenePatterns <- function(object,
 
   }
 
-
-
-
-
   # 3. Pass to object -------------------------------------------------------
 
 
@@ -902,6 +969,7 @@ hspaClusterGenePatterns <- function(object,
 #'
 runHspa <- function(object,
                     genes_subset = NULL,
+                    include_genes = NULL,
                     mtr_name = "scaled",
                     method_binarization = "kmeans",
                     method_kmeans = "Hartigan-Wong",
@@ -909,7 +977,7 @@ runHspa <- function(object,
                     method_csr = "MonteCarlo",
                     n_quadrats = 10,
                     method_padj = "fdr",
-                    save_intermediate_results = TRUE,
+                    save_intermediate_results = FALSE,
                     verbose = NULL,
                     of_sample = NA){
 
@@ -955,6 +1023,7 @@ runHspa <- function(object,
 
   object <- hspaSelectGenes(object = object,
                             of_sample = of_sample,
+                            include_genes = base::unique(c(genes_subset, include_genes)),
                             verbose = verbose)
 
   if(base::isTRUE(save_intermediate_results)){
@@ -962,6 +1031,10 @@ runHspa <- function(object,
     saveSpataObject(object = object)
 
   }
+
+  hspa_list <- getHspaResults(object)
+
+  saveRDS(hspa_list, "R-development/hierarchical-spatial-pattern-analysis/hspa_list_T269.RDS")
 
   object <- hspaPatternIdentification(object = object,
                                       verbose = verbose,
@@ -973,9 +1046,19 @@ runHspa <- function(object,
 
   }
 
+  hspa_list <- getHspaResults(object)
+
+  saveRDS(hspa_list, "hspa_list_T269.RDS")
+
   object <- hspaPatternSimilarity(object = object,
                                   verbose = verbose,
                                   of_sample = of_sample)
+
+
+  hspa_list <- getHspaResults(object)
+
+  saveRDS(hspa_list, "hspa_list_T269.RDS")
+
 
   base::return(object)
 

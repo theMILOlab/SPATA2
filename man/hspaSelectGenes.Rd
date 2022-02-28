@@ -4,7 +4,13 @@
 \alias{hspaSelectGenes}
 \title{Title}
 \usage{
-hspaSelectGenes(object, csr_cutoff = NULL, of_sample = NA, verbose = NULL)
+hspaSelectGenes(
+  object,
+  csr_cutoff = NULL,
+  include_genes = NULL,
+  of_sample = NA,
+  verbose = NULL
+)
 }
 \arguments{
 \item{of_sample}{}

@@ -7,6 +7,7 @@
 runHspa(
   object,
   genes_subset = NULL,
+  include_genes = NULL,
   mtr_name = "scaled",
   method_binarization = "kmeans",
   method_kmeans = "Hartigan-Wong",
@@ -14,7 +15,7 @@ runHspa(
   method_csr = "MonteCarlo",
   n_quadrats = 10,
   method_padj = "fdr",
-  save_intermediate_results = TRUE,
+  save_intermediate_results = FALSE,
   verbose = NULL,
   of_sample = NA
 )

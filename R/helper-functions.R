@@ -604,8 +604,7 @@ hlpr_image_add_on <- function(object, display_image, of_sample){
 
       st_image <-
         image_raster %>%
-        magick::image_read() %>%
-        magick::image_flip()
+        magick::image_read()
 
       image_add_on <-
         ggplot2::annotation_raster(raster = st_image,
@@ -650,8 +649,7 @@ hlpr_image_add_on2 <- function(image){
         magick::image_info()
 
       image_flipped <-
-        magick::image_read(image_raster) %>%
-        magick::image_flip()
+        magick::image_read(image_raster)
 
       image_add_on <-
         ggplot2::annotation_raster(raster = image_flipped,
@@ -665,6 +663,16 @@ hlpr_image_add_on2 <- function(image){
 
 }
 
+#' @rdname hlpr_image_add_on
+hlpr_image_to_df <- function(img){
+
+  grDevices::as.raster(img) %>%
+    base::as.matrix() %>%
+    reshape2::melt(formula = x ~ y, value.name = "colors") %>%
+    tibble::as_tibble() %>%
+    dplyr::rename(x = Var1, y = Var2)
+
+}
 
 
 #' @title Join with single value

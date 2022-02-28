@@ -5,12 +5,16 @@
 \alias{compute_pattern_relation}
 \title{Title}
 \usage{
-compute_pattern_similarity(bcx, bcy, pb = NULL, verbose = TRUE)
+compute_pattern_similarity(bc_x_df, bc_y_df, pb = NULL, verbose = TRUE)
 
-compute_pattern_relation(bcx, bcy, x, y, pb = NULL)
+compute_pattern_relation(bc_x_df, bc_y_df, x, y, pb = NULL, distance_df)
 }
 \arguments{
 \item{verbose}{}
+
+\item{bcx}{Barcodes from gene pattern X (first pattern), order is irrelevant.}
+
+\item{bcy}{Barcodes form gene pattern Y (second pattern), order is irrelevant.}
 }
 \value{
 

@@ -39,6 +39,7 @@ plotCsrCutoffSimulations <- function(object, of_sample = NA){
     ggplot2::labs(x = "Cluster Tendency", y = "Number Remaining Genes", color = NULL,
                   subtitle = glue::glue("Suggested Cutoff: {base::round(cutoff_val, 2)}  \nRemaining Genes: {n}"))
 
+
 }
 
 
@@ -98,6 +99,97 @@ plotCsrResults <- function(object, of_sample){
 #'
 #' @return
 #' @export
+#'
+
+plotGenePattern <- function(object,
+                            genes = NULL,
+                            pattern = NULL,
+                            facet_by = c("genes", "gene_pattern"),
+                            background = "coords",
+                            pt_alpha = NULL,
+                            pt_size = NULL,
+                            nrow = NULL,
+                            ncol = NULL){
+
+  hlpr_assign_arguments(object)
+
+  facet_by <- facet_by[1]
+
+  confuns::check_one_of(
+    input = facet_by,
+    against = c("genes", "gene_pattern")
+  )
+
+  if(base::is.character(pattern)){
+
+    genes <-
+      stringr::str_remove(string = pattern, pattern = "_.+$") %>%
+      base::unique()
+
+  }
+
+  # extract data
+  gp_coords <-
+    getGenePatternCoordsDf(
+      object = object,
+      genes = genes
+    )
+
+  if(base::is.character(pattern)){
+
+    gp_coords <- dplyr::filter(gp_coords, gene_pattern %in% {{pattern}})
+
+  } else if(base::is.numeric(pattern)){
+
+    gp_coords <- dplyr::filter(gp_coords, index_pattern %in% {{pattern}})
+
+  }
+
+
+  # prepare background
+
+  background_add_on <- list()
+
+  if("coords" %in% background){
+
+    background_add_on$coords <-
+      geom_point_fixed(
+        data = getCoordsDf(object),
+        size = pt_size,
+        alpha = 0.25,
+        color = "lightgrey"
+      )
+
+  }
+
+  if("image" %in% background){
+
+    background_add_on$image <- ggpLayerImage(object)
+
+  }
+
+  ggplot2::ggplot(data = gp_coords, mapping = ggplot2::aes(x = x, y = y, color = gene_pattern)) +
+    background_add_on$image +
+    background_add_on$coords +
+    geom_point_fixed(size = pt_size, alpha = pt_alpha) +
+    ggplot2::theme_bw() +
+    titleNone() +
+    surfaceFrame(object) +
+    ggplot2::facet_wrap(
+      facets = stats::as.formula(stringr::str_c(". ~ ", facet_by)),
+      nrow = nrow,
+      ncol = ncol
+    ) +
+    ggplot2::theme(
+      strip.background = ggplot2::element_blank()
+    ) +
+    ggplot2::labs(color = "Pattern")
+
+}
+
+#' @rdname plotGenePattern
+#' @export
+
 plotGenePatterns <- function(object,
                              genes = NULL,
                              gene_patterns = NULL,
@@ -248,42 +340,6 @@ plotGenePatternBinarized <- function(object,
                       ) %>%
                       dplyr::select(-counts, -sample)
 
-                    if(base::any(c(dbscan_display, dbscan_remove))){
-
-                      dbscan_kept <-
-                        getGenePatternExtentDf(object, genes = gene) %>%
-                        dplyr::filter(area == "inside") %>%
-                        dplyr::pull(barcodes)
-
-                      binarized_kept <-
-                        dplyr::filter(df, bin_res == "Kept") %>%
-                        dplyr::pull(barcodes)
-
-                      dbscan_removed <-
-                        binarized_kept[!binarized_kept %in% dbscan_kept]
-
-                      if(base::isTRUE(dbscan_display)){
-
-                        val <- "Removed (DBSCAN)"
-
-                      } else {
-
-                        val <- "Removed"
-
-                      }
-
-                      df <-
-                        dplyr::mutate(
-                          .data = df,
-                          bin_res = dplyr::if_else(
-                            condition = barcodes %in% dbscan_removed,
-                            true = {{val}},
-                            false = bin_res
-                            )
-                        )
-
-                    }
-
                     base::return(df)
 
                   }) %>%
@@ -321,6 +377,7 @@ plotGenePatternBinarized <- function(object,
     ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
     ggplot2::theme_void() +
     ggplot2::labs(color = NULL) +
+    ggplot2::coord_equal() +
     scale_color_add_on(aes = "color", variable = filtered_df$bin_res,
                        clrp = "milo", clrp.adjust = c("Removed" = "lightgrey", "Removed (DBSCAN)" = "tomato", "Kept" = pt_clr))
 

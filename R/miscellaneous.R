@@ -119,10 +119,84 @@ exchangeImage <- function(object, image_dir, verbose = NULL){
       }
     )
 
-  object@images[[sample]] <- new_image
+  image_obj <- getImageObject(object)
+
+  image_obj@annotations <-
+    purrr::map(
+      .x = image_obj@annotations,
+      .f = function(img_ann){
+
+        img_ann@area$x <- img_ann@area$x * dim_fct[1]
+        img_ann@area$y <- img_ann@area$y * dim_fct[2]
+
+        return(img_ann)
+
+      }
+    )
+
+  image_obj@image <- new_image
+
+  object <- setImageObject(object, image_object = image_obj)
 
   give_feedback(msg = "Image exchanged.", verbose = verbose)
 
   return(object)
 
 }
+
+
+
+
+
+#' @title Obtain barcode spot distances
+#'
+#' @description Computes the distance from every barcode spot to every other
+#' barcode spot.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details The output data.frame has a number of rows that is equal to
+#' \code{nBarcodes(object)^2}
+#'
+#'
+#' @return A data.frame.
+#' @export
+#'
+#' @examples
+getBarcodeSpotDistances <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::give_feedback(
+    msg = "Computing barcode spot distances.",
+    verbose = verbose
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  bc_origin <- coords_df$barcodes
+  bc_destination <- coords_df$barcodes
+
+  distance_df <-
+    tidyr::expand_grid(bc_origin, bc_destination) %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y), by = "bc_origin") %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y), by = "bc_destination") %>%
+    dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  return(distance_df)
+
+}
+
+
+
+
+
+
+
+
+

@@ -37,6 +37,26 @@ getCoordsDf <- function(object, of_sample = NA){
 }
 
 
+
+#' @title Obtain coordinate range
+#'
+#' @description Extracts the range of the x- and y-coordinates.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A list of two vectors each of length 2.
+#' @export
+#'
+getCoordsRange <- function(object){
+
+  list(
+    x = getCoordsDf(object)$x %>% base::range(),
+    y = getCoordsDf(object)$y %>% base::range()
+  )
+
+}
+
+
 #' @rdname getCoordsDf
 #' @export
 getSegmentDf <- function(object, segment_names, of_sample = NA){
@@ -1100,15 +1120,161 @@ getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
 #' @return An image of class \emph{EBImage}.
 #' @export
 
-getImage <- function(object, of_sample = NA){
+getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, padding = 0){
 
   check_object(object)
 
+  confuns::are_vectors(
+    c("xrange", "yrange"),
+    mode = "numeric",
+    of.length = 2,
+    skip.allow = TRUE,
+    skip.val = NULL
+  )
+
+  confuns::is_value(x = padding, mode = "numeric")
+
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-  object@images[[of_sample]]
+  out <- object@images[[of_sample]]@image
+
+  if(base::is.null(out)){
+
+    stop("No image found.")
+
+  }
+
+  img_dims <- getImageDims(object)
+
+  actual_xmax <- img_dims[1]
+  actual_ymax <- img_dims[2]
+
+
+  # account for flipped image handling
+
+  if(base::is.numeric(xrange)){
+
+    if(padding < 1 && padding != 0){
+
+      padding_val <- (base::max(xrange) - base::min(xrange)) * padding
+
+    } else {
+
+      padding_val <- padding
+
+    }
+
+    xmin <- xrange[1] - padding
+
+    if(xmin < 0){ xmin <- 0 }
+
+    xmax <- xrange[2] + padding
+
+    if(xmax > actual_xmax){ xmax <- actual_xmax }
+
+    out <- out[xmin:xmax, , ]
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    # account for mirror inverted image handling
+    yrange <- c((actual_ymax - yrange[1]), (actual_ymax - yrange[2]))
+
+    if(padding < 1 && padding != 0){
+
+      padding_val <- (base::max(yrange) - base::min(yrange)) * padding
+
+    } else {
+
+      padding_val <- padding
+
+    }
+
+    ymax <- yrange[1] + padding_val
+
+    if(ymax > actual_ymax){ ymax <- actual_ymax }
+
+    ymin <- yrange[2] - padding_val
+
+    if(ymin < 0){ ymin <- 0}
+
+    out <- out[, ymin:ymax, ]
+
+  }
+
+  return(out)
 
 }
+
+#' @rdname getImage
+#' @export
+getImageDims <- function(object, xrange = NULL, yrange = NULL){
+
+  img <- object@images[[1]]@image
+
+  out <- base::dim(img@.Data)
+
+  return(out)
+
+}
+
+#' @rdname getImage
+#' @export
+getImageRange <- function(object, xrange = NULL, yrange = NULL){
+
+  out <- list()
+
+  img_dims <- getImageDims(object, xrange = xrange, yrange = yrange)
+
+  out$x <- c(0,img_dims[[1]])
+  out$y <- c(0,img_dims[[2]])
+
+  return(out)
+
+}
+
+#' @rdname getImage
+#' @export
+getImageRaster <- function(object, xrange = NULL, yrange = NULL, padding = 0){
+
+  img <-
+    getImage(object, xrange = xrange, yrange = yrange, padding = padding) %>%
+    grDevices::as.raster() %>%
+    magick::image_read()
+
+  return(img)
+
+}
+
+#' @rdname getImage
+#' @export
+getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
+
+  getImageRaster(object, xrange = xrange, yrange = yrange) %>%
+    magick::image_info()
+
+}
+
+
+
+#' @title Obtain object of class \code{HistologyImage}
+#'
+#' @description Extracts the S4-object. Do not confuse with \code{getImage()}
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Object of class \code{HistologyImage}
+#' @export
+#'
+getImageObject <- function(object){
+
+  object@images[[1]]
+
+}
+
+
+
 
 # -----
 # Slot: information -------------------------------------------------------
@@ -2198,4 +2364,41 @@ getGenesInteractive <- function(object){
 
 
 
+
+
+
+
+
+# misc --------------------------------------------------------------------
+
+getSpataObject <- function(obj_name, envir = .GlobalEnv){
+
+  if(base::exists(x = "name.spata.object", where = envir) && base::exists(name.spata.object)){
+
+    obj_name <- get(x = "name.spata.object", envir = envir)
+
+  } else if(!base::exists(x = obj_name, where = envir)){
+
+    obj_name <- NULL
+
+  }
+
+
+  if(!confuns::is_value(obj_name, mode = "character", verbose = FALSE)){
+
+    stop(
+      "Could not find spata object. Please specify argument `object` or store the
+       name of the spata object in a character value named `name.spata.object`
+      "
+    )
+
+  }
+
+  out <-
+    base::parse(text = obj_name) %>%
+    base::eval(envir = envir)
+
+  return(out)
+
+}
 

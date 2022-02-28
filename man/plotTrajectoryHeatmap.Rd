@@ -84,7 +84,7 @@ or by adding vertical lines.}
 
 \item{line_color}{Character value. Specifies the color of lines in the plot.}
 
-\item{line_size}{Numeric value. Specifies the transperancy
+\item{line_size}{Numeric value. Specifies the transparency
 and the thickness of lines in the plot.}
 
 \item{line_type}{Character value. Specifies the type of the lines. Use

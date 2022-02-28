@@ -334,9 +334,19 @@ setImage <- function(object, image, of_sample = ""){
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
-  object@images[[of_sample]] <- image
+  object@images[[of_sample]]@image <- image
 
   base::return(object)
+
+}
+
+setImageObject <- function(object, image_object){
+
+  sample_name<- getSampleNames(object)
+
+  object@images[[sample_name]] <- image_object
+
+  return(object)
 
 }
 

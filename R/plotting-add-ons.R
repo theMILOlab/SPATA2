@@ -26,6 +26,15 @@ legendColor <- function(...){
 }
 
 
+#' @title No axis titles
+#' @export
+titleNone <- function(){
+
+  ggplot2::theme(axis.title = ggplot2::element_blank())
+
+}
+
+
 
 
 #' @title Add frame of the sample

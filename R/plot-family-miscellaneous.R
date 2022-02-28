@@ -2183,7 +2183,7 @@ plotDeaHeatmap <- function(object,
 #'
 #' @export
 plotDeaDotPlot <- function(object,
-                           across,
+                           across = getDefaultGrouping(object, verbose = T, "across"),
                            across_subset = NULL,
                            relevel = NULL,
                            method_de = NULL,
@@ -2389,38 +2389,37 @@ plotSegmentation <- function(object,
   # data extraction
   plot_df <-
     getCoordsDf(object, of_sample = of_sample) %>%
-    joinWithFeatures(object, spata_df = ., features = "segmentation", verbose = FALSE)
+    joinWithFeatures(object, spata_df = ., features = color_by, verbose = FALSE)
 
   segment_df <-
-    dplyr::filter(plot_df, !segmentation %in% c("", "none")) %>%
+    dplyr::filter(plot_df, !(!!rlang::sym(color_by) %in% c("", "none", "unnamed"))) %>%
     tidyr::drop_na() %>%
-    dplyr::mutate(segmentation = base::factor(segmentation))
+    dplyr::mutate({{color_by}} := base::factor(!!rlang::sym(color_by)))
 
   #if(base::nrow(segment_df) == 0){base::stop(glue::glue("Sample {of_sample} has not been segmented yet."))}
 
   if(base::is.character(segment_subset)){
 
-    confuns::check_one_of(
-      input = segment_subset,
-      against = getSegmentNames(object, of_sample = of_sample)
-    )
-
     segment_df <-
-      dplyr::filter(segment_df, segmentation %in% {{segment_subset}})
+      confuns::check_across_subset(
+        df = segment_df,
+        across = color_by,
+        across.subset = segment_subset
+      )
 
   }
 
   if(base::isTRUE(encircle)){
 
     encircle_add_on <-
-      ggforce::geom_mark_hull(data = segment_df, mapping = ggplot2::aes(x = x, y = y, color = segmentation, fill = segmentation))
+      ggforce::geom_mark_hull(data = segment_df, mapping = ggplot2::aes(x = x, y = y, color = .data[[color_by]], fill = .data[[color_by]]))
 
     encircle_add_on <-
       ggplot2::layer(
         geom = ggforce::GeomMarkHull,
         data = segment_df,
         stat = "identity",
-        mapping = ggplot2::aes(x = x, y = y, color = segmentation, fill = segmentation),
+        mapping = ggplot2::aes(x = x, y = y, color = .data[[color_by]], fill = .data[[color_by]]),
         position = "identity",
         params = params_encircle
       )

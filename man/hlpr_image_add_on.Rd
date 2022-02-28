@@ -3,11 +3,14 @@
 \name{hlpr_image_add_on}
 \alias{hlpr_image_add_on}
 \alias{hlpr_image_add_on2}
+\alias{hlpr_image_to_df}
 \title{Provides the image as ggplot background}
 \usage{
 hlpr_image_add_on(object, display_image, of_sample)
 
 hlpr_image_add_on2(image)
+
+hlpr_image_to_df(img)
 }
 \arguments{
 \item{object}{A valid spata-object.}

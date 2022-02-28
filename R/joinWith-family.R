@@ -627,8 +627,44 @@ joinWithVariables <- function(object,
                               normalize = TRUE,
                               verbose = TRUE){
 
-  stopifnot(base::is.list(variables))
-  stopifnot(base::any(c("features", "genes", "gene_sets") %in% base::names(variables)))
+  if(base::is.list(x = variables)){
+
+    stopifnot(base::any(c("features", "genes", "gene_sets") %in% base::names(variables)))
+
+  } else {
+
+    variable_list <-
+      list(
+        "features" = base::character(),
+        "genes" = base::character(),
+        "gene_sets" = base::character()
+        )
+
+    for(v in variables){
+
+      if(isGene(object, v)){
+
+        variable_list$genes <- c(variable_list$genes, v) %>% base::unique()
+
+      } else if(isGeneSet(object, v)){
+
+        variable_list$gene_sets <- c(variable_list$gene_sets, v) %>% base::unique()
+
+      } else if(isFeature(object, v)){
+
+        variable_list$features <- c(variable_list$features, v) %>% base::unique()
+
+      }
+
+    }
+
+    variables <- purrr::discard(.x = variable_list, .p = ~ base::length(.x) == 0)
+
+  }
+
+
+
+
 
   if("features" %in% base::names(variables)){
 

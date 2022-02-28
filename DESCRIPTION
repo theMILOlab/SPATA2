@@ -26,6 +26,7 @@ Imports:
     lubridate,
     magick,
     magrittr,
+    paletteer,
     pheatmap,
     progress,
     purrr,
@@ -46,11 +47,17 @@ Imports:
     viridis,
     umap
 Collate: 
+    'S4-HistologyImage.R'
     'S4-documentation.R'
     'S4-generic-functions.R'
     'S4-programming-aid.R'
     'add-family.R'
     'adjust-family.R'
+    'annotateBarcodeSpots.R'
+    'annotateImage-UI.R'
+    'annotateImage-helper.R'
+    'annotateImage.R'
+    'as-family.R'
     'autoencoder-preliminary-functions.R'
     'autoencoder-preliminary-plotting-functions.R'
     'check-family-adjusting.R'
@@ -59,8 +66,6 @@ Collate:
     'checkpoint.R'
     'cnv-analysis.R'
     'compute-family.R'
-    'createAnnoation.R'
-    'create_annotation_ui.R'
     'create_family.R'
     'data.R'
     'dimensional-reduction.R'
@@ -98,6 +103,7 @@ Collate:
     'plot-family-summaries.R'
     'plot-family-surface.R'
     'plot-family-trajectory.R'
+    'plotSurfaceBase.R'
     'plotting-add-ons.R'
     'print-family.R'
     'process-seurat-object.R'

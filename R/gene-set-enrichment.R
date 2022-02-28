@@ -155,36 +155,63 @@ runGSEA <- function(object,
               )
 
               out <-
-                hypeR::hypeR(
-                  signature = signature,
-                  genesets = gene_set_list,
-                  test = test,
-                  background = background,
-                  power = power,
-                  absolute = absolute,
-                  fdr = fdr,
-                  pval = pval,
-                  quiet = quiet
-                )
+                base::tryCatch({
 
-              if(base::isTRUE(reduce)){
+                  hypeR::hypeR(
+                    signature = signature,
+                    genesets = gene_set_list,
+                    test = test,
+                    background = background,
+                    power = power,
+                    absolute = absolute,
+                    fdr = fdr,
+                    pval = pval,
+                    quiet = quiet
+                  )
 
-                out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
+                }, error = function(error){
+
+                  msg <-
+                    glue::glue(
+                      "Computing enrichment for group '{group}' resulted in an error: {error}."
+                    ) %>%
+                    base::as.character()
+
+                })
+
+              if(base::is.character(out)){
+
+                give_feedback(msg = out, fdb.fn = "warning")
+
+                out <- NA
+
+              } else {
+
+                if(base::isTRUE(reduce)){
+
+                  out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
+
+                }
+
+                out$data <-
+                  dplyr::mutate(
+                    .data = out$data,
+                    overlap_perc = overlap/geneset,
+                    label = base::as.factor(label)
+                  )
 
               }
-
-              out$data <-
-                dplyr::mutate(
-                  .data = out$data,
-                  overlap_perc = overlap/geneset,
-                  label = base::as.factor(label)
-                  )
 
               return(out)
 
             }
           ) %>%
-          purrr::set_names(nm = group_names)
+          purrr::set_names(nm = group_names) %>%
+          purrr::discard(.p = base::is.na)
+
+      } else {
+
+        give_feedback(msg = "GSEA results already present.", verbose = verbose)
 
       }
 

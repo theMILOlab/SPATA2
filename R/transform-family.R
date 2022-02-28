@@ -387,19 +387,17 @@ transformSeuratToSpata <- function(seurat_object,
       )
 
     # get image
-    image <-
+    image_object <-
       getFromSeurat(
-        return_value = seurat_object@images[[image_name]][1]@image,
+        return_value = seurat_object@images[[image_name]],
         error_handling = "warning",
         error_value = NULL,
         error_ref = "image"
       )
 
-    if(!base::is.null(image)){
+    if(!base::is.null(image_object)){
 
-      image <-
-        EBImage::Image(image, colormode = "Color") %>%
-        EBImage::transpose()
+      image_object <- asVisium(object = image_object)
 
     }
 
@@ -609,7 +607,11 @@ transformSeuratToSpata <- function(seurat_object,
 
   spata_object <-
     setCoordsDf(object = spata_object, coords_df = coords_df) %>%
-    setImage(object = ., image = image)
+    setImageObject(object = ., image = image_object)
+
+  spata_object <- flipImage(spata_object)
+
+  spata_object <- flipImageAndCoords(spata_object)
 
   # other lists
   spata_object@information <-
@@ -624,8 +626,8 @@ transformSeuratToSpata <- function(seurat_object,
   spata_object <-
     setActiveExpressionMatrix(spata_object, mtr_name = "scaled")
 
-  spata_object <-
-    computeGeneMetaData(object = spata_object, verbose = verbose)
+  #äspata_object <-
+  #  computeGeneMetaData(object = spata_object, verbose = verbose)
 
   spata_object@spatial <-
     magrittr::set_names(x = list(list()), value = sample_name)

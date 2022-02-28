@@ -131,7 +131,7 @@ renameFeatures <- function(object, ..., of_sample = NA){
 #'
 #'
 
-renameGroups <- function(object, discrete_feature, ..., of_sample = NA){
+renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_sample = NA){
 
   check_object(object)
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
@@ -167,19 +167,31 @@ renameGroups <- function(object, discrete_feature, ..., of_sample = NA){
 
   rename_input <- rename_input[rename_input %in% valid_rename_input]
 
-  if(base::any(base::table(base::names(rename_input)) > 1) |
-     base::any(base::names(rename_input) %in% group_names)){
-
-    stop("Every new name must be unique and must not exist in the current naming. Use mergeGroups() to merge groups.")
-
-  }
-
   # rename feature
   renamed_feature_df <-
     dplyr::mutate(
       .data = feature_df,
       {{discrete_feature}} := forcats::fct_recode(.f = !!rlang::sym(discrete_feature), !!!rename_input)
     )
+
+  if(discrete_feature %in% getAnnotationNames(object, verbose = FALSE)){
+
+    keep_levels <- c(keep_levels, "unnamed")
+
+  }
+
+  if(base::is.character(keep_levels)){
+
+    keep_levels <- base::unique(keep_levels)
+
+    all_levels <-
+      c(base::levels(renamed_feature_df[[discrete_feature]]), keep_levels) %>%
+      base::unique()
+
+    renamed_feature_df[[discrete_feature]] <-
+      base::factor(x = renamed_feature_df[[discrete_feature]], levels = all_levels)
+
+  }
 
   # rename dea list
   dea_list <- object@dea[[of_sample]][[discrete_feature]]
