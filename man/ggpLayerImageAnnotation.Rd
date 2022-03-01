@@ -31,13 +31,16 @@ Adds ggplot2 layer of polygons of structures that were annotated within the imag
 with \code{annotateImage()}.
 }
 \details{
-After the filtering by image annotation ID you can use a combination
-of the arguments \code{tags} and \code{test} to filter for the image annotations of
-interest. Input for argument \code{tags} specifies the tags of interest. With argument
+How to use arguments \code{tags} and \code{test} to specify
+the image annotations of interest:
+Input for argument \code{tags} specifies the tags of interest. With argument
 \code{test} set to \emph{'any'} you make the function include all image annotations
 that were tagged with at least one tag of the input for argument \code{tags}.
 If \code{test} is set to \emph{'all'} an image annotation must contain all
 tags of \code{tags} to be included.
+
+This filtering process happens in addition to / after the filtering by input for argument
+\code{ids}.
 }
 \note{
 Adds two additional layers to set the scales for the color- and

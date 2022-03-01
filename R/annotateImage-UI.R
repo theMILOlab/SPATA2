@@ -17,6 +17,8 @@ annotate_image_ui <- function(){
 
     shinydashboard::dashboardBody(
 
+      shinybusy::add_busy_spinner(spin = "cube-grid", color = "red"),
+
       shinydashboard::tabItems(
 
         shinydashboard::tabItem(

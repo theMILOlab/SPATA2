@@ -1,6 +1,106 @@
 
 
 
+
+
+process_ranges <- function(xrange = getImageRange(object)$x,
+                           yrange = getImageRange(object)$y,
+                           expand = 0,
+                           persp = "image",
+                           object){
+
+  expand_input <- expand
+
+  out <- list(xmin = xrange[1],
+              xmax = xrange[2],
+              ymin = yrange[1],
+              ymax = yrange[2]
+  )
+
+  img_dims <- getImageDims(object)
+
+  actual_xmax <- img_dims[1]
+  actual_ymax <- img_dims[2]
+
+  if(base::is.numeric(xrange)){
+
+
+    expand <- expand_input[1]
+
+    if(expand < 1 && expand != 0){
+
+      expand_val <- (base::max(xrange) - base::min(xrange)) * expand
+
+    } else {
+
+      expand_val <- expand
+
+    }
+
+    xmin <- xrange[1] - expand_val
+
+    if(xmin < 0){ xmin <- 0 }
+
+    xmax <- xrange[2] + expand_val
+
+    if(xmax > actual_xmax){ xmax <- actual_xmax }
+
+    out$xmin <- xmin
+    out$xmax <- xmax
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    if(persp == "image"){
+
+      yrange <- c((actual_ymax - yrange[1]), (actual_ymax - yrange[2]))
+
+    }
+
+    if(base::length(expand_input) == 2){
+
+      expand <- expand_input[2]
+
+    } else {
+
+      expand <- expand_input[1]
+
+    }
+
+    if(expand < 1 && expand != 0){
+
+      expand_val <- (base::max(yrange) - base::min(yrange)) * expand
+
+    } else {
+
+      expand_val <- expand
+
+    }
+
+    ymax <- yrange[1] + expand_val
+
+    if(ymax > actual_ymax){ ymax <- actual_ymax }
+
+    ymin <- yrange[2] - expand_val
+
+    if(ymin < 0){ ymin <- 0}
+
+    out$ymin <- ymin
+    out$ymax <- ymax
+
+  }
+
+  return(out)
+
+}
+
+
+
+
+
+
+
 #' @title Remove annotation
 #'
 #' @description Removes annotations within annotation variables.

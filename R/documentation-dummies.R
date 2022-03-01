@@ -244,11 +244,8 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param ids Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 #' interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.
 #'
-#' @param tags Character vector or NULL. If character, the image annotation tags of interest.
-#'
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
-#'
 #'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
@@ -257,8 +254,12 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' @param object A valid spata-object.
 #'
-#' @param padding Numeric value. If bigger than 0 creates a padding around the cropped image that never
-#' exceeds the actual limits of the image. Barcode spots are not affected.
+#' @param expand Numeric value. Specifies the extent to which the cropped image
+#' section is expanded. 0 as input leads to no expansion at all. Values lower than 1
+#' are considered in relation to the x- and yrange - e.g. \code{expand} = 0.5 expands the plot to 150%. Values
+#' bigger than 1 are considered as absolute - e.g. \code{expand} = 20 adds 20pixels on
+#' both sides of each axis respectively. If length of \code{expand} is 2 the first value
+#' is used to expand the x-axis, the second value is used to expand the y-axis.
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
@@ -268,6 +269,12 @@ seurat_object_dummy <- function(seurat_object){}
 #' are not included.
 #' @param simplify Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 #' to FALSE a list is returned.
+#'
+#' @param square Logical. If TRUE, the cropped section of the image that contains the annotated
+#' structure is forced into a square. If FALSE, the section is cropped according to the extent
+#' of the annotated structure and the input for argument \code{expand}.
+#'
+#' @param tags Character vector or NULL. If character, the image annotation tags of interest.
 #'
 #' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

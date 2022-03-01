@@ -62,11 +62,12 @@ Visium <- methods::setClass(Class = "Visium",
 #' captures the spatial extent of the identified structure.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
-#' @slot Image image. Cropped version of the annotated image that only contains
-#' the area where the annotated structure is located (plus padding). This slot is
+#' @slot image image. Cropped version of the annotated image that only contains
+#' the area where the annotated structure is located (plus expand). This slot is
 #' empty as long as the \code{ImageAnnotation} object is located in an
 #' object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
 #' or \code{getImageAnnotations()} adds the cropped image to the slot.
+#' @slot image_info list. List of infos around the image of slot @@image.
 #' @slot tags character. Tags that can be used to group iamge annotations in different manners.
 #' This can be a single or multiple strings.
 #'
@@ -76,6 +77,7 @@ ImageAnnotation <- methods::setClass(Class = "ImageAnnotation",
                                        area = "data.frame",
                                        id = "character",
                                        image = "Image",
+                                       image_info = "list",
                                        tags = "character"
                                      )
 )
@@ -226,14 +228,19 @@ getImageAnnotationTags <- function(object){
 #' @export
 #'
 
-getImageAnnotation <- function(object, id, add_image = TRUE, padding = 20, equal_range = FALSE){
+getImageAnnotation <- function(object,
+                               id,
+                               add_image = TRUE,
+                               expand = 0,
+                               square = FALSE){
 
   getImageAnnotations(
     object = object,
     ids = id,
     flatten = TRUE,
     add_image = add_image,
-    padding = padding
+    square = square,
+    expand = expand
     )
 
 }
@@ -250,13 +257,16 @@ getImageAnnotation <- function(object, id, add_image = TRUE, padding = 20, equal
 #' is occupied by the annotated structure is added to the \code{ImageAnnotation}
 #' object in slot @@image.
 #'
-#' @details After the filtering by image annotation ID you can use a combination
-#' of the arguments \code{tags} and \code{test} to filter for the image annotations of
-#' interest. Input for argument \code{tags} specifies the tags of interest. With argument
+#' @details How to use arguments \code{tags} and \code{test} to specify
+#' the image annotations of interest:
+#' Input for argument \code{tags} specifies the tags of interest. With argument
 #' \code{test} set to \emph{'any'} you make the function include all image annotations
 #' that were tagged with at least one tag of the input for argument \code{tags}.
 #' If \code{test} is set to \emph{'all'} an image annotation must contain all
 #' tags of \code{tags} to be included.
+#'
+#' This filtering process happens in addition to / after the filtering by input for argument
+#' \code{ids}.
 #'
 #' @return An object of class \code{ImageAnnotation}.
 #' @export
@@ -266,8 +276,8 @@ getImageAnnotations <- function(object,
                                 tags = NULL,
                                 test = "any",
                                 add_image = TRUE,
-                                padding = 0.05,
-                                equal_range = FALSE,
+                                expand = 0,
+                                square = FALSE,
                                 flatten = FALSE){
 
   img_annotations <- getImageObject(object)@annotations
@@ -319,7 +329,10 @@ getImageAnnotations <- function(object,
       xrange <- base::range(img_ann@area$x)
       yrange <- base::range(img_ann@area$y)
 
-      if(base::isTRUE(equal_range)){
+      xmean <- base::mean(xrange)
+      ymean <- base::mean(yrange)
+
+      if(base::isTRUE(square)){
 
         xdist <- xrange[2] - xrange[1]
 
@@ -327,11 +340,15 @@ getImageAnnotations <- function(object,
 
         if(xdist > ydist){
 
-          yrange <- c(yrange[1], (yrange[1] + xdist))
+          xdisth <- xdist/2
+
+          yrange <- c(ymean - xdisth, ymean + xdisth)
 
         } else {
 
-          xrange <- c(xrange[1], (xrange[1] + ydist))
+          ydisth <- ydist/2
+
+          xrange <- c(xmean - ydisth, xmean + ydisth)
 
         }
 
@@ -342,8 +359,39 @@ getImageAnnotations <- function(object,
           object = object,
           xrange = xrange,
           yrange = yrange,
-          padding = padding
+          expand = expand
         )
+
+      img_list <- list()
+
+      range_list <-
+        process_ranges(
+          xrange = xrange,
+          yrange = yrange,
+          expand = expand,
+          object = object
+        )
+
+      for(val in base::names(range_list)){
+
+        img_list[[val]] <- range_list[[val]]
+
+      }
+
+      img_list$xmax_parent <- getImageRange(object)$x[2]
+      img_list$ymax_parent <- getImageRange(object)$y[2]
+
+      img_list$ymin_coords <-
+        img_list$ymax_parent - img_list$ymax
+
+      img_list$ymax_coords <-
+        img_list$ymax_parent - img_list$ymin
+
+      img_list$expand <- expand
+
+      img_list$square <- square
+
+      img_ann@image_info <- img_list
 
       img_annotations[[nm]] <- img_ann
 
@@ -523,10 +571,14 @@ getImageAnnotationDf <- function(object,
     .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
     .f = function(img_ann){
 
+      tag <-
+        scollapse(string = img_ann@tags, sep = sep, last = last) %>%
+        base::as.character()
+
       out <-
         dplyr::mutate(
           .data = img_ann@area,
-          tags =  scollapse(string = img_ann@tags, sep = sep, last = last) %>% base::as.character() ,
+          tags = {{tag}},
           ids = img_ann@id %>% base::factor()
         ) %>%
           dplyr::select(ids, tags, dplyr::everything()) %>%
@@ -543,5 +595,139 @@ getImageAnnotationDf <- function(object,
 
 
 
+#' @title Plot image annotations
+#'
+#' @description Plots annotated
+#'
+#' @param plot Logical value. If TRUE, the plots are plotted immediately
+#' via \code{gridExtra.grid.arrange()} and the list of plots is returned
+#' invisibly. Else the list of plots is simply returned.
+#' @param display_title Logical value. If TRUE, the ID of each image annotation
+#' is plotted in the title.
+#' @param display_subtitle Logical value. If TRUE, the tags of each image annotation
+#' are plotted in the subtitle.
+#' @inherit argument_dummy params
+#'
+#' @inherit getImageAnnotations details
+#'
+#' @return A list of ggplots. Each slot contains a plot
+#' that visualizes an image annotation.
+#'
+#' @export
+#'
+plotImageAnnotations <- function(object,
+                                 ids = NULL,
+                                 tags = NULL,
+                                 test = "any",
+                                 expand = 0.05,
+                                 square = FALSE,
+                                 linecolor = "black",
+                                 linesize = 1.5,
+                                 linetype = "solid",
+                                 fill = "orange",
+                                 alpha = 0.25,
+                                 display_title = FALSE,
+                                 display_subtitle = TRUE,
+                                 ggpLayers = list(),
+                                 nrow = NULL,
+                                 ncol = NULL,
+                                 plot = TRUE,
+                                 ...){
 
+  img_annotations <-
+    getImageAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      expand = expand,
+      square = square
+    )
+
+  plist <-
+    purrr::map(
+      .x = img_annotations,
+      .f = function(img_ann){
+
+        image_raster <- grDevices::as.raster(x = img_ann@image)
+
+        img_info <- img_ann@image_info
+
+        plot_out <-
+          ggplot2::ggplot() +
+          ggplot2::theme_bw() +
+          ggplot2::annotation_raster(
+            raster = image_raster,
+            xmin = img_info$xmin,
+            ymin = img_info$ymin_coords,
+            xmax = img_info$xmax,
+            ymax = img_info$ymax_coords
+          ) +
+          ggplot2::geom_polygon(
+            data = img_ann@area,
+            mapping = ggplot2::aes(x = x, y = y),
+            size = linesize,
+            color = linecolor,
+            linetype = linetype,
+            alpha = alpha,
+            fill = fill
+          ) +
+          ggplot2::scale_x_continuous(limits = c(img_info$xmin, img_info$xmax), expand = c(0, 0)) +
+          ggplot2::scale_y_continuous(limits = c(img_info$ymin_coords, img_info$ymax_coords), expand = c(0,0)) +
+          ggplot2::coord_fixed() +
+          ggpLayerThemeCoords() +
+          ggpLayers
+
+        if(base::isTRUE(display_title)){
+
+          plot_out <-
+            plot_out +
+            ggplot2::labs(
+              title = stringr::str_c(
+                "Annotation ",
+                stringr::str_extract(img_ann@id, "\\d*$")
+              )) +
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+
+        }
+
+        if(base::isTRUE(display_subtitle)){
+
+          plot_out <-
+            plot_out +
+            ggplot2::labs(
+              subtitle = scollapse(
+                string = confuns::make_pretty_names(img_ann@tags),
+                sep = ", ",
+                last = " & "
+              ) %>% stringr::str_c("Tags: ", .)
+            ) +
+            ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
+
+
+        }
+
+        return(plot_out)
+
+      }
+    )
+
+  if(base::isTRUE(plot)){
+
+    gridExtra::grid.arrange(
+      grobs = plist,
+      nrow = nrow,
+      ncol = ncol
+    )
+
+    base::invisible(plist)
+
+  } else {
+
+    return(plist)
+
+  }
+
+
+}
 

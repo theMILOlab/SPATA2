@@ -157,6 +157,53 @@ loadCorrespondingSeuratObject <- function(object, verbose = NULL){
 }
 
 
+
+
+#' @title Exchange images
+#'
+#' @description Exchanges the image of the spata object by using
+#' the directories that have been set with \code{setImageDirLowres()} or
+#' \code{setImageDirHighres()} and scales the barcodes spots coordinates
+#' accordingly.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return An updated spata object.
+#' @export
+#'
+loadImageLowres <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  dir <- getImageDirLowres(object)
+
+  object <- exchangeImage(object, image_dir = dir)
+
+  return(object)
+
+}
+
+#' @rdname loadImageLowres
+#' @export
+loadImageHighres <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  dir <- getImageDirHighres(object)
+
+  object <- exchangeImage(object, image_dir = dir)
+
+  return(object)
+
+}
+
+
+
+
+
+
+
+
 #' @title Save corresponding objects
 #'
 #' @description Family of functions to save corresponding objects of different analysis
@@ -215,7 +262,7 @@ saveSpataObject <- function(object,
 
     })
 
-  if(base::is.character(directory_spata)){
+  if(base::is.character(directory_spata) & directory_spata != "not defined"){
 
     confuns::give_feedback(
       msg = glue::glue("Saving spata-object under '{directory_spata}'."),

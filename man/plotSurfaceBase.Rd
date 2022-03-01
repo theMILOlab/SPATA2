@@ -23,7 +23,7 @@ plotSurfaceBase(
   xrange = NULL,
   yrange = NULL,
   adjust_pt_size = TRUE,
-  padding = 0,
+  expand = 0,
   verbose = NULL,
   ...
 )
@@ -71,8 +71,12 @@ from x-coordinate 200 up to x-coordinate 500.}
 with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
 from x-coordinate 200 up to x-coordinate 500.}
 
-\item{padding}{Numeric value. If bigger than 0 creates a padding around the cropped image that never
-exceeds the actual limits of the image. Barcode spots are not affected.}
+\item{expand}{Numeric value. Specifies the extent to which the cropped image
+section is expanded. 0 as input leads to no expansion at all. Values lower than 1
+are considered in relation to the x- and yrange - e.g. \code{expand} = 0.5 expands the plot to 150%. Values
+bigger than 1 are considered as absolute - e.g. \code{expand} = 20 adds 20pixels on
+both sides of each axis respectively. If length of \code{expand} is 2 the first value
+is used to expand the x-axis, the second value is used to expand the y-axis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

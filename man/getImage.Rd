@@ -8,13 +8,13 @@
 \alias{getImageRasterInfo}
 \title{Obtain histology image}
 \usage{
-getImage(object, of_sample = NA, xrange = NULL, yrange = NULL, padding = 0)
+getImage(object, of_sample = NA, xrange = NULL, yrange = NULL, expand = 0)
 
 getImageDims(object, xrange = NULL, yrange = NULL)
 
 getImageRange(object, xrange = NULL, yrange = NULL)
 
-getImageRaster(object, xrange = NULL, yrange = NULL, padding = 0)
+getImageRaster(object, xrange = NULL, yrange = NULL, expand = 0)
 
 getImageRasterInfo(object, xrange = NULL, yrange = NULL)
 }

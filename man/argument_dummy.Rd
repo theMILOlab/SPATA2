@@ -54,8 +54,6 @@ the dendrogom is cut.}
 \item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
 
-\item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
-
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
 
@@ -67,8 +65,12 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 
 \item{object}{A valid spata-object.}
 
-\item{padding}{Numeric value. If bigger than 0 creates a padding around the cropped image that never
-exceeds the actual limits of the image. Barcode spots are not affected.}
+\item{expand}{Numeric value. Specifies the extent to which the cropped image
+section is expanded. 0 as input leads to no expansion at all. Values lower than 1
+are considered in relation to the x- and yrange - e.g. \code{expand} = 0.5 expands the plot to 150%. Values
+bigger than 1 are considered as absolute - e.g. \code{expand} = 20 adds 20pixels on
+both sides of each axis respectively. If length of \code{expand} is 2 the first value
+is used to expand the x-axis, the second value is used to expand the y-axis.}
 
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
@@ -78,6 +80,12 @@ are not included.}
 
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}
+
+\item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
+structure is forced into a square. If FALSE, the section is cropped according to the extent
+of the annotated structure and the input for argument \code{expand}.}
+
+\item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

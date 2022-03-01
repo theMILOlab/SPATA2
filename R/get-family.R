@@ -1120,7 +1120,7 @@ getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
 #' @return An image of class \emph{EBImage}.
 #' @export
 
-getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, padding = 0){
+getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, expand = 0){
 
   check_object(object)
 
@@ -1132,7 +1132,7 @@ getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, paddi
     skip.val = NULL
   )
 
-  confuns::is_value(x = padding, mode = "numeric")
+  confuns::is_vec(x = expand, mode = "numeric", max.length = 2)
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
@@ -1144,64 +1144,25 @@ getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, paddi
 
   }
 
-  img_dims <- getImageDims(object)
+  if(base::is.null(xrange)){ xrange <- getImageRange(object)$x }
 
-  actual_xmax <- img_dims[1]
-  actual_ymax <- img_dims[2]
+  if(base::is.null(yrange)){ yrange <- getImageRange(object)$y }
 
+  range_list <-
+    process_ranges(
+      xrange = xrange,
+      yrange = yrange,
+      expand = expand,
+      object = object
+    )
 
-  # account for flipped image handling
+  xmin <- range_list$xmin
+  xmax <- range_list$xmax
+  ymin <- range_list$ymin
+  ymax <- range_list$ymax
 
-  if(base::is.numeric(xrange)){
-
-    if(padding < 1 && padding != 0){
-
-      padding_val <- (base::max(xrange) - base::min(xrange)) * padding
-
-    } else {
-
-      padding_val <- padding
-
-    }
-
-    xmin <- xrange[1] - padding
-
-    if(xmin < 0){ xmin <- 0 }
-
-    xmax <- xrange[2] + padding
-
-    if(xmax > actual_xmax){ xmax <- actual_xmax }
-
-    out <- out[xmin:xmax, , ]
-
-  }
-
-  if(base::is.numeric(yrange)){
-
-    # account for mirror inverted image handling
-    yrange <- c((actual_ymax - yrange[1]), (actual_ymax - yrange[2]))
-
-    if(padding < 1 && padding != 0){
-
-      padding_val <- (base::max(yrange) - base::min(yrange)) * padding
-
-    } else {
-
-      padding_val <- padding
-
-    }
-
-    ymax <- yrange[1] + padding_val
-
-    if(ymax > actual_ymax){ ymax <- actual_ymax }
-
-    ymin <- yrange[2] - padding_val
-
-    if(ymin < 0){ ymin <- 0}
-
-    out <- out[, ymin:ymax, ]
-
-  }
+  out <- out[xmin:xmax, , ]
+  out <- out[, ymin:ymax, ]
 
   return(out)
 
@@ -1236,10 +1197,10 @@ getImageRange <- function(object, xrange = NULL, yrange = NULL){
 
 #' @rdname getImage
 #' @export
-getImageRaster <- function(object, xrange = NULL, yrange = NULL, padding = 0){
+getImageRaster <- function(object, xrange = NULL, yrange = NULL, expand = 0){
 
   img <-
-    getImage(object, xrange = xrange, yrange = yrange, padding = padding) %>%
+    getImage(object, xrange = xrange, yrange = yrange, expand = expand) %>%
     grDevices::as.raster() %>%
     magick::image_read()
 
@@ -1257,6 +1218,59 @@ getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
 }
 
 
+#' @title Obtain image directories
+#'
+#' @description Extracts image directories.
+#'
+#' @inherit argument_dummy params
+#' @param check Logical value. If set to TRUE the input directory is checked
+#' for validity and it is checked if the file actually exists.
+#'
+#' @return Character value.
+#' @export
+#'
+getImageDirLowres <- function(object, check = TRUE){
+
+  dir_lowres <- getImageObject(object)@dir_lowres
+
+  if(base::is.na(dir_lowres)){
+
+    stop("Could not find directory to low resolution image. Set with `setImageLowresDir()`.")
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_lowres, type = "files")
+
+  }
+
+  return(dir_lowres)
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirHighres <- function(object, check = TRUE){
+
+  dir_highres <- getImageObject(object)@dir_highres
+
+  if(base::is.na(dir_highres)){
+
+    stop("Could not find directory to high resolution image. Set with `setImageHighresDir()`.")
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_highres, type = "files")
+
+  }
+
+  return(dir_highres)
+
+}
 
 #' @title Obtain object of class \code{HistologyImage}
 #'
@@ -1272,6 +1286,74 @@ getImageObject <- function(object){
   object@images[[1]]
 
 }
+
+
+#' @title Obtain image sections by barcode spot
+#'
+#' @description Cuts out the area of the image that is covered by each barcode.
+#'
+#' @param barcodes Characte vector or NULL. If character, subsets the barcodes
+#' of interest. If NULL, all barcodes are considered.
+#' @inherit argument_dummy params
+#'
+#' @return A named list. Each slot is named after one barcode. The content is
+#' another list that contains the barcode specific image section as well
+#' as the x- and y-ranges that were used to crop the section.
+#'
+#' @export
+#'
+getImageSectionsByBarcode <- function(object, barcodes = NULL, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  dist_val <-
+    getBarcodeSpotDistances(object) %>%
+    dplyr::filter(bc_origin != bc_destination) %>%
+    dplyr::group_by(bc_origin) %>%
+    dplyr::filter(distance == base::min(distance)) %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(mean_dist = base::mean(distance)) %>%
+    dplyr::pull(mean_dist)
+
+  dist_valh <- dist_val/2
+
+  coords_df <- getCoordsDf(object)
+
+  if(base::is.character(barcodes)){
+
+    coords_df <- dplyr::filter(coords_df, barcodes %in% {{barcodes}})
+
+  }
+
+  barcodes <- coords_df$barcodes
+
+  img_list <-
+    purrr::set_names(
+      x = base::vector(mode = "list", length = base::nrow(coords_df)),
+      nm = barcodes
+    )
+
+  pb <- confuns::create_progress_bar(total = base::length(barcodes))
+
+  for(bcsp in barcodes){
+
+    if(base::isTRUE(verbose)){ pb$tick() }
+
+    bcsp_df <- dplyr::filter(coords_df, barcodes == bcsp)
+
+    xrange <- c((bcsp_df$x - dist_valh), (bcsp_df$x + dist_valh))
+    yrange <- c((bcsp_df$y - dist_valh), (bcsp_df$y + dist_valh))
+
+    img <- getImage(object, xrange = xrange, yrange = yrange)
+
+    img_list[[bcsp]] <- list(image = img, xrange = xrange, yrange = yrange, barcode = bcsp)
+
+  }
+
+  return(img_list)
+
+}
+
 
 
 

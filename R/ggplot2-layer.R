@@ -1,6 +1,27 @@
 
 
 
+#' @title Add coordinates theme
+#'
+#' @description Adds a theme to the plot that displays the coordinates of
+#' the tissue.
+#'
+#' @return List.
+#' @export
+#'
+ggpLayerThemeCoords <- function(){
+
+    list(
+      ggplot2::theme_bw(),
+      ggplot2::theme(
+        panel.grid = ggplot2::element_blank(),
+        axis.title = ggplot2::element_blank()
+      )
+    )
+
+}
+
+
 #' @title Initiate ggplot2 layering
 #'
 #' @description Initiates a ggplot object to which \code{ggpLayer}-
@@ -100,8 +121,8 @@ ggpLayerImage <- function(object = "object"){
 
 #' @title Set plot limits
 #'
-#' @description Sets the limits of a ggplot based on the coordinate
-#' range or the image range of the spata object.
+#' @description Sets the limits on the x- and y-axis of a ggplot based on the coordinate
+#' range or the image range.
 #'
 #' @inherit argument_dummy
 #'
@@ -175,9 +196,7 @@ ggpLayerImageAnnotation <- function(object = "object",
       object = object,
       ids = ids,
       tags = tags,
-      test = test,
-      sep = sep,
-      last = last
+      test = test
     )
 
   out <- list()

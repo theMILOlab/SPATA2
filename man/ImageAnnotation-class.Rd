@@ -19,11 +19,13 @@ captures the spatial extent of the identified structure.}
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}
 
-\item{\code{Image}}{image. Cropped version of the annotated image that only contains
-the area where the annotated structure is located (plus padding). This slot is
+\item{\code{image}}{image. Cropped version of the annotated image that only contains
+the area where the annotated structure is located (plus expand). This slot is
 empty as long as the \code{ImageAnnotation} object is located in an
 object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
 or \code{getImageAnnotations()} adds the cropped image to the slot.}
+
+\item{\code{image_info}}{list. List of infos around the image of slot @image.}
 
 \item{\code{tags}}{character. Tags that can be used to group iamge annotations in different manners.
 This can be a single or multiple strings.}

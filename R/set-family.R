@@ -350,6 +350,61 @@ setImageObject <- function(object, image_object){
 
 }
 
+#' @title Set image directories
+#'
+#' @description Sets image directories that facilitate image exchanges.
+#'
+#' @inherit argument_dummy params
+#' @param dir_lowres,dir_highres Character value. The file directories to
+#' the corresponding images.
+#' @param check Logical value. If set to TRUE the input directory is checked
+#' for validity and it is checked if the file actually exists.
+#'
+#' @return An updated spata object.
+#' @export
+#'
+setImageDirLowres <- function(object, dir_lowres, check = TRUE){
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_lowres, type = "files")
+
+  }
+
+  img_object <- getImageObject(object)
+
+  img_object@dir_lowres <- dir_lowres
+
+  object <- setImageObject(object, image_object = img_object)
+
+  return(object)
+
+}
+
+#' @rdname setImageDirLowres
+#' @export
+setImageDirHighres <- function(object, dir_highres, check = TRUE){
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_highres, type = "files")
+
+  }
+
+  img_object <- getImageObject(object)
+
+  img_object@dir_highres <- dir_highres
+
+  object <- setImageObject(object, image_object = img_object)
+
+  return(object)
+
+}
+
+
+
+
+
 
 # Slot: information -------------------------------------------------------
 

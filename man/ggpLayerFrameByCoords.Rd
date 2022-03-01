@@ -16,8 +16,8 @@ ggpLayerFrameByImage(object = "object")
 List.
 }
 \description{
-Sets the limits of a ggplot based on the coordinate
-range or the image range of the spata object.
+Sets the limits on the x- and y-axis of a ggplot based on the coordinate
+range or the image range.
 }
 \note{
 Always adds \code{ggplot2::coord_equal()}.

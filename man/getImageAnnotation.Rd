@@ -4,13 +4,21 @@
 \alias{getImageAnnotation}
 \title{Obtain object of class \code{ImageAnnotation}}
 \usage{
-getImageAnnotation(object, id, add_image = TRUE, padding = 20)
+getImageAnnotation(object, id, add_image = TRUE, expand = 0, square = FALSE)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{padding}{Numeric value. If bigger than 0 creates a padding around the cropped image that never
-exceeds the actual limits of the image. Barcode spots are not affected.}
+\item{expand}{Numeric value. Specifies the extent to which the cropped image
+section is expanded. 0 as input leads to no expansion at all. Values lower than 1
+are considered in relation to the x- and yrange - e.g. \code{expand} = 0.5 expands the plot to 150%. Values
+bigger than 1 are considered as absolute - e.g. \code{expand} = 20 adds 20pixels on
+both sides of each axis respectively. If length of \code{expand} is 2 the first value
+is used to expand the x-axis, the second value is used to expand the y-axis.}
+
+\item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
+structure is forced into a square. If FALSE, the section is cropped according to the extent
+of the annotated structure and the input for argument \code{expand}.}
 }
 \value{
 An object of class \code{ImageAnnotation}.

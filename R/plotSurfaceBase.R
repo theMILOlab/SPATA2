@@ -1,45 +1,12 @@
 
 
-pad_ranges <- function(xrange = NULL, yrange = NULL, padding = 0, object){
 
-  out <- list()
 
-  img_dims <- getImageDims(object)
 
-  actual_xmax <- img_dims[1]
-  actual_ymax <- img_dims[2]
 
-  if(base::is.numeric(xrange)){
 
-    xmin <- xrange[1] - padding
 
-    if(xmin < 0){ xmin <- 0 }
 
-    xmax <- xrange[2] + padding
-
-    if(xmax > actual_xmax){ xmax <- actual_xmax }
-
-    out$xrange <- c(xmin, xmax)
-
-  }
-
-  if(base::is.numeric(yrange)){
-
-    ymin <- yrange[1] - padding
-
-    if(ymin < 0){ ymin <- 0}
-
-    ymax <- yrange[2] + padding
-
-    if(ymax > actual_ymax){ ymax <- actual_ymax }
-
-    out$yrange <- c(ymin, ymax)
-
-  }
-
-  return(out)
-
-}
 
 #' @title Plot surface with R base plotting
 #'
@@ -71,7 +38,7 @@ plotSurfaceBase <- function(object,
                             xrange = NULL,
                             yrange = NULL,
                             adjust_pt_size = TRUE,
-                            padding = 0,
+                            expand = 0,
                             verbose = NULL,
                             ...
                             ){
@@ -129,14 +96,14 @@ plotSurfaceBase <- function(object,
         object = object,
         xrange = xrange,
         yrange = yrange,
-        padding = padding
+        expand = expand
         )
 
     ranges <-
-      pad_ranges(
+      process_ranges(
         xrange = xrange,
         yrange = yrange,
-        padding = padding,
+        expand = expand,
         object = object
       )
 
