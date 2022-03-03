@@ -159,64 +159,104 @@ check_image_annoation_tags <- function(object, tags = NULL, ...){
 
 
 
-# fns ---------------------------------------------------------------------
 
+# a -----------------------------------------------------------------------
 
-#' @title Obtain image annotations ids
+#' @title Add image annotation
 #'
-#' @description Extracts image annotation IDs as a character vector.
+#' @description Creates and adds an object of class \code{ImageAnnotation}.
 #'
-#' @inherit argument_dummy
+#' @param area_df A data.frame that contains at least two numeric variables named
+#' \emph{x} and \emph{y}.
 #'
-#' @return Character vector.
+#' @return An updated spata object.
 #' @export
 #'
-getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
+addImageAnnotation <- function(object, tags, area_df){
 
-  if(nImageAnnotations(object) >= 1){
+  confuns::check_data_frame(
+    df = area_df,
+    var.class = list(x = "numeric", y = "numeric")
+  )
 
-    out <-
-      purrr::map_chr(
-        .x = getImageAnnotations(object, tags = tags, test = test, add_image = FALSE),
-        .f = ~ .x@id
-      ) %>%
-      base::unname()
+  number <- lastImageAnnotation(object) + 1
 
-  } else {
+  id <- stringr::str_c("img_ann_", number)
 
-    out <- base::character(0)
+  img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
 
-  }
+  image_obj <- getImageObject(object)
 
-  return(out)
+  image_obj@annotations[[id]] <- img_ann
+
+  object <- setImageObject(object, image_obj)
+
+  return(object)
 
 }
 
 
-#' @title Obtain image annotations tags
+
+
+# c -----------------------------------------------------------------------
+
+#' @title Count image annotation tags
 #'
-#' @description Extracts all unique tags with which image annotations
-#' have been tagged.
+#' @description Counts image annotations by tags. See details for more
+#' information.
 #'
+#' @param tags Character vector or list or NULL. If character vector only image
+#' annotations that pass the "tag test" are included in the counting process. If
+#' list, every slot should be a character vector of tag names that are counted
+#' as combinations.
 #' @inherit argument_dummy
+#' @param collapse Characer value. Given to argument \code{collapse} of
+#'  \code{sttringr::str_c()} if input for argument \code{tags} is a list.
 #'
-#' @return Character vector.
+#' @return A data.frame with two variables: \emph{tags} and \emph{n}
 #' @export
 #'
-getImageAnnotationTags <- function(object){
+countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
-  if(nImageAnnotations(object) >= 1){
+  check_image_annoation_tags(object, tags)
+
+  if(base::is.list(tags)){
+
+    tags.list <-
+      purrr::flatten(.x = tags) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    check_image_annoation_tags(object, tags = tags.list, ref.input = "`tags.list`")
+
+    out <-
+      tibble::tibble(
+        n = purrr::map_int(.x = tags, .f = function(tag_combo){
+
+          getImageAnnotations(object, tags = tag_combo, test = "all", add_image = FALSE) %>%
+            base::length()
+
+        }
+        ),
+        tags = purrr::map_chr(.x = tags, .f = ~ stringr::str_c(.x, collapse = collapse)),
+      ) %>%
+      dplyr::select(tags, n)
+
+  } else {
 
     out <-
       purrr::map(
-        .x = getImageAnnotations(object, add_image = FALSE),
+        .x = getImageAnnotations(object, tags = tags, test = "any", add_image = FALSE),
         .f = ~ .x@tags
       ) %>%
-      purrr::flatten_chr()
-
-  } else {
-
-    out <- base::character(0)
+      purrr::flatten() %>%
+      purrr::flatten_chr() %>%
+      base::table() %>%
+      base::as.data.frame() %>%
+      magrittr::set_names(value = c("tag", "n")) %>%
+      tibble::as_tibble() %>%
+      dplyr::group_by(tag) %>%
+      dplyr::summarise(n = base::sum(n))
 
   }
 
@@ -225,6 +265,41 @@ getImageAnnotationTags <- function(object){
 }
 
 
+
+# d -----------------------------------------------------------------------
+
+#' @title Discard image annotations
+#'
+#' @description Discards image annotations drawn with \code{annotateImage()}.
+#'
+#' @param ids Character vector. The IDs of the image annotations to
+#' be discarded.
+#' @inherit argument_dummy params
+#'
+#' @return An updated spata object.
+#' @export
+#'
+discardImageAnnotations <- function(object, ids){
+
+  confuns::check_one_of(
+    input = ids,
+    against = getImageAnnotationIds(object)
+  )
+
+  io <- getImageObject(bject)
+
+  io@annotations <- confuns::lselect(io@annotations, -dplyr::all_of(ids))
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+
+}
+
+
+
+
+# g -----------------------------------------------------------------------
 
 
 #' @title Obtain object of class \code{ImageAnnotation}
@@ -251,12 +326,94 @@ getImageAnnotation <- function(object,
     add_image = add_image,
     square = square,
     expand = expand
-    )
+  )
 
 }
 
 
+#' @title Obtain barcodes by image annotation tag
+#'
+#' @description Extracts the barcodes that are covered by the extent of the
+#' annotated structures of interest.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
+#' @export
+#'
+getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
 
+  getImageAnnotations(
+    object = object,
+    ids = NULL,
+    tags = tags,
+    test = test
+  ) %>%
+    purrr::map(.f = ~ .x@barcodes) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+}
+
+
+#' @title Obtain image annotation data.frame
+#'
+#' @description Extracts the coordinates of the polygon that was drawn to
+#' annotate structures in the histology image in a data.frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame that contains the grouping variables \emph{id} and \emph{tags}
+#' and the numeric variables \emph{x} and \emph{y}. The returned data.frame can contain
+#' the spatial extent of more than just
+#' one annotated structure, depending on the input of arguments \code{ids}, \code{tags}
+#' and \code{test}. The variable \emph{ids} of the returned data.frame is used to
+#' uniquely mark the belonging of each x- and y-coordinate.
+#'
+#' @inherit getImageAnnotations details
+#'
+#' @note The variables \emph{x} and \emph{y} correspond to the coordinates
+#' with which the annotated structure was denoted in \code{annotateImage()}. These
+#' coordinates are not to be confused with coordinates of barcode spots that might
+#' fall in to the area of the polygon! To obtain a data.frame of barcode spots that fall in to
+#' the spatial extent of the annotated structure along with their coordinates
+#' use \code{getImageAnnotationBarcodes()}.
+#'
+#' @export
+#'
+getImageAnnotationDf <- function(object,
+                                 ids = NULL,
+                                 tags = NULL,
+                                 test = "any",
+                                 sep = " & ",
+                                 last = " & "){
+
+  purrr::map_df(
+    .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
+    .f = function(img_ann){
+
+      tag <-
+        scollapse(string = img_ann@tags, sep = sep, last = last) %>%
+        base::as.character()
+
+      out <-
+        dplyr::mutate(
+          .data = img_ann@area,
+          tags = {{tag}},
+          ids = img_ann@id %>% base::factor()
+        ) %>%
+        dplyr::select(ids, tags, dplyr::everything()) %>%
+        tibble::as_tibble()
+
+      out$tags <- base::as.factor(out$tags)
+
+      return(out)
+
+    }
+  )
+
+}
 
 #' @title Obtain list of \code{ImageAnnotation}-objects
 #'
@@ -461,84 +618,61 @@ getImageAnnotations <- function(object,
 }
 
 
-
-
-#' @title Number of image annotations
+#' @title Obtain image annotations ids
 #'
-#' @description Returns the number of \code{ImageAnnotation}-objects in the sample.
+#' @description Extracts image annotation IDs as a character vector.
 #'
-#' @inherit argument_dummy params
+#' @inherit argument_dummy
 #'
-#' @return Numeric value.
-#'
+#' @return Character vector.
 #' @export
-nImageAnnotations <- function(object){
+#'
+getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
 
-  getImageAnnotations(object, add_image = FALSE) %>%
-    base::length()
+  if(nImageAnnotations(object) >= 1){
+
+    out <-
+      purrr::map_chr(
+        .x = getImageAnnotations(object, tags = tags, test = test, add_image = FALSE),
+        .f = ~ .x@id
+      ) %>%
+      base::unname()
+
+  } else {
+
+    out <- base::character(0)
+
+  }
+
+  return(out)
 
 }
 
 
-
-
-#' @title Count image annotation tags
+#' @title Obtain image annotations tags
 #'
-#' @description Counts image annotations by tags. See details for more
-#' information.
+#' @description Extracts all unique tags with which image annotations
+#' have been tagged.
 #'
-#' @param tags Character vector or list or NULL. If character vector only image
-#' annotations that pass the "tag test" are included in the counting process. If
-#' list, every slot should be a character vector of tag names that are counted
-#' as combinations.
 #' @inherit argument_dummy
-#' @param collapse Characer value. Given to argument \code{collapse} of
-#'  \code{sttringr::str_c()} if input for argument \code{tags} is a list.
 #'
-#' @return A data.frame with two variables: \emph{tags} and \emph{n}
+#' @return Character vector.
 #' @export
 #'
-countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
+getImageAnnotationTags <- function(object){
 
-  check_image_annoation_tags(object, tags)
-
-  if(base::is.list(tags)){
-
-    tags.list <-
-      purrr::flatten(.x = tags) %>%
-      purrr::flatten_chr() %>%
-      base::unique()
-
-    check_image_annoation_tags(object, tags = tags.list, ref.input = "`tags.list`")
-
-    out <-
-      tibble::tibble(
-        n = purrr::map_int(.x = tags, .f = function(tag_combo){
-
-          getImageAnnotations(object, tags = tag_combo, test = "all", add_image = FALSE) %>%
-            base::length()
-
-        }
-        ),
-        tags = purrr::map_chr(.x = tags, .f = ~ stringr::str_c(.x, collapse = collapse)),
-      ) %>%
-      dplyr::select(tags, n)
-
-  } else {
+  if(nImageAnnotations(object) >= 1){
 
     out <-
       purrr::map(
-        .x = getImageAnnotations(object, tags = tags, test = "any", add_image = FALSE),
+        .x = getImageAnnotations(object, add_image = FALSE),
         .f = ~ .x@tags
       ) %>%
-      purrr::flatten() %>%
-      purrr::flatten_chr() %>%
-      base::table() %>%
-      base::as.data.frame() %>%
-      magrittr::set_names(value = c("tag", "n")) %>%
-      tibble::as_tibble() %>%
-      dplyr::group_by(tag) %>%
-      dplyr::summarise(n = base::sum(n))
+      purrr::flatten_chr()
+
+  } else {
+
+    out <- base::character(0)
 
   }
 
@@ -550,100 +684,131 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
 
 
-#' @title Add image annotation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# m -----------------------------------------------------------------------
+
+
+#' @title Image annotation and barcode intersection
 #'
-#' @description Creates and adds an object of class \code{ImageAnnotation}.
-#'
-#' @param area_df A data.frame that contains at least two numeric variables named
-#' \emph{x} and \emph{y}.
-#'
-#' @return An updated spata object.
-#' @export
-#'
-addImageAnnotation <- function(object, tags, area_df){
-
-  confuns::check_data_frame(
-    df = area_df,
-    var.class = list(x = "numeric", y = "numeric")
-  )
-
-  number <- lastImageAnnotation(object) + 1
-
-  id <- stringr::str_c("img_ann_", number)
-
-  img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
-
-  image_obj <- getImageObject(object)
-
-  image_obj@annotations[[id]] <- img_ann
-
-  object <- setImageObject(object, image_obj)
-
-  return(object)
-
-}
-
-
-
-
-#' @title Obtain image annotation data.frame
-#'
-#' @description Extracts the coordinates of the polygon that was drawn to
-#' annotate structures in the histology image in a data.frame.
+#' @description Creates a data.frame that maps the tags of image annotations
+#' to the barcodes that were covered by the spatial extent of the respective
+#' image annotation.
 #'
 #' @inherit argument_dummy params
+#' @param merge Logical value. If TRUE, the results are merged in a single variable.
+#' @param merge_drop Logical value. If TRUE and \code{merge} is TRUE, all image-annotation-
+#' tag-variables are dropped.
+#' @param merge_name Character value. The name of the merged variable.
+#' @param merge_missing Character value. The value that is assigned to barcodes that
+#' do not fall in the extent of any image annotation.
+#' @param merge_sep Character value. The string with which the image annotation tags
+#' are separated with while being merged.
 #'
-#' @return A data.frame that contains the grouping variables \emph{id} and \emph{tags}
-#' and the numeric variables \emph{x} and \emph{y}. The returned data.frame can contain
-#' the spatial extent of more than just
-#' one annotated structure, depending on the input of arguments \code{ids}, \code{tags}
-#' and \code{test}. The variable \emph{ids} of the returned data.frame is used to
-#' uniquely mark the belonging of each x- and y-coordinate.
-#'
-#' @inherit getImageAnnotations details
-#'
-#' @note The variables \emph{x} and \emph{y} correspond to the coordinates
-#' with which the annotated structure was denoted in \code{annotateImage()}. These
-#' coordinates are not to be confused with coordinates of barcode spots that might
-#' fall in to the area of the polygon! To obtain a data.frame of barcode spots that fall in to
-#' the spatial extent of the annotated structure along with their coordinates
-#' use \code{getImageAnnotationBarcodes()}.
-#'
+#' @return A data.frame.
 #' @export
 #'
-getImageAnnotationDf <- function(object,
-                                 ids = NULL,
-                                 tags = NULL,
-                                 test = "any",
-                                 sep = " & ",
-                                 last = " & "){
+mapImageAnnotationTags <- function(object,
+                                   ids = NULL,
+                                   tags = NULL,
+                                   merge = TRUE,
+                                   merge_name = "img_annotations",
+                                   merge_missing = "none",
+                                   merge_sep = "_",
+                                   merge_drop = FALSE){
 
-  purrr::map_df(
-    .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
-    .f = function(img_ann){
+    img_annotations <-
+      getImageAnnotations(
+        object = object,
+        ids = ids,
+        tags = tags,
+        add_image = FALSE,
+        add_barcodes = TRUE
+      )
 
-      tag <-
-        scollapse(string = img_ann@tags, sep = sep, last = last) %>%
-        base::as.character()
+    img_ann_tags <- getImageAnnotationTags(object)
 
-      out <-
-        dplyr::mutate(
-          .data = img_ann@area,
-          tags = {{tag}},
-          ids = img_ann@id %>% base::factor()
-        ) %>%
-          dplyr::select(ids, tags, dplyr::everything()) %>%
-          tibble::as_tibble()
+    spata_df <- getSpataDf(object)
 
-      out$tags <- base::as.factor(out$tags)
+    for(img_ann_tag in img_ann_tags){
 
-      return(out)
+      barcodes <-
+        getImageAnnotationBarcodes(
+          object = object,
+          tags = img_ann_tag,
+          test = "any"
+        )
+
+      spata_df[[img_ann_tag]] <-
+        dplyr::if_else(
+          condition = spata_df$barcodes %in% barcodes,
+          true = img_ann_tag,
+          false = NA_character_
+        )
 
     }
-  )
+
+    if(base::isTRUE(merge)){
+
+      confuns::are_values(c("merge_name", "merge_sep", "merge_missing"), mode = "character")
+
+      if(merge_name %in% base::colnames(spata_df)){
+
+        ref <- scollapse(base::colnames(spata_df), last = "' or '")
+
+        stop(
+          glue::glue(
+            "Input for argument 'merge_name' must not be '{ref}'."
+          )
+        )
+
+      }
+
+      spata_df <-
+        tidyr::unite(
+          data = spata_df,
+          col = {{merge_name}},
+          dplyr::all_of(img_ann_tags),
+          na.rm = TRUE,
+          remove = merge_drop,
+          sep = merge_sep
+        ) %>%
+        dplyr::mutate(
+          {{merge_name}} := stringr::str_replace(!!rlang::sym(merge_name), pattern = "^$", replacement = merge_missing)
+        )
+
+    }
+
+    return(spata_df)
 
 }
 
+
+
+# p -----------------------------------------------------------------------
 
 
 #' @title Plot image annotations
@@ -799,126 +964,8 @@ plotImageAnnotations <- function(object,
 
 
 
-#' @title Image annotation and barcode intersection
-#'
-#' @description Creates a data.frame that maps the tags of image annotations
-#' to the barcodes that were covered by the spatial extent of the respective
-#' image annotation.
-#'
-#' @inherit argument_dummy params
-#' @param merge Logical value. If TRUE, the results are merged in a single variable.
-#' @param merge_drop Logical value. If TRUE and \code{merge} is TRUE, all image-annotation-
-#' tag-variables are dropped.
-#' @param merge_name Character value. The name of the merged variable.
-#' @param merge_missing Character value. The value that is assigned to barcodes that
-#' do not fall in the extent of any image annotation.
-#' @param merge_sep Character value. The string with which the image annotation tags
-#' are separated with while being merged.
-#'
-#' @return A data.frame.
-#' @export
-#'
-mapImageAnnotationTags <- function(object,
-                                   ids = NULL,
-                                   tags = NULL,
-                                   merge = TRUE,
-                                   merge_name = "img_annotations",
-                                   merge_missing = "none",
-                                   merge_sep = "_",
-                                   merge_drop = FALSE){
+# r -----------------------------------------------------------------------
 
-    img_annotations <-
-      getImageAnnotations(
-        object = object,
-        ids = ids,
-        tags = tags,
-        add_image = FALSE,
-        add_barcodes = TRUE
-      )
-
-    img_ann_tags <- getImageAnnotationTags(object)
-
-    spata_df <- getSpataDf(object)
-
-    for(img_ann_tag in img_ann_tags){
-
-      barcodes <-
-        getImageAnnotationBarcodes(
-          object = object,
-          tags = img_ann_tag,
-          test = "any"
-        )
-
-      spata_df[[img_ann_tag]] <-
-        dplyr::if_else(
-          condition = spata_df$barcodes %in% barcodes,
-          true = img_ann_tag,
-          false = NA_character_
-        )
-
-    }
-
-    if(base::isTRUE(merge)){
-
-      confuns::are_values(c("merge_name", "merge_sep", "merge_missing"), mode = "character")
-
-      if(merge_name %in% base::colnames(spata_df)){
-
-        ref <- scollapse(base::colnames(spata_df), last = "' or '")
-
-        stop(
-          glue::glue(
-            "Input for argument 'merge_name' must not be '{ref}'."
-          )
-        )
-
-      }
-
-      spata_df <-
-        tidyr::unite(
-          data = spata_df,
-          col = {{merge_name}},
-          dplyr::all_of(img_ann_tags),
-          na.rm = TRUE,
-          remove = merge_drop,
-          sep = merge_sep
-        ) %>%
-        dplyr::mutate(
-          {{merge_name}} := stringr::str_replace(!!rlang::sym(merge_name), pattern = "^$", replacement = merge_missing)
-        )
-
-    }
-
-    return(spata_df)
-
-}
-
-
-
-#' @title Obtain barcodes by image annotation tag
-#'
-#' @description Extracts the barcodes that are covered by the extent of the
-#' annotated structures of interest.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Character vector.
-#'
-#' @export
-#'
-getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
-
-    getImageAnnotations(
-      object = object,
-      ids = NULL,
-      tags = tags,
-      test = test
-    ) %>%
-    purrr::map(.f = ~ .x@barcodes) %>%
-    purrr::flatten_chr() %>%
-    base::unique()
-
-}
 
 
 
@@ -970,33 +1017,7 @@ renameImageAnnotationId <- function(object, id, new_id){
 
 
 
-#' @title Discard image annotations
-#'
-#' @description Discards image annotations drawn with \code{annotateImage()}.
-#'
-#' @param ids Character vector. The IDs of the image annotations to
-#' be discarded.
-#' @inherit argument_dummy params
-#'
-#' @return An updated spata object.
-#' @export
-#'
-discardImageAnnotations <- function(object, ids){
 
-  confuns::check_one_of(
-    input = ids,
-    against = getImageAnnotationIds(object)
-  )
-
-  io <- getImageObject(bject)
-
-  io@annotations <- confuns::lselect(io@annotations, -dplyr::all_of(ids))
-
-  object <- setImageObject(object, image_object = io)
-
-  return(object)
-
-}
 
 
 

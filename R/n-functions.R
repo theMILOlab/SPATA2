@@ -45,3 +45,20 @@ nGenes <- function(object, mtr_name = NULL){
 }
 
 
+#' @title Number of image annotations
+#'
+#' @description Returns the number of \code{ImageAnnotation}-objects in the sample.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value.
+#'
+#' @export
+nImageAnnotations <- function(object){
+
+  getImageAnnotations(object, add_image = FALSE) %>%
+    base::length()
+
+}
+
+
