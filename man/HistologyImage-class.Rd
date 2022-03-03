@@ -28,5 +28,10 @@ named \emph{x} and a variable named \emph{y} representing a grid.}
 of the same class.}
 
 \item{\code{image}}{Image.}
+
+\item{\code{info}}{list. A flexible list that is supposed to store miscellaneous
+information around the image.}
+
+\item{\code{misc}}{list. A flexible list for miscellaneous input.}
 }}
 

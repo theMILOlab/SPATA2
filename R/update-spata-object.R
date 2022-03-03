@@ -356,8 +356,6 @@ updateSpataObject <- function(object,
 
     new_image <- Visium()
 
-    object <- flipCoords(object)
-
     new_image@coordinates <- getCoordsDf(object)
 
     if(base::class(object@images[[1]]) == "Image"){
@@ -365,6 +363,10 @@ updateSpataObject <- function(object,
       new_image@image <- object@images[[1]]
 
     }
+
+    object@images[[sample_name]] <- new_image
+
+    object <- flipCoords(object)
 
     msg <-
       c("We have aligned the surface plotting to the mechanism used by other packages.
@@ -376,9 +378,7 @@ updateSpataObject <- function(object,
     give_feedback(
       msg = msg,
       verbose = verbose
-      )
-
-    object@images[[sample_name]] <- new_image
+    )
 
   }
 

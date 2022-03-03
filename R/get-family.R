@@ -1302,7 +1302,7 @@ getImageObject <- function(object){
 #'
 #' @export
 #'
-getImageSectionsByBarcode <- function(object, barcodes = NULL, verbose = NULL){
+getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -1344,7 +1344,7 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, verbose = NULL){
     xrange <- c((bcsp_df$x - dist_valh), (bcsp_df$x + dist_valh))
     yrange <- c((bcsp_df$y - dist_valh), (bcsp_df$y + dist_valh))
 
-    img <- getImage(object, xrange = xrange, yrange = yrange)
+    img <- getImage(object, xrange = xrange, yrange = yrange, expand = 0)
 
     img_list[[bcsp]] <- list(image = img, xrange = xrange, yrange = yrange, barcode = bcsp)
 

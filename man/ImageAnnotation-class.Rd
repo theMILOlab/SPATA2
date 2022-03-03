@@ -27,6 +27,8 @@ or \code{getImageAnnotations()} adds the cropped image to the slot.}
 
 \item{\code{image_info}}{list. List of infos around the image of slot @image.}
 
+\item{\code{misc}}{list. A flexible list for miscellaneous input.}
+
 \item{\code{tags}}{character. Tags that can be used to group iamge annotations in different manners.
 This can be a single or multiple strings.}
 }}

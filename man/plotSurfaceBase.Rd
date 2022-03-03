@@ -7,6 +7,7 @@
 plotSurfaceBase(
   object,
   color_by = NULL,
+  alpha_by = NULL,
   pt_alpha = 0.9,
   pt_color = "grey",
   pt_clrp = "milo",

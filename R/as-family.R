@@ -46,6 +46,10 @@ methods::setMethod(
 
     new_object@info$flipped <- FALSE
 
+    new_object@misc$scale.factor <- object@scale.factors
+    new_object@misc$assay <- object@assay
+    new_object@misc$spot.radius <- object@spot.radius
+
     return(new_object)
 
   }

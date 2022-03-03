@@ -58,8 +58,14 @@ plotSurface <- function(object,
 
   # 1. Control --------------------------------------------------------------
 
+  # work around pt_alpha
+  scale_alpha <- base::is.character(alpha_by)
+
   # lazy check
   hlpr_assign_arguments(object)
+
+  if(scale_alpha){ pt_alpha <- NULL }
+
 
   check_pt(pt_size, pt_alpha, pt_clrsp)
   check_display(display_title, display_image)

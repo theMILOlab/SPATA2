@@ -1,4 +1,6 @@
 
+image_class <- "Image"
+base::attr(x = image_class, which = "package") <- "EBImage"
 
 #' @title The HistologyImage - Class
 #'
@@ -15,6 +17,9 @@
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
 #' @slot image Image.
+#' @slot info list. A flexible list that is supposed to store miscellaneous
+#' information around the image.
+#' @slot misc list. A flexible list for miscellaneous input.
 #'
 #' @export
 HistologyImage <- methods::setClass(Class = "HistologyImage",
@@ -26,7 +31,8 @@ HistologyImage <- methods::setClass(Class = "HistologyImage",
                                       grid = "data.frame",
                                       id = "character",
                                       info = "list",
-                                      image = "Image"
+                                      image = image_class,
+                                      misc = "list"
                                     ))
 
 #' @title The Visium - Class
@@ -60,6 +66,8 @@ Visium <- methods::setClass(Class = "Visium",
 #' @slot area data.frame. A data.frame that contains at least the numeric
 #' variables \emph{x} and \emph{y}. Data corresponds to the polygong that
 #' captures the spatial extent of the identified structure.
+#' @barcodes character. Character vector of barcodes that fall into the polygon
+#' that encircles the annotated structure.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
 #' @slot image image. Cropped version of the annotated image that only contains
@@ -68,16 +76,18 @@ Visium <- methods::setClass(Class = "Visium",
 #' object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
 #' or \code{getImageAnnotations()} adds the cropped image to the slot.
 #' @slot image_info list. List of infos around the image of slot @@image.
+#' @slot misc list. A flexible list for miscellaneous input.
 #' @slot tags character. Tags that can be used to group iamge annotations in different manners.
 #' This can be a single or multiple strings.
 #'
-#' @examples
 ImageAnnotation <- methods::setClass(Class = "ImageAnnotation",
                                      slots = list(
                                        area = "data.frame",
+                                       barcodes = "character",
                                        id = "character",
-                                       image = "Image",
+                                       image = image_class,
                                        image_info = "list",
+                                       misc = "list",
                                        tags = "character"
                                      )
 )
@@ -258,14 +268,20 @@ getImageAnnotation <- function(object,
 #' object in slot @@image.
 #'
 #' @details How to use arguments \code{tags} and \code{test} to specify
-#' the image annotations of interest:
-#' Input for argument \code{tags} specifies the tags of interest. With argument
-#' \code{test} set to \emph{'any'} you make the function include all image annotations
-#' that were tagged with at least one tag of the input for argument \code{tags}.
-#' If \code{test} is set to \emph{'all'} an image annotation must contain all
-#' tags of \code{tags} to be included.
+#' the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the image annotations of interest. There are three options:
 #'
-#' This filtering process happens in addition to / after the filtering by input for argument
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be indluded, an image annotation
+#' must be tagged with all of the input tags and must not be tagged with anything else.
+#'
+#' Note that the filtering process happens in addition to / after the filtering by input for argument
 #' \code{ids}.
 #'
 #' @return An object of class \code{ImageAnnotation}.
@@ -275,6 +291,7 @@ getImageAnnotations <- function(object,
                                 ids = NULL,
                                 tags = NULL,
                                 test = "any",
+                                add_barcodes = TRUE,
                                 add_image = TRUE,
                                 expand = 0,
                                 square = FALSE,
@@ -294,6 +311,8 @@ getImageAnnotations <- function(object,
 
   }
 
+  base::stopifnot(base::length(test) == 1)
+
   if(base::is.character(tags)){
 
     check_image_annoation_tags(object, tags)
@@ -303,13 +322,24 @@ getImageAnnotations <- function(object,
         .x = img_annotations,
         .p = function(img_ann){
 
-          if(test == "any"){
+          if(test == "any" | test == 1){
 
             out <- base::any(tags %in% img_ann@tags)
 
-          } else if(test == "all"){
+          } else if(test == "all" | test == 2){
 
             out <- base::all(tags %in% img_ann@tags)
+
+          } else if(test == "identical" | test == 3){
+
+            tags_input <- base::sort(tags)
+            tags_img_ann <- base::sort(img_ann@tags)
+
+            out <- base::identical(tags_input, tags_img_ann)
+
+          } else {
+
+            stop("Invalid input for argument `test`. Must be either 'any', 'all' or 'identical'.")
 
           }
 
@@ -320,11 +350,13 @@ getImageAnnotations <- function(object,
 
   }
 
-  if(base::isTRUE(add_image)){
+  coords_df <- getCoordsDf(object)
 
-    for(nm in base::names(img_annotations)){
+  for(nm in base::names(img_annotations)){
 
-      img_ann <- img_annotations[[nm]]
+    img_ann <- img_annotations[[nm]]
+
+    if(base::isTRUE(add_image)){
 
       xrange <- base::range(img_ann@area$x)
       yrange <- base::range(img_ann@area$y)
@@ -393,9 +425,28 @@ getImageAnnotations <- function(object,
 
       img_ann@image_info <- img_list
 
-      img_annotations[[nm]] <- img_ann
+    }
+
+    if(base::isTRUE(add_barcodes)){
+
+      polygon_df <- img_ann@area
+
+      barcodes_pos <-
+        sp::point.in.polygon(
+          point.x = coords_df$x, # x coordinates of all spatial positions
+          point.y = coords_df$y, # y coordinates of all spatial positions
+          pol.x = polygon_df$x, # x coordinates of the segments vertices
+          pol.y = polygon_df$y
+        )
+
+      barcodes_to_add <-
+        coords_df$barcodes[barcodes_pos != 0]
+
+      img_ann@barcodes <- barcodes_to_add
 
     }
+
+    img_annotations[[nm]] <- img_ann
 
   }
 
@@ -606,6 +657,8 @@ getImageAnnotationDf <- function(object,
 #' is plotted in the title.
 #' @param display_subtitle Logical value. If TRUE, the tags of each image annotation
 #' are plotted in the subtitle.
+#' @param encircle Logical value. If TRUE, are polygon is drawn around the
+#' exact extent of the annotated structure (as was drawn in \code{annotateImage()}).
 #' @inherit argument_dummy params
 #'
 #' @inherit getImageAnnotations details
@@ -621,6 +674,7 @@ plotImageAnnotations <- function(object,
                                  test = "any",
                                  expand = 0.05,
                                  square = FALSE,
+                                 encircle = TRUE,
                                  linecolor = "black",
                                  linesize = 1.5,
                                  linetype = "solid",
@@ -653,6 +707,25 @@ plotImageAnnotations <- function(object,
 
         img_info <- img_ann@image_info
 
+        if(base::isTRUE(encircle)){
+
+          encircle_add_on <-
+            ggplot2::geom_polygon(
+              data = img_ann@area,
+              mapping = ggplot2::aes(x = x, y = y),
+              size = linesize,
+              color = linecolor,
+              linetype = linetype,
+              alpha = alpha,
+              fill = fill
+            )
+
+        } else {
+
+          encircle_add_on <- list()
+
+        }
+
         plot_out <-
           ggplot2::ggplot() +
           ggplot2::theme_bw() +
@@ -663,15 +736,7 @@ plotImageAnnotations <- function(object,
             xmax = img_info$xmax,
             ymax = img_info$ymax_coords
           ) +
-          ggplot2::geom_polygon(
-            data = img_ann@area,
-            mapping = ggplot2::aes(x = x, y = y),
-            size = linesize,
-            color = linecolor,
-            linetype = linetype,
-            alpha = alpha,
-            fill = fill
-          ) +
+          encircle_add_on +
           ggplot2::scale_x_continuous(limits = c(img_info$xmin, img_info$xmax), expand = c(0, 0)) +
           ggplot2::scale_y_continuous(limits = c(img_info$ymin_coords, img_info$ymax_coords), expand = c(0,0)) +
           ggplot2::coord_fixed() +
@@ -730,4 +795,213 @@ plotImageAnnotations <- function(object,
 
 
 }
+
+
+
+
+#' @title Image annotation and barcode intersection
+#'
+#' @description Creates a data.frame that maps the tags of image annotations
+#' to the barcodes that were covered by the spatial extent of the respective
+#' image annotation.
+#'
+#' @inherit argument_dummy params
+#' @param merge Logical value. If TRUE, the results are merged in a single variable.
+#' @param merge_drop Logical value. If TRUE and \code{merge} is TRUE, all image-annotation-
+#' tag-variables are dropped.
+#' @param merge_name Character value. The name of the merged variable.
+#' @param merge_missing Character value. The value that is assigned to barcodes that
+#' do not fall in the extent of any image annotation.
+#' @param merge_sep Character value. The string with which the image annotation tags
+#' are separated with while being merged.
+#'
+#' @return A data.frame.
+#' @export
+#'
+mapImageAnnotationTags <- function(object,
+                                   ids = NULL,
+                                   tags = NULL,
+                                   merge = TRUE,
+                                   merge_name = "img_annotations",
+                                   merge_missing = "none",
+                                   merge_sep = "_",
+                                   merge_drop = FALSE){
+
+    img_annotations <-
+      getImageAnnotations(
+        object = object,
+        ids = ids,
+        tags = tags,
+        add_image = FALSE,
+        add_barcodes = TRUE
+      )
+
+    img_ann_tags <- getImageAnnotationTags(object)
+
+    spata_df <- getSpataDf(object)
+
+    for(img_ann_tag in img_ann_tags){
+
+      barcodes <-
+        getImageAnnotationBarcodes(
+          object = object,
+          tags = img_ann_tag,
+          test = "any"
+        )
+
+      spata_df[[img_ann_tag]] <-
+        dplyr::if_else(
+          condition = spata_df$barcodes %in% barcodes,
+          true = img_ann_tag,
+          false = NA_character_
+        )
+
+    }
+
+    if(base::isTRUE(merge)){
+
+      confuns::are_values(c("merge_name", "merge_sep", "merge_missing"), mode = "character")
+
+      if(merge_name %in% base::colnames(spata_df)){
+
+        ref <- scollapse(base::colnames(spata_df), last = "' or '")
+
+        stop(
+          glue::glue(
+            "Input for argument 'merge_name' must not be '{ref}'."
+          )
+        )
+
+      }
+
+      spata_df <-
+        tidyr::unite(
+          data = spata_df,
+          col = {{merge_name}},
+          dplyr::all_of(img_ann_tags),
+          na.rm = TRUE,
+          remove = merge_drop,
+          sep = merge_sep
+        ) %>%
+        dplyr::mutate(
+          {{merge_name}} := stringr::str_replace(!!rlang::sym(merge_name), pattern = "^$", replacement = merge_missing)
+        )
+
+    }
+
+    return(spata_df)
+
+}
+
+
+
+#' @title Obtain barcodes by image annotation tag
+#'
+#' @description Extracts the barcodes that are covered by the extent of the
+#' annotated structures of interest.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
+#' @export
+#'
+getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
+
+    getImageAnnotations(
+      object = object,
+      ids = NULL,
+      tags = tags,
+      test = test
+    ) %>%
+    purrr::map(.f = ~ .x@barcodes) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+}
+
+
+
+#' @title Rename image annotation ID
+#'
+#' @description Renames image annotation created with \code{annotateImage()}.
+#'
+#' @param id Character value. The current ID of the image annotation to be
+#' renamed.
+#' @param new_id Character value. The new ID of the image annotation.
+#' @param inherit argument_dummy params
+#'
+#' @return An updates spata object.
+#' @export
+#'
+renameImageAnnotationId <- function(object, id, new_id){
+
+  confuns::are_values(c("id", "new_id"), mode = "character")
+
+  check_image_annoation_ids(object, ids = id)
+
+  img_ann_ids <- getImageAnnotationIds(object)
+
+  confuns::check_none_of(
+    input = new_id,
+    against = img_ann_ids,
+    ref.against = "image annotation IDs"
+  )
+
+  io <- getImageObject(object)
+
+  img_ann_names <- base::names(io@annotations)
+
+  img_ann_pos <- base::which(img_ann_names == id)
+
+  img_ann <- io@annotations[[id]]
+
+  img_ann@id <- new_id
+
+  io@annotations[[img_ann_pos]] <- img_ann
+
+  base::names(io@annotations)[img_ann_pos] <- new_id
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+
+}
+
+
+
+#' @title Discard image annotations
+#'
+#' @description Discards image annotations drawn with \code{annotateImage()}.
+#'
+#' @param ids Character vector. The IDs of the image annotations to
+#' be discarded.
+#' @inherit argument_dummy params
+#'
+#' @return An updated spata object.
+#' @export
+#'
+discardImageAnnotations <- function(object, ids){
+
+  confuns::check_one_of(
+    input = ids,
+    against = getImageAnnotationIds(object)
+  )
+
+  io <- getImageObject(bject)
+
+  io@annotations <- confuns::lselect(io@annotations, -dplyr::all_of(ids))
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+
+}
+
+
+
+
+
+
+
 

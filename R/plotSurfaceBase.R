@@ -22,6 +22,7 @@
 #'
 plotSurfaceBase <- function(object,
                             color_by = NULL,
+                            alpha_by = NULL,
                             pt_alpha = 0.9,
                             pt_color = "grey",
                             pt_clrp = "milo",
@@ -43,7 +44,13 @@ plotSurfaceBase <- function(object,
                             ...
                             ){
 
+  # work around pt_alpha
+  scale_alpha <- base::is.character(alpha_by)
+
+  # lazy check
   hlpr_assign_arguments(object)
+
+  if(scale_alpha){ pt_alpha <- NULL }
 
   confuns::are_vectors(
     c("xrange", "yrange"),
@@ -142,43 +149,8 @@ plotSurfaceBase <- function(object,
 
   if(base::is.character(color_by)){
 
-    coords_df <-
-      joinWithVariables(
-        object = object,
-        variables = color_by,
-        spata_df = coords_df,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        verbose = verbose
-      )
-
-    if(base::is.numeric(coords_df[[color_by]])){
-
-      n_color <- 20
-      colors <- paletteer::paletteer_c(palette = stringr::str_c("viridis::", pt_clrsp), n = n_color)
-
-      # Transform the numeric variable in bins
-      rank <-
-        base::cut(coords_df[[color_by]], n_color) %>%
-        base::as.numeric() %>%
-        base::as.factor()
-
-      col_input <- colors[rank]
-
-    } else {
-
-      colors <-
-        confuns::color_vector(
-          clrp = pt_clrp,
-          names = base::levels(coords_df[[color_by]]),
-          clrp.adjust = clrp_adjust
-          )
-
-      col_input <- base::unname(colors[coords_df[[color_by]]])
-
-    }
-
     # plot
+    graphics::plot.new()
     graphics::par(pty = "s", ...)
     graphics::plot(
       x = coords_df$x,
@@ -203,18 +175,24 @@ plotSurfaceBase <- function(object,
 
     }
 
-    graphics::points(
-      x = coords_df$x,
-      y = coords_df$y,
-      pch = 19,
-      cex = pt_size,
-      col = ggplot2::alpha(col_input, alpha = pt_alpha),
-      asp = 1
+    addPointsBase(
+      object = object,
+      color_by = color_by,
+      alpha_by = alpha_by,
+      pt_alpha = pt_alpha,
+      pt_size = pt_size,
+      pt_clrsp = pt_clrsp,
+      smooth = smooth,
+      smooth_span = smooth_span,
+      pt_clrp = pt_clrp,
+      xrange = xrange,
+      yrange = yrange
     )
 
   } else {
 
     # plot
+    graphics::plot.new()
     graphics::par(pty = "s", ...)
     graphics::plot(
       x = coords_df$x,
@@ -280,7 +258,7 @@ plotSurfaceBase <- function(object,
 #' @return A plot that is immediately plotted.
 #' @export
 #'
-plotImage <- function(object, xrange = NULL, yrange = NULL){
+plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 
   img <- getImageRaster(object, xrange = xrange, yrange = yrange)
 
@@ -312,8 +290,8 @@ plotImage <- function(object, xrange = NULL, yrange = NULL){
 
   }
 
-  graphics::par(pty = "s")
-
+  graphics::plot.new()
+  graphics::par(pty = "s", ...)
   graphics::plot(
     x = coords_df$x,
     y = coords_df$y,
@@ -337,6 +315,106 @@ plotImage <- function(object, xrange = NULL, yrange = NULL){
 
 
 
+
+
+#' @title Add points to base surface plot
+#'
+#' @description Adds a point layer to a base surface plot.
+#'
+#' @inherit argument_dummy params
+#' @param scale_alpha
+#'
+#' @return
+#' @export
+#'
+#' @examples
+addPointsBase <- function(object,
+                          color_by,
+                          alpha_by = NULL,
+                          pt_alpha = 0.75,
+                          pt_size = 1,
+                          pt_clrp = "default",
+                          pt_clrsp = "inferno",
+                          smooth = NULL,
+                          smooth_span = NULL,
+                          xrange = NULL,
+                          yrange = NULL){
+
+  # work around pt_alpha
+  scale_alpha <- base::is.character(alpha_by)
+
+  # lazy check
+  hlpr_assign_arguments(object)
+
+  if(scale_alpha){ pt_alpha <- NULL }
+
+
+  coords_df <- getCoordsDf(object)
+
+  if(base::is.numeric(xrange)){
+
+    coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
+
+  }
+
+  coords_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = coords_df,
+      variables = base::unique(c(color_by, alpha_by)),
+      smooth = smooth,
+      smooth_span = smooth_span,
+      verbose = FALSE
+    )
+
+  if(base::is.numeric(coords_df[[color_by]])){
+
+    n_color <- 20
+    colors <- paletteer::paletteer_c(palette = stringr::str_c("viridis::", pt_clrsp), n = n_color)
+
+    # Transform the numeric variable in bins
+    rank <-
+      base::cut(coords_df[[color_by]], n_color) %>%
+      base::as.numeric() %>%
+      base::as.factor()
+
+    col_input <- colors[rank]
+
+  } else {
+
+    colors <-
+      confuns::color_vector(
+        clrp = pt_clrp,
+        names = base::levels(coords_df[[color_by]]),
+        clrp.adjust = clrp_adjust
+      )
+
+    col_input <- base::unname(colors[coords_df[[color_by]]])
+
+  }
+
+  if(base::is.character(alpha_by) && base::is.numeric(coords_df[[alpha_by]])){
+
+    pt_alpha <- coords_df[[alpha_by]]
+
+  }
+
+  graphics::points(
+    x = coords_df$x,
+    y = coords_df$y,
+    pch = 19,
+    cex = pt_size,
+    col = ggplot2::alpha(col_input, alpha = pt_alpha),
+    asp = 1
+  )
+
+}
 
 
 

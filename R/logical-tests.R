@@ -42,6 +42,26 @@ isFlipped <- function(object){
 
 
 #' @export
+isNumericVariable <- function(object, variable){
+
+  all_numeric_vars <-
+    c(
+      getGenes(object),
+      getGeneSets(object),
+      getFeatureNames(object, of_class = "numeric") %>% base::unname()
+    )
+
+  out <- variable %in% all_numeric_vars
+
+  return(out)
+
+
+}
+
+
+
+
+#' @export
 containsImage <- function(object){
 
   img <- object@images[[1]]

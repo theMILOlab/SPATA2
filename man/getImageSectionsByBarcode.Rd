@@ -4,13 +4,20 @@
 \alias{getImageSectionsByBarcode}
 \title{Obtain image sections by barcode spot}
 \usage{
-getImageSectionsByBarcode(object, barcodes = NULL, verbose = NULL)
+getImageSectionsByBarcode(object, barcodes = NULL, expand = 0, verbose = NULL)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
 \item{barcodes}{Characte vector or NULL. If character, subsets the barcodes
 of interest. If NULL, all barcodes are considered.}
+
+\item{expand}{Numeric value. Specifies the extent to which the cropped image
+section is expanded. 0 as input leads to no expansion at all. Values lower than 1
+are considered in relation to the x- and yrange - e.g. \code{expand} = 0.5 expands the plot to 150%. Values
+bigger than 1 are considered as absolute - e.g. \code{expand} = 20 adds 20pixels on
+both sides of each axis respectively. If length of \code{expand} is 2 the first value
+is used to expand the x-axis, the second value is used to expand the y-axis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
