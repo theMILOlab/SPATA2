@@ -682,33 +682,6 @@ getImageAnnotationTags <- function(object){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # m -----------------------------------------------------------------------
 
 
@@ -740,7 +713,7 @@ mapImageAnnotationTags <- function(object,
                                    merge_sep = "_",
                                    merge_drop = FALSE){
 
-    img_annotations <-
+    img_annotations <-O
       getImageAnnotations(
         object = object,
         ids = ids,
@@ -963,10 +936,7 @@ plotImageAnnotations <- function(object,
 
 
 
-
 # r -----------------------------------------------------------------------
-
-
 
 
 #' @title Rename image annotation ID
@@ -1014,9 +984,6 @@ renameImageAnnotationId <- function(object, id, new_id){
   return(object)
 
 }
-
-
-
 
 
 

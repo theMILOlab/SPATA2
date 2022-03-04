@@ -11,36 +11,15 @@
 #'
 #' @return An updated spata-object.
 #'
+#' @export
+#'
 flipCoords <- function(object){
 
-  img_dims <- getImageDims(object)
-
-  y_length <- img_dims[2]
+  yrange <- getImageRange(object)$y
 
   coords_df <- getCoordsDf(object)
 
-  mn_old <- coords_df$y %>% base::min()
-  mx_old <- coords_df$y %>% base::max()
-
-  y_d_o <- y_length - mx_old
-
-  y_coords <- coords_df$y * -1
-
-  coords_df$y <- scales::rescale(x = y_coords, to = c(mn_old, mx_old))
-
-  mx_new <- coords_df$y %>% base::max()
-
-  dif <- base::abs(mn_old - y_d_o)
-
-  if(isFlipped(object)){
-
-    coords_df$y <- coords_df$y - dif
-
-  } else {
-
-    coords_df$y <- coords_df$y + dif
-
-  }
+  coords_df$y <- yrange[2] - coords_df$y + yrange[1]
 
   object <- setCoordsDf(object, coords_df)
 

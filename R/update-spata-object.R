@@ -364,6 +364,8 @@ updateSpataObject <- function(object,
 
     }
 
+    new_image@info$flipped <- FALSE
+
     object@images[[sample_name]] <- new_image
 
     object <- flipCoords(object)
