@@ -11,7 +11,7 @@
 
 validActivationFunctions <- function(){
 
-  base::return(activation_fns)
+  return(activation_fns)
 
 }
 
@@ -60,7 +60,7 @@ validDeAnalysisMethods <- function(){
 #' @export
 validDefaultInstructionSlots <- function(){
 
-  base::return(methods::slotNames(methods::new("default_instructions")))
+  return(methods::slotNames(methods::new("default_instructions")))
 
 }
 
@@ -68,7 +68,7 @@ validDefaultInstructionSlots <- function(){
 #' @export
 validDimRedMethods <- function(){
 
-  base::return(gene_set_emthods)
+  return(gene_set_emthods)
 
 }
 
@@ -76,7 +76,7 @@ validDimRedMethods <- function(){
 #' @export
 validDirectoryInstructionSlots <- function(){
 
-  base::return(directory_options)
+  return(directory_options)
 
 }
 
@@ -92,7 +92,16 @@ validDistanceMethods <- function(){
 #' @export
 validHierarchicalClusterMethods <- function(){
 
-  base::return(hclust_methods)
+  return(hclust_methods)
+
+}
+
+
+#' @rdname validActivationFunctions
+#' @export
+validImageClasses <- function(){
+
+  return(image_classes)
 
 }
 
@@ -101,7 +110,7 @@ validHierarchicalClusterMethods <- function(){
 #' @export
 validPatternRecognitionMethods <- function(){
 
-  base::return(pr_methods)
+  return(pr_methods)
 
 }
 
@@ -110,7 +119,7 @@ validPatternRecognitionMethods <- function(){
 #' @export
 validPadjMethods <- function(){
 
-  base::return(stats::p.adjust.methods)
+  return(stats::p.adjust.methods)
 
 }
 

@@ -11,6 +11,8 @@ initiateSpataObject_ExprMtr(
   count_mtr = NULL,
   mtr_name = "scaled",
   image = NULL,
+  image_class = "HistologyImage",
+  image_object = NULL,
   directory_spata = NULL,
   combine_with_wd = FALSE,
   gene_set_path = NULL,

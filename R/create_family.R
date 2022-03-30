@@ -1,3 +1,31 @@
+
+createImageObject <- function(image, image_class, stop_if_null = FALSE, ...){
+
+  if(!base::is.null(image) && base::isFALSE(stop_if_null)){
+
+    confuns::check_one_of(
+      input = image_class,
+      against = validImageClasses()
+    )
+
+    image_obj <-
+      methods::new(
+        Class = image_class,
+        image = image,
+        ...
+        )
+
+
+  } else {
+
+    image_obj <- NULL
+
+  }
+
+  return(image_obj)
+
+}
+
 #' @title Spatial Segmentation
 #'
 #' @description The function \code{createSegmentation()} provides access to an

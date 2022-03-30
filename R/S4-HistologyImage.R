@@ -25,10 +25,11 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 HistologyImage <- methods::setClass(Class = "HistologyImage",
                                     slots = list(
                                       annotations = "list",
+                                      coordinates = "data.frame",
                                       dir_default = "character",
                                       dir_highres = "character",
                                       dir_lowres = "character",
-                                      grid = "data.frame",
+                                      grid = "list",
                                       id = "character",
                                       info = "list",
                                       image = image_class,
@@ -53,9 +54,7 @@ HistologyImage <- methods::setClass(Class = "HistologyImage",
 #' @export
 Visium <- methods::setClass(Class = "Visium",
                             contains = "HistologyImage",
-                            slots = list(
-                              coordinates = "data.frame"
-                            )
+                            slots = list()
                            )
 
 #' @title The \code{ImageAnnotation} - Class

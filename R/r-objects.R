@@ -61,6 +61,13 @@ pr_list_slots <-
 pr_methods <- c("hotspot")
 
 
+
+# Images ------------------------------------------------------------------
+
+
+image_classes <- c("HistologyImage", "SlideSeq", "Visium")
+
+
 # Information -------------------------------------------------------------
 
 directory_options <- c("cell_data_set", "seurat_object", "spata_object")
@@ -230,5 +237,5 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 6, patch = 0)
+current_spata_version <- list(major = 1, minor = 7, patch = 0)
 

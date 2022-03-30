@@ -12,6 +12,7 @@
 \alias{validDirectoryInstructionSlots}
 \alias{validDistanceMethods}
 \alias{validHierarchicalClusterMethods}
+\alias{validImageClasses}
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
 \alias{validPlotTypes}
@@ -39,6 +40,8 @@ validDirectoryInstructionSlots()
 validDistanceMethods()
 
 validHierarchicalClusterMethods()
+
+validImageClasses()
 
 validPatternRecognitionMethods()
 

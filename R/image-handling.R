@@ -13,15 +13,29 @@
 #'
 #' @export
 #'
-flipCoords <- function(object){
+flipCoords <- function(object, verbose = FALSE){
 
-  yrange <- getImageRange(object)$y
+  if(!containsImage(object)){
 
-  coords_df <- getCoordsDf(object)
+    if(base::isTRUE(verbose)){
 
-  coords_df$y <- yrange[2] - coords_df$y + yrange[1]
+      warning("Can not flip coordinates without an image.")
 
-  object <- setCoordsDf(object, coords_df)
+    }
+
+  } else {
+
+    yrange <- getImageRange(object)$y
+
+    coords_df <- getCoordsDf(object)
+
+    coords_df$y <- yrange[2] - coords_df$y + yrange[1]
+
+    object <- setCoordsDf(object, coords_df)
+
+    object@images[[1]]@coordinates <- coords_df
+
+  }
 
   return(object)
 
@@ -63,6 +77,12 @@ flipImage <- function(object){
   of_sample <- check_sample(object)
 
   io <- getImageObject(object)
+
+  if(base::is.null(io@info$flipped)){
+
+    io@info$flipped <- FALSE
+
+  }
 
   io@info$flipped <- !io@info$flipped
 

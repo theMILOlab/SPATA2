@@ -10,13 +10,23 @@ validation <- function(x){
 
   if(!base::identical(object@version, current_spata_version)){
 
-    base::warning(
-      glue::glue(
-        "Provided spata2-object is of version {version_string(object@version)}. ",
-        "Latest version is {version_string(current_spata_version)}. ",
-        "Make sure to use 'updateSpataObject()' to ensure the objects integrity."
+    if(base::exists(x = "x.updating.spata.object.x", envir = .GlobalEnv) &&
+       base::isTRUE(base::get("x.updating.spata.object.x"))
+       ){
+
+      base::invisible(TRUE)
+
+    } else {
+
+      base::warning(
+        glue::glue(
+          "Provided spata2-object is of version {version_string(object@version)}. ",
+          "Latest version is {version_string(current_spata_version)}. ",
+          "Make sure to use 'updateSpataObject()' to ensure the objects integrity."
+        )
       )
-    )
+
+    }
 
   }
 

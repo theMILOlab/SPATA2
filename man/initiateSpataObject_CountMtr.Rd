@@ -10,6 +10,8 @@ initiateSpataObject_CountMtr(
   feature_df = NULL,
   sample_name,
   image = NULL,
+  image_class = "HistologyImage",
+  image_object = NULL,
   directory_spata = NULL,
   directory_seurat = NULL,
   combine_with_wd = FALSE,

@@ -70,12 +70,8 @@ subsetBySegment_CountMtr <- function(object,
   old_coords_df <-
     dplyr::filter(coords_df, !barcodes %in% {{barcodes}})
 
-  image <-
-    getImage(object = object, of_sample = of_sample)
-
   count_mtr <-
     getCountMatrix(object = object, of_sample = of_sample)[, barcodes]
-
 
   # 3. Initiation -----------------------------------------------------------
 
@@ -83,7 +79,7 @@ subsetBySegment_CountMtr <- function(object,
     initiateSpataObject_CountMtr(
       coords_df = segment_coords_df,
       count_mtr = count_mtr,
-      image = image,
+      image_object = getImageObject(object),
       sample_name = of_sample,
       SCTransform = SCTransform,
       NormalizeData = NormalizeData,
@@ -103,9 +99,12 @@ subsetBySegment_CountMtr <- function(object,
 
   spata_object <- setInitiationInfo(object = spata_object)
 
+  spata_object@images[[1]]@coordinates <-
+    dplyr::filter(spata_object@images[[1]]@coordinates, barcodes %in% {{barcodes}})
+
   spata_object@information$old_coordinates <- old_coords_df
 
-  base::return(spata_object)
+  return(spata_object)
 
 }
 
@@ -161,28 +160,6 @@ subsetByBarcodes_CountMtr <- function(object,
   old_coords_df <-
     dplyr::filter(coords_df, !barcodes %in% {{barcodes}})
 
-  image <-
-    getImage(object = object, of_sample = of_sample)
-
-  count_mtr <-  getCountMatrix(object = object, of_sample = of_sample)[, barcodes]
-
-  # 2. Data extraction ------------------------------------------------------
-
-  gene_set_df <-
-    getGeneSetDf(object)
-
-  coords_df <-
-    getCoordsDf(object = object, of_sample = of_sample)
-
-  segment_coords_df <-
-    dplyr::filter(coords_df, barcodes %in% {{barcodes}})
-
-  old_coords_df <-
-    dplyr::filter(coords_df, !barcodes %in% {{barcodes}})
-
-  image <-
-    getImage(object = object, of_sample = of_sample)
-
   count_mtr <-
     getCountMatrix(object = object, of_sample = of_sample)[, barcodes]
 
@@ -192,7 +169,7 @@ subsetByBarcodes_CountMtr <- function(object,
     initiateSpataObject_CountMtr(
       coords_df = segment_coords_df,
       count_mtr = count_mtr,
-      image = image,
+      image_object = getImageObject(object),
       sample_name = of_sample,
       SCTransform = SCTransform,
       NormalizeData = NormalizeData,
@@ -212,9 +189,12 @@ subsetByBarcodes_CountMtr <- function(object,
 
   spata_object <- setInitiationInfo(object = spata_object)
 
+  spata_object@images[[1]]@coordinates <-
+    dplyr::filter(spata_object@images[[1]]@coordinates, barcodes %in% {{barcodes}})
+
   spata_object@information$old_coordinates <- old_coords_df
 
-  base::return(spata_object)
+  return(spata_object)
 
 }
 
@@ -263,9 +243,6 @@ subsetBySegment_ExprMtr <- function(object,
   old_coords_df <-
     dplyr::filter(coords_df, !barcodes %in% {{barcodes}})
 
-  image <-
-    getImage(object = object, of_sample = of_sample)
-
   expr_mtr <-
     getExpressionMatrix(object = object, of_sample = of_sample)[, barcodes]
 
@@ -277,7 +254,7 @@ subsetBySegment_ExprMtr <- function(object,
       expr_mtr = expr_mtr,
       sample_name = of_sample,
       mtr_name = mtr_name,
-      image = image,
+      image_object = getImageObject(object),
       directory_spata = directory_spata,
       combine_with_wd = combine_with_wd,
       gene_set_path = NULL,
@@ -293,9 +270,12 @@ subsetBySegment_ExprMtr <- function(object,
 
   spata_object <- setInitiationInfo(object = spata_object)
 
+  spata_object@images[[1]]@coordinates <-
+    dplyr::filter(spata_object@images[[1]]@coordinates, barcodes %in% {{barcodes}})
+
   spata_object@information$old_coordinates <- old_coords_df
-  
-  base::return(spata_object)
+
+  return(spata_object)
 
 }
 
@@ -351,9 +331,6 @@ subsetByBarcodes_ExprMtr <- function(object,
   old_coords_df <-
     dplyr::filter(coords_df, !barcodes %in% {{barcodes}})
 
-  image <-
-    getImage(object = object, of_sample = of_sample)
-
   expr_mtr <-
     getExpressionMatrix(object = object, of_sample = of_sample)[, barcodes]
 
@@ -365,7 +342,7 @@ subsetByBarcodes_ExprMtr <- function(object,
       expr_mtr = expr_mtr,
       sample_name = of_sample,
       mtr_name = mtr_name,
-      image = image,
+      image_object = getImageObject(object),
       directory_spata = directory_spata,
       combine_with_wd = combine_with_wd,
       gene_set_path = NULL,
@@ -381,9 +358,12 @@ subsetByBarcodes_ExprMtr <- function(object,
 
   spata_object <- setInitiationInfo(object = spata_object)
 
+  spata_object@images[[1]]@coordinates <-
+    dplyr::filter(spata_object@images[[1]]@coordinates, barcodes %in% {{barcodes}})
+
   spata_object@information$old_coordinates <- old_coords_df
-  
-  base::return(spata_object)
+
+  return(spata_object)
 
 }
 

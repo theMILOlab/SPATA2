@@ -12,7 +12,7 @@
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, of_sample = NA){
+getCoordsDf <- function(object, type = "both", of_sample = NA){
 
   # 1. Control --------------------------------------------------------------
 
@@ -26,9 +26,35 @@ getCoordsDf <- function(object, of_sample = NA){
 
   # 2. Data wrangling -------------------------------------------------------
 
-  coords_df <-
-    object@coordinates[[of_sample]] %>%
-    tibble::as_tibble()
+  if(containsHistologyImage(object)){
+
+    image_obj <- getImageObject(object)
+
+    if(type == "exact"){
+
+      coords_df <-
+        image_obj@coordinates %>%
+        dplyr::select(barcodes, sample, x, y)
+
+    } else if(type == "aligned"){
+
+      if(base::is.null(image_obj)){ stop("Can not extract aligned coordinates without proper image object of class `HistologyImage`.")}
+
+      coords_df <-
+        image_obj@coordinates %>%
+        dplyr::select(barcodes, sample, row, col)
+
+    } else if(type == "both") {
+
+      coords_df <- image_obj@coordinates
+
+    }
+
+  } else {
+
+    coords_df <- object@coordinates[[of_sample]] %>% tibble::as_tibble()
+
+  }
 
   # -----
 

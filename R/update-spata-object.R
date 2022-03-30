@@ -29,6 +29,9 @@ updateSpataObject <- function(object,
                               n_pcs = 60,
                               verbose = TRUE){
 
+
+  base::assign(x = "x.updating.spata.object.x", value = TRUE, envir = .GlobalEnv)
+
   # 1. From SPATA to SPATA2 -------------------------------------------------
 
   object_class <- base::class(object)
@@ -354,9 +357,11 @@ updateSpataObject <- function(object,
 
     give_feedback(msg = "Creating new object of class `Visium`.", verbose = verbose)
 
-    new_image <- Visium()
+    new_image <- HistologyImage()
 
-    new_image@coordinates <- getCoordsDf(object)
+    new_image@coordinates <-
+      object@coordinates[[sample_name]] %>%
+      tibble::as_tibble()
 
     if(base::class(object@images[[1]]) == "Image"){
 
@@ -368,7 +373,15 @@ updateSpataObject <- function(object,
 
     object@images[[sample_name]] <- new_image
 
-    object <- flipCoords(object)
+    yrange <- getImageRange(object)$y
+
+    coords_df <- object@coordinates[[sample_name]]
+
+    coords_df$y <- yrange[2] - coords_df$y + yrange[1]
+
+    object@coordinates[[sample_name]] <- coords_df
+
+    object <- flipImage(object)
 
     msg <-
       c("We have aligned the surface plotting to the mechanism used by other packages.
@@ -381,6 +394,47 @@ updateSpataObject <- function(object,
       msg = msg,
       verbose = verbose
     )
+
+  }
+
+  if(object@version$major == 1 && object@version$minor == 6){
+
+    object@version <- list(major = 1, minor = 7, patch = 0)
+
+    image_obj <- getImageObject(object)
+
+    if(!base::is.null(image_obj)){
+
+      image_class <- base::class(image_obj)
+
+      image_obj_new <- methods::new(Class = image_class)
+
+      image_obj_new <-
+        hlpr_transfer_slot_content(
+          recipient = image_obj_new,
+          donor = image_obj,
+          verbose = FALSE,
+          skip = "misc"
+        )
+
+      grid <- image_obj@grid
+
+      if(base::is.data.frame(grid) && base::nrow(grid) != 0){
+
+        image_obj_new@coordinates <-
+          dplyr::left_join(
+            x = getCoordsDf(object),
+            y = grid[, c("barcodes", "row", "col")],
+            by = "barcodes"
+          )
+
+      }
+
+      image_obj_new@grid <- list()
+
+      object <- setImageObject(object, image_object = image_obj_new)
+
+    }
 
   }
 
@@ -404,6 +458,8 @@ updateSpataObject <- function(object,
   object <- setDefaultInstructions(object)
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
+
+  base::remove(x.updating.spata.object.x, envir = .GlobalEnv)
 
   base::return(object)
 

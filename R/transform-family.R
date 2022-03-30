@@ -362,9 +362,6 @@ transformSeuratToSpata <- function(seurat_object,
         error_value = NULL
       )
 
-    spata_object@compatibility <- list("Seurat" = list("slice" = slice))
-
-
     # get scaled matrix
 
     assay <- seurat_object@assays[[assay_name]]
@@ -397,7 +394,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     if(!base::is.null(image_object)){
 
-      image_object <- asVisium(object = image_object)
+      image_object <- asHistologyImage(object = image_object)
 
     }
 
@@ -462,7 +459,7 @@ transformSeuratToSpata <- function(seurat_object,
       )
 
     # no image
-    image <- NULL
+    image_object <- NULL
 
   }
 
@@ -605,13 +602,19 @@ transformSeuratToSpata <- function(seurat_object,
 
   # coordinates & image
 
-  spata_object <-
-    setCoordsDf(object = spata_object, coords_df = coords_df) %>%
-    setImageObject(object = ., image = image_object)
+  if(!base::is.null(image_object)){
 
-  spata_object <- flipImage(spata_object)
+    spata_object <- setImageObject(spata_object, image_object = image_object)
 
-  spata_object <- flipImageAndCoords(spata_object)
+    spata_object <- flipImage(spata_object)
+
+    spata_object <- flipImageAndCoords(spata_object)
+
+  }
+
+  spata_object <- setCoordsDf(object = spata_object, coords_df = coords_df)
+
+  spata_object <- flipCoords(object = spata_object)
 
   # other lists
   spata_object@information <-

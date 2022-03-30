@@ -4,10 +4,15 @@
 \alias{flipCoords}
 \title{Flip coordinates}
 \usage{
-flipCoords(object)
+flipCoords(object, verbose = FALSE)
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 An updated spata-object.

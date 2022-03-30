@@ -12,31 +12,29 @@
 #' @return An object of class \code{Visium}.
 #' @export
 #'
-methods::setGeneric(name = "asVisium", def = function(object, ...){
+methods::setGeneric(name = "asHistologyImage", def = function(object, ...){
 
-  standardGeneric(f = "asVisium")
+  standardGeneric(f = "asHistologyImage")
 
 })
 
 
-#' @rdname asVisium
+#' @rdname asHistologyImage
 #' @export
 methods::setMethod(
-  f = "asVisium",
+  f = "asHistologyImage",
   signature = "VisiumV1",
-  definition = function(object){
+  definition = function(object, scale_with = "lowres"){
 
-    new_object <- Visium()
+    new_object <- HistologyImage()
+
+    scale_fct <- object@scale.factors[[scale_with]]
 
     new_object@coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
-      tibble::as_tibble() %>%
-      dplyr::select(barcodes, x = imagecol, y = imagerow)
-
-    new_object@grid <-
-      tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
-      tibble::as_tibble() %>%
-      dplyr::select(barcodes, col, row)
+      dplyr::select(barcodes, x = imagecol, y = imagerow, row, col) %>%
+      dplyr::mutate(x = x*scale_fct, y = y*scale_fct) %>%
+      tibble::as_tibble()
 
     new_object@id <- object@key
 
@@ -46,7 +44,9 @@ methods::setMethod(
 
     new_object@info$flipped <- FALSE
 
-    new_object@misc$scale.factor <- object@scale.factors
+    new_object@misc$origin <- "VisiumV1"
+
+    new_object@misc$scale.factors <- object@scale.factors
     new_object@misc$assay <- object@assay
     new_object@misc$spot.radius <- object@spot.radius
 

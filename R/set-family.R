@@ -42,6 +42,7 @@ setCoordsDf <- function(object, coords_df, of_sample = ""){
   coords_df <- dplyr::mutate(.data = coords_df, sample = {{of_sample}})
 
   object@coordinates[[of_sample]] <- coords_df
+  object@images[[of_sample]]@coordinates <- coords_df
 
   base::return(object)
 
@@ -738,8 +739,8 @@ addSpCorCluster <- function(object,
   sp_cor[["cluster"]][[method]] <- cluster_list
 
   object <- setSpCorResults(object = object,
-                                         sp_cor_list = sp_cor,
-                                         of_sample = of_sample)
+                            sp_cor_list = sp_cor,
+                            of_sample = of_sample)
 
   base::return(object)
 
@@ -771,9 +772,3 @@ setGeneSetDf <- function(object, gene_set_df){
   base::return(object)
 
 }
-
-
-
-
-
-

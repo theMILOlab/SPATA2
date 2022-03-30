@@ -24,6 +24,8 @@ initiateSpataObject_Empty <- function(sample_name){
   object <-
     methods::new(Class = class_string, samples = sample_name)
 
+  object@images[[sample_name]] <- HistologyImage()
+
   object@version <- current_spata_version
 
   return(object)
@@ -66,6 +68,8 @@ initiateSpataObject_CountMtr <- function(coords_df,
                                          feature_df = NULL,
                                          sample_name,
                                          image = NULL,
+                                         image_class = "HistologyImage",
+                                         image_object = NULL,
                                          directory_spata = NULL,
                                          directory_seurat = NULL,
                                          combine_with_wd = FALSE,
@@ -158,8 +162,24 @@ initiateSpataObject_CountMtr <- function(coords_df,
       )
 
     spata_object <-
-      setCoordsDf(object = spata_object, coords_df = coords_df) %>%
-      setImage(object = ., image = image)
+      setCoordsDf(object = spata_object, coords_df = coords_df)
+
+    if(!base::is.null(image_object)){
+
+      spata_object <- setImageObject(object = spata_object, image_object = image_object)
+
+    } else {
+
+      image_object <-
+        createImageObject(
+          image = image,
+          image_class = image_class,
+          coordinates = coords_df
+        )
+
+      spata_object <- setImageObject(object = spata_object, image_object = image_object)
+
+    }
 
     spata_object <- setInitiationInfo(spata_object)
 
@@ -426,6 +446,8 @@ initiateSpataObject_ExprMtr <- function(coords_df,
                                         count_mtr = NULL,
                                         mtr_name = "scaled",
                                         image = NULL,
+                                        image_class = "HistologyImage",
+                                        image_object = NULL,
                                         directory_spata = NULL,
                                         combine_with_wd = FALSE,
                                         gene_set_path = NULL,
@@ -544,9 +566,24 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   spata_object <-
     setCoordsDf(object = spata_object, coords_df = coords_df) %>%
     setFeatureDf(object = ., feature_df = feature_df) %>%
-    setGeneSetDf(object = ., gene_set_df = gene_set_df) %>%
-    setImage(object = ., image = image)
+    setGeneSetDf(object = ., gene_set_df = gene_set_df)
 
+  if(!base::is.null(image_object)){
+
+    spata_object <- setImageObject(object = spata_object, image_object = image_object)
+
+  } else {
+
+    image_object <-
+      createImageObject(
+        image = image,
+        image_class = image_class,
+        coordinates = coords_df
+      )
+
+    spata_object <- setImageObject(object = spata_object, image_object = image_object)
+
+  }
 
   # transfer lists
   spata_object@trajectories <-
@@ -558,8 +595,6 @@ initiateSpataObject_ExprMtr <- function(coords_df,
       values = list(
         barcodes = magrittr::set_names(x = list(base::colnames(expr_mtr)), nm = sample_name)
       ))
-
-
 
   # -----
 

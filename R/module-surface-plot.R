@@ -429,7 +429,7 @@ moduleSurfacePlotServer <- function(id,
 
           st_image <-
             grDevices::as.raster(getImage(object, of_sample = current$sample)) %>%
-            magick::image_read() %>% magick::image_flip()
+            magick::image_read()
 
           image_add_on <-
             ggplot2::annotation_raster(raster = st_image,
@@ -453,7 +453,8 @@ moduleSurfacePlotServer <- function(id,
       sample_coords <- shiny::reactive({
 
         sample_coords <-
-          getCoordsDf(object = object, of_sample = current$sample)
+          getCoordsDf(object = object, of_sample = current$sample) %>%
+          dplyr::select(barcodes, sample, x, y)
 
         return(sample_coords)
 
