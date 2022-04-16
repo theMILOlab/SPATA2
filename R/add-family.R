@@ -777,13 +777,22 @@ addGeneSet <- function(object,
                        class_name,
                        gs_name,
                        genes,
-                       overwrite = FALSE){
+                       overwrite = FALSE,
+                       check_genes = TRUE){
 
   # lazy control
   check_object(object)
 
   # adjusting control
-  genes <- check_genes(object, genes = genes)
+
+  if(base::isTRUE(check_genes)){
+
+    confuns::check_one_of(
+      input = genes,
+      against = getGenes(object)
+    )
+
+  }
 
   if(base::any(!base::sapply(X = list(class_name, gs_name, genes),
                              FUN = base::is.character))){

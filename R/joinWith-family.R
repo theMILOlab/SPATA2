@@ -516,39 +516,72 @@ joinWithGeneSets <- function(object,
 
     # make sure that percentage is equal to or higher than the threshold
     if(ignore == T){
-    if(p_found_genes >= filter_gs){
 
-      # apply specified method to handle gene sets
-      if(method_gs == "mean"){
 
-        geneset_vls <-
-          base::colMeans(rna_assay[genes, ]) %>%
-          base::as.data.frame() %>%
-          magrittr::set_colnames(value = gene_sets[i]) %>%
-          tibble::rownames_to_column(var = "barcodes")
 
-      } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
+      if(p_found_genes >= filter_gs){
 
-        geneset_vls <-
-          GSVA::gsva(expr = rna_assay[genes,],
-                     gset.idx.list = gene_set_df,
-                     mx.diff = 1,
-                     parallel.sz = 2,
-                     method = method_gs,
-                     verbose = FALSE) %>%
-          base::t() %>%
-          as.data.frame() %>%
-          magrittr::set_colnames(value = gene_sets[i]) %>%
-          tibble::rownames_to_column(var = "barcodes")
+        # apply specified method to handle gene sets
 
-      }
-      }else{
+        if(base::length(genes) == 1){
 
-      geneset_vls <-
-          base::colMeans(rna_assay[genes, ]) %>%
-          base::as.data.frame() %>%
-          magrittr::set_colnames(value = gene_sets[i]) %>%
-          tibble::rownames_to_column(var = "barcodes")
+          gs <- gene_sets[i]
+
+          warning(glue::glue("Only one gene ('{genes}') found of gene set '{gs}'."))
+
+          geneset_vls <-
+            base::as.data.frame(rna_assay[genes,]) %>%
+            magrittr::set_colnames(value = gene_sets[i]) %>%
+            tibble::rownames_to_column(var = "barcodes")
+
+        } else if(method_gs == "mean"){
+
+          geneset_vls <-
+            base::colMeans(rna_assay[genes, ]) %>%
+            base::as.data.frame() %>%
+            magrittr::set_colnames(value = gene_sets[i]) %>%
+            tibble::rownames_to_column(var = "barcodes")
+
+        } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
+
+          geneset_vls <-
+            GSVA::gsva(expr = rna_assay[genes,],
+                       gset.idx.list = gene_set_df,
+                       mx.diff = 1,
+                       parallel.sz = 2,
+                       method = method_gs,
+                       verbose = FALSE) %>%
+            base::t() %>%
+            as.data.frame() %>%
+            magrittr::set_colnames(value = gene_sets[i]) %>%
+            tibble::rownames_to_column(var = "barcodes")
+
+        }
+
+      } else {
+
+
+        if(base::length(genes) == 1){
+
+          gs <- gene_sets[i]
+
+          warning(glue::glue("Only one gene found of gene set '{gs}'."))
+
+          geneset_vls <-
+            base::as.data.frame(rna_assay[genes,]) %>%
+            magrittr::set_colnames(value = gene_sets[i]) %>%
+            tibble::rownames_to_column(var = "barcodes")
+
+        } else {
+
+          geneset_vls <-
+            base::colMeans(rna_assay[genes, ]) %>%
+            base::as.data.frame() %>%
+            magrittr::set_colnames(value = gene_sets[i]) %>%
+            tibble::rownames_to_column(var = "barcodes")
+
+        }
+
       }
 
       # smoothing
