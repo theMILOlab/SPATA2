@@ -56,6 +56,8 @@ getCoordsDf <- function(object, type = "both", of_sample = NA){
 
   }
 
+  coords_df$sample <- object@samples
+
   # -----
 
   return(coords_df)

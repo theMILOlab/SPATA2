@@ -5,7 +5,14 @@
 \alias{addGeneSetsInteractive}
 \title{Add a new gene set}
 \usage{
-addGeneSet(object, class_name, gs_name, genes, overwrite = FALSE)
+addGeneSet(
+  object,
+  class_name,
+  gs_name,
+  genes,
+  overwrite = FALSE,
+  check_genes = TRUE
+)
 
 addGeneSetsInteractive(object)
 }

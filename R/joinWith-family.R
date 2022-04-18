@@ -499,6 +499,8 @@ joinWithGeneSets <- function(object,
 
     if(base::isTRUE(verbose)){pb$tick()}
 
+    gs <- gene_sets[i]
+
     # get genes of gene set
     gs_df <- dplyr::filter(gene_set_df, ont %in% gene_sets[i])
 
@@ -511,13 +513,21 @@ joinWithGeneSets <- function(object,
 
     n_found_genes <- base::length(genes)
 
+    not_found <- gs_df$gene[!gs_df$gene %in% base::rownames(rna_assay)]
+
+    ref <- confuns::adapt_reference(input = not_found, sg = "gene")
+    ref2 <- confuns::scollapse(not_found)
+
+    confuns::give_feedback(
+      msg = glue::glue("Of gene set {gs} did not find {ref} {ref2} in assay."),
+      verbose = verbose
+    )
+
     # calculate percentage of genes found
     p_found_genes <- base::round(n_found_genes/n_genes, digits = 2)
 
     # make sure that percentage is equal to or higher than the threshold
     if(ignore == T){
-
-
 
       if(p_found_genes >= filter_gs){
 
