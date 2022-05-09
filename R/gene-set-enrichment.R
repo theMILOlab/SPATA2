@@ -42,7 +42,7 @@
 
 runGSEA <- function(object,
                     across,
-                    methods_de = NULL,
+                    methods_de = "wilcox",
                     max_adj_pval = NULL,
                     min_lfc = NULL,
                     n_highest_lfc = NULL,
@@ -207,7 +207,7 @@ runGSEA <- function(object,
             }
           ) %>%
           purrr::set_names(nm = group_names) %>%
-          purrr::discard(.p = base::is.na)
+          purrr::discard(.p = ~ base::any(base::is.na(.x)))
 
       } else {
 
