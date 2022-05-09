@@ -12,7 +12,7 @@
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, type = "both", of_sample = NA){
+getCoordsDf <- function(object, type = "both", of_sample = NA, ...){
 
   # 1. Control --------------------------------------------------------------
 
@@ -58,7 +58,27 @@ getCoordsDf <- function(object, type = "both", of_sample = NA){
 
   coords_df$sample <- object@samples
 
+  joinWith <- confuns::keep_named(list(...))
+
+  joinWith[["object"]] <- NULL
+  joinWith[["spata_df"]] <- NULL
+
+  if(base::length(joinWith) >= 1){
+
+    coords_df <-
+      confuns::call_flexibly(
+        fn = "joinWith",
+        fn.ns = "SPATA2",
+        default = list(object = object, spata_df = coords_df),
+        v.fail = coords_df,
+        verbose = FALSE
+      )
+
+  }
+
   # -----
+
+  coords_df <- tibble::as_tibble(coords_df)
 
   return(coords_df)
 

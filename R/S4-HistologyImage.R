@@ -285,7 +285,7 @@ discardImageAnnotations <- function(object, ids){
     against = getImageAnnotationIds(object)
   )
 
-  io <- getImageObject(bject)
+  io <- getImageObject(object)
 
   io@annotations <- confuns::lselect(io@annotations, -dplyr::all_of(ids))
 
@@ -354,6 +354,39 @@ getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "
     base::unique()
 
 }
+
+#' @export
+getImageAnnotationCenter <- function(object, id){
+
+  img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
+
+  area_df <- img_ann@area
+
+  x <- base::mean(area_df$x)
+  y <- base::mean(area_df$y)
+
+  out <- c(x = x, y = y)
+
+  return(out)
+
+}
+
+#' @export
+getImageAnnotationCenterBcsp <- function(object, id){
+
+  coords_df <- getCoordsDf(object)
+
+  center <- getImageAnnotationCenter(object, id = id)
+
+  out_df <-
+    dplyr::mutate(.data = coords_df, dist = base::sqrt((x - center[["x"]])^2 + (y - center[["y"]])^2) ) %>%
+    dplyr::filter(dist == base::min(dist))
+
+  return(out_df)
+
+}
+
+
 
 
 #' @title Obtain image annotation data.frame
