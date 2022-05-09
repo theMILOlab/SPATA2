@@ -12,7 +12,7 @@
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, type = "both", of_sample = NA, ...){
+getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
 
   # 1. Control --------------------------------------------------------------
 
