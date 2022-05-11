@@ -17,6 +17,7 @@ runGSEA(
   test = c("hypergeometric", "kstest"),
   background = nGenes(object),
   absolute = FALSE,
+  power = 1,
   pval = 1,
   fdr = 1,
   reduce = TRUE,
@@ -55,6 +56,8 @@ from the object's gene set data.frame.}
 \item{background}{Size or character vector of background population genes}
 
 \item{absolute}{Takes max-min score rather than the max deviation from null (kstest only)}
+
+\item{power}{Exponent for weights (kstest only)}
 
 \item{pval}{Filter results to be less than pval cutoff}
 

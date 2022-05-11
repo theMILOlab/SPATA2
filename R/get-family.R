@@ -2249,6 +2249,20 @@ getGeneSetDf <- function(object){
 
 }
 
+#' @rdname getGeneSetDf
+#' @export
+getGeneSetList <- function(object){
+
+  getGeneSetDf(object) %>%
+    base::split(f = .["ont"]) %>%
+    purrr::map(.f = function(x){
+
+      x[,base::setdiff(base::names(x), "ont")][[1]]
+
+    })
+
+}
+
 #' @title Overview about the current gene sets
 #'
 #' @param object A valid spata-object.

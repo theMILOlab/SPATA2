@@ -5,12 +5,16 @@
 \alias{ggpLayerFrameByImage}
 \title{Set plot limits}
 \usage{
-ggpLayerFrameByCoords(object = "object")
+ggpLayerFrameByCoords(object = "object", opt = "scale")
 
-ggpLayerFrameByImage(object = "object")
+ggpLayerFrameByImage(object = "object", opt = "scale")
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{opt}{Character value. Either \emph{'scale'} or \emph{'coords'}. If \emph{'scale'},
+Depending on the input either functions \code{scale_x/y_continuous()} or
+\code{coord_cartesian()} is used.}
 }
 \value{
 List.

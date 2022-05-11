@@ -124,6 +124,10 @@ ggpLayerImage <- function(object = "object"){
 #' @description Sets the limits on the x- and y-axis of a ggplot based on the coordinate
 #' range or the image range.
 #'
+#' @param opt Character value. Either \emph{'scale'} or \emph{'coords'}. If \emph{'scale'},
+#' Depending on the input either functions \code{scale_x/y_continuous()} or
+#' \code{coord_cartesian()} is used.
+#'
 #' @inherit argument_dummy
 #'
 #' @note Always adds \code{ggplot2::coord_equal()}.
@@ -131,29 +135,66 @@ ggpLayerImage <- function(object = "object"){
 #' @return List.
 #' @export
 #'
-ggpLayerFrameByCoords <- function(object = "object"){
+ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
-  list(
-    scale_x = ggplot2::scale_x_continuous(limits = getCoordsRange(object)$x),
-    scale_y = ggplot2::scale_y_continuous(limits = getCoordsRange(object)$y),
-    coord = ggplot2::coord_equal()
+  xlim <- getCoordsRange(object)$x
+  ylim <- getCoordsRange(object)$y
+
+  confuns::check_one_of(
+    input = opt,
+    against = c("scale", "coords")
   )
+
+  if(opt == "scale"){
+
+    out <-
+      list(
+        scale_x = ggplot2::scale_x_continuous(limits = xlim),
+        scale_y = ggplot2::scale_y_continuous(limits = ylim),
+        coord = ggplot2::coord_equal()
+      )
+
+  } else {
+
+    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+
+  }
+
+  return(out)
+
 
 }
 
 #' @rdname ggpLayerFrameByCoords
 #' @export
-ggpLayerFrameByImage <- function(object = "object"){
+ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
-  list(
-    scale_x = ggplot2::scale_x_continuous(limits = getImageRange(object)$x),
-    scale_y = ggplot2::scale_y_continuous(limits = getImageRange(object)$y),
-    coord = ggplot2::coord_equal()
-    )
+  xlim <- getImageRange(object)$x
+  ylim <- getImageRange(object)$y
+
+  confuns::check_one_of(
+    input = opt,
+    against = c("scale", "coords")
+  )
+
+  if(opt == "scale"){
+
+    out <-
+      list(
+        scale_x = ggplot2::scale_x_continuous(limits = xlim),
+        scale_y = ggplot2::scale_y_continuous(limits = ylim),
+        coord = ggplot2::coord_equal()
+      )
+
+  } else {
+
+    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+
+  }
 
 }
 

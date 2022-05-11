@@ -52,6 +52,7 @@ runGSEA <- function(object,
                     test = c("hypergeometric", "kstest"),
                     background = nGenes(object),
                     absolute = FALSE,
+                    power = 1,
                     pval = 1,
                     fdr = 1,
                     reduce = TRUE,
@@ -106,7 +107,9 @@ runGSEA <- function(object,
 
     }
 
-    gene_set_list <- getGenes(object, of_gene_sets = gene_set_names, simplify = FALSE)
+    gene_set_list <- getGeneSetList(object)
+
+    gene_set_list <- gene_set_list[gene_set_names]
 
   }
 

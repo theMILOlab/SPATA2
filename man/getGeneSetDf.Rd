@@ -2,9 +2,12 @@
 % Please edit documentation in R/get-family.R
 \name{getGeneSetDf}
 \alias{getGeneSetDf}
+\alias{getGeneSetList}
 \title{Obtain gene set data.frame}
 \usage{
 getGeneSetDf(object)
+
+getGeneSetList(object)
 }
 \arguments{
 \item{object}{A valid spata-object.}
