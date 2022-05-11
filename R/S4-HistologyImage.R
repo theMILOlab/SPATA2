@@ -852,6 +852,7 @@ plotImageAnnotations <- function(object,
                                  alpha = 0.25,
                                  display_title = FALSE,
                                  display_subtitle = TRUE,
+                                 display_caption = TRUE,
                                  ggpLayers = list(),
                                  nrow = NULL,
                                  ncol = NULL,
@@ -939,6 +940,14 @@ plotImageAnnotations <- function(object,
             ) +
             ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 
+
+        }
+
+        if(base::isTRUE(display_caption)){
+
+          plot_out <-
+            plot_out +
+            ggplot2::labs(caption = img_ann@id)
 
         }
 

@@ -1778,7 +1778,7 @@ hlpr_add_models <- function(df, custom_fit = NULL){
 
 #' @rdname hlpr_add_models
 #' @export
-hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL){
+hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
 
   if(!base::is.null(pb)){
 
@@ -1788,26 +1788,26 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL){
 
     dplyr::transmute(
       .data = df,
-      trajectory_order = trajectory_order,
-      p_one_peak =  (values - confuns::fit_curve(trajectory_order, fn = "one_peak"))^2,
-      p_one_peak_rev = (values - confuns::fit_curve(trajectory_order, fn = "one_peak", rev = "y"))^2,
-      p_two_peaks = (values - confuns::fit_curve(trajectory_order, fn = "two_peaks"))^2,
-      p_two_peaks_rev = (values - confuns::fit_curve(trajectory_order, fn = "two_peaks", rev = "y"))^2,
-      p_gradient_desc = (values - confuns::fit_curve(trajectory_order, fn = "gradient"))^2,
-      p_gradient_asc = (values - confuns::fit_curve(trajectory_order, fn = "gradient", rev = "x"))^2,
-      p_log_desc = (values - confuns::fit_curve(trajectory_order, fn = "log", rev = "y"))^2,
-      p_log_asc = (values - base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "y")))^2,
-      p_log_desc_rev = (values - confuns::fit_curve(trajectory_order, fn = "log", rev = "x"))^2,
-      p_log_asc_rev = (values - base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "x")))^2,
-      p_lin_asc = (values - confuns::fit_curve(trajectory_order, fn = "linear"))^2,
-      p_lin_desc = (values - confuns::fit_curve(trajectory_order, fn = "linear", rev = "x"))^2,
-      p_sharp_peak = (values - confuns::fit_curve(trajectory_order, fn = "sharp_peak"))^2,
-      p_sin = (values - confuns::fit_curve(trajectory_order, fn = "sinus"))^2,
-      p_sin_rev = (values - confuns::fit_curve(trajectory_order, fn = "sinus", rev = "x"))^2,
-      p_early_peak = (values - confuns::fit_curve(trajectory_order, fn = "early_peak"))^2,
-      p_late_peak = (values - confuns::fit_curve(trajectory_order, fn = "late_peak"))^2,
-      p_abrupt_asc = (values - confuns::fit_curve(trajectory_order, fn = "abrupt_ascending"))^2,
-      p_abrupt_desc = (values - confuns::fit_curve(trajectory_order, fn = "abrupt_descending"))^2
+      {{column}} := !!rlang::sym(x = column),
+      p_one_peak =  (values - confuns::fit_curve(!!rlang::sym(column), fn = "one_peak"))^2,
+      p_one_peak_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "one_peak", rev = "y"))^2,
+      p_two_peaks = (values - confuns::fit_curve(!!rlang::sym(column), fn = "two_peaks"))^2,
+      p_two_peaks_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "two_peaks", rev = "y"))^2,
+      p_gradient_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "gradient"))^2,
+      p_gradient_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "gradient", rev = "x"))^2,
+      p_log_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y"))^2,
+      p_log_asc = (values - base::rev(confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y")))^2,
+      p_log_desc_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "x"))^2,
+      p_log_asc_rev = (values - base::rev(confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "x")))^2,
+      p_lin_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear"))^2,
+      p_lin_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear", rev = "x"))^2,
+      p_sharp_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sharp_peak"))^2,
+      p_sin = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sinus"))^2,
+      p_sin_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sinus", rev = "x"))^2,
+      p_early_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "early_peak"))^2,
+      p_late_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "late_peak"))^2,
+      p_abrupt_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_ascending"))^2,
+      p_abrupt_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_descending"))^2
     )
 
 }
@@ -1834,7 +1834,7 @@ hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
 
 #' @rdname hlpr_add_models
 #' @export
-hlpr_summarize_residuals <- function(df, pb = NULL){
+hlpr_summarize_residuals <- function(df, pb = NULL, column = "trajectory_order"){
 
   if(!base::is.null(pb)){
 
@@ -1842,10 +1842,10 @@ hlpr_summarize_residuals <- function(df, pb = NULL){
 
   }
 
-  purrr::map_dfc(.x = dplyr::select(df, -trajectory_order),
+  purrr::map_dfc(.x = dplyr::select(df, -{{column}}),
                  .f = function(y){
 
-                   pracma::trapz(x = df$trajectory_order, y = y)
+                   pracma::trapz(x = df[[column]], y = y)
 
                  })
 

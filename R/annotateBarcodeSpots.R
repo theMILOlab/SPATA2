@@ -1092,6 +1092,8 @@ annotateBarcodeSpots <- function(object){
 
             object <- setFeatureDf(object, feature_df = fdata)
 
+            assign(x = "polygon_df", value = polygon_df(), envir = .GlobalEnv)
+
             spata_object(object)
 
             shiny::removeModal()

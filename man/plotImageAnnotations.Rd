@@ -19,6 +19,7 @@ plotImageAnnotations(
   alpha = 0.25,
   display_title = FALSE,
   display_subtitle = TRUE,
+  display_caption = TRUE,
   ggpLayers = list(),
   nrow = NULL,
   ncol = NULL,

@@ -11,11 +11,17 @@
 \usage{
 hlpr_add_models(df, custom_fit = NULL)
 
-hlpr_add_residuals(df, pb = NULL, curves = NULL, custom_fit = NULL)
+hlpr_add_residuals(
+  df,
+  pb = NULL,
+  curves = NULL,
+  custom_fit = NULL,
+  column = "trajectory_order"
+)
 
 hlpr_add_residuals_customized(df, customized_trends_df, pb = NULL)
 
-hlpr_summarize_residuals(df, pb = NULL)
+hlpr_summarize_residuals(df, pb = NULL, column = "trajectory_order")
 
 hlpr_name_models(names)
 
