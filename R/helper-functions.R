@@ -1812,6 +1812,33 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, 
 
 }
 
+#' @rdname hlpr_add_models
+#' @export
+hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
+
+  if(!base::is.null(pb)){
+
+    pb$tick()
+
+  }
+
+  dplyr::transmute(
+    .data = df,
+    {{column}} := !!rlang::sym(x = column),
+    p_one_peak =  (values - confuns::fit_curve(!!rlang::sym(column), fn = "one_peak"))^2,
+    p_lin_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear"))^2,
+    p_lin_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear", rev = "x"))^2,
+    p_log_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y"))^2,
+    p_log_asc = (values - base::rev(confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y")))^2,
+    p_sharp_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sharp_peak"))^2,
+    p_early_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "early_peak"))^2,
+    p_late_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "late_peak"))^2,
+    p_abrupt_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_ascending"))^2,
+    p_abrupt_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_descending"))^2
+  )
+
+}
+
 
 #' @rdname hlpr_add_models
 #' @export

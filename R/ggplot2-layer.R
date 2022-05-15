@@ -222,8 +222,11 @@ ggpLayerImageAnnotation <- function(object = "object",
                                     tags = NULL,
                                     test = "any",
                                     alpha = 0.5,
+                                    fill = NA,
+                                    color = "black",
                                     size = 1.5,
                                     linetype = "solid",
+                                    display_color = FALSE,
                                     clrp = NULL,
                                     clrp_adjust = NULL,
                                     ...){
@@ -242,33 +245,53 @@ ggpLayerImageAnnotation <- function(object = "object",
 
   out <- list()
 
-  out$image_annotation <-
-    ggplot2::layer(
-      stat = "identity",
-      position = "identity",
-      geom = ggplot2::GeomPolygon,
-      mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
-      data = img_ann_df,
-      params = list(alpha = alpha, size = size, linetype = linetype)
-    )
+  if(base::isTRUE(display_color)){
 
-  out$scale_color_add_on <-
-    scale_color_add_on(
-      aes = "fill",
-      variable = img_ann_df[["ids"]],
-      clrp = clrp,
-      clrp.adjust = clrp_adjust,
-      ...
-    )
+    out$image_annotation <-
+      ggplot2::layer(
+        stat = "identity",
+        position = "identity",
+        geom = ggplot2::GeomPolygon,
+        mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
+        data = img_ann_df,
+        params = list(alpha = alpha, size = size, linetype = linetype)
+      )
 
-  out$scale_fill_add_on <-
-    scale_color_add_on(
-      aes = "color",
-      variable = img_ann_df[["ids"]],
-      clrp = clrp,
-      clrp.adjust = clrp_adjust,
-      ...
-    )
+    out$scale_color_add_on <-
+      scale_color_add_on(
+        aes = "fill",
+        variable = img_ann_df[["ids"]],
+        clrp = clrp,
+        clrp.adjust = clrp_adjust,
+        ...
+      )
+
+    out$scale_fill_add_on <-
+      scale_color_add_on(
+        aes = "color",
+        variable = img_ann_df[["ids"]],
+        clrp = clrp,
+        clrp.adjust = clrp_adjust,
+        ...
+      )
+
+  } else {
+
+    out$image_annotation <-
+      ggplot2::layer(
+        stat = "identity",
+        position = "identity",
+        geom = ggplot2::GeomPolygon,
+        mapping = ggplot2::aes(x = x, y = y, group = ids),
+        data = img_ann_df,
+        params = list(alpha = alpha, size = size, linetype = linetype, fill = fill, color = color)
+      )
+  }
+
+
+
+
+
 
   return(out)
 

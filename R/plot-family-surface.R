@@ -655,6 +655,7 @@ plotSurfaceComparison2 <- function(coords_df,
 
 plotSurfaceQuantiles <- function(object,
                                  color_by,
+                                 alpha_by = NULL,
                                  n_qntls = 5,
                                  keep_qntls = 1:n_qntls,
                                  pt_alpha = NULL,
@@ -662,6 +663,7 @@ plotSurfaceQuantiles <- function(object,
                                  pt_size = NULL,
                                  smooth = NULL,
                                  smooth_span = NULL,
+                                 display_image = NULL,
                                  verbose = NULL,
                                  of_sample = NA,
                                  ...){
@@ -719,11 +721,23 @@ plotSurfaceQuantiles <- function(object,
 
   base::names(clrp_adjust) <- discard
 
+  if(base::isTRUE(display_image)){
+
+    img <- getImage(object)
+
+  } else {
+
+    img <- NULL
+
+  }
+
   plotSurface2(coords_df = plot_df,
                color_by = "values",
+               alpha_by = alpha_by,
                pt_alpha = pt_alpha,
                pt_clrp = pt_clrp,
                pt_size = pt_size,
+               image = img,
                clrp_adjust = clrp_adjust) +
     ggplot2::facet_wrap(facets = . ~ variables) +
     ggplot2::labs(color = "Quantiles")

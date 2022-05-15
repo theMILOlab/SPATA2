@@ -355,6 +355,19 @@ getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "
 
 }
 
+
+#' @title Obtain center information an image annotation
+#'
+#' @description \code{getImageAnnotationCenter()} computes the
+#' x- and y- coordinates of the most central points within the
+#' image annotation polygon. \code{getImageAnnotationBcsp()} returns
+#' a data.frame that contains one row, namely the barcode spot
+#' that lies closest to the most central point.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
 #' @export
 getImageAnnotationCenter <- function(object, id){
 

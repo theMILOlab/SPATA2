@@ -1,4 +1,22 @@
 
+#' @title Compute the distance between to points
+#'
+#' @param starting_pos,final_pos Numeric vector of length two. Denotes the two positions
+#' between which the distance is calculated
+#'
+#' @return A numeric value.
+#'
+
+compute_distance <- function(starting_pos, final_pos){
+
+  # direction vector
+  drvc <- final_pos - starting_pos
+
+  # compute effective distance traveled ( = value of direction vector)
+  base::sqrt(drvc[1]^2 + drvc[2]^2)
+
+}
+
 #' @title Compute gene summary statistics
 #'
 #' @description Calculates summary statistics of all genes (rows) of the provided
