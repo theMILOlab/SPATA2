@@ -10,8 +10,11 @@ ggpLayerImageAnnotation(
   tags = NULL,
   test = "any",
   alpha = 0.5,
+  fill = NA,
+  color = "black",
   size = 1.5,
   linetype = "solid",
+  display_color = FALSE,
   clrp = NULL,
   clrp_adjust = NULL,
   ...

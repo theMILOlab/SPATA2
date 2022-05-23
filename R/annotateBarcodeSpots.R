@@ -1118,6 +1118,8 @@ annotateBarcodeSpots <- function(object){
 
             fdata[[vname]][fdata$barcodes %in% encircled_bcsp] <- new_group_name
 
+            assign(x = "polygon_df", value = polygon_df(), envir = .GlobalEnv)
+
             object <- setFeatureDf(object, feature_df = fdata)
 
             spata_object(object)

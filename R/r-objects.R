@@ -239,3 +239,45 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 current_spata_version <- list(major = 1, minor = 7, patch = 0)
 
+
+
+
+
+
+
+
+############ alphabetical
+
+
+
+
+# m -----------------------------------------------------------------------
+
+pattern_formulas <-
+  list(
+    p_one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
+    p_one_peak_rev = ~ confuns::fit_curve(.x, fn = "one_peak", rev = "y"),
+    p_two_peaks = ~ confuns::fit_curve(.x, fn = "two_peaks"),
+    p_two_peaks_rev = ~ confuns::fit_curve(.x, fn = "two_peaks", rev = "y"),
+    p_gradient_desc = ~ confuns::fit_curve(.x, fn = "gradient"),
+    p_gradient_asc = ~ confuns::fit_curve(.x, fn = "gradient", rev = "x"),
+    p_log_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "y"),
+    p_log_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "y")),
+    p_log_desc_rev = ~ confuns::fit_curve(.x, fn = "log", rev = "x"),
+    p_log_asc_rev = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")),
+    p_lin_asc = ~ confuns::fit_curve(.x, fn = "linear"),
+    p_lin_desc = ~ confuns::fit_curve(.x, fn = "linear", rev = "x"),
+    p_sharp_peak = ~ confuns::fit_curve(.x, fn = "sharp_peak"),
+    p_sin = ~ confuns::fit_curve(.x, fn = "sinus"),
+    p_sin_rev = ~ confuns::fit_curve(.x, fn = "sinus", rev = "x"),
+    p_early_peak = ~ confuns::fit_curve(.x, fn = "early_peak"),
+    p_late_peak = ~ confuns::fit_curve(.x, fn = "late_peak"),
+    p_abrupt_asc = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
+    p_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
+  )
+
+
+
+
+
+

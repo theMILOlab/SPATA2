@@ -1812,6 +1812,45 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, 
 
 }
 
+#' @param df data.frame that contains a column with the values against which the residuals for
+#' every pattern (remaining columns) are computed.
+#' @export
+hlpr_add_residuals2 <- function(df,
+                                pb = NULL,
+                                column_order = "bins_order",
+                                column_values = "values",
+                                shift_longer = FALSE){
+
+  if(!base::is.null(pb)){ pb$tick() }
+
+  out_df <-
+    dplyr::mutate(
+      .data = df,
+      dplyr::across(
+        .cols = -dplyr::all_of(c(column_order, column_values)),
+        .fns = ~ (!!rlang::sym(column_values) - .x)^2
+      )
+    )
+
+  if(base::isTRUE(shift_longer)){
+
+    out_df <-
+      tidyr::pivot_longer(
+        data = out_df,
+        cols = -dplyr::all_of(c(column_order, column_values)),
+        names_to = "pattern_names",
+        values_to = "residuals"
+      )
+
+  }
+
+  out_df <- dplyr::select(out_df, -{{column_values}})
+
+  return(out_df)
+
+
+}
+
 #' @rdname hlpr_add_models
 #' @export
 hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
@@ -1840,6 +1879,30 @@ hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = N
 }
 
 
+hlpr_add_models <- function(df, pb = NULL, pattern_fns = SPATA2::pattern_formulas, column = "trajectory_order"){
+
+  if(!base::is.null(pb)){ pb$tick() }
+
+  dplyr::mutate(
+    .data = df,
+    dplyr::across(
+      .cols = !!rlang::sym(column),
+      .fns = pattern_fns,
+      .names = "{.fn}"
+    )
+  )
+
+}
+
+
+
+
+
+
+
+
+
+
 #' @rdname hlpr_add_models
 #' @export
 hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
@@ -1861,7 +1924,11 @@ hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
 
 #' @rdname hlpr_add_models
 #' @export
-hlpr_summarize_residuals <- function(df, pb = NULL, column = "trajectory_order"){
+hlpr_summarize_residuals <- function(df,
+                                     pb = NULL,
+                                     column = "trajectory_order",
+                                     column_order = "trajectory_order",
+                                     shift_longer = FALSE){
 
   if(!base::is.null(pb)){
 
@@ -1869,12 +1936,34 @@ hlpr_summarize_residuals <- function(df, pb = NULL, column = "trajectory_order")
 
   }
 
-  purrr::map_dfc(.x = dplyr::select(df, -{{column}}),
-                 .f = function(y){
+ # out_df <-
+  #  purrr::map_dfc(
+   #   .x = dplyr::select(df, -{{column}}),
+    #  .f = function(y){ pracma::trapz(x = df[[column]], y = y) }
+     # )
 
-                   pracma::trapz(x = df[[column]], y = y)
+  out_df <-
+    dplyr::summarise(
+      .data = df,
+      dplyr::across(
+        .cols = -{{column_order}},
+        .fns = ~ pracma::trapz(x = !!rlang::sym(column_order), y = .x)
+      )
+    )
 
-                 })
+  if(base::isTRUE(shift_longer)){
+
+    out_df <-
+      tidyr::pivot_longer(
+        data = out_df,
+        cols = dplyr::everything(),
+        names_to = "pattern_names",
+        values_to = "auc"
+      )
+
+  }
+
+  return(out_df)
 
 }
 

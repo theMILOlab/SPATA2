@@ -7,6 +7,7 @@
 plotSurfaceQuantiles(
   object,
   color_by,
+  alpha_by = NULL,
   n_qntls = 5,
   keep_qntls = 1:n_qntls,
   pt_alpha = NULL,
@@ -14,6 +15,7 @@ plotSurfaceQuantiles(
   pt_size = NULL,
   smooth = NULL,
   smooth_span = NULL,
+  display_image = NULL,
   verbose = NULL,
   of_sample = NA,
   ...
@@ -48,6 +50,9 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \code{smoooth_}-parameters.}
 
 \item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+
+\item{display_image}{Logical. If set to TRUE the histology image of the specified sample
+is displayed underneath the plot.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -1,5 +1,73 @@
 
 
+# c -----------------------------------------------------------------------
+
+#' @export
+create_model_df <- function(input,
+                            pattern_subset = NULL,
+                            pattern_remove = NULL,
+                            pattern_add = NULL,
+                            verbose = TRUE){
+
+  fns_input <- pattern_formulas
+
+  # select pattern of interest
+  if(base::is.character(pattern_subset)){
+
+    fns_input <- confuns::lselect(lst = fns_input, dplyr::contains(pattern_subset))
+
+  }
+
+  # remove unwanted pattern
+  if(base::is.character(pattern_remove)){
+
+    fns_input <- confuns::lselect(lst = fns_input, -dplyr::contains(pattern_remove))
+
+  }
+
+  # add additional pattern to screen for
+  if(base::is.list(pattern_add)){
+
+    patterns_add_named <- confuns::keep_named(input = pattern_add)
+
+    confuns::check_none_of(
+      input = base::names(patterns_add_named),
+      against = base::names(fns_input),
+      ref.input = "names of additional pattern",
+      ref.against = "names of known pattern to SPATA2"
+    )
+
+    n_names <- base::names(patterns_add_named) %>% base::length()
+    n_pattern <- base::length(patterns_add_named)
+
+    if(n_names != n_pattern){ stop("Every additional pattern must be named uniquely.")}
+
+    fns_formulas <- purrr::keep(patterns_add_named, .p = purrr::is_formula)
+
+    fns_numeric <-
+      purrr::keep(patterns_add_named, .p = ~ base::is.numeric(.x) & base::length(.x) == length_out) %>%
+      purrr::map(.f = confuns::normalize)
+
+    add_pattern_names <-
+      base::names(c(fns_formulas, fns_numeric)) %>%
+      confuns::scollapse()
+
+    confuns::give_feedback(
+      msg = glue::glue("Adding pattern '{add_pattern_names}' to screening."),
+      verbose = verbose,
+    )
+
+    fns_input <- c(fns_input, fns_formulas, fns_numeric)
+
+  }
+
+  out_df <-
+    tibble::tibble(x = base::as.integer(1:input)) %>%
+    dplyr::transmute(dplyr::across(.cols = x, .fns = fns_input, .names = "{.fn}"))
+
+  return(out_df)
+
+}
 
 
 

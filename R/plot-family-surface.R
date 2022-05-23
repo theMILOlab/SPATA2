@@ -569,6 +569,8 @@ plotSurfaceComparison <- function(object,
     verbose = verbose
     )
 
+  plot_df$variables <- base::factor(plot_df$variables, levels = variables)
+
   ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x, y = y)) +
     hlpr_image_add_on(object, display_image, of_sample) +
     geom_point_fixed(
@@ -578,7 +580,7 @@ plotSurfaceComparison <- function(object,
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
     ggplot2::theme_void() +
     ggplot2::coord_equal() +
-    ggplot2::facet_wrap(facets = ~ variables, ...) +
+    ggplot2::facet_wrap(facets = . ~ variables, ...) +
     ggplot2::labs(color = NULL)
 
 }
@@ -612,6 +614,8 @@ plotSurfaceComparison2 <- function(coords_df,
       )
 
     # plotting
+
+    plot_df$variables <- base::factor(plot_df$variables, levels = variables)
 
     ggplot2::ggplot(data = shifted_df, mapping = ggplot2::aes(x = x, y = y)) +
       hlpr_image_add_on2(image) +

@@ -1,26 +1,210 @@
 
 
 
-#' @title Add coordinates theme
+# a -----------------------------------------------------------------------
+
+ggpLayerAreaEncircling <- function(object,
+                                   id,
+                                   n_circles,
+                                   buffer,
+                                   linealpha = 0.9,
+                                   linecolor = "black",
+                                   linesize = 1,
+                                   expand = ggplot2::unit(5, "mm"),
+                                   radius = ggplot2::unit(2.5, "mm"),
+                                   concavity = 2,
+                                   ...){
+
+  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+
+  circle_names <- stringr::str_c("Circle", 1:n_circles, sep = " ")
+
+  circles <-
+    purrr::set_names(
+      x = c((1:n_circles)*buffer),
+      nm = circle_names
+    )
+
+  buffer_vec <- c("Core" = 0, circles)
+
+  areas <-
+    purrr::imap(
+      .x = buffer_vec,
+      .f =
+        ~ buffer_area(df = img_ann@area, buffer = .x) %>%
+        dplyr::mutate(., circle = .y)
+    )
+
+  coords_df <-
+    getCoordsDf(object, gene_sets = "HM_HYPOXIA")
+
+  coords_df$bins <- "Outside"
+
+  for(area in base::names(areas)){
+
+    area_df <- areas[[area]]
+
+    coords_df$pt_in_plg <-
+      sp::point.in.polygon(
+        point.x = coords_df$x,
+        point.y = coords_df$y,
+        pol.x = area_df$x,
+        pol.y = area_df$y
+      )
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        bins = dplyr::case_when(
+          bins == "Outside" & pt_in_plg %in% c(1,2) ~ {{area}},
+          TRUE ~ bins
+        )
+      )
+
+  }
+
+  out_list <-
+    purrr::map(
+      .x = areas,
+      .f = ~
+        ggforce::geom_mark_hull(
+          data = .x,
+          mapping = ggplot2::aes(x = x, y = y),
+          alpha = linealpha,
+          color = linecolor,
+          size = linesize,
+          expand = expand,
+          radius = radius,
+          concavity = concavity
+        )
+    )
+
+
+  out_list <-
+    list(
+      out_list,
+      ggpLayerFrameByCoords(object = object, opt = "coords")
+    )
+
+  return(out_list)
+
+}
+
+
+# f -----------------------------------------------------------------------
+
+
+#' @title Set plot limits
 #'
-#' @description Adds a theme to the plot that displays the coordinates of
-#' the tissue.
+#' @description Sets the limits on the x- and y-axis of a ggplot based on the coordinate
+#' range or the image range.
+#'
+#' @param opt Character value. Either \emph{'scale'} or \emph{'coords'}. If \emph{'scale'},
+#' Depending on the input either functions \code{scale_x/y_continuous()} or
+#' \code{coord_cartesian()} is used.
+#'
+#' @inherit argument_dummy
+#'
+#' @note Always adds \code{ggplot2::coord_equal()}.
 #'
 #' @return List.
 #' @export
 #'
-ggpLayerThemeCoords <- function(){
+ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
 
-    list(
-      ggplot2::theme_bw(),
-      ggplot2::theme(
-        panel.grid = ggplot2::element_blank(),
-        axis.title = ggplot2::element_blank()
+  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+
+  xlim <- getCoordsRange(object)$x
+  ylim <- getCoordsRange(object)$y
+
+  confuns::check_one_of(
+    input = opt,
+    against = c("scale", "coords")
+  )
+
+  if(opt == "scale"){
+
+    out <-
+      list(
+        scale_x = ggplot2::scale_x_continuous(limits = xlim),
+        scale_y = ggplot2::scale_y_continuous(limits = ylim),
+        coord = ggplot2::coord_equal()
       )
-    )
+
+  } else {
+
+    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+
+  }
+
+  return(out)
+
 
 }
 
+#' @rdname ggpLayerFrameByCoords
+#' @export
+ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
+
+  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+
+  xlim <- getImageRange(object)$x
+  ylim <- getImageRange(object)$y
+
+  confuns::check_one_of(
+    input = opt,
+    against = c("scale", "coords")
+  )
+
+  if(opt == "scale"){
+
+    out <-
+      list(
+        scale_x = ggplot2::scale_x_continuous(limits = xlim),
+        scale_y = ggplot2::scale_y_continuous(limits = ylim),
+        coord = ggplot2::coord_equal()
+      )
+
+  } else {
+
+    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+
+  }
+
+}
+
+
+
+# g -----------------------------------------------------------------------
+
+ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = FALSE, ...){
+
+  genes <-
+    stringr::str_remove(gene_pattern, pattern = gene_pattern_suf_regex) %>%
+    base::unique()
+
+  gp_coords_df <-
+    getGenePatternCoordsDf(object, genes = genes, verbose = FALSE) %>%
+    dplyr::filter(gene_pattern %in% {{gene_pattern}})
+
+  if(type == "hull"){
+
+    out <-
+      ggforce::geom_mark_hull(
+        data = gp_coords_df,
+        mapping = ggplot2::aes(x = x, y = y, color = gene_pattern, fill = gene_pattern),
+        ...
+      )
+
+  }
+
+  return(out)
+
+}
+
+
+
+# i -----------------------------------------------------------------------
 
 #' @title Initiate ggplot2 layering
 #'
@@ -116,90 +300,6 @@ ggpLayerImage <- function(object = "object"){
 
 }
 
-
-
-
-#' @title Set plot limits
-#'
-#' @description Sets the limits on the x- and y-axis of a ggplot based on the coordinate
-#' range or the image range.
-#'
-#' @param opt Character value. Either \emph{'scale'} or \emph{'coords'}. If \emph{'scale'},
-#' Depending on the input either functions \code{scale_x/y_continuous()} or
-#' \code{coord_cartesian()} is used.
-#'
-#' @inherit argument_dummy
-#'
-#' @note Always adds \code{ggplot2::coord_equal()}.
-#'
-#' @return List.
-#' @export
-#'
-ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
-
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
-  xlim <- getCoordsRange(object)$x
-  ylim <- getCoordsRange(object)$y
-
-  confuns::check_one_of(
-    input = opt,
-    against = c("scale", "coords")
-  )
-
-  if(opt == "scale"){
-
-    out <-
-      list(
-        scale_x = ggplot2::scale_x_continuous(limits = xlim),
-        scale_y = ggplot2::scale_y_continuous(limits = ylim),
-        coord = ggplot2::coord_equal()
-      )
-
-  } else {
-
-    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
-
-  }
-
-  return(out)
-
-
-}
-
-#' @rdname ggpLayerFrameByCoords
-#' @export
-ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
-
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
-  xlim <- getImageRange(object)$x
-  ylim <- getImageRange(object)$y
-
-  confuns::check_one_of(
-    input = opt,
-    against = c("scale", "coords")
-  )
-
-  if(opt == "scale"){
-
-    out <-
-      list(
-        scale_x = ggplot2::scale_x_continuous(limits = xlim),
-        scale_y = ggplot2::scale_y_continuous(limits = ylim),
-        coord = ggplot2::coord_equal()
-      )
-
-  } else {
-
-    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
-
-  }
-
-}
-
-
-
 #' @title Add polygons of annotated structures
 #'
 #' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
@@ -288,14 +388,37 @@ ggpLayerImageAnnotation <- function(object = "object",
       )
   }
 
-
-
-
-
-
   return(out)
 
 }
+
+
+
+# t -----------------------------------------------------------------------
+
+
+#' @title Add coordinates theme
+#'
+#' @description Adds a theme to the plot that displays the coordinates of
+#' the tissue.
+#'
+#' @return List.
+#' @export
+#'
+ggpLayerThemeCoords <- function(){
+
+  list(
+    ggplot2::theme_bw(),
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.title = ggplot2::element_blank()
+    )
+  )
+
+}
+
+
+
 
 #' @title Add trajectory layer
 #'
@@ -346,27 +469,3 @@ ggpLayerTrajectories <- function(object = "object",
 }
 
 
-ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = FALSE, ...){
-
-  genes <-
-    stringr::str_remove(gene_pattern, pattern = gene_pattern_suf_regex) %>%
-    base::unique()
-
-  gp_coords_df <-
-    getGenePatternCoordsDf(object, genes = genes, verbose = FALSE) %>%
-    dplyr::filter(gene_pattern %in% {{gene_pattern}})
-
-  if(type == "hull"){
-
-    out <-
-      ggforce::geom_mark_hull(
-        data = gp_coords_df,
-        mapping = ggplot2::aes(x = x, y = y, color = gene_pattern, fill = gene_pattern),
-        ...
-      )
-
-  }
-
-  return(out)
-
-}

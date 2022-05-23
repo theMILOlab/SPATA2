@@ -3,13 +3,19 @@
 \name{hlpr_add_models}
 \alias{hlpr_add_models}
 \alias{hlpr_add_residuals}
+\alias{hlpr_add_residuals_diet}
 \alias{hlpr_add_residuals_customized}
 \alias{hlpr_summarize_residuals}
 \alias{hlpr_name_models}
 \alias{hlpr_filter_trend}
 \title{Helper functions for trajectory ranking}
 \usage{
-hlpr_add_models(df, custom_fit = NULL)
+hlpr_add_models(
+  df,
+  pb = NULL,
+  pattern_fns = SPATA2::pattern_formulas,
+  column = "trajectory_order"
+)
 
 hlpr_add_residuals(
   df,
@@ -19,9 +25,23 @@ hlpr_add_residuals(
   column = "trajectory_order"
 )
 
+hlpr_add_residuals_diet(
+  df,
+  pb = NULL,
+  curves = NULL,
+  custom_fit = NULL,
+  column = "trajectory_order"
+)
+
 hlpr_add_residuals_customized(df, customized_trends_df, pb = NULL)
 
-hlpr_summarize_residuals(df, pb = NULL, column = "trajectory_order")
+hlpr_summarize_residuals(
+  df,
+  pb = NULL,
+  column = "trajectory_order",
+  column_order = "trajectory_order",
+  shift_longer = FALSE
+)
 
 hlpr_name_models(names)
 
