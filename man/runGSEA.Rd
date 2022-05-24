@@ -16,6 +16,7 @@ runGSEA(
   gene_set_list = NULL,
   gene_set_names = NULL,
   test = c("hypergeometric", "kstest"),
+  power = 1,
   background = nGenes(object),
   absolute = FALSE,
   pval = 1,
@@ -37,6 +38,7 @@ runGsea(
   gene_set_list = NULL,
   gene_set_names = NULL,
   test = c("hypergeometric", "kstest"),
+  power = 1,
   background = nGenes(object),
   absolute = FALSE,
   pval = 1,
@@ -73,6 +75,8 @@ gene set names. The slot contains the genes of the gene sets.Holds priority over
 from the object's gene set data.frame.}
 
 \item{test}{Choose an enrichment type e.g. c("hypergeometric", "kstest")}
+
+\item{power}{Exponent for weights (kstest only)}
 
 \item{background}{Size or character vector of background population genes}
 
