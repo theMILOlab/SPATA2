@@ -312,47 +312,13 @@ transformSeuratToSpata <- function(seurat_object,
 
   if(method == "spatial"){
 
-    # get coordinates
-    coords_df <-
-      getFromSeurat(
-        return_value = Seurat::GetTissueCoordinates(seurat_object),
-        error_handling = "stop",
-        error_ref = "coordinates",
-        error_value = NULL
-      ) %>%
-      confuns::keep_named() %>%
-      tibble::rownames_to_column(var = "barcodes")
+    if(FALSE){
 
-    c_cnames <- base::colnames(coords_df)
 
-    if("imagecol" %in% c_cnames){
-
-      coords_df <- dplyr::rename(coords_df, x = imagecol)
 
     }
 
-    if("imagerow" %in% c_cnames){
 
-      coords_df <- dplyr::rename(coords_df, y = imagerow)
-
-    }
-
-    if(!base::all(c("x", "y") %in% base::colnames(coords_df))){
-
-      msg <-
-        glue::glue(
-          "Dont know which columns refer to x and y coordinates.",
-          "Please check the coordinate data.frame in the seurat-object's image slot",
-          "and make sure that it has columns either named 'imagerow' and 'imagecol' or 'x' and 'y'."
-        )
-
-      confuns::give_feedback(msg = msg, fdb.fn = "stop")
-
-    }
-
-    coords_df <-
-      dplyr::mutate(coords_df, sample = {{sample_name}}) %>%
-      dplyr::select(barcodes, sample, x, y)
 
     slice <-
       getFromSeurat(
@@ -395,6 +361,52 @@ transformSeuratToSpata <- function(seurat_object,
     if(!base::is.null(image_object)){
 
       image_object <- asHistologyImage(object = image_object)
+
+      coords_df <- image_object@coordinates
+
+    } else {
+
+      # get coordinates
+      coords_df <-
+        getFromSeurat(
+          return_value = Seurat::GetTissueCoordinates(seurat_object),
+          error_handling = "stop",
+          error_ref = "coordinates",
+          error_value = NULL
+        ) %>%
+        confuns::keep_named() %>%
+        tibble::rownames_to_column(var = "barcodes")
+
+      c_cnames <- base::colnames(coords_df)
+
+      if("imagecol" %in% c_cnames){
+
+        coords_df <- dplyr::rename(coords_df, x = imagecol)
+
+      }
+
+      if("imagerow" %in% c_cnames){
+
+        coords_df <- dplyr::rename(coords_df, y = imagerow)
+
+      }
+
+      if(!base::all(c("x", "y") %in% base::colnames(coords_df))){
+
+        msg <-
+          glue::glue(
+            "Dont know which columns refer to x and y coordinates.",
+            "Please check the coordinate data.frame in the seurat-object's image slot",
+            "and make sure that it has columns either named 'imagerow' and 'imagecol' or 'x' and 'y'."
+          )
+
+        confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+      }
+
+      coords_df <-
+        dplyr::mutate(coords_df, sample = {{sample_name}}) %>%
+        dplyr::select(barcodes, sample, x, y)
 
     }
 
@@ -610,9 +622,11 @@ transformSeuratToSpata <- function(seurat_object,
 
     spata_object <- flipImageAndCoords(spata_object)
 
-  }
+  } else {
 
-  spata_object <- setCoordsDf(object = spata_object, coords_df = coords_df)
+    spata_object <- setCoordsDf(object = spata_object, coords_df = coords_df)
+
+  }
 
   spata_object <- flipCoords(object = spata_object)
 

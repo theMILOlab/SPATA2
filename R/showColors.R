@@ -65,3 +65,34 @@ showColors <- function(input, n = 20, title_size = 10){
   gridExtra::grid.arrange(grobs = plot_list)
 
 }
+
+#' @rdname showColors
+#' @export
+showModels <- function(input = 100,
+                       pattern_subset = NULL,
+                       pattern_remove = NULL,
+                       pattern_add = NULL,
+                       ...){
+
+  mdf <-
+    create_model_df(
+      input = input,
+      pattern_subset = pattern_subset,
+      pattern_remove = pattern_remove,
+      pattern_add = pattern_add
+    ) %>%
+    dplyr::rename_with(.fn = ~ stringr::str_remove(.x, "^p_")) %>%
+    dplyr::mutate(x = 1:input) %>%
+    tidyr::pivot_longer(
+      cols = -x,
+      names_to = "pattern",
+      values_to = "values"
+    )
+
+  ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
+    ggplot2::geom_path() +
+    ggplot2::facet_wrap(facets = . ~ pattern, ...) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(x = NULL, y = NULL)
+
+}

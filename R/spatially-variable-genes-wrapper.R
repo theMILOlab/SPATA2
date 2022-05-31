@@ -24,7 +24,7 @@ runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
   coords_mtr <-
     getCoordsDf(object) %>%
     tibble::column_to_rownames(var = "barcodes") %>%
-    dplyr::select(-sample) %>%
+    dplyr::select(-sample, x, y) %>%
     base::as.matrix()
 
   count_mtr <- getCountMatrix(object)

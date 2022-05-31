@@ -2,9 +2,18 @@
 % Please edit documentation in R/showColors.R
 \name{showColors}
 \alias{showColors}
+\alias{showModels}
 \title{Show color palettes and spectra}
 \usage{
 showColors(input, n = 20, title_size = 10)
+
+showModels(
+  input = 100,
+  pattern_subset = NULL,
+  pattern_remove = NULL,
+  pattern_add = NULL,
+  ...
+)
 }
 \arguments{
 \item{input}{Character vector of input options for \code{clrsp} and

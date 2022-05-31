@@ -1999,6 +1999,30 @@ hlpr_name_models <- function(names){
 
 }
 
+#' @export
+make_pretty_model_names <- function(model_names){
+
+  stringr::str_replace_all(
+    string = model_names,
+    pattern = c(
+      "abrupt_desc" = "Abrupt descending",
+      "abrupt_asc" = "Abrupt ascending",
+      "gradient_desc" = "Gradient descending",
+      "gradient_asc" = "Gradient ascending",
+      "lin_desc" = "Linear descending",
+      "lin_asc" = "Linear ascending",
+      "late_desc" = "Late descending",
+      "late_asc" = "Late ascending",
+      "immediate_desc" = "Immediate descending",
+      "immediate_asc" = "Immediate ascending",
+      "one_peak" = "One peak",
+      "one_peak_rev" = "One peak reversed"
+    )
+  )
+
+}
+
+
 #' @rdname hlpr_add_models
 #' @export
 hlpr_filter_trend <- function(atdf, limit, poi){

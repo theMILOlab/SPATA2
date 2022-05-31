@@ -253,6 +253,32 @@ current_spata_version <- list(major = 1, minor = 7, patch = 0)
 
 # m -----------------------------------------------------------------------
 
+model_formulas <-
+  list(
+    m_one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
+    m_one_peak_rev = ~ confuns::fit_curve(.x, fn = "one_peak", rev = "y"),
+    m_two_peaks = ~ confuns::fit_curve(.x, fn = "two_peaks"),
+    m_two_peaks_rev = ~ confuns::fit_curve(.x, fn = "two_peaks", rev = "y"),
+    m_immediate_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "y"), # immediate_desc
+    m_late_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "y")),
+    m_late_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "x"), # log_desc
+    m_immediate_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")), # immediate_asc
+    m_lin_asc = ~ confuns::fit_curve(.x, fn = "linear"),
+    m_lin_desc = ~ confuns::fit_curve(.x, fn = "linear", rev = "x"),
+    m_sharp_peak = ~ confuns::fit_curve(.x, fn = "sharp_peak"),
+    m_sin = ~ confuns::fit_curve(.x, fn = "sinus"),
+    m_sin_rev = ~ confuns::fit_curve(.x, fn = "sinus", rev = "x"),
+    m_early_peak = ~ confuns::fit_curve(.x, fn = "early_peak"),
+    m_late_peak = ~ confuns::fit_curve(.x, fn = "late_peak"),
+    m_abrupt_asc = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
+    m_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
+  )
+
+
+
+
+# p -----------------------------------------------------------------------
+
 pattern_formulas <-
   list(
     p_one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
@@ -261,10 +287,10 @@ pattern_formulas <-
     p_two_peaks_rev = ~ confuns::fit_curve(.x, fn = "two_peaks", rev = "y"),
     p_gradient_desc = ~ confuns::fit_curve(.x, fn = "gradient"),
     p_gradient_asc = ~ confuns::fit_curve(.x, fn = "gradient", rev = "x"),
-    p_log_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "y"),
+    p_log_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "y"), # immediate_desc
     p_log_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "y")),
-    p_log_desc_rev = ~ confuns::fit_curve(.x, fn = "log", rev = "x"),
-    p_log_asc_rev = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")),
+    p_log_desc_rev = ~ confuns::fit_curve(.x, fn = "log", rev = "x"), # log_desc
+    p_log_asc_rev = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")), # immediate_asc
     p_lin_asc = ~ confuns::fit_curve(.x, fn = "linear"),
     p_lin_desc = ~ confuns::fit_curve(.x, fn = "linear", rev = "x"),
     p_sharp_peak = ~ confuns::fit_curve(.x, fn = "sharp_peak"),
@@ -274,6 +300,19 @@ pattern_formulas <-
     p_late_peak = ~ confuns::fit_curve(.x, fn = "late_peak"),
     p_abrupt_asc = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
     p_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
+  )
+
+
+
+# s -----------------------------------------------------------------------
+
+sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
+
+
+summarize_formulas <-
+  list(
+    "mean" = ~ base::mean(.x, na.rm = TRUE),
+    "median" = ~ stats::median(.x, na.rm = TRUE)
   )
 
 

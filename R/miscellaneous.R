@@ -9,7 +9,7 @@ create_model_df <- function(input,
                             pattern_add = NULL,
                             verbose = TRUE){
 
-  fns_input <- pattern_formulas
+  fns_input <- model_formulas
 
   # select pattern of interest
   if(base::is.character(pattern_subset)){
@@ -60,6 +60,13 @@ create_model_df <- function(input,
     fns_input <- c(fns_input, fns_formulas, fns_numeric)
 
   }
+
+  n_models <- base::length(fns_input)
+
+  confuns::give_feedback(
+    msg = glue::glue("Total number of pattern/models: {n_models}."),
+    verbose = verbose
+  )
 
   out_df <-
     tibble::tibble(x = base::as.integer(1:input)) %>%
