@@ -104,7 +104,6 @@ Collate:
     'plot-family-trajectory.R'
     'plotSurfaceBase.R'
     'plotSurfaceInteractivelyDiet.R'
-    'plotVolcanoSGS.R'
     'plotting-add-ons.R'
     'print-family.R'
     'process-seurat-object.R'

@@ -40,193 +40,206 @@
 #' @export
 #'
 
-runGSEA <- function(object,
-                    across,
-                    methods_de = "wilcox",
-                    max_adj_pval = NULL,
-                    min_lfc = NULL,
-                    n_highest_lfc = NULL,
-                    n_lowest_pval = NULL,
-                    gene_set_list = NULL,
-                    gene_set_names = NULL,
-                    test = c("hypergeometric", "kstest"),
-                    background = nGenes(object),
-                    absolute = FALSE,
-                    power = 1,
-                    pval = 1,
-                    fdr = 1,
-                    reduce = TRUE,
-                    quiet = TRUE,
-                    chr_to_fct = TRUE,
-                    verbose = NULL){
+setGeneric(name = "runGSEA", def = function(object, ...){
 
-  check_object(object)
-  hlpr_assign_arguments(object)
+  standardGeneric(f = "runGSEA")
 
-  of_sample <- check_sample(object)
+})
 
-  dea_overview <- getDeaOverview(object)
+#' @rdname runGSEA
+#' @export
+setMethod(
+  f = "runGSEA",
+  signature = "spata2",
+  definition = function(object,
+                        across,
+                        methods_de = "wilcox",
+                        max_adj_pval = NULL,
+                        min_lfc = NULL,
+                        n_highest_lfc = NULL,
+                        n_lowest_pval = NULL,
+                        gene_set_list = NULL,
+                        gene_set_names = NULL,
+                        test = c("hypergeometric", "kstest"),
+                        background = nGenes(object),
+                        absolute = FALSE,
+                        power = 1,
+                        pval = 1,
+                        fdr = 1,
+                        reduce = TRUE,
+                        quiet = TRUE,
+                        chr_to_fct = TRUE,
+                        verbose = NULL){
 
-  across <- base::unique(across)
+    check_object(object)
+    hlpr_assign_arguments(object)
 
-  check_one_of(
-    input = across,
-    against = base::names(dea_overview),
-    fdb.opt = 2,
-    ref.opt.2 = "grouping options across which de-analysis has been computed"
-  )
+    of_sample <- check_sample(object)
 
-  methods_de <- base::unique(methods_de)
+    dea_overview <- getDeaOverview(object)
 
-  check_one_of(
-    input = methods_de,
-    against = validDeAnalysisMethods()
-  )
+    across <- base::unique(across)
 
-  # prepare gene set list
-  if(base::is.list(gene_set_list) && confuns::is_named(gene_set_list)){
+    check_one_of(
+      input = across,
+      against = base::names(dea_overview),
+      fdb.opt = 2,
+      ref.opt.2 = "grouping options across which de-analysis has been computed"
+    )
 
-    give_feedback(msg = "Using input gene set list.", verbose = verbose)
+    methods_de <- base::unique(methods_de)
 
-  } else {
+    check_one_of(
+      input = methods_de,
+      against = validDeAnalysisMethods()
+    )
 
-    if(base::is.character(gene_set_names)){
+    # prepare gene set list
+    if(base::is.list(gene_set_list) && confuns::is_named(gene_set_list)){
 
-      give_feedback(msg = "Using subset of default gene set list.", verbose = verbose)
-
-      check_one_of(
-        input = gene_set_names,
-        against = getGeneSets(object)
-      )
+      give_feedback(msg = "Using input gene set list.", verbose = verbose)
 
     } else {
 
-      give_feedback(msg = "Using default gene set list.", verbose = verbose)
+      if(base::is.character(gene_set_names)){
 
-      gene_set_names <- getGeneSets(object)
+        give_feedback(msg = "Using subset of default gene set list.", verbose = verbose)
 
-    }
-
-    gene_set_list <- getGeneSetList(object)
-
-    gene_set_list <- gene_set_list[gene_set_names]
-
-  }
-
-  for(across_value in across){
-
-    for(method_de in methods_de){
-
-      dea_df <-
-        getDeaResultsDf(
-          object = object,
-          across = across_value,
-          method_de = method_de,
-          max_adj_pval = max_adj_pval,
-          min_lfc = min_lfc,
-          n_highest_lfc = n_highest_lfc,
-          n_lowest_pval = n_lowest_pval
+        check_one_of(
+          input = gene_set_names,
+          against = getGeneSets(object)
         )
-
-      if(!base::is.null(dea_df)){
-
-        group_names <- getGroupNames(object, discrete_feature = across_value)
-
-        n_groups <- base::length(group_names)
-
-        msg <-
-          glue::glue(
-            "Calculating enrichment of signatures across '{across_value}' (n = {n_groups}). ",
-            "Based on results of method '{method_de}'."
-          )
-
-        give_feedback(msg = msg, verbose = verbose)
-
-        object@dea[[of_sample]][[across_value]][[method_de]][["hypeR_gsea"]] <-
-          purrr::map2(
-            .x = group_names,
-            .y = base::seq_along(group_names),
-            .f = function(group, index){
-
-              signature <-
-                dplyr::filter(dea_df, !!rlang::sym(across_value) == {{group}}) %>%
-                dplyr::pull(var = "gene")
-
-              give_feedback(
-                msg = glue::glue("Working on group: '{group}' ({index}/{n_groups})"),
-                verbose = verbose
-              )
-
-              out <-
-                base::tryCatch({
-
-                  hypeR::hypeR(
-                    signature = signature,
-                    genesets = gene_set_list,
-                    test = test,
-                    background = background,
-                    power = power,
-                    absolute = absolute,
-                    fdr = fdr,
-                    pval = pval,
-                    quiet = quiet
-                  )
-
-                }, error = function(error){
-
-                  msg <-
-                    glue::glue(
-                      "Computing enrichment for group '{group}' resulted in an error: {error}."
-                    ) %>%
-                    base::as.character()
-
-                })
-
-              if(base::is.character(out)){
-
-                give_feedback(msg = out, fdb.fn = "warning")
-
-                out <- NA
-
-              } else {
-
-                if(base::isTRUE(reduce)){
-
-                  out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
-
-                }
-
-                out$data <-
-                  dplyr::mutate(
-                    .data = out$data,
-                    overlap_perc = overlap/geneset,
-                    label = base::as.factor(label)
-                  )
-
-              }
-
-              return(out)
-
-            }
-          ) %>%
-          purrr::set_names(nm = group_names) %>%
-          purrr::discard(.p = ~ base::any(base::is.na(.x)))
 
       } else {
 
-        give_feedback(msg = "GSEA results already present.", verbose = verbose)
+        give_feedback(msg = "Using default gene set list.", verbose = verbose)
+
+        gene_set_names <- getGeneSets(object)
+
+      }
+
+      gene_set_list <- getGeneSetList(object)
+
+      gene_set_list <- gene_set_list[gene_set_names]
+
+    }
+
+    for(across_value in across){
+
+      for(method_de in methods_de){
+
+        dea_df <-
+          getDeaResultsDf(
+            object = object,
+            across = across_value,
+            method_de = method_de,
+            max_adj_pval = max_adj_pval,
+            min_lfc = min_lfc,
+            n_highest_lfc = n_highest_lfc,
+            n_lowest_pval = n_lowest_pval
+          )
+
+        if(!base::is.null(dea_df)){
+
+          group_names <- getGroupNames(object, discrete_feature = across_value)
+
+          n_groups <- base::length(group_names)
+
+          msg <-
+            glue::glue(
+              "Calculating enrichment of signatures across '{across_value}' (n = {n_groups}). ",
+              "Based on results of method '{method_de}'."
+            )
+
+          give_feedback(msg = msg, verbose = verbose)
+
+          object@dea[[of_sample]][[across_value]][[method_de]][["hypeR_gsea"]] <-
+            purrr::map2(
+              .x = group_names,
+              .y = base::seq_along(group_names),
+              .f = function(group, index){
+
+                signature <-
+                  dplyr::filter(dea_df, !!rlang::sym(across_value) == {{group}}) %>%
+                  dplyr::pull(var = "gene")
+
+                give_feedback(
+                  msg = glue::glue("Working on group: '{group}' ({index}/{n_groups})"),
+                  verbose = verbose
+                )
+
+                out <-
+                  base::tryCatch({
+
+                    hypeR::hypeR(
+                      signature = signature,
+                      genesets = gene_set_list,
+                      test = test,
+                      background = background,
+                      power = power,
+                      absolute = absolute,
+                      fdr = fdr,
+                      pval = pval,
+                      quiet = quiet
+                    )
+
+                  }, error = function(error){
+
+                    msg <-
+                      glue::glue(
+                        "Computing enrichment for group '{group}' resulted in an error: {error}."
+                      ) %>%
+                      base::as.character()
+
+                  })
+
+                if(base::is.character(out)){
+
+                  give_feedback(msg = out, fdb.fn = "warning")
+
+                  out <- NA
+
+                } else {
+
+                  if(base::isTRUE(reduce)){
+
+                    out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
+
+                  }
+
+                  out$data <-
+                    dplyr::mutate(
+                      .data = out$data,
+                      overlap_perc = overlap/geneset,
+                      label = base::as.factor(label)
+                    )
+
+                }
+
+                return(out)
+
+              }
+            ) %>%
+            purrr::set_names(nm = group_names) %>%
+            purrr::discard(.p = ~ base::any(base::is.na(.x)))
+
+        } else {
+
+          give_feedback(msg = "GSEA results already present.", verbose = verbose)
+
+        }
 
       }
 
     }
 
+    give_feedback(msg = "Done.", verbose = verbose)
+
+    return(object)
+
   }
+)
 
-  give_feedback(msg = "Done.", verbose = verbose)
-
-  return(object)
-
-}
 
 
 

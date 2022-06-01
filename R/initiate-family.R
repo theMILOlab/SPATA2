@@ -761,7 +761,8 @@ initiateSpataObject_10X <- function(directory_10X,
                                     FindClusters = list(resolution = 0.8),
                                     RunTSNE = TRUE,
                                     RunUMAP = list(dims = 1:30),
-                                    verbose = TRUE){
+                                    verbose = TRUE,
+                                    ...){
 
   # 1. Control --------------------------------------------------------------
 
