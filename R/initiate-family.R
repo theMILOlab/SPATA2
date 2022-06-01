@@ -726,7 +726,8 @@ initiateSpataObject_10X <- function(directory_10X,
                                     FindClusters = list(resolution = 0.8),
                                     RunTSNE = TRUE,
                                     RunUMAP = list(dims = 1:30),
-                                    verbose = TRUE){
+                                    verbose = TRUE,
+                                    ...){
 
   # 1. Control --------------------------------------------------------------
 
@@ -787,7 +788,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
    confuns::give_feedback(msg = glue::glue("Loading from directory: '{data_dir}'"), verbose = verbose)
 
-   seurat_object <- Seurat::Load10X_Spatial(data.dir = data_dir, filename = "filtered_feature_bc_matrix.h5")
+   seurat_object <- Seurat::Load10X_Spatial(data.dir = data_dir, filename = "filtered_feature_bc_matrix.h5", ...)
 
   } else {
 
