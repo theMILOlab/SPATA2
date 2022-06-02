@@ -186,7 +186,8 @@ plotSurfaceBase <- function(object,
       smooth_span = smooth_span,
       pt_clrp = pt_clrp,
       xrange = xrange,
-      yrange = yrange
+      yrange = yrange,
+      clrp_adjust = clrp_adjust
     )
 
   } else {
@@ -335,6 +336,7 @@ addPointsBase <- function(object,
                           pt_size = 1,
                           pt_clrp = "default",
                           pt_clrsp = "inferno",
+                          clrp_adjust = NULL,
                           smooth = NULL,
                           smooth_span = NULL,
                           xrange = NULL,

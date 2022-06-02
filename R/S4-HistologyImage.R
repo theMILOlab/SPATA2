@@ -171,16 +171,28 @@ check_image_annoation_tags <- function(object, tags = NULL, ...){
 #' @return An updated spata object.
 #' @export
 #'
-addImageAnnotation <- function(object, tags, area_df){
+addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   confuns::check_data_frame(
     df = area_df,
     var.class = list(x = "numeric", y = "numeric")
   )
 
-  number <- lastImageAnnotation(object) + 1
+  if(base::is.character(id)){
 
-  id <- stringr::str_c("img_ann_", number)
+    confuns::check_none_of(
+      input = id,
+      against = getImageAnnotationIds(object),
+      ref.against = "image annotation IDs"
+    )
+
+  } else {
+
+    number <- lastImageAnnotation(object) + 1
+
+    id <- stringr::str_c("img_ann_", number)
+
+  }
 
   img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
 

@@ -45,6 +45,14 @@ annotateImage <- function(object){
 
           shinyhelper::observe_helpers()
 
+          fnames <-
+            getFeatureNames(object) %>%
+            base::unname()
+
+          gene_sets <- getGeneSets(object)
+
+          genes <- getGenes(object)
+
           mai_vec <- base::rep(0.5, 4)
 
           # reactive values
@@ -90,6 +98,51 @@ annotateImage <- function(object){
           )
 
           # render UIs
+
+          output$color_by_var <- shiny::renderUI({
+
+            shinyWidgets::pickerInput(
+              inputId = "color_by_var",
+              label = NULL,
+              choices = color_by_choices(),
+              options = list(`live-search` = TRUE),
+              multiple = F
+            )
+
+          })
+
+          output$img_ann_labeling <- shiny::renderUI({
+
+            if(input$drawing_option == "Single"){
+
+              out <-
+                shiny::tagList(
+                  shiny::fluidRow(shiny::tags$h5(shiny::strong("Tag image annotation:"))),
+                  shiny::fluidRow(
+                      shiny::uiOutput(outputId = "tags")
+                  ),
+                  shiny::fluidRow(shiny::tags$h5(shiny::strong("Name image annotation:"))),
+                  shiny::fluidRow(
+                    shiny::textInput(inputId = "img_ann_id", label = NULL, placeholder = "name ...", width = "100%")
+                  )
+                )
+
+
+            } else if(input$drawing_option == "Multiple"){
+
+              out <-
+                shiny::tagList(
+                  shiny::fluidRow(shiny::tags$h5(shiny::strong("Tag image annotations:"))),
+                  shiny::fluidRow(
+                    shiny::uiOutput(outputId = "tags")
+                  )
+                )
+            }
+
+            return(out)
+
+          })
+
           output$tags <- shiny::renderUI({
 
             shiny::selectizeInput(
@@ -97,12 +150,52 @@ annotateImage <- function(object){
               label = NULL,
               choices = getImageAnnotationTags(spata_object()),
               multiple = TRUE,
-              options = list(create = TRUE)
+              options = list(create = TRUE),
+              width = "100%"
             )
 
           })
 
           # reactive expressions
+          color_by_choices <- shiny::reactive({
+
+            if(input$color_by_opt == "nothing"){
+
+              out <- NULL
+
+            } else if(input$color_by_opt == "genes"){
+
+              out <- genes
+
+            } else if(input$color_by_opt == "gene_sets"){
+
+              out <- gene_sets
+
+            } else if(input$color_by_opt == "features"){
+
+              out <- fnames
+
+            }
+
+            return(out)
+
+          })
+
+          color_by_var <- shiny::reactive({
+
+            if(!base::is.null(color_by_choices())){
+
+              out <- input$color_by_var
+
+            } else {
+
+              out <- NULL
+
+            }
+
+            return(out)
+
+          })
 
           current_zooming <- shiny::reactive({
 
@@ -129,6 +222,22 @@ annotateImage <- function(object){
 
           })
 
+          pt_alpha <- shiny::reactive({
+
+            if(!base::is.null(color_by_var())){
+
+              out <- 1 -input$pt_transparency
+
+            } else {
+
+              out <- 0
+
+            }
+
+            return(out)
+
+          })
+
           xrange <- shiny::reactive({
 
             if(n_zooms() == 0){
@@ -148,7 +257,6 @@ annotateImage <- function(object){
           })
 
           yrange <- shiny::reactive({
-
 
             if(n_zooms() == 0){
 
@@ -201,6 +309,20 @@ annotateImage <- function(object){
           oe <- shiny::observeEvent(input$dbl_click, {
 
             # switch between drawing() == TRUE and drawing() == FALSE
+            if(base::isFALSE(drawing()) & # if dbl click is used to start drawing again
+               input$drawing_option == "Single" &
+               n_polygons() != 0){ # if there is already a drawn polygon
+
+              confuns::give_feedback(
+                msg = "Drawing option is set to 'Single.' If you want to create several annotations simultaneously switch to 'Multiple'.",
+                fdb.fn = "stop",
+                in.shiny = TRUE,
+                with.time = FALSE,
+                duration = 15
+              )
+
+            }
+
             current_val <- drawing()
             drawing(!current_val)
 
@@ -316,6 +438,36 @@ annotateImage <- function(object){
               case_false = "no_tags"
             )
 
+            if(input$drawing_option == "Single"){
+
+              id <- input$img_ann_id
+
+              checkpoint(
+                evaluate = !n_polygons() > 1,
+                case_false = "too_many_polygons"
+              )
+
+              checkpoint(
+                evaluate = id != "",
+                case_false = "no_name"
+              )
+
+              checkpoint(
+                evaluate = stringr::str_detect(id, pattern = "^[A-Za-z]"),
+                case_false = "invalid_id"
+              )
+
+              checkpoint(
+                evaluate = !id %in% getImageAnnotationIds(spata_object()),
+                case_false = "name_in_use"
+              )
+
+            } else if(input$drawing_option == "Multiple") {
+
+              id <- NULL
+
+            }
+
             object <- spata_object()
 
             for(i in 1:n_polygons()){
@@ -324,13 +476,14 @@ annotateImage <- function(object){
                 addImageAnnotation(
                   object = object,
                   tags = input$tags,
-                  area_df = polygon_list$dfs[[i]]
+                  area_df = polygon_list$dfs[[i]],
+                  id = id
                   )
 
             }
 
             ref1 <- n_polygons()
-            ref2 <- base::ifelse(ref1 == 1, "polygon", "polygons")
+            ref2 <- base::ifelse(ref1 == 1, "annotation", "annotations")
 
             give_feedback(msg = glue::glue("Added {ref1} {ref2}."), in.shiny = TRUE)
 
@@ -363,8 +516,9 @@ annotateImage <- function(object){
 
             plotSurfaceBase(
               object = object,
-              color_by = NULL,
-              pt_alpha = 0,
+              color_by = color_by_var(),
+              pt_alpha = pt_alpha(),
+              pt_size = input$pt_size,
               display_image = TRUE,
               display_axes = FALSE,
               xrange = xrange(),
@@ -380,7 +534,7 @@ annotateImage <- function(object){
                 graphics::polygon(
                   x = polygon_list$dfs[[i]][["x"]],
                   y = polygon_list$dfs[[i]][["y"]],
-                  lwd = 2.5,
+                  lwd = input$linesize,
                   lty = "solid",
                   col = ggplot2::alpha("orange", alpha = 0.25)
                 )
@@ -400,6 +554,7 @@ annotateImage <- function(object){
                 x = polygon_vals$x,
                 y = polygon_vals$y,
                 type = "l",
+                lwd = input$linesize,
                 xlim = xrange(),
                 ylim = yrange(),
                 xlab = NA_character_,

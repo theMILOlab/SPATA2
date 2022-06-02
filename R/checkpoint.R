@@ -22,6 +22,9 @@ checkpoint <- function(evaluate = TRUE,
 
                          # naming
                          no_name = "Could not save. Please enter a valid name",
+                         invalid_id = "Invalid input. ID must start with a letter.",
+                         name_in_use = "ID is already in use.",
+                         too_many_polygons = "Drawing option is set to 'Single'. Can not save multiple annotations.",
 
                          # segmentation
                          ann_var_already_exists = "This name is already used by another annotation variable.",
