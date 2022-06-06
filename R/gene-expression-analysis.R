@@ -118,7 +118,7 @@ runDeAnalysis <- function(object,
 
           base::message(glue::glue("Skipping de-analysis on across-input '{across}' with method '{method}' as it resulted in the following error message: {error}"))
 
-          base::return(object)
+          return(object)
 
          }
         )
@@ -128,7 +128,7 @@ runDeAnalysis <- function(object,
   }
 
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -207,7 +207,7 @@ filterDeaDf <- function(dea_df,
   dea_df <-
     dplyr::ungroup(dea_df) %>%
     confuns::check_across_subset(df = ., across = across, across.subset = across_subset, relevel = relevel) %>%
-    dplyr::filter(!avg_logFC %in% c(Inf, -Inf) & !avg_logFC < 0) %>%
+    dplyr::filter(!avg_logFC %in% c(Inf, -Inf)) %>%
     dplyr::group_by(!!rlang::sym(across))
 
   across_subset <-
@@ -254,24 +254,24 @@ filterDeaDf <- function(dea_df,
       dplyr::pull(res_df, gene) %>%
       magrittr::set_names(value = dplyr::pull(res_df, var = {{across}}))
 
-    base::return(res)
+    return(res)
 
   } else if(return == "data.frame") {
 
-    base::return(res_df)
+    return(res_df)
 
   } else if(return == "list"){
 
-    purrr::map(.x = across_subset, .f = function(i){
+    res <-
+      purrr::map(.x = across_subset, .f = function(i){
 
-      dplyr::filter(.data = res_df, !!rlang::sym(across) == {{i}}) %>%
-        dplyr::pull(gene)
+        dplyr::filter(.data = res_df, !!rlang::sym(across) == {{i}}) %>%
+          dplyr::pull(gene)
 
-    }) %>%
+      }) %>%
+        magrittr::set_names(value = across_subset)
 
-      res <- magrittr::set_names(value = across_subset)
-
-      base::return(res)
+      return(res)
 
   }
 

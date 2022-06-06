@@ -173,6 +173,35 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
 
 
+# s -----------------------------------------------------------------------
+
+shift_frame <- function(current_frame, new_center){
+
+  current_center <-
+    c(
+      x = (current_frame$xmax - current_frame$xmin) / 2,
+      y = (current_frame$ymax - current_frame$ymin) / 2
+    )
+
+  xdif <- current_center["x"] - new_center["x"]
+  ydif <- current_center["y"] - new_center["y"]
+
+  xdif <- base::unname(xdif)
+  ydif <- base::unname(ydif)
+
+  new_frame <-
+    list(
+      xmin = current_frame$xmin - xdif,
+      xmax = current_frame$xmax - xdif,
+      ymin = current_frame$ymin - ydif,
+      ymax = current_frame$ymax - ydif
+    )
+
+  return(new_frame)
+
+}
+
+
 
 
 

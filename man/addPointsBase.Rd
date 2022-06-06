@@ -12,6 +12,7 @@ addPointsBase(
   pt_size = 1,
   pt_clrp = "default",
   pt_clrsp = "inferno",
+  clrp_adjust = NULL,
   smooth = NULL,
   smooth_span = NULL,
   xrange = NULL,
@@ -20,6 +21,11 @@ addPointsBase(
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{xrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
 with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped

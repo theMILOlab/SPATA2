@@ -112,6 +112,7 @@ Collate:
     'rename-family.R'
     'set-family.R'
     'shiny-dashboard-tab-items.R'
+    'shinyWrapper.R'
     'showColors.R'
     'spata-object-manipulation.R'
     'spatial-correlation.R'

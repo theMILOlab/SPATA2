@@ -12,6 +12,7 @@ showModels(
   pattern_subset = NULL,
   pattern_remove = NULL,
   pattern_add = NULL,
+  pretty_names = TRUE,
   ...
 )
 }

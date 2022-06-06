@@ -2,9 +2,12 @@
 % Please edit documentation in R/plotSurfaceBase.R
 \name{plotImage}
 \alias{plotImage}
+\alias{plotImageGgplot}
 \title{Plot histology image}
 \usage{
 plotImage(object, xrange = NULL, yrange = NULL, ...)
+
+plotImageGgplot(object)
 }
 \arguments{
 \item{object}{A valid spata-object.}

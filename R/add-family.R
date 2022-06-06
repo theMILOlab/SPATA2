@@ -532,6 +532,8 @@ discardFeatures <- function(object, feature_names, of_sample = NA){
 
     feature_df[[feature]] <- NULL
 
+    object@dea[[1]][[feature]] <- NULL
+
   }
 
   object <- setFeatureDf(object, feature_df = feature_df, of_sample = of_sample)

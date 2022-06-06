@@ -190,13 +190,14 @@ helper_content <- list(
 
   overview =
   c( "Choose the annotation variable that you want to alter. If you want to create a new one
-     click on 'New annotation variable' and you are prompted to enter the name the new annotation will carry.
+     click on 'Create new annotation variable' and you are prompted to enter the name of the new annotation variable.
      It can then be selected. The surface plot below shows the annotation variable you are currently working on
      and colors it according to the regions you have named.",
     "",
     "('unnamed' is the default group name that is assigned to every transcriptomic spot by creating a new annotation variable.)"),
-  interaction =
-    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+  interaction_annotate_barcodes =
+    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions that contain the barcode spots you want to annotate.",
+      "",
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
@@ -204,11 +205,26 @@ helper_content <- list(
       the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
       starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
       "",
-      " Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate. If so, click on 'Annotate'.
-       You are then prompted to choose the name you want to annotate the transcriptomic spots with that fall into this area.
-       This can either be a new name or one that has already been assigned within the variable. Then click on the respective 'Save annotation'-button.
-       The 'Overview'-plot on the left should now display the annoated region. Note that the higlighted region will stay until you click on
-      reset. (If you notice a typo in the annotation you can repeat the naming process.)"),
+      " Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate.
+       You are then prompted to choose the name you want to annotate the barcode spots with that fall into this area.
+       This can either be a new name or one that has already been assigned within the variable. Then click on 'Annotate'.
+       The 'Overview'-plot on the left should now display the annoated region in addition to all the other regions that
+       you have annotated already."),
+  interaction_annotate_image =
+    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+      "",
+      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
+      "",
+      "Encircling: By doubleckling on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
+      the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
+      starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
+      "",
+      "Tagging: Provide additional information about the annotated structure in form of bullet points that can be used later on
+      to group and/or separate them.",
+      "",
+      "Naming: This creates the image annotation id to uniquely identify each annotation. If you chose the drawing mode 'Single' you can name the annotated structure individually. If you are using 'Multiple' the
+      names are automatically generated as a combination of 'img_ann' and a number."),
   orientation =
     c(" This plot mainly stays as is. Once you start zooming in on the interactive plot a rectangle is drawn to visualize where you currently are.")
 

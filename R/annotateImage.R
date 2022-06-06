@@ -111,19 +111,50 @@ annotateImage <- function(object){
 
           })
 
+          output$img_ann_ids <- shiny::renderUI({
+
+            shiny::req(base::length(img_ann_ids()) >= 1)
+
+            shinyWidgets::checkboxGroupButtons(
+              inputId = "img_ann_ids",
+              label = "Image annotations:",
+              choices = img_ann_ids(),
+              selected = utils::head(img_ann_ids(), 4)
+            )
+
+          })
+
           output$img_ann_labeling <- shiny::renderUI({
 
             if(input$drawing_option == "Single"){
 
+              val <- stringr::str_c("img_ann", (lastImageAnnotation(spata_object()) + 1), sep = "_")
+
               out <-
                 shiny::tagList(
+                  shiny::fluidRow(shiny::tags$h5(shiny::strong("Pick action:"))),
+                  shiny::fluidRow(
+                    shiny::splitLayout(
+                      shiny::actionButton(
+                        inputId = "highlight",
+                        label = "Highlight",
+                        width = "100%"
+                      ),
+                      shiny::actionButton(
+                        inputId = "reset",
+                        label = "Reset",
+                        width = "100%"
+                      ),
+                      cellWidths = c("50%", "50%")
+                    )
+                  ),
                   shiny::fluidRow(shiny::tags$h5(shiny::strong("Tag image annotation:"))),
                   shiny::fluidRow(
                       shiny::uiOutput(outputId = "tags")
                   ),
                   shiny::fluidRow(shiny::tags$h5(shiny::strong("Name image annotation:"))),
                   shiny::fluidRow(
-                    shiny::textInput(inputId = "img_ann_id", label = NULL, placeholder = "name ...", width = "100%")
+                    shiny::textInput(inputId = "img_ann_id", label = NULL, value = val, width = "100%")
                   )
                 )
 
@@ -132,6 +163,22 @@ annotateImage <- function(object){
 
               out <-
                 shiny::tagList(
+                  shiny::fluidRow(shiny::tags$h5(shiny::strong("Pick action:"))),
+                  shiny::fluidRow(
+                    shiny::splitLayout(
+                      shiny::actionButton(
+                        inputId = "reset_all",
+                        label = "Reset All",
+                        width = "100%"
+                      ),
+                      shiny::actionButton(
+                        inputId = "reset_last",
+                        label = "Reset Last",
+                        width = "100%"
+                      ),
+                      cellWidths = c("50%", "50%")
+                    )
+                  ),
                   shiny::fluidRow(shiny::tags$h5(shiny::strong("Tag image annotations:"))),
                   shiny::fluidRow(
                     shiny::uiOutput(outputId = "tags")
@@ -206,6 +253,40 @@ annotateImage <- function(object){
           default_ranges <- shiny::reactive({
 
             getImageRange(object = spata_object())
+
+          })
+
+          img_ann_ids <- shiny::reactive({
+
+            getImageAnnotationIds(object = spata_object())
+
+          })
+
+          n_col <- shiny::reactive({
+
+            if(input$ncol == 0){
+
+              NULL
+
+            } else {
+
+              input$ncol
+
+            }
+
+          })
+
+          n_row <- shiny::reactive({
+
+            if(input$nrow == 0){
+
+              NULL
+
+            } else {
+
+              input$nrow
+
+            }
 
           })
 
@@ -305,7 +386,6 @@ annotateImage <- function(object){
 
 
           # drawing
-
           oe <- shiny::observeEvent(input$dbl_click, {
 
             # switch between drawing() == TRUE and drawing() == FALSE
@@ -325,6 +405,36 @@ annotateImage <- function(object){
 
             current_val <- drawing()
             drawing(!current_val)
+
+            if(input$drawing_option == "Single"){
+
+              # nothing
+
+            } else if(input$drawing_option == "Multiple"){ # close polygon
+
+              if(!drawing()){
+
+                polygon_list$dfs[[(n_polygons() + 1)]] <-
+                  base::data.frame(
+                    x = polygon_vals$x,
+                    y = polygon_vals$y
+                  )
+
+              }
+
+              polygon_vals$x <- NULL
+              polygon_vals$y <- NULL
+
+            }
+
+          })
+
+          oe <- shiny::observeEvent(input$highlight, {
+
+            checkpoint(
+              evaluate = !drawing(),
+              case_false = "still_drawing"
+            )
 
             if(!drawing()){
 
@@ -383,6 +493,21 @@ annotateImage <- function(object){
 
           })
 
+          # zooming in and out via shortcuts
+          oe <- shiny::observeEvent(input$keys, {
+
+            if(input$keys == "d"){
+
+              drawing(TRUE)
+
+            } else {
+
+              drawing(FALSE)
+
+            }
+
+          })
+
           # zooming add ons
           oe <- shiny::observeEvent(interactive$zooming,{
 
@@ -409,6 +534,15 @@ annotateImage <- function(object){
           })
 
           # reset polygons
+          oe <- shiny::observeEvent(input$reset, {
+
+            polygon_vals$x <- NULL
+            polygon_vals$y <- NULL
+
+            polygon_list$dfs <- list()
+
+          })
+
           oe <- shiny::observeEvent(input$reset_all, {
 
             polygon_list$dfs <- list()
@@ -423,19 +557,12 @@ annotateImage <- function(object){
 
           })
 
-
           # add annotation
-
           oe <- shiny::observeEvent(input$add_annotation, {
 
             checkpoint(
               evaluate = n_polygons() >= 1,
               case_false = "no_polygons"
-            )
-
-            checkpoint(
-              evaluate = base::length(input$tags) >= 1,
-              case_false = "no_tags"
             )
 
             if(input$drawing_option == "Single"){
@@ -508,7 +635,28 @@ annotateImage <- function(object){
 
           output$annotation_plot <- shiny::renderPlot({
 
-            annotation_plot()
+            shiny::validate(
+              shiny::need(
+                expr = shiny::isTruthy(img_ann_ids()),
+                message = "No image annotations added."
+              )
+            )
+
+            plotImageAnnotations(
+              object = spata_object(),
+              ids = input$img_ann_ids,
+              expand = input$expand,
+              square = input$square,
+              encircle = input$encircle,
+              linesize = input$linesize2,
+              alpha = (1 - input$transparency),
+              display_title = input$title,
+              display_subtitle = input$subtitle,
+              display_caption = input$caption,
+              nrow = n_row(),
+              ncol = n_col()
+            )
+
 
           })
 
@@ -518,9 +666,11 @@ annotateImage <- function(object){
               object = object,
               color_by = color_by_var(),
               pt_alpha = pt_alpha(),
+              pt_clrp = getDefault(object, "pt_clrp"),
+              pt_clrsp = getDefault(object, "pt_clrsp"),
               pt_size = input$pt_size,
               display_image = TRUE,
-              display_axes = FALSE,
+              display_axes = TRUE,
               xrange = xrange(),
               yrange = yrange(),
               mai = mai_vec,
@@ -547,7 +697,7 @@ annotateImage <- function(object){
 
           output$plot_sm <- shiny::renderPlot({
 
-            if(drawing()){
+            if(input$drawing_option == "Single" | drawing()){
 
               graphics::par(pty = "s", mai = mai_vec)
               graphics::plot(
@@ -561,7 +711,7 @@ annotateImage <- function(object){
                 ylab = NA_character_,
                 #lwd = input$linesize,
                 axes = FALSE,
-                main = "You are drawing"
+                main = base::ifelse(test = drawing(), yes = "You are drawing", no = "")
               )
 
             } else {

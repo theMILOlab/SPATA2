@@ -315,6 +315,17 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 }
 
 
+#' @rdname plotImage
+#' @export
+plotImageGgplot <- function(object){
+
+  ggpInit(object) +
+    ggpLayerImage(object) +
+    ggpLayerFrameByImage(object) +
+    ggpLayerThemeCoords()
+
+}
+
 
 
 

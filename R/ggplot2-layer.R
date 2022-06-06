@@ -323,8 +323,8 @@ ggpLayerImageAnnotation <- function(object = "object",
                                     test = "any",
                                     alpha = 0.5,
                                     fill = NA,
-                                    color = "black",
-                                    size = 1.5,
+                                    linecolor = "black",
+                                    linesize = 1.5,
                                     linetype = "solid",
                                     display_color = FALSE,
                                     clrp = NULL,
@@ -354,7 +354,7 @@ ggpLayerImageAnnotation <- function(object = "object",
         geom = ggplot2::GeomPolygon,
         mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
         data = img_ann_df,
-        params = list(alpha = alpha, size = size, linetype = linetype)
+        params = list(alpha = alpha, size = linesize, linetype = linetype)
       )
 
     out$scale_color_add_on <-
@@ -384,7 +384,7 @@ ggpLayerImageAnnotation <- function(object = "object",
         geom = ggplot2::GeomPolygon,
         mapping = ggplot2::aes(x = x, y = y, group = ids),
         data = img_ann_df,
-        params = list(alpha = alpha, size = size, linetype = linetype, fill = fill, color = color)
+        params = list(alpha = alpha, size = linesize, linetype = linetype, fill = fill, color = linecolor)
       )
   }
 

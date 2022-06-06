@@ -2,12 +2,18 @@
 % Please edit documentation in R/image-handling.R
 \name{flipImage}
 \alias{flipImage}
+\alias{rotateImage}
 \title{Flip object image}
 \usage{
-flipImage(object)
+flipImage(object, axis = "x")
+
+rotateImage(object, angle)
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{axis}{Character value. Either \emph{'x'} or \emph{'y'}. Denotes
+the axis around which the image is flipped.}
 }
 \value{
 An updated spata-object.

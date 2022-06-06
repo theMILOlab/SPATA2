@@ -4,7 +4,7 @@
 \alias{addImageAnnotation}
 \title{Add image annotation}
 \usage{
-addImageAnnotation(object, tags, area_df)
+addImageAnnotation(object, tags, area_df, id = NULL)
 }
 \arguments{
 \item{area_df}{A data.frame that contains at least two numeric variables named

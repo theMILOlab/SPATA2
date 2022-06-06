@@ -194,6 +194,12 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   }
 
+  if(!shiny::isTruthy(tags)){
+
+    tags <- "none"
+
+  }
+
   img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
 
   image_obj <- getImageObject(object)
@@ -299,7 +305,7 @@ discardImageAnnotations <- function(object, ids){
 
   io <- getImageObject(object)
 
-  io@annotations <- confuns::lselect(io@annotations, -dplyr::all_of(ids))
+  io@annotations <- io@annotations[!base::names(io@annotations) %in% ids]
 
   object <- setImageObject(object, image_object = io)
 
@@ -509,9 +515,20 @@ getImageAnnotations <- function(object,
                                 add_image = TRUE,
                                 expand = 0,
                                 square = FALSE,
-                                flatten = FALSE){
+                                flatten = FALSE,
+                                check = FALSE){
 
   img_annotations <- getImageObject(object)@annotations
+
+  if(base::isTRUE(check)){
+
+    check_availability(
+      test = base::length(img_annotations) >= 1,
+      ref_x = "any image annotations",
+      ref_fns = "`annotateImage()`"
+    )
+
+  }
 
   if(base::is.character(ids)){
 
@@ -725,7 +742,8 @@ getImageAnnotationTags <- function(object){
         .x = getImageAnnotations(object, add_image = FALSE),
         .f = ~ .x@tags
       ) %>%
-      purrr::flatten_chr()
+      purrr::flatten_chr() %>%
+      base::unique()
 
   } else {
 
@@ -891,7 +909,8 @@ plotImageAnnotations <- function(object,
       tags = tags,
       test = test,
       expand = expand,
-      square = square
+      square = square,
+      check = TRUE
     )
 
   plist <-
@@ -956,15 +975,7 @@ plotImageAnnotations <- function(object,
 
           plot_out <-
             plot_out +
-            ggplot2::labs(
-              subtitle = scollapse(
-                string = confuns::make_pretty_names(img_ann@tags),
-                sep = ", ",
-                last = " & "
-              ) %>% stringr::str_c("Tags: ", .)
-            ) +
-            ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
-
+            ggplot2::labs(subtitle = img_ann@id)
 
         }
 
@@ -972,7 +983,14 @@ plotImageAnnotations <- function(object,
 
           plot_out <-
             plot_out +
-            ggplot2::labs(caption = img_ann@id)
+            ggplot2::labs(
+              caption = scollapse(
+                string = img_ann@tags,
+                sep = ", ",
+                last = " & "
+              ) %>% stringr::str_c("Tags: ", .)
+            ) +
+            ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 
         }
 

@@ -26,8 +26,9 @@ getDeaGenes(
   method_de = "wilcox",
   max_adj_pval = NULL,
   min_lfc = NULL,
-  n_highest_lfc = 50,
-  n_lowest_pval = 50,
+  n_highest_lfc = NULL,
+  n_lowest_pval = NULL,
+  flatten = TRUE,
   of_sample = NA
 )
 }

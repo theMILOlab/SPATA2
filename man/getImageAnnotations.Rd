@@ -13,7 +13,8 @@ getImageAnnotations(
   add_image = TRUE,
   expand = 0,
   square = FALSE,
-  flatten = FALSE
+  flatten = FALSE,
+  check = FALSE
 )
 }
 \arguments{

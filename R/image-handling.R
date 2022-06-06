@@ -66,13 +66,15 @@ flipImageAndCoords <- function(object){
 #' @description Flips image dimensions to align with coordinates in case
 #' of non matching image and coordinates.
 #'
+#' @param axis Character value. Either \emph{'x'} or \emph{'y'}. Denotes
+#' the axis around which the image is flipped.
 #' @inherit argument_dummy params
 #'
 #' @return An updated spata-object.
 #' @export
 #'
 
-flipImage <- function(object){
+flipImage <- function(object, axis = "x"){
 
   of_sample <- check_sample(object)
 
@@ -86,7 +88,19 @@ flipImage <- function(object){
 
   io@info$flipped <- !io@info$flipped
 
-  io@image <- EBImage::flip(io@image)
+  if(axis == "x"){
+
+    io@image <- EBImage::flip(io@image)
+
+  } else if(axis == "y"){
+
+    io@image <- EBImage::flop(io@image)
+
+  } else {
+
+    stop("Axis must either be 'x' or 'y'.")
+
+  }
 
   object <- setImageObject(object, image_object = io)
 
@@ -94,5 +108,19 @@ flipImage <- function(object){
 
 }
 
+#' @rdname flipImage
+#' @export
+rotateImage <- function(object, angle){
 
+  stopifnot(angle %in% c(90, 180))
+
+  io <- getImageObject(object)
+
+  io@image <- EBImage::rotate(x = io@image, angle = angle)
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+
+}
 

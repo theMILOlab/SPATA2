@@ -72,6 +72,7 @@ showModels <- function(input = 100,
                        pattern_subset = NULL,
                        pattern_remove = NULL,
                        pattern_add = NULL,
+                       pretty_names = TRUE,
                        ...){
 
   mdf <-
@@ -88,6 +89,14 @@ showModels <- function(input = 100,
       names_to = "pattern",
       values_to = "values"
     )
+
+  if(base::isTRUE(pretty_names)){
+
+    mdf$pattern <-
+      make_pretty_model_names(mdf$pattern) %>%
+      stringr::str_remove(pattern = "^m_")
+
+    }
 
   ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
     ggplot2::geom_path() +

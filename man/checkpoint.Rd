@@ -8,23 +8,24 @@ checkpoint(
   evaluate = TRUE,
   case_false = NULL,
   error_notifications = list(no_name = "Could not save. Please enter a valid name",
+    invalid_id = "Invalid input. ID must start with a letter.", name_in_use =
+    "ID is already in use.", too_many_polygons =
+    "Drawing option is set to 'Single'. Can not save multiple annotations.",
     ann_var_already_exists = "This name is already used by another annotation variable.",
     insufficient_n_vertices = "Please determine at least three vertices.",
     insufficient_n_vertices2 =
-    "Please determine at least two vertices and highlight the trajectory.",
+    "Please determine at least two vertices and highlight the trajectory.",     
     invalid_segment_name = "Please enter a valid name for the segment.",
     no_ann_var_chosen = "Please create an annotation variable first.", no_chosen_name =
-    "There are no names to choose from.",      not_highlighted =
+    "There are no names to choose from.", not_highlighted =
     "Please highlight the region with a click on 'Highlight'.", no_polygons =
-    "No area encircled.", no_tags =
-    "Please enter at least one tag with which to annotate the areas.", not_zoomed_in =
-    "Completely zoomed out.", occupied_segment_name =
-    "This segment name is already taken.", segment_name_not_found =
+    "No area encircled.", not_zoomed_in = "Completely zoomed out.", occupied_segment_name
+    = "This segment name is already taken.", segment_name_not_found =
     "Could not find the specified segment.", invalid_group_name =
-    "Group names must start with a letter and must contain at least one letter.",
+    "Group names must start with a letter and must contain at least one letter.",     
     still_drawing =
     "You are still drawing. Double click on the plot to leave the drawing mode. Then click on 'Highlight' again.",
-         occupied_trajectory_name = "This trajectory name is already taken.",
+    occupied_trajectory_name = "This trajectory name is already taken.",
     invalid_trajectory_name = "Please enter a valid name for the trajectory.",
     insufficient_n_genes = "Please determine at least two genes.", invalid_gs_string1 =
     "The class-prefix must not contain '_'.", invalid_gs_string2 =

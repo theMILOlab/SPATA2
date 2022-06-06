@@ -261,8 +261,9 @@ getDeaGenes <- function(object,
                         method_de = "wilcox",
                         max_adj_pval = NULL,
                         min_lfc = NULL,
-                        n_highest_lfc = 50,
-                        n_lowest_pval = 50,
+                        n_highest_lfc = NULL,
+                        n_lowest_pval = NULL,
+                        flatten = TRUE,
                         of_sample = NA){
 
   # 1. Control --------------------------------------------------------------
@@ -284,13 +285,23 @@ getDeaGenes <- function(object,
 
   }
 
+  if(base::isTRUE(flatten)){
+
+    return <- "vector"
+
+  } else {
+
+    return <- "list"
+
+  }
+
   dea_results <- filterDeaDf(dea_df = de_result_list[["data"]],
                              across_subset = across_subset,
                              max_adj_pval = max_adj_pval,
                              min_lfc = min_lfc,
                              n_highest_lfc = n_highest_lfc,
                              n_lowest_pval = n_lowest_pval,
-                             return = "vector")
+                             return = return)
 
   # 3. Return ---------------------------------------------------------------
 
@@ -1281,7 +1292,7 @@ getImageDirLowres <- function(object, check = TRUE){
 
   dir_lowres <- getImageObject(object)@dir_lowres
 
-  if(base::is.na(dir_lowres)){
+  if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
 
     stop("Could not find directory to low resolution image. Set with `setImageLowresDir()`.")
 
@@ -1304,7 +1315,7 @@ getImageDirHighres <- function(object, check = TRUE){
 
   dir_highres <- getImageObject(object)@dir_highres
 
-  if(base::is.na(dir_highres)){
+  if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
 
     stop("Could not find directory to high resolution image. Set with `setImageHighresDir()`.")
 

@@ -560,7 +560,8 @@ plotSurfaceComparison <- function(object,
       cols = dplyr::all_of(variables),
       names_to = "variables",
       values_to = "values"
-    )
+    ) %>%
+    dplyr::mutate(variables = base::factor(variables, levels = base::unique(color_by)))
 
   # plotting
 

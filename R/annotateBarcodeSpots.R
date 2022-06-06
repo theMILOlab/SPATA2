@@ -59,6 +59,8 @@ annotateBarcodeSpots <- function(object){
 
             shinydashboard::dashboardBody(
 
+              shinybusy::add_busy_spinner(spin = "cube-grid", color = "red"),
+
               shinydashboard::tabItems(
 
                 shinydashboard::tabItem(
@@ -124,7 +126,7 @@ annotateBarcodeSpots <- function(object){
                     shiny::column(
                       width = 4,
                       shiny::wellPanel(
-                        shiny::tags$h3(shiny::strong("Interaction")) %>% add_helper(content = helper_content$interaction),
+                        shiny::tags$h3(shiny::strong("Interaction")) %>% add_helper(content = helper_content$interaction_annotate_barcodes),
                         shiny::helpText("Interactively select and name regions."),
                         shiny::fluidRow(
                           shiny::column(
@@ -182,50 +184,68 @@ annotateBarcodeSpots <- function(object){
                         ),
                         shiny::HTML(text = base::rep("<br>", 22) %>% stringr::str_c(collapse = "")),
                         shiny::fluidRow(
+                          #shiny::column(width = 1),
                           shiny::column(
-                            width = 7,
-                            align = "center",
-                            shiny::splitLayout(
-                              shiny::actionButton(
-                                inputId = "zoom_in",
-                                label = "Zoom in",
-                                width = "100%"
-                              ),
-                              shiny::actionButton(
-                                inputId = "zoom_back",
-                                label = "Zoom back",
-                                width = "100%"
-                              ),
-                              shiny::actionButton(
-                                inputId = "zoom_out",
-                                label = "Zoom out",
-                                width = "100%"
-                              ),
-                              cellWidths = "33%"
+                            width = 6,
+                            #align = "center",
+                            shiny::fluidRow(
+                              shiny::column(
+                                width = 12,
+                                align = "center",
+                                shiny::fluidRow(shiny::tags$h5(shiny::strong("Zooming options:"))),
+                                shiny::splitLayout(
+                                  shiny::actionButton(
+                                    inputId = "zoom_in",
+                                    label = "Zoom in",
+                                    width = "100%"
+                                  ),
+                                  shiny::actionButton(
+                                    inputId = "zoom_back",
+                                    label = "Zoom back",
+                                    width = "100%"
+                                  ),
+                                  shiny::actionButton(
+                                    inputId = "zoom_out",
+                                    label = "Zoom out",
+                                    width = "100%"
+                                  ),
+                                  cellWidths = "33%"
+                                )
+                              )
                             )
                           ),
+                          shiny::column(width = 1),
                           shiny::column(
-                            width = 5,
-                            align = "center",
-                            shiny::splitLayout(
-                              shiny::actionButton(
-                                inputId = "highlight_region",
-                                label = "Highlight",
-                                width = "100%"
-                              ),
-                              shiny::actionButton(
-                                inputId = "reset_region",
-                                label = "Reset",
-                                width = "100%"
-                              ),
-                              shiny::actionButton(
-                                inputId = "name_region",
-                                label = "Annotate ",
-                                width = "100%"
-                              ),
-                              cellWidths = "33%"
+                            width = 4,
+                            #align = "center",
+                            shiny::fluidRow(
+                              shiny::column(
+                                width = 12,
+                                align = "center",
+                                shiny::fluidRow(shiny::tags$h5(shiny::strong("Pick action:"))),
+                                shiny::fluidRow(
+                                  shiny::splitLayout(
+                                    shiny::actionButton(
+                                      inputId = "highlight_region",
+                                      label = "Highlight",
+                                      width = "100%"
+                                    ),
+                                    shiny::actionButton(
+                                      inputId = "reset_region",
+                                      label = "Reset ",
+                                      width = "100%"
+                                    ),
+                                    cellWidths = "50%"
+                                  )
+                                )
+                              )
+                            ),
+                            shiny::HTML("<br>"),
+                            shiny::fluidRow(
+                              shiny::uiOutput(outputId = "new_region_name")
                             )
-                          )
+                          ),
+                          shiny::column(width = 1)
                         ),
                         shiny::HTML("<br>"),
                         shiny::fluidRow(
@@ -256,7 +276,7 @@ annotateBarcodeSpots <- function(object){
                             shiny::uiOutput(outputId = "color_by_var"),
                             shinyWidgets::pickerInput(
                               inputId = "pt_clrsp",
-                              label = "Colorspectrum",
+                              label = "Colorspectrum:",
                               choices = validColorPalettes()[["Viridis Options"]],
                               selected = "inferno"
                             )
@@ -265,16 +285,16 @@ annotateBarcodeSpots <- function(object){
                             width = 6,
                             align = "left",
                             shiny::sliderInput(
-                              inputId = "pt_transparency", label = "Transparency",
+                              inputId = "pt_transparency", label = "Point transparency:",
                               min = 0, max = 1, value = 0.5, step = 0.01
                             ),
                             shiny::sliderInput(
-                              inputId = "pt_size", label = "Point Size",
+                              inputId = "pt_size", label = "Point size:",
                               min = 0.5, max = 5, value = 1,
                               step = 0.025
                             ),
                             shiny::sliderInput(
-                              inputId = "linesize", label = "Line Size (drawing)",
+                              inputId = "linesize", label = "Linesize (drawing):",
                               min = 1, max = 10, value = 2.5, step = 0.25
                             )
                             #,
@@ -422,6 +442,56 @@ annotateBarcodeSpots <- function(object){
               options = list(`live-search` = TRUE),
               multiple = F
             )
+
+          })
+
+          output$new_region_name <- shiny::renderUI({
+
+
+            shiny::validate(
+              shiny::need(
+                expr = shiny::isTruthy(input$ann_var_name),
+                message = "No annotation variable chosen."
+              )
+            )
+
+            shiny::validate(
+              shiny::need(
+                expr = base::length(encircled_barcodes()) >= 1,
+                message = "Encircle and highlight a region."
+              )
+            )
+
+            choices <-
+              getGroupNames(
+                object = spata_object(),
+                discrete_feature = input$ann_var_name
+              ) %>%
+              stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
+
+            shiny::tagList(
+              shiny::fluidRow(
+                shiny::column(
+                  width = 4,
+                  shiny::actionButton(
+                    inputId = "name_region",
+                    label = "Annotate"
+                  )
+                ),
+                shiny::column(
+                  width = 8,
+                  shiny::selectizeInput(
+                    inputId = "new_name",
+                    label = NULL,
+                    choices = choices,
+                    multiple = FALSE,
+                    options = list(create = TRUE),
+                    width = "100%"
+                  )
+                )
+              )
+            )
+
 
           })
 
@@ -969,11 +1039,6 @@ annotateBarcodeSpots <- function(object){
               case_false = "no_ann_var_chosen"
             )
 
-            checkpoint(
-              evaluate = !drawing(),
-              case_false = "still_drawing"
-            )
-
             positions <-
               sp::point.in.polygon(
                 point.x = coords_df()$x, # x coordinates of all spatial positions
@@ -1009,65 +1074,23 @@ annotateBarcodeSpots <- function(object){
           oe <- shiny::observeEvent(input$name_region, {
 
             checkpoint(
-              evaluate = interactive$highlighted,
-              case_false = "not_highlighted"
+              evaluate = !drawing(),
+              case_false = "still_drawing"
             )
 
-            shiny::showModal(
-              ui = shiny::modalDialog(
-                shiny::column(
-                  width = 12,
-                  align = "center",
-                  shiny::fluidRow(
-                    shiny::splitLayout(
-                      shiny::actionButton(
-                        inputId = "assign_new_name",
-                        label = "Assign entered name:",
-                        width = "100%"
-                      ),
-                      shiny::textInput(
-                        inputId = "new_name_text",
-                        label = NULL
-                      ),
-                      cellWidths = "50%"
-                    )
-                  ),
-                  shiny::fluidRow(
-                    shiny::splitLayout(
-                      shiny::actionButton(
-                        inputId = "assign_chosen_name",
-                        label = "Assign chosen name:",
-                        width = "100%"
-                      ),
-                      shinyWidgets::pickerInput(
-                        inputId = "new_name_picker",
-                        label = NULL,
-                        width = "100%",
-                        choices =
-                          base::levels(getFeatureDf(spata_object())[[input$ann_var_name]]) %>%
-                          stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
-                      ),
-                      cellWidths = "50%"
-                    )
-                  )
-                ),
-                footer = shiny::tagList(
-                  shiny::actionButton(inputId = "cancel_naming", label = "Cancel")
-                )
+            encircled_bcsp <- encircled_barcodes()
+
+            if(base::length(encircled_bcsp) == 0){
+
+              confuns::give_feedback(
+                msg = "No barcode spots encircled.",
+                fdn.fn = "stop",
+                in.shiny = TRUE
               )
-            )
 
-          })
+            }
 
-          oe <- shiny::observeEvent(input$cancel_naming, {
-
-            shiny::removeModal()
-
-          })
-
-          oe <- shiny::observeEvent(input$assign_chosen_name, {
-
-            new_group_name <- input$new_name_picker
+            new_group_name <- input$new_name
 
             test1 <-
               stringr::str_extract(string = new_group_name, pattern = "^.") %>%
@@ -1080,35 +1103,6 @@ annotateBarcodeSpots <- function(object){
 
             vname <- input$ann_var_name
 
-            encircled_bcsp <- encircled_barcodes()
-
-            object <- spata_object()
-            fdata <- getFeatureDf(object)
-
-            base::levels(fdata[[vname]]) <-
-              c(base::levels(fdata[[vname]]), new_group_name)
-
-            fdata[[vname]][fdata$barcodes %in% encircled_bcsp] <- new_group_name
-
-            object <- setFeatureDf(object, feature_df = fdata)
-
-            assign(x = "polygon_df", value = polygon_df(), envir = .GlobalEnv)
-
-            spata_object(object)
-
-            shiny::removeModal()
-
-          })
-
-
-          oe <- shiny::observeEvent(input$assign_new_name, {
-
-            new_group_name <- input$new_name_text
-
-            vname <- input$ann_var_name
-
-            encircled_bcsp <- encircled_barcodes()
-
             object <- spata_object()
             fdata <- getFeatureDf(object)
 
@@ -1118,13 +1112,18 @@ annotateBarcodeSpots <- function(object){
 
             fdata[[vname]][fdata$barcodes %in% encircled_bcsp] <- new_group_name
 
-            assign(x = "polygon_df", value = polygon_df(), envir = .GlobalEnv)
-
             object <- setFeatureDf(object, feature_df = fdata)
 
             spata_object(object)
 
-            shiny::removeModal()
+            # reset region
+            polygon_vals$x <- NULL
+            polygon_vals$y <- NULL
+
+            encircled_barcodes(base::character(0))
+
+            interactive$highlighted <- FALSE
+
 
           })
 
