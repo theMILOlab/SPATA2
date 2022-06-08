@@ -4,14 +4,22 @@
 \alias{flipImageAndCoords}
 \title{Mirror invert the surface}
 \usage{
-flipImageAndCoords(object)
+flipImageAndCoords(object, axis)
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{axis}{Character value. Either \emph{'x'} or \emph{'y'}. Denotes the axis
+around which the iamge and the coordinates are flipped.}
 }
 \value{
 An updated spata-object.
 }
 \description{
-Flips both and coordinates which results in mirror inverted plots.
+Flips both image and coordinates which results in mirror inverted plots.
+}
+\note{
+Make sure to flip coordinates \bold{before} adding image annotations
+via \code{createImageAnnotations()} or adding spatial trajectories
+via \code{createTrajectories()}!
 }

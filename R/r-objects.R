@@ -216,15 +216,16 @@ helper_content <- list(
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
-      "Encircling: By doubleckling on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
-      the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
-      starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
+      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
+      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
       "",
       "Tagging: Provide additional information about the annotated structure in form of bullet points that can be used later on
       to group and/or separate them.",
       "",
-      "Naming: This creates the image annotation id to uniquely identify each annotation. If you chose the drawing mode 'Single' you can name the annotated structure individually. If you are using 'Multiple' the
-      names are automatically generated as a combination of 'img_ann' and a number."),
+      "Naming: This creates the image annotation ID to uniquely identify each annotation. If you chose the drawing mode 'Single' you can name the annotated structure individually. If you are using 'Multiple' the
+      names are automatically generated as a combination of 'img_ann' and a number."
+      ),
   orientation =
     c(" This plot mainly stays as is. Once you start zooming in on the interactive plot a rectangle is drawn to visualize where you currently are.")
 

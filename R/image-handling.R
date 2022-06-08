@@ -4,16 +4,23 @@
 
 #' @title Flip coordinates
 #'
-#' @description Flips coordinate dimensions along the y-axis to align with image in case
+#' @description Flips coordinates to align with image in case
 #' of non matching image and coordinates.
 #'
+#' @param axis Character value. Either \emph{'x'} or \emph{'y'}. Denotes the axis
+#' around which the coordinates are flipped.
+#'
 #' @inherit argument_dummy params
+#'
+#' @note Make sure to flip coordinates \bold{before} adding image annotations
+#' via \code{createImageAnnotations()} or adding spatial trajectories
+#' via \code{createTrajectories()}!
 #'
 #' @return An updated spata-object.
 #'
 #' @export
 #'
-flipCoords <- function(object, verbose = FALSE){
+flipCoords <- function(object, axis = "x", verbose = FALSE){
 
   if(!containsImage(object)){
 
@@ -23,7 +30,7 @@ flipCoords <- function(object, verbose = FALSE){
 
     }
 
-  } else {
+  } else if(axis == "x") {
 
     yrange <- getImageRange(object)$y
 
@@ -32,6 +39,18 @@ flipCoords <- function(object, verbose = FALSE){
     coords_df$y <- yrange[2] - coords_df$y + yrange[1]
 
     object <- setCoordsDf(object, coords_df)
+
+    object@images[[1]]@coordinates <- coords_df
+
+  } else if(axis == "y"){
+
+    xrange <- getImageRange(object)$x
+
+    coords_df <- getCoordsDf(object)
+
+    coords_df$x <- xrange[2] - coords_df$x + xrange[1]
+
+    object <- setCoordsDf(object, coords_df = coords_df)
 
     object@images[[1]]@coordinates <- coords_df
 
@@ -44,18 +63,25 @@ flipCoords <- function(object, verbose = FALSE){
 
 #' @title Mirror invert the surface
 #'
-#' @description Flips both and coordinates which results in mirror inverted plots.
+#' @description Flips both image and coordinates which results in mirror inverted plots.
+#'
+#' @param axis Character value. Either \emph{'x'} or \emph{'y'}. Denotes the axis
+#' around which the iamge and the coordinates are flipped.
 #'
 #' @inherit argument_dummy params
+#'
+#' @note Make sure to flip coordinates \bold{before} adding image annotations
+#' via \code{createImageAnnotations()} or adding spatial trajectories
+#' via \code{createTrajectories()}!
 #'
 #' @return An updated spata-object.
 #' @export
 #'
-flipImageAndCoords <- function(object){
+flipImageAndCoords <- function(object, axis){
 
-  object <- flipCoords(object)
+  object <- flipCoords(object, axis = axis)
 
-  object <- flipImage(object)
+  object <- flipImage(object, axis = axis)
 
   return(object)
 
@@ -63,11 +89,12 @@ flipImageAndCoords <- function(object){
 
 #' @title Flip object image
 #'
-#' @description Flips image dimensions to align with coordinates in case
+#' @description Flips image to align with coordinates in case
 #' of non matching image and coordinates.
 #'
 #' @param axis Character value. Either \emph{'x'} or \emph{'y'}. Denotes
 #' the axis around which the image is flipped.
+#'
 #' @inherit argument_dummy params
 #'
 #' @return An updated spata-object.

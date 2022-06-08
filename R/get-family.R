@@ -1195,13 +1195,9 @@ getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, expan
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-  out <- object@images[[of_sample]]@image
+  out <- object@images[[1]]@image
 
-  if(base::is.null(out)){
-
-    stop("No image found.")
-
-  }
+  if(base::is.null(out)){ stop("No image found.") }
 
   if(base::is.null(xrange)){ xrange <- getImageRange(object)$x }
 
@@ -1422,23 +1418,23 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 
 
-#' @title Obtain annotation names
+#' @title Obtain segmentation variable names
 #'
-#' @description Extracts tha names of the variables that have been created
-#' via \code{addAnnotationInteractively()}.
+#' @description Extracts the names of the variables that have been created
+#' via \code{createSegmentation()}.
 #'
 #' @inherit argument_dummy params
 #'
 #' @return Character vector.
 #' @export
 #'
-getAnnotationNames <- function(object, fdb_fn = "message", ...){
+getSegmentationNames <- function(object, fdb_fn = "message", ...){
 
   out <- object@information$annotation_variable_names
 
   if(!base::length(out) >= 1){
 
-    msg <- "No annotation variables have been added. Use 'addAnnotationInteractively()' for that matter."
+    msg <- "No segmentation variables have been added. Use 'createSegmentation()' for that matter."
 
     give_feedback(
       msg = msg,
@@ -1453,16 +1449,20 @@ getAnnotationNames <- function(object, fdb_fn = "message", ...){
 
 }
 
-#' @rdname getAnnotationNames
+#' @rdname getSegmentationNames
 #' @export
-addAnnotationVariable <- function(object, name, verbose = NULL, ...){
+getSegmentationVariableNames <- getSegmentationNames
+
+#' @rdname getSegmentationNames
+#' @export
+addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   hlpr_assign_arguments(object)
 
   confuns::is_value(x = name, mode = "character")
 
   ann_names <-
-    getAnnotationNames(object, verbose = FALSE, fdb_fn = "message")
+    getSegmentationNames(object, verbose = FALSE, fdb_fn = "message")
 
   feature_names <-
     getFeatureNames(object)
@@ -1508,9 +1508,9 @@ addAnnotationVariable <- function(object, name, verbose = NULL, ...){
 
 }
 
-#' @rdname getAnnotationNames
+#' @rdname getSegmentationNames
 #' @export
-discardAnnotationVariable <- function(object, name, verbose = NULL, ...){
+discardSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   hlpr_assign_arguments(object)
 
@@ -1518,16 +1518,16 @@ discardAnnotationVariable <- function(object, name, verbose = NULL, ...){
 
   confuns::check_one_of(
     input = name,
-    against = getAnnotationNames(object, fdb_fn = "stop", ...)
+    against = getSegmentationNames(object, fdb_fn = "stop", ...)
   )
 
-  object@information$annotation_variable_names <-
-    object@information$annotation_variable_names[object@information$annotation_variable_names != name]
+  object@information$segmentation_variable_names <-
+    object@information$segmentation_variable_names[object@information$segmentation_variable_names != name]
 
   object <- discardFeatures(object, feature_names = name)
 
   give_feedback(
-    msg = glue::glue("Annotation variable '{name}' discarded."),
+    msg = glue::glue("Segmentation variable '{name}' discarded."),
     verbose = verbose,
     ...
   )

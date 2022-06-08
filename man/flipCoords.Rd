@@ -4,10 +4,13 @@
 \alias{flipCoords}
 \title{Flip coordinates}
 \usage{
-flipCoords(object, verbose = FALSE)
+flipCoords(object, axis = "x", verbose = FALSE)
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{axis}{Character value. Either \emph{'x'} or \emph{'y'}. Denotes the axis
+around which the coordinates are flipped.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -18,6 +21,11 @@ the computational progress will be printed.
 An updated spata-object.
 }
 \description{
-Flips coordinate dimensions along the y-axis to align with image in case
+Flips coordinates to align with image in case
 of non matching image and coordinates.
+}
+\note{
+Make sure to flip coordinates \bold{before} adding image annotations
+via \code{createImageAnnotations()} or adding spatial trajectories
+via \code{createTrajectories()}!
 }

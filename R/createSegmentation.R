@@ -1,7 +1,7 @@
 
 
 
-#' @title Interactive barcode annotation
+#' @title Interactive sample segmentation
 #'
 #' @description This function gives access to an interactive user interface
 #' barcode spots can be interactively annotated.
@@ -10,17 +10,17 @@
 #'
 #' @inherit argument_dummy params
 #'
-#' @details Annotation variables are grouping variables that are stored in
+#' @details Segmentation variables are grouping variables that are stored in
 #' the feature data.frame of the spata object (such as clustering variables).
 #' They differ from clustering variables in so far as that
 #' they are not the result of unsupervised cluster algorithms but results from
 #' group assignment the researcher conducted him/herself.
 #' (E.g. histologial classification.)
 #'
-#' Therefore, all annotation variables can be extracted via \code{getFeatureNames()}
+#' Therefore, all segmentation variables can be extracted via \code{getFeatureNames()}
 #' as they are part of those. To specifically extract variables that were created
-#' with \code{createAnnotation()} use \code{getAnnotationVariableNames()}. To remove
-#' annotations you no longer need use \code{discardAnnotationVariable()}.
+#' with \code{createSegmentation()} use \code{getSegmentationVariableNames()}. To remove
+#' annotations you no longer need use \code{discardSegmentationVariable()}.
 #'
 #' @note The interface allows to zoom in on the sample. This is useful if your
 #' spata object contains an HE-image as background and you want to classify
@@ -35,7 +35,7 @@
 #' @return An updated spata object.
 #' @export
 #'
-annotateBarcodeSpots <- function(object){
+createSegmentation <- function(object){
 
   new_object <-
     shiny::runApp(
@@ -44,14 +44,14 @@ annotateBarcodeSpots <- function(object){
 
           shinydashboard::dashboardPage(
 
-            shinydashboard::dashboardHeader(title = "Create Annotation"),
+            shinydashboard::dashboardHeader(title = "Create Segmentation"),
 
             shinydashboard::dashboardSidebar(
               collapsed = TRUE,
               shinydashboard::sidebarMenu(
                 shinydashboard::menuItem(
-                  text = "Annotation",
-                  tabName = "annotation",
+                  text = "Segmentation",
+                  tabName = "segmentation",
                   selected = TRUE
                 )
               )
@@ -64,7 +64,7 @@ annotateBarcodeSpots <- function(object){
               shinydashboard::tabItems(
 
                 shinydashboard::tabItem(
-                  tabName = "annotation",
+                  tabName = "segmentation",
 
                   shiny::fluidRow(
 
@@ -72,14 +72,16 @@ annotateBarcodeSpots <- function(object){
                     shiny::column(
                       width = 4,
                       align = "left",
-                      shiny::wellPanel(
+                      shinydashboard::box(
+                        width = 12,
                         shiny::tags$h3(shiny::strong("Overview")) %>% add_helper(content = helper_content$overview),
-                        shiny::helpText("Choose the annotation variable you want to work on."),
+                        shiny::helpText("Choose the segmentation variable you want to work on."),
                         shiny::fluidRow(
                           shiny::column(
                             width = 12,
-                            shiny::fluidRow(
-                              shiny::plotOutput(outputId = "annotation_plot")
+                            container(
+                              width = 12,
+                              shiny::plotOutput(outputId = "segmentation_plot")
                             )
                           )
                         ),
@@ -89,23 +91,25 @@ annotateBarcodeSpots <- function(object){
                             width = 12,
                             align = "center",
                             shiny::fluidRow(
-                              shiny::fluidRow(
+                              container(
+                                width = 12,
                                 shiny::column(
                                   width = 6,
                                   shiny::tags$h5(shiny::strong("Choose variable:")),
-                                  shiny::uiOutput(outputId = "ann_var_name")
+                                  shiny::uiOutput(outputId = "segm_var_name")
                                 ),
                                 shiny::column(
                                   width = 6,
                                   shiny::tags$h5(shiny::strong("If no variable exists:")),
-                                  shiny::actionButton(inputId = "new_ann_var", label = "Create new annotation variable", width = "100%")
+                                  shiny::actionButton(inputId = "new_segm_var", label = "Create new segmentation variable", width = "100%")
                                 )
                               ),
-                              shiny::fluidRow(
+                              container(
+                                width = 12,
                                 shiny::column(
                                   width = 6,
-                                  shiny::tags$h5(shiny::strong("Choose a group/annotation:")),
-                                  shiny::uiOutput(outputId = "ann_group")
+                                  shiny::tags$h5(shiny::strong("Choose a group/segment:")),
+                                  shiny::uiOutput(outputId = "segm_group")
                                 ),
                                 shiny::column(
                                   width = 6,
@@ -122,16 +126,18 @@ annotateBarcodeSpots <- function(object){
                       )
                     ),
 
-                    # plot for annotation
+                    # plot for segmentation
                     shiny::column(
                       width = 4,
-                      shiny::wellPanel(
+                      shinydashboard::box(
+                        width = 12,
                         shiny::tags$h3(shiny::strong("Interaction")) %>% add_helper(content = helper_content$interaction_annotate_barcodes),
                         shiny::helpText("Interactively select and name regions."),
                         shiny::fluidRow(
                           shiny::column(
                             width = 12,
-                            shiny::fluidRow(
+                            container(
+                              width = 12,
                               shiny::div(
                                 class = "large-plot",
                                 shiny::plotOutput(
@@ -214,7 +220,6 @@ annotateBarcodeSpots <- function(object){
                               )
                             )
                           ),
-                          shiny::column(width = 1),
                           shiny::column(
                             width = 4,
                             #align = "center",
@@ -223,7 +228,8 @@ annotateBarcodeSpots <- function(object){
                                 width = 12,
                                 align = "center",
                                 shiny::fluidRow(shiny::tags$h5(shiny::strong("Pick action:"))),
-                                shiny::fluidRow(
+                                container(
+                                  width = 12,
                                   shiny::splitLayout(
                                     shiny::actionButton(
                                       inputId = "highlight_region",
@@ -241,7 +247,8 @@ annotateBarcodeSpots <- function(object){
                               )
                             ),
                             shiny::HTML("<br>"),
-                            shiny::fluidRow(
+                            container(
+                              width = 12,
                               shiny::uiOutput(outputId = "new_region_name")
                             )
                           ),
@@ -307,16 +314,18 @@ annotateBarcodeSpots <- function(object){
                       )
                     ),
 
-                    # plot that shows current annotation
+                    # plot that shows current segmentation
                     shiny::column(
                       width = 4,
-                      shiny::wellPanel(
+                      shinydashboard::box(
+                        width = 12,
                         shiny::tags$h3(shiny::strong("Orientation")) %>% add_helper(content = helper_content$orientation),
                         shiny::helpText("Keep track of where you are when you zoom in and out."),
                         shiny::fluidRow(
                           shiny::column(
                             width = 12,
-                            shiny::fluidRow(
+                            container(
+                              width = 12,
                               shiny::plotOutput(outputId = "orientation_plot")
                             )
                           )
@@ -375,8 +384,8 @@ annotateBarcodeSpots <- function(object){
 
           selected <- shiny::reactiveValues(
 
-            ann_var = NULL,
-            ann_group = NULL
+            segm_var = NULL,
+            segm_group = NULL
 
           )
 
@@ -391,40 +400,40 @@ annotateBarcodeSpots <- function(object){
 
           # render UIs
 
-          output$ann_var_name <- shiny::renderUI({
+          output$segm_var_name <- shiny::renderUI({
 
-            if(base::is.character(selected$ann_var)){
+            if(base::is.character(selected$segm_var)){
 
-              selected_ann_var <- selected$ann_var
+              selected_segm_var <- selected$segm_var
 
             } else {
 
-              selected_ann_var <- NULL
+              selected_segm_var <- NULL
 
             }
 
             shinyWidgets::pickerInput(
-              inputId = "ann_var_name",
+              inputId = "segm_var_name",
               label = NULL,
-              choices = ann_vars(),
-              selected = selected_ann_var
+              choices = segm_vars(),
+              selected = selected_segm_var
             )
 
           })
 
-          output$ann_group <- shiny::renderUI({
+          output$segm_group <- shiny::renderUI({
 
-            shiny::req(input$ann_var_name)
+            shiny::req(input$segm_var_name)
 
             choices <-
               getGroupNames(
                 object = spata_object(),
-                discrete_feature = input$ann_var_name
+                discrete_feature = input$segm_var_name
                 ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
             shinyWidgets::pickerInput(
-              inputId = "ann_group",
+              inputId = "segm_group",
               label = NULL,
               choices = choices,
               multiple = FALSE,
@@ -450,8 +459,8 @@ annotateBarcodeSpots <- function(object){
 
             shiny::validate(
               shiny::need(
-                expr = shiny::isTruthy(input$ann_var_name),
-                message = "No annotation variable chosen."
+                expr = shiny::isTruthy(input$segm_var_name),
+                message = "No segmentation variable chosen."
               )
             )
 
@@ -465,7 +474,7 @@ annotateBarcodeSpots <- function(object){
             choices <-
               getGroupNames(
                 object = spata_object(),
-                discrete_feature = input$ann_var_name
+                discrete_feature = input$segm_var_name
               ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
@@ -475,7 +484,7 @@ annotateBarcodeSpots <- function(object){
                   width = 4,
                   shiny::actionButton(
                     inputId = "name_region",
-                    label = "Annotate"
+                    label = "Name"
                   )
                 ),
                 shiny::column(
@@ -497,11 +506,11 @@ annotateBarcodeSpots <- function(object){
 
           # reactive expressions
 
-          ann_vars <- shiny::reactive({
+          segm_vars <- shiny::reactive({
 
-            ann_names <- getAnnotationNames(object = spata_object(), verbose = FALSE)
+            segm_names <- getSegmentationNames(object = spata_object(), verbose = FALSE)
 
-            return(ann_names)
+            return(segm_names)
 
           })
 
@@ -572,9 +581,9 @@ annotateBarcodeSpots <- function(object){
 
           })
 
-          current_ann_var <- shiny::reactive({
+          current_segm_var <- shiny::reactive({
 
-            input$ann_var_name
+            input$segm_var_name
 
           })
 
@@ -645,7 +654,7 @@ annotateBarcodeSpots <- function(object){
 
             if(base::isTRUE(input$display_regions)){
 
-              current_var <- input$ann_var_name
+              current_var <- input$segm_var_name
 
               regions_df <-
                 getCoordsDf(object = spata_object()) %>%
@@ -730,18 +739,18 @@ annotateBarcodeSpots <- function(object){
 
           # basic plot
 
-          annotation_plot <- shiny::reactive({
+          segmentation_plot <- shiny::reactive({
 
             shiny::validate(
               shiny::need(
-                expr = input$ann_var_name,
-                message = "No annotation variables to select from. Create one by clicking on the button below."
+                expr = input$segm_var_name,
+                message = "No segmentation variables to select from. Create one by clicking on the button below."
               )
             )
 
             plotSurface(
               object = spata_object(),
-              color_by = input$ann_var_name,
+              color_by = input$segm_var_name,
               clrp_adjust =  c("unnamed" = "grey"),
               verbose = FALSE
             ) +
@@ -785,15 +794,15 @@ annotateBarcodeSpots <- function(object){
 
           # observe events
 
-          oe <- shiny::observeEvent(input$ann_var_name, {
+          oe <- shiny::observeEvent(input$segm_var_name, {
 
-            selected$ann_var <- input$ann_var_name
+            selected$segm_var <- input$segm_var_name
 
           })
 
-          oe <- shiny::observeEvent(input$ann_group, {
+          oe <- shiny::observeEvent(input$segm_group, {
 
-            selected$ann_group <- input$ann_group
+            selected$segm_group <- input$segm_group
 
           })
 
@@ -819,24 +828,24 @@ annotateBarcodeSpots <- function(object){
 
           })
 
-          # new annotation variable
-          oe <- shiny::observeEvent(input$new_ann_var, {
+          # new segmentation variable
+          oe <- shiny::observeEvent(input$new_segm_var, {
 
             shiny::showModal(
               ui = shiny::modalDialog(
                 title = "Naming",
                 shiny::textInput(
-                  inputId = "new_ann_var_name",
+                  inputId = "new_segm_var_name",
                   label = "Enter name:",
                   value = ""
                 ),
                 footer = shiny::tagList(
                   shiny::actionButton(
-                    inputId = "add_ann_var",
-                    label = "Add annotation variable"
+                    inputId = "add_segm_var",
+                    label = "Add segmentation variable"
                   ),
                   shiny::actionButton(
-                    inputId = "cancel_ann_var",
+                    inputId = "cancel_segm_var",
                     label = "Cancel"
                   )
                 )
@@ -845,26 +854,26 @@ annotateBarcodeSpots <- function(object){
 
           })
 
-          oe <- shiny::observeEvent(input$add_ann_var, {
+          oe <- shiny::observeEvent(input$add_segm_var, {
 
             object <- spata_object()
 
             object <-
-              addAnnotationVariable(
+              addSegmentationVariable(
                 object = object,
-                name = input$new_ann_var_name,
+                name = input$new_segm_var_name,
                 in.shiny = TRUE
               )
 
             spata_object(object)
 
-            selected$ann_var <- input$new_ann_var_name
+            selected$segm_var <- input$new_segm_var_name
 
             shiny::removeModal()
 
           })
 
-          oe <- shiny::observeEvent(input$cancel_ann_var, {
+          oe <- shiny::observeEvent(input$cancel_segm_var, {
 
             shiny::removeModal()
 
@@ -874,7 +883,7 @@ annotateBarcodeSpots <- function(object){
           oe <- shiny::observeEvent(input$discard_group, {
 
             text_val <-
-              glue::glue("Do you really want to discard group annotation '{input$ann_group}'? This action cannot be undone.") %>%
+              glue::glue("Do you really want to discard group segmentation '{input$segm_group}'? This action cannot be undone.") %>%
               base::as.character()
 
             shiny::showModal(
@@ -894,9 +903,9 @@ annotateBarcodeSpots <- function(object){
 
             object <- spata_object()
 
-            rename_input <- purrr::set_names(x = input$ann_group, nm = "unnamed")
+            rename_input <- purrr::set_names(x = input$segm_group, nm = "unnamed")
 
-            object <- renameGroups(object, discrete_feature = input$ann_var_name, rename_input)
+            object <- renameGroups(object, discrete_feature = input$segm_var_name, rename_input)
 
             spata_object(object)
 
@@ -915,7 +924,7 @@ annotateBarcodeSpots <- function(object){
 
             shiny::showModal(
               ui = shiny::modalDialog(
-                title = "Rename annotation",
+                title = "Rename segmentation",
                 shiny::textInput(inputId = "new_group_name", label = "New name:"),
                 footer = shiny::fluidRow(
                   shiny::actionButton(inputId = "confirm_rename_group", label = "Rename"),
@@ -943,9 +952,9 @@ annotateBarcodeSpots <- function(object){
 
             object <- spata_object()
 
-            rename_input <- purrr::set_names(x = input$ann_group, nm = new_name)
+            rename_input <- purrr::set_names(x = input$segm_group, nm = new_name)
 
-            object <- renameGroups(object, discrete_feature = input$ann_var_name, rename_input)
+            object <- renameGroups(object, discrete_feature = input$segm_var_name, rename_input)
 
             spata_object(object)
 
@@ -1035,8 +1044,8 @@ annotateBarcodeSpots <- function(object){
           oe <- shiny::observeEvent(input$highlight_region, {
 
             checkpoint(
-              evaluate = shiny::isTruthy(current_ann_var()),
-              case_false = "no_ann_var_chosen"
+              evaluate = shiny::isTruthy(current_segm_var()),
+              case_false = "no_segm_var_chosen"
             )
 
             positions <-
@@ -1101,7 +1110,7 @@ annotateBarcodeSpots <- function(object){
               case_false = "invalid_group_name"
             )
 
-            vname <- input$ann_var_name
+            vname <- input$segm_var_name
 
             object <- spata_object()
             fdata <- getFeatureDf(object)
@@ -1138,9 +1147,9 @@ annotateBarcodeSpots <- function(object){
 
           # plot outputs
 
-          output$annotation_plot <- shiny::renderPlot({
+          output$segmentation_plot <- shiny::renderPlot({
 
-            annotation_plot()
+            segmentation_plot()
 
           })
 

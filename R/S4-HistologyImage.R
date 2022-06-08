@@ -196,7 +196,7 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   if(!shiny::isTruthy(tags)){
 
-    tags <- "none"
+    tags <- "no_tags"
 
   }
 
@@ -607,15 +607,20 @@ getImageAnnotations <- function(object,
 
           yrange <- c(ymean - xdisth, ymean + xdisth)
 
-        } else {
+        } else if(ydist > xdist) {
 
           ydisth <- ydist/2
 
           xrange <- c(xmean - ydisth, xmean + ydisth)
 
+        } else {
+
+          # both ranges are equally long
+
         }
 
       }
+
 
       img_ann@image <-
         getImage(
@@ -627,13 +632,19 @@ getImageAnnotations <- function(object,
 
       img_list <- list()
 
-      range_list <-
-        process_ranges(
-          xrange = xrange,
-          yrange = yrange,
-          expand = expand,
-          object = object
-        )
+      # getImage already outputs warnings
+      base::suppressWarnings({
+
+        range_list <-
+          process_ranges(
+            xrange = xrange,
+            yrange = yrange,
+            expand = expand,
+            object = object
+          )
+
+      })
+
 
       for(val in base::names(range_list)){
 
@@ -678,6 +689,7 @@ getImageAnnotations <- function(object,
     }
 
     img_annotations[[nm]] <- img_ann
+
 
   }
 
@@ -866,10 +878,12 @@ mapImageAnnotationTags <- function(object,
 #' @param plot Logical value. If TRUE, the plots are plotted immediately
 #' via \code{gridExtra.grid.arrange()} and the list of plots is returned
 #' invisibly. Else the list of plots is simply returned.
-#' @param display_title Logical value. If TRUE, the ID of each image annotation
+#' @param display_title Logical value. If TRUE, the number of each image annotation
 #' is plotted in the title.
-#' @param display_subtitle Logical value. If TRUE, the tags of each image annotation
-#' are plotted in the subtitle.
+#' @param display_subtitle Logical value. If TRUE, the ID of each image annotation
+#' is plotted in the subtitle.
+#' @param display_caption Logial value. If TRUE, the tags of each image annotation
+#' are plotted in the caption.
 #' @param encircle Logical value. If TRUE, are polygon is drawn around the
 #' exact extent of the annotated structure (as was drawn in \code{annotateImage()}).
 #' @inherit argument_dummy params

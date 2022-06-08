@@ -174,7 +174,7 @@ renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_s
       {{discrete_feature}} := forcats::fct_recode(.f = !!rlang::sym(discrete_feature), !!!rename_input)
     )
 
-  if(discrete_feature %in% getAnnotationNames(object, verbose = FALSE)){
+  if(discrete_feature %in% getSegmentationNames(object, verbose = FALSE)){
 
     keep_levels <- c(keep_levels, "unnamed")
 

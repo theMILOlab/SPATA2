@@ -19,6 +19,6 @@ the axis around which the image is flipped.}
 An updated spata-object.
 }
 \description{
-Flips image dimensions to align with coordinates in case
+Flips image to align with coordinates in case
 of non matching image and coordinates.
 }

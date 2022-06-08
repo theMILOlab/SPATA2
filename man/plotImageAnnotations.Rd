@@ -35,12 +35,25 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
-\item{expand}{Numeric value. Specifies the extent to which the cropped image
-section is expanded. 0 as input leads to no expansion at all. Values lower than 1
-are considered in relation to the x- and yrange - e.g. \code{expand} = 0.5 expands the plot to 150%. Values
-bigger than 1 are considered as absolute - e.g. \code{expand} = 20 adds 20pixels on
-both sides of each axis respectively. If length of \code{expand} is 2 the first value
-is used to expand the x-axis, the second value is used to expand the y-axis.}
+\item{expand}{Numeric value or vector. Specifies the extent to which the  x- and y-span
+of the cropped image section is expanded. There are two options to provide values:
+
+Values from 0 to 1 are used to calculate the corresponding percentage of the image
+span which is then \bold{added} to it. E.g. \code{expand} = 1 doubles the span,
+\code{expand} = 0.5 results in 150 percent of the span and \code{expand} = 0 returns the
+original span.
+
+Values bigger than 1 are considered to be absolute values. The returned image
+section has the exact x- and y- spans as specified in \code{expand}.
+E.g. \code{expand} = 200 results in an image section with x- and y-span of
+200. If the input value is bigger than 1 it must be at least as big as the
+original span.
+
+To adjust x- and y-span specifically you can provide a vector of length 2.
+If you do so the first value is taken to adjust the xspan and the second
+value is used to adjust the yspan. E.g. \code{expand} = c(0.5, 0) adds 50 percent
+of the original xspan to the xspan of the image section and does not adjust
+ the yspan.}
 
 \item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
 structure is forced into a square. If FALSE, the section is cropped according to the extent
@@ -49,11 +62,14 @@ of the annotated structure and the input for argument \code{expand}.}
 \item{encircle}{Logical value. If TRUE, are polygon is drawn around the
 exact extent of the annotated structure (as was drawn in \code{annotateImage()}).}
 
-\item{display_title}{Logical value. If TRUE, the ID of each image annotation
+\item{display_title}{Logical value. If TRUE, the number of each image annotation
 is plotted in the title.}
 
-\item{display_subtitle}{Logical value. If TRUE, the tags of each image annotation
-are plotted in the subtitle.}
+\item{display_subtitle}{Logical value. If TRUE, the ID of each image annotation
+is plotted in the subtitle.}
+
+\item{display_caption}{Logial value. If TRUE, the tags of each image annotation
+are plotted in the caption.}
 
 \item{nrow}{Affects the way the subplots
 are displayed.}

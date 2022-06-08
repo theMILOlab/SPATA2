@@ -39,7 +39,7 @@ createImageObject <- function(image, image_class, stop_if_null = FALSE, ...){
 #'
 #' @export
 
-createSegmentation <- function(object){
+createSegmentation2 <- function(object){
 
   check_object(object)
 
