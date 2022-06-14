@@ -1,6 +1,6 @@
 
-# annotateImage()
-annotate_image_descriptions <- list(
+# createImageAnnotations()
+create_image_annotations_descr <- list(
 
   caption = c("Display the image annotation tags as a caption. (If display mode: One by one.)"),
   encircle = c("Display the polygon with which the structure has been encircled. (If display mode: One by one.)"),
@@ -107,13 +107,73 @@ annotate_image_descriptions <- list(
 )
 
 
+# createSegmentation()
 
+create_segmentation_descr <- list(
 
+  color_by = c("Use SPATA variables to color the surface of the image."),
+  linesize = create_image_annotations_descr$linesize,
+  pick_action_interaction =     c(
+    "Highlight: Closes the drawn circle and highlights the area that it includes marking
+    the exact structure that you have annotated. Before you cann add an image annotation
+    it must be higlighted.",
+    "",
+    "Reset: Removes any drawing that is currently displayed on the interactive plot."
+  ),
 
+  pick_action_overview = c(
+  "The segment chosen on the left under 'Choose a group/segment'. Can either be renamed
+   or discarded. Clicking on either of the two buttons opens a model in which to specify
+   the action."),
+  plot_interaction = c(
+    "This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+    "",
+    "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
+      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
+    "",
+    "Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate.
+     You are then prompted to choose the name you want to annotate the barcode spots with that fall into this area.
+     This can either be a new name or one that has already been assigned within the variable. Then click on 'Name'.
+     The 'Overview'-plot on the left should now display the named region in addition to all the other regions that
+     you have annotated already. Naming barcode spots that have already been named results in overwriting the previous name."
+  ),
+  plot_orientation = create_image_annotations_descr$tab_panel_orientation,
+  plot_overview = c(
+    "Choose the segmentation variable that you want to alter. If you want to create a new one
+    click on 'Create new segmentation variable' and you are prompted to enter the name of the new variable.
+    It can then be selected. The surface plot below shows the segmentation variable you are currently working on
+    and colors it according to the regions you have named.",
+    "",
+    "('unnamed' is the default group name that is assigned to every barcode spot by creating a new segmentation variable.)"),
+  pointsize = c("The size with which points are displayed."),
+  transparency_point = create_image_annotations_descr$transparency_point,
+  zooming_options = c(
+    "Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+    back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
+    you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
+    zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+    you are using drawing mode 'Single'."
+  )
+
+)
+
+# createSpatialTrajectories()
+
+create_spatial_trajectories <- list(
+  ncol = create_image_annotations_descr$ncol,
+  nrow = create_image_annotations_descr$nrow,
+  sgmt_size = "Size of the trajectory.",
+  trajectory_ids = "Choose the IDs of the trajectories you want to plot.",
+  transparency_1 = "The transparency of the points that are not included by the trajectory.",
+  transparency_2 = "The transparency of the points that are included by the trajectory."
+)
 
 
 
 # all
 text <- list(
-  annotateImage = annotate_image_descriptions
+  createImageAnnotation = create_image_annotations_descr,
+  createSegmentation = create_segmentation_descr,
+  createSpatialTrajectories = create_spatial_trajectories
 )

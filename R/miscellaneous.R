@@ -4,73 +4,101 @@
 
 #' @export
 create_model_df <- function(input,
-                            pattern_subset = NULL,
-                            pattern_remove = NULL,
-                            pattern_add = NULL,
+                            var_order = NULL,
+                            model_subset = NULL,
+                            model_remove = NULL,
+                            model_add = NULL,
                             verbose = TRUE){
+
+  input <- base::max(input)
 
   fns_input <- model_formulas
 
-  # select pattern of interest
-  if(base::is.character(pattern_subset)){
+  # select models of interest
+  if(base::is.character(model_subset)){
 
-    fns_input <- confuns::lselect(lst = fns_input, dplyr::contains(pattern_subset))
-
-  }
-
-  # remove unwanted pattern
-  if(base::is.character(pattern_remove)){
-
-    fns_input <- confuns::lselect(lst = fns_input, -dplyr::contains(pattern_remove))
+    fns_input <- confuns::lselect(lst = fns_input, dplyr::contains(model_subset))
 
   }
 
-  # add additional pattern to screen for
-  if(base::is.list(pattern_add)){
+  # remove unwanted models
+  if(base::is.character(model_remove)){
 
-    patterns_add_named <- confuns::keep_named(input = pattern_add)
+    fns_input <- confuns::lselect(lst = fns_input, -dplyr::contains(model_remove))
+
+  }
+
+  # add additional models to screen for
+  if(base::is.list(model_add)){
+
+    model_add <- base::as.list(model_add)
+
+    models_add_named <- confuns::keep_named(input = model_add)
 
     confuns::check_none_of(
-      input = base::names(patterns_add_named),
+      input = base::names(models_add_named),
       against = base::names(fns_input),
-      ref.input = "names of additional pattern",
-      ref.against = "names of known pattern to SPATA2"
+      ref.input = "names of additional models",
+      ref.against = "names of known model to SPATA2"
     )
 
-    n_names <- base::names(patterns_add_named) %>% base::length()
-    n_pattern <- base::length(patterns_add_named)
+    n_names <- base::names(models_add_named) %>% base::length()
+    n_model <- base::length(models_add_named)
 
-    if(n_names != n_pattern){ stop("Every additional pattern must be named uniquely.")}
+    if(n_names != n_model){ stop("Every additional model must be named uniquely.") }
 
-    fns_formulas <- purrr::keep(patterns_add_named, .p = purrr::is_formula)
+    fns_formulas <- purrr::keep(models_add_named,  .p = purrr::is_formula)
 
     fns_numeric <-
-      purrr::keep(patterns_add_named, .p = ~ base::is.numeric(.x) & base::length(.x) == length_out) %>%
+      purrr::keep(models_add_named, .p = ~ base::is.numeric(.x) & base::length(.x) == input) %>%
       purrr::map(.f = confuns::normalize)
 
-    add_pattern_names <-
+    add_model_names <-
       base::names(c(fns_formulas, fns_numeric)) %>%
       confuns::scollapse()
 
+    ref <- confuns::adapt_reference(input = base::length(add_model_names), "model")
+
     confuns::give_feedback(
-      msg = glue::glue("Adding pattern '{add_pattern_names}' to screening."),
+      msg = glue::glue("Adding {ref} '{add_model_names}' to screening."),
       verbose = verbose,
     )
 
-    fns_input <- c(fns_input, fns_formulas, fns_numeric)
+    fns_input <- c(fns_input, fns_formulas)
+
+  } else {
+
+    fns_numeric <- NULL
 
   }
 
-  n_models <- base::length(fns_input)
+  n_models <- base::length(fns_input) + base::length(fns_numeric)
 
   confuns::give_feedback(
-    msg = glue::glue("Total number of pattern/models: {n_models}."),
+    msg = glue::glue("Total number of models: {n_models}."),
     verbose = verbose
   )
 
   out_df <-
     tibble::tibble(x = base::as.integer(1:input)) %>%
     dplyr::transmute(dplyr::across(.cols = x, .fns = fns_input, .names = "{.fn}"))
+
+  if(base::is.list(fns_numeric) & !purrr::is_empty(fns_numeric)){
+
+    out_df <-
+      tibble::as_tibble(fns_numeric) %>%
+      base::cbind(out_df, .) %>%
+      tibble::as_tibble()
+
+  }
+
+  if(base::is.character(var_order)){
+
+    out_df <-
+      dplyr::mutate(out_df, {{var_order}} := dplyr::row_number()) %>%
+      dplyr::select({{var_order}}, dplyr::everything())
+
+  }
 
   return(out_df)
 

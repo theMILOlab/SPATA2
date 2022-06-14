@@ -1430,7 +1430,7 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 #'
 getSegmentationNames <- function(object, fdb_fn = "message", ...){
 
-  out <- object@information$annotation_variable_names
+  out <- object@information$segmentation_variable_names
 
   if(!base::length(out) >= 1){
 
@@ -1488,8 +1488,8 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   }
 
-  object@information$annotation_variable_names <-
-    c(object@information$annotation_variable_names, name)
+  object@information$segmentation_variable_names <-
+    c(object@information$segmentation_variable_names, name)
 
   fdata <- getFeatureDf(object)
 
@@ -1498,7 +1498,7 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
   object <- setFeatureDf(object, feature_df = fdata)
 
   give_feedback(
-    msg = glue::glue("Added annotation variable '{name}'."),
+    msg = glue::glue("Added segmentation variable '{name}'."),
     verbose = verbose,
     with.time = FALSE,
     ...
@@ -1839,15 +1839,12 @@ getSpCorResults <- function(object, of_sample = NA){
 #'
 
 getTrajectoryLength <- function(object,
-                                trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
-                                binwidth = 5,
-                                of_sample = NA){
-
+                                id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
+                                binwidth = 5){
 
   # 1. Control --------------------------------------------------------------
 
   check_object(object)
-  check_trajectory(object = object, trajectory_name = trajectory_name, of_sample = of_sample)
 
   confuns::is_value(x = binwidth, mode = "numeric")
 
@@ -1855,12 +1852,9 @@ getTrajectoryLength <- function(object,
 
   # 2. Extraction -----------------------------------------------------------
 
-  t_object <-
-    getTrajectoryObject(object = object,
-                        trajectory_name = trajectory_name,
-                        of_sample = of_sample)
+  t_object <- getTrajectory(object = object, id = id)
 
-  t_object@compiled_trajectory_df %>%
+  t_object@projection %>%
     dplyr::mutate(pl_binned = plyr::round_any(x = projection_length, accuracy = binwidth, f = base::floor)) %>%
     dplyr::group_by(pl_binned, trajectory_part) %>%
     dplyr::summarise(n = dplyr::n(), .groups = "drop_last") %>%
@@ -1869,147 +1863,6 @@ getTrajectoryLength <- function(object,
 
 }
 
-
-#' @title Obtain trajectory names
-#'
-#' @inherit argument_dummy params
-#' @inherit check_sample params
-#'
-#' @return A list named according to the \code{of_sample} in which each element is
-#' a character vector containing the names of trajectories which were drawn for the
-#' specific sample.
-#'
-#' @export
-
-getTrajectoryNames <- function(object, simplify = TRUE, of_sample = NA, verbose = FALSE, ...){
-
-  # lazy check
-  check_object(object)
-
-  # adjusting check
-  of_sample <- check_sample(object = object, of_sample = of_sample)
-
-  # main part
-  t_names_list <-
-    purrr::map(.x = of_sample, .f = function(i){
-
-      t_names <-
-        base::names(object@trajectories[[i]])
-
-      if(base::length(t_names) == 0){
-
-        msg <- stringr::str_c("No trajectories found in sample: ", i, sep = "")
-
-        input <- confuns::keep_named(c(...))
-
-        verbose <- base::ifelse(test = base::any(input == FALSE), yes = FALSE, no = TRUE)
-
-        confuns::give_feedback(
-          msg = msg,
-          with.time = FALSE,
-          verbose = verbose
-        )
-
-        return(NULL)
-
-      } else {
-
-        return(t_names)
-
-      }
-
-    })
-
-  base::names(t_names_list) <- of_sample
-
-  t_names_list <- purrr::discard(.x = t_names_list, .p = is.null)
-
-  if(base::isTRUE(simplify)){
-
-    t_names_list <- base::unlist(t_names_list) %>% base::unname()
-
-  }
-
-  if(!base::length(t_names_list) == 0){
-
-    return(t_names_list)
-
-  } else {
-
-    return(base::invisible(NULL))
-
-  }
-
-
-}
-
-
-
-#' @title Obtain a summarized trajectory data.frame
-#'
-#' @description Computes the expression trends of all specified variables
-#' along the direction of the spatial trajectory.
-#'
-#' @inherit check_sample params
-#' @inherit check_trajectory params
-#' @inherit hlpr_summarize_trajectory_df params
-#' @param shift_wider Logical. If set to TRUE the trajectory data.frame is
-#' shifted to it's wider format. Formats can be changed via \code{shiftTrajectoryDf()}.
-#'
-#' @return A summarized trajectory data.frame.
-#'
-#' @inherit hlpr_summarize_trajectory_df details
-#'
-#' @export
-
-getTrajectoryDf <- function(object,
-                            trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
-                            variables,
-                            method_gs = "mean",
-                            binwidth = 5,
-                            normalize = TRUE,
-                            whole_sample = FALSE,
-                            shift_wider = FALSE,
-                            summarize_with = c("mean"),
-                            with_sd = FALSE,
-                            verbose = TRUE,
-                            of_sample = NA){
-
-
-  confuns::are_values(c("normalize", "shift_wider", "with_sd", "verbose"), mode = "logical")
-
-  check_one_of(
-    input= summarize_with,
-    against = c("mean", "median")
-  )
-
-  tobj <-
-    getTrajectoryObject(object, trajectory_name, of_sample)
-
-  stdf <-
-    hlpr_summarize_trajectory_df(
-      object,
-      ctdf = tobj@compiled_trajectory_df,
-      binwidth = binwidth,
-      variables = variables,
-      method_gs = method_gs,
-      verbose = verbose,
-      normalize = normalize,
-      whole_sample = whole_sample,
-      summarize_with = summarize_with,
-      with_sd = with_sd
-    ) %>%
-    tibble::as_tibble()
-
-  if(base::isTRUE(shift_wider)){
-
-    stdf <- shiftTrajectoryDf(stdf = stdf, shift = "wider")
-
-  }
-
-  return(stdf)
-
-}
 
 #' @title Obtain trjectory course
 #'
@@ -2020,13 +1873,17 @@ getTrajectoryDf <- function(object,
 #'
 #' @return Data.frame.
 #' @export
-getTrajectorySegmentDf <- function(object, trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name")){
+getTrajectorySegmentDf <- function(object,
+                                   id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
+                                   ...){
 
-  traj_obj <- getTrajectoryObject(object, trajectory_name)
+  deprecated(...)
+
+  traj_obj <- getTrajectory(object, trajectory_name)
 
   out <-
     dplyr::mutate(
-      .data = traj_obj@segment_trajectory_df,
+      .data = traj_obj@segment,
       trajectory = {{trajectory_name}}
     )
 
@@ -2034,29 +1891,7 @@ getTrajectorySegmentDf <- function(object, trajectory_name = getDefaultTrajector
 
 }
 
-#' @title Obtain trajectory object
-#'
-#' @inherit check_sample params
-#' @inherit check_trajectory params
-#'
-#' @return An object of class \code{spatialTrajectory}.
-#' @export
 
-getTrajectoryObject <- function(object,
-                                trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
-                                of_sample = NA){
-
-  check_trajectory(object = object,
-                   trajectory_name = trajectory_name,
-                   of_sample = of_sample)
-
-  of_sample <- check_sample(object = object,
-                            of_sample = of_sample,
-                            desired_length = 1)
-
-  object@trajectories[[of_sample]][[trajectory_name]]
-
-}
 
 # -----
 

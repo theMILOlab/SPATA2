@@ -61,6 +61,10 @@ createSegmentation <- function(object){
 
               shinybusy::add_busy_spinner(spin = "cube-grid", color = "red"),
 
+              keys::useKeys(),
+
+              keys::keysInput(inputId = "keys", keys = c("d", "e")),
+
               shinydashboard::tabItems(
 
                 shinydashboard::tabItem(
@@ -74,7 +78,8 @@ createSegmentation <- function(object){
                       align = "left",
                       shinydashboard::box(
                         width = 12,
-                        shiny::tags$h3(shiny::strong("Overview")) %>% add_helper(content = helper_content$overview),
+                        shiny::tags$h3(shiny::strong("Overview")) %>%
+                          add_helper(content = text$createSegmentation$plot_overview),
                         shiny::helpText("Choose the segmentation variable you want to work on."),
                         shiny::fluidRow(
                           shiny::column(
@@ -89,18 +94,17 @@ createSegmentation <- function(object){
                         shiny::fluidRow(
                           shiny::column(
                             width = 12,
-                            align = "center",
                             shiny::fluidRow(
                               container(
                                 width = 12,
                                 shiny::column(
                                   width = 6,
-                                  shiny::tags$h5(shiny::strong("Choose variable:")),
+                                  strongH5("Choose variable:"),
                                   shiny::uiOutput(outputId = "segm_var_name")
                                 ),
                                 shiny::column(
                                   width = 6,
-                                  shiny::tags$h5(shiny::strong("If no variable exists:")),
+                                  strongH5("If no variable exists:"),
                                   shiny::actionButton(inputId = "new_segm_var", label = "Create new segmentation variable", width = "100%")
                                 )
                               ),
@@ -108,12 +112,12 @@ createSegmentation <- function(object){
                                 width = 12,
                                 shiny::column(
                                   width = 6,
-                                  shiny::tags$h5(shiny::strong("Choose a group/segment:")),
+                                  strongH5("Choose a group/segment:"),
                                   shiny::uiOutput(outputId = "segm_group")
                                 ),
                                 shiny::column(
                                   width = 6,
-                                  shiny::tags$h5(shiny::strong("Pick action:")),
+                                  strongH5("Pick action:"),
                                   shiny::splitLayout(
                                     shiny::actionButton(inputId = "rename_group", label = "Rename", width = "100%"),
                                     shiny::actionButton(inputId = "discard_group", label = "Discard", width = "100%")
@@ -122,6 +126,16 @@ createSegmentation <- function(object){
                               )
                             )
                           )
+                        ),
+                        breaks(1),
+                        container(
+                          width = 12,
+                          strongH3("All segmentation variables:")
+                          ),
+                        breaks(1),
+                        container(
+                          width = 12,
+                          DT::dataTableOutput(outputId = "segment_df")
                         )
                       )
                     ),
@@ -131,7 +145,8 @@ createSegmentation <- function(object){
                       width = 4,
                       shinydashboard::box(
                         width = 12,
-                        shiny::tags$h3(shiny::strong("Interaction")) %>% add_helper(content = helper_content$interaction_annotate_barcodes),
+                        shiny::tags$h3(shiny::strong("Interaction")) %>%
+                          add_helper(content = text$createSegmentation$plot_interaction),
                         shiny::helpText("Interactively select and name regions."),
                         shiny::fluidRow(
                           shiny::column(
@@ -197,8 +212,11 @@ createSegmentation <- function(object){
                             shiny::fluidRow(
                               shiny::column(
                                 width = 12,
-                                align = "center",
-                                shiny::fluidRow(shiny::tags$h5(shiny::strong("Zooming options:"))),
+                                container(
+                                  width = 12,
+                                  strongH5("Zooming options:") %>%
+                                    add_helper(content = text$createSegmentation$zooming_options)
+                                ),
                                 shiny::splitLayout(
                                   shiny::actionButton(
                                     inputId = "zoom_in",
@@ -226,8 +244,11 @@ createSegmentation <- function(object){
                             shiny::fluidRow(
                               shiny::column(
                                 width = 12,
-                                align = "center",
-                                shiny::fluidRow(shiny::tags$h5(shiny::strong("Pick action:"))),
+                                container(
+                                  width = 12,
+                                  strongH5("Pick action:") %>%
+                                    add_helper(content = text$createSegmentation$pick_action_interaction)
+                                  ),
                                 container(
                                   width = 12,
                                   shiny::splitLayout(
@@ -269,10 +290,10 @@ createSegmentation <- function(object){
                                 "Features" = "features"
                               ),
                               selected = "nothing"
-                            ),
+                            )  %>% add_helper(content = text$createSegmentation$color_by),
                             shinyWidgets::pickerInput(
                               inputId = "pt_clrp",
-                              label = "Colorpalette:",
+                              label = "Color palette:",
                               choices = validColorPalettes(),
                               selected = "default"
                             )
@@ -283,7 +304,7 @@ createSegmentation <- function(object){
                             shiny::uiOutput(outputId = "color_by_var"),
                             shinyWidgets::pickerInput(
                               inputId = "pt_clrsp",
-                              label = "Colorspectrum:",
+                              label = "Color spectrum:",
                               choices = validColorPalettes()[["Viridis Options"]],
                               selected = "inferno"
                             )
@@ -292,18 +313,18 @@ createSegmentation <- function(object){
                             width = 6,
                             align = "left",
                             shiny::sliderInput(
-                              inputId = "pt_transparency", label = "Point transparency:",
+                              inputId = "pt_transparency", label = "Transparency:",
                               min = 0, max = 1, value = 0.5, step = 0.01
-                            ),
+                            ) %>% add_helper(content = text$createSegmentation$transparency_point),
                             shiny::sliderInput(
                               inputId = "pt_size", label = "Point size:",
                               min = 0.5, max = 5, value = 1,
                               step = 0.025
-                            ),
+                            ) %>% add_helper(content = text$createSegmentation$pointsize),
                             shiny::sliderInput(
-                              inputId = "linesize", label = "Linesize (drawing):",
+                              inputId = "linesize", label = "Line size (drawing):",
                               min = 1, max = 10, value = 2.5, step = 0.25
-                            )
+                            ) %>% add_helper(content = text$createSegmentation$linesize)
                             #,
                             #shiny::sliderInput(
                             #inputId = "pt_smooth", label = "Smoothing",
@@ -319,7 +340,8 @@ createSegmentation <- function(object){
                       width = 4,
                       shinydashboard::box(
                         width = 12,
-                        shiny::tags$h3(shiny::strong("Orientation")) %>% add_helper(content = helper_content$orientation),
+                        shiny::tags$h3(shiny::strong("Orientation")) %>%
+                          add_helper(content = text$createSegmentation$plot_orientation),
                         shiny::helpText("Keep track of where you are when you zoom in and out."),
                         shiny::fluidRow(
                           shiny::column(
@@ -362,30 +384,14 @@ createSegmentation <- function(object){
 
           # reactive values
 
-          spata_object <- shiny::reactiveVal(value = object)
-
-          polygon_vals <- shiny::reactiveValues(
-
-            x = NULL,
-            y = NULL
-
-          )
+          drawing <- shiny::reactiveVal(value = FALSE)
 
           encircled_barcodes <- shiny::reactiveVal(value = base::character(0))
-
-          drawing <- shiny::reactiveVal(value = FALSE)
 
           interactive <- shiny::reactiveValues(
 
             highlighted = FALSE,
             zooming = list()
-
-          )
-
-          selected <- shiny::reactiveValues(
-
-            segm_var = NULL,
-            segm_group = NULL
 
           )
 
@@ -397,6 +403,22 @@ createSegmentation <- function(object){
             orientation_rect = list()
 
           )
+
+          polygon_vals <- shiny::reactiveValues(
+
+            x = NULL,
+            y = NULL
+
+          )
+
+          selected <- shiny::reactiveValues(
+
+            segm_var = NULL,
+            segm_group = NULL
+
+          )
+
+          spata_object <- shiny::reactiveVal(value = object)
 
           # render UIs
 
@@ -429,7 +451,7 @@ createSegmentation <- function(object){
               getGroupNames(
                 object = spata_object(),
                 discrete_feature = input$segm_var_name
-                ) %>%
+              ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
             shinyWidgets::pickerInput(
@@ -501,18 +523,9 @@ createSegmentation <- function(object){
               )
             )
 
-
           })
 
           # reactive expressions
-
-          segm_vars <- shiny::reactive({
-
-            segm_names <- getSegmentationNames(object = spata_object(), verbose = FALSE)
-
-            return(segm_names)
-
-          })
 
           color_by_choices <- shiny::reactive({
 
@@ -593,9 +606,23 @@ createSegmentation <- function(object){
 
           })
 
+          cursor_pos <- shiny::reactive({
+
+            c(input$hover$x,input$hover$y)
+
+          })
+
+
           default_ranges <- shiny::reactive({
 
             getImageRange(object = spata_object())
+
+          })
+
+          final_orientation_plot <- shiny::reactive({
+
+            orientation_plot() +
+              plot_add_ons$orientation_rect
 
           })
 
@@ -616,6 +643,28 @@ createSegmentation <- function(object){
           })
 
           n_zooms <- shiny::reactive({ base::length(interactive$zooming) })
+
+          orientation_plot <- shiny::reactive({
+
+            plotSurface(
+              object = spata_object(),
+              color_by = NULL,
+              #pt_clrp = input$pt_clrp,
+              #pt_clrsp = input$pt_clrsp,
+              pt_alpha = 0.25,
+              display_image = TRUE,
+              #smooth = pt_smooth()$smooth,
+              #smooth_span = pt_smooth()$smooth_span,
+              na_rm = TRUE,
+              verbose = FALSE
+            ) +
+              ggplot2::theme(
+                plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
+              ) +
+              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
+              ggplot2::scale_y_continuous(limits = default_ranges()$y)
+
+          })
 
           polygon_df <- shiny::reactive({
 
@@ -699,6 +748,38 @@ createSegmentation <- function(object){
 
           })
 
+          segm_vars <- shiny::reactive({
+
+            getSegmentationVariableNames(
+              object = spata_object(),
+              verbose = FALSE
+            )
+
+          })
+
+          segmentation_plot <- shiny::reactive({
+
+            shiny::validate(
+              shiny::need(
+                expr = input$segm_var_name,
+                message = "No segmentation variables to select from. Create one by clicking on the button below."
+              )
+            )
+
+            plotSurface(
+              object = spata_object(),
+              color_by = input$segm_var_name,
+              clrp_adjust =  c("unnamed" = "grey"),
+              verbose = FALSE
+            ) +
+              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
+              ggplot2::scale_y_continuous(limits = default_ranges()$y) +
+              ggplot2::theme(
+                plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
+              )
+
+          })
+
           xrange <- shiny::reactive({
 
             if(n_zooms() == 0){
@@ -737,63 +818,28 @@ createSegmentation <- function(object){
           })
 
 
-          # basic plot
-
-          segmentation_plot <- shiny::reactive({
-
-            shiny::validate(
-              shiny::need(
-                expr = input$segm_var_name,
-                message = "No segmentation variables to select from. Create one by clicking on the button below."
-              )
-            )
-
-            plotSurface(
-              object = spata_object(),
-              color_by = input$segm_var_name,
-              clrp_adjust =  c("unnamed" = "grey"),
-              verbose = FALSE
-            ) +
-              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
-              ggplot2::scale_y_continuous(limits = default_ranges()$y) +
-              ggplot2::theme(
-                plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
-              )
-
-          })
-
-          orientation_plot <- shiny::reactive({
-
-            plotSurface(
-              object = spata_object(),
-              color_by = NULL,
-              #pt_clrp = input$pt_clrp,
-              #pt_clrsp = input$pt_clrsp,
-              pt_alpha = 0.25,
-              display_image = TRUE,
-              #smooth = pt_smooth()$smooth,
-              #smooth_span = pt_smooth()$smooth_span,
-              na_rm = TRUE,
-              verbose = FALSE
-            ) +
-              ggplot2::theme(
-                plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
-              ) +
-              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
-              ggplot2::scale_y_continuous(limits = default_ranges()$y)
-
-          })
-
-          final_orientation_plot <- shiny::reactive({
-
-            orientation_plot() +
-              plot_add_ons$orientation_rect
-
-          })
 
 
           # observe events
 
+          # keys d/e
+          oe <- shiny::observeEvent(input$keys, {
+
+            checkShortcut(shortcut = input$keys, valid = c("d", "e"), cursor_pos = cursor_pos())
+
+            if(input$keys == "d"){
+
+              drawing(TRUE)
+
+            } else if(input$keys == "e") {
+
+              drawing(FALSE)
+
+            }
+
+          })
+
+          # segments
           oe <- shiny::observeEvent(input$segm_var_name, {
 
             selected$segm_var <- input$segm_var_name
@@ -805,7 +851,6 @@ createSegmentation <- function(object){
             selected$segm_group <- input$segm_group
 
           })
-
 
           # drawing
 
@@ -985,6 +1030,7 @@ createSegmentation <- function(object){
 
           })
 
+          ### new1
 
           # zooming in and out
           oe <- shiny::observeEvent(input$zoom_in,{
@@ -993,7 +1039,7 @@ createSegmentation <- function(object){
 
           })
 
-          oe <- shiny::observeEvent(input$zoom_back, {
+          oe <- shiny::observeEvent(c(input$zoom_back), {
 
             checkpoint(
               evaluate = n_zooms() != 0,
@@ -1003,9 +1049,9 @@ createSegmentation <- function(object){
             interactive$zooming <-
               utils::head(interactive$zooming, n = (n_zooms() - 1))
 
-          })
+          }, ignoreInit = TRUE)
 
-          oe <- shiny::observeEvent(input$zoom_out, {
+          oe <- shiny::observeEvent(c(input$zoom_out), {
 
             checkpoint(
               evaluate = n_zooms() != 0,
@@ -1014,7 +1060,10 @@ createSegmentation <- function(object){
 
             interactive$zooming <- list()
 
-          })
+          }, ignoreInit = TRUE)
+
+          ###new2
+
 
           # zooming add ons
           oe <- shiny::observeEvent(interactive$zooming,{
@@ -1041,7 +1090,9 @@ createSegmentation <- function(object){
 
           })
 
-          oe <- shiny::observeEvent(input$highlight_region, {
+          # new3
+
+          oe <- shiny::observeEvent(c(input$highlight_region), {
 
             checkpoint(
               evaluate = shiny::isTruthy(current_segm_var()),
@@ -1078,8 +1129,9 @@ createSegmentation <- function(object){
 
             }
 
-          })
+          }, ignoreInit = TRUE)
 
+          # new4
           oe <- shiny::observeEvent(input$name_region, {
 
             checkpoint(
@@ -1145,11 +1197,22 @@ createSegmentation <- function(object){
           })
 
 
-          # plot outputs
+          # outputs
 
-          output$segmentation_plot <- shiny::renderPlot({
+          output$segment_df <- DT::renderDataTable({
 
-            segmentation_plot()
+            csv <- current_segm_var()
+            sv <- segm_vars()
+
+            getFeatureDf(object = spata_object()) %>%
+              dplyr::select(barcodes, dplyr::all_of(sv)) %>%
+              dplyr::select(barcodes, {{csv}}, dplyr::everything())
+
+          }, options = list(scrollX = TRUE))
+
+          output$orientation_plot <- shiny::renderPlot({
+
+            final_orientation_plot()
 
           })
 
@@ -1205,7 +1268,7 @@ createSegmentation <- function(object){
                 xlab = NA_character_,
                 ylab = NA_character_,
                 axes = FALSE
-                )
+              )
               graphics::polygon(
                 x = polygon_vals$x,
                 y = polygon_vals$y,
@@ -1216,9 +1279,9 @@ createSegmentation <- function(object){
 
           }, bg = "transparent")
 
-          output$orientation_plot <- shiny::renderPlot({
+          output$segmentation_plot <- shiny::renderPlot({
 
-            final_orientation_plot()
+            segmentation_plot()
 
           })
 

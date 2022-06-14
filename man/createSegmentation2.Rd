@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_family.R
 \name{createSegmentation2}
 \alias{createSegmentation2}
-\title{Spatial Segmentation}
+\title{Spatial Segmentation (old version)}
 \usage{
 createSegmentation2(object)
 }
@@ -14,7 +14,7 @@ An updated version of the spata-object specified as \code{object}
 now containing the information about all drawn segments.
 }
 \description{
-The function \code{createSegmentation()} provides access to an
+The function \code{createSegmentation2()} provides access to an
 interactive mini-shiny application that allows to separate a sample into
 several segments.
 }

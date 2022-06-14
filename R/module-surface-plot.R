@@ -9,45 +9,49 @@ moduleSurfacePlotUI <- function(id){
 
   shiny::tagList(
     shiny::column(width = 12,
-                  shiny::wellPanel(
-                    shiny::fluidRow(
-                      shiny::column(width = 4,
-                                    shiny::fluidRow(
-                                      shiny::column(width = 6, shiny::uiOutput(ns("sample_opts"))),
-                                      shiny::column(width = 6, shiny::uiOutput(ns("aes_clr_opts")))
-                                    ),
-                                    shiny::fluidRow(
-                                      shiny::column(width = 12,
-                                                    shiny::uiOutput(ns("aes_clr_opts_detailed")),
-                                                    shiny::conditionalPanel(
-                                                      condition = "input.aes_clr_opts == 'gene_sets'", ns = ns,
-                                                      shinyWidgets::pickerInput(ns("method_gs"),
-                                                                                label = "Gene-set method:",
-                                                                                choices = c("Mean" = "mean",
-                                                                                            "Gene Set Variation Analysis" = "gsva",
-                                                                                            "Gene Set Enrichment Analysis" = "ssgsea",
-                                                                                            "Z-Score" = "zscore",
-                                                                                            "Plage" = "plage" )))),
-                                    ),
-                                    shiny::fluidRow(
-                                      shiny::column(width = 6, shiny::uiOutput(ns("pt_clrsp"))),
-                                      shiny::column(width = 6, shiny::uiOutput(ns("pt_clrp")))
+                  shinydashboard::box(
+                    width = 12,
+                    container(
+                      width = 12,
+                      container(width = 12, strongH3("Surface Plot")),
+                      shiny::fluidRow(
+                        shiny::column(width = 4,
+                                      shiny::fluidRow(
+                                        shiny::column(width = 6, shiny::uiOutput(ns("sample_opts"))),
+                                        shiny::column(width = 6, shiny::uiOutput(ns("aes_clr_opts")))
                                       ),
-                                    shiny::fluidRow(
-                                      shiny::column(width = 6,
-                                                    shiny::uiOutput(ns("pt_size")),
-                                                    shiny::sliderInput(ns("pt_alpha"), label = "Transparency of points:", min = 0.01, max = 0.99, step = 0.01, value = 0.15),
-                                                    shiny::uiOutput(ns("pt_smooth"))
+                                      shiny::fluidRow(
+                                        shiny::column(width = 12,
+                                                      shiny::uiOutput(ns("aes_clr_opts_detailed")),
+                                                      shiny::conditionalPanel(
+                                                        condition = "input.aes_clr_opts == 'gene_sets'", ns = ns,
+                                                        shinyWidgets::pickerInput(ns("method_gs"),
+                                                                                  label = "Gene-set method:",
+                                                                                  choices = c("Mean" = "mean",
+                                                                                              "Gene Set Variation Analysis" = "gsva",
+                                                                                              "Gene Set Enrichment Analysis" = "ssgsea",
+                                                                                              "Z-Score" = "zscore",
+                                                                                              "Plage" = "plage" )))),
                                       ),
-                                      shiny::column(width = 6,
-                                                    shiny::uiOutput(ns("scale_color_min")),
-                                                    shiny::uiOutput(ns("scale_color_mid")),
-                                                    shiny::uiOutput(ns("scale_color_max"))
-                                      )
-                                    ),
-                                    shiny::HTML("<br>")
-                      ),
-                      shiny::column(width = 8,
+                                      shiny::fluidRow(
+                                        shiny::column(width = 6, shiny::uiOutput(ns("pt_clrsp"))),
+                                        shiny::column(width = 6, shiny::uiOutput(ns("pt_clrp")))
+                                      ),
+                                      shiny::fluidRow(
+                                        shiny::column(width = 6,
+                                                      shiny::uiOutput(ns("pt_size")),
+                                                      shiny::sliderInput(ns("pt_alpha"), label = "Transparency of points:", min = 0.01, max = 0.99, step = 0.01, value = 0.15),
+                                                      shiny::uiOutput(ns("pt_smooth"))
+                                        ),
+                                        shiny::column(width = 6,
+                                                      shiny::uiOutput(ns("scale_color_min")),
+                                                      shiny::uiOutput(ns("scale_color_mid")),
+                                                      shiny::uiOutput(ns("scale_color_max"))
+                                        )
+                                      ),
+                                      shiny::HTML("<br>")
+                        ),
+                        shiny::column(width = 8,
                                       shiny::plotOutput(ns("surface_plot"), dblclick = ns("surface_plot_dblclick")),
                                       shiny::HTML("<br>"),
                                       shiny::fluidRow(
@@ -58,16 +62,17 @@ moduleSurfacePlotUI <- function(id){
                                                                                          label = NULL,
                                                                                          selected = "legend",
                                                                                          choices = c("Legend" = "legend",
-                                                                                                    "Image" = "image",
-                                                                                                    "Title" = "title",
-                                                                                                    "Coordinates" = "coords",
-                                                                                                    "Segmentation" = "segmentation"),
+                                                                                                     "Image" = "image",
+                                                                                                     "Title" = "title",
+                                                                                                     "Coordinates" = "coords",
+                                                                                                     "Segmentation" = "segmentation"),
                                                                                          direction = "horizontal",
                                                                                          justified = FALSE,
                                                                                          individual = FALSE)
-                                                      )
                                         )
-                                    )
+                                      )
+                        )
+                      )
                     )
                   )
     )

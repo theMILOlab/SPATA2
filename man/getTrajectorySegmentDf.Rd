@@ -6,7 +6,8 @@
 \usage{
 getTrajectorySegmentDf(
   object,
-  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name")
+  id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
+  ...
 )
 }
 \arguments{

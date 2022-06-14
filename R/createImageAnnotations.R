@@ -127,6 +127,7 @@ createImageAnnotations <- function(object, ...){
                 no = shiny::icon("remove", lib = "glyphicon")
               )
             )
+
           })
 
           output$img_ann_labeling <- shiny::renderUI({
@@ -137,7 +138,7 @@ createImageAnnotations <- function(object, ...){
 
               out <-
                 shiny::tagList(
-                  shiny::fluidRow(strongH5("Pick action:") %>% add_helper(content = text$annotateImage$pick_action_single)),
+                  shiny::fluidRow(strongH5("Pick action:") %>% add_helper(content = text$createImageAnnotation$pick_action_single)),
                   shiny::fluidRow(
                     shiny::splitLayout(
                       shiny::actionButton(
@@ -154,11 +155,11 @@ createImageAnnotations <- function(object, ...){
                     )
                   ),
                   breaks(1),
-                  shiny::fluidRow(strongH5("Tag image annotation:") %>% add_helper(content = text$annotateImage$img_ann_tags)),
+                  shiny::fluidRow(strongH5("Tag image annotation:") %>% add_helper(content = text$createImageAnnotation$img_ann_tags)),
                   shiny::fluidRow(
                       shiny::uiOutput(outputId = "tags")
                   ),
-                  shiny::fluidRow(strongH5("ID of image annotation:") %>% add_helper(content = text$annotateImage$img_ann_id)),
+                  shiny::fluidRow(strongH5("ID of image annotation:") %>% add_helper(content = text$createImageAnnotation$img_ann_id)),
                   shiny::fluidRow(
                     shiny::textInput(inputId = "img_ann_id", label = NULL, value = val, width = "100%")
                   ),
@@ -179,7 +180,7 @@ createImageAnnotations <- function(object, ...){
 
               out <-
                 shiny::tagList(
-                  shiny::fluidRow(strongH5("Pick action:") %>% add_helper(content = text$annotateImage$pick_action_multiple)),
+                  shiny::fluidRow(strongH5("Pick action:") %>% add_helper(content = text$createImageAnnotation$pick_action_multiple)),
                   shiny::fluidRow(
                     shiny::splitLayout(
                       shiny::actionButton(
@@ -196,7 +197,7 @@ createImageAnnotations <- function(object, ...){
                     )
                   ),
                   breaks(1),
-                  shiny::fluidRow(strongH5("Tag image annotations:") %>% add_helper(content = text$annotateImage$img_ann_tags)),
+                  shiny::fluidRow(strongH5("Tag image annotations:") %>% add_helper(content = text$createImageAnnotation$img_ann_tags)),
                   shiny::fluidRow(
                     shiny::uiOutput(outputId = "tags")
                   ),
@@ -229,7 +230,7 @@ createImageAnnotations <- function(object, ...){
                 max = 1000,
                 step = 1,
                 width = "100%"
-                ) %>% add_helper(content = text$annotateImage$ncol)
+                ) %>% add_helper(content = text$createImageAnnotation$ncol)
 
             }
 
@@ -247,7 +248,7 @@ createImageAnnotations <- function(object, ...){
                 max = 1000,
                 step = 1,
                 width = "100%"
-                ) %>% add_helper(content = text$annotateImage$nrow)
+                ) %>% add_helper(content = text$createImageAnnotation$nrow)
 
             }
 

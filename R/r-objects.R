@@ -254,7 +254,7 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 7, patch = 0)
+current_spata_version <- list(major = 1, minor = 8, patch = 0)
 
 
 
@@ -265,6 +265,37 @@ current_spata_version <- list(major = 1, minor = 7, patch = 0)
 
 ############ alphabetical
 
+
+
+
+
+
+# d -----------------------------------------------------------------------
+
+depr_info <-
+  list(
+    fns = list(
+      "assessTrajectoryTrends" = "spatialTrajectoryScreening",
+      "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
+      "createTrajectories" = "createSpatialTrajectories",
+      "createTrajectoryManually" = "addSpatialTrajectory",
+      "getDefaultTrajectory" = "getDefaultTrajectoryId",
+      "getTrajectoryNames" = "getTrajectoryIds",
+      "getTrajectoryObject" = "getTrajectory",
+      "plotTrajectory" = "plotSpatialTrajectories",
+      "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
+      "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",
+      "plotTrajectoryFit" = "plotTrajectoryLineplotFitted",
+      "plotTrajectoryFitCustomized" = "plotTrajectoryFitted",
+      "plotTrajectoryGenes" = "plotTrajectoryLineplot",
+      "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
+      "setDefaultTrajectory" = "setDefaultTrajectoryId"
+    ),
+    args = list(
+      "of_sample" = NA_character_,
+      "trajectory_name" = "id"
+    )
+  )
 
 
 
@@ -329,7 +360,8 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 summarize_formulas <-
   list(
     "mean" = ~ base::mean(.x, na.rm = TRUE),
-    "median" = ~ stats::median(.x, na.rm = TRUE)
+    "median" = ~ stats::median(.x, na.rm = TRUE),
+    "sd" = ~ stats::sd(.x, na.rm = TRUE)
   )
 
 

@@ -438,6 +438,18 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 && object@version$minor == 7){
+
+    object@version <- list(major = 1, minor = 8, patch = 0)
+
+    object@trajectories[[1]] <-
+      purrr::map(
+        .x = object@trajectories[[1]],
+        .f = asSpatialTrajectory
+      )
+
+  }
+
   # default adjustment ------------------------------------------------------
 
   old_default <- object@information$instructions$default
@@ -459,7 +471,7 @@ updateSpataObject <- function(object,
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 
-  base::remove(x.updating.spata.object.x, envir = .GlobalEnv)
+  base::rm(x.updating.spata.object.x, envir = .GlobalEnv)
 
   base::return(object)
 

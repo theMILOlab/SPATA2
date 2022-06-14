@@ -706,9 +706,6 @@ joinWithVariables <- function(object,
   }
 
 
-
-
-
   if("features" %in% base::names(variables)){
 
     spata_df <-

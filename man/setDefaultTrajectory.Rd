@@ -3,21 +3,26 @@
 \name{setDefaultTrajectory}
 \alias{setDefaultTrajectory}
 \alias{getDefaultTrajectory}
-\title{Default trajecotry}
+\alias{getDefaultTrajectoryId}
+\alias{setDefaultTrajectoryId}
+\title{Default trajectory ID}
 \usage{
-setDefaultTrajectory(object, trajectory_name, verbose = NULL)
+setDefaultTrajectory(object, id, verbose = NULL)
 
-getDefaultTrajectory(object, verbose = FALSE, ...)
+getDefaultTrajectory(object, ...)
+
+getDefaultTrajectoryId(object, ...)
+
+setDefaultTrajectoryId(object, id, verbose = NULL)
 }
 \arguments{
-\item{trajectory_name}{Character value. The trajectory that is
-used by default within all functions that need one.}
+\item{id}{Character value.}
 }
 \value{
-\code{setDefaultTrajectory()}: Updated spata object. \code{getDefaultTrajectory()}: Character value. Name
+\code{setDefaultTrajectory()}: Updated spata object. \code{getDefaultTrajectory()}: Character value. Id
 of the default trajectory.
 }
 \description{
-Sets and extracts the default trajectory. Useful to save typing
+Sets and extracts the default trajectory id. Useful to save typing
 in functions that require a trajectory name as input.
 }

@@ -435,31 +435,29 @@ ggpLayerThemeCoords <- function(){
 #' @export
 #'
 ggpLayerTrajectories <- function(object = "object",
-                                 trajectories,
-                                 arrow = list(length = ggplot2::unit(x = 0.125, "inches")),
+                                 ids,
+                                 arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
                                  ...){
+
+  hlpr_assign_arguments(object)
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
   segment_df <-
-    purrr::map_df(
-      .x = trajectories,
-      .f = ~ getTrajectorySegmentDf(
-        object = object,
-        trajectory_name = .x
-      )
+    purrr::map(
+      .x = ids,
+      .f = ~ getSpatialTrajectory(object, id = .x)
     ) %>%
+    purrr::set_names(nm = ids) %>%
+    purrr::imap_dfr(.f = ~ dplyr::mutate(.x@segment, ids = .y)) %>%
     tibble::as_tibble()
-
-  coords_df <-
-    getCoordsDf(object)
 
   out <-
     list(
       ggplot2::geom_segment(
         data = segment_df,
         mapping = ggplot2::aes(x = x, y= y, xend = xend, yend = yend),
-        arrow = rlang::exec(.fn = "ggplot2::arrow", arrow),
+        arrow = arrow,
         ...
       )
     )

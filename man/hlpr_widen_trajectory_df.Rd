@@ -14,7 +14,7 @@ from \code{hlpr_summarize_trajectory_df()}.}
 \emph{'gene_sets', 'genes'} or \emph{'features'}.}
 }
 \value{
-A widened data.frame in which each every observation is a
+A widened data.frame in which  every observation is a
 trajectory and every variable describes the value of the trajectory
 at a specific position.
 }

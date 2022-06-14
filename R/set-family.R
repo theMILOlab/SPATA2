@@ -541,32 +541,33 @@ setDirectoryInstructions <- function(object){
 }
 
 
-#' @title Default trajecotry
+#' @title Default trajectory ID
 #'
-#' @description Sets and extracts the default trajectory. Useful to save typing
+#' @description Sets and extracts the default trajectory id. Useful to save typing
 #' in functions that require a trajectory name as input.
 #'
-#' @param trajectory_name Character value. The trajectory that is
-#' used by default within all functions that need one.
+#' @param id Character value.
 #'
-#' @return \code{setDefaultTrajectory()}: Updated spata object. \code{getDefaultTrajectory()}: Character value. Name
+#' @return \code{setDefaultTrajectory()}: Updated spata object. \code{getDefaultTrajectory()}: Character value. Id
 #' of the default trajectory.
 #' @export
 #'
-setDefaultTrajectory <- function(object, trajectory_name, verbose = NULL){
+setDefaultTrajectory <- function(object, id, verbose = NULL){
+
+  deprecated(fn = TRUE)
 
   hlpr_assign_arguments(object)
 
-  is_value(x = trajectory_name, mode = "character")
+  is_value(x = id, mode = "character")
 
   check_one_of(
-    input = trajectory_name,
-    against = getTrajectoryNames(object)
+    input = id,
+    against = getTrajectoryIds(object)
   )
 
-  object@information$default_trajectory <- trajectory_name
+  object@information$default_trajectory <- id
 
-  give_feedback(msg = glue::glue("Default trajectory: '{trajectory_name}'"), verbose = verbose)
+  give_feedback(msg = glue::glue("Default trajectory: '{id}'"), verbose = verbose)
 
   return(object)
 
@@ -574,7 +575,9 @@ setDefaultTrajectory <- function(object, trajectory_name, verbose = NULL){
 
 #' @rdname setDefaultTrajectory
 #' @export
-getDefaultTrajectory <- function(object, verbose = FALSE, ...){
+getDefaultTrajectory <- function(object, ...){
+
+  deprecated(fn = TRUE)
 
   t <- object@information$default_trajectory
 
@@ -584,11 +587,11 @@ getDefaultTrajectory <- function(object, verbose = FALSE, ...){
 
     if(base::is.character(x)){
 
-      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectory()' or specify with argument '{x}'."))
+      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()' or specify with argument `id`."))
 
     } else {
 
-      stop("Default trajectory is not set. Set it with 'setDefaultTrajectory()'.")
+      stop("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()'.")
 
     }
 
@@ -599,6 +602,15 @@ getDefaultTrajectory <- function(object, verbose = FALSE, ...){
   return(t)
 
 }
+
+#' @rdname setDefaultTrajectory
+#' @export
+getDefaultTrajectoryId <- getDefaultTrajectory
+
+#' @rdname setDefaultTrajectory
+#' @export
+setDefaultTrajectoryId <- setDefaultTrajectory
+
 
 
 
@@ -611,8 +623,7 @@ getDefaultTrajectory <- function(object, verbose = FALSE, ...){
 #'
 #' @inherit set_dummy return details
 
-setInitiationInfo <- function(object,
-                              additional_input = list()){
+setInitiationInfo <- function(object, additional_input = list()){
 
   ce <- rlang::caller_env()
 

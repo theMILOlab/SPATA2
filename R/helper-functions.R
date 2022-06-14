@@ -88,7 +88,7 @@ vselect <- function(input, ...){
   }
 
 
-  base::return(output)
+ return(output)
 
 }
 
@@ -128,7 +128,7 @@ hlpr_add_barcode_suffix <- function(input, sample_name){
 
   }
 
-  base::return(input)
+ return(input)
 
 }
 
@@ -180,7 +180,7 @@ hlpr_add_old_coords <- function(object, plot_df, complete){
   }
 
 
-  base::return(res_df)
+ return(res_df)
 }
 
 
@@ -271,7 +271,7 @@ hlpr_breaks <- function(mtr, length_out){
 
   breaks <- base::seq(quantiles[2], quantiles[4], length.out = length_out)
 
-  base::return(breaks)
+ return(breaks)
 
 }
 
@@ -432,11 +432,11 @@ hlpr_display_title <- function(display_title, title){
 
     add_on <- ggplot2::labs(title = title)
 
-    base::return(add_on)
+   return(add_on)
 
   } else {
 
-    base::return(NULL)
+   return(NULL)
 
   }
 
@@ -449,11 +449,11 @@ hlpr_display_subtitle <- function(display_subtitle, subtitle){
 
     add_on <- ggplot2::labs(subtitle = subtitle)
 
-    base::return(add_on)
+   return(add_on)
 
   } else {
 
-    base::return(NULL)
+   return(NULL)
 
   }
 
@@ -626,7 +626,7 @@ hlpr_image_add_on <- function(object, display_image, of_sample){
 
   }
 
-  base::return(image_add_on)
+ return(image_add_on)
 
 }
 
@@ -744,11 +744,11 @@ hlpr_labs_add_on <- function(input,
 
     plot_title <- stringr::str_c(input_str, input_clpsd, sep = " ")
 
-    base::return(ggplot2::labs(title = plot_title, color = color_str))
+   return(ggplot2::labs(title = plot_title, color = color_str))
 
   } else {
 
-    base::return(ggplot2::labs(color = color_str))
+   return(ggplot2::labs(color = color_str))
 
   }
 
@@ -775,7 +775,7 @@ hlpr_normalize_imap <- function(variable,
 
   if(!base::is.numeric(variable) | !var_name %in% subset){
 
-      base::return(variable)
+     return(variable)
 
   } else if(base::all(variable == 0)){
 
@@ -786,7 +786,7 @@ hlpr_normalize_imap <- function(variable,
       }
 
       base::warning(stringr::str_c(aspect, var_name, "contains only 0s. Returning NULL.", sep = " "))
-      base::return(NULL)
+     return(NULL)
 
   } else if(base::length(base::unique(variable)) == 1){
 
@@ -797,7 +797,7 @@ hlpr_normalize_imap <- function(variable,
       }
 
       base::warning(stringr::str_c(aspect, var_name, "is uniformly expressed. Returning NULL.", sep = " "))
-      base::return(NULL)
+     return(NULL)
 
   } else {
 
@@ -808,12 +808,12 @@ hlpr_normalize_imap <- function(variable,
 
       if(!base::any(base::is.na(res))){
 
-      base::return(res)
+     return(res)
 
       } else {
 
         base::warning(stringr::str_c(aspect, var_name, "normalization resulted in NaNs. Returning NULL.", sep = " "))
-        base::return(NULL)
+       return(NULL)
 
       }
 
@@ -836,11 +836,11 @@ hlpr_normalize_vctr <- function(variable){
 
   if(base::any(base::is.na(res))){
 
-    base::return(variable)
+   return(variable)
 
   } else {
 
-    base::return(res)
+   return(res)
 
   }
 
@@ -867,7 +867,7 @@ hlpr_one_distinct <- function(x, rna_assay, pb = NULL, verbose = TRUE){
 
   res <- dplyr::n_distinct(rna_assay[x,]) == 1
 
-  base::return(res)
+ return(res)
 
 }
 
@@ -957,7 +957,7 @@ hlpr_process_spatial_correlation_cluster <- function(cutree_df, dist_df, input){
          "k" = input$k,
          "method" = input$method)
 
-  base::return(cluster_list)
+ return(cluster_list)
 
 }
 
@@ -1163,7 +1163,7 @@ hlpr_scatterplot <- function(object,
 
   }
 
-  base::return(
+ return(
     list(data = spata_df,
          add_on = ggplot_add_on
     )
@@ -1207,7 +1207,7 @@ hlpr_smooth <- function(variable,
 
   if(!var_name %in% subset){
 
-    base::return(variable)
+   return(variable)
 
   } else if(!base::is.numeric(data$rv)){
 
@@ -1217,7 +1217,7 @@ hlpr_smooth <- function(variable,
 
     }
 
-    base::return(variable)
+   return(variable)
 
   } else if(base::any(base::is.na(data$rv)) |
             base::any(base::is.nan(data$rv))|
@@ -1230,7 +1230,7 @@ hlpr_smooth <- function(variable,
     }
 
     base::warning(stringr::str_c("Skip smoothing of", aspect, var_name, "as it contains NaNs or infinites.", sep = " "))
-    base::return(variable)
+   return(variable)
 
   } else {
 
@@ -1238,7 +1238,7 @@ hlpr_smooth <- function(variable,
 
     model <- stats::loess(formula = rv ~ x * y, data = data, span = smooth_span)
 
-    base::return(stats::predict(object = model))
+   return(stats::predict(object = model))
 
   }
 
@@ -1285,14 +1285,14 @@ hlpr_smooth_shiny <- function(variable,
 
     if(base::nrow(smoothed_df) == base::nrow(coords_df)){
 
-      base::return(smoothed_df)
+     return(smoothed_df)
 
     } else {
 
       shiny::showNotification(ui = "Smoothing failed. Return original values.",
                               type = "warning")
 
-      base::return(coords_df)
+     return(coords_df)
 
     }
 
@@ -1304,7 +1304,7 @@ hlpr_smooth_shiny <- function(variable,
 
     base::colnames(coords_df)[base::which(base::colnames(coords_df) == "response_variable")] <- variable
 
-    base::return(coords_df)
+   return(coords_df)
 
   }
 
@@ -1331,7 +1331,7 @@ hlpr_subset_across <- function(data, across, across_subset){
 
   if(base::is.null(across_subset)){
 
-    base::return(data)
+   return(data)
 
   } else {
 
@@ -1352,7 +1352,7 @@ hlpr_subset_across <- function(data, across, across_subset){
 
     data <- dplyr::filter(.data = data, !!rlang::sym(across) %in% {{across_subset}})
 
-    base::return(data)
+   return(data)
 
   }
 
@@ -1611,7 +1611,7 @@ hlpr_summarize_trajectory_df <- function(object,
 
   # -----
 
-  base::return(shifted_df)
+ return(shifted_df)
 
 }
 
@@ -1693,7 +1693,7 @@ hlpr_vector_projection <- function(lcs, x_coordinate, y_coordinate){
   # compute the length of the projected vector
   res <- base::sqrt((pv[1])^2 + (pv[2])^2)
 
-  base::return(res)
+ return(res)
 
 
 }
@@ -1708,7 +1708,7 @@ hlpr_vector_projection <- function(lcs, x_coordinate, y_coordinate){
 #' \emph{'gene_sets', 'genes'} or \emph{'features'}.
 #'
 #'
-#' @return A widened data.frame in which each every observation is a
+#' @return A widened data.frame in which  every observation is a
 #' trajectory and every variable describes the value of the trajectory
 #' at a specific position.
 #'
@@ -2040,7 +2040,7 @@ hlpr_filter_trend <- function(atdf, limit, poi){
 
   } else {
 
-    base::return(res)
+   return(res)
 
   }
 

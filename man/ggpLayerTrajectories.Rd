@@ -6,21 +6,24 @@
 \usage{
 ggpLayerTrajectories(
   object = "object",
-  trajectories,
-  arrow = list(length = ggplot2::unit(x = 0.125, "inches")),
+  ids,
+  arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
   ...
 )
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{trajectories}{Character vector. The name of the trajectories
-that should be plotted.}
+\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
+interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
 
 \item{arrow}{A list of arguments given to \code{ggplot2::arrow()}. Based
 on which the trajectories are plotted.}
 
 \item{...}{Additional arguments given to \code{ggplot2::geom_segment()}.}
+
+\item{trajectories}{Character vector. The name of the trajectories
+that should be plotted.}
 }
 \value{
 List.

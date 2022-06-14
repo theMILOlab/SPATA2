@@ -6,23 +6,16 @@
 \usage{
 getTrajectoryLength(
   object,
-  trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
-  binwidth = 5,
-  of_sample = NA
+  id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
+  binwidth = 5
 )
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{trajectory_name}{The trajectory of interest specified
-as a single character value.}
-
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 Numeric value.

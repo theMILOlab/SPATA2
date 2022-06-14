@@ -155,45 +155,7 @@ tab_create_segmentation_return <- function(){shinydashboard::tabItem(tabName = "
 
 tab_create_trajectories_return <- function(){
 
-  shiny::fluidRow(
-    shiny::column(width = 4,
-                  shiny::wellPanel(
-                    shiny::tags$h3(shiny::strong("Instructions")),
-                    shiny::HTML("<br>"),
-                    shiny::helpText("1. Click on 'Plot & Update' to display the sample according to the adjustments you set up or changed."),
-                    shiny::HTML("<br>"),
-                    shiny::helpText("2. Determine the vertices of the trajectory by 'double - clicking' the position on the plot."),
-                    shiny::HTML("<br>"),
-                    shiny::helpText("3. Highlight or reset the trajectory by clicking the respective button below."),
-                    shiny::sliderInput("trajectory_width", label = "Determine width of trajectory", value = 20, min = 0.5, max = 100, step = 0.5),
-                    shiny::HTML("<br>"),
-                    shiny::splitLayout(
-                      shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
-                      shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
-                      cellWidths = c("50%", "50%")
-                    ),
-                    shiny::HTML("<br>"),
-                    shiny::helpText("4. Enter the name you want to give the trajectory as well as a 'guiding comment' and click the 'Save'-button."),
-                    shiny::splitLayout(
-                      shiny::actionButton("save_trajectory", "Save Trajectory", width = "100%"),
-                      shiny::textInput("name_trajectory", label = NULL, placeholder = "Name trajectory", value = ""),
-                      cellWidths = c("50%", "50%")
-                    ),
-                    shiny::textInput("comment_trajectory", label = NULL, placeholder = "A guiding comment.", value = ""),
-                    shiny::HTML("<br>"),
-                    shiny::helpText("5. If you are done click on 'Close application'."),
-                    shiny::HTML("<br>"),
-                    shiny::fluidRow(
-                      shiny::column(width = 12, align = "center",
-                                    shiny::actionButton("close_app", label = "Close application", width = "50%")
-                      )
-                    )
-                  )),
-    shiny::column(width = 8,
-                  moduleSurfacePlotUI(id = "trajectories")
-    )
 
-  )
 }
 
 # -----
