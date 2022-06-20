@@ -62,9 +62,6 @@ the computational progress will be printed.
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 }
-\value{
-
-}
 \description{
 This function calculates the quantiles specified in \code{n_qntl}
 of the numeric variable specified in \code{color_by} and divides the barcode

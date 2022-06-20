@@ -40,12 +40,6 @@ are not included are dropped which affects the colors with which they are displa
 
 \item{smooth_span}{The amount of smoothing specified as a single numeric value.}
 
-\item{nrow}{Affects the way the subplots
-are displayed.}
-
-\item{ncol}{Affects the way the subplots
-are displayed.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

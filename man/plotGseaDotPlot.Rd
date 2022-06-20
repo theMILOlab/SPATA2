@@ -46,10 +46,6 @@ plotGseaDotPlot(
 that contains the group assignment across which results are displayed. If NULL,
 no grouping is done.}
 
-\item{across_subset}{Character vector or NULL. If character, specifies groups of the
-grouping variable that are of interest. Prefixing group names with \emph{'-'} excludes them.
-If NULL, all groups are considered.}
-
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across.subset} and
 \code{variables} determines the order in which the groups of interest are displayed.}
 
@@ -70,34 +66,9 @@ for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discover
 \item{signif_threshold}{Numeric value. Significance values below \code{signif_threshold}
 are not included.}
 
-\item{alpha_by}{Character
-value or NULL. If character, specifies the variable that is mapped to the respective
-aesthetic of the plot.}
-
-\item{alpha_trans}{Character value. Name of the transformation method applied to the continuous scale. Use
-\code{validScaleTransformations()} to obtain all valid input options. Use \emph{'identity'}
-for no transformation.}
-
-\item{color_by}{Character value or NULL. If character, specifies the
-variable that is displayed by color.}
-
-\item{color_trans}{Character value. Name of the transformation method applied to the continuous scale. Use
-\code{validScaleTransformations()} to obtain all valid input options. Use \emph{'identity'}
-for no transformation.}
-
-\item{size_by}{Character
-value or NULL. If character, specifies the variable that is mapped to the respective
-aesthetic of the plot.}
-
-\item{size_trans}{Character value. Name of the transformation method applied to the continuous scale. Use
-\code{validScaleTransformations()} to obtain all valid input options. Use \emph{'identity'}
-for no transformation.}
-
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
-
-\item{pt_color}{Character value. Specifies the color with which all points are displayed .}
 
 \item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
@@ -119,13 +90,7 @@ belonging. Making the appearance of the plots tidier.}
 \item{reverse}{Logical. If TRUE the gene sets are arranged from top to bottom.
 If FALSE they are arranged from bottom to top.}
 
-\item{scales}{Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Affects the way the subplots
-are displayed.}
-
-\item{ncol}{Affects the way the subplots
+\item{scales, ncol, nrow}{Affects the way the subplots
 are displayed.}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.

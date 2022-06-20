@@ -64,15 +64,11 @@ represent the group.}
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
-\item{xrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
+\item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
 with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
 from x-coordinate 200 up to x-coordinate 500.}
 
-\item{yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
-with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
-from x-coordinate 200 up to x-coordinate 500.}
-
-\item{expand}{Numeric value or vector. Specifies the extent to which the  x- and y-span
+\item{expand}{Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
 
 Values from 0 to 1 are used to calculate the corresponding percentage of the image
@@ -84,7 +80,7 @@ Values bigger than 1 are considered to be absolute values. The returned image
 section has the exact x- and y- spans as specified in \code{expand}.
 E.g. \code{expand} = 200 results in an image section with x- and y-span of
 200. If the input value is bigger than 1 it must be at least as big as the
-original span.
+original span of the image annotation.
 
 To adjust x- and y-span specifically you can provide a vector of length 2.
 If you do so the first value is taken to adjust the xspan and the second

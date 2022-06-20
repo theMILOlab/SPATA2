@@ -41,9 +41,6 @@ represent the group.}
 visualizes the parts in which the trajectory has been partitioned while beeing
 drawn.}
 
-\item{scales}{Affects the way the subplots
-are displayed.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

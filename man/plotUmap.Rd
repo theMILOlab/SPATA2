@@ -103,33 +103,10 @@ plotPca(
   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
   }}
 
-\item{color_aes}{Either \emph{'color'} or \emph{'fill'}. Specifies the
-aesthetic that is used to visualize the variable that is specified in \code{color_by}.
-Ignored if \code{color_by} is NULL.}
-
-\item{color_trans}{Character value. Name of the transformation method applied to the continuous scale. Use
-\code{validScaleTransformations()} to obtain all valid input options. Use \emph{'identity'}
-for no transformation.}
-
-\item{alpha_by}{Character
-value or NULL. If character, specifies the variable that is mapped to the respective
-aesthetic of the plot.}
-
-\item{order_by}{Character value or NULL. If character, specifies the
-numeric variable by which the points are arranged before plotting.}
-
-\item{shape_by}{Character
-value or NULL. If character, specifies the variable that is mapped to the respective
-aesthetic of the plot.}
-
 \item{method_gs}{Character value. The method according to which gene sets will be handled
 specified as a character of length one. This can be either \emph{'mean'} or one
 of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
 \code{gsva::GSVA()}.}
-
-\item{pt_shape}{Numeric or character value. If numeric, the respective
-shape is taken for all points. If character, the respective variable is
-mapped to the shape-aesthetic.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
@@ -168,12 +145,6 @@ spata-objects can store more than one sample.}
 \item{add_ons}{A list of ggplot add ons to add to each plot.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
-
-\item{nrow}{Affects the way the subplots
-are displayed.}
-
-\item{ncol}{Affects the way the subplots
-are displayed.}
 
 \item{n_pcs}{Numeric value. Determines the number of principal components to be plotted.
 Must be an even number.}

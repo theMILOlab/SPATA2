@@ -10,7 +10,7 @@ Description: This package provides a framework of functions and shiny-applicatio
 Encoding: UTF-8
 LazyData: true
 License: GPL-3
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 Imports: 
     broom,
     concaveman,
@@ -46,8 +46,9 @@ Imports:
     viridis,
     umap
 Collate: 
-    'S4-HistologyImage.R'
+    'BayesSpaceWrapper.R'
     'S4-documentation.R'
+    'S4-HistologyImage.R'
     'S4-generic-functions.R'
     'S4-programming-aid.R'
     'add-family.R'
@@ -68,6 +69,7 @@ Collate:
     'create_family.R'
     'data.R'
     'deprecated.R'
+    'dev.R'
     'dimensional-reduction.R'
     'documentation-dummies.R'
     'find-cluster.R'
@@ -78,10 +80,6 @@ Collate:
     'ggplot2-layer.R'
     'hclust-implementation.R'
     'helper-functions.R'
-    'hspa-helper-functions.R'
-    'hspa-main-functions.R'
-    'hspa-plotting.R'
-    'hspa-sub-functions.R'
     'image-annotation-screening.R'
     'image-handling.R'
     'imported-functions.R'
@@ -120,7 +118,6 @@ Collate:
     'showColors.R'
     'spata-object-manipulation.R'
     'spatial-correlation.R'
-    'spatial-gradient-screening.R'
     'spatially-variable-genes-wrapper.R'
     'trajectory-plots-new.R'
     'trajectory-screening.R'

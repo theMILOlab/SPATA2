@@ -53,8 +53,7 @@ add_models <- function(input_df,
 evaluate_model_fits <- function(input_df,
                                 var_order,
                                 with_corr = TRUE,
-                                with_raoc = TRUE,
-                                verbose = TRUE){
+                                with_raoc = TRUE){
 
   n <- dplyr::n_distinct(input_df[[var_order]])
 
@@ -105,7 +104,8 @@ shift_for_evaluation <- function(input_df, var_order){
       cols = -dplyr::all_of(keep),
       names_to = "models",
       values_to = "values_models"
-    )
+    ) %>%
+    dplyr::arrange(variables, models)
 
   return(out_df)
 

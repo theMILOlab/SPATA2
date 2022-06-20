@@ -49,9 +49,6 @@ used as the final clustering result. Default is 1. Note that if
 num_iter is greater than 1, the random_seed argument will be ignored
 for the louvain method.}
 }
-\value{
-
-}
 \description{
 Check monocle input
 }

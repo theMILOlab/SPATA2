@@ -79,14 +79,6 @@ or by adding vertical lines.}
 
 \item{line_alpha}{Numeric value. Specifies the transparency of the lines.}
 
-\item{line_color}{Character value. Specifies the color of lines in the plot.}
-
-\item{line_size}{Numeric value. Specifies the transparency
-and the thickness of lines in the plot.}
-
-\item{line_type}{Character value. Specifies the type of the lines. Use
-\code{validLineTypes()} to obtain all valid input options.}
-
 \item{clrsp}{Character value. Specifies the color spectrum to be used to represent
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 valid input options.}

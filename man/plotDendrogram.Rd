@@ -77,12 +77,6 @@ represent the group.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 
-\item{ncol}{Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Affects the way the subplots
-are displayed.}
-
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 

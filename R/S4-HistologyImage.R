@@ -1,163 +1,7 @@
 
-image_class <- "Image"
-base::attr(x = image_class, which = "package") <- "EBImage"
 
-#' @title The HistologyImage - Class
-#'
-#' @description S4 class that represents histology images.
-#'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot dir_default character. The default directory that is used to load
-#' the image if slot @@image is empty. Or a string linking to the default slot
-#' ('highres' or 'lowres').
-#' @slot dir_highres character. Directory to the high resolution version of the image.
-#' @slot dir_lowres character. Directory to the low resolution version of the image.
-#' @slot grid data.frame. A data.frame that contains at least a variable
-#' named \emph{x} and a variable named \emph{y} representing a grid.
-#' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class.
-#' @slot image Image.
-#' @slot info list. A flexible list that is supposed to store miscellaneous
-#' information around the image.
-#' @slot misc list. A flexible list for miscellaneous input.
-#'
-#' @export
-HistologyImage <- methods::setClass(Class = "HistologyImage",
-                                    slots = list(
-                                      annotations = "list",
-                                      coordinates = "data.frame",
-                                      dir_default = "character",
-                                      dir_highres = "character",
-                                      dir_lowres = "character",
-                                      grid = "list",
-                                      id = "character",
-                                      info = "list",
-                                      image = image_class,
-                                      misc = "list"
-                                    ))
-
-#' @title The Visium - Class
-#'
-#' @description S4 class that represents spatial information from 10X Genomics
-#' Visium experiments.
-#'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot grid data.frame. A data.frame that contains at least a the numeric variables
-#' named \emph{x} and \emph{y} as well as the character variable \emph{barcodes}.
-#' @slot dir_default character. Directory to the default version of the image.
-#' @slot dir_highres character. Directory to the high resolution version of the image.
-#' @slot grid data.frame. A data.frame that contains at least a variable
-#' named \emph{x} and a variable named \emph{y} representing a grid. Must contain
-#' a character variable named \emph{barcodes}, too.
-#' @slot image Image.
-#'
-#' @export
-Visium <- methods::setClass(Class = "Visium",
-                            contains = "HistologyImage",
-                            slots = list()
-                           )
-
-#' @title The \code{ImageAnnotation} - Class
-#'
-#' @description S4 class that contains information used to identify and
-#' annotate structures in histology images.
-#'
-#' @slot area data.frame. A data.frame that contains at least the numeric
-#' variables \emph{x} and \emph{y}. Data corresponds to the polygong that
-#' captures the spatial extent of the identified structure.
-#' @barcodes character. Character vector of barcodes that fall into the polygon
-#' that encircles the annotated structure.
-#' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class.
-#' @slot image image. Cropped version of the annotated image that only contains
-#' the area where the annotated structure is located (plus expand). This slot is
-#' empty as long as the \code{ImageAnnotation} object is located in an
-#' object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
-#' or \code{getImageAnnotations()} adds the cropped image to the slot.
-#' @slot image_info list. List of infos around the image of slot @@image.
-#' @slot misc list. A flexible list for miscellaneous input.
-#' @slot tags character. Tags that can be used to group iamge annotations in different manners.
-#' This can be a single or multiple strings.
-#'
-ImageAnnotation <- methods::setClass(Class = "ImageAnnotation",
-                                     slots = list(
-                                       area = "data.frame",
-                                       barcodes = "character",
-                                       id = "character",
-                                       image = image_class,
-                                       image_info = "list",
-                                       misc = "list",
-                                       tags = "character"
-                                     )
-)
-
-
-
-
-# helper ------------------------------------------------------------------
-
-#' @export
-lastImageAnnotation <- function(object){
-
-  ios <- getImageAnnotations(object, add_image = FALSE)
-
-  if(base::length(ios) == 0){
-
-    out <- 0
-
-  } else {
-
-    out <-
-      purrr::map_chr(.x = ios, .f = ~ stringr::str_extract(.x@id, pattern = "\\d*$")) %>%
-      base::as.numeric() %>%
-      base::max()
-
-  }
-
-  return(out)
-
-}
-
-#' @export
-check_image_annoation_ids <- function(object, ids = NULL, ...){
-
-  if(base::is.character(ids)){
-
-    check_one_of(
-      input = ids,
-      against = getImageAnnotationIds(object),
-      fdb.opt = 2,
-      ref.opt = "image annotation IDs",
-      ...
-    )
-
-  }
-
-  base::invisible(TRUE)
-
-}
-
-#' @export
-check_image_annoation_tags <- function(object, tags = NULL, ...){
-
-  if(base::is.character(tags)){
-
-    check_one_of(
-      input = tags,
-      against = getImageAnnotationTags(object),
-      fdb.opt = 2,
-      ref.opt = "image annotation tags",
-      ...
-    )
-
-  }
-
-  base::invisible(TRUE)
-
-}
-
-
-
+#' @include S4-documentation.R
+NULL
 
 # a -----------------------------------------------------------------------
 
@@ -217,6 +61,46 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
 # c -----------------------------------------------------------------------
 
+#' @export
+check_image_annotation_ids <- function(object, ids = NULL, ...){
+
+  if(base::is.character(ids)){
+
+    check_one_of(
+      input = ids,
+      against = getImageAnnotationIds(object),
+      fdb.opt = 2,
+      ref.opt = "image annotation IDs",
+      ...
+    )
+
+  }
+
+  base::invisible(TRUE)
+
+}
+
+#' @export
+check_image_annotation_tags <- function(object, tags = NULL, ...){
+
+  if(base::is.character(tags)){
+
+    check_one_of(
+      input = tags,
+      against = getImageAnnotationTags(object),
+      fdb.opt = 2,
+      ref.opt = "image annotation tags",
+      ...
+    )
+
+  }
+
+  base::invisible(TRUE)
+
+}
+
+
+
 #' @title Count image annotation tags
 #'
 #' @description Counts image annotations by tags. See details for more
@@ -235,7 +119,7 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 #'
 countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
-  check_image_annoation_tags(object, tags)
+  check_image_annotation_tags(object, tags)
 
   if(base::is.list(tags)){
 
@@ -244,7 +128,7 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
       purrr::flatten_chr() %>%
       base::unique()
 
-    check_image_annoation_tags(object, tags = tags.list, ref.input = "`tags.list`")
+    check_image_annotation_tags(object, tags = tags.list, ref.input = "`tags.list`")
 
     out <-
       tibble::tibble(
@@ -324,6 +208,7 @@ discardImageAnnotations <- function(object, ids){
 #' @description Extracts object of class \code{ImageAnnotaion} by
 #' its id.
 #'
+#' @param id Character value. The ID of the image annotation of interest.
 #' @inherit argument_dummy params
 #'
 #' @return An object of class \code{ImageAnnotation}.
@@ -335,6 +220,11 @@ getImageAnnotation <- function(object,
                                add_image = TRUE,
                                expand = 0,
                                square = FALSE){
+
+  confuns::check_one_of(
+    input = id,
+    against = getImageAnnotationIds(object)
+  )
 
   getImageAnnotations(
     object = object,
@@ -382,27 +272,73 @@ getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "
 #' a data.frame that contains one row, namely the barcode spot
 #' that lies closest to the most central point.
 #'
+#' @inherit getImageAnnotation params
 #' @inherit argument_dummy params
+#'
 #'
 #' @return Character vector.
 #'
 #' @export
-getImageAnnotationCenter <- function(object, id){
 
-  img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
+setGeneric(name = "getImageAnnotationCenter", def = function(object, ...){
 
-  area_df <- img_ann@area
+  standardGeneric(f = "getImageAnnotationCenter")
 
-  x <- base::mean(area_df$x)
-  y <- base::mean(area_df$y)
+})
 
-  out <- c(x = x, y = y)
-
-  return(out)
-
-}
-
+#' @rdname getImageAnnotationCenter
 #' @export
+setMethod(
+  f = "getImageAnnotationCenter",
+  signature = "spata2",
+  definition = function(object, id){
+
+    img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
+
+    area_df <- img_ann@area
+
+    x <- base::mean(area_df$x)
+    y <- base::mean(area_df$y)
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImageAnnotationCenter
+#' @export
+
+setMethod(
+  f = "getImageAnnotationCenter",
+  signature = "ImageAnnotation",
+  definition = function(object){
+
+    area_df <- object@area
+
+    x <- base::mean(area_df$x)
+    y <- base::mean(area_df$y)
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+
+#' @title Obtain center barcode-spot
+#'
+#' @description Extracts the barcode spot that lies closest
+#' to the center of the image annotation.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return Data.frame as returned by \code{getCoordsDf()} with one row.
+#'
+#' @export
+
 getImageAnnotationCenterBcsp <- function(object, id){
 
   coords_df <- getCoordsDf(object)
@@ -420,7 +356,7 @@ getImageAnnotationCenterBcsp <- function(object, id){
 
 
 
-#' @title Obtain image annotation data.frame
+#' @title Obtain image annotation area data.frame
 #'
 #' @description Extracts the coordinates of the polygon that was drawn to
 #' annotate structures in the histology image in a data.frame.
@@ -445,12 +381,12 @@ getImageAnnotationCenterBcsp <- function(object, id){
 #'
 #' @export
 #'
-getImageAnnotationDf <- function(object,
-                                 ids = NULL,
-                                 tags = NULL,
-                                 test = "any",
-                                 sep = " & ",
-                                 last = " & "){
+getImageAnnotationAreaDf <- function(object,
+                                     ids = NULL,
+                                     tags = NULL,
+                                     test = "any",
+                                     sep = " & ",
+                                     last = " & "){
 
   purrr::map_df(
     .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
@@ -532,7 +468,7 @@ getImageAnnotations <- function(object,
 
   if(base::is.character(ids)){
 
-    check_image_annoation_ids(object, ids)
+    check_image_annotation_ids(object, ids)
 
     img_annotations <- purrr::keep(.x = img_annotations, .p = ~ .x@id %in% ids)
 
@@ -546,7 +482,7 @@ getImageAnnotations <- function(object,
 
   if(base::is.character(tags)){
 
-    check_image_annoation_tags(object, tags)
+    check_image_annotation_tags(object, tags)
 
     img_annotations <-
       purrr::keep(
@@ -768,6 +704,29 @@ getImageAnnotationTags <- function(object){
 }
 
 
+# l -----------------------------------------------------------------------
+
+#' @export
+lastImageAnnotation <- function(object){
+
+  ios <- getImageAnnotations(object, add_image = FALSE)
+
+  if(base::length(ios) == 0){
+
+    out <- 0
+
+  } else {
+
+    out <-
+      purrr::map_chr(.x = ios, .f = ~ stringr::str_extract(.x@id, pattern = "\\d*$")) %>%
+      base::as.numeric() %>%
+      base::max()
+
+  }
+
+  return(out)
+
+}
 
 # m -----------------------------------------------------------------------
 
@@ -1053,7 +1012,7 @@ renameImageAnnotationId <- function(object, id, new_id){
 
   confuns::are_values(c("id", "new_id"), mode = "character")
 
-  check_image_annoation_ids(object, ids = id)
+  check_image_annotation_ids(object, ids = id)
 
   img_ann_ids <- getImageAnnotationIds(object)
 

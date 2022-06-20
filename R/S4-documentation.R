@@ -1,5 +1,202 @@
 
-# gene expression data ----------------------------------------------------
+
+# miscellaneous -----------------------------------------------------------
+
+
+Trajectory <- setClass(Class = "Trajectory",
+                       slots = list(
+                         comment = "character",
+                         id = "character",
+                         projection = "data.frame",
+                         sample = "character",
+                         segment = "data.frame",
+                         width = "numeric"
+                       ))
+
+
+# A -----------------------------------------------------------------------
+
+
+
+# H -----------------------------------------------------------------------
+
+image_class <- "Image"
+base::attr(x = image_class, which = "package") <- "EBImage"
+
+#' @title The HistologyImage - Class
+#'
+#' @description S4 class that represents histology images.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot dir_default character. The default directory that is used to load
+#' the image if slot @@image is empty. Or a string linking to the default slot
+#' ('highres' or 'lowres').
+#' @slot dir_highres character. Directory to the high resolution version of the image.
+#' @slot dir_lowres character. Directory to the low resolution version of the image.
+#' @slot grid data.frame. A data.frame that contains at least a variable
+#' named \emph{x} and a variable named \emph{y} representing a grid.
+#' @slot id character. String to identify the object in a list of multiple objects
+#' of the same class.
+#' @slot image Image.
+#' @slot info list. A flexible list that is supposed to store miscellaneous
+#' information around the image.
+#' @slot misc list. A flexible list for miscellaneous input.
+#'
+#' @export
+HistologyImage <- setClass(Class = "HistologyImage",
+                                    slots = list(
+                                      annotations = "list",
+                                      coordinates = "data.frame",
+                                      dir_default = "character",
+                                      dir_highres = "character",
+                                      dir_lowres = "character",
+                                      grid = "list",
+                                      id = "character",
+                                      info = "list",
+                                      image = image_class,
+                                      misc = "list"
+                                    ))
+
+
+# I -----------------------------------------------------------------------
+
+#' @title The \code{ImageAnnotation} - Class
+#'
+#' @description S4 class that contains information used to identify and
+#' annotate structures in histology images.
+#'
+#' @slot area data.frame. A data.frame that contains at least the numeric
+#' variables \emph{x} and \emph{y}. Data corresponds to the polygong that
+#' captures the spatial extent of the identified structure.
+#' @barcodes character. Character vector of barcodes that fall into the polygon
+#' that encircles the annotated structure.
+#' @slot id character. String to identify the object in a list of multiple objects
+#' of the same class.
+#' @slot image image. Cropped version of the annotated image that only contains
+#' the area where the annotated structure is located (plus expand). This slot is
+#' empty as long as the \code{ImageAnnotation} object is located in an
+#' object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
+#' or \code{getImageAnnotations()} adds the cropped image to the slot.
+#' @slot image_info list. List of infos around the image of slot @@image.
+#' @slot misc list. A flexible list for miscellaneous input.
+#' @slot tags character. Tags that can be used to group iamge annotations in different manners.
+#' This can be a single or multiple strings.
+#'
+#' @export
+#'
+ImageAnnotation <- setClass(Class = "ImageAnnotation",
+                                     slots = list(
+                                       area = "data.frame",
+                                       barcodes = "character",
+                                       id = "character",
+                                       image = image_class,
+                                       image_info = "list",
+                                       misc = "list",
+                                       tags = "character"
+                                     )
+)
+
+
+
+#' @title The \code{ImageAnnotationScreening} - Class
+#'
+#' @description S4 class that contains input for and output of the
+#' function \code{imageAnnotationScreening()}.
+#'
+#' @slot buffer numeric. The value with which the polygon that encircles
+#' the image annotation is consecutively expanded via \code{sf::st_buffer()},
+#' @slot coords data.frame. Coordinates data.frame of the sample.
+#' @slot dea data.frame. Results of the DE-Analysis between the image annotation
+#' area and the rest of the sample.
+#' @slot img_annotation ImageAnnotation. The \code{ImageAnnotation}-object of
+#' the image annotation chosen for the screening.
+#' @slot method_padj character. The method with which p-values were adjusted.
+#' @slot n_bins_angle numeric. Number of bins that were created anglewise.
+#' @slot n_bins_circle numeric. Number of bins that were created circlewise.
+#' @slot results data.frame. Data.frame that contains the results of
+#' the model fitting per angle bin.
+#' @slot results_smrd data.frame. Data.frame that contains the summary of
+#' all gene-model fits across all angle bins.
+#' @slot sample character. The sample name.
+#'
+#' @export
+#'
+ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
+                                               slots = list(
+                                                 buffer = "numeric",
+                                                 coords = "data.frame",
+                                                 dea = "data.frame",
+                                                 img_annotation = "ImageAnnotation",
+                                                 method_padj = "character",
+                                                 n_bins_angle = "numeric",
+                                                 n_bins_circle = "numeric",
+                                                 results = "data.frame",
+                                                 results_smrd = "data.frame",
+                                                 sample = "character"
+                                               ))
+
+
+# S -----------------------------------------------------------------------
+
+SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
+                              slots = list(
+                                coords = "data.frame"
+                              ),
+                              contains = "Trajectory")
+
+
+SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
+                                                slots = list(
+                                                  binwidth = "numeric",
+                                                  id = "character",
+                                                  models = "data.frame",
+                                                  results = "data.frame",
+                                                  summarize_with = "character",
+                                                  spatial_trajectory = "SpatialTrajectory"
+                                                ))
+
+
+
+# T -----------------------------------------------------------------------
+
+# see above under 'miscellaneous'
+
+# V -----------------------------------------------------------------------
+
+#' @title The Visium - Class
+#'
+#' @description S4 class that represents spatial information from 10X Genomics
+#' Visium experiments.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot grid data.frame. A data.frame that contains at least a the numeric variables
+#' named \emph{x} and \emph{y} as well as the character variable \emph{barcodes}.
+#' @slot dir_default character. Directory to the default version of the image.
+#' @slot dir_highres character. Directory to the high resolution version of the image.
+#' @slot grid data.frame. A data.frame that contains at least a variable
+#' named \emph{x} and a variable named \emph{y} representing a grid. Must contain
+#' a character variable named \emph{barcodes}, too.
+#' @slot image Image.
+#'
+#' @export
+Visium <- setClass(Class = "Visium",
+                            contains = "HistologyImage",
+                            slots = list()
+)
+
+
+
+
+
+
+
+
+
+
+
+
+# Deprecated --------------------------------------------------------------
+
 
 #' data_counts object
 #'
@@ -11,13 +208,11 @@
 #' @export
 #'
 
-data_counts <- methods::setClass("data_counts",
-                                  slots = c(counts = "Matrix",
-                                            norm_exp  = "matrix"))
 
+data_counts <- setClass("data_counts",
+                                 slots = c(counts = "Matrix",
+                                           norm_exp  = "matrix"))
 
-
-# dimensional reduction ---------------------------------------------------
 
 #' dim_red object
 #'
@@ -28,19 +223,10 @@ data_counts <- methods::setClass("data_counts",
 #' @export
 #'
 
-dim_red <- methods::setClass("dim_red",
-                              slots = c(UMAP =  "data.frame",
-                                        TSNE ="data.frame"))
+dim_red <- setClass("dim_red",
+                             slots = c(UMAP =  "data.frame",
+                                       TSNE ="data.frame"))
 
-
-
-
-# single cell velocity ----------------------------------------------------
-
-
-
-
-# spatial trajectory ------------------------------------------------------
 
 #' spatial_trajectory object
 #'
@@ -67,7 +253,7 @@ dim_red <- methods::setClass("dim_red",
 #' @export
 #'
 
-spatial_trajectory <- methods::setClass("spatial_trajectory",
+spatial_trajectory <- setClass("spatial_trajectory",
                                         slots = c(
                                           compiled_trajectory_df = "data.frame",
                                           segment_trajectory_df = "data.frame",
@@ -75,9 +261,6 @@ spatial_trajectory <- methods::setClass("spatial_trajectory",
                                           name = "character",
                                           sample = "character"))
 
-
-
-# spata object ------------------------------------------------------------
 
 #' @title The spata-object
 #'
@@ -125,31 +308,31 @@ spatial_trajectory <- methods::setClass("spatial_trajectory",
 #' @export
 
 spata2 <- setClass("spata2",
-                  slots = c(autoencoder = "list",
-                            cnv = "list",
-                            compatibility = "list",
-                            coordinates ="list", #coordinates: bc, x, y, sample
-                            data = "list",
-                            dea = "list",
-                            dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
-                            fdata = "list", #fdata : bc, ...
-                            gdata = "list",
-                            images = "list",
-                            information = "list",
-                            samples = "character",
-                            spatial = "list",
-                            scvelo = "list",
-                            trajectories = "list",
-                            used_genesets = "data.frame",
-                            version = "list")
-                  )
+                   slots = c(autoencoder = "list",
+                             cnv = "list",
+                             compatibility = "list",
+                             coordinates ="list", #coordinates: bc, x, y, sample
+                             data = "list",
+                             dea = "list",
+                             dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
+                             fdata = "list", #fdata : bc, ...
+                             gdata = "list",
+                             images = "list",
+                             information = "list",
+                             samples = "character",
+                             spatial = "list",
+                             scvelo = "list",
+                             trajectories = "list",
+                             used_genesets = "data.frame",
+                             version = "list")
+)
 
 
 
 
 #' default instructions
 #' @export
-default_instructions <- methods::setClass(Class = "default_instructions",
+default_instructions <- setClass(Class = "default_instructions",
                                           slots = c(
                                             average_genes = "logical",
                                             binwidth = "numeric",
@@ -201,6 +384,13 @@ default_instructions <- methods::setClass(Class = "default_instructions",
                                             smooth_span = "numeric",
                                             uniform_genes = "character",
                                             verbose = "logical")
-                                          )
+)
+
+
+
+
+
+
+
 
 

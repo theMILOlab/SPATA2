@@ -24,9 +24,6 @@ of the values.}
 
 \item{verbose}{}
 }
-\value{
-
-}
 \description{
 Title
 }

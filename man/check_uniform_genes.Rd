@@ -11,9 +11,6 @@ check_uniform_genes(uniform_genes)
 uniformly expressed across all barcode-spots of the specified coordinates
 data.frame are discarded. If set to \emph{'keep'} they are kept.}
 }
-\value{
-
-}
 \description{
 Check uniform genes input
 }

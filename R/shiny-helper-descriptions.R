@@ -160,7 +160,7 @@ create_segmentation_descr <- list(
 
 # createSpatialTrajectories()
 
-create_spatial_trajectories <- list(
+create_spatial_trajectories_descr <- list(
   ncol = create_image_annotations_descr$ncol,
   nrow = create_image_annotations_descr$nrow,
   sgmt_size = "Size of the trajectory.",
@@ -173,7 +173,7 @@ create_spatial_trajectories <- list(
 
 # all
 text <- list(
-  createImageAnnotation = create_image_annotations_descr,
+  createImageAnnotations = create_image_annotations_descr,
   createSegmentation = create_segmentation_descr,
-  createSpatialTrajectories = create_spatial_trajectories
+  createSpatialTrajectories = create_spatial_trajectories_descr
 )

@@ -27,18 +27,11 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{xrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
-with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
-from x-coordinate 200 up to x-coordinate 500.}
-
-\item{yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
+\item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
 with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
 from x-coordinate 200 up to x-coordinate 500.}
 
 \item{scale_alpha}{}
-}
-\value{
-
 }
 \description{
 Adds a point layer to a base surface plot.

@@ -5,33 +5,6 @@
 # S4 ----------------------------------------------------------------------
 
 
-Trajectory <- methods::setClass(Class = "Trajectory",
-                                slots = list(
-                                  comment = "character",
-                                  id = "character",
-                                  projection = "data.frame",
-                                  sample = "character",
-                                  segment = "data.frame",
-                                  width = "numeric"
-                                ))
-
-SpatialTrajectory <- methods::setClass(Class = "SpatialTrajectory",
-                                       slots = list(
-                                         coords = "data.frame"
-                                       ),
-                                       contains = "Trajectory")
-
-
-SpatialTrajectoryScreening <- methods::setClass(Class = "SpatialTrajectoryScreening",
-                                                slots = list(
-                                                  binwidth = "numeric",
-                                                  id = "character",
-                                                  models = "data.frame",
-                                                  results = "data.frame",
-                                                  summarize_with = "character",
-                                                  spatial_trajectory = "SpatialTrajectory"
-                                                ))
-
 
 # objects -----------------------------------------------------------------
 
@@ -49,8 +22,7 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
 
   add_models(
     input_df = shifted_projection_df,
-    by = "trajectory_order",
-    shift_longer = TRUE,
+    var_order = "trajectory_order",
     model_subset = model_subset,
     model_remove = model_remove,
     model_add = model_add,
@@ -228,10 +200,6 @@ getTrajectoryNames <- function(object, ...){
   base::names(object@trajectories[[1]])
 
 }
-
-
-
-
 
 
 #' @title Obtain a summarized trajectory data.frame

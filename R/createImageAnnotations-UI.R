@@ -49,7 +49,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                   shiny::fluidRow(strongH3("Interactive Plot")),
                   shiny::fluidRow(
                     shiny::helpText("Interactively encircle and annotate histological structures.") %>%
-                      add_helper(content = text$annotateImage$tab_panel_interaction)
+                      add_helper(content = text$createImageAnnotations$tab_panel_interaction)
                     ),
                   shiny::fluidRow(
                     shiny::column(
@@ -112,7 +112,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                       width = 6,
                       container(
                         width = 12,
-                        strongH5("Zooming options:") %>% add_helper(content = text$annotateImage$zooming_options)
+                        strongH5("Zooming options:") %>% add_helper(content = text$createImageAnnotations$zooming_options)
                         ),
                       container(
                         width = 12,
@@ -143,7 +143,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             label = "Drawing mode:",
                             choices = c("Single", "Multiple"),
                             selected = "Single"
-                          ) %>% add_helper(content = text$annotateImage$drawing_mode),
+                          ) %>% add_helper(content = text$createImageAnnotations$drawing_mode),
                           shiny::sliderInput(
                             inputId = "linesize",
                             label = "Linesize:",
@@ -151,7 +151,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             max = 10,
                             step = 0.1,
                             value = 2
-                            ) %>% add_helper(content = text$annotateImage$linesize),
+                            ) %>% add_helper(content = text$createImageAnnotations$linesize),
                           cellWidths = c("50%", "50%")
                         )
                       ),
@@ -168,7 +168,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                               "Features" = "features"
                             ),
                             selected = "nothing"
-                          ) %>% add_helper(text$annotateImage$color_by)
+                          ) %>% add_helper(text$createImageAnnotations$color_by)
                         ),
                         shiny::column(
                           width = 6,
@@ -184,7 +184,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             max = 2,
                             step = 0.01,
                             value = 1
-                            ) %>% add_helper(content = text$annotateImage$pointsize),
+                            ) %>% add_helper(content = text$createImageAnnotations$pointsize),
                           shiny::sliderInput(
                             inputId = "pt_transparency",
                             label = "Transparency:",
@@ -192,7 +192,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             max = 1,
                             step = 0.01,
                             value = 0.1
-                            ) %>% add_helper(content =text$annotateImage$transparency_point),
+                            ) %>% add_helper(content =text$createImageAnnotations$transparency_point),
                           cellWidths = c("50%", "50%")
                         )
                       )
@@ -235,7 +235,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                       width = 12,
                       shiny::fluidRow(
                         shiny::helpText("Keep track of where you are when you zoom in and out.") %>%
-                          add_helper(content = text$annotateImage$tab_panel_orientation)
+                          add_helper(content = text$createImageAnnotations$tab_panel_orientation)
                         ),
                       container(
                         width = 12,
@@ -255,7 +255,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                       width = 12,
                       shiny::fluidRow(
                         shiny::helpText("Display added image annotations.") %>%
-                          add_helper(content = text$annotateImage$tab_panel_image_annotations)
+                          add_helper(content = text$createImageAnnotations$tab_panel_image_annotations)
                         ),
                       shiny::fluidRow(
                         shiny::column(
@@ -286,7 +286,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                                   label = "Display mode:",
                                   choices = c("Surface", "One by one"),
                                   width = "100%"
-                                ) %>% add_helper(content = text$annotateImage$display_mode)
+                                ) %>% add_helper(content = text$createImageAnnotations$display_mode)
                               ),
                               shiny::column(
                                 width = 3,
@@ -300,7 +300,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             breaks(1),
                             container(
                               width = 3,
-                              strongH5("Image annotation tags:") %>% add_helper(content = text$annotateImage$img_ann_tags_select)
+                              strongH5("Image annotation tags:") %>% add_helper(content = text$createImageAnnotations$img_ann_tags_select)
                             ),
                             shiny::fluidRow(
                               shiny::column(
@@ -319,7 +319,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             breaks(1),
                             container(
                               width = 3,
-                              strongH5("Image annotation IDs:") %>% add_helper(content = text$annotateImage$img_ann_ids_select)
+                              strongH5("Image annotation IDs:") %>% add_helper(content = text$createImageAnnotations$img_ann_ids_select)
                             ),
                             container(
                               width = 12,

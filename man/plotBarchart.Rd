@@ -56,12 +56,6 @@ represent the group.}
 \item{display_facets}{Logical value. If set to TRUE the plot is split via
 \code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
 
-\item{ncol}{Affects the way the subplots
-are displayed.}
-
-\item{nrow}{Affects the way the subplots
-are displayed.}
-
 \item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
 function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
 }

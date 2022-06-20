@@ -37,9 +37,6 @@ the computational progress will be printed.
 \item{merge}{Character vector or NULL. If character, specifies the groups
 that are merged together.}
 }
-\value{
-
-}
 \description{
 Merge groups into one group.
 }

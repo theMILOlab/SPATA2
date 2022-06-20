@@ -238,7 +238,7 @@ seurat_object_dummy <- function(seurat_object){}
 #' to display the results.
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
 #'
-#' @param expand Numeric value or vector. Specifies the extent to which the  x- and y-span
+#' @param expand Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
 #' of the cropped image section is expanded. There are two options to provide values:
 #'
 #' Values from 0 to 1 are used to calculate the corresponding percentage of the image
@@ -250,7 +250,7 @@ seurat_object_dummy <- function(seurat_object){}
 #' section has the exact x- and y- spans as specified in \code{expand}.
 #' E.g. \code{expand} = 200 results in an image section with x- and y-span of
 #' 200. If the input value is bigger than 1 it must be at least as big as the
-#' original span.
+#' original span of the image annotation.
 #'
 #' To adjust x- and y-span specifically you can provide a vector of length 2.
 #' If you do so the first value is taken to adjust the xspan and the second
@@ -284,7 +284,8 @@ seurat_object_dummy <- function(seurat_object){}
 #' to FALSE a list is returned.
 #'
 #' @param square Logical. If TRUE, the cropped section of the image that contains the annotated
-#' structure is forced into a square. If FALSE, the section is cropped according to the extent
+#' structure is forced into a square. X- and yspan of the square are equal to the span
+#' that is the biggest. If FALSE, the section is cropped according to the extent
 #' of the annotated structure and the input for argument \code{expand}.
 #'
 #' @param tags Character vector or NULL. If character, the image annotation tags of interest.

@@ -85,12 +85,6 @@ is displayed underneath the plot.}
 uniformly expressed across all barcode-spots of the specified coordinates
 data.frame are discarded. If set to \emph{'keep'} they are kept.}
 
-\item{nrow}{Affects the way the subplots
-are displayed.}
-
-\item{ncol}{Affects the way the subplots
-are displayed.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

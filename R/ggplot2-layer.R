@@ -3,25 +3,20 @@
 
 # a -----------------------------------------------------------------------
 
-ggpLayerAreaEncircling <- function(object,
-                                   id,
-                                   n_circles,
-                                   buffer,
-                                   linealpha = 0.9,
-                                   linecolor = "black",
-                                   linesize = 1,
-                                   expand = ggplot2::unit(5, "mm"),
-                                   radius = ggplot2::unit(2.5, "mm"),
-                                   concavity = 2,
-                                   ...){
+ggpLayerEncirclingIAS <- function(object,
+                                  id,
+                                  n_bins_circle,
+                                  buffer,
+                                  linecolor = "black",
+                                  linesize = 1){
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
 
-  circle_names <- stringr::str_c("Circle", 1:n_circles, sep = " ")
+  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
 
   circles <-
     purrr::set_names(
-      x = c((1:n_circles)*buffer),
+      x = c((1:n_bins_circle)*buffer),
       nm = circle_names
     )
 
@@ -35,58 +30,94 @@ ggpLayerAreaEncircling <- function(object,
         dplyr::mutate(., circle = .y)
     )
 
-  coords_df <-
-    getCoordsDf(object, gene_sets = "HM_HYPOXIA")
-
-  coords_df$bins <- "Outside"
-
-  for(area in base::names(areas)){
-
-    area_df <- areas[[area]]
-
-    coords_df$pt_in_plg <-
-      sp::point.in.polygon(
-        point.x = coords_df$x,
-        point.y = coords_df$y,
-        pol.x = area_df$x,
-        pol.y = area_df$y
-      )
-
-    coords_df <-
-      dplyr::mutate(
-        .data = coords_df,
-        bins = dplyr::case_when(
-          bins == "Outside" & pt_in_plg %in% c(1,2) ~ {{area}},
-          TRUE ~ bins
-        )
-      )
-
-  }
-
   out_list <-
     purrr::map(
       .x = areas,
-      .f = ~
-        ggforce::geom_mark_hull(
+      .f =
+        ~ ggplot2::geom_polygon(
           data = .x,
           mapping = ggplot2::aes(x = x, y = y),
-          alpha = linealpha,
+          alpha = 0,
           color = linecolor,
-          size = linesize,
-          expand = expand,
-          radius = radius,
-          concavity = concavity
+          size = linesize
         )
     )
 
+  xrange <-
+    purrr::map(areas, .f = ~ .x$x) %>%
+    purrr::flatten_dbl() %>%
+    base::range()
+
+  yrange <-
+    purrr::map(areas, .f = ~ .x$y) %>%
+    purrr::flatten_dbl() %>%
+    base::range()
 
   out_list <-
     list(
       out_list,
-      ggpLayerFrameByCoords(object = object, opt = "coords")
+      ggplot2::scale_x_continuous(limits = xrange),
+      ggplot2::scale_y_continuous(limits = yrange)
     )
 
   return(out_list)
+
+}
+
+
+
+# e -----------------------------------------------------------------------
+
+
+ggpLayerEncirclingGroups <- function(object,
+                                     plot_type = "coords",
+                                     grouping_variable,
+                                     groups_subset = NULL,
+                                     label_with = "none",
+                                     ...){
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = c("coords", "tsne", "umap")
+  )
+
+  confuns::check_one_of(
+    input = label_with,
+    against = c("color", "label", "none", "text")
+  )
+
+  if(plot_type == "coords"){
+
+    layer_df <- getCoordsDf(object)
+
+  } else if(plot_type == "tsne"){
+
+    layer_df <- getTsneDf(object)
+
+  } else if(plot_type == "umap"){
+
+    layer_df <- getUmapDf(object)
+
+  }
+
+  layer_df <-
+    dplyr::select(layer_df, -sample) %>%
+    magrittr::set_colnames(value = c("barcodes", "x", "y"))
+
+  layer_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = layer_df,
+      variables = grouping_variable
+    ) %>%
+    confuns::check_across_subset(
+      across = grouping_variable,
+      across.subset = groups_subset
+    )
+
+  mapping <- ggplot2::aes(x = x, y = y, group = .data[[grouping_variable]])
+
+  ggforce::geom_mark_hull(data = layer_df, mapping = mapping, ...)
 
 }
 
@@ -336,7 +367,7 @@ ggpLayerImageAnnotation <- function(object = "object",
   hlpr_assign_arguments(object)
 
   img_ann_df <-
-    getImageAnnotationDf(
+    getImageAnnotationAreaDf(
       object = object,
       ids = ids,
       tags = tags,

@@ -2,12 +2,20 @@
 % Please edit documentation in R/S4-HistologyImage.R
 \name{getImageAnnotationCenter}
 \alias{getImageAnnotationCenter}
+\alias{getImageAnnotationCenter,spata2-method}
+\alias{getImageAnnotationCenter,ImageAnnotation-method}
 \title{Obtain center information an image annotation}
 \usage{
-getImageAnnotationCenter(object, id)
+getImageAnnotationCenter(object, ...)
+
+\S4method{getImageAnnotationCenter}{spata2}(object, id)
+
+\S4method{getImageAnnotationCenter}{ImageAnnotation}(object)
 }
 \arguments{
 \item{object}{A valid spata-object.}
+
+\item{id}{Character value. The ID of the image annotation of interest.}
 }
 \value{
 Character vector.
