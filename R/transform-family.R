@@ -620,7 +620,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     spata_object <- flipImage(spata_object)
 
-    spata_object <- flipImageAndCoords(spata_object)
+    spata_object <- flipImageAndCoords(spata_object, axis = "x")
 
   } else {
 
