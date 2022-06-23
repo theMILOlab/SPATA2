@@ -2,7 +2,7 @@
 % Please edit documentation in R/modeling.R
 \name{add_models}
 \alias{add_models}
-\title{Title}
+\title{Add models to a data.frame}
 \usage{
 add_models(
   input_df,
@@ -15,15 +15,25 @@ add_models(
 }
 \arguments{
 \item{input_df}{Data.frame with at least three columns. \emph{values}
-contain the actual values. \emph{variables} contain the variable belonging
+contains the actual values. \emph{variables} contains the variable belonging
 of the values. \emph{\code{var_order}} contains the integers from 1 to n
 corresponding to the ordering of the values.}
 
 \item{var_order}{Character value. The variable that corresponds to the order
 of the values.}
 
-\item{verbose}{}
+\item{model_subset}{Character value. Used as a regex to subset the models
+that are known to \code{SPATA2}. Use \code{validModelNames()} to obtain all model names
+and \code{showModels()} to visualize them.}
+
+\item{model_remove}{Character value. Used as a regex to remove models
+are not supposed to be included in the screening process.}
+
+\item{model_add}{Named list. Every slot in the list must be either a formula
+containing a function that takes a numeric vector as input and returns a numeric
+vector with the same length as its input vector. Or a numeric vector with the
+same length as the input vector. Test models with \code{showModels()}.}
 }
 \description{
-Title
+Add models to a data.frame
 }

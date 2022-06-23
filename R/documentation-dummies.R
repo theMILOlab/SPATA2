@@ -126,6 +126,11 @@ method_hclust <- function(method_hclust){}
 
 normalize <- function(normalize){}
 
+#' @title object
+#'
+#' @param object Any object for which a method has been defined.
+#'
+object_dummy <- function(){}
 
 #' @title pb
 #'
@@ -258,6 +263,9 @@ seurat_object_dummy <- function(seurat_object){}
 #' of the original xspan to the xspan of the image section and does not adjust
 #'  the yspan.
 #'
+#' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
+#' Skim \code{ggpLayer*()}-functions for more options.
+#'
 #' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
 #' the dendrogom is cut.
 #'
@@ -266,6 +274,9 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
+#'
+#' @param method_padj Character value. The method with which adjusted p-values are
+#' calculated. Use \code{validPadjMehods()} to obtain all valid input options.
 #'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.

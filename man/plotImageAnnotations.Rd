@@ -72,6 +72,9 @@ is plotted in the subtitle.}
 \item{display_caption}{Logial value. If TRUE, the tags of each image annotation
 are plotted in the caption.}
 
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
+
 \item{plot}{Logical value. If TRUE, the plots are plotted immediately
 via \code{gridExtra.grid.arrange()} and the list of plots is returned
 invisibly. Else the list of plots is simply returned.}

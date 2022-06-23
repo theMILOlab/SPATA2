@@ -13,6 +13,7 @@
 \alias{validDistanceMethods}
 \alias{validHierarchicalClusterMethods}
 \alias{validImageClasses}
+\alias{validModelNames}
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
 \alias{validPlotTypes}
@@ -42,6 +43,8 @@ validDistanceMethods()
 validHierarchicalClusterMethods()
 
 validImageClasses()
+
+validModelNames()
 
 validPatternRecognitionMethods()
 

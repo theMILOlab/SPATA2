@@ -77,3 +77,12 @@ getSparkxGeneDf <- function(object, threshold_pval = 1, arrange_pval = TRUE){
     {if(base::isTRUE(arrange_pval)){ dplyr::arrange(.,adjustedPval)} else { . }}
 
 }
+
+#' @rdname runSparkx
+#' @export
+getSparkxGenes <- function(object, threshold_pval){
+
+  getSparkxGeneDf(object, threshold_pval = threshold_pval) %>%
+    dplyr::pull(genes)
+
+}

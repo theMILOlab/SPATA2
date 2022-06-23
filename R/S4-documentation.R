@@ -3,6 +3,23 @@
 # miscellaneous -----------------------------------------------------------
 
 
+#' @title The \code{Trajectory} - Class
+#'
+#' @description S4 class that represents trajectories
+#' drawn within real or latent space.
+#'
+#' @slot comment character. A comment about why the trajectory was drawn.
+#' @slot id character. ID that uniquely identfies the trajectory in a sample.
+#' @slot projection data.frame. Data.frame that contains the length of the
+#' projection of each barcode spot onto the trajectory.
+#' @slot sample character. The sample name.
+#' @slot segment data.frame. Contains the course of the trajetory in
+#' form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}
+#' @slot width numeric. The width of the rectangle that was spanned along
+#' the trajectory. (Length of the rectangle corresponds to the length of
+#' the segment.)
+#'
+#' @export
 Trajectory <- setClass(Class = "Trajectory",
                        slots = list(
                          comment = "character",
@@ -23,7 +40,7 @@ Trajectory <- setClass(Class = "Trajectory",
 image_class <- "Image"
 base::attr(x = image_class, which = "package") <- "EBImage"
 
-#' @title The HistologyImage - Class
+#' @title The \code{HistologyImage} - Class
 #'
 #' @description S4 class that represents histology images.
 #'
@@ -138,6 +155,14 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 
 # S -----------------------------------------------------------------------
 
+#' @title The \code{SpatialTrajectory} - class
+#'
+#' @description Extension of the \code{Trajectory} for trajectories
+#' that have been drawn in real space.
+#'
+#' @slot coords data.frame. The coordinates data.frame of the sample.
+#'
+#' @export
 SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
                               slots = list(
                                 coords = "data.frame"
@@ -145,6 +170,24 @@ SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
                               contains = "Trajectory")
 
 
+#' @title The \code{SpatialTrajectoryScreening} - class
+#'
+#' @description S4 class that contains input for and output of the
+#' function \code{spatialTrajectoryScreening()}.
+#'
+#' @slot binwidth numeric. The width of the bins in which the barcode-spots
+#' are put based on the projection length values.
+#' @slot id character. The ID of the screened trajectory.
+#' @slot models data.frame. The model data.frame that has been used for the
+#' screening.
+#' @slot results data.frame. A data.frame that contains the model evaluations
+#' @slot summarize_with character. The name of the function that has been
+#' used to summarize the variables by bin.
+#' @slot spatial_trajectory SpatialTrajectory. The spatial trajectory that
+#' along which the screening took place.
+#'
+#' @export
+#'
 SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
                                                 slots = list(
                                                   binwidth = "numeric",

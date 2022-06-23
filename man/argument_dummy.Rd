@@ -68,6 +68,9 @@ value is used to adjust the yspan. E.g. \code{expand} = c(0.5, 0) adds 50 percen
 of the original xspan to the xspan of the image section and does not adjust
  the yspan.}
 
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
+
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
 
@@ -76,6 +79,9 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
+
+\item{method_padj}{Character value. The method with which adjusted p-values are
+calculated. Use \code{validPadjMehods()} to obtain all valid input options.}
 
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}

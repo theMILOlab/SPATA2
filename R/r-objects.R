@@ -301,6 +301,7 @@ depr_info <-
 
 # m -----------------------------------------------------------------------
 
+#' @export
 model_formulas <-
   list(
     m_one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
@@ -322,7 +323,26 @@ model_formulas <-
     m_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
   )
 
-
+model_formulas <-
+  list(
+    one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
+    one_peak_rev = ~ confuns::fit_curve(.x, fn = "one_peak", rev = "y"),
+    two_peaks = ~ confuns::fit_curve(.x, fn = "two_peaks"),
+    two_peaks_rev = ~ confuns::fit_curve(.x, fn = "two_peaks", rev = "y"),
+    immediate_descending = ~ confuns::fit_curve(.x, fn = "log", rev = "y"), # immediate_desc
+    late_ascending =~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "y")),
+    late_descending = ~ confuns::fit_curve(.x, fn = "log", rev = "x"), # log_desc
+    immediate_ascending = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")), # immediate_asc
+    linear_ascending = ~ confuns::fit_curve(.x, fn = "linear"),
+    linear_descending = ~ confuns::fit_curve(.x, fn = "linear", rev = "x"),
+    sharp_peak = ~ confuns::fit_curve(.x, fn = "sharp_peak"),
+    sinus = ~ confuns::fit_curve(.x, fn = "sinus"),
+    sinus_rev = ~ confuns::fit_curve(.x, fn = "sinus", rev = "x"),
+    early_peak = ~ confuns::fit_curve(.x, fn = "early_peak"),
+    late_peak = ~ confuns::fit_curve(.x, fn = "late_peak"),
+    abrupt_ascending = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
+    abrupt_descending = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
+  )
 
 
 # p -----------------------------------------------------------------------

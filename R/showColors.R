@@ -69,18 +69,18 @@ showColors <- function(input, n = 20, title_size = 10){
 #' @rdname showColors
 #' @export
 showModels <- function(input = 100,
-                       pattern_subset = NULL,
-                       pattern_remove = NULL,
-                       pattern_add = NULL,
-                       pretty_names = TRUE,
+                       model_subset = NULL,
+                       model_remove = NULL,
+                       model_add = NULL,
+                       pretty_names = FALSE,
                        ...){
 
   mdf <-
     create_model_df(
       input = input,
-      pattern_subset = pattern_subset,
-      pattern_remove = pattern_remove,
-      pattern_add = pattern_add
+      model_subset = model_subset,
+      model_remove = model_remove,
+      model_add = model_add
     ) %>%
     dplyr::rename_with(.fn = ~ stringr::str_remove(.x, "^p_")) %>%
     dplyr::mutate(x = 1:input) %>%
@@ -93,8 +93,7 @@ showModels <- function(input = 100,
   if(base::isTRUE(pretty_names)){
 
     mdf$pattern <-
-      make_pretty_model_names(mdf$pattern) %>%
-      stringr::str_remove(pattern = "^m_")
+      confuns::make_pretty_names(mdf$pattern)
 
     }
 

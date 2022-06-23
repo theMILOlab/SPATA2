@@ -98,6 +98,7 @@ bin_by_area <- function(coords_df,
 
 }
 
+
 #' @param min_bins_circle Numeric value or NULL. Indiates the minimum
 #' number of circle bins the angle bin groups must have in order not
 #' to be renamed or removed. Ignored if NULL.
@@ -195,12 +196,25 @@ bin_by_angle <- function(coords_df,
 
 }
 
+#' @title Buffer area
+#'
+#' @description Buffers the area of a polygon.
+#'
+#' @param df Data.frame with two variables, named \emph{x}
+#' and \emph{y} corresponding to the vertices of the polygon.
+
+
 #' @export
 buffer_area <- function(df, buffer){
 
-  #area_grown <- Ternary::GrowPolygon(x = df$x, y = df$y, buffer = buffer)
+  frow <- df[1, c("x", "y")] %>% base::as.numeric()
+  lrow <- df[base::nrow(df), c("x", "y")] %>% base::as.numeric()
 
-  df <- close_area_df(df)
+  if(!base::identical(frow, lrow)){
+
+    df <- close_area_df(df)
+
+  }
 
   area_grown <-
     sf::st_polygon(x = list(base::as.matrix(df[,c("x", "y")]))) %>%
@@ -507,7 +521,32 @@ getImageAnnotationScreeningDf <- function(object,
 
 # i -----------------------------------------------------------------------
 
-
+#' @title Implementation of the IAS-algorithm
+#'
+#' @description Screens the sample for numeric variables that stand
+#' in meaningful, spatial relation to annotated structures/areas of
+#' the sample.
+#'
+#' @inherit getImageAnnotatation params
+#' @param variables Character vector. All numeric variables, meaning genes,
+#' gene-sets and numeric features that are supposed to be included in
+#' the screening process.
+#' @param buffer The distance by which to consecutively expand the
+#' area that covers the image annotation screening.
+#' @param n_bins_circle Numeric value (or vector of length two, see details
+#' for more). Specifies how many times the area is buffere with the value
+#' denoted in \code{buffer}. The combination of both results in area that is
+#' screened.
+#' @param n_bins_angle Numeric value. Number of bins that are created by angle.
+#'
+#' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
+#' Specifies the function with which the bins are summarized.
+#' @inherit add_models params
+#' @inherit argument_dummy params
+#'
+#' @return An object of class \code{ImageAnnotationScreening}. See documentation
+#' with \code{?ImageAnnotationScreening} for more information.
+#'
 #' @export
 imageAnnotationScreening <- function(object,
                                      id,
@@ -520,9 +559,18 @@ imageAnnotationScreening <- function(object,
                                      model_subset = NULL,
                                      model_remove = NULL,
                                      model_add = NULL,
-                                     verbose = NULL){
+                                     method_de = "wilcox",
+                                     verbose = NULL,
+                                     ...){
 
   hlpr_assign_arguments(object)
+
+  confuns::give_feedback(
+    msg = "Starting image annotation screening.",
+    verbose = verbose
+  )
+
+  img_ann <- getImageAnnotation(object, id = id)
 
   ias_df <-
     getImageAnnotationScreeningDf(
@@ -771,14 +819,29 @@ pick_vars <- function(df, input, order_by, neg_log){
 
 }
 
-#' @title Plot Clockplots
+#' @title Plot  a clockplot
+#'
+#' @description Visualize the evaluation of the pattern a numeric variable
+#' has in relation to an image annotation.
+#'
+#' @param fill Character value. The color with which the columns are filled.
+#'
+#' @inherit object_dummy params
+#' @inherit variables_num params
+#' @inherit imageAnnotationScreening params
+#' @inherit ggplot2::facet_wrap params
+#' @inherit ggplot2::facet_grid params
+#' @inherit argument_dummy params
+#'
 #' @export
+#'
 setGeneric(name = "plotClockplot", def = function(object, ...){
 
   standardGeneric(f = "plotClockplot")
 
 })
 
+#' @rdname plotClockplot
 #' @export
 setMethod(
   f = "plotClockplot",
@@ -786,8 +849,8 @@ setMethod(
   definition = function(object,
                         id,
                         variables,
-                        n_circles,
                         buffer,
+                        n_bins_circle,
                         n_angle_bins = 12,
                         summarize_with = "mean",
                         model_subset = NULL,
@@ -824,6 +887,7 @@ setMethod(
 
 
 
+#' @rdname plotClockplot
 #' @export
 setMethod(
   f = "plotClockplot",
@@ -870,7 +934,12 @@ setMethod(
 
     if(base::length(variables) == 1){
 
-      facet_add_on <- ggplot2::facet_wrap(facets = . ~ models)
+      facet_add_on <-
+        ggplot2::facet_wrap(
+          facets = . ~ models,
+          nrow = nrow,
+          ncol = ncol
+          )
 
     } else if(layout == 1){
 
@@ -957,7 +1026,26 @@ plotSummaryIAS <- function(ias,
 }
 
 
-#' @title Visualize screening are of IAS-algorithm
+#' @title Visualize screening area are of IAS-algorithm
+#'
+#' @description Plots the surface of the sample three times with different
+#' coloring to visualize how \code{imageAnnotationScreening()} screens
+#' the sample depending on the input of arguments \code{buffer}, \code{n_bins_circle},
+#' \code{n_bins_angle}.
+#'
+#' @inherit getImageAnnotation params
+#' @inherit imageAnnotationScreening params
+#' @param color_core,color_outside Character value. Denotes
+#' the colors with which the area of image annotation (\code{color_core})
+#' and the area that is not included in the screening (\code{color_outside})
+#' is displayed.
+#' @param show_plots Logical value. If TRUE, the plots are immediately
+#' plotted. If FALSE, only a list of plots is returned (invisibly).
+#' @param display_angle,display_bins_angle,display_circle Logical value.
+#' If TRUE, the plot is included. If FALSE, plotting is skipped.
+#' @inherit argument_dummy params
+#'
+#'
 #' @export
 setGeneric(name = "plotSurfaceIAS", def = function(object, ...){
 
@@ -981,7 +1069,6 @@ setMethod(
                         pt_size = NULL,
                         color_core = ggplot2::alpha("grey", 0),
                         color_outside = ggplot2::alpha("lightgrey", 0.25),
-                        direction = -1,
                         show_plots = TRUE,
                         display_angle = FALSE,
                         display_bins_angle = TRUE,
@@ -1096,7 +1183,6 @@ setMethod(
                         pt_size = 2.25,
                         color_core = ggplot2::alpha("grey", 0),
                         color_outside = ggplot2::alpha("lightgrey", 0.25),
-                        direction = -1,
                         show_plots = TRUE,
                         display_angle = FALSE,
                         display_bins_angle = TRUE,
@@ -1153,7 +1239,7 @@ setMethod(
       )
 
     p <- list()
-print(ggpLayers)
+
     if(base::isTRUE(display_bins_circle)){
 
       p$bins_circle <-

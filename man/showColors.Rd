@@ -9,10 +9,10 @@ showColors(input, n = 20, title_size = 10)
 
 showModels(
   input = 100,
-  pattern_subset = NULL,
-  pattern_remove = NULL,
-  pattern_add = NULL,
-  pretty_names = TRUE,
+  model_subset = NULL,
+  model_remove = NULL,
+  model_add = NULL,
+  pretty_names = FALSE,
   ...
 )
 }

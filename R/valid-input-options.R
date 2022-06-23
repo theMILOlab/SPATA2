@@ -105,6 +105,14 @@ validImageClasses <- function(){
 
 }
 
+#' @rdname validActivationFunctions
+#' @export
+validModelNames <- function(){
+
+  base::names(model_formulas)
+
+}
+
 
 #' @rdname validActivationFunctions
 #' @export

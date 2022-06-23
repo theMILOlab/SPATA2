@@ -4,7 +4,7 @@
 \alias{plotSurfaceIAS}
 \alias{plotSurfaceIAS,spata2-method}
 \alias{plotSurfaceIAS,ImageAnnotationScreening-method}
-\title{Visualize screening are of IAS-algorithm}
+\title{Visualize screening area are of IAS-algorithm}
 \usage{
 plotSurfaceIAS(object, ...)
 
@@ -20,7 +20,6 @@ plotSurfaceIAS(object, ...)
   pt_size = NULL,
   color_core = ggplot2::alpha("grey", 0),
   color_outside = ggplot2::alpha("lightgrey", 0.25),
-  direction = -1,
   show_plots = TRUE,
   display_angle = FALSE,
   display_bins_angle = TRUE,
@@ -37,7 +36,6 @@ plotSurfaceIAS(object, ...)
   pt_size = 2.25,
   color_core = ggplot2::alpha("grey", 0),
   color_outside = ggplot2::alpha("lightgrey", 0.25),
-  direction = -1,
   show_plots = TRUE,
   display_angle = FALSE,
   display_bins_angle = TRUE,
@@ -46,6 +44,38 @@ plotSurfaceIAS(object, ...)
   ...
 )
 }
+\arguments{
+\item{object}{A valid spata-object.}
+
+\item{id}{Character value. The ID of the image annotation of interest.}
+
+\item{buffer}{The distance by which to consecutively expand the
+area that covers the image annotation screening.}
+
+\item{n_bins_circle}{Numeric value (or vector of length two, see details
+for more). Specifies how many times the area is buffere with the value
+denoted in \code{buffer}. The combination of both results in area that is
+screened.}
+
+\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.}
+
+\item{color_core, color_outside}{Character value. Denotes
+the colors with which the area of image annotation (\code{color_core})
+and the area that is not included in the screening (\code{color_outside})
+is displayed.}
+
+\item{show_plots}{Logical value. If TRUE, the plots are immediately
+plotted. If FALSE, only a list of plots is returned (invisibly).}
+
+\item{display_angle, display_bins_angle, display_circle}{Logical value.
+If TRUE, the plot is included. If FALSE, plotting is skipped.}
+
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
+}
 \description{
-Visualize screening are of IAS-algorithm
+Plots the surface of the sample three times with different
+coloring to visualize how \code{imageAnnotationScreening()} screens
+the sample depending on the input of arguments \code{buffer}, \code{n_bins_circle},
+\code{n_bins_angle}.
 }

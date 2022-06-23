@@ -4,7 +4,7 @@
 \name{HistologyImage-class}
 \alias{HistologyImage-class}
 \alias{HistologyImage}
-\title{The HistologyImage - Class}
+\title{The \code{HistologyImage} - Class}
 \description{
 S4 class that represents histology images.
 }

@@ -4,6 +4,7 @@
 \alias{runSparkx}
 \alias{getSparkxResults}
 \alias{getSparkxGeneDf}
+\alias{getSparkxGenes}
 \title{Identify genes of interest with SPARKX}
 \usage{
 runSparkx(object, numCores = 1, option = "mixture", verbose = NULL)
@@ -11,6 +12,8 @@ runSparkx(object, numCores = 1, option = "mixture", verbose = NULL)
 getSparkxResults(object, test = TRUE)
 
 getSparkxGeneDf(object, threshold_pval = 1, arrange_pval = TRUE)
+
+getSparkxGenes(object, threshold_pval)
 }
 \value{
 An updated spata object.
