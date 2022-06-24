@@ -10,9 +10,22 @@
 
 # b -----------------------------------------------------------------------
 
+
+#' @title Bin barcode-spots by area extension
+#'
+#' @description Bins barcode-spots by consecutively expanding a polygon.
+#'
+#' @param coords_df The coordinates data.frame whose barcode-spots are supposed
+#' to be binned.
+#' @param area_df Data.frame with variables \emph{x} and \emph{y} describing the
+#' vertices of the polygon that encircles the area based on which the barcode-spots
+#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects.
 #' @param remove Character or logical. If character, denotes circle bins that
 #' are removed. If TRUE, bins \emph{'Core' and 'Outside'} are removed. If FALSE,
 #' ignored.
+#' @param drop Logical value. If TRUE, unused levels of the \emph{bins_circle}
+#' variables are dropped.
+#' @inherit imageAnnotationScreening params
 #'
 #' @export
 bin_by_area <- function(coords_df,
@@ -99,6 +112,14 @@ bin_by_area <- function(coords_df,
 }
 
 
+#' @title Bin barcode-spots by angle
+#'
+#' @description Bins barcode-spots according to their angle towards the position
+#' specified with argument \code{center}.
+#'
+#' @param center Numeric vector of length two that is named. Value named \emph{x}
+#' provides position on the x-axis. Value named \emph{y} provides position on
+#' the y-axis.
 #' @param min_bins_circle Numeric value or NULL. Indiates the minimum
 #' number of circle bins the angle bin groups must have in order not
 #' to be renamed or removed. Ignored if NULL.
@@ -111,6 +132,8 @@ bin_by_area <- function(coords_df,
 #' \code{min_bins_circle} are renamed to \emph{'Outside'}. Ignored if \code{min_bins_circle} is NULL.
 #' Set \code{remove} to FALSE in order not to remove the renamed
 #' barcode-spots.
+#'
+#' @inherit bin_by_area params
 #'
 #' @export
 bin_by_angle <- function(coords_df,
@@ -200,10 +223,14 @@ bin_by_angle <- function(coords_df,
 #'
 #' @description Buffers the area of a polygon.
 #'
-#' @param df Data.frame with two variables, named \emph{x}
-#' and \emph{y} corresponding to the vertices of the polygon.
-
-
+#' @param df Data.frame with variables \emph{x} and \emph{y} describing the
+#' vertices of the polygon that encircles the area based on which the barcode-spots
+#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects.
+#'
+#' @param buffer The distance by which to consecutively expand the
+#' area that covers the image annotation screening. Given to argument
+#' \code{dist} of function \code{sf::st_buffer()}.
+#'
 #' @export
 buffer_area <- function(df, buffer){
 
@@ -232,15 +259,35 @@ buffer_area <- function(df, buffer){
 
 # c -----------------------------------------------------------------------
 
+#' @title Close area encircling
+#'
+#' @description "Closes" the area described by the vertices of \code{df} by
+#' adding the starting point (first row) to the end of the data.frame.
+#'
 #' @export
 close_area_df <- function(df){
 
-  df[base::nrow(df) + 1, ] <- df[1,]
+  fr <- base::as.numeric(df[1,])
+  lr <- base::as.numeric(df[base::nrow(df), ])
+
+  if(!base::identical(x = fr, y = lr)){
+
+    df[base::nrow(df) + 1, ] <- df[1,]
+
+  }
 
   return(df)
 
 }
 
+
+#' @title Compute angle between two points
+#'
+#' @description Computes the angle between two points. 0° is aligned
+#' with the y-axis.
+#'
+#' @param p1,p2 Numeric vectors of length two, named \emph{x} and \emph{y}.
+#'
 #' @export
 compute_angle_between_two_points <- function(p1, p2){
 
@@ -277,18 +324,6 @@ compute_angle_between_two_points <- function(p1, p2){
 
 }
 
-#' @export
-compute_angle_related_to_center <- function(center_segm, segm2){
-
-  a <- c(center["x"], ymax) - center
-  b <- point - center
-
-  theta <- acos( sum(a*b) / ( sqrt(sum(a * a)) * sqrt(sum(b * b)) ) )
-
-  return(angle)
-
-
-}
 
 
 # e -----------------------------------------------------------------------
@@ -429,7 +464,20 @@ getDescendingVars <- function(ias,
 }
 
 
+#' @title Obtain IAS screending data.frame
+#'
+#' @description Bins and annotates barcode-spots in the same way that
+#' \code{imageAnnotationScreening()} does.
+#'
+#' @param remove_circle_bins,remove_angle_bins,remame_angle_bins Logical values.
+#' Given to the corresponding arguments of \code{bin_by_area()}
+#' and \code{bin_by_angle()}.
+#'
+#' @inherit imageAnnotationScreening params
+#' @inherit joinWith params
+#'
 #' @export
+
 getImageAnnotationScreeningDf <- function(object,
                                           id,
                                           buffer,
@@ -455,6 +503,8 @@ getImageAnnotationScreeningDf <- function(object,
     getCoordsDf(object) %>%
     dplyr::select(barcodes, x, y)
 
+  if(base::length(drop) == 1){ drop <- base::rep(drop, 2)}
+
   ias_df <-
     bin_by_area(
       coords_df = coords_df,
@@ -462,7 +512,7 @@ getImageAnnotationScreeningDf <- function(object,
       buffer = buffer,
       n_bins_circle = max_circles,
       remove = remove_circle_bins,
-      drop = drop
+      drop = drop[1]
     ) %>%
     bin_by_angle(
       center = img_ann_center,
@@ -470,7 +520,7 @@ getImageAnnotationScreeningDf <- function(object,
       min_bins_circle = min_circles,
       rename = rename_angle_bins,
       remove = remove_angle_bins,
-      drop = drop
+      drop = drop[2]
     )
 
   if(base::is.character(variables)){
@@ -531,8 +581,6 @@ getImageAnnotationScreeningDf <- function(object,
 #' @param variables Character vector. All numeric variables, meaning genes,
 #' gene-sets and numeric features that are supposed to be included in
 #' the screening process.
-#' @param buffer The distance by which to consecutively expand the
-#' area that covers the image annotation screening.
 #' @param n_bins_circle Numeric value (or vector of length two, see details
 #' for more). Specifies how many times the area is buffere with the value
 #' denoted in \code{buffer}. The combination of both results in area that is
@@ -541,8 +589,10 @@ getImageAnnotationScreeningDf <- function(object,
 #'
 #' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
 #' Specifies the function with which the bins are summarized.
+#'
 #' @inherit add_models params
 #' @inherit argument_dummy params
+#' @inherit buffer_area params
 #'
 #' @return An object of class \code{ImageAnnotationScreening}. See documentation
 #' with \code{?ImageAnnotationScreening} for more information.
@@ -559,6 +609,7 @@ imageAnnotationScreening <- function(object,
                                      model_subset = NULL,
                                      model_remove = NULL,
                                      model_add = NULL,
+                                     with_de = TRUE,
                                      method_de = "wilcox",
                                      verbose = NULL,
                                      ...){
@@ -606,19 +657,88 @@ imageAnnotationScreening <- function(object,
       verbose = verbose
     )
 
-  n_remaining <- base::length(bins_angle_remaining)
+  # DE analysis
+  if(base::isTRUE(with_de)){
+
+    img_ann_barcodes <- img_ann@barcodes
+
+    fdata_temp <-
+      getFeatureDf(object) %>%
+      dplyr::select(barcodes) %>%
+      dplyr::mutate(
+        img_ann_temp = dplyr::if_else(
+          condition = barcodes %in% {{img_ann_barcodes}},
+          true = img_ann@id,
+          false = "Ctrl"
+        ),
+        img_ann_temp = base::factor(img_ann_temp, levels = c("Ctrl", img_ann@id))
+      )
+
+    object <- setFeatureDf(object, fdata_temp)
+
+    object <-
+      runDeAnalysis(
+        object = object,
+        across = "img_ann_temp",
+        method_de = method_de,
+        ...
+      )
+
+    dea_df <- getDeaResultsDf(object, across = "img_ann_temp", method_de = method_de)
+
+  } else {
+
+    dea_df <- base::data.frame()
+
+  }
+
+  # model fitting
+  n_total <- base::length(bins_angle_remaining)
+
+  time_start <- base::Sys.time()
+  bin_duration <- NULL
+  fn_envir <- base::environment()
+
+  confuns::give_feedback(
+    msg = "Fitting models by bin.",
+    verbose = verbose
+  )
 
   results <-
     purrr::map_df(
       .x = bins_angle_remaining,
       .f = function(bin){
 
+        start_bin <- base::Sys.time()
+
         nth <- base::which(bins_angle_remaining == bin)
 
         confuns::give_feedback(
-          msg = glue::glue("Working on bin {bin}. ({nth}/{n_remaining})"),
+          msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
           verbose = TRUE
         )
+
+        bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
+
+        if(!base::is.null(bin_dur)){
+
+          # -1 cause nth bin is yet to be screened
+          n_remaining <- n_total - (nth-1)
+
+          dur_sec <-
+            base::as.numeric(bin_dur * n_remaining) %>%
+            base::round(digits = 2)
+
+          dur_min <- base::round(dur_sec/60, digits = 2)
+          dur_hours <- base::round(dur_sec/3600, digits = 2)
+
+          est_end <- base::Sys.time() + dur_sec
+
+          msg <- glue::glue("Estimated end of screening: {est_end}.")
+
+          confuns::give_feedback(msg = msg, verbose = verbose)
+
+        }
 
         bin_angle_df <-
           dplyr::filter(ias_df, bins_angle == {{bin}}) %>%
@@ -657,53 +777,48 @@ imageAnnotationScreening <- function(object,
           }) %>%
           dplyr::mutate(bins_angle = {{bin}})
 
+        end_bin <- base::Sys.time()
+
+        base::assign(
+          x = "bin_duration",
+          value = base::difftime(end_bin, start_bin, units = "secs"),
+          envir = fn_envir
+        )
+
         return(results)
 
       }
     )
 
-  results_smrd <- summarize_ias_results(results, method_padj = method_padj)
+  confuns::give_feedback(
+    msg = "Finished model fitting.",
+    verbose = verbose
+  )
 
-  # DE analysis
-  img_ann_barcodes <- img_ann@barcodes
 
-  fdata_temp <-
-    getFeatureDf(object) %>%
-    dplyr::select(barcodes) %>%
-    dplyr::mutate(
-      img_ann_temp = dplyr::if_else(
-        condition = barcodes %in% {{img_ann_barcodes}},
-        true = img_ann@id,
-        false = "Ctrl"
-      ),
-      img_ann_temp = base::factor(img_ann_temp, levels = c("Ctrl", img_ann@id))
+  # assemble output and summarize
+  confuns::give_feedback(
+    msg = "Summarizing output.",
+    verbose = verbose
     )
 
-  object <- setFeatureDf(object, fdata_temp)
-
-  object <-
-    runDeAnalysis(
-      object = object,
-      across = "img_ann_temp",
-      method_de = method_de,
-      ...
-    )
-
-  dea_df <- getDeaResultsDf(object, across = "img_ann_temp", method_de = method_de)
-
-  # assemble output
   ias_out <-
     ImageAnnotationScreening(
       buffer = buffer,
       coords = getCoordsDf(object),
+      dea = dea_df,
       img_annotation = getImageAnnotation(object, id = id),
-      method_padj = method_padj,
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
       results = results,
-      results_smrd = results_smrd,
       sample = object@samples
-    )
+    ) %>%
+    summarizeIAS(method_padj = method_padj)
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
 
   return(ias_out)
 
@@ -729,7 +844,6 @@ make_angle_bins <- function(n){
 
 # p -----------------------------------------------------------------------
 
-#' @export
 pick_vars <- function(df, input, order_by, neg_log){
 
   if(base::is.list(input)){
@@ -756,14 +870,14 @@ pick_vars <- function(df, input, order_by, neg_log){
       if(base::isTRUE(neg_log)){
 
         out_df <-
-          dplyr::group_by(df, pattern) %>%
+          dplyr::group_by(df, models) %>%
           dplyr::slice_max(order_by = !!rlang::sym(order_by), n = n) %>%
           dplyr::ungroup()
 
       } else {
 
         out_df <-
-          dplyr::group_by(df, pattern) %>%
+          dplyr::group_by(df, models) %>%
           dplyr::slice_min(order_by = !!rlang::sym(order_by), n = n) %>%
           dplyr::ungroup()
 
@@ -796,14 +910,14 @@ pick_vars <- function(df, input, order_by, neg_log){
     if(base::isTRUE(neg_log)){
 
       out_df <-
-        dplyr::group_by(df, pattern) %>%
+        dplyr::group_by(df, models) %>%
         dplyr::slice_max(order_by = !!rlang::sym(order_by), n = input) %>%
         dplyr::ungroup()
 
     } else {
 
       out_df <-
-        dplyr::group_by(df, pattern) %>%
+        dplyr::group_by(df, models) %>%
         dplyr::slice_min(order_by = !!rlang::sym(order_by), n = input) %>%
         dplyr::ungroup()
 
@@ -821,8 +935,8 @@ pick_vars <- function(df, input, order_by, neg_log){
 
 #' @title Plot  a clockplot
 #'
-#' @description Visualize the evaluation of the pattern a numeric variable
-#' has in relation to an image annotation.
+#' @description Visualize the evaluation of the fit of a numeric variable
+#' against models around the area on an image annotation.
 #'
 #' @param fill Character value. The color with which the columns are filled.
 #'
@@ -992,7 +1106,7 @@ setMethod(
   }
 )
 
-
+#' @title Visualize summary of spatial fitting
 #' @export
 plotSummaryIAS <- function(ias,
                            x = "corr_mean",
@@ -1003,21 +1117,43 @@ plotSummaryIAS <- function(ias,
                            display_labels = FALSE,
                            n_labels = 10,
                            var_labels = "x",
-                           pattern_subset = NULL,
+                           model_subset = NULL,
+                           model_remove = NULL,
                            ...){
 
   plot_df <-
     dplyr::group_by(ias@results_smrd, variables) %>%
     dplyr::slice_max(order_by = !!rlang::sym(x), n = 1) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(
-      pattern = make_pretty_model_names(pattern)
-    )
+    dplyr::ungroup()
+
+  if(!base::is.null(model_subset)){
+
+    keep <-
+      confuns::vselect(
+        input = base::unique(plot_df[["models"]]),
+        dplyr::contains(match = model_subset)
+        )
+
+    plot_df <- dplyr::filter(plot_df, models %in% {{keep}})
+
+  }
+
+  if(!base::is.null(model_remove)){
+
+    remove <-
+      confuns::vselect(
+        input = base::unique(plot_df[["models"]]),
+        dplyr::contains(match = model_remove)
+      )
+
+    plot_df <- dplyr::filter(plot_df, !models %in% {{remove}})
+
+  }
 
   ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = .data[[x]], y = -log10(.data[[y]]))) +
     ggplot2::geom_point(alpha = pt_alpha, color = pt_color, size = pt_size) +
     #ggplot2::scale_y_reverse(limits = c(1,0)) +
-    ggplot2::facet_wrap(facets = . ~ pattern) +
+    ggplot2::facet_wrap(facets = . ~ models) +
     ggplot2::theme_classic() +
     ggplot2::theme(
       panel.grid = ggplot2::element_line(color = "lightgrey")
@@ -1026,7 +1162,7 @@ plotSummaryIAS <- function(ias,
 }
 
 
-#' @title Visualize screening area are of IAS-algorithm
+#' @title Visualize screening areaof IAS-algorithm
 #'
 #' @description Plots the surface of the sample three times with different
 #' coloring to visualize how \code{imageAnnotationScreening()} screens
@@ -1045,8 +1181,15 @@ plotSummaryIAS <- function(ias,
 #' If TRUE, the plot is included. If FALSE, plotting is skipped.
 #' @inherit argument_dummy params
 #'
+#' @return An invisible list of ggplots.
+#'
+#' @details The method for class \code{ImageAnnotationScreening} (the output of
+#' the function \code{imageAnnotationScreening()}) can be used
+#' to show the area on which the results base. Therefore, it does not have
+#' arguments \code{buffer}, \code{n_bins_circle} and \code{n_bins_angle}.
 #'
 #' @export
+
 setGeneric(name = "plotSurfaceIAS", def = function(object, ...){
 
   standardGeneric(f = "plotSurfaceIAS")
@@ -1085,7 +1228,8 @@ setMethod(
         n_bins_circle = n_bins_circle,
         n_bins_angle = n_bins_angle,
         remove_circle_bins = "Core",
-        rename_angle_bins = TRUE
+        rename_angle_bins = TRUE,
+        drop = c(FALSE, TRUE)
       )
 
 
@@ -1303,198 +1447,259 @@ setMethod(
 )
 
 
+#' @title Compare evaluatio of spatially opposing fits
+#'
+#' @description Plots a volcano plot by using the model evaluation
+#' of spatial fitting as implemented by \code{imageAnnotationScreening()}
+#' and \code{spatialTrajectoryScreening()}.
+#'
+#' @param eval Character value. The variable to use for the x-axis.
+#' @param pval Character value. The variable to use for the y-axis.
+#' @param left,right Character value. The name of the model whose best-fit variables
+#' go to the left or to the right, respectively. Defaults to \code{left} = \emph{'linear_ascending'}
+#' and \code{right} = \emph{'linear_descending'}.
+#' @param display_threshold Logical value. If TRUE, the thresholds set by
+#' \code{treshold_pval} and \code{threshold_eval} are used to color the points
+#' of the plot.
+#' @param threshold_pval,threshold_eval Numeric values that set the thresholds below/above
+#' which the points are highlighted.
+#' @param threshold_colors Character vector of length two. First denotes
+#' the color of the significant variables, second denotes the color
+#' of the not-significant variables.
+#' @param label_vars Character value, numeric value or NULL. Useful to highlight
+#' the exact position/evaulation of variables.
+#'
+#' If character, specifies the variables that are labeled. If numeric, specifies
+#' the top n of variables that are labeled. If NULL, ignored.
+#'
+#' @param hstep,vstep Adjust the position of the two labels that show the
+#' model names on the left and on the right.
+#'
+#' @param best_only Logical value. If TRUE, only variables are included in
+#' the plot that have their best model fit in either the left or the right
+#' model.
+#'
+#' @inherit argument_dummy params
+#'
+#'
 #' @export
-plotVolcanoIAS <- function(ias,
-                           x = "corr_mean",
-                           y = "pvalue_median",
-                           left = "lin_asc",
-                           right = "lin_desc",
-                           summarize_with = "mean",
-                           method_padj = "fdr",
-                           display_thresholds = TRUE,
-                           threshold_corr = 0.5,
-                           threshold_pval = 0.05,
-                           threshold_colors = c("tomato", "lightgrey"),
-                           highlight_vars = NULL,
-                           label_vars = NULL,
-                           negative_log = TRUE,
-                           pt_alpha = 0.9,
-                           pt_size = 1,
-                           display_names = TRUE,
-                           hstep = 1.5,
-                           vstep = 1.2,
-                           best_only = FALSE,
-                           ...){
 
-  confuns::is_vec(x = threshold_colors, mode = "character", of.length = 2)
+setGeneric(name = "plotVolcano", def = function(object, ...){
 
-  ias_df_smrd <- ias@results_smrd
+  standardGeneric(f = "plotVolcano")
 
-  # if TRUE, the subsequent filtering will remove all genes that did not have
-  # their best fit with the left or right pattern
-  if(base::isTRUE(best_only)){
+})
 
-    ias_df_smrd <-
-      dplyr::group_by(ias_df_smrd, variables) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(x), n = 1) %>%
-      dplyr::ungroup()
+#' @rdname plotVolcano
+#' @export
+setMethod(
+  f = "plotVolcano",
+  signature = "ImageAnnotationScreening",
+  definition = function(object,
+                        eval = "corr_mean",
+                        pval = "pvalue_median",
+                        left = "linear_ascending",
+                        right = "linear_descending",
+                        display_thresholds = TRUE,
+                        threshold_eval = 0.5,
+                        threshold_pval = 0.05,
+                        threshold_colors = c("tomato", "lightgrey"),
+                        highlight_vars = NULL,
+                        label_vars = NULL,
+                        negative_log = TRUE,
+                        pt_alpha = 0.9,
+                        pt_size = 1,
+                        display_names = TRUE,
+                        hstep = 1.5,
+                        vstep = 1.2,
+                        best_only = FALSE,
+                        ...){
 
-  }
+    confuns::is_vec(x = threshold_colors, mode = "character", of.length = 2)
 
-  # subsequent filtering^^
-  prel_plot_df <-
-    dplyr::filter(ias_df_smrd, stringr::str_detect(string = pattern, pattern = stringr::str_c(left, right, sep = "|")))
+    ias_df_smrd <- object@results_smrd
 
-  # if TRUE slice_max has already been applied above
-  if(!base::isTRUE(best_only)){
+    # if TRUE, the subsequent filtering will remove all variables that did not have
+    # their best fit with the left or right model
+    if(base::isTRUE(best_only)){
+
+      ias_df_smrd <-
+        dplyr::group_by(ias_df_smrd, variables) %>%
+        dplyr::slice_max(order_by = !!rlang::sym(eval), n = 1) %>%
+        dplyr::ungroup()
+
+    }
+
+    # subsequent filtering^^
+    prel_plot_df <-
+      dplyr::filter(
+        .data = ias_df_smrd,
+        stringr::str_detect(string = models, pattern = stringr::str_c(left, right, sep = "|"))
+      )
+
+    # if TRUE slice_max has already been applied above
+    if(!base::isTRUE(best_only)){
+
+      prel_plot_df <-
+        dplyr::group_by(prel_plot_df, variables) %>%
+        dplyr::slice_max(order_by = !!rlang::sym(eval), n = 1) %>%
+        dplyr::ungroup()
+
+    }
 
     prel_plot_df <-
-      dplyr::group_by(prel_plot_df, variables) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(x), n = 1) %>%
+      dplyr::mutate(
+        .data = prel_plot_df,
+        status = dplyr::case_when(
+          !!rlang::sym(eval) >= {{threshold_eval}} & !!rlang::sym(pval) <= {{threshold_pval}} ~ "signif",
+          TRUE ~ "not_signif"
+        )
+      )
+
+    left_df <-
+      dplyr::filter(prel_plot_df, stringr::str_detect(models, pattern = {{left}}))
+
+    right_df <-
+      dplyr::filter(prel_plot_df, stringr::str_detect(models, pattern = {{right}}))
+
+    left_df[[eval]] <- left_df[[eval]] * -1
+
+    plot_df <-
+      base::rbind(left_df, right_df) %>%
       dplyr::ungroup()
 
-  }
+    breaks_x <- base::seq(-1, 1, by = 0.2)
 
-  prel_plot_df <-
-    dplyr::mutate(
-      .data = prel_plot_df,
-      status = dplyr::case_when(
-        !!rlang::sym(x) >= {{threshold_corr}} & !!rlang::sym(y) <= {{threshold_pval}} ~ "signif",
-        TRUE ~ "not_signif"
-      )
-    )
+    labels_x <- stringr::str_remove(breaks_x, pattern = "^-")
 
-  left_df <-
-    dplyr::filter(prel_plot_df, stringr::str_detect(pattern, pattern = {{left}}))
+    if(base::isTRUE(negative_log)){
 
-  right_df <-
-    dplyr::filter(prel_plot_df, stringr::str_detect(pattern, pattern = {{right}}))
+      y_label <- stringr::str_c(pval, "(-log10)", sep = " ")
 
-  left_df[[x]] <- left_df[[x]] * -1
+      plot_df[[pval]] <- -base::log10(x = plot_df[[pval]])
 
-  plot_df <-
-    base::rbind(left_df, right_df) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(pattern = make_pretty_model_names(pattern))
+      threshold_pval <- -base::log10(threshold_pval)
 
-  breaks_x <- base::seq(-1, 1, by = 0.2)
+    } else {
 
-  labels_x <- stringr::str_remove(breaks_x, pattern = "^-")
+      y_label <- pval
 
+    }
 
-  if(base::isTRUE(negative_log)){
+    if(!base::is.null(label_vars)){
 
-    y_label <- stringr::str_c(y, "(-log10)", sep = " ")
+      label_df <-
+        pick_vars(
+          df = dplyr::filter(plot_df, status == "signif"),
+          input = label_vars,
+          order_by = pval,
+          neg_log = negative_log
+        )
 
-    plot_df[[y]] <- -base::log10(x = plot_df[[y]])
+      label_add_on <-
+        ggrepel::geom_text_repel(
+          data = label_df,
+          mapping = ggplot2::aes(x = .data[[eval]], y = .data[[pval]], label = variables),
+          ...
+        )
 
-    threshold_pval <- -base::log10(threshold_pval)
+    } else {
 
-  } else {
+      label_add_on <- NULL
 
-    y_label <- y
+    }
 
-  }
+    max_y <- base::max(plot_df[[pval]])
 
-  if(!base::is.null(label_vars)){
+    if(display_thresholds){
 
-    label_df <-
-      pick_vars(
-        df = dplyr::filter(plot_df, status == "signif"),
-        input = label_vars,
-        order_by = y,
-        neg_log = negative_log
-      )
+      tc <- threshold_eval
+      tp <- threshold_pval
 
-    label_add_on <-
-      ggrepel::geom_text_repel(
-        data = label_df,
-        mapping = ggplot2::aes(x = .data[[x]], y = .data[[y]], label = variables),
-        ...
-      )
+      hline_add_on <- ggplot2::geom_hline(yintercept = tp, linetype = "dashed", color = "grey")
+      vline_add_on <- ggplot2::geom_vline(xintercept = c(-tc, tc), linetype = "dashed", color = "grey")
 
-  } else {
+      mapping <- ggplot2::aes(x = .data[[eval]], y = .data[[pval]], color = .data[["status"]])
 
-    label_add_on <- NULL
+      color_add_on <-
+        confuns::scale_color_add_on(
+          variable = plot_df[["status"]],
+          clrp = "milo",
+          clrp.adjust = c("not_signif" = threshold_colors[2], "signif" = threshold_colors[1])
+        )
 
-  }
+      threshold_add_ons <-
+        list(
+          vline_add_on,
+          hline_add_on,
+          color_add_on
+        )
 
-  max_y <- base::max(plot_df[[y]])
+    } else {
 
-  if(display_thresholds){
+      mapping <- ggplot2::aes(x = .data[[eval]], y = .data[[pval]])
+      threshold_add_ons <- NULL
 
-    tc <- threshold_corr
-    tp <- threshold_pval
+    }
 
-    hline_add_on <- ggplot2::geom_hline(yintercept = tp, linetype = "dashed", color = "grey")
-    vline_add_on <- ggplot2::geom_vline(xintercept = c(-tc, tc), linetype = "dashed", color = "grey")
+    if(display_names){
 
-    mapping <- ggplot2::aes(x = .data[[x]], y = .data[[y]], color = .data[["status"]])
+      annotation_df <-
+        tibble::tibble(
+          labels = confuns::make_pretty_names(c(left, right)),
+          pos_x = c(-0.5, 0.5) * hstep,
+          pos_y = max_y * vstep
+        )
 
-    color_add_on <-
-      confuns::scale_color_add_on(
-        variable = plot_df[["status"]],
-        clrp = "milo",
-        clrp.adjust = c("not_signif" = threshold_colors[2], "signif" = threshold_colors[1])
-      )
+      text_add_on <-
+        ggplot2::geom_text(
+          data = annotation_df,
+          mapping = ggplot2::aes(x = pos_x, y = pos_y, label = labels)
+        )
 
-    threshold_add_ons <-
-      list(
-        vline_add_on,
-        hline_add_on,
-        color_add_on
-      )
+    } else {
 
-  } else {
+      text_add_on <- NULL
 
-    mapping <- ggplot2::aes(x = .data[[x]], y = .data[[y]])
-    threshold_add_ons <- NULL
+    }
 
-  }
-
-  if(display_names){
-
-    annotation_df <-
-      tibble::tibble(
-        labels = make_pretty_model_names(c(left, right)) %>% confuns::make_pretty_names(),
-        pos_x = c(-0.5, 0.5) * hstep,
-        pos_y = max_y * vstep
-      )
-
-    text_add_on <-
-      ggplot2::geom_text(
-        data = annotation_df,
-        mapping = ggplot2::aes(x = pos_x, y = pos_y, label = labels)
-      )
-
-  } else {
-
-    text_add_on <- NULL
+    ggplot2::ggplot(data = plot_df) +
+      threshold_add_ons +
+      ggplot2::geom_point(
+        data = plot_df,
+        mapping = mapping,
+        alpha = pt_alpha, size = pt_size) +
+      label_add_on +
+      text_add_on +
+      #ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
+      ggplot2::theme_classic() +
+      ggplot2::scale_x_continuous(
+        limits = c(-1,1),
+        breaks = breaks_x,
+        labels = labels_x
+      ) +
+      ggplot2::labs(
+        x = confuns::make_pretty_name(eval),
+        y = confuns::make_pretty_name(y_label)
+      ) +
+      legendNone()
 
   }
+)
 
-  ggplot2::ggplot(data = plot_df) +
-    threshold_add_ons +
-    ggplot2::geom_point(
-      data = plot_df,
-      mapping = mapping,
-      alpha = pt_alpha, size = pt_size) +
-    label_add_on +
-    text_add_on +
-    #ggplot2::geom_vline(xintercept = 0, linetype = "dashed") +
-    ggplot2::theme_classic() +
-    ggplot2::scale_x_continuous(
-      limits = c(-1,1),
-      breaks = breaks_x,
-      labels = labels_x
-    ) +
-    ggplot2::labs(
-      x = confuns::make_pretty_name(x),
-      y = confuns::make_pretty_name(y_label)
-    ) +
-    legendNone()
+#' @rdname plotVolcano
+#' @export
+setMethod(
+  f = "plotVolcano",
+  signature = "SpatialTrajectoryScreening",
+  definition = function(object,
+                        ...){
 
-}
+
+  }
+)
+
+
 
 
 
@@ -1602,12 +1807,22 @@ summarize_and_shift_variable_df <- function(grouped_df, variables){
 
 }
 
+
+#' @title Summarize IAS-results
+#'
+#' @description Summarizes the results of the IAS-algorithm. Creates
+#' the content of slot @@results_smrd of the \code{ImageAnnotationScreening}-class.
+#'
+#' @details Model fitting and evaluation happens within every angle-bin.
+#' To get a single evaulation for every gene the results of every
+#' angle-bin must be summarized.
+#'
 #' @export
-summarize_ias_results <- function(df, method_padj = "fdr"){
+summarizeIAS <- function(ias, method_padj = "fdr"){
 
   smrd_df <-
     dplyr::mutate(
-      .data  = df,
+      .data  = ias@results,
       p_value = tidyr::replace_na(data = p_value, replace = 1),
       corr = tidyr::replace_na(data = corr, replace = 0)
     ) %>%
@@ -1630,6 +1845,10 @@ summarize_ias_results <- function(df, method_padj = "fdr"){
       pvalue_combined_adjusted = stats::p.adjust(p = pvalue_combined, method = method_padj)
     )
 
-  return(smrd_df)
+  ias@method_padj <- method_padj
+
+  ias@results_smrd <- smrd_df
+
+  return(ias)
 
 }

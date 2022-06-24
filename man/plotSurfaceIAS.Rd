@@ -4,7 +4,7 @@
 \alias{plotSurfaceIAS}
 \alias{plotSurfaceIAS,spata2-method}
 \alias{plotSurfaceIAS,ImageAnnotationScreening-method}
-\title{Visualize screening area are of IAS-algorithm}
+\title{Visualize screening areaof IAS-algorithm}
 \usage{
 plotSurfaceIAS(object, ...)
 
@@ -50,7 +50,8 @@ plotSurfaceIAS(object, ...)
 \item{id}{Character value. The ID of the image annotation of interest.}
 
 \item{buffer}{The distance by which to consecutively expand the
-area that covers the image annotation screening.}
+area that covers the image annotation screening. Given to argument
+\code{dist} of function \code{sf::st_buffer()}.}
 
 \item{n_bins_circle}{Numeric value (or vector of length two, see details
 for more). Specifies how many times the area is buffere with the value
@@ -73,9 +74,18 @@ If TRUE, the plot is included. If FALSE, plotting is skipped.}
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 }
+\value{
+An invisible list of ggplots.
+}
 \description{
 Plots the surface of the sample three times with different
 coloring to visualize how \code{imageAnnotationScreening()} screens
 the sample depending on the input of arguments \code{buffer}, \code{n_bins_circle},
 \code{n_bins_angle}.
+}
+\details{
+The method for class \code{ImageAnnotationScreening} (the output of
+the function \code{imageAnnotationScreening()}) can be used
+to show the area on which the results base. Therefore, it does not have
+arguments \code{buffer}, \code{n_bins_circle} and \code{n_bins_angle}.
 }

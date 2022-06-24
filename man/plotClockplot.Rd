@@ -48,7 +48,8 @@ plotClockplot(object, ...)
   }}
 
 \item{buffer}{The distance by which to consecutively expand the
-area that covers the image annotation screening.}
+area that covers the image annotation screening. Given to argument
+\code{dist} of function \code{sf::st_buffer()}.}
 
 \item{n_bins_circle}{Numeric value (or vector of length two, see details
 for more). Specifies how many times the area is buffere with the value
@@ -79,6 +80,6 @@ labels will be displayed to the left. Can also be set to
 \item{fill}{Character value. The color with which the columns are filled.}
 }
 \description{
-Visualize the evaluation of the pattern a numeric variable
-has in relation to an image annotation.
+Visualize the evaluation of the fit of a numeric variable
+against models around the area on an image annotation.
 }

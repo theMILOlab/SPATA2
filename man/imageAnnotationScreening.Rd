@@ -16,6 +16,7 @@ imageAnnotationScreening(
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
+  with_de = TRUE,
   method_de = "wilcox",
   verbose = NULL,
   ...
@@ -29,7 +30,8 @@ gene-sets and numeric features that are supposed to be included in
 the screening process.}
 
 \item{buffer}{The distance by which to consecutively expand the
-area that covers the image annotation screening.}
+area that covers the image annotation screening. Given to argument
+\code{dist} of function \code{sf::st_buffer()}.}
 
 \item{n_bins_circle}{Numeric value (or vector of length two, see details
 for more). Specifies how many times the area is buffere with the value

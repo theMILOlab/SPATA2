@@ -7,8 +7,13 @@
 buffer_area(df, buffer)
 }
 \arguments{
-\item{df}{Data.frame with two variables, named \emph{x}
-and \emph{y} corresponding to the vertices of the polygon.}
+\item{df}{Data.frame with variables \emph{x} and \emph{y} describing the
+vertices of the polygon that encircles the area based on which the barcode-spots
+are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
+
+\item{buffer}{The distance by which to consecutively expand the
+area that covers the image annotation screening. Given to argument
+\code{dist} of function \code{sf::st_buffer()}.}
 }
 \description{
 Buffers the area of a polygon.
