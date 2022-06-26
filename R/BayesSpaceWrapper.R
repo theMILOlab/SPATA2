@@ -48,7 +48,7 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  sce <- BayesSpace::readVisium(pathToOuts)
+  sce <- BayesSpace::readVisium(dirname)
 
   if(base::isTRUE(empty_remove)){
 

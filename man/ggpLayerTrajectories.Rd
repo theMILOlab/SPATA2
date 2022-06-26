@@ -26,8 +26,14 @@ on which the trajectories are plotted.}
 that should be plotted.}
 }
 \value{
-List.
+A list of \code{ggproto}-objects.
 }
 \description{
 Adds trajectories in form of arrows to a surface plot.
+}
+\details{
+\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+that can be added to ggplots via the \code{+} operator. In most of the cases
+they are supposed to be added to plots created with the \code{plotSurface*()}
+family.
 }

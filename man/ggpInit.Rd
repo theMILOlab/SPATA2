@@ -13,7 +13,7 @@ ggpInit(object = "object", theme = "void", data = "coords")
 theme. Defaults to \code{void}}
 }
 \value{
-List.
+An empty ggplot.
 }
 \description{
 Initiates a ggplot object to which \code{ggpLayer}-

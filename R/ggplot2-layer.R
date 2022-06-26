@@ -1,12 +1,34 @@
 
 
+#' @title ggpLayer
+#'
+#' @return A list of \code{ggproto}-objects.
+#' @details \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+#' that can be added to ggplots via the \code{+} operator. In most of the cases
+#' they are supposed to be added to plots created with the \code{plotSurface*()}
+#' family.
+#'
+ggpLayer_dummy <- function(){}
 
 # a -----------------------------------------------------------------------
 
+
+
+#' @title Add IAS area expansion
+#'
+#' @description Adds the circular expansion used by the IAS-algorithm
+#' of the area of  an image annotation to a surface plot.
+#'
+#' @inherit imageAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+#'
 ggpLayerEncirclingIAS <- function(object,
                                   id,
-                                  n_bins_circle,
                                   buffer,
+                                  n_bins_circle,
                                   linecolor = "black",
                                   linesize = 1){
 
@@ -68,12 +90,28 @@ ggpLayerEncirclingIAS <- function(object,
 
 # e -----------------------------------------------------------------------
 
-
+#' @title Add group encircling
+#'
+#' @description Highlights groups of barcode-spots by encircling them.
+#' Depending on the \code{plot_type} this can be added to a surface plot
+#' or a dimensional reduction plot.
+#'
+#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
+#' \emph{'umap'}.
+#' @param grouping_variable Character value. The grouping variable of choice.
+#' @param groups_subset Character value or NULL. If character,
+#' specifies the exact groups that are encircled. If NULL, all groups
+#' are encircled.
+#' @inherit imageAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+#'
 ggpLayerEncirclingGroups <- function(object,
                                      plot_type = "coords",
                                      grouping_variable,
                                      groups_subset = NULL,
-                                     label_with = "none",
                                      ...){
 
   confuns::check_one_of(
@@ -134,11 +172,15 @@ ggpLayerEncirclingGroups <- function(object,
 #' Depending on the input either functions \code{scale_x/y_continuous()} or
 #' \code{coord_cartesian()} is used.
 #'
-#' @inherit argument_dummy
+#' @param opt Specifies the function with which the limits are set. If
+#' \emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.
+#' If \emph{'coords'}, \code{ggplot2::coord_cartesian()} is used.
 #'
-#' @note Always adds \code{ggplot2::coord_equal()}.
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
 #'
-#' @return List.
+#' @note If \emph{'scale'}, always adds \code{ggplot2::coord_equal()}.
+#'
 #' @export
 #'
 ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
@@ -246,7 +288,8 @@ ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = F
 #' @param theme Character value. String that denotes the default
 #' theme. Defaults to \code{void}
 #'
-#' @return List.
+#' @return An empty ggplot.
+#'
 #' @export
 #'
 ggpInit <- function(object = "object", theme = "void", data = "coords"){
@@ -280,13 +323,13 @@ ggpInit <- function(object = "object", theme = "void", data = "coords"){
 #' @description Creates ggplot2 layer with the histology image
 #' as a raster annotation.
 #'
+#' @inherit ggpLayer_dummy return details
 #' @inherit argument_dummy params
 #'
 #' @note The returned list contains an additional \code{ggplot2::geom_point()}
-#' layer with invisible barcode spots coordinates (alpha = 0) to enable the
+#' layer with invisible barcode spots coordinates (\code{alpha} = 0) to enable the
 #' image plotting.
 #'
-#' @return List.
 #' @export
 #'
 ggpLayerImage <- function(object = "object"){
@@ -334,18 +377,18 @@ ggpLayerImage <- function(object = "object"){
 #' @title Add polygons of annotated structures
 #'
 #' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
-#' with \code{annotateImage()}.
+#' with \code{createImageAnnotations()}.
 #'
 #' @param alpha,size Numeric values. Given to \code{ggplot2::geom_polygon()}.
 #' @param ... Additional arguments given to \code{scale_color_add_on()}. Used to
 #' set the color adjustments of the polygon (fill and color).
 #'
+#' @inherit ggpLayer_dummy return details
 #' @inherit getImageAnnotations details
 #'
 #' @note Adds two additional layers to set the scales for the color- and
 #' fill aesthetic of the plot.
 #'
-#' @return List.
 #' @export
 #'
 ggpLayerImageAnnotation <- function(object = "object",
@@ -455,14 +498,15 @@ ggpLayerThemeCoords <- function(){
 #'
 #' @description Adds trajectories in form of arrows to a surface plot.
 #'
-#' @inherit argument_dummy params
 #' @param trajectories Character vector. The name of the trajectories
 #' that should be plotted.
 #' @param arrow A list of arguments given to \code{ggplot2::arrow()}. Based
 #' on which the trajectories are plotted.
 #' @param ... Additional arguments given to \code{ggplot2::geom_segment()}.
 #'
-#' @return List.
+#' @inherit ggpLayer_dummy return details
+#' @inherit argument_dummy params
+#'
 #' @export
 #'
 ggpLayerTrajectories <- function(object = "object",

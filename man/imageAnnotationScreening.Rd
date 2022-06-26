@@ -46,12 +46,12 @@ Specifies the function with which the bins are summarized.}
 \item{method_padj}{Character value. The method with which adjusted p-values are
 calculated. Use \code{validPadjMehods()} to obtain all valid input options.}
 
-\item{model_subset}{Character value. Used as a regex to subset the models
-that are known to \code{SPATA2}. Use \code{validModelNames()} to obtain all model names
+\item{model_subset}{Character value. Used as a regex to subset models.
+Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
 and \code{showModels()} to visualize them.}
 
 \item{model_remove}{Character value. Used as a regex to remove models
-are not supposed to be included in the screening process.}
+are not supposed to be included.}
 
 \item{model_add}{Named list. Every slot in the list must be either a formula
 containing a function that takes a numeric vector as input and returns a numeric

@@ -40,6 +40,16 @@ runCnvAnalysis(
 \arguments{
 \item{object}{A valid spata-object.}
 
+\item{ref_annotation}{A data.frame in which the row names refer to the barcodes of
+the reference matrix provided in argument \code{ref_mtr} and
+and a column named \emph{sample} that refers to the reference group names.
+
+Defaults to the data.frame stored in slot \code{$annotation} of list \code{SPATA2::cnv_ref}.
+
+If you provide your own reference, make sure that barcodes of the reference
+input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+exemplified in the default list \code{SPATA2::cnv_ref}.)}
+
 \item{ref_mtr}{The count matrix that is supposed to be used as the reference.
 Row names must refer to the gene names and column names must refer to
 the barcodes. Barcodes must be identical to the row names of the data.frame
@@ -148,16 +158,6 @@ calls. Input for argument \code{infercnv_obj} must not be specified.}
 to be called. Make sure that your input does not conflict with downstream function
 calls. Input for argument \code{infercnv_obj} and  must not be specified. Input for argument
 \code{out_dir} is taken from argument \code{directory_cnv_folder}.}
-
-\item{ref_annotaion}{A data.frame in which the row names refer to the barcodes of
-the reference matrix provided in argument \code{ref_mtr} and
-and a column named \emph{sample} that refers to the reference group names.
-
-Defaults to the data.frame stored in slot \code{$annotation} of list \code{SPATA2::cnv_ref}.
-
-If you provide your own reference, make sure that barcodes of the reference
-input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
-exemplified in the default list \code{SPATA2::cnv_ref}.)}
 }
 \value{
 An updated spata-object containg the results in the respective slot.

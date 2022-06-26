@@ -13,11 +13,11 @@
 #' corresponding to the ordering of the values.
 #' @param var_order Character value. The variable that corresponds to the order
 #' of the values.
-#' @param model_subset Character value. Used as a regex to subset the models
-#' that are known to \code{SPATA2}. Use \code{validModelNames()} to obtain all model names
+#' @param model_subset Character value. Used as a regex to subset models.
+#' Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
 #' and \code{showModels()} to visualize them.
 #' @param model_remove Character value. Used as a regex to remove models
-#' are not supposed to be included in the screening process.
+#' are not supposed to be included.
 #' @param model_add Named list. Every slot in the list must be either a formula
 #' containing a function that takes a numeric vector as input and returns a numeric
 #' vector with the same length as its input vector. Or a numeric vector with the
@@ -62,6 +62,7 @@ evaluate_model_fits <- function(input_df,
 
   eval_df <-
       dplyr::group_by(input_df, variables, models) %>%
+      dplyr::filter(!base::all(base::is.na(values))) %>%
       dplyr::summarise(
         rauc = {if(with_raoc){ summarise_rauc(x = values_models, y = values, n = {{n}}) }},
         corr_string = {if(with_corr){ summarise_corr_string(x = values_models, y = values) }}
@@ -188,6 +189,7 @@ summarise_rauc <- function(x, y, n){
   return(out)
 
 }
+
 
 
 

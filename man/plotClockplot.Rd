@@ -4,7 +4,7 @@
 \alias{plotClockplot}
 \alias{plotClockplot,spata2-method}
 \alias{plotClockplot,ImageAnnotationScreening-method}
-\title{Plot  a clockplot}
+\title{Plota clockplot}
 \usage{
 plotClockplot(object, ...)
 
@@ -59,12 +59,12 @@ screened.}
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
 
-\item{model_subset}{Character value. Used as a regex to subset the models
-that are known to \code{SPATA2}. Use \code{validModelNames()} to obtain all model names
+\item{model_subset}{Character value. Used as a regex to subset models.
+Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
 and \code{showModels()} to visualize them.}
 
 \item{model_remove}{Character value. Used as a regex to remove models
-are not supposed to be included in the screening process.}
+are not supposed to be included.}
 
 \item{model_add}{Named list. Every slot in the list must be either a formula
 containing a function that takes a numeric vector as input and returns a numeric
@@ -81,5 +81,5 @@ labels will be displayed to the left. Can also be set to
 }
 \description{
 Visualize the evaluation of the fit of a numeric variable
-against models around the area on an image annotation.
+against models around the area of an image annotation.
 }

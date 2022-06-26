@@ -11,7 +11,7 @@ plotVolcano(object, ...)
 \S4method{plotVolcano}{ImageAnnotationScreening}(
   object,
   eval = "corr_mean",
-  pval = "pvalue_median",
+  pval = "pvalue_mean",
   left = "linear_ascending",
   right = "linear_descending",
   display_thresholds = TRUE,

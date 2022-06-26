@@ -130,7 +130,7 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' @inherit argument_dummy params
 #' @inherit check_sample params
 #'
-#' @param ref_annotaion A data.frame in which the row names refer to the barcodes of
+#' @param ref_annotation A data.frame in which the row names refer to the barcodes of
 #' the reference matrix provided in argument \code{ref_mtr} and
 #' and a column named \emph{sample} that refers to the reference group names.
 #'

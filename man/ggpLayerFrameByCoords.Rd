@@ -12,17 +12,23 @@ ggpLayerFrameByImage(object = "object", opt = "scale")
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{opt}{Character value. Either \emph{'scale'} or \emph{'coords'}. If \emph{'scale'},
-Depending on the input either functions \code{scale_x/y_continuous()} or
-\code{coord_cartesian()} is used.}
+\item{opt}{Specifies the function with which the limits are set. If
+\emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.
+If \emph{'coords'}, \code{ggplot2::coord_cartesian()} is used.}
 }
 \value{
-List.
+A list of \code{ggproto}-objects.
 }
 \description{
 Sets the limits on the x- and y-axis of a ggplot based on the coordinate
 range or the image range.
 }
+\details{
+\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+that can be added to ggplots via the \code{+} operator. In most of the cases
+they are supposed to be added to plots created with the \code{plotSurface*()}
+family.
+}
 \note{
-Always adds \code{ggplot2::coord_equal()}.
+If \emph{'scale'}, always adds \code{ggplot2::coord_equal()}.
 }

@@ -333,135 +333,124 @@ compute_angle_between_two_points <- function(p1, p2){
 # g -----------------------------------------------------------------------
 
 
+#' @title Obtain IAS results (data.frame)
+#'
+#' @description Extracts (and filters) the summarized IAS results in form
+#' of a data.frame
+#'
+#' @param var_pval,var_eval Character value. Specifies the p-value- and the
+#' evaluation variable based on which the thresholds are applied.
+#' @param threshold_pval,threshold_eval Numeric value. Used to filter
+#' the output accordingly.
+#'
+#' @inherit object_dummy params
+#' @inherit add_models params
+#'
+#' @return Data.frame.
 #' @export
-getVarsDf <- function(ias,
-                      poi = NULL,
-                      n = Inf,
-                      order_by = "corr_median",
-                      var_pvalue = "pvalue_median",
-                      threshold_pvalue = 0.05,
-                      threshold_corr = 0.5
-){
+#'
 
-  df <- ias@results_smrd
+setGeneric(name = "getSmrdResultsDf", def = function(object, ...){
 
-  if(base::is.character(poi)){
+  standardGeneric(f = "getSmrdResultsDf")
 
-    if(base::length(poi) > 1){
+})
 
-      poi <- stringr::str_c(poi, collapse = "|")
+#' @rdname getSmrdResultsDf
+#' @export
+setMethod(
+  f = "getSmrdResultsDf",
+  signature = "ImageAnnotationScreening",
+  definition = function(object,
+                        var_pval = "pvalue_median",
+                        var_eval = "corr_median",
+                        threshold_pval = 1,
+                        threshold_eval = 0,
+                        model_subset = NULL,
+                        model_remove = NULL){
+
+    rdf <-
+      dplyr::filter(
+        .data = ias@results_smrd,
+        !!rlang::sym(var_pval) <= {{threshold_pval}} &
+        !!rlang::sym(var_eval) >= {{threshold_eval}}
+        )
+
+    if(base::is.character(model_subset)){
+
+      keep <- confuns::vselect(base::unique(rdf[["models"]]), dplyr::contains(model_subset))
+
+      rdf <- dplyr::filter(rdf, models %in% {{keep}})
 
     }
 
-    df <- dplyr::filter(df, stringr::str_detect(string = pattern, pattern = {{poi}}))
+    if(base::is.character(model_remove)){
+
+      keep <- confuns::vselect(base::unique(rdf[["models"]]), -dplyr::contains(model_subset))
+
+      rdf <- dplyr::filter(rdf, models %in% {{keep}})
+
+    }
+
+    return(rdf)
 
   }
+)
 
-  confuns::give_feedback(
-    msg = glue::glue("Threshold {order_by}: {threshold_corr}. Threshold {var_pvalue}: {threshold_pvalue}."),
-    verbose = TRUE
-  )
-
-  dplyr::filter(df, !!rlang::sym(var_pvalue) <= {{threshold_pvalue}}) %>%
-    dplyr::filter(!!rlang::sym(order_by) >= {{threshold_corr}}) %>%
-    dplyr::group_by(pattern) %>%
-    dplyr::slice_max(order_by = !!rlang::sym(order_by), n = n)
-
-}
-
-
+#' @title Obtain IAS results (variable names)
+#'
+#' @description Extracts (and filters) the summarized IAS results in form
+#' of a character vector of variable names.
+#'
+#' @param var_arrange The evaulation variable based on which the variables
+#' are arranged before being returned. Defaults to input of argument \code{var_eval}.
+#' @inherit getVarDf params
+#'
+#' @details After the filtering the variable names are arranged according
+#' to their values of \code{var_eval}.
+#'
+#' @return Data.frame.
 #' @export
-getAscendingVarsDf <- function(ias,
-                               n = Inf,
-                               order_by = "corr_median",
-                               threshold_pvalue = 0.05,
-                               var_pvalue = "pvalue_median",
-                               threshold_corr = 0.5,
-                               specif = c("abrupt", "immediate", "late", "lin")){
+#'
 
-  poi <- stringr::str_c(specif, "asc", sep = "_")
+setGeneric(name = "getVarNames", def = function(object, ...){
 
-  getVarsDf(
-    ias = ias,
-    n = n,
-    poi = poi,
-    order_by = order_by,
-    threshold_pvalue = threshold_pvalue,
-    var_pvalue = var_pvalue,
-    threshold_corr = threshold_corr
-  )
+  standardGeneric(f = "getVarNames")
 
-}
+})
 
+#' @rdname getVarNames
 #' @export
-getAscendingVars <- function(ias,
-                             n = Inf,
-                             order_by = "corr_median",
-                             threshold_pvalue = 0.05,
-                             var_pvalue = "pvalue_median",
-                             threshold_corr = 0.5,
-                             specif = c("abrupt", "immediate", "late", "lin")){
+setMethod(
+  f = "getVarNames",
+  signature = "ImageAnnotationScreening",
+  definition = function(object,
+                        var_pval = "pvalue_median",
+                        var_eval = "corr_median",
+                        var_arrange = var_eval,
+                        threshold_pval = 1,
+                        threshold_eval = 0,
+                        model_subset = NULL,
+                        model_remove = NULL){
 
-  poi <- stringr::str_c(specif, "asc", sep = "_")
+    getSmrdResultsDf(
+      object = object,
+      var_pval = var_pval,
+      var_eval = var_eval,
+      threshold_pval = threshold_pval,
+      threshold_eval = threshold_eval,
+      model_subset = model_subset,
+      model_remove = model_remove
+      ) %>%
+      dplyr::group_by(variables) %>%
+      dplyr::slice_max(order_by = !!rlang::sym(var_eval)) %>%
+      dplyr::ungroup() %>%
+      dplyr::arrange(dplyr::desc(!!rlang::sym(var_arrange))) %>%
+      dplyr::pull(variables) %>%
+      base::unique()
 
-  getVarsDf(
-    ias = ias,
-    n = n,
-    poi = poi,
-    order_by = order_by,
-    threshold_pvalue = threshold_pvalue,
-    var_pvalue = var_pvalue,
-    threshold_corr = threshold_corr
-  ) %>%
-    dplyr::pull(variables)
-
-}
-
-#' @export
-getDescendingVarsDf <- function(ias,
-                                n = Inf,
-                                order_by = "corr_median",
-                                threshold_pvalue = 0.05,
-                                var_pvalue = "pvalue_median",
-                                threshold_corr = 0.5,
-                                specif = c("abrupt", "immediate", "late", "lin")){
-
-  poi <- stringr::str_c(specif, "desc", sep = "_")
-
-  getVarsDf(
-    ias = ias,
-    n = n,
-    poi = poi,
-    order_by = order_by,
-    threshold_pvalue = threshold_pvalue,
-    var_pvalue = var_pvalue,
-    threshold_corr = threshold_corr
-  )
-
-}
-#' @export
-getDescendingVars <- function(ias,
-                              n = Inf,
-                              order_by = "corr_median",
-                              threshold_pvalue = 0.05,
-                              var_pvalue = "pvalue_median",
-                              threshold_corr = 0.5,
-                              specif = c("abrupt", "immediate", "late", "lin")){
-
-  poi <- stringr::str_c(specif, "desc", sep = "_")
-
-  getVarsDf(
-    ias = ias,
-    n = n,
-    poi = poi,
-    order_by = order_by,
-    threshold_pvalue = threshold_pvalue,
-    var_pvalue = var_pvalue,
-    threshold_corr = threshold_corr
-  ) %>%
-    dplyr::pull(variables)
-
-}
+  }
+)
 
 
 #' @title Obtain IAS screending data.frame
@@ -933,10 +922,10 @@ pick_vars <- function(df, input, order_by, neg_log){
 
 }
 
-#' @title Plot  a clockplot
+#' @title Plota clockplot
 #'
 #' @description Visualize the evaluation of the fit of a numeric variable
-#' against models around the area on an image annotation.
+#' against models around the area of an image annotation.
 #'
 #' @param fill Character value. The color with which the columns are filled.
 #'
@@ -1106,60 +1095,95 @@ setMethod(
   }
 )
 
-#' @title Visualize summary of spatial fitting
+#' @title Plot summary of spatial fitting
+#'
+#' @description Assigns every numeric variable to the model it fitted best
+#' against and plots the p-value of the fit against the fit evaluation.
+#'
+#' @param x,y Character value. Specifies what to map to the x- and what to
+#' map to the y-axis.
+#'
+#' @inherit argument_dummy params
+#'
 #' @export
-plotSummaryIAS <- function(ias,
-                           x = "corr_mean",
-                           y = "pvalue_mean",
-                           pt_alpha = 0.75,
-                           pt_color = "black",
-                           pt_size = 1,
-                           display_labels = FALSE,
-                           n_labels = 10,
-                           var_labels = "x",
-                           model_subset = NULL,
-                           model_remove = NULL,
-                           ...){
 
-  plot_df <-
-    dplyr::group_by(ias@results_smrd, variables) %>%
-    dplyr::slice_max(order_by = !!rlang::sym(x), n = 1) %>%
-    dplyr::ungroup()
+setGeneric(name = "plotSummary", def = function(object, ...){
 
-  if(!base::is.null(model_subset)){
+  standardGeneric(f = "plotSummary")
 
-    keep <-
-      confuns::vselect(
-        input = base::unique(plot_df[["models"]]),
-        dplyr::contains(match = model_subset)
+})
+
+#' @rdname plotSummary
+#' @export
+setMethod(
+  f = "plotSummary",
+  signature = "ImageAnnotationScreening",
+  definition = function(object,
+                        x = "corr_mean",
+                        y = "pvalue_mean",
+                        pt_alpha = 0.75,
+                        pt_color = "black",
+                        pt_size = 1,
+                        display_labels = FALSE,
+                        model_subset = NULL,
+                        model_remove = NULL,
+                        pretty_names = FALSE,
+                        ...){
+
+    plot_df <-
+      dplyr::group_by(object@results_smrd, variables) %>%
+      dplyr::slice_max(order_by = !!rlang::sym(x), n = 1) %>%
+      dplyr::ungroup()
+
+    if(!base::is.null(model_subset)){
+
+      keep <-
+        confuns::vselect(
+          input = base::unique(plot_df[["models"]]),
+          dplyr::contains(match = model_subset)
         )
 
-    plot_df <- dplyr::filter(plot_df, models %in% {{keep}})
+      plot_df <- dplyr::filter(plot_df, models %in% {{keep}})
 
-  }
+    }
 
-  if(!base::is.null(model_remove)){
+    if(!base::is.null(model_remove)){
 
-    remove <-
-      confuns::vselect(
-        input = base::unique(plot_df[["models"]]),
-        dplyr::contains(match = model_remove)
+      remove <-
+        confuns::vselect(
+          input = base::unique(plot_df[["models"]]),
+          dplyr::contains(match = model_remove)
+        )
+
+      plot_df <- dplyr::filter(plot_df, !models %in% {{remove}})
+
+    }
+
+    if(base::isTRUE(pretty_names)){
+
+      plot_df[["models"]] <- confuns::make_pretty_names(plot_df[["models"]])
+
+    }
+
+    ggplot2::ggplot(
+      data = plot_df,
+      mapping = ggplot2::aes(x = .data[[x]], y = -log10(.data[[y]]))
+      ) +
+      ggplot2::geom_point(
+        alpha = pt_alpha,
+        color = pt_color,
+        size = pt_size
+        ) +
+      #ggplot2::scale_y_reverse(limits = c(1,0)) +
+      ggplot2::facet_wrap(facets = . ~ models) +
+      ggplot2::theme_classic() +
+      ggplot2::theme(
+        panel.grid = ggplot2::element_line(color = "lightgrey")
       )
 
-    plot_df <- dplyr::filter(plot_df, !models %in% {{remove}})
-
   }
+)
 
-  ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = .data[[x]], y = -log10(.data[[y]]))) +
-    ggplot2::geom_point(alpha = pt_alpha, color = pt_color, size = pt_size) +
-    #ggplot2::scale_y_reverse(limits = c(1,0)) +
-    ggplot2::facet_wrap(facets = . ~ models) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_line(color = "lightgrey")
-    )
-
-}
 
 
 #' @title Visualize screening areaof IAS-algorithm
@@ -1497,7 +1521,7 @@ setMethod(
   signature = "ImageAnnotationScreening",
   definition = function(object,
                         eval = "corr_mean",
-                        pval = "pvalue_median",
+                        pval = "pvalue_mean",
                         left = "linear_ascending",
                         right = "linear_descending",
                         display_thresholds = TRUE,
@@ -1642,7 +1666,14 @@ setMethod(
 
     }
 
-    if(display_names){
+    if(base::is.character(display_names) | base::isTRUE(display_names)){
+
+      if(base::is.character(display_names)){
+
+        left <- display_names[1]
+        right <- display_names[2]
+
+      }
 
       annotation_df <-
         tibble::tibble(
