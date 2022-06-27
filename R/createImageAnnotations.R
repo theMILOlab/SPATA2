@@ -394,6 +394,13 @@ createImageAnnotations <- function(object, ...){
 
           })
 
+          final_orientation_plot <- shiny::reactive({
+
+            orientation_plot() +
+              plot_add_ons$orientation_rect
+
+          })
+
           img_ann_ids <- shiny::reactive({
 
             if(input$test == "ignore"){
@@ -467,13 +474,6 @@ createImageAnnotations <- function(object, ...){
               ) +
               ggplot2::scale_x_continuous(limits = default_ranges()$x) +
               ggplot2::scale_y_continuous(limits = default_ranges()$y)
-
-          })
-
-          final_orientation_plot <- shiny::reactive({
-
-            orientation_plot() +
-              plot_add_ons$orientation_rect
 
           })
 
@@ -611,7 +611,9 @@ createImageAnnotations <- function(object, ...){
               case_false = "still_drawing"
             )
 
-            if(!drawing()){
+            if(!drawing() &
+               base::length(polygon_vals$x) > 2 &
+               base::length(polygon_vals$y) > 2){
 
               polygon_list$dfs[[(n_polygons() + 1)]] <-
                 base::data.frame(
@@ -624,7 +626,7 @@ createImageAnnotations <- function(object, ...){
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
-          })
+          }, ignoreInit = TRUE)
 
 
           oe <- shiny::observeEvent(input$hover, {

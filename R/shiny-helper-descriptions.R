@@ -23,7 +23,8 @@ create_image_annotations_descr <- list(
       "Multiple: Mode that allows to quickly encircle several similar structures, thus adding multiple image
     annotations at the same time. Exiting the drawing mode immediately highlights the structure and
     entering it again starts the encircling of a new structure. Image annotation IDs are created as
-    a combination of 'img_ann' and the position the annotations have in the list of image annotations."
+    a combination of 'img_ann' and the position the annotations have in the list of image annotations
+    named according to this pattern."
     ),
   img_ann_id = c("The ID that uniquely identifes the image annotation."),
   img_ann_ids_select = c("The image annotations that you want to include in the plot above."),
