@@ -379,8 +379,10 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 
 summarize_formulas <-
   list(
+    "max" = ~ base::max(.x, na.rm = TRUE),
     "mean" = ~ base::mean(.x, na.rm = TRUE),
     "median" = ~ stats::median(.x, na.rm = TRUE),
+    "min" = ~ base::min(.x, na.rm = TRUE),
     "sd" = ~ stats::sd(.x, na.rm = TRUE)
   )
 
