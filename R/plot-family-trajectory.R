@@ -1041,11 +1041,52 @@ plotTrajectoryHeatmap <- function(object,
 
       y <- (values - base::min(values))/(base::max(values) - base::min(values))
 
-      model <- stats::loess(formula = y ~ x, span = smooth_span)
+      smoothed_values <-
+        base::tryCatch({
 
-      mtr_smoothed[i,] <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*10))
+          model <- stats::loess(formula = y ~ x, span = smooth_span)
+
+          out <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*10))
+
+          out
+
+        }, error = function(error){
+
+          out <- base::rep(0, base::ncol(mtr)*10)
+
+          out
+
+        })
+
+      mtr_smoothed[i,] <- smoothed_values
 
     }
+
+    keep <-
+      base::apply(
+        X = mtr_smoothed,
+        MARGIN = 1,
+        FUN = function(x){
+
+          !base::all(x == 0)
+
+        }
+      )
+
+    if(base::sum(!keep) >= 1){
+
+      removed <-
+        base::rownames(mtr_smoothed)[!keep] %>%
+        glue::glue_collapse(., sep = "', '", width = Inf, last = "' and '")
+
+      confuns::give_feedback(
+        msg = glue::glue("Removing variable(s) '{removed}' due to errors in smoothing."),
+        verbose = TRUE
+      )
+
+    }
+
+    mtr_smoothed <- mtr_smoothed[keep, ]
 
   }
 
