@@ -44,7 +44,7 @@ screened.}
 Specifies the function with which the bins are summarized.}
 
 \item{method_padj}{Character value. The method with which adjusted p-values are
-calculated. Use \code{validPadjMehods()} to obtain all valid input options.}
+calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}

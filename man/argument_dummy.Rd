@@ -81,7 +81,7 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 in which the hierarchical tree is supposed to be split.}
 
 \item{method_padj}{Character value. The method with which adjusted p-values are
-calculated. Use \code{validPadjMehods()} to obtain all valid input options.}
+calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
 
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}

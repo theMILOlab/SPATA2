@@ -1,3 +1,13 @@
+#' @title Spatial Trajectories
+#'
+#' @description Provides access to an interactive shiny application
+#' where trajectories can be drawn..
+#'
+#' @inherit argument_dummy params
+#'
+#' @return An updated \code{SPATA2} object.
+
+#' @export
 createSpatialTrajectories <- function(object){
 
   validation(x = object)
