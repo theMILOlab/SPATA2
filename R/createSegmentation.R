@@ -390,10 +390,11 @@ createSegmentation <- function(object){
 
           interactive <- shiny::reactiveValues(
 
-            highlighted = FALSE,
             zooming = list()
 
           )
+
+          highlighted <- shiny::reactiveVal(value = FALSE)
 
           plot_add_ons <- shiny::reactiveValues(
 
@@ -612,7 +613,6 @@ createSegmentation <- function(object){
 
           })
 
-
           default_ranges <- shiny::reactive({
 
             getImageRange(object = spata_object())
@@ -635,6 +635,22 @@ createSegmentation <- function(object){
             } else {
 
               out <- legendNone()
+
+            }
+
+            return(out)
+
+          })
+
+          main <- shiny::reactive({
+
+            if(drawing()){
+
+              out <- "Your are drawing."
+
+            } else {
+
+              out <- ""
 
             }
 
@@ -1020,7 +1036,7 @@ createSegmentation <- function(object){
 
             encircled_barcodes(base::character(0))
 
-            interactive$highlighted <- FALSE
+            highlighted(FALSE)
 
           })
 
@@ -1125,7 +1141,7 @@ createSegmentation <- function(object){
 
               encircled_barcodes(out)
 
-              interactive$highlighted <- TRUE
+              highlighted(TRUE)
 
             }
 
@@ -1183,8 +1199,7 @@ createSegmentation <- function(object){
 
             encircled_barcodes(base::character(0))
 
-            interactive$highlighted <- FALSE
-
+            highlighted(FALSE)
 
           })
 
@@ -1225,8 +1240,6 @@ createSegmentation <- function(object){
               pt_size = pt_size(),
               pt_clrp = input$pt_clrp,
               pt_clrsp = input$pt_clrsp,
-              #smooth = pt_smooth()$smooth,
-              #smooth_span = pt_smooth()$smooth_span,
               display_image = TRUE,
               display_axes = FALSE,
               highlight_barcodes = encircled_barcodes(),
@@ -1241,7 +1254,7 @@ createSegmentation <- function(object){
 
           output$plot_sm <- shiny::renderPlot({
 
-            if(drawing()){
+            if(!highlighted()){
 
               graphics::par(pty = "s", mai = mai_vec)
               graphics::plot(
@@ -1254,10 +1267,10 @@ createSegmentation <- function(object){
                 ylab = NA_character_,
                 lwd = input$linesize,
                 axes = FALSE,
-                main = "You are drawing"
+                main = main()
               )
 
-            } else {
+            } else if(highlighted()){
 
               graphics::par(pty = "s", mai = mai_vec)
               graphics::plot(

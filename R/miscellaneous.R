@@ -431,12 +431,12 @@ exchangeImage <- function(object, image_dir, verbose = NULL){
       .x = object@trajectories[[sample]],
       .f = function(traj){
 
-        traj@compiled_trajectory_df <-
-          traj@compiled_trajectory_df %>%
+        traj@projection <-
+          traj@projection %>%
           dplyr::mutate( x = x * dim_fct[1], y = y * dim_fct[2])
 
-        traj@segment_trajectory_df <-
-          traj@segment_trajectory_df %>%
+        traj@segment <-
+          traj@segment %>%
           dplyr::mutate(
             x = x * dim_fct[1], xend = xend * dim_fct[1],
             y = y * dim_fct[2], yend = yend * dim_fct[2]
