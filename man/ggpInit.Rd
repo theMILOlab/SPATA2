@@ -7,7 +7,7 @@
 ggpInit(object = "object", theme = "void", data = "coords")
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{theme}{Character value. String that denotes the default
 theme. Defaults to \code{void}}

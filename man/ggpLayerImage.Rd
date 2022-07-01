@@ -7,7 +7,7 @@
 ggpLayerImage(object = "object")
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 }
 \value{
 A list of \code{ggproto}-objects.

@@ -64,7 +64,7 @@ plotTrajectoryGeneSets(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{features}{The features of interest specified as a character vector.}
 
@@ -73,7 +73,8 @@ single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
@@ -115,10 +116,11 @@ are stored is named \emph{mean_genes}.}
 
 \item{gene_sets}{The gene sets of interest specified as a character vector.}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
 
 \item{discrete_feature}{Character value. The discrete feature of interest.}
 }

@@ -13,7 +13,7 @@ ggpLayerEncirclingGroups(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{plot_type}{Character value. Either \emph{'surface', 'tsne'} or
 \emph{'umap'}.}

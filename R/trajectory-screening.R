@@ -14,6 +14,7 @@ smrd_projection_df_names <- c("trajectory_part", "order_binned", "trajectory_ord
 
 # a -----------------------------------------------------------------------
 
+#' @export
 add_models_to_shifted_projection_df <- function(shifted_projection_df,
                                                 model_subset = NULL,
                                                 model_remove = NULL,
@@ -31,7 +32,7 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
 
 }
 
-
+#' @export
 addSpatialTrajectory <- function(object,
                                  id,
                                  width,
@@ -119,6 +120,7 @@ addSpatialTrajectory <- function(object,
 
 
 #' @title Title
+#' @export
 setGeneric(name = "asSpatialTrajectory", def = function(object, ...){
 
   standardGeneric(f = "asSpatialTrajectory")
@@ -151,6 +153,7 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 
 # d -----------------------------------------------------------------------
 
+#' @export
 discardSpatialTrajectory <- function(object, id){
 
   confuns::check_one_of(
@@ -166,7 +169,7 @@ discardSpatialTrajectory <- function(object, id){
 
 # g -----------------------------------------------------------------------
 
-
+#' @export
 getTrajectory <- function(object, id){
 
   out <- object@trajectories[[1]][[id]]
@@ -190,7 +193,6 @@ getTrajectory <- function(object, id){
 #'
 #' @export
 #'
-#' @examples
 getTrajectoryNames <- function(object, ...){
 
   deprecated(fn = TRUE)
@@ -207,13 +209,16 @@ getTrajectoryNames <- function(object, ...){
 #' @description Computes the expression trends of all specified variables
 #' along the direction of the spatial trajectory.
 #'
-#' @inherit check_sample params
-#' @inherit check_trajectory params
-#' @inherit hlpr_summarize_trajectory_df params
+#' @inherit argument_dummy params
+#' @inherit variables_num params
+#' @inherit getSpatialTrajetoryIds params
+#' @param binwidth The width of the the bins in which the barcode-spots
+#' are binned according to their projection length values.
+#'
 #' @param shift_wider Logical. If set to TRUE the trajectory data.frame is
 #' shifted to it's wider format. Formats can be changed via \code{shiftTrajectoryDf()}.
 #'
-#' @return A summarized trajectory data.frame.
+#' @return Data.frame.
 #'
 #' @details Initially the projection data.frame of the specified trajectory
 #' is joined with the respective input of variables via \code{joinWithVariables()}.
@@ -339,7 +344,6 @@ getSpatialTrajectory <- function(object, id){
 #' @return Character vector.
 #' @export
 #'
-#' @examples
 getTrajectoryIds <- function(object){
 
   check_object(object)
@@ -417,7 +421,7 @@ normalize_smrd_projection_df <- function(smrd_projection_df){
 #' @export
 #'
 plotSpatialTrajectories <- function(object,
-                                    ids,
+                                    ids = NULL,
                                     color_by = NULL,
                                     method_gs = NULL,
                                     smooth = NULL,
@@ -443,6 +447,8 @@ plotSpatialTrajectories <- function(object,
 
   check_object(object)
   hlpr_assign_arguments(object)
+
+  if(base::is.null(ids)){ ids <- getSpatialTrajectoryIds(object) }
 
   df <-
     purrr::map_df(
@@ -1017,7 +1023,6 @@ plotTrajectoryHeatmap <- function(object,
 #' @inherit check_smooth params
 #' @inherit check_trajectory_binwidth params
 #'
-#' @param discrete_feature Character value. The discrete feature of interest.
 #' @param display_trajectory_parts Logical. If set to TRUE the returned plot
 #' visualizes the parts in which the trajectory has been partitioned while beeing
 #' drawn.
@@ -1070,7 +1075,7 @@ plotTrajectoryLineplot <- function(object,
   # 2. Data wrangling -------------------------------------------------------
 
   result_df <-
-    getSpatialTrajectoryDf(
+    getTrajectoryDf(
       object = object,
       id = id,
       variables = variables,
@@ -1149,32 +1154,26 @@ plotTrajectoryLineplot <- function(object,
 
 
 
-#' Title
+#' @title Plot trajectory model fitting
 #'
-#' @param object
-#' @param id
-#' @param variable
-#' @param binwidth
-#' @param model_subset
-#' @param model_remove
-#' @param model_add
-#' @param method_gs
-#' @param smooth
-#' @param smooth_span
-#' @param lineorder
-#' @param linesize
-#' @param linecolors
-#' @param linetypes
-#' @param display_residuals
-#' @param area_alpha
-#' @param nrow
-#' @param ncol
-#' @param verbose
+#' @description Plots a trajectory lineplot in combination with models
+#' fitted to the course of the trajectory.
 #'
-#' @return
+#' @param area_alpha Numeric value. The alpha value for the area under the curve
+#' of the resiudals.
+#' @param linecolors,linetypes The colors and types of the three lines. First value stands for the
+#' values of the variable, second on for the models, third one for the residuals.
+#' @param display_residuals Logical value. If TRUE, the residuals curve is displayed.
+#'
+#' @inherit argument_dummy params
+#' @inherit getSpatialTrajectoryIds params
+#' @inherit add_models params
+#' @inherit variable_num params
+#'
+#' @inherit ggplot_dummy return
+#'
 #' @export
 #'
-#' @examples
 plotTrajectoryLineplotFitted <- function(object,
                                          id = getDefaultTrajectory(object),
                                          variable,
@@ -1518,9 +1517,8 @@ spatialTrajectoryScreening <- function(object,
     evaluate_model_fits(
       input_df = shifted_df_with_models,
       var_order = "trajectory_order",
-      with_corr = with_corr,
-      with_raoc = with_raoc,
-      verbose = verbose
+      with_corr = TRUE,
+      with_raoc = TRUE
     )
 
   sts <-

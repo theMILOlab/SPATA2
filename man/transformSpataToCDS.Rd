@@ -20,7 +20,7 @@ transformSpataToCDS(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{preprocess_method}{Monocle3 - description:
 

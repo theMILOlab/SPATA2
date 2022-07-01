@@ -10,7 +10,7 @@ plotImage(object, xrange = NULL, yrange = NULL, ...)
 plotImageGgplot(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
 with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped

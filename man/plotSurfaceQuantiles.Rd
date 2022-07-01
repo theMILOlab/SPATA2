@@ -22,7 +22,7 @@ plotSurfaceQuantiles(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{color_by}{Character value. Specifies the numeric variable of interest:
 
@@ -46,10 +46,10 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
-\item{smooth}{Logical. If set to TRUE values will be smoothed according to the
-\code{smoooth_}-parameters.}
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}

@@ -27,21 +27,21 @@ plotTrajectoryLineplot(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{smooth_method}{The smoothing method that will be used specified as a
 single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
 
@@ -77,8 +77,6 @@ the computational progress will be printed.
 
 \item{...}{Additional arguments given to \code{ggplot2::facet_wrap()} if argument
 \code{display_facets} is set to TRUE.}
-
-\item{discrete_feature}{Character value. The discrete feature of interest.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

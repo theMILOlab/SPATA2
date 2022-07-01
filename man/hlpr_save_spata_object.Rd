@@ -7,7 +7,7 @@
 hlpr_save_spata_object(object, object_file, ref_step, verbose)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{object_file}{The directory under which to store the object.}
 

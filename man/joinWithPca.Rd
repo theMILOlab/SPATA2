@@ -20,7 +20,7 @@ joinWithTsne(object, spata_df, verbose = NULL, force = FALSE, of_sample = NA)
 joinWithUmap(object, spata_df, verbose = NULL, force = FALSE, of_sample = NA)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components to be included.}
 

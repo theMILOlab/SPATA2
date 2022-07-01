@@ -33,7 +33,7 @@ plotVolcano(object, ...)
 \S4method{plotVolcano}{SpatialTrajectoryScreening}(object, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{eval}{Character value. The variable to use for the x-axis.}
 

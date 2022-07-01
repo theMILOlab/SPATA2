@@ -7,7 +7,7 @@
 getImageAnnotationBarcodes(object, ids = NULL, tags = NULL, test = "any")
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}

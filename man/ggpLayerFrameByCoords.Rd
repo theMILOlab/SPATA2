@@ -10,7 +10,7 @@ ggpLayerFrameByCoords(object = "object", opt = "scale")
 ggpLayerFrameByImage(object = "object", opt = "scale")
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{opt}{Specifies the function with which the limits are set. If
 \emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.

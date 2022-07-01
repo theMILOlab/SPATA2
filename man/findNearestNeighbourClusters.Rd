@@ -17,7 +17,7 @@ findNearestNeighbourClusters(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{k}{The maximum number of nearest neighbours to compute. The default value
 is set to the smaller of the number of columnns in data.}

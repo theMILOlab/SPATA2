@@ -33,7 +33,7 @@ plotTrajectoryHeatmap(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{variables}{The variables of interest specified as a character vector:
 
@@ -56,13 +56,18 @@ in the same order as they are provided in the argument \code{variables}.}
 
 \item{colors}{A vector of colors to be used.}
 
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
 \item{show_rownames}{Logical. If set to TRUE the variable elements
 will be displayed at the rownames of the heatmap.}
 
 \item{split_columns}{Logial. If set to TRUE the heatmap is vertically
 splitted according to the trajectory parts.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{multiplier}{Numeric value. For better visualization the transient pattern
 is smoothed with a loess fit. The total number of predicted values (via \code{stats::predict()})

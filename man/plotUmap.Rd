@@ -92,7 +92,7 @@ plotPca(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{color_by}{The variable to be displayed by color:
 
@@ -103,10 +103,9 @@ plotPca(
   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
   }}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
@@ -145,6 +144,8 @@ spata-objects can store more than one sample.}
 \item{add_ons}{A list of ggplot add ons to add to each plot.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{n_pcs}{Numeric value. Determines the number of principal components to be plotted.
 Must be an even number.}

@@ -21,7 +21,7 @@ getImageAnnotationScreeningDf(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the image annotation screening. Given to argument
@@ -42,10 +42,10 @@ the screening process.}
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{smooth}{Logical. If set to TRUE values will be smoothed according to the
-\code{smoooth_}-parameters.}
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{remove_circle_bins, remove_angle_bins, remame_angle_bins}{Logical values.
 Given to the corresponding arguments of \code{bin_by_area()}

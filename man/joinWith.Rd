@@ -70,16 +70,15 @@ joinWithVariables(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{features}{The features of interest specified as a character vector.}
 
 \item{gene_sets}{The gene sets of interest specified as a character vector.}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{genes}{The genes of interest specified as a character vector.}
 
@@ -90,10 +89,10 @@ specified genes is calculated and saved under one variable named 'mean_genes'.}
 uniformly expressed across all barcode-spots of the specified coordinates
 data.frame are discarded. If set to \emph{'keep'} they are kept.}
 
-\item{smooth}{Logical. If set to TRUE values will be smoothed according to the
-\code{smoooth_}-parameters.}
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

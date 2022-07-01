@@ -7,7 +7,7 @@
 flipImageAndCoords(object, axis)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{axis}{Character value. Either \emph{'x'} or \emph{'y'}. Denotes the axis
 around which the iamge and the coordinates are flipped.}

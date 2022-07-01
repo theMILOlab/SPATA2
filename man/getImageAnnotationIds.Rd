@@ -7,7 +7,7 @@
 getImageAnnotationIds(object, tags = NULL, test = "any")
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 }

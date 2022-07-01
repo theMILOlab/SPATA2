@@ -7,7 +7,7 @@
 exchangeImage(object, image_dir, verbose = NULL)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{image_dir}{Character value. Directory to the image you want to
 exchange the current image with. Should be .png.}

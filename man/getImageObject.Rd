@@ -7,7 +7,7 @@
 getImageObject(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 }
 \value{
 Object of class \code{HistologyImage}

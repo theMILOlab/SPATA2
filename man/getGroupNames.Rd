@@ -7,7 +7,7 @@
 getGroupNames(object, discrete_feature, of_sample = NA)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{discrete_feature}{Character value. Specifies the name of the grouping variable
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}

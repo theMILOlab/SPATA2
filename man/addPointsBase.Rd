@@ -20,12 +20,17 @@ addPointsBase(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
+
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
 with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped

@@ -72,7 +72,7 @@ plotDistributionDiscrete(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
@@ -84,10 +84,9 @@ plotDistributionDiscrete(
 
 \item{plot_type}{Character value. One of \emph{'histogram', 'density', 'violin', 'boxplot' and 'ridgeplot'}.}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

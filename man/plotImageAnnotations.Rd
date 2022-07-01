@@ -28,7 +28,7 @@ plotImageAnnotations(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
@@ -63,6 +63,8 @@ of the annotated structure and the input for argument \code{expand}.}
 \item{encircle}{Logical value. If TRUE, are polygon is drawn around the
 exact extent of the annotated structure (as was drawn in \code{annotateImage()}).}
 
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
+
 \item{display_title}{Logical value. If TRUE, the number of each image annotation
 is plotted in the title.}
 
@@ -74,6 +76,8 @@ are plotted in the caption.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{plot}{Logical value. If TRUE, the plots are plotted immediately
 via \code{gridExtra.grid.arrange()} and the list of plots is returned

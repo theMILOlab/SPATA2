@@ -51,6 +51,7 @@ add_models <- function(input_df,
 
 # e -----------------------------------------------------------------------
 
+#' @export
 evaluate_model_fits <- function(input_df,
                                 var_order,
                                 with_corr = TRUE,
@@ -63,9 +64,9 @@ evaluate_model_fits <- function(input_df,
   eval_df <-
       dplyr::group_by(input_df, variables, models) %>%
       dplyr::filter(!base::all(base::is.na(values))) %>%
-      dplyr::summarise(
-        rauc = {if(with_raoc){ summarise_rauc(x = values_models, y = values, n = {{n}}) }},
-        corr_string = {if(with_corr){ summarise_corr_string(x = values_models, y = values) }}
+      dplyr::summarize(
+        rauc = {if(with_raoc){ summarize_rauc(x = values_models, y = values, n = {{n}}) }},
+        corr_string = {if(with_corr){ summarize_corr_string(x = values_models, y = values) }}
       ) %>%
     dplyr::ungroup()
 
@@ -82,7 +83,7 @@ evaluate_model_fits <- function(input_df,
 
   if(with_raoc){
 
-    eval_df <-  dplyr::mutate(.data = eval_df, raoc = 1 - rauc / max_auc)
+    eval_df <-  dplyr::mutate(.data = eval_df, raoc = 1 - (rauc / max_auc))
 
   }
 
@@ -95,7 +96,7 @@ evaluate_model_fits <- function(input_df,
 
 # s -----------------------------------------------------------------------
 
-
+#' @export
 shift_for_evaluation <- function(input_df, var_order){
 
   keep <- c("variables", "values", var_order)
@@ -113,7 +114,7 @@ shift_for_evaluation <- function(input_df, var_order){
 
 }
 
-
+#' @export
 shift_for_plotting <- function(input_df, var_order){
 
   model_names <-
@@ -170,7 +171,8 @@ shift_for_plotting <- function(input_df, var_order){
 
 }
 
-summarise_corr_string <- function(x, y){
+#' @export
+summarize_corr_string <- function(x, y){
 
   res <- stats::cor.test(x = x, y = y)
 
@@ -180,7 +182,8 @@ summarise_corr_string <- function(x, y){
 
 }
 
-summarise_rauc <- function(x, y, n){
+#' @export
+summarize_rauc <- function(x, y, n){
 
   out <-
     base::abs((x-y)) %>%

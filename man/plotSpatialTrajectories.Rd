@@ -6,7 +6,7 @@
 \usage{
 plotSpatialTrajectories(
   object,
-  ids,
+  ids = NULL,
   color_by = NULL,
   method_gs = NULL,
   smooth = NULL,
@@ -32,7 +32,7 @@ plotSpatialTrajectories(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
@@ -46,15 +46,14 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
   }}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{smooth}{Logical. If set to TRUE values will be smoothed according to the
-\code{smoooth_}-parameters.}
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
@@ -84,6 +83,8 @@ is displayed underneath the plot.}
 \item{uniform_genes}{Character value. If set to \emph{'discard'} genes that are
 uniformly expressed across all barcode-spots of the specified coordinates
 data.frame are discarded. If set to \emph{'keep'} they are kept.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

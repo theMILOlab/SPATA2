@@ -16,7 +16,7 @@ addSegmentationVariable(object, name, verbose = NULL, ...)
 discardSegmentationVariable(object, name, verbose = NULL, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

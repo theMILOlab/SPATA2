@@ -18,7 +18,7 @@ createTrajectoryManually(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{trajectory_name}{Character value. The name of the new trajectory.}
 

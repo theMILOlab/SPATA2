@@ -10,7 +10,7 @@ setImageDirLowres(object, dir_lowres, check = TRUE)
 setImageDirHighres(object, dir_highres, check = TRUE)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{dir_lowres, dir_highres}{Character value. The file directories to
 the corresponding images.}

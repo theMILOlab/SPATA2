@@ -20,7 +20,7 @@ plotTrajectoryFeaturesDiscrete(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{discrete_feature}{Character value. The discrete feature of interest.}
 

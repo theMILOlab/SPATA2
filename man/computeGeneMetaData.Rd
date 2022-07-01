@@ -16,7 +16,7 @@ computeGeneMetaData(
 computeGeneMetaData2(expr_mtr, verbose = TRUE, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{mtr_name}{A character value that denotes the name of the exprssion matrix with
 which one can refer to it in subsequent functions.}

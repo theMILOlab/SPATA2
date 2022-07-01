@@ -7,7 +7,7 @@
 getImageSectionsByBarcode(object, barcodes = NULL, expand = 0, verbose = NULL)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{barcodes}{Characte vector or NULL. If character, subsets the barcodes
 of interest. If NULL, all barcodes are considered.}

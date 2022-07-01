@@ -7,7 +7,7 @@
 nImageAnnotations(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 }
 \value{
 Numeric value.

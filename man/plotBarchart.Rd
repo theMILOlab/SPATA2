@@ -20,7 +20,7 @@ plotBarchart(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{variables}{Character vector. The discrete features whose group count or
 proportion you want to display. Must not contain the feature specified in
@@ -55,6 +55,8 @@ represent the group.}
 
 \item{display_facets}{Logical value. If set to TRUE the plot is split via
 \code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
 function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}

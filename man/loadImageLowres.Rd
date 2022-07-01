@@ -10,7 +10,7 @@ loadImageLowres(object, verbose = NULL)
 loadImageHighres(object, verbose = NULL)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

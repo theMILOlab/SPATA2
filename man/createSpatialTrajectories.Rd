@@ -7,7 +7,7 @@
 createSpatialTrajectories(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 }
 \value{
 An updated \code{SPATA2} object.

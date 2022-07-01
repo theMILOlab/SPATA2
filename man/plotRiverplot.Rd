@@ -20,7 +20,7 @@ plotRiverplot(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{grouping_variables}{Character vector. Names of the grouping variables
 you want to include in the riverplot.}

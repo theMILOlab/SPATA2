@@ -2,7 +2,7 @@
 % Please edit documentation in R/trajectory-screening.R
 \name{plotTrajectoryLineplotFitted}
 \alias{plotTrajectoryLineplotFitted}
-\title{Title}
+\title{Plot trajectory model fitting}
 \usage{
 plotTrajectoryLineplotFitted(
   object,
@@ -27,8 +27,58 @@ plotTrajectoryLineplotFitted(
 )
 }
 \arguments{
-\item{verbose}{}
+\item{object}{An object of class \code{SPATA2}.}
+
+\item{variable}{Character value. The numeric variable of interest. Must be inside:
+
+\itemize{
+  \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+  \item{ \strong{Genes} Must be in \code{getGenes()}}
+  \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+  }}
+
+\item{model_subset}{Character value. Used as a regex to subset models.
+Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
+and \code{showModels()} to visualize them.}
+
+\item{model_remove}{Character value. Used as a regex to remove models
+are not supposed to be included.}
+
+\item{model_add}{Named list. Every slot in the list must be either a formula
+containing a function that takes a numeric vector as input and returns a numeric
+vector with the same length as its input vector. Or a numeric vector with the
+same length as the input vector. Test models with \code{showModels()}.}
+
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
+
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
+
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
+
+\item{linecolors, linetypes}{The colors and types of the three lines. First value stands for the
+values of the variable, second on for the models, third one for the residuals.}
+
+\item{display_residuals}{Logical value. If TRUE, the residuals curve is displayed.}
+
+\item{area_alpha}{Numeric value. The alpha value for the area under the curve
+of the resiudals.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+}
+\value{
+A ggplot.
 }
 \description{
-Title
+Plots a trajectory lineplot in combination with models
+fitted to the course of the trajectory.
 }

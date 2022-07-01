@@ -18,28 +18,22 @@ getTrajectoryDf(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
-\item{variables}{Character vector. The variables of interest:
+\item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
 \itemize{
- \item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
- \item{ \strong{Genes}: Must be in \code{getGenes()}}
- \item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
- }}
+  \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+  \item{ \strong{Genes} Must be in \code{getGenes()}}
+  \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+  }}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
-relevant barcode spots into groups that are then aligned with respect to the
-chosen trajectory's direction.#'}
-
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+\item{binwidth}{The width of the the bins in which the barcode-spots
+are binned according to their projection length values.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -50,7 +44,7 @@ the computational progress will be printed.
 shifted to it's wider format. Formats can be changed via \code{shiftTrajectoryDf()}.}
 }
 \value{
-A summarized trajectory data.frame.
+Data.frame.
 }
 \description{
 Computes the expression trends of all specified variables

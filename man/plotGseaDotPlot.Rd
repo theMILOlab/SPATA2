@@ -40,7 +40,7 @@ plotGseaDotPlot(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{across}{Character value or NULL. If character, specifies the name of the grouping variable
 that contains the group assignment across which results are displayed. If NULL,
@@ -90,8 +90,7 @@ belonging. Making the appearance of the plots tidier.}
 \item{reverse}{Logical. If TRUE the gene sets are arranged from top to bottom.
 If FALSE they are arranged from bottom to top.}
 
-\item{scales, ncol, nrow}{Affects the way the subplots
-are displayed.}
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

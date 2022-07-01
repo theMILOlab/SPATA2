@@ -18,7 +18,7 @@ plotCnvResults(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -38,7 +38,10 @@ Use \code{getGroupNames()} to obtain all valid input options.}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

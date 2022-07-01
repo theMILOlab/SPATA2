@@ -13,7 +13,7 @@ getImageAnnotationCenter(object, ...)
 \S4method{getImageAnnotationCenter}{ImageAnnotation}(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 }

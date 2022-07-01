@@ -32,7 +32,7 @@ plotFourStates2(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{states}{The gene sets defining the four states specified as a character vector
 of length 4.}
@@ -45,6 +45,10 @@ of length 4.}
   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
   }}
+
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

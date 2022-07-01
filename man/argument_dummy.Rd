@@ -33,6 +33,8 @@ to display the results.}
 \item{scales, ncol, nrow}{Affects the way the subplots
 are displayed.}
 
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -80,6 +82,10 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
 
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
 \item{method_padj}{Character value. The method with which adjusted p-values are
 calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
 
@@ -89,7 +95,9 @@ can be set to prevent overplotting.}
 \item{n_gsets}{Numeric value. Maximal number of gene sets whose results are included.
 The first \code{n_gsets} are included starting with the one with the lowest significance value.}
 
-\item{object}{A valid spata-object.}
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
+
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
@@ -99,6 +107,11 @@ are not included.}
 
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}
+
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
+
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
 structure is forced into a square. X- and yspan of the square are equal to the span

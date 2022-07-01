@@ -14,7 +14,7 @@ discardGenes(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{genes}{Character vector or NULL. If character vector, specifies the genes
 to be discarded by name.}

@@ -14,7 +14,7 @@ ggpLayerEncirclingIAS(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the image annotation screening. Given to argument
@@ -24,6 +24,8 @@ area that covers the image annotation screening. Given to argument
 for more). Specifies how many times the area is buffere with the value
 denoted in \code{buffer}. The combination of both results in area that is
 screened.}
+
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
 }
 \value{
 A list of \code{ggproto}-objects.

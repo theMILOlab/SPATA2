@@ -100,6 +100,10 @@ gene_set_path <- function(gene_set_path){}
 
 ggplot_family <- function(){}
 
+#' @title ggplot
+#' @return A ggplot.
+ggplot_dummy <- function(){}
+
 
 #' @title image_dummy
 #' @param image An image of class \emph{Image} to be displayed in the background.
@@ -275,6 +279,10 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
 #'
+#' @param method_gs Character value. The method according to which gene sets will
+#'  be handled specified as a character of length one. This can be either 'mean
+#'  or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().
+#'
 #' @param method_padj Character value. The method with which adjusted p-values are
 #' calculated. Use \code{validPadjMethods()} to obtain all valid input options.
 #'
@@ -283,7 +291,11 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param n_gsets Numeric value. Maximal number of gene sets whose results are included.
 #' The first \code{n_gsets} are included starting with the one with the lowest significance value.
 #'
-#' @param object A valid spata-object.
+#' @param nrow,ncol Numeric values or NULL. Used to arrange multiple plots.
+#'
+#' @param linesize Numeric value. The size of the line(s) plotted.
+#'
+#' @param object An object of class \code{SPATA2}.
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
@@ -293,6 +305,10 @@ seurat_object_dummy <- function(seurat_object){}
 #' are not included.
 #' @param simplify Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 #' to FALSE a list is returned.
+#'
+#' @param smooth Logical. If TRUE, a loess fit is used to smooth the values.
+#' @param smooth_span Numeric value. Controls the degree of smoothing.
+#' Given to argument \code{span} of \code{stats::loess()}.
 #'
 #' @param square Logical. If TRUE, the cropped section of the image that contains the annotated
 #' structure is forced into a square. X- and yspan of the square are equal to the span

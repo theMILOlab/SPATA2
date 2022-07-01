@@ -20,7 +20,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 }
 \value{
 The load object of interest.

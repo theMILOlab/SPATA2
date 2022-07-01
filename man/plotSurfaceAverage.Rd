@@ -16,7 +16,7 @@ plotSurfaceAverage(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{color_by}{A character vector of gene names or a
 named list in which each element is a vector of gene names.}
@@ -28,10 +28,10 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
-\item{smooth}{Logical. If set to TRUE values will be smoothed according to the
-\code{smoooth_}-parameters.}
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}

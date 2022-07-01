@@ -38,7 +38,7 @@ runCnvAnalysis(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{ref_annotation}{A data.frame in which the row names refer to the barcodes of
 the reference matrix provided in argument \code{ref_mtr} and

@@ -18,10 +18,10 @@ plotCustomizedTrajectoryTrends(
 the trajectory of interest might adopt. The names of the respective variables will correspond to the name
 with which you want to refer to the trend later on.}
 
-\item{smooth}{Logical. If set to TRUE values will be smoothed according to the
-\code{smoooth_}-parameters.}
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
 

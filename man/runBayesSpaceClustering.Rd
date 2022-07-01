@@ -18,7 +18,7 @@ runBayesSpaceClustering(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{dirname}{Path to spaceranger output directory (e.g. "sampleID/outs/").
 This directory must contain the counts matrix and feature/barcode TSVs in

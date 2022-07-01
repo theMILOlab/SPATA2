@@ -7,7 +7,7 @@
 relevelGroups(object, grouping_variable, new_levels)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{new_levels}{Character vector of group names in the order in which
 the new ordering is supposed to be stored. Must contain all groups of the

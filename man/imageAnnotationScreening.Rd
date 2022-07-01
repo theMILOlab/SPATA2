@@ -23,7 +23,7 @@ imageAnnotationScreening(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{variables}{Character vector. All numeric variables, meaning genes,
 gene-sets and numeric features that are supposed to be included in

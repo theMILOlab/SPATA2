@@ -19,7 +19,7 @@ hlpr_summarize_trajectory_df(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{ctdf}{A compiled trajectory data.frame containing the variables
 \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.}
@@ -39,10 +39,9 @@ chosen trajectory's direction.#'}
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

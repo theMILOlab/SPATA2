@@ -24,7 +24,8 @@ smoothSpatially(
 \item{variables}{Character vector. Specifies the numeric variables of the
 input data.frame that are to be smoothed.}
 
-\item{smooth_span}{The amount of smoothing specified as a single numeric value.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

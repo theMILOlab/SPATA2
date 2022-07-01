@@ -10,7 +10,7 @@ getImageDirLowres(object, check = TRUE)
 getImageDirHighres(object, check = TRUE)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{check}{Logical value. If set to TRUE the input directory is checked
 for validity and it is checked if the file actually exists.}

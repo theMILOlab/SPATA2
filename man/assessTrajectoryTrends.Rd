@@ -35,7 +35,7 @@ assessTrajectoryTrendsCustomized(
 assessTrajectoryTrendsCustomized2(stdf, customized_trends, verbose = TRUE)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{trajectory_name}{The trajectory of interest specified
 as a single character value.}

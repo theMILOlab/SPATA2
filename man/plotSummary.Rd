@@ -22,7 +22,7 @@ plotSummary(object, ...)
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{x, y}{Character value. Specifies what to map to the x- and what to
 map to the y-axis.}

@@ -126,7 +126,7 @@ plotViolinplot(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{variables}{Character vector. The variables of interest:
 
@@ -185,8 +185,7 @@ input lowers the position.}
 \item{display_facets}{Logical value. If set to TRUE the plot is split via
 \code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
 
-\item{scales, ncol, nrow}{Affects the way the subplots
-are displayed.}
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{display_points}{Logical value. If set to TRUE points are used additionally
 to display the results.}
@@ -200,10 +199,9 @@ can be set to prevent overplotting.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
-\item{method_gs}{Character value. The method according to which gene sets will be handled
-specified as a character of length one. This can be either \emph{'mean'} or one
-of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to
-\code{gsva::GSVA()}.}
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 

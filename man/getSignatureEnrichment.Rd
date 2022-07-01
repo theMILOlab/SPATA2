@@ -15,7 +15,7 @@ getSignatureEnrichment(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
