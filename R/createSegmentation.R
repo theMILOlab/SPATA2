@@ -1,4 +1,21 @@
 
+br_add <- function(height, break_add = NULL){
+
+  if(base::is.null(break_add)){
+
+    x <- base::ceiling((height - 400)/100)
+
+    out <- x*5
+
+  } else {
+
+    out <- break_add
+
+  }
+
+  return(out)
+
+}
 
 
 #' @title Interactive sample segmentation
@@ -35,7 +52,7 @@
 #' @return An updated spata object.
 #' @export
 #'
-createSegmentation <- function(object){
+createSegmentation <- function(object, height = 500, break_add = NULL){
 
   new_object <-
     shiny::runApp(
@@ -168,7 +185,8 @@ createSegmentation <- function(object){
                                     delayType = "throttle",
                                     clip = TRUE,
                                     nullOutside = TRUE
-                                  )
+                                  ),
+                                  height = height
                                 ),
                                 shiny::plotOutput(
                                   outputId = "plot_sm",
@@ -183,7 +201,8 @@ createSegmentation <- function(object){
                                     delayType = "throttle",
                                     clip = TRUE,
                                     nullOutside = TRUE
-                                  )
+                                  ),
+                                  height = height
                                 ),
                                 shiny::tags$style(
                                   "
@@ -203,7 +222,7 @@ createSegmentation <- function(object){
                             )
                           )
                         ),
-                        shiny::HTML(text = base::rep("<br>", 22) %>% stringr::str_c(collapse = "")),
+                        shiny::HTML(text = base::rep("<br>", 22 + br_add(height, break_add)) %>% stringr::str_c(collapse = "")),
                         shiny::fluidRow(
                           #shiny::column(width = 1),
                           shiny::column(
