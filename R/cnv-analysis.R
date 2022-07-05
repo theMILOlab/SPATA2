@@ -252,7 +252,7 @@ runCnvAnalysis <- function(object,
                            ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
                            ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
                            ref_regions = cnv_ref[["regions"]], # chromosome positions
-                           gene_pos_df = gene_pos_df,
+                           gene_pos_df = SPATA2::gene_pos_df,
                            directory_cnv_folder = "data-development/cnv-results", # output folder
                            directory_regions_df = NA, # deprecated (chromosome positions)
                            n_pcs = 30,
