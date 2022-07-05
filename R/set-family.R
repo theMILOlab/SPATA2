@@ -12,6 +12,15 @@ set_dummy <- function(){}
 
 
 
+setTrajectory <- function(object, trajectory){
+
+  object@trajectories[[1]][[trajectory@id]] <- trajectory
+
+  return(object)
+
+}
+
+
 ################################################################################
 
 
