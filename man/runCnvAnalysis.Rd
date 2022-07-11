@@ -9,7 +9,7 @@ runCnvAnalysis(
   ref_annotation = cnv_ref[["annotation"]],
   ref_mtr = cnv_ref[["mtr"]],
   ref_regions = cnv_ref[["regions"]],
-  gene_pos_df = gene_pos_df,
+  gene_pos_df = SPATA2::gene_pos_df,
   directory_cnv_folder = "data-development/cnv-results",
   directory_regions_df = NA,
   n_pcs = 30,

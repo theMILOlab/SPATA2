@@ -58,6 +58,10 @@ containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
 same length as the input vector. Test models with \code{showModels()}.}
 
+\item{method_de}{Character value. Denotes the method to according to which the de-analysis is performed.
+Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
+to obtain all valid input options.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

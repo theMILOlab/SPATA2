@@ -60,6 +60,16 @@ screened.}
 
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.}
 
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_clrp}{The color palette to be used if the specified variable displayed by
+color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
+
+\item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
+color is continuous. Run \code{validColorSpectra()} to see valid input.}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
+
 \item{color_core, color_outside}{Character value. Denotes
 the colors with which the area of image annotation (\code{color_core})
 and the area that is not included in the screening (\code{color_outside})

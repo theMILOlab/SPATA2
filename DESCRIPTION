@@ -102,6 +102,7 @@ Collate:
     'plot-family-statistics.R'
     'plot-family-summaries.R'
     'plot-family-surface.R'
+    'plotDeaVolcano.R'
     'plotSurfaceBase.R'
     'plotSurfaceInteractivelyDiet.R'
     'plotTrajectoryLineplotFitted.R'

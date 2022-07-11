@@ -56,6 +56,10 @@ the exact position/evaulation of variables.
 If character, specifies the variables that are labeled. If numeric, specifies
 the top n of variables that are labeled. If NULL, ignored.}
 
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
+
 \item{hstep, vstep}{Adjust the position of the two labels that show the
 model names on the left and on the right.}
 

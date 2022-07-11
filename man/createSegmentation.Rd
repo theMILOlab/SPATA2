@@ -4,7 +4,7 @@
 \alias{createSegmentation}
 \title{Interactive sample segmentation}
 \usage{
-createSegmentation(object)
+createSegmentation(object, height = 500, break_add = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

@@ -225,6 +225,20 @@ seurat_object_dummy <- function(seurat_object){}
 
 #' @title Argument dummy
 #'
+#' @param across Character value or NULL. Specifies the grouping variable of interest.
+#'
+#' Use \code{getGroupingOptions()} to obtain all variable names that group the
+#' barcode spots of your object in a certain manner.
+#'
+#' @param across_subset Character vector or NULL. Specifies the particular groups
+#' of interest the grouping variable specified in argument \code{across} contains.
+#'
+#' If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
+#' with a \emph{'-'}. (Saves writing if there are more groups you are interested in
+#' than groups you are not interested in.)
+#'
+#' Use \code{getGroupNames()} to obtain all valid input options.
+#'
 #' @param clrp Character value. Specifies the color palette to be used to represent
 #' groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 #' input options.
@@ -279,6 +293,10 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
 #'
+#' @param method_de Character value. Denotes the method to according to which the de-analysis is performed.
+#' Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
+#' to obtain all valid input options.
+#'
 #' @param method_gs Character value. The method according to which gene sets will
 #'  be handled specified as a character of length one. This can be either 'mean
 #'  or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().
@@ -296,6 +314,18 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
 #' @param object An object of class \code{SPATA2}.
+#'
+#' @param pt_alpha Numeric value. Specifies the degree of transparency of all points.
+#' @param pt_clr Character value. Specifies the color of all points.
+#' @param pt_clrp The color palette to be used if the specified variable displayed by
+#' color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.
+#' @param pt_clrsp The color spectrum to be used if the specified variable displayed by
+#' color is continuous. Run \code{validColorSpectra()} to see valid input.
+#' @param pt_size Numeric value. Specifies the size of all points.
+#'
+#' @param relevel Logical value. If set to TRUE the input order of \code{across_subset}
+#' determines the order in which the groups of interest are displayed. Groups that
+#' are not included are dropped which affects the colors with which they are displayed.
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.

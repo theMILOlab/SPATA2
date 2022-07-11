@@ -37,12 +37,23 @@ plotDeaDotPlot(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{across}{Character value or NULL. If character, specifies the name of the grouping variable
-that contains the group assignment across which results are displayed. If NULL,
-no grouping is done.}
+\item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
-\item{relevel}{Logical value. If set to TRUE the input order of \code{across.subset} and
-\code{variables} determines the order in which the groups of interest are displayed.}
+Use \code{getGroupingOptions()} to obtain all variable names that group the
+barcode spots of your object in a certain manner.}
+
+\item{across_subset}{Character vector or NULL. Specifies the particular groups
+of interest the grouping variable specified in argument \code{across} contains.
+
+If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
+with a \emph{'-'}. (Saves writing if there are more groups you are interested in
+than groups you are not interested in.)
+
+Use \code{getGroupNames()} to obtain all valid input options.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
+determines the order in which the groups of interest are displayed. Groups that
+are not included are dropped which affects the colors with which they are displayed.}
 
 \item{method_de}{Character value. Denotes the method to according to which the de-analysis is performed.
 Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}

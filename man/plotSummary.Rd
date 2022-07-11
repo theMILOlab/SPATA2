@@ -26,6 +26,10 @@ plotSummary(object, ...)
 
 \item{x, y}{Character value. Specifies what to map to the x- and what to
 map to the y-axis.}
+
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
 }
 \description{
 Assigns every numeric variable to the model it fitted best
