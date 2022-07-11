@@ -37,6 +37,7 @@ plotDeaVolcano <- function(object,
                            threshold_logFC = 1,
                            threshold_pval = 0.01,
                            label_genes = 5,
+                           label_size = 1,
                            nrow = NULL,
                            ncol = NULL,
                            scales = "fixed",
@@ -159,7 +160,8 @@ plotDeaVolcano <- function(object,
     label_add_on <-
       ggrepel::geom_text_repel(
         data = label_df,
-        mapping = ggplot2::aes(label = .data[[col_genes]])
+        mapping = ggplot2::aes(label = .data[[col_genes]]),
+        size = label_size
       )
 
   } else {
