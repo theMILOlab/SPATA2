@@ -24,6 +24,8 @@ plotGseaDotPlot(
   pt_size = 2,
   pt_color = "blue4",
   pt_clrsp = "plasma",
+  force_gsets = NULL,
+  force_opt = "add",
   remove = "^.+?(?=_)",
   remove_gsets = NULL,
   replace = c("_", " "),

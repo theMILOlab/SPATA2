@@ -1,5 +1,5 @@
 
-
+#' @export
 adjustGseaDf <- function(df,
                          signif_var,
                          signif_threshold,

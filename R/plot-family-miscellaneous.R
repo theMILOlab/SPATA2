@@ -2208,6 +2208,9 @@ plotDeaDotPlot <- function(object,
                            nrow = NULL,
                            ncol = NULL,
                            transform_with = NULL,
+                           arrange_genes = TRUE,
+                           reverse = TRUE,
+                           reverse_within = FALSE,
                            ...){
 
   hlpr_assign_arguments(object)
@@ -2330,6 +2333,10 @@ plotDeaDotPlot <- function(object,
         pt.clrsp = pt_clrsp,
         pt.size = pt_size,
         transform.with = transform_with,
+        arrange.y = arrange_genes,
+        reverse.all = reverse,
+        reverse.within = reverse_within,
+        arrange.by = size_by,
         ...
       )
 

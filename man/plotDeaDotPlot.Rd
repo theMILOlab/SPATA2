@@ -31,6 +31,9 @@ plotDeaDotPlot(
   nrow = NULL,
   ncol = NULL,
   transform_with = NULL,
+  arrange_genes = TRUE,
+  reverse = TRUE,
+  reverse_within = FALSE,
   ...
 )
 }

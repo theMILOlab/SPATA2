@@ -54,18 +54,6 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
-\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
-
-\item{pt_clr}{Character value. Specifies the color of all points.}
-
-\item{pt_clrp}{The color palette to be used if the specified variable displayed by
-color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
-
-\item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
-color is continuous. Run \code{validColorSpectra()} to see valid input.}
-
-\item{pt_size}{Numeric value. Specifies the size of all points.}
-
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
@@ -128,6 +116,18 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
 \item{object}{An object of class \code{SPATA2}.}
+
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_clr}{Character value. Specifies the color of all points.}
+
+\item{pt_clrp}{The color palette to be used if the specified variable displayed by
+color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
+
+\item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
+color is continuous. Run \code{validColorSpectra()} to see valid input.}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
 
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that

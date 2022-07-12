@@ -18,6 +18,7 @@ plotDeaVolcano(
   threshold_logFC = 1,
   threshold_pval = 0.01,
   label_genes = 5,
+  label_size = 1,
   nrow = NULL,
   ncol = NULL,
   scales = "fixed",
