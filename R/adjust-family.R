@@ -7,7 +7,13 @@ adjustGseaDf <- function(df,
                          remove_gsets,
                          replace,
                          n_gsets,
-                         digits){
+                         digits,
+                         force_gsets = NULL,
+                         force_opt = "replace"){
+
+  group_var <- base::names(df)[1]
+
+  df_orig <- df
 
   if(base::is.character(remove_gsets)){
 
@@ -15,33 +21,127 @@ adjustGseaDf <- function(df,
 
   }
 
-  df <-
-    dplyr::group_by(df, label) %>%
+  df_out <-
+    dplyr::group_by(df, !!rlang::sym(group_var)) %>%
     dplyr::filter(!!rlang::sym(signif_var) < {{signif_threshold}}) %>%
     dplyr::arrange({{signif_var}}, .by_group = TRUE) %>%
-    dplyr::slice_head(n = n_gsets)
+    dplyr::slice_min(order_by = !!rlang::sym(signif_var), n = n_gsets, with_ties = FALSE) %>%
+    dplyr::ungroup()
+
+  groups <- base::levels(df_out[[group_var]])
+
+  if(base::is.character(force_gsets)){
+
+    force_gsets <- force_gsets[!force_gsets %in% base::unique(df_out[["label"]])]
+
+    if(base::length(force_gsets) >= 1){
+
+      force_gsets <-
+        confuns::check_vector(
+          input = force_gsets,
+          against = base::levels(df[["label"]]),
+          ref.input = "input for argument `force_gsets`",
+          ref.against = "among significant gene sets.",
+          fdb.fn = "warning"
+        )
+
+      # df with gene sets that must be included
+      df_forced <- dplyr::filter(df_orig, label %in% {{force_gsets}})
+
+      if(force_opt == "replace"){
+
+        df_out <-
+          purrr::map_df(
+            .x = groups,
+            .f = function(group){
+
+              df_out_group <- dplyr::filter(df_out, !!rlang::sym(group_var) == {{group}})
+
+              df_forced_group <- dplyr::filter(df_forced, !!rlang::sym(group_var) == {{group}})
+
+              # total number of
+              n_total <- base::nrow(df_out_group)
+
+              # number of group specific gene sets that must be replaced
+              n_replace <-
+                dplyr::filter(df_forced_group, label %in% {{force_gsets}}) %>%
+                base::nrow()
+
+              if(n_replace > n_total){
+
+                df_return <-
+                  dplyr::slice_min(
+                    .data = df_forced_group,
+                    order_by = !!rlang::sym(signif_var),
+                    n = n_total,
+                    with_ties = FALSE
+                    )
+
+              } else if(n_replace > 0){
+
+                df_group_removed <-
+                  dplyr::slice_min(
+                    .data = df_out_group,
+                    order_by = !!rlang::sym(signif_var),
+                    n = n_total-n_replace,
+                    with_ties = FALSE
+                    )
+
+                df_group_replace <-
+                  dplyr::slice_min(
+                    .data = df_forced_group,
+                    order_by = !!rlang::sym(signif_var),
+                    n = n_replace,
+                    with_ties = FALSE
+                    )
+
+                df_return <- base::rbind(df_group_removed, df_group_replace)
+
+              } else {
+
+                df_return <- df_out_group
+
+              }
+
+              df_return <- dplyr::arrange(df_return, {{signif_var}})
+
+              return(df_return)
+
+          })
+
+      } else if(force_opt == "add"){
+
+        df_out <- base::rbind(df_out, df_forced)
+
+      }
+
+    }
+
+  }
 
   if(base::is.character(remove)){
 
     is_value(remove, mode = "character")
 
-    df[["label"]] <-
-      stringr::str_remove(string = df[["label"]], pattern = remove) %>%
+    df_out[["label"]] <-
+      stringr::str_remove(string = df_out[["label"]], pattern = remove) %>%
       base::as.factor()
 
   }
 
   if(is_vec(x = replace, mode = "character", of.length = 2, fdb.fn = "message", verbose = FALSE)){
 
-    df[["label"]] <-
-      stringr::str_replace_all(string = df[["label"]], pattern = replace[1], replacement = replace[2]) %>%
+    df_out[["label"]] <-
+      stringr::str_replace_all(string = df_out[["label"]], pattern = replace[1], replacement = replace[2]) %>%
       base::as.factor()
 
   }
 
-  df <- dplyr::mutate(df, overlap_perc = base::round(overlap_perc, digits = digits))
+  df_out <-
+    dplyr::mutate(df_out, overlap_perc = base::round(overlap_perc, digits = digits)) %>%
+    dplyr::distinct()
 
-  return(df)
+  return(df_out)
 
 }
 

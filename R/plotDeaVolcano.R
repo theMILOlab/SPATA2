@@ -204,6 +204,7 @@ plotDeaVolcano <- function(object,
     ggplot2::theme(strip.background = ggplot2::element_blank()) +
     ggplot2::labs(x = xlab, y = "Adjusted p-value (log10)") +
     label_add_on +
-    facet_add_on
+    facet_add_on +
+    scale_x_add_on
 
 }
