@@ -861,7 +861,8 @@ plotCnvResults <- function(object,
     final_plot <-
       ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
       ggplot2::geom_smooth(
-        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = clr, ...) +
+        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = linecolor,
+        size = linesize, alpha = linealpha, ...) +
       ggplot2::geom_ribbon(
         mapping = ggplot2::aes(ymin = mean-sd, ymax = mean + sd),
         alpha = ribbon_alpha, color = ribbon_color
@@ -932,7 +933,8 @@ plotCnvResults <- function(object,
     final_plot <-
       ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
       ggplot2::geom_smooth(
-        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = linecolor, ...) +
+        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE,
+        alpha = linealpha, color = linecolor, size = linesize, ...) +
       ggplot2::geom_ribbon(
         mapping = ggplot2::aes(ymin = mean-sd, ymax = mean + sd),
         alpha = ribbon_alpha, color = ribbon_color
