@@ -797,12 +797,22 @@ plotCnvResults <- function(object,
                            across = NULL,
                            across_subset = NULL,
                            relevel = NULL,
-                           clr = "blue",
+                           linealpha = 0.9,
+                           linecolor = "blue",
+                           linesize = 1,
                            smooth_span = 0.08,
+                           vline_alpha = 0.5,
+                           vline_color = "grey",
+                           vline_size = 1,
+                           vline_type = "dashed",
+                           ribbon_alpha = 0.2,
+                           ribbon_color = "grey",
                            nrow = NULL,
                            ncol = NULL,
                            of_sample = NA,
-                           verbose = NULL
+                           verbose = NULL,
+                           clr = NA,
+                           ...
                            ){
 
   # 1. Control --------------------------------------------------------------
@@ -812,6 +822,8 @@ plotCnvResults <- function(object,
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
   # -----
+
+  if(!base::all(base::is.na(clr))){ warning("Argument `clr` is deprecated. Please use argument `linecolor`.")}
 
 
   # 2. Data preparation -----------------------------------------------------
@@ -848,10 +860,20 @@ plotCnvResults <- function(object,
 
     final_plot <-
       ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
-      ggplot2::geom_smooth(method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = clr) +
-      ggplot2::geom_ribbon(mapping = ggplot2::aes(ymin = mean-sd, ymax = mean + sd),
-                           alpha = 0.2) +
-      ggplot2::geom_vline(data = line_df, mapping = ggplot2::aes(xintercept = line_pos), linetype = "dashed", alpha = 0.5) +
+      ggplot2::geom_smooth(
+        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = clr, ...) +
+      ggplot2::geom_ribbon(
+        mapping = ggplot2::aes(ymin = mean-sd, ymax = mean + sd),
+        alpha = ribbon_alpha, color = ribbon_color
+        ) +
+      ggplot2::geom_vline(
+        data = line_df,
+        mapping = ggplot2::aes(xintercept = line_pos),
+        alpha = vline_alpha,
+        color = vline_color,
+        size = vline_size,
+        linetype = vline_type
+        ) +
       ggplot2::theme_classic() +
       ggplot2::scale_x_continuous(breaks = line_df$label_breaks, labels = line_df$chromosome_name) +
       ggplot2::labs(x = "Chromosomes", y = "CNV-Results")
@@ -908,19 +930,23 @@ plotCnvResults <- function(object,
       tidyr::drop_na()
 
     final_plot <-
-      ggplot2::ggplot(data = summarized_df, mapping = ggplot2::aes(x = x_axis, y = cnv_mean)) +
-      ggplot2::geom_smooth(method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = clr) +
+      ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
+      ggplot2::geom_smooth(
+        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE, color = linecolor, ...) +
       ggplot2::geom_ribbon(
-        mapping = ggplot2::aes(ymin = cnv_mean - cnv_sd, ymax = cnv_mean + cnv_sd),
-        alpha = 0.2
+        mapping = ggplot2::aes(ymin = mean-sd, ymax = mean + sd),
+        alpha = ribbon_alpha, color = ribbon_color
       ) +
       ggplot2::geom_vline(
         data = line_df,
-        mapping = ggplot2::aes(xintercept = line_pos), linetype = "dashed", alpha = 0.5
+        mapping = ggplot2::aes(xintercept = line_pos),
+        alpha = vline_alpha,
+        color = vline_color,
+        size = vline_size,
+        linetype = vline_type
       ) +
       ggplot2::facet_wrap(facets = ~ across, nrow = nrow, ncol = ncol) +
       ggplot2::theme_classic() +
-      ggplot2::theme(strip.background = ggplot2::element_blank()) +
       ggplot2::scale_x_continuous(breaks = line_df$label_breaks, labels = line_df$chromosome_name) +
       ggplot2::labs(x = "Chromosomes", y = "CNV-Results")
 

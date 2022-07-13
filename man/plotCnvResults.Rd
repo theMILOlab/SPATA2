@@ -9,12 +9,22 @@ plotCnvResults(
   across = NULL,
   across_subset = NULL,
   relevel = NULL,
-  clr = "blue",
+  linealpha = 0.9,
+  linecolor = "blue",
+  linesize = 1,
   smooth_span = 0.08,
+  vline_alpha = 0.5,
+  vline_color = "grey",
+  vline_size = 1,
+  vline_type = "dashed",
+  ribbon_alpha = 0.2,
+  ribbon_color = "grey",
   nrow = NULL,
   ncol = NULL,
   of_sample = NA,
-  verbose = NULL
+  verbose = NULL,
+  clr = NA,
+  ...
 )
 }
 \arguments{
@@ -37,6 +47,8 @@ Use \code{getGroupNames()} to obtain all valid input options.}
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
+
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
