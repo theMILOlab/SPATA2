@@ -1224,7 +1224,7 @@ plotTrajectoryLineplotFitted <- function(object,
     )
 
 
-  if(base::isTRUE(FALSE)){
+  if(base::isTRUE(smooth)){
 
     model_df <- dplyr::filter(plot_df, origin == "Models")
 

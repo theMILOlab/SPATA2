@@ -98,6 +98,7 @@ Collate:
     'module-surface-plot.R'
     'n-functions.R'
     'package-dependencies.R'
+    'ploIasHeatmap.R'
     'plot-family-miscellaneous.R'
     'plot-family-statistics.R'
     'plot-family-summaries.R'

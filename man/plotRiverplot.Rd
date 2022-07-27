@@ -12,6 +12,7 @@ plotRiverplot(
   strata_color = "white",
   strata_fill = "white",
   strata_width = 1/3,
+  allv_color = "white",
   allv_type = "xspline",
   allv_width = 1/3,
   clrp = NULL,

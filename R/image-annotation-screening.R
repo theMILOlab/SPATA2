@@ -1528,8 +1528,10 @@ setMethod(
                         threshold_eval = 0.5,
                         threshold_pval = 0.05,
                         threshold_colors = c("tomato", "lightgrey"),
-                        highlight_vars = NULL,
                         label_vars = NULL,
+                        label_alpha = 0.9,
+                        label_color = "black",
+                        label_size = 2,
                         negative_log = TRUE,
                         pt_alpha = 0.9,
                         pt_size = 1,
@@ -1624,6 +1626,10 @@ setMethod(
         ggrepel::geom_text_repel(
           data = label_df,
           mapping = ggplot2::aes(x = .data[[eval]], y = .data[[pval]], label = variables),
+          alpha = label_alpha,
+          color = label_color,
+          size = label_size,
+
           ...
         )
 
