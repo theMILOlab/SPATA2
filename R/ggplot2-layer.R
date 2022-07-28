@@ -119,11 +119,6 @@ ggpLayerEncirclingGroups <- function(object,
     against = c("coords", "tsne", "umap")
   )
 
-  confuns::check_one_of(
-    input = label_with,
-    against = c("color", "label", "none", "text")
-  )
-
   if(plot_type == "coords"){
 
     layer_df <- getCoordsDf(object)

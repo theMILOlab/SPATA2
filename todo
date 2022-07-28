@@ -1,4 +1,3 @@
 
-- removeAnnotation: change name
-- createSpatialTrajectories: adjust to new S4 class, make pretty
-- ImageAnnotationScreening: rewrite in stlye of spatial-trajectory-screening.R & combine with modelling.R
+- ... to reach geom_text_repel in plotDeaVolcano
+- remove 'label_with' in ggpLayerEncirclingGroups

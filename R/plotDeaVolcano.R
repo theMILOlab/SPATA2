@@ -41,7 +41,8 @@ plotDeaVolcano <- function(object,
                            nrow = NULL,
                            ncol = NULL,
                            scales = "fixed",
-                           use_pseudolog = FALSE){
+                           use_pseudolog = FALSE,
+                           ...){
 
   hlpr_assign_arguments(object)
 
@@ -161,7 +162,8 @@ plotDeaVolcano <- function(object,
       ggrepel::geom_text_repel(
         data = label_df,
         mapping = ggplot2::aes(label = .data[[col_genes]]),
-        size = label_size
+        size = label_size,
+        ...
       )
 
   } else {
