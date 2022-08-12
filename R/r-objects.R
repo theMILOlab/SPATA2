@@ -376,7 +376,8 @@ pattern_formulas <-
 
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
 
-
+#' @title List of summarizing formulas
+#' @export
 summarize_formulas <-
   list(
     "max" = ~ base::max(.x, na.rm = TRUE),

@@ -571,8 +571,8 @@ getImageAnnotationScreeningDf <- function(object,
 #' gene-sets and numeric features that are supposed to be included in
 #' the screening process.
 #' @param n_bins_circle Numeric value (or vector of length two, see details
-#' for more). Specifies how many times the area is buffere with the value
-#' denoted in \code{buffer}. The combination of both results in area that is
+#' for more). Specifies how many times the area is buffered with the value
+#' denoted in \code{buffer}. The combination of both results in the area that is
 #' screened.
 #' @param n_bins_angle Numeric value. Number of bins that are created by angle.
 #'

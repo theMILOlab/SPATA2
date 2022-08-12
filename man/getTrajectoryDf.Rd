@@ -35,6 +35,8 @@ or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given 
 \item{binwidth}{The width of the the bins in which the barcode-spots
 are binned according to their projection length values.}
 
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

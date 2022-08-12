@@ -345,6 +345,8 @@ seurat_object_dummy <- function(seurat_object){}
 #' that is the biggest. If FALSE, the section is cropped according to the extent
 #' of the annotated structure and the input for argument \code{expand}.
 #'
+#' @param summarize_with Character value. Name of the function with which to summarize.
+#'
 #' @param tags Character vector or NULL. If character, the image annotation tags of interest.
 #'
 #' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.

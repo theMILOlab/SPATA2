@@ -88,6 +88,8 @@ or by adding vertical lines.}
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 valid input options.}
 
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

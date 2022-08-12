@@ -48,6 +48,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}

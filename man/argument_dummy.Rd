@@ -152,6 +152,8 @@ structure is forced into a square. X- and yspan of the square are equal to the s
 that is the biggest. If FALSE, the section is cropped according to the extent
 of the annotated structure and the input for argument \code{expand}.}
 
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.

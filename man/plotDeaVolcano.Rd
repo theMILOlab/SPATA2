@@ -22,7 +22,8 @@ plotDeaVolcano(
   nrow = NULL,
   ncol = NULL,
   scales = "fixed",
-  use_pseudolog = FALSE
+  use_pseudolog = FALSE,
+  ...
 )
 }
 \arguments{
