@@ -11,7 +11,6 @@ plotIasLineplot(
   n_bins_circle,
   n_bins_angle,
   variables,
-  include_area = FALSE,
   method_gs = NULL,
   smooth_method = "loess",
   smooth_span = 0.2,
@@ -26,6 +25,12 @@ plotIasLineplot(
   nrow = NULL,
   ncol = NULL,
   display_axis_text = FALSE,
+  include_area = FALSE,
+  display_border = TRUE,
+  border_linealpha = 0.75,
+  border_linecolor = "black",
+  border_linesize = 1,
+  border_linetype = "dashed",
   verbose = NULL,
   ...
 )
@@ -35,21 +40,15 @@ plotIasLineplot(
 
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the image annotation screening. Given to argument
-\code{dist} of function \code{sf::st_buffer()}.}
+\code{dist} of function \code{sf::st_buffer()}. (See details for more.)}
 
-\item{n_bins_circle}{Numeric value (or vector of length two, see details
-for more). Specifies how many times the area is buffered with the value
-denoted in \code{buffer}. The combination of both results in the area that is
-screened.}
+\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{buffer}.
+ (See details for more.)}
 
-\item{variables}{Character vector. All numeric variables, meaning genes,
-gene-sets and numeric features that are supposed to be included in
+\item{variables}{Character vector. All numeric variables (meaning genes,
+gene-sets and numeric features) that are supposed to be included in
 the screening process.}
-
-\item{include_area}{Logical. If TRUE, the visualization
-includes the area the image annotation covered. If FALSE,
-visualization only includes the surrounding of the area of the image
-annotation.}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
@@ -82,6 +81,11 @@ Specifies the function with which the bins are summarized.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
+\item{include_area}{Logical. If TRUE, the visualization
+includes the area the image annotation covered. If FALSE,
+visualization only includes the surrounding of the area of the image
+annotation.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -95,4 +99,13 @@ A ggplot.
 }
 \description{
 Plot Image Annotation Screening Lineplot
+}
+\details{
+In conjunction with argument \code{id} which provides the
+ID of the image annotation of interest the arguments \code{n_bins_circle},
+\code{buffer}, \code{angle_span} and \code{n_bins_angle} can be used
+to specify the exact area that is screened as well as the resolution of the screening.
+
+Note that the function \code{plotSurfaceIas()} allows to visually check
+if your input results in the desired screening.
 }

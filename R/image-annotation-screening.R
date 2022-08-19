@@ -139,68 +139,210 @@ bin_by_area <- function(coords_df,
 bin_by_angle <- function(coords_df,
                          center,
                          n_bins_angle = 12,
+                         angle_span = c(0,360),
                          min_bins_circle = NULL,
                          rename = FALSE,
                          remove = FALSE,
                          drop = TRUE){
 
-  mltp <- 360/n_bins_angle
-  breaks <- 0:n_bins_angle * mltp
+  confuns::is_vec(x = angle_span, mode = "numeric", of.length = 2)
 
-  angle_df <-
+  angle_span <- c(from = angle_span[1], to = angle_span[2])
+
+  range_span <- base::range(angle_span)
+
+  if(angle_span[1] == angle_span[2]){
+
+    stop("Invalid input for argument `angle_span`. Must contain to different values.")
+
+  } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
+
+    stop("Input for argument `angle_span` must range from 0 to 360.")
+
+  }
+
+  # compute angle
+  prel_angle_df <-
     dplyr::group_by(.data = coords_df, barcodes) %>%
     dplyr::mutate(
       angle = compute_angle_between_two_points(
         p1 = c(x = x, y = y),
         p2 = center
       )
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(
-      bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
     )
 
-  if(base::is.numeric(min_bins_circle)){
+  # create angle bins
 
-    bins_to_keep <-
-      dplyr::select(angle_df ,bins_circle, bins_angle) %>%
-      dplyr::distinct() %>%
-      dplyr::group_by(bins_angle) %>%
-      dplyr::tally() %>%
-      dplyr::filter(n >= {{min_bins_circle}}) %>%
-      dplyr::pull(bins_angle) %>%
-      base::as.character()
+  if(angle_span[["from"]] > angle_span[["to"]]){
 
-    if(base::isTRUE(rename)){
+    range_vec <- c(
+      angle_span[["from"]]:360,
+      0:angle_span[["to"]]
+    )
 
-      bins_circle_levels <- base::levels(angle_df[["bins_circle"]])
+    nth <- base::floor(base::length(range_vec)/n_bins_angle)
 
-      angle_df <-
-        dplyr::mutate(
-          .data = angle_df,
-          bins_angle = base::as.character(bins_angle),
-          bins_angle = dplyr::case_when(
-            bins_circle == "Core" ~ "Core",
-            bins_circle == "Outside" ~ "Outside",
-            !bins_angle %in% {{bins_to_keep}} ~ "Outside",
-            TRUE ~ bins_angle
-          ),
-          bins_angle = base::factor(bins_angle, levels = c("Core", bins_to_keep, "Outside")),
-          bins_circle = base::as.character(bins_circle),
-          bins_circle = dplyr::case_when(
-            bins_angle == "Outside" ~ "Outside",
-            TRUE ~ bins_circle
-          ),
-          bins_circle = base::factor(bins_circle, bins_circle_levels)
+    bin_list <- base::vector(mode = "list", length = n_bins_angle)
+
+    for(i in 1:n_bins_angle){
+
+      if(i == 1){
+
+        sub <- 1:nth
+
+      } else {
+
+        sub <- ((nth*(i-1))+1):(nth*i)
+
+      }
+
+      bin_list[[i]] <- range_vec[sub]
+
+    }
+
+    if(base::any(base::is.na(bin_list[[n_bins_angle]]))){
+
+      bin_list[[(n_bins_angle)-1]] <-
+        c(bin_list[[(n_bins_angle-1)]], bin_list[[n_bins_angle]]) %>%
+        rm_na()
+
+      bin_list[[n_bins_angle]] <- NULL
+
+    }
+
+    all_vals <- purrr::flatten_dbl(bin_list)
+
+    bin_list[[n_bins_angle]] <-
+      c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
+
+    prel_angle_bin_df <-
+      dplyr::ungroup(prel_angle_df) %>%
+      dplyr::filter(base::round(angle) %in% range_vec) %>%
+      dplyr::mutate(
+        angle_round = base::round(angle),
+        bins_angle = ""
         )
 
+    bin_names <- base::character(n_bins_angle)
+
+    for(i in base::seq_along(bin_list)){
+
+      angles <- bin_list[[i]]
+
+      bin_names[i] <-
+        stringr::str_c(
+          "(", angles[1], ",", utils::tail(angles,1), "]"
+        )
+
+      prel_angle_bin_df[prel_angle_bin_df$angle_round %in% angles, "bins_angle"] <-
+        bin_names[i]
+
     }
 
-    if(base::isTRUE(remove)){
+    prel_angle_bin_df$angle_round <- NULL
 
-      angle_df <- dplyr::filter(angle_df, bins_angle %in% {{bins_to_keep}})
+    prel_angle_bin_df$bins_angle <-
+      base::factor(
+        x = prel_angle_bin_df$bins_angle,
+        levels = bin_names
+        )
 
-    }
+  } else {
+
+    range_vec <- range_span[1]:range_span[2]
+
+    sub <-
+      base::seq(
+        from = 1,
+        to = base::length(range_vec),
+        length.out = n_bins_angle+1
+        ) %>%
+      base::round()
+
+    breaks <- range_vec[sub]
+
+    prel_angle_bin_df <-
+      dplyr::ungroup(prel_angle_df) %>%
+      dplyr::filter(base::round(angle) %in% range_vec) %>%
+      dplyr::mutate(
+        bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
+      )
+
+  }
+
+  bins_angle_levels <-
+    base::levels(prel_angle_bin_df[["bins_angle"]]) %>%
+    c("Core", ., "Outside") %>%
+    base::unique()
+
+  bins_circle_levels <-
+    base::levels(prel_angle_bin_df[["bins_circle"]]) %>%
+    c("Core", ., "Outside") %>%
+    base::unique()
+
+  # add to input data.frame
+  angle_df <-
+    dplyr::left_join(
+      x = coords_df,
+      y = prel_angle_df[,c("barcodes", "angle")],
+      by = "barcodes"
+      ) %>%
+    dplyr::left_join(
+      x = .,
+      y = prel_angle_bin_df[,c("barcodes", "bins_angle")],
+      by = "barcodes"
+    ) %>%
+    dplyr::mutate(
+      bins_angle = base::as.character(bins_angle),
+      bins_angle = dplyr::case_when(
+        !base::is.na(bins_angle) ~ bins_angle,
+        TRUE ~ "Outside"
+      ),
+      bins_angle = base::factor(bins_angle, levels = bins_angle_levels)
+    )
+
+  # denote barcodes to remove due to insufficient number of circles in angle_bin
+  if(!base::is.numeric(min_bins_circle)){
+
+    min_bins_circle <- 0
+
+  }
+
+  bins_to_keep <-
+    dplyr::select(angle_df ,bins_circle, bins_angle) %>%
+    dplyr::distinct() %>%
+    dplyr::group_by(bins_angle) %>%
+    dplyr::tally() %>%
+    dplyr::filter(n >= {{min_bins_circle}}) %>%
+    dplyr::pull(bins_angle) %>%
+    base::as.character()
+
+  if(base::isTRUE(rename)){
+
+    angle_df <-
+      dplyr::mutate(
+        .data = angle_df,
+        bins_angle = base::as.character(bins_angle),
+        bins_angle = dplyr::case_when(
+          bins_circle == "Core" ~ "Core",
+          bins_circle == "Outside" ~ "Outside",
+          !bins_angle %in% {{bins_to_keep}} ~ "Outside",
+          TRUE ~ bins_angle
+        ),
+        bins_circle = base::as.character(bins_circle),
+        bins_circle = dplyr::case_when(
+          bins_angle == "Outside" ~ "Outside",
+          TRUE ~ bins_circle
+        ),
+        bins_circle = base::factor(bins_circle, levels = bins_circle_levels),
+        bins_angle = base::factor(bins_angle, levels = bins_angle_levels)
+      )
+
+  }
+
+  if(base::isTRUE(remove)){
+
+    angle_df <- dplyr::filter(angle_df, bins_angle %in% {{bins_to_keep}})
 
   }
 
@@ -219,6 +361,7 @@ bin_by_angle <- function(coords_df,
 
 }
 
+
 #' @title Buffer area
 #'
 #' @description Buffers the area of a polygon.
@@ -229,7 +372,7 @@ bin_by_angle <- function(coords_df,
 #'
 #' @param buffer The distance by which to consecutively expand the
 #' area that covers the image annotation screening. Given to argument
-#' \code{dist} of function \code{sf::st_buffer()}.
+#' \code{dist} of function \code{sf::st_buffer()}. (See details for more.)
 #'
 #' @export
 buffer_area <- function(df, buffer){
@@ -469,8 +612,9 @@ setMethod(
 
 getImageAnnotationScreeningDf <- function(object,
                                           id,
-                                          buffer,
                                           n_bins_circle,
+                                          buffer,
+                                          angle_span = c(0,360),
                                           n_bins_angle = 12,
                                           variables = NULL,
                                           normalize = TRUE,
@@ -505,6 +649,7 @@ getImageAnnotationScreeningDf <- function(object,
     ) %>%
     bin_by_angle(
       center = img_ann_center,
+      angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       min_bins_circle = min_circles,
       rename = rename_angle_bins,
@@ -563,18 +708,23 @@ getImageAnnotationScreeningDf <- function(object,
 #' @title Implementation of the IAS-algorithm
 #'
 #' @description Screens the sample for numeric variables that stand
-#' in meaningful, spatial relation to annotated structures/areas of
-#' the sample.
+#' in meaningful, spatial relation to annotated structures/areas.
+#' For a detailed explanation on how to define the parameters
+#' \code{n_bins_circle}, \code{buffer}, \code{angle_span} and \code{n_bins_angle}
+#' see details section.
 #'
 #' @inherit getImageAnnotatation params
-#' @param variables Character vector. All numeric variables, meaning genes,
-#' gene-sets and numeric features that are supposed to be included in
+#' @param variables Character vector. All numeric variables (meaning genes,
+#' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
-#' @param n_bins_circle Numeric value (or vector of length two, see details
-#' for more). Specifies how many times the area is buffered with the value
-#' denoted in \code{buffer}. The combination of both results in the area that is
-#' screened.
+#' @param n_bins_circle Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+#' denoted in \code{buffer}.
+#'  (See details for more.)
+#' @param angle_span Numeric vector of length 2. Confines the area screened by
+#' an angle span relative to the center of the image annotation.
+#'  (See details fore more.)
 #' @param n_bins_angle Numeric value. Number of bins that are created by angle.
+#' (See details for more.)
 #'
 #' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
 #' Specifies the function with which the bins are summarized.
@@ -586,12 +736,34 @@ getImageAnnotationScreeningDf <- function(object,
 #' @return An object of class \code{ImageAnnotationScreening}. See documentation
 #' with \code{?ImageAnnotationScreening} for more information.
 #'
+#' @seealso createImageAnnotations()
+#'
+#'
+#' @details In conjunction with argument \code{id} which provides the
+#' ID of the image annotation of interest the arguments \code{n_bins_circle},
+#' \code{buffer}, \code{angle_span} and \code{n_bins_angle} can be used
+#' to specify the exact area that is screened as well as the resolution of the screening.
+#'
+#' Note that the function \code{plotSurfaceIas()} allows to visually check
+#' if your input results in the desired screening.
+#'
+#' @section Specify the screened area
+#' To specify the area that is supposed to be screened you need to combine the
+#' arguments \code{n_bins_circle}, \code{buffer}. \code{n_bins_circle} denotes
+#' how often the area defined by the image annotation is expanded. \code{buffer}
+#' denotes the distance with which the image annotation is expanded for every n
+#' in \code{n_bins_circle}. E.g. with \code{n_bins_circle} = 10 and \code{buffer}
+#' 20 an area of 10x20px around the area of the image annotation is screened.
+#'
+#'
+#'
 #' @export
 imageAnnotationScreening <- function(object,
                                      id,
                                      variables,
-                                     buffer,
                                      n_bins_circle,
+                                     buffer,
+                                     angle_span = c(0,360),
                                      n_bins_angle = 12,
                                      summarize_with = "mean",
                                      method_padj = "fdr",
@@ -618,6 +790,7 @@ imageAnnotationScreening <- function(object,
       id = id,
       variables = variables,
       buffer = buffer,
+      angle_span = angle_span,
       n_bins_circle = n_bins_circle,
       n_bins_angle = n_bins_angle,
       remove_circle_bins = TRUE,
@@ -793,6 +966,7 @@ imageAnnotationScreening <- function(object,
 
   ias_out <-
     ImageAnnotationScreening(
+      angle_span = angle_span,
       buffer = buffer,
       coords = getCoordsDf(object),
       dea = dea_df,
@@ -952,8 +1126,9 @@ setMethod(
   definition = function(object,
                         id,
                         variables,
-                        buffer,
                         n_bins_circle,
+                        buffer,
+                        angle_span = c(0,360),
                         n_angle_bins = 12,
                         summarize_with = "mean",
                         model_subset = NULL,
@@ -969,6 +1144,7 @@ setMethod(
         object = object,
         id = id,
         variables = variables,
+        angle_span = angle_span,
         buffer = buffer,
         n_bins_circle = n_bins_circle,
         n_bins_angle = n_bins_angle,
@@ -1227,8 +1403,9 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         id,
-                        buffer,
                         n_bins_circle,
+                        buffer,
+                        angle_span = c(0,360),
                         n_bins_angle = 12,
                         pt_alpha = NA_integer_,
                         pt_clrp = c("inferno", "default"),
@@ -1248,6 +1425,7 @@ setMethod(
         object = object,
         id = id,
         variables = NULL,
+        angle_span = angle_span,
         buffer = buffer,
         n_bins_circle = n_bins_circle,
         n_bins_angle = n_bins_angle,
@@ -1255,7 +1433,6 @@ setMethod(
         rename_angle_bins = TRUE,
         drop = c(FALSE, TRUE)
       )
-
 
     if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
 
@@ -1379,6 +1556,7 @@ setMethod(
       ) %>%
       bin_by_angle(
         center = img_ann_center,
+        angle_span = object@angle_span,
         n_bins_angle = n_bins_angle,
         min_bins_circle = min_circles,
         rename = TRUE,

@@ -236,7 +236,6 @@ plotIasLineplot <- function(object,
                             n_bins_circle,
                             n_bins_angle,
                             variables,
-                            include_area = FALSE,
                             method_gs = NULL,
                             smooth_method = "loess",
                             smooth_span = 0.2,
@@ -251,6 +250,12 @@ plotIasLineplot <- function(object,
                             nrow = NULL,
                             ncol = NULL,
                             display_axis_text = FALSE,
+                            include_area = FALSE,
+                            display_border = TRUE,
+                            border_linealpha = 0.75,
+                            border_linecolor = "black",
+                            border_linesize = 1,
+                            border_linetype = "dashed",
                             verbose = NULL,
                             ...){
 
@@ -267,7 +272,6 @@ plotIasLineplot <- function(object,
 
   }
 
-
   ias_df <-
     getImageAnnotationScreeningDf(
       object = object,
@@ -278,7 +282,8 @@ plotIasLineplot <- function(object,
       variables = variables,
       remove_angle_bins = TRUE,
       remove_circle_bins = !include_area,
-      smooth = FALSE, normalize = c(FALSE, FALSE)
+      smooth = FALSE,
+      normalize = c(FALSE, FALSE)
     )
 
   if(facet_by == "variables"){
@@ -352,7 +357,6 @@ plotIasLineplot <- function(object,
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ bins_angle, ncol = ncol, nrow = nrow)
 
-
     if(base::is.character(linecolor)){
 
       mapping <- ggplot2::aes(x = x_axis, y = values)
@@ -373,6 +377,26 @@ plotIasLineplot <- function(object,
     }
 
   }
+
+  if(base::isTRUE(display_border)){
+
+    xintercept <- base::ifelse(base::isTRUE(include_area), yes = 2, no = 1)
+
+    border_add_on <-
+      ggplot2::geom_vline(
+        xintercept = xintercept,
+        alpha = border_linealpha,
+        color = border_linecolor,
+        size = border_linesize,
+        linetype = border_linetype
+      )
+
+  } else {
+
+    border_add_on <- NULL
+
+  }
+
 
   if(base::isTRUE(display_axis_text)){ display_axis_text <- c("x", "y")}
 
@@ -427,6 +451,7 @@ plotIasLineplot <- function(object,
     ) +
     ggplot2::labs(x = xlab, y = NULL, color = confuns::make_pretty_name(facet_by)) +
     facet_add_on +
+    border_add_on +
     theme_add_on
 
 }

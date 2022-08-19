@@ -120,6 +120,8 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @description S4 class that contains input for and output of the
 #' function \code{imageAnnotationScreening()}.
 #'
+#' @slot angle_span numeric. Vector of length two. Confines the area of interest
+#' by angle relative to the center of the image annotation.
 #' @slot buffer numeric. The value with which the polygon that encircles
 #' the image annotation is consecutively expanded via \code{sf::st_buffer()},
 #' @slot coords data.frame. Coordinates data.frame of the sample.
@@ -140,6 +142,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #'
 ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                slots = list(
+                                                 angle_span = "numeric",
                                                  buffer = "numeric",
                                                  coords = "data.frame",
                                                  dea = "data.frame",

@@ -12,6 +12,9 @@ function \code{imageAnnotationScreening()}.
 \section{Slots}{
 
 \describe{
+\item{\code{angle_span}}{numeric. Vector of length two. Confines the area of interest
+by angle relative to the center of the image annotation.}
+
 \item{\code{buffer}}{numeric. The value with which the polygon that encircles
 the image annotation is consecutively expanded via \code{sf::st_buffer()},}
 

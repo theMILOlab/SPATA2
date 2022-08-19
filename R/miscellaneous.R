@@ -106,6 +106,8 @@ create_model_df <- function(input,
 
 
 
+# p -----------------------------------------------------------------------
+
 process_ranges <- function(xrange = getImageRange(object)$x,
                            yrange = getImageRange(object)$y,
                            expand = 0,
@@ -294,6 +296,12 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
 }
 
+
+
+
+# r -----------------------------------------------------------------------
+
+rm_na <- function(x){ x[!base::is.na(x)] }
 
 
 
