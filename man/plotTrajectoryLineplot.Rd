@@ -8,7 +8,8 @@ plotTrajectoryLineplot(
   object,
   id,
   variables,
-  binwidth = 5,
+  binwidth = getBarcodeSpotDistance(object),
+  n_bins = NA,
   method_gs = NULL,
   smooth_method = NULL,
   smooth_span = NULL,
@@ -32,6 +33,9 @@ plotTrajectoryLineplot(
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
+
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean

@@ -25,6 +25,10 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
+\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+See details for more information.}
+
 \item{add_image}{Logical. If TRUE, the area of the histology image that
 is occupied by the annotated structure is added to the \code{ImageAnnotation}
 object in slot @image.}

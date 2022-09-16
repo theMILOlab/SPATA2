@@ -40,7 +40,7 @@ addSpatialTrajectory <- function(object,
                                  start = NULL,
                                  end = NULL,
                                  vertices = NULL,
-                                 comment = base::character(0)
+                                 comment = base::character(1)
                                  ){
 
   confuns::is_value(x = width, mode = "numeric")
@@ -144,6 +144,37 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 
 
 
+# b -----------------------------------------------------------------------
+
+
+bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
+
+  if(base::is.numeric(binwidth)){
+
+    binned_projection_df <-
+      dplyr::mutate(
+        .data = projection_df,
+        order_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
+        order_numeric = base::as.factor(order_binned) %>% base::as.numeric()
+      )
+
+  } else if(base::is.numeric(n_bins)){
+
+    binned_projection_df <-
+      dplyr::mutate(
+        .data = projection_df,
+        order_binned = base::cut(projection_length, breaks = n_bins),
+        order_numeric = base::as.numeric(order_binned)
+      )
+
+  }
+
+  return(binned_projection_df)
+
+}
+
+
+
 # c -----------------------------------------------------------------------
 
 
@@ -168,6 +199,16 @@ discardSpatialTrajectory <- function(object, id){
 }
 
 # g -----------------------------------------------------------------------
+
+
+getProjectionDf <- function(object,
+                            id,
+                            variables){
+
+
+}
+
+
 
 #' @export
 getTrajectory <- function(object, id){
@@ -249,8 +290,9 @@ getTrajectoryNames <- function(object, ...){
 getTrajectoryDf <- function(object,
                             id,
                             variables,
+                            binwidth = getBarcodeSpotDistance(object),
+                            n_bins = NA_integer_,
                             method_gs = "mean",
-                            binwidth = 5,
                             normalize = TRUE,
                             summarize_with = "mean",
                             format = "long",
@@ -260,6 +302,8 @@ getTrajectoryDf <- function(object,
   deprecated(...)
 
   hlpr_assign_arguments(object)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth)
 
   confuns::are_values(c("normalize"), mode = "logical")
 
@@ -278,7 +322,6 @@ getTrajectoryDf <- function(object,
   stdf <-
     joinWithVariables(
       object = object,
-      #spata_df = trajectory@projection,
       variables = variables,
       method_gs = method_gs,
       normalize = normalize,
@@ -287,7 +330,7 @@ getTrajectoryDf <- function(object,
     ) %>%
     dplyr::select(barcodes, dplyr::all_of(variables)) %>%
     dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes") %>%
-    summarize_projection_df(binwidth = binwidth, summarize_with = summarize_with) %>%
+    summarize_projection_df(binwidth = binwidth, n_bins = n_bins, summarize_with = summarize_with) %>%
     normalize_smrd_projection_df() %>%
     tibble::as_tibble()
 
@@ -559,7 +602,7 @@ plotSpatialTrajectories <- function(object,
 plotTrajectoryBarplot <- function(object,
                                   id,
                                   feature,
-                                  binwidth = 10,
+                                  binwidth = getBarcodeSpotDistance(object),
                                   clrp = NULL,
                                   clrp_adjust = NULL,
                                   display_trajectory_parts = NULL,
@@ -683,7 +726,8 @@ plotTrajectoryBarplot <- function(object,
 plotTrajectoryHeatmap <- function(object,
                                   id,
                                   variables,
-                                  binwidth = 5,
+                                  binwidth = getBarcodeSpotDistance(object),
+                                  n_bins = NA,
                                   arrange_rows = "none",
                                   colors = NULL,
                                   method_gs = NULL,
@@ -712,7 +756,6 @@ plotTrajectoryHeatmap <- function(object,
 
   # all checks
   hlpr_assign_arguments(object)
-  check_trajectory_binwidth(binwidth)
 
   confuns::are_values(c("method_gs", "arrange_rows"), mode = "character")
 
@@ -749,7 +792,7 @@ plotTrajectoryHeatmap <- function(object,
       variables = variables,
       method_gs = method_gs
     ) %>%
-    summarize_projection_df(binwidth = binwidth, summarize_with = summarize_with) %>%
+    summarize_projection_df(binwidth = binwidth, n_bins = n_bins, summarize_with = summarize_with) %>%
     normalize_smrd_projection_df() %>%
     shift_smrd_projection_df(trajectory_part, trajectory_order)
 
@@ -1043,7 +1086,8 @@ plotTrajectoryHeatmap <- function(object,
 plotTrajectoryLineplot <- function(object,
                                    id,
                                    variables,
-                                   binwidth = 5,
+                                   binwidth = getBarcodeSpotDistance(object),
+                                   n_bins = NA,
                                    method_gs = NULL,
                                    smooth_method = NULL,
                                    smooth_span = NULL,
@@ -1080,6 +1124,7 @@ plotTrajectoryLineplot <- function(object,
       id = id,
       variables = variables,
       method_gs = method_gs,
+      n_bins = n_bins,
       binwidth = binwidth,
       summarize_with = summarize_with
     )
@@ -1177,7 +1222,8 @@ plotTrajectoryLineplot <- function(object,
 plotTrajectoryLineplotFitted <- function(object,
                                          id = getDefaultTrajectory(object),
                                          variable,
-                                         binwidth = 5,
+                                         binwidth = getBarcodeSpotDistance(object),
+                                         n_bins = NA,
                                          model_subset = NULL,
                                          model_remove = NULL,
                                          model_add = NULL,
@@ -1194,19 +1240,20 @@ plotTrajectoryLineplotFitted <- function(object,
                                          ncol = NULL,
                                          verbose = NULL){
 
-
   stdf <-
     getTrajectoryDf(
       object = object,
       id = id,
       variables = variable,
       method_gs = method_gs,
+      n_bins = n_bins,
       binwidth = binwidth,
       normalize = TRUE ,
       verbose = FALSE,
       smooth = smooth,
       smooth_span = smooth_span
-    )
+    ) %>%
+    dplyr::select(-dplyr::any_of("trajectory_part"))
 
 
   plot_df <-
@@ -1294,7 +1341,7 @@ plotTrajectoryLineplotFitted <- function(object,
     ) +
     ggplot2::scale_linetype_manual(values = linetypes) +
     ggplot2::theme_classic() +
-    ggplot2::labs(x = "Trajectory Order", y = NULL) +
+    ggplot2::labs(x = "Trajectory Direction", y = NULL) +
     theme_trajectory_fit()
 
 
@@ -1423,7 +1470,7 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
     names_to = "variables",
     values_to = "values"
   ) %>%
-    dplyr::select({{var_order}}, variables, values, ...)
+    dplyr::select({{var_order}}, variables, values, dplyr::any_of(x = "trajectory_part"), ...)
 
 }
 
@@ -1431,7 +1478,8 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
 spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
-                                       binwidth = 5,
+                                       n_bins = NA,
+                                       binwidth = NA,
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        model_add = NULL,
@@ -1439,6 +1487,8 @@ spatialTrajectoryScreening <- function(object,
                                        verbose = NULL){
 
   hlpr_assign_arguments(object)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth)
 
   confuns::give_feedback(
     msg = "Starting spatial trajectory screening.",
@@ -1473,6 +1523,7 @@ spatialTrajectoryScreening <- function(object,
   smrd_projection_df <-
     summarize_projection_df(
       projection_df = projection_df,
+      n_bins = n_bins,
       binwidth = binwidth,
       summarize_with = summarize_with
     )
@@ -1501,6 +1552,9 @@ spatialTrajectoryScreening <- function(object,
     dplyr::select(df_with_models, -variables, -values) %>%
     dplyr::distinct()
 
+  # remove to prevent error
+  df_with_models[["trajectory_part"]] <- NULL
+
   shifted_df_with_models <-
     shift_for_evaluation(
       input_df = df_with_models,
@@ -1521,11 +1575,15 @@ spatialTrajectoryScreening <- function(object,
       with_raoc = TRUE
     )
 
+  if(!base::is.numeric(binwidth)){ binwidth <- NA_integer_}
+  if(!base::is.numeric(n_bins)){ n_bins <- NA_integer_ }
+
   sts <-
     SpatialTrajectoryScreening(
       binwidth = binwidth,
       id = id,
       models = models_only,
+      n_bins = n_bins,
       results = results,
       summarize_with = summarize_with,
       spatial_trajectory = spat_traj
@@ -1543,7 +1601,8 @@ spatialTrajectoryScreening <- function(object,
 
 #' @export
 summarize_projection_df <- function(projection_df,
-                                    binwidth = 5,
+                                    n_bins = NA,
+                                    binwidth = NA,
                                     summarize_with = "mean"){
 
   confuns::check_one_of(
@@ -1557,15 +1616,11 @@ summarize_projection_df <- function(projection_df,
     dplyr::select_if(.predicate = base::is.numeric) %>%
     base::names()
 
-  binned_projection_df <-
-    dplyr::mutate(
-      .data = projection_df,
-      order_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::floor)
-    ) %>%
-    dplyr::select(dplyr::any_of(c(projection_df_names, num_vars)), order_binned)
+  binned_projection_df <- bin_projection_df(projection_df, n_bins = n_bins, binwidth = binwidth)
 
   smrd_projection_df <-
-    dplyr::group_by(binned_projection_df, trajectory_part, order_binned) %>%
+    dplyr::select(binned_projection_df, dplyr::any_of(c(projection_df_names, num_vars)), order_binned) %>%
+    dplyr::group_by(trajectory_part, order_binned) %>%
     dplyr::summarise(
       dplyr::across(
         .cols = dplyr::all_of(num_vars),

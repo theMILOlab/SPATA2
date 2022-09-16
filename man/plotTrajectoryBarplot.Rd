@@ -8,7 +8,7 @@ plotTrajectoryBarplot(
   object,
   id,
   feature,
-  binwidth = 10,
+  binwidth = getBarcodeSpotDistance(object),
   clrp = NULL,
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,

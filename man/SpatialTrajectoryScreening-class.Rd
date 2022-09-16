@@ -20,6 +20,9 @@ are put based on the projection length values.}
 \item{\code{models}}{data.frame. The model data.frame that has been used for the
 screening.}
 
+\item{\code{n_bins}}{numeric. The number of bins in which the barcode-spots
+are distributed based on their projection length.}
+
 \item{\code{results}}{data.frame. A data.frame that contains the model evaluations}
 
 \item{\code{summarize_with}}{character. The name of the function that has been

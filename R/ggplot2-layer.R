@@ -27,26 +27,38 @@ ggpLayer_dummy <- function(){}
 #'
 ggpLayerEncirclingIAS <- function(object,
                                   id,
-                                  buffer,
-                                  n_bins_circle,
+                                  distance = NA_integer_,
+                                  binwidth = NA_integer_,
+                                  n_bins_circle = NA_integer_,
                                   linecolor = "black",
                                   linesize = 1){
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
 
-  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
+  input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle
+    )
+
+  distance <- input$distance
+  binwidth <- input$binwidth
+  n_bins_circle <- input$n_bins_circle
+
+  circle_names <- stringr::str_c("Circle", n_bins_circle, sep = " ")
 
   circles <-
     purrr::set_names(
-      x = c((1:n_bins_circle)*buffer),
+      x = c((n_bins_circle)*binwidth),
       nm = circle_names
     )
 
-  buffer_vec <- c("Core" = 0, circles)
+  binwidth_vec <- c("Core" = 0, circles)
 
   areas <-
     purrr::imap(
-      .x = buffer_vec,
+      .x = binwidth_vec,
       .f =
         ~ buffer_area(df = img_ann@area, buffer = .x) %>%
         dplyr::mutate(., circle = .y)
@@ -463,6 +475,70 @@ ggpLayerImageAnnotation <- function(object = "object",
 
 
 
+# r -----------------------------------------------------------------------
+
+#' @title Add a rectangular to the plot
+#'
+#' @description Adds a rectangular to the plot.
+#'
+#' @param xrange,yrange Numeric vectors of length 2. Specify the range
+#' from the rectangular on the x- and y-axis.
+#' @param alpha,color,fill,size Given to \code{ggplot2::geom_rect()}.
+#' @param ... Additional arguments given to \code{ggplot2::geom_rect()}.
+#'
+#' @inherit ggpLayer_dummy return details
+#' @inherit argument_dummy params
+#'
+#' @export
+#'
+ggpLayerRect <- function(object = "object",
+                         xrange,
+                         yrange,
+                         alpha = 0,
+                         color = "black",
+                         size = 1,
+                         expand = 0,
+                         ...){
+
+  # process range input
+  pri <-
+    process_ranges(
+      object = object,
+      xrange = xrange,
+      yrange = yrange,
+      expand = expand,
+      persp = "coords"
+    )
+
+  xrange <- c(pri$xmin, pri$xmax)
+  yrange <- c(pri$ymin, pri$ymax)
+
+  df <-
+    base::data.frame(
+      xmin = base::min(xrange),
+      ymin = base::min(yrange),
+      xmax = base::max(xrange),
+      ymax = base::max(yrange)
+    )
+
+  ggplot2::geom_rect(
+    data = df,
+    mapping = ggplot2::aes(
+      xmin = xmin,
+      ymin = ymin,
+      xmax = xmax,
+      ymax = ymax
+    ),
+    alpha = alpha,
+    color = color,
+    size = size,
+    ...
+  )
+
+}
+
+
+
 # t -----------------------------------------------------------------------
 
 
@@ -536,4 +612,55 @@ ggpLayerTrajectories <- function(object = "object",
 
 }
 
+
+
+
+
+# z -----------------------------------------------------------------------
+
+
+#' @title Set plot limits manually
+#'
+#' @description Sets the limits on the x- and y-axis of a ggplot based on
+#' manual input.
+#'
+#' @param xlim,ylim Numeric vector of length 2 or NULL. If specified, sets
+#' the range of the plot that is displayed on the x- or y-axis
+#' respectively.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+ggpLayerZoom <- function(xrange = NULL, yrange = NULL){
+
+  layers <- list()
+
+  if(base::is.numeric(xrange)){
+
+    confuns::is_vec(xrange, mode = "numeric", of.length = 2)
+
+    layers <-
+      c(
+        layers,
+        ggplot2::scale_x_continuous(limits = xrange)
+      )
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    confuns::is_vec(yrange, mode = "numeric", of.length = 2)
+
+    layers <-
+      c(
+        layers,
+        ggplot2::scale_y_continuous(limits = yrange)
+      )
+
+  }
+
+  return(layers)
+
+}
 

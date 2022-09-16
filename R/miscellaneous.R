@@ -10,7 +10,11 @@ create_model_df <- function(input,
                             model_add = NULL,
                             verbose = TRUE){
 
-  input <- base::max(input)
+  if(base::length(input) > 1){
+
+    input <- base::length(input)
+
+  }
 
   fns_input <- model_formulas
 
@@ -291,7 +295,6 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
   }
 
-
   return(out)
 
 }
@@ -528,8 +531,27 @@ getBarcodeSpotDistances <- function(object, verbose = NULL){
 
 }
 
+#' @rdname getBarcodeSpotDistance
+getBarcodeSpotDistance <- function(object, verbose = NULL){
 
+  dist_val <- object@information$bcsp_dist
 
+  if(base::is.null(dist_val)){
+
+    dist_val <-
+      getBarcodeSpotDistances(object, verbose = verbose) %>%
+      dplyr::filter(bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::filter(distance == base::min(distance)) %>%
+      dplyr::ungroup() %>%
+      dplyr::summarise(mean_dist = base::mean(distance)) %>%
+      dplyr::pull(mean_dist)
+
+  }
+
+  return(dist_val)
+
+}
 
 
 

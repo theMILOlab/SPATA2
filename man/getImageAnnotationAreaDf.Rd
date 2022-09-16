@@ -9,6 +9,7 @@ getImageAnnotationAreaDf(
   ids = NULL,
   tags = NULL,
   test = "any",
+  add_tags = FALSE,
   sep = " & ",
   last = " & "
 )
@@ -20,6 +21,10 @@ getImageAnnotationAreaDf(
 interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
+
+\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+See details for more information.}
 }
 \value{
 A data.frame that contains the grouping variables \emph{id} and \emph{tags}

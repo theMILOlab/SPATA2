@@ -2,9 +2,12 @@
 % Please edit documentation in R/createSegmentation.R
 \name{createSegmentation}
 \alias{createSegmentation}
+\alias{createSpatialSegmentation}
 \title{Interactive sample segmentation}
 \usage{
 createSegmentation(object, height = 500, break_add = NULL)
+
+createSpatialSegmentation(object, height = 500, break_add = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

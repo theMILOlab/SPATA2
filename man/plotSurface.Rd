@@ -64,6 +64,10 @@ plotSurfaceInteractive(object)
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
+\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
+
+Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.

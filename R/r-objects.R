@@ -77,7 +77,6 @@ default_colors <- viridis::viridis(15)
 default_instructions_object <-
   methods::new(Class = "default_instructions",
                average_genes = FALSE,
-               binwidth = 1,
                clrp = "milo",
                clrsp = "inferno",
                colors = default_colors,
@@ -254,7 +253,7 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 8, patch = 0)
+current_spata_version <- list(major = 1, minor = 9, patch = 0)
 
 
 

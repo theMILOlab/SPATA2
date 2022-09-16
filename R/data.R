@@ -78,3 +78,22 @@
 "gene_pos_df"
 
 
+#' A list of lists of image annotations. Every slot in list \code{image_annotations}
+#' is named by the sample the image annotations belong to.
+#'
+#'  @docType data
+#'  @usage data(image_annotations)
+#'
+"image_annotations"
+
+#' A list of lists of spatial segmentations. Every slot in list \code{spatial_segmentations}
+#' is named by the sample the segmentations belong to. Every sample specific slot
+#' is a data.frame with two variables: \emph{barcodes} and the spatial segmentation
+#' variable (usually named \emph{histolgoy}). The segmentation variable can be
+#' added to the corresponding sample using the function \code{addFeatures()}.
+#'
+#'  @docType data
+#'  @usage data(spatial_segmentations)
+#'
+"spatial_segmentations"
+

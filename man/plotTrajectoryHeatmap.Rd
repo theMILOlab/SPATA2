@@ -8,7 +8,8 @@ plotTrajectoryHeatmap(
   object,
   id,
   variables,
-  binwidth = 5,
+  binwidth = getBarcodeSpotDistance(object),
+  n_bins = NA,
   arrange_rows = "none",
   colors = NULL,
   method_gs = NULL,
@@ -48,6 +49,9 @@ gene sets or to genes.}
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
+
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
 
 \item{arrange_rows}{Alter the way the rows of the heatmap
 are displayed in order to highlight patterns. Currently either \emph{'maxima'},

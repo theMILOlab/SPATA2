@@ -2,15 +2,10 @@
 % Please edit documentation in R/documentation-dummies.R
 \name{normalize}
 \alias{normalize}
-\title{normalize}
+\title{Normalize variable}
 \usage{
-normalize(normalize)
-}
-\arguments{
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+normalize(x)
 }
 \description{
-normalize
+Normalize variable
 }

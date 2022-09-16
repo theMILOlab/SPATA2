@@ -450,6 +450,14 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 && object@version$minor == 8){
+
+    object@version <- list(major = 1, minor = 9, patch = 0)
+
+    object@information$bcsp_dist <- getBarcodeSpotDistance(object)
+
+  }
+
   # default adjustment ------------------------------------------------------
 
   old_default <- object@information$instructions$default

@@ -45,6 +45,31 @@ check_availability <- function(test, ref_x, ref_fns){
 
 }
 
+
+check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL){
+
+  if(!base::is.numeric(n_bins) & !base::is.numeric(binwidth)){
+
+    stop("Please specify either argument `n_bins` or `binwidth`.")
+
+  } else if(base::is.numeric(n_bins) & base::is.numeric(binwidth)){
+
+    confuns::give_feedback(
+      msg = glue::glue("Using `n_bins` = {n_bins} instead of binwidth."),
+      verbose = TRUE
+    )
+
+    ce <- rlang::caller_env()
+
+    base::assign(x = "n_bins", value = n_bins, envir = ce)
+
+    base::assign(x = "binwidth", value = NA, envir = ce)
+
+  }
+
+}
+
+
 #' @title Gives feedback about input validity
 #'
 #' @param to Character value. Denotes the object to which
@@ -852,19 +877,19 @@ check_pt <- function(pt_size = NULL,
                      pt_clr = NULL){
 
   msg <- NULL
-  
-  
+
+
   # -- Add this statement for pt_size and pt_alpha
   if(length(pt_size)==1){confuns::are_values(c("pt_size"), mode = "numeric", skip.allow = TRUE, skip.val = NULL)}else{confuns::are_vectors(c("pt_size"), mode = "numeric", skip.allow = TRUE, skip.val = NULL)}
   if(length(pt_alpha)==1){confuns::are_values(c("pt_alpha"), mode = "numeric", skip.allow = TRUE, skip.val = NULL)}else{confuns::are_vectors(c("pt_alpha"), mode = "numeric", skip.allow = TRUE, skip.val = NULL)}
-  
+
   #confuns::are_values(c("pt_clrp", "pt_clrsp"), mode = "character", skip.allow = TRUE, skip.val = NULL)
   #confuns::are_values(c("pt_size", "pt_alpha"), mode = "numeric", skip.allow = TRUE, skip.val = NULL)
 
   #-------------------
-  
-  
-  
+
+
+
   if(!base::is.null(pt_clrsp) && !pt_clrsp %in% base::unlist(validColorSpectra(), use.names = FALSE)){
 
     msg <- "Invalid input for argument 'pt_clrsp'. Run validColorSpectra() to see all valid input options."

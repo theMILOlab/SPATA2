@@ -5,6 +5,10 @@ legendBottom <- purrr::partial(.f = ggplot2::theme, legend.position = "bottom")
 
 #' @rdname legendBottom
 #' @export
+legendLeft <- purrr::partial(.f = ggplot2::theme, legend.position = "left")
+
+#' @rdname legendBottom
+#' @export
 legendNone <- purrr::partial(.f = ggplot2::theme, legend.position = "none")
 
 #' @rdname legendBottom

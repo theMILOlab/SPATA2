@@ -69,10 +69,13 @@ showColors <- function(input, n = 20, title_size = 10){
 #' @rdname showColors
 #' @export
 showModels <- function(input = 100,
+                       linecolor = "black",
+                       linesize = 0.5,
                        model_subset = NULL,
                        model_remove = NULL,
                        model_add = NULL,
                        pretty_names = FALSE,
+                       x_axis_arrow = TRUE,
                        ...){
 
   mdf <-
@@ -97,10 +100,29 @@ showModels <- function(input = 100,
 
     }
 
+  if(base::isTRUE(x_axis_arrow)){
+
+    theme_add_on <-
+      ggplot2::theme(
+        axis.line.x = ggplot2::element_line(
+          arrow = ggplot2::arrow(
+            length = ggplot2::unit(0.075, "inches"),
+            type = "closed")
+          ),
+        strip.text = ggplot2::element_text(color = "black")
+      )
+
+  } else {
+
+    theme_add_on <- NULL
+
+  }
+
   ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
-    ggplot2::geom_path() +
+    ggplot2::geom_path(size = linesize, color = linecolor) +
     ggplot2::facet_wrap(facets = . ~ pattern, ...) +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = NULL, y = NULL)
+    ggplot2::theme_classic() +
+    ggplot2::labs(x = NULL, y = NULL) +
+    theme_add_on
 
 }

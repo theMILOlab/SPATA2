@@ -143,17 +143,17 @@ createSegmentation <- function(object, height = 500, break_add = NULL){
                               )
                             )
                           )
-                        ),
-                        breaks(1),
-                        container(
-                          width = 12,
-                          strongH3("All segmentation variables:")
-                          ),
-                        breaks(1),
-                        container(
-                          width = 12,
-                          DT::dataTableOutput(outputId = "segment_df")
-                        )
+                        )#,
+                        #breaks(1),
+                        #container(
+                          #width = 12,
+                          #strongH3("All segmentation variables:")
+                          #),
+                        #breaks(1),
+                        #container(
+                          #width = 12,
+                          #DT::dataTableOutput(outputId = "segment_df")
+                        #)
                       )
                     ),
 
@@ -1322,3 +1322,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL){
     )
 
 }
+
+#' @rdname createSegmentation
+#' @export
+createSpatialSegmentation <- createSegmentation

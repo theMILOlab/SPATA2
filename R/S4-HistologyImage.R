@@ -44,6 +44,8 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   }
 
+  area_df <- tibble::as_tibble(area_df)
+
   img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
 
   image_obj <- getImageObject(object)
@@ -385,6 +387,7 @@ getImageAnnotationAreaDf <- function(object,
                                      ids = NULL,
                                      tags = NULL,
                                      test = "any",
+                                     add_tags = FALSE,
                                      sep = " & ",
                                      last = " & "){
 
@@ -399,13 +402,18 @@ getImageAnnotationAreaDf <- function(object,
       out <-
         dplyr::mutate(
           .data = img_ann@area,
-          tags = {{tag}},
           ids = img_ann@id %>% base::factor()
         ) %>%
-        dplyr::select(ids, tags, dplyr::everything()) %>%
+        dplyr::select(ids, dplyr::everything()) %>%
         tibble::as_tibble()
 
-      out$tags <- base::as.factor(out$tags)
+      if(base::isTRUE(add_tags)){
+
+        out$tags <- tag
+
+        out$tags <- base::as.factor(out$tags)
+
+      }
 
       return(out)
 
@@ -976,13 +984,11 @@ plotImageAnnotations <- function(object,
 
   if(base::isTRUE(plot)){
 
-    gridExtra::grid.arrange(
+    patchwork::wrap_plots(
       grobs = plist,
       nrow = nrow,
       ncol = ncol
     )
-
-    base::invisible(plist)
 
   } else {
 

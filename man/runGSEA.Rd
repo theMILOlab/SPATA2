@@ -56,7 +56,9 @@ gene set names. The slot contains the genes of the gene sets.Holds priority over
 \item{gene_set_names}{Character vector of gene set names that are taken
 from the object's gene set data.frame.}
 
-\item{test}{Choose an enrichment type e.g. c("hypergeometric", "kstest")}
+\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+See details for more information.}
 
 \item{background}{Size or character vector of background population genes}
 

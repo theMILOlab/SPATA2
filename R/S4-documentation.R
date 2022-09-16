@@ -85,7 +85,7 @@ HistologyImage <- setClass(Class = "HistologyImage",
 #' @slot area data.frame. A data.frame that contains at least the numeric
 #' variables \emph{x} and \emph{y}. Data corresponds to the polygong that
 #' captures the spatial extent of the identified structure.
-#' @barcodes character. Character vector of barcodes that fall into the polygon
+#' @slot barcodes character. Character vector of barcodes that fall into the polygon
 #' that encircles the annotated structure.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
@@ -122,7 +122,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #'
 #' @slot angle_span numeric. Vector of length two. Confines the area of interest
 #' by angle relative to the center of the image annotation.
-#' @slot buffer numeric. The value with which the polygon that encircles
+#' @slot binwidth numeric. The value with which the polygon that encircles
 #' the image annotation is consecutively expanded via \code{sf::st_buffer()},
 #' @slot coords data.frame. Coordinates data.frame of the sample.
 #' @slot dea data.frame. Results of the DE-Analysis between the image annotation
@@ -143,8 +143,9 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                slots = list(
                                                  angle_span = "numeric",
-                                                 buffer = "numeric",
+                                                 binwidth = "numeric",
                                                  coords = "data.frame",
+                                                 distance = "numeric",
                                                  dea = "data.frame",
                                                  img_annotation = "ImageAnnotation",
                                                  method_padj = "character",
@@ -183,6 +184,8 @@ SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
 #' @slot id character. The ID of the screened trajectory.
 #' @slot models data.frame. The model data.frame that has been used for the
 #' screening.
+#' @slot n_bins numeric. The number of bins in which the barcode-spots
+#' are distributed based on their projection length.
 #' @slot results data.frame. A data.frame that contains the model evaluations
 #' @slot summarize_with character. The name of the function that has been
 #' used to summarize the variables by bin.
@@ -196,6 +199,7 @@ SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
                                                   binwidth = "numeric",
                                                   id = "character",
                                                   models = "data.frame",
+                                                  n_bins = "numeric",
                                                   results = "data.frame",
                                                   summarize_with = "character",
                                                   spatial_trajectory = "SpatialTrajectory"

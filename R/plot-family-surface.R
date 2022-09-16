@@ -750,3 +750,54 @@ plotSurfaceQuantiles <- function(object,
 }
 
 
+
+
+#' @export
+plotSurfaceTrajectoryBins <- function(object,
+                                      id,
+                                      n_bins = NULL,
+                                      binwidth = NULL,
+                                      pt_clrp = "default",
+                                      clrp_adjust = NULL,
+                                      color_outside = "lightgrey",
+                                      nth = Inf,
+                                      ...){
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth)
+
+  traj_obj <- getTrajectory(object, id = id)
+
+  proj_df <-
+    traj_obj@projection %>%
+    bin_projection_df(n_bins = n_bins, binwidth = binwidth) %>%
+    dplyr::filter(!order_numeric > {{nth}})
+
+  bins <-
+    base::as.character(proj_df[["order_binned"]]) %>%
+    base::unique()
+
+  proj_df[["bins"]] <-
+    base::factor(proj_df[["order_binned"]], levels = bins)
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    dplyr::left_join(
+      x = .,
+      y = proj_df[, c("barcodes", "bins")],
+      by = "barcodes"
+    ) %>%
+    dplyr::mutate(
+      bins = forcats::fct_explicit_na(f = bins, na_level = "Outside")
+    )
+
+  plotSurface2(
+    coords_df = coords_df,
+    color_by = "bins",
+    pt_clrp = pt_clrp,
+    clrp_adjust = c("Outside" = color_outside, clrp_adjust),
+    ...
+  ) +
+    ggplot2::theme_bw() +
+    legendNone()
+
+}

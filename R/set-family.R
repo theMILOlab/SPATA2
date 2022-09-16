@@ -350,6 +350,81 @@ setImage <- function(object, image, of_sample = ""){
 
 }
 
+#' @title Set image annotations
+#'
+#' @description Sets image annotations in the correct slot.
+#'
+#' @param overwrite Logical Value. If TRUE and the ID of the
+#' input image annotation is already used by an image annotation
+#' it is overwritten.
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+setImageAnnotation <- function(object, img_ann, overwrite = FALSE){
+
+
+  check <-
+    base::identical(
+      x = base::class(ImageAnnotation()),
+      y = base::class(img_ann)
+    )
+
+  if(!check){
+
+    stop("Input for argument `img_ann` must be of class 'ImageAnnotation' from the SPATA2 package.")
+
+  }
+
+  confuns::check_none_of(
+    input = getImageAnnotationIds(object),
+    against = img_ann@id,
+    ref.input = "input image annotation",
+    ref.against = "image annotation IDs",
+    overwrite = overwrite
+  )
+
+  object@images[[1]]@annotations[[img_ann@id]] <- img_ann
+
+  return(object)
+
+}
+
+#' @rdname setImageAnnotation
+#' @export
+setImageAnnotations <- function(object, img_anns, overwrite = FALSE){
+
+  if(!base::isTRUE(overwrite)){
+
+    ids <-
+      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
+      base::unname()
+
+    confuns::check_none_of(
+      input = ids,
+      against = getImageAnnotationIds(object),
+      ref.input = "input image annotations",
+      ref.against = "image annotation IDs present"
+    )
+
+  }
+
+  for(img_ann in base::names(img_anns)){
+
+    object <-
+      setImageAnnotation(
+        object = object,
+        img_ann = img_anns[[img_ann]],
+        overwrite = overwrite
+        )
+
+  }
+
+  return(object)
+
+}
+
+
 setImageObject <- function(object, image_object){
 
   sample_name<- getSampleNames(object)

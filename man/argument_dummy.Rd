@@ -110,8 +110,15 @@ calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}
 
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
+
 \item{n_gsets}{Numeric value. Maximal number of gene sets whose results are included.
 The first \code{n_gsets} are included starting with the one with the lowest significance value.}
+
+\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
+
+Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
@@ -155,6 +162,10 @@ of the annotated structure and the input for argument \code{expand}.}
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
+
+\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+See details for more information.}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

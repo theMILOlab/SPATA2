@@ -10,108 +10,6 @@
 
 # b -----------------------------------------------------------------------
 
-
-#' @title Bin barcode-spots by area extension
-#'
-#' @description Bins barcode-spots by consecutively expanding a polygon.
-#'
-#' @param coords_df The coordinates data.frame whose barcode-spots are supposed
-#' to be binned.
-#' @param area_df Data.frame with variables \emph{x} and \emph{y} describing the
-#' vertices of the polygon that encircles the area based on which the barcode-spots
-#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects.
-#' @param remove Character or logical. If character, denotes circle bins that
-#' are removed. If TRUE, bins \emph{'Core' and 'Outside'} are removed. If FALSE,
-#' ignored.
-#' @param drop Logical value. If TRUE, unused levels of the \emph{bins_circle}
-#' variables are dropped.
-#' @inherit imageAnnotationScreening params
-#'
-#' @export
-bin_by_area <- function(coords_df,
-                        area_df,
-                        buffer,
-                        n_bins_circle,
-                        remove = FALSE,
-                        drop = TRUE){
-
-  n_bins_circle <- base::max(n_bins_circle)
-
-  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
-
-  circles <-
-    purrr::set_names(
-      x = c((1:n_bins_circle)*buffer),
-      nm = circle_names
-    )
-
-  buffer_vec <- c("Core" = 0, circles)
-
-  areas <-
-    purrr::imap(
-      .x = buffer_vec,
-      .f = ~ buffer_area(df = area_df, buffer = .x)
-    )
-
-  # create new variable. Default is 'Outside'.
-  # values will be overwritten with every additional loop
-  coords_df$bins_circle <- "Outside"
-
-  for(area in base::names(areas)){
-
-    area_df <- areas[[area]]
-
-    coords_df$pt_in_plg <-
-      sp::point.in.polygon(
-        point.x = coords_df$x,
-        point.y = coords_df$y,
-        pol.x = area_df$x,
-        pol.y = area_df$y
-      )
-
-    coords_df <-
-      dplyr::mutate(
-        .data = coords_df,
-        bins_circle = dplyr::case_when(
-          # if bins_circle is NOT 'Outside' it has already bin binned
-          bins_circle == "Outside" & pt_in_plg %in% c(1,2) ~ {{area}},
-          TRUE ~ bins_circle
-        )
-      )
-  }
-
-  bin_levels <- c(base::names(buffer_vec), "Outside")
-
-  out_df <-
-    dplyr::mutate(
-      .data = coords_df,
-      bins_circle = base::factor(x = bins_circle, levels = bin_levels),
-      # as.numeric uses level order, -1 cause 'Core' is first, should be Circle 1
-      bins_order = (base::as.numeric(bins_circle) - 1),
-      pt_in_plg = NULL
-    )
-
-  if(base::is.character(remove)){
-
-    out_df <- dplyr::filter(out_df, !bins_circle %in% {{remove}})
-
-  } else if(base::isTRUE(remove)){
-
-    out_df <- dplyr::filter(out_df, !bins_circle %in% c("Core", "Outside"))
-
-  }
-
-  if(base::isTRUE(drop)){
-
-    out_df <- dplyr::mutate(out_df, bins_circle = base::droplevels(bins_circle))
-
-  }
-
-  return(out_df)
-
-}
-
-
 #' @title Bin barcode-spots by angle
 #'
 #' @description Bins barcode-spots according to their angle towards the position
@@ -138,7 +36,7 @@ bin_by_area <- function(coords_df,
 #' @export
 bin_by_angle <- function(coords_df,
                          center,
-                         n_bins_angle = 12,
+                         n_bins_angle = 1,
                          angle_span = c(0,360),
                          min_bins_circle = NULL,
                          rename = FALSE,
@@ -221,7 +119,7 @@ bin_by_angle <- function(coords_df,
       dplyr::mutate(
         angle_round = base::round(angle),
         bins_angle = ""
-        )
+      )
 
     bin_names <- base::character(n_bins_angle)
 
@@ -245,7 +143,7 @@ bin_by_angle <- function(coords_df,
       base::factor(
         x = prel_angle_bin_df$bins_angle,
         levels = bin_names
-        )
+      )
 
   } else {
 
@@ -256,7 +154,7 @@ bin_by_angle <- function(coords_df,
         from = 1,
         to = base::length(range_vec),
         length.out = n_bins_angle+1
-        ) %>%
+      ) %>%
       base::round()
 
     breaks <- range_vec[sub]
@@ -286,7 +184,7 @@ bin_by_angle <- function(coords_df,
       x = coords_df,
       y = prel_angle_df[,c("barcodes", "angle")],
       by = "barcodes"
-      ) %>%
+    ) %>%
     dplyr::left_join(
       x = .,
       y = prel_angle_bin_df[,c("barcodes", "bins_angle")],
@@ -353,13 +251,119 @@ bin_by_angle <- function(coords_df,
         .data = angle_df,
         bins_angle = base::droplevels(bins_angle),
         bins_circle = base::droplevels(bins_circle)
-        )
+      )
 
   }
 
   return(angle_df)
 
 }
+
+
+#' @title Bin barcode-spots by area extension
+#'
+#' @description Bins barcode-spots by consecutively expanding a polygon.
+#'
+#' @param coords_df The coordinates data.frame whose barcode-spots are supposed
+#' to be binned.
+#' @param area_df Data.frame with variables \emph{x} and \emph{y} describing the
+#' vertices of the polygon that encircles the area based on which the barcode-spots
+#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects.
+#' @param remove Character or logical. If character, denotes circle bins that
+#' are removed. If TRUE, bins \emph{'Core' and 'Outside'} are removed. If FALSE,
+#' ignored.
+#' @param drop Logical value. If TRUE, unused levels of the \emph{bins_circle}
+#' variables are dropped.
+#' @inherit imageAnnotationScreening params
+#'
+#' @export
+bin_by_area <- function(coords_df,
+                        area_df,
+                        binwidth,
+                        n_bins_circle,
+                        remove = FALSE,
+                        drop = TRUE){
+
+  n_bins_circle <- base::max(n_bins_circle)
+
+  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
+
+  circles <-
+    purrr::set_names(
+      x = c((1:n_bins_circle)*binwidth),
+      nm = circle_names
+    )
+
+  binwidth_vec <- c("Core" = 0, circles)
+
+  areas <-
+    purrr::imap(
+      .x = binwidth_vec,
+      .f = ~ buffer_area(df = area_df, buffer = .x)
+    )
+
+  # create new variable. Default is 'Outside'.
+  # values will be overwritten with every additional loop
+  coords_df$bins_circle <- "Outside"
+
+  for(area in base::names(areas)){
+
+    area_df <- areas[[area]]
+
+    coords_df$pt_in_plg <-
+      sp::point.in.polygon(
+        point.x = coords_df$x,
+        point.y = coords_df$y,
+        pol.x = area_df$x,
+        pol.y = area_df$y
+      )
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        bins_circle = dplyr::case_when(
+          # if bins_circle is NOT 'Outside' it has already bin binned
+          bins_circle == "Outside" & pt_in_plg %in% c(1,2) ~ {{area}},
+          TRUE ~ bins_circle
+        )
+      )
+  }
+
+  bin_levels <- c(base::names(binwidth_vec), "Outside")
+
+  out_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      bins_circle = base::factor(x = bins_circle, levels = bin_levels),
+      # as.numeric uses level order, -1 cause 'Core' is first, should be Circle 1
+      bins_order = (base::as.numeric(bins_circle) - 1),
+      pt_in_plg = NULL
+    )
+
+  if(base::is.character(remove)){
+
+    out_df <- dplyr::filter(out_df, !bins_circle %in% {{remove}})
+
+  } else if(base::isTRUE(remove)){
+
+    out_df <- dplyr::filter(out_df, !bins_circle %in% c("Core", "Outside"))
+
+  }
+
+  if(base::isTRUE(drop)){
+
+    out_df <- dplyr::mutate(out_df, bins_circle = base::droplevels(bins_circle))
+
+  }
+
+  return(out_df)
+
+}
+
+
+bin_by_expansion <- bin_by_area
+
+
 
 
 #' @title Buffer area
@@ -514,7 +518,7 @@ setMethod(
 
     rdf <-
       dplyr::filter(
-        .data = ias@results_smrd,
+        .data = object@results_smrd,
         !!rlang::sym(var_pval) <= {{threshold_pval}} &
         !!rlang::sym(var_eval) >= {{threshold_eval}}
         )
@@ -612,10 +616,11 @@ setMethod(
 
 getImageAnnotationScreeningDf <- function(object,
                                           id,
-                                          n_bins_circle,
-                                          buffer,
+                                          distance = NA_integer_,
+                                          binwidth = NA_integer_,
+                                          n_bins_circle = NA_integer_,
                                           angle_span = c(0,360),
-                                          n_bins_angle = 12,
+                                          n_bins_angle = 1,
                                           variables = NULL,
                                           normalize = TRUE,
                                           smooth = FALSE,
@@ -623,7 +628,23 @@ getImageAnnotationScreeningDf <- function(object,
                                           remove_circle_bins = FALSE,
                                           remove_angle_bins = FALSE,
                                           rename_angle_bins = FALSE,
-                                          drop = TRUE){
+                                          drop = TRUE,
+                                          summarize_by_circles = TRUE,
+                                          summarize_with = "mean",
+                                          verbose = TRUE){
+
+  hlpr_assign_arguments(object)
+
+  input_list <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle
+    )
+
+  distance <- input_list$distance
+  n_bins_circle <- input_list$n_bins_circle
+  binwidth  <- input_list$binwidth
 
   max_circles <- base::max(n_bins_circle)
   min_circles <- base::min(n_bins_circle)
@@ -642,7 +663,7 @@ getImageAnnotationScreeningDf <- function(object,
     bin_by_area(
       coords_df = coords_df,
       area_df = img_ann@area,
-      buffer = buffer,
+      binwidth = binwidth,
       n_bins_circle = max_circles,
       remove = remove_circle_bins,
       drop = drop[1]
@@ -697,6 +718,24 @@ getImageAnnotationScreeningDf <- function(object,
 
   }
 
+  if(base::isTRUE(summarize_by_circles)){
+
+    confuns::give_feedback(
+      msg = glue::glue("Summarizing by bins."),
+      verbose = verbose
+    )
+
+    ias_df <-
+      dplyr::group_by(.data = ias_df, bins_circle, bins_order) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::any_of(variables),
+          .fns = summarize_formulas[[summarize_with]]
+        )
+      )
+
+  }
+
   return(ias_df)
 
 }
@@ -709,16 +748,23 @@ getImageAnnotationScreeningDf <- function(object,
 #'
 #' @description Screens the sample for numeric variables that stand
 #' in meaningful, spatial relation to annotated structures/areas.
-#' For a detailed explanation on how to define the parameters
-#' \code{n_bins_circle}, \code{buffer}, \code{angle_span} and \code{n_bins_angle}
+#' For a detailed explanation on how to define the parameters \code{distance},
+#' \code{n_bins_circle}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
 #' see details section.
 #'
 #' @inherit getImageAnnotatation params
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
+#' @param distance Numeric value. Specifies the distance from the border of the
+#' image annotation to the \emph{horizon} in the periphery up to which the screening
+#' is conducted. (See details for more.)
+#' @param binwidth Numeric value. The width of the circular bins to which
+#' the barcode-spots are assigned. We recommend to set it equal to the distance
+#' between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
+#' (See details for more.)
 #' @param n_bins_circle Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-#' denoted in \code{buffer}.
+#' denoted in \code{binwidth}.
 #'  (See details for more.)
 #' @param angle_span Numeric vector of length 2. Confines the area screened by
 #' an angle span relative to the center of the image annotation.
@@ -738,40 +784,107 @@ getImageAnnotationScreeningDf <- function(object,
 #'
 #' @seealso createImageAnnotations()
 #'
-#'
 #' @details In conjunction with argument \code{id} which provides the
-#' ID of the image annotation of interest the arguments \code{n_bins_circle},
-#' \code{buffer}, \code{angle_span} and \code{n_bins_angle} can be used
+#' ID of the image annotation of interest the arguments \code{distance},
+#' \code{binwidth}, \code{n_bins_circle}, \code{angle_span} and \code{n_bins_angle} can be used
 #' to specify the exact area that is screened as well as the resolution of the screening.
+#'
+#' \bold{How the algorithm works:} During the IAS-algorithm the barcode spots are
+#' binned according to their localisation to the image annotation. Every bin's mean
+#' expression of a given gene is then aligned in an ascending order - mean expression
+#' of bin 1, mean expression of bin 2, ... up to the last bin, the bin with the
+#' barcode-spots that lie farest away from the image annotation. This allows to infer
+#' the gene expression changes in relation to the image annotation and
+#' to screen for genes whose expression changes resemble specific biological
+#' behaviors. E.g. linear ascending: gene expression increases linearly with
+#' the distance to the image annotation. E.g. immediate descending: gene expression
+#' is high in close proximity to the image annotation and declines logarithmically
+#' with the distance to the image annotation.
+#'
+#' \bold{How circular binning works:}
+#' To bin barcode-spots according to their localisation to the image annotation
+#' three parameters are required:
+#'
+#'  \itemize{
+#'    \item{\code{distance}: The distance from the border of the image annotation to
+#'     the \emph{horizon} in the periphery up to which the screening is conducted. Unit
+#'     of the distance is pixel as is the unit of the image.
+#'     }
+#'     \item{\code{binwidth}: The width of every bin. Unit is pixel.}
+#'     \item{\code{n_bins_circle}: The number of bins that are created.}
+#'  }
+#'
+#' Regarding parameter \code{n_bins_circle}: The suffix \code{_circle} is used for one
+#' thing to emphasize that bins are created in a circular fashion around the image
+#' annotation (although the shape of the polygon that was created to encircle the
+#' image annotation is maintained). Additionally, the suffix is needed to delineate
+#' it from argument \code{n_bins_angle} which can be used to increase the
+#' resolution of the screening.
+#'
+#' These three parameters stand in the following relation to each other:
+#'
+#'  \enumerate{
+#'   \item{\code{n_bins_circle} = \code{distance} / \code{binwidth}}
+#'   \item{\code{distance} = \code{n_bins_circle} * \code{binwidth}}
+#'   \item{\code{binwidth} = \code{distance} / \code{n_bins_circle}}
+#'  }
+#'
+#' Therefore, only two of the three arguments must be specified as the remaining
+#' one is calculated. We recommend to stick to the first option: Specifying
+#' \code{distance} and \code{binwidth} and letting the function calculate
+#' \code{n_bins_circle}.
+#'
+#' Once the parameters are set and calculated the polygon that is used to
+#' define the borders of the image annotation (the one you draw with
+#' \code{createImageAnnotation()}) is repeatedly expanded by the distance indicated
+#' by parameter \code{binwidth}. The number of times this expansion is
+#' repeated is equal to the parameter \code{n_bins_circle}. Every time the
+#' polygon is expanded, the newly enclosed barcode-spots are binned (grouped)
+#' and the bin is given a number that is equal to the number of the expansion.
+#' Thus, barcode-spots that are adjacent to the image annotation are binned into
+#' bin 1, barcode spots that lie a distance of \code{binwidth} away are binned into
+#' bin 2, etc.
 #'
 #' Note that the function \code{plotSurfaceIas()} allows to visually check
 #' if your input results in the desired screening.
 #'
-#' @section Specify the screened area
-#' To specify the area that is supposed to be screened you need to combine the
-#' arguments \code{n_bins_circle}, \code{buffer}. \code{n_bins_circle} denotes
-#' how often the area defined by the image annotation is expanded. \code{buffer}
-#' denotes the distance with which the image annotation is expanded for every n
-#' in \code{n_bins_circle}. E.g. with \code{n_bins_circle} = 10 and \code{buffer}
-#' 20 an area of 10x20px around the area of the image annotation is screened.
+#' \bold{How the screening works:} For every gene that is included in the
+#' screening process every bin's mean expression is calculated and then
+#' aligned in an ascending order - mean expression of bin 1, mean expression
+#' of bin 2, ... up to the last bin, namely the bin with the barcode-spots that lie
+#' farest away from the image annotation. This allows to infer
+#' the gene expression changes in relation to the image annotation and
+#' to screen for genes whose expression changes resemble specific biological
+#' behaviors. The gene expression change is fitted to every model that is included.
+#' (Use \code{showModels()} to visualize the predefined models of \code{SPATA2}).
+#' A gene-model-fit is evaluated twofold:
 #'
+#'  \itemize{
+#'    \item{Residuals area over the curve}: The area under the curve (AUC) of the
+#'    residuals between the inferred expression changes and the model is calculated,
+#'    normalized against the number of bins and then subtracted from 1.
+#'    \item{Pearson correlation}: The inferred expression changes is correlated
+#'    with the model. (Correlation as well as the corresponding p-value depend
+#'    on the number of bins!)
+#'   }
 #'
+#' Eventually, the mean of the RAOC and the Correlation for every gene-model-fit
+#' is calculated and stored as the IAS-Score.
 #'
 #' @export
 imageAnnotationScreening <- function(object,
                                      id,
                                      variables,
-                                     n_bins_circle,
-                                     buffer,
+                                     distance = NA_integer_,
+                                     binwidth = NA_integer_,
+                                     n_bins_circle = NA_integer_,
                                      angle_span = c(0,360),
-                                     n_bins_angle = 12,
+                                     n_bins_angle = 1,
                                      summarize_with = "mean",
                                      method_padj = "fdr",
                                      model_subset = NULL,
                                      model_remove = NULL,
                                      model_add = NULL,
-                                     with_de = TRUE,
-                                     method_de = "wilcox",
                                      verbose = NULL,
                                      ...){
 
@@ -784,20 +897,32 @@ imageAnnotationScreening <- function(object,
 
   img_ann <- getImageAnnotation(object, id = id)
 
+  input_list <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle
+    )
+
+  distance <- input_list$distance
+  n_bins_circle <- input_list$n_bins_circle
+  binwidth  <- input_list$binwidth
+
   ias_df <-
     getImageAnnotationScreeningDf(
       object = object,
       id = id,
       variables = variables,
-      buffer = buffer,
-      angle_span = angle_span,
+      distance = distance,
+      binwidth = binwidth,
       n_bins_circle = n_bins_circle,
+      angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       remove_circle_bins = TRUE,
       remove_angle_bins = TRUE,
-      drop = FALSE
+      drop = FALSE,
+      summarize_by = FALSE
     )
-
 
   bins_angle <- base::levels(ias_df$bins_angle)
 
@@ -818,41 +943,6 @@ imageAnnotationScreening <- function(object,
       model_add = model_add,
       verbose = verbose
     )
-
-  # DE analysis
-  if(base::isTRUE(with_de)){
-
-    img_ann_barcodes <- img_ann@barcodes
-
-    fdata_temp <-
-      getFeatureDf(object) %>%
-      dplyr::select(barcodes) %>%
-      dplyr::mutate(
-        img_ann_temp = dplyr::if_else(
-          condition = barcodes %in% {{img_ann_barcodes}},
-          true = img_ann@id,
-          false = "Ctrl"
-        ),
-        img_ann_temp = base::factor(img_ann_temp, levels = c("Ctrl", img_ann@id))
-      )
-
-    object <- setFeatureDf(object, fdata_temp)
-
-    object <-
-      runDeAnalysis(
-        object = object,
-        across = "img_ann_temp",
-        method_de = method_de,
-        ...
-      )
-
-    dea_df <- getDeaResultsDf(object, across = "img_ann_temp", method_de = method_de)
-
-  } else {
-
-    dea_df <- base::data.frame()
-
-  }
 
   # model fitting
   n_total <- base::length(bins_angle_remaining)
@@ -967,9 +1057,9 @@ imageAnnotationScreening <- function(object,
   ias_out <-
     ImageAnnotationScreening(
       angle_span = angle_span,
-      buffer = buffer,
+      binwidth = binwidth,
       coords = getCoordsDf(object),
-      dea = dea_df,
+      distance = distance,
       img_annotation = getImageAnnotation(object, id = id),
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
@@ -987,7 +1077,62 @@ imageAnnotationScreening <- function(object,
 
 }
 
+#' @title Convert image annotation to segmentation
+#'
+#' @description Converts one or more image annotations to a binary
+#' segmentation variable in the feature data.frame.
+#' @param ids Character vector. Specifies the image annotation(s) of interest.
+#' Barcode-spots that fall into the area of these annotations are labeled
+#' with the input for argument \code{inside}.
+#' @param segmentation_name Character value. The name of the new segmentation variable.
+#' @param inside Character value. The group name for the barcode-spots that
+#' are located inside the area of the image annotation(s).
+#' @param outside Character value. The group name for the barcode-spots that
+#' are located outside the area of the image annotation(s).
+#' @param overwrite Logical. Set to TRUE to overwrite existing variables with
+#' the same name.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return An updated spata object.
+#' @export
+#'
+imageAnnotationToSegmentation <- function(object,
+                                          ids,
+                                          segmentation_name,
+                                          inside = "inside",
+                                          outside = "outside",
+                                          overwrite = FALSE){
 
+  confuns::are_values("inside", "outside", mode = "character")
+
+  confuns::check_none_of(
+    input = segmentation_name,
+    against = getFeatureNames(object),
+    ref.against = "names of the feature data",
+    overwrite = overwrite
+  )
+
+  bcsp_inside <- getImageAnnotationBarcodes(object, ids = ids)
+
+  fdata <-
+    getFeatureDf(object) %>%
+    dplyr::mutate(
+      {{segmentation_name}} := dplyr::case_when(
+        condition = barcodes %in% {{bcsp_inside}} ~ {{inside}},
+        TRUE ~ {{outside}}
+      ),
+      {{segmentation_name}} := base::factor(
+        x = !!rlang::sym(segmentation_name),
+        levels = c(inside, outside)
+      )
+    )
+
+  object <- setFeatureDf(object, feature_df = fdata)
+
+  return(object)
+
+}
 
 # m -----------------------------------------------------------------------
 
@@ -1126,8 +1271,9 @@ setMethod(
   definition = function(object,
                         id,
                         variables,
-                        n_bins_circle,
-                        buffer,
+                        distance = NA_integer_,
+                        binwidth = NA_integer_,
+                        n_bins_circle = NA_integer_,
                         angle_span = c(0,360),
                         n_angle_bins = 12,
                         summarize_with = "mean",
@@ -1139,14 +1285,26 @@ setMethod(
                         fill = "steelblue",
                         ...){
 
+    input_list <-
+      check_ias_input(
+        distance = distance,
+        binwidth = binwidth,
+        n_bins_circle = n_bins_circle
+      )
+
+    distance <- input_list$distance
+    n_bins_circle <- input_list$n_bins_circle
+    binwidth  <- input_list$binwidth
+
     temp_ias <-
       imageAnnotationScreening(
         object = object,
         id = id,
         variables = variables,
-        angle_span = angle_span,
-        buffer = buffer,
+        distance = distance,
+        binwidth = binwidth,
         n_bins_circle = n_bins_circle,
+        angle_span = angle_span,
         n_bins_angle = n_bins_angle,
         summarize_with = summarize_with,
         model_subset = model_subset,
@@ -1366,7 +1524,7 @@ setMethod(
 #'
 #' @description Plots the surface of the sample three times with different
 #' coloring to visualize how \code{imageAnnotationScreening()} screens
-#' the sample depending on the input of arguments \code{buffer}, \code{n_bins_circle},
+#' the sample depending on the input of arguments \code{binwidth}, \code{n_bins_circle},
 #' \code{n_bins_angle}.
 #'
 #' @inherit getImageAnnotation params
@@ -1386,7 +1544,7 @@ setMethod(
 #' @details The method for class \code{ImageAnnotationScreening} (the output of
 #' the function \code{imageAnnotationScreening()}) can be used
 #' to show the area on which the results base. Therefore, it does not have
-#' arguments \code{buffer}, \code{n_bins_circle} and \code{n_bins_angle}.
+#' arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
 #'
 #' @export
 
@@ -1403,10 +1561,11 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         id,
-                        n_bins_circle,
-                        buffer,
+                        distance = NA_integer_,
+                        binwidth = NA_integer_,
+                        n_bins_circle = NA_integer_,
                         angle_span = c(0,360),
-                        n_bins_angle = 12,
+                        n_bins_angle = 1,
                         pt_alpha = NA_integer_,
                         pt_clrp = c("inferno", "default"),
                         pt_clrsp = "inferno",
@@ -1420,18 +1579,24 @@ setMethod(
                         ggpLayers = list(),
                         ...){
 
+    hlpr_assign_arguments(object)
+
+    if(base::length(pt_clrp) != 2){ pt_clrp <- base::rep(pt_clrp, 2)}
+
     ias_df <-
       getImageAnnotationScreeningDf(
         object = object,
         id = id,
         variables = NULL,
-        angle_span = angle_span,
-        buffer = buffer,
+        distance = distance,
+        binwidth = binwidth,
         n_bins_circle = n_bins_circle,
+        angle_span = angle_span,
         n_bins_angle = n_bins_angle,
         remove_circle_bins = "Core",
         rename_angle_bins = TRUE,
-        drop = c(FALSE, TRUE)
+        drop = c(FALSE, TRUE),
+        summarize_by = FALSE
       )
 
     if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
@@ -1465,9 +1630,10 @@ setMethod(
           plotSurface2(
             coords_df = ias_df,
             color_by = "bins_circle",
-            pt_clrp = "milo",
+            pt_clrp = pt_clrp[1],
             clrp_adjust = circle_clrp_adjust,
-            pt_alpha = pt_alpha
+            pt_alpha = pt_alpha,
+            pt_size = pt_size
           ) + ggpLayers
 
         })
@@ -1482,9 +1648,10 @@ setMethod(
           plotSurface2(
             coords_df = ias_df,
             color_by = "bins_angle",
-            pt_clrp = "milo",
+            pt_clrp = pt_clrp[2],
             clrp_adjust = angle_clrp_adjust,
-            pt_alpha = pt_alpha
+            pt_alpha = pt_alpha,
+            pt_size = pt_size
           ) + ggpLayers
 
         })
@@ -1497,7 +1664,8 @@ setMethod(
         plotSurface2(
           coords_df = ias_df,
           color_by = "angle",
-          pt_clrsp = pt_clrsp
+          pt_clrsp = pt_clrsp,
+          pt_size = pt_size
         ) + ggpLayers
 
     }
@@ -1543,14 +1711,14 @@ setMethod(
 
     coords_df <- object@coords
 
-    buffer <- object@buffer
+    binwidth <- object@binwidth
     n_bins_angle <- object@n_bins_angle
 
     ias_df <-
       bin_by_area(
         coords_df = coords_df,
         area_df = img_ann@area,
-        buffer = buffer,
+        binwidth = binwidth,
         n_bins_circle = max_circles,
         remove = "Core"
       ) %>%
@@ -2049,16 +2217,19 @@ summarizeIAS <- function(ias, method_padj = "fdr"){
       corr_min = base::min(corr),
       corr_max = base::max(corr),
       corr_sd = stats::sd(corr),
+      raoc_mean = base::mean(raoc),
       pvalue_mean = base::mean(p_value),
       pvalue_median = stats::median(p_value),
       pvalue_combined = base::prod(p_value)
     ) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
+      ias_score = (raoc_mean + corr_mean) / 2,
       pvalue_mean_adjusted = stats::p.adjust(p = pvalue_mean, method = method_padj),
       pvalue_median_adjusted = stats::p.adjust(p = pvalue_median, method = method_padj),
       pvalue_combined_adjusted = stats::p.adjust(p = pvalue_combined, method = method_padj)
-    )
+    ) %>%
+    dplyr::select(variables, models, ias_score, dplyr::everything())
 
   ias@method_padj <- method_padj
 

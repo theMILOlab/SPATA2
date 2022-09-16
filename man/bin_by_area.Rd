@@ -7,7 +7,7 @@
 bin_by_area(
   coords_df,
   area_df,
-  buffer,
+  binwidth,
   n_bins_circle,
   remove = FALSE,
   drop = TRUE
@@ -21,12 +21,13 @@ to be binned.}
 vertices of the polygon that encircles the area based on which the barcode-spots
 are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
 
-\item{buffer}{The distance by which to consecutively expand the
-area that covers the image annotation screening. Given to argument
-\code{dist} of function \code{sf::st_buffer()}. (See details for more.)}
+\item{binwidth}{Numeric value. The width of the circular bins to which
+the barcode-spots are assigned. We recommend to set it equal to the distance
+between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
+(See details for more.)}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{buffer}.
+denoted in \code{binwidth}.
  (See details for more.)}
 
 \item{remove}{Character or logical. If character, denotes circle bins that

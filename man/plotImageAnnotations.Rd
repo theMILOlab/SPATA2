@@ -35,6 +35,10 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
+\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+See details for more information.}
+
 \item{expand}{Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
 

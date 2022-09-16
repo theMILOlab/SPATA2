@@ -683,23 +683,9 @@ joinWithVariables <- function(object,
         "gene_sets" = base::character()
         )
 
-    for(v in variables){
-
-      if(isGene(object, v)){
-
-        variable_list$genes <- c(variable_list$genes, v) %>% base::unique()
-
-      } else if(isGeneSet(object, v)){
-
-        variable_list$gene_sets <- c(variable_list$gene_sets, v) %>% base::unique()
-
-      } else if(isFeature(object, v)){
-
-        variable_list$features <- c(variable_list$features, v) %>% base::unique()
-
-      }
-
-    }
+    variable_list[["features"]] <- variables[variables %in% getFeatureNames(object)]
+    variable_list[["genes"]] <- variables[variables %in% getGenes(object)]
+    variable_list[["gene_sets"]] <- variables[variables %in% getGeneSets(object)]
 
     variables <- purrr::discard(.x = variable_list, .p = ~ base::length(.x) == 0)
 

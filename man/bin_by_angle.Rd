@@ -7,7 +7,7 @@
 bin_by_angle(
   coords_df,
   center,
-  n_bins_angle = 12,
+  n_bins_angle = 1,
   angle_span = c(0, 360),
   min_bins_circle = NULL,
   rename = FALSE,

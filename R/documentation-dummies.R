@@ -121,14 +121,9 @@ image_dummy <- function(image){}
 method_hclust <- function(method_hclust){}
 
 
-#' @title normalize
-#' @param normalize Logical. If set to TRUE values will be scaled to 0-1.
-#'
-#' Hint: Variables that are uniformly expressed can not be scaled and are discarded.
-#'
-#'
+#' @title Normalize variable
 
-normalize <- function(normalize){}
+normalize <- confuns::normalize
 
 #' @title object
 #'
@@ -306,8 +301,15 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
+#'
+#' @param n_bins Numeric value. Specifies the exact number of bins the barcodes
+#' are binned into.
+#'
 #' @param n_gsets Numeric value. Maximal number of gene sets whose results are included.
 #' The first \code{n_gsets} are included starting with the one with the lowest significance value.
+#' @param normalize Logical. If set to TRUE values will be scaled to 0-1.
+#'
+#' Hint: Variables that are uniformly expressed can not be scaled and are discarded.
 #'
 #' @param nrow,ncol Numeric values or NULL. Used to arrange multiple plots.
 #'
@@ -348,6 +350,10 @@ seurat_object_dummy <- function(seurat_object){}
 #' @param summarize_with Character value. Name of the function with which to summarize.
 #'
 #' @param tags Character vector or NULL. If character, the image annotation tags of interest.
+#'
+#' @param test Character value. Specifies how the input of \cdoe{tags} is used to
+#' subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+#' See details for more information.
 #'
 #' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

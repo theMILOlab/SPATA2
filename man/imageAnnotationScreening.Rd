@@ -8,17 +8,16 @@ imageAnnotationScreening(
   object,
   id,
   variables,
-  n_bins_circle,
-  buffer,
+  distance = NA_integer_,
+  binwidth = NA_integer_,
+  n_bins_circle = NA_integer_,
   angle_span = c(0, 360),
-  n_bins_angle = 12,
+  n_bins_angle = 1,
   summarize_with = "mean",
   method_padj = "fdr",
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
-  with_de = TRUE,
-  method_de = "wilcox",
   verbose = NULL,
   ...
 )
@@ -30,13 +29,18 @@ imageAnnotationScreening(
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{buffer}.
- (See details for more.)}
+\item{distance}{Numeric value. Specifies the distance from the border of the
+image annotation to the \emph{horizon} in the periphery up to which the screening
+is conducted. (See details for more.)}
 
-\item{buffer}{The distance by which to consecutively expand the
-area that covers the image annotation screening. Given to argument
-\code{dist} of function \code{sf::st_buffer()}. (See details for more.)}
+\item{binwidth}{Numeric value. The width of the circular bins to which
+the barcode-spots are assigned. We recommend to set it equal to the distance
+between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
+(See details for more.)}
+
+\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}.
+ (See details for more.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
@@ -63,10 +67,6 @@ containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
 same length as the input vector. Test models with \code{showModels()}.}
 
-\item{method_de}{Character value. Denotes the method to according to which the de-analysis is performed.
-Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
-to obtain all valid input options.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -78,17 +78,99 @@ with \code{?ImageAnnotationScreening} for more information.
 }
 \description{
 Screens the sample for numeric variables that stand
-in meaningful, spatial relation to annotated structures/areas of
-the sample. For a detailed explanation on how to define the parameters
-\code{n_bins_circle}, \code{buffer}, \code{angle_span} and \code{n_bins_angle}
+in meaningful, spatial relation to annotated structures/areas.
+For a detailed explanation on how to define the parameters \code{distance},
+\code{n_bins_circle}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
 see details section.
 }
 \details{
 In conjunction with argument \code{id} which provides the
-ID of the image annotation of interest the arguments \code{n_bins_circle},
-\code{buffer}, \code{angle_span} and \code{n_bins_angle} can be used
+ID of the image annotation of interest the arguments \code{distance},
+\code{binwidth}, \code{n_bins_circle}, \code{angle_span} and \code{n_bins_angle} can be used
 to specify the exact area that is screened as well as the resolution of the screening.
+
+\bold{How the algorithm works:} During the IAS-algorithm the barcode spots are
+binned according to their localisation to the image annotation. Every bin's mean
+expression of a given gene is then aligned in an ascending order - mean expression
+of bin 1, mean expression of bin 2, ... up to the last bin, the bin with the
+barcode-spots that lie farest away from the image annotation. This allows to infer
+the gene expression changes in relation to the image annotation and
+to screen for genes whose expression changes resemble specific biological
+behaviors. E.g. linear ascending: gene expression increases linearly with
+the distance to the image annotation. E.g. immediate descending: gene expression
+is high in close proximity to the image annotation and declines logarithmically
+with the distance to the image annotation.
+
+\bold{How circular binning works:}
+To bin barcode-spots according to their localisation to the image annotation
+three parameters are required:
+
+ \itemize{
+   \item{\code{distance}: The distance from the border of the image annotation to
+    the \emph{horizon} in the periphery up to which the screening is conducted. Unit
+    of the distance is pixel as is the unit of the image.
+    }
+    \item{\code{binwidth}: The width of every bin. Unit is pixel.}
+    \item{\code{n_bins_circle}: The number of bins that are created.}
+ }
+
+Regarding parameter \code{n_bins_circle}: The suffix \code{_circle} is used for one
+thing to emphasize that bins are created in a circular fashion around the image
+annotation (although the shape of the polygon that was created to encircle the
+image annotation is maintained). Additionally, the suffix is needed to delineate
+it from argument \code{n_bins_angle} which can be used to increase the
+resolution of the screening.
+
+These three parameters stand in the following relation to each other:
+
+ \enumerate{
+  \item{\code{n_bins_circle} = \code{distance} / \code{binwidth}}
+  \item{\code{distance} = \code{n_bins_circle} * \code{binwidth}}
+  \item{\code{binwidth} = \code{distance} / \code{n_bins_circle}}
+ }
+
+Therefore, only two of the three arguments must be specified as the remaining
+one is calculated. We recommend to stick to the first option: Specifying
+\code{distance} and \code{binwidth} and letting the function calculate
+\code{n_bins_circle}.
+
+Once the parameters are set and calculated the polygon that is used to
+define the borders of the image annotation (the one you draw with
+\code{createImageAnnotation()}) is repeatedly expanded by the distance indicated
+by parameter \code{binwidth}. The number of times this expansion is
+repeated is equal to the parameter \code{n_bins_circle}. Every time the
+polygon is expanded, the newly enclosed barcode-spots are binned (grouped)
+and the bin is given a number that is equal to the number of the expansion.
+Thus, barcode-spots that are adjacent to the image annotation are binned into
+bin 1, barcode spots that lie a distance of \code{binwidth} away are binned into
+bin 2, etc.
 
 Note that the function \code{plotSurfaceIas()} allows to visually check
 if your input results in the desired screening.
+
+\bold{How the screening works:} For every gene that is included in the
+screening process every bin's mean expression is calculated and then
+aligned in an ascending order - mean expression of bin 1, mean expression
+of bin 2, ... up to the last bin, namely the bin with the barcode-spots that lie
+farest away from the image annotation. This allows to infer
+the gene expression changes in relation to the image annotation and
+to screen for genes whose expression changes resemble specific biological
+behaviors. The gene expression change is fitted to every model that is included.
+(Use \code{showModels()} to visualize the predefined models of \code{SPATA2}).
+A gene-model-fit is evaluated twofold:
+
+ \itemize{
+   \item{Residuals area over the curve}: The area under the curve (AUC) of the
+   residuals between the inferred expression changes and the model is calculated,
+   normalized against the number of bins and then subtracted from 1.
+   \item{Pearson correlation}: The inferred expression changes is correlated
+   with the model. (Correlation as well as the corresponding p-value depend
+   on the number of bins!)
+  }
+
+Eventually, the mean of the RAOC and the Correlation for every gene-model-fit
+is calculated and stored as the IAS-Score.
+}
+\seealso{
+createImageAnnotations()
 }

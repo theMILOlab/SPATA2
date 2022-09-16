@@ -37,6 +37,32 @@ setMethod(f = "show", signature = "spata2", definition = function(object){
 })
 
 
+#' @export
+setMethod(f = "show", signature = "ImageAnnotation", definition = function(object){
+
+  map(
+    .x = slotNames(object),
+    .f = ~head(slot(object, .x))
+  ) %>%
+    setNames(slotNames(object))
+
+
+  n_bcsp <- base::length(object@barcodes)
+
+  n_vert <- base::nrow(object@area)
+
+  tags <- confuns::scollapse(object@tags, sep = ", ", last = ", ")
+
+
+  writeLines(
+    glue::glue(
+      "An object of class 'ImageAnnotation' named '{object@id}'. Tags: {tags}."
+    )
+  )
+
+})
+
+
 #' @title Obtain a trajectory comment
 #'
 #' @param object A valid spata-object or a valid spatialTrajectory-object.

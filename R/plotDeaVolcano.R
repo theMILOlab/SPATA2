@@ -29,8 +29,8 @@ plotDeaVolcano <- function(object,
                            across_subset = NULL,
                            relevel = TRUE,
                            method_de = NULL,
-                           color_up = "steelblue",
-                           color_down = "tomato",
+                           color_up = "tomato",
+                           color_down = "steelblue",
                            color_insignif = "lightgrey",
                            pt_alpha = 0.9,
                            pt_size = 1,
@@ -204,7 +204,7 @@ plotDeaVolcano <- function(object,
     ggplot2::labs(color = NULL) +
     ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = pt_size*2))) +
     ggplot2::theme(strip.background = ggplot2::element_blank()) +
-    ggplot2::labs(x = xlab, y = "Adjusted p-value (log10)") +
+    ggplot2::labs(x = xlab, y = "Adjusted p-value (-log10)") +
     label_add_on +
     facet_add_on +
     scale_x_add_on

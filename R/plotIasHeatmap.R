@@ -14,8 +14,9 @@
 plotIasHeatmap <- function(object,
                            id,
                            variables,
-                           buffer,
-                           n_bins_circle,
+                           distance = NA_integer_,
+                           binwidth = NA_integer_,
+                           n_bins_circle = NA_integer_,
                            include_area = FALSE,
                            arrange_rows = "input",
                            method_gs = "mean",
@@ -232,18 +233,20 @@ plotIasHeatmap <- function(object,
 #'
 plotIasLineplot <- function(object,
                             id,
-                            buffer,
-                            n_bins_circle,
-                            n_bins_angle,
                             variables,
+                            binwidth = NA_integer_,
+                            distance = NA_integer_,
+                            n_bins_circle = NA_integer_,
+                            angle_span = c(0,360),
+                            n_bins_angle = 1,
                             method_gs = NULL,
                             smooth_method = "loess",
                             smooth_span = 0.2,
-                            smooth_se = TRUE,
+                            smooth_se = FALSE,
                             clrp = NULL,
                             clrp_adjust = NULL,
                             alpha = 0.4,
-                            linecolor = "black",
+                            linecolor = NULL,
                             linesize = 1.5,
                             facet_by = "variables",
                             summarize_with = "mean",
@@ -276,8 +279,10 @@ plotIasLineplot <- function(object,
     getImageAnnotationScreeningDf(
       object = object,
       id = id,
-      buffer = buffer,
+      binwidth = binwidth,
+      distance = distance,
       n_bins_circle = n_bins_circle,
+      angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
       remove_angle_bins = TRUE,
@@ -311,8 +316,6 @@ plotIasLineplot <- function(object,
 
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow)
-
-    mapping <- ggplot2::aes(x = x_axis, y = values, color = variables)
 
   } else if(facet_by == "bins_angle"){
 
@@ -357,25 +360,6 @@ plotIasLineplot <- function(object,
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ bins_angle, ncol = ncol, nrow = nrow)
 
-    if(base::is.character(linecolor)){
-
-      mapping <- ggplot2::aes(x = x_axis, y = values)
-
-      clrp_adjust <- purrr::set_names(x = linecolor, nm = variables)
-
-    } else {
-
-      mapping <- ggplot2::aes(x = x_axis, y = values, color = bins_angle)
-
-      clrp_adjust <-
-        confuns::color_vector(
-          clrp = clrp,
-          names = base::levels(plot_df[["bins_angle"]])
-
-        )
-
-    }
-
   }
 
   if(base::isTRUE(display_border)){
@@ -396,7 +380,6 @@ plotIasLineplot <- function(object,
     border_add_on <- NULL
 
   }
-
 
   if(base::isTRUE(display_axis_text)){ display_axis_text <- c("x", "y")}
 
@@ -430,6 +413,20 @@ plotIasLineplot <- function(object,
 
   }
 
+  if(base::is.character(linecolor) & base::length(linecolor) == 1){
+
+    lvls <- base::levels(plot_df[[facet_by]])
+
+    clrp_adjust <-
+      purrr::set_names(
+        x = base::rep(linecolor, base::length(lvls)),
+        nm = lvls
+      )
+
+  }
+
+  mapping <- ggplot2::aes(x = x_axis, y = values, color = .data[[facet_by]])
+
   ggplot2::ggplot(data = plot_df, mapping = mapping) +
     ggplot2::geom_smooth(
       alpha = alpha,
@@ -437,7 +434,7 @@ plotIasLineplot <- function(object,
       span = smooth_span,
       method = smooth_method,
       formula = y ~ x,
-      se = TRUE
+      se = smooth_se
     ) +
     confuns::scale_color_add_on(variable = plot_df[[facet_by]], clrp = clrp, clrp.adjust = clrp_adjust) +
     ggplot2::scale_x_continuous(breaks = base::unique(plot_df[["x_axis"]]), labels = base::levels(plot_df[["bins_circle"]])) +

@@ -9,10 +9,13 @@ showColors(input, n = 20, title_size = 10)
 
 showModels(
   input = 100,
+  linecolor = "black",
+  linesize = 0.5,
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
   pretty_names = FALSE,
+  x_axis_arrow = TRUE,
   ...
 )
 }

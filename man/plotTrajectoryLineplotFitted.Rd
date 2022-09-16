@@ -8,7 +8,8 @@ plotTrajectoryLineplotFitted(
   object,
   id = getDefaultTrajectory(object),
   variable,
-  binwidth = 5,
+  binwidth = getBarcodeSpotDistance(object),
+  n_bins = NA,
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
@@ -36,6 +37,9 @@ plotTrajectoryLineplotFitted(
   \item{ \strong{Genes} Must be in \code{getGenes()}}
   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
   }}
+
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}

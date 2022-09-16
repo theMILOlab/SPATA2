@@ -8,8 +8,9 @@ getTrajectoryDf(
   object,
   id,
   variables,
+  binwidth = getBarcodeSpotDistance(object),
+  n_bins = NA_integer_,
   method_gs = "mean",
-  binwidth = 5,
   normalize = TRUE,
   summarize_with = "mean",
   format = "long",
@@ -28,12 +29,19 @@ getTrajectoryDf(
   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
   }}
 
+\item{binwidth}{The width of the the bins in which the barcode-spots
+are binned according to their projection length values.}
+
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
+
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{binwidth}{The width of the the bins in which the barcode-spots
-are binned according to their projection length values.}
+\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
+
+Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 

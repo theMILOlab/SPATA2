@@ -16,6 +16,9 @@ annotate structures in histology images.
 variables \emph{x} and \emph{y}. Data corresponds to the polygong that
 captures the spatial extent of the identified structure.}
 
+\item{\code{barcodes}}{character. Character vector of barcodes that fall into the polygon
+that encircles the annotated structure.}
+
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}
 

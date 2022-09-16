@@ -10,6 +10,10 @@ getImageAnnotationIds(object, tags = NULL, test = "any")
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
+
+\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
+See details for more information.}
 }
 \value{
 Character vector.

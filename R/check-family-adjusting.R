@@ -439,6 +439,78 @@ check_gene_sets <- function(object,
 }
 
 
+check_ias_input <- function(distance = NA_integer_,
+                            binwidth = NA_integer_,
+                            n_bins_circle = NA_integer_,
+                            verbose = TRUE){
+
+  n_bins_circle <- base::max(n_bins_circle)
+
+  confuns::are_values(
+    c("distance", "binwidth", "n_bins_circle"),
+    mode = "numeric",
+    skip.allow = TRUE,
+    skip.val = NA_integer_
+  )
+
+  dist_spec <- !base::is.na(distance)
+  binwidth_spec <- !base::is.na(binwidth)
+  n_bins_circle_spec <- !base::is.na(n_bins_circle)
+
+  if(base::all(dist_spec, binwidth_spec, n_bins_circle_spec)){
+
+    verbose <- FALSE
+
+  }
+
+  if(dist_spec & binwidth_spec){
+
+    n_bins_circle <- base::ceiling(distance / binwidth)
+
+    confuns::give_feedback(
+      msg = glue::glue(
+        "Specified `distance` = {distance} and `binwidth` = {binwidth}. Calculated `n_bins_circle` = {n_bins_circle}."
+        ),
+      verbose = verbose
+    )
+
+  } else if(dist_spec & n_bins_circle){
+
+    binwidth <- distance / n_bins_circle
+
+    confuns::give_feedback(
+      msg = glue::glue(
+        "Specified `distance` = {distance} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth}."
+        ),
+      verbose = verbose
+    )
+
+  } else if(n_bins_circle_spec & binwidth_spec){
+
+    distance <- n_bins_circle * binwidth
+
+    confuns::give_feedback(
+      msg = glue::glue(
+        "Specified `binwidth` = {binwidth} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance}."
+        ),
+      verbose = verbose
+    )
+
+  } else {
+
+    stop("Invalid input or input combination for arguments `distance`, `binwidth` and `n_bins_circle`.")
+
+  }
+
+  n_bins_circle <- 1:n_bins_circle
+
+  out <- list(distance = distance, n_bins_circle = n_bins_circle, binwidth = binwidth)
+
+  return(out)
+
+}
+
+
 #' @title Check pattern input
 #'
 #' @description A member of the \code{adjusting-check_*()}-family. Takes a character
