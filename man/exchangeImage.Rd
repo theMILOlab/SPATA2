@@ -4,7 +4,7 @@
 \alias{exchangeImage}
 \title{Exchange HE-Image}
 \usage{
-exchangeImage(object, image_dir, verbose = NULL)
+exchangeImage(object, image_dir, resize = NULL, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

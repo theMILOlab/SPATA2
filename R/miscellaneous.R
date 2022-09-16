@@ -396,6 +396,13 @@ removeAnnotation <- function(object, ann_var, groups){
 #'
 #' @param image_dir Character value. Directory to the image you want to
 #' exchange the current image with. Should be .png.
+#'
+#' @param resize Numeric vector of length two or NULL. If numeric,
+#' specifies the size of the image in pixels. First value of the input
+#' vector is used to set the width of the image, second value is used
+#' for the height. Note that the scale of the image should stay the same!
+#' E.g. use
+#'
 #' @inherit argument_dummy params
 #'
 #' @details The function requires the spata object to already contain an
@@ -407,7 +414,7 @@ removeAnnotation <- function(object, ann_var, groups){
 #' @return An updated spata object.
 #' @export
 
-exchangeImage <- function(object, image_dir, verbose = NULL){
+exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
 
   check_object(object)
 
@@ -426,6 +433,12 @@ exchangeImage <- function(object, image_dir, verbose = NULL){
   dim_old <- base::dim(old_image)
 
   new_image <- EBImage::readImage(files = image_dir)
+
+  if(base::is.numeric(resize)){
+
+    new_image <- EBImage::resize(x = new_image, w = resize[1], h = resize[2])
+
+  }
 
   dim_new <- base::dim(new_image)
 
