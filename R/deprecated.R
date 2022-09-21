@@ -43,17 +43,21 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
     args_named <- args_named[base::names(args_named) %in% deprecatedArguments()]
 
-    for(arg in base::names(args_named)){
+    for(old_arg_name in base::names(args_named)){
 
-      ref <- depr_info$args[[arg]]
+      new_arg_name <- depr_info$args[[old_arg_name]]
 
-      if(base::is.na(ref)){
+      if(base::is.na(new_arg_name)){
 
-        msg <- glue::glue("Argument `{arg}` is deprecated and no longer in use.")
+        msg <- glue::glue("Argument `{old_arg_name}` is deprecated and no longer in use.")
 
       } else {
 
-        msg <- glue::glue("Argument `{arg}` is deprecated. Please use argument `{ref}` instead.")
+        msg <- glue::glue("Argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead.")
+
+        ce <- rlang::caller_env()
+
+        base::assign(x = new_arg_name, value = args[[old_arg_name]], envir = ce)
 
       }
 

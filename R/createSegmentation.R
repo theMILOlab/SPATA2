@@ -52,7 +52,7 @@ br_add <- function(height, break_add = NULL){
 #' @return An updated spata object.
 #' @export
 #'
-createSegmentation <- function(object, height = 500, break_add = NULL){
+createSegmentation <- function(object, height = 500, break_add = NULL, box_widths = c(4,4,4)){
 
   new_object <-
     shiny::runApp(
@@ -91,7 +91,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL){
 
                     # instructions
                     shiny::column(
-                      width = 4,
+                      width = box_widths[1],
                       align = "left",
                       shinydashboard::box(
                         width = 12,
@@ -159,7 +159,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL){
 
                     # plot for segmentation
                     shiny::column(
-                      width = 4,
+                      width = box_widths[2],
                       shinydashboard::box(
                         width = 12,
                         shiny::tags$h3(shiny::strong("Interaction")) %>%
@@ -258,7 +258,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL){
                             )
                           ),
                           shiny::column(
-                            width = 4,
+                            width = 6,
                             #align = "center",
                             shiny::fluidRow(
                               shiny::column(
@@ -356,7 +356,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL){
 
                     # plot that shows current segmentation
                     shiny::column(
-                      width = 4,
+                      width = box_widths[3],
                       shinydashboard::box(
                         width = 12,
                         shiny::tags$h3(shiny::strong("Orientation")) %>%

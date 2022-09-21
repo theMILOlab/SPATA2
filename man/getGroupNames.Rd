@@ -4,13 +4,10 @@
 \alias{getGroupNames}
 \title{Obtain group names a grouping variable contains}
 \usage{
-getGroupNames(object, discrete_feature, of_sample = NA)
+getGroupNames(object, grouping_variable, of_sample = NA, ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
-
-\item{discrete_feature}{Character value. Specifies the name of the grouping variable
-of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
@@ -27,6 +24,6 @@ Obtain group names a grouping variable contains
  # obtain all group names the variable 'my_cluster'
  # contains
 
- getGroupNames(object = object, discrete_feature = "my_cluster")
+ getGroupNames(object = object, grouping_variable = "my_cluster")
 
 }

@@ -2,15 +2,12 @@
 % Please edit documentation in R/image-annotation-screening.R
 \name{getSmrdResultsDf}
 \alias{getSmrdResultsDf}
-\alias{getSmrdResultsDf,ImageAnnotationScreening-method}
 \title{Obtain IAS results (data.frame)}
 \usage{
-getSmrdResultsDf(object, ...)
-
-\S4method{getSmrdResultsDf}{ImageAnnotationScreening}(
-  object,
-  var_pval = "pvalue_median",
-  var_eval = "corr_median",
+getSmrdResultsDf(
+  ias,
+  eval = "ias_score",
+  pval = "pvalue_mean_adjusted",
   threshold_pval = 1,
   threshold_eval = 0,
   model_subset = NULL,
@@ -18,11 +15,6 @@ getSmrdResultsDf(object, ...)
 )
 }
 \arguments{
-\item{object}{Any object for which a method has been defined.}
-
-\item{var_pval, var_eval}{Character value. Specifies the p-value- and the
-evaluation variable based on which the thresholds are applied.}
-
 \item{threshold_pval, threshold_eval}{Numeric value. Used to filter
 the output accordingly.}
 
@@ -32,6 +24,9 @@ and \code{showModels()} to visualize them.}
 
 \item{model_remove}{Character value. Used as a regex to remove models
 are not supposed to be included.}
+
+\item{var_pval, var_eval}{Character value. Specifies the p-value- and the
+evaluation variable based on which the thresholds are applied.}
 }
 \value{
 Data.frame.

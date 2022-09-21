@@ -12,6 +12,19 @@ exchangeImage(object, image_dir, resize = NULL, verbose = NULL)
 \item{image_dir}{Character value. Directory to the image you want to
 exchange the current image with. Should be .png.}
 
+\item{resize}{Numeric vector of length two, numeric value or NULL. If numeric,
+specifies the size with which the loaded image is eventually saved.
+
+If \code{resize} is of length one, e.g. \code{resize} = 3, the image dimensions
+of the old image are multiplied with the \code{resize}, here with 3, to create the dimensions
+under which the new image is saved. This is useful, as the relation between width
+and height of the new image should not change to ensure that the barcode-spots
+overlap perfectly with the histology image.
+
+If \code{resize} is of length two, e.g. \code{resize} = c(1000, 1200), the image
+dimensions of the new image are set to exactly that. First value sets the width,
+the second value sets the height.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -22,12 +35,14 @@ An updated spata object.
 }
 \description{
 Exchanges histology images and scales the coordinates
-accordingly.
+accordingly. Use argument \code{resize} to downscale images that
+are too big for R to handle.
 }
 \details{
 The function requires the spata object to already contain an
 image. This is because images of different resolution (total number of pixels)
-require the barcode spots x- and y-coordinates to be scaled. The scale
+require the barcode-spots x- and y-coordinates to be scaled. The scale
 factor is computed by comparing the resolution of the old image with
-the one from the image that is supposed to replace the old one.
+the one from the image that is supposed to replace the old one (after resizing,
+if resizing is desired).
 }

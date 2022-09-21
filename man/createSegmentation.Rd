@@ -5,9 +5,19 @@
 \alias{createSpatialSegmentation}
 \title{Interactive sample segmentation}
 \usage{
-createSegmentation(object, height = 500, break_add = NULL)
+createSegmentation(
+  object,
+  height = 500,
+  break_add = NULL,
+  box_widths = c(4, 4, 4)
+)
 
-createSpatialSegmentation(object, height = 500, break_add = NULL)
+createSpatialSegmentation(
+  object,
+  height = 500,
+  break_add = NULL,
+  box_widths = c(4, 4, 4)
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

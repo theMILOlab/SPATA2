@@ -54,6 +54,9 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
+\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
+are removed before plotting.}
+
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
@@ -163,7 +166,7 @@ of the annotated structure and the input for argument \code{expand}.}
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
-\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+\item{test}{Character value. Specifies how the input of \code{tags} is used to
 subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
 See details for more information.}
 

@@ -392,26 +392,36 @@ removeAnnotation <- function(object, ann_var, groups){
 #' @title Exchange HE-Image
 #'
 #' @description Exchanges histology images and scales the coordinates
-#' accordingly.
+#' accordingly. Use argument \code{resize} to downscale images that
+#' are too big for R to handle.
 #'
 #' @param image_dir Character value. Directory to the image you want to
 #' exchange the current image with. Should be .png.
 #'
-#' @param resize Numeric vector of length two or NULL. If numeric,
-#' specifies the size of the image in pixels. First value of the input
-#' vector is used to set the width of the image, second value is used
-#' for the height. Note that the scale of the image should stay the same!
-#' E.g. use
+#' @param resize Numeric vector of length two, numeric value or NULL. If numeric,
+#' specifies the size with which the loaded image is eventually saved.
+#'
+#' If \code{resize} is of length one, e.g. \code{resize} = 3, the image dimensions
+#' of the old image are multiplied with the \code{resize}, here with 3, to create the dimensions
+#' under which the new image is saved. This is useful, as the relation between width
+#' and height of the new image should not change to ensure that the barcode-spots
+#' overlap perfectly with the histology image.
+#'
+#' If \code{resize} is of length two, e.g. \code{resize} = c(1000, 1200), the image
+#' dimensions of the new image are set to exactly that. First value sets the width,
+#' the second value sets the height.
 #'
 #' @inherit argument_dummy params
 #'
 #' @details The function requires the spata object to already contain an
 #' image. This is because images of different resolution (total number of pixels)
-#' require the barcode spots x- and y-coordinates to be scaled. The scale
+#' require the barcode-spots x- and y-coordinates to be scaled. The scale
 #' factor is computed by comparing the resolution of the old image with
-#' the one from the image that is supposed to replace the old one.
+#' the one from the image that is supposed to replace the old one (after resizing,
+#' if resizing is desired).
 #'
 #' @return An updated spata object.
+#'
 #' @export
 
 exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
@@ -430,15 +440,56 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
 
   }
 
+  confuns::is_vec(
+    x = resize,
+    mode = "numeric",
+    max.length = 2,
+    skip.allow = TRUE,
+    skip.val = NULL
+    )
+
   dim_old <- base::dim(old_image)
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading image from '{image_dir}'."),
+    verbose = verbose
+  )
 
   new_image <- EBImage::readImage(files = image_dir)
 
   if(base::is.numeric(resize)){
 
-    new_image <- EBImage::resize(x = new_image, w = resize[1], h = resize[2])
+    if(base::length(resize) == 1){
+
+      resize_input <- getImageDims(object)[c(1,2)]*resize
+
+    } else {
+
+      resize_input <- resize[c(1,2)]
+
+    }
+
+    width <- resize[1]
+    height <- resize[2]
+
+    confuns::give_feedback(
+      msg = glue::glue("Resizing new image to width = {width} and height = {height}."),
+      verbose = verbose
+    )
+
+    new_image <-
+      EBImage::resize(
+        x = new_image,
+        w = width,
+        h = height
+        )
 
   }
+
+  confuns::give_feedback(
+    msg = "Scaling coordinates.",
+    verbose = verbose
+  )
 
   dim_new <- base::dim(new_image)
 
@@ -495,8 +546,6 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
   return(object)
 
 }
-
-
 
 
 

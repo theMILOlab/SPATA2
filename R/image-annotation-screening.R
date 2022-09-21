@@ -497,66 +497,52 @@ compute_angle_between_two_points <- function(p1, p2){
 #' @export
 #'
 
-setGeneric(name = "getSmrdResultsDf", def = function(object, ...){
+getSmrdResultsDf <-  function(ias,
+                              eval = "ias_score",
+                              pval = "pvalue_mean_adjusted",
+                              threshold_pval = 1,
+                              threshold_eval = 0,
+                              model_subset = NULL,
+                              model_remove = NULL){
 
-  standardGeneric(f = "getSmrdResultsDf")
+  rdf <-
+    dplyr::filter(
+      .data = ias@results_smrd,
+      !!rlang::sym(pval) <= {{threshold_pval}} &
+        !!rlang::sym(eval) >= {{threshold_eval}}
+    )
 
-})
+  if(base::is.character(model_subset)){
 
-#' @rdname getSmrdResultsDf
-#' @export
-setMethod(
-  f = "getSmrdResultsDf",
-  signature = "ImageAnnotationScreening",
-  definition = function(object,
-                        var_pval = "pvalue_median",
-                        var_eval = "corr_median",
-                        threshold_pval = 1,
-                        threshold_eval = 0,
-                        model_subset = NULL,
-                        model_remove = NULL){
-
-    rdf <-
-      dplyr::filter(
-        .data = object@results_smrd,
-        !!rlang::sym(var_pval) <= {{threshold_pval}} &
-        !!rlang::sym(var_eval) >= {{threshold_eval}}
-        )
-
-    if(base::is.character(model_subset)){
-
-      keep <- confuns::vselect(base::unique(rdf[["models"]]), dplyr::contains(model_subset))
-
-      rdf <- dplyr::filter(rdf, models %in% {{keep}})
-
-    }
-
-    if(base::is.character(model_remove)){
-
-      keep <- confuns::vselect(base::unique(rdf[["models"]]), -dplyr::contains(model_subset))
-
-      rdf <- dplyr::filter(rdf, models %in% {{keep}})
-
-    }
-
-    return(rdf)
+    rdf <- dplyr::filter(rdf, stringr::str_detect(models, pattern = model_subset))
 
   }
-)
 
-#' @title Obtain IAS results (variable names)
+  if(base::is.character(model_remove)){
+
+    rdf <- dplyr::filter(rdf, !stringr::str_detect(models, pattern = model_remove))
+
+  }
+
+  rdf <- dplyr::arrange(rdf, dplyr::desc(!!rlang::sym(eval)))
+
+  return(rdf)
+
+}
+
+#' @title Obtain screening results (variable names)
 #'
-#' @description Extracts (and filters) the summarized IAS results in form
+#' @description Extracts (and filters) screening results in form
 #' of a character vector of variable names.
 #'
-#' @param var_arrange The evaulation variable based on which the variables
+#' @param var_arrange The evaluation based on which the variables
 #' are arranged before being returned. Defaults to input of argument \code{var_eval}.
 #' @inherit getVarDf params
 #'
 #' @details After the filtering the variable names are arranged according
 #' to their values of \code{var_eval}.
 #'
-#' @return Data.frame.
+#' @return Data.frame
 #' @export
 #'
 
@@ -572,27 +558,27 @@ setMethod(
   f = "getVarNames",
   signature = "ImageAnnotationScreening",
   definition = function(object,
-                        var_pval = "pvalue_median",
-                        var_eval = "corr_median",
-                        var_arrange = var_eval,
-                        threshold_pval = 1,
+                        eval = "ias_score",
+                        pval = "pvalue_mean_adjusted",
+                        arrange_by = eval,
                         threshold_eval = 0,
+                        threshold_pval = 1,
                         model_subset = NULL,
                         model_remove = NULL){
 
     getSmrdResultsDf(
-      object = object,
-      var_pval = var_pval,
-      var_eval = var_eval,
+      ias = object,
+      pval = pval,
+      eval = eval,
       threshold_pval = threshold_pval,
       threshold_eval = threshold_eval,
       model_subset = model_subset,
       model_remove = model_remove
       ) %>%
       dplyr::group_by(variables) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(var_eval)) %>%
+      dplyr::slice_max(order_by = !!rlang::sym(eval)) %>%
       dplyr::ungroup() %>%
-      dplyr::arrange(dplyr::desc(!!rlang::sym(var_arrange))) %>%
+      dplyr::arrange(dplyr::desc(!!rlang::sym(arrange_by))) %>%
       dplyr::pull(variables) %>%
       base::unique()
 
@@ -1429,90 +1415,104 @@ setMethod(
   }
 )
 
-#' @title Plot summary of spatial fitting
+#' @title Plot overview of S4 objects
 #'
 #' @description Assigns every numeric variable to the model it fitted best
 #' against and plots the p-value of the fit against the fit evaluation.
 #'
-#' @param x,y Character value. Specifies what to map to the x- and what to
-#' map to the y-axis.
-#'
+#' @inherit plotVolcano params
 #' @inherit argument_dummy params
 #'
 #' @export
 
-setGeneric(name = "plotSummary", def = function(object, ...){
+setGeneric(name = "plotOverview", def = function(object, ...){
 
-  standardGeneric(f = "plotSummary")
+  standardGeneric(f = "plotOverview")
 
 })
 
-#' @rdname plotSummary
+#' @rdname plotOverview
 #' @export
+
 setMethod(
-  f = "plotSummary",
+  f = "plotOverview",
   signature = "ImageAnnotationScreening",
   definition = function(object,
-                        x = "corr_mean",
-                        y = "pvalue_mean",
+                        eval = "ias_score",
+                        pval = "pvalue_mean_adjusted",
                         pt_alpha = 0.75,
                         pt_color = "black",
                         pt_size = 1,
-                        display_labels = FALSE,
+                        label_vars = NULL,
+                        label_alpha = 0.9,
+                        label_color = "black",
+                        label_size = 2,
                         model_subset = NULL,
-                        model_remove = NULL,
-                        pretty_names = FALSE,
+                        nrow = NULL,
+                        ncol = NULL,
                         ...){
 
+    if(base::is.character(model_subset)){
+
+      input_df <-
+        dplyr::filter(
+          .data = object@results_smrd,
+          stringr::str_detect(models, pattern = model_subset)
+        )
+
+    } else {
+
+      input_df <- object@results_smrd
+
+    }
+
     plot_df <-
-      dplyr::group_by(object@results_smrd, variables) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(x), n = 1) %>%
+      dplyr::group_by(input_df, variables) %>%
+      dplyr::slice_max(order_by = !!rlang::sym(eval), n = 1) %>%
       dplyr::ungroup()
 
-    if(!base::is.null(model_subset)){
+    if(!base::is.null(label_vars)){
 
-      keep <-
-        confuns::vselect(
-          input = base::unique(plot_df[["models"]]),
-          dplyr::contains(match = model_subset)
+      if(base::is.numeric(label_vars)){
+
+        label_df <-
+          dplyr::group_by(plot_df, models) %>%
+          dplyr::slice_max(order_by = !!rlang::sym(eval), n = label_vars[1]) %>%
+          dplyr::ungroup()
+
+      } else if(base::is.character(label_vars)){
+
+        label_df <-
+          dplyr::filter(plot_df, variables %in% {{label_vars}})
+
+      }
+
+      label_add_on <-
+        ggrepel::geom_text_repel(
+          data = label_df,
+          mapping = ggplot2::aes(x = .data[[eval]], y = -log10(.data[[pval]]), label = variables),
+          alpha = label_alpha, color = label_color, size = label_size,
+          ...
         )
 
-      plot_df <- dplyr::filter(plot_df, models %in% {{keep}})
+    } else {
+
+      label_add_on <- NULL
 
     }
 
-    if(!base::is.null(model_remove)){
 
-      remove <-
-        confuns::vselect(
-          input = base::unique(plot_df[["models"]]),
-          dplyr::contains(match = model_remove)
-        )
-
-      plot_df <- dplyr::filter(plot_df, !models %in% {{remove}})
-
-    }
-
-    if(base::isTRUE(pretty_names)){
-
-      plot_df[["models"]] <- confuns::make_pretty_names(plot_df[["models"]])
-
-    }
-
-    ggplot2::ggplot(
-      data = plot_df,
-      mapping = ggplot2::aes(x = .data[[x]], y = -log10(.data[[y]]))
-      ) +
-      ggplot2::geom_point(
-        alpha = pt_alpha,
-        color = pt_color,
-        size = pt_size
-        ) +
-      #ggplot2::scale_y_reverse(limits = c(1,0)) +
-      ggplot2::facet_wrap(facets = . ~ models) +
+    ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = .data[[eval]], y = -log10(.data[[pval]]))) +
+      ggplot2::geom_point(alpha = pt_alpha, color = pt_color, size = pt_size) +
+      label_add_on +
+      ggplot2::facet_wrap(facets = . ~ models, nrow = nrow, ncol = ncol) +
       ggplot2::theme_classic() +
       ggplot2::theme(
         panel.grid = ggplot2::element_line(color = "lightgrey")
+      ) +
+      ggplot2::labs(
+        x = confuns::make_pretty_name(eval),
+        y = glue::glue("-log10({pval})")
       )
 
   }
@@ -1817,7 +1817,7 @@ setMethod(
 )
 
 
-#' @title Compare evaluatio of spatially opposing fits
+#' @title Compare evaluation of spatially opposing fits
 #'
 #' @description Plots a volcano plot by using the model evaluation
 #' of spatial fitting as implemented by \code{imageAnnotationScreening()}

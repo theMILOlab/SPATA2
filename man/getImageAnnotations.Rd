@@ -25,7 +25,7 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 
 \item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
 
-\item{test}{Character value. Specifies how the input of \cdoe{tags} is used to
+\item{test}{Character value. Specifies how the input of \code{tags} is used to
 subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
 See details for more information.}
 

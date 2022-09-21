@@ -27,6 +27,7 @@ plotSurface(
   verbose = NULL,
   highlight_groups = NULL,
   transform_with = NULL,
+  bcsp_rm = NULL,
   na_rm = FALSE,
   of_sample = NA,
   ...
@@ -112,6 +113,9 @@ Or it can be a list of functions (and function names).
 Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
+
+\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
+are removed before plotting.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}

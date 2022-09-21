@@ -234,6 +234,9 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' Use \code{getGroupNames()} to obtain all valid input options.
 #'
+#' @param bcsp_rm Character vector or NULL. If character, specifies barcode-spots that
+#' are removed before plotting.
+#'
 #' @param clrp Character value. Specifies the color palette to be used to represent
 #' groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 #' input options.
@@ -351,7 +354,7 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' @param tags Character vector or NULL. If character, the image annotation tags of interest.
 #'
-#' @param test Character value. Specifies how the input of \cdoe{tags} is used to
+#' @param test Character value. Specifies how the input of \code{tags} is used to
 #' subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
 #' See details for more information.
 #'

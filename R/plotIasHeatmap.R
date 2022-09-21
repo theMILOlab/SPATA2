@@ -385,7 +385,6 @@ plotIasLineplot <- function(object,
 
   theme_add_on <- list()
 
-  xlab <- "Screening Direction"
 
   if("x" %in% display_axis_text){
 
@@ -400,6 +399,10 @@ plotIasLineplot <- function(object,
       )
 
     xlab <- NULL
+
+  } else {
+
+    xlab <- stringr::str_c("Distance to '", id, "'")
 
   }
 
@@ -441,12 +444,13 @@ plotIasLineplot <- function(object,
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2), limits = c(0,1)) +
     ggplot2::theme_classic() +
     ggplot2::theme(
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
       axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")),
-      axis.line.y = ggplot2::element_line()
+      axis.line.y = ggplot2::element_line(),
+      strip.background = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = xlab, y = NULL, color = confuns::make_pretty_name(facet_by)) +
+    ggplot2::labs(x = xlab, y = "Inferred expession", color = confuns::make_pretty_name(facet_by)) +
     facet_add_on +
     border_add_on +
     theme_add_on

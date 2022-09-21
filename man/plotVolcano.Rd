@@ -4,7 +4,7 @@
 \alias{plotVolcano}
 \alias{plotVolcano,ImageAnnotationScreening-method}
 \alias{plotVolcano,SpatialTrajectoryScreening-method}
-\title{Compare evaluatio of spatially opposing fits}
+\title{Compare evaluation of spatially opposing fits}
 \usage{
 plotVolcano(object, ...)
 

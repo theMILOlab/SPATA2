@@ -291,6 +291,7 @@ depr_info <-
       "setDefaultTrajectory" = "setDefaultTrajectoryId"
     ),
     args = list(
+      "discrete_feature" = "grouping_variable",
       "of_sample" = NA_character_,
       "trajectory_name" = "id"
     )

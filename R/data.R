@@ -97,3 +97,14 @@
 #'
 "spatial_segmentations"
 
+
+#' A list of lists of spatial trajectories. Every slot in list \code{trajectories}
+#' is named by the sample the trajectory belongs to. Every sample specific slot
+#' is an S4 object of class \code{SpatialTrajectory}. Use \code{setSpatialTrajectory()}
+#' to add them to the corresponding object.
+#'
+#'  @docType data
+#'  @usage data(trajectories)
+#'
+"trajectories"
+

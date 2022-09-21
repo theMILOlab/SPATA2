@@ -52,6 +52,7 @@ plotSurface <- function(object,
                         verbose = NULL,
                         highlight_groups = NULL,
                         transform_with = NULL,
+                        bcsp_rm = NULL,
                         na_rm = FALSE,
                         of_sample = NA,
                         ...){
@@ -159,6 +160,12 @@ plotSurface <- function(object,
 
   }
 
+
+  if(base::is.character(bcsp_rm)){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcsp_rm}})
+
+  }
 
   ggplot2::ggplot(data = coords_df) +
     hlpr_image_add_on(object, display_image, of_sample) +
@@ -508,6 +515,7 @@ plotSurfaceComparison <- function(object,
                                   pt_alpha = NULL,
                                   pt_clrsp = NULL,
                                   display_image = NULL,
+                                  bcsp_rm = NULL,
                                   verbose = NULL,
                                   of_sample = NA,
                                   ...){
@@ -571,6 +579,12 @@ plotSurfaceComparison <- function(object,
     )
 
   plot_df$variables <- base::factor(plot_df$variables, levels = variables)
+
+  if(base::is.character(bcsp_rm)){
+
+    plot_df <- dplyr::filter(plot_df, !barcodes %in% {{bcsp_rm}})
+
+  }
 
   ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x, y = y)) +
     hlpr_image_add_on(object, display_image, of_sample) +

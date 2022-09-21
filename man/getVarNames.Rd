@@ -3,30 +3,30 @@
 \name{getVarNames}
 \alias{getVarNames}
 \alias{getVarNames,ImageAnnotationScreening-method}
-\title{Obtain IAS results (variable names)}
+\title{Obtain screening results (variable names)}
 \usage{
 getVarNames(object, ...)
 
 \S4method{getVarNames}{ImageAnnotationScreening}(
   object,
-  var_pval = "pvalue_median",
-  var_eval = "corr_median",
-  var_arrange = var_eval,
-  threshold_pval = 1,
+  eval = "ias_score",
+  pval = "pvalue_mean_adjusted",
+  arrange_by = eval,
   threshold_eval = 0,
+  threshold_pval = 1,
   model_subset = NULL,
   model_remove = NULL
 )
 }
 \arguments{
-\item{var_arrange}{The evaulation variable based on which the variables
+\item{var_arrange}{The evaluation based on which the variables
 are arranged before being returned. Defaults to input of argument \code{var_eval}.}
 }
 \value{
-Data.frame.
+Data.frame
 }
 \description{
-Extracts (and filters) the summarized IAS results in form
+Extracts (and filters) screening results in form
 of a character vector of variable names.
 }
 \details{

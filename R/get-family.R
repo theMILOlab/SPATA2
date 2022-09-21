@@ -919,21 +919,21 @@ getGroupingOptions <- function(object, of_sample = NA){
 #'  # obtain all group names the variable 'my_cluster'
 #'  # contains
 #'
-#'  getGroupNames(object = object, discrete_feature = "my_cluster")
+#'  getGroupNames(object = object, grouping_variable = "my_cluster")
 #'
 
-getGroupNames <- function(object, discrete_feature, of_sample = NA){
+getGroupNames <- function(object, grouping_variable, of_sample = NA, ...){
+
+  deprecated(...)
 
   check_object(object)
 
   of_sample <- check_sample(object, of_sample, of.length = 1)
 
-  confuns::is_value(discrete_feature, mode = "character")
-
   res_groups <-
     getFeatureValues(
       object = object,
-      features = discrete_feature,
+      features = grouping_variable,
       of_sample = of_sample
     )
 

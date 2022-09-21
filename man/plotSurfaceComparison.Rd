@@ -16,6 +16,7 @@ plotSurfaceComparison(
   pt_alpha = NULL,
   pt_clrsp = NULL,
   display_image = NULL,
+  bcsp_rm = NULL,
   verbose = NULL,
   of_sample = NA,
   ...
