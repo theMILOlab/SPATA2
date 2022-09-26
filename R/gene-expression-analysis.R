@@ -47,8 +47,21 @@ runDeAnalysis <- function(object,
       object <-
         base::tryCatch({
 
+          # make sure across-input is valid
+          groups <- getFeatureVariables(object = object,
+                                        features = across,
+                                        of_sample = of_sample,
+                                        return = "vector")
+
           # make sure that across-input is passed as a factor
-          groups <- getGroupNames(object_t269, grouping_variable = "histolgoy")
+
+          if(!base::is.factor(groups)){
+
+            groups <- base::factor(x = groups, levels = base::unique(groups))
+
+          }
+
+          n_groups <- dplyr::n_distinct(groups)
 
           if(n_groups >= 20){
 
@@ -67,30 +80,19 @@ runDeAnalysis <- function(object,
           # De analysis ----------------------------------------------------------
 
           # prepare seurat object
-
-          feature_df <- getFeatureDf(object) %>% select(barcodes, {{across}})
-
           seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object, of_sample = of_sample))
 
           seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, of_sample = of_sample, verbose = TRUE)
 
-          seurat_object@meta.data <-
-            tibble::rownames_to_column(seurat_object@meta.data, var = "barcodes") %>%
-            dplyr::left_join(x = ., y = feature_df, by = "barcodes") %>%
-            tibble::column_to_rownames(var = "barcodes") %>%
-            base::as.data.frame()
+          seurat_object@meta.data$orig.ident <- groups
 
-          seurat_object@active.ident <- seurat_object@meta.data[, across]
+          seurat_object@active.ident <- seurat_object@meta.data[,"orig.ident"]
 
           base::names(seurat_object@active.ident) <- base::rownames(seurat_object@meta.data)
 
           # perform analysis and remove seurat object afterwards
           de_results <-
-            Seurat::FindAllMarkers(
-              object = seurat_object,
-              test.use = method,
-              ...
-              )
+            Seurat::FindAllMarkers(object = seurat_object, test.use = method, ...)
 
            base::rm(seurat_object)
 
@@ -116,7 +118,7 @@ runDeAnalysis <- function(object,
 
           base::message(glue::glue("Skipping de-analysis on across-input '{across}' with method '{method}' as it resulted in the following error message: {error}"))
 
-          return(object)
+          base::return(object)
 
          }
         )
@@ -126,7 +128,7 @@ runDeAnalysis <- function(object,
   }
 
 
-  return(object)
+  base::return(object)
 
 }
 
