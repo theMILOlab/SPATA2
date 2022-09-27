@@ -1399,7 +1399,7 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
     xrange <- c((bcsp_df$x - dist_valh), (bcsp_df$x + dist_valh))
     yrange <- c((bcsp_df$y - dist_valh), (bcsp_df$y + dist_valh))
 
-    img <- getImage(object, xrange = xrange, yrange = yrange, expand = 0)
+    img <- getImage(object, xrange = xrange, yrange = yrange, expand = expand)
 
     img_list[[bcsp]] <- list(image = img, xrange = xrange, yrange = yrange, barcode = bcsp)
 
