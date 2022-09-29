@@ -499,7 +499,7 @@ compute_angle_between_two_points <- function(p1, p2){
 
 getSmrdResultsDf <-  function(ias,
                               eval = "ias_score",
-                              pval = "pvalue_mean_adjusted",
+                              pval = "p_value_mean_adjusted",
                               threshold_pval = 1,
                               threshold_eval = 0,
                               model_subset = NULL,
@@ -507,7 +507,7 @@ getSmrdResultsDf <-  function(ias,
 
   rdf <-
     dplyr::filter(
-      .data = ias@results_smrd,
+      .data = ias@results,
       !!rlang::sym(pval) <= {{threshold_pval}} &
         !!rlang::sym(eval) >= {{threshold_eval}}
     )
@@ -530,60 +530,7 @@ getSmrdResultsDf <-  function(ias,
 
 }
 
-#' @title Obtain screening results (variable names)
-#'
-#' @description Extracts (and filters) screening results in form
-#' of a character vector of variable names.
-#'
-#' @param var_arrange The evaluation based on which the variables
-#' are arranged before being returned. Defaults to input of argument \code{var_eval}.
-#' @inherit getVarDf params
-#'
-#' @details After the filtering the variable names are arranged according
-#' to their values of \code{var_eval}.
-#'
-#' @return Data.frame
-#' @export
-#'
 
-setGeneric(name = "getVarNames", def = function(object, ...){
-
-  standardGeneric(f = "getVarNames")
-
-})
-
-#' @rdname getVarNames
-#' @export
-setMethod(
-  f = "getVarNames",
-  signature = "ImageAnnotationScreening",
-  definition = function(object,
-                        eval = "ias_score",
-                        pval = "pvalue_mean_adjusted",
-                        arrange_by = eval,
-                        threshold_eval = 0,
-                        threshold_pval = 1,
-                        model_subset = NULL,
-                        model_remove = NULL){
-
-    getSmrdResultsDf(
-      ias = object,
-      pval = pval,
-      eval = eval,
-      threshold_pval = threshold_pval,
-      threshold_eval = threshold_eval,
-      model_subset = model_subset,
-      model_remove = model_remove
-      ) %>%
-      dplyr::group_by(variables) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(eval)) %>%
-      dplyr::ungroup() %>%
-      dplyr::arrange(dplyr::desc(!!rlang::sym(arrange_by))) %>%
-      dplyr::pull(variables) %>%
-      base::unique()
-
-  }
-)
 
 
 #' @title Obtain IAS screending data.frame
@@ -942,7 +889,7 @@ imageAnnotationScreening <- function(object,
     verbose = verbose
   )
 
-  results <-
+  results_primary <-
     purrr::map_df(
       .x = bins_angle_remaining,
       .f = function(bin){
@@ -1047,9 +994,10 @@ imageAnnotationScreening <- function(object,
       coords = getCoordsDf(object),
       distance = distance,
       img_annotation = getImageAnnotation(object, id = id),
+      models = model_df,
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
-      results = results,
+      results_primary = results_primary,
       sample = object@samples
     ) %>%
     summarizeIAS(method_padj = method_padj)
@@ -1325,7 +1273,7 @@ setMethod(
                         ...){
 
     ias_results_df <-
-      dplyr::filter(object@results, variables %in% {{variables}}) %>%
+      dplyr::filter(object@results_primary, variables %in% {{variables}}) %>%
       dplyr::mutate(bins_angle = base::factor(bins_angle, levels = make_angle_bins(object@n_bins_angle)))
 
     bins_angle <- base::levels(ias_results_df$bins_angle)
@@ -1415,108 +1363,7 @@ setMethod(
   }
 )
 
-#' @title Plot overview of S4 objects
-#'
-#' @description Assigns every numeric variable to the model it fitted best
-#' against and plots the p-value of the fit against the fit evaluation.
-#'
-#' @inherit plotVolcano params
-#' @inherit argument_dummy params
-#'
-#' @export
 
-setGeneric(name = "plotOverview", def = function(object, ...){
-
-  standardGeneric(f = "plotOverview")
-
-})
-
-#' @rdname plotOverview
-#' @export
-
-setMethod(
-  f = "plotOverview",
-  signature = "ImageAnnotationScreening",
-  definition = function(object,
-                        eval = "ias_score",
-                        pval = "pvalue_mean_adjusted",
-                        pt_alpha = 0.75,
-                        pt_color = "black",
-                        pt_size = 1,
-                        label_vars = NULL,
-                        label_alpha = 0.9,
-                        label_color = "black",
-                        label_size = 2,
-                        model_subset = NULL,
-                        nrow = NULL,
-                        ncol = NULL,
-                        ...){
-
-    if(base::is.character(model_subset)){
-
-      input_df <-
-        dplyr::filter(
-          .data = object@results_smrd,
-          stringr::str_detect(models, pattern = model_subset)
-        )
-
-    } else {
-
-      input_df <- object@results_smrd
-
-    }
-
-    plot_df <-
-      dplyr::group_by(input_df, variables) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(eval), n = 1) %>%
-      dplyr::ungroup()
-
-    if(!base::is.null(label_vars)){
-
-      if(base::is.numeric(label_vars)){
-
-        label_df <-
-          dplyr::group_by(plot_df, models) %>%
-          dplyr::slice_max(order_by = !!rlang::sym(eval), n = label_vars[1]) %>%
-          dplyr::ungroup()
-
-      } else if(base::is.character(label_vars)){
-
-        label_df <-
-          dplyr::filter(plot_df, variables %in% {{label_vars}})
-
-      }
-
-      label_add_on <-
-        ggrepel::geom_text_repel(
-          data = label_df,
-          mapping = ggplot2::aes(x = .data[[eval]], y = -log10(.data[[pval]]), label = variables),
-          alpha = label_alpha, color = label_color, size = label_size,
-          ...
-        )
-
-    } else {
-
-      label_add_on <- NULL
-
-    }
-
-
-    ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = .data[[eval]], y = -log10(.data[[pval]]))) +
-      ggplot2::geom_point(alpha = pt_alpha, color = pt_color, size = pt_size) +
-      label_add_on +
-      ggplot2::facet_wrap(facets = . ~ models, nrow = nrow, ncol = ncol) +
-      ggplot2::theme_classic() +
-      ggplot2::theme(
-        panel.grid = ggplot2::element_line(color = "lightgrey")
-      ) +
-      ggplot2::labs(
-        x = confuns::make_pretty_name(eval),
-        y = glue::glue("-log10({pval})")
-      )
-
-  }
-)
 
 
 
@@ -1837,7 +1684,7 @@ setMethod(
 #' the color of the significant variables, second denotes the color
 #' of the not-significant variables.
 #' @param label_vars Character value, numeric value or NULL. Useful to highlight
-#' the exact position/evaulation of variables.
+#' the exact position/evalation of variables.
 #'
 #' If character, specifies the variables that are labeled. If numeric, specifies
 #' the top n of variables that are labeled. If NULL, ignored.
@@ -1867,7 +1714,7 @@ setMethod(
   signature = "ImageAnnotationScreening",
   definition = function(object,
                         eval = "corr_mean",
-                        pval = "pvalue_mean",
+                        pval = "p_value_mean",
                         left = "linear_ascending",
                         right = "linear_descending",
                         display_thresholds = TRUE,
@@ -1889,7 +1736,7 @@ setMethod(
 
     confuns::is_vec(x = threshold_colors, mode = "character", of.length = 2)
 
-    ias_df_smrd <- object@results_smrd
+    ias_df_smrd <- object@results
 
     # if TRUE, the subsequent filtering will remove all variables that did not have
     # their best fit with the left or right model
@@ -2116,9 +1963,9 @@ subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NUL
 
   if(base::is.numeric(angle_span)){
 
-    ias@results <-
+    ias@results_primary <-
       dplyr::mutate(
-        .data = ias@results,
+        .data = ias@results_primary,
         temp = stringr::str_remove_all(base::as.character(bins_angle), pattern = "\\(|\\]")
       ) %>%
       tidyr::separate(col = temp, into = c("amin", "amax"), sep = ",") %>%
@@ -2133,24 +1980,24 @@ subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NUL
 
   if(base::is.character(angle_bins)){
 
-    ias@results <- dplyr::filter(ias@results, bins_angle %in% {{angle_bins}})
+    ias@results_primary <- dplyr::filter(ias@results_primary, bins_angle %in% {{angle_bins}})
 
   }
 
   if(base::is.character(variables)){
 
-    ias@results <- dplyr::filter(ias@results, variables %in% {{variables}})
+    ias@results_primary <- dplyr::filter(ias@results_primary, variables %in% {{variables}})
 
   }
 
-  ias@results$bins_angle <- base::droplevels(ias@results$bins_angle)
+  ias@results_primary$bins_angle <- base::droplevels(ias@results_primary$bins_angle)
 
   confuns::give_feedback(
     msg = "Summarizing.",
     verbose = verbose
   )
 
-  ias@results_smrd <- summarize_ias_df(df = ias@results)
+  ias@results_primary <- summarize_ias_df(df = ias@results_primary)
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 
@@ -2194,7 +2041,7 @@ summarize_and_shift_variable_df <- function(grouped_df, variables){
 #' @title Summarize IAS-results
 #'
 #' @description Summarizes the results of the IAS-algorithm. Creates
-#' the content of slot @@results_smrd of the \code{ImageAnnotationScreening}-class.
+#' the content of slot @@results of the \code{ImageAnnotationScreening}-class.
 #'
 #' @details Model fitting and evaluation happens within every angle-bin.
 #' To get a single evaulation for every gene the results of every
@@ -2205,7 +2052,7 @@ summarizeIAS <- function(ias, method_padj = "fdr"){
 
   smrd_df <-
     dplyr::mutate(
-      .data  = ias@results,
+      .data  = ias@results_primary,
       p_value = tidyr::replace_na(data = p_value, replace = 1),
       corr = tidyr::replace_na(data = corr, replace = 0)
     ) %>%
@@ -2218,22 +2065,22 @@ summarizeIAS <- function(ias, method_padj = "fdr"){
       corr_max = base::max(corr),
       corr_sd = stats::sd(corr),
       raoc_mean = base::mean(raoc),
-      pvalue_mean = base::mean(p_value),
-      pvalue_median = stats::median(p_value),
-      pvalue_combined = base::prod(p_value)
+      p_value_mean = base::mean(p_value),
+      p_value_median = stats::median(p_value),
+      p_value_combined = base::prod(p_value)
     ) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
       ias_score = (raoc_mean + corr_mean) / 2,
-      pvalue_mean_adjusted = stats::p.adjust(p = pvalue_mean, method = method_padj),
-      pvalue_median_adjusted = stats::p.adjust(p = pvalue_median, method = method_padj),
-      pvalue_combined_adjusted = stats::p.adjust(p = pvalue_combined, method = method_padj)
+      p_value_mean_adjusted = stats::p.adjust(p = p_value_mean, method = method_padj),
+      p_value_median_adjusted = stats::p.adjust(p = p_value_median, method = method_padj),
+      p_value_combined_adjusted = stats::p.adjust(p = p_value_combined, method = method_padj)
     ) %>%
     dplyr::select(variables, models, ias_score, dplyr::everything())
 
   ias@method_padj <- method_padj
 
-  ias@results_smrd <- smrd_df
+  ias@results <- smrd_df
 
   return(ias)
 

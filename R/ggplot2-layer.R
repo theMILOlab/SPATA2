@@ -314,7 +314,7 @@ ggpInit <- function(object = "object", theme = "void", data = "coords"){
     )
 
   out$data_invis <-
-    ggplot2::geom_point(
+    geom_point_fixed(
       data = df,
       mapping = ggplot2::aes(x = x, y = y),
       alpha = 0

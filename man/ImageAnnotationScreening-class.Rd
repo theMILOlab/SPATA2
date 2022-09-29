@@ -20,24 +20,26 @@ the image annotation is consecutively expanded via \code{sf::st_buffer()},}
 
 \item{\code{coords}}{data.frame. Coordinates data.frame of the sample.}
 
-\item{\code{dea}}{data.frame. Results of the DE-Analysis between the image annotation
-area and the rest of the sample.}
-
 \item{\code{img_annotation}}{ImageAnnotation. The \code{ImageAnnotation}-object of
 the image annotation chosen for the screening.}
 
 \item{\code{method_padj}}{character. The method with which p-values were adjusted.}
 
+\item{\code{models}}{data.frame. The model data.frame that has been used for the
+screening.}
+
 \item{\code{n_bins_angle}}{numeric. Number of bins that were created anglewise.}
 
 \item{\code{n_bins_circle}}{numeric. Number of bins that were created circlewise.}
 
-\item{\code{results}}{data.frame. Data.frame that contains the results of
+\item{\code{results_primary}}{data.frame. Data.frame that contains the results of
 the model fitting per angle bin.}
 
-\item{\code{results_smrd}}{data.frame. Data.frame that contains the summary of
+\item{\code{results}}{data.frame. Data.frame that contains the summary of
 all gene-model fits across all angle bins.}
 
 \item{\code{sample}}{character. The sample name.}
+
+\item{\code{summarize_with}}{character. Either \emph{'mean'} or \emph{'median'}.}
 }}
 

@@ -11,7 +11,7 @@ plotVolcano(object, ...)
 \S4method{plotVolcano}{ImageAnnotationScreening}(
   object,
   eval = "corr_mean",
-  pval = "pvalue_mean",
+  pval = "p_value_mean",
   left = "linear_ascending",
   right = "linear_descending",
   display_thresholds = TRUE,
@@ -53,7 +53,7 @@ the color of the significant variables, second denotes the color
 of the not-significant variables.}
 
 \item{label_vars}{Character value, numeric value or NULL. Useful to highlight
-the exact position/evaulation of variables.
+the exact position/evalation of variables.
 
 If character, specifies the variables that are labeled. If numeric, specifies
 the top n of variables that are labeled. If NULL, ignored.}

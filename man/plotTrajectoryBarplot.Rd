@@ -7,7 +7,7 @@
 plotTrajectoryBarplot(
   object,
   id,
-  feature,
+  grouping_variable,
   binwidth = getBarcodeSpotDistance(object),
   clrp = NULL,
   clrp_adjust = NULL,
@@ -21,8 +21,6 @@ plotTrajectoryBarplot(
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
-
-\item{feature}{Character value. The grouping feature of interest.}
 
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
@@ -50,6 +48,8 @@ the computational progress will be printed.
 spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{ggplot2::facet_wrap()}.}
+
+\item{feature}{Character value. The grouping feature of interest.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

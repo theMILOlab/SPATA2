@@ -10,9 +10,20 @@ create_model_df <- function(input,
                             model_add = NULL,
                             verbose = TRUE){
 
+  # if length > 1 it is assumed that input corresponds to a variable like 'var_order'
+  # and the output models will have the same length as the vector of it's unique values
   if(base::length(input) > 1){
 
+    input <-
+      base::unique(input) %>%
+      base::sort()
+
     input <- base::length(input)
+
+  } else {
+
+    # else length(input) == 1, input indicates the length of the output models
+
 
   }
 
@@ -539,6 +550,10 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
 
   image_obj@image <- new_image
 
+  object@information$bcsp_dist <- NULL
+
+  object@information$bcsp_dist <- getBarcodeSpotDistance(object)
+
   object <- setImageObject(object, image_object = image_obj)
 
   give_feedback(msg = "Image exchanged.", verbose = verbose)
@@ -594,11 +609,11 @@ getBarcodeSpotDistances <- function(object, verbose = NULL){
 }
 
 #' @rdname getBarcodeSpotDistance
-getBarcodeSpotDistance <- function(object, verbose = NULL){
+getBarcodeSpotDistance <- function(object, force = FALSE, verbose = NULL){
 
   dist_val <- object@information$bcsp_dist
 
-  if(base::is.null(dist_val)){
+  if(base::is.null(dist_val) & base::isFALSE(force)){
 
     dist_val <-
       getBarcodeSpotDistances(object, verbose = verbose) %>%

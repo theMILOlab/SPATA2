@@ -6,7 +6,7 @@
 \usage{
 plotBarchart(
   object,
-  variables,
+  grouping_variables,
   across = NULL,
   across_subset = NULL,
   relevel = NULL,
@@ -21,10 +21,6 @@ plotBarchart(
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
-
-\item{variables}{Character vector. The discrete features whose group count or
-proportion you want to display. Must not contain the feature specified in
-\code{across} - if \code{across} is not set to NULL.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -60,6 +56,10 @@ represent the group.}
 
 \item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
 function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
+
+\item{variables}{Character vector. The discrete features whose group count or
+proportion you want to display. Must not contain the feature specified in
+\code{across} - if \code{across} is not set to NULL.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

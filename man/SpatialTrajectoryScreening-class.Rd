@@ -15,7 +15,11 @@ function \code{spatialTrajectoryScreening()}.
 \item{\code{binwidth}}{numeric. The width of the bins in which the barcode-spots
 are put based on the projection length values.}
 
+\item{\code{coords}}{data.frame. Coordinates data.frame of the sample.}
+
 \item{\code{id}}{character. The ID of the screened trajectory.}
+
+\item{\code{method_padj}}{character. The method with which p-values were adjusted.}
 
 \item{\code{models}}{data.frame. The model data.frame that has been used for the
 screening.}
@@ -25,10 +29,12 @@ are distributed based on their projection length.}
 
 \item{\code{results}}{data.frame. A data.frame that contains the model evaluations}
 
+\item{\code{sample}}{character. The sample name.}
+
 \item{\code{summarize_with}}{character. The name of the function that has been
 used to summarize the variables by bin.}
 
-\item{\code{spatial_trajectory}}{SpatialTrajectory. The spatial trajectory that
-along which the screening took place.}
+\item{\code{spatial_trajectory}}{SpatialTrajectory. The spatial trajectory based on
+which the screening took place.}
 }}
 

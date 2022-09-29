@@ -125,18 +125,19 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @slot binwidth numeric. The value with which the polygon that encircles
 #' the image annotation is consecutively expanded via \code{sf::st_buffer()},
 #' @slot coords data.frame. Coordinates data.frame of the sample.
-#' @slot dea data.frame. Results of the DE-Analysis between the image annotation
-#' area and the rest of the sample.
 #' @slot img_annotation ImageAnnotation. The \code{ImageAnnotation}-object of
 #' the image annotation chosen for the screening.
 #' @slot method_padj character. The method with which p-values were adjusted.
+#' @slot models data.frame. The model data.frame that has been used for the
+#' screening.
 #' @slot n_bins_angle numeric. Number of bins that were created anglewise.
 #' @slot n_bins_circle numeric. Number of bins that were created circlewise.
-#' @slot results data.frame. Data.frame that contains the results of
+#' @slot results_primary data.frame. Data.frame that contains the results of
 #' the model fitting per angle bin.
-#' @slot results_smrd data.frame. Data.frame that contains the summary of
+#' @slot results data.frame. Data.frame that contains the summary of
 #' all gene-model fits across all angle bins.
 #' @slot sample character. The sample name.
+#' @slot summarize_with character. Either \emph{'mean'} or \emph{'median'}.
 #'
 #' @export
 #'
@@ -146,14 +147,15 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                  binwidth = "numeric",
                                                  coords = "data.frame",
                                                  distance = "numeric",
-                                                 dea = "data.frame",
                                                  img_annotation = "ImageAnnotation",
                                                  method_padj = "character",
+                                                 models = "data.frame",
                                                  n_bins_angle = "numeric",
                                                  n_bins_circle = "numeric",
+                                                 results_primary = "data.frame",
                                                  results = "data.frame",
-                                                 results_smrd = "data.frame",
-                                                 sample = "character"
+                                                 sample = "character",
+                                                 summarize_with = "character"
                                                ))
 
 
@@ -181,26 +183,32 @@ SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
 #'
 #' @slot binwidth numeric. The width of the bins in which the barcode-spots
 #' are put based on the projection length values.
+#' @slot coords data.frame. Coordinates data.frame of the sample.
 #' @slot id character. The ID of the screened trajectory.
+#' @slot method_padj character. The method with which p-values were adjusted.
 #' @slot models data.frame. The model data.frame that has been used for the
 #' screening.
 #' @slot n_bins numeric. The number of bins in which the barcode-spots
 #' are distributed based on their projection length.
 #' @slot results data.frame. A data.frame that contains the model evaluations
+#' @slot sample character. The sample name.
 #' @slot summarize_with character. The name of the function that has been
 #' used to summarize the variables by bin.
-#' @slot spatial_trajectory SpatialTrajectory. The spatial trajectory that
-#' along which the screening took place.
+#' @slot spatial_trajectory SpatialTrajectory. The spatial trajectory based on
+#' which the screening took place.
 #'
 #' @export
 #'
 SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
                                                 slots = list(
                                                   binwidth = "numeric",
+                                                  coords = "data.frame",
                                                   id = "character",
+                                                  method_padj = "character",
                                                   models = "data.frame",
                                                   n_bins = "numeric",
                                                   results = "data.frame",
+                                                  sample = "character",
                                                   summarize_with = "character",
                                                   spatial_trajectory = "SpatialTrajectory"
                                                 ))

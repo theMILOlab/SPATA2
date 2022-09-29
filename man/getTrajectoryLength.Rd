@@ -4,18 +4,10 @@
 \alias{getTrajectoryLength}
 \title{Obtain the length of a trajectory}
 \usage{
-getTrajectoryLength(
-  object,
-  id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
-  binwidth = 5
-)
+getTrajectoryLength(object, id)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
-relevant barcode spots into groups that are then aligned with respect to the
-chosen trajectory's direction.#'}
 }
 \value{
 Numeric value.

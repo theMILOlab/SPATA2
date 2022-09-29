@@ -7,7 +7,7 @@
 getSmrdResultsDf(
   ias,
   eval = "ias_score",
-  pval = "pvalue_mean_adjusted",
+  pval = "p_value_mean_adjusted",
   threshold_pval = 1,
   threshold_eval = 0,
   model_subset = NULL,

@@ -10,7 +10,7 @@
 
 projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")
 
-smrd_projection_df_names <- c("trajectory_part", "order_binned", "trajectory_order", "trajectory_part_order")
+smrd_projection_df_names <- c("trajectory_part", "proj_length_binned", "trajectory_order", "trajectory_part_order")
 
 # a -----------------------------------------------------------------------
 
@@ -154,8 +154,8 @@ bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
     binned_projection_df <-
       dplyr::mutate(
         .data = projection_df,
-        order_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
-        order_numeric = base::as.factor(order_binned) %>% base::as.numeric()
+        proj_length_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
+        order_numeric = base::as.factor(proj_length_binned) %>% base::as.numeric()
       )
 
   } else if(base::is.numeric(n_bins)){
@@ -163,8 +163,8 @@ bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
     binned_projection_df <-
       dplyr::mutate(
         .data = projection_df,
-        order_binned = base::cut(projection_length, breaks = n_bins),
-        order_numeric = base::as.numeric(order_binned)
+        proj_length_binned = base::cut(projection_length, breaks = n_bins),
+        order_numeric = base::as.numeric(proj_length_binned)
       )
 
   }
@@ -201,10 +201,21 @@ discardSpatialTrajectory <- function(object, id){
 # g -----------------------------------------------------------------------
 
 
+#' @title Obtain trajectory projection
+#'
+#' @description Extracts the projection data.frame of a trajectory. If \code{variables}
+#' is specified
+#'
+#' @inherit argument_dummy params
+#' @export
+#'
 getProjectionDf <- function(object,
                             id,
-                            variables){
+                            ...){
 
+  traj_obj <- getTrajectoryObject(object = object, id = id)
+
+  return(traj_obj@projection)
 
 }
 
@@ -222,6 +233,18 @@ getTrajectory <- function(object, id){
   )
 
   return(out)
+
+}
+
+
+#' @export
+
+getTrajectoryLength <- function(object, id){
+
+
+  traj_obj <- getTrajectory(object, id = id)
+
+
 
 }
 
@@ -413,7 +436,7 @@ getSpatialTrajectoryIds <- function(object){
 nest_shifted_projection_df <- function(shifted_projection_df){
 
   out_df <-
-    dplyr::select(shifted_projection_df, -dplyr::contains("trajectory_part"), -order_binned) %>%
+    dplyr::select(shifted_projection_df, -dplyr::contains("trajectory_part"), -proj_length_binned) %>%
     dplyr::group_by(variables) %>%
     tidyr::nest()
 
@@ -529,19 +552,11 @@ plotSpatialTrajectories <- function(object,
       }
     )
 
-  if(base::isTRUE(display_facets)){
-
-    facet_add_on <- ggplot2::facet_wrap(facets = . ~ ids, nrow = nrow, ncol = ncol)
-
-  } else {
-
-    facet_add_on <- NULL
-
-  }
-
   if(base::isTRUE(display_image)){
 
-    base_plot <- plotImageGgplot(object)
+    base_plot <-
+      ggplot2::ggplot() +
+      ggpLayerImage(object = object)
 
   } else {
 
@@ -553,15 +568,27 @@ plotSpatialTrajectories <- function(object,
 
   }
 
+
+  if(base::length(ids) == 1){ display_facets <- FALSE }
+
+  if(base::isTRUE(display_facets)){
+
+    facet_add_on <- ggplot2::facet_wrap(facets = . ~ ids, nrow = nrow, ncol = ncol)
+
+  } else {
+
+    facet_add_on <- NULL
+
+  }
+
   params <- adjust_ggplot_params(params = list(color = pt_clr, size = pt_size))
 
   base_plot +
     geom_point_fixed(
       params,
       data = df,
-      mapping = ggplot2::aes_string(x = "x", y = "y", alpha = "in_traj", color = color_by)
+      mapping = ggplot2::aes(x = x, y = y, alpha = in_traj, color = .data[[color_by]])
     ) +
-    facet_add_on +
     ggpLayerTrajectories(
       object = object,
       ids = ids,
@@ -601,7 +628,7 @@ plotSpatialTrajectories <- function(object,
 #' @export
 plotTrajectoryBarplot <- function(object,
                                   id,
-                                  feature,
+                                  grouping_variable,
                                   binwidth = getBarcodeSpotDistance(object),
                                   clrp = NULL,
                                   clrp_adjust = NULL,
@@ -621,7 +648,7 @@ plotTrajectoryBarplot <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, 1)
 
-  feature <- check_features(object, feature, valid_classes = c("character", "factor"), 1)
+  grouping_variable <- check_features(object, grouping_variable, valid_classes = c("character", "factor"), 1)
 
   # -----
 
@@ -630,13 +657,13 @@ plotTrajectoryBarplot <- function(object,
 
   tobj <- getTrajectory(object, id = id)
 
-  joined_df <- joinWith(object, spata_df = tobj@projection,  features = feature)
+  joined_df <- joinWith(object, spata_df = tobj@projection,  features = grouping_variable)
 
   plot_df <-
     dplyr::mutate(
       .data = joined_df,
-      order_binned = plyr::round_any(x = projection_length, accuracy = binwidth, f = base::floor),
-      trajectory_order = stringr::str_c(trajectory_part, order_binned, sep = "_")
+      proj_length_binned = plyr::round_any(x = projection_length, accuracy = binwidth, f = base::floor),
+      trajectory_order = stringr::str_c(trajectory_part, proj_length_binned, sep = "_")
     )
 
   plot_df$trajectory_order <-
@@ -658,10 +685,10 @@ plotTrajectoryBarplot <- function(object,
 
   ggplot2::ggplot(data = plot_df) +
     ggplot2::geom_bar(
-      mapping = ggplot2::aes(x = trajectory_order, fill = .data[[feature]]),
+      mapping = ggplot2::aes(x = trajectory_order, fill = .data[[grouping_variable]]),
       position = position,
       width = 0.9) +
-    confuns::scale_color_add_on(aes = "fill", variable = plot_df[[feature]], clrp = clrp, clrp.adjust = clrp_adjust) +
+    confuns::scale_color_add_on(aes = "fill", variable = plot_df[[grouping_variable]], clrp = clrp, clrp.adjust = clrp_adjust) +
     facet_add_on +
     ggplot2::theme_minimal() +
     ggplot2::theme(
@@ -1014,10 +1041,10 @@ plotTrajectoryHeatmap <- function(object,
       ggplot2::geom_tile() +
       traj_part_add_on +
       ggplot2::theme_classic() +
-      ggplot2::labs(x = NULL, y = NULL, fill = "Expr.") +
+      ggplot2::labs(x = "Trajectory Direction", y = NULL, fill = "Expr.") +
       ggplot2::theme(
         axis.ticks = ggplot2::element_blank(),
-        axis.line.x = ggplot2::element_blank(),
+        axis.line.x = trajectory.line.x,
         axis.line.y = ggplot2::element_blank(),
         axis.text.x = ggplot2::element_blank(),
         strip.background = ggplot2::element_blank(),
@@ -1181,9 +1208,9 @@ plotTrajectoryLineplot <- function(object,
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
     ggplot2::theme_classic() +
     ggplot2::theme(
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
+      axis.line.x = trajectory.line.x,
       axis.line.y = ggplot2::element_line()
     ) +
     ggplot2::labs(x = "Trajectory Direction", y = NULL, color = "Variable") +
@@ -1474,21 +1501,90 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
 
 }
 
+
+
+
+
+
+#' @title The of the STS-algorithm
+#'
+#' @description Screens the sample for numeric variables that follow specific expression
+#' changes along the course of the spatial trajectory.
+#'
+#' @inherit getTrajectoryDf params
+#' @param variables Character vector. All numeric variables (meaning genes,
+#' gene-sets and numeric features) that are supposed to be included in
+#' the screening process.
+#' @param binwidth Numeric value. The width of the bins to which
+#' the barcode-spots are assigned. We recommend to set it equal to the distance
+#' between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
+#' (See details for more.)
+#' @param n_bins Numeric value or vector of length 2. Specifies exactly how many bins are
+#' created. (See details for more.)
+#'
+#' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
+#' Specifies the function with which the bins are summarized.
+#'
+#' @inherit add_models params
+#' @inherit argument_dummy params
+#'
+#' @return An object of class \code{SpatialTrajectoryScreening}. See documentation
+#' with \code{?ImageAnnotationScreening} for more information.
+#'
+#' @seealso createSpatialTrajectories()
+#'
+#' @details
+#'
+#' \bold{How the algorithm works:} All barcode-spots that fall into the scope
+#' of the trajectory are projected on the trajectory's course. These projection
+#' values indicate if a barcode-spot is rather located at the beginning or at
+#' the end of the trajectory. Barcode-spots are binned by their projection values.
+#'
+#' How many bins area created depends on the input for argument \code{binwidth}
+#' or \code{n_bins} as well as on the length of trajectory. As the length of
+#' the trajectory is fixed only one argument of the latter two must be provided.
+#' The other one is calculated based on the equation shown below.
+#'
+#' \code{n_bins} = \emph{length_of_trajectory} / \code{binwidth}
+#'
+#' \code{binwidth} = \emph{length_of_trajectory} / \code{n_bins}
+#'
+#' and for every numeric variable included the mean-expression of each bin is calcuated.
+#' As the bins can be aligned in an ascending order (ascending in relation to the
+#' directory of the trajectory), so can the bin-wise mean expression of each variable.
+#' Doing so results in \emph{inferred expression changes along the trajectory}.
+#' Use \code{plotTrajectoryLineplot()} to visualize this concept.
+#'
+#' The inferred expression changes are fitted against predefined models to find
+#' variables whose expression e.g. increases, decreases or peaks over the course
+#' of the trajectory. Use \code{showModels()} to visualize the inbuilt models.
+#'
+#' How good a model fits is evaluated by pearson correlation and the area under
+#' the curve of the gene-model-residuals.
+#'
 #' @export
 spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
                                        n_bins = NA,
-                                       binwidth = NA,
+                                       binwidth = getBarcodeSpotDistance(object),
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        model_add = NULL,
+                                       method_padj = "fdr",
                                        summarize_with = "mean",
                                        verbose = NULL){
 
   hlpr_assign_arguments(object)
 
   check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth)
+
+  method_padj <- method_padj[1]
+
+  confuns::check_one_of(
+    input = method_padj,
+    against = validPadjMethods()
+  )
 
   confuns::give_feedback(
     msg = "Starting spatial trajectory screening.",
@@ -1573,7 +1669,14 @@ spatialTrajectoryScreening <- function(object,
       var_order = "trajectory_order",
       with_corr = TRUE,
       with_raoc = TRUE
-    )
+    ) %>%
+    dplyr::mutate(
+      sts_score = (corr + raoc) / 2
+    ) %>%
+    dplyr::select(variables, models, sts_score, corr, raoc, pvalue, dplyr::everything())
+
+  results[["p_value_adjusted"]] <-
+    stats::p.adjust(p = results[["p_value"]], method = method_padj)
 
   if(!base::is.numeric(binwidth)){ binwidth <- NA_integer_}
   if(!base::is.numeric(n_bins)){ n_bins <- NA_integer_ }
@@ -1581,7 +1684,9 @@ spatialTrajectoryScreening <- function(object,
   sts <-
     SpatialTrajectoryScreening(
       binwidth = binwidth,
+      coords = getCoordsDf(object),
       id = id,
+      method_padj = method_padj,
       models = models_only,
       n_bins = n_bins,
       results = results,
@@ -1619,8 +1724,8 @@ summarize_projection_df <- function(projection_df,
   binned_projection_df <- bin_projection_df(projection_df, n_bins = n_bins, binwidth = binwidth)
 
   smrd_projection_df <-
-    dplyr::select(binned_projection_df, dplyr::any_of(c(projection_df_names, num_vars)), order_binned) %>%
-    dplyr::group_by(trajectory_part, order_binned) %>%
+    dplyr::select(binned_projection_df, dplyr::any_of(c(projection_df_names, num_vars)), proj_length_binned) %>%
+    dplyr::group_by(trajectory_part, proj_length_binned) %>%
     dplyr::summarise(
       dplyr::across(
         .cols = dplyr::all_of(num_vars),

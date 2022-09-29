@@ -410,26 +410,34 @@ plotViolinplot <- function(object,
 #' \code{across} - if \code{across} is not set to NULL.
 
 plotBarchart <- function(object,
-                        variables,
-                        across = NULL,
-                        across_subset = NULL,
-                        relevel = NULL,
-                        clrp = NULL,
-                        clrp_adjust = NULL,
-                        position = NULL,
-                        display_facets = NULL,
-                        ncol = NULL,
-                        nrow = NULL,
-                        ...){
+                         grouping_variables,
+                         across = NULL,
+                         across_subset = NULL,
+                         relevel = NULL,
+                         clrp = NULL,
+                         clrp_adjust = NULL,
+                         position = NULL,
+                         display_facets = NULL,
+                         ncol = NULL,
+                         nrow = NULL,
+                         ...){
 
   hlpr_assign_arguments(object)
+
+  if(!base::is.null(list(...)[["variables"]])){
+
+    warning("Argument `variables` is deprecated in this function. Please use `grouping_variables` instead.")
+
+    grouping_variables <- variables
+
+  }
 
   of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
 
   features <-
     check_features(
       object = object,
-      features = c(variables, across),
+      features = c(grouping_variables, across),
       valid_classes = c("character", "factor")
       )
 
@@ -444,7 +452,7 @@ plotBarchart <- function(object,
 
 
   confuns::plot_barplot(df = spata_df,
-                        variables = variables,
+                        variables = grouping_variables,
                         across = across,
                         across.subset = across_subset,
                         relevel = relevel,

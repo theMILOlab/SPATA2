@@ -8,7 +8,7 @@ summarizeIAS(ias, method_padj = "fdr")
 }
 \description{
 Summarizes the results of the IAS-algorithm. Creates
-the content of slot @results_smrd of the \code{ImageAnnotationScreening}-class.
+the content of slot @results of the \code{ImageAnnotationScreening}-class.
 }
 \details{
 Model fitting and evaluation happens within every angle-bin.

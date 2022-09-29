@@ -5,6 +5,61 @@ NULL
 
 # Generics ----------------------------------------------------------------
 
+
+#' @title Obtain model evaluation
+#'
+#' @description Extracts the data.frame that contains the variable-model-fit
+#' evaluation containing.
+#'
+#' @inherit object_dummy
+#'
+#' @return Data.frame.
+#'
+#' @export
+
+setGeneric(name = "getModelEvaluationDf", def = function(object, ...){
+
+  standardGeneric(f = "getModelEvaluationDf")
+
+})
+
+#' @rdname getModelEvaluationDf
+#' @export
+setMethod(
+  f = "getModelEvaluationDf",
+  signature = "ImageAnnotationScreening",
+  definition = function(object, smrd = TRUE){
+
+    if(base::isTRUE(smrd)){
+
+      out <- object@results_smrd
+
+    } else {
+
+      out <- object@results
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getModelEvaluationDf
+#' @export
+setMethod(
+  f = "getModelEvaluationDf",
+  signature = "SpatialTrajectoryScreening",
+  definition = function(object, ...){
+
+    out <- object@results
+
+    return(out)
+
+  }
+)
+
+
 #' @title Obtain a trajectory comment
 #'
 #' @param object A valid spata-object.
@@ -18,6 +73,10 @@ setGeneric(name = "getTrajectoryComment", def = function(object, ...){
   standardGeneric(f = "getTrajectoryComment")
 
 })
+
+
+# p -----------------------------------------------------------------------
+
 
 
 # -----

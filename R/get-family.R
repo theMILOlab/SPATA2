@@ -952,6 +952,7 @@ getGroupNames <- function(object, grouping_variable, of_sample = NA, ...){
 }
 
 
+
 #' @title Obtain segment names
 #'
 #' @inherit check_sample params

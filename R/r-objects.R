@@ -392,3 +392,15 @@ summarize_formulas <-
 
 
 
+
+
+# t -----------------------------------------------------------------------
+
+
+trajectory.line.x <-
+  ggplot2::element_line(
+    arrow = ggplot2::arrow(
+      length = ggplot2::unit(0.075, "inches"),
+      type = "closed"
+      )
+    )
