@@ -888,7 +888,7 @@ plotCnvResults <- function(object,
 
     gene_names <- base::rownames(cnv_data)
 
-    prel_df <-
+    plot_df <-
       base::as.data.frame(cnv_data) %>%
       base::t() %>%
       base::as.data.frame() %>%
