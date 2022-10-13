@@ -931,7 +931,7 @@ plotCnvResults <- function(object,
       tidyr::drop_na()
 
     final_plot <-
-      ggplot2::ggplot(data = summarized_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
+      ggplot2::ggplot(data = summarized_df, mapping = ggplot2::aes(x = 1:base::nrow(summarized_df), y = mean)) +
       ggplot2::geom_smooth(
         method = "loess", formula = y ~ x, span = smooth_span, se = FALSE,
         alpha = linealpha, color = linecolor, size = linesize, ...) +
