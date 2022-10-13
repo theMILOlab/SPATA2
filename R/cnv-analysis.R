@@ -888,7 +888,7 @@ plotCnvResults <- function(object,
 
     gene_names <- base::rownames(cnv_data)
 
-    plot_df <-
+    prel_df <-
       base::as.data.frame(cnv_data) %>%
       base::t() %>%
       base::as.data.frame() %>%
@@ -931,7 +931,7 @@ plotCnvResults <- function(object,
       tidyr::drop_na()
 
     final_plot <-
-      ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
+      ggplot2::ggplot(data = summarized_df, mapping = ggplot2::aes(x = 1:base::nrow(plot_df), y = mean)) +
       ggplot2::geom_smooth(
         method = "loess", formula = y ~ x, span = smooth_span, se = FALSE,
         alpha = linealpha, color = linecolor, size = linesize, ...) +
