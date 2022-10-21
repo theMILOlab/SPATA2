@@ -6,7 +6,7 @@
 \usage{
 plotDeaDotPlot(
   object,
-  across = getDefaultGrouping(object, verbose = T, "across"),
+  across = getDefaultGrouping(object),
   across_subset = NULL,
   relevel = NULL,
   method_de = NULL,
@@ -16,10 +16,8 @@ plotDeaDotPlot(
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
   genes = NULL,
-  x = c("avg_logFC", "p_val_adj")[1],
   alpha_by = NULL,
   alpha_trans = "identity",
-  color_by = "avg_logFC",
   color_trans = "identity",
   size_by = "p_val_adj",
   size_trans = "reverse",
@@ -70,9 +68,6 @@ gene sets is created.}
 that determines which genes are included. If NULL, genes are taken according
 to the threshold input for average log fold change and adjusted p-value.}
 
-\item{x}{Character value. Specifies what is plotted on the x-axis.
-If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.}
-
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
@@ -92,6 +87,9 @@ plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
 \item{...}{Additional arguments given to \code{scale_color_add_on()}.}
+
+\item{x}{Character value. Specifies what is plotted on the x-axis.
+If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.}
 }
 \value{
 A ggplot.

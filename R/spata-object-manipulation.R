@@ -1,4 +1,104 @@
 
+
+
+#' @title Simple subsetting by barcodes
+#'
+#' @description Removes unwanted barcode spots from the object without any significant
+#' post processing.
+#'
+#' @param object
+#' @param barcodes Character vector. The barcodes of the barcode spots that are
+#' supposed to be \bold{kept}.
+#'
+#' @return An updated \code{spata2} object.
+#'
+#' @details Unused levels of factor variables in the feature data.frame are dropped
+#' and directory settings are reset to NULL.
+#'
+#' @export
+#'
+subsetByBarcodes <- function(object, barcodes, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  object <-
+    getFeatureDf(object) %>%
+    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = where(base::is.factor),
+        .fns = base::droplevels
+      )
+    ) %>%
+    setFeatureDf(object = object, feature_df = .)
+
+  object <-
+    getCoordsDf(object) %>%
+    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    setCoordsDf(object, coords_df = .)
+
+  object@data[[1]] <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = function(mtr){
+
+        out <- mtr[,barcodes]
+
+        return(out)
+
+      }
+    )
+
+  object@images[[1]]@annotations <-
+    purrr::map(
+      .x = object@images[[1]]@annotations,
+      .f = function(img_ann){
+
+        img_ann@barcodes <-
+          img_ann@barcodes[img_ann@barcodes %in% barcodes]
+
+        return(img_ann)
+
+      }
+    )
+
+  object@trajectories[[1]] <-
+    purrr::map(
+      .x = object@trajectories[[1]],
+      .f = function(traj){
+
+        traj@projection <-
+          dplyr::filter(traj@projection, barcodes %in% {{barcodes}})
+
+        return(traj)
+
+      }
+    )
+
+  object@information$barcodes <-
+    object@information$barcodes[object@information$barcodes %in% barcodes]
+
+  if(base::is.numeric(object@information$subsetted)){
+
+    object@information$subsetted <- object@information$subsetted + 1
+
+  } else {
+
+    object@information$subsetted <- 1
+
+  }
+
+  n_bcsp <- nBarcodes(object)
+
+  confuns::give_feedback(
+    msg = glue::glue("{n_bcsp} barcode spots remaining."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
 #' @title Subset a spata-object
 #'
 #' @description These functions filter your spata-object and initiate a new one

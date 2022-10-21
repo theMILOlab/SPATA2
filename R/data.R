@@ -86,6 +86,15 @@
 #'
 "image_annotations"
 
+
+#' A list of data.frames that each contain two variables: \emph{barcodes} and \emph{snn}.
+#' The latter contains the grouping according to Shared Nearest Neighbour clustering.
+#'
+#'  @docType data
+#'  @usage data(snn_clustering)
+#'
+'snn_clustering'
+
 #' A list of lists of spatial segmentations. Every slot in list \code{spatial_segmentations}
 #' is named by the sample the segmentations belong to. Every sample specific slot
 #' is a data.frame with two variables: \emph{barcodes} and the spatial segmentation

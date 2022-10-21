@@ -65,6 +65,9 @@ represent the group.}
 \item{discrete_feature}{Character value. Specifies the name of the grouping variable
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 
+\item{display_ribbon}{Logical value. If TRUE, a ribbon is displayed around
+the main line of the plot visualizing uncertainty using standard deviation.}
+
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 
 \item{expand}{Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
@@ -92,6 +95,10 @@ Skim \code{ggpLayer*()}-functions for more options.}
 
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
+
+\item{hline_alpha, hline_color, hline_size, hline_type}{Parameters given to
+\code{ggplot2::geom_hline()} that control the appearance of vertical lines
+of the plot.}
 
 \item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
@@ -122,6 +129,14 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
+\item{line_alpha, line_color, line_size, line_type}{Parameters given to
+\code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
+that control the appearance of the main line(s) of the plot.}
+
+\item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
+\code{ggplot2::geom_vline()} that control the appearance of vertical lines
+of the plot.}
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 

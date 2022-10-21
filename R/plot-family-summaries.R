@@ -149,13 +149,16 @@ plotDeaPvalues <- function(object,
 
   }
 
-  de_df <- getDeaResultsDf(object = object,
-                           across = across,
-                           across_subset = across_subset,
-                           relevel = relevel,
-                           method_de = method_de,
-                           max_adj_pval = max_adj_pval,
-                           of_sample = of_sample)
+  de_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      across_subset = across_subset,
+      relevel = relevel,
+      method_de = method_de,
+      max_adj_pval = max_adj_pval,
+      of_sample = of_sample
+    )
 
 
   # 2. Plotting -------------------------------------------------------------
@@ -211,6 +214,13 @@ plotDeaLogFC <- function(object,
     against = validPlotTypes(fn_name = "plotDeaLogFC")
   )
 
+  lfc_name <-
+    getDeaLfcName(
+      object = object,
+      across = across,
+      method_de = method_de
+      )
+
   if(plot_type == "histogram"){
 
     default_list <-
@@ -235,7 +245,7 @@ plotDeaLogFC <- function(object,
 
   # 2. Plotting -------------------------------------------------------------
 
-  ggplot2::ggplot(data = de_df, mapping = ggplot2::aes(x = avg_logFC)) +
+  ggplot2::ggplot(data = de_df, mapping = ggplot2::aes(x = .data[[lfc_name]])) +
     confuns::call_flexibly(
       fn = stringr::str_c("geom", plot_type, sep = "_"), fn.ns = "ggplot2",
       default = default_list,
@@ -250,7 +260,7 @@ plotDeaLogFC <- function(object,
       legend.position = "none",
       strip.background = ggplot2::element_blank()) +
     ggplot2::scale_x_continuous(limits = limits_x) +
-    ggplot2::labs(x = "Average logFC-values", y = NULL) +
+    ggplot2::labs(y = NULL) +
     hlpr_display_title(display_title, title = stringr::str_c("Adj. p-value cutoff:", max_adj_pval, sep = " "))
 
 
@@ -288,13 +298,16 @@ plotDeaGeneCount <- function(object,
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
-  dea_df <- getDeaResultsDf(object = object,
-                           across = across,
-                           across_subset = across_subset,
-                           relevel = relevel,
-                           method_de = method_de,
-                           max_adj_pval = max_adj_pval,
-                           of_sample = of_sample)
+  dea_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      across_subset = across_subset,
+      relevel = relevel,
+      method_de = method_de,
+      max_adj_pval = max_adj_pval,
+      of_sample = of_sample
+    )
 
   if(base::isTRUE(sort_by_count)){
 

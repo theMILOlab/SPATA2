@@ -1229,8 +1229,25 @@ hlpr_smooth <- function(variable,
 
     }
 
-    base::warning(stringr::str_c("Skip smoothing of", aspect, var_name, "as it contains NaNs or infinites.", sep = " "))
-   return(variable)
+    n <- base::sum(!is_number(data$rv))
+
+    mn <- base::min(data$rv[is_number(data$rv)])
+
+    warning(
+      glue::glue(
+        "Exchanging {n} Inf/NA values with {mn} for smoothing."
+      )
+    )
+
+    data$rv[!is_number(data$rv)] <- mn
+
+    smooth_span <- smooth_span/10
+
+    model <- stats::loess(formula = rv ~ x * y, data = data, span = smooth_span)
+
+    out <- stats::predict(object = model)
+
+    return(out)
 
   } else {
 
@@ -1238,9 +1255,18 @@ hlpr_smooth <- function(variable,
 
     model <- stats::loess(formula = rv ~ x * y, data = data, span = smooth_span)
 
-   return(stats::predict(object = model))
+    out <- stats::predict(object = model)
+
+   return(out)
 
   }
+
+}
+
+
+is_number <- function(x){
+
+  !(base::is.na(x) | base::is.na(x) | base::is.infinite(x))
 
 }
 

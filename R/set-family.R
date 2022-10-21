@@ -561,17 +561,17 @@ setDefaultGrouping <- function(object, grouping_variable, verbose = NULL){
 
 #' @rdname setDefaultGrouping
 #' @export
-getDefaultGrouping <- function(object, verbose = FALSE, ...){
+getDefaultGrouping <- function(object, verbose = NULL, arg = "across"){
+
+  hlpr_assign_arguments(object)
 
   g <- object@information$default_grouping
 
-  x <- c(...)
-
   if(!base::is.character(g)){
 
-    if(base::is.character(x)){
+    if(base::is.character(arg)){
 
-      stop(glue::glue("Default grouping is not set. Set it with 'setDefaultGrouping()' or specify with argument '{x}'."))
+      stop(glue::glue("Default grouping is not set. Set it with 'setDefaultGrouping()' or specify with argument '{arg}'."))
 
     } else {
 
@@ -865,5 +865,35 @@ setGeneSetDf <- function(object, gene_set_df){
   object@used_genesets <- gene_set_df
 
   base::return(object)
+
+}
+
+
+
+
+
+
+# L -----------------------------------------------------------------------
+
+
+setDeaResults <- function(object, dea_results, across, method_de, ...){
+
+  if(base::length(object@dea) == 0){
+
+    object@dea <-
+      base::vector(mode = "list", length = 1) %>%
+      purrr::set_names(nm = object@samples)
+
+  }
+
+  # set data.frame
+  object@dea[[1]][[across]][[method_de]][["data"]] <-
+    tibble::remove_rownames(.data = dea_results) %>%
+    dplyr::rename(!!rlang::sym(across) := "cluster") %>%
+    tibble::as_tibble()
+
+  object@dea[[1]][[across]][[method_de]][["adjustments"]] <- list(...)
+
+  return(object)
 
 }

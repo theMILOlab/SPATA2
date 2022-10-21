@@ -9,6 +9,8 @@ plotCnvResults(
   across = NULL,
   across_subset = NULL,
   relevel = NULL,
+  chr_subset = NULL,
+  summarize_with = "median",
   linealpha = 0.9,
   linecolor = "blue",
   linesize = 1,
@@ -21,6 +23,7 @@ plotCnvResults(
   ribbon_color = "grey",
   nrow = NULL,
   ncol = NULL,
+  yrange = 1,
   of_sample = NA,
   verbose = NULL,
   clr = NA,
@@ -48,10 +51,16 @@ Use \code{getGroupNames()} to obtain all valid input options.}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
 
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
+
+\item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
+\code{ggplot2::geom_vline()} that control the appearance of vertical lines
+of the plot.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 

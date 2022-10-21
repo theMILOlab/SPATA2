@@ -87,7 +87,7 @@ plotBoxplot <- function(object,
       variables = variables,
       method_gs = method_gs,
       smooth = FALSE,
-      normalize = FALSE
+      normalize = normalize
     ) %>%
     dplyr::select(-barcodes, -sample)
 

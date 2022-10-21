@@ -355,6 +355,18 @@ addFeatures <- function(object,
 
   }
 
+  confuns::check_none_of(
+    input = feature_names,
+    against = getGenes(object),
+    ref.against = "gene names - must be renamed before being added"
+  )
+
+  confuns::check_none_of(
+    input = feature_names,
+    against = getGeneSets(object),
+    ref.against = "gene set names - must be renamed before being added"
+  )
+
   feature_names <- confuns::check_vector(
     input = feature_names,
     against = base::colnames(feature_df),

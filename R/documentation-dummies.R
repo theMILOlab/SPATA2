@@ -257,6 +257,8 @@ seurat_object_dummy <- function(seurat_object){}
 #' \code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.
 #' @param display_points Logical value. If set to TRUE points are used additionally
 #' to display the results.
+#' @param display_ribbon Logical value. If TRUE, a ribbon is displayed around
+#' the main line of the plot visualizing uncertainty using standard deviation.
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
 #'
 #' @param expand Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
@@ -284,6 +286,10 @@ seurat_object_dummy <- function(seurat_object){}
 #'
 #' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
 #' the dendrogom is cut.
+#'
+#' @param hline_alpha,hline_color,hline_size,hline_type Parameters given to
+#' \code{ggplot2::geom_hline()} that control the appearance of vertical lines
+#' of the plot.
 #'
 #' @param ids Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
 #' interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.
@@ -315,6 +321,14 @@ seurat_object_dummy <- function(seurat_object){}
 #' Hint: Variables that are uniformly expressed can not be scaled and are discarded.
 #'
 #' @param nrow,ncol Numeric values or NULL. Used to arrange multiple plots.
+#'
+#' @param line_alpha,line_color,line_size,line_type Parameters given to
+#' \code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
+#' that control the appearance of the main line(s) of the plot.
+#'
+#' @param vline_alpha,vline_color,vline_size,vline_type Parameters given to
+#' \code{ggplot2::geom_vline()} that control the appearance of vertical lines
+#' of the plot.
 #'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'

@@ -196,7 +196,7 @@ getDeaOverview <- function(object){
 #' @export
 
 getDeaResultsDf <- function(object,
-                            across = getDefaultGrouping(object, verbose = TRUE, "across"),
+                            across = getDefaultGrouping(object),
                             across_subset = NULL,
                             relevel = FALSE,
                             method_de = "wilcox",
@@ -256,11 +256,11 @@ getDeaResultsDf <- function(object,
 #' @rdname getDeaResultsDf
 #' @export
 getDeaGenes <- function(object,
-                        across = getDefaultGrouping(object, verbose = TRUE, "across"),
+                        across = getDefaultGrouping(object),
                         across_subset = NULL,
                         method_de = "wilcox",
                         max_adj_pval = NULL,
-                        min_lfc = NULL,
+                        min_lfc = 0,
                         n_highest_lfc = NULL,
                         n_lowest_pval = NULL,
                         flatten = TRUE,
@@ -295,17 +295,48 @@ getDeaGenes <- function(object,
 
   }
 
-  dea_results <- filterDeaDf(dea_df = de_result_list[["data"]],
-                             across_subset = across_subset,
-                             max_adj_pval = max_adj_pval,
-                             min_lfc = min_lfc,
-                             n_highest_lfc = n_highest_lfc,
-                             n_lowest_pval = n_lowest_pval,
-                             return = return)
+  dea_results <-
+    filterDeaDf(
+      dea_df = de_result_list[["data"]],
+      across_subset = across_subset,
+      max_adj_pval = max_adj_pval,
+      min_lfc = min_lfc,
+      n_highest_lfc = n_highest_lfc,
+      n_lowest_pval = n_lowest_pval,
+      return = return
+    )
 
   # 3. Return ---------------------------------------------------------------
 
   return(dea_results)
+
+}
+
+
+#' @title Obtain LFC name
+#' @description Extracts name of variable that contains log fold change results
+#' of DEA.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#'
+
+getDeaLfcName <- function(object,
+                          across = getDefaultGrouping(object) ,
+                          method_de = NULL){
+
+  hlpr_assign_arguments(object)
+
+  out <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      method_de = method_de
+    ) %>%
+    base::colnames()
+
+  return(out[2])
 
 }
 
@@ -898,7 +929,7 @@ getGroupingOptions <- function(object, of_sample = NA){
 
   getFeatureNames(
     object = object,
-    of_class = c("character", "factor"),
+    of_class = c("factor"),
     of_sample = of_sample
   )
 

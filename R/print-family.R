@@ -21,7 +21,7 @@ printDeaOverview <- function(object, of_sample = NA){
 
   check_availability(
     test = !base::is.null(base::names(dea_list)),
-    ref_x = "any de-analysis results",
+    ref_x = "any DEA results",
     ref_fns = "runDeaAnalysis()"
   )
 
@@ -36,7 +36,7 @@ printDeaOverview <- function(object, of_sample = NA){
 
   msg <-
     glue::glue(
-      "De-analysis has been performed on grouping {ref1}:\n{msg_dea}",
+      "DEA results exist for grouping {ref1}:\n{msg_dea}",
       ref1 = confuns::adapt_reference(base::names(dea_list), sg = "variable", pl = "variables"))
 
   base::print(msg)

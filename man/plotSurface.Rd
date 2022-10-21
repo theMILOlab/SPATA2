@@ -29,6 +29,7 @@ plotSurface(
   transform_with = NULL,
   bcsp_rm = NULL,
   na_rm = FALSE,
+  pt_size_legend = 10,
   of_sample = NA,
   ...
 )

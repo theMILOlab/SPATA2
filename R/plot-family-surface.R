@@ -54,6 +54,7 @@ plotSurface <- function(object,
                         transform_with = NULL,
                         bcsp_rm = NULL,
                         na_rm = FALSE,
+                        pt_size_legend = 10,
                         of_sample = NA,
                         ...){
 
@@ -167,6 +168,16 @@ plotSurface <- function(object,
 
   }
 
+  if(!base::is.null(color_by) && color_by %in% getGroupingOptions(object)){
+
+    size_add_on <- legendColor(size = pt_size_legend)
+
+  } else {
+
+    size_add_on <- NULL
+
+  }
+
   ggplot2::ggplot(data = coords_df) +
     hlpr_image_add_on(object, display_image, of_sample) +
     point_add_on +
@@ -179,7 +190,9 @@ plotSurface <- function(object,
       ...
     ) +
     ggplot2::coord_equal() +
-    ggplot2::theme_void()
+    ggplot2::theme_void() +
+    size_add_on
+
 
   # -----
 

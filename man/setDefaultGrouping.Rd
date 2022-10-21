@@ -7,7 +7,7 @@
 \usage{
 setDefaultGrouping(object, grouping_variable, verbose = NULL)
 
-getDefaultGrouping(object, verbose = FALSE, ...)
+getDefaultGrouping(object, verbose = NULL, arg = "across")
 }
 \arguments{
 \item{grouping_variable}{Character value. The grouping variable that is

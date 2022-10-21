@@ -1,12 +1,15 @@
 #' @title Find differently expressed genes
 #'
 #' @description This function makes use of \code{Seurat::FindAllMarkers()} to compute
-#' the differently expressed genes across the groups denoted in the argument \code{across}.
+#' the differently expressed genes based on the count matrix across the groups of
+#' the grouping variable denoted in the argument \code{across}.
+#'
 #' See details for more.
 #'
 #' @inherit across_dummy params
 #' @inherit check_sample params
 #' @inherit check_method params
+#' @param fc_name,base Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.
 #' @param ... Additional arguments given to \code{Seurat::FindAllMarkers()}
 #'
 #' @details If \code{across} and/or \code{method_de} are vectors instead of single
@@ -16,24 +19,26 @@
 #' across all groups found in the feature variable \emph{seurat_clusters} according to method \emph{wilcox} and
 #' stores the results in the respective slot. Then it does the same according to method \emph{bimod}.)
 #'
-#' The results are obtainable via \code{getDeResults()} and \code{getDeGenes()}.
+#' The results are obtainable via \code{getDeaResults()} and \code{getDeaGenes()}.
 #'
 #' @return A spata-object containing the results in slot @@dea.
 #' @export
 
-runDeAnalysis <- function(object,
-                          across,
-                          method_de = NULL,
-                          verbose = NULL,
-                          of_sample = NA,
-                          ...){
+runDEA <- function(object,
+                   across,
+                   method_de = NULL,
+                   verbose = NULL,
+                   base = 2,
+                   fc_name = NULL,
+                   of_sample = NA,
+                   ...){
 
   hlpr_assign_arguments(object)
 
   purrr::walk(.x = method_de, .f = ~ check_method(method_de = .x))
 
   valid_across <-
-    check_features(object = object, valid_classes = c("character", "factor"), features = across)
+    check_features(object = object, valid_classes = c("factor"), features = across)
 
   # adjusting
   of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
@@ -82,7 +87,7 @@ runDeAnalysis <- function(object,
           # prepare seurat object
           seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object, of_sample = of_sample))
 
-          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, of_sample = of_sample, verbose = TRUE)
+          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, of_sample = of_sample, verbose = FALSE)
 
           seurat_object@meta.data$orig.ident <- groups
 
@@ -91,26 +96,29 @@ runDeAnalysis <- function(object,
           base::names(seurat_object@active.ident) <- base::rownames(seurat_object@meta.data)
 
           # perform analysis and remove seurat object afterwards
-          de_results <-
-            Seurat::FindAllMarkers(object = seurat_object, test.use = method, ...)
+          dea_results <-
+            Seurat::FindAllMarkers(
+              object = seurat_object,
+              test.use = method_de,
+              slot = "counts",
+              base = base,
+              ...
+            )
 
-           base::rm(seurat_object)
-
-           if("avg_log2FC" %in% base::colnames(de_results)){
-
-             de_results <- dplyr::rename(de_results, avg_logFC = avg_log2FC)
-
-           }
+          base::rm(seurat_object)
 
           # save results in spata object
-          object@dea[[of_sample]][[across]][[method]][["data"]] <-
-            tibble::remove_rownames(.data = de_results) %>%
-            dplyr::rename({{across}} := "cluster")
-
-
-          object@dea[[of_sample]][[across]][[method_de]][["adjustments"]] <- list(...)
+          object <-
+            setDeaResults(
+              object = object,
+              dea_results = dea_results,
+              across = across,
+              method_de = method_de,
+              ...
+            )
 
           object
+
 
         },
 
@@ -118,9 +126,9 @@ runDeAnalysis <- function(object,
 
           base::message(glue::glue("Skipping de-analysis on across-input '{across}' with method '{method}' as it resulted in the following error message: {error}"))
 
-          base::return(object)
+          return(object)
 
-         }
+        }
         )
 
     }
@@ -128,10 +136,21 @@ runDeAnalysis <- function(object,
   }
 
 
-  base::return(object)
+  return(object)
 
 }
 
+#' @rdname runDEA
+#' @export
+runDeAnalysis <- function(...){
+
+  deprecated(fn = TRUE)
+
+  object <- runDEA(...)
+
+  return(object)
+
+}
 
 
 
@@ -196,8 +215,10 @@ filterDeaDf <- function(dea_df,
 
   check_dea_df(dea_df)
 
+  lfc_name <- base::colnames(dea_df)[2]
+
   across <-
-    dplyr::select(dea_df, -dplyr::all_of(x = dea_df_columns)) %>%
+    dplyr::select(dea_df, -dplyr::all_of(x = c(dea_df_columns, lfc_name))) %>%
     base::colnames()
 
   # -----
@@ -207,7 +228,7 @@ filterDeaDf <- function(dea_df,
   dea_df <-
     dplyr::ungroup(dea_df) %>%
     confuns::check_across_subset(df = ., across = across, across.subset = across_subset, relevel = relevel) %>%
-    dplyr::filter(!avg_logFC %in% c(Inf, -Inf)) %>%
+    dplyr::filter(!{{lfc_name}} %in% c(Inf, -Inf)) %>%
     dplyr::group_by(!!rlang::sym(across))
 
   across_subset <-
@@ -224,26 +245,36 @@ filterDeaDf <- function(dea_df,
   if(!base::is.null(min_lfc)){
 
     dea_df <-
-      dplyr::filter(.data = dea_df, avg_logFC >= {{min_lfc}})
+      dplyr::filter(.data = dea_df, !!rlang::sym(lfc_name) >= {{min_lfc}})
 
   }
 
   if(!base::is.null(n_highest_lfc)){
 
     dea_df <-
-      dplyr::slice_max(.data = dea_df, avg_logFC, n = n_highest_lfc, with_ties = FALSE)
+      dplyr::slice_max(
+        .data = dea_df,
+        order_by = !!rlang::sym(lfc_name),
+        n = n_highest_lfc,
+        with_ties = FALSE
+        )
 
   }
 
   if(!base::is.null(n_lowest_pval)){
 
     dea_df <-
-      dplyr::slice_min(.data = dea_df, p_val_adj, n = n_lowest_pval, with_ties = FALSE)
+      dplyr::slice_min(
+        .data = dea_df,
+        order_by = p_val_adj,
+        n = n_lowest_pval,
+        with_ties = FALSE
+        )
 
   }
 
   res_df <-
-    dplyr::arrange(dea_df, dplyr::desc(avg_logFC), .by_group = TRUE) %>%
+    dplyr::arrange(dea_df, dplyr::desc(!!rlang::sym(lfc_name)), .by_group = TRUE) %>%
     dplyr::ungroup()
 
   # -----

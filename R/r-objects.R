@@ -20,7 +20,7 @@ hclust_methods <- c("ward.D", "ward.D2", "single", "complete", "average", "mcqui
 
 de_methods <- c("wilcox", "bimod", "roc", "t", "negbinom", "poisson", "LR", "MAST", "DESeq2")
 
-dea_df_columns <- c("p_val", "avg_logFC", "pct.1", "pct.2", "p_val_adj", "gene")
+dea_df_columns <- c("p_val", "pct.1", "pct.2", "p_val_adj", "gene")
 
 
 # Data structure ----------------------------------------------------------
@@ -269,6 +269,20 @@ current_spata_version <- list(major = 1, minor = 9, patch = 0)
 
 
 
+
+
+# c -----------------------------------------------------------------------
+
+chrom_levels <- base::as.character(1:22)
+
+chrom_arm_levels <-
+  purrr::map(
+    .x = chrom_levels,
+    .f = ~ stringr::str_c(., c("p", "q"))
+  ) %>%
+  purrr::flatten_chr()
+
+
 # d -----------------------------------------------------------------------
 
 depr_info <-
@@ -288,6 +302,7 @@ depr_info <-
       "plotTrajectoryFitCustomized" = "plotTrajectoryFitted",
       "plotTrajectoryGenes" = "plotTrajectoryLineplot",
       "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
+      "runDeAnalysis" = "runDEA",
       "setDefaultTrajectory" = "setDefaultTrajectoryId"
     ),
     args = list(

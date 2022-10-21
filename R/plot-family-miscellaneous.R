@@ -2183,7 +2183,7 @@ plotDeaHeatmap <- function(object,
 #'
 #' @export
 plotDeaDotPlot <- function(object,
-                           across = getDefaultGrouping(object, verbose = T, "across"),
+                           across = getDefaultGrouping(object),
                            across_subset = NULL,
                            relevel = NULL,
                            method_de = NULL,
@@ -2193,10 +2193,8 @@ plotDeaDotPlot <- function(object,
                            n_highest_lfc = NULL,
                            n_lowest_pval = NULL,
                            genes = NULL,
-                           x = c("avg_logFC", "p_val_adj")[1],
                            alpha_by = NULL,
                            alpha_trans = "identity",
-                           color_by = "avg_logFC",
                            color_trans = "identity",
                            size_by = "p_val_adj",
                            size_trans = "reverse",
@@ -2215,6 +2213,8 @@ plotDeaDotPlot <- function(object,
 
   hlpr_assign_arguments(object)
   check_object(object)
+
+  lfc_name <- getDeaLfcName(object, across = across, method_de = method_de)
 
   if(base::is.character(genes)){
 
@@ -2242,7 +2242,7 @@ plotDeaDotPlot <- function(object,
       dplyr::filter(df, gene %in% genes) %>%
       dplyr::mutate(
         gene = base::factor(gene, levels = genes),
-        avg_logFC = base::round(avg_logFC, digits = 2)
+        {{lfc_name}} := base::round(!!rlang::sym(lfc_name), digits = 2)
       )
 
   } else {
@@ -2261,20 +2261,18 @@ plotDeaDotPlot <- function(object,
       ) %>%
       dplyr::mutate(
         gene = base::as.factor(gene),
-        avg_logFC = base::round(avg_logFC, digits = 2)
+        {{lfc_name}} := base::round(!!rlang::sym(lfc_name), digits = 2)
       )
 
   }
 
+  x <- lfc_name
+  color_by <- lfc_name
 
   if(base::isTRUE(by_group)){
 
-    check_one_of(
-      input = x,
-      against = c("avg_logFC", "p_val_adj")
-    )
-
-    if(x == "avg_logFC"){
+    # change later
+    if(x == x){
 
       x_add_on <- NULL
 
@@ -2291,7 +2289,7 @@ plotDeaDotPlot <- function(object,
     out_plot <-
       plot_dot_plot_1d(
         df = df,
-        x = "avg_logFC",
+        x = x,
         y = "gene",
         across = across,
         across.subset = across_subset,

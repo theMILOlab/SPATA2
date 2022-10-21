@@ -256,7 +256,6 @@ check_dea_df <- function(dea_df){
     df = dea_df,
     var.class = list(
       p_val = "numeric",
-      avg_logFC = "numeric",
       p_val_adj = "numeric",
       gene = "character"
     ),

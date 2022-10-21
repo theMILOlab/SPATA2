@@ -12,6 +12,7 @@ LazyData: true
 License: GPL-3
 RoxygenNote: 7.2.0
 Imports: 
+    aplot,
     broom,
     concaveman,
     colorspace,
