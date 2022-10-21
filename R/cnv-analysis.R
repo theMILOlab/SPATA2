@@ -1914,7 +1914,31 @@ runCnvAnalysis <- function(object,
 
 setCnvResults <- function(object, cnv_list, of_sample = NA){
 
+<<<<<<< HEAD
   check_object(object)
+=======
+    final_plot <-
+      ggplot2::ggplot(data = summarized_df, mapping = ggplot2::aes(x = 1:base::nrow(summarized_df), y = cnv_mean)) +
+      ggplot2::geom_smooth(
+        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE,
+        alpha = linealpha, color = linecolor, size = linesize, ...) +
+      ggplot2::geom_ribbon(
+        mapping = ggplot2::aes(ymin = cnv_mean-cnv_sd, ymax = cnv_mean + cnv_sd),
+        alpha = ribbon_alpha, color = ribbon_color
+      ) +
+      ggplot2::geom_vline(
+        data = line_df,
+        mapping = ggplot2::aes(xintercept = line_pos),
+        alpha = vline_alpha,
+        color = vline_color,
+        size = vline_size,
+        linetype = vline_type
+      ) +
+      ggplot2::facet_wrap(facets = ~ across, nrow = nrow, ncol = ncol) +
+      ggplot2::theme_classic() +
+      ggplot2::scale_x_continuous(breaks = line_df$label_breaks, labels = line_df$chromosome_name) +
+      ggplot2::labs(x = "Chromosomes", y = "CNV-Results")
+>>>>>>> de6c41076c3a018b0ad314443bd392273c77bd5b
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
