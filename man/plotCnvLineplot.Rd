@@ -59,7 +59,7 @@ are included. Defaults to all 1-22.}
 
 \item{chrom_separate}{Character or numeric vector. Denotes the chromosomes that
 are separated from their neighbors by vertical lines. Defaults to all 1-22. If FALSE or NULL,
-no vertical lines are drawn.}
+no vertical lines are drawn. Requires \code{display_vlines} to be set to TRUE.}
 
 \item{chrom_arm_subset}{Character vector. Denotes the exact chromosome-arm combinations
 that are included.}

@@ -218,13 +218,13 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' are included. Defaults to all 1-22.
 #' @param chrom_separate Character or numeric vector. Denotes the chromosomes that
 #' are separated from their neighbors by vertical lines. Defaults to all 1-22. If FALSE or NULL,
-#' no vertical lines are drawn.
+#' no vertical lines are drawn. Requires \code{display_vlines} to be set to TRUE.
 #' @param chrom_arm_subset Character vector. Denotes the exact chromosome-arm combinations
 #' that are included.
 #' @param n_bins_bcsp,n_bins_genes Numeric values. Denotes the number of bins into which CNV results of
 #' barcode-spot ~ gene pairs are summarized. Reduces the plotting load. Set to \code{Inf} if you want
 #' all barcode-spots ~ gene pairs to be plotted in one tile. \code{n_bins_bcsp} effectively
-#' sets the number of rows of the heatmap, \code{n_bins_genes} sets to number of columns.
+#' specifies the number of rows of the heatmap, \code{n_bins_genes} specifies the number of columns.
 #' @param summarize_with Character value. Name of the function with which to summarize. Either
 #' \emph{'mean'} or \emph{'median'}.
 #' @param display_arm_annotation Logical value. If TRUE, guiding information of the chromosome
@@ -235,8 +235,14 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' are plotted on top of the heatmap.
 #' @param display_chrom_names Logical value. If TRUE, the chromosome names/numbers
 #' are plotted on top or on the bottom of the heatmap.
+#' @param display_hlines Logical value. If TRUE and if \code{across} is not NULL,
+#' horizontal lines are drawn to aid the eye by separating the grouping rows of the
+#' heatmap. Appearance of the lines can be adjusted with the \code{hline}-arguments.
+#' @param display_vlines Logical value. If TRUE, vertical lines are drawn to aid the
+#' eye by separating the chromosome columns of the heatmap. Appearance of the lines
+#' can be adjusted with the \code{vlines}-arguments.
 #' @param text_alpha,text_color,text_size Parameters given to \code{ggplot2::geom_text()}
-#' that are used to manipulate the chromosome names.
+#' that are used to manipulate the appearance of the chromosome names.
 #' @param text_position Character value. Either \emph{'top'} or \emph{'bottom'}.
 #' @param clrsp Character vector. The colorspectrum with which the tiles of the heatmap
 #' are colored. Should be one of \code{validColorSpectra()[[\emph{'Diverging'}]]}.
@@ -246,7 +252,9 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' @param limits Numeric vector of length two or NULL, If numeric, sets the limits
 #' of the colorscale (\code{oob} is set to \code{scales::squish}).
 #' @param display_border Logical value. If TRUE, a border is drawn around the heatmap
-#' and each annotation.
+#' and each annotation. Can be provided as a named vector to adress single parts
+#' of the heatmap. Valid names are \emph{'arm'}, \emph{'chrom'}, \emph{'grouping'}
+#' and \emph{'main'}.
 #' @param border_color,border_size Impact the appearance of the border if \code{display_border}
 #' is TRUE.
 #'
@@ -267,20 +275,26 @@ plotCnvHeatmap <- function(object,
                            n_bins_genes = 500,
                            summarize_with = "mean",
                            display_arm_annotation = TRUE,
-                           colors_arm_annotation = c("p" = "lightgrey", "q" = "black"),
+                           colors_arm_annotation = c("p" = "white", "q" = "black"),
                            display_chrom_annotation = FALSE,
                            display_chrom_names = TRUE,
                            text_alpha = 1,
                            text_color = "black",
                            text_position = "top",
                            text_size = 3.5,
+                           display_hlines = TRUE,
+                           hline_alpha = 0.75,
+                           hline_color = "black",
+                           hline_size = 0.5,
+                           hline_type = "dashed",
+                           display_vlines = TRUE,
                            vline_alpha = 0.75,
                            vline_color = "black",
                            vline_size = 0.5,
                            vline_type = "dashed",
-                           display_border = FALSE,
+                           display_border = TRUE,
                            border_color = "black",
-                           border_size = 1,
+                           border_size = 0.5,
                            clrp = NULL,
                            clrsp = "Blue-Red 3",
                            limits = NULL,
@@ -416,7 +430,6 @@ plotCnvHeatmap <- function(object,
     verbose = verbose
   )
 
-
   border <- display_border
 
   if(base::any(border)){
@@ -425,7 +438,8 @@ plotCnvHeatmap <- function(object,
       ggplot2::theme(
         panel.border = ggplot2::element_rect(
           color = border_color,
-          size = border_size
+          size = border_size,
+          fill = ggplot2::alpha("white", 0)
         )
       )
 
@@ -433,14 +447,15 @@ plotCnvHeatmap <- function(object,
       list(
         arm = border_theme,
         chrom = border_theme,
-        grouping = border_theme
+        grouping = border_theme,
+        main = border_theme
       )
 
     if(base::length(border) == 1){
 
       border <-
-        base::rep(TRUE, 3) %>%
-        purrr::set_names(nm = c("arm", "chrom", "grouping"))
+        base::rep(TRUE, 4) %>%
+        purrr::set_names(nm = c("arm", "chrom", "grouping", "main"))
 
     } else {
 
@@ -471,6 +486,8 @@ plotCnvHeatmap <- function(object,
         variable = grouping_df[[across]],
         clrp = clrp
       ) +
+      ggplot2::scale_x_continuous(expand = c(0,0)) +
+      ggplot2::scale_y_continuous(expand = c(0,0)) +
       ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
       ggplot2::labs(fill = confuns::make_pretty_name(across, make.pretty = pretty_name)) +
       pull_slot(border_add_on, slot = border["grouping"])
@@ -503,7 +520,6 @@ plotCnvHeatmap <- function(object,
       ) +
       ggplot2::theme_void() +
       ggplot2::labs(fill = "Chr.Arm") +
-      +
       pull_slot(border_add_on, slot = border["arm"])
 
   } else {
@@ -538,7 +554,6 @@ plotCnvHeatmap <- function(object,
       ) +
       ggplot2::theme_void() +
       ggplot2::labs(fill = "Chrom.") +
-      +
       pull_slot(border_add_on, slot = border["chrom"])
 
   } else {
@@ -548,7 +563,7 @@ plotCnvHeatmap <- function(object,
   }
 
   # create vline add on
-  if(!base::is.null(chrom_separate) | !base::isFALSE(chrom_separate)){
+  if(base::isTRUE(display_vlines)){
 
     if(base::is.numeric(chrom_separate)){
 
@@ -574,6 +589,8 @@ plotCnvHeatmap <- function(object,
 
     }
 
+    vline_df <- dplyr::filter(vline_df, chrom_arm != {{last}})
+
     vline_df <-
       dplyr::ungroup(vline_df) %>%
       dplyr::distinct(gene_bins)
@@ -591,6 +608,33 @@ plotCnvHeatmap <- function(object,
   } else {
 
     vline_add_on <- NULL
+
+  }
+
+  if(base::isTRUE(display_hlines)){
+
+    hline_df <-
+      dplyr::ungroup(smrd_cnv_df) %>%
+      dplyr::distinct(bcsp_bins, !!rlang::sym(across)) %>%
+      dplyr::group_by(!!rlang::sym(across)) %>%
+      dplyr::filter(bcsp_bins == base::min(bcsp_bins)) %>%
+      dplyr::mutate(bcsp_bins = bcsp_bins - 1) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(bcsp_bins != base::min(bcsp_bins)) # remove lowest
+
+    hline_add_on <-
+      ggplot2::geom_hline(
+        data = hline_df,
+        mapping = ggplot2::aes(yintercept = bcsp_bins),
+        alpha = hline_alpha,
+        color = hline_color,
+        size = hline_size,
+        linetype = hline_type
+      )
+
+  } else {
+
+    hline_add_on <- NULL
 
   }
 
@@ -658,6 +702,7 @@ plotCnvHeatmap <- function(object,
     ) +
     ggplot2::geom_raster(mapping = ggplot2::aes(fill = values)) +
     vline_add_on +
+    hline_add_on +
     ggplot2::theme_void() +
     ggplot2::scale_x_continuous(expand = c(0, 0)) +
     ggplot2::scale_y_continuous(expand = c(0, 0)) +
@@ -668,7 +713,8 @@ plotCnvHeatmap <- function(object,
       oob = scales::squish,
       limits = limits
     ) +
-    ggplot2::labs(fill = "CNV")
+    ggplot2::labs(fill = "CNV") +
+    pull_slot(border_add_on, slot = border["main"])
 
   # insert all parts
   if(base::length(annotation_size_top) == 1){
@@ -1712,6 +1758,8 @@ runCnvAnalysis <- function(object,
       cnv_list = cnv_res,
       of_sample = of_sample
     )
+
+  object <- computeCnvByChrArm(object, overwrite = TRUE)
 
   # -----
 

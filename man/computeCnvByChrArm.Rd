@@ -4,12 +4,22 @@
 \alias{computeCnvByChrArm}
 \title{Compute CNV by chromosome arm}
 \usage{
-computeCnvByChrArm(object, summarize_with = "mean", overwrite = FALSE)
+computeCnvByChrArm(
+  object,
+  summarize_with = "mean",
+  overwrite = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \description{
 Extension to \code{runCnvAnalysis()}. Uses the results

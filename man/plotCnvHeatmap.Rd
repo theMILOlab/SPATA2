@@ -16,20 +16,26 @@ plotCnvHeatmap(
   n_bins_genes = 500,
   summarize_with = "mean",
   display_arm_annotation = TRUE,
-  colors_arm_annotation = c(p = "lightgrey", q = "black"),
+  colors_arm_annotation = c(p = "white", q = "black"),
   display_chrom_annotation = FALSE,
   display_chrom_names = TRUE,
   text_alpha = 1,
   text_color = "black",
   text_position = "top",
   text_size = 3.5,
+  display_hlines = TRUE,
+  hline_alpha = 0.75,
+  hline_color = "black",
+  hline_size = 0.5,
+  hline_type = "dashed",
+  display_vlines = TRUE,
   vline_alpha = 0.75,
   vline_color = "black",
   vline_size = 0.5,
   vline_type = "dashed",
-  display_border = FALSE,
+  display_border = TRUE,
   border_color = "black",
-  border_size = 1,
+  border_size = 0.5,
   clrp = NULL,
   clrsp = "Blue-Red 3",
   limits = NULL,
@@ -64,7 +70,7 @@ are included. Defaults to all 1-22.}
 
 \item{chrom_separate}{Character or numeric vector. Denotes the chromosomes that
 are separated from their neighbors by vertical lines. Defaults to all 1-22. If FALSE or NULL,
-no vertical lines are drawn.}
+no vertical lines are drawn. Requires \code{display_vlines} to be set to TRUE.}
 
 \item{chrom_arm_subset}{Character vector. Denotes the exact chromosome-arm combinations
 that are included.}
@@ -72,7 +78,7 @@ that are included.}
 \item{n_bins_bcsp, n_bins_genes}{Numeric values. Denotes the number of bins into which CNV results of
 barcode-spot ~ gene pairs are summarized. Reduces the plotting load. Set to \code{Inf} if you want
 all barcode-spots ~ gene pairs to be plotted in one tile. \code{n_bins_bcsp} effectively
-sets the number of rows of the heatmap, \code{n_bins_genes} sets to number of columns.}
+specifies the number of rows of the heatmap, \code{n_bins_genes} specifies the number of columns.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize. Either
 \emph{'mean'} or \emph{'median'}.}
@@ -90,16 +96,30 @@ are plotted on top of the heatmap.}
 are plotted on top or on the bottom of the heatmap.}
 
 \item{text_alpha, text_color, text_size}{Parameters given to \code{ggplot2::geom_text()}
-that are used to manipulate the chromosome names.}
+that are used to manipulate the appearance of the chromosome names.}
 
 \item{text_position}{Character value. Either \emph{'top'} or \emph{'bottom'}.}
+
+\item{display_hlines}{Logical value. If TRUE and if \code{across} is not NULL,
+horizontal lines are drawn to aid the eye by separating the grouping rows of the
+heatmap. Appearance of the lines can be adjusted with the \code{hline}-arguments.}
+
+\item{hline_alpha, hline_color, hline_size, hline_type}{Parameters given to
+\code{ggplot2::geom_hline()} that control the appearance of vertical lines
+of the plot.}
+
+\item{display_vlines}{Logical value. If TRUE, vertical lines are drawn to aid the
+eye by separating the chromosome columns of the heatmap. Appearance of the lines
+can be adjusted with the \code{vlines}-arguments.}
 
 \item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
 \code{ggplot2::geom_vline()} that control the appearance of vertical lines
 of the plot.}
 
 \item{display_border}{Logical value. If TRUE, a border is drawn around the heatmap
-and each annotation.}
+and each annotation. Can be provided as a named vector to adress single parts
+of the heatmap. Valid names are \emph{'arm'}, \emph{'chrom'}, \emph{'grouping'}
+and \emph{'main'}.}
 
 \item{border_color, border_size}{Impact the appearance of the border if \code{display_border}
 is TRUE.}

@@ -331,10 +331,6 @@ variables_num <- function(variables){}
 #' \code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
 #' that control the appearance of the main line(s) of the plot.
 #'
-#' @param vline_alpha,vline_color,vline_size,vline_type Parameters given to
-#' \code{ggplot2::geom_vline()} that control the appearance of vertical lines
-#' of the plot.
-#'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
 #' @param object An object of class \code{SPATA2}.
@@ -390,6 +386,10 @@ variables_num <- function(variables){}
 #' the computational progress will be printed.
 #'
 #' (Warning messages will always be printed.)
+#'
+#' @param vline_alpha,vline_color,vline_size,vline_type Parameters given to
+#' \code{ggplot2::geom_vline()} that control the appearance of vertical lines
+#' of the plot.
 #'
 #' @param whole_sample Logical. If TRUE, normalization of the values used
 #' takes place in the light of the complete sample.

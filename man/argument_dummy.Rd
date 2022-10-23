@@ -134,10 +134,6 @@ Hint: Variables that are uniformly expressed can not be scaled and are discarded
 \code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
 that control the appearance of the main line(s) of the plot.}
 
-\item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
-\code{ggplot2::geom_vline()} that control the appearance of vertical lines
-of the plot.}
-
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
 \item{object}{An object of class \code{SPATA2}.}
@@ -193,6 +189,10 @@ Or it can be a list of functions (and function names).
 Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
+
+\item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
+\code{ggplot2::geom_vline()} that control the appearance of vertical lines
+of the plot.}
 
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
