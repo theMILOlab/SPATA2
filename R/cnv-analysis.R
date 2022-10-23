@@ -257,8 +257,36 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' and \emph{'main'}.
 #' @param border_color,border_size Impact the appearance of the border if \code{display_border}
 #' is TRUE.
+#' @param ggpLayers A list of additional \code{gg} elements to customize the
+#' output plot. See details for more.
 #'
 #' @inherit argument_dummy params
+#'
+#' @details The output plot of this function consists of several elements - each element being
+#' a ggplot. These elements are combined/aligned using the \code{aplot} package.
+#' Therefore, the output plot is of class \code{aplot} and can \bold{not} be adjusted
+#' by adding additional \code{gg} objects using the \code{+} operator of the \code{ggplot2}
+#' framework.
+#'
+#' Individual customization is still possible with the \code{ggpLayers} argument.
+#' Every single element of the output plot is named:
+#'
+#' \itemize{
+#'  \item{main:}{ The heatmap itself and the horizontal and vertical lines.}
+#'  \item{arm:}{ The arm annotation on top of the heatmap.}
+#'  \item{chrom:} The chromosome annotation on top of the heatmap. (not displayed by default)
+#'  \item{names:} The chromosome name annotation on top of the heatmap.
+#'  \item{grouping:} The grouping annotation on the left side of the heatmap if \code{across} is not NULL.
+#'  }
+#'
+#' \code{ggpLayers} takes a list as input. Unnamed elements of the list are added
+#' to all elements of the plot. E.g.: \code{ggpLayers} = \code{list(theme(legend.position = "none"))}
+#' removes all legends.
+#'
+#' To address single elements of the output plot corresponding elements of the list must be
+#' named. E.g.: \code{ggpLayers} = \code{list(grouping = theme(legend.position = "none"))}
+#' removes only the legend of the grouping while leaving the legends that come
+#' with other plot elements as they are.
 #'
 #' @return A plot of class \code{aplot}.
 #'
@@ -301,6 +329,7 @@ plotCnvHeatmap <- function(object,
                            annotation_size_top = 0.0125,
                            annotation_size_side = 0.0125,
                            pretty_name = TRUE,
+                           ggpLayers = list(),
                            verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -430,6 +459,45 @@ plotCnvHeatmap <- function(object,
     verbose = verbose
   )
 
+  if(base::length(ggpLayers) == 0){
+
+    ggpLayers_add_on <- list()
+
+  } else {
+
+    # distribute unnamed elements
+    if(!base::is.null(base::names(ggpLayers))){
+
+      unnamed_elements <-
+        ggpLayers[!purrr::map_lgl(.x = base::names(ggpLayers), .f = ~ shiny::isTruthy(.x))]
+
+    } else {
+
+      unnamed_elements <- ggpLayers
+
+    }
+
+    ggpLayers_add_on <-
+      purrr::map(
+        .x = cnv_heatmap_list, # remove unnamed elements
+        .f = ~ c(.x, unnamed_elements) # add unnamed elements to each slot
+      )
+
+    # distribute named elements
+    named_elements <- confuns::keep_named(ggpLayers)
+
+    if(base::length(named_elements) >= 1){
+
+      ggpLayers_add_on <-
+        purrr::imap(
+          .x = named_elements, # iterate over named elements
+          .f = ~ list(.x, ggpLayers_add_on[[.y]]) # combine content with respective slot
+        )
+
+    }
+
+  }
+
   border <- display_border
 
   if(base::any(border)){
@@ -490,7 +558,8 @@ plotCnvHeatmap <- function(object,
       ggplot2::scale_y_continuous(expand = c(0,0)) +
       ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
       ggplot2::labs(fill = confuns::make_pretty_name(across, make.pretty = pretty_name)) +
-      pull_slot(border_add_on, slot = border["grouping"])
+      pull_slot(border_add_on, slot = border["grouping"]) +
+      pull_slot(ggpLayers_add_on, slot = "grouping")
 
 
   } else {
@@ -520,7 +589,8 @@ plotCnvHeatmap <- function(object,
       ) +
       ggplot2::theme_void() +
       ggplot2::labs(fill = "Chr.Arm") +
-      pull_slot(border_add_on, slot = border["arm"])
+      pull_slot(border_add_on, slot = border["arm"]) +
+      pull_slot(ggpLayers_add_on, slot = "arm")
 
   } else {
 
@@ -554,7 +624,8 @@ plotCnvHeatmap <- function(object,
       ) +
       ggplot2::theme_void() +
       ggplot2::labs(fill = "Chrom.") +
-      pull_slot(border_add_on, slot = border["chrom"])
+      pull_slot(border_add_on, slot = border["chrom"]) +
+      pull_slot(ggpLayers_add_on, slot = "chrom")
 
   } else {
 
@@ -563,7 +634,7 @@ plotCnvHeatmap <- function(object,
   }
 
   # create vline add on
-  if(base::isTRUE(display_vlines)){
+  if(base::isTRUE(display_vlines) & base::is.numeric(chrom_separate)){
 
     if(base::is.numeric(chrom_separate)){
 
@@ -611,7 +682,7 @@ plotCnvHeatmap <- function(object,
 
   }
 
-  if(base::isTRUE(display_hlines)){
+  if(base::is.character(across) && base::isTRUE(display_hlines)){
 
     hline_df <-
       dplyr::ungroup(smrd_cnv_df) %>%
@@ -679,7 +750,8 @@ plotCnvHeatmap <- function(object,
         color = text_color,
         size = text_size
       ) +
-      ggplot2::theme_void()
+      ggplot2::theme_void() +
+      pull_slot(ggpLayers_add_on, slot = "names")
 
   } else {
 
@@ -714,7 +786,8 @@ plotCnvHeatmap <- function(object,
       limits = limits
     ) +
     ggplot2::labs(fill = "CNV") +
-    pull_slot(border_add_on, slot = border["main"])
+    pull_slot(border_add_on, slot = border["main"]) +
+    pull_slot(ggpLayers_add_on, slot = "main")
 
   # insert all parts
   if(base::length(annotation_size_top) == 1){

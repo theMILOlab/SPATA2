@@ -42,6 +42,7 @@ plotCnvHeatmap(
   annotation_size_top = 0.0125,
   annotation_size_side = 0.0125,
   pretty_name = TRUE,
+  ggpLayers = list(),
   verbose = NULL
 )
 }
@@ -139,6 +140,9 @@ the size of the row/column annotation of the heatmap.}
 
 \item{pretty_name}{Logical. If TRUE makes legend names pretty.}
 
+\item{ggpLayers}{A list of additional \code{gg} elements to customize the
+output plot. See details for more.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -152,4 +156,31 @@ Plots the results of \code{runCnvAnalysis()} in form of a heatmap.
 Use arguments \code{across} and \code{across_subset} to visualize CNV differences
 between subgroups of cluster variables or other grouping variables (e.g. based on
 histology created with \code{createSpatialSegmentation()}).
+}
+\details{
+The output plot of this function consists of several elements - each element being
+a ggplot. These elements are combined/aligned using the \code{aplot} package.
+Therefore, the output plot is of class \code{aplot} and can \bold{not} be adjusted
+by adding additional \code{gg} objects using the \code{+} operator of the \code{ggplot2}
+framework.
+
+Individual customization is still possible with the \code{ggpLayers} argument.
+Every single element of the output plot is named:
+
+\itemize{
+ \item{main:}{ The heatmap itself and the horizontal and vertical lines.}
+ \item{arm:}{ The arm annotation on top of the heatmap.}
+ \item{chrom:} The chromosome annotation on top of the heatmap. (not displayed by default)
+ \item{names:} The chromosome name annotation on top of the heatmap.
+ \item{grouping:} The grouping annotation on the left side of the heatmap if \code{across} is not NULL.
+ }
+
+\code{ggpLayers} takes a list as input. Unnamed elements of the list are added
+to all elements of the plot. E.g.: \code{ggpLayers} = \code{list(theme(legend.position = "none"))}
+removes all legends.
+
+To address single elements of the output plot corresponding elements of the list must be
+named. E.g.: \code{ggpLayers} = \code{list(grouping = theme(legend.position = "none"))}
+removes only the legend of the grouping while leaving the legends that come
+with other plot elements as they are.
 }

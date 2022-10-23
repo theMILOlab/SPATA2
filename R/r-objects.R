@@ -274,6 +274,15 @@ chrom_arm_levels <-
   ) %>%
   purrr::flatten_chr()
 
+cnv_heatmap_list <-
+  list(
+    arm = list(),
+    chrom = list(),
+    grouping = list(),
+    names = list(),
+    main = list()
+  )
+
 current_spata_version <- list(major = 1, minor = 10, patch = 0)
 
 
