@@ -22,7 +22,7 @@ plotCnvHeatmap(
   text_alpha = 1,
   text_color = "black",
   text_position = "top",
-  text_size = 5,
+  text_size = 3.5,
   vline_alpha = 0.75,
   vline_color = "black",
   vline_size = 0.5,

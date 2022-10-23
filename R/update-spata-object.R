@@ -458,6 +458,91 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 && object@version$minor == 9){
+
+    object@version <- list(major = 1, minor = 10, patch = 0)
+
+    if(containsCNV(object)){
+
+      confuns::give_feedback(
+        msg = "Adjusting CNV content.",
+        verbose = verbose
+      )
+
+      # adjust cnv content
+      cnv_res_old <- getCnvResults(object)
+
+      cnv_res_new <- cnv_res_old # overwrite slots
+
+      # 1. cnv df
+      cnv_res_new$cnv_df <-
+        dplyr::select(
+          .data = cnv_res_old$cnv_df,
+          -dplyr::any_of(stringr::str_c(cnv_res_old$prefix, c("0", "23", "24")))
+        )
+
+      # 2. regions df
+      cnv_res_new$regions_df <-
+        tibble::rownames_to_column(
+          .data = cnv_res_old$regions_df,
+          var = "chrom_arm"
+        ) %>%
+        dplyr::mutate(
+          chrom = stringr::str_remove(string = chrom_arm, pattern = "p|q"),
+          arm = stringr::str_extract(string = chrom_arm, pattern = "p|q"),
+          chrom_arm = base::factor(chrom_arm, levels = chrom_arm_levels),
+          chrom = base::factor(chrom, levels = chrom_levels),
+          arm = base::factor(arm, levels = c("p", "q"))
+        ) %>%
+        dplyr::select(chrom_arm, chrom, arm, start = Start, end = End, length = Length) %>%
+        tibble::as_tibble()
+
+      # 3. gene pos df
+
+      regions_df_wide <-
+        dplyr::select(cnv_res_new$regions_df, -length, -chrom_arm) %>%
+        tidyr::pivot_wider(
+          names_from = arm,
+          values_from = c(start, end),
+          names_sep = "_"
+        ) %>%
+        dplyr::select(chrom, start_p, end_p, start_q, end_q)
+
+      cnv_res_new$gene_pos_df <-
+        tibble::as_tibble(cnv_res_old$gene_pos_df) %>%
+        dplyr::rename(chrom = chromosome_name) %>%
+        dplyr::filter(chrom %in% {{chrom_levels}}) %>% # remove not annotated genes
+        dplyr::mutate(
+          chrom = base::factor(chrom, levels = chrom_levels),
+          genes = hgnc_symbol
+        ) %>%
+        # join wide format to compute gene wise arm location
+        dplyr::left_join(
+          x = .,
+          y = regions_df_wide,
+          by = "chrom"
+        ) %>%
+        dplyr::mutate(
+          arm = dplyr::case_when(
+            # if gene starts at position bigger than end of arm p it must be located
+            # on arm q
+            start_position > end_p ~ "q",
+            # else it' lays's located on arm p
+            TRUE ~ "p"
+          ),
+          arm = base::factor(x = arm, levels = c("p", "q")),
+          chrom_arm = stringr::str_c(chrom, arm, sep = ""),
+          chrom_arm = base::factor(chrom_arm, levels = chrom_arm_levels)
+        ) %>%
+        dplyr::select(-start_p, -end_p, -start_q, -end_q) %>%
+        dplyr::select(genes, chrom_arm, chrom, arm, start_position, end_position, dplyr::everything())
+
+      object <- setCnvResults(object = object, cnv_list = cnv_res_new)
+
+    }
+
+  }
+
   # default adjustment ------------------------------------------------------
 
   old_default <- object@information$instructions$default

@@ -253,14 +253,6 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # Version  ----------------------------------------------------------------
 
-current_spata_version <- list(major = 1, minor = 9, patch = 0)
-
-
-
-
-
-
-
 
 ############ alphabetical
 
@@ -282,6 +274,8 @@ chrom_arm_levels <-
   ) %>%
   purrr::flatten_chr()
 
+current_spata_version <- list(major = 1, minor = 10, patch = 0)
+
 
 # d -----------------------------------------------------------------------
 
@@ -295,6 +289,7 @@ depr_info <-
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
+      "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
       "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",

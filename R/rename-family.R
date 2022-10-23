@@ -114,7 +114,7 @@ renameFeatures <- function(object, ..., of_sample = NA){
 #' to rename already drawn segments.
 #'
 #' @inherit check_sample params
-#' @param discrete_feature Character value. The grouping variable of interest.
+#' @param grouping_variable Character value. The grouping variable of interest.
 #' @param ... The groups to be renamed specified according to the following
 #' syntax: \emph{'new_group_name'} \code{=} \emph{'old_group_name'}.
 #'
@@ -125,19 +125,26 @@ renameFeatures <- function(object, ..., of_sample = NA){
 #'
 #'  object <-
 #'     renameGroups(object = spata_object,
-#'                  discrete_feature = "seurat_clusters",
+#'                  grouping_variable = "seurat_clusters",
 #'                  "first_new_group" = "1",
 #'                  "sec_new_group" = "2")
 #'
 #'
 
-renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_sample = NA){
+renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_sample = NA){
+
+  deprecated(...)
 
   check_object(object)
+
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
-  discrete_feature <-
-    check_features(object, features = discrete_feature, valid_classes = c("factor"))
+  grouping_variable <-
+    check_features(
+      object = object,
+      features = grouping_variable,
+      valid_classes = c("factor")
+      )
 
   rename_input <- confuns::keep_named(c(...))
 
@@ -157,13 +164,13 @@ renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_s
   valid_rename_input <-
     confuns::check_vector(
       input = base::unname(rename_input),
-      against = base::levels(feature_df[[discrete_feature]]),
+      against = base::levels(feature_df[[grouping_variable]]),
       fdb.fn = "warning",
       ref.input = "groups to rename",
-      ref.against = glue::glue("all groups of feature '{discrete_feature}'. ({renaming_hint})")
+      ref.against = glue::glue("all groups of feature '{grouping_variable}'. ({renaming_hint})")
     )
 
-  group_names <- getGroupNames(object, discrete_feature)
+  group_names <- getGroupNames(object, grouping_variable)
 
   rename_input <- rename_input[rename_input %in% valid_rename_input]
 
@@ -171,10 +178,10 @@ renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_s
   renamed_feature_df <-
     dplyr::mutate(
       .data = feature_df,
-      {{discrete_feature}} := forcats::fct_recode(.f = !!rlang::sym(discrete_feature), !!!rename_input)
+      {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
     )
 
-  if(discrete_feature %in% getSegmentationNames(object, verbose = FALSE)){
+  if(grouping_variable %in% getSegmentationNames(object, verbose = FALSE)){
 
     keep_levels <- c(keep_levels, "unnamed")
 
@@ -185,20 +192,20 @@ renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_s
     keep_levels <- base::unique(keep_levels)
 
     all_levels <-
-      c(base::levels(renamed_feature_df[[discrete_feature]]), keep_levels) %>%
+      c(base::levels(renamed_feature_df[[grouping_variable]]), keep_levels) %>%
       base::unique()
 
-    renamed_feature_df[[discrete_feature]] <-
-      base::factor(x = renamed_feature_df[[discrete_feature]], levels = all_levels)
+    renamed_feature_df[[grouping_variable]] <-
+      base::factor(x = renamed_feature_df[[grouping_variable]], levels = all_levels)
 
   }
 
   # rename dea list
-  dea_list <- object@dea[[of_sample]][[discrete_feature]]
+  dea_list <- object@dea[[of_sample]][[grouping_variable]]
 
   if(!base::is.null(dea_list)){
 
-    object@dea[[of_sample]][[discrete_feature]] <-
+    object@dea[[of_sample]][[grouping_variable]] <-
       purrr::map(
         .x = dea_list,
         .f = function(method){
@@ -206,7 +213,7 @@ renameGroups <- function(object, discrete_feature, ..., keep_levels = NULL, of_s
           new_df <-
             dplyr::mutate(
               .data = method$data,
-              {{discrete_feature}} := forcats::fct_recode(.f = !!rlang::sym(discrete_feature), !!!rename_input)
+              {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
             )
 
           out <- list(data = new_df, adjustments = method$adjustments)

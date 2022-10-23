@@ -40,7 +40,6 @@ getCnvResults <- function(object, of_sample = NA){
 #' @return Character vector.
 #' @export
 #'
-
 getCnvFeatureNames <- function(object, of_sample = NA){
 
   check_object(object)
@@ -53,7 +52,7 @@ getCnvFeatureNames <- function(object, of_sample = NA){
 
   chromosomes <-
     cnv_results$regions_df %>%
-    base::rownames() %>%
+    dplyr::pull(chrom) %>%
     stringr::str_remove_all(pattern = "p$|q$") %>%
     base::unique()
 
@@ -65,6 +64,17 @@ getCnvFeatureNames <- function(object, of_sample = NA){
 
 
 
+#' @title Obtain CNV results by gene
+#'
+#' @description Extracts CNV results in form of barcode ~ pairs in a data.frame.
+#'
+#' @param object
+#' @param add_meta Logical value. If TRUE, meta information obtained by
+#' \code{getGenePosDf()} every gene is added to the data.frame
+#'
+#' @return Data.frame.
+#' @export
+#'
 getCnvGenesDf <- function(object, add_meta = TRUE){
 
   cnv_res <- getCnvResults(object)
@@ -86,6 +96,20 @@ getCnvGenesDf <- function(object, add_meta = TRUE){
 
 }
 
+
+#' @title Obtain gene information
+#'
+#' @description Extracts information regarding gene positioning
+#' on chromosomes and/or chromosome arms.
+#'
+#' @param object
+#' @param keep Logical value, TRUE the columns \emph{ensemble_gene_id} and
+#' \emph{hgnc_symbol} are included. The content of \emph{hgnc_symbol} is
+#' identical to the content of column \emph{genes}.
+#'
+#' @return Data.frame.
+#' @export
+#'
 getGenePosDf <- function(object, keep = FALSE){
 
   cnv_res <- getCnvResults(object)
@@ -103,6 +127,19 @@ getGenePosDf <- function(object, keep = FALSE){
 
 }
 
+#' @title Obtain chromosome information
+#'
+#' @description Extracts information regarding
+#' start, end and length of chromosomal arms.
+#'
+#' @param object
+#' @param format Character. If \emph{'long'} rows correspond to chromosome
+#' arms if \emph{'wide'} rows correspond to chromosomes and information
+#' about the respective arms is stored in separate columns.
+#'
+#' @return Data.frame.
+#' @export
+#'
 getChrRegionsDf <- function(object, format = "long"){
 
   cnv_res <- getCnvResults(object)
@@ -703,8 +740,7 @@ plotCnvLineplot <- function(object,
                             limits_y = base::range(breaks_y),
                             expand_y = ggplot2::waiver(),
                             verbose = TRUE,
-                            ...
-){
+                            ...){
 
   hlpr_assign_arguments(object)
 
@@ -926,238 +962,6 @@ plotCnvLineplot <- function(object,
 
 }
 
-#' @title Visualize copy-number-variations results
-#'
-#' @description Displays a smoothed lineplot indicating
-#' chromosomal gains and losses. Requires the results of \code{runCnvAnalysis()}.
-#'
-#' @inherit across_dummy params
-#' @inherit argument_dummy params
-#' @inherit check_smooth params
-#' @inherit ggplot_family return
-#'
-#' @export
-plotCnvResults <- function(object,
-                           across = NULL,
-                           across_subset = NULL,
-                           relevel = NULL,
-                           chr_subset = NULL,
-                           summarize_with = "median",
-                           linealpha = 0.9,
-                           linecolor = "blue",
-                           linesize = 1,
-                           smooth_span = 0.08,
-                           vline_alpha = 0.5,
-                           vline_color = "grey",
-                           vline_size = 1,
-                           vline_type = "dashed",
-                           ribbon_alpha = 0.2,
-                           ribbon_color = "grey",
-                           nrow = NULL,
-                           ncol = NULL,
-                           yrange = 1,
-                           of_sample = NA,
-                           verbose = NULL,
-                           clr = NA,
-                           ...
-                           ){
-
-  # 1. Control --------------------------------------------------------------
-
-  hlpr_assign_arguments(object)
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
-
-  # -----
-
-  if(!base::all(base::is.na(clr))){ warning("Argument `clr` is deprecated. Please use argument `linecolor`.")}
-
-
-  # 2. Data preparation -----------------------------------------------------
-
-  # cnv results
-  cnv_results <- getCnvResults(object, of_sample = of_sample)
-
-  cnv_data <- cnv_results$cnv_mtr
-
-  if(base::is.numeric(chr_subset)){
-
-    chr_subset <- base::as.character(chr_subset)
-
-  }
-
-  if(base::is.null(across)){
-
-    confuns::give_feedback(msg = "Plotting cnv-results for whole sample.", verbose = verbose)
-
-    plot_df <-
-      base::data.frame(
-        cnv_smrd = base::apply(cnv_data, MARGIN = 1, FUN = stats::median)
-      ) %>%
-      tibble::rownames_to_column(var = "hgnc_symbol") %>%
-      tibble::as_tibble() %>%
-      dplyr::left_join(x = ., y = cnv_results$gene_pos_df, by = "hgnc_symbol") %>%
-      dplyr::mutate(
-        chromosome_name = base::factor(chromosome_name, levels = base::as.character(0:23)),
-        x_axis = dplyr::row_number()
-      ) %>%
-      confuns::check_across_subset(
-        df = .,
-        across = "chromosome_name",
-        across.subset = chr_subset
-      )
-
-    if(base::is.null(yrange) | base::length(yrange) == 2){
-
-      new_yrange <- yrange
-
-    } else {
-
-      yrange <- base::range(plot_df[["cnv_values"]])
-
-      ymax <-
-        base::abs(yrange) %>%
-        base::max()
-
-      ydif <- (ymax - 1)
-
-      new_yrange <- c(1-ydif*yrange_mltpl, 1+ydif*yrange_mltpl)
-
-    }
-
-    line_df <-
-      dplyr::count(x = plot_df, chromosome_name) %>%
-      dplyr::mutate(
-        line_pos = base::cumsum(x = n),
-        line_lag = dplyr::lag(x = line_pos, default = 0) ,
-        label_breaks = (line_lag + line_pos) / 2
-      ) %>%
-      tidyr::drop_na()
-
-    final_plot <-
-      ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x_axis, y = cnv_smrd)) +
-      ggplot2::geom_smooth(
-        method = "loess", formula = y ~ x, span = smooth_span, se = TRUE, color = linecolor,
-        size = linesize, alpha = linealpha, ...) +
-      ggplot2::geom_vline(
-        data = line_df,
-        mapping = ggplot2::aes(xintercept = line_pos),
-        alpha = vline_alpha,
-        color = vline_color,
-        size = vline_size,
-        linetype = vline_type
-        ) +
-      ggplot2::theme_classic() +
-      ggplot2::scale_x_continuous(breaks = line_df$label_breaks, labels = line_df$chromosome_name) +
-      ggplot2::scale_y_continuous(limits = new_yrange) +
-      ggplot2::labs(x = "Chromosomes", y = NULL)
-
-  } else if(base::is.character(across)){
-
-    confuns::give_feedback(
-      msg = glue::glue("Plotting cnv-results across '{across}'. This might take a few moments."),
-      verbose = verbose
-    )
-
-    gene_names <- base::rownames(cnv_data)
-
-    prel_df <-
-      base::as.data.frame(cnv_data) %>%
-      base::t() %>%
-      base::as.data.frame() %>%
-      tibble::rownames_to_column(var = "barcodes") %>%
-      tibble::as_tibble() %>%
-      joinWith(object = object, spata_df = ., features = across, smooth = FALSE) %>%
-      confuns::check_across_subset(
-        df = .,
-        across = across,
-        across.subset = across_subset,
-        relevel = relevel
-        ) %>%
-      tidyr::pivot_longer(
-        cols = dplyr::all_of(gene_names),
-        names_to = "hgnc_symbol",
-        values_to = "cnv_values"
-      ) %>%
-      dplyr::left_join(x = ., y = cnv_results$gene_pos_df, by = "hgnc_symbol") %>%
-      dplyr::mutate(
-        chromosome_name = base::factor(chromosome_name, levels = base::as.character(0:23))
-      ) %>%
-      confuns::check_across_subset(
-        df = .,
-        across = "chromosome_name",
-        across.subset = chr_subset
-      )
-
-    confuns::give_feedback(msg = "Summarising results for all groups.", verbose = verbose)
-
-    plot_df <-
-      dplyr::group_by(prel_df, !!rlang::sym(x = across), chromosome_name, hgnc_symbol) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = cnv_values,
-          .fns = summarize_formulas[[summarize_with]]
-        )
-      ) %>%
-      dplyr::ungroup() %>%
-      dplyr::group_by(!!rlang::sym(x = across)) %>%
-      dplyr::mutate(x_axis = dplyr::row_number(), across = !!rlang::sym(across))
-
-    if(base::is.null(yrange) | base::length(yrange) == 2){
-
-      new_yrange <- yrange
-
-    } else {
-
-      yrange <- base::range(plot_df[["cnv_values"]])
-
-      ymax <-
-        base::abs(yrange) %>%
-        base::max()
-
-      ydif <- (ymax - 1)
-
-      new_yrange <- c(1-ydif*yrange_mltpl, 1+ydif*yrange_mltpl)
-
-    }
-
-    vline_df <-
-      dplyr::count(x = plot_df, chromosome_name) %>%
-      dplyr::ungroup() %>%
-      dplyr::group_by(!!rlang::sym(across)) %>%
-      dplyr::mutate(
-        line_pos = base::cumsum(x = n),
-        line_lag = dplyr::lag(x = line_pos, default = 0),
-        label_breaks = (line_lag + line_pos) / 2
-      )  %>%
-      tidyr::drop_na()
-
-    final_plot <-
-      ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x_axis, y = cnv_values)) +
-      ggplot2::geom_smooth(
-        method = "loess", formula = y ~ x, span = smooth_span, se = TRUE,
-        alpha = linealpha, color = linecolor, size = linesize) +
-      ggplot2::facet_wrap(facets = ~ across, nrow = nrow, ncol = ncol) +
-      ggplot2::geom_vline(
-        data = vline_df,
-        mapping = ggplot2::aes(xintercept = line_pos),
-        alpha = vline_alpha,
-        color = vline_color,
-        size = vline_size,
-        linetype = vline_type
-      ) +
-      ggplot2::theme_classic() +
-      ggplot2::scale_x_continuous(breaks = vline_df$label_breaks, labels = vline_df$chromosome_name) +
-      ggplot2::scale_y_continuous(limits = new_yrange) +
-      ggplot2::labs(x = "Chromosomes", y = NULL)
-
-  }
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
-
-  return(final_plot)
-
-}
 
 
 
@@ -1859,33 +1663,6 @@ runCnvAnalysis <- function(object,
       of_sample = of_sample
     )
 
-  if(FALSE){
-
-
-    confuns::give_feedback(msg = "Computing PCA based on cnv results.", verbose = verbose)
-
-    object <-
-      hlpr_run_cnva_pca(object, n_pcs = n_pcs, of_sample = of_sample)
-
-    # cnv clustering - hierarchical
-
-    cnv_pca_df <- dplyr::select(cnv_res$dim_red$pca, -sample)
-
-    cnv_hclust <-
-      confuns::initiate_hclust_object(
-        hclust.data = tibble::column_to_rownames(cnv_pca_df, var = "barcodes"),
-        key.name = "barcodes"
-      )
-
-    clustering_list <- list(hierarchical = cnv_hclust)
-
-    cnv_res$clustering <- clustering_list
-
-    object <- setCnvResults(object, cnv_list = cnv_res, of_sample = of_sample)
-
-  }
-
-
   # -----
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -1914,31 +1691,7 @@ runCnvAnalysis <- function(object,
 
 setCnvResults <- function(object, cnv_list, of_sample = NA){
 
-<<<<<<< HEAD
   check_object(object)
-=======
-    final_plot <-
-      ggplot2::ggplot(data = summarized_df, mapping = ggplot2::aes(x = 1:base::nrow(summarized_df), y = cnv_mean)) +
-      ggplot2::geom_smooth(
-        method = "loess", formula = y ~ x, span = smooth_span, se = FALSE,
-        alpha = linealpha, color = linecolor, size = linesize, ...) +
-      ggplot2::geom_ribbon(
-        mapping = ggplot2::aes(ymin = cnv_mean-cnv_sd, ymax = cnv_mean + cnv_sd),
-        alpha = ribbon_alpha, color = ribbon_color
-      ) +
-      ggplot2::geom_vline(
-        data = line_df,
-        mapping = ggplot2::aes(xintercept = line_pos),
-        alpha = vline_alpha,
-        color = vline_color,
-        size = vline_size,
-        linetype = vline_type
-      ) +
-      ggplot2::facet_wrap(facets = ~ across, nrow = nrow, ncol = ncol) +
-      ggplot2::theme_classic() +
-      ggplot2::scale_x_continuous(breaks = line_df$label_breaks, labels = line_df$chromosome_name) +
-      ggplot2::labs(x = "Chromosomes", y = "CNV-Results")
->>>>>>> de6c41076c3a018b0ad314443bd392273c77bd5b
 
   of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 

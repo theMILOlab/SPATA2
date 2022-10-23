@@ -58,6 +58,25 @@ isNumericVariable <- function(object, variable){
 
 }
 
+#' @export
+containsCNV <- function(object){
+
+  out <-
+    base::tryCatch({
+
+      cnv <- object@cnv[[1]]
+
+      purrr::is_list(cnv) && !purrr::is_empty(cnv)
+
+    }, error = function(error){
+
+      FALSE
+
+    })
+
+  return(out)
+
+}
 
 #' @export
 containsImage <- function(object){

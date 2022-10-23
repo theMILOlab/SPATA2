@@ -53,7 +53,12 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
       } else {
 
-        msg <- glue::glue("Argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead.")
+        msg <-
+          glue::glue(
+            "Argument `{old_arg_name}` is deprecated.
+            It will be removed in the near future.
+            Please use argument `{new_arg_name}` instead."
+            )
 
         ce <- rlang::caller_env()
 
@@ -2508,3 +2513,18 @@ createTrajectoryManually <- function(object,
   return(object)
 
 }
+
+
+
+#' @title Deprecated
+#'
+#' @export
+plotCnvResults <- function(...){
+
+  deprecated(fn = TRUE)
+
+  plotCnvLineplot(...)
+
+}
+
+
