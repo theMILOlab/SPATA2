@@ -495,14 +495,16 @@ addFeatures <- function(object,
 
       if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
-      base::warning(glue::glue("Only {n_bc_feat} barcode-spots of {n_bc_obj} were found in 'feature_df'. Not found barcode-spots obtain NAs for all features to be joined."))
+      base::warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
 
     }
 
     new_feature_df <-
-      dplyr::left_join(x = fdata,
-                       y = feature_df[,c("barcodes", feature_names)],
-                       by = "barcodes")
+      dplyr::left_join(
+        x = fdata,
+        y = feature_df[,c("barcodes", feature_names)],
+        by = "barcodes"
+      )
 
     object <- setFeatureDf(object = object, feature_df = new_feature_df, of_sample = of_sample)
 

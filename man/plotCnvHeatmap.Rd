@@ -27,6 +27,9 @@ plotCnvHeatmap(
   vline_color = "black",
   vline_size = 0.5,
   vline_type = "dashed",
+  display_border = FALSE,
+  border_color = "black",
+  border_size = 1,
   clrp = NULL,
   clrsp = "Blue-Red 3",
   limits = NULL,
@@ -94,6 +97,12 @@ that are used to manipulate the chromosome names.}
 \item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
 \code{ggplot2::geom_vline()} that control the appearance of vertical lines
 of the plot.}
+
+\item{display_border}{Logical value. If TRUE, a border is drawn around the heatmap
+and each annotation.}
+
+\item{border_color, border_size}{Impact the appearance of the border if \code{display_border}
+is TRUE.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

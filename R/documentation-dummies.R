@@ -168,7 +168,16 @@ print_family <- function(){}
 sample_name <- function(sample_name){}
 
 
+#' Title
+#'
+#' @param seurat_object A valid seurat-object. (from the Seurat platform)
+#'
+seurat_object_dummy <- function(seurat_object){}
 
+
+#' @return The input \code{spata2} object containing the added or computed
+#' results.
+update_dummy <- function(){}
 
 #' @title variable
 #'
@@ -211,11 +220,7 @@ variable_num <- function(variable){}
 variables_num <- function(variables){}
 
 
-#' Title
-#'
-#' @param seurat_object A valid seurat-object. (from the Seurat platform)
-#'
-seurat_object_dummy <- function(seurat_object){}
+
 
 
 #' @title Argument dummy

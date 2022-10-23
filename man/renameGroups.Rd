@@ -5,14 +5,20 @@
 \alias{renameSegments}
 \title{Rename cluster/group names}
 \usage{
-renameGroups(object, discrete_feature, ..., keep_levels = NULL, of_sample = NA)
+renameGroups(
+  object,
+  grouping_variable,
+  ...,
+  keep_levels = NULL,
+  of_sample = NA
+)
 
 renameSegments(object, ..., of_sample = NA)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{discrete_feature}{Character value. The grouping variable of interest.}
+\item{grouping_variable}{Character value. The grouping variable of interest.}
 
 \item{...}{The groups to be renamed specified according to the following
 syntax: \emph{'new_group_name'} \code{=} \emph{'old_group_name'}.}
@@ -34,7 +40,7 @@ to rename already drawn segments.
 
  object <-
     renameGroups(object = spata_object,
-                 discrete_feature = "seurat_clusters",
+                 grouping_variable = "seurat_clusters",
                  "first_new_group" = "1",
                  "sec_new_group" = "2")
 

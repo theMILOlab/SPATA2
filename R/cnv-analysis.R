@@ -245,6 +245,10 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' @param pretty_name Logical. If TRUE makes legend names pretty.
 #' @param limits Numeric vector of length two or NULL, If numeric, sets the limits
 #' of the colorscale (\code{oob} is set to \code{scales::squish}).
+#' @param display_border Logical value. If TRUE, a border is drawn around the heatmap
+#' and each annotation.
+#' @param border_color,border_size Impact the appearance of the border if \code{display_border}
+#' is TRUE.
 #'
 #' @inherit argument_dummy params
 #'
@@ -274,6 +278,9 @@ plotCnvHeatmap <- function(object,
                            vline_color = "black",
                            vline_size = 0.5,
                            vline_type = "dashed",
+                           display_border = FALSE,
+                           border_color = "black",
+                           border_size = 1,
                            clrp = NULL,
                            clrsp = "Blue-Red 3",
                            limits = NULL,
@@ -409,6 +416,44 @@ plotCnvHeatmap <- function(object,
     verbose = verbose
   )
 
+
+  border <- display_border
+
+  if(base::any(border)){
+
+    border_theme <-
+      ggplot2::theme(
+        panel.border = ggplot2::element_rect(
+          color = border_color,
+          size = border_size
+        )
+      )
+
+    border_add_on <-
+      list(
+        arm = border_theme,
+        chrom = border_theme,
+        grouping = border_theme
+      )
+
+    if(base::length(border) == 1){
+
+      border <-
+        base::rep(TRUE, 3) %>%
+        purrr::set_names(nm = c("arm", "chrom", "grouping"))
+
+    } else {
+
+      border <- confuns::keep_named(border)
+
+    }
+
+  } else {
+
+    border_add_on <- NULL
+
+  }
+
   # create grouping annotation
   if(base::is.character(across)){
 
@@ -427,7 +472,8 @@ plotCnvHeatmap <- function(object,
         clrp = clrp
       ) +
       ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
-      ggplot2::labs(fill = confuns::make_pretty_name(across, make.pretty = pretty_name))
+      ggplot2::labs(fill = confuns::make_pretty_name(across, make.pretty = pretty_name)) +
+      pull_slot(border_add_on, slot = border["grouping"])
 
 
   } else {
@@ -456,7 +502,9 @@ plotCnvHeatmap <- function(object,
         clrp.adjust = colors_arm_annotation
       ) +
       ggplot2::theme_void() +
-      ggplot2::labs(fill = "Chr.Arm")
+      ggplot2::labs(fill = "Chr.Arm") +
+      +
+      pull_slot(border_add_on, slot = border["arm"])
 
   } else {
 
@@ -489,7 +537,9 @@ plotCnvHeatmap <- function(object,
         clrp.adjust = clrp_adjust_chrom
       ) +
       ggplot2::theme_void() +
-      ggplot2::labs(fill = "Chrom.")
+      ggplot2::labs(fill = "Chrom.") +
+      +
+      pull_slot(border_add_on, slot = border["chrom"])
 
   } else {
 
