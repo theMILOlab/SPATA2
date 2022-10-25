@@ -6,6 +6,7 @@
 \alias{plotHistogram}
 \alias{plotRidgeplot}
 \alias{plotViolinplot}
+\alias{plotVioBoxplot}
 \title{Plot numeric distribution and statistical tests}
 \usage{
 plotBoxplot(
@@ -96,6 +97,36 @@ plotRidgeplot(
 )
 
 plotViolinplot(
+  object,
+  variables,
+  across = NULL,
+  across_subset = NULL,
+  relevel = NULL,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  test_groupwise = NULL,
+  test_pairwise = NULL,
+  ref_group = NULL,
+  step_increase = 0.01,
+  display_facets = NULL,
+  vjust = 0,
+  scales = "free",
+  nrow = NULL,
+  ncol = NULL,
+  display_points = FALSE,
+  n_bcsp = NULL,
+  pt_alpha = NULL,
+  pt_clr = NULL,
+  pt_size = NULL,
+  pt_shape = NULL,
+  method_gs = NULL,
+  normalize = NULL,
+  verbose = NULL,
+  of_sample = NA,
+  ...
+)
+
+plotVioBoxplot(
   object,
   variables,
   across = NULL,

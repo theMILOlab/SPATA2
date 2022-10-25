@@ -71,6 +71,8 @@ plotBoxplot <- function(object,
   all_genes <- getGenes(object = object)
   all_gene_sets <- getGeneSets(object)
 
+  var_levels <- base::unique(variables)
+
   variables <-
     check_variables(
       variables = c(variables, across),
@@ -93,7 +95,7 @@ plotBoxplot <- function(object,
 
   confuns::plot_boxplot(
     df = spata_df,
-    variables = variables,
+    variables = var_levels,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -143,6 +145,8 @@ plotDensityplot <- function(object,
 
   of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
 
+  var_levels <- base::unique(variables)
+
   all_features <- getFeatureNames(object)
   all_genes <- getGenes(object = object)
   all_gene_sets <- getGeneSets(object)
@@ -167,7 +171,7 @@ plotDensityplot <- function(object,
 
   confuns::plot_density(
     df = spata_df,
-    variables = variables,
+    variables = var_levels,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -210,6 +214,8 @@ plotHistogram <- function(object,
   all_genes <- getGenes(object = object)
   all_gene_sets <- getGeneSets(object)
 
+  var_levels <- base::unique(variables)
+
   variables <-
     check_variables(
       variables = c(variables, across),
@@ -232,7 +238,7 @@ plotHistogram <- function(object,
 
   confuns::plot_histogram(
     df = spata_df,
-    variables = variables,
+    variables = var_levels,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -284,6 +290,8 @@ plotRidgeplot <- function(object,
       simplify = FALSE
     )
 
+  var_levels <- base::unique(variables)
+
   spata_df <-
     joinWithVariables(
       object = object,
@@ -297,7 +305,7 @@ plotRidgeplot <- function(object,
 
   confuns::plot_ridgeplot(
     df = spata_df,
-    variables = variables,
+    variables = var_levels,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -351,6 +359,8 @@ plotViolinplot <- function(object,
   all_genes <- getGenes(object = object)
   all_gene_sets <- getGeneSets(object)
 
+  var_levels <- base::unique(variables)
+
   variables <-
     check_variables(
       variables = c(variables, across),
@@ -373,7 +383,7 @@ plotViolinplot <- function(object,
 
   confuns::plot_violin(
     df = spata_df,
-    variables = variables,
+    variables = var_levels,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -400,7 +410,94 @@ plotViolinplot <- function(object,
 
 }
 
+#' @rdname plotBoxplot
+#' @export
+plotVioBoxplot <- function(object,
+                           variables,
+                           across = NULL,
+                           across_subset = NULL,
+                           relevel = NULL,
+                           clrp = NULL,
+                           clrp_adjust = NULL,
+                           test_groupwise = NULL,
+                           test_pairwise = NULL,
+                           ref_group = NULL,
+                           step_increase = 0.01,
+                           display_facets = NULL,
+                           vjust = 0,
+                           scales = "free",
+                           nrow = NULL,
+                           ncol = NULL,
+                           display_points = FALSE,
+                           n_bcsp = NULL,
+                           pt_alpha = NULL,
+                           pt_clr = NULL,
+                           pt_size = NULL,
+                           pt_shape = NULL,
+                           method_gs = NULL,
+                           normalize = NULL,
+                           verbose = NULL,
+                           of_sample = NA,
+                           ...){
 
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object)
+  all_gene_sets <- getGeneSets(object)
+
+  var_levels <- base::unique(variables)
+
+  variables <-
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
+
+  spata_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      variables = variables,
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+  confuns::plot_vioboxplot(
+    df = spata_df,
+    variables = var_levels,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    test.pairwise = test_pairwise,
+    test.groupwise = test_groupwise,
+    ref.group = ref_group,
+    step.increase = step_increase,
+    vjust = vjust,
+    scales = scales,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    display.points = display_points,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.num = n_bcsp,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
+
+}
 
 #' @title Plot distribution of discrete variables
 #'
@@ -470,6 +567,8 @@ plotBarchart <- function(object,
                         ...)
 
 }
+
+
 
 
 
