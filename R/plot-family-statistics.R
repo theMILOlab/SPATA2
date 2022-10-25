@@ -93,6 +93,7 @@ plotBoxplot <- function(object,
 
   confuns::plot_boxplot(
     df = spata_df,
+    variables = variables,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -166,6 +167,7 @@ plotDensityplot <- function(object,
 
   confuns::plot_density(
     df = spata_df,
+    variables = variables,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -230,6 +232,7 @@ plotHistogram <- function(object,
 
   confuns::plot_histogram(
     df = spata_df,
+    variables = variables,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -294,6 +297,7 @@ plotRidgeplot <- function(object,
 
   confuns::plot_ridgeplot(
     df = spata_df,
+    variables = variables,
     across = across,
     across.subset = across_subset,
     relevel = relevel,
@@ -369,6 +373,7 @@ plotViolinplot <- function(object,
 
   confuns::plot_violin(
     df = spata_df,
+    variables = variables,
     across = across,
     across.subset = across_subset,
     relevel = relevel,

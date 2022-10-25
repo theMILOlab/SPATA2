@@ -157,7 +157,6 @@ plotDeaVolcano <- function(object,
       label_df <- base::rbind(label_df1, label_df2)
 
     }
-
     label_add_on <-
       ggrepel::geom_text_repel(
         data = label_df,

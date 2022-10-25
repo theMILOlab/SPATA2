@@ -479,7 +479,7 @@ plotCnvHeatmap <- function(object,
 
     ggpLayers_add_on <-
       purrr::map(
-        .x = cnv_heatmap_list, # remove unnamed elements
+        .x = cnv_heatmap_list,
         .f = ~ c(.x, unnamed_elements) # add unnamed elements to each slot
       )
 
