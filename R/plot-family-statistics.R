@@ -511,6 +511,8 @@ plotVioBoxplot <- function(object,
 #' proportion you want to display. Must not contain the feature specified in
 #' \code{across} - if \code{across} is not set to NULL.
 
+#' @export
+
 plotBarchart <- function(object,
                          grouping_variables,
                          across = NULL,

@@ -121,6 +121,7 @@ Collate:
     'r-objects.R'
     'relevel.R'
     'rename-family.R'
+    'rotate.R'
     'set-family.R'
     'shiny-dashboard-tab-items.R'
     'shiny-helper-descriptions.R'
