@@ -6,10 +6,10 @@
 \usage{
 plotTrajectoryLineplotFitted(
   object,
-  id = getDefaultTrajectory(object),
+  id,
   variable,
-  binwidth = getBarcodeSpotDistance(object),
-  n_bins = NA,
+  binwidth = ccDist(object),
+  n_bins = NA_integer_,
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,

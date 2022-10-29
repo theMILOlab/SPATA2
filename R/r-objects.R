@@ -265,6 +265,8 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 # c -----------------------------------------------------------------------
 
+bcsp_dist <- 7
+
 chrom_levels <- base::as.character(1:22)
 
 chrom_arm_levels <-
@@ -296,6 +298,8 @@ depr_info <-
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
+      "getSampleNames" = "getSampleName",
+      "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",

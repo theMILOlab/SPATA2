@@ -8,6 +8,12 @@ getProjectionDf(object, id, ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
+
+\item{...}{Given to \code{joinWith()}}
+}
+\value{
+Data.frame that contains the projection length of each barcode-spot
+in relation to the trajectory specified in \code{id}.
 }
 \description{
 Extracts the projection data.frame of a trajectory. If \code{variables}

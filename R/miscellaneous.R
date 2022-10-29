@@ -574,12 +574,57 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
 #' @details The output data.frame has a number of rows that is equal to
 #' \code{nBarcodes(object)^2}
 #'
+#' @return If \code{unit} is \emph{'pixel'} a numeric value that scales
+#' the center to center distance of barcode spots to the current image.
+#' Else an object of class \code{unit}.
+#' @export
 #'
-#' @return A data.frame.
+#'
+getBarcodeSpotDistance <- function(object,
+                                   unit = "pixel",
+                                   force = FALSE,
+                                   verbose = NULL,
+                                   ...){
+
+  dist_val <- object@information$bcsp_dist
+
+  if(base::is.null(dist_val) & base::isFALSE(force)){
+
+    dist_val <-
+      getBarcodeSpotDistances(object, verbose = verbose) %>%
+      dplyr::filter(bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::filter(distance == base::min(distance)) %>%
+      dplyr::ungroup() %>%
+      dplyr::summarise(mean_dist = base::mean(distance)) %>%
+      dplyr::pull(mean_dist)
+
+  }
+
+  return(dist_val)
+
+}
+
+
+
+
+#' @title Obtain distances between barcodes
+#'
+#' @inherit argument_dummy params
+#' @param barcdoes Character vector or NULL. If character,
+#' only input barcodes are considered.
+#'
+#'
+#' @return A data.frame in which each observation/row corresponds to a barcodes-spot ~
+#' barcode-spot pair.
+#'
 #' @export
 #'
 #' @examples
-getBarcodeSpotDistances <- function(object, verbose = NULL){
+getBarcodeSpotDistances <- function(object,
+                                    barcodes = NULL,
+                                    unit = "pixel",
+                                    verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -608,27 +653,10 @@ getBarcodeSpotDistances <- function(object, verbose = NULL){
 
 }
 
-#' @rdname getBarcodeSpotDistance
-getBarcodeSpotDistance <- function(object, force = FALSE, verbose = NULL){
 
-  dist_val <- object@information$bcsp_dist
 
-  if(base::is.null(dist_val) & base::isFALSE(force)){
 
-    dist_val <-
-      getBarcodeSpotDistances(object, verbose = verbose) %>%
-      dplyr::filter(bc_origin != bc_destination) %>%
-      dplyr::group_by(bc_origin) %>%
-      dplyr::filter(distance == base::min(distance)) %>%
-      dplyr::ungroup() %>%
-      dplyr::summarise(mean_dist = base::mean(distance)) %>%
-      dplyr::pull(mean_dist)
 
-  }
-
-  return(dist_val)
-
-}
 
 
 

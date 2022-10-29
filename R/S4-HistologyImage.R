@@ -442,7 +442,7 @@ getImageAnnotationAreaDf <- function(object,
 #' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
 #' must be tagged with all of the input tags.
 #'
-#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be indluded, an image annotation
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
 #' must be tagged with all of the input tags and must not be tagged with anything else.
 #'
 #' Note that the filtering process happens in addition to / after the filtering by input for argument

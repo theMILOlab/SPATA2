@@ -22,9 +22,8 @@ vertices of the polygon that encircles the area based on which the barcode-spots
 are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
 
 \item{binwidth}{Numeric value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the distance
-between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
-(See details for more.)}
+the barcode-spots are assigned. We recommend to set it equal to the center-center
+distance: \code{binwidth = ccDist(object)}. (See details for more.)}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.

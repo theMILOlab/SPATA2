@@ -2623,6 +2623,8 @@ plotRiverplot <- function(object,
                           clrp_adjust = NULL,
                           ...){
 
+  require(ggalluvial)
+
   hlpr_assign_arguments(object)
 
   all_vars <- c(grouping_variables, fill_by)

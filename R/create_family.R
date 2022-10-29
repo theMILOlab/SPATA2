@@ -1,5 +1,19 @@
 
-createImageObject <- function(image, image_class, stop_if_null = FALSE, ...){
+
+
+#' @title Create S4 Image object for SPATA2
+#'
+#' @description Creates the basic S4 image object that is put
+#' in slot @@images in the \code{SPATA2} object.
+#'
+#' @param image Image of class \code{EBImage}.
+#' @param image_class Name of the S4 object. One of \code{validImageClasses()}.
+#' @param ...
+#'
+#' @return An object of class \code{image_class}.
+#' @export
+#'
+createImageObject <- function(image, image_class = "HistologyImage", ...){
 
   if(!base::is.null(image) && base::isFALSE(stop_if_null)){
 

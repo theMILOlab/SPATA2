@@ -31,8 +31,6 @@ Trajectory <- setClass(Class = "Trajectory",
                        ))
 
 
-# A -----------------------------------------------------------------------
-
 
 
 # H -----------------------------------------------------------------------
@@ -53,7 +51,7 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' @slot grid data.frame. A data.frame that contains at least a variable
 #' named \emph{x} and a variable named \emph{y} representing a grid.
 #' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class.
+#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
 #' @slot image Image.
 #' @slot info list. A flexible list that is supposed to store miscellaneous
 #' information around the image.

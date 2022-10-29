@@ -283,6 +283,131 @@ ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = F
 }
 
 
+# h -----------------------------------------------------------------------
+
+#' @title Fix ggplot frame
+#'
+#' @description Fixes the frame of an surface plot based
+#' on the coordinates range of the \code{SPATA2} object.
+#'
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+ggpLayerFixFrame <- function(object){
+
+  list(
+    ggplot2::coord_fixed(
+      xlim = getCoordsRange(object)$x,
+      ylim = getCoordsRange(object)$y
+    )
+  )
+
+}
+
+
+#' @title Add IAS area horizon
+#'
+#' @description Adds the last circular expansion used by the IAS-algorithm
+#' of the area of  an image annotation to a surface plot in order to
+#' visualize the border between screened tissue and everything beyond that
+#' is not included in the IAS.
+#'
+#' @inherit imageAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+#'
+ggpLayerHorizonIAS <- function(object,
+                               id,
+                               distance = NA_integer_,
+                               binwidth = NA_integer_,
+                               n_bins_circle = NA_integer_,
+                               line_color = "black",
+                               line_size = 1,
+                               crop_frame = FALSE){
+
+  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+
+  input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle
+    )
+
+  distance <- input$distance
+  binwidth <- input$binwidth
+  n_bins_circle <- input$n_bins_circle
+
+  circle_names <- stringr::str_c("Circle", n_bins_circle, sep = " ")
+
+  circles <-
+    purrr::set_names(
+      x = c((n_bins_circle)*binwidth),
+      nm = circle_names
+    ) %>%
+    utils::tail(1)
+
+  binwidth_vec <- c("Core" = 0, circles)
+
+  areas <-
+    purrr::imap(
+      .x = binwidth_vec,
+      .f =
+        ~ buffer_area(df = img_ann@area, buffer = .x) %>%
+        dplyr::mutate(., circle = .y)
+    )
+
+  out_list <-
+    purrr::map(
+      .x = areas,
+      .f =
+        ~ ggplot2::geom_polygon(
+          data = .x,
+          mapping = ggplot2::aes(x = x, y = y),
+          alpha = 0,
+          color = line_color,
+          size = line_size
+        )
+    )
+
+  if(base::isTRUE(crop_frame)){
+
+    frame_list <-
+      list(
+        ggplot2::coord_fixed(
+          xlim = getCoordsRange(object)$x,
+          ylim = getCoordsRange(object)$y
+        )
+      )
+
+
+  } else {
+
+    xrange <-
+      purrr::map(areas, .f = ~ .x$x) %>%
+      purrr::flatten_dbl() %>%
+      base::range()
+
+    yrange <-
+      purrr::map(areas, .f = ~ .x$y) %>%
+      purrr::flatten_dbl() %>%
+      base::range()
+
+    frame_list <- list(
+      ggplot2::scale_x_continuous(limits = xrange),
+      ggplot2::scale_y_continuous(limits = yrange)
+    )
+
+
+  }
+
+  out_list <- list(out_list, frame_list)
+
+  return(out_list)
+
+}
 
 # i -----------------------------------------------------------------------
 

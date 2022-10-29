@@ -52,7 +52,7 @@ check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL){
 
     stop("Please specify either argument `n_bins` or `binwidth`.")
 
-  } else if(base::is.numeric(n_bins) & base::is.numeric(binwidth)){
+  } else if(base::is.numeric(n_bins) & base::is.numeric(binwidth) & !base::is.na(n_bins)){
 
     confuns::give_feedback(
       msg = glue::glue("Using `n_bins` = {n_bins} instead of binwidth."),

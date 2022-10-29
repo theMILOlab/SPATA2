@@ -2,14 +2,14 @@
 % Please edit documentation in R/trajectory-screening.R
 \name{spatialTrajectoryScreening}
 \alias{spatialTrajectoryScreening}
-\title{The of the STS-algorithm}
+\title{The Spatial Trajectory Screening algorithm}
 \usage{
 spatialTrajectoryScreening(
   object,
   id,
   variables,
-  n_bins = NA,
-  binwidth = getBarcodeSpotDistance(object),
+  n_bins = NA_integer_,
+  binwidth = ccDist(object),
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
@@ -29,9 +29,8 @@ the screening process.}
 created. (See details for more.)}
 
 \item{binwidth}{Numeric value. The width of the bins to which
-the barcode-spots are assigned. We recommend to set it equal to the distance
-between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
-(See details for more.)}
+the barcode-spots are assigned. We recommend to set it equal to the center-center
+distance: \code{binwidth = ccDist(object)}. (See details for more.)}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
@@ -79,7 +78,7 @@ The other one is calculated based on the equation shown below.
 
 \code{binwidth} = \emph{length_of_trajectory} / \code{n_bins}
 
-and for every numeric variable included the mean-expression of each bin is calcuated.
+and for every numeric variable included the mean-expression of each bin is calculated.
 As the bins can be aligned in an ascending order (ascending in relation to the
 directory of the trajectory), so can the bin-wise mean expression of each variable.
 Doing so results in \emph{inferred expression changes along the trajectory}.

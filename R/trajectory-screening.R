@@ -206,6 +206,12 @@ discardSpatialTrajectory <- function(object, id){
 #' is specified
 #'
 #' @inherit argument_dummy params
+#' @inherit getTrajectoryIds params
+#' @param ... Given to \code{joinWith()}
+#'
+#' @return Data.frame that contains the projection length of each barcode-spot
+#' in relation to the trajectory specified in \code{id}.
+#'
 #' @export
 #'
 getProjectionDf <- function(object,
@@ -214,7 +220,22 @@ getProjectionDf <- function(object,
 
   traj_obj <- getTrajectoryObject(object = object, id = id)
 
-  return(traj_obj@projection)
+  if(base::is.character(list(...)[["variables"]])){
+
+    out <-
+      joinWith(
+        object = object,
+        spata_df = traj_obj@projection,
+        ...
+      )
+
+  } else {
+
+    out <- traj_obj@projection
+
+  }
+
+  return(out)
 
 }
 
@@ -269,19 +290,22 @@ getTrajectoryNames <- function(object, ...){
 
 #' @title Obtain a summarized trajectory data.frame
 #'
-#' @description Computes the expression trends of all specified variables
-#' along the direction of the spatial trajectory.
+#' @description Extracts a data.frame that contains information about barcode-spots
+#' needed for analysis related to \code{spatialTrajectoryScreening()}.
 #'
 #' @inherit argument_dummy params
 #' @inherit variables_num params
 #' @inherit getSpatialTrajetoryIds params
-#' @param binwidth The width of the the bins in which the barcode-spots
-#' are binned according to their projection length values.
+#' @param binwidth Numeric value. The width of the bins to which
+#' the barcode-spots are assigned. We recommend to set it equal to the center-center
+#' distance: \code{binwidth = ccDist(object)}. (See details for more.)
 #'
-#' @param shift_wider Logical. If set to TRUE the trajectory data.frame is
-#' shifted to it's wider format. Formats can be changed via \code{shiftTrajectoryDf()}.
+#' @return Data.frame. (See details for more.)
 #'
-#' @return Data.frame.
+#' @note \code{getTrajectoryScreeningDf()} summarizes by bins by default.
+#' To obtain the coordinates joined with the projection length set \code{summarize_with}
+#' to FALES or use \code{getProjectionDf()}. The same applies if you want to join grouping
+#' variables to the data.frame (can not be summarized).
 #'
 #' @details Initially the projection data.frame of the specified trajectory
 #' is joined with the respective input of variables via \code{joinWithVariables()}.
@@ -290,9 +314,9 @@ getTrajectoryNames <- function(object, ...){
 #' given trajectory will be summarized with regards to the trajectory's direction:
 #' The amount of \code{binwidth} and the previously specified 'trajectory width' in \code{createTrajectories()}
 #' determine the length and width of the sub-rectangles in which the rectangle the
-#' trajectory embraces are splitted and in which all barcode-spots are binned.
+#' trajectory embraces is split and in which all barcode-spots are binned.
 #' Via \code{dplyr::summarize()} the variable-means of every sub-rectangle are calculated.
-#' These mean-values are then arranged according to the trajectory's direction.
+#' These mean-values are then arranged along to the trajectory's direction.
 #'
 #' Eventually the data.frame is shifted via \code{tidyr::pivot_longer()} to a data.frame in which
 #' every observation refers to the mean-value of one of the specified variable-elements (e.g. a specified
@@ -305,23 +329,22 @@ getTrajectoryNames <- function(object, ...){
 #'  only one trajectory part.)}
 #'  \item{\emph{trajectory_order}: Numeric. Indicates the order within the whole trajectory.}
 #'  \item{\emph{variables}: Character. The respective gene sets, gene or feature the value refers to.}
-#'  \item{\emph{values}: Numeric. The actual summarized values.}}
+#'  \item{\emph{values}: Numeric. The summarized values.}}
 #'
 #' @export
+#'
 
-getTrajectoryDf <- function(object,
-                            id,
-                            variables,
-                            binwidth = getBarcodeSpotDistance(object),
-                            n_bins = NA_integer_,
-                            method_gs = "mean",
-                            normalize = TRUE,
-                            summarize_with = "mean",
-                            format = "long",
-                            verbose = NULL,
-                            ...){
-
-  deprecated(...)
+getTrajectoryScreeningDf <- function(object,
+                                     id,
+                                     variables,
+                                     binwidth = ccDist(object),
+                                     n_bins = NA_integer_,
+                                     method_gs = "mean",
+                                     normalize = TRUE,
+                                     summarize_with = "mean",
+                                     format = "wide",
+                                     verbose = NULL,
+                                     ...){
 
   hlpr_assign_arguments(object)
 
@@ -341,31 +364,58 @@ getTrajectoryDf <- function(object,
 
   trajectory <- getTrajectory(object, id = id)
 
-  stdf <-
+  if(base::length(normalize) == 1){
+
+    normalize <- base::rep(normalize, 2)
+
+  }
+
+  out <-
     joinWithVariables(
       object = object,
       variables = variables,
       method_gs = method_gs,
-      normalize = normalize,
-      verbose = verbose,
-      ...
+      normalize = normalize[1],
+      smooth = FALSE,
+      verbose = verbose
     ) %>%
     dplyr::select(barcodes, dplyr::all_of(variables)) %>%
-    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes") %>%
-    summarize_projection_df(binwidth = binwidth, n_bins = n_bins, summarize_with = summarize_with) %>%
-    normalize_smrd_projection_df() %>%
-    tibble::as_tibble()
+    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes")
 
-  if(format == "long"){
+  if(base::is.character(summarize_with)){
 
-    stdf <- shift_smrd_projection_df(stdf)
+    out <-
+      summarize_projection_df(
+        projection_df = out,
+        binwidth = binwidth,
+        n_bins = n_bins,
+        summarize_with = summarize_with
+      ) %>%
+        normalize_smrd_projection_df(normalize = normalize[2]) %>%
+        tibble::as_tibble()
+
+    if(format == "long"){
+
+      out <- shift_smrd_projection_df(out)
+
+    }
 
   }
 
-  return(stdf)
+  return(out)
 
 }
 
+#' @rdname getTrajectoryScreeningDf
+#' @export
+getTrajectoryDf <- function(object, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  getTrajectoryScreeningDf(object = object, ...)
+
+
+}
 
 #' @title Obtain object of class \code{SpatialTrajectory}.
 #'
@@ -444,15 +494,26 @@ nest_shifted_projection_df <- function(shifted_projection_df){
 }
 
 #' @export
-normalize_smrd_projection_df <- function(smrd_projection_df){
+normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
 
-  dplyr::mutate(
-    .data = smrd_projection_df,
-    dplyr::across(
-      .cols = -dplyr::all_of(smrd_projection_df_names),
-      .fns = ~ confuns::normalize(.x)
-    )
-  )
+  if(base::isTRUE(normalize)){
+
+    out <-
+      dplyr::mutate(
+        .data = smrd_projection_df,
+        dplyr::across(
+          .cols = -dplyr::all_of(smrd_projection_df_names),
+          .fns = ~ confuns::normalize(.x)
+        )
+      )
+
+  } else {
+
+    out <- smrd_projection_df
+
+  }
+
+  return(out)
 
 }
 
@@ -609,7 +670,7 @@ plotSpatialTrajectories <- function(object,
 }
 
 
-#' @title Plot discrete trajectory dynamics
+#' @title Plot categorical trajectory dynamics
 #'
 #' @description Displays discrete variables along a trajectory.
 #'
@@ -628,7 +689,7 @@ plotSpatialTrajectories <- function(object,
 plotTrajectoryBarplot <- function(object,
                                   id,
                                   grouping_variable,
-                                  binwidth = getBarcodeSpotDistance(object),
+                                  binwidth = ccDist(object),
                                   clrp = NULL,
                                   clrp_adjust = NULL,
                                   display_trajectory_parts = NULL,
@@ -752,8 +813,8 @@ plotTrajectoryBarplot <- function(object,
 plotTrajectoryHeatmap <- function(object,
                                   id,
                                   variables,
-                                  binwidth = getBarcodeSpotDistance(object),
-                                  n_bins = NA,
+                                  binwidth = ccDist(object),
+                                  n_bins = NA_integer_,
                                   arrange_rows = "none",
                                   colors = NULL,
                                   method_gs = NULL,
@@ -1112,8 +1173,8 @@ plotTrajectoryHeatmap <- function(object,
 plotTrajectoryLineplot <- function(object,
                                    id,
                                    variables,
-                                   binwidth = getBarcodeSpotDistance(object),
-                                   n_bins = NA,
+                                   binwidth = ccDist(object),
+                                   n_bins = NA_integer_,
                                    method_gs = NULL,
                                    smooth_method = NULL,
                                    smooth_span = NULL,
@@ -1145,14 +1206,15 @@ plotTrajectoryLineplot <- function(object,
   # 2. Data wrangling -------------------------------------------------------
 
   result_df <-
-    getTrajectoryDf(
+    getTrajectoryScreeningDf(
       object = object,
       id = id,
       variables = variables,
       method_gs = method_gs,
       n_bins = n_bins,
       binwidth = binwidth,
-      summarize_with = summarize_with
+      summarize_with = summarize_with,
+      format = "long"
     )
 
   if(base::isTRUE(display_trajectory_parts)){
@@ -1195,10 +1257,9 @@ plotTrajectoryLineplot <- function(object,
 
   # -----
 
-  ggplot2::ggplot(data = result_df,
-                  mapping = ggplot2::aes(x = trajectory_order,
-                                         y = values,
-                                         color = variables)
+  ggplot2::ggplot(
+    data = result_df,
+    mapping = ggplot2::aes(x = trajectory_order, y = values, color = variables)
   ) +
     trajectory_part_add_on +
     ggplot2::geom_smooth(size = linesize, span = smooth_span, method = smooth_method, formula = y ~ x,
@@ -1219,9 +1280,6 @@ plotTrajectoryLineplot <- function(object,
 
 
 }
-
-
-
 
 
 
@@ -1246,10 +1304,10 @@ plotTrajectoryLineplot <- function(object,
 #' @export
 #'
 plotTrajectoryLineplotFitted <- function(object,
-                                         id = getDefaultTrajectory(object),
+                                         id,
                                          variable,
-                                         binwidth = getBarcodeSpotDistance(object),
-                                         n_bins = NA,
+                                         binwidth = ccDist(object),
+                                         n_bins = NA_integer_,
                                          model_subset = NULL,
                                          model_remove = NULL,
                                          model_add = NULL,
@@ -1267,7 +1325,7 @@ plotTrajectoryLineplotFitted <- function(object,
                                          verbose = NULL){
 
   stdf <-
-    getTrajectoryDf(
+    getTrajectoryScreeningDf(
       object = object,
       id = id,
       variables = variable,
@@ -1276,8 +1334,7 @@ plotTrajectoryLineplotFitted <- function(object,
       binwidth = binwidth,
       normalize = TRUE ,
       verbose = FALSE,
-      smooth = smooth,
-      smooth_span = smooth_span
+      format = "long"
     ) %>%
     dplyr::select(-dplyr::any_of("trajectory_part"))
 
@@ -1505,19 +1562,15 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
 
 
 
-#' @title The of the STS-algorithm
+#' @title The Spatial Trajectory Screening algorithm
 #'
 #' @description Screens the sample for numeric variables that follow specific expression
 #' changes along the course of the spatial trajectory.
 #'
-#' @inherit getTrajectoryDf params
+#' @inherit getTrajectoryScreeningDf params
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
-#' @param binwidth Numeric value. The width of the bins to which
-#' the barcode-spots are assigned. We recommend to set it equal to the distance
-#' between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
-#' (See details for more.)
 #' @param n_bins Numeric value or vector of length 2. Specifies exactly how many bins are
 #' created. (See details for more.)
 #'
@@ -1548,7 +1601,7 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
 #'
 #' \code{binwidth} = \emph{length_of_trajectory} / \code{n_bins}
 #'
-#' and for every numeric variable included the mean-expression of each bin is calcuated.
+#' and for every numeric variable included the mean-expression of each bin is calculated.
 #' As the bins can be aligned in an ascending order (ascending in relation to the
 #' directory of the trajectory), so can the bin-wise mean expression of each variable.
 #' Doing so results in \emph{inferred expression changes along the trajectory}.
@@ -1565,8 +1618,8 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
 spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
-                                       n_bins = NA,
-                                       binwidth = getBarcodeSpotDistance(object),
+                                       n_bins = NA_integer_,
+                                       binwidth = ccDist(object),
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        model_add = NULL,
@@ -1672,7 +1725,7 @@ spatialTrajectoryScreening <- function(object,
     dplyr::mutate(
       sts_score = (corr + raoc) / 2
     ) %>%
-    dplyr::select(variables, models, sts_score, corr, raoc, pvalue, dplyr::everything())
+    dplyr::select(variables, models, sts_score, corr, raoc, p_value, dplyr::everything())
 
   results[["p_value_adjusted"]] <-
     stats::p.adjust(p = results[["p_value"]], method = method_padj)
@@ -1705,7 +1758,7 @@ spatialTrajectoryScreening <- function(object,
 
 #' @export
 summarize_projection_df <- function(projection_df,
-                                    n_bins = NA,
+                                    n_bins = NA_integer_,
                                     binwidth = NA,
                                     summarize_with = "mean"){
 

@@ -526,10 +526,10 @@ getSmrdResultsDf <-  function(ias,
 
 
 
-#' @title Obtain IAS screending data.frame
+#' @title Obtain IAS screening data.frame
 #'
-#' @description Bins and annotates barcode-spots in the same way that
-#' \code{imageAnnotationScreening()} does.
+#' @description Extracts a data.frame that contains information about barcode-spots
+#' needed for analysis related to \code{imageAnnotationScreening()}.
 #'
 #' @param remove_circle_bins,remove_angle_bins,remame_angle_bins Logical values.
 #' Given to the corresponding arguments of \code{bin_by_area()}
@@ -538,26 +538,72 @@ getSmrdResultsDf <-  function(ias,
 #' @inherit imageAnnotationScreening params
 #' @inherit joinWith params
 #'
+#' @return The final output depends on the input for \code{variables} and
+#'  \code{summarize_by}.
+#'
+#'  By default (both arguments are NULL) the returned data.frame contains
+#'  barcode-spots as observations/rows and variables that describe their position
+#'  to the image annotation denoted with \code{id}. This includes the variables
+#'  \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
+#'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
+#'  and \code{n_bins_circle}.
+#'
+#'  If argument \code{variables} is a character the denoted variables are
+#'  joined to the data.frame via \code{joinWith()}. If argument \code{summarize by}
+#'  is a character, too, the joined numeric variables are summarized via
+#'  \code{dplyr::summarize()} using the function denoted with \code{summarize_with}.
+#'  Note, that this changes the structure of the output data.frame, as now every
+#'  observation/row corresponds to the grouping denoted in \code{summarize by}.
+#'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' data("image_annotations")
+#'
+#' necrotic_img_ann <- image_annotations[["313_T"]][["necrotic_center"]]
+#'
+#' object <- downloadSpataObject(sample_name = "313_T")
+#'
+#' object <- setImageAnnotation(object = object, img_ann = necrotic_img_ann)
+#'
+#' getImageAnnotationScreeningDf(
+#'   object = object,
+#'   id = "necrotic_center",
+#'   distance = 200,
+#'   variables = "VEGFA"
+#'   )
+#'
+#' getImageAnnotationScreeningDf(
+#'   object = object,
+#'    id = "necrotic_center",
+#'    distance = 200,
+#'    variables = "VEGFA",
+#'    summarize_by = "bins_circle"
+#'    )
+#'
 
 getImageAnnotationScreeningDf <- function(object,
                                           id,
                                           distance = NA_integer_,
-                                          binwidth = NA_integer_,
                                           n_bins_circle = NA_integer_,
+                                          binwidth = ccDist(object),
                                           angle_span = c(0,360),
                                           n_bins_angle = 1,
                                           variables = NULL,
+                                          method_gs = NULL,
+                                          summarize_by = NULL,
+                                          summarize_with = "mean",
                                           normalize = TRUE,
-                                          smooth = FALSE,
-                                          smooth_span = 0.2,
                                           remove_circle_bins = FALSE,
                                           remove_angle_bins = FALSE,
                                           rename_angle_bins = FALSE,
                                           drop = TRUE,
-                                          summarize_by_circles = TRUE,
-                                          summarize_with = "mean",
-                                          verbose = TRUE){
+                                          verbose = TRUE,
+                                          ...){
 
   hlpr_assign_arguments(object)
 
@@ -604,6 +650,7 @@ getImageAnnotationScreeningDf <- function(object,
       drop = drop[2]
     )
 
+  # join with variables if desired
   if(base::is.character(variables)){
 
     if(base::length(normalize) == 1){
@@ -617,9 +664,10 @@ getImageAnnotationScreeningDf <- function(object,
         object = object,
         spata_df = getSpataDf(object),
         variables = variables,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        normalize = normalize[1]
+        smooth = FALSE,
+        normalize = normalize[1],
+        method_gs = method_gs,
+        ...
       )
 
     ias_df <-
@@ -629,40 +677,70 @@ getImageAnnotationScreeningDf <- function(object,
         by = "barcodes"
       )
 
-    if(base::isTRUE(normalize[2])){
+    # summarize if desired
+    if(base::is.character(summarize_by)){
+
+      groups <- base::character()
+
+      if(base::any(stringr::str_detect(summarize_by, "circle"))){
+
+        groups <- c(groups, "bins_circle")
+
+      }
+
+      if(base::any(stringr::str_detect(summarize_by, "angle"))){
+
+        groups <- c(groups, "bins_angle")
+
+      }
+
+      ref <- confuns::scollapse(string = groups)
+
+      if(base::length(groups) == 0){
+
+        stop("Invalid input for argument `groups`. Must contains 'circle' and/or 'angle'.")
+
+      }
+
+      confuns::give_feedback(
+        msg = glue::glue("Summarizing by '{ref}'."),
+        verbose = verbose
+      )
+
+      groups <- c(groups, "bins_order")
 
       ias_df <-
-        dplyr::mutate(
+        dplyr::group_by(
           .data = ias_df,
+          dplyr::across(.cols = dplyr::all_of(groups))
+        ) %>%
+        dplyr::summarise(
           dplyr::across(
-            .cols = dplyr::all_of(variables),
-            .fns = confuns::normalize
+            .cols = dplyr::any_of(variables),
+            .fns = summarize_formulas[[summarize_with]]
           )
         )
+
+      if(base::isTRUE(normalize[2])){
+
+        ias_df <-
+          dplyr::ungroup(ias_df) %>%
+          dplyr::mutate(
+            dplyr::across(
+              .cols = dplyr::all_of(variables),
+              .fns = confuns::normalize
+            )
+          )
+
+      }
 
     }
 
   }
 
-  if(base::isTRUE(summarize_by_circles)){
+  out <- dplyr::ungroup(ias_df)
 
-    confuns::give_feedback(
-      msg = glue::glue("Summarizing by bins."),
-      verbose = verbose
-    )
-
-    ias_df <-
-      dplyr::group_by(.data = ias_df, bins_circle, bins_order) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::any_of(variables),
-          .fns = summarize_formulas[[summarize_with]]
-        )
-      )
-
-  }
-
-  return(ias_df)
+  return(out)
 
 }
 
@@ -686,9 +764,8 @@ getImageAnnotationScreeningDf <- function(object,
 #' image annotation to the \emph{horizon} in the periphery up to which the screening
 #' is conducted. (See details for more.)
 #' @param binwidth Numeric value. The width of the circular bins to which
-#' the barcode-spots are assigned. We recommend to set it equal to the distance
-#' between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
-#' (See details for more.)
+#' the barcode-spots are assigned. We recommend to set it equal to the center-center
+#' distance: \code{binwidth = ccDist(object)}. (See details for more.)
 #' @param n_bins_circle Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 #' denoted in \code{binwidth}.
 #'  (See details for more.)
@@ -802,8 +879,8 @@ imageAnnotationScreening <- function(object,
                                      id,
                                      variables,
                                      distance = NA_integer_,
-                                     binwidth = NA_integer_,
                                      n_bins_circle = NA_integer_,
+                                     binwidth = ccDist(object),
                                      angle_span = c(0,360),
                                      n_bins_angle = 1,
                                      summarize_with = "mean",
@@ -1199,8 +1276,8 @@ setMethod(
                         id,
                         variables,
                         distance = NA_integer_,
-                        binwidth = NA_integer_,
                         n_bins_circle = NA_integer_,
+                        binwidth = ccDist(object),
                         angle_span = c(0,360),
                         n_angle_bins = 12,
                         summarize_with = "mean",
@@ -1402,7 +1479,7 @@ setMethod(
   definition = function(object,
                         id,
                         distance = NA_integer_,
-                        binwidth = NA_integer_,
+                        binwidth = ccDist(object),
                         n_bins_circle = NA_integer_,
                         angle_span = c(0,360),
                         n_bins_angle = 1,
@@ -1417,6 +1494,7 @@ setMethod(
                         display_bins_angle = TRUE,
                         display_bins_circle = TRUE,
                         ggpLayers = list(),
+                        remove_circle_bins = FALSE,
                         ...){
 
     hlpr_assign_arguments(object)
@@ -1433,7 +1511,7 @@ setMethod(
         n_bins_circle = n_bins_circle,
         angle_span = angle_span,
         n_bins_angle = n_bins_angle,
-        remove_circle_bins = "Core",
+        remove_circle_bins = remove_circle_bins,
         rename_angle_bins = TRUE,
         drop = c(FALSE, TRUE),
         summarize_by = FALSE

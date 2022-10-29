@@ -2,6 +2,26 @@
 
 
 
+#' @title Obtain center to center distance
+#'
+#' @description Returns center to center distance depending on the
+#' platform used. Output can be adjusted to the unit needed.
+#'
+#' @param object An object of class \code{SPATA2} or NULL. If NULL,
+#' \code{unit} must not be \emph{'pixel'}.
+#'
+#' @return If \code{unit} is \emph{'pixel'} a numeric value that scales
+#' the center to center distance of barcode spots to the current image.
+#' Else an object of class \code{unit}.
+#' @export
+#'
+
+ccDist <- function(object = NULL, unit = "pixel", platform = "Visium"){
+
+  return(7)
+
+}
+
 
 
 #' @title Compute CNV by chromosome arm

@@ -1096,6 +1096,11 @@ plotCnvLineplot <- function(object,
     dplyr::summarise(breaks = base::mean(gene_pos)) %>%
     dplyr::rename(labels = chrom)
 
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
   ggplot2::ggplot(
     data = smrd_cnv_df,
     mapping = ggplot2::aes(

@@ -25,7 +25,7 @@ the image if slot @image is empty. Or a string linking to the default slot
 named \emph{x} and a variable named \emph{y} representing a grid.}
 
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
-of the same class.}
+of the same class. Usually refers to the sample name of the \code{SPATA2} object.}
 
 \item{\code{image}}{Image.}
 

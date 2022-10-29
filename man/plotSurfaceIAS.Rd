@@ -12,7 +12,7 @@ plotSurfaceIAS(object, ...)
   object,
   id,
   distance = NA_integer_,
-  binwidth = NA_integer_,
+  binwidth = ccDist(object),
   n_bins_circle = NA_integer_,
   angle_span = c(0, 360),
   n_bins_angle = 1,
@@ -27,6 +27,7 @@ plotSurfaceIAS(object, ...)
   display_bins_angle = TRUE,
   display_bins_circle = TRUE,
   ggpLayers = list(),
+  remove_circle_bins = FALSE,
   ...
 )
 
@@ -56,9 +57,8 @@ image annotation to the \emph{horizon} in the periphery up to which the screenin
 is conducted. (See details for more.)}
 
 \item{binwidth}{Numeric value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the distance
-between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
-(See details for more.)}
+the barcode-spots are assigned. We recommend to set it equal to the center-center
+distance: \code{binwidth = ccDist(object)}. (See details for more.)}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.

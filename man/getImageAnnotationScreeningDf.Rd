@@ -2,27 +2,27 @@
 % Please edit documentation in R/image-annotation-screening.R
 \name{getImageAnnotationScreeningDf}
 \alias{getImageAnnotationScreeningDf}
-\title{Obtain IAS screending data.frame}
+\title{Obtain IAS screening data.frame}
 \usage{
 getImageAnnotationScreeningDf(
   object,
   id,
   distance = NA_integer_,
-  binwidth = NA_integer_,
   n_bins_circle = NA_integer_,
+  binwidth = ccDist(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
   variables = NULL,
+  method_gs = NULL,
+  summarize_by = NULL,
+  summarize_with = "mean",
   normalize = TRUE,
-  smooth = FALSE,
-  smooth_span = 0.2,
   remove_circle_bins = FALSE,
   remove_angle_bins = FALSE,
   rename_angle_bins = FALSE,
   drop = TRUE,
-  summarize_by_circles = TRUE,
-  summarize_with = "mean",
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
@@ -32,14 +32,13 @@ getImageAnnotationScreeningDf(
 image annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.)}
 
-\item{binwidth}{Numeric value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the distance
-between the barcode-spots: \code{binwidth = getBarcodeSpotsDistance(object)}.
-(See details for more.)}
-
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
  (See details for more.)}
+
+\item{binwidth}{Numeric value. The width of the circular bins to which
+the barcode-spots are assigned. We recommend to set it equal to the center-center
+distance: \code{binwidth = ccDist(object)}. (See details for more.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
@@ -52,28 +51,74 @@ an angle span relative to the center of the image annotation.
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
+\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
+Specifies the function with which the bins are summarized.}
+
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
-
 \item{remove_circle_bins, remove_angle_bins, remame_angle_bins}{Logical values.
 Given to the corresponding arguments of \code{bin_by_area()}
 and \code{bin_by_angle()}.}
-
-\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
-Specifies the function with which the bins are summarized.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 }
+\value{
+The final output depends on the input for \code{variables} and
+ \code{summarize_by}.
+
+ By default (both arguments are NULL) the returned data.frame contains
+ barcode-spots as observations/rows and variables that describe their position
+ to the image annotation denoted with \code{id}. This includes the variables
+ \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
+ content depends on the set up via the arguments \code{distance}, \code{binwidth}
+ and \code{n_bins_circle}.
+
+ If argument \code{variables} is a character the denoted variables are
+ joined to the data.frame via \code{joinWith()}. If argument \code{summarize by}
+ is a character, too, the joined numeric variables are summarized via
+ \code{dplyr::summarize()} using the function denoted with \code{summarize_with}.
+ Note, that this changes the structure of the output data.frame, as now every
+ observation/row corresponds to the grouping denoted in \code{summarize by}.
+}
 \description{
-Bins and annotates barcode-spots in the same way that
-\code{imageAnnotationScreening()} does.
+Extracts a data.frame that contains information about barcode-spots
+needed for analysis related to \code{imageAnnotationScreening()}.
+}
+\examples{
+
+library(SPATA2)
+library(SPATAData)
+
+data("image_annotations")
+
+necrotic_img_ann <- image_annotations[["313_T"]][["necrotic_center"]]
+
+object <- downloadSpataObject(sample_name = "313_T")
+
+object <- setImageAnnotation(object = object, img_ann = necrotic_img_ann)
+
+getImageAnnotationScreeningDf(
+  object = object,
+  id = "necrotic_center",
+  distance = 200,
+  variables = "VEGFA"
+  )
+
+getImageAnnotationScreeningDf(
+  object = object,
+   id = "necrotic_center",
+   distance = 200,
+   variables = "VEGFA",
+   summarize_by = "bins_circle"
+   )
+
 }

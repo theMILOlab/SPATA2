@@ -1060,17 +1060,18 @@ getSegmentNames <- function(object,
 
 }
 
-#' @title Obtain sample names
+#' @title Obtain name of \code{SPATA2} object
+#'
+#' @description Extracts the name/ID of the \code{SPATA2} object
+#' in form of a single character value.
 #'
 #' @inherit check_object params
 #'
-#' @return A character vector.
+#' @return A character value.
 #'
 #' @export
 
-getSampleNames <- function(object){
-
-  check_object(object)
+getSampleName <- function(object){
 
   object@samples
 
@@ -1370,7 +1371,11 @@ getImageDirHighres <- function(object, check = TRUE){
 #'
 getImageObject <- function(object){
 
-  object@images[[1]]
+  out <- object@images[[1]]
+
+  out@id <- getSampleName(object)
+
+  return(out)
 
 }
 

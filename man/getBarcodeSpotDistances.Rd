@@ -2,9 +2,14 @@
 % Please edit documentation in R/miscellaneous.R
 \name{getBarcodeSpotDistances}
 \alias{getBarcodeSpotDistances}
-\title{Obtain barcode spot distances}
+\title{Obtain distances between barcodes}
 \usage{
-getBarcodeSpotDistances(object, verbose = NULL)
+getBarcodeSpotDistances(
+  object,
+  barcodes = NULL,
+  unit = "pixel",
+  verbose = NULL
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
@@ -13,15 +18,14 @@ getBarcodeSpotDistances(object, verbose = NULL)
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{barcdoes}{Character vector or NULL. If character,
+only input barcodes are considered.}
 }
 \value{
-A data.frame.
+A data.frame in which each observation/row corresponds to a barcodes-spot ~
+barcode-spot pair.
 }
 \description{
-Computes the distance from every barcode spot to every other
-barcode spot.
-}
-\details{
-The output data.frame has a number of rows that is equal to
-\code{nBarcodes(object)^2}
+Obtain distances between barcodes
 }

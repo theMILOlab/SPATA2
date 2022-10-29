@@ -1,6 +1,8 @@
 
 
 
+# functions to facilitate deprecating functions and/or arguments
+
 deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
   if(base::isTRUE(fn)){
@@ -79,6 +81,23 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 }
 
 deprecatedArguments <- function(){ depr_info$args %>% base::names() }
+
+
+
+
+# g -----------------------------------------------------------------------
+
+#' @rdname getSampleName
+#' @export
+getSampleNames <- function(object){
+
+  #deprecated(fn = TRUE)
+
+  check_object(object)
+
+  object@samples
+
+}
 
 
 

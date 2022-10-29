@@ -438,7 +438,7 @@ check_gene_sets <- function(object,
 
 }
 
-
+#' @export
 check_ias_input <- function(distance = NA_integer_,
                             binwidth = NA_integer_,
                             n_bins_circle = NA_integer_,
@@ -580,9 +580,9 @@ check_sample <- function(object,
 
   if(base::all(of_sample == "")){
 
-    of_sample <- getSampleNames(object)[1]
+    of_sample <- getSampleName(object)[1]
 
-    if(base::length(getSampleNames(object)) > 1){
+    if(base::length(getSampleName(object)) > 1){
 
       base::message(glue::glue("No sample specified. Defaulting to first sample: '{of_sample}'."))
 

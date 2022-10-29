@@ -93,7 +93,7 @@ runBayesSpaceClustering <- function(object,
   object@data[[1]]$SCE <-
     list(
       colData = SingleCellExperiment::colData(sce),
-      rowData=SingleCellExperiment::rowData(sce)
+      rowData = SingleCellExperiment::rowData(sce)
     )
 
   space <-
@@ -154,5 +154,7 @@ runBayesSpaceClustering <- function(object,
     )
 
   object <- SPATA2::addFeatures(object, cluster_df)
+
+  return(object)
 
 }

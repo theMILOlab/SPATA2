@@ -2,13 +2,13 @@
 % Please edit documentation in R/trajectory-screening.R
 \name{plotTrajectoryBarplot}
 \alias{plotTrajectoryBarplot}
-\title{Plot discrete trajectory dynamics}
+\title{Plot categorical trajectory dynamics}
 \usage{
 plotTrajectoryBarplot(
   object,
   id,
   grouping_variable,
-  binwidth = getBarcodeSpotDistance(object),
+  binwidth = ccDist(object),
   clrp = NULL,
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,
