@@ -77,7 +77,6 @@ Collate:
     'dimensional-reduction.R'
     'documentation-dummies.R'
     'e.R'
-    'european_unit_of_length.R'
     'f.R'
     'find-cluster.R'
     'gene-expression-analysis.R'
