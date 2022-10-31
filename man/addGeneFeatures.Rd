@@ -24,8 +24,7 @@ gene meta data.frame.}
 
 \item{feature_names}{Character vector or NULL. See details for more.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 
 \item{overwrite}{Logical. If the specified feature names already exist in the
 current spata-object this argument must be set to TRUE in order to overwrite them.}

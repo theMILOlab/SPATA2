@@ -19,14 +19,14 @@ plotIasLineplot(
   smooth_se = FALSE,
   clrp = NULL,
   clrp_adjust = NULL,
-  alpha = 0.4,
-  linecolor = NULL,
-  linesize = 1.5,
+  line_color = NULL,
+  line_size = 1.5,
   facet_by = "variables",
+  normalize_by = "sample",
   summarize_with = "mean",
   nrow = NULL,
   ncol = NULL,
-  display_axis_text = FALSE,
+  display_axis_text = "x",
   include_area = FALSE,
   display_border = TRUE,
   border_linealpha = 0.75,
@@ -44,17 +44,19 @@ plotIasLineplot(
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{distance}{Numeric value. Specifies the distance from the border of the
+\item{distance}{Distance value. Specifies the distance from the border of the
 image annotation to the \emph{horizon} in the periphery up to which the screening
-is conducted. (See details for more.)}
+is conducted. (See details for more.) - See details of \code{?is_dist} for more
+information about distance values.}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
  (See details for more.)}
 
-\item{binwidth}{Numeric value. The width of the circular bins to which
+\item{binwidth}{Distance value. The width of the circular bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.)}
+distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
+information about distance values.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
@@ -81,10 +83,8 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{linesize}{Numeric value. Specifies the thicknes of the lines with which
-the trajectory dynamics are displayed.}
-
-\item{facet_by}{Either \emph{'variables'} or \emph{'bins_angle'}.}
+\item{facet_by}{Either \emph{'variables'} or \emph{'bins_angle'}.
+If \emph{'bins_angle'} length of \code{variables} must be one.}
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
@@ -108,7 +108,7 @@ the computational progress will be printed.
 A ggplot.
 }
 \description{
-Plots gene expression changes against the distance
+Plots gene expression changes against the distance to
 an the image annotation using lineplots.
 }
 \details{

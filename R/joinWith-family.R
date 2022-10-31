@@ -54,9 +54,12 @@ joinWith <- function(object,
       ),
     ref = "spata_df")
 
-  input_list <- list("gene_sets" = gene_sets,
-                     "genes" = genes,
-                     "features" = features)
+  input_list <-
+    list(
+      "gene_sets" = gene_sets,
+      "genes" = genes,
+      "features" = features
+    )
 
   input_list <- purrr::discard(input_list, .p = base::is.null)
 
@@ -206,7 +209,13 @@ joinWithGenes <- function(object,
   check_uniform_genes(uniform_genes)
 
   # adjusting check
-  rna_assay <- getExpressionMatrix(object, of_sample = base::unique(spata_df$sample))
+
+  mtr_name <- getActiveMatrixName(object, verbose = verbose)
+
+  rna_assay <-
+    getMatrix(object, mtr_name = mtr_name) %>%
+    base::as.matrix()
+
   genes <- check_genes(object, genes = genes, rna_assay = rna_assay)
 
   # -----
@@ -253,11 +262,13 @@ joinWithGenes <- function(object,
     } else {
 
       uniformly_expressed <-
-        purrr::map_lgl(.x = 1:n_genes,
-                       .f = hlpr_one_distinct,
-                       rna_assay = rna_assay,
-                       pb = pb,
-                       verbose = verbose)
+        purrr::map_lgl(
+          .x = 1:n_genes,
+          .f = hlpr_one_distinct,
+          rna_assay = rna_assay,
+          pb = pb,
+          verbose = verbose
+        )
 
     }
 
@@ -457,7 +468,19 @@ joinWithGeneSets <- function(object,
 
   # 2. Extract gene set data and join with spata_df ------------------------
 
-  rna_assay <- getExpressionMatrix(object = object, of_sample = base::unique(spata_df$sample))
+  mtr_name <- getActiveMatrixName(object, verbose = verbose)
+
+  if(mtr_name == "counts"){
+
+    rlang::warn(
+      message = "Active matrix is 'counts'. It is recommended to use scaled expression data for gene-set expression.",
+      .frequency = "once",
+    )
+
+  }
+
+  rna_assay <- getMatrix(object, mtr_name = mtr_name)
+
   gene_set_df <- getGeneSetDf(object = object)
   joined_df <- spata_df
 
@@ -472,7 +495,6 @@ joinWithGeneSets <- function(object,
     smooth_ref <- " "
 
   }
-
 
   #feedback vectors
   filter_gs <- 0.25
@@ -555,12 +577,14 @@ joinWithGeneSets <- function(object,
         } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
 
           geneset_vls <-
-            GSVA::gsva(expr = rna_assay[genes,],
-                       gset.idx.list = gene_set_df,
-                       mx.diff = 1,
-                       parallel.sz = 2,
-                       method = method_gs,
-                       verbose = FALSE) %>%
+            GSVA::gsva(
+              expr = rna_assay[genes,],
+              gset.idx.list = gene_set_df,
+              mx.diff = 1,
+              parallel.sz = 2,
+              method = method_gs,
+              verbose = FALSE
+            ) %>%
             base::t() %>%
             as.data.frame() %>%
             magrittr::set_colnames(value = gene_sets[i]) %>%

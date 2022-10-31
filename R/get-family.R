@@ -351,13 +351,54 @@ getDeaLfcName <- function(object,
 #' @return Character value.
 #' @export
 
-getActiveMatrixName <- function(object, of_sample = NA){
+getActiveMatrixName <- function(object, verbose = NULL, ...){
+
+  deprecated(...)
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  hlpr_assign_arguments(object)
 
-  object@information$active_mtr[[of_sample]]
+
+  mtr_name <- object@information$active_mtr[[1]]
+
+  if(base::is.null(mtr_name)){
+
+    stop("Please set an active matrix with `setActivenMatrixName()`")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Using matrix '{mtr_name}'"),
+    verbose = verbose
+  )
+
+  return(mtr_name)
+
+}
+
+#' @rdname getActiveMatrixName
+#' @export
+getActiveExpressionMatrixName <- function(object, of_sample = NA, verbose = NULL){
+
+  check_object(object)
+
+  hlpr_assign_arguments(object)
+
+  expr_mtr_name <- object@information$active_expr_mtr[[1]]
+
+  if(base::is.null(expr_mtr_name)){
+
+    stop("Please set an active expression matrix with `setActiveExpressionMatrixName()`")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Active expression matrix: {expr_mtr_name}"),
+    verbose = verbose
+  )
+
+  return(expr_mtr_name)
 
 }
 
@@ -365,17 +406,24 @@ getActiveMatrixName <- function(object, of_sample = NA){
 #' @title Obtain count and expression matrix
 #'
 #' @inherit check_sample params
-#' @param mtr_name Character value. The name of the expression matrix of interest. If set to NULL
-#' the currently active matrix is chosen.
+#' @param mtr_name Character value. The name of the matrix of interest.
 #'
-#' @return The active expression or count matrix of the specified object and sample(s).
+#' @return The matrix of the specified object and sample(s).
 #' @export
 
-getMatrix <- function(object, mtr_name, of_sample = NA){
+getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
 
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+  deprecated(...)
 
-  object@data[[of_sample]][[mtr_name]]
+  hlpr_assign_arguments(object)
+
+  if(base::is.null(mtr_name)){
+
+    mtr_name <- getActiveMatrixName(object, verbose = verbose)
+
+  }
+
+  object@data[[1]][[mtr_name]]
 
 }
 
@@ -384,23 +432,24 @@ getMatrix <- function(object, mtr_name, of_sample = NA){
 getExpressionMatrix <- function(object,
                                 mtr_name = NULL,
                                 verbose = FALSE,
-                                of_sample = NA){
+                                ...){
+
+  deprecated(...)
 
   # lazy control
   check_object(object)
 
   # adjusting control
-  of_sample <- check_sample(object = object, of_sample = of_sample)
 
   if(base::is.null(mtr_name)){
 
-    active_mtr <- getActiveMatrixName(object, of_sample = of_sample)
+    active_mtr <- getActiveExpressionMatrixName(object)
 
-    if(base::is.null(active_mtr) || !active_mtr %in% getExpressionMatrixNames(object, of_sample = of_sample)){
+    if(base::is.null(active_mtr) || !active_mtr %in% getExpressionMatrixNames(object)){
 
       active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
 
-      base::stop(glue::glue("Did not find active matrix '{active_mtr}' in data slot of sample '{of_sample}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
+      base::stop(glue::glue("Did not find active expression matrix '{active_mtr}' in data slot of sample '{of_sample}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
 
     }
 
@@ -2224,8 +2273,9 @@ getGenes <- function(object,
                      similar_to = NULL,
                      top_n = 25,
                      simplify = TRUE,
-                     of_sample = NA,
-                     in_sample = NA){
+                     ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -2236,7 +2286,6 @@ getGenes <- function(object,
                        skip.allow = TRUE, skip.val = NULL)
 
   # adjusting check
-  of_sample <- check_sample(object = object, of_sample = of_sample)
 
   # -----
 
@@ -2251,9 +2300,11 @@ getGenes <- function(object,
 
   if(base::all(base::is.null(of_gene_sets), base::is.null(similar_to))){
 
-    expr_mtr <- getExpressionMatrix(object = object, of_sample = of_sample)
+    mtr_name <- getActiveMatrixName(object, verbose = FALSE)
 
-    return(base::rownames(expr_mtr))
+    mtr <- getMatrix(object, mtr_name)
+
+    return(base::rownames(mtr))
 
   }
 
@@ -2265,7 +2316,7 @@ getGenes <- function(object,
     gene_set_df <- getGeneSetDf(object)
 
     of_gene_sets <- check_gene_sets(object, gene_sets = of_gene_sets)
-    expr_mtr <- getExpressionMatrix(object = object, of_sample = of_sample)
+    expr_mtr <- getMatrix(object = object, verbose = FALSE)
 
     genes_list <-
       purrr::map(.x = of_gene_sets, .f = function(i){
@@ -2299,7 +2350,7 @@ getGenes <- function(object,
 
   } else if(base::is.character(similar_to)){
 
-    dist_df <- getGeneDistDf(object, of_sample = of_sample)
+    dist_df <- getGeneDistDf(object)
 
     confuns::is_value(x = top_n, mode = "numeric")
 
@@ -2428,4 +2479,40 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
   return(out)
 
 }
+
+
+
+
+
+
+
+
+
+
+# getM --------------------------------------------------------------------
+
+#' @export
+getMethod <- function(object){
+
+  object@information$method
+
+}
+
+#' @export
+getMethodUnit <- function(object){
+
+  getMethod(object)@image_frame[["x"]] %>%
+    extract_unit()
+
+}
+
+#' @export
+getMethodName <- function(object){
+
+  object@information$method@name
+
+}
+
+
+
 

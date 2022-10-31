@@ -12,6 +12,239 @@ ggpLayer_dummy <- function(){}
 
 # a -----------------------------------------------------------------------
 
+#' @title Display axes with European Units of Length
+#'
+#' @description Performs necessary transformations to display axes of
+#' surface plots with European Units of Length.
+#'
+#' @inherit argument_dummy params
+#' @inherit transform_eOUL_to_pixels params
+#' @inherit ggpLayer_dummy return details
+#' @param eUOL The desired unit in wich the axes are displayed. Defaults to the unit
+#' in which the original size of the image of the spatial method is
+#' provided. Obtain valid input options with \code{validUnitsOfLength()}.
+#' @param which One or two of \emph{'x'} and \emph{'y'}. Specifies
+#' for which axes the transformation is performed. Defaults to both.
+#' @param frame_by Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
+#' If specified, sets the plot frame accordingly.
+#' @param breaks_x,breaks_y Vector of distance inputs. Can be pixel or European
+#' units of lengths. If European unit of lengths, input is transformed to pixels as
+#' the plot is plotted with pixel-based coordinates.
+#' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
+#' the plot.
+#'
+#'
+ggpLayerAxesEUOL <- function(object,
+                             eUOL = getMethodUnit(object),
+                             which = c("x", "y"),
+                             frame_by = "coords",
+                             breaks_x = NULL,
+                             breaks_y = NULL,
+                             add_labs = TRUE,
+                             round = 2){
+
+  confuns::check_one_of(
+    input = eUOL,
+    against = validUnitsOfLength(),
+    suggest = TRUE
+  )
+
+  if(!base::is.null(breaks_x)){
+
+    are_eUOL <-
+      purrr::map_lgl(.x = breaks_x, .f = is_eUOL_dist) %>%
+      base::all()
+
+    are_pixels <-
+      purrr::map_lgl(.x = breaks_x, .f = is_pixel_dist) %>%
+      base::all()
+
+    if(are_eUOL){
+
+      breaks_x <-
+        transform_eUOL_to_pixels(
+          input = breaks_x,
+          object = object,
+        )
+
+    } else if(are_pixels){
+
+      breaks_x <- extract_unit(breaks_x)
+
+    } else {
+
+      breaks_x <- NULL
+
+      warning("Invalid input for `breaks_x`. Ignoring input.")
+
+    }
+
+  }
+
+  if(!base::is.null(breaks_y)){
+
+    are_eUOL <-
+      purrr::map_lgl(.x = breaks_y, .f = is_eUOL_dist) %>%
+      base::all()
+
+    are_pixels <-
+      purrr::map_lgl(.x = breaks_y, .f = is_pixel_dist) %>%
+      base::all()
+
+    if(are_eUOL){
+
+      breaks_y <-
+        transform_eUOL_to_pixels(
+          input = breaks_y,
+          object = object,
+        )
+
+    } else if(are_pixels){
+
+      breaks_y <- extract_unit(breaks_y)
+
+    } else {
+
+      breaks_y <- NULL
+
+      warning("Invalid input for `breaks_y`. Ignoring input.")
+
+    }
+
+  }
+
+  if(frame_by == "coords"){
+
+    xlim <- getCoordsRange(object)$x
+    ylim <- getCoordsRange(object)$y
+
+  } else if(frame_by == "image"){
+
+    xlim <- getImageRange(object)$x
+    ylim <- getImageRange(object)$y
+
+  } else {
+
+    xlim <- NULL
+    ylim <- NULL
+
+  }
+
+  axes <-
+    list(
+      ggplot2::scale_x_continuous(
+        labels = ~ transform_pixels_to_eUOL(
+          input = .x,
+          eUOL = eUOL,
+          object = object,
+          as_numeric = TRUE,
+          round = round
+        ),
+        limits = xlim,
+        breaks = breaks_x
+      ),
+      ggplot2::scale_y_continuous(
+        labels = ~ transform_pixels_to_eUOL(
+          input = .x,
+          eUOL = eUOL,
+          object = object,
+          as_numeric = TRUE,
+          round = round
+        ),
+        limits = ylim,
+        breaks = breaks_y
+      )
+    ) %>%
+    purrr::set_names(nm = c("x", "y"))
+
+  if(base::isTRUE(add_labs)){
+
+    labs_add_on <-
+      list(
+        x = ggplot2::labs(x = glue::glue("x-coordinates ({eUOL})")),
+        y = ggplot2::labs(y = glue::glue("y-coordinates ({eUOL})")),
+        theme = ggplot2::theme(axis.title = ggplot2::element_text())
+      )
+
+  }
+
+  list(
+    axes[which],
+    ggpLayerThemeCoords(),
+    labs_add_on[c(which, "theme")]
+  )
+
+}
+
+
+
+
+
+# e -----------------------------------------------------------------------
+
+#' @title Add group encircling
+#'
+#' @description Highlights groups of barcode-spots by encircling them.
+#' Depending on the \code{plot_type} this can be added to a surface plot
+#' or a dimensional reduction plot.
+#'
+#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
+#' \emph{'umap'}.
+#' @param grouping_variable Character value. The grouping variable of choice.
+#' @param groups_subset Character value or NULL. If character,
+#' specifies the exact groups that are encircled. If NULL, all groups
+#' are encircled.
+#' @inherit imageAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+#'
+ggpLayerEncirclingGroups <- function(object,
+                                     plot_type = "coords",
+                                     grouping_variable,
+                                     groups_subset = NULL,
+                                     ...){
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = c("coords", "tsne", "umap")
+  )
+
+  if(plot_type == "coords"){
+
+    layer_df <- getCoordsDf(object)
+
+  } else if(plot_type == "tsne"){
+
+    layer_df <- getTsneDf(object)
+
+  } else if(plot_type == "umap"){
+
+    layer_df <- getUmapDf(object)
+
+  }
+
+  layer_df <-
+    dplyr::select(layer_df, -sample) %>%
+    magrittr::set_colnames(value = c("barcodes", "x", "y"))
+
+  layer_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = layer_df,
+      variables = grouping_variable
+    ) %>%
+    confuns::check_across_subset(
+      across = grouping_variable,
+      across.subset = groups_subset
+    )
+
+  mapping <- ggplot2::aes(x = x, y = y, group = .data[[grouping_variable]])
+
+  ggforce::geom_mark_hull(data = layer_df, mapping = mapping, ...)
+
+}
 
 
 #' @title Add IAS area expansion
@@ -97,75 +330,6 @@ ggpLayerEncirclingIAS <- function(object,
   return(out_list)
 
 }
-
-
-
-# e -----------------------------------------------------------------------
-
-#' @title Add group encircling
-#'
-#' @description Highlights groups of barcode-spots by encircling them.
-#' Depending on the \code{plot_type} this can be added to a surface plot
-#' or a dimensional reduction plot.
-#'
-#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
-#' \emph{'umap'}.
-#' @param grouping_variable Character value. The grouping variable of choice.
-#' @param groups_subset Character value or NULL. If character,
-#' specifies the exact groups that are encircled. If NULL, all groups
-#' are encircled.
-#' @inherit imageAnnotationScreening params
-#' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
-#'
-#' @export
-#'
-ggpLayerEncirclingGroups <- function(object,
-                                     plot_type = "coords",
-                                     grouping_variable,
-                                     groups_subset = NULL,
-                                     ...){
-
-  confuns::check_one_of(
-    input = plot_type,
-    against = c("coords", "tsne", "umap")
-  )
-
-  if(plot_type == "coords"){
-
-    layer_df <- getCoordsDf(object)
-
-  } else if(plot_type == "tsne"){
-
-    layer_df <- getTsneDf(object)
-
-  } else if(plot_type == "umap"){
-
-    layer_df <- getUmapDf(object)
-
-  }
-
-  layer_df <-
-    dplyr::select(layer_df, -sample) %>%
-    magrittr::set_colnames(value = c("barcodes", "x", "y"))
-
-  layer_df <-
-    joinWithVariables(
-      object = object,
-      spata_df = layer_df,
-      variables = grouping_variable
-    ) %>%
-    confuns::check_across_subset(
-      across = grouping_variable,
-      across.subset = groups_subset
-    )
-
-  mapping <- ggplot2::aes(x = x, y = y, group = .data[[grouping_variable]])
-
-  ggforce::geom_mark_hull(data = layer_df, mapping = mapping, ...)
-
-}
-
 
 # f -----------------------------------------------------------------------
 

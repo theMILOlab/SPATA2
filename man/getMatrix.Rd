@@ -6,23 +6,22 @@
 \alias{getCountMatrix}
 \title{Obtain count and expression matrix}
 \usage{
-getMatrix(object, mtr_name, of_sample = NA)
+getMatrix(object, mtr_name = NULL, verbose = NULL, ...)
 
-getExpressionMatrix(object, mtr_name = NULL, verbose = FALSE, of_sample = NA)
+getExpressionMatrix(object, mtr_name = NULL, verbose = FALSE, ...)
 
 getCountMatrix(object, of_sample = NA)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 }
 \value{
-The active expression or count matrix of the specified object and sample(s).
+The matrix of the specified object and sample(s).
 }
 \description{
 Obtain count and expression matrix

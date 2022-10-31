@@ -298,8 +298,10 @@ check_genes <- function(object,
 
     })
 
+    mtr_name <- getActiveMatrixName(object, verbose = FALSE)
+
     ref_genes <-
-      getExpressionMatrix(object = object, of_sample = of_sample) %>%
+      getMatrix(object = object, mtr_name) %>%
       base::rownames()
 
   } else if(!base::is.null(rna_assay)){
@@ -442,20 +444,18 @@ check_gene_sets <- function(object,
 check_ias_input <- function(distance = NA_integer_,
                             binwidth = NA_integer_,
                             n_bins_circle = NA_integer_,
+                            object = NULL,
                             verbose = TRUE){
 
   n_bins_circle <- base::max(n_bins_circle)
 
-  confuns::are_values(
-    c("distance", "binwidth", "n_bins_circle"),
-    mode = "numeric",
-    skip.allow = TRUE,
-    skip.val = NA_integer_
-  )
-
+  # check what is specified
   dist_spec <- !base::is.na(distance)
   binwidth_spec <- !base::is.na(binwidth)
   n_bins_circle_spec <- !base::is.na(n_bins_circle)
+
+  distance_orig <- distance
+  binwidth_orig <- binwidth
 
   if(base::all(dist_spec, binwidth_spec, n_bins_circle_spec)){
 
@@ -463,13 +463,37 @@ check_ias_input <- function(distance = NA_integer_,
 
   }
 
+  if(binwidth_spec){
+
+    binwidth <-
+      asPixel(
+        input = binwidth,
+        object = object,
+        as_numeric = TRUE
+      )
+
+  }
+
+  if(dist_spec){
+
+    distance <-
+      asPixel(
+        input = distance,
+        object = object,
+        as_numeric = TRUE,
+        verbose = FALSE
+      )
+
+  }
+
+
   if(dist_spec & binwidth_spec){
 
     n_bins_circle <- base::ceiling(distance / binwidth)
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {distance} and `binwidth` = {binwidth}. Calculated `n_bins_circle` = {n_bins_circle}."
+        "Specified `distance` = {distance_orig} and `binwidth` = {binwidth_orig}. Calculated `n_bins_circle` = {n_bins_circle}."
         ),
       verbose = verbose
     )
@@ -478,9 +502,19 @@ check_ias_input <- function(distance = NA_integer_,
 
     binwidth <- distance / n_bins_circle
 
+    unit_dist <- extract_unit(distance_orig)
+
+    binwidth_ref <-
+      as_unit(
+        input = binwidth,
+        unit = unit_dist,
+        object = object,
+        round = 4
+        )
+
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {distance} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth}."
+        "Specified `distance` = {distance_orig} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth_ref}."
         ),
       verbose = verbose
     )
@@ -489,9 +523,19 @@ check_ias_input <- function(distance = NA_integer_,
 
     distance <- n_bins_circle * binwidth
 
+    unit_binwidth <- extract_unit(binwidth_orig)
+
+    distance_ref <-
+      as_unit(
+        input = distance,
+        unit = unit_binwidth,
+        object = object,
+        round = round
+        )
+
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `binwidth` = {binwidth} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance}."
+        "Specified `binwidth` = {binwidth_orig} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance_ref}."
         ),
       verbose = verbose
     )

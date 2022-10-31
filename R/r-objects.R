@@ -285,7 +285,7 @@ cnv_heatmap_list <-
     main = list()
   )
 
-current_spata_version <- list(major = 1, minor = 10, patch = 0)
+current_spata_version <- list(major = 1, minor = 11, patch = 0)
 
 
 # d -----------------------------------------------------------------------
@@ -319,6 +319,31 @@ depr_info <-
       "trajectory_name" = "id"
     )
   )
+
+dist_unit_abbr <-
+  c(
+    "nanometer" = "nm",
+    "micrometer" = "um",
+    "millimeter" = "mm",
+    "centimeter" = "cm",
+    "decimeter" = "dm",
+    "meter" = "m",
+    "pixel" = "px"
+  )
+
+dist_units <- c(base::names(dist_unit_abbr))
+
+# e -----------------------------------------------------------------------
+
+eUOL_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
+
+eUOL_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
+
+
+# i -----------------------------------------------------------------------
+
+
+invalid_dist_input <- "Invalid distance input. Please see details at `?is_dist` for more information."
 
 
 
@@ -395,9 +420,68 @@ pattern_formulas <-
 
 
 
+
+# r -----------------------------------------------------------------------
+
+
+
+# NOTE: regular expressions party depend on each other. therefore
+# they are not listed in alphabetical order but in function order
+
+# matches normal number: only digits (no points!!)
+# ignores unit-suffix -> use for extraction of value
+regex_number <- "^\\d{1,}(?!.*\\.)"
+
+# matches decimal number: digit, 1!point, at least one following digit
+# ignores unit-suffix -> use for extraction of value
+regex_dec_number <- "^\\d{1,}\\.{1}\\d{1,}"
+
+# matches either normal number or decimal number
+regex_dist_value <- stringr::str_c(regex_number, regex_dec_number, sep = "|")
+
+# matches eUOL
+regex_eUOL <- stringr::str_c(string = base::unname(eUOL_abbr), "$", collapse = "|")
+
+# matches pixel if single numeric value
+# does NOT ignore suffix -> use to test pixel input
+regex_pxl_num <- stringr::str_c(regex_number, "$", sep = "")
+
+# matches pixel if single numeric decimal value
+# does NOT ignore suffix -> use to test pixel input
+regex_pxl_dec_num <- stringr::str_c(regex_dec_number, "$", sep = "")
+
+regex_pxl <- "px$"
+
+# matches dist_value if combined with "px" or if only a number
+regex_pxl_dist <-
+  stringr::str_c(
+    stringr::str_c(regex_number, regex_pxl, sep = ""),
+    stringr::str_c(regex_dec_number, regex_pxl, sep = ""),
+    regex_pxl_num,
+    regex_pxl_dec_num,
+    sep = "|"
+  )
+
+
+# matches dist_value if combined with an eUOL
+# does NOT, ignore suffix -> use to test eUOL input
+regex_eUOL_dist <- stringr::str_c("(", regex_dist_value, ")(", regex_eUOL, ")", sep = "")
+
+# matches distance input either provided as eUOL or px
+regex_dist <-
+  stringr::str_c(
+    stringr::str_c(regex_pxl_dist),
+    stringr::str_c(regex_eUOL_dist),
+    sep = "|"
+  )
+
+
 # s -----------------------------------------------------------------------
 
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
+
+
+spatial_methods <- c("SlideSeq", "Visium10X")
 
 #' @title List of summarizing formulas
 #' @export
@@ -411,12 +495,6 @@ summarize_formulas <-
   )
 
 
-
-
-
-
-
-
 # t -----------------------------------------------------------------------
 
 
@@ -427,3 +505,41 @@ trajectory.line.x <-
       type = "closed"
       )
     )
+
+
+
+
+
+
+
+
+# V -----------------------------------------------------------------------
+
+# image dims are not equal
+
+width <- 592
+height <- 600
+
+scale_fct <- width/height
+
+# visium capture frame 8mmx8mm
+# assumin that 600px == 8mm
+
+x_mm <- width/height*8
+
+#' @title Visium meta data
+#' @export
+Visium <-
+  SpatialMethod(
+    image_frame = list(x = stringr::str_c(x_mm, "mm"), y = "8mm"),
+    info = list(ccd = "110um"),
+    name = "Visium",
+    observational_unit = "barcode-spot"
+  )
+
+
+
+
+
+
+

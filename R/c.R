@@ -23,6 +23,78 @@ ccDist <- function(object = NULL, unit = "pixel", platform = "Visium"){
 }
 
 
+#' @title Obtain Center to Center distance
+#'
+#' @description Extracts the center to center distance from
+#' barcode-spots depending on the method used.
+#'
+#' @inherit argument_dummy params
+#' @param unit Character value or \code{NULL}. If character, specifies
+#' the unit in which the distance is supposed to be returned.
+#' Use \code{validUnits()} to obtain  all valid input options.
+#'
+#' @return Character value.
+#' @export
+#'
+getCCD <- function(object,
+                   unit = NULL,
+                   as_numeric = FALSE,
+                   round = FALSE){
+
+  check_object(object)
+
+  method <- getMethod(object)
+
+  ccd <- method@info[["ccd"]]
+
+  if(base::is.character(unit)){
+
+    ccd_unit <- extract_unit(ccd)
+
+    if(ccd_unit != unit){
+
+      if(unit == "px"){
+
+        ccd <-
+          asPixel(
+            input = ccd,
+            object = object,
+            as_numeric = as_numeric,
+            round = round
+          )
+
+      } else {
+
+        ccd <-
+          as_unit(
+            input = ccd,
+            unit = unit,
+            object = object,
+            as_numeric = as_numeric,
+            round = round
+            )
+
+      }
+
+    }
+
+  }
+
+  return(ccd)
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 #' @title Compute CNV by chromosome arm
 #'

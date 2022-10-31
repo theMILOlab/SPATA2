@@ -17,8 +17,7 @@ findSeuratClusters(
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 
 \item{FindVariableFeatures}{A named list of arguments given to \code{Seurat::FindVariableFeatures()}, TRUE or FALSE.}
 

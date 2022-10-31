@@ -32,9 +32,10 @@ getTrajectoryDf(object, ...)
   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
   }}
 
-\item{binwidth}{Numeric value. The width of the bins to which
+\item{binwidth}{Distance value. The width of the bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.)}
+distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
+of \code{?is_dist} for more information about distance values.}
 
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}

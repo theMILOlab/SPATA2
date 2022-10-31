@@ -12,8 +12,7 @@ getGeneMetaDf(object, mtr_name = NULL, of_sample = NA)
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 
 \item{only_df}{Logical. If set to TRUE only the data.frame is returned.
 If set to FALSE (the default) the whole list is returned.}

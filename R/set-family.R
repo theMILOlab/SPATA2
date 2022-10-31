@@ -493,6 +493,28 @@ setImageDirHighres <- function(object, dir_highres, check = TRUE){
 
 # Slot: information -------------------------------------------------------
 
+
+setActiveMatrix <- function(object, mtr_name, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = mtr_name,
+    against = base::names(object@data[[1]]),
+    suggest = TRUE
+  )
+
+  object@information$active_mtr[[1]] <- mtr_name
+
+  confuns::give_feedback(
+    msg = glue::glue("Active matrix set to {mtr_name}."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
 #' @title Denote the default expression matrix
 #'
 #' @inherit check_object params
@@ -512,16 +534,18 @@ setActiveExpressionMatrix <- function(object, mtr_name, of_sample = NA){
   # check if 'name' is slot in @data
   mtr_names <- getExpressionMatrixNames(object = object, of_sample = of_sample)
 
-  confuns::check_one_of(input = mtr_name,
-                        against = mtr_names[mtr_names != "counts"],
-                        ref.input = "input for argument 'mtr_name'")
+  confuns::check_one_of(
+    input = mtr_name,
+    against = mtr_names[mtr_names != "counts"],
+    ref.input = "input for argument 'mtr_name'"
+  )
 
   msg <- glue::glue("Active expression matrix set to '{mtr_name}'.")
 
   confuns::give_feedback(msg = msg)
 
   # set name
-  object@information$active_mtr[[of_sample]] <- mtr_name
+  object@information$active_expr_mtr[[of_sample]] <- mtr_name
 
   base::return(object)
 

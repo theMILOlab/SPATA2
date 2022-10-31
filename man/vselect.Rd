@@ -4,7 +4,7 @@
 \alias{vselect}
 \title{Select vector with tidyselect functions}
 \usage{
-vselect(input, ...)
+vselect(input, ..., out.fail = base::character(0))
 }
 \arguments{
 \item{input}{A character vector or a factor.}

@@ -146,6 +146,13 @@ validPlotTypes <- function(fn_name){
 
 }
 
+#' @rdname validActivationFunctions
+#' @export
+validSpatialMethods <- function(){
+
+  spatial_methods
+
+}
 
 #' @rdname validActivationFunctions
 validTrajectoryTrends <- function(){
@@ -155,4 +162,37 @@ validTrajectoryTrends <- function(){
 }
 
 
+#' @rdname validActivationFunctions
+#' @export
+validUnits <- function(){
+
+  c(eUOL_abbr, "px")
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
+validUnitsOfLength <- function(){
+
+  deprecated(fn = TRUE)
+
+  eUOL_abbr
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
+validEuropeanUnitsOfLength <- function(name = T){
+
+  out <- eUOL_abbr
+
+  if(base::isFALSE(name)){
+
+    out <- base::unname(out)
+
+  }
+
+  return(out)
+
+}
 

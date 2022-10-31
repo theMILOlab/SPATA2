@@ -23,8 +23,7 @@ plotGeneMetaData(
 \item{variables}{Character vector. The variables among the gene meta data
 that you want to visualize.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

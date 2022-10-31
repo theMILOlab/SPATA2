@@ -28,9 +28,10 @@ the screening process.}
 \item{n_bins}{Numeric value or vector of length 2. Specifies exactly how many bins are
 created. (See details for more.)}
 
-\item{binwidth}{Numeric value. The width of the bins to which
+\item{binwidth}{Distance value. The width of the bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.)}
+distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
+of \code{?is_dist} for more information about distance values.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}

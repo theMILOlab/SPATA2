@@ -3,6 +3,14 @@
 # miscellaneous -----------------------------------------------------------
 
 
+
+
+
+
+
+
+# 0 - classes on which other classes depend on ----------------------------
+
 #' @title The \code{Trajectory} - Class
 #'
 #' @description S4 class that represents trajectories
@@ -29,8 +37,6 @@ Trajectory <- setClass(Class = "Trajectory",
                          segment = "data.frame",
                          width = "numeric"
                        ))
-
-
 
 
 # H -----------------------------------------------------------------------
@@ -125,6 +131,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @slot coords data.frame. Coordinates data.frame of the sample.
 #' @slot img_annotation ImageAnnotation. The \code{ImageAnnotation}-object of
 #' the image annotation chosen for the screening.
+#' @slot info list. Miscellaneous information.
 #' @slot method_padj character. The method with which p-values were adjusted.
 #' @slot models data.frame. The model data.frame that has been used for the
 #' screening.
@@ -146,6 +153,7 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                  coords = "data.frame",
                                                  distance = "numeric",
                                                  img_annotation = "ImageAnnotation",
+                                                 info = "list",
                                                  method_padj = "character",
                                                  models = "data.frame",
                                                  n_bins_angle = "numeric",
@@ -157,7 +165,34 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                ))
 
 
+
+
 # S -----------------------------------------------------------------------
+
+
+#' @title The \code{SpatialMethod} - class
+#'
+#' @description Abstracts the concept of spatial biology experiments
+#' such as \emph{Visium10X} or \emph{SlideSeq}.
+#'
+#' @slot image_frame list. List of length two or three. Provides
+#' measures of the sample length in units of length.
+#' @slot observational_unit character. Single word that describes
+#' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
+#' case of @@name == \emph{'Visium10X'}.
+#' @slot meta list. List of miscellaneous meta data for the method.
+#' @slot name character. The name of the spatial method. Should
+#' be one of \code{validSpatialMethods()}.
+#'
+SpatialMethod <- setClass(Class = "SpatialMethod",
+                          slots = list(
+                            image_frame = "list",
+                            observational_unit = "character",
+                            info = "list",
+                            name = "character"
+                          ))
+
+
 
 #' @title The \code{SpatialTrajectory} - class
 #'
@@ -215,7 +250,7 @@ SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
 
 # T -----------------------------------------------------------------------
 
-# see above under 'miscellaneous'
+# Trajectory - other S4 classes inherit from it. Is listed on top under 0
 
 # V -----------------------------------------------------------------------
 

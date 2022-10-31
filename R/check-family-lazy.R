@@ -46,7 +46,11 @@ check_availability <- function(test, ref_x, ref_fns){
 }
 
 
-check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL){
+check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL, object = NULL){
+
+  ce <- rlang::caller_env()
+
+  if(base::is.null(object)){  object <- get(x = "object", envir = ce) }
 
   if(!base::is.numeric(n_bins) & !base::is.numeric(binwidth)){
 
@@ -58,8 +62,6 @@ check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL){
       msg = glue::glue("Using `n_bins` = {n_bins} instead of binwidth."),
       verbose = TRUE
     )
-
-    ce <- rlang::caller_env()
 
     base::assign(x = "n_bins", value = n_bins, envir = ce)
 

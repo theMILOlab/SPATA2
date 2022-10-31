@@ -32,14 +32,23 @@ create_model_df <- function(input,
   # select models of interest
   if(base::is.character(model_subset)){
 
-    fns_input <- confuns::lselect(lst = fns_input, dplyr::contains(model_subset))
+    fns_input <-
+      confuns::lselect(
+        lst = fns_input,
+        dplyr::contains(model_subset)
+        )
 
   }
 
   # remove unwanted models
   if(base::is.character(model_remove)){
 
-    fns_input <- confuns::lselect(lst = fns_input, -dplyr::contains(model_remove))
+    fns_input <-
+      confuns::lselect(
+        lst = fns_input,
+        -dplyr::contains(model_remove),
+        out.fail =
+        )
 
   }
 

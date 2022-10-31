@@ -2,6 +2,191 @@
 
 
 
+#' @title Transform distance values
+#'
+#' @description Collection of functions to transform distance values.
+#'
+#' @param input Distance values to transform.
+#' @param unit Character value. Specifies the desired unit.
+#' @inherit argument_dummy params
+#' @inherit getCCD params
+#' @inherit transform_eUOL_to_pixels params
+#' @inherit transform_pixels_to_eUOL params return
+#'
+#' @param ... Needed arguments that depend on the input/unit combination. If
+#' one of both is \emph{'px'} the \code{SPATA2} object is need or \code{method}
+#' \code{image_dims}.
+#'
+#' @inherit is_dist details
+#'
+#' @export
+#'
+as_unit <- function(input,
+                    unit,
+                    object = NULL,
+                    image_dims = NULL,
+                    method = NULL,
+                    as_numeric = FALSE,
+                    round = FALSE,
+                    verbose = FALSE){
+
+  input <- base::as.character(input)
+
+  is_dist(input, verbose = TRUE)
+
+  confuns::is_value(x = unit, mode = "character")
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnits()
+  )
+
+  input_unit <- extract_unit(input)
+
+  if(input_unit == unit){
+
+    out <- input
+
+    if(base::isTRUE(as_numeric)){
+
+      out <- extract_value(out)
+
+    }
+
+  } else {
+
+    confuns::give_feedback(
+      msg = glue::glue("Transforming {input_unit} to {unit}."),
+      verbose = verbose,
+      with.time = FALSE
+    )
+
+    if(is_eUOL_dist(input) & unit == "px"){
+
+      out <-
+        transform_eUOL_to_pixels(
+          input = input,
+          object = object,
+          method = method,
+          round = round
+        )
+
+    } else if(is_pixel_dist(input) & unit %in% validEuropeanUnitsOfLength()){
+
+      out <-
+        transform_pixels_to_eUOL(
+          input = input,
+          eUOL = unit,
+          object = object,
+          image_dims = image_dims,
+          method = method,
+          round = round,
+          as_numeric = as_numeric
+        )
+
+    } else {
+
+      fct_scale <- eUOL_to_eUOL_fct(from = input_unit, to = unit)
+
+      input_val <- extract_value(input)
+
+      out <- input_val*fct_scale
+
+    }
+
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname as_unit
+#' @export
+asCentimeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "cm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+asDecimeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "dm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+asMeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+asMicrometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um",
+    ...
+  )
+
+}
+
+
+#' @rdname as_unit
+#' @export
+asMillimeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "mm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+asNanometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nn",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+asPixel <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "px",
+    ...
+  )
+
+}
+
+
 #' @title Transform \code{SPATA2} to \code{Giotto}
 #'
 #' @description Transforms an \code{SPATA2} object to an object of class

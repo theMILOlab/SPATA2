@@ -531,9 +531,17 @@ getSmrdResultsDf <-  function(ias,
 #' @description Extracts a data.frame that contains information about barcode-spots
 #' needed for analysis related to \code{imageAnnotationScreening()}.
 #'
-#' @param remove_circle_bins,remove_angle_bins,remame_angle_bins Logical values.
-#' Given to the corresponding arguments of \code{bin_by_area()}
-#' and \code{bin_by_angle()}.
+#' @inherit bin_by_expansion params
+#' @inherit bin_by_angle params
+#'
+#' @param normalize_by Character value or FALSE. If character, there are two options:
+#' \itemize{
+#'  \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
+#'  \item{\code{normalize_by} = \emph{'bins_angle'}:}{
+#'  Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
+#'  is bigger than 1.
+#'  }
+#'  }
 #'
 #' @inherit imageAnnotationScreening params
 #' @inherit joinWith params
@@ -548,12 +556,35 @@ getSmrdResultsDf <-  function(ias,
 #'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
 #'  and \code{n_bins_circle}.
 #'
-#'  If argument \code{variables} is a character the denoted variables are
-#'  joined to the data.frame via \code{joinWith()}. If argument \code{summarize by}
-#'  is a character, too, the joined numeric variables are summarized via
-#'  \code{dplyr::summarize()} using the function denoted with \code{summarize_with}.
-#'  Note, that this changes the structure of the output data.frame, as now every
-#'  observation/row corresponds to the grouping denoted in \code{summarize by}.
+#' \bold{Coordinates data.frame vs. Inferred expression changes}:
+#'
+#' If argument \code{variables} is a character the denoted variables are
+#' joined to the data.frame via \code{joinWith()}. If the set of variables
+#' contains only numeric ones (genes, gene-sets and numeric features) the
+#' function argument \code{summarize_by} can be set up in three different ways:
+#'
+#' \itemize{
+#'  \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
+#'  is a coordinates data.frame with each observation/row corresponding to
+#'  a barcode spots with additional information of its relation to the image
+#'  annotation denoted in \code{id}.}
+#'  \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
+#'  area summarized by each circular expansion of the polygon. This results
+#'  in data.frame with a column named \emph{bins_circle} containing the names of the bin
+#'  (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
+#'  per variable that contain the summarized expression value by circle bin. Visualization
+#'  of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
+#'  }
+#'  \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
+#'  each area are summarized by each circular expansion as well as by angle-bin.
+#'  Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
+#'  from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
+#'  is only useful if \code{n_bins_circle} is bigger than 1. Visualization
+#'  of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
+#'  }}
+#'
+#' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
+#' summary step.
 #'
 #' @export
 #'
@@ -570,6 +601,21 @@ getSmrdResultsDf <-  function(ias,
 #'
 #' object <- setImageAnnotation(object = object, img_ann = necrotic_img_ann)
 #'
+#' plotSurfaceIAS(
+#'  object = object,
+#'  id = "necrotic_center",
+#'  distance = 200
+#'  )
+#'
+#' plotSurfaceIAS(
+#'  object = object,
+#'  id = "necrotic_center",
+#'  distance = 200,
+#'  binwidth = getCCD(object)*4 # lower resolution by increasing binwidth for visualization
+#'  n_bins_angle = 12,
+#'  display_angle = TRUE
+#'  )
+#'
 #' getImageAnnotationScreeningDf(
 #'   object = object,
 #'   id = "necrotic_center",
@@ -585,18 +631,30 @@ getSmrdResultsDf <-  function(ias,
 #'    summarize_by = "bins_circle"
 #'    )
 #'
+#' getImageAnnotationScreeningDf(
+#'   object = object,
+#'    id = "necrotic_center",
+#'    distance = 200,
+#'    variables = "VEGFA",
+#'    n_bins_angle = 12,
+#'    summarize_by = c("bins_circle", "bins_angle")
+#'    )
+#'
+#'  plot
+#'
 
 getImageAnnotationScreeningDf <- function(object,
                                           id,
                                           distance = NA_integer_,
                                           n_bins_circle = NA_integer_,
-                                          binwidth = ccDist(object),
+                                          binwidth = getCCD(object),
                                           angle_span = c(0,360),
                                           n_bins_angle = 1,
                                           variables = NULL,
                                           method_gs = NULL,
-                                          summarize_by = NULL,
+                                          summarize_by = FALSE,
                                           summarize_with = "mean",
+                                          normalize_by = "sample",
                                           normalize = TRUE,
                                           remove_circle_bins = FALSE,
                                           remove_angle_bins = FALSE,
@@ -611,7 +669,9 @@ getImageAnnotationScreeningDf <- function(object,
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
     )
 
   distance <- input_list$distance
@@ -653,19 +713,13 @@ getImageAnnotationScreeningDf <- function(object,
   # join with variables if desired
   if(base::is.character(variables)){
 
-    if(base::length(normalize) == 1){
-
-      normalize <- base::rep(normalize, 2)
-
-    }
-
     var_df <-
       joinWithVariables(
         object = object,
         spata_df = getSpataDf(object),
         variables = variables,
         smooth = FALSE,
-        normalize = normalize[1],
+        normalize = FALSE,
         method_gs = method_gs,
         ...
       )
@@ -698,7 +752,7 @@ getImageAnnotationScreeningDf <- function(object,
 
       if(base::length(groups) == 0){
 
-        stop("Invalid input for argument `groups`. Must contains 'circle' and/or 'angle'.")
+        stop("Invalid input for argument `summarize_by`. Must contains 'circle' and/or 'angle'.")
 
       }
 
@@ -721,18 +775,48 @@ getImageAnnotationScreeningDf <- function(object,
           )
         )
 
-      if(base::isTRUE(normalize[2])){
+    }
 
-        ias_df <-
-          dplyr::ungroup(ias_df) %>%
-          dplyr::mutate(
-            dplyr::across(
-              .cols = dplyr::all_of(variables),
-              .fns = confuns::normalize
-            )
-          )
+    # normalize if desired
+    if(base::is.character(normalize_by)){
+
+      confuns::check_one_of(
+        input = normalize_by,
+        against = c("sample", "bins_angle"),
+        suggest = FALSE
+      )
+
+      if(normalize_by == "sample"){
+
+        # no grouping needed
+        groups <- base::character()
+
+        ref = ""
+
+      } else if(normalize_by == "bins_angle"){
+
+        groups <- "bins_angle"
+
+        ref <- " by 'bins_angle'"
 
       }
+
+      confuns::give_feedback(
+        msg = glue::glue("Normalizing{ref}."),
+        verbose = verbose
+      )
+
+      ias_df <-
+        dplyr::group_by(
+          .data = ias_df,
+          dplyr::across(.cols = dplyr::all_of(groups))
+        ) %>%
+        dplyr::mutate(
+          dplyr::across(
+            .cols = dplyr::any_of(variables),
+            .fns = confuns::normalize
+          )
+        )
 
     }
 
@@ -760,12 +844,14 @@ getImageAnnotationScreeningDf <- function(object,
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
-#' @param distance Numeric value. Specifies the distance from the border of the
+#' @param distance Distance value. Specifies the distance from the border of the
 #' image annotation to the \emph{horizon} in the periphery up to which the screening
-#' is conducted. (See details for more.)
-#' @param binwidth Numeric value. The width of the circular bins to which
+#' is conducted. (See details for more.) - See details of \code{?is_dist} for more
+#' information about distance values.
+#' @param binwidth Distance value. The width of the circular bins to which
 #' the barcode-spots are assigned. We recommend to set it equal to the center-center
-#' distance: \code{binwidth = ccDist(object)}. (See details for more.)
+#' distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
+#' information about distance values.
 #' @param n_bins_circle Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 #' denoted in \code{binwidth}.
 #'  (See details for more.)
@@ -880,14 +966,16 @@ imageAnnotationScreening <- function(object,
                                      variables,
                                      distance = NA_integer_,
                                      n_bins_circle = NA_integer_,
-                                     binwidth = ccDist(object),
+                                     binwidth = getCCD(object),
                                      angle_span = c(0,360),
                                      n_bins_angle = 1,
                                      summarize_with = "mean",
+                                     normalize_by = FALSE,
                                      method_padj = "fdr",
                                      model_subset = NULL,
                                      model_remove = NULL,
                                      model_add = NULL,
+                                     mtr_name = NULL,
                                      verbose = NULL,
                                      ...){
 
@@ -900,16 +988,27 @@ imageAnnotationScreening <- function(object,
 
   img_ann <- getImageAnnotation(object, id = id)
 
+  input_binwidth <- binwidth
+  input_distance <- distance
+
   input_list <-
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
     )
 
   distance <- input_list$distance
   n_bins_circle <- input_list$n_bins_circle
   binwidth  <- input_list$binwidth
+
+  if(base::is.character(mtr_name)){
+
+    object <- setActiveMatrix(object, mtr_name = mtr_name, verbose = FALSE)
+
+  }
 
   ias_df <-
     getImageAnnotationScreeningDf(
@@ -924,7 +1023,8 @@ imageAnnotationScreening <- function(object,
       remove_circle_bins = TRUE,
       remove_angle_bins = TRUE,
       drop = FALSE,
-      summarize_by = FALSE
+      summarize_by = FALSE,
+      normalize_by = normalize_by
     )
 
   bins_angle <- base::levels(ias_df$bins_angle)
@@ -1055,6 +1155,13 @@ imageAnnotationScreening <- function(object,
   confuns::give_feedback(
     msg = "Summarizing output.",
     verbose = verbose
+    )
+
+  info <- list(
+    input_binwidth = input_binwidth,
+    input_distance = input_distance,
+    mtr_name = mtr_name,
+    normalize_by = normalize_by
     )
 
   ias_out <-
@@ -1277,7 +1384,7 @@ setMethod(
                         variables,
                         distance = NA_integer_,
                         n_bins_circle = NA_integer_,
-                        binwidth = ccDist(object),
+                        binwidth = getCCD(object),
                         angle_span = c(0,360),
                         n_angle_bins = 12,
                         summarize_with = "mean",
@@ -1293,7 +1400,9 @@ setMethod(
       check_ias_input(
         distance = distance,
         binwidth = binwidth,
-        n_bins_circle = n_bins_circle
+        n_bins_circle = n_bins_circle,
+        object = object,
+        verbose = verbose
       )
 
     distance <- input_list$distance
@@ -1479,7 +1588,7 @@ setMethod(
   definition = function(object,
                         id,
                         distance = NA_integer_,
-                        binwidth = ccDist(object),
+                        binwidth = getCCD(object),
                         n_bins_circle = NA_integer_,
                         angle_span = c(0,360),
                         n_bins_angle = 1,

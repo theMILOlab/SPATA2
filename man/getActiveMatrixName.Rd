@@ -2,9 +2,12 @@
 % Please edit documentation in R/get-family.R
 \name{getActiveMatrixName}
 \alias{getActiveMatrixName}
+\alias{getActiveExpressionMatrixName}
 \title{Obtain name of currently active expression matrix}
 \usage{
-getActiveMatrixName(object, of_sample = NA)
+getActiveMatrixName(object, verbose = NULL, ...)
+
+getActiveExpressionMatrixName(object, of_sample = NA, verbose = NULL)
 }
 \arguments{
 \item{object}{A valid spata-object.}

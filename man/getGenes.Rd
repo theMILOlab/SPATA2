@@ -11,8 +11,7 @@ getGenes(
   similar_to = NULL,
   top_n = 25,
   simplify = TRUE,
-  of_sample = NA,
-  in_sample = NA
+  ...
 )
 
 getGenesInteractive(object)

@@ -23,6 +23,8 @@ the image annotation is consecutively expanded via \code{sf::st_buffer()},}
 \item{\code{img_annotation}}{ImageAnnotation. The \code{ImageAnnotation}-object of
 the image annotation chosen for the screening.}
 
+\item{\code{info}}{list. Miscellaneous information.}
+
 \item{\code{method_padj}}{character. The method with which p-values were adjusted.}
 
 \item{\code{models}}{data.frame. The model data.frame that has been used for the

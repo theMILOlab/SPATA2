@@ -543,6 +543,30 @@ updateSpataObject <- function(object,
 
   }
 
+
+  if(object@version$major == 1 && object@version$minor == 10){
+
+    object@version <- list(major = 1, minor = 11, patch = 0)
+
+    # update differences between active matrix / expression matrix
+    active_mtr <- object@information$active_mtr[[1]]
+
+    if(base::is.null(active_mtr)){
+
+      active_mtr <- "scaled"
+
+    }
+
+    object@information$active_mtr[[1]] <- active_mtr
+    object@information$active_expr_mtr[[1]] <- active_mtr
+
+    # update method slot
+
+    object@information$method <- Visium
+
+  }
+
+
   # default adjustment ------------------------------------------------------
 
   old_default <- object@information$instructions$default

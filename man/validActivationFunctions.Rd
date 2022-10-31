@@ -17,7 +17,11 @@
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
 \alias{validPlotTypes}
+\alias{validSpatialMethods}
 \alias{validTrajectoryTrends}
+\alias{validUnits}
+\alias{validUnitsOfLength}
+\alias{validEuropeanUnitsOfLength}
 \title{Obtain valid argument inputs}
 \usage{
 validActivationFunctions()
@@ -52,7 +56,15 @@ validPadjMethods()
 
 validPlotTypes(fn_name)
 
+validSpatialMethods()
+
 validTrajectoryTrends()
+
+validUnits()
+
+validUnitsOfLength()
+
+validEuropeanUnitsOfLength(name = T)
 }
 \value{
 Character vectors or named lists of such.

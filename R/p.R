@@ -407,10 +407,12 @@ plotIasHeatmap <- function(object,
 
 #' @title Plot IAS lineplot
 #'
-#' @description Plots gene expression changes against the distance
+#' @description Plots gene expression changes against the distance to
 #' an the image annotation using lineplots.
 #'
 #' @param facet_by Either \emph{'variables'} or \emph{'bins_angle'}.
+#' If \emph{'bins_angle'} length of \code{variables} must be one.
+#'
 #' @inherit plotIasHeatmap params details
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
@@ -432,14 +434,14 @@ plotIasLineplot <- function(object,
                             smooth_se = FALSE,
                             clrp = NULL,
                             clrp_adjust = NULL,
-                            alpha = 0.4,
-                            linecolor = NULL,
-                            linesize = 1.5,
+                            line_color = NULL,
+                            line_size = 1.5,
                             facet_by = "variables",
+                            normalize_by = "sample",
                             summarize_with = "mean",
                             nrow = NULL,
                             ncol = NULL,
-                            display_axis_text = FALSE,
+                            display_axis_text = "x",
                             include_area = FALSE,
                             display_border = TRUE,
                             border_linealpha = 0.75,
@@ -449,26 +451,35 @@ plotIasLineplot <- function(object,
                             verbose = NULL,
                             ...){
 
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
   if(facet_by == "bins_angle"){
 
-    if(!base::length(variables) == 1){
+    if(!n_bins_angle > 1){
 
-      stop("Input for argument `variables` must be of length one if `facet_by` == 'bins_angle`.")
+      warning("Facetting by angle with only one angle bin. Increase `n_bins_angle`.")
 
     }
 
-  }
+    if(base::length(variables) > 1){
 
-  if(facet_by == "bins_angle"){
+      warning("Facetting by angle can only display one variable. Taking first element.")
+
+      variables <- variables[1]
+
+    }
 
     summarize_by <- c("bins_angle", "bins_circle")
+
+
 
   } else {
 
     summarize_by <- c("bins_circle")
+
+    n_bins_angle <- 1
 
   }
 
@@ -482,7 +493,8 @@ plotIasLineplot <- function(object,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
-      summarize_by = FALSE,
+      summarize_by = summarize_by,
+      normalize_by = normalize_by,
       remove_angle_bins = TRUE,
       remove_circle_bins = !include_area,
       normalize = c(FALSE, FALSE),
@@ -492,21 +504,8 @@ plotIasLineplot <- function(object,
   if(facet_by == "variables"){
 
     plot_df <-
-      dplyr::group_by(ias_df, bins_circle) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::any_of(variables),
-          .fns = summarize_formulas[[summarize_with]]
-        )
-      ) %>%
-      dplyr::mutate(
-        x_axis = base::as.numeric(bins_circle),
-        dplyr::across(
-          .cols = dplyr::any_of(variables),
-          .fns = confuns::normalize
-        )
-      ) %>%
       tidyr::pivot_longer(
+        data = ias_df,
         cols = dplyr::any_of(variables),
         names_to = "variables",
         values_to = "values"
@@ -515,41 +514,13 @@ plotIasLineplot <- function(object,
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow)
 
+    ylab <- "Inferred expression change"
+
   } else if(facet_by == "bins_angle"){
 
     plot_df <-
-      dplyr::group_by(ias_df, bins_circle, bins_angle) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::any_of(variables),
-          .fns = summarize_formulas[[summarize_with]]
-        )
-      ) %>%
-      dplyr::group_by(bins_angle) %>%
-      dplyr::mutate(
-        x_axis = base::as.numeric(bins_circle),
-        dplyr::across(
-          .cols = dplyr::any_of(variables),
-          .fns = function(x){
-
-            x_norm <- confuns::normalize(x)
-
-            if(base::all(base::is.na(x_norm))){
-
-              out <- base::rep(0, base::length(x_norm))
-
-            } else {
-
-              out <- x_norm
-
-            }
-
-            return(out)
-
-          }
-        )
-      ) %>%
       tidyr::pivot_longer(
+        data = ias_df,
         cols = dplyr::any_of(variables),
         names_to = "variables",
         values_to = "values"
@@ -557,6 +528,8 @@ plotIasLineplot <- function(object,
 
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ bins_angle, ncol = ncol, nrow = nrow)
+
+    ylab <- stringr::str_c("Inferred expression change (", variables, ")")
 
   }
 
@@ -583,20 +556,19 @@ plotIasLineplot <- function(object,
 
   theme_add_on <- list()
 
-
   if("x" %in% display_axis_text){
 
     theme_add_on <-
       c(
         theme_add_on,
         list(ggplot2::theme(
-          axis.text.x = ggplot2::element_text(angle = 45, vjust = 0.85, hjust = 1),
+          axis.text.x = ggplot2::element_text(vjust = 0.85, hjust = 1),
           axis.ticks.x = ggplot2::element_line()
         )
         )
       )
 
-    xlab <- NULL
+    xlab <- "bins_circle"
 
   } else {
 
@@ -614,41 +586,73 @@ plotIasLineplot <- function(object,
 
   }
 
-  if(base::is.character(linecolor) & base::length(linecolor) == 1){
+  if(base::is.character(line_color) & base::length(line_color) == 1){
 
     lvls <- base::levels(plot_df[[facet_by]])
 
     clrp_adjust <-
       purrr::set_names(
-        x = base::rep(linecolor, base::length(lvls)),
+        x = base::rep(line_color, base::length(lvls)),
         nm = lvls
       )
 
   }
 
-  mapping <- ggplot2::aes(x = x_axis, y = values, color = .data[[facet_by]])
+  # create line
+  if(smooth_span == 0){
+
+    line_add_on <- ggplot2::geom_path(size = line_size)
+
+  } else {
+
+    line_add_on <-
+      ggplot2::geom_smooth(
+        size = line_size,
+        span = smooth_span,
+        method = smooth_method,
+        formula = y ~ x,
+        se = smooth_se
+      )
+
+  }
+
+  # adjust y scale
+  if(base::is.character(normalize_by)){
+
+    scale_y_add_on <-
+      ggplot2::scale_y_continuous(
+        breaks = base::seq(0 , 1, 0.2),
+        labels = base::seq(0 , 1, 0.2), limits = c(0,1)
+      )
+
+  } else {
+
+    scale_y_add_on <- NULL
+
+  }
+
+
+  mapping <- ggplot2::aes(x = bins_order, y = values, color = .data[[facet_by]])
 
   ggplot2::ggplot(data = plot_df, mapping = mapping) +
-    ggplot2::geom_smooth(
-      alpha = alpha,
-      size = linesize,
-      span = smooth_span,
-      method = smooth_method,
-      formula = y ~ x,
-      se = smooth_se
-    ) +
-    confuns::scale_color_add_on(variable = plot_df[[facet_by]], clrp = clrp, clrp.adjust = clrp_adjust) +
-    ggplot2::scale_x_continuous(breaks = base::unique(plot_df[["x_axis"]]), labels = base::levels(plot_df[["bins_circle"]])) +
-    ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2), limits = c(0,1)) +
+    line_add_on +
+    confuns::scale_color_add_on(
+      variable = plot_df[[facet_by]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+      ) +
+    scale_y_add_on +
     ggplot2::theme_classic() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_blank(),
-      axis.ticks.x = ggplot2::element_blank(),
       axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")),
       axis.line.y = ggplot2::element_line(),
       strip.background = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = xlab, y = "Inferred expression change", color = confuns::make_pretty_name(facet_by)) +
+    ggplot2::labs(
+      x = xlab,
+      y = ylab,
+      color = facet_by
+      ) +
     facet_add_on +
     border_add_on +
     theme_add_on

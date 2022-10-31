@@ -9,13 +9,14 @@ getImageAnnotationScreeningDf(
   id,
   distance = NA_integer_,
   n_bins_circle = NA_integer_,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
   variables = NULL,
   method_gs = NULL,
-  summarize_by = NULL,
+  summarize_by = FALSE,
   summarize_with = "mean",
+  normalize_by = "sample",
   normalize = TRUE,
   remove_circle_bins = FALSE,
   remove_angle_bins = FALSE,
@@ -28,17 +29,19 @@ getImageAnnotationScreeningDf(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{distance}{Numeric value. Specifies the distance from the border of the
+\item{distance}{Distance value. Specifies the distance from the border of the
 image annotation to the \emph{horizon} in the periphery up to which the screening
-is conducted. (See details for more.)}
+is conducted. (See details for more.) - See details of \code{?is_dist} for more
+information about distance values.}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
  (See details for more.)}
 
-\item{binwidth}{Numeric value. The width of the circular bins to which
+\item{binwidth}{Distance value. The width of the circular bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.)}
+distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
+information about distance values.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
@@ -58,13 +61,21 @@ or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
 
+\item{normalize_by}{Character value or FALSE. If character, there are two options:
+\itemize{
+ \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
+ \item{\code{normalize_by} = \emph{'bins_angle'}:}{
+ Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
+ is bigger than 1.
+ }
+ }}
+
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{remove_circle_bins, remove_angle_bins, remame_angle_bins}{Logical values.
-Given to the corresponding arguments of \code{bin_by_area()}
-and \code{bin_by_angle()}.}
+\item{drop}{Logical value. If TRUE, unused levels of the \emph{bins_circle}
+variables are dropped.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -82,12 +93,35 @@ The final output depends on the input for \code{variables} and
  content depends on the set up via the arguments \code{distance}, \code{binwidth}
  and \code{n_bins_circle}.
 
- If argument \code{variables} is a character the denoted variables are
- joined to the data.frame via \code{joinWith()}. If argument \code{summarize by}
- is a character, too, the joined numeric variables are summarized via
- \code{dplyr::summarize()} using the function denoted with \code{summarize_with}.
- Note, that this changes the structure of the output data.frame, as now every
- observation/row corresponds to the grouping denoted in \code{summarize by}.
+\bold{Coordinates data.frame vs. Inferred expression changes}:
+
+If argument \code{variables} is a character the denoted variables are
+joined to the data.frame via \code{joinWith()}. If the set of variables
+contains only numeric ones (genes, gene-sets and numeric features) the
+function argument \code{summarize_by} can be set up in three different ways:
+
+\itemize{
+ \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
+ is a coordinates data.frame with each observation/row corresponding to
+ a barcode spots with additional information of its relation to the image
+ annotation denoted in \code{id}.}
+ \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
+ area summarized by each circular expansion of the polygon. This results
+ in data.frame with a column named \emph{bins_circle} containing the names of the bin
+ (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
+ per variable that contain the summarized expression value by circle bin. Visualization
+ of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
+ }
+ \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
+ each area are summarized by each circular expansion as well as by angle-bin.
+ Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
+ from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
+ is only useful if \code{n_bins_circle} is bigger than 1. Visualization
+ of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
+ }}
+
+Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
+summary step.
 }
 \description{
 Extracts a data.frame that contains information about barcode-spots
@@ -106,6 +140,21 @@ object <- downloadSpataObject(sample_name = "313_T")
 
 object <- setImageAnnotation(object = object, img_ann = necrotic_img_ann)
 
+plotSurfaceIAS(
+ object = object,
+ id = "necrotic_center",
+ distance = 200
+ )
+
+plotSurfaceIAS(
+ object = object,
+ id = "necrotic_center",
+ distance = 200,
+ binwidth = getCCD(object)*4 # lower resolution by increasing binwidth for visualization
+ n_bins_angle = 12,
+ display_angle = TRUE
+ )
+
 getImageAnnotationScreeningDf(
   object = object,
   id = "necrotic_center",
@@ -120,5 +169,16 @@ getImageAnnotationScreeningDf(
    variables = "VEGFA",
    summarize_by = "bins_circle"
    )
+
+getImageAnnotationScreeningDf(
+  object = object,
+   id = "necrotic_center",
+   distance = 200,
+   variables = "VEGFA",
+   n_bins_angle = 12,
+   summarize_by = c("bins_circle", "bins_angle")
+   )
+
+ plot
 
 }

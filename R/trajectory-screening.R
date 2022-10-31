@@ -296,9 +296,10 @@ getTrajectoryNames <- function(object, ...){
 #' @inherit argument_dummy params
 #' @inherit variables_num params
 #' @inherit getSpatialTrajetoryIds params
-#' @param binwidth Numeric value. The width of the bins to which
+#' @param binwidth Distance value. The width of the bins to which
 #' the barcode-spots are assigned. We recommend to set it equal to the center-center
-#' distance: \code{binwidth = ccDist(object)}. (See details for more.)
+#' distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
+#' of \code{?is_dist} for more information about distance values.
 #'
 #' @return Data.frame. (See details for more.)
 #'
@@ -348,7 +349,9 @@ getTrajectoryScreeningDf <- function(object,
 
   hlpr_assign_arguments(object)
 
-  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth)
+  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
 
   confuns::are_values(c("normalize"), mode = "logical")
 
@@ -1629,7 +1632,9 @@ spatialTrajectoryScreening <- function(object,
 
   hlpr_assign_arguments(object)
 
-  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth)
+  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
 
   method_padj <- method_padj[1]
 

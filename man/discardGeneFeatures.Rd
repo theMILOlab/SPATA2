@@ -11,8 +11,7 @@ discardGeneFeatures(object, feature_names, mtr_name = NULL)
 
 \item{feature_names}{Character vector. Specifies the gene features to be discarded.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 }
 \value{
 An updated spata-object.

@@ -50,8 +50,7 @@ variances are kept even if the total number of genes}
 \item{method_dist}{Character value or vector (see details for more). Denotes the distance methods (e.g. \emph{'euclidean'}) to be used. Run \code{validDistanceMethods()}
 to obtain all valid input options.}
 
-\item{mtr_name}{Character value. The name of the expression matrix of interest. If set to NULL
-the currently active matrix is chosen.}
+\item{mtr_name}{Character value. The name of the matrix of interest.}
 }
 \value{
 An updated spata-object.

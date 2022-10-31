@@ -36,9 +36,10 @@ plotTrajectoryEvaluation(
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{binwidth}{Numeric value. The width of the circular bins to which
+\item{binwidth}{Distance value. The width of the circular bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.)}
+distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
+information about distance values.}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
