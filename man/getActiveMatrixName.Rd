@@ -7,13 +7,10 @@
 \usage{
 getActiveMatrixName(object, verbose = NULL, ...)
 
-getActiveExpressionMatrixName(object, of_sample = NA, verbose = NULL)
+getActiveExpressionMatrixName(object, verbose = NULL, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 Character value.

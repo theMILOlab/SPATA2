@@ -24,6 +24,9 @@ getTrajectoryDf(object, ...)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{id}{Character value. Denotes the spatial trajectory
+of interest.}
+
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
 \itemize{
@@ -90,6 +93,6 @@ gene set) of the particular sub-rectangle. The returned data.frame contains the 
 \note{
 \code{getTrajectoryScreeningDf()} summarizes by bins by default.
 To obtain the coordinates joined with the projection length set \code{summarize_with}
-to FALES or use \code{getProjectionDf()}. The same applies if you want to join grouping
+to \code{FALSE} or use \code{getProjectionDf()}. The same applies if you want to join grouping
 variables to the data.frame (can not be summarized).
 }

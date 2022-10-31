@@ -379,7 +379,9 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
 #' @rdname getActiveMatrixName
 #' @export
-getActiveExpressionMatrixName <- function(object, of_sample = NA, verbose = NULL){
+getActiveExpressionMatrixName <- function(object, verbose = NULL, ...){
+
+  deprecated(... = )
 
   check_object(object)
 
@@ -449,15 +451,15 @@ getExpressionMatrix <- function(object,
 
       active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
 
-      base::stop(glue::glue("Did not find active expression matrix '{active_mtr}' in data slot of sample '{of_sample}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
+      stop(glue::glue("Did not find active expression matrix '{active_mtr}' in data slot of sample '{of_sample}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
 
     }
 
   } else {
 
-    if(!mtr_name %in% getExpressionMatrixNames(object, of_sample = of_sample)){
+    if(!mtr_name %in% getExpressionMatrixNames(object)){
 
-      base::stop(glue::glue("Could not find expression matrix '{mtr_name}' of sample '{of_sample}' in provided object."))
+      stop(glue::glue("Could not find expression matrix '{mtr_name}'."))
 
     }
 
@@ -489,7 +491,7 @@ getCountMatrix <- function(object, of_sample = NA){
 
   if(base::is.null(count_mtr)){
 
-    base::stop(glue::glue("Did not find count matrix of sample '{of_sample}' in provided spata-object."))
+    stop(glue::glue("Did not find count matrix of sample '{of_sample}' in provided spata-object."))
 
   }
 
@@ -517,7 +519,7 @@ getExpressionMatrixNames <- function(object, of_sample = NA){
 
   if(base::is.null(mtr_names) | base::identical(mtr_names, base::character(0))){
 
-    base::stop("Could not find any expression matrices in the provided spata-object.")
+    stop("Could not find any expression matrices in the provided spata-object.")
 
   } else {
 
@@ -602,7 +604,7 @@ getDimRedDf <- function(object,
 
   if(base::is.null(dim_red_df) || base::nrow(dim_red_df) == 0){
 
-    base::stop("There seems to be no data for method: ", method_dr)
+    stop("There seems to be no data for method: ", method_dr)
 
   }
 
@@ -830,7 +832,7 @@ getFeatureDf <- function(object, of_sample = NA){
 
   if(base::is.null(fdata) | base::nrow(fdata) == 0){
 
-    base::stop(glue::glue("Could not find feature data for sample '{of_sample}'."))
+    stop(glue::glue("Could not find feature data for sample '{of_sample}'."))
 
   }
 
@@ -1911,43 +1913,6 @@ getSpCorResults <- function(object, of_sample = NA){
 
 
 
-#' @title Obtain the length of a trajectory
-#'
-#' @description This function returns the length (the number of bins) of a trajectory
-#' depending on the chosen \code{binwidth}.
-#'
-#' @inherit check_sample params
-#' @inherit check_trajectory params
-#' @inherit check_trajectory_binwidth params
-#'
-#' @return Numeric value.
-#' @export
-#'
-
-getTrajectoryLength <- function(object,
-                                id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
-                                binwidth = 5){
-
-  # 1. Control --------------------------------------------------------------
-
-  check_object(object)
-
-  confuns::is_value(x = binwidth, mode = "numeric")
-
-  # -----
-
-  # 2. Extraction -----------------------------------------------------------
-
-  t_object <- getTrajectory(object = object, id = id)
-
-  t_object@projection %>%
-    dplyr::mutate(pl_binned = plyr::round_any(x = projection_length, accuracy = binwidth, f = base::floor)) %>%
-    dplyr::group_by(pl_binned, trajectory_part) %>%
-    dplyr::summarise(n = dplyr::n(), .groups = "drop_last") %>%
-    base::nrow()
-
-
-}
 
 
 #' @title Obtain trjectory course
@@ -2089,7 +2054,7 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
   # -----
   if(base::is.null(res_list)){
 
-    base::stop("Did not find any gene-set.")
+    stop("Did not find any gene-set.")
 
   } else {
 

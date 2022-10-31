@@ -30,6 +30,8 @@ as_unit <- function(input,
                     round = FALSE,
                     verbose = FALSE){
 
+  is_suffixed <-
+
   input <- base::as.character(input)
 
   is_dist(input, verbose = TRUE)
@@ -168,7 +170,7 @@ asNanometer <- function(input, ...){
 
   as_unit(
     input = input,
-    unit = "nn",
+    unit = "nm",
     ...
   )
 

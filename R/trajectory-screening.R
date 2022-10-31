@@ -295,7 +295,7 @@ getTrajectoryNames <- function(object, ...){
 #'
 #' @inherit argument_dummy params
 #' @inherit variables_num params
-#' @inherit getSpatialTrajetoryIds params
+#' @inherit getSpatialTrajectory params
 #' @param binwidth Distance value. The width of the bins to which
 #' the barcode-spots are assigned. We recommend to set it equal to the center-center
 #' distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
@@ -305,7 +305,7 @@ getTrajectoryNames <- function(object, ...){
 #'
 #' @note \code{getTrajectoryScreeningDf()} summarizes by bins by default.
 #' To obtain the coordinates joined with the projection length set \code{summarize_with}
-#' to FALES or use \code{getProjectionDf()}. The same applies if you want to join grouping
+#' to \code{FALSE} or use \code{getProjectionDf()}. The same applies if you want to join grouping
 #' variables to the data.frame (can not be summarized).
 #'
 #' @details Initially the projection data.frame of the specified trajectory

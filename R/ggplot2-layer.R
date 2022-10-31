@@ -261,8 +261,8 @@ ggpLayerEncirclingGroups <- function(object,
 ggpLayerEncirclingIAS <- function(object,
                                   id,
                                   distance = NA_integer_,
-                                  binwidth = NA_integer_,
                                   n_bins_circle = NA_integer_,
+                                  binwidth = getCCD(object),
                                   linecolor = "black",
                                   linesize = 1){
 
@@ -272,7 +272,8 @@ ggpLayerEncirclingIAS <- function(object,
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle
+      n_bins_circle = n_bins_circle,
+      object = object
     )
 
   distance <- input$distance
@@ -497,7 +498,8 @@ ggpLayerHorizonIAS <- function(object,
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle
+      n_bins_circle = n_bins_circle,
+      object = object,
     )
 
   distance <- input$distance

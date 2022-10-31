@@ -8,8 +8,8 @@ ggpLayerEncirclingIAS(
   object,
   id,
   distance = NA_integer_,
-  binwidth = NA_integer_,
   n_bins_circle = NA_integer_,
+  binwidth = getCCD(object),
   linecolor = "black",
   linesize = 1
 )
@@ -22,14 +22,14 @@ image annotation to the \emph{horizon} in the periphery up to which the screenin
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values.}
 
+\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}.
+ (See details for more.)}
+
 \item{binwidth}{Distance value. The width of the circular bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
 distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values.}
-
-\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}.
- (See details for more.)}
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 }

@@ -28,7 +28,7 @@ Tests if input that refers to a distance is of valid input.
 Input to specify a distance can be provided in two different
 ways.
 
-\bold{Distance as pixel}:
+\bold{Distance in pixel}:
 
 There are two valid input options to specify the distance in pixel:
 
@@ -38,11 +38,11 @@ There are two valid input options to specify the distance in pixel:
  \item{character:}{ Suffixed with \emph{'px'}, e.g. \emph{'2px'}, \emph{'3.554px'}}
  }
 
-\bold{Distance as European unit of length (eUOL)}:
+\bold{Distance in European units of length (eUOL)}:
 
- Specifying distances as European units of length e.g. \emph{'2mm'}, \emph{'400um'} etc.
- requires the input to be a character as the unit must be provided. Between the numeric
- value and the must be no empty space! Unit suffixes must be one of
+ Specifying distances in European units of length e.g. \emph{'2mm'}, \emph{'400um'} etc.
+ requires the input to be a character as the unit must be provided as suffix. Between the numeric
+ value and the unit must be no empty space! Unit suffixes must be one of
  \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
 }
 \examples{

@@ -539,13 +539,12 @@ plotSurfaceComparison <- function(object,
   hlpr_assign_arguments(object)
 
   # adjusting check
-  of_sample <- check_sample(object, of_sample, 1)
 
   all_gene_sets <- getGeneSets(object, "all")
-  all_genes <- getGenes(object, of_sample = of_sample)
+  all_genes <- getGenes(object)
   all_features <-
     base::suppressWarnings(
-      check_features(object, features = getFeatureNames(object, of_sample = of_sample),
+      check_features(object, features = getFeatureNames(object),
                      valid_classes = "numeric")
     )
 
@@ -560,7 +559,7 @@ plotSurfaceComparison <- function(object,
 
   joined_df <-
     joinWithVariables(object = object,
-                      spata_df = getCoordsDf(object, of_sample = of_sample),
+                      spata_df = getCoordsDf(object),
                       variables = variables,
                       average_genes = FALSE,
                       method_gs = method_gs,

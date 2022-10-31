@@ -1,7 +1,72 @@
 
 
 
-# R -----------------------------------------------------------------------
+
+# getC --------------------------------------------------------------------
+
+#' @title Obtain Center to Center distance
+#'
+#' @description Extracts the center to center distance from
+#' barcode-spots depending on the method used.
+#'
+#' @inherit argument_dummy params
+#' @param unit Character value or \code{NULL}. If character, specifies
+#' the unit in which the distance is supposed to be returned.
+#' Use \code{validUnits()} to obtain  all valid input options.
+#'
+#' @return Character value.
+#' @export
+#'
+getCCD <- function(object,
+                   unit = NULL,
+                   as_numeric = FALSE,
+                   round = FALSE){
+
+  check_object(object)
+
+  method <- getMethod(object)
+
+  ccd <- method@info[["ccd"]]
+
+  if(base::is.character(unit)){
+
+    ccd_unit <- extract_unit(ccd)
+
+    if(ccd_unit != unit){
+
+      if(unit == "px"){
+
+        ccd <-
+          asPixel(
+            input = ccd,
+            object = object,
+            as_numeric = as_numeric,
+            round = round
+          )
+
+      } else {
+
+        ccd <-
+          as_unit(
+            input = ccd,
+            unit = unit,
+            object = object,
+            as_numeric = as_numeric,
+            round = round
+          )
+
+      }
+
+    }
+
+  }
+
+  return(ccd)
+
+}
+
+
+# getR --------------------------------------------------------------------
 
 
 
@@ -207,6 +272,46 @@ setMethod(
 )
 
 
+
+# getT --------------------------------------------------------------------
+
+#' @title Obtain length of trajectory
+#'
+#' @description Computes and returns the length of a trajectory.
+#'
+#' @inherit argument_dummy params
+#' @inherit getTrajectoryScreeningDf params
+#' @inherit as_unit params return
+#' @inherit is_dist details
+#' @export
+#'
+getTrajectoryLength <- function(object,
+                                id,
+                                unit = "px",
+                                round = FALSE,
+                                as_numeric = FALSE){
+
+  tobj <- getTrajectory(object, id = id)
+
+  start <- base::as.numeric(tobj@segment[,c("x", "y")])
+  end <- base::as.numeric(tobj@segment[,c("xend", "yend")])
+
+  dist <-
+    compute_distance(start, end) %>%
+    stringr::str_c(., "px")
+
+  out <-
+    as_unit(
+      input = dist,
+      unit = unit,
+      object = object,
+      as_numeric = as_numeric,
+      round = round
+    )
+
+  return(out)
+
+}
 
 
 
