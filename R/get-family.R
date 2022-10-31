@@ -369,7 +369,7 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Using matrix '{mtr_name}'"),
+    msg = glue::glue("Using matrix '{mtr_name}'."),
     verbose = verbose
   )
 

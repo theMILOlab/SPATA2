@@ -34,7 +34,8 @@ bin_by_angle <- function(coords_df,
                          min_bins_circle = NULL,
                          rename = FALSE,
                          remove = FALSE,
-                         drop = TRUE){
+                         drop = TRUE,
+                         verbose = TRUE){
 
   confuns::is_vec(x = angle_span, mode = "numeric", of.length = 2)
 
@@ -49,6 +50,23 @@ bin_by_angle <- function(coords_df,
   } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
 
     stop("Input for argument `angle_span` must range from 0 to 360.")
+
+  }
+
+  from <- angle_span[1]
+  to <- angle_span[2]
+
+  confuns::give_feedback(
+    msg = glue::glue("Including area between {from}° and {to}°."),
+    verbose = verbose
+  )
+
+  if(n_bins_angle > 1){
+
+    confuns::give_feedback(
+      msg = glue::glue("Binning included area in {n_bins_angle} angle-bins."),
+      verbose = verbose
+    )
 
   }
 
@@ -105,6 +123,8 @@ bin_by_angle <- function(coords_df,
 
     bin_list[[n_bins_angle]] <-
       c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
+
+
 
     prel_angle_bin_df <-
       dplyr::ungroup(prel_angle_df) %>%
@@ -707,7 +727,8 @@ getImageAnnotationScreeningDf <- function(object,
       min_bins_circle = min_circles,
       rename = rename_angle_bins,
       remove = remove_angle_bins,
-      drop = drop[2]
+      drop = drop[2],
+      verbose = TRUE
     )
 
   # join with variables if desired
@@ -819,6 +840,13 @@ getImageAnnotationScreeningDf <- function(object,
         )
 
     }
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "No variables joined.",
+      verbose = verbose
+    )
 
   }
 
@@ -970,7 +998,7 @@ imageAnnotationScreening <- function(object,
                                      angle_span = c(0,360),
                                      n_bins_angle = 1,
                                      summarize_with = "mean",
-                                     normalize_by = FALSE,
+                                     normalize_by = "sample",
                                      method_padj = "fdr",
                                      model_subset = NULL,
                                      model_remove = NULL,
@@ -1023,7 +1051,7 @@ imageAnnotationScreening <- function(object,
       remove_circle_bins = TRUE,
       remove_angle_bins = TRUE,
       drop = FALSE,
-      summarize_by = FALSE,
+      summarize_by = c("bins_circle", "bins_angle"),
       normalize_by = normalize_by
     )
 
@@ -1097,13 +1125,7 @@ imageAnnotationScreening <- function(object,
 
         bin_angle_df <-
           dplyr::filter(ias_df, bins_angle == {{bin}}) %>%
-          dplyr::group_by(bins_order) %>%
-          dplyr::summarise(
-            dplyr::across(
-              .cols = dplyr::all_of(variables),
-              .fns = summarize_formulas[[summarize_with]]
-            )
-          ) %>%
+          dplyr::select(-bins_circle, -bins_angle) %>%
           tidyr::pivot_longer(
             cols = dplyr::all_of(variables),
             names_to = "variables",
@@ -1171,6 +1193,7 @@ imageAnnotationScreening <- function(object,
       coords = getCoordsDf(object),
       distance = distance,
       img_annotation = getImageAnnotation(object, id = id),
+      info = info,
       models = model_df,
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
@@ -1604,6 +1627,7 @@ setMethod(
                         display_bins_circle = TRUE,
                         ggpLayers = list(),
                         remove_circle_bins = FALSE,
+                        verbose = NULL,
                         ...){
 
     hlpr_assign_arguments(object)

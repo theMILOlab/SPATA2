@@ -309,8 +309,7 @@ transform_pixels_to_eUOL <- function(input,
 
   }
 
-
-
+  return(out)
 
 }
 
