@@ -4,13 +4,21 @@
 \alias{getTrajectoryLength}
 \title{Obtain length of trajectory}
 \usage{
-getTrajectoryLength(object, id)
+getTrajectoryLength(object, id, unit = "px", round = FALSE, as_numeric = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}
+
+\item{unit}{Character value. Specifies the desired unit.}
+
+\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
+of \code{base::round()}. Rounds transformed values before they are returned.}
+
+\item{as_numeric}{Logical value. If \code{TRUE}, forces the output to be numeric.
+This means that the unit is not \bold{not} suffixed.}
 }
 \value{
 Transformed input. Character vector of the same length as \code{input}.

@@ -33,6 +33,7 @@ ggpLayer_dummy <- function(){}
 #' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
 #' the plot.
 #'
+#' @export
 #'
 ggpLayerAxesEUOL <- function(object,
                              eUOL = getMethodUnit(object),

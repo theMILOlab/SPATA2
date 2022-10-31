@@ -642,7 +642,7 @@ plotSurfaceComparison2 <- function(coords_df,
 
     # plotting
 
-    plot_df$variables <- base::factor(plot_df$variables, levels = variables)
+    plot_df$variables <- base::factor(shifted_df$variables, levels = variables)
 
     ggplot2::ggplot(data = shifted_df, mapping = ggplot2::aes(x = x, y = y)) +
       hlpr_image_add_on2(image) +

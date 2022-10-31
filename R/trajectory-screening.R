@@ -257,17 +257,6 @@ getTrajectory <- function(object, id){
 }
 
 
-#' @export
-
-getTrajectoryLength <- function(object, id){
-
-
-  traj_obj <- getTrajectory(object, id = id)
-
-
-
-}
-
 
 
 #' @title Deprecated.
