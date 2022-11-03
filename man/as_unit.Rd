@@ -97,3 +97,26 @@ There are two valid input options to specify the distance in pixel:
  value and the unit must be no empty space! Unit suffixes must be one of
  \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
 }
+\examples{
+
+library(SPATA2)
+library(SPATAData)
+
+object <- downloadSpataObject("269_T")
+
+pixel_values <- c(200, 450, 500)
+
+euol_values <- c("2mm", "400um", "0.8dm")
+
+# spata object must be provided to scale based on current image resolution
+asMillimeter(input = pixel_values, object = object, round = 2)
+
+asMicrometer(input = pixel_values, object = object, round = 4)
+
+asPixel(input = euol_values, object = object)
+
+# spata object must not be provided
+asMicrometer(input = euol_values)
+
+
+}

@@ -157,7 +157,8 @@ plotIasEvaluation <- function(object,
       n_bins_circle = n_bins_circle,
       variables = variables,
       remove_circle_bins = "Core",
-      summarize_by = "bins_circle"
+      summarize_by = "bins_circle",
+      normalize_by = "sample"
     )
 
 
@@ -663,6 +664,61 @@ plotIasLineplot <- function(object,
 
 
 
+# plotM -------------------------------------------------------------------
+
+#' @title Plot mosaic plot
+#'
+#' @description Plots a mosaic plot of two grouping variables.
+#'
+#' @param grouping_variable Character value. The grouping variable that is
+#' plotted on the x-axis.
+#' @param fill_by Character value. The grouping variable that is used to
+#' fill the mosaic.
+#'
+#' @inherit confuns::plot_moasic params
+#' @inherit argument_dummy params
+#' @inherit plotBarchart params return
+#'
+#' @export
+#'
+plotMosaicplot <- function(object,
+                           grouping_variable,
+                           fill_by,
+                           clrp = NULL,
+                           clrp_adjust = NULL,
+                           ...){
+
+  require(ggmosaic)
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = c(grouping_variable, fill_by),
+    against = getGroupingOptions(object),
+    suggest = TRUE
+  )
+
+  df <- getFeatureDf(object)
+
+  confuns::plot_mosaic(
+    df = df,
+    x = grouping_variable,
+    fill.by = fill_by,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust
+  ) +
+    ggplot2::theme(
+      panel.background = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      axis.title.y = ggplot2::element_blank()
+    ) +
+    ggplot2::labs(
+      x = grouping_variable,
+      fill = fill_by
+    )
+
+}
 
 
 

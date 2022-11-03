@@ -18,7 +18,7 @@ ggpLayer_dummy <- function(){}
 #' surface plots with European Units of Length.
 #'
 #' @inherit argument_dummy params
-#' @inherit transform_eOUL_to_pixels params
+#' @inherit transform_eUOL_to_pixels params
 #' @inherit ggpLayer_dummy return details
 #' @param eUOL The desired unit in wich the axes are displayed. Defaults to the unit
 #' in which the original size of the image of the spatial method is
@@ -29,7 +29,8 @@ ggpLayer_dummy <- function(){}
 #' If specified, sets the plot frame accordingly.
 #' @param breaks_x,breaks_y Vector of distance inputs. Can be pixel or European
 #' units of lengths. If European unit of lengths, input is transformed to pixels as
-#' the plot is plotted with pixel-based coordinates.
+#' the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
+#' automatically to five breaks equally distributed along the axis.
 #' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
 #' the plot.
 #'
@@ -46,7 +47,7 @@ ggpLayerAxesEUOL <- function(object,
 
   confuns::check_one_of(
     input = eUOL,
-    against = validUnitsOfLength(),
+    against = validEuropeanUnitsOfLength(),
     suggest = TRUE
   )
 
@@ -80,6 +81,12 @@ ggpLayerAxesEUOL <- function(object,
 
     }
 
+  } else {
+
+    breaks_x <-
+      getCoordsDf(object)$x %>%
+      stats::quantile()
+
   }
 
   if(!base::is.null(breaks_y)){
@@ -111,6 +118,12 @@ ggpLayerAxesEUOL <- function(object,
       warning("Invalid input for `breaks_y`. Ignoring input.")
 
     }
+
+  } else {
+
+    breaks_y <-
+      getCoordsDf(object)$y %>%
+      stats::quantile()
 
   }
 
@@ -158,21 +171,42 @@ ggpLayerAxesEUOL <- function(object,
     ) %>%
     purrr::set_names(nm = c("x", "y"))
 
+
   if(base::isTRUE(add_labs)){
 
     labs_add_on <-
       list(
         x = ggplot2::labs(x = glue::glue("x-coordinates ({eUOL})")),
-        y = ggplot2::labs(y = glue::glue("y-coordinates ({eUOL})")),
-        theme = ggplot2::theme(axis.title = ggplot2::element_text())
+        y = ggplot2::labs(y = glue::glue("y-coordinates ({eUOL})"))
       )
+
+  } else {
+
+    labs_add_on <- NULL
 
   }
 
-  list(
-    axes[which],
+  theme_add_on <-
+    list(
+      x = ggplot2::theme(
+        axis.ticks.x = ggplot2::element_line(),
+        axis.ticks.length.x = ggplot2::unit(5, "points"),
+        axis.text.x = ggplot2::element_text(),
+        axis.title.x = ggplot2::element_text()
+        ),
+      y = ggplot2::theme(
+        axis.ticks.y = ggplot2::element_line(),
+        axis.ticks.length.y = ggplot2::unit(5, "points"),
+        axis.text.y = ggplot2::element_text(),
+        axis.title.y = ggplot2::element_text(angle = 90)
+      )
+    )
+
+  c(
     ggpLayerThemeCoords(),
-    labs_add_on[c(which, "theme")]
+    axes[which],
+    labs_add_on[which],
+    theme_add_on[which]
   )
 
 }

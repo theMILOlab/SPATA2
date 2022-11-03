@@ -6,11 +6,11 @@
 \alias{is_pixel_dist}
 \title{Test distance input}
 \usage{
-is_eUOL_dist(input, verbose = FALSE)
+is_eUOL_dist(input, error = FALSE)
 
-is_dist(input, verbose = FALSE)
+is_dist(input, error = FALSE)
 
-is_pixel_dist(input, verbose = FALSE)
+is_pixel_dist(input, error = FALSE)
 }
 \arguments{
 \item{input}{Character value or numeric value of length one.}

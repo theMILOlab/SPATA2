@@ -64,11 +64,18 @@ Given to argument \code{span} of \code{stats::loess()}.}
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
-\item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
-with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
-from x-coordinate 200 up to x-coordinate 500.}
+\item{xrange, yrange}{Vectors of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200 up to x-coordinate 500.
 
-\item{expand}{Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units.
+
+See details section of \code{?is_dist} for more information.}
+
+\item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
 
 Values from 0 to 1 are used to calculate the corresponding percentage of the image
@@ -83,10 +90,16 @@ E.g. \code{expand} = 200 results in an image section with x- and y-span of
 original span of the image annotation.
 
 To adjust x- and y-span specifically you can provide a vector of length 2.
-If you do so the first value is taken to adjust the xspan and the second
-value is used to adjust the yspan. E.g. \code{expand} = c(0.5, 0) adds 50 percent
-of the original xspan to the xspan of the image section and does not adjust
- the yspan.}
+If you do so the first value is taken to adjust the x-span and the second
+value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
+of the original x-span to the x-span of the image section and does not adjust
+the y-span.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units.
+
+See details section of \code{?is_dist} for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

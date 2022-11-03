@@ -34,7 +34,10 @@ transform_eUOL_to_pixel <- function(input,
                                     method = NULL,
                                     round = FALSE){
 
-  is_eUOL_dist(input, verbose = TRUE)
+  # eUOL must be character due to unit suffix
+  confuns::is_value(x = input, mode = "character")
+
+  is_eUOL_dist(input, error = TRUE)
 
   if(base::is.null(object)){
 
@@ -109,7 +112,7 @@ transform_eUOL_to_pixel <- function(input,
 }
 
 
-#' @rdname transform_pixel_to_eUOL
+#' @rdname transform_eUOL_to_pixel
 #' @export
 transform_eUOL_to_pixels <- function(input,
                                      object = NULL,
@@ -117,13 +120,7 @@ transform_eUOL_to_pixels <- function(input,
                                      method = NULL,
                                      round = FALSE){
 
-  test <- base::all(purrr::map_lgl(.x = input, .f = is_eUOL_dist))
-
-  if(base::isFALSE(test)){
-
-    stop(invalid_dist_input)
-
-  }
+  is_eUOL_dist(input = input, error = TRUE)
 
   purrr::map_dbl(
     .x = input,
@@ -183,6 +180,14 @@ transform_pixel_to_eUOL <- function(input,
                                     method = NULL,
                                     round = FALSE,
                                     as_numeric = FALSE){
+
+  if(base::length(input) != 1){
+
+    stop("`input` must be of length one.")
+
+  }
+
+  is_pixel_dist(input = input, error = TRUE)
 
   confuns::check_one_of(
     input = eUOL,
@@ -268,16 +273,10 @@ transform_pixels_to_eUOL <- function(input,
                                      image_dims = NULL,
                                      method = NULL,
                                      round = FALSE,
-                                     as_numeric = FALSE){
+                                     as_numeric = FALSE
+                                     ){
 
-  test <- base::all(purrr::map_lgl(.x = input, .f = is_pixel_dist))
-
-  if(base::isFALSE(test)){
-
-    stop(invalid_dist_input)
-
-  }
-
+  is_pixel_dist(input = input, error = TRUE)
 
   if(base::isTRUE(as_numeric)){
 

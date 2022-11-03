@@ -30,10 +30,14 @@ If specified, sets the plot frame accordingly.}
 
 \item{breaks_x, breaks_y}{Vector of distance inputs. Can be pixel or European
 units of lengths. If European unit of lengths, input is transformed to pixels as
-the plot is plotted with pixel-based coordinates.}
+the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
+automatically to five breaks equally distributed along the axis.}
 
 \item{add_labs}{Logical. If \code{TRUE}, adds informative x- and y-labs to
 the plot.}
+
+\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
+of \code{base::round()}. Rounds transformed values before they are returned.}
 }
 \value{
 A list of \code{ggproto}-objects.

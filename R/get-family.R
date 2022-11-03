@@ -1258,12 +1258,17 @@ getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
 
 #' @title Obtain histology image
 #'
+#' @description Extracts the image as an object of class \emph{EBImage}.
+#'
+#' @inherit argument_dummy params
 #' @inherit check_sample params
 #'
 #' @return An image of class \emph{EBImage}.
 #' @export
 
-getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, expand = 0){
+getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
+
+  deprecated(...)
 
   check_object(object)
 
@@ -1276,8 +1281,6 @@ getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, expan
   )
 
   confuns::is_vec(x = expand, mode = "numeric", max.length = 2)
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
   out <- object@images[[1]]@image
 
@@ -1307,7 +1310,10 @@ getImage <- function(object, of_sample = NA, xrange = NULL, yrange = NULL, expan
 
 }
 
-#' @rdname getImage
+#' @title Obtain image dimensions/ranges
+#'
+#' @inherit argument_dummy params
+#'
 #' @export
 getImageDims <- function(object, xrange = NULL, yrange = NULL){
 
@@ -1319,7 +1325,7 @@ getImageDims <- function(object, xrange = NULL, yrange = NULL){
 
 }
 
-#' @rdname getImage
+#' @rdname getImageDims
 #' @export
 getImageRange <- function(object, xrange = NULL, yrange = NULL){
 
@@ -1334,7 +1340,10 @@ getImageRange <- function(object, xrange = NULL, yrange = NULL){
 
 }
 
-#' @rdname getImage
+#' @title Obtain image raster-(information)
+#'
+#' @inherit argument_dummy params
+#'
 #' @export
 getImageRaster <- function(object, xrange = NULL, yrange = NULL, expand = 0){
 
@@ -1347,7 +1356,7 @@ getImageRaster <- function(object, xrange = NULL, yrange = NULL, expand = 0){
 
 }
 
-#' @rdname getImage
+#' @rdname getImageRaster
 #' @export
 getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
 

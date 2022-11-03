@@ -7,24 +7,13 @@
 
 #' @rdname is_dist
 #' @export
-is_eUOL_dist <- function(input, verbose = FALSE){
+is_eUOL_dist <- function(input, error = FALSE){
 
-  out <- confuns::is_value(x = input, mode = "character", verbose = FALSE)
+  res <- stringr::str_detect(input, pattern = regex_eUOL_dist)
 
-  if(base::isTRUE(out)){
+  feedback_distance_input(x = res, error = error)
 
-    out <- stringr::str_detect(input, pattern = regex_eUOL_dist)
-
-  }
-
-  if(base::isTRUE(verbose) && base::isFALSE(out)){
-
-    stop(invalid_dist_input)
-
-
-  }
-
-  return(out)
+  return(res)
 
 }
 
@@ -73,50 +62,31 @@ is_eUOL_dist <- function(input, verbose = FALSE){
 #'
 #' is_dist(input = ".4mm") # -> must start with a number
 #'
-is_dist <- function(input, verbose = FALSE){
+is_dist <- function(input, error = FALSE){
 
-  out <- base::length(input) == 1
+  res <-
+    stringr::str_detect(string = input, pattern = regex_pxl_dist)|
+    stringr::str_detect(string = input, pattern = regex_eUOL_dist)
 
-  if(base::isTRUE(out)){
+  feedback_distance_input(x = res, error = error)
 
-    out <-
-      stringr::str_detect(string = input, pattern = regex_pxl_dist)|
-      stringr::str_detect(string = input, pattern = regex_eUOL_dist)
-
-  }
-
-  if(base::isTRUE(verbose) & base::isFALSE(out)){
-
-    stop(invalid_dist_input)
-
-  }
-
-  return(out)
+  return(res)
 
 }
 
 
 #' @rdname is_dist
 #' @export
-is_pixel_dist <- function(input, verbose = FALSE){
+is_pixel_dist <- function(input, error = FALSE){
 
-  out <- base::length(input) == 1
+  res <- stringr::str_detect(input, pattern = regex_pxl_dist)
 
-  if(base::isTRUE(out)){
+  feedback_distance_input(x = res, error = error)
 
-    out <- stringr::str_detect(input, pattern = regex_pxl_dist)
-
-  }
-
-  if(base::isTRUE(verbose) && base::isFALSE(out)){
-
-    stop(invalid_dist_input)
-
-  }
-
-  return(out)
+  return(res)
 
 }
+
 
 
 

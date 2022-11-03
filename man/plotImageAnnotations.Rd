@@ -39,7 +39,7 @@ interest. If numeric, the image annotations are picked by number. If NULL, all i
 subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
 See details for more information.}
 
-\item{expand}{Numeric value or vector of length two. Specifies the extent to which the  x- and y-span
+\item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
 
 Values from 0 to 1 are used to calculate the corresponding percentage of the image
@@ -54,10 +54,16 @@ E.g. \code{expand} = 200 results in an image section with x- and y-span of
 original span of the image annotation.
 
 To adjust x- and y-span specifically you can provide a vector of length 2.
-If you do so the first value is taken to adjust the xspan and the second
-value is used to adjust the yspan. E.g. \code{expand} = c(0.5, 0) adds 50 percent
-of the original xspan to the xspan of the image section and does not adjust
- the yspan.}
+If you do so the first value is taken to adjust the x-span and the second
+value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
+of the original x-span to the x-span of the image section and does not adjust
+the y-span.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units.
+
+See details section of \code{?is_dist} for more information.}
 
 \item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
 structure is forced into a square. X- and yspan of the square are equal to the span

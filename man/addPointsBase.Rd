@@ -42,9 +42,16 @@ represent the group.}
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
-\item{xrange, yrange}{Numeric vectors of length two or NULL. If numeric, specifies the coordinates
-with which the image is subsetted. E.g. xrange = c(200, 500) results in the image being cropped
-from x-coordinate 200 up to x-coordinate 500.}
+\item{xrange, yrange}{Vectors of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200 up to x-coordinate 500.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units.
+
+See details section of \code{?is_dist} for more information.}
 
 \item{scale_alpha}{}
 }

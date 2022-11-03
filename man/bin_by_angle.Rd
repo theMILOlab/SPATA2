@@ -12,7 +12,8 @@ bin_by_angle(
   min_bins_circle = NULL,
   rename = FALSE,
   remove = FALSE,
-  drop = TRUE
+  drop = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{

@@ -6,7 +6,7 @@
 \usage{
 scale_color_add_on(
   aes = "color",
-  variable = "numeric",
+  variable = NULL,
   clrsp = NULL,
   clrp = NULL,
   clrp.adjust = NULL,

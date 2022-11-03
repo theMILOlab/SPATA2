@@ -14,7 +14,7 @@ imageAnnotationScreening(
   angle_span = c(0, 360),
   n_bins_angle = 1,
   summarize_with = "mean",
-  normalize_by = FALSE,
+  normalize_by = "sample",
   method_padj = "fdr",
   model_subset = NULL,
   model_remove = NULL,

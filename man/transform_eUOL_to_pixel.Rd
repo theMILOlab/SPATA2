@@ -2,9 +2,18 @@
 % Please edit documentation in R/t.R
 \name{transform_eUOL_to_pixel}
 \alias{transform_eUOL_to_pixel}
+\alias{transform_eUOL_to_pixels}
 \title{Transforms European Units of Length to pixels}
 \usage{
 transform_eUOL_to_pixel(
+  input,
+  object = NULL,
+  image_dims = NULL,
+  method = NULL,
+  round = FALSE
+)
+
+transform_eUOL_to_pixels(
   input,
   object = NULL,
   image_dims = NULL,

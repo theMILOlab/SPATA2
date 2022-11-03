@@ -1,8 +1,29 @@
 
 
 
+# fe ----------------------------------------------------------------------
+
+feedback_distance_input <- function(x, error = TRUE){
+
+  pos <- base::which(x == FALSE)
+
+  if(base::length(pos) >= 1 && base::isTRUE(error)){
+
+    pos <- base::as.character(pos)
+
+    ref1 <- confuns::adapt_reference(input = pos, sg = "position")
+
+    ref2 <- confuns::scollapse(pos)
+
+    stop(glue::glue("Invalid distance input at {ref1} {ref2}. Please see details at `?is_dist` for more information"))
+
+  }
+
+}
 
 
+
+# fi ----------------------------------------------------------------------
 
 
 filter_by_best <- function(df,

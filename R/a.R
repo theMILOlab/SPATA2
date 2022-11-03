@@ -21,6 +21,28 @@
 #'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object <- downloadSpataObject("269_T")
+#'
+#' pixel_values <- c(200, 450, 500)
+#'
+#' euol_values <- c("2mm", "400um", "0.8dm")
+#'
+#' # spata object must be provided to scale based on current image resolution
+#' asMillimeter(input = pixel_values, object = object, round = 2)
+#'
+#' asMicrometer(input = pixel_values, object = object, round = 4)
+#'
+#' asPixel(input = euol_values, object = object)
+#'
+#' # spata object must not be provided
+#' asMicrometer(input = euol_values)
+#'
+#'
 as_unit <- function(input,
                     unit,
                     object = NULL,
@@ -30,11 +52,11 @@ as_unit <- function(input,
                     round = FALSE,
                     verbose = FALSE){
 
-  is_suffixed <-
+  base::options(scipen = 999)
 
   input <- base::as.character(input)
 
-  is_dist(input, verbose = TRUE)
+  is_dist(input, error = TRUE)
 
   confuns::is_value(x = unit, mode = "character")
 
@@ -43,41 +65,47 @@ as_unit <- function(input,
     against = validUnits()
   )
 
-  input_unit <- extract_unit(input)
+  input_units <- extract_unit(input)
 
-  if(input_unit == unit){
+  input_units_ref <-
+    base::unique(input_units) %>%
+    confuns::scollapse(string = ., sep = ", ", last = " and ")
 
-    out <- input
+  confuns::give_feedback(
+    msg = glue::glue("Transforming {input_units_ref} to {unit}."),
+    verbose = verbose,
+    with.time = FALSE
+  )
 
-    if(base::isTRUE(as_numeric)){
+  out <- base::vector(mode = "character", length = base::length(input))
 
-      out <- extract_value(out)
+  for(i in base::seq_along(input)){
 
-    }
+    if(input_units[i] == unit){ # needs no transformation
 
-  } else {
+      out <- input
 
-    confuns::give_feedback(
-      msg = glue::glue("Transforming {input_unit} to {unit}."),
-      verbose = verbose,
-      with.time = FALSE
-    )
+      if(base::isTRUE(as_numeric)){
 
-    if(is_eUOL_dist(input) & unit == "px"){
+        out <- extract_value(out)
 
-      out <-
-        transform_eUOL_to_pixels(
-          input = input,
+      }
+
+    } else if(is_eUOL_dist(input[i]) & unit == "px"){
+
+      out[i] <-
+        transform_eUOL_to_pixel(
+          input = input[i],
           object = object,
           method = method,
           round = round
         )
 
-    } else if(is_pixel_dist(input) & unit %in% validEuropeanUnitsOfLength()){
+    } else if(is_pixel_dist(input[i]) & unit %in% validEuropeanUnitsOfLength()){
 
-      out <-
-        transform_pixels_to_eUOL(
-          input = input,
+      out[i] <-
+        transform_pixel_to_eUOL(
+          input = input[i],
           eUOL = unit,
           object = object,
           image_dims = image_dims,
@@ -88,16 +116,33 @@ as_unit <- function(input,
 
     } else {
 
-      fct_scale <- eUOL_to_eUOL_fct(from = input_unit, to = unit)
+      fct_scale <- eUOL_to_eUOL_fct(from = input_units[i], to = unit)
 
-      input_val <- extract_value(input)
+      input_val <- extract_value(input[i])
 
-      out <- input_val*fct_scale
+      out[i] <- input_val*fct_scale
 
     }
 
+  }
+
+
+  if(base::isFALSE(as_numeric)){
+
+    not_suffixed <- !stringr::str_detect(out, pattern = stringr::str_c(unit, "$"))
+
+    out[not_suffixed] <- stringr::str_c(out[not_suffixed], unit)
 
   }
+
+
+  if(confuns::is_named(input)){
+
+    base::names(out) <- base::names(input)
+
+  }
+
+  base::options(scipen = 0)
 
   return(out)
 

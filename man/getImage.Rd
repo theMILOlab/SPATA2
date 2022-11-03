@@ -2,31 +2,53 @@
 % Please edit documentation in R/get-family.R
 \name{getImage}
 \alias{getImage}
-\alias{getImageDims}
-\alias{getImageRange}
-\alias{getImageRaster}
-\alias{getImageRasterInfo}
 \title{Obtain histology image}
 \usage{
-getImage(object, of_sample = NA, xrange = NULL, yrange = NULL, expand = 0)
-
-getImageDims(object, xrange = NULL, yrange = NULL)
-
-getImageRange(object, xrange = NULL, yrange = NULL)
-
-getImageRaster(object, xrange = NULL, yrange = NULL, expand = 0)
-
-getImageRasterInfo(object, xrange = NULL, yrange = NULL)
+getImage(object, xrange = NULL, yrange = NULL, expand = 0, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
+\item{xrange, yrange}{Vectors of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200 up to x-coordinate 500.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units.
+
+See details section of \code{?is_dist} for more information.}
+
+\item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
+of the cropped image section is expanded. There are two options to provide values:
+
+Values from 0 to 1 are used to calculate the corresponding percentage of the image
+span which is then \bold{added} to it. E.g. \code{expand} = 1 doubles the span,
+\code{expand} = 0.5 results in 150 percent of the span and \code{expand} = 0 returns the
+original span.
+
+Values bigger than 1 are considered to be absolute values. The returned image
+section has the exact x- and y- spans as specified in \code{expand}.
+E.g. \code{expand} = 200 results in an image section with x- and y-span of
+200. If the input value is bigger than 1 it must be at least as big as the
+original span of the image annotation.
+
+To adjust x- and y-span specifically you can provide a vector of length 2.
+If you do so the first value is taken to adjust the x-span and the second
+value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
+of the original x-span to the x-span of the image section and does not adjust
+the y-span.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units.
+
+See details section of \code{?is_dist} for more information.}
 }
 \value{
 An image of class \emph{EBImage}.
 }
 \description{
-Obtain histology image
+Extracts the image as an object of class \emph{EBImage}.
 }

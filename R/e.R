@@ -35,11 +35,13 @@ eUOL_to_eUOL_fct <- function(from, to){
 #'
 extract_unit <- function(input){
 
-  is_dist(input = input, verbose = TRUE)
+  is_dist(input = input, error = TRUE)
 
   out <- stringr::str_extract(input, pattern = "[a-z]*$")
 
-  if(out == ""){ out <- "px"}
+  no_units <- !stringr::str_detect(out, pattern = "[a-z]*$")
+
+  out[no_units] <- stringr::str_c(out[no_units], "px")
 
   return(out)
 
