@@ -129,6 +129,204 @@ plotAutoencoderResults <- function(object,
 
 
 
+# plotB -------------------------------------------------------------------
+
+#' @title Plot distribution of discrete variables
+#'
+#' @description Visualizes the count or the proportion of barcode spots falling
+#' into certain groups via barcharts. It does so either for the whole sample or
+#' in a comparing manner if \code{across} is specified.
+#'
+#' @inherit plotBoxplot params return
+#'
+#' @param variables Character vector. The discrete features whose group count or
+#' proportion you want to display. Must not contain the feature specified in
+#' \code{across} - if \code{across} is not set to NULL.
+
+#' @export
+
+plotBarchart <- function(object,
+                         grouping_variables,
+                         across = NULL,
+                         across_subset = NULL,
+                         relevel = NULL,
+                         clrp = NULL,
+                         clrp_adjust = NULL,
+                         position = NULL,
+                         display_facets = NULL,
+                         ncol = NULL,
+                         nrow = NULL,
+                         ...){
+
+  hlpr_assign_arguments(object)
+
+  if(!base::is.null(list(...)[["variables"]])){
+
+    warning("Argument `variables` is deprecated in this function. Please use `grouping_variables` instead.")
+
+    grouping_variables <- variables
+
+  }
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  features <-
+    check_features(
+      object = object,
+      features = c(grouping_variables, across),
+      valid_classes = c("character", "factor")
+    )
+
+  spata_df <-
+    joinWith(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      features = features,
+      smooth = FALSE
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+
+  confuns::plot_barplot(df = spata_df,
+                        variables = grouping_variables,
+                        across = across,
+                        across.subset = across_subset,
+                        relevel = relevel,
+                        display.facets = display_facets,
+                        nrow = nrow,
+                        ncol = ncol,
+                        clrp = clrp,
+                        clrp.adjust = clrp_adjust,
+                        position = position,
+                        ...)
+
+}
+
+
+#' @title Plot numeric distribution and statistical tests
+#'
+#' @description These functions display the distribution of numeric
+#' variables for the whole sample or in a comparative manner if argument
+#' \code{across} is specified. \code{plotViolinplot()} and \code{plotBoxplot()}
+#' allow for statistical tests such as t-test or ANOVA.
+#'
+#' @inherit across_dummy params
+#' @inherit argument_dummy params
+#' @inherit check_pt params
+#' @inherit check_sample params
+#' @inherit joinWith params
+#' @inherit variables_num params
+#'
+#' @param test_groupwise Character value or NULL. Specifies the groupwise statistical
+#' test to be conducted. If character, one of \emph{'anova', 'kruskal.test'}. If set
+#' to NULL the testing is skipped.
+#' @param test_pairwise Character value or NULL. Specifies the pairwise statistical
+#' test to be conducted. If character, one of \emph{'t.test', 'wilcox.test'}. If set
+#' to NULL the testing is skipped.
+#' @param ref_group Character value or NULL. Specifies the reference group against
+#' which all other groups are compared in the test denoted in \code{test_groupwise}
+#' is conducted. If set to NULL the first group found is taken.
+#' @param step_increase Numeric value. Denotes the increase in fraction of total
+#' height for every additional comparison to minimize overlap.
+#' @param vjust Numeric value. Denotes the relative, vertical position of the results of
+#' the test denoted in \code{test.groupwise}. Negative input highers, positive
+#' input lowers the position.
+#'
+#' @param ... Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
+#' function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.
+#'
+#' @inherit ggplot_family return
+#'
+#' @export
+#'
+
+plotBoxplot <- function(object,
+                        variables,
+                        across = NULL,
+                        across_subset = NULL,
+                        relevel = NULL,
+                        clrp = NULL,
+                        clrp_adjust = NULL,
+                        test_groupwise = NULL,
+                        test_pairwise = NULL,
+                        ref_group = NULL,
+                        step_increase = 0.01,
+                        vjust = 0,
+                        display_facets = NULL,
+                        scales = "free",
+                        nrow = NULL,
+                        ncol = NULL,
+                        display_points = FALSE,
+                        n_bcsp = NULL,
+                        pt_alpha = NULL,
+                        pt_clr = NULL,
+                        pt_size = NULL,
+                        pt_shape = NULL,
+                        method_gs = NULL,
+                        normalize = NULL,
+                        verbose = NULL,
+                        of_sample = NA,
+                        ...){
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object)
+  all_gene_sets <- getGeneSets(object)
+
+  var_levels <- base::unique(variables)
+
+  variables <-
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
+
+  spata_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      variables = variables,
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+  confuns::plot_boxplot(
+    df = spata_df,
+    variables = var_levels,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    test.pairwise = test_pairwise,
+    test.groupwise = test_groupwise,
+    ref.group = ref_group,
+    step.increase = step_increase,
+    vjust = vjust,
+    scales = scales,
+    nrow = nrow,
+    ncol = ncol,
+    display.facets = display_facets,
+    display.points = display_points,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.num = n_bcsp,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
+
+}
+
 # plotC -------------------------------------------------------------------
 
 
@@ -1677,6 +1875,550 @@ plotDeaHeatmap <- function(object,
 
 }
 
+
+#' @title Plot the number of differently expressed genes of certain groups
+#'
+#' @description Use argument \code{across} to specify the grouping
+#' variable of interest across which the de-analysis has been conducted and
+#' argument \code{max_adj_pval} to set the quality requirements of genes
+#' to be included in the counting process.
+#'
+#' @inherit plotDeaPvalues params return
+#' @inherit getDeaResultsDf params
+#'
+#' @export
+
+plotDeaGeneCount <- function(object,
+                             across = NULL,
+                             across_subset = NULL,
+                             relevel = FALSE,
+                             method_de = NULL,
+                             max_adj_pval = NULL,
+                             clrp = NULL,
+                             clrp_adjust = NULL,
+                             display_title = NULL,
+                             sort_by_count = TRUE,
+                             of_sample = NA,
+                             ...){
+
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  dea_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      across_subset = across_subset,
+      relevel = relevel,
+      method_de = method_de,
+      max_adj_pval = max_adj_pval,
+      of_sample = of_sample
+    )
+
+  if(base::isTRUE(sort_by_count)){
+
+    dea_df <- dplyr::mutate(dea_df, {{across}} := forcats::fct_infreq(f = !!rlang::sym(across)))
+
+  }
+
+  # 2. Plotting -------------------------------------------------------------
+
+  ggplot2::ggplot(data = dea_df, mapping = ggplot2::aes(x = .data[[across]])) +
+    ggplot2::geom_bar(mapping = ggplot2::aes(fill = .data[[across]]), color = "black") +
+    scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp, clrp.adjust = clrp_adjust, ...) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::labs(y = "Number of differentially expressed genes") +
+    hlpr_display_title(display_title, title = stringr::str_c("Adj. p-value cutoff:", max_adj_pval, sep = " "))
+
+
+}
+
+#' @rdname plotDeaPvalues
+#' @export
+plotDeaLogFC <- function(object,
+                         across = NULL,
+                         across_subset = NULL,
+                         relevel = NULL,
+                         method_de = NULL,
+                         max_adj_pval = NULL,
+                         binwidth = NULL,
+                         clrp = NULL,
+                         plot_type = "histogram",
+                         scales = NULL,
+                         limits_x = c(NA, NA),
+                         display_title = NULL,
+                         of_sample = NA,
+                         ...){
+
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = validPlotTypes(fn_name = "plotDeaLogFC")
+  )
+
+  lfc_name <-
+    getDeaLfcName(
+      object = object,
+      across = across,
+      method_de = method_de
+    )
+
+  if(plot_type == "histogram"){
+
+    default_list <-
+      c(list(mapping = ggplot2::aes(fill = .data[[across]]), color = "black"),
+        "binwidth" = binwidth)
+
+  } else {
+
+    default_list <-
+      list(mapping = ggplot2::aes(fill = .data[[across]]), color = "black")
+
+  }
+
+  de_df <- getDeaResultsDf(object = object,
+                           across = across,
+                           across_subset = across_subset,
+                           relevel = relevel,
+                           method_de = method_de,
+                           max_adj_pval = max_adj_pval,
+                           of_sample = of_sample)
+
+
+  # 2. Plotting -------------------------------------------------------------
+
+  ggplot2::ggplot(data = de_df, mapping = ggplot2::aes(x = .data[[lfc_name]])) +
+    confuns::call_flexibly(
+      fn = stringr::str_c("geom", plot_type, sep = "_"), fn.ns = "ggplot2",
+      default = default_list,
+    ) +
+    scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    confuns::call_flexibly(
+      fn = "facet_wrap", fn.ns = "ggplot2",
+      default = list(facets = stats::as.formula(stringr::str_c("~", across)), scales = scales, drop = TRUE)
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      legend.position = "none",
+      strip.background = ggplot2::element_blank()) +
+    ggplot2::scale_x_continuous(limits = limits_x) +
+    ggplot2::labs(y = NULL) +
+    hlpr_display_title(display_title, title = stringr::str_c("Adj. p-value cutoff:", max_adj_pval, sep = " "))
+
+
+}
+
+
+#' @title Plot the p-value and log fold change distribution of de-analysis results
+#'
+#' @description Use argument \code{across} to specify the grouping
+#' variable of interest across which the de-analysis has been conducted.
+#'
+#' Valid input options for \code{plot_type} are \emph{'density'} and
+#'  \emph{'histogram'}.
+#'
+#' @inherit argument_dummy params
+#' @inherit binwidth_dummy params
+#' @inherit check_method params
+#' @inherit plotDeaSummary params return
+#' @inherit plot_type_dummy params
+#'
+#' @param limits_x Numeric vector of length two. Specify the limits
+#' of the x-axis.
+#'
+#' @inherit ggplot_dummy return
+#'
+#' @export
+
+plotDeaPvalues <- function(object,
+                           across = NULL,
+                           across_subset = NULL,
+                           relevel = NULL,
+                           method_de = NULL,
+                           max_adj_pval = NULL,
+                           binwidth = NULL,
+                           clrp = NULL,
+                           plot_type = "histogram",
+                           scales = NULL,
+                           limits_x = c(NA, NA),
+                           display_title = NULL,
+                           of_sample = NA,
+                           ...){
+
+  confuns::make_available(...)
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = validPlotTypes(fn_name = "plotDeaPvalues")
+  )
+
+  if(plot_type == "histogram"){
+
+    default_list <-
+      c(list(mapping = ggplot2::aes(fill = .data[[across]]), color = "black"),
+        "binwidth" = binwidth)
+
+  } else {
+
+    default_list <-
+      list(mapping = ggplot2::aes(fill = .data[[across]]), color = "black")
+
+  }
+
+  de_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      across_subset = across_subset,
+      relevel = relevel,
+      method_de = method_de,
+      max_adj_pval = max_adj_pval,
+      of_sample = of_sample
+    )
+
+
+  # 2. Plotting -------------------------------------------------------------
+
+  ggplot2::ggplot(data = de_df, mapping = ggplot2::aes(x = p_val_adj)) +
+    confuns::call_flexibly(
+      fn = stringr::str_c("geom", plot_type, sep = "_"), fn.ns = "ggplot2",
+      default = default_list,
+    ) +
+    scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    confuns::call_flexibly(
+      fn = "facet_wrap", fn.ns = "ggplot2",
+      default = list(facets = stats::as.formula(stringr::str_c("~", across)), scales = scales, drop = TRUE)
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      legend.position = "none",
+      strip.background = ggplot2::element_blank()
+    ) +
+    ggplot2::scale_x_continuous(limits = limits_x) +
+    ggplot2::labs(x = "Adjusted p-values", y = NULL) +
+    hlpr_display_title(display_title, title = stringr::str_c("Adj. p-value cutoff:", max_adj_pval, sep = " "))
+
+}
+
+
+
+#' @title Plot a summary of differential expression analysis results
+#'
+#' @description This function is a wrapper around \code{plotDeaPvalues(),
+#' plotDeaLogFC()} and \code{plotDeaGeneCount()} and returns
+#' a combined ggplot. Set the respective argument to FALSE if
+#' you want to skip one of the functions or specify their arguments
+#' by providing a named list of arguments.
+#'
+#' @inherit argument_dummy params
+#' @inherit across_dummy params
+#' @inherit check_method params
+#' @inherit check_sample params
+#' @inherit getDeaResultsDf params
+#'
+#' @inherit ggplot_family return
+#' @export
+
+plotDeaSummary <- function(object,
+                           across = NULL,
+                           across_subset = NULL,
+                           relevel = NULL,
+                           method_de = NULL,
+                           max_adj_pval = NULL,
+                           clrp = NULL,
+                           plotDeaGeneCount = list(display_title = TRUE),
+                           plotDeaLogFC = list(display_title = FALSE),
+                           plotDeaPvalues = list(display_title = FALSE),
+                           verbose = NULL,
+                           of_sample = NA){
+
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = validPlotTypes(fn_name = "plotDeaSummary")
+  )
+
+  default_list <-
+    list("object" = object,
+         "max_adj_pval" = max_adj_pval,
+         "method_de" = method_de,
+         "across" = across,
+         "across_subset" = across_subset,
+         "relevel" = relevel,
+         "clrp" = clrp,
+         "of_sample" = of_sample,
+         "verbose" = verbose)
+
+  # 2. Plotting -------------------------------------------------------------
+
+  dea_gene_count <-
+    confuns::call_flexibly(
+      fn = "plotDeaGeneCount", fn.ns = "SPATA",
+      default = default_list,
+      v.fail = patchwork::plot_spacer(),
+      v.skip = patchwork::plot_spacer()
+    )
+
+  dea_log_fc <-
+    confuns::call_flexibly(
+      fn = "plotDeaLogFC", fn.ns = "SPATA",
+      default = default_list,
+      v.fail = patchwork::plot_spacer(),
+      v.skip = patchwork::plot_spacer()
+    )
+
+  dea_pvalues <-
+    confuns::call_flexibly(
+      fn = "plotDeaPvalues", fn.ns = "SPATA",
+      default = default_list,
+      v.fail = patchwork::plot_spacer(),
+      v.skip = patchwork::plot_spacer()
+    )
+
+
+  (patchwork::plot_spacer() / dea_gene_count) | (dea_log_fc / dea_pvalues)
+
+}
+
+#' @title Visualize gene expression testing
+#'
+#' @description Plots a common volcano plot with p-value on the y- and logfold
+#' change on the x-axis.
+#'
+#' @param color_up Character value. Color of points that represent upregulated genes.
+#' @param color_down Character value. Color of poitns that represent downregulated genes.
+#' @param color_insignif Character value. Color of points that fall below the threshold set
+#' via argument \code{threshold_pval}.
+#' @param threshold_pval Numeric value. Denotes the threshold for the p-value. Genes with
+#' a p-value above are displayed as not significant.
+#' @param threshold_logFC Numeric value. Denotes the threshold for the logFC. Genes with
+#' a logFC below are displayed as not significant.
+#' @param label_genes Specify which genes are labeled in the plot. If numeric,
+#' specifies the number of genes that are labeled. E.g. if \code{label_genes} = 5,
+#' the default, the top 5 genes are labeled. If character, specifies the genes
+#' that are supposed to be labeled by name. If NULL, no genes are labeled.
+#' @param use_pseudolog Logical value. If TRUE, avglogFC is transformed with log10. Requires
+#' package \code{ggallin} to be installed.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @export
+#'
+plotDeaVolcano <- function(object,
+                           across = getDefaultGrouping(object),
+                           across_subset = NULL,
+                           relevel = TRUE,
+                           method_de = NULL,
+                           color_up = "tomato",
+                           color_down = "steelblue",
+                           color_insignif = "lightgrey",
+                           pt_alpha = 0.9,
+                           pt_size = 1,
+                           threshold_logFC = 1,
+                           threshold_pval = 0.01,
+                           label_genes = 5,
+                           label_size = 1,
+                           nrow = NULL,
+                           ncol = NULL,
+                           scales = "fixed",
+                           use_pseudolog = FALSE,
+                           ...){
+
+  hlpr_assign_arguments(object)
+
+  col_pval <- "p_val_adj"
+  col_logFC <- "avg_logFC"
+  col_genes <- "gene"
+  col_groups <- across
+
+  # get data
+  dea_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      method_de = method_de,
+      max_adj_pval = 1,
+      min_lfc = NULL
+    )
+
+  # create formula
+  facet_formula <-
+    stringr::str_c(". ~ ", col_groups, sep = "") %>%
+    stats::as.formula()
+
+  facet_add_on <-
+    ggplot2::facet_wrap(
+      facets = facet_formula,
+      nrow = nrow,
+      ncol = ncol,
+      scales = scales
+    )
+
+  dea_df <-
+    confuns::check_across_subset(
+      df = dea_df,
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel
+    )
+
+  # denote significance and up/downregulation genes
+
+  neg_threshold_lgFC <- -threshold_logFC
+
+  dea_df <-
+    dplyr::mutate(
+      .data = dea_df,
+      status = dplyr::case_when(
+        !!rlang::sym(col_pval) > {{threshold_pval}} ~ "Insignificant",
+        !!rlang::sym(col_logFC) > {{threshold_logFC}} ~ "Upregulated",
+        !!rlang::sym(col_logFC) < {{neg_threshold_lgFC}} ~ "Downregulated",
+        TRUE ~ "Insignificant"
+      ),
+      stats = base::factor(x = status, levels = c("Upregulated", "Downregulated", "Insignificant"))
+    )
+
+  # transform pvalue
+  dea_df[["pval_log10"]] <- -base::log10(dea_df[[col_pval]])
+
+  # label genes if desired
+  if(!base::is.null(label_genes)){
+
+    if(base::is.character(label_genes)){
+
+      label_df <- dplyr::filter(dea_df, !!rlang::sym(col_genes) %in% {{label_genes}})
+
+    } else if(base::is.numeric(label_genes)){
+
+      if(base::is.character(col_groups)){
+
+        dea_df <- dplyr::group_by(dea_df, !!rlang::sym(col_groups))
+
+      }
+
+      if(base::length(label_genes) == 1){
+
+        label_genes <- base::rep(label_genes, 2)
+
+      }
+
+      if(label_genes[1] != 0){
+
+        label_df1 <-
+          dplyr::slice_min(
+            .data = dplyr::filter(dea_df, !!rlang::sym(col_logFC) > 0),
+            order_by = !!rlang::sym(col_pval),
+            n = label_genes[1],
+            with_ties = FALSE
+          )
+
+      } else {
+
+        label_df1 <- NULL
+
+      }
+
+      if(label_genes[2] != 0){
+
+        label_df2 <-
+          dplyr::slice_min(
+            .data = dplyr::filter(dea_df, !!rlang::sym(col_logFC) < 0),
+            order_by = !!rlang::sym(col_pval),
+            n = label_genes[2],
+            with_ties = FALSE
+          )
+
+      } else {
+
+        label_df2 <- NULL
+
+      }
+
+      label_df <- base::rbind(label_df1, label_df2)
+
+    }
+    label_add_on <-
+      ggrepel::geom_text_repel(
+        data = label_df,
+        mapping = ggplot2::aes(label = .data[[col_genes]]),
+        size = label_size,
+        ...
+      )
+
+  } else {
+
+    label_add_on <- NULL
+
+  }
+
+  if(base::isTRUE(use_pseudolog)){
+
+    scale_x_add_on <-
+      ggplot2::scale_x_continuous(
+        trans = ggallin::pseudolog10_trans
+      )
+
+    xlab <- "Avg. logFC (pseudolog10)"
+
+  } else {
+
+    scale_x_add_on <- NULL
+    xlab <- "Avg. logFC"
+
+  }
+
+  # assemble final plot
+  ggplot2::ggplot(
+    data = dea_df,
+    mapping = ggplot2::aes(x = .data[[col_logFC]], y = pval_log10)
+  ) +
+    ggplot2::geom_point(
+      mapping = ggplot2::aes(color = status),
+      alpha = pt_alpha, size = pt_size
+    ) +
+    ggplot2::scale_color_manual(
+      values = c("Upregulated" = color_up, "Downregulated" = color_down, "Insignificant" = color_insignif)
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(color = NULL) +
+    ggplot2::guides(color = ggplot2::guide_legend(override.aes = list(size = pt_size*2))) +
+    ggplot2::theme(strip.background = ggplot2::element_blank()) +
+    ggplot2::labs(x = xlab, y = "Adjusted p-value (-log10)") +
+    label_add_on +
+    facet_add_on +
+    scale_x_add_on
+
+}
+
+
+
+
+
+
 plotDimRed <- function(object,
                        method_dr,
                        color_by = NULL,
@@ -1764,5 +2506,69 @@ plotDimRed <- function(object,
 
 
 
+#' @rdname plotBoxplot
+#' @export
+plotDensityplot <- function(object,
+                            variables,
+                            across = NULL,
+                            across_subset = NULL,
+                            relevel = NULL,
+                            clrp = NULL,
+                            clrp_adjust = NULL,
+                            display_facets = NULL,
+                            scales = "free_x",
+                            nrow = NULL,
+                            ncol = NULL,
+                            method_gs = NULL,
+                            normalize = NULL,
+                            verbose = NULL,
+                            of_sample = NA,
+                            ...){
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  var_levels <- base::unique(variables)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object)
+  all_gene_sets <- getGeneSets(object)
+
+  variables <-
+    check_variables(variables = c(variables, across),
+                    all_features = all_features,
+                    all_gene_sets = all_gene_sets,
+                    all_genes = all_genes,
+                    simplify = FALSE)
+
+  spata_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      variables = variables,
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+  confuns::plot_density(
+    df = spata_df,
+    variables = var_levels,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    scales = scales,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
+
+}
 
 

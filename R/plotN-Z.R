@@ -360,6 +360,75 @@ plotPseudotime <- function(object,
 # plotR -------------------------------------------------------------------
 
 
+
+#' @rdname plotBoxplot
+#' @export
+plotRidgeplot <- function(object,
+                          variables,
+                          across = NULL,
+                          across_subset = NULL,
+                          relevel = NULL,
+                          alpha = 0.8,
+                          clrp = NULL,
+                          clrp_adjust = NULL,
+                          display_facets = NULL,
+                          scales = "free",
+                          nrow = NULL,
+                          ncol = NULL,
+                          method_gs = NULL,
+                          normalize = NULL,
+                          verbose = NULL,
+                          of_sample = NA,
+                          ...){
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object)
+  all_gene_sets <- getGeneSets(object)
+
+  variables <-
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
+
+  var_levels <- base::unique(variables)
+
+  spata_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      variables = variables,
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+  confuns::plot_ridgeplot(
+    df = spata_df,
+    variables = var_levels,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    display_facets = display_facets,
+    scales = scales,
+    nrow = nrow,
+    ncol = ncol,
+    alpha = alpha,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose
+  )
+
+}
+
 #' @title Plot riverplots
 #'
 #' @description Visualizes overlapping proportions of multiple grouping variables.
@@ -553,6 +622,250 @@ plotStatisticsInteractive <- function(spata_df){
   confuns::plot_statistics_interactive(df = spata_df, 25)
 
 }
+
+
+
+
+#' @title Plot surface with R base plotting
+#'
+#' @description Uses Rs base plotting device instead of ggplot2. This
+#' is usually faster but can not make use of the mechanism ggplot2 offers.
+#'
+#' @inherit argument_dummy params
+#' @inherit plotSurface params
+#' @inherit getImage params
+#'
+#' @return Plots right into the plotting window.
+#' @export
+#'
+plotSurfaceBase <- function(object,
+                            color_by = NULL,
+                            alpha_by = NULL,
+                            pt_alpha = 0.9,
+                            pt_color = "grey",
+                            pt_clrp = "milo",
+                            pt_clrsp = "inferno",
+                            pt_size = 1,
+                            clrp_adjust = NULL,
+                            smooth = FALSE,
+                            smooth_span = 0.2,
+                            display_axes = FALSE,
+                            display_image = NULL,
+                            highlight_barcodes = NULL,
+                            highlight_alpha = 0.75,
+                            highlight_color = "orange",
+                            xrange = NULL,
+                            yrange = NULL,
+                            adjust_pt_size = TRUE,
+                            expand = 0,
+                            verbose = NULL,
+                            ...
+){
+
+  # work around pt_alpha
+  scale_alpha <- base::is.character(alpha_by)
+
+  # lazy check
+  hlpr_assign_arguments(object)
+
+  if(scale_alpha){ pt_alpha <- NULL }
+
+  confuns::are_vectors(
+    c("xrange", "yrange"),
+    mode = "numeric",
+    of.length = 2,
+    skip.allow = TRUE,
+    skip.val = NULL
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  if(base::is.numeric(xrange)){
+
+    coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
+
+  }
+
+  crop_image <- FALSE
+
+  if(base::isTRUE(display_image)){
+
+    if(!base::is.numeric(xrange)){
+
+      xrange <- getImageRange(object)$x
+
+    } else {
+
+      crop_image <- TRUE
+
+    }
+
+    if(!base::is.numeric(yrange)){
+
+      yrange <- getImageRange(object)$y
+
+    }  else {
+
+      crop_image <- TRUE
+
+    }
+
+    img <-
+      getImageRaster(
+        object = object,
+        xrange = xrange,
+        yrange = yrange,
+        expand = expand
+      )
+
+    ranges <-
+      process_ranges(
+        xrange = xrange,
+        yrange = yrange,
+        expand = expand,
+        object = object
+      )
+
+    if(base::is.numeric(ranges$xrange)){
+
+      xrange <- ranges$xrange
+
+    }
+
+    if(base::is.numeric(ranges$yrange)){
+
+      yrange <- ranges$yrange
+
+    }
+
+  }
+
+  if(containsImage(object) &
+     base::isTRUE(crop_image) &
+     base::isTRUE(adjust_pt_size)){
+
+    img_dims <- getImageDims(object)
+
+    whole_surface <- img_dims[1]*img_dims[2]
+
+    cropped_surface <- xrange[2] * yrange[2]
+
+    whole_surface/cropped_surface
+
+    fct <- sqrt(whole_surface/cropped_surface)
+
+    pt_size <- pt_size*fct
+
+  }
+
+
+  if(base::is.character(color_by)){
+
+    # plot
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = coords_df$x,
+      y = coords_df$y,
+      col = ggplot2::alpha("white", 0),
+      xlab = NA_character_,
+      ylab = NA_character_,
+      axes = display_axes,
+      xlim = xrange,
+      ylim = yrange
+    )
+
+    if(base::isTRUE(display_image) && !base::is.null(img)){
+
+      graphics::rasterImage(
+        image = img,
+        xleft = xrange[1],
+        xright = xrange[2],
+        ybottom = yrange[1],
+        ytop = yrange[2]
+      )
+
+    }
+
+    addPointsBase(
+      object = object,
+      color_by = color_by,
+      alpha_by = alpha_by,
+      pt_alpha = pt_alpha,
+      pt_size = pt_size,
+      pt_clrsp = pt_clrsp,
+      smooth = smooth,
+      smooth_span = smooth_span,
+      pt_clrp = pt_clrp,
+      xrange = xrange,
+      yrange = yrange,
+      clrp_adjust = clrp_adjust
+    )
+
+  } else {
+
+    # plot
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = coords_df$x,
+      y = coords_df$y,
+      col = ggplot2::alpha("white", 0),
+      xlab = NA_character_,
+      ylab = NA_character_,
+      axes = display_axes,
+      xlim = xrange,
+      ylim = yrange
+    )
+
+    if(base::isTRUE(display_image) && !base::is.null(img)){
+
+      graphics::rasterImage(
+        image = img,
+        xleft = xrange[1],
+        xright = xrange[2],
+        ybottom = yrange[1],
+        ytop = yrange[2]
+      )
+
+    }
+
+    graphics::points(
+      x = coords_df$x,
+      y = coords_df$y,
+      pch = 19,
+      cex = pt_size,
+      col = ggplot2::alpha(pt_color, alpha = pt_alpha),
+      asp = 1
+    )
+
+  }
+
+  if(base::is.character(highlight_barcodes) && base::length(highlight_barcodes) >= 1){
+
+    highlight_df <-
+      dplyr::filter(coords_df, barcodes %in% highlight_barcodes)
+
+    graphics::points(
+      x = highlight_df$x,
+      y = highlight_df$y,
+      pch = 19,
+      cex = pt_size + pt_size*0.1,
+      col = ggplot2::alpha(highlight_color, highlight_alpha),
+      asp = 1
+    )
+
+  }
+
+}
+
+
 
 #' @title Visualize screening areaof IAS-algorithm
 #'
@@ -1069,6 +1382,186 @@ plotTsneComparison <- function(object,
 
 
 # plotV -------------------------------------------------------------------
+
+#' @rdname plotBoxplot
+#' @export
+plotVioBoxplot <- function(object,
+                           variables,
+                           across = NULL,
+                           across_subset = NULL,
+                           relevel = NULL,
+                           clrp = NULL,
+                           clrp_adjust = NULL,
+                           test_groupwise = NULL,
+                           test_pairwise = NULL,
+                           ref_group = NULL,
+                           step_increase = 0.01,
+                           display_facets = NULL,
+                           vjust = 0,
+                           scales = "free",
+                           nrow = NULL,
+                           ncol = NULL,
+                           display_points = FALSE,
+                           n_bcsp = NULL,
+                           pt_alpha = NULL,
+                           pt_clr = NULL,
+                           pt_size = NULL,
+                           pt_shape = NULL,
+                           method_gs = NULL,
+                           normalize = NULL,
+                           verbose = NULL,
+                           of_sample = NA,
+                           ...){
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object)
+  all_gene_sets <- getGeneSets(object)
+
+  var_levels <- base::unique(variables)
+
+  variables <-
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
+
+  spata_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      variables = variables,
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+  confuns::plot_vioboxplot(
+    df = spata_df,
+    variables = var_levels,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    test.pairwise = test_pairwise,
+    test.groupwise = test_groupwise,
+    ref.group = ref_group,
+    step.increase = step_increase,
+    vjust = vjust,
+    scales = scales,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    display.points = display_points,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.num = n_bcsp,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
+
+}
+
+
+#' @rdname plotBoxplot
+#' @export
+plotViolinplot <- function(object,
+                           variables,
+                           across = NULL,
+                           across_subset = NULL,
+                           relevel = NULL,
+                           clrp = NULL,
+                           clrp_adjust = NULL,
+                           test_groupwise = NULL,
+                           test_pairwise = NULL,
+                           ref_group = NULL,
+                           step_increase = 0.01,
+                           display_facets = NULL,
+                           vjust = 0,
+                           scales = "free",
+                           nrow = NULL,
+                           ncol = NULL,
+                           display_points = FALSE,
+                           n_bcsp = NULL,
+                           pt_alpha = NULL,
+                           pt_clr = NULL,
+                           pt_size = NULL,
+                           pt_shape = NULL,
+                           method_gs = NULL,
+                           normalize = NULL,
+                           verbose = NULL,
+                           of_sample = NA,
+                           ...){
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object)
+  all_gene_sets <- getGeneSets(object)
+
+  var_levels <- base::unique(variables)
+
+  variables <-
+    check_variables(
+      variables = c(variables, across),
+      all_features = all_features,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      simplify = FALSE
+    )
+
+  spata_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = getSpataDf(object, of_sample),
+      variables = variables,
+      method_gs = method_gs,
+      smooth = FALSE,
+      normalize = normalize
+    ) %>%
+    dplyr::select(-barcodes, -sample)
+
+  confuns::plot_violin(
+    df = spata_df,
+    variables = var_levels,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    test.pairwise = test_pairwise,
+    test.groupwise = test_groupwise,
+    ref.group = ref_group,
+    step.increase = step_increase,
+    vjust = vjust,
+    scales = scales,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    display.points = display_points,
+    pt.alpha = pt_alpha,
+    pt.color = pt_clr,
+    pt.num = n_bcsp,
+    pt.shape = pt_shape,
+    pt.size = pt_size,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    verbose = verbose,
+    ...
+  )
+
+}
+
 
 #' @title Compare evaluation of spatially opposing fits
 #'

@@ -319,6 +319,81 @@ setSpataDir <- function(object, dir){
 # shift -------------------------------------------------------------------
 
 
+#' @export
+shift_for_evaluation <- function(input_df, var_order){
+
+  keep <- c("variables", "values", var_order)
+
+  out_df <-
+    tidyr::pivot_longer(
+      data = input_df,
+      cols = -dplyr::all_of(keep),
+      names_to = "models",
+      values_to = "values_models"
+    ) %>%
+    dplyr::arrange(variables, models)
+
+  return(out_df)
+
+}
+
+#' @export
+shift_for_plotting <- function(input_df, var_order){
+
+  model_names <-
+    dplyr::select(input_df, -{{var_order}}, -values, -variables) %>%
+    base::names()
+
+  model_df <- input_df[, c(var_order, model_names)]
+
+  values <- input_df[["values"]]
+
+  # compute residuals data.frame and shift
+  res_df <-
+    dplyr::mutate(
+      .data = model_df,
+      dplyr::across(
+        .cols = dplyr::all_of(model_names),
+        .fns = ~ base::abs(.x - {{values}}),
+        .names = "{.col}"
+      )
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(model_names),
+      names_to = "models",
+      values_to = "values_Residuals"
+    )
+
+  # shift model data.frame
+  mod_df <-
+    tidyr::pivot_longer(
+      data = model_df,
+      cols = dplyr::all_of(model_names),
+      names_to = "models",
+      values_to = "values_Models"
+    )
+
+  # rename input
+  new_var <- stringr::str_c("values", base::unique(input_df[["variables"]]), sep = "_")
+
+  input_df <- dplyr::rename(input_df, {{new_var}} := values)
+
+  # join and shift all
+  out_df <-
+    dplyr::left_join(x = mod_df, y = input_df, by = {{var_order}}) %>%
+    dplyr::left_join(x = ., y = res_df, by = c("models", var_order)) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::starts_with("values"),
+      names_to = "origin",
+      values_to = "values",
+      names_prefix = "values_"
+    ) %>%
+    dplyr::select(models, origin, {{var_order}},values)
+
+  return(out_df)
+
+}
+
 shift_frame <- function(current_frame, new_center){
 
   current_center <-
@@ -517,6 +592,28 @@ summarize_and_shift_variable_df <- function(grouped_df, variables){
 
 }
 
+
+#' @export
+summarize_corr_string <- function(x, y){
+
+  res <- stats::cor.test(x = x, y = y)
+
+  out <- stringr::str_c(res$estimate, res$p.value, sep = "_")
+
+  return(out)
+
+}
+
+#' @export
+summarize_rauc <- function(x, y, n){
+
+  out <-
+    base::abs((x-y)) %>%
+    pracma::trapz(x = 1:n, y = .)
+
+  return(out)
+
+}
 
 #' @title Summarize IAS-results
 #'

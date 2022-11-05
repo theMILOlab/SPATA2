@@ -22,7 +22,48 @@ add_helper <- function(shiny_tag,
 
 }
 
+#' @title Add models to a data.frame
+#'
+#' @param input_df Data.frame with at least three columns. \emph{values}
+#' contains the actual values. \emph{variables} contains the variable belonging
+#' of the values. \emph{\code{var_order}} contains the integers from 1 to n
+#' corresponding to the ordering of the values.
+#' @param var_order Character value. The variable that corresponds to the order
+#' of the values.
+#' @param model_subset Character value. Used as a regex to subset models.
+#' Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
+#' and \code{showModels()} to visualize them.
+#' @param model_remove Character value. Used as a regex to remove models
+#' are not supposed to be included.
+#' @param model_add Named list. Every slot in the list must be either a formula
+#' containing a function that takes a numeric vector as input and returns a numeric
+#' vector with the same length as its input vector. Or a numeric vector with the
+#' same length as the input vector. Test models with \code{showModels()}.
+#'
+#' @export
+#'
+add_models <- function(input_df,
+                       var_order,
+                       model_subset = NULL,
+                       model_remove = NULL,
+                       model_add = NULL,
+                       verbose = TRUE){
 
+  model_df <-
+    create_model_df(
+      input = input_df[[var_order]],
+      var_order = var_order,
+      model_subset = model_subset,
+      model_remove = model_remove,
+      model_add = model_add,
+      verbose = verbose
+    )
+
+  out_df <- dplyr::left_join(x = input_df, y = model_df,  by = var_order)
+
+  return(out_df)
+
+}
 # addA --------------------------------------------------------------------
 
 
@@ -600,6 +641,110 @@ addGeneSetsInteractive <- function(object){
 
 }
 
+
+
+
+# addP --------------------------------------------------------------------
+
+#' @title Add points to base surface plot
+#'
+#' @description Adds a point layer to a base surface plot.
+#'
+#' @inherit argument_dummy params
+#' @param scale_alpha
+#'
+#' @return
+#' @export
+#'
+#' @examples
+addPointsBase <- function(object,
+                          color_by,
+                          alpha_by = NULL,
+                          pt_alpha = 0.75,
+                          pt_size = 1,
+                          pt_clrp = "default",
+                          pt_clrsp = "inferno",
+                          clrp_adjust = NULL,
+                          smooth = NULL,
+                          smooth_span = NULL,
+                          xrange = NULL,
+                          yrange = NULL){
+
+  # work around pt_alpha
+  scale_alpha <- base::is.character(alpha_by)
+
+  # lazy check
+  hlpr_assign_arguments(object)
+
+  if(scale_alpha){ pt_alpha <- NULL }
+
+
+  coords_df <- getCoordsDf(object)
+
+  if(base::is.numeric(xrange)){
+
+    coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
+
+  }
+
+  coords_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = coords_df,
+      variables = base::unique(c(color_by, alpha_by)),
+      smooth = smooth,
+      smooth_span = smooth_span,
+      verbose = FALSE
+    )
+
+  if(base::is.numeric(coords_df[[color_by]])){
+
+    n_color <- 20
+    colors <- paletteer::paletteer_c(palette = stringr::str_c("viridis::", pt_clrsp), n = n_color)
+
+    # Transform the numeric variable in bins
+    rank <-
+      base::cut(coords_df[[color_by]], n_color) %>%
+      base::as.numeric() %>%
+      base::as.factor()
+
+    col_input <- colors[rank]
+
+  } else {
+
+    colors <-
+      confuns::color_vector(
+        clrp = pt_clrp,
+        names = base::levels(coords_df[[color_by]]),
+        clrp.adjust = clrp_adjust
+      )
+
+    col_input <- base::unname(colors[coords_df[[color_by]]])
+
+  }
+
+  if(base::is.character(alpha_by) && base::is.numeric(coords_df[[alpha_by]])){
+
+    pt_alpha <- coords_df[[alpha_by]]
+
+  }
+
+  graphics::points(
+    x = coords_df$x,
+    y = coords_df$y,
+    pch = 19,
+    cex = pt_size,
+    col = ggplot2::alpha(col_input, alpha = pt_alpha),
+    asp = 1
+  )
+
+}
 
 
 # addS --------------------------------------------------------------------

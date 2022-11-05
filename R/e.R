@@ -22,7 +22,55 @@ eUOL_to_eUOL_fct <- function(from, to){
 }
 
 
-# ex ----------------------------------------------------------------------
+
+
+# evaluate ----------------------------------------------------------------
+
+#' @export
+evaluate_model_fits <- function(input_df,
+                                var_order,
+                                with_corr = TRUE,
+                                with_raoc = TRUE){
+
+  n <- dplyr::n_distinct(input_df[[var_order]])
+
+  max_auc <- base::max(input_df[[var_order]])
+
+  eval_df <-
+    dplyr::group_by(input_df, variables, models) %>%
+    dplyr::filter(!base::all(base::is.na(values))) %>%
+    dplyr::summarize(
+      rauc = {if(with_raoc){ summarize_rauc(x = values_models, y = values, n = {{n}}) }},
+      corr_string = {if(with_corr){ summarize_corr_string(x = values_models, y = values) }}
+    ) %>%
+    dplyr::ungroup()
+
+  if(with_corr){
+
+    eval_df <-
+      tidyr::separate(eval_df, col = corr_string, into = c("corr", "p_value"), sep = "_") %>%
+      dplyr::mutate(
+        corr = base::as.numeric(corr),
+        p_value = base::as.numeric(p_value)
+      )
+
+  }
+
+  if(with_raoc){
+
+    eval_df <-  dplyr::mutate(.data = eval_df, raoc = 1 - (rauc / max_auc))
+
+  }
+
+  eval_df <- dplyr::select(eval_df, variables, models, dplyr::any_of(c( "p_value", "corr", "raoc", "rauc")))
+
+  return(eval_df)
+
+}
+
+
+
+# examine -----------------------------------------------------------------
 
 #' @title Examine clustering results
 #'

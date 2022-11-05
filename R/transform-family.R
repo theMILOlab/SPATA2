@@ -641,6 +641,9 @@ transformSeuratToSpata <- function(seurat_object,
   spata_object <- setInitiationInfo(spata_object)
 
   spata_object <-
+    setActiveMatrix(spata_object, mtr_name = "scaled")
+
+  spata_object <-
     setActiveExpressionMatrix(spata_object, mtr_name = "scaled")
 
   #äspata_object <-
