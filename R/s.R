@@ -420,6 +420,195 @@ shift_frame <- function(current_frame, new_center){
 
 }
 
+#' @export
+shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory_order", ...){
+
+  tidyr::pivot_longer(
+    data = smrd_projection_df,
+    cols = -dplyr::all_of(smrd_projection_df_names),
+    names_to = "variables",
+    values_to = "values"
+  ) %>%
+    dplyr::select({{var_order}}, variables, values, dplyr::any_of(x = "trajectory_part"), ...)
+
+}
+
+
+
+
+
+
+# show --------------------------------------------------------------------
+
+#' @export
+setMethod(f = "show", signature = "spata2", definition = function(object){
+
+  num_samples <- base::length(getSampleNames(object))
+  samples <- stringr::str_c( getSampleNames(object), collapse = "', '")
+  sample_ref <- base::ifelse(num_samples > 1, "samples", "sample")
+
+  base::print(glue::glue("An object of class 'spata2' that contains {num_samples} {sample_ref} named '{samples}'."))
+
+})
+
+
+#' @export
+setMethod(f = "show", signature = "ImageAnnotation", definition = function(object){
+
+  map(
+    .x = slotNames(object),
+    .f = ~head(slot(object, .x))
+  ) %>%
+    setNames(slotNames(object))
+
+
+  n_bcsp <- base::length(object@barcodes)
+
+  n_vert <- base::nrow(object@area)
+
+  tags <- confuns::scollapse(object@tags, sep = ", ", last = ", ")
+
+
+  writeLines(
+    glue::glue(
+      "An object of class 'ImageAnnotation' named '{object@id}'. Tags: {tags}."
+    )
+  )
+
+})
+
+
+
+
+
+
+#' @title Show color palettes and spectra
+#'
+#' @description Simple visualization of available color palettes and
+#' spectra from left to right.
+#'
+#' @param input Character vector of input options for \code{clrsp} and
+#' \code{clrp}.
+#' @param n Numnber of colors.
+#' @param title_size Size of plot titles.
+#'
+#' @return A plot of ggplots arranged with \code{gridExtra::arrange.grid()}.
+#' @export
+#'
+#' @examples
+#'
+#'  showColors(input = c("inferno", "Reds", "npg", "uc"), n = 10)
+#'
+#'  showColors(input = validColorPalettes()[[1]])
+#'
+showColors <- function(input, n = 20, title_size = 10){
+
+  plot_list <-
+    purrr::map(
+      .x = input,
+      .f = function(x){
+
+        if(x %in% confuns::diverging){
+
+          vec <- base::seq(-1, 1, len = n)
+
+        } else {
+
+          vec <- 1:n
+
+        }
+
+        if(x %in% c(confuns::colorpalettes)){
+
+          vec <- base::as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+
+        }
+
+        df <- base::data.frame(x = vec, y = 1)
+
+        out <-
+          ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+          ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+          confuns::scale_color_add_on(aes = "fill", clrsp = x, clrp = x, variable = vec) +
+          ggplot2::scale_y_continuous() +
+          ggplot2::theme_void() +
+          ggplot2::theme(
+            legend.position = "none",
+            plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+          ) +
+          ggplot2::labs(title = x)
+
+        return(out)
+
+      }
+    )
+
+  gridExtra::grid.arrange(grobs = plot_list)
+
+}
+
+#' @rdname showColors
+#' @export
+showModels <- function(input = 100,
+                       linecolor = "black",
+                       linesize = 0.5,
+                       model_subset = NULL,
+                       model_remove = NULL,
+                       model_add = NULL,
+                       pretty_names = FALSE,
+                       x_axis_arrow = TRUE,
+                       ...){
+
+  mdf <-
+    create_model_df(
+      input = input,
+      model_subset = model_subset,
+      model_remove = model_remove,
+      model_add = model_add
+    ) %>%
+    dplyr::rename_with(.fn = ~ stringr::str_remove(.x, "^p_")) %>%
+    dplyr::mutate(x = 1:input) %>%
+    tidyr::pivot_longer(
+      cols = -x,
+      names_to = "pattern",
+      values_to = "values"
+    )
+
+  if(base::isTRUE(pretty_names)){
+
+    mdf$pattern <-
+      confuns::make_pretty_names(mdf$pattern)
+
+  }
+
+  if(base::isTRUE(x_axis_arrow)){
+
+    theme_add_on <-
+      ggplot2::theme(
+        axis.line.x = ggplot2::element_line(
+          arrow = ggplot2::arrow(
+            length = ggplot2::unit(0.075, "inches"),
+            type = "closed")
+        ),
+        strip.text = ggplot2::element_text(color = "black")
+      )
+
+  } else {
+
+    theme_add_on <- NULL
+
+  }
+
+  ggplot2::ggplot(data = mdf, mapping = ggplot2::aes(x = x, y = values)) +
+    ggplot2::geom_path(size = linesize, color = linecolor) +
+    ggplot2::facet_wrap(facets = . ~ pattern, ...) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(x = NULL, y = NULL) +
+    theme_add_on
+
+}
+
+
 # smooth ------------------------------------------------------------------
 
 #' @title Smooth numeric variables spatially
@@ -487,8 +676,346 @@ smoothSpatially <- function(coords_df,
 }
 
 
+# spatial -----------------------------------------------------------------
+
+#' @title The Spatial Trajectory Screening algorithm
+#'
+#' @description Screens the sample for numeric variables that follow specific expression
+#' changes along the course of the spatial trajectory.
+#'
+#' @inherit getTrajectoryScreeningDf params
+#' @param variables Character vector. All numeric variables (meaning genes,
+#' gene-sets and numeric features) that are supposed to be included in
+#' the screening process.
+#' @param n_bins Numeric value or vector of length 2. Specifies exactly how many bins are
+#' created. (See details for more.)
+#'
+#' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
+#' Specifies the function with which the bins are summarized.
+#'
+#' @inherit add_models params
+#' @inherit argument_dummy params
+#'
+#' @return An object of class \code{SpatialTrajectoryScreening}. See documentation
+#' with \code{?ImageAnnotationScreening} for more information.
+#'
+#' @seealso createSpatialTrajectories()
+#'
+#' @details
+#'
+#' \bold{How the algorithm works:} All barcode-spots that fall into the scope
+#' of the trajectory are projected on the trajectory's course. These projection
+#' values indicate if a barcode-spot is rather located at the beginning or at
+#' the end of the trajectory. Barcode-spots are binned by their projection values.
+#'
+#' How many bins area created depends on the input for argument \code{binwidth}
+#' or \code{n_bins} as well as on the length of trajectory. As the length of
+#' the trajectory is fixed only one argument of the latter two must be provided.
+#' The other one is calculated based on the equation shown below.
+#'
+#' \code{n_bins} = \emph{length_of_trajectory} / \code{binwidth}
+#'
+#' \code{binwidth} = \emph{length_of_trajectory} / \code{n_bins}
+#'
+#' and for every numeric variable included the mean-expression of each bin is calculated.
+#' As the bins can be aligned in an ascending order (ascending in relation to the
+#' directory of the trajectory), so can the bin-wise mean expression of each variable.
+#' Doing so results in \emph{inferred expression changes along the trajectory}.
+#' Use \code{plotTrajectoryLineplot()} to visualize this concept.
+#'
+#' The inferred expression changes are fitted against predefined models to find
+#' variables whose expression e.g. increases, decreases or peaks over the course
+#' of the trajectory. Use \code{showModels()} to visualize the inbuilt models.
+#'
+#' How good a model fits is evaluated by pearson correlation and the area under
+#' the curve of the gene-model-residuals.
+#'
+#' @export
+spatialTrajectoryScreening <- function(object,
+                                       id,
+                                       variables,
+                                       n_bins = NA_integer_,
+                                       binwidth = ccDist(object),
+                                       model_subset = NULL,
+                                       model_remove = NULL,
+                                       model_add = NULL,
+                                       method_padj = "fdr",
+                                       summarize_with = "mean",
+                                       verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
+
+  method_padj <- method_padj[1]
+
+  confuns::check_one_of(
+    input = method_padj,
+    against = validPadjMethods()
+  )
+
+  confuns::give_feedback(
+    msg = "Starting spatial trajectory screening.",
+    verbose = verbose
+  )
+
+  spat_traj <- getSpatialTrajectory(object, id = id)
+
+  # add variables to be screened
+
+  confuns::give_feedback(
+    msg = "Checking and adding variables to screen.",
+    verbose = verbose
+  )
+
+  projection_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = spat_traj@projection,
+      variables = variables,
+      smooth = FALSE,
+      normalize = TRUE
+    )
+
+
+  # bin along trajectory and summarize by bin
+  confuns::give_feedback(
+    msg = "Binning and summarizing projection data.frame.",
+    verbose = verbose
+  )
+
+  smrd_projection_df <-
+    summarize_projection_df(
+      projection_df = projection_df,
+      n_bins = n_bins,
+      binwidth = binwidth,
+      summarize_with = summarize_with
+    )
+
+  # normalize along the bins and shift to long format
+  confuns::give_feedback(
+    msg = "Shifting data.frame and adding models.",
+    verbose = verbose
+  )
+
+  shifted_smrd_projection_df <-
+    normalize_smrd_projection_df(smrd_projection_df = smrd_projection_df) %>%
+    shift_smrd_projection_df()
+
+  df_with_models <-
+    add_models(
+      input_df = shifted_smrd_projection_df,
+      var_order = "trajectory_order",
+      model_subset = model_subset,
+      model_remove = model_remove,
+      model_add = model_add,
+      verbose = verbose
+    )
+
+  models_only <-
+    dplyr::select(df_with_models, -variables, -values) %>%
+    dplyr::distinct()
+
+  # remove to prevent error
+  df_with_models[["trajectory_part"]] <- NULL
+
+  shifted_df_with_models <-
+    shift_for_evaluation(
+      input_df = df_with_models,
+      var_order = "trajectory_order"
+    )
+
+  # evaluate model fits
+  confuns::give_feedback(
+    msg = "Evaluating model fits.",
+    verbose = verbose
+  )
+
+  results <-
+    evaluate_model_fits(
+      input_df = shifted_df_with_models,
+      var_order = "trajectory_order",
+      with_corr = TRUE,
+      with_raoc = TRUE
+    ) %>%
+    dplyr::mutate(
+      sts_score = (corr + raoc) / 2
+    ) %>%
+    dplyr::select(variables, models, sts_score, corr, raoc, p_value, dplyr::everything())
+
+  results[["p_value_adjusted"]] <-
+    stats::p.adjust(p = results[["p_value"]], method = method_padj)
+
+  if(!base::is.numeric(binwidth)){ binwidth <- NA_integer_}
+  if(!base::is.numeric(n_bins)){ n_bins <- NA_integer_ }
+
+  sts <-
+    SpatialTrajectoryScreening(
+      binwidth = binwidth,
+      coords = getCoordsDf(object),
+      id = id,
+      method_padj = method_padj,
+      models = models_only,
+      n_bins = n_bins,
+      results = results,
+      summarize_with = summarize_with,
+      spatial_trajectory = spat_traj
+    )
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  return(sts)
+
+}
+
+
+
+# split -------------------------------------------------------------------
+
+splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidths = NULL){
+
+  input <- list(...)
+
+  if(base::is.null(split_widths)){
+
+    split_widths <- base::floor(12/base::length(input))
+
+  }
+
+  if(base::length(split_widths) == 1){
+
+    split_width <- base::rep(split_widths, base::length(input))
+
+  }
+
+  purrr::map2(
+    .x = input,
+    .y = split_widths,
+    .f = ~ shiny::column(width = .y, align = align, .x)
+  ) %>%
+    shiny::tagList()
+
+}
+
+# strong ------------------------------------------------------------------
+
+strongH3 <- function(text){
+
+  shiny::tags$h3(shiny::strong(text))
+
+}
+
+strongH5 <- function(text){
+
+  shiny::tags$h5(shiny::strong(text))
+
+}
 
 # subset ------------------------------------------------------------------
+
+
+#' @title Simple subsetting by barcodes
+#'
+#' @description Removes unwanted barcode spots from the object without any significant
+#' post processing.
+#'
+#' @param object
+#' @param barcodes Character vector. The barcodes of the barcode spots that are
+#' supposed to be \bold{kept}.
+#'
+#' @return An updated \code{spata2} object.
+#'
+#' @details Unused levels of factor variables in the feature data.frame are dropped
+#' and directory settings are reset to NULL.
+#'
+#' @export
+#'
+subsetByBarcodes <- function(object, barcodes, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  object <-
+    getFeatureDf(object) %>%
+    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = where(base::is.factor),
+        .fns = base::droplevels
+      )
+    ) %>%
+    setFeatureDf(object = object, feature_df = .)
+
+  object <-
+    getCoordsDf(object) %>%
+    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    setCoordsDf(object, coords_df = .)
+
+  object@data[[1]] <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = function(mtr){
+
+        out <- mtr[,barcodes]
+
+        return(out)
+
+      }
+    )
+
+  object@images[[1]]@annotations <-
+    purrr::map(
+      .x = object@images[[1]]@annotations,
+      .f = function(img_ann){
+
+        img_ann@barcodes <-
+          img_ann@barcodes[img_ann@barcodes %in% barcodes]
+
+        return(img_ann)
+
+      }
+    )
+
+  object@trajectories[[1]] <-
+    purrr::map(
+      .x = object@trajectories[[1]],
+      .f = function(traj){
+
+        traj@projection <-
+          dplyr::filter(traj@projection, barcodes %in% {{barcodes}})
+
+        return(traj)
+
+      }
+    )
+
+  object@information$barcodes <-
+    object@information$barcodes[object@information$barcodes %in% barcodes]
+
+  if(base::is.numeric(object@information$subsetted)){
+
+    object@information$subsetted <- object@information$subsetted + 1
+
+  } else {
+
+    object@information$subsetted <- 1
+
+  }
+
+  n_bcsp <- nBarcodes(object)
+
+  confuns::give_feedback(
+    msg = glue::glue("{n_bcsp} barcode spots remaining."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
 
 #' @rdname export
 subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NULL, verbose = TRUE){
@@ -615,6 +1142,45 @@ summarize_rauc <- function(x, y, n){
 
 }
 
+#' @export
+summarize_projection_df <- function(projection_df,
+                                    n_bins = NA_integer_,
+                                    binwidth = NA,
+                                    summarize_with = "mean"){
+
+  confuns::check_one_of(
+    input = summarize_with,
+    against = c("mean", "median", "sd")
+  )
+
+  # extract numeric variables that can be
+  num_vars <-
+    dplyr::select(projection_df, -dplyr::any_of(projection_df_names)) %>%
+    dplyr::select_if(.predicate = base::is.numeric) %>%
+    base::names()
+
+  binned_projection_df <- bin_projection_df(projection_df, n_bins = n_bins, binwidth = binwidth)
+
+  smrd_projection_df <-
+    dplyr::select(binned_projection_df, dplyr::any_of(c(projection_df_names, num_vars)), proj_length_binned) %>%
+    dplyr::group_by(trajectory_part, proj_length_binned) %>%
+    dplyr::summarise(
+      dplyr::across(
+        .cols = dplyr::all_of(num_vars),
+        .fns = summarize_formulas[[summarize_with]]
+      )
+    ) %>%
+    # while beeing grouped by trajectory_part
+    dplyr::mutate(trajectory_part_order = dplyr::row_number()) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
+    dplyr::select(dplyr::all_of(smrd_projection_df_names), dplyr::everything())
+
+  return(smrd_projection_df)
+
+}
+
+
 #' @title Summarize IAS-results
 #'
 #' @description Summarizes the results of the IAS-algorithm. Creates
@@ -662,3 +1228,7 @@ summarizeIAS <- function(ias, method_padj = "fdr"){
   return(ias)
 
 }
+
+
+
+

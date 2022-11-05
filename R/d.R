@@ -1,8 +1,7 @@
 
 
 
-
-
+# discard -----------------------------------------------------------------
 
 
 #' @title Discard an expression matrix
@@ -344,6 +343,35 @@ discardGeneSets <- function(object, gs_names){
 }
 
 
+#' @title Discard image annotations
+#'
+#' @description Discards image annotations drawn with \code{annotateImage()}.
+#'
+#' @param ids Character vector. The IDs of the image annotations to
+#' be discarded.
+#' @inherit argument_dummy params
+#'
+#' @return An updated spata object.
+#' @export
+#'
+discardImageAnnotations <- function(object, ids){
+
+  confuns::check_one_of(
+    input = ids,
+    against = getImageAnnotationIds(object)
+  )
+
+  io <- getImageObject(object)
+
+  io@annotations <- io@annotations[!base::names(io@annotations) %in% ids]
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+
+}
+
+
 
 #' @rdname getSegmentationNames
 #' @export
@@ -373,3 +401,17 @@ discardSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
 }
 
+
+#' @export
+discardSpatialTrajectory <- function(object, id){
+
+  confuns::check_one_of(
+    input = id,
+    against = getSpatialTrajectoryNames(object)
+  )
+
+  object@trajectories[[1]][[id]] <- NULL
+
+  return(object)
+
+}

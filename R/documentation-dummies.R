@@ -178,6 +178,20 @@ print_family <- function(){}
 sample_name <- function(sample_name){}
 
 
+#' @title set
+#'
+#' @details All \code{set*()}-functions offer a save way to set certain
+#' slots of your spata-object. They do check the input for validity but
+#' effectively overwrite everything that is occupying the slot to be set -
+#' use with caution.
+#'
+#' @return A spata object containing the set input.
+
+set_dummy <- function(){}
+
+
+
+
 #' Title
 #'
 #' @param seurat_object A valid seurat-object. (from the Seurat platform)

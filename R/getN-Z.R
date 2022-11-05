@@ -39,6 +39,48 @@ getPcaMtr <- function(object,
 
 }
 
+#' @title Obtain trajectory projection
+#'
+#' @description Extracts the projection data.frame of a trajectory. If \code{variables}
+#' is specified
+#'
+#' @inherit argument_dummy params
+#' @inherit getTrajectoryIds params
+#' @param ... Given to \code{joinWith()}
+#'
+#' @return Data.frame that contains the projection length of each barcode-spot
+#' in relation to the trajectory specified in \code{id}.
+#'
+#' @export
+#'
+getProjectionDf <- function(object,
+                            id,
+                            ...){
+
+  traj_obj <- getTrajectoryObject(object = object, id = id)
+
+  if(base::is.character(list(...)[["variables"]])){
+
+    out <-
+      joinWith(
+        object = object,
+        spata_df = traj_obj@projection,
+        ...
+      )
+
+  } else {
+
+    out <- traj_obj@projection
+
+  }
+
+  return(out)
+
+}
+
+
+
+
 
 # getR --------------------------------------------------------------------
 
@@ -353,6 +395,50 @@ getSignatureEnrichment <- function(object,
 }
 
 
+
+#' @rdname runSparkx
+#' @export
+getSparkxGeneDf <- function(object, threshold_pval = 1, arrange_pval = TRUE){
+
+  res <- getSparkxResults(object)
+
+  base::as.data.frame(res$res_mtest) %>%
+    tibble::rownames_to_column("genes") %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(adjustedPval <= threshold_pval) %>%
+    {if(base::isTRUE(arrange_pval)){ dplyr::arrange(.,adjustedPval)} else { . }}
+
+}
+
+#' @rdname runSparkx
+#' @export
+getSparkxGenes <- function(object, threshold_pval){
+
+  getSparkxGeneDf(object, threshold_pval = threshold_pval) %>%
+    dplyr::pull(genes)
+
+}
+
+#' @rdname runSparkx
+#' @export
+getSparkxResults <- function(object, test = TRUE){
+
+  out <- object@spatial[[1]][["sparkx"]]
+
+  if(base::isTRUE(test)){
+
+    check_availability(
+      test = base::is.list(out),
+      ref_x = "SPARK-X results",
+      ref_fns = "`runSPARKX()`"
+    )
+
+  }
+
+  return(out)
+
+}
+
 #' @title Obtain a spata-data.frame
 #'
 #' @description This function is the most basic start if you want
@@ -408,6 +494,51 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
     base::eval(envir = envir)
 
   return(out)
+
+}
+
+
+
+#' @title Obtain object of class \code{SpatialTrajectory}.
+#'
+#' @inherit argument_dummy params
+#' @param id Character value. Denotes the spatial trajectory
+#' of interest.
+#'
+#' @return An object of class \code{SpatialTrajectory.}
+#' @export
+#'
+
+getSpatialTrajectory <- function(object, id){
+
+  confuns::check_one_of(
+    input = id,
+    against = getSpatialTrajectoryIds(object)
+  )
+
+  out <- object@trajectories[[1]][[id]]
+
+  check_availability(
+    test = !base::is.null(out),
+    ref_x = glue::glue("spatial trajectory '{id}'"),
+    ref_fns = "createSpatialTrajectories()"
+  )
+
+  out@coords <- getCoordsDf(object)
+
+  return(out)
+
+}
+
+
+#' @export
+getSpatialTrajectoryIds <- function(object){
+
+  purrr::keep(
+    .x = object@trajectories[[1]],
+    .p = ~ base::class(.x) == "SpatialTrajectory"
+  ) %>%
+    base::names()
 
 }
 
@@ -471,6 +602,180 @@ getSmrdResultsDf <-  function(ias,
 
 # getT --------------------------------------------------------------------
 
+
+#' @export
+getTrajectory <- function(object, id){
+
+  out <- object@trajectories[[1]][[id]]
+
+  check_availability(
+    test = !base::is.null(out),
+    ref_x = glue::glue("spatial trajectory '{id}'"),
+    ref_fns = "createSpatialTrajectories()"
+  )
+
+  return(out)
+
+}
+
+
+#' @rdname getTrajectoryScreeningDf
+#' @export
+getTrajectoryDf <- function(object, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  getTrajectoryScreeningDf(object = object, ...)
+
+
+}
+
+#' @title Obtain trajectory ids
+#'
+#' @description Extracts the ids of all objects of class \code{Trajectory}
+#' in the SPATA2 object.
+#'
+#' @inherit argument_dummy params.
+#'
+#' @return Character vector.
+#' @export
+#'
+getTrajectoryIds <- function(object){
+
+  check_object(object)
+
+  base::names(object@trajectories[[1]])
+
+}
+
+
+
+
+#' @title Obtain a summarized trajectory data.frame
+#'
+#' @description Extracts a data.frame that contains information about barcode-spots
+#' needed for analysis related to \code{spatialTrajectoryScreening()}.
+#'
+#' @inherit argument_dummy params
+#' @inherit variables_num params
+#' @inherit getSpatialTrajectory params
+#' @param binwidth Distance value. The width of the bins to which
+#' the barcode-spots are assigned. We recommend to set it equal to the center-center
+#' distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
+#' of \code{?is_dist} for more information about distance values.
+#'
+#' @return Data.frame. (See details for more.)
+#'
+#' @note \code{getTrajectoryScreeningDf()} summarizes by bins by default.
+#' To obtain the coordinates joined with the projection length set \code{summarize_with}
+#' to \code{FALSE} or use \code{getProjectionDf()}. The same applies if you want to join grouping
+#' variables to the data.frame (can not be summarized).
+#'
+#' @details Initially the projection data.frame of the specified trajectory
+#' is joined with the respective input of variables via \code{joinWithVariables()}.
+#'
+#' The argument \code{binwidth} refers to the amount of which the barcode-spots of the
+#' given trajectory will be summarized with regards to the trajectory's direction:
+#' The amount of \code{binwidth} and the previously specified 'trajectory width' in \code{createTrajectories()}
+#' determine the length and width of the sub-rectangles in which the rectangle the
+#' trajectory embraces is split and in which all barcode-spots are binned.
+#' Via \code{dplyr::summarize()} the variable-means of every sub-rectangle are calculated.
+#' These mean-values are then arranged along to the trajectory's direction.
+#'
+#' Eventually the data.frame is shifted via \code{tidyr::pivot_longer()} to a data.frame in which
+#' every observation refers to the mean-value of one of the specified variable-elements (e.g. a specified
+#' gene set) of the particular sub-rectangle. The returned data.frame contains the following variables:
+#'
+#' \itemize{
+#'  \item{\emph{trajectory_part}: Character. Specifies the trajectory's sub-part of the observation. (Negligible if there is
+#'  only one trajectory part.)}
+#'  \item{\emph{trajectory_part_order}: Numeric. Indicates the order within the trajectory-part. (Negligible if there is
+#'  only one trajectory part.)}
+#'  \item{\emph{trajectory_order}: Numeric. Indicates the order within the whole trajectory.}
+#'  \item{\emph{variables}: Character. The respective gene sets, gene or feature the value refers to.}
+#'  \item{\emph{values}: Numeric. The summarized values.}}
+#'
+#' @export
+#'
+
+getTrajectoryScreeningDf <- function(object,
+                                     id,
+                                     variables,
+                                     binwidth = ccDist(object),
+                                     n_bins = NA_integer_,
+                                     method_gs = "mean",
+                                     normalize = TRUE,
+                                     summarize_with = "mean",
+                                     format = "wide",
+                                     verbose = NULL,
+                                     ...){
+
+  hlpr_assign_arguments(object)
+
+  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
+
+  confuns::are_values(c("normalize"), mode = "logical")
+
+  check_one_of(
+    input= summarize_with,
+    against = c("mean", "median")
+  )
+
+  check_one_of(
+    input = format,
+    against = c("long", "wide")
+  )
+
+  trajectory <- getTrajectory(object, id = id)
+
+  if(base::length(normalize) == 1){
+
+    normalize <- base::rep(normalize, 2)
+
+  }
+
+  out <-
+    joinWithVariables(
+      object = object,
+      variables = variables,
+      method_gs = method_gs,
+      normalize = normalize[1],
+      smooth = FALSE,
+      verbose = verbose
+    ) %>%
+    dplyr::select(barcodes, dplyr::all_of(variables)) %>%
+    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes")
+
+  if(base::is.character(summarize_with)){
+
+    out <-
+      summarize_projection_df(
+        projection_df = out,
+        binwidth = binwidth,
+        n_bins = n_bins,
+        summarize_with = summarize_with
+      ) %>%
+      normalize_smrd_projection_df(normalize = normalize[2]) %>%
+      tibble::as_tibble()
+
+    if(format == "long"){
+
+      out <- shift_smrd_projection_df(out)
+
+    }
+
+  }
+
+  return(out)
+
+}
+
+
+
+
+
 #' @title Obtain length of trajectory
 #'
 #' @description Computes and returns the length of a trajectory.
@@ -508,6 +813,9 @@ getTrajectoryLength <- function(object,
   return(out)
 
 }
+
+
+
 
 #' @title Obtain trjectory course
 #'

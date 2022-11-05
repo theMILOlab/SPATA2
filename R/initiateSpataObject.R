@@ -27,6 +27,8 @@ initiateSpataObject_Empty <- function(sample_name){
 
   object@version <- current_spata_version
 
+  spata_object@information$method <- Visium
+
   return(object)
 
 }
@@ -239,6 +241,9 @@ initiateSpataObject_CountMtr <- function(coords_df,
       verbose = verbose
     )
 
+    spata_object@information$method <- Visium
+
+
     # -----
 
     base::return(spata_object)
@@ -399,6 +404,9 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
     )
 
   spata_object <- setInitiationInfo(spata_object)
+
+  spata_object@information$method <- Visium
+
 
   # -----
 
@@ -695,6 +703,9 @@ initiateSpataObject_ExprMtr <- function(coords_df,
     verbose = verbose
   )
 
+  spata_object@information$method <- Visium
+
+
   # -----
 
   base::return(spata_object)
@@ -964,6 +975,8 @@ initiateSpataObject_10X <- function(directory_10X,
     msg = "Initiation finished.",
     verbose = verbose
   )
+
+  spata_object@information$method <- Visium
 
   # -----
 

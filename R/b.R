@@ -370,7 +370,36 @@ bin_by_area <- function(coords_df,
 
 }
 
+#' @export
 bin_by_expansion <- bin_by_area
+
+
+#' @export
+bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
+
+  if(base::is.numeric(binwidth)){
+
+    binned_projection_df <-
+      dplyr::mutate(
+        .data = projection_df,
+        proj_length_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
+        order_numeric = base::as.factor(proj_length_binned) %>% base::as.numeric()
+      )
+
+  } else if(base::is.numeric(n_bins)){
+
+    binned_projection_df <-
+      dplyr::mutate(
+        .data = projection_df,
+        proj_length_binned = base::cut(projection_length, breaks = n_bins),
+        order_numeric = base::as.numeric(proj_length_binned)
+      )
+
+  }
+
+  return(binned_projection_df)
+
+}
 
 
 br_add <- function(height, break_add = NULL){
@@ -391,6 +420,13 @@ br_add <- function(height, break_add = NULL){
 
 }
 
+breaks <- function(n){
+
+  base::rep("<br>", n) %>%
+    stringr::str_c(collapse = "") %>%
+    shiny::HTML()
+
+}
 
 
 #' @title Buffer area

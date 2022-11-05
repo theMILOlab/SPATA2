@@ -1,3 +1,103 @@
+
+
+# helper function for plotIas- and plotStsEvaluation
+plot_screening_evaluation <- function(df,
+                                      variables,
+                                      var_order,
+                                      model_subset = NULL,
+                                      model_remove = NULL,
+                                      model_add = NULL,
+                                      pt_alpha = 0.9,
+                                      pt_color = "black",
+                                      pt_size = 1,
+                                      line_alpha = 0.9,
+                                      line_color = "blue",
+                                      line_size = 1,
+                                      display_se = FALSE,
+                                      display_corr = FALSE,
+                                      corr_p_min = 5e-05,
+                                      corr_pos_x = NULL,
+                                      corr_pos_y = NULL,
+                                      corr_text_sep = "\n",
+                                      corr_text_size = 1,
+                                      verbose = TRUE){
+
+  model_df <-
+    create_model_df(
+      input = df[[var_order]],
+      model_subset = model_subset,
+      model_remove = model_remove,
+      model_add = model_add
+    )
+
+  mnames <- base::names(model_df)
+
+  model_df[[var_order]] <- 1:base::nrow(model_df)
+
+  joined_df <-
+    dplyr::left_join(
+      x = df,
+      y = model_df,
+      by = var_order
+    )
+
+  shifted_df <-
+    tidyr::pivot_longer(
+      data = joined_df,
+      cols = dplyr::any_of(mnames),
+      names_to = "models",
+      values_to = "model_values"
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::any_of(variables),
+      names_to = "variables",
+      values_to = "variable_values"
+    )
+
+  breaks <- c(0,0.25,0.5,0.75,1)
+  labels <- c(0.00, 0.25, 0.50, 0.75, 1.00) %>% base::as.character()
+
+  confuns::plot_scatterplot(
+    df = shifted_df,
+    x = "model_values",
+    y = "variable_values",
+    across = c("variables", "models"),
+    pt.alpha = pt_alpha,
+    pt.color = pt_color,
+    pt.size = pt_size,
+    smooth.alpha = line_alpha,
+    smooth.color = line_color,
+    smooth.method = "lm",
+    smooth.size = line_size,
+    smooth.se = display_se,
+    display.smooth = TRUE,
+    display.corr = display_corr,
+    corr.p.min = corr_p_min,
+    corr.pos.x = corr_pos_x,
+    corr.pos.y = corr_pos_y,
+    corr.text.sep = corr_text_sep,
+    corr.text.size = corr_text_size,
+    corr.method = "pearson"
+  ) +
+    ggplot2::scale_x_continuous(
+      breaks = breaks,
+      labels = labels
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = breaks,
+      labels = labels
+    ) +
+    ggplot2::theme(
+      strip.background = ggplot2::element_rect()
+    )
+
+}
+
+
+
+
+
+
 plot_overview <- function(object,
                           eval = "ias_score",
                           pval = "p_value_mean_adjusted",

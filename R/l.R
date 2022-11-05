@@ -3,6 +3,62 @@
 NULL
 
 
+# last --------------------------------------------------------------------
+
+#' @export
+lastImageAnnotation <- function(object){
+
+  ios <-
+    getImageAnnotations(object, add_image = FALSE) %>%
+    purrr::keep(.p = ~ stringr::str_detect(string = .x@id, pattern = "^img_ann_\\d*$"))
+
+  if(base::length(ios) == 0){
+
+    out <- 0
+
+  } else {
+
+    out <-
+      purrr::map_chr(.x = ios, .f = ~ stringr::str_extract(.x@id, pattern = "\\d*$")) %>%
+      base::as.numeric() %>%
+      base::max()
+
+  }
+
+  return(out)
+
+}
+# legend ------------------------------------------------------------------
+
+#' @title Ggplot add on wrapper
+#' @export
+legendBottom <- purrr::partial(.f = ggplot2::theme, legend.position = "bottom")
+
+#' @rdname legendBottom
+#' @export
+legendColor <- function(...){
+
+  ggplot2::guides(
+    color = ggplot2::guide_legend(override.aes = list(...))
+  )
+
+}
+
+#' @rdname legendBottom
+#' @export
+legendLeft <- purrr::partial(.f = ggplot2::theme, legend.position = "left")
+
+#' @rdname legendBottom
+#' @export
+legendNone <- purrr::partial(.f = ggplot2::theme, legend.position = "none")
+
+#' @rdname legendBottom
+#' @export
+legendRight <- purrr::partial(.f = ggplot2::theme, legend.position = "right")
+
+#' @rdname legendBottom
+#' @export
+legendTop <- purrr::partial(.f = ggplot2::theme, legend.position = "top")
 
 
 

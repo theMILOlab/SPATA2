@@ -54,6 +54,482 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
 
 
+#' @title Obtain object of class \code{ImageAnnotation}
+#'
+#' @description Extracts object of class \code{ImageAnnotaion} by
+#' its id.
+#'
+#' @param id Character value. The ID of the image annotation of interest.
+#' @inherit argument_dummy params
+#'
+#' @return An object of class \code{ImageAnnotation}.
+#' @export
+#'
+
+getImageAnnotation <- function(object,
+                               id,
+                               add_image = TRUE,
+                               expand = 0,
+                               square = FALSE){
+
+  confuns::check_one_of(
+    input = id,
+    against = getImageAnnotationIds(object)
+  )
+
+  getImageAnnotations(
+    object = object,
+    ids = id,
+    flatten = TRUE,
+    add_image = add_image,
+    square = square,
+    expand = expand
+  )
+
+}
+
+
+#' @title Obtain image annotation area data.frame
+#'
+#' @description Extracts the coordinates of the polygon that was drawn to
+#' annotate structures in the histology image in a data.frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame that contains the grouping variables \emph{id} and \emph{tags}
+#' and the numeric variables \emph{x} and \emph{y}. The returned data.frame can contain
+#' the spatial extent of more than just
+#' one annotated structure, depending on the input of arguments \code{ids}, \code{tags}
+#' and \code{test}. The variable \emph{ids} of the returned data.frame is used to
+#' uniquely mark the belonging of each x- and y-coordinate.
+#'
+#' @inherit getImageAnnotations details
+#'
+#' @note The variables \emph{x} and \emph{y} correspond to the coordinates
+#' with which the annotated structure was denoted in \code{annotateImage()}. These
+#' coordinates are not to be confused with coordinates of barcode spots that might
+#' fall in to the area of the polygon! To obtain a data.frame of barcode spots that fall in to
+#' the spatial extent of the annotated structure along with their coordinates
+#' use \code{getImageAnnotationBarcodes()}.
+#'
+#' @export
+#'
+getImageAnnotationAreaDf <- function(object,
+                                     ids = NULL,
+                                     tags = NULL,
+                                     test = "any",
+                                     add_tags = FALSE,
+                                     sep = " & ",
+                                     last = " & "){
+
+  purrr::map_df(
+    .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
+    .f = function(img_ann){
+
+      tag <-
+        scollapse(string = img_ann@tags, sep = sep, last = last) %>%
+        base::as.character()
+
+      out <-
+        dplyr::mutate(
+          .data = img_ann@area,
+          ids = img_ann@id %>% base::factor()
+        ) %>%
+        dplyr::select(ids, dplyr::everything()) %>%
+        tibble::as_tibble()
+
+      if(base::isTRUE(add_tags)){
+
+        out$tags <- tag
+
+        out$tags <- base::as.factor(out$tags)
+
+      }
+
+      return(out)
+
+    }
+  )
+
+}
+
+#' @title Obtain barcodes by image annotation tag
+#'
+#' @description Extracts the barcodes that are covered by the extent of the
+#' annotated structures of interest.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
+#' @export
+#'
+getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
+
+  getImageAnnotations(
+    object = object,
+    ids = NULL,
+    tags = tags,
+    test = test
+  ) %>%
+    purrr::map(.f = ~ .x@barcodes) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+}
+
+
+#' @title Obtain center information an image annotation
+#'
+#' @description \code{getImageAnnotationCenter()} computes the
+#' x- and y- coordinates of the most central points within the
+#' image annotation polygon. \code{getImageAnnotationBcsp()} returns
+#' a data.frame that contains one row, namely the barcode spot
+#' that lies closest to the most central point.
+#'
+#' @inherit getImageAnnotation params
+#' @inherit argument_dummy params
+#'
+#'
+#' @return Character vector.
+#'
+#' @export
+
+setGeneric(name = "getImageAnnotationCenter", def = function(object, ...){
+
+  standardGeneric(f = "getImageAnnotationCenter")
+
+})
+
+#' @rdname getImageAnnotationCenter
+#' @export
+setMethod(
+  f = "getImageAnnotationCenter",
+  signature = "spata2",
+  definition = function(object, id){
+
+    img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
+
+    area_df <- img_ann@area
+
+    x <- base::mean(area_df$x)
+    y <- base::mean(area_df$y)
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImageAnnotationCenter
+#' @export
+
+setMethod(
+  f = "getImageAnnotationCenter",
+  signature = "ImageAnnotation",
+  definition = function(object){
+
+    area_df <- object@area
+
+    x <- base::mean(area_df$x)
+    y <- base::mean(area_df$y)
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+
+#' @title Obtain center barcode-spot
+#'
+#' @description Extracts the barcode spot that lies closest
+#' to the center of the image annotation.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return Data.frame as returned by \code{getCoordsDf()} with one row.
+#'
+#' @export
+
+getImageAnnotationCenterBcsp <- function(object, id){
+
+  coords_df <- getCoordsDf(object)
+
+  center <- getImageAnnotationCenter(object, id = id)
+
+  out_df <-
+    dplyr::mutate(.data = coords_df, dist = base::sqrt((x - center[["x"]])^2 + (y - center[["y"]])^2) ) %>%
+    dplyr::filter(dist == base::min(dist))
+
+  return(out_df)
+
+}
+
+
+
+
+#' @title Obtain image annotations ids
+#'
+#' @description Extracts image annotation IDs as a character vector.
+#'
+#' @inherit argument_dummy
+#'
+#' @return Character vector.
+#' @export
+#'
+getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
+
+  if(nImageAnnotations(object) >= 1){
+
+    out <-
+      purrr::map_chr(
+        .x = getImageAnnotations(object, tags = tags, test = test, add_image = FALSE),
+        .f = ~ .x@id
+      ) %>%
+      base::unname()
+
+  } else {
+
+    out <- base::character(0)
+
+  }
+
+  return(out)
+
+}
+
+
+
+#' @title Obtain list of \code{ImageAnnotation}-objects
+#'
+#' @description Extracts a list of objects of class \code{ImageAnnotaion}.
+#'
+#' @inherit argument_dummy params
+#' @param add_image Logical. If TRUE, the area of the histology image that
+#' is occupied by the annotated structure is added to the \code{ImageAnnotation}
+#' object in slot @@image.
+#'
+#' @details How to use arguments \code{tags} and \code{test} to specify
+#' the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the image annotations of interest. There are three options:
+#'
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+#' must be tagged with all of the input tags and must not be tagged with anything else.
+#'
+#' Note that the filtering process happens in addition to / after the filtering by input for argument
+#' \code{ids}.
+#'
+#' @return An object of class \code{ImageAnnotation}.
+#' @export
+#'
+getImageAnnotations <- function(object,
+                                ids = NULL,
+                                tags = NULL,
+                                test = "any",
+                                add_barcodes = TRUE,
+                                add_image = TRUE,
+                                expand = 0,
+                                square = FALSE,
+                                flatten = FALSE,
+                                check = FALSE){
+
+  img_annotations <- getImageObject(object)@annotations
+
+  if(base::isTRUE(check)){
+
+    check_availability(
+      test = base::length(img_annotations) >= 1,
+      ref_x = "any image annotations",
+      ref_fns = "`annotateImage()`"
+    )
+
+  }
+
+  if(base::is.character(ids)){
+
+    check_image_annotation_ids(object, ids)
+
+    img_annotations <- purrr::keep(.x = img_annotations, .p = ~ .x@id %in% ids)
+
+  } else if(base::is.numeric(ids)){
+
+    img_annotations <- img_annotations[ids]
+
+  }
+
+  base::stopifnot(base::length(test) == 1)
+
+  if(base::is.character(tags)){
+
+    check_image_annotation_tags(object, tags)
+
+    img_annotations <-
+      purrr::keep(
+        .x = img_annotations,
+        .p = function(img_ann){
+
+          if(test == "any" | test == 1){
+
+            out <- base::any(tags %in% img_ann@tags)
+
+          } else if(test == "all" | test == 2){
+
+            out <- base::all(tags %in% img_ann@tags)
+
+          } else if(test == "identical" | test == 3){
+
+            tags_input <- base::sort(tags)
+            tags_img_ann <- base::sort(img_ann@tags)
+
+            out <- base::identical(tags_input, tags_img_ann)
+
+          } else {
+
+            stop("Invalid input for argument `test`. Must be either 'any', 'all' or 'identical'.")
+
+          }
+
+          return(out)
+
+        }
+      )
+
+  }
+
+  coords_df <- getCoordsDf(object)
+
+  for(nm in base::names(img_annotations)){
+
+    img_ann <- img_annotations[[nm]]
+
+    if(base::isTRUE(add_image)){
+
+      xrange <- base::range(img_ann@area$x)
+      yrange <- base::range(img_ann@area$y)
+
+      xmean <- base::mean(xrange)
+      ymean <- base::mean(yrange)
+
+      if(base::isTRUE(square)){
+
+        xdist <- xrange[2] - xrange[1]
+
+        ydist <- yrange[2] - yrange[1]
+
+        if(xdist > ydist){
+
+          xdisth <- xdist/2
+
+          yrange <- c(ymean - xdisth, ymean + xdisth)
+
+        } else if(ydist > xdist) {
+
+          ydisth <- ydist/2
+
+          xrange <- c(xmean - ydisth, xmean + ydisth)
+
+        } else {
+
+          # both ranges are equally long
+
+        }
+
+      }
+
+
+      img_ann@image <-
+        getImage(
+          object = object,
+          xrange = xrange,
+          yrange = yrange,
+          expand = expand
+        )
+
+      img_list <- list()
+
+      # getImage already outputs warnings
+      base::suppressWarnings({
+
+        range_list <-
+          process_ranges(
+            xrange = xrange,
+            yrange = yrange,
+            expand = expand,
+            object = object
+          )
+
+      })
+
+
+      for(val in base::names(range_list)){
+
+        img_list[[val]] <- range_list[[val]]
+
+      }
+
+      img_list$xmax_parent <- getImageRange(object)$x[2]
+      img_list$ymax_parent <- getImageRange(object)$y[2]
+
+      img_list$ymin_coords <-
+        img_list$ymax_parent - img_list$ymax
+
+      img_list$ymax_coords <-
+        img_list$ymax_parent - img_list$ymin
+
+      img_list$expand <- expand
+
+      img_list$square <- square
+
+      img_ann@image_info <- img_list
+
+    }
+
+    if(base::isTRUE(add_barcodes)){
+
+      polygon_df <- img_ann@area
+
+      barcodes_pos <-
+        sp::point.in.polygon(
+          point.x = coords_df$x, # x coordinates of all spatial positions
+          point.y = coords_df$y, # y coordinates of all spatial positions
+          pol.x = polygon_df$x, # x coordinates of the segments vertices
+          pol.y = polygon_df$y
+        )
+
+      barcodes_to_add <-
+        coords_df$barcodes[barcodes_pos != 0]
+
+      img_ann@barcodes <- barcodes_to_add
+
+    }
+
+    img_annotations[[nm]] <- img_ann
+
+
+  }
+
+  if(base::isTRUE(flatten) && base::length(img_annotations) == 1){
+
+    img_annotations <- img_annotations[[1]]
+
+  }
+
+  return(img_annotations)
+
+}
+
+
+
 #' @title Obtain IAS screening data.frame
 #'
 #' @description Extracts a data.frame that contains information about barcode-spots
@@ -366,6 +842,37 @@ getImageAnnotationScreeningDf <- function(object,
 
 
 
+#' @title Obtain image annotations tags
+#'
+#' @description Extracts all unique tags with which image annotations
+#' have been tagged.
+#'
+#' @inherit argument_dummy
+#'
+#' @return Character vector.
+#' @export
+#'
+getImageAnnotationTags <- function(object){
+
+  if(nImageAnnotations(object) >= 1){
+
+    out <-
+      purrr::map(
+        .x = getImageAnnotations(object, add_image = FALSE),
+        .f = ~ .x@tags
+      ) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+  } else {
+
+    out <- base::character(0)
+
+  }
+
+  return(out)
+
+}
 
 
 #' @title Obtain image dimensions/ranges
@@ -614,3 +1121,58 @@ getMethodName <- function(object){
   object@information$method@name
 
 }
+
+
+#' @title Obtain model evaluation
+#'
+#' @description Extracts the data.frame that contains the variable-model-fit
+#' evaluation containing.
+#'
+#' @inherit object_dummy
+#'
+#' @return Data.frame.
+#'
+#' @export
+
+setGeneric(name = "getModelEvaluationDf", def = function(object, ...){
+
+  standardGeneric(f = "getModelEvaluationDf")
+
+})
+
+#' @rdname getModelEvaluationDf
+#' @export
+setMethod(
+  f = "getModelEvaluationDf",
+  signature = "ImageAnnotationScreening",
+  definition = function(object, smrd = TRUE){
+
+    if(base::isTRUE(smrd)){
+
+      out <- object@results_smrd
+
+    } else {
+
+      out <- object@results
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getModelEvaluationDf
+#' @export
+setMethod(
+  f = "getModelEvaluationDf",
+  signature = "SpatialTrajectoryScreening",
+  definition = function(object, ...){
+
+    out <- object@results
+
+    return(out)
+
+  }
+)
+

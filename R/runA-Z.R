@@ -1605,6 +1605,49 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
 }
 
 
+# runS --------------------------------------------------------------------
+
+#' @title Identify genes of interest with SPARKX
+#'
+#' @description A wrapper around the algorithm introduced by \emph{Zhu et al. 2021}
+#' to identify genes with spatial expression pattern with SPARK-X.
+#'
+#' @inerit SPARK::sparkx param
+#' @inherit argument_dummy param
+#'
+#' @author Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables
+#'  scalable and robust detection of spatial expression patterns for large spatial
+#'  transcriptomic studies. Genome Biol 22, 184 (2021). https://doi.org/10.1186/s13059-021-02404-0
+#'
+#' @return An updated spata object.
+#' @export
+#'
+runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  coords_mtr <-
+    getCoordsDf(object) %>%
+    tibble::column_to_rownames(var = "barcodes") %>%
+    dplyr::select(-sample, x, y) %>%
+    base::as.matrix()
+
+  count_mtr <- getCountMatrix(object)
+
+  sparkx_out <-
+    SPARK::sparkx(
+      count_in = count_mtr,
+      locus_in = coords_mtr,
+      numCores = numCores,
+      option = option,
+      verbose = verbose
+    )
+
+  object@spatial[[object@samples]][["sparkx"]] <- sparkx_out
+
+  return(object)
+
+}
 
 # runT --------------------------------------------------------------------
 

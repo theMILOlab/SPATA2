@@ -20,6 +20,104 @@ make_angle_bins <- function(n){
 
 
 
+# map ---------------------------------------------------------------------
+
+#' @title Image annotation and barcode intersection
+#'
+#' @description Creates a data.frame that maps the tags of image annotations
+#' to the barcodes that were covered by the spatial extent of the respective
+#' image annotation.
+#'
+#' @inherit argument_dummy params
+#' @param merge Logical value. If TRUE, the results are merged in a single variable.
+#' @param merge_drop Logical value. If TRUE and \code{merge} is TRUE, all image-annotation-
+#' tag-variables are dropped.
+#' @param merge_name Character value. The name of the merged variable.
+#' @param merge_missing Character value. The value that is assigned to barcodes that
+#' do not fall in the extent of any image annotation.
+#' @param merge_sep Character value. The string with which the image annotation tags
+#' are separated with while being merged.
+#'
+#' @return A data.frame.
+#' @export
+#'
+mapImageAnnotationTags <- function(object,
+                                   ids = NULL,
+                                   tags = NULL,
+                                   merge = TRUE,
+                                   merge_name = "img_annotations",
+                                   merge_missing = "none",
+                                   merge_sep = "_",
+                                   merge_drop = FALSE){
+
+  img_annotations <-O
+  getImageAnnotations(
+    object = object,
+    ids = ids,
+    tags = tags,
+    add_image = FALSE,
+    add_barcodes = TRUE
+  )
+
+  img_ann_tags <- getImageAnnotationTags(object)
+
+  spata_df <- getSpataDf(object)
+
+  for(img_ann_tag in img_ann_tags){
+
+    barcodes <-
+      getImageAnnotationBarcodes(
+        object = object,
+        tags = img_ann_tag,
+        test = "any"
+      )
+
+    spata_df[[img_ann_tag]] <-
+      dplyr::if_else(
+        condition = spata_df$barcodes %in% barcodes,
+        true = img_ann_tag,
+        false = NA_character_
+      )
+
+  }
+
+  if(base::isTRUE(merge)){
+
+    confuns::are_values(c("merge_name", "merge_sep", "merge_missing"), mode = "character")
+
+    if(merge_name %in% base::colnames(spata_df)){
+
+      ref <- scollapse(base::colnames(spata_df), last = "' or '")
+
+      stop(
+        glue::glue(
+          "Input for argument 'merge_name' must not be '{ref}'."
+        )
+      )
+
+    }
+
+    spata_df <-
+      tidyr::unite(
+        data = spata_df,
+        col = {{merge_name}},
+        dplyr::all_of(img_ann_tags),
+        na.rm = TRUE,
+        remove = merge_drop,
+        sep = merge_sep
+      ) %>%
+      dplyr::mutate(
+        {{merge_name}} := stringr::str_replace(!!rlang::sym(merge_name), pattern = "^$", replacement = merge_missing)
+      )
+
+  }
+
+  return(spata_df)
+
+}
+
+
+
 # merge -------------------------------------------------------------------
 
 
@@ -1239,3 +1337,42 @@ moduleSurfacePlotServer <- function(id,
 
 }
 
+
+
+
+# mS ----------------------------------------------------------------------
+
+mSwitch <- function(inputId, label = NULL, status = "success", width = "80%", app = "annotateImage", helper = TRUE, hslot = inputId, ...){
+
+  if(base::is.null(label)){
+
+    label <-
+      confuns::make_pretty_name(inputId) %>%
+      stringr::str_c(., ":", sep = "")
+
+  }
+
+  shinyWidgets::materialSwitch(
+    inputId = inputId,
+    label = label,
+    status = status,
+    width = width,
+    ...
+  ) %>%
+    {
+      if(base::isTRUE(helper)){
+
+        add_helper(
+          shiny_tag = .,
+          content = text[[app]][[hslot]]
+        )
+
+      } else {
+
+        .
+
+      }
+
+    }
+
+}

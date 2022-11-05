@@ -64,6 +64,28 @@ add_models <- function(input_df,
   return(out_df)
 
 }
+
+
+#' @export
+add_models_to_shifted_projection_df <- function(shifted_projection_df,
+                                                model_subset = NULL,
+                                                model_remove = NULL,
+                                                model_add = NULL,
+                                                verbos = TRUE){
+
+  add_models(
+    input_df = shifted_projection_df,
+    var_order = "trajectory_order",
+    model_subset = model_subset,
+    model_remove = model_remove,
+    model_add = model_add,
+    verbose = verbose
+  )
+
+}
+
+
+
 # addA --------------------------------------------------------------------
 
 
@@ -512,7 +534,32 @@ addGeneFeatures <- function(object,
 
 }
 
+#' @title Add gene meta data to the object
+#'
+#' @description Safely adds the output of \code{computeGeneMetaData2()}
+#' to the spata-object.
+#'
+#' @inherit check_sample params
+#' @inherit set_dummy params return details
+#'
+#' @param meta_data_list Output list of \code{computeGeneMetaData2()}. An additional
+#' slot named \emph{mtr_name} needs to be added manually.
+#'
+#' @export
 
+addGeneMetaData <- function(object, of_sample = "", meta_data_list){
+
+  check_object(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  mtr_name <- meta_data_list$mtr_name
+
+  object@gdata[[of_sample]][[mtr_name]] <- meta_data_list
+
+  base::return(object)
+
+}
 
 #' @title Add a new gene set
 #'
@@ -641,6 +688,65 @@ addGeneSetsInteractive <- function(object){
 
 }
 
+
+
+
+
+
+# addI --------------------------------------------------------------------
+
+#' @title Add image annotation
+#'
+#' @description Creates and adds an object of class \code{ImageAnnotation}.
+#'
+#' @param area_df A data.frame that contains at least two numeric variables named
+#' \emph{x} and \emph{y}.
+#'
+#' @return An updated spata object.
+#' @export
+#'
+addImageAnnotation <- function(object, tags, area_df, id = NULL){
+
+  confuns::check_data_frame(
+    df = area_df,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  if(base::is.character(id)){
+
+    confuns::check_none_of(
+      input = id,
+      against = getImageAnnotationIds(object),
+      ref.against = "image annotation IDs"
+    )
+
+  } else {
+
+    number <- lastImageAnnotation(object) + 1
+
+    id <- stringr::str_c("img_ann_", number)
+
+  }
+
+  if(!shiny::isTruthy(tags)){
+
+    tags <- "no_tags"
+
+  }
+
+  area_df <- tibble::as_tibble(area_df)
+
+  img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
+
+  image_obj <- getImageObject(object)
+
+  image_obj@annotations[[id]] <- img_ann
+
+  object <- setImageObject(object, image_obj)
+
+  return(object)
+
+}
 
 
 
@@ -804,6 +910,91 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
 }
 
+
+#' @export
+addSpatialTrajectory <- function(object,
+                                 id,
+                                 width,
+                                 segment_df = NULL,
+                                 start = NULL,
+                                 end = NULL,
+                                 vertices = NULL,
+                                 comment = base::character(1)
+){
+
+  confuns::is_value(x = width, mode = "numeric")
+
+  if(!base::is.data.frame(segment_df)){
+
+    # check input
+    confuns::are_vectors(c("start", "end"), mode = "numeric", of.length = 2)
+
+    confuns::is_value(x = comment, mode = "character")
+
+    # assemble segment df
+    segment_df <-
+      base::data.frame(
+        x = start[1],
+        y = start[2],
+        xend = end[1],
+        yend = end[2],
+        part = "part_1",
+        stringsAsFactors = FALSE
+      )
+
+    if(confuns::is_list(vertices) & base::length(vertices) >= 1){
+
+      for(nth in base::seq_along(vertices)){
+
+        if(!confuns::is_vec(x = vertices[[nth]], mode = "numeric", of.length = 2, verbose = FALSE)){
+
+          stop("Every slot of input list for argument 'vertices' must be a numeric vector of length 2.")
+
+        }
+
+        segment_df$xend[nth] <- vertices[[nth]][1]
+        segment_df$yend[nth] <- vertices[[nth]][2]
+
+        segment_df <-
+          dplyr::add_row(
+            .data = segment_df,
+            x = vertices[[nth]][1],
+            y = vertices[[nth]][2],
+            xend = end[1],
+            yend = end[2],
+            part = stringr::str_c("part", nth+1, sep = "_")
+          )
+
+      }
+
+    }
+
+  }
+
+  coords_df <- getCoordsDf(object)
+
+  projection_df <-
+    project_on_trajectory(
+      coords_df = coords_df,
+      segment_df = segment_df,
+      width = width
+    )
+
+  spat_traj <-
+    SpatialTrajectory(
+      comment = comment,
+      id = id,
+      projection = projection_df,
+      segment = segment_df,
+      sample = object@samples,
+      width = width
+    )
+
+  object@trajectories[[1]][[id]] <- spat_traj
+
+  return(object)
+
+}
 
 # addT --------------------------------------------------------------------
 
@@ -1369,6 +1560,132 @@ asDecimeter <- function(input, ...){
 }
 
 
+
+#' @rdname runAutoencoderAssessment
+#' @export
+assessAutoencoderOptions <- function(expr_mtr,
+                                     activations,
+                                     bottlenecks,
+                                     layers = c(128, 64, 32),
+                                     dropout = 0.1,
+                                     epochs = 20,
+                                     verbose = TRUE){
+
+  # 1. Control --------------------------------------------------------------
+
+  confuns::check_one_of(input = activations, against = activation_fns)
+
+  confuns::are_values(c("dropout", "epochs"), mode = "numeric")
+
+  confuns::is_vec(x = layers, mode = "numeric", of.length = 3)
+  confuns::is_vec(x = bottlenecks, mode = "numeric")
+
+  # 2. Assess all combinations in for loop ----------------------------------
+
+  activations_list <-
+    base::vector(mode = "list", length = base::length(activations)) %>%
+    purrr::set_names(nm = activations)
+
+  for(a in base::seq_along(activations)){
+
+    activation <- activations[a]
+
+    bottlenecks_list <-
+      base::vector(mode = "list", length = base::length(bottlenecks)) %>%
+      purrr::set_names(nm = stringr::str_c("bn", bottlenecks, sep = "_"))
+
+    for(b in base::seq_along(bottlenecks)){
+
+      bottleneck <- bottlenecks[b]
+
+      base::message(Sys.time())
+      base::message(glue::glue("Assessing activation option {a}/{base::length(activations)}:'{activation}' and bottleneck option {b}/{base::length(bottlenecks)}: {bottleneck}"))
+
+      # Neural network ----------------------------------------------------------
+
+      input_layer <-
+        keras::layer_input(shape = c(base::ncol(expr_mtr)))
+
+      encoder <-
+        input_layer %>%
+        keras::layer_dense(units = layers[1], activation = activation) %>%
+        keras::layer_batch_normalization() %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[2], activation = activation) %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[3], activation = activation) %>%
+        keras::layer_dense(units = bottleneck)
+
+      decoder <-
+        encoder %>%
+        keras::layer_dense(units = layers[3], activation = activation) %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[2], activation = activation) %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[1], activation = activation) %>%
+        keras::layer_dense(units = c(ncol(expr_mtr)))
+
+      autoencoder_model <- keras::keras_model(inputs = input_layer, outputs = decoder)
+
+      autoencoder_model %>% keras::compile(
+        loss = 'mean_squared_error',
+        optimizer = 'adam',
+        metrics = c('accuracy')
+      )
+
+      history <-
+        autoencoder_model %>%
+        keras::fit(expr_mtr, expr_mtr, epochs = epochs, shuffle = TRUE,
+                   validation_data = list(expr_mtr, expr_mtr), verbose = verbose)
+
+      reconstructed_points <-
+        autoencoder_model %>%
+        keras::predict_on_batch(x = expr_mtr)
+
+      base::rownames(reconstructed_points) <- base::rownames(expr_mtr)
+      base::colnames(reconstructed_points) <- base::colnames(expr_mtr)
+
+
+      # PCA afterwards ----------------------------------------------------------
+
+      bottlenecks_list[[b]] <- irlba::prcomp_irlba(base::t(reconstructed_points), n = 30)
+
+    }
+
+    activations_list[[a]] <- bottlenecks_list
+
+  }
+
+  # 3. Summarize in data.frame ----------------------------------------------
+
+  res_df <-
+    purrr::imap_dfr(.x = activations_list, .f = function(.list, .name){
+
+      data.frame(
+        activation = .name,
+        bottleneck = stringr::str_remove(string = base::names(.list), pattern = "^bn_"),
+        total_var = purrr::map_dbl(.x = .list, .f = "totalvar")
+      )
+
+    }) %>% tibble::remove_rownames()
+
+  res_df$bottleneck <- base::factor(res_df$bottleneck, levels = base::unique(res_df$bottleneck))
+
+  pca_scaled <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = 30)
+
+  assessment_list <- list("df" = res_df,
+                          "set_up" = list("epochs" = epochs, "dropout" = dropout, "layers" = layers),
+                          "scaled_var" = pca_scaled$totalvar)
+
+  base::return(assessment_list)
+
+}
+
+
+
+
+
+
 #' @title Transform \code{SPATA2} to \code{Giotto}
 #'
 #' @description Transforms an \code{SPATA2} object to an object of class
@@ -1751,124 +2068,31 @@ setMethod(
 )
 
 
-#' @rdname runAutoencoderAssessment
+#' @title Title
 #' @export
-assessAutoencoderOptions <- function(expr_mtr,
-                                     activations,
-                                     bottlenecks,
-                                     layers = c(128, 64, 32),
-                                     dropout = 0.1,
-                                     epochs = 20,
-                                     verbose = TRUE){
+setGeneric(name = "asSpatialTrajectory", def = function(object, ...){
 
-  # 1. Control --------------------------------------------------------------
+  standardGeneric(f = "asSpatialTrajectory")
 
-  confuns::check_one_of(input = activations, against = activation_fns)
+})
 
-  confuns::are_values(c("dropout", "epochs"), mode = "numeric")
+#' @rdname asSpatialTrajectory
+#' @export
 
-  confuns::is_vec(x = layers, mode = "numeric", of.length = 3)
-  confuns::is_vec(x = bottlenecks, mode = "numeric")
+setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definition = function(object, ...){
 
-  # 2. Assess all combinations in for loop ----------------------------------
+  SpatialTrajectory(
+    comment = object@comment,
+    id = object@name,
+    projection = object@compiled_trajectory_df,
+    sample = object@sample,
+    segment = object@segment_trajectory_df
+  )
 
-  activations_list <-
-    base::vector(mode = "list", length = base::length(activations)) %>%
-    purrr::set_names(nm = activations)
-
-  for(a in base::seq_along(activations)){
-
-    activation <- activations[a]
-
-    bottlenecks_list <-
-      base::vector(mode = "list", length = base::length(bottlenecks)) %>%
-      purrr::set_names(nm = stringr::str_c("bn", bottlenecks, sep = "_"))
-
-    for(b in base::seq_along(bottlenecks)){
-
-      bottleneck <- bottlenecks[b]
-
-      base::message(Sys.time())
-      base::message(glue::glue("Assessing activation option {a}/{base::length(activations)}:'{activation}' and bottleneck option {b}/{base::length(bottlenecks)}: {bottleneck}"))
-
-      # Neural network ----------------------------------------------------------
-
-      input_layer <-
-        keras::layer_input(shape = c(base::ncol(expr_mtr)))
-
-      encoder <-
-        input_layer %>%
-        keras::layer_dense(units = layers[1], activation = activation) %>%
-        keras::layer_batch_normalization() %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[2], activation = activation) %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[3], activation = activation) %>%
-        keras::layer_dense(units = bottleneck)
-
-      decoder <-
-        encoder %>%
-        keras::layer_dense(units = layers[3], activation = activation) %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[2], activation = activation) %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[1], activation = activation) %>%
-        keras::layer_dense(units = c(ncol(expr_mtr)))
-
-      autoencoder_model <- keras::keras_model(inputs = input_layer, outputs = decoder)
-
-      autoencoder_model %>% keras::compile(
-        loss = 'mean_squared_error',
-        optimizer = 'adam',
-        metrics = c('accuracy')
-      )
-
-      history <-
-        autoencoder_model %>%
-        keras::fit(expr_mtr, expr_mtr, epochs = epochs, shuffle = TRUE,
-                   validation_data = list(expr_mtr, expr_mtr), verbose = verbose)
-
-      reconstructed_points <-
-        autoencoder_model %>%
-        keras::predict_on_batch(x = expr_mtr)
-
-      base::rownames(reconstructed_points) <- base::rownames(expr_mtr)
-      base::colnames(reconstructed_points) <- base::colnames(expr_mtr)
+})
 
 
-      # PCA afterwards ----------------------------------------------------------
 
-      bottlenecks_list[[b]] <- irlba::prcomp_irlba(base::t(reconstructed_points), n = 30)
 
-    }
-
-    activations_list[[a]] <- bottlenecks_list
-
-  }
-
-  # 3. Summarize in data.frame ----------------------------------------------
-
-  res_df <-
-    purrr::imap_dfr(.x = activations_list, .f = function(.list, .name){
-
-      data.frame(
-        activation = .name,
-        bottleneck = stringr::str_remove(string = base::names(.list), pattern = "^bn_"),
-        total_var = purrr::map_dbl(.x = .list, .f = "totalvar")
-      )
-
-    }) %>% tibble::remove_rownames()
-
-  res_df$bottleneck <- base::factor(res_df$bottleneck, levels = base::unique(res_df$bottleneck))
-
-  pca_scaled <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = 30)
-
-  assessment_list <- list("df" = res_df,
-                          "set_up" = list("epochs" = epochs, "dropout" = dropout, "layers" = layers),
-                          "scaled_var" = pca_scaled$totalvar)
-
-  base::return(assessment_list)
-
-}
 
 

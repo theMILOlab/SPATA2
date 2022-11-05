@@ -28,6 +28,21 @@ nCounts <- function(object, gene){
 
 }
 
+
+
+#' @export
+nest_shifted_projection_df <- function(shifted_projection_df){
+
+  out_df <-
+    dplyr::select(shifted_projection_df, -dplyr::contains("trajectory_part"), -proj_length_binned) %>%
+    dplyr::group_by(variables) %>%
+    tidyr::nest()
+
+  return(out_df)
+
+}
+
+
 #' @title Number of genes
 #'
 #' @description Returns the number of genes in the active matrix.
@@ -60,5 +75,72 @@ nImageAnnotations <- function(object){
     base::length()
 
 }
+
+
+
+
+#' @export
+normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
+
+  if(base::isTRUE(normalize)){
+
+    out <-
+      dplyr::mutate(
+        .data = smrd_projection_df,
+        dplyr::across(
+          .cols = -dplyr::all_of(smrd_projection_df_names),
+          .fns = ~ confuns::normalize(.x)
+        )
+      )
+
+  } else {
+
+    out <- smrd_projection_df
+
+  }
+
+  return(out)
+
+}
+
+
+numericSlider <- function(inputId, label = NULL, width = "80%",  app = "annotateImage", helper = TRUE, hslot = inputId, ...){
+
+  if(base::is.null(label)){
+
+    label <-
+      confuns::make_pretty_name(inputId)  %>%
+      stringr::str_c(., ":", sep = "")
+
+  }
+
+  shiny::sliderInput(
+    inputId = inputId,
+    label = label,
+    width = width,
+    ...
+  ) %>%
+    {
+      if(base::isTRUE(helper)){
+
+        add_helper(
+          shiny_tag = .,
+          content = text[[app]][[hslot]]
+        )
+
+      } else {
+
+        .
+
+      }
+
+    }
+
+}
+
+
+
+
+
 
 

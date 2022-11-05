@@ -846,6 +846,35 @@ getDefault <- function(object, arg){
 
 }
 
+#' @rdname setDefaultGrouping
+#' @export
+getDefaultGrouping <- function(object, verbose = NULL, arg = "across"){
+
+  hlpr_assign_arguments(object)
+
+  g <- object@information$default_grouping
+
+  if(!base::is.character(g)){
+
+    if(base::is.character(arg)){
+
+      stop(glue::glue("Default grouping is not set. Set it with 'setDefaultGrouping()' or specify with argument '{arg}'."))
+
+    } else {
+
+      stop("Default grouping is not set. Set it with 'setDefaultGrouping()'.")
+
+    }
+
+  }
+
+  give_feedback(msg = glue::glue("Using default grouping: '{g}'"))
+
+  return(g)
+
+}
+
+
 
 #' @title Obtain default argument inputs
 #'
@@ -878,6 +907,43 @@ getDefaultInstructions <- function(object){
 #'   \item{ \code{getUmapDf()}: \emph{umap1, umap2}}
 #'   }
 #'
+
+
+#' @rdname setDefaultTrajectory
+#' @export
+getDefaultTrajectory <- function(object, ...){
+
+  deprecated(fn = TRUE)
+
+  t <- object@information$default_trajectory
+
+  x <- c(...)
+
+  if(!base::is.character(t)){
+
+    if(base::is.character(x)){
+
+      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()' or specify with argument `id`."))
+
+    } else {
+
+      stop("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()'.")
+
+    }
+
+  }
+
+  give_feedback(msg = glue::glue("Using default trajectory: '{t}'"))
+
+  return(t)
+
+}
+
+#' @rdname setDefaultTrajectory
+#' @export
+getDefaultTrajectoryId <- getDefaultTrajectory
+
+
 
 getDimRedDf <- function(object,
                         method_dr = c("pca", "tsne", "umap"),
@@ -1211,6 +1277,50 @@ getFeatureVariables <- function(object,
   return(res)
 
 }
+
+
+#' @title Safe extraction
+#'
+#' @description A wrapper around \code{base::tryCatch()} with predefined error handling
+#' messages if extraction from seurat-object failed.
+#'
+#' @param return_value Whatever needs to be extracted.
+#' @param error_handling Either \emph{'warning} or \emph{'stop'}.
+#' @param error_value What is supposed to be returned if extraction fails.
+#' @param error_ref The reference for the feedback message.
+#'
+
+
+getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
+
+  result <-
+    base::tryCatch(
+
+      return_value,
+
+      error = function(error){
+
+        if(error_handling == "warning"){
+
+          base::warning(glue::glue("Could not find {error_ref} in specified seurat object. Did you choose the correct method?"))
+
+        } else if(error_handling == "stop"){
+
+          base::stop(glue::glue("Could not find {error_ref} in specified seurat object. Did you choose the correct method?"))
+
+        }
+
+        base::return(error_value)
+
+
+      })
+
+
+  base::return(result)
+
+}
+
+
 
 # getG --------------------------------------------------------------------
 

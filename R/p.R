@@ -4,801 +4,7 @@
 
 
 
-# plot_ -------------------------------------------------------------------
-
-# helper function for plotIas- and plotStsEvaluation
-plot_screening_evaluation <- function(df,
-                                      variables,
-                                      var_order,
-                                      model_subset = NULL,
-                                      model_remove = NULL,
-                                      model_add = NULL,
-                                      pt_alpha = 0.9,
-                                      pt_color = "black",
-                                      pt_size = 1,
-                                      line_alpha = 0.9,
-                                      line_color = "blue",
-                                      line_size = 1,
-                                      display_se = FALSE,
-                                      display_corr = FALSE,
-                                      corr_p_min = 5e-05,
-                                      corr_pos_x = NULL,
-                                      corr_pos_y = NULL,
-                                      corr_text_sep = "\n",
-                                      corr_text_size = 1,
-                                      verbose = TRUE){
-
-  model_df <-
-    create_model_df(
-      input = df[[var_order]],
-      model_subset = model_subset,
-      model_remove = model_remove,
-      model_add = model_add
-    )
-
-  mnames <- base::names(model_df)
-
-  model_df[[var_order]] <- 1:base::nrow(model_df)
-
-  joined_df <-
-    dplyr::left_join(
-      x = df,
-      y = model_df,
-      by = var_order
-    )
-
-  shifted_df <-
-    tidyr::pivot_longer(
-      data = joined_df,
-      cols = dplyr::any_of(mnames),
-      names_to = "models",
-      values_to = "model_values"
-    ) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::any_of(variables),
-      names_to = "variables",
-      values_to = "variable_values"
-    )
-
-  breaks <- c(0,0.25,0.5,0.75,1)
-  labels <- c(0.00, 0.25, 0.50, 0.75, 1.00) %>% base::as.character()
-
-  confuns::plot_scatterplot(
-    df = shifted_df,
-    x = "model_values",
-    y = "variable_values",
-    across = c("variables", "models"),
-    pt.alpha = pt_alpha,
-    pt.color = pt_color,
-    pt.size = pt_size,
-    smooth.alpha = line_alpha,
-    smooth.color = line_color,
-    smooth.method = "lm",
-    smooth.size = line_size,
-    smooth.se = display_se,
-    display.smooth = TRUE,
-    display.corr = display_corr,
-    corr.p.min = corr_p_min,
-    corr.pos.x = corr_pos_x,
-    corr.pos.y = corr_pos_y,
-    corr.text.sep = corr_text_sep,
-    corr.text.size = corr_text_size,
-    corr.method = "pearson"
-  ) +
-    ggplot2::scale_x_continuous(
-      breaks = breaks,
-      labels = labels
-    ) +
-    ggplot2::scale_y_continuous(
-      breaks = breaks,
-      labels = labels
-    ) +
-    ggplot2::theme(
-      strip.background = ggplot2::element_rect()
-    )
-
-}
-
-
-
-# plotI -------------------------------------------------------------------
-
-#' @title Plot IAS evaluation per variable-model pair
-#'
-#' @description Plots inferred gene expression along the distance to an image
-#' annotation against model values.
-#'
-#' @inherit imageAnnotationScreening params
-#' @inherit plotScatterplot params
-#' @inherit argument_dummy params
-#' @param display_corr Logical. If TRUE, correlation values are added to the plots.
-#' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
-#' @param corr_pos_x,corr_pos_y Numeric vector of length two. The position of
-#' the correlation text with x- and y-coordinates.
-#' @param corr_text_sep Character value used to separate correlation value and
-#' corresponding p-value.
-#' @param corr_text_size Numeric value. Size of text.
-#'
-#' @export
-#'
-plotIasEvaluation <- function(object,
-                              id,
-                              variables,
-                              distance = NA_integer_,
-                              binwidth = ccDist(object),
-                              n_bins_circle = NA_integer_,
-                              angle_span = c(0,360),
-                              model_subset = NULL,
-                              model_remove = NULL,
-                              model_add = NULL,
-                              pt_alpha = 0.9,
-                              pt_color = "black",
-                              pt_size = 1,
-                              line_alpha = 0.9,
-                              line_color = "blue",
-                              line_size = 1,
-                              display_se = FALSE,
-                              display_corr = FALSE,
-                              corr_p_min = 5e-05,
-                              corr_pos_x = NULL,
-                              corr_pos_y = NULL,
-                              corr_text_sep = "\n",
-                              corr_text_size = 1,
-                              verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  ias_df <-
-    getImageAnnotationScreeningDf(
-      object = object,
-      id = id,
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      variables = variables,
-      remove_circle_bins = "Core",
-      summarize_by = "bins_circle",
-      normalize_by = "sample"
-    )
-
-
-  plot_screening_evaluation(
-    df = ias_df,
-    variables = variables,
-    var_order = "bins_order",
-    model_subset = model_subset,
-    model_remove = model_remove,
-    model_add = model_add,
-    pt_alpha = pt_alpha,
-    pt_color = pt_color,
-    pt_size = pt_size,
-    line_alpha = line_alpha,
-    line_size = line_size,
-    display_se = display_se,
-    display_corr = display_corr,
-    corr_p_min = corr_p_min,
-    corr_pos_x = corr_pos_x,
-    corr_pos_y = corr_pos_y,
-    corr_text_sep = corr_text_sep,
-    corr_text_size = corr_text_size,
-    verbose = verbose
-  )
-
-
-}
-
-
-#' @title Plot IAS heatmap
-#'
-#' @description Plots gene expression changes against the distance
-#' an the image annotation using a heatmap.
-#'
-#' @inherit imageAnnotationScreening params details
-#' @inherit plotTrajectoryHeatmap params
-#' @inherit ggplot_dummy return
-#' @inherit documentation_dummy params
-#'
-#' @export
-
-plotIasHeatmap <- function(object,
-                           id,
-                           variables,
-                           distance = NA_integer_,
-                           n_bins_circle = NA_integer_,
-                           binwidth = ccDist(object),
-                           angle_span = c(0,360),
-                           arrange_rows = "input",
-                           method_gs = "mean",
-                           smooth_span = 0.4,
-                           multiplier = 10,
-                           clrsp = "inferno",
-                           .cols = dplyr::everything(),
-                           summarize_with = "mean",
-                           .f = NULL,
-                           verbose = TRUE,
-                           ...){
-
-  # 1. Control --------------------------------------------------------------
-
-  # all checks
-  input_levels <- base::unique(variables)
-
-  smooth <- TRUE
-
-  # -----
-
-  # 2. Data wrangling -------------------------------------------------------
-
-  img_ann_df <-
-    getImageAnnotationScreeningDf(
-      object = object,
-      id = id,
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      n_bins_angle = 1,
-      angle_span = angle_span,
-      variables = variables,
-      summarize_by = "bins_circle",
-      summarize_with = summarize_with
-    ) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::any_of(variables),
-      names_to = "variables",
-      values_to = "values"
-    )
-
-  wide_df <-
-    tidyr::pivot_wider(
-      data = img_ann_df,
-      id_cols = variables,
-      names_from = bins_circle,
-      values_from = "values"
-    )
-
-  # -----
-
-  # 4. Smooth rows ----------------------------------------------------------
-
-  mtr <- base::as.matrix(dplyr::select(.data = wide_df, -variables))
-  base::rownames(mtr) <- dplyr::pull(.data = wide_df, variables)
-
-  keep <- base::apply(mtr, MARGIN = 1,
-                      FUN = function(x){
-
-                        dplyr::n_distinct(x) != 1
-
-                      })
-
-  n_discarded <- base::sum(!keep)
-
-  if(base::isTRUE(smooth) && n_discarded != 0){
-
-    discarded <- base::rownames(mtr)[!keep]
-
-    discarded_ref <- stringr::str_c(discarded, collapse = ', ')
-
-    mtr <- mtr[keep, ]
-
-    base::warning(glue::glue("Discarded {n_discarded} variables due to uniform expression. (Can not smooth uniform values.): '{discarded_ref}'"))
-
-  }
-
-  mtr_smoothed <- matrix(0, nrow = nrow(mtr), ncol = ncol(mtr) * multiplier)
-
-  base::rownames(mtr_smoothed) <- base::rownames(mtr)
-  base::colnames(mtr_smoothed) <- stringr::str_c("V", 1:base::ncol(mtr_smoothed))
-
-  if(base::isTRUE(smooth)){
-
-    confuns::give_feedback(
-      msg = glue::glue("Smoothing values with smoothing span: {smooth_span}."),
-      verbose = verbose
-    )
-
-    for(i in 1:base::nrow(mtr)){
-
-      x <- 1:base::ncol(mtr)
-
-      values <- base::as.numeric(mtr[i,])
-
-      y <- (values - base::min(values))/(base::max(values) - base::min(values))
-
-      model <- stats::loess(formula = y ~ x, span = smooth_span)
-
-      mtr_smoothed[i,] <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*multiplier))
-
-    }
-
-  }
-
-  # arrange rows
-  if(base::all(arrange_rows == "maxima") | base::all(arrange_rows == "minima")){
-
-    mtr_smoothed <-
-      confuns::arrange_rows(
-        df = base::as.data.frame(mtr_smoothed),
-        according.to = arrange_rows,
-        verbose = verbose
-      ) %>%
-      base::as.matrix()
-
-  } else if(arrange_rows == "input"){
-
-    mtr_smoothed <-
-      base::as.data.frame(mtr_smoothed) %>%
-      tibble::rownames_to_column(var = "vars") %>%
-      dplyr::mutate(vars = base::factor(x = vars, levels = input_levels)) %>%
-      tibble::as_tibble() %>%
-      dplyr::arrange(vars) %>%
-      base::as.data.frame() %>%
-      tibble::column_to_rownames(var = "vars") %>%
-      base::as.matrix()
-
-  }
-
-  # -----
-
-  # Plot heatmap ------------------------------------------------------------
-
-  ias_levels <- base::colnames(mtr_smoothed)
-  var_levels <- base::rownames(mtr_smoothed) %>% base::rev()
-
-  df_smoothed <-
-    base::as.data.frame(mtr_smoothed) %>%
-    tibble::rownames_to_column(var = "variables") %>%
-    tibble::as_tibble() %>%
-    tidyr::pivot_longer(
-      cols = dplyr::all_of(ias_levels),
-      values_to = "values",
-      names_to = "circle_order"
-    ) %>%
-    dplyr::mutate(
-      ias_order = base::factor(x = circle_order, levels = ias_levels),
-      variables = base::factor(x = variables, levels = var_levels),
-      ias_ord_num = base::as.character(circle_order) %>% stringr::str_remove("^V") %>% base::as.numeric(),
-      ias_part = "none"
-    )
-
-  if(!base::is.null(.f)){
-
-    df_smoothed$variables <-
-      confuns::vredefine_with(
-        df_smoothed$variables,
-        .cols = .cols,
-        .f = .f
-      )
-
-  }
-
-  out <-
-    ggplot2::ggplot(data = df_smoothed, mapping = ggplot2::aes(x = ias_ord_num, y = variables, fill = values)) +
-    ggplot2::geom_tile() +
-    ggplot2::theme_classic() +
-    ggplot2::labs(x = NULL, y = NULL, fill = "Expr.") +
-    ggplot2::theme(
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_blank(),
-      axis.line.y = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_blank(),
-      strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_blank()
-    ) +
-    scale_color_add_on(aes = "fill", clrsp = clrsp)
-
-  return(out)
-
-}
-
-
-
-
-
-
-#' @title Plot IAS lineplot
-#'
-#' @description Plots gene expression changes against the distance to
-#' an the image annotation using lineplots.
-#'
-#' @param facet_by Either \emph{'variables'} or \emph{'bins_angle'}.
-#' If \emph{'bins_angle'} length of \code{variables} must be one.
-#'
-#' @inherit plotIasHeatmap params details
-#' @inherit plotTrajectoryLineplot params
-#' @inherit argument_dummy params
-#' @inherit ggplot_dummy return
-#'
-#' @export
-#'
-plotIasLineplot <- function(object,
-                            id,
-                            variables,
-                            distance = NA_integer_,
-                            n_bins_circle = NA_integer_,
-                            binwidth = ccDist(object),
-                            angle_span = c(0,360),
-                            n_bins_angle = 1,
-                            method_gs = NULL,
-                            smooth_method = "loess",
-                            smooth_span = 0.2,
-                            smooth_se = FALSE,
-                            clrp = NULL,
-                            clrp_adjust = NULL,
-                            line_color = NULL,
-                            line_size = 1.5,
-                            facet_by = "variables",
-                            normalize_by = "sample",
-                            summarize_with = "mean",
-                            nrow = NULL,
-                            ncol = NULL,
-                            display_axis_text = "x",
-                            include_area = FALSE,
-                            display_border = TRUE,
-                            border_linealpha = 0.75,
-                            border_linecolor = "black",
-                            border_linesize = 1,
-                            border_linetype = "dashed",
-                            verbose = NULL,
-                            ...){
-
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  if(facet_by == "bins_angle"){
-
-    if(!n_bins_angle > 1){
-
-      warning("Facetting by angle with only one angle bin. Increase `n_bins_angle`.")
-
-    }
-
-    if(base::length(variables) > 1){
-
-      warning("Facetting by angle can only display one variable. Taking first element.")
-
-      variables <- variables[1]
-
-    }
-
-    summarize_by <- c("bins_angle", "bins_circle")
-
-
-
-  } else {
-
-    summarize_by <- c("bins_circle")
-
-    n_bins_angle <- 1
-
-  }
-
-  ias_df <-
-    getImageAnnotationScreeningDf(
-      object = object,
-      id = id,
-      binwidth = binwidth,
-      distance = distance,
-      n_bins_circle = n_bins_circle,
-      angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
-      variables = variables,
-      summarize_by = summarize_by,
-      normalize_by = normalize_by,
-      remove_angle_bins = TRUE,
-      remove_circle_bins = !include_area,
-      normalize = c(FALSE, FALSE),
-      verbose = TRUE
-    )
-
-  if(facet_by == "variables"){
-
-    plot_df <-
-      tidyr::pivot_longer(
-        data = ias_df,
-        cols = dplyr::any_of(variables),
-        names_to = "variables",
-        values_to = "values"
-      )
-
-    facet_add_on <-
-      ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow)
-
-    ylab <- "Inferred expression change"
-
-  } else if(facet_by == "bins_angle"){
-
-    plot_df <-
-      tidyr::pivot_longer(
-        data = ias_df,
-        cols = dplyr::any_of(variables),
-        names_to = "variables",
-        values_to = "values"
-      )
-
-    facet_add_on <-
-      ggplot2::facet_wrap(facets = . ~ bins_angle, ncol = ncol, nrow = nrow)
-
-    ylab <- stringr::str_c("Inferred expression change (", variables, ")")
-
-  }
-
-  if(base::isTRUE(display_border)){
-
-    xintercept <- base::ifelse(base::isTRUE(include_area), yes = 2, no = 1)
-
-    border_add_on <-
-      ggplot2::geom_vline(
-        xintercept = xintercept,
-        alpha = border_linealpha,
-        color = border_linecolor,
-        size = border_linesize,
-        linetype = border_linetype
-      )
-
-  } else {
-
-    border_add_on <- NULL
-
-  }
-
-  if(base::isTRUE(display_axis_text)){ display_axis_text <- c("x", "y")}
-
-  theme_add_on <- list()
-
-  if("x" %in% display_axis_text){
-
-    theme_add_on <-
-      c(
-        theme_add_on,
-        list(ggplot2::theme(
-          axis.text.x = ggplot2::element_text(vjust = 0.85, hjust = 1),
-          axis.ticks.x = ggplot2::element_line()
-        )
-        )
-      )
-
-    xlab <- "bins_circle"
-
-  } else {
-
-    xlab <- stringr::str_c("Distance to '", id, "'")
-
-  }
-
-  if("y" %in% display_axis_text){
-
-    theme_add_on <-
-      c(
-        theme_add_on,
-        list(ggplot2::theme(axis.text.y = ggplot2::element_text()))
-      )
-
-  }
-
-  if(base::is.character(line_color) & base::length(line_color) == 1){
-
-    lvls <- base::levels(plot_df[[facet_by]])
-
-    clrp_adjust <-
-      purrr::set_names(
-        x = base::rep(line_color, base::length(lvls)),
-        nm = lvls
-      )
-
-  }
-
-  # create line
-  if(smooth_span == 0){
-
-    line_add_on <- ggplot2::geom_path(size = line_size)
-
-  } else {
-
-    line_add_on <-
-      ggplot2::geom_smooth(
-        size = line_size,
-        span = smooth_span,
-        method = smooth_method,
-        formula = y ~ x,
-        se = smooth_se
-      )
-
-  }
-
-  # adjust y scale
-  if(base::is.character(normalize_by)){
-
-    scale_y_add_on <-
-      ggplot2::scale_y_continuous(
-        breaks = base::seq(0 , 1, 0.2),
-        labels = base::seq(0 , 1, 0.2), limits = c(0,1)
-      )
-
-  } else {
-
-    scale_y_add_on <- NULL
-
-  }
-
-
-  mapping <- ggplot2::aes(x = bins_order, y = values, color = .data[[facet_by]])
-
-  ggplot2::ggplot(data = plot_df, mapping = mapping) +
-    line_add_on +
-    confuns::scale_color_add_on(
-      variable = plot_df[[facet_by]],
-      clrp = clrp,
-      clrp.adjust = clrp_adjust
-      ) +
-    scale_y_add_on +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")),
-      axis.line.y = ggplot2::element_line(),
-      strip.background = ggplot2::element_blank()
-    ) +
-    ggplot2::labs(
-      x = xlab,
-      y = ylab,
-      color = facet_by
-      ) +
-    facet_add_on +
-    border_add_on +
-    theme_add_on
-
-}
-
-
-
-
-
-# plotM -------------------------------------------------------------------
-
-#' @title Plot mosaic plot
-#'
-#' @description Plots a mosaic plot of two grouping variables.
-#'
-#' @param grouping_variable Character value. The grouping variable that is
-#' plotted on the x-axis.
-#' @param fill_by Character value. The grouping variable that is used to
-#' fill the mosaic.
-#'
-#' @inherit confuns::plot_moasic params
-#' @inherit argument_dummy params
-#' @inherit plotBarchart params return
-#'
-#' @export
-#'
-plotMosaicplot <- function(object,
-                           grouping_variable,
-                           fill_by,
-                           clrp = NULL,
-                           clrp_adjust = NULL,
-                           ...){
-
-  require(ggmosaic)
-
-  hlpr_assign_arguments(object)
-
-  confuns::check_one_of(
-    input = c(grouping_variable, fill_by),
-    against = getGroupingOptions(object),
-    suggest = TRUE
-  )
-
-  df <- getFeatureDf(object)
-
-  confuns::plot_mosaic(
-    df = df,
-    x = grouping_variable,
-    fill.by = fill_by,
-    clrp = clrp,
-    clrp.adjust = clrp_adjust
-  ) +
-    ggplot2::theme(
-      panel.background = ggplot2::element_blank(),
-      axis.ticks.y = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_blank(),
-      axis.title.y = ggplot2::element_blank()
-    ) +
-    ggplot2::labs(
-      x = grouping_variable,
-      fill = fill_by
-    )
-
-}
-
-
-
-
-
-
-
-
-
-# plotT -------------------------------------------------------------------
-
-
-#' @title Plot STS evaluation per variable-model pair
-#'
-#' @description Plots inferred gene expression along a spatial trajectory
-#' against model values.
-#'
-#' @inherit imageAnnotationScreening params
-#' @inherit plotScatterplot params
-#' @inherit argument_dummy params
-#' @param display_corr Logical. If TRUE, correlation values are added to the plots.
-#' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
-#' @param corr_pos_x,corr_pos_y Numeric vector of length two. The position of
-#' the correlation text with x- and y-coordinates.
-#' @param corr_text_sep Character value used to separate correlation value and
-#' corresponding p-value.
-#' @param corr_text_size Numeric value. Size of text.
-#'
-#' @export
-#'
-plotTrajectoryEvaluation <- function(object,
-                                     id,
-                                     variables,
-                                     binwidth = ccDist(object),
-                                     n_bins_circle = NA_integer_,
-                                     model_subset = NULL,
-                                     model_remove = NULL,
-                                     model_add = NULL,
-                                     pt_alpha = 0.9,
-                                     pt_color = "black",
-                                     pt_size = 1,
-                                     line_alpha = 0.9,
-                                     line_color = "blue",
-                                     line_size = 1,
-                                     display_se = FALSE,
-                                     display_corr = FALSE,
-                                     corr_p_min = 5e-05,
-                                     corr_pos_x = NULL,
-                                     corr_pos_y = NULL,
-                                     corr_text_sep = "\n",
-                                     corr_text_size = 1,
-                                     verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  sts_df <-
-    getTrajectoryScreeningDf(
-      object = object,
-      id = id,
-      variables = variables,
-      binwidth = binwidth,
-      normalize = TRUE
-    )
-
-  plot_screening_evaluation(
-    df = sts_df,
-    variables = variables,
-    var_order = "trajectory_order",
-    model_subset = model_subset,
-    model_remove = model_remove,
-    model_add = model_add,
-    pt_alpha = pt_alpha,
-    pt_color = pt_color,
-    pt_size = pt_size,
-    line_alpha = line_alpha,
-    line_size = line_size,
-    display_se = display_se,
-    display_corr = display_corr,
-    corr_p_min = corr_p_min,
-    corr_pos_x = corr_pos_x,
-    corr_pos_y = corr_pos_y,
-    corr_text_sep = corr_text_sep,
-    corr_text_size = corr_text_size,
-    verbose = verbose
-  )
-
-}
-
-
-
-# pi ----------------------------------------------------------------------
+# pick --------------------------------------------------------------------
 
 pick_vars <- function(df, input, order_by, neg_log){
 
@@ -890,9 +96,170 @@ pick_vars <- function(df, input, order_by, neg_log){
 }
 
 
+# print -------------------------------------------------------------------
+
+#' @title Print autoencoder summary
+#'
+#' @description Prints a human readable summary about the set up of the last neural network that
+#' was constructed to generate a denoised expression matrix.
+#'
+#' @inherit check_sample params
+#'
+#' @inherit print_family return
+#' @export
+
+printAutoencoderSummary <- function(object, mtr_name = "denoised", of_sample = ""){
+
+  check_object(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  info_list <- object@information$autoencoder[[of_sample]][["nn_set_ups"]]
+
+  info_list <- getAutoencoderSetUp(object = object, of_sample = of_sample, mtr_name = mtr_name)
+
+  if(base::is.null(info_list)){
+
+    base::stop("Could not find any information. It seems as if function 'runAutoEncoderDenoising()' has not been run yet.")
+
+  }
+
+  feedback <- glue::glue("{introduction}: \n\nActivation function: {activation}\nBottleneck neurons: {bn}\nDropout: {do}\nEpochs: {epochs}\nLayers: {layers}",
+                         introduction = glue::glue("The neural network that generated matrix '{mtr_name}' was constructed with the following adjustments"),
+                         activation = info_list$activation,
+                         bn = info_list$bottleneck,
+                         do = info_list$dropout,
+                         epochs = info_list$epochs,
+                         layers = glue::glue_collapse(x = info_list$layers, sep = ", ", last = " and "))
+
+  base::return(feedback)
+
+}
+
+#' @title Print overview of all conducted de-analysis
+#'
+#' @inherit check_sample params
+#' @inherit print_family return
+#'
+#' @export
+
+printDeaOverview <- function(object, of_sample = NA){
+
+  check_object(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  dea_list <- object@dea[[of_sample]]
+
+  check_availability(
+    test = !base::is.null(base::names(dea_list)),
+    ref_x = "any DEA results",
+    ref_fns = "runDeaAnalysis()"
+  )
+
+  msg_dea <-
+    purrr::map(
+      .x = dea_list,
+      .f = ~ base::names(.x) %>%
+        glue::glue_collapse( sep = "', '", last = "' and '") %>%
+        base::as.character()
+    ) %>%
+    confuns::glue_list_report(prefix = "- '", separator = "' with methods: ")
+
+  msg <-
+    glue::glue(
+      "DEA results exist for grouping {ref1}:\n{msg_dea}",
+      ref1 = confuns::adapt_reference(base::names(dea_list), sg = "variable", pl = "variables"))
+
+  base::print(msg)
+
+}
 
 
-# pr ----------------------------------------------------------------------
+#' @title Print current default settings
+#'
+#' @inherit check_object params
+#' @inherit print_family return
+#'
+#' @export
+
+printDefaultInstructions <- function(object){
+
+  check_object(object)
+
+  dflt_instructions <- getDefaultInstructions(object)
+
+  slot_names <- methods::slotNames(x = dflt_instructions)
+
+  default_list <-
+    base::vector(mode = "list", length = base::length(slot_names)) %>%
+    purrr::set_names(nm = slot_names)
+
+  for(slot in slot_names){
+
+    slot_content <- methods::slot(object = dflt_instructions, name = slot)
+
+    if(base::is.character(slot_content)){
+
+      slot_content <-
+        glue::glue_collapse(x = slot_content, width = 100, sep = ", ") %>%
+        base::as.character()
+    }
+
+    default_list[[slot]] <- slot_content
+
+  }
+
+  feedback <-
+    glue::glue("The spata object uses the following as default input for recurring arguments: {report}",
+               report = confuns::glue_list_report(lst = default_list))
+
+  base::return(feedback)
+
+}
+
+
+#' @title Print overview about the current gene sets
+#'
+#' @inherit check_sample params
+#'
+#' @inherit print_family return
+#'
+#' @export
+
+printGeneSetOverview <- function(object){
+
+  # lazy check
+  check_object(object)
+
+  # main part
+  gene_sets_df <- dplyr::ungroup(object@used_genesets)
+
+  gene_sets <- object@used_genesets$ont
+
+  if(base::nrow(gene_sets_df) == 0){
+
+    base::message("Gene-set data.frame is empty.")
+    base::return(data.frame())
+
+  } else {
+
+    gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
+
+    dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
+      dplyr::select(-gene) %>%
+      dplyr::distinct() %>%
+      dplyr::pull(gs_type) %>%
+      base::table() %>%
+      base::as.data.frame() %>%
+      magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
+
+  }
+
+}
+
+
+# process -----------------------------------------------------------------
 
 
 process_ranges <- function(xrange = getImageRange(object)$x,
@@ -1094,7 +461,345 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
 }
 
-# pu ----------------------------------------------------------------------
+
+#' @title Wrapper around Seurat processing functions
+#'
+#' @inherit argument_dummy params
+#' @inherit transformSpataToSeurat params
+#' @param seurat_object A valid seurat-object.
+#'
+#'
+#' @return A processed seurat-object.
+#'
+
+process_seurat_object <- function(seurat_object,
+                                  assay_name = NULL,
+                                  calculate_rb_and_mt = TRUE,
+                                  remove_stress_and_mt = TRUE,
+                                  SCTransform = FALSE,
+                                  NormalizeData = TRUE,
+                                  FindVariableFeatures = TRUE,
+                                  ScaleData = TRUE,
+                                  RunPCA = TRUE,
+                                  FindNeighbors = TRUE,
+                                  FindClusters = TRUE,
+                                  RunTSNE = TRUE,
+                                  RunUMAP = TRUE,
+                                  verbose = TRUE){
+
+  # 1. Control --------------------------------------------------------------
+
+  base::stopifnot(methods::is(object = seurat_object, class2 = "Seurat"))
+
+  confuns::is_value(x = assay_name, mode = "character", skip.allow = TRUE, skip.val = NULL)
+
+  if(base::is.null(assay_name)){
+
+    assay_name <- base::names(seurat_object@assays)
+
+    if(base::length(assay_name) != 1){
+
+      msg <- glue::glue("Found more than one assay in provided seurat-object. Please specify one of the options '{ref_assays}' using argument 'assay_name'.",
+                        ref_assays = glue::glue_collapse(x = assay_name, sep = "', '", last = "' or '"))
+
+      confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+    }
+
+  }
+
+  for(fn in seurat_process_fns){
+
+    input <- base::parse(text = fn) %>% base::eval()
+
+    if(base::is.data.frame(input) | (!base::isTRUE(input) && !base::is.list(input) &&!base::isFALSE(input))){
+
+      base::stop(glue::glue("Invalid input for argument '{fn}'. Must either be TRUE, FALSE or a named list."))
+
+    }
+
+  }
+
+  # calculate ribosomal and mitochondrial percentage
+  if(base::isTRUE(calculate_rb_and_mt)){
+
+    msg <- "Calculating percentage of ribosomal and mitochondrial genes."
+
+    confuns::give_feedback(msg = msg, verbose = verbose)
+
+    seurat_object[["percent.mt"]] <- Seurat::PercentageFeatureSet(seurat_object, pattern = "^MT.")
+    seurat_object[["percent.RB"]] <- Seurat::PercentageFeatureSet(seurat_object, pattern = "^RPS")
+
+  }
+
+  # remove stress and mitochondrial genes
+  if(base::isTRUE(remove_stress_and_mt)){
+
+    msg <- "Removing stress genes and mitochondrial genes."
+
+    confuns::give_feedback(msg = msg, verbose = verbose)
+
+    exclude <- c(base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^RPL", base::rownames(seurat_object@assays[[assay_name]]))],
+                 base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^RPS", base::rownames(seurat_object@assays[[assay_name]]))],
+                 base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^MT-", base::rownames(seurat_object@assays[[assay_name]]))],
+                 c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1'))
+
+    feat_keep <- base::rownames(seurat_object@assays[[assay_name]][!(base::rownames(seurat_object@assays[[assay_name]]) %in% exclude), ])
+
+    seurat_object <- base::subset(x = seurat_object, features = feat_keep)
+
+  }
+
+
+
+  # 2. Process seurat object ------------------------------------------------
+
+  functions_to_call <- seurat_process_fns
+
+  for(fn in functions_to_call){
+
+    input <-
+      base::parse(text = fn) %>%
+      base::eval()
+
+    if(base::isTRUE(input)){
+
+      msg <- glue::glue("Running 'Seurat::{fn}()' with default parameters.")
+
+      confuns::give_feedback(msg = msg, verbose = verbose)
+
+      args <- base::list("object" = seurat_object)
+
+      if(fn == "ScaleData"){
+
+        args <- base::append(x = args, values = list("features" = base::rownames(seurat_object)))
+
+      }
+
+      # ensure that function is called from Seurat-namespace
+      fn <- stringr::str_c("Seurat::", fn, sep = "")
+
+      seurat_object <- base::tryCatch(
+
+        rlang::invoke(.fn = base::eval(base::parse(text = fn)), args),
+
+        error = function(error){
+
+          msg <- glue::glue("Running'Seurat::{fn}()' resulted in the following error: {error$message}. Abort and continue with next function.")
+
+          confuns::give_feedback(msg = msg, verbose = TRUE)
+
+          base::return(seurat_object)
+
+        })
+
+    } else if(base::is.list(input) &
+              !base::is.data.frame(input)){
+
+      msg <- glue::glue("Running 'Seurat::{fn}()' with specified parameters.")
+
+      confuns::give_feedback(msg = msg, verbose = verbose)
+
+      args <- purrr::prepend(x = input, values = seurat_object)
+
+      if(fn == "ScaleData" && !"features" %in% base::names(args)){
+
+        args <- base::append(x = args,
+                             values = list("features" = base::rownames(seurat_object)))
+
+      }
+
+      # ensure that function is called from Seurat-namespace
+      fn <- stringr::str_c("Seurat::", fn, sep = "")
+
+      seurat_object <- base::tryCatch(
+
+        rlang::invoke(.fn = base::eval(base::parse(text = fn)), args),
+
+        error = function(error){
+
+          msg <- glue::glue("Running'Seurat::{fn}()' resulted in the following error: {error$message}. Abort and continue with next function.")
+
+          confuns::give_feedback(msg = msg, verbose = TRUE)
+
+          base::return(seurat_object)
+
+        }
+
+      )
+
+    } else {
+
+      msg <- glue::glue("Skip running '{fn}()' as it's argument input is neither TRUE nor a list.")
+
+      confuns::give_feedback(msg = msg, verbose = verbose)
+
+    }
+
+  }
+
+  base::return(seurat_object)
+
+}
+
+
+
+# project -----------------------------------------------------------------
+
+
+
+#' @title Project barcode spots on a trajectory
+#'
+#' @description Projects every barcode spot that falls in to the rectangle
+#' defined by the trajectory and the width parameter on the trajectory
+#' and saves the projection length in a vector.
+#'
+#' @param segment_df A data.frame specifying each segment of the whole
+#' trajectory with variables \code{x, y, xend, yend}.
+#' @param width Numeric value that determines the width of the
+#' trajectory.
+#' @inherit check_sample params
+#'
+#' @return A data.frame containing the variables \emph{barcodes, sample, x, y}
+#' as well as
+#' \itemize{
+#'  \item{\emph{projection_length}: indicating the position of every barcode-spot
+#'  with respect to the direction of the trajectory-part. The higher the barcode-spots
+#'  value is the farther away it is from the starting point of the trajectory-part
+#'  it belongs to. }
+#'  \item{\emph{trajectory_part}: indicating the part of the trajectory the barcode-spot
+#'   belongs to.}
+#'   }
+#'
+#' @export
+
+project_on_trajectory <- function(coords_df,
+                                  segment_df,
+                                  width){
+
+  projection_df <-
+    purrr::map_df(
+      .x = 1:base::nrow(segment_df),
+      .f = function(i){
+
+        # One dimensional part ----------------------------------------------------
+
+        trajectory_part <- segment_df[i,1:4]
+
+        start_point <- base::as.numeric(trajectory_part[,c("x", "y")])
+        end_point <- base::as.numeric(trajectory_part[,c("xend", "yend")])
+
+        trajectory_vec <- end_point - start_point
+
+        # factor with which to compute the width vector
+        trajectory_magnitude <- base::sqrt((trajectory_vec[1])^2 + (trajectory_vec[2])^2)
+        trajectory_factor <- width / trajectory_magnitude
+
+        # orthogonal trajectory vector
+        orth_trajectory_vec <- (c(-trajectory_vec[2], trajectory_vec[1]) * trajectory_factor)
+
+
+        # Two dimensional part ----------------------------------------------------
+
+        # determine trajectory frame points 'tfps' making up the square that embraces
+        # the points
+        tfp1.1 <- start_point + orth_trajectory_vec
+        tfp1.2 <- start_point - orth_trajectory_vec
+        tfp2.1 <- end_point - orth_trajectory_vec
+        tfp2.2 <- end_point + orth_trajectory_vec
+
+        trajectory_frame <-
+          data.frame(
+            x = c(tfp1.1[1], tfp1.2[1], tfp2.1[1], tfp2.2[1]),
+            y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
+          )
+
+        # calculate every point of interests projection on the trajectory vector using 'vector projection'  on a local
+        # coordinate system 'lcs' to sort the points according to the trajectories direction
+
+        lcs <- data.frame(
+          x = c(tfp1.1[1], tfp1.1[1]),
+          y = c(tfp1.1[2], tfp1.1[2]),
+          xend = c(tfp2.2[1], tfp1.2[1]),
+          yend = c(tfp2.2[2], tfp1.2[2]),
+          id = c("local length axis", "local width axis")
+        )
+
+        positions <-
+          sp::point.in.polygon(
+            point.x = coords_df$x,
+            point.y = coords_df$y,
+            pol.x = trajectory_frame$x,
+            pol.y = trajectory_frame$y
+          )
+
+
+        # Data wrangling part -----------------------------------------------------
+
+        # points of interest data.frame
+        points_of_interest <-
+          dplyr::mutate(.data = coords_df, position = {{positions}}) %>%
+          dplyr::filter(position != 0) %>% # filter only those that fall in the trajectory frame
+          dplyr::select(-position) %>%
+          dplyr::group_by(barcodes) %>%
+          dplyr::mutate(
+            projection_length = project_on_vector(lcs = lcs, x = x, y = y),
+            trajectory_part = stringr::str_c("Part", i, sep = " ")
+          ) %>%
+          dplyr::arrange(projection_length) %>%  # arrange barcodes according to their projection value
+          dplyr::ungroup()
+
+      }
+    )
+
+  return(projection_df)
+
+}
+
+
+
+#' @title Perform vector projection
+#'
+#' @description Helper function for trajectory-analysis to use within
+#' \code{dplyr::mutate()}. Performs vector-projection with a spatial position
+#' and a local coordinates system to arrange the barcodes that fall into a
+#' trajectory square according to the trajectory direction.
+#'
+#' @param lcs A data.frame specifying the local coordinates system with variables
+#' \code{x, y, xend, yend} and the observations \emph{local length axis} and
+#' \emph{local width axis}.
+#' @param x x-coordinate
+#' @param y y-coordinate
+#'
+#' @return The projected length.
+#'
+#' @export
+
+project_on_vector <- function(lcs, x, y){
+
+  # vector from point of interest to origin of local coord system: 'vto'
+  vto <- c((x - lcs$x[1]), (y - lcs$y[1]))
+
+  # define local length axis (= relocated trajectory): 'lla'
+  lla <- c((lcs$xend[1] - lcs$x[1]), (lcs$yend[1] - lcs$y[1]))
+
+  # define lambda coefficient
+  lambda <-
+    ((vto[1] * lla[1]) + (vto[2] * lla[2])) / base::sqrt((lla[1])^2 + (lla[2])^2)^2
+
+  # projecting vector on length axis
+  pv <- lambda * (lla)
+
+  # compute the length of the projected vector
+  res <- base::sqrt((pv[1])^2 + (pv[2])^2)
+
+  return(res)
+
+}
+
+
+
+# pull --------------------------------------------------------------------
 
 
 
