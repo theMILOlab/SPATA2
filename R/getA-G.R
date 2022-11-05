@@ -216,6 +216,96 @@ getBarcodes <- function(object,
 }
 
 
+
+#' @title Obtain barcode spot distances
+#'
+#' @description Computes the distance from every barcode spot to every other
+#' barcode spot.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details The output data.frame has a number of rows that is equal to
+#' \code{nBarcodes(object)^2}
+#'
+#' @return If \code{unit} is \emph{'pixel'} a numeric value that scales
+#' the center to center distance of barcode spots to the current image.
+#' Else an object of class \code{unit}.
+#' @export
+#'
+#'
+getBarcodeSpotDistance <- function(object,
+                                   unit = "pixel",
+                                   force = FALSE,
+                                   verbose = NULL,
+                                   ...){
+
+  dist_val <- object@information$bcsp_dist
+
+  if(base::is.null(dist_val) & base::isFALSE(force)){
+
+    dist_val <-
+      getBarcodeSpotDistances(object, verbose = verbose) %>%
+      dplyr::filter(bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::filter(distance == base::min(distance)) %>%
+      dplyr::ungroup() %>%
+      dplyr::summarise(mean_dist = base::mean(distance)) %>%
+      dplyr::pull(mean_dist)
+
+  }
+
+  return(dist_val)
+
+}
+
+#' @title Obtain distances between barcodes
+#'
+#' @inherit argument_dummy params
+#' @param barcdoes Character vector or NULL. If character,
+#' only input barcodes are considered.
+#'
+#'
+#' @return A data.frame in which each observation/row corresponds to a barcodes-spot ~
+#' barcode-spot pair.
+#'
+#' @export
+#'
+#' @examples
+getBarcodeSpotDistances <- function(object,
+                                    barcodes = NULL,
+                                    unit = "pixel",
+                                    verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::give_feedback(
+    msg = "Computing barcode spot distances.",
+    verbose = verbose
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  bc_origin <- coords_df$barcodes
+  bc_destination <- coords_df$barcodes
+
+  distance_df <-
+    tidyr::expand_grid(bc_origin, bc_destination) %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y), by = "bc_origin") %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y), by = "bc_destination") %>%
+    dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  return(distance_df)
+
+}
+
+
+
+
 # getC --------------------------------------------------------------------
 
 #' @title Obtain Center to Center distance

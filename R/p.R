@@ -890,6 +890,210 @@ pick_vars <- function(df, input, order_by, neg_log){
 }
 
 
+
+
+# pr ----------------------------------------------------------------------
+
+
+process_ranges <- function(xrange = getImageRange(object)$x,
+                           yrange = getImageRange(object)$y,
+                           expand = 0,
+                           persp = "image",
+                           object = NULL){
+
+  if(!base::is.null(xrange)){
+
+    xrange <- asPixel(input = xrange, object = object, as_numeric = TRUE)
+
+  }
+
+  if(!base::is.null(yrange)){
+
+    yrange <- asPixel(input = yrange, object = object, as_numeric = TRUE)
+
+  }
+
+  expand_input <- expand
+
+  out <-
+    list(
+      xmin = xrange[1],
+      xmax = xrange[2],
+      ymin = yrange[1],
+      ymax = yrange[2]
+    )
+
+  img_dims <- getImageDims(object)
+
+  actual_xmax <- img_dims[1]
+  actual_ymax <- img_dims[2]
+
+  if(base::is.numeric(xrange)){
+
+    # first value is always used for xrange
+    expand <- expand_input[1]
+
+    # check if expand is treated as a percentage or an absolute number
+    if(expand <= 1){
+
+      expand_val <- (base::max(xrange) - base::min(xrange)) * expand
+
+      expand_opt <- "percentage"
+
+    } else {
+
+      expand_val <- expand/2
+
+      expand_opt <- "absolute"
+
+    }
+
+    # add a percentage
+    if(expand_opt == "percentage"){
+
+      xmin <- xrange[1] - expand_val
+
+      if(xmin < 0){ xmin <- 0 }
+
+      xmax <- xrange[2] + expand_val
+
+      if(xmax > actual_xmax){ xmax <- actual_xmax }
+
+      out$xmin <- xmin
+      out$xmax <- xmax
+
+      # consider as absolute
+    } else if(expand_opt == "absolute") {
+
+      xspan <- xrange[2] - xrange[1]
+
+      if(expand < xspan){
+
+        xspan_ref <- base::round(xspan, digits = 2)
+
+        warning(
+          glue::glue(
+            "Value for `expand` to set the xrange is {expand} and thus lower than the actual span of the xrange of
+            the requested image which is {xspan_ref}. Returning original xrange."
+          )
+        )
+
+        expand_val <- xspan/2
+
+      }
+
+      xcenter <- base::mean(x = xrange)
+
+      xmin <- xcenter - expand_val
+
+      if(xmin < 0){ xmin <- 0}
+
+      xmax <- xcenter + expand_val
+
+      if(xmax > actual_xmax){ xmax <- actual_xmax}
+
+      out$xmin <- xmin
+      out$xmax <- xmax
+
+    }
+
+  }
+
+  if(base::is.numeric(yrange)){
+
+    # input for x- and yrange often come from the perspective of the
+    # coordinates. however, the yaxis is flipped in the image
+    # -> flip range
+    if(persp == "image"){
+
+      yrange <- c((actual_ymax - yrange[1]), (actual_ymax - yrange[2]))
+
+      # switch yrange min and max back to first and last place
+      yrange <- base::rev(yrange)
+
+    }
+
+    # if length == 2 second value is used for yrange
+    if(base::length(expand_input) == 2){
+
+      expand <- expand_input[2]
+
+
+    } else {
+
+      expand <- expand_input[1]
+
+    }
+
+    if(expand <= 1){
+
+      expand_val <- (base::max(yrange) - base::min(yrange)) * expand
+
+      expand_opt <- "percentage"
+
+    } else {
+
+      expand_val <- expand/2
+
+      expand_opt <- "absolute"
+
+    }
+
+    # add a percentage
+    if(expand_opt == "percentage"){
+
+      ymin <- yrange[1] - expand_val
+
+      if(ymin < 0){ ymin <- 0 }
+
+      ymax <- yrange[2] + expand_val
+
+      if(ymax > actual_ymax){ ymax <- actual_ymax }
+
+      out$ymin <- ymin
+      out$ymax <- ymax
+
+      # consider as absolute
+    } else if(expand_opt == "absolute") {
+
+      yspan <- yrange[2] - yrange[1]
+
+      if(expand < yspan){
+
+        yspan_ref <- base::round(yspan, digits = 2)
+
+        warning(
+          glue::glue(
+            "Value for `expand` to set the yrange is {expand} and thus lower than the actual span of the yrange of
+            the requested image which is {yspan_ref}. Returning original yrange."
+          )
+        )
+
+        expand_val <- yspan/2
+
+      }
+
+      ycenter <- base::mean(x = yrange)
+
+      ymin <- ycenter - expand_val
+
+      if(ymin < 0){ ymin <- 0}
+
+      ymax <- ycenter + expand_val
+
+      if(ymax > actual_ymax){ ymax <- actual_ymax}
+
+      out$ymin <- ymin
+      out$ymax <- ymax
+
+    }
+
+  }
+
+  return(out)
+
+}
+
 # pu ----------------------------------------------------------------------
 
 

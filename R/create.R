@@ -410,6 +410,132 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 
 }
 
+#' @export
+create_model_df <- function(input,
+                            var_order = NULL,
+                            model_subset = NULL,
+                            model_remove = NULL,
+                            model_add = NULL,
+                            verbose = TRUE){
+
+  # if length > 1 it is assumed that input corresponds to a variable like 'var_order'
+  # and the output models will have the same length as the vector of it's unique values
+  if(base::length(input) > 1){
+
+    input <-
+      base::unique(input) %>%
+      base::sort()
+
+    input <- base::length(input)
+
+  } else {
+
+    # else length(input) == 1, input indicates the length of the output models
+
+
+  }
+
+  fns_input <- model_formulas
+
+  # select models of interest
+  if(base::is.character(model_subset)){
+
+    fns_input <-
+      confuns::lselect(
+        lst = fns_input,
+        dplyr::contains(model_subset)
+      )
+
+  }
+
+  # remove unwanted models
+  if(base::is.character(model_remove)){
+
+    fns_input <-
+      confuns::lselect(
+        lst = fns_input,
+        -dplyr::contains(model_remove),
+        out.fail =
+      )
+
+  }
+
+  # add additional models to screen for
+  if(base::is.list(model_add)){
+
+    model_add <- base::as.list(model_add)
+
+    models_add_named <- confuns::keep_named(input = model_add)
+
+    confuns::check_none_of(
+      input = base::names(models_add_named),
+      against = base::names(fns_input),
+      ref.input = "names of additional models",
+      ref.against = "names of known model to SPATA2"
+    )
+
+    n_names <- base::names(models_add_named) %>% base::length()
+    n_model <- base::length(models_add_named)
+
+    if(n_names != n_model){ stop("Every additional model must be named uniquely.") }
+
+    fns_formulas <- purrr::keep(models_add_named,  .p = purrr::is_formula)
+
+    fns_numeric <-
+      purrr::keep(models_add_named, .p = ~ base::is.numeric(.x) & base::length(.x) == input) %>%
+      purrr::map(.f = confuns::normalize)
+
+    add_model_names <-
+      base::names(c(fns_formulas, fns_numeric)) %>%
+      confuns::scollapse()
+
+    ref <- confuns::adapt_reference(input = base::length(add_model_names), "model")
+
+    confuns::give_feedback(
+      msg = glue::glue("Adding {ref} '{add_model_names}' to screening."),
+      verbose = verbose,
+    )
+
+    fns_input <- c(fns_input, fns_formulas)
+
+  } else {
+
+    fns_numeric <- NULL
+
+  }
+
+  n_models <- base::length(fns_input) + base::length(fns_numeric)
+
+  confuns::give_feedback(
+    msg = glue::glue("Total number of models: {n_models}."),
+    verbose = verbose
+  )
+
+  out_df <-
+    tibble::tibble(x = base::as.integer(1:input)) %>%
+    dplyr::transmute(dplyr::across(.cols = x, .fns = fns_input, .names = "{.fn}"))
+
+  if(base::is.list(fns_numeric) & !purrr::is_empty(fns_numeric)){
+
+    out_df <-
+      tibble::as_tibble(fns_numeric) %>%
+      base::cbind(out_df, .) %>%
+      tibble::as_tibble()
+
+  }
+
+  if(base::is.character(var_order)){
+
+    out_df <-
+      dplyr::mutate(out_df, {{var_order}} := dplyr::row_number()) %>%
+      dplyr::select({{var_order}}, dplyr::everything())
+
+  }
+
+  return(out_df)
+
+}
+
 
 
 # createI -----------------------------------------------------------------

@@ -1,3 +1,54 @@
+
+#' @title Remove annotation
+#'
+#' @description Removes annotations within annotation variables.
+#'
+#' @param ann_var Character value. The annotation variable that contains
+#' the barcode spot annotations you want to alter.
+#' @param groups Character vector. The annotation / group names you want
+#' to remove.
+#'
+#' @details As the default within every annotation variable is \emph{'unnamed'}
+#' removing the annotation effectively renames the annotation back to \emph{'unnamed'}.
+#'
+#' @return An updated spata object.
+#' @export
+#'
+#' @examples
+#'
+#'   object <- createAnnotation(object)
+#'
+#'   object <- removeAnnotation(object, ann_var = "cns_layer", groups = c("layer_1", "layer2")
+
+removeAnnotation <- function(object, ann_var, groups){
+
+  confuns::is_value(x = ann_var, mode = "character")
+  confuns::is_vec(x = groups, mode = "character")
+
+  confuns::check_one_of(
+    input = ann_var,
+    against = getAnnotationNames(object, fdb_fn = "stop")
+  )
+
+  confuns::check_one_of(
+    input = groups,
+    against = getGroupNames(object, discrete_feature = ann_var)
+  )
+
+  fdata <- getFeatureDf(object = object)
+
+  fdata[[ann_var]][fdata[[ann_var]] %in% groups] <- "unnamed"
+
+  object <- setFeatureDf(object, feature_df = fdata)
+
+  return(object)
+
+}
+
+
+rm_na <- function(x){ x[!base::is.na(x)] }
+
+
 # inspired by https://rdrr.io/github/ErasmusOIC/SMoLR/src/R/rotate.R
 # basic function
 rotate_coord <- function(x,y,angle, type=c("degrees","radial"), method=c("transform","polar","polar_extended"), center=c(0,0), translate=NULL, stretch=NULL, flip=FALSE){

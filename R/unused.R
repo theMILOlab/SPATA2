@@ -183,3 +183,36 @@ ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = F
 
 }
 
+
+
+#' @title Visualize clustering results
+#'
+#' @description Plots a dendrogram of the distance matrix calculated via \code{runSpatialCorrelation()}.
+#'
+#' @inherit check_sample params
+#' @inherit check_method params
+#' @param ... Additional arguments given to \code{ggdendro::ggdendrogram()}
+#'
+#' @return ggplot_family return
+#' @export
+
+plotGeneDendrogram <- function(object,
+                               method_hclust = "complete",
+                               of_sample = NA,
+                               ...){
+
+  hlpr_assign_adjustment(object)
+
+  check_method(method_hclust = method_hclust)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+
+  sp_cor <- getSpCorResults(object, of_sample = of_sample)
+
+  hcluster_out <-
+    stats::hclust(d = sp_cor$dist_mtr, method = method_hclust)
+
+  ggdendro::ggdendrogram(data = hcluster_out, labels = FALSE, ...)
+
+}
+

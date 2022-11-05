@@ -1235,6 +1235,91 @@ createSegmentation2 <- function(object){
 
 }
 
+
+
+# e -----------------------------------------------------------------------
+
+#' @title Examine trajectory-moddeling results
+#'
+#' @description Visualizes the distribution of the assessment-scores
+#'  (residuals-area-under-the-curve) of a trajectory.
+#'
+#' @inherit check_atdf params
+#' @param limits The minimum and maximum auc-values to include. Given to
+#' \code{ggplot2::scale_x_continuous()}.
+#' @param plot_type One of \emph{'histogram', 'density', and 'ridgeplot'}.
+#' @param ... additional arguments given to \code{ggplot2::facet_wrap()}.
+#'
+#' @inherit ggplot_family return
+#' @export
+#'
+
+examineTrajectoryAssessment <- function(atdf,
+                                        limits = c(0, 10),
+                                        plot_type = "histogram",
+                                        binwidth = 0.5,
+                                        clrp = "milo",
+                                        ...){
+
+  # 1. Control --------------------------------------------------------------
+
+  confuns::is_value(plot_type,"character", "plot_type")
+  confuns::is_value(clrp, "character", "clrp")
+  check_atdf(atdf)
+
+  var <- "variables"
+
+  base::stopifnot(base::is.character(dplyr::pull(atdf, {{var}})))
+
+  # -----
+
+  # 2. Plotting -------------------------------------------------------------
+
+  atdf <- dplyr::filter(atdf, dplyr::between(auc, left = limits[1], right = limits[2]))
+
+  if(plot_type == "histogram"){
+
+    display_add_on <- list(
+      ggplot2::geom_histogram(mapping = ggplot2::aes(x = auc, fill = pattern),
+                              binwidth = binwidth, color = "black", data = atdf),
+      ggplot2::facet_wrap(facets = . ~ pattern, ...)
+    )
+
+  } else if(plot_type == "density"){
+
+    display_add_on <- list(
+      ggplot2::geom_density(mapping = ggplot2::aes(x = auc, fill = pattern),
+                            color = "black", data = atdf),
+      ggplot2::facet_wrap(facets = . ~ pattern, ...)
+    )
+
+  } else if(plot_type == "ridgeplot"){
+
+    display_add_on <- list(
+      ggridges::geom_density_ridges(mapping = ggplot2::aes(x = auc, y = pattern, fill = pattern),
+                                    color = "black", data = atdf, alpha = 0.75),
+      ggridges::theme_ridges()
+    )
+
+  } else {
+
+    base::stop("Argument 'plot_type' needs to be one of 'histogram', 'density' or 'ridgeplot'")
+  }
+
+  # -----
+
+  ggplot2::ggplot(data = atdf) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(x = "Area under the curve [residuals]",
+                  y = NULL) +
+    confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    display_add_on +
+    ggplot2::theme(
+      strip.background = ggplot2::element_blank(),
+      legend.position = "none")
+
+}
+
 # g -----------------------------------------------------------------------
 
 #' @title Obtain information about object initiation
@@ -1802,6 +1887,137 @@ make_pretty_model_names <- function(model_names){
 
 }
 
+
+#' @title Merge Spata Objects
+#'
+#' @description Takes an arbitrary number of spata-objects and merges them into one.
+#'
+#' @param objects A list of valid spata-objects. All sample names must be unique.
+#' @param gsdf_input Determines the final input for slot @@used_genesets:
+#'
+#' If set to \emph{'merge'} all gene-set data.frames of all objects are joined
+#' and unique gene-sets are kept. Gene-sets with the same name but different
+#' genes are merged!
+#'
+#' If a directory is specified the directory is given to \code{loadGSDF()}.
+#'
+#' If a data.frame is specified that data.frame is used.
+#'
+#' If set to NULL the standard \code{SPATA::gsdf} is used.
+#'
+#' @return A merged spata object.
+#' @export
+#'
+
+mergeSpataObjects <- function(objects, gsdf_input = NULL, verbose = TRUE){
+
+  deprecated(fn = TRUE)
+
+  object_list <-
+    purrr::keep(.x = objects,
+                .p = ~ methods::is(object = .x, class2 = "spata"))
+
+  sample_names <-
+    purrr::map(.x = objects, .f = ~ getSampleNames(object = .x)) %>%
+    purrr::flatten_chr()
+
+  if(dplyr::n_distinct(sample_names) != base::length(sample_names)){
+
+    base::stop("All sample names must be unique.")
+
+  } else {
+
+    merged_object <- methods::new("spata", samples = sample_names)
+
+  }
+
+  merged_object@coordinates <-
+    purrr::map(.x = objects, .f = ~ .x@coordinates) %>%
+    purrr::flatten() %>%
+    purrr::set_names(nm = getSampleNames(merged_object))
+
+  merged_object@data <-
+    purrr::map(.x = objects, .f = ~ .x@data) %>%
+    purrr::flatten() %>%
+    purrr::set_names(nm = getSampleNames(merged_object))
+
+  merged_object@dea <-
+    purrr::map(.x = objects, .f = ~ .x@dea) %>%
+    purrr::flatten()
+
+  merged_object@dim_red <-
+    purrr::map(.x = objects, .f = ~ .x@dim_red) %>%
+    purrr::flatten() %>%
+    purrr::set_names(nm = getSampleNames(merged_object))
+
+  merged_object@fdata <-
+    purrr::map(.x = objects, .f = ~ .x@fdata) %>%
+    purrr::flatten() %>%
+    purrr::set_names(nm = getSampleNames(merged_object))
+
+  merged_object@images <-
+    purrr::map(.x = objects, .f = ~ .x@images) %>%
+    purrr::set_names(nm = getSampleNames(merged_object)) %>%
+    purrr::flatten()
+
+  information_list <-
+    purrr::map(.x = objects, .f = ~ .x@information)%>%
+    purrr::set_names(nm = getSampleNames(merged_object))
+
+  merged_object@information <-
+    list("active_mtr" = purrr::map(.x = information_list, .f = "active_mtr"),
+         "autoencoder" = purrr::map(.x = information_list, .f = "autoencoder"),
+         "barcodes" = purrr::map(.x = information_list, .f = "barcodes"))
+
+  merged_object@scvelo <-
+    purrr::set_names(x = base::vector(mode = "list"), length = base::length(getSampleNames(merged_object)),
+                     nm = getSampleNames(object))
+
+  merged_object@trajectories <-
+    purrr::map(.x = objects, .f = ~ .x@trajectories) %>%
+    purrr::flatten() %>%
+    purrr::set_names(nm = getSampleNames(merged_object))
+
+  if(base::is.null(gsdf_input)){
+
+    if(base::isTRUE(verbose)){base::message("Using SPATA's default gene set data.frame.")}
+
+    merged_object@used_genesets <- gsdf
+
+  } else if(base::all(gsdf_input == "merge")){
+
+    if(base::isTRUE(verbose)){base::message("Merging gene-set data.frames.")}
+
+    merged_object@used_genesets <-
+      purrr::map_df(.x = object_list, .f = ~ .x@used_genesets) %>%
+      dplyr::distinct()
+
+  } else if(base::is.data.frame(gsdf_input)){
+
+    if(base::isTRUE(verbose)){base::message("Using 'gsdf_input' as gene-set data.frame.")}
+
+    merged_object@used_genesets <- gsdf_input
+
+  } else if(base::is.character(gsdf_input) & base::length(gsdf_input) == 1){
+
+    merged_object@used_genesets <-
+      loadGSDF(gene_set_path = gsdf_input, verbose = verbose)
+
+  }
+
+  merged_object@version <- current_spata_version
+
+
+  # Return merged object ----------------------------------------------------
+
+  base::return(merged_object)
+
+}
+
+
+
+
+
 # p -----------------------------------------------------------------------
 
 #' @rdname plotDendrogram
@@ -1889,6 +2105,1005 @@ plotDendrogramCnv <- function(object,
 
 }
 
+
+
+
+#' @title Distribution of continuous values (Deprecated)
+#'
+#' @description These functions are deprecated in favor of \code{plotDensityplot(),
+#' plotHistogram(), plotRidgplot(), plotBoxplot(), plotViolinplot()} and \code{plotBarchart()}.
+#'
+#' @inherit across_dummy params
+#' @inherit argument_dummy params
+#' @inherit variables_num params
+#' @param plot_type Character value. One of \emph{'histogram', 'density', 'violin', 'boxplot' and 'ridgeplot'}.
+#' @param binwidth The binwidth to use if \code{plot_type} is specified as \emph{'histogram'}.
+#' @param ... additional arguments to \code{ggplot2::facet_wrap()}
+#'
+#' @inherit check_sample params
+#' @inherit check_method params
+#' @inherit normalize params
+#' @inherit check_assign params
+#' @inherit clrp params
+#'
+#' @export
+
+plotDistribution <- function(object,
+                             variables,
+                             plot_type = "histogram",
+                             method_gs = NULL,
+                             clrp = NULL,
+                             binwidth = NULL,
+                             normalize = NULL,
+                             verbose = NULL,
+                             of_sample = NA,
+                             ...){
+
+  # 1. Control --------------------------------------------------------------
+
+  if(!plot_type %in% c("histogram", "density", "ridgeplot", "boxplot", "violin")){
+
+    base::stop("Argument 'plot_type' needs to be one of 'histogram', 'density', 'ridgeplot', 'boxplot', 'violin'.")
+
+  }
+
+  if(plot_type %in% c("violin", "ridgeplot", "boxplot")){
+
+    max_length = 10
+
+  } else {
+
+    max_length = 25
+
+  }
+
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+
+  all_features <- getFeatureNames(object)
+  all_genes <- getGenes(object = object, in_sample = of_sample)
+  all_gene_sets <- getGeneSets(object)
+
+  variables <-
+    check_variables(variables = variables,
+                    all_features = all_features,
+                    all_gene_sets = all_gene_sets,
+                    all_genes = all_genes,
+                    max_length = max_length,
+                    simplify = TRUE)
+
+  # -----
+
+  # 2. Extract and wrangle with data ----------------------------------------
+
+  data <-
+    getCoordinates(object = object,
+                   of_sample = of_sample)
+
+
+  if(base::any(variables %in% all_features)){
+
+    data <-
+      joinWithFeatures(object = object,
+                       spata_df = data,
+                       features = variables[variables %in% all_features],
+                       smooth = FALSE,
+                       verbose = verbose
+      )
+
+  }
+
+  if(base::any(variables %in% all_gene_sets)){
+
+    data <-
+      joinWithGeneSets(object = object,
+                       spata_df = data,
+                       gene_sets = variables[variables %in% all_gene_sets],
+                       method_gs = method_gs,
+                       smooth = FALSE,
+                       verbose = verbose)
+
+  }
+
+  if(base::any(variables %in% all_genes)){
+
+    data <-
+      joinWithGenes(object = object,
+                    spata_df = data,
+                    genes = variables[variables %in% all_genes],
+                    average_genes = FALSE,
+                    verbose = verbose)
+
+  }
+
+  data <-
+    tidyr::pivot_longer(
+      data = data,
+      cols = dplyr::all_of(x = variables),
+      names_to = "variables",
+      values_to = "values"
+    )
+
+  # -----
+
+
+
+  # 3. Display add on -------------------------------------------------------
+
+  data$variables <- hlpr_gene_set_name(string = data$variables)
+
+  if(plot_type == "histogram"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_histogram(mapping = ggplot2::aes(x = values, fill = variables),
+                                color = "black", binwidth = binwidth,
+                                data = data),
+        ggplot2::theme_classic(),
+        ggplot2::labs(y = NULL)
+      )
+
+  } else if(plot_type == "density"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_density(mapping = ggplot2::aes(x = values, fill = variables),
+                              color = "black", data = data),
+        ggplot2::theme_classic(),
+        ggplot2::labs(y = "Density")
+      )
+
+  } else if(plot_type == "ridgeplot"){
+
+    display_add_on <-
+      list(
+        ggridges::geom_density_ridges(mapping = ggplot2::aes(x = values, y = variables, fill = variables),
+                                      color = "black", alpha = 0.825, data = data),
+        ggridges::theme_ridges(),
+        ggplot2::scale_fill_discrete(labels = base::rev(base::unique(variables))),
+        ggplot2::labs(y = NULL)
+      )
+
+  } else if(plot_type == "violin"){
+
+
+    display_add_on <-
+      list(
+        ggplot2::geom_violin(mapping = ggplot2::aes(x = values, y = variables, fill = variables),
+                             color = "black", data = data),
+        ggplot2::theme_classic(),
+        ggplot2::labs(y = NULL),
+        ggplot2::coord_flip()
+      )
+
+  } else if(plot_type == "boxplot"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_boxplot(mapping = ggplot2::aes(x = values, y = variables, fill = variables),
+                              color = "black", data = data),
+        ggplot2::theme_classic(),
+        ggplot2::labs(y = NULL),
+        ggplot2::coord_flip()
+      )
+
+  }
+
+  if(base::length(variables) > 1 && !plot_type  %in% c("ridgeplot", "violin", "boxplot")){
+
+    facet_add_on <-
+      list(ggplot2::facet_wrap(facets = . ~ variables, ...))
+
+  } else {
+
+    facet_add_on <- NULL
+
+  }
+
+  # -----
+
+  ggplot2::ggplot(data = data, mapping = ggplot2::aes(x = values)) +
+    display_add_on +
+    facet_add_on +
+    confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(color = "black"),
+      axis.text.x = ggplot2::element_text(color = "black"),
+      strip.text.y = ggplot2::element_text(angle = 0, face = "italic", size = 14),
+      strip.placement = "outside",
+      strip.background = ggplot2::element_rect(color = "white", fill = "white"),
+      panel.spacing.y = ggplot2::unit(10, "pt"),
+      legend.position = "none"
+    ) +
+    ggplot2::labs(x = NULL)
+
+}
+
+#' @rdname plotDistribution
+#' @export
+plotDistribution2 <- function(df,
+                              variables = "all",
+                              plot_type = "histogram",
+                              clrp = "milo",
+                              binwidth = 0.05,
+                              verbose = TRUE,
+                              ... ){
+
+  # 1. Control --------------------------------------------------------------
+
+  # lazy check
+  confuns::is_value(clrp, "character", "clrp")
+
+  stopifnot(base::is.data.frame(df))
+  if(!base::is.null(variables)){confuns::is_vec(variables, "character", "variables")}
+
+  if(!plot_type %in% c("histogram", "density", "ridgeplot", "boxplot", "violin")){
+
+    base::stop("Argument 'plot_type' needs to be one of 'histogram', 'density', 'ridgeplot', 'boxplot', 'violin'.")
+
+  }
+
+  # check variable input
+  confuns::is_vec(variables, "character", "variables")
+
+  if(base::all(variables == "all")){
+
+    if(base::isTRUE(verbose)){base::message("Argument 'variables' set to 'all'. Extracting all valid, numeric variables.")}
+
+    cnames <- base::colnames(dplyr::select_if(.tbl = df, .predicate = base::is.numeric))
+
+    valid_variables <- cnames[!cnames %in% c("x", "y", "umap1", "umap2", "tsne1", "tsne2")]
+
+  } else {
+
+    check_list <-
+      purrr::map(variables, function(i){c("numeric", "integer", "double")}) %>%
+      magrittr::set_names(value = variables)
+
+    confuns::check_data_frame(
+      df = df,
+      var.class = check_list,
+      ref = "df"
+    )
+
+    valid_variables <- variables
+
+    if(base::isTRUE(verbose)){"All specified variables found."}
+
+  }
+
+  n_valid_variables <- base::length(valid_variables)
+  ref <- base::ifelse(n_valid_variables > 1,
+                      yes = "different variables. (This can take a few seconds.)",
+                      no = "variable.")
+  if(base::isTRUE(verbose)){base::message(glue::glue("Plotting {n_valid_variables} {ref}"))}
+
+  # -----
+
+  # 2. Shift data -----------------------------------------------------------
+
+  expr_data <-
+    tidyr::pivot_longer(
+      data = dplyr::select(.data = df, dplyr::all_of(x = valid_variables)),
+      cols = dplyr::all_of(x = valid_variables),
+      names_to = "valid_variables",
+      values_to = "values"
+    )
+
+  # -----
+
+
+  # 3. Display add on -------------------------------------------------------
+
+  expr_data$valid_variables <- hlpr_gene_set_name(string = expr_data$valid_variables)
+
+  if(plot_type == "histogram"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_histogram(mapping = ggplot2::aes(x = values, fill = valid_variables),
+                                color = "black", binwidth = binwidth,
+                                data = expr_data),
+        ggplot2::labs(y = NULL)
+      )
+
+  } else if(plot_type == "density"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_density(mapping = ggplot2::aes(x = values, fill = valid_variables),
+                              color = "black", data = expr_data),
+        ggplot2::labs(y = "Density")
+      )
+
+  } else if(plot_type == "ridgeplot"){
+
+    display_add_on <-
+      list(
+        ggridges::geom_density_ridges(mapping = ggplot2::aes(x = values, y = valid_variables, fill = valid_variables),
+                                      color = "black", alpha = 0.825, data = expr_data),
+        #ggridges::theme_ridges(),
+        ggplot2::labs(y = NULL)
+      )
+
+  } else if(plot_type == "violin"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_violin(mapping = ggplot2::aes(x = values, y = valid_variables, fill = valid_variables),
+                             color = "black", data = expr_data),
+        ggplot2::labs(y = NULL),
+        ggplot2::coord_flip()
+      )
+
+  } else if(plot_type == "boxplot"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_boxplot(mapping = ggplot2::aes(x = values, y = valid_variables, fill = valid_variables),
+                              color = "black", data = expr_data),
+        ggplot2::labs(y = NULL),
+        ggplot2::coord_flip()
+      )
+
+  }
+
+  if(base::length(valid_variables) > 1 && !plot_type  %in% c("ridgeplot", "violin", "boxplot")){
+
+    facet_add_on <-
+      list(ggplot2::facet_wrap(facets = . ~ valid_variables, ...))
+
+  } else {
+
+    facet_add_on <- NULL
+
+  }
+
+  theme_add_on <- base::ifelse(test = plot_type == "ridgeplot",
+                               yes = list(ggridges::theme_ridges()),
+                               no = list(ggplot2::theme_classic()))
+
+  # 4. Plotting -------------------------------------------------------------
+
+  ggplot2::ggplot(data = expr_data, mapping = ggplot2::aes(x = values)) +
+    display_add_on +
+    facet_add_on +
+    theme_add_on +
+    confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(color = "black"),
+      axis.text.x = ggplot2::element_text(color = "black"),
+      strip.text.y = ggplot2::element_text(angle = 0, face = "italic", size = 14),
+      strip.placement = "outside",
+      strip.background = ggplot2::element_rect(color = "white", fill = "white"),
+      panel.spacing.y = ggplot2::unit(10, "pt"),
+      legend.position = "none"
+    ) +
+    ggplot2::labs(x = NULL)
+
+}
+
+#' @rdname plotDistribution
+#' @export
+plotDistributionAcross <- function(object,
+                                   variables,
+                                   across,
+                                   across_subset = NULL,
+                                   binwidth = 0.05,
+                                   method_gs = NULL,
+                                   plot_type = NULL,
+                                   clrp = NULL,
+                                   normalize = NULL,
+                                   verbose = NULL,
+                                   of_sample = NA,
+                                   ...){
+
+  # 1. Control --------------------------------------------------------------
+
+  if(!plot_type %in% c("histogram", "density", "ridgeplot", "boxplot", "violin")){
+
+    base::stop("Argument 'plot_type' needs to be one of 'histogram', 'density', 'ridgeplot', 'boxplot', 'violin'.")
+
+  }
+
+  hlpr_assign_arguments(object)
+
+  confuns::is_value(clrp, "character", "clrp")
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+  across <- check_features(object, feature = across, valid_classes = c("character", "factor"), max_length = 1)
+
+  all_features <- getFeatureNames(object, of_class = c("integer", "numeric"))
+  all_genes <- getGenes(object, in_sample = of_sample)
+  all_gene_sets <- getGeneSets(object)
+
+  variables <-
+    check_variables(variables = variables,
+                    all_features = all_features,
+                    all_gene_sets = all_gene_sets,
+                    all_genes = all_genes,
+                    simplify = TRUE)
+
+  # -----
+
+  # 2. Extract and wrangle with data ----------------------------------------
+
+  data <-
+    getCoordinates(object = object,
+                   of_sample = of_sample)
+
+
+  if(across %in% getFeatureNames(object)){
+
+    data <-
+      joinWithFeatures(object = object,
+                       spata_df = data,
+                       features = across,
+                       smooth = FALSE,
+                       verbose = verbose
+      )
+
+  }
+
+
+  if(base::any(variables %in% all_features)){
+
+    data <-
+      joinWithFeatures(object = object,
+                       spata_df = data,
+                       features = c(variables[variables %in% all_features]),
+                       smooth = FALSE,
+                       verbose = verbose
+      )
+
+  }
+
+  if(base::any(variables %in% all_gene_sets)){
+
+    data <-
+      joinWithGeneSets(object = object,
+                       spata_df = data,
+                       gene_sets = variables[variables %in% all_gene_sets],
+                       method_gs = method_gs,
+                       smooth = FALSE,
+                       verbose = verbose)
+
+  }
+
+  if(base::any(variables %in% all_genes)){
+
+    data <-
+      joinWithGenes(object = object,
+                    spata_df = data,
+                    genes = variables[variables %in% all_genes],
+                    average_genes = FALSE,
+                    verbose = verbose)
+
+  }
+
+  data <-
+    tidyr::pivot_longer(
+      data = data,
+      cols = dplyr::all_of(x = variables),
+      names_to = "variables",
+      values_to = "values"
+    )
+
+  data <- hlpr_subset_across(data, across, across_subset)
+
+
+  # -----
+
+  # 3. Display add on -------------------------------------------------------
+
+  if(plot_type == "histogram"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_histogram(mapping = ggplot2::aes(x = values, fill = !!rlang::sym(across)),
+                                color = "black", binwidth = binwidth,
+                                data = data),
+        ggplot2::labs(y = NULL)
+      )
+
+  } else if(plot_type == "density"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_density(mapping = ggplot2::aes(x = values, fill = !!rlang::sym(across)),
+                              color = "black", data = data,alpha = 0.825),
+        ggplot2::labs(y = "Density")
+      )
+
+  } else if(plot_type == "ridgeplot"){
+
+    display_add_on <-
+      list(
+        ggridges::geom_density_ridges(mapping = ggplot2::aes(x = values, y = as.factor(!!rlang::sym(across)), fill = !!rlang::sym(across)),
+                                      color = "black", data = data, alpha = 0.825),
+        ggplot2::scale_fill_discrete(guide = ggplot2::guide_legend(reverse = TRUE)),
+        ggplot2::labs(y = across, x = NULL)
+      )
+
+  } else if(plot_type == "violin"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_violin(mapping = ggplot2::aes(x = !!rlang::sym(across), y = values, fill = !!rlang::sym(across)),
+                             color = "black", data = data),
+        ggplot2::labs(y = NULL, x = across)
+      )
+
+  } else if(plot_type == "boxplot"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_boxplot(mapping = ggplot2::aes(x = !!rlang::sym(across), y = values, fill = !!rlang::sym(across)),
+                              color = "black", data = data),
+        ggplot2::labs(y = NULL, x = across)
+      )
+
+  }
+
+  if(base::length(variables) > 1){
+
+    facet_add_on <-
+      list(ggplot2::facet_wrap(facets = . ~ variables, ...))
+
+  } else {
+
+    facet_add_on <- NULL
+
+  }
+
+  # -----
+
+
+  # 4. Plotting -------------------------------------------------------------
+
+  ggplot2::ggplot(data = data, mapping = ggplot2::aes(x = values)) +
+    display_add_on +
+    facet_add_on +
+    confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(color = "black"),
+      axis.text.x = ggplot2::element_text(color = "black"),
+      strip.text.y = ggplot2::element_text(angle = 0, face = "italic", size = 14),
+      strip.placement = "outside",
+      strip.background = ggplot2::element_rect(color = "white", fill = "white"),
+      panel.spacing.y = ggplot2::unit(10, "pt")
+    ) +
+    ggplot2::labs(x = NULL)
+
+}
+
+
+#' @rdname plotDistribution
+#' @export
+plotDistributionAcross2 <- function(df,
+                                    variables = "all",
+                                    across,
+                                    across_subset = NULL,
+                                    plot_type = "violin",
+                                    binwidth = 0.05,
+                                    clrp = "milo",
+                                    ... ,
+                                    normalize = TRUE,
+                                    assign = FALSE,
+                                    assign_name,
+                                    verbose = TRUE){
+
+  # 1. Control --------------------------------------------------------------
+
+  if(!plot_type %in% c("histogram", "density", "ridgeplot", "boxplot", "violin")){
+
+    base::stop("Argument 'plot_type' needs to be one of 'histogram', 'density', 'ridgeplot', 'boxplot', 'violin'.")
+
+  }
+  if(plot_type %in% c("violin", "ridgeplot", "boxplot")){
+
+    max_length = 10
+
+  } else {
+
+    max_length = 25
+
+  }
+
+
+  confuns::is_value(clrp, "character", "clrp")
+
+  # check across input
+  confuns::is_value(across, "character", "across")
+  confuns::check_data_frame(
+    df = df,
+    var.class = list(c("character", "factor")) %>% magrittr::set_names(across),
+    ref = "df"
+  )
+
+  # check variable input
+  confuns::is_vec(variables, "character", "variables")
+
+  if(base::all(variables == "all")){
+
+    if(base::isTRUE(verbose)){base::message("Argument 'variables' set to 'all'. Extracting all valid, numeric variables.")}
+
+    cnames <- base::colnames(dplyr::select_if(.tbl = df, .predicate = base::is.numeric))
+
+    variables <- cnames[!cnames %in% c("x", "y", "umap1", "umap2", "tsne1", "tsne2")]
+
+  } else {
+
+    check_list <-
+      purrr::map(variables, function(i){c("numeric", "integer")}) %>%
+      magrittr::set_names(value = variables)
+
+    confuns::check_data_frame(
+      df = df,
+      var.class = check_list,
+      ref = "df"
+    )
+
+    if(base::isTRUE(verbose)){"All specified variables found."}
+
+  }
+
+  # -----
+
+  # 2. Data extraction ------------------------------------------------------
+
+  data <-
+    tidyr::pivot_longer(
+      data = df,
+      cols = dplyr::all_of(x = variables),
+      names_to = "variables",
+      values_to = "values"
+    )
+
+  data <- hlpr_subset_across(data, across, across_subset)
+
+  # -----
+
+  # 3. Display add on -------------------------------------------------------
+
+  if(plot_type == "histogram"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_histogram(mapping = ggplot2::aes(x = values, fill = !!rlang::sym(across)),
+                                color = "black", binwidth = binwidth,
+                                data = data),
+        ggplot2::labs(y = NULL)
+      )
+
+  } else if(plot_type == "density"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_density(mapping = ggplot2::aes(x = values, fill = !!rlang::sym(across)),
+                              color = "black", data = data,alpha = 0.825),
+        ggplot2::labs(y = "Density")
+      )
+
+  } else if(plot_type == "ridgeplot"){
+
+    display_add_on <-
+      list(
+        ggridges::geom_density_ridges(mapping = ggplot2::aes(x = values, y = as.factor(!!rlang::sym(across)), fill = !!rlang::sym(across)),
+                                      color = "black", data = data, alpha = 0.825),
+        ggplot2::scale_fill_discrete(guide = ggplot2::guide_legend(reverse = TRUE)),
+        ggplot2::labs(y = across, x = NULL)
+
+      )
+
+  } else if(plot_type == "violin"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_violin(mapping = ggplot2::aes(x = !!rlang::sym(across), y = values, fill = !!rlang::sym(across)),
+                             color = "black", data = data),
+        ggplot2::labs(y = NULL, x = across)
+      )
+
+  } else if(plot_type == "boxplot"){
+
+    display_add_on <-
+      list(
+        ggplot2::geom_boxplot(mapping = ggplot2::aes(x = !!rlang::sym(across), y = values, fill = !!rlang::sym(across)),
+                              color = "black", data = data),
+        ggplot2::labs(y = NULL, x = across)
+      )
+
+  }
+
+  if(base::length(variables) > 1){
+
+    facet_add_on <-
+      list(ggplot2::facet_wrap(facets = . ~ variables, ...))
+
+  } else {
+
+    facet_add_on <- NULL
+
+  }
+
+  # -----
+
+  # 4. Plotting -------------------------------------------------------------
+
+  ggplot2::ggplot(data = data, mapping = ggplot2::aes(x = values)) +
+    display_add_on +
+    facet_add_on +
+    confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(color = "black"),
+      axis.text.x = ggplot2::element_text(color = "black"),
+      strip.text.y = ggplot2::element_text(angle = 0, face = "italic", size = 14),
+      strip.placement = "outside",
+      strip.background = ggplot2::element_rect(color = "white", fill = "white"),
+      panel.spacing.y = ggplot2::unit(10, "pt")
+    ) +
+    ggplot2::labs(x = NULL)
+
+}
+
+#' @rdname plotDistribution
+#' @export
+plotDistributionDiscrete <- function(object,
+                                     features,
+                                     feature_compare = NULL,
+                                     clrp = NULL,
+                                     position = NULL,
+                                     of_sample = NA,
+                                     ...){
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(input = position,
+                        against = c("fill", "dodge", "stack"),
+                        ref.input = "argument 'position'")
+
+  of_sample <- check_sample(object, of_sample = of_sample)
+  features <- check_features(object, features = features, c("character", "factor"))
+
+  if(!base::is.null(feature_compare)){
+
+    feature_compare <- check_features(object, features = feature_compare, c("character", "factor"), 1)
+
+    if(feature_compare %in% features){
+
+      base::stop("Input of argument 'feature_compare' must not be in input of argument 'features'.")
+
+    }
+  }
+
+  # ----
+
+
+  # Additional checks and data extraction -----------------------------------
+
+  if(base::is.character(feature_compare)){
+
+    all_features <- c(features, feature_compare)
+    facet_add_on <- list(ggplot2::facet_wrap(facets = . ~ features, scales = "free_x"))
+    fill <- feature_compare
+    theme_add_on <- list()
+
+
+  } else {
+
+    all_features <- features
+
+    facet_add_on <- list(ggplot2::facet_wrap(facets = . ~ features, scales = "free_x", ...))
+
+    if(base::length(all_features) > 1){
+
+      fill = "features"
+
+    } else {
+
+      fill = "values"
+
+    }
+
+    theme_add_on <- list(ggplot2::theme(legend.position = "none"))
+
+    if(position == "fill" & base::length(all_features) > 1){
+
+      position <- "stack"
+
+      base::warning("Argument 'feature_compare' is NULL. Using 'stack' for argument 'position'.")
+
+    }
+
+  }
+
+
+  plot_df <-
+    joinWithFeatures(object = object,
+                     spata_df = getSpataDf(object),
+                     features = all_features,
+                     verbose = FALSE) %>%
+    tidyr::pivot_longer(data = .,
+                        cols = dplyr::all_of(features),
+                        names_to = "features",
+                        values_to = "values")
+
+  # ----
+
+  if(position == "fill"){
+
+    scale_y_add_on <- ggplot2::scale_y_continuous(breaks = c(0, 0.25, 0.5, 0.75, 1), labels = c("0", "25", "50", "75", "100"))
+
+    y_title <- "Percentage"
+
+  } else {
+
+    scale_y_add_on <- list()
+
+    y_title <- "Count"
+
+  }
+
+  ggplot2::ggplot(data = plot_df) +
+    ggplot2::geom_bar(position = position, color = "black",
+                      mapping = ggplot2::aes(x = values, fill = .data[[fill]])) +
+    facet_add_on +
+    confuns::scale_color_add_on(aes = "fill", variable = "discrete", clrp = clrp) +
+    ggplot2::theme_classic() +
+    theme_add_on +
+    ggplot2::theme(strip.background = ggplot2::element_blank()) +
+    scale_y_add_on +
+    ggplot2::labs(y = y_title, x = NULL)
+
+}
+
+#' @title Plot segmentation
+#'
+#' @description Displays the segmentation of a specified sample that was drawn with
+#' \code{SPATA::createSegmentation()}.
+#'
+#' @inherit check_sample params
+#' @inherit check_pt params
+#' @param encircle Logical. If set to TRUE the segments are enclosed in a polygon.
+#' @param params_encircle Named list of arguments given to \code{ggforce::geom_mark_hull()}.
+#' @param segment_subset Character vector or NULL. If character vector, denotes
+#' the segments that are supposed to be highlighted.
+#' @param ... Additional arguments given to \code{confuns::scale_color_add_on()}.
+#'
+#' @inherit ggplot_family return
+#'
+#' @export
+
+plotSegmentation <- function(object,
+                             encircle = TRUE,
+                             params_encircle = list(),
+                             segment_subset = NULL,
+                             pt_alpha = NULL,
+                             pt_size = NULL,
+                             pt_clrp = NULL,
+                             clrp_adjust = NULL,
+                             pt_size_fixed = TRUE,
+                             color_by = "segmentation",
+                             of_sample = NA,
+                             ...){
+
+  deprecated(fn = TRUE)
+
+  # control
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample, desired_length = 1)
+  check_pt(pt_size = pt_size)
+
+  check_one_of(
+    input = color_by,
+    against = getFeatureNames(object, of_class = "factor")
+  )
+
+  # data extraction
+  plot_df <-
+    getCoordsDf(object, of_sample = of_sample) %>%
+    joinWithFeatures(object, spata_df = ., features = color_by, verbose = FALSE)
+
+  segment_df <-
+    dplyr::filter(plot_df, !(!!rlang::sym(color_by) %in% c("", "none", "unnamed"))) %>%
+    tidyr::drop_na() %>%
+    dplyr::mutate({{color_by}} := base::factor(!!rlang::sym(color_by)))
+
+  #if(base::nrow(segment_df) == 0){base::stop(glue::glue("Sample {of_sample} has not been segmented yet."))}
+
+  if(base::is.character(segment_subset)){
+
+    segment_df <-
+      confuns::check_across_subset(
+        df = segment_df,
+        across = color_by,
+        across.subset = segment_subset
+      )
+
+  }
+
+  if(base::isTRUE(encircle)){
+
+    encircle_add_on <-
+      ggforce::geom_mark_hull(data = segment_df, mapping = ggplot2::aes(x = x, y = y, color = .data[[color_by]], fill = .data[[color_by]]))
+
+    encircle_add_on <-
+      ggplot2::layer(
+        geom = ggforce::GeomMarkHull,
+        data = segment_df,
+        stat = "identity",
+        mapping = ggplot2::aes(x = x, y = y, color = .data[[color_by]], fill = .data[[color_by]]),
+        position = "identity",
+        params = params_encircle
+      )
+
+  } else {
+
+    encircle_add_on <- list()
+
+  }
+
+
+  pt_color <- "lightgrey"
+
+  params <- list(size = pt_size, alpha = pt_alpha, color = pt_color)
+
+  if(base::isTRUE(pt_size_fixed)){
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        mapping = ggplot2::aes_string(x = "x", y = "y"),
+        data = plot_df
+      )
+
+    params_no_color <- lselect(params, -color)
+
+    segment_add_on <-
+      geom_point_fixed(
+        params_no_color,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by),
+        data = segment_df
+      )
+
+  } else {
+
+    point_add_on <-
+      ggplot2::geom_point(
+        params,
+        mapping = ggplot2::aes_string(x = "x", y = "y"),
+        data = plot_df
+      )
+
+    segment_add_on <-
+      ggplot2::geom_point(
+        lselect(params, -color),
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by),
+        data = segment_df
+      )
+
+  }
+
+
+  # plotting
+  ggplot2::ggplot() +
+    point_add_on +
+    segment_add_on +
+    encircle_add_on +
+    confuns::scale_color_add_on(aes = "fill", variable = segment_df[[color_by]], clrp = pt_clrp, clrp.adjust = clrp_adjust, ...) +
+    confuns::scale_color_add_on(aes = "color", variable = segment_df[[color_by]], clrp = pt_clrp, clrp.adjust = clrp_adjust, ...) +
+    ggplot2::theme_void() +
+    ggplot2::labs(fill = "Segments", color = "Segments")
+
+}
 
 # v -----------------------------------------------------------------------
 

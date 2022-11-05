@@ -356,3 +356,79 @@ computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
 
 
+
+
+
+
+# contains ----------------------------------------------------------------
+
+
+
+#' @export
+containsCNV <- function(object){
+
+  out <-
+    base::tryCatch({
+
+      cnv <- object@cnv[[1]]
+
+      purrr::is_list(cnv) && !purrr::is_empty(cnv)
+
+    }, error = function(error){
+
+      FALSE
+
+    })
+
+  return(out)
+
+}
+
+#' @export
+containsHistologyImage <- function(object){
+
+  img <- object@images[[1]]
+
+  out <- methods::is(object = img, class2 = "HistologyImage")
+
+  return(out)
+
+}
+
+#' @export
+containsImage <- function(object){
+
+  img <- object@images[[1]]
+
+  dims <- base::dim(img@image)
+
+  out <- !base::any(dims == 0)
+
+  return(out)
+
+}
+
+#' @export
+containsImageObject <- function(object){
+
+  if(!is.null(object@images[[1]])){
+
+    out <-
+      base::any(
+        purrr::map_lgl(
+          .x = validImageClasses(),
+          .f = ~ methods::is(object@images[[1]], class2 = .x)
+        )
+      )
+
+  } else {
+
+    out <- FALSE
+
+  }
+
+  return(out)
+
+}
+
+

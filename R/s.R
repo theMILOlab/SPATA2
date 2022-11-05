@@ -316,6 +316,103 @@ setSpataDir <- function(object, dir){
 
 
 
+# shift -------------------------------------------------------------------
+
+
+shift_frame <- function(current_frame, new_center){
+
+  current_center <-
+    c(
+      x = (current_frame$xmax - current_frame$xmin) / 2,
+      y = (current_frame$ymax - current_frame$ymin) / 2
+    )
+
+  xdif <- current_center["x"] - new_center["x"]
+  ydif <- current_center["y"] - new_center["y"]
+
+  xdif <- base::unname(xdif)
+  ydif <- base::unname(ydif)
+
+  new_frame <-
+    list(
+      xmin = current_frame$xmin - xdif,
+      xmax = current_frame$xmax - xdif,
+      ymin = current_frame$ymin - ydif,
+      ymax = current_frame$ymax - ydif
+    )
+
+  return(new_frame)
+
+}
+
+# smooth ------------------------------------------------------------------
+
+#' @title Smooth numeric variables spatially
+#'
+#' @description Uses a loess-fit model to smooth numeric variables spatially.
+#' The variable names denoted in argument \code{variables} are overwritten.
+#' @inherit argument_dummy params
+#' @inherit check_coords_df params
+#' @inherit check_smooth params
+#' @param variables Character vector. Specifies the numeric variables of the
+#' input data.frame that are to be smoothed.
+#'
+#' @return The input data.frame containing the smoothed variables.
+#' @export
+
+smoothSpatially <- function(coords_df,
+                            variables,
+                            smooth_span = 0.025,
+                            normalize = TRUE,
+                            verbose = TRUE){
+
+  var_class <-
+    purrr::map(c("x", "y", variables), .f = function(c){ base::return("numeric")}) %>%
+    purrr::set_names(nm = c("x", "y", variables))
+
+  confuns::check_data_frame(
+    df = coords_df,
+    var.class = var_class,
+    fdb.fn = "stop"
+  )
+
+  pb <- confuns::create_progress_bar(total = base::ncol(coords_df))
+
+  smoothed_df <-
+    purrr::imap_dfr(.x = coords_df,
+                    .f = hlpr_smooth,
+                    coords_df = coords_df,
+                    smooth_span = smooth_span,
+                    aspect = "variable",
+                    subset = variables,
+                    pb = pb)
+
+  if(base::isTRUE(normalize)){
+
+    confuns::give_feedback(
+      msg = "Normalizing values.",
+      verbose = verbose,
+      with.time = FALSE
+    )
+
+    smoothed_df <-
+      purrr::imap_dfr(.x = smoothed_df,
+                      .f = hlpr_normalize_imap,
+                      aspect = "variable",
+                      subset = variables
+      )
+
+  }
+
+
+
+  base::return(smoothed_df)
+
+
+}
+
+
+
 # subset ------------------------------------------------------------------
 
 #' @rdname export
