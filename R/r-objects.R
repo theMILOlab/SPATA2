@@ -475,6 +475,8 @@ regex_dist <-
     sep = "|"
   )
 
+regex_unit <- stringr::str_c(regex_eUOL, regex_pxl, sep = "|")
+
 
 # s -----------------------------------------------------------------------
 

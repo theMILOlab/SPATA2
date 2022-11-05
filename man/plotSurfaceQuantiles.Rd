@@ -26,12 +26,12 @@ plotSurfaceQuantiles(
 
 \item{color_by}{Character value. Specifies the numeric variable of interest:
 
- \itemize{
-  \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-  \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-  expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-  \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames(..., of_class = "numeric")}}
-  }}
+\itemize{
+\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
+expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
+\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames(..., of_class = "numeric")}}
+}}
 
 \item{n_qntls}{Numeric value. Specifies the number of bins in which
 to distribute the barcode spots.}

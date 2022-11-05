@@ -23,10 +23,10 @@ moduleSurfacePlotServer(
 }
 \value{
 A reactive list with several slots:
- \enumerate{
-  \item $assembled_plot() The surface plot as a ggplot-object.
-  \item $dblclick() A list containing information regarding the double clicked position in the plot.
-  \item $current_setting() A list with information about the settings of \code{assembled_plot} (e.g. sample, color_to, smooth, smoothing_span ...)}
+\enumerate{
+\item $assembled_plot() The surface plot as a ggplot-object.
+\item $dblclick() A list containing information regarding the double clicked position in the plot.
+\item $current_setting() A list with information about the settings of \code{assembled_plot} (e.g. sample, color_to, smooth, smoothing_span ...)}
 }
 \description{
 Server of the surface plot module

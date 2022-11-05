@@ -15,9 +15,9 @@ The list contains three named slots:
 }
 \details{
 \describe{
-   \item{\emph{annotation}:}{ A data.frame denoting the barcodes of the count matrix in slot \emph{mtr} as reference barcodes.}
-   \item{\emph{mtr}:}{ A count matrix that can be used as reference data for cnv analysis. The data derived from stRNA-seq of healthy human brain tissue.}
-   \item{\emph{regions}:}{ A data.frame containing information about start and end points of chromosomes.}
- }
+\item{\emph{annotation}:}{ A data.frame denoting the barcodes of the count matrix in slot \emph{mtr} as reference barcodes.}
+\item{\emph{mtr}:}{ A count matrix that can be used as reference data for cnv analysis. The data derived from stRNA-seq of healthy human brain tissue.}
+\item{\emph{regions}:}{ A data.frame containing information about start and end points of chromosomes.}
+}
 }
 \keyword{datasets}

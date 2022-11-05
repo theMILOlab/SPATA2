@@ -30,11 +30,11 @@ Safely adds data.frames containing the barcode-spot embedding
 of different dimensional reduction techniques. Cell embedding variables
 must be named as follows:
 
- \itemize{
-  \item{ \code{pca_df}: \emph{PC1, PC2, PC3, ...}}
-  \item{ \code{tsne_df}: \emph{tsne1, tsne2, ...}}
-  \item{ \code{umap_df}: \emph{umap1, umap2, ...}}
- }
+\itemize{
+\item{ \code{pca_df}: \emph{PC1, PC2, PC3, ...}}
+\item{ \code{tsne_df}: \emph{tsne1, tsne2, ...}}
+\item{ \code{umap_df}: \emph{umap1, umap2, ...}}
+}
 }
 \details{
 All \code{set*()}-functions offer a save way to set certain

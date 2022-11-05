@@ -100,14 +100,14 @@ The de-data.frame is processed such that the following steps are performed for e
 group.
 
 \enumerate{
- \item{Discards genes with \emph{avg_logFC}-values that are either infinite or negative}
- \item{Discards genes with adjusted p-values above the threshold set with \code{max_adj_pval}}
- \item{Discard genes with average log fold change below the treshold set with \code{min_lfc}}
- \item{Slices the data.frame in order that for every experimental group:}
- \enumerate{
-  \item{the n genes with the highest \emph{avg_logFC}-values are kept where n = \code{n_highest_lfc}}
-  \item{the n genes with the lowest \emph{p_val_adj}-values are kept where n = \code{n_lowest_pval}}
-  }
- \item{Arranges the genes according to the highest \emph{avg_logFC}-values}
- }
+\item{Discards genes with \emph{avg_logFC}-values that are either infinite or negative}
+\item{Discards genes with adjusted p-values above the threshold set with \code{max_adj_pval}}
+\item{Discard genes with average log fold change below the treshold set with \code{min_lfc}}
+\item{Slices the data.frame in order that for every experimental group:}
+\enumerate{
+\item{the n genes with the highest \emph{avg_logFC}-values are kept where n = \code{n_highest_lfc}}
+\item{the n genes with the lowest \emph{p_val_adj}-values are kept where n = \code{n_lowest_pval}}
+}
+\item{Arranges the genes according to the highest \emph{avg_logFC}-values}
+}
 }

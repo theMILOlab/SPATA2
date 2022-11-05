@@ -18,12 +18,12 @@ The spata-object
 
 \item{\code{coordinates}}{A data.frame containing information about every barcode-spot. Must contain the variables:
 
- \describe{
-  \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-  \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
-  \item{\emph{x}}{Numeric. The x-coordinates of every barcode.}
-  \item{\emph{y}}{Numeric. The y-coordinates of every barcode.}
- }}
+\describe{
+\item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
+\item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
+\item{\emph{x}}{Numeric. The x-coordinates of every barcode.}
+\item{\emph{y}}{Numeric. The y-coordinates of every barcode.}
+}}
 
 \item{\code{data}}{See documentation for S4-object 'data'}
 
@@ -34,8 +34,8 @@ analysis has been conducted (via \code{findDeGenes()}). Every slot contains a da
 
 \item{\code{fdata}}{A data.frame containing the additionally computed features. Must contain the variables:
 \describe{
- \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
- \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
+\item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
+\item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
 }}
 
 \item{\code{image}}{A list of images named according to the samples the object contains.}
@@ -50,9 +50,9 @@ that list contains another list of all 'spatial_trajectory'-objects created for 
 \item{\code{used_genesets}}{A data.frame containing the defined gene-sets. Must contain the variables:
 
 \describe{
- \item{\emph{ont}}{Character. The gene-set name.}
- \item{\emph{gene}}{Character. The belonging genes.}
- }}
+\item{\emph{ont}}{Character. The gene-set name.}
+\item{\emph{gene}}{Character. The belonging genes.}
+}}
 
 \item{\code{version}}{A list of four slots denoting the version of SPATA under which the object has been
 created.}

@@ -13,6 +13,6 @@ image_annotations
 }
 \description{
 @docType data
- @usage data(image_annotations)
+@usage data(image_annotations)
 }
 \keyword{datasets}

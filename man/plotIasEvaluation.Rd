@@ -50,11 +50,11 @@ information about distance values.}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
- (See details for more.)}
+(See details for more.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
- (See details fore more.)}
+(See details fore more.)}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}

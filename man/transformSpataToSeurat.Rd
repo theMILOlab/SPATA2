@@ -59,18 +59,18 @@ If specified as TRUE or named list of arguments the respective functions are cal
 order to pre process the object.
 }
 \details{
-`transformSpataToSeurat()` is a convenient wrapper around all functions that preprocess a seurat-object
+\code{transformSpataToSeurat()} is a convenient wrapper around all functions that preprocess a seurat-object
 after it's initiation. The object is initiated by passing the spata-objects count-matrix and feature data to it whereupon
 the functions are called in the order they are presented in this documentation. For all
 pre processing functions apply the following instructions:
 
- \itemize{
-  \item{If set to FALSE the processing function is skipped.}
-  \item{If set to TRUE the respective function is called with it's default argument settings. Note: \code{RunUMAP()} needs
-  additional input!}
-  \item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
-  passed to every function as the first argument!!!.)}
-  }
+\itemize{
+\item{If set to FALSE the processing function is skipped.}
+\item{If set to TRUE the respective function is called with it's default argument settings. Note: \code{RunUMAP()} needs
+additional input!}
+\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
+passed to every function as the first argument!!!.)}
+}
 
 Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 will result in an error. (\code{base::tryCatch()} will prevent the function from crashing.)

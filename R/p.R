@@ -193,10 +193,6 @@ plotIasEvaluation <- function(object,
 #' @description Plots gene expression changes against the distance
 #' an the image annotation using a heatmap.
 #'
-#' @param include_area Logical. If TRUE, the visualization
-#' includes the area the image annotation covered. If FALSE,
-#' visualization only includes the surrounding of the area of the image
-#' annotation.
 #' @inherit imageAnnotationScreening params details
 #' @inherit plotTrajectoryHeatmap params
 #' @inherit ggplot_dummy return
@@ -211,7 +207,6 @@ plotIasHeatmap <- function(object,
                            n_bins_circle = NA_integer_,
                            binwidth = ccDist(object),
                            angle_span = c(0,360),
-                           include_area = FALSE,
                            arrange_rows = "input",
                            method_gs = "mean",
                            smooth_span = 0.4,
@@ -252,12 +247,6 @@ plotIasHeatmap <- function(object,
       names_to = "variables",
       values_to = "values"
     )
-
-  if(!base::isTRUE(include_area)){
-
-    img_ann_df <- dplyr::filter(img_ann_df, bins_circle != "Core")
-
-  }
 
   wide_df <-
     tidyr::pivot_wider(
@@ -808,6 +797,97 @@ plotTrajectoryEvaluation <- function(object,
 }
 
 
+
+# pi ----------------------------------------------------------------------
+
+pick_vars <- function(df, input, order_by, neg_log){
+
+  if(base::is.list(input)){
+
+    var_names <-
+      purrr::keep(.x = input, .p = is.character) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    out_df_names <-
+      dplyr::filter(df, variables %in% {{var_names}})
+
+    n <-
+      purrr::keep(.x = input, .p = is.numeric) %>%
+      purrr::flatten() %>%
+      base::as.numeric()
+
+    if(base::length(n) == 0){
+
+      out_df <- out_df_names
+
+    } else if(base::length(n) == 1){
+
+      if(base::isTRUE(neg_log)){
+
+        out_df <-
+          dplyr::group_by(df, models) %>%
+          dplyr::slice_max(order_by = !!rlang::sym(order_by), n = n) %>%
+          dplyr::ungroup()
+
+      } else {
+
+        out_df <-
+          dplyr::group_by(df, models) %>%
+          dplyr::slice_min(order_by = !!rlang::sym(order_by), n = n) %>%
+          dplyr::ungroup()
+
+      }
+
+      out_df <-
+        base::rbind(out_df, out_df_names) %>%
+        dplyr::distinct()
+
+    } else {
+
+      stop("Numeric input for argument `label_vars` must be of length 1.")
+
+    }
+
+
+  } else if(base::is.character(input)){
+
+    confuns::check_one_of(
+      input = input,
+      against = df$variables
+    )
+
+    out_df <- dplyr::filter(df, variables %in% {{input}})
+
+  } else if(base::is.numeric(input)){
+
+    confuns::is_value(x = input, mode = "numeric")
+
+    if(base::isTRUE(neg_log)){
+
+      out_df <-
+        dplyr::group_by(df, models) %>%
+        dplyr::slice_max(order_by = !!rlang::sym(order_by), n = input) %>%
+        dplyr::ungroup()
+
+    } else {
+
+      out_df <-
+        dplyr::group_by(df, models) %>%
+        dplyr::slice_min(order_by = !!rlang::sym(order_by), n = input) %>%
+        dplyr::ungroup()
+
+    }
+
+  } else {
+
+    out_df <- df[base::rep(FALSE, base::nrow(df))]
+
+  }
+
+  return(out_df)
+
+}
 
 
 # pu ----------------------------------------------------------------------

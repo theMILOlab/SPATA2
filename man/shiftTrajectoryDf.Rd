@@ -9,13 +9,13 @@ shiftTrajectoryDf(stdf, shift = "wider")
 \arguments{
 \item{stdf}{A data.frame containing information about a spatial trajectory. Must contain the variables:
 
- \describe{
-  \item{\emph{trajectory_part}}{Character. The trajectory's subparts.}
-  \item{\emph{trajectory_part_order}}{Numeric. Denotes every trajectory-bin's position along the trajectory's subpart.}
-  \item{\emph{trajectory_order}}{Numeric. Denotes every trajectory-bin's position along the whole trajectory.}
-  \item{\emph{variables}}{Character. The genes, gene-sets and features that have been summarized along the trajectory.}
-  \item{\emph{values}}{Numeric. The binned values of every gene, gene-set and feature that has been summarized along the trajectory.}
-  }}
+\describe{
+\item{\emph{trajectory_part}}{Character. The trajectory's subparts.}
+\item{\emph{trajectory_part_order}}{Numeric. Denotes every trajectory-bin's position along the trajectory's subpart.}
+\item{\emph{trajectory_order}}{Numeric. Denotes every trajectory-bin's position along the whole trajectory.}
+\item{\emph{variables}}{Character. The genes, gene-sets and features that have been summarized along the trajectory.}
+\item{\emph{values}}{Numeric. The binned values of every gene, gene-set and feature that has been summarized along the trajectory.}
+}}
 }
 \value{
 A shifted trajectory data.frame.

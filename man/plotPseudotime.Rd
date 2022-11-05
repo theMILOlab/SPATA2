@@ -37,8 +37,8 @@ Returns a list of one or two ggplot-objects that can be additionally customized 
 to the rules of the ggplot2-framework.
 
 \itemize{
- \item{\emph{pseudotime}: Monocle3-Umap colored by feature 'pseudotime'. }
- \item{\emph{\code{color_to}}: Monocle3-Umap colored by input of \code{color_to}. (if specified)}
+\item{\emph{pseudotime}: Monocle3-Umap colored by feature 'pseudotime'. }
+\item{\emph{\code{color_to}}: Monocle3-Umap colored by input of \code{color_to}. (if specified)}
 }
 }
 \description{

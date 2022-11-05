@@ -16,6 +16,6 @@ spatial_segmentations
 }
 \description{
 @docType data
- @usage data(spatial_segmentations)
+@usage data(spatial_segmentations)
 }
 \keyword{datasets}

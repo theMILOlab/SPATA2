@@ -13,15 +13,15 @@ gene_pos_df
 }
 \description{
 \describe{
-   \item{\emph{ensembl_gene_id}:}{ Character. ENSEMBL encoding of gene names.}
-   \item{\emph{hgnc_symbol}:}{ Character. Gene names in HUGO format.}
-   \item{\emph{chromosome_name}:}{ Character. Name of the chromosome.}
-   \item{\emph{start_position}:}{ Integer. Starting position of the gene.}
-   \item{\emph{end_position}:}{ Integer. Ending positiong of the gene.}
- }
+\item{\emph{ensembl_gene_id}:}{ Character. ENSEMBL encoding of gene names.}
+\item{\emph{hgnc_symbol}:}{ Character. Gene names in HUGO format.}
+\item{\emph{chromosome_name}:}{ Character. Name of the chromosome.}
+\item{\emph{start_position}:}{ Integer. Starting position of the gene.}
+\item{\emph{end_position}:}{ Integer. Ending positiong of the gene.}
+}
 }
 \details{
 @docType data
- @usage data(gene_pos_df)
+@usage data(gene_pos_df)
 }
 \keyword{datasets}

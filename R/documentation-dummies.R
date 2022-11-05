@@ -93,6 +93,16 @@ flexible_call_dummy <- function(...){}
 gene_set_path <- function(gene_set_path){}
 
 
+#' @title ggpLayer
+#'
+#' @return A list of \code{ggproto}-objects.
+#' @details \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+#' that can be added to ggplots via the \code{+} operator. In most of the cases
+#' they are supposed to be added to plots created with the \code{plotSurface*()}
+#' family.
+#'
+ggpLayer_dummy <- function(){}
+
 #' @title ggplot_family
 #' @return Returns a ggplot-object that can be additionally customized according
 #' to the rules of the ggplot2-framework.
@@ -175,7 +185,7 @@ sample_name <- function(sample_name){}
 seurat_object_dummy <- function(seurat_object){}
 
 
-#' @return The input \code{spata2} object containing the added or computed
+#' @return The input `SPATA2` object containing the added or computed
 #' results.
 update_dummy <- function(){}
 
@@ -255,6 +265,9 @@ variables_num <- function(variables){}
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
 #'
+#' @param dir Character value. The chosen directory. See details for possible
+#' requirements.
+#'
 #' @param discrete_feature Character value. Specifies the name of the grouping variable
 #' of interest. Use \code{getGroupingOptions()} to obtain all valid input options.
 #'
@@ -290,7 +303,7 @@ variables_num <- function(variables){}
 #' If values are specified in European units of length the input is
 #' immediately converted to pixel units.
 #'
-#' See details section of \code{?is_dist} for more information.
+#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
 #'
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
@@ -400,16 +413,17 @@ variables_num <- function(variables){}
 #' @param whole_sample Logical. If TRUE, normalization of the values used
 #' takes place in the light of the complete sample.
 #'
-#' @param xrange,yrange Vectors of length two or \code{NULL}. If not \code{NULL},
+#' @param xrange,yrange Vector of length two or \code{NULL}. If not \code{NULL},
 #' specifies the x- and y-range to which the output image is cropped. E.g.
 #' \code{xrange = c(200, 500)} results in the image being cropped from
-#' x-coordinate 200 up to x-coordinate 500.
+#' x-coordinate 200px up to x-coordinate 500px. If `NULL`, the original image
+#' ranges are taken.
 #'
 #' This argument works within the \code{SPATA2} distance framework.
 #' If values are specified in European units of length the input is
 #' immediately converted to pixel units.
 #'
-#' See details section of \code{?is_dist} for more information.
+#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
 #'
 
 argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}

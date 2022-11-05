@@ -34,12 +34,12 @@ plotSurfaceBase(
 
 \item{color_by}{The variable to be displayed by color:
 
- \itemize{
-  \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-  \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-  expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-  \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
-  }}
+\itemize{
+\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
+expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
+\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
+}}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
@@ -64,16 +64,17 @@ Given to argument \code{span} of \code{stats::loess()}.}
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
-\item{xrange, yrange}{Vectors of length two or \code{NULL}. If not \code{NULL},
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
 \code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200 up to x-coordinate 500.
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units.
 
-See details section of \code{?is_dist} for more information.}
+See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
 \item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
@@ -99,7 +100,7 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units.
 
-See details section of \code{?is_dist} for more information.}
+See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

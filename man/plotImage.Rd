@@ -12,16 +12,17 @@ plotImageGgplot(object)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{xrange, yrange}{Vectors of length two or \code{NULL}. If not \code{NULL},
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
 \code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200 up to x-coordinate 500.
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units.
 
-See details section of \code{?is_dist} for more information.}
+See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 }
 \value{
 A plot that is immediately plotted.

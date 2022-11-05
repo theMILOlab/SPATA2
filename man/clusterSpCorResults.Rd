@@ -20,7 +20,7 @@ spata-objects can store more than one sample.}
 
 \item{method_hclust}{Character value. Denotes the hierarchical clustering method  according
 to which the clustering is performed. Valid input options are \emph{'ward.D', 'ward.D2', 'single',
- 'complete', 'average', 'mcquitty', 'median'} and \emph{'centroid'}.}
+'complete', 'average', 'mcquitty', 'median'} and \emph{'centroid'}.}
 
 \item{k, h}{Numeric values. Given to the respective arguments of \code{stats::cutree()}
 and are used to determine the eventual cluster belonging of every gene. Use
@@ -47,13 +47,13 @@ Apart from the belonging value for \code{k} or \code{h} the list contains three
 main slots:
 
 \itemize{
- \item{\emph{assessment_df}: A data.frame that attempts to evaluate all cluster's
-  quality by providing the average distance between it's genes.}
-  \item{\emph{distances_list}: A named list of data.frames. Each data.frame contains the
-  gene-gene distances between all genes the cluster it corresponds to contains.}
-  \item{\emph{gene_names_list}: A named list of character vectors. Each vector contains the
-  unique gene names of the cluster it corresponds to.}
-  }
+\item{\emph{assessment_df}: A data.frame that attempts to evaluate all cluster's
+quality by providing the average distance between it's genes.}
+\item{\emph{distances_list}: A named list of data.frames. Each data.frame contains the
+gene-gene distances between all genes the cluster it corresponds to contains.}
+\item{\emph{gene_names_list}: A named list of character vectors. Each vector contains the
+unique gene names of the cluster it corresponds to.}
+}
 
 Hierarchical clustering is an explorative approach not a deterministic an. The optimal input for
 \code{method_hclust}, \code{k} and \code{h} depend on the data's properties as well as the

@@ -12,7 +12,6 @@ plotIasHeatmap(
   n_bins_circle = NA_integer_,
   binwidth = ccDist(object),
   angle_span = c(0, 360),
-  include_area = FALSE,
   arrange_rows = "input",
   method_gs = "mean",
   smooth_span = 0.4,
@@ -39,7 +38,7 @@ information about distance values.}
 
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
- (See details for more.)}
+(See details for more.)}
 
 \item{binwidth}{Distance value. The width of the circular bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
@@ -48,12 +47,7 @@ information about distance values.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
- (See details fore more.)}
-
-\item{include_area}{Logical. If TRUE, the visualization
-includes the area the image annotation covered. If FALSE,
-visualization only includes the surrounding of the area of the image
-annotation.}
+(See details fore more.)}
 
 \item{arrange_rows}{Alter the way the rows of the heatmap
 are displayed in order to highlight patterns. Currently either \emph{'maxima'},
@@ -115,14 +109,14 @@ with the distance to the image annotation.
 To bin barcode-spots according to their localisation to the image annotation
 three parameters are required:
 
- \itemize{
-   \item{\code{distance}: The distance from the border of the image annotation to
-    the \emph{horizon} in the periphery up to which the screening is conducted. Unit
-    of the distance is pixel as is the unit of the image.
-    }
-    \item{\code{binwidth}: The width of every bin. Unit is pixel.}
-    \item{\code{n_bins_circle}: The number of bins that are created.}
- }
+\itemize{
+\item{\code{distance}: The distance from the border of the image annotation to
+the \emph{horizon} in the periphery up to which the screening is conducted. Unit
+of the distance is pixel as is the unit of the image.
+}
+\item{\code{binwidth}: The width of every bin. Unit is pixel.}
+\item{\code{n_bins_circle}: The number of bins that are created.}
+}
 
 Regarding parameter \code{n_bins_circle}: The suffix \code{_circle} is used for one
 thing to emphasize that bins are created in a circular fashion around the image
@@ -133,11 +127,11 @@ resolution of the screening.
 
 These three parameters stand in the following relation to each other:
 
- \enumerate{
-  \item{\code{n_bins_circle} = \code{distance} / \code{binwidth}}
-  \item{\code{distance} = \code{n_bins_circle} * \code{binwidth}}
-  \item{\code{binwidth} = \code{distance} / \code{n_bins_circle}}
- }
+\enumerate{
+\item{\code{n_bins_circle} = \code{distance} / \code{binwidth}}
+\item{\code{distance} = \code{n_bins_circle} * \code{binwidth}}
+\item{\code{binwidth} = \code{distance} / \code{n_bins_circle}}
+}
 
 Therefore, only two of the three arguments must be specified as the remaining
 one is calculated. We recommend to stick to the first option: Specifying
@@ -169,14 +163,14 @@ behaviors. The gene expression change is fitted to every model that is included.
 (Use \code{showModels()} to visualize the predefined models of \code{SPATA2}).
 A gene-model-fit is evaluated twofold:
 
- \itemize{
-   \item{Residuals area over the curve}: The area under the curve (AUC) of the
-   residuals between the inferred expression changes and the model is calculated,
-   normalized against the number of bins and then subtracted from 1.
-   \item{Pearson correlation}: The inferred expression changes is correlated
-   with the model. (Correlation as well as the corresponding p-value depend
-   on the number of bins!)
-  }
+\itemize{
+\item{Residuals area over the curve}: The area under the curve (AUC) of the
+residuals between the inferred expression changes and the model is calculated,
+normalized against the number of bins and then subtracted from 1.
+\item{Pearson correlation}: The inferred expression changes is correlated
+with the model. (Correlation as well as the corresponding p-value depend
+on the number of bins!)
+}
 
 Eventually, the mean of the RAOC and the Correlation for every gene-model-fit
 is calculated and stored as the IAS-Score.

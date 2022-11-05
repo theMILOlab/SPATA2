@@ -7,7 +7,9 @@
 extract_value(input)
 }
 \arguments{
-\item{input}{Character value or numeric value of length one.}
+\item{input}{Character or numeric vector. Elements must match the
+requirements of the \code{SPATA2} distance framework. See details
+for more information.}
 }
 \value{
 Numeric value.
@@ -24,15 +26,15 @@ ways.
 There are two valid input options to specify the distance in pixel:
 
 \itemize{
- \item{numeric:}{ Single numeric values, e.g. 2, 3.554, 69, 100.67. If no unit
- is specified the input will be interpreted as pixels.}
- \item{character:}{ Suffixed with \emph{'px'}, e.g. \emph{'2px'}, \emph{'3.554px'}}
- }
+\item{numeric:}{ Single numeric values, e.g. 2, 3.554, 69, 100.67. If no unit
+is specified the input will be interpreted as pixels.}
+\item{character:}{ Suffixed with \emph{'px'}, e.g. \emph{'2px'}, \emph{'3.554px'}}
+}
 
 \bold{Distance in European units of length (eUOL)}:
 
- Specifying distances in European units of length e.g. \emph{'2mm'}, \emph{'400um'} etc.
- requires the input to be a character as the unit must be provided as suffix. Between the numeric
- value and the unit must be no empty space! Unit suffixes must be one of
- \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
+Specifying distances in European units of length e.g. \emph{'2mm'}, \emph{'400um'} etc.
+requires the input to be a character as the unit must be provided as suffix. Between the numeric
+value and the unit must be no empty space! Unit suffixes must be one of
+\emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
 }

@@ -94,5 +94,5 @@ Use argument \code{across} to specify the grouping
 variable of interest across which the de-analysis has been conducted.
 
 Valid input options for \code{plot_type} are \emph{'density'} and
- \emph{'histogram'}.
+\emph{'histogram'}.
 }

@@ -1,7 +1,6 @@
 
 
 
-# Test functions --------------------------------------------------------
 
 #' @title Initiate an empty spata-object
 #'
@@ -33,7 +32,6 @@ initiateSpataObject_Empty <- function(sample_name){
 }
 
 
-# Exported functions ------------------------------------------------------
 
 #' @title Initiate a spata-object from a raw count matrix
 #'

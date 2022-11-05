@@ -17,13 +17,13 @@ spatial_trajectory object
 \item{\code{compiled_trajectory_df}}{A data.frame containing the variables:
 
 \describe{
- \item{\emph{barcodes}}{Character. The barcode-spots' sequences.}
- \item{\emph{sample}}{Character. The barcode-spots' sample belonging.}
- \item{\emph{x,y}}{Numeric. The barcode-spots' spatial coordinates.}
- \item{\emph{projection_length}}{Numeric. The distance between the barcode-spots'
-  projection onto the trajectory-vector and the start of the trajectory.}
- \item{\emph{trajectory_part}}{Character. The part of the trajectory.}
- }}
+\item{\emph{barcodes}}{Character. The barcode-spots' sequences.}
+\item{\emph{sample}}{Character. The barcode-spots' sample belonging.}
+\item{\emph{x,y}}{Numeric. The barcode-spots' spatial coordinates.}
+\item{\emph{projection_length}}{Numeric. The distance between the barcode-spots'
+projection onto the trajectory-vector and the start of the trajectory.}
+\item{\emph{trajectory_part}}{Character. The part of the trajectory.}
+}}
 
 \item{\code{segment_trajectory_df}}{A data.frame containing the numeric variables
 \emph{x, y, xend, yend} that denote the start and the end of every trajectory

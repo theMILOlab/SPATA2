@@ -1,16 +1,43 @@
 
 
-#' @title ggpLayer
-#'
-#' @return A list of \code{ggproto}-objects.
-#' @details \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
-#' that can be added to ggplots via the \code{+} operator. In most of the cases
-#' they are supposed to be added to plots created with the \code{plotSurface*()}
-#' family.
-#'
-ggpLayer_dummy <- function(){}
 
-# a -----------------------------------------------------------------------
+# ge ----------------------------------------------------------------------
+
+#' @title Points (fixed)
+#'
+#' @description A slightly changed version of \code{geom_point()}. In contrast
+#' to the default the size rescales to the size of the plotting device.
+#'
+#' @inherit ggplot2::geom_point params
+#'
+#' @export
+geom_point_fixed <- function(...,
+                             mapping = ggplot2::aes(),
+                             data = NULL,
+                             stat = "identity",
+                             position = "identity",
+                             na.rm = FALSE,
+                             show.legend = NA,
+                             inherit.aes = TRUE){
+
+  ggplot2::layer(
+    geom = GeomPointFixed,
+    data = data,
+    stat = stat,
+    position = position,
+    params = c(..., list(na.rm = na.rm)),
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    mapping = mapping
+  )
+
+}
+
+
+
+
+
+# ggp ---------------------------------------------------------------------
 
 #' @title Display axes with European Units of Length
 #'
@@ -193,7 +220,7 @@ ggpLayerAxesEUOL <- function(object,
         axis.ticks.length.x = ggplot2::unit(5, "points"),
         axis.text.x = ggplot2::element_text(),
         axis.title.x = ggplot2::element_text()
-        ),
+      ),
       y = ggplot2::theme(
         axis.ticks.y = ggplot2::element_line(),
         axis.ticks.length.y = ggplot2::unit(5, "points"),
@@ -215,7 +242,6 @@ ggpLayerAxesEUOL <- function(object,
 
 
 
-# e -----------------------------------------------------------------------
 
 #' @title Add group encircling
 #'
@@ -367,7 +393,25 @@ ggpLayerEncirclingIAS <- function(object,
 
 }
 
-# f -----------------------------------------------------------------------
+
+#' @title Fix ggplot frame
+#'
+#' @description Fixes the frame of an surface plot based
+#' on the coordinates range of the \code{SPATA2} object.
+#'
+#' @inherit ggpLayer_dummy return details
+#'
+#' @export
+ggpLayerFixFrame <- function(object){
+
+  list(
+    ggplot2::coord_fixed(
+      xlim = getCoordsRange(object)$x,
+      ylim = getCoordsRange(object)$y
+    )
+  )
+
+}
 
 
 #' @title Set plot limits
@@ -455,54 +499,6 @@ ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
 
 
 
-# g -----------------------------------------------------------------------
-
-ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = FALSE, ...){
-
-  genes <-
-    stringr::str_remove(gene_pattern, pattern = gene_pattern_suf_regex) %>%
-    base::unique()
-
-  gp_coords_df <-
-    getGenePatternCoordsDf(object, genes = genes, verbose = FALSE) %>%
-    dplyr::filter(gene_pattern %in% {{gene_pattern}})
-
-  if(type == "hull"){
-
-    out <-
-      ggforce::geom_mark_hull(
-        data = gp_coords_df,
-        mapping = ggplot2::aes(x = x, y = y, color = gene_pattern, fill = gene_pattern),
-        ...
-      )
-
-  }
-
-  return(out)
-
-}
-
-
-# h -----------------------------------------------------------------------
-
-#' @title Fix ggplot frame
-#'
-#' @description Fixes the frame of an surface plot based
-#' on the coordinates range of the \code{SPATA2} object.
-#'
-#' @inherit ggpLayer_dummy return details
-#'
-#' @export
-ggpLayerFixFrame <- function(object){
-
-  list(
-    ggplot2::coord_fixed(
-      xlim = getCoordsRange(object)$x,
-      ylim = getCoordsRange(object)$y
-    )
-  )
-
-}
 
 
 #' @title Add IAS area horizon
@@ -609,47 +605,6 @@ ggpLayerHorizonIAS <- function(object,
   return(out_list)
 
 }
-
-# i -----------------------------------------------------------------------
-
-#' @title Initiate ggplot2 layering
-#'
-#' @description Initiates a ggplot object to which \code{ggpLayer}-
-#' functions can be added for individual plotting ideas.
-#'
-#' @inherit argument_dummy params
-#' @param theme Character value. String that denotes the default
-#' theme. Defaults to \code{void}
-#'
-#' @return An empty ggplot.
-#'
-#' @export
-#'
-ggpInit <- function(object = "object", theme = "void", data = "coords"){
-
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
-  out <- list()
-
-  out$theme <- rlang::exec(.fn = stringr::str_c("theme_", theme))
-
-  df <-
-    rlang::exec(
-      .fn = stringr::str_c("get", make_capital_letters(data), "Df"),
-      object = object
-    )
-
-  out$data_invis <-
-    geom_point_fixed(
-      data = df,
-      mapping = ggplot2::aes(x = x, y = y),
-      alpha = 0
-    )
-
-  ggplot2::ggplot() + out
-
-}
-
 
 #' @title Add histology image
 #'
@@ -800,16 +755,21 @@ ggpLayerImageAnnotation <- function(object = "object",
 }
 
 
-
-# r -----------------------------------------------------------------------
-
 #' @title Add a rectangular to the plot
 #'
 #' @description Adds a rectangular to the plot.
 #'
-#' @param xrange,yrange Numeric vectors of length 2. Specify the range
-#' from the rectangular on the x- and y-axis.
 #' @param alpha,color,fill,size Given to \code{ggplot2::geom_rect()}.
+#' @param xrange,yrange Vector of length two. Specifies the x- and y-range
+#' of the rectangle. E.g. \code{xrange = c(200, 500)} results in a rectangle
+#' that ranges from 200px to 500px on the x-axis.
+#'
+#' This argument works within the \code{SPATA2} distance framework.
+#' If values are specified in European units of length the input is
+#' immediately converted to pixel units.
+#'
+#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
+#'
 #' @param ... Additional arguments given to \code{ggplot2::geom_rect()}.
 #'
 #' @inherit ggpLayer_dummy return details
@@ -864,10 +824,6 @@ ggpLayerRect <- function(object = "object",
 }
 
 
-
-# t -----------------------------------------------------------------------
-
-
 #' @title Add coordinates theme
 #'
 #' @description Adds a theme to the plot that displays the coordinates of
@@ -887,7 +843,6 @@ ggpLayerThemeCoords <- function(){
   )
 
 }
-
 
 
 
@@ -939,23 +894,22 @@ ggpLayerTrajectories <- function(object = "object",
 }
 
 
-
-
-
-# z -----------------------------------------------------------------------
-
-
 #' @title Set plot limits manually
 #'
 #' @description Sets the limits on the x- and y-axis of a ggplot based on
 #' manual input.
 #'
-#' @param xlim,ylim Numeric vector of length 2 or NULL. If specified, sets
-#' the range of the plot that is displayed on the x- or y-axis
-#' respectively.
-#'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return details
+#' @param xrange,yrange Vector of length two. Specifies the x- and y-range
+#' of zooming. E.g. \code{xrange = c(200, 500)} results in the plot
+#' being cropped from x-coordinate 200px up to x-coordinate 500px.
+#'
+#' This argument works within the \code{SPATA2} distance framework.
+#' If values are specified in European units of length the input is
+#' immediately converted to pixel units.
+#'
+#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
 #'
 #' @export
 ggpLayerZoom <- function(xrange = NULL, yrange = NULL){
@@ -989,4 +943,47 @@ ggpLayerZoom <- function(xrange = NULL, yrange = NULL){
   return(layers)
 
 }
+
+
+#' @title Initiate ggplot2 layering
+#'
+#' @description Initiates a ggplot object to which \code{ggpLayer}-
+#' functions can be added for individual plotting ideas.
+#'
+#' @inherit argument_dummy params
+#' @param theme Character value. String that denotes the default
+#' theme. Defaults to \code{void}
+#'
+#' @return An empty ggplot.
+#'
+#' @export
+#'
+ggpInit <- function(object = "object", theme = "void", data = "coords"){
+
+  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+
+  out <- list()
+
+  out$theme <- rlang::exec(.fn = stringr::str_c("theme_", theme))
+
+  df <-
+    rlang::exec(
+      .fn = stringr::str_c("get", make_capital_letters(data), "Df"),
+      object = object
+    )
+
+  out$data_invis <-
+    geom_point_fixed(
+      data = df,
+      mapping = ggplot2::aes(x = x, y = y),
+      alpha = 0
+    )
+
+  ggplot2::ggplot() + out
+
+}
+
+
+
+
 

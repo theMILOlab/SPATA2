@@ -1,6 +1,1042 @@
 
 
 
+# add_ --------------------------------------------------------------------
+
+add_helper <- function(shiny_tag,
+                       content,
+                       title = "What do I have to do here?",
+                       type = "inline",
+                       size = "s", ...){
+
+
+  res <-
+    shinyhelper::helper(shiny_tag = shiny_tag,
+                        content = content,
+                        title = title,
+                        size = size,
+                        type = type,
+                        ...)
+
+  return(res)
+
+}
+
+
+# addA --------------------------------------------------------------------
+
+
+#' @title Add the set up of a neural network
+#'
+#' @inherit check_object params
+#' @param set_up_list A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.
+#'
+#' @return A spata-object.
+
+addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
+
+  check_object(object)
+  confuns::is_list(set_up_list)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  # check hierarchically if list structures exist
+
+  object@autoencoder[[of_sample]][["nn_set_ups"]][[mtr_name]] <- set_up_list
+
+  return(object)
+
+}
+
+
+
+# addE --------------------------------------------------------------------
+
+
+#' @title Add an expression matrix
+#'
+#' @description Adds an expression matrix to the object's data slot and
+#' makes it available for all SPATA-intern function. Use \code{setActiveExpressionMatrix()}
+#' to denote it as the default to use.
+#'
+#' @inherit check_sample params
+#' @param expr_mtr A matrix in which the rownames correspond to the gene names and the
+#' column names correspond to the barcode-spots.
+#' @param mtr_name A character value that denotes the name of the exprssion matrix with
+#' which one can refer to it in subsequent functions.
+#'
+#' @return An updated spata-object.
+#' @export
+
+addExpressionMatrix <- function(object, expr_mtr, mtr_name, of_sample = ""){
+
+  check_object(object)
+
+  confuns::is_value(x = mtr_name, mode = "character")
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  object@data[[of_sample]][[mtr_name]] <- expr_mtr
+
+  return(object)
+
+}
+
+
+
+
+
+
+# addF --------------------------------------------------------------------
+
+
+
+#' @title Add a new feature
+#'
+#' @description Adds new externally generated variables to the spata-object's feature data
+#' to make them available for all SPATA-intern functions.
+#'
+#' @inherit check_sample params
+#' @param feature_df A data.frame that contains the key variables as well
+#' as the informative variables that are to be joined.
+#' @param feature_names Character vector or NULL. See details for more.
+#' @param key_variable Character value. Either \emph{'barcodes'} or \emph{'coordinates'}.
+#' If set to \emph{'coordinates'} the \code{feature_df}-input must contain numeric x- and
+#' y- variables.
+#'
+#' Key variables are variables in a data.frame that uniquely identify each observation -
+#' in this case each barcode-spot. In SPATA the barcode-variable is a key-variable on its own,
+#' x- and y-coordinates work as key-variables if they are used combined.
+#'
+#' @param overwrite Logical. If the specified feature names already exist in the
+#' current spata-object this argument must be set to TRUE in order to overwrite them.
+#'
+#'
+#' @details If you are only interested in adding specific features to the spata-object
+#' you can specify those with the \code{feature_names}-argument. If no variables
+#' are specified this way all variables found in the input data.frame for argument
+#' \code{feature_df} are taken. (Apart from variables called \emph{barcodes, sample, x} and \emph{y}).
+#'
+#' Eventually the new features are joined via \code{dplyr::left_join()} over the
+#' key-variables \emph{barcodes} or \emph{x} and \emph{y}. Additional steps secure
+#' the joining process.
+#'
+#' @return An updated spata-object.
+#' @export
+#' @examples #Not run:
+#'
+#' mncl_clusters <- findMonocleClusters(object = spata_obj)
+#'
+#' spata_obj <- addFeatures(object = spata_obj,
+#'                          feature_names = NULL, # add all variables...
+#'                          feature_df = mncl_clusters # ... from the data.frame 'mncl_clusters'
+#'                          )
+#'
+#' getGroupingOptions(object = spata_obj)
+
+addFeatures <- function(object,
+                        feature_df,
+                        feature_names = NULL,
+                        key_variable = "barcodes",
+                        overwrite = FALSE,
+                        of_sample = NA){
+
+  # 1. Control --------------------------------------------------------------
+  check_object(object)
+
+  confuns::is_vec(x = feature_names, mode = "character", skip.allow = TRUE, skip.val = NULL)
+  confuns::is_value(x = key_variable, mode = "character")
+
+  confuns::check_one_of(input = key_variable, against = c("barcodes", "coordinates"), ref.input = "argument 'key_variable'")
+
+  if(base::is.null(feature_names)){
+
+    all_cnames <- base::colnames(feature_df)
+
+    feature_names <- all_cnames[!all_cnames %in% c("x", "y", "barcodes", "sample")]
+
+  }
+
+  confuns::check_none_of(
+    input = feature_names,
+    against = getGenes(object),
+    ref.against = "gene names - must be renamed before being added"
+  )
+
+  confuns::check_none_of(
+    input = feature_names,
+    against = getGeneSets(object),
+    ref.against = "gene set names - must be renamed before being added"
+  )
+
+  feature_names <- confuns::check_vector(
+    input = feature_names,
+    against = base::colnames(feature_df),
+    verbose = TRUE,
+    ref.input = "specified feature names",
+    ref.against = "variables of provided feature data.frame")
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  if(key_variable  == "barcodes"){
+
+    confuns::check_data_frame(df = feature_df,
+                              var.class = list("barcodes" = "character"),
+                              ref = "feature_df")
+
+  } else if(key_variable == "coordinates"){
+
+    confuns::check_data_frame(df = feature_df,
+                              var.class = list(
+                                "x" = c("numeric", "integer", "double"),
+                                "y" = c("numeric", "integer", "double")
+                              ),
+                              ref = "feature_df")
+
+  }
+
+  # 2. Extract and compare --------------------------------------------------
+
+  existing_fnames <- getFeatureNames(object = object, of_sample = of_sample)
+
+  # throw error if there intersecting feature names and overwrite is FALSE
+  if(base::any(feature_names %in% existing_fnames) && !base::isTRUE(overwrite)){
+
+    found <- feature_names[feature_names %in% existing_fnames]
+
+    if(base::length(found) > 1){
+
+      ref <- c("are", "them")
+
+    } else {
+
+      ref <- c("is", "it")
+
+    }
+
+    found_ref <- stringr::str_c(found, collapse = "', '")
+
+    msg <- glue::glue("Specified feature names '{found_ref}' {ref[1]} already present in current feature data. Set overwrite to TRUE in order to overwrite {ref[2]}.")
+
+    confuns::give_feedback(
+      msg = msg,
+      fdb.fn = "stop"
+    )
+
+    # discard existing, intersecting feature names if overwrite is TRUE
+  } else if(base::any(feature_names %in% existing_fnames) && base::isTRUE(overwrite)){
+
+    overwrite_features <- existing_fnames[existing_fnames %in% feature_names]
+
+    fdata <-
+      getFeatureDf(object, of_sample = of_sample) %>%
+      dplyr::select(-dplyr::all_of(overwrite_features))
+
+    #
+  } else {
+
+    fdata <- getFeatureDf(object, of_sample = of_sample)
+
+  }
+
+  # join over coordinates
+  if(key_variable == "coordinates"){
+
+    coords_df <-
+      getCoordsDf(object, of_sample = of_sample) %>%
+      purrr::map_at(.at = c("x", "y"), .f = function(i){ base::round(i, digits = 0)}) %>%
+      purrr::map_df(.f = function(i){ return(i) })
+
+    fdata <- dplyr::left_join(x = fdata, y = coords_df, key = "barcodes")
+
+    feature_df <-
+      purrr::map_at(.x = feature_df, .at = c("x", "y"), .f = function(i){ base::round(i, digits = 0)}) %>%
+      purrr::map_df(.f = function(i){ return(i) }) %>%
+      dplyr::left_join(y = coords_df, key = c("x", "y"))
+
+    # feedback about how many barcode-spots can be joined
+    barcodes_feature_df <- feature_df$barcodes
+    barcodes_obj <- fdata$barcodes
+
+    n_bc_feat <- base::length(barcodes_feature_df)
+    n_bc_obj <- base::length(barcodes_obj)
+
+    if(!base::all(barcodes_obj %in% barcodes_feature_df)){
+
+      not_found <- barcodes_obj[!barcodes_obj %in% barcodes_feature_df]
+      n_not_found <- base::length(not_found)
+
+      if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
+
+      base::warning(glue::glue("Only {n_bc_feat} barcode-spots of {n_bc_obj} were found in 'feature_df'. Not found barcode-spots obtain NAs for all features to be joined."))
+
+    }
+
+    new_feature_df <-
+      dplyr::left_join(x = fdata,
+                       y = feature_df[,c("x", "y", feature_names)],
+                       by = c("x", "y")) %>%
+      dplyr::select(-x, -y)
+
+    object <- setFeatureDf(object = object, feature_df = new_feature_df, of_sample = of_sample)
+
+    # join over coordinates
+  } else if(key_variable == "barcodes") {
+
+    # feedback about how many barcode-spots can be joined
+    barcodes_feature_df <- feature_df$barcodes
+    barcodes_obj <- fdata$barcodes
+
+    n_bc_feat <- base::length(barcodes_feature_df)
+    n_bc_obj <- base::length(barcodes_obj)
+
+    if(!base::all(barcodes_obj %in% barcodes_feature_df)){
+
+      not_found <- barcodes_obj[!barcodes_obj %in% barcodes_feature_df]
+      n_not_found <- base::length(not_found)
+
+      if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
+
+      base::warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
+
+    }
+
+    new_feature_df <-
+      dplyr::left_join(
+        x = fdata,
+        y = feature_df[,c("barcodes", feature_names)],
+        by = "barcodes"
+      )
+
+    object <- setFeatureDf(object = object, feature_df = new_feature_df, of_sample = of_sample)
+
+  }
+
+  return(object)
+
+}
+
+
+
+
+# addG --------------------------------------------------------------------
+
+#' @title Add new gene features
+#'
+#' @description This function allows to savely add features to the
+#' gene meta data.frame of an expression matrix of choice.
+#'
+#' @inherit addFeatures params
+#' @inherit argument_dummy params
+#' @inherit check_sample params
+#' @inherit getGeneMetaData params
+#'
+#' @param gene_df A data.frame that contains the variables specified by name
+#' in the argument \code{feature_names} and the key variable \emph{genes} by
+#' which the feature variables are joined to the already existing
+#' gene meta data.frame.
+#'
+#' @details If you are only interested in adding specific features to the spata-object
+#' you can specify those with the \code{feature_names}-argument. If no variables
+#' are specified this way all variables found in the input data.frame for argument
+#' \code{gene_df} are taken. (Apart from the key variable \emph{genes}).
+#'
+#' Eventually the new features are joined via \code{dplyr::left_join()} over the
+#' key-variables \emph{genes}. Additional steps secure
+#' the joining process.
+#'
+#' @return An updated spata-object.
+#' @export
+#'
+addGeneFeatures <- function(object,
+                            gene_df,
+                            feature_names = NULL,
+                            mtr_name = NULL,
+                            overwrite = FALSE,
+                            verbose = NULL,
+                            of_sample = NA){
+
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  gene_cnames <-
+    dplyr::select(gene_df, -genes) %>%
+    base::colnames()
+
+  if(base::is.null(feature_names)){
+
+    feature_names <- gene_cnames
+
+  } else {
+
+    var.class <-
+      purrr::map(.x = feature_names, .f = function(i){ return("any") }) %>%
+      purrr::set_names(feature_names)
+
+    confuns::check_data_frame(
+      df = gene_df,
+      var.class = c("genes" = "character", var.class)
+    )
+
+    gene_df <- dplyr::select(gene_df, dplyr::all_of(x = c("genes", feature_names)))
+
+  }
+
+  # get matrix name for feedback
+  if(base::is.null(mtr_name)){
+
+    mtr_name <- getActiveMatrixName(object, of_sample = of_sample)
+
+  }
+
+
+  # 2. Extract gene meta data.frame -----------------------------------------
+
+  gmdata <-
+    getGeneMetaData(object = object, mtr_name = mtr_name, of_sample = of_sample)
+
+  gmdf <- gmdata$df
+
+
+  # 3. Compare input and gene meta data.frame -------------------------------
+
+  # do features already exist?
+
+  gmdf_features <-
+    dplyr::select(gmdf, -genes) %>%
+    base::colnames()
+
+  ovlp <-
+    base::intersect(x = feature_names, y = gmdf_features)
+
+  if(base::length(ovlp) >= 1){
+
+    if(base::isTRUE(overwrite)){
+
+      gmdf <-
+        dplyr::select(gmdf, -dplyr::all_of(x = ovlp))
+
+    } else {
+
+      msg <-
+        glue::glue("{ref1} '{ref_features}' already {ref2} in gene meta data of matrix '{mtr_name}'. Set argument 'overwrite' to TRUE in order to overwrite them.",
+                   ref1 = confuns::adapt_reference(input = ovlp, sg = "Feature"),
+                   ref_features = glue::glue_collapse(x = ovlp, sep = "', '", last = "' and '"),
+                   ref2 = confuns::adapt_reference(input = ovlp, sg = "exists", pl = "exist")
+        )
+
+      confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
+
+    }
+
+  }
+
+  # make sure that no data of not existing genes is added
+  gmdf_genes <- gmdf$genes
+
+  gene_df_final <- dplyr::filter(gene_df, genes %in% {{gmdf_genes}})
+
+  # join features
+  confuns::give_feedback(
+    msg = glue::glue("Adding features to gene meta data of matrix '{mtr_name}'."),
+    verbose = verbose
+  )
+
+  gmdf_new <-
+    dplyr::left_join(
+      x = gmdf,
+      y = gene_df_final,
+      by = "genes"
+    )
+
+  #  4. Add new gene meta data.frame -----------------------------------------
+
+  gmdata$df <- gmdf_new
+
+  object <-
+    addGeneMetaData(
+      object = object,
+      meta_data_list = gmdata
+    )
+
+  # 5. Return results -------------------------------------------------------
+
+  confuns::give_feedback(msg = "Done.", verbose = verbose)
+
+  return(object)
+
+}
+
+
+
+#' @title Add a new gene set
+#'
+#' @description Stores a new gene set in the spata-object.
+#'
+#' @inherit check_object
+#' @param class_name Character value. The class the gene set belongs to..
+#' @param gs_name Character value. The name of the new gene set.
+#' @param overwrite Logical. Overwrites existing gene sets with the same \code{class_name} -
+#' \code{gs_name} combination.
+#'
+#' @inherit check_genes params
+#'
+#' @return An updated spata-object.
+#'
+#' @details Combines \code{class_name} and \code{gs_name} to the final gene set name.
+#' Gene set classes and gene set names are separated by '_' and handled like this
+#' in all additional gene set related functions which is why \code{class_name} must
+#' not contain any '_'.
+#'
+#' @export
+
+addGeneSet <- function(object,
+                       class_name,
+                       gs_name,
+                       genes,
+                       overwrite = FALSE,
+                       check_genes = TRUE){
+
+  # lazy control
+  check_object(object)
+
+  # adjusting control
+
+  if(base::isTRUE(check_genes)){
+
+    confuns::check_one_of(
+      input = genes,
+      against = getGenes(object)
+    )
+
+  }
+
+  if(base::any(!base::sapply(X = list(class_name, gs_name, genes),
+                             FUN = base::is.character))){
+
+    base::stop("Arguments 'class_name', 'gs_name' and 'genes' must be of class character.")
+
+  }
+
+  if(base::length(class_name) != 1 | base::length(gs_name) != 1){
+
+    base::stop("Arguments 'class_name' and 'gs_name' must be of length one.")
+
+  }
+
+  if(stringr::str_detect(string = class_name, pattern = "_")){
+
+    base::stop("Invalid input for argument 'class_name'. Must not contain '_'.")
+
+  }
+
+  name <- stringr::str_c(class_name, gs_name, sep = "_")
+
+  # make sure not to overwrite if overwrite == FALSE
+  if(name %in% object@used_genesets$ont && base::isFALSE(overwrite)){
+
+    base::stop(stringr::str_c("Gene set '", name, "' already exists.",
+                              " Set argument 'overwrite' to TRUE in order to overwrite existing gene set."))
+
+  } else if(name %in% object@used_genesets$ont && base::isTRUE(overwrite)) {
+
+    object <- discardGeneSets(object, gs_names = name)
+
+  }
+
+  # add gene set
+  object@used_genesets <-
+    dplyr::add_row(
+      .data = object@used_genesets,
+      ont = base::rep(name, base::length(genes)),
+      gene = genes
+    )
+
+  return(object)
+
+}
+
+
+#' @rdname addGeneSet
+#' @export
+addGeneSetsInteractive <- function(object){
+
+  check_object(object)
+
+  new_object <-
+    shiny::runApp(
+      shiny::shinyApp(
+        ui = function(){
+
+          shiny::fluidPage(
+            moduleAddGeneSetsUI(id = "add_gs"),
+            shiny::HTML("<br><br>"),
+            shiny::actionButton("close_app", label = "Close application")
+          )
+
+        },
+        server = function(input, output, session){
+
+          module_return <-
+            moduleAddGeneSetsServer(id = "add_gs",
+                                    object = object)
+
+
+          oe <- shiny::observeEvent(input$close_app, {
+
+            shiny::stopApp(returnValue = module_return())
+
+          })
+
+        }
+      )
+    )
+
+  return(new_object)
+
+}
+
+
+
+# addS --------------------------------------------------------------------
+
+#' @rdname getSegmentationNames
+#' @export
+addSegmentationVariable <- function(object, name, verbose = NULL, ...){
+
+  hlpr_assign_arguments(object)
+
+  confuns::is_value(x = name, mode = "character")
+
+  ann_names <-
+    getSegmentationNames(object, verbose = FALSE, fdb_fn = "message")
+
+  feature_names <-
+    getFeatureNames(object)
+
+  gene_names <- getGenes(object)
+
+  gs_names <- getGeneSets(object)
+
+  if(base::is.character(ann_names)){
+
+    new <- !name %in% c(feature_names, gene_names, gs_names)
+
+    if(base::isFALSE(new)){
+
+      give_feedback(
+        msg = glue::glue("Name '{name}' is already used by a feature, gene or gene set.."),
+        fdb.fn = "stop",
+        with.time = FALSE,
+        ...
+      )
+
+    }
+
+  }
+
+  object@information$segmentation_variable_names <-
+    c(object@information$segmentation_variable_names, name)
+
+  fdata <- getFeatureDf(object)
+
+  fdata[[name]] <- base::factor(x = "unnamed")
+
+  object <- setFeatureDf(object, feature_df = fdata)
+
+  give_feedback(
+    msg = glue::glue("Added segmentation variable '{name}'."),
+    verbose = verbose,
+    with.time = FALSE,
+    ...
+  )
+
+  return(object)
+
+}
+
+
+# addT --------------------------------------------------------------------
+
+addTrajectoryObject <- function(object,
+                                trajectory_name,
+                                trajectory_object,
+                                of_sample = NA){
+
+  # 1. Control --------------------------------------------------------------
+
+  check_object(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  confuns::is_value(x = trajectory_name, mode = "character")
+
+  base::stopifnot(methods::is(trajectory_object, class2 = "spatial_trajectory"))
+
+  if(trajectory_name %in% getTrajectoryNames(object, of_sample = of_sample)){
+
+    base::stop(glue::glue("Trajectory name '{trajectory_name}' is already taken."))
+
+  } else if(trajectory_name == ""){
+
+    base::stop("'' is not a valid trajectory name.")
+
+  }
+
+  # 2. Set trajectory object ------------------------------------------------
+
+  object@trajectories[[of_sample]][[trajectory_name]] <-
+    trajectory_object
+
+  return(object)
+
+}
+
+
+
+
+# adjust ------------------------------------------------------------------
+
+#' @title Adjust default instructions
+#'
+#' @inherit check_object params
+#' @param to Character value. Denotes the platform for which a new storage
+#' directory is to be created. Must be either \emph{'cell_data_set', 'seurat_object'}
+#' or \emph{'spata_object'}.
+#' @param directory_new Character value. The new directory under which
+#' to store the object of interest. Overwrites the stored default directory.
+#' Use \code{getDefaultDirectory()} to obtain the current set up.
+#' @param combine_with_wd Character value or FALSE. If specified with a
+#' character value (default: \emph{'/'}) the input of \code{new_directory}
+#' is considered to be a relative directory and is combined with the
+#' current working directory (\code{base::getwd()}) separated with the character string
+#' specified. If set to FALSE the input of \code{new_directory}
+#' is taken as is.
+#'
+#' @param ... Named arguments whoose default input you want to override.
+#'
+#' @return An updated spata object.
+#' @export
+#'
+#' @examples
+#'
+#'  # Not run
+#'
+#'  object <- adjustDefaultInstructions(object, pt_size = 4, smooth = FALSE)
+
+adjustDefaultInstructions <- function(object, ...){
+
+  named_list <-
+    confuns::keep_named(input = list(...))
+
+  names_args <- base::names(named_list)
+
+  valid_arg_names <-
+    confuns::check_vector(
+      input = names_args,
+      against = validDefaultInstructionSlots(),
+      fdb.fn = "warning",
+      ref.input = "the named input",
+      ref.against = "valid instruction slots. run validDefaultInstructionSlots() to obtain all valid input options"
+    )
+
+  valid_list <- named_list[valid_arg_names]
+
+  dflt_instr <- getDefaultInstructions(object)
+
+  for(nm in valid_arg_names){
+
+    methods::slot(dflt_instr, name = nm) <- valid_list[[nm]]
+
+  }
+
+  object@information$instructions$default <- dflt_instr
+
+  base::return(object)
+
+}
+
+
+#' @rdname adjustDefaultInstructions
+#' @export
+adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_wd = FALSE){
+
+  check_object(object)
+
+  confuns::check_one_of(
+    input = to,
+    against = validDirectoryInstructionSlots(),
+    ref.input = "input for argument 'to'"
+  )
+
+  if(base::is.character(combine_with_wd)){
+
+    confuns::is_value(x = combine_with_wd, mode = "character")
+
+    directory_new <-
+      stringr::str_c(base::getwd(), combine_with_wd, directory_new, sep = "")
+
+    confuns::give_feedback(
+      msg = glue::glue("Combining specified directory to {to} with working directory.",
+                       to = stringr::str_replace_all(to, pattern = "_", replacement = "-")),
+      verbose = TRUE
+    )
+
+  }
+
+  object@information$instructions$directories[[to]] <-
+    directory_new
+
+  # give feedback
+  msg <-
+    glue::glue(
+      "Default directory to the corresponding {to} set to '{directory_new}'.",
+      to = stringr::str_replace(to, "_", "-")
+    )
+
+  confuns::give_feedback(
+    msg = msg,
+    verbose = TRUE
+  )
+
+  base::return(object)
+
+}
+
+
+#' @title Filter gene-set data.frame
+#'
+#' @description Checks the objects gene-set data.frame for gene-sets that
+#' are composed of genes that exist in the given expression matrix.
+#'
+#' @inherit check_object params
+#' @param limit Numeric value between 1 and 100. The minimum percentage of gene-set genes
+#' that have to exist in the given expression matrix in order for a gene set to stay in the
+#' gene-set data.frame.
+#'
+#' @return An updated spata-object and an informative message about how many
+#' gene-sets have been discarded and how many gene-sets remain.
+#'
+#' @details E.g.: Gene-set 'x' is composed of 30 genes. The expression matrix
+#' however contains only 15 of them. If argument \code{limit} is set to 75 gene-set 'x'
+#' is removed since the percentage of genes of which the given expression matrix
+#' contains information about is only 50.
+#'
+#' @export
+
+adjustGeneSetDf <- function(object, limit = 50){
+
+  # 1. Control --------------------------------------------------------------
+
+  check_object(object)
+  confuns::is_value(limit, mode = "numeric", ref = "limit")
+  if(!dplyr::between(limit, left = 1, right = 99)){
+
+    base::stop("Argument 'limit' needs to be a numeric value between 1 and 99.")
+
+  }
+
+  limit <- limit/100
+
+  # -----
+
+  # 2. Cleaning -------------------------------------------------------------
+
+  base::message(glue::glue("Calculating percentage of genes found in expression matrix for {dplyr::n_distinct(object@used_genesets$ont)} gene sets."))
+
+  all_genes <- getGenes(object, simplify = TRUE, in_sample = "all")
+
+  filtered_df <-
+    dplyr::group_by(.data = object@used_genesets, ont) %>%
+    dplyr::mutate(
+      gene_count = dplyr::n(),
+      gene_found = gene %in% all_genes,
+      n_found = base::sum(gene_found),
+      p_found = base::round(n_found/gene_count, digits = 2)
+    ) %>%
+    dplyr::filter(p_found > {{limit}}) %>%
+    dplyr::ungroup()
+
+  n_all_gs <-
+    getGeneSets(object) %>%
+    base::length()
+
+  n_remaining_gs <-
+    dplyr::pull(filtered_df, var = ont) %>%
+    base::unique() %>%
+    base::length()
+
+  n_removed_gs <- n_all_gs - n_remaining_gs
+
+  base::message(glue::glue("Removed {n_removed_gs} gene-sets. Number of remaining gene-sets: {n_remaining_gs} "))
+
+  object@used_genesets <-
+    dplyr::select(filtered_df, ont, gene)
+
+  base::return(object)
+
+}
+
+
+#' @export
+adjustGseaDf <- function(df,
+                         signif_var,
+                         signif_threshold,
+                         remove,
+                         remove_gsets,
+                         replace,
+                         n_gsets,
+                         digits,
+                         force_gsets = NULL,
+                         force_opt = "replace"){
+
+  group_var <- base::names(df)[1]
+
+  df_orig <- df
+
+  if(base::is.character(remove_gsets)){
+
+    df <- dplyr::filter(df, !stringr::str_detect(label, pattern = {{remove_gsets}}))
+
+  }
+
+  df_out <-
+    dplyr::group_by(df, !!rlang::sym(group_var)) %>%
+    dplyr::filter(!!rlang::sym(signif_var) < {{signif_threshold}}) %>%
+    dplyr::arrange({{signif_var}}, .by_group = TRUE) %>%
+    dplyr::slice_min(order_by = !!rlang::sym(signif_var), n = n_gsets, with_ties = FALSE) %>%
+    dplyr::ungroup()
+
+  groups <- base::levels(df_out[[group_var]])
+
+  if(base::is.character(force_gsets)){
+
+    force_gsets <- force_gsets[!force_gsets %in% base::unique(df_out[["label"]])]
+
+    if(base::length(force_gsets) >= 1){
+
+      force_gsets <-
+        confuns::check_vector(
+          input = force_gsets,
+          against = base::levels(df[["label"]]),
+          ref.input = "input for argument `force_gsets`",
+          ref.against = "among significant gene sets.",
+          fdb.fn = "warning"
+        )
+
+      # df with gene sets that must be included
+      df_forced <- dplyr::filter(df_orig, label %in% {{force_gsets}})
+
+      if(force_opt == "replace"){
+
+        df_out <-
+          purrr::map_df(
+            .x = groups,
+            .f = function(group){
+
+              df_out_group <- dplyr::filter(df_out, !!rlang::sym(group_var) == {{group}})
+
+              df_forced_group <- dplyr::filter(df_forced, !!rlang::sym(group_var) == {{group}})
+
+              # total number of
+              n_total <- base::nrow(df_out_group)
+
+              # number of group specific gene sets that must be replaced
+              n_replace <-
+                dplyr::filter(df_forced_group, label %in% {{force_gsets}}) %>%
+                base::nrow()
+
+              if(n_replace > n_total){
+
+                df_return <-
+                  dplyr::slice_min(
+                    .data = df_forced_group,
+                    order_by = !!rlang::sym(signif_var),
+                    n = n_total,
+                    with_ties = FALSE
+                  )
+
+              } else if(n_replace > 0){
+
+                df_group_removed <-
+                  dplyr::slice_min(
+                    .data = df_out_group,
+                    order_by = !!rlang::sym(signif_var),
+                    n = n_total-n_replace,
+                    with_ties = FALSE
+                  )
+
+                df_group_replace <-
+                  dplyr::slice_min(
+                    .data = df_forced_group,
+                    order_by = !!rlang::sym(signif_var),
+                    n = n_replace,
+                    with_ties = FALSE
+                  )
+
+                df_return <- base::rbind(df_group_removed, df_group_replace)
+
+              } else {
+
+                df_return <- df_out_group
+
+              }
+
+              df_return <- dplyr::arrange(df_return, {{signif_var}})
+
+              return(df_return)
+
+            })
+
+      } else if(force_opt == "add"){
+
+        df_out <- base::rbind(df_out, df_forced)
+
+      }
+
+    }
+
+  }
+
+  if(base::is.character(remove)){
+
+    is_value(remove, mode = "character")
+
+    df_out[["label"]] <-
+      stringr::str_remove(string = df_out[["label"]], pattern = remove) %>%
+      base::as.factor()
+
+  }
+
+  if(is_vec(x = replace, mode = "character", of.length = 2, fdb.fn = "message", verbose = FALSE)){
+
+    df_out[["label"]] <-
+      stringr::str_replace_all(string = df_out[["label"]], pattern = replace[1], replacement = replace[2]) %>%
+      base::as.factor()
+
+  }
+
+  df_out <-
+    dplyr::mutate(df_out, overlap_perc = base::round(overlap_perc, digits = digits)) %>%
+    dplyr::distinct()
+
+  return(df_out)
+
+}
+
+
+
+
+
+
+
+
+
+# as_ ---------------------------------------------------------------------
 
 #' @title Transform distance values
 #'
@@ -77,7 +1113,17 @@ as_unit <- function(input,
     with.time = FALSE
   )
 
-  out <- base::vector(mode = "character", length = base::length(input))
+  if(base::isTRUE(as_numeric)){
+
+    mode <- "numeric"
+
+  } else {
+
+    mode <- "character"
+
+  }
+
+  out <- base::vector(mode = mode, length = base::length(input))
 
   for(i in base::seq_along(input)){
 
@@ -148,6 +1194,10 @@ as_unit <- function(input,
 
 }
 
+
+# asC-asH -----------------------------------------------------------------
+
+
 #' @rdname as_unit
 #' @export
 asCentimeter <- function(input, ...){
@@ -160,6 +1210,7 @@ asCentimeter <- function(input, ...){
 
 }
 
+
 #' @rdname as_unit
 #' @export
 asDecimeter <- function(input, ...){
@@ -167,67 +1218,6 @@ asDecimeter <- function(input, ...){
   as_unit(
     input = input,
     unit = "dm",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-asMeter <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "m",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-asMicrometer <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "um",
-    ...
-  )
-
-}
-
-
-#' @rdname as_unit
-#' @export
-asMillimeter <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "mm",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-asNanometer <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "nm",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-asPixel <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "px",
     ...
   )
 
@@ -349,6 +1339,131 @@ asGiotto <- function(object,
 
 }
 
+#' @title Convert to class \code{Visium}
+#'
+#' @description Coverts objects of specific classes to objects
+#' of class \code{Visium}.
+#'
+#' @param object Any object for which a method has been defined.
+#'
+#' @return An object of class \code{Visium}.
+#' @export
+#'
+methods::setGeneric(name = "asHistologyImage", def = function(object, ...){
+
+  standardGeneric(f = "asHistologyImage")
+
+})
+
+
+#' @rdname asHistologyImage
+#' @export
+methods::setMethod(
+  f = "asHistologyImage",
+  signature = "VisiumV1",
+  definition = function(object, scale_with = "lowres"){
+
+    new_object <- HistologyImage()
+
+    scale_fct <- object@scale.factors[[scale_with]]
+
+    new_object@coordinates <-
+      tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
+      dplyr::select(barcodes, x = imagecol, y = imagerow, row, col) %>%
+      dplyr::mutate(x = x*scale_fct, y = y*scale_fct) %>%
+      tibble::as_tibble()
+
+    new_object@id <- object@key
+
+    new_object@image <-
+      EBImage::Image(object@image, colormode = "Color") %>%
+      EBImage::transpose()
+
+    new_object@info$flipped <- FALSE
+
+    new_object@misc$origin <- "VisiumV1"
+
+    new_object@misc$scale.factors <- object@scale.factors
+    new_object@misc$assay <- object@assay
+    new_object@misc$spot.radius <- object@spot.radius
+
+    return(new_object)
+
+  }
+)
+
+
+
+
+# asM-asS -----------------------------------------------------------------
+
+
+#' @rdname as_unit
+#' @export
+asMeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+asMicrometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um",
+    ...
+  )
+
+}
+
+
+#' @rdname as_unit
+#' @export
+asMillimeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "mm",
+    ...
+  )
+
+}
+
+
+
+
+#' @rdname as_unit
+#' @export
+asNanometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nm",
+    ...
+  )
+
+}
+
+
+
+
+#' @rdname as_unit
+#' @export
+asPixel <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "px",
+    ...
+  )
+
+}
 
 
 #' @title Transform to \code{SPATA2} object
@@ -489,5 +1604,126 @@ setMethod(
 
   }
 )
+
+
+#' @rdname runAutoencoderAssessment
+#' @export
+assessAutoencoderOptions <- function(expr_mtr,
+                                     activations,
+                                     bottlenecks,
+                                     layers = c(128, 64, 32),
+                                     dropout = 0.1,
+                                     epochs = 20,
+                                     verbose = TRUE){
+
+  # 1. Control --------------------------------------------------------------
+
+  confuns::check_one_of(input = activations, against = activation_fns)
+
+  confuns::are_values(c("dropout", "epochs"), mode = "numeric")
+
+  confuns::is_vec(x = layers, mode = "numeric", of.length = 3)
+  confuns::is_vec(x = bottlenecks, mode = "numeric")
+
+  # 2. Assess all combinations in for loop ----------------------------------
+
+  activations_list <-
+    base::vector(mode = "list", length = base::length(activations)) %>%
+    purrr::set_names(nm = activations)
+
+  for(a in base::seq_along(activations)){
+
+    activation <- activations[a]
+
+    bottlenecks_list <-
+      base::vector(mode = "list", length = base::length(bottlenecks)) %>%
+      purrr::set_names(nm = stringr::str_c("bn", bottlenecks, sep = "_"))
+
+    for(b in base::seq_along(bottlenecks)){
+
+      bottleneck <- bottlenecks[b]
+
+      base::message(Sys.time())
+      base::message(glue::glue("Assessing activation option {a}/{base::length(activations)}:'{activation}' and bottleneck option {b}/{base::length(bottlenecks)}: {bottleneck}"))
+
+      # Neural network ----------------------------------------------------------
+
+      input_layer <-
+        keras::layer_input(shape = c(base::ncol(expr_mtr)))
+
+      encoder <-
+        input_layer %>%
+        keras::layer_dense(units = layers[1], activation = activation) %>%
+        keras::layer_batch_normalization() %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[2], activation = activation) %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[3], activation = activation) %>%
+        keras::layer_dense(units = bottleneck)
+
+      decoder <-
+        encoder %>%
+        keras::layer_dense(units = layers[3], activation = activation) %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[2], activation = activation) %>%
+        keras::layer_dropout(rate = dropout) %>%
+        keras::layer_dense(units = layers[1], activation = activation) %>%
+        keras::layer_dense(units = c(ncol(expr_mtr)))
+
+      autoencoder_model <- keras::keras_model(inputs = input_layer, outputs = decoder)
+
+      autoencoder_model %>% keras::compile(
+        loss = 'mean_squared_error',
+        optimizer = 'adam',
+        metrics = c('accuracy')
+      )
+
+      history <-
+        autoencoder_model %>%
+        keras::fit(expr_mtr, expr_mtr, epochs = epochs, shuffle = TRUE,
+                   validation_data = list(expr_mtr, expr_mtr), verbose = verbose)
+
+      reconstructed_points <-
+        autoencoder_model %>%
+        keras::predict_on_batch(x = expr_mtr)
+
+      base::rownames(reconstructed_points) <- base::rownames(expr_mtr)
+      base::colnames(reconstructed_points) <- base::colnames(expr_mtr)
+
+
+      # PCA afterwards ----------------------------------------------------------
+
+      bottlenecks_list[[b]] <- irlba::prcomp_irlba(base::t(reconstructed_points), n = 30)
+
+    }
+
+    activations_list[[a]] <- bottlenecks_list
+
+  }
+
+  # 3. Summarize in data.frame ----------------------------------------------
+
+  res_df <-
+    purrr::imap_dfr(.x = activations_list, .f = function(.list, .name){
+
+      data.frame(
+        activation = .name,
+        bottleneck = stringr::str_remove(string = base::names(.list), pattern = "^bn_"),
+        total_var = purrr::map_dbl(.x = .list, .f = "totalvar")
+      )
+
+    }) %>% tibble::remove_rownames()
+
+  res_df$bottleneck <- base::factor(res_df$bottleneck, levels = base::unique(res_df$bottleneck))
+
+  pca_scaled <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = 30)
+
+  assessment_list <- list("df" = res_df,
+                          "set_up" = list("epochs" = epochs, "dropout" = dropout, "layers" = layers),
+                          "scaled_var" = pca_scaled$totalvar)
+
+  base::return(assessment_list)
+
+}
 
 

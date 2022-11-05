@@ -1,5 +1,3 @@
-
-
 # inspired by https://rdrr.io/github/ErasmusOIC/SMoLR/src/R/rotate.R
 # basic function
 rotate_coord <- function(x,y,angle, type=c("degrees","radial"), method=c("transform","polar","polar_extended"), center=c(0,0), translate=NULL, stretch=NULL, flip=FALSE){
@@ -116,46 +114,18 @@ rotateCoords <- function(object, angle){
 }
 
 
+#' @rdname flipImage
+#' @export
+rotateImage <- function(object, angle){
 
+  stopifnot(angle %in% c(90, 180))
 
+  io <- getImageObject(object)
 
+  io@image <- EBImage::rotate(x = io@image, angle = angle)
 
+  object <- setImageObject(object, image_object = io)
 
-# scale
-
-scale_nuclei_df <- function(object,
-                            nuclei_df,
-                            x = "Location_Center_X",
-                            y = "Location_Center_Y",
-                            opt = "image"){
-
-  if(opt == "image"){
-
-    ranges <- getImageRange(object)
-
-  } else {
-
-    ranges <- getCoordsRange(object)
-
-  }
-
-  xr <- ranges[["x"]] %>% base::as.numeric()
-  yr <- ranges[["y"]] %>% base::as.numeric()
-
-  nuclei_df[[x]] <- scales::rescale(x = nuclei_df[[x]], to = xr)
-  nuclei_df[[y]] <- scales::rescale(x = nuclei_df[[y]], to = yr)
-
-  return(nuclei_df)
-
+  return(object)
 
 }
-
-
-
-
-
-
-
-
-
-

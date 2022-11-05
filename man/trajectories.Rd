@@ -15,6 +15,6 @@ trajectories
 }
 \description{
 @docType data
- @usage data(trajectories)
+@usage data(trajectories)
 }
 \keyword{datasets}

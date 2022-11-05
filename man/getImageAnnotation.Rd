@@ -35,7 +35,7 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units.
 
-See details section of \code{?is_dist} for more information.}
+See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
 \item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
 structure is forced into a square. X- and yspan of the square are equal to the span

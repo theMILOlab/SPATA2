@@ -85,7 +85,1215 @@ deprecatedArguments <- function(){ depr_info$args %>% base::names() }
 
 
 
+# c -----------------------------------------------------------------------
+
+#' @title Check assessed trajectory data.frame
+#'
+#' @param atdf A data.frame containing the results of trajectory-modelling. Must contain the variables:
+#'
+#'  \describe{
+#'   \item{\emph{variables}}{Character. The genes, gene-sets and features that have been assessed.}
+#'   \item{\emph{pattern}}{Character. The respective trajectory pattern.}
+#'   \item{\emph{auc}}{Numeric. The assessment value which is the residual's area under the curve.}
+#'  }
+#'
+#' @inherit lazy_check_dummy description details return
+
+check_atdf <- function(atdf){
+
+  confuns::check_data_frame(
+    df = atdf,
+    var.class = list(
+      variables = c("character"),
+      pattern = c("character", "factor"),
+      auc = c("numeric", "integer", "double")
+    ),
+    ref = "atdf")
+
+}
+
+
+#' @title Check compiled trajectory data.frame
+#'
+#' @param ctdf A compiled trajectory data.frame containing the variables
+#' \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.
+#'
+#' @inherit lazy_check_dummy description details return
+
+check_compiled_trajectory_df <- function(ctdf){
+
+  check_spata_df(spata_df = ctdf)
+  check_coordinate_variables(data = ctdf, x = "x", y = "y")
+
+  vc <- confuns::variable_classes2(data = ctdf)
+
+  if(!base::all(c("projection_length", "trajectory_part") %in% base::names(vc))){
+    base::stop("Variables must contain 'projection_length' and 'trajectory_part'.")
+  }
+
+  if(vc["projection_length"] != "numeric"){
+    base::stop("Variable 'projection_length' needs to be of class numeric.")
+  }
+
+  if(vc["trajectory_part"] != "character"){
+    base::stop("Variable 'projection_length' needs to be of class character.")
+  }
+
+}
+
+#' @title Check customized trend list
+#'
+#' @param length_trajectory Numeric value. Length of trajectory according to which the trends have been
+#' customized.
+#' @param customized_trends A data.frame or a named list. All numeric variables are considered to correspond to customized trends
+#' the trajectory of interest might adopt. The names of the respective variables will correspond to the name
+#' with which you want to refer to the trend later on.
+
+check_customized_trends <- function(length_trajectory,
+                                    customized_trends){
+
+  if(!base::is.list(customized_trends)){
+
+    base::stop("Input for argument 'customized_trends' must be a named list or a data.frame.")
+
+  }
+
+  # keep only numeric slots
+  all_numerics <-
+    purrr::keep(.x = customized_trends, .p = ~ base::is.numeric(.x))
+
+  # check names
+  trend_names <- base::names(all_numerics)
+
+  if(base::is.null(trend_names) | base::length(trend_names) != base::length(all_numerics)){
+
+    base::stop("Please make sure that all numeric slots of the list 'customized_trends' are named.")
+
+  }
+
+  # check lengths
+  all_lengths <-
+    purrr::map_int(.x = all_numerics, .f = ~ base::length(.x))
+
+  if(dplyr::n_distinct(all_lengths) != 1){
+
+    base::stop("Please make sure that all numeric slots of the list 'customized_trends' are of the same length.")
+
+  }
+
+  # compare length of trajectory with length of customized trends
+
+  if(base::is.numeric(length_trajectory)){
+
+    length_customized_trends <- base::unique(all_lengths)
+
+    if(length_trajectory != length_customized_trends){
+
+      base::stop(glue::glue("Please make sure that the lengths of the customized trends are equal to the length of the trajectory (= {length_trajectory})."))
+
+    }
+
+  }
+
+  # check for nas
+  has_nas <-
+    purrr::map(.x = all_numerics, .f = ~ base::is.na(.x) %>% base::sum()) %>%
+    purrr::keep(.x = ., .p = ~ .x > 0)
+
+  if(base::length(has_nas) >= 1){
+
+    slots_with_nas <- stringr::str_c(base::names(has_nas), collapse = "', '")
+
+    base::warning(glue::glue("Ignoring slots '{slots_with_nas}' as they contain NAs."))
+
+  }
+
+  no_nas <-
+    purrr::keep(.x = all_numerics, .p = ~ base::is.na(.x) %>% base::sum() == 0) %>%
+    purrr::map_df(.x = . , .f = ~ confuns::normalize(x = .x))
+
+  base::return(no_nas)
+
+}
+
+
+#' @rdname check_atdf
+check_rtdf <- function(rtdf, variable = NULL){
+
+  # check classes
+  confuns::check_data_frame(df = rtdf,
+                            var.class =
+                              list(
+                                variables = "character",
+                                data = "list",
+                                residuals = "list",
+                                auc = "list"),
+                            ref = "rtdf")
+
+  base::return(base::invisible(TRUE))
+
+}
+
+
+#' @title Check spata slots
+#'
+#' @description Functions that provide a report regarding the validity of
+#' the respective slot.
+#'
+#' @param object A spata-object.
+#'
+#' @return A character string. (Call \code{base::writeLines()} with that
+#'  string as input in order to format it.)
+#' @export
+
+check_slot_coordinates <- function(object){
+
+  coords <- object@coordinates
+
+  messages <- base::character()
+
+  # column names and samples
+  c_colnames <- base::colnames(coords)
+
+  if(!base::identical(c_colnames, c("barcodes", "sample", "x", "y"))){
+
+    c_colnames <- stringr::str_c(base::colnames(coords), collapse = "', '")
+    feedback <- stringr::str_c("Invalid column names.",
+                               "\n Columns:    '",  c_colnames,
+                               "\n Have to be: 'barcodes', 'sample', 'x', 'y'",
+                               sep = "")
+
+    messages <-
+      base::append(x = messages,
+                   values = feedback)
+
+  } else {
+
+    messages <- hlpr_compare_samples(object, df = coords, messages = messages)
+
+  }
+
+  # variable classes
+  c_classes <- base::sapply(coords, base::class) %>% base::unname()
+
+  if(!base::identical(c_classes, c("character", "character", "numeric", "numeric"))){
+
+    c_classes <- stringr::str_c(c_classes, collapse = "', '")
+    feedback <- stringr::str_c("Invalid column classes.",
+                               "\n             'barcodes',  'sample',    'x',       'y'",
+                               "\n Classes:    '", c_classes,
+                               "\n Have to be: 'character', 'character', 'numeric', 'numeric'.",
+                               sep = "")
+
+    messages <-
+      base::append(x = messages,
+                   values = feedback)
+  }
+
+  # return
+
+  if(base::identical(messages, base::character())){
+
+    base::return("Valid!")
+
+  } else {
+
+    base::return(messages)
+
+  }
+
+}
+
+#' @rdname check_slot_coordinates
+#'
+#' @export
+check_slot_data <- function(object){
+
+  data <- object@data
+
+  messages <- base::character()
+
+  if(base::all(c(!base::is.matrix(data@counts), !methods::is(data@counts, "Matrix"))) ||
+     !base::is.numeric(base::as.matrix(data@counts))){
+
+    messages <-
+      base::append(messages,
+                   values = "Slot 'counts' needs to be a numeric matrix.")
+
+  }
+
+  if(base::all(c(!base::is.matrix(data@norm_exp), !methods::is(data@norm_exp, "Matrix"))) ||
+     !base::is.numeric(base::as.matrix(data@norm_exp))){
+
+    messages <-
+      base::append(messages,
+                   values = "Slot 'norm_exp' needs to be a numeric matrix.")
+
+  }
+
+  if(base::identical(messages, base::character())){
+
+    base::return("Valid!")
+
+  } else {
+
+
+
+    base::return(messages)
+
+  }
+
+
+}
+
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_dim_red <- function(object){
+
+  messages <- base::character()
+
+  input_slots <- methods::slotNames(x = object@dim_red) %>% base::sort()
+  dim_red_slots <- c("UMAP", "TSNE") %>% base::sort()
+
+  if(!base::identical(input_slots, dim_red_slots)){
+
+    messages <- base::append(x = messsages, values = "Invalid slot names. Have to be 'UMAP' and 'TSNE'.")
+
+    return(messages)
+
+  } else {
+
+    # UMAP --------------------------------------------------------------------
+
+    umap_df <- object@dim_red@UMAP
+
+    # column names and samples
+    u_colnames <- base::colnames(umap_df)
+
+    if(!base::identical(u_colnames, c("barcodes", "sample", "umap1", "umap2"))){
+
+      u_colnames <- stringr::str_c(u_colnames, collapse = "', '")
+      feedback <- stringr::str_c("Invalid column names in slot 'UMAP'.",
+                                 "\n Columns:  '",  u_colnames,
+                                 "\n Have to be: 'barcodes', 'sample', 'umap1', 'umap2'",
+                                 sep = "")
+
+      messages <-
+        base::append(x = messages,
+                     values = feedback)
+
+    } else if(base::nrow(umap_df) != 0){
+
+      messages <- hlpr_compare_samples(object, df = umap_df, messages = messages)
+
+    } else if(base::nrow(umap_df) == 0){
+
+      messages <- base::append(x = messages, values = "UMAP data.frame is empty.")
+
+    }
+
+    # variable classes
+    u_classes <- base::sapply(umap_df, base::class) %>% base::unname()
+
+    if(!base::identical(u_classes, c("character", "character", "numeric", "numeric"))){
+
+      u_classes <- stringr::str_c(u_classes, collapse = "', '")
+      feedback <- stringr::str_c("Invalid column classes in slot 'UMAP'.",
+                                 "\n             'barcodes',  'sample',    'umap1',   'umap2'",
+                                 "\n Classes:    '", u_classes,
+                                 "\n Have to be: 'character', 'character', 'numeric', 'numeric'.",
+                                 sep = "")
+
+      messages <-
+        base::append(x = messages,
+                     values = feedback)
+
+    }
+
+
+    # TSNE --------------------------------------------------------------------
+
+    tsne_df <- object@dim_red@TSNE
+
+    # column names and samples
+    t_colnames <- base::colnames(tsne_df)
+
+    if(!base::identical(t_colnames, c("barcodes", "sample", "tsne1", "tsne2"))){
+
+      t_colnames <- stringr::str_c(t_colnames, collapse = "', '")
+      feedback <- stringr::str_c("Invalid column names in slot 'TSNE'.",
+                                 "\n Columns:    '",  t_colnames,
+                                 "\n Have to be: 'barcodes', 'sample', 'tsne1', 'tsne2'",
+                                 sep = "")
+
+      messages <-
+        base::append(x = messages,
+                     values = feedback)
+
+    } else if(base::nrow(tsne_df) != 0) {
+
+      messages <- hlpr_compare_samples(object, df = tsne_df, messages = messages)
+
+    } else if(base::nrow(tsne_df) == 0){
+
+      messages <- base::append(x = messages, values = "TSNE data.frame is empty.")
+
+    }
+
+    # variable classes
+    t_classes <- base::sapply(tsne_df, base::class) %>% base::unname()
+
+    if(!base::identical(t_classes, c("character", "character", "numeric", "numeric"))){
+
+      t_classes <- stringr::str_c(t_classes, collapse = "', '")
+      feedback <- stringr::str_c("Invalid column classes in slot 'TSNE'.",
+                                 "\n             'barcodes',  'sample',    'tsne1',   'tsne2'",
+                                 "\n Classes:    '", t_classes,
+                                 "\n Have to be: 'character', 'character', 'numeric', 'numeric'.",
+                                 sep = "")
+
+      messages <-
+        base::append(x = messages,
+                     values = feedback)
+
+    }
+
+
+    # Return ------------------------------------------------------------------
+
+    if(base::identical(messages, base::character())){
+
+      base::return("Valid!")
+
+    } else {
+
+      base::return(messages)
+
+    }
+
+  }
+
+}
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_fdata <- function(object){
+
+  fdata <- object@fdata
+  messages <- base::character()
+
+  if(base::nrow(fdata) == 0){
+
+    messages <- base::append(x = messages, values = "'fdata' data.frame is empty.")
+
+  } else {
+
+    # Column names  -----------------------------------------------------------
+
+    f_colnames <- base::colnames(fdata)
+    missing <- character(0)
+
+    if(!c("sample") %in% f_colnames){
+
+      missing <- base::append(x = missing, values = "sample")
+
+    }
+
+    if(!"barcodes" %in% f_colnames){
+
+      missing <- base::append(x = missing, values = "barcodes")
+
+    }
+
+    if(!"segment" %in% f_colnames){
+
+      missing <- base::append(x = missing, values = "segment")
+
+    }
+
+    if(base::length(missing) != 0){
+
+      missing <- stringr::str_c(missing, collapse = "', '")
+
+      messages <- base::append(x = messages,
+                               values = stringr::str_c(
+                                 "Missing columns in 'fdata': '",
+                                 missing, "'", sep = ""
+                               ))
+
+    } else {
+
+      # variable classes
+      f_classes <- base::sapply(fdata[,c("sample", "barcodes", "segment")], base::class) %>% base::unname()
+
+      if(!base::identical(f_classes, c("character", "character", "character"))){
+
+        f_classes <- stringr::str_c(f_classes, collapse = "', '")
+        feedback <- stringr::str_c("Invalid column classes in 'fdata'.",
+                                   "\n Columns:    'barcodes',  'sample',    'segment'",
+                                   "\n Classes:    '", f_classes,
+                                   "\n Have to be: 'character', 'character', 'character'",
+                                   sep = "")
+
+        messages <-
+          base::append(x = messages,
+                       values = feedback)
+      }
+
+      # compare samples
+      if(base::all(f_classes[1:2] == "character")){
+
+        messages <- hlpr_compare_samples(object, df = fdata, messages = messages)
+
+      }
+
+    }
+
+    # Return ------------------------------------------------------------------
+
+    if(base::identical(messages, base::character())){
+
+      base::return("Valid!")
+
+    } else {
+
+      base::return(messages)
+
+    }
+
+  }
+
+}
+
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_image <- function(object){
+
+  image_list <- object@image
+  messages <- base::character()
+
+  i_samples <- base::names(image_list) %>% base::sort()
+  o_samples <- samples(object) %>% base::sort()
+
+  # if sample names match check for classes
+  if(!base::identical(i_samples, o_samples )){
+
+    i_samples <- stringr::str_c(i_samples, collapse = ", ")
+    o_samples <- stringr::str_c(o_samples, collapse = ", ")
+
+    messages <- base::append(x = messages,
+                             values = stringr::str_c(
+                               "Invalid name(s) in 'image-list'. Must match samples in object.",
+                               "\n Image names: ", i_samples,
+                               "\n In object  : ", o_samples,
+                               sep = ""
+                             ))
+
+  } else {
+
+    i_samples <- base::names(image_list)
+
+    i_classes <- base::sapply(X = image_list, FUN = base::class) %>% base::unname()
+
+    if(!base::all(i_classes == "Image")){
+
+      invalid_images <- stringr::str_c(i_samples[i_classes != "Image"], collapse = ", ")
+
+      messages <- base::append(x = messages,
+                               values = stringr::str_c("Invalid class in slot(s): '",
+                                                       invalid_images, "' of image-list.",
+                                                       " Must be of class 'Image'.",
+                                                       sep = ""))
+
+
+
+    }
+
+  }
+
+
+  # return
+  if(base::identical(messages, base::character())){
+
+    base::return("Valid!")
+
+  } else {
+
+    base::return(messages)
+
+  }
+
+
+
+
+
+
+}
+
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_samples <- function(object){
+
+  samples <- object@samples
+
+  if(base::length(samples) != 0){
+
+    "Valid!"
+
+  } else {
+
+    "Slot 'samples' must not be of length zero."
+
+  }
+
+}
+
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_scvelo <- function(object){
+
+  base::return("(Currently not in use!)")
+
+}
+
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_trajectories <- function(object){
+
+  messages <- base::character()
+
+  o_names <-
+    object@samples %>%
+    base::sort() %>%
+    stringr::str_c(collapse = "', '")
+
+  tl_names <-
+    base::names(object@trajectories) %>%
+    base::sort() %>%
+    stringr::str_c(collapse = "', '")
+
+  if(!base::identical(o_names, tl_names)){
+
+    feedback <- stringr::str_c("Invalid names in trajectories-list.",
+                               "\n Names:      '", tl_names, "'",
+                               "\n Have to be: '", o_names, "'",
+                               sep = "")
+
+    messages <- base::append(x = messages,
+                             values = feedback)
+
+  } else {
+
+    tl_names <- base::names(object@trajectories)
+
+    for(i in base::seq_along(tl_names)){
+
+      sample <- tl_names[i]
+      sample_trajectories <- base::names(object@trajectories[[sample]])
+
+      messages <-
+        base::append(messages,
+                     values = stringr::str_c("\n-----------------------------------", "\n\nOf sample: ", sample, sep = ""))
+
+      if(base::is.null(sample_trajectories)){
+
+        messages <-
+          base::append(x = messages,
+                       values = "No trajectories.")
+
+      } else {
+
+        for(t in base::seq_along(sample_trajectories)){
+
+          t_name <- sample_trajectories[t]
+
+          feedback <-
+            check_trajectory_object(t_object = object@trajectories[[sample]][[t_name]],
+                                    t_object_name = t_name,
+                                    t_object_sample = sample)
+
+          if(base::identical(feedback, "Valid!")){
+
+            sep = "\n"
+
+          } else {
+
+            sep = "\n\n"
+
+          }
+
+          feedback_value <-
+            stringr::str_c("--------------------", "\n\nTrajectory: ", t_name, sep = "") %>%
+            stringr::str_c(feedback, sep = sep)
+
+          messages <-
+            base::append(x = messages,
+                         values = feedback_value)
+
+        }
+
+      }
+
+    }
+
+  }
+
+
+  if(base::identical(messages, base::character())){
+
+    base::return("Valid")
+
+  } else {
+
+    base::return(messages)
+
+  }
+
+
+}
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_trajectory_object <- function(t_object, t_object_name, t_object_sample){
+
+  messages <- base::character()
+  df_slots <- methods::slotNames(t_object)
+
+  # name
+  if(!base::identical(t_object_name, t_object@name)){
+
+    feedback <-
+      stringr::str_c("Trajectory name in list and in object it self do not match.",
+                     "\n Name in list:   '", stringr::str_c(t_object_name, collapse = ""), "'",
+                     "\n Name in object: '", stringr::str_c(t_object@name, collapse = ""), "'",
+                     sep = "")
+
+    messages <-
+      base::append(x = messages,
+                   values = feedback)
+
+  }
+
+  # sample
+  if(!base::identical(t_object_sample, t_object@sample)){
+
+    feedback <-
+      stringr::str_c("Sample belonging in list and in object it self do not match.",
+                     "\n Belonging according to list:   '", stringr::str_c(t_object_sample, collapse = ""), "'",
+                     "\n Belonging acoording to object: '", stringr::str_c(t_object@sample, collapse = ""), "'",
+                     sep = "")
+
+    messages <-
+      base::append(x = messages,
+                   values = feedback)
+
+  }
+
+
+  # compiled-trajectory
+  ctdf <- t_object@compiled_trajectory_df
+
+  ctdf_colnames <-
+    base::colnames(ctdf) %>%
+    stringr::str_c(collapse = "', '")
+
+  correct_colnames <-
+    c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part") %>%
+    stringr::str_c(collapse = "', '")
+
+  if(!base::identical(ctdf_colnames, correct_colnames)){
+
+    feedback <- stringr::str_c("Invalid columns in slot 'compiled_trajector_df'.",
+                               "\n Column:     '", ctdf_colnames, "'",
+                               "\n Have to be: '", correct_colnames, "'",
+                               sep = "")
+
+    messages <- base::append(x = messages,
+                             values = feedback)
+
+
+  } else {
+
+    ctdf_classes <-
+      base::sapply(X = ctdf[,c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")],
+                   FUN = base::class) %>%
+      base::unname() %>%
+      stringr::str_c(collapse = "', '")
+
+    correct_classes <-
+      c("character", "character", "numeric", "numeric", "numeric", "character") %>%
+      base::unname() %>%
+      stringr::str_c(collapse = "', '")
+
+    if(!base::identical(ctdf_classes, correct_classes)){
+
+      feedback <- stringr::str_c("Invalid classes in 'compiled_trajector_df'.",
+                                 "\n Columns:    '", correct_colnames, "'",
+                                 "\n Classes:    '", ctdf_classes, "'",
+                                 "\n Have to be: '", correct_classes, "'",
+                                 sep = "")
+
+      messages <- base::append(x = messages,
+                               values = feedback)
+
+    }
+
+
+  }
+
+  #
+  sgmt_df <- t_object@segment_trajectory_df
+
+  if(!base::all(c("x", "y", "xend", "yend") %in% base::colnames(sgmt_df))){
+
+    messages <- base::append(x = messages,
+                             values = "Segment data.frame must have variables: 'x', 'y', 'xend', 'yend'.")
+
+  } else if(!base::all(base::sapply(sgmt_df[,c("x", "y", "xend", "yend")], base::class) == "numeric")){
+
+    messages <- base::append(x = messages,
+                             values = "Coordinate related columns of segment data.frame must be numeric.")
+
+  }
+
+
+  if(base::identical(messages, base::character())){
+
+    base::return("Valid!")
+
+  } else {
+
+    base::return(messages)
+
+  }
+
+}
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_used_genesets <- function(object){
+
+  gs_df <- object@used_genesets
+  messages <- base::character()
+
+  if(base::nrow(gs_df) == 0){
+
+    messages <- base::append(x = messages,
+                             values = "'used_geneset' data.frame is empty")
+
+  } else {
+
+    gs_colnames <- base::colnames(gs_df)
+
+    # check for column names and then for column classes
+    if(!base::all(gs_colnames %in% c("ont", "gene"))){
+
+      gs_colnames <-
+        gs_colnames %>%
+        base::sort() %>%
+        stringr::str_c(collapse = "', '")
+
+      messages <-
+        base::append(x = messages,
+                     values = stringr::str_c("Invalid column names in slot 'used_genesets'",
+                                             "\n Columns:    '", gs_colnames, "'",
+                                             "\n Have to be: 'gene', 'ont'",
+                                             sep = ""))
+
+
+    } else {
+
+      gs_classes <- base::sapply(X = gs_df, FUN = base::class) %>% base::unname()
+
+      if(!base::all(gs_classes == "character")){
+
+        gs_classes <-
+          gs_classes %>%
+          base::sort() %>%
+          stringr::str_c(collapse = "', '")
+
+        messages <-
+          base::append(x = messages,
+                       values = stringr::str_c("Invalid column classes:",
+                                               "\n Classes:    '", gs_classes, "'",
+                                               "\n Have to be: 'character', 'character'",
+                                               sep = ""))
+
+      }
+
+    }
+
+  }
+
+  # check for rownames
+  if(tibble::has_rownames(gs_df)){
+
+    messages <- base::append(x = messages,
+                             values = "'used_genesets' data.frame must not contain row.names.")
+
+  }
+
+  # return
+  if(base::identical(messages, base::character())){
+
+    base::return("Valid!")
+
+  } else {
+
+    base::return(messages)
+
+  }
+
+}
+
+#' @rdname check_slot_coordinates
+#' @export
+
+check_slot_version <- function(object){
+
+  base::return("(Currently not in use!)")
+
+}
+
+#' @title Spatial Segmentation (old version)
+#'
+#' @description The function \code{createSegmentation2()} provides access to an
+#' interactive mini-shiny application that allows to separate a sample into
+#' several segments.
+#'
+#' @inherit check_object
+#'
+#' @return An updated version of the spata-object specified as \code{object}
+#' now containing the information about all drawn segments.
+#'
+#' @export
+
+createSegmentation2 <- function(object){
+
+  deprecated(fn = TRUE)
+
+  check_object(object)
+
+  ##----- launch application
+  new_object <-
+    shiny::runApp(
+      shiny::shinyApp(ui = function(){
+
+        shinydashboard::dashboardPage(
+
+          shinydashboard::dashboardHeader(title = "Create Segmentation"),
+
+          shinydashboard::dashboardSidebar(
+            collapsed = TRUE,
+            shinydashboard::sidebarMenu(
+              shinydashboard::menuItem(
+                text = "Segmentation",
+                tabName = "create_segmentation",
+                selected = TRUE
+              )
+            )
+          ),
+
+          shinydashboard::dashboardBody(
+
+            #----- busy indicator
+            shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
+
+            #----- tab items
+            shinydashboard::tabItems(
+              tab_create_segmentation_return()
+            )
+          )
+
+        )},
+        server = function(input, output, session){
+
+          # Reactive values -----------------------------------------------------------
+
+          # a reactive spata object
+          spata_obj <- shiny::reactiveVal(value = object)
+
+          # df and ggplot layer of the currently drawn segment
+          vertices_df <-
+            shiny::reactiveVal(value = data.frame(x = base::numeric(0),
+                                                  y = base::numeric(0)))
+
+          vertices_layer <- shiny::reactiveVal(value = list())
+
+          # a list about the parameters of the currently displayed surface plot
+          current <- reactiveVal(value = list())
+
+          #
+          segmentation_df <- reactive({
+
+            segm_df <-
+              getFeatureDf(object = spata_obj(), of_sample = current()$sample) %>%
+              dplyr::filter(!segmentation %in% c("", "none")) %>%
+              dplyr::select(barcodes, segmentation)
+
+            return(segm_df)
+
+          })
+
+
+          # Modularized plot surface part -------------------------------------------
+
+          module_return <- moduleSurfacePlotServer(id = "segmentation",
+                                                   object = object,
+                                                   final_plot = shiny::reactive(final_plot()),
+                                                   reactive_object = shiny::reactive(spata_obj()))
+
+          # update current()
+          oe <- shiny::observeEvent(module_return()$current_setting(), {
+
+            current(module_return()$current_setting())
+
+          })
+
+          # final plot
+          final_plot <- shiny::reactive({
+
+            module_return()$assembled_plot() +
+              vertices_layer()
+
+          })
+
+          # Observe events ----------------------------------------------------------
+
+          ##--- 1. grow vertices data and update vertices layer frame with every click
+          oe <- shiny::observeEvent(module_return()$dblclick(), {
+
+            ## 1. computation
+            vrtcs_list <- module_return()$dblclick()
+            new_df <- dplyr::add_row(.data = vertices_df(),
+                                     x = vrtcs_list$x,
+                                     y = vrtcs_list$y)
+
+            ## 2.1 update vertices df
+            vertices_df(new_df)
+
+            ## 2.2 update vertices geom layer
+            if(base::nrow(vertices_df()) != 0){
+
+              new_layer <- list(ggplot2::geom_point(data = vertices_df(), mapping = ggplot2::aes(x = x, y = y), size = 3.5, color = "black"),
+                                ggplot2::geom_path(data = vertices_df(), mapping = ggplot2::aes(x = x, y = y), size = 1.25, color = "black")
+              )
+
+              vertices_layer(new_layer)
+
+            } else {
+
+              new_layer <- NULL
+              vertices_layer(list())
+
+            }
+
+          })
+
+          ##--- 2.1 convert vertices layer to geom_polygon to highlight the segmentation
+          oe <- shiny::observeEvent(input$highlight_segment, {
+
+            checkpoint(evaluate = base::nrow(vertices_df()) > 2, case_false = "insufficient_n_vertices")
+
+            new_layer <- list(ggplot2::geom_polygon(data = vertices_df(),
+                                                    mapping = ggplot2::aes(x = x, y = y),
+                                                    alpha = 0.75, colour = "orange", fill = "orange",
+                                                    size = 1))
+            vertices_layer(new_layer)
+
+          })
+
+          ##--- 2.2 reset current() vertices
+          oe <- shiny::observeEvent(input$reset_segment, {
+
+            vertices_df(data.frame(x = numeric(0), y = numeric(0)))
+            vertices_layer(list())
+
+          })
+
+          ##--- 3. save the highlighted segmentation
+          oe <- shiny::observeEvent(input$save_segment, {
+
+            checkpoint(evaluate = input$name_segment != "", case_false = "invalid_segment_name")
+            checkpoint(evaluate = !input$name_segment %in% segmentation_df()$segmentation, case_false = "occupied_segment_name")
+            checkpoint(evaluate = base::nrow(vertices_df()) > 2, case_false = "insufficient_n_vertices")
+
+            sample_coords <- getCoordsDf(objec = spata_obj(), of_sample = current()$sample)
+
+            ## 1. determine positions of each point with respect to the defined segmentation
+            positions <-  sp::point.in.polygon(point.x = sample_coords$x, # x coordinates of all spatial positions
+                                               point.y = sample_coords$y, # y coordaintes of all spatial positions
+                                               pol.x = vertices_df()$x, # x coordinates of the segments vertices
+                                               pol.y = vertices_df()$y) # y coordinates of the segments vertices
+
+            ## 2. update spata obj
+
+            # 2.1 extract object
+            spata_obj <- spata_obj()
+
+            # 2.2 update fdata
+
+            # extract feature data
+
+            # update sample subset
+            fdata <-
+              getFeatureDf(spata_obj, of_sample = current()$sample) %>%
+              dplyr::mutate(
+                positions = positions,
+                segmentation = base::as.character(segmentation),
+                segmentation = dplyr::if_else(condition = positions %in% c(1,2,3), true = input$name_segment, false = segmentation),
+                segmentation = base::factor(segmentation),
+              ) %>%
+              dplyr::select(-positions)
+
+            # exchange sample subset
+            spata_obj <- setFeatureDf(object = spata_obj, feature_df = fdata, of_sample = current()$sample)
+
+            # 2.4 update and check
+            spata_obj(spata_obj)
+
+            if(input$name_segment %in% base::unique(getFeatureDf(spata_obj(), of_sample = current()$sample)$segmentation)){
+
+              shiny::showNotification(ui = stringr::str_c(input$name_segment, "has been saved.", sep = " "), type = "message")
+
+            }
+
+            ## 3. reset vertices values
+            vertices_df(data.frame(x = base::numeric(0), y = base::numeric(0)))
+            vertices_layer(list())
+
+          })
+
+          ##--- 4. remove segments
+          oe <- shiny::observeEvent(input$remove_segment, {
+
+            spata_obj <- spata_obj()
+            fdata <- getFeatureDf(spata_obj, of_sample = current()$sample)
+
+            checkpoint(evaluate = input$name_segment_rmv %in% base::unique(fdata$segmentation), case_false = "segment_name_not_found")
+
+            fdata_new <-
+              dplyr::mutate(
+                .data = fdata,
+                segmentation = base::as.character(segmentation),
+                segmentation = dplyr::if_else(segmentation == input$name_segment_rmv, true = "none", false = segmentation),
+                segmentation = base::factor(segmentation)
+              )
+
+            spata_obj <- setFeatureDf(spata_obj, feature_df = fdata_new, of_sample = current()$sample)
+
+            spata_obj(spata_obj)
+
+            if(!input$name_segment_rmv %in% getFeatureDf(spata_obj(), of_sample = current()$sample)$segmentation){
+
+              shiny::showNotification(ui = stringr::str_c("Segment '", input$name_segment_rmv, "' has been successfully removed.", sep = ""), type = "message")
+
+            }
+
+          })
+
+          ##--- 5. close application and return spata object
+          oe <- shiny::observeEvent(input$close_app, {
+
+            shiny::stopApp(returnValue = spata_obj())
+
+          })
+
+          # Outputs -----------------------------------------------------------------
+
+          output$current_segmentation <- shiny::renderPlot({
+
+            sample <- module_return()$current_setting()$sample
+            segmentation_done <- (base::length(getSegmentNames(object = spata_obj(),
+                                                               of_sample = sample,
+                                                               verbose = FALSE)) != 0)
+
+            shiny::validate(shiny::need(segmentation_done, message = glue::glue("Sample '{sample}' has not been segmented yet.")))
+
+            plotSegmentation(object = spata_obj(),
+                             pt_size = module_return()$pt_size_reactive())
+
+          })
+
+        })
+    )
+
+  return(new_object)
+
+}
+
 # g -----------------------------------------------------------------------
+
+#' @title Obtain information about object initiation
+#'
+#' @description Information about the object's initiation is stored in
+#' a list of three slots:
+#'
+#' \itemize{
+#'  \item{\emph{init_fn}: Contains the name of the initation function as a character value.}
+#'  \item{\emph{input}: Contains a list of which every slot refers to the input of one argument with which the
+#'  initiation function has been called.}
+#'  \item{\emph{time}: Contains the time at which the object was initiated.}
+#'  }
+#'
+#'  \code{getInitiationInput()} returns only slot \emph{input}.
+#'
+#' @inherit check_object params
+#' @inherit argument_dummy params
+#'
+#' @details \code{initiateSpataObject_CountMtr()} and \code{initiateSpataObject_ExprMtr()} each require
+#' a matrix and a coordinate data.frame as input. These are not included in the output
+#' of this function but can be obtained via \code{getCoordsDf()} and \code{getCountMtr()} or \code{getExpressionMtr()}.
+#'
+#' @return A list. See description.
+#' @export
+
+getInitiationInfo <- function(object){
+
+  deprecated(fn = TRUE)
+
+  check_object(object)
+
+  info <- object@information$initiation
+
+  return(info)
+
+}
+
+#' @rdname getInitiationInfo
+#' @export
+getInitiationInput <- function(object, verbose = NULL){
+
+  deprecated(fn = TRUE)
+
+  hlpr_assign_arguments(object)
+
+  info <- getInitiationInfo(object)
+
+  init_fn <- info$init_fn
+
+  confuns::give_feedback(
+    msg = glue::glue("Initiation function used: '{init_fn}()'."),
+    verbose = verbose,
+    with.time = FALSE
+  )
+
+  return(info$input)
+
+}
 
 #' @rdname getSampleName
 #' @export
@@ -96,6 +1304,675 @@ getSampleNames <- function(object){
   check_object(object)
 
   object@samples
+
+}
+
+#' @rdname getCoordsDf
+#' @export
+getSegmentDf <- function(object, segment_names, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  check_object(object)
+
+  confuns::is_vec(segment_names, mode = "character")
+
+  confuns::check_one_of(
+    input = segment_names,
+    against = getSegmentNames(object)
+  )
+
+  res_df <-
+    joinWith(
+      object = object,
+      spata_df = getCoordsDf(object),
+      features = "segmentation"
+    ) %>%
+    dplyr::filter(segmentation %in% {{segment_names}}) %>%
+    tibble::as_tibble()
+
+  return(res_df)
+
+}
+
+#' @title Obtain segment names
+#'
+#' @inherit check_sample params
+#'
+#' @return A list named according to the \code{of_sample} in which each element is
+#' a character vector containing the names of segments which were drawn for the
+#' specific sample.
+#'
+#' @export
+
+getSegmentNames <- function(object,
+                            simplify = TRUE,
+                            of_sample = NA,
+                            ...){
+
+  deprecated(fn = TRUE)
+
+  # lazy check
+  check_object(object)
+
+  # adjusting check
+  of_sample <- check_sample(object, of_sample = of_sample)
+
+  # main part
+  res_list <-
+    purrr::map(.x = of_sample,
+               .f = function(i){
+
+                 segment_names <-
+                   getFeatureDf(object, of_sample = of_sample) %>%
+                   dplyr::pull(segmentation) %>%
+                   base::unique()
+
+                 if(base::length(segment_names) == 1 && base::all(segment_names %in% c("none", ""))){
+
+                   verbose <- base::ifelse(test = base::any(FALSE %in% confuns::keep_named(c(...))), yes = FALSE, no = TRUE)
+
+                   if(base::isTRUE(verbose)){
+
+                     msg <- stringr::str_c("There seems to be no segmentation for sample '", i, "'.")
+
+                     confuns::give_feedback(
+                       msg = msg,
+                       fdb.fn = "stop",
+                       with.time = FALSE
+                     )
+
+                   }
+
+                   base::invisible(NULL)
+
+                 } else {
+
+                   return(segment_names[!segment_names %in% c("none", "")])
+
+                 }
+
+               })
+
+  base::names(res_list) <- of_sample
+
+  res_list <- purrr::discard(.x = res_list, .p = base::is.null)
+
+  if(base::isTRUE(simplify)){
+
+    res_list <- base::unlist(res_list, use.names = FALSE)
+
+    return(res_list)
+
+  } else {
+
+    return(res_list)
+
+  }
+
+
+}
+
+# h -----------------------------------------------------------------------
+
+#' run pca on the cnv-matrix
+#'
+#' @param object spata-object
+#' @param n_pcs number of pcs to be calculated
+#' @param of_sample sample of interest
+#' @param ... arguments given to the pca algorithm
+
+hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
+
+  deprecated(fn = TRUE)
+
+  check_object(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
+
+  cnv_res <- getCnvResults(object, of_sample = of_sample)
+
+  cnv_mtr <- cnv_res$cnv_mtr
+
+  pca_res <- irlba::prcomp_irlba(x = base::t(cnv_mtr), n = n_pcs, ...)
+
+  pca_df <-
+    base::as.data.frame(x = pca_res[["x"]]) %>%
+    dplyr::mutate(barcodes = base::colnames(cnv_mtr), sample = {{of_sample}}) %>%
+    dplyr::select(barcodes, sample, dplyr::everything()) %>%
+    tibble::as_tibble()
+
+  cnv_res$dim_red$pca <- pca_df
+
+  object <- setCnvResults(object, cnv_list = cnv_res, of_sample = of_sample)
+
+  return(object)
+}
+
+#' @title Helper functions for trajectory ranking
+#'
+#' @description Functions to use within \code{purrr::map()} again in \code{dplyr::mutate()} in order to
+#' create a nested ranked trajectory data.frame.
+#'
+#' \itemize{
+#'  \item{\code{hlpr_add_models()}: Returns a data.frame of variables corresponding to
+#'  mathematical curves.}
+#'  \item{\code{hlpr_add_residuals(): Calculates the residuals of the variable \emph{values} with respect
+#'  to each mathematical curve.}}
+#'  \item{\code{hlpr_summarise_residuals(): Calculates the area under the curve for every residual in order to
+#'  access the fit of the respective expression trend to the fitted curve.}}}
+#'
+#' @param df A data.frame.
+#' @param customized_trends_df A data.frame of only numeric variables that represent the trends a trajectory
+#' might adopt.
+#'
+#' @return If used within \code{purrr::map()} a list of data.frames.
+#' @export
+#'
+
+hlpr_add_models <- function(df, custom_fit = NULL){
+
+  dplyr::transmute(.data = df,
+                   trajectory_order = trajectory_order,
+                   p_one_peak = confuns::fit_curve(trajectory_order, fn = "one_peak"),
+                   p_one_peak_rev = confuns::fit_curve(trajectory_order, fn = "one_peak", rev = "y"),
+                   p_two_peaks = confuns::fit_curve(trajectory_order, fn = "two_peaks"),
+                   p_two_peaks_rev = confuns::fit_curve(trajectory_order, fn = "two_peaks", rev = "y"),
+                   p_gradient_desc = confuns::fit_curve(trajectory_order, fn = "gradient"),
+                   p_gradient_asc = confuns::fit_curve(trajectory_order, fn = "gradient", rev = "x"),
+                   p_log_desc = confuns::fit_curve(trajectory_order, fn = "log", rev = "y"),
+                   p_log_asc = base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "y")),
+                   p_log_desc_rev = confuns::fit_curve(trajectory_order, fn = "log", rev = "x"),
+                   p_log_asc_rev = base::rev(confuns::fit_curve(trajectory_order, fn = "log", rev = "x")),
+                   p_lin_asc = confuns::fit_curve(trajectory_order, fn = "linear"),
+                   p_lin_desc = confuns::fit_curve(trajectory_order, fn = "linear", rev = "x"),
+                   p_sin = confuns::fit_curve(trajectory_order, fn = "sinus"),
+                   p_sin_rev = confuns::fit_curve(trajectory_order, fn = "sinus", rev = "x"),
+                   p_sharp_peak = confuns::fit_curve(trajectory_order, fn = "sharp_peak"),
+                   p_early_peak = confuns::fit_curve(trajectory_order, fn = "early_peak"),
+                   p_late_peak = confuns::fit_curve(trajectory_order, fn = "late_peak"),
+                   p_abrupt_asc = confuns::fit_curve(trajectory_order, fn = "abrupt_ascending"),
+                   p_abrupt_desc = confuns::fit_curve(trajectory_order, fn = "abrupt_descending"),
+                   p_custom = custom_fit
+  )
+
+}
+
+#' @rdname hlpr_add_models
+#' @export
+hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
+
+  if(!base::is.null(pb)){
+
+    pb$tick()
+
+  }
+
+  dplyr::transmute(
+    .data = df,
+    {{column}} := !!rlang::sym(x = column),
+    p_one_peak =  (values - confuns::fit_curve(!!rlang::sym(column), fn = "one_peak"))^2,
+    p_one_peak_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "one_peak", rev = "y"))^2,
+    p_two_peaks = (values - confuns::fit_curve(!!rlang::sym(column), fn = "two_peaks"))^2,
+    p_two_peaks_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "two_peaks", rev = "y"))^2,
+    p_gradient_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "gradient"))^2,
+    p_gradient_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "gradient", rev = "x"))^2,
+    p_log_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y"))^2,
+    p_log_asc = (values - base::rev(confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y")))^2,
+    p_log_desc_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "x"))^2,
+    p_log_asc_rev = (values - base::rev(confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "x")))^2,
+    p_lin_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear"))^2,
+    p_lin_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear", rev = "x"))^2,
+    p_sharp_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sharp_peak"))^2,
+    p_sin = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sinus"))^2,
+    p_sin_rev = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sinus", rev = "x"))^2,
+    p_early_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "early_peak"))^2,
+    p_late_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "late_peak"))^2,
+    p_abrupt_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_ascending"))^2,
+    p_abrupt_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_descending"))^2
+  )
+
+}
+
+#' @param df data.frame that contains a column with the values against which the residuals for
+#' every pattern (remaining columns) are computed.
+#' @export
+hlpr_add_residuals2 <- function(df,
+                                pb = NULL,
+                                column_order = "bins_order",
+                                column_values = "values",
+                                shift_longer = FALSE){
+
+  if(!base::is.null(pb)){ pb$tick() }
+
+  out_df <-
+    dplyr::mutate(
+      .data = df,
+      dplyr::across(
+        .cols = -dplyr::all_of(c(column_order, column_values)),
+        .fns = ~ (!!rlang::sym(column_values) - .x)^2
+      )
+    )
+
+  if(base::isTRUE(shift_longer)){
+
+    out_df <-
+      tidyr::pivot_longer(
+        data = out_df,
+        cols = -dplyr::all_of(c(column_order, column_values)),
+        names_to = "pattern_names",
+        values_to = "residuals"
+      )
+
+  }
+
+  out_df <- dplyr::select(out_df, -{{column_values}})
+
+  return(out_df)
+
+
+}
+
+#' @rdname hlpr_add_models
+#' @export
+hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
+
+  if(!base::is.null(pb)){
+
+    pb$tick()
+
+  }
+
+  dplyr::transmute(
+    .data = df,
+    {{column}} := !!rlang::sym(x = column),
+    p_one_peak =  (values - confuns::fit_curve(!!rlang::sym(column), fn = "one_peak"))^2,
+    p_lin_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear"))^2,
+    p_lin_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "linear", rev = "x"))^2,
+    p_log_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y"))^2,
+    p_log_asc = (values - base::rev(confuns::fit_curve(!!rlang::sym(column), fn = "log", rev = "y")))^2,
+    p_sharp_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "sharp_peak"))^2,
+    p_early_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "early_peak"))^2,
+    p_late_peak = (values - confuns::fit_curve(!!rlang::sym(column), fn = "late_peak"))^2,
+    p_abrupt_asc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_ascending"))^2,
+    p_abrupt_desc = (values - confuns::fit_curve(!!rlang::sym(column), fn = "abrupt_descending"))^2
+  )
+
+}
+
+
+hlpr_add_models <- function(df, pb = NULL, pattern_fns = SPATA2::pattern_formulas, column = "trajectory_order"){
+
+  if(!base::is.null(pb)){ pb$tick() }
+
+  dplyr::mutate(
+    .data = df,
+    dplyr::across(
+      .cols = !!rlang::sym(column),
+      .fns = pattern_fns,
+      .names = "{.fn}"
+    )
+  )
+
+}
+
+
+#' @rdname hlpr_add_models
+#' @export
+hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
+
+  if(!base::is.null(pb)){
+
+    pb$tick()
+
+  }
+
+  dplyr::mutate(.data = customized_trends_df, original_values = df$values) %>%
+    dplyr::mutate(dplyr::across(.fns = ~ (.x - original_values)^2)) %>%
+    dplyr::select(-original_values) %>%
+    dplyr::rename_with(.fn = ~ stringr::str_c("p", .x, sep = "_")) %>%
+    dplyr::mutate(trajectory_order = dplyr::row_number())
+
+}
+
+
+#' @rdname hlpr_add_models
+#' @export
+hlpr_summarize_residuals <- function(df,
+                                     pb = NULL,
+                                     column = "trajectory_order",
+                                     column_order = "trajectory_order",
+                                     shift_longer = FALSE){
+
+  if(!base::is.null(pb)){
+
+    pb$tick()
+
+  }
+
+  # out_df <-
+  #  purrr::map_dfc(
+  #   .x = dplyr::select(df, -{{column}}),
+  #  .f = function(y){ pracma::trapz(x = df[[column]], y = y) }
+  # )
+
+  out_df <-
+    dplyr::summarise(
+      .data = df,
+      dplyr::across(
+        .cols = -{{column_order}},
+        .fns = ~ pracma::trapz(x = !!rlang::sym(column_order), y = .x)
+      )
+    )
+
+  if(base::isTRUE(shift_longer)){
+
+    out_df <-
+      tidyr::pivot_longer(
+        data = out_df,
+        cols = dplyr::everything(),
+        names_to = "pattern_names",
+        values_to = "auc"
+      )
+
+  }
+
+  return(out_df)
+
+}
+
+#' @rdname hlpr_add_models
+#' @export
+hlpr_name_models <- function(names){
+
+  stringr::str_replace_all(
+    string = names,
+    pattern = c(
+      "abrupt_desc" = "Abrupt descending",
+      "abrupt_asc" = "Abrupt ascending",
+      "gradient_desc" = "Gradient descending",
+      "gradient_asc" = "Gradient ascending",
+      "lin_desc" = "Linear descending",
+      "lin_asc" = "Linear ascending",
+      "log_desc_rev" = "Logarithmic descending",
+      "log_asc_rev" = "Immediate ascending",
+      "log_desc" = "Immediate descending",
+      "log_asc" = "Logarithmic ascending",
+      "one_peak_rev" = "One peak (reversed)",
+      "one_peak" = "One peak",
+      "sin_rev" = "Sinus (reversed)",
+      "sin" = "Sinus",
+      "two_peaks_rev" = "Two peaks (reversed)",
+      "two_peaks" = "Two peaks",
+      "early_peak" = "Early peak",
+      "sharp_peak" = "Sharp peak",
+      "late_peak" = "Late peak",
+      "custom_fit" = "Custom fit"
+    )
+  )
+
+}
+
+#' @rdname hlpr_add_models
+#' @export
+hlpr_filter_trend <- function(atdf, limit, poi){
+
+  check_atdf(atdf)
+  confuns::is_value(x = limit, mode = "numeric", ref = "limit")
+
+  res <-
+    dplyr::filter(.data = atdf, pattern %in% poi & auc <= limit) %>%
+    dplyr::pull(var = variables) %>% base::unique()
+
+  if(base::length(res) == 0){
+
+    base::stop(glue::glue("No trajectory-trends of pattern '{stringr::str_c(poi, collapse = ', ')}' found with auc lower than {limit}."))
+
+  } else {
+
+    return(res)
+
+  }
+
+}
+
+
+
+
+
+# i -----------------------------------------------------------------------
+
+#' @title Check if object has been subsetted by segment
+#'
+#' @inherit check_object params
+#'
+#' @return TRUE or FALSE
+
+is_subsetted_by_segment <- function(object){
+
+  deprecated(fn = TRUE)
+
+  res <- base::tryCatch({
+
+    check_object(object)
+
+    confuns::check_data_frame(
+      df = object@information$old_coordinates,
+      var.class = list("barcodes" = "character",
+                       "x" = c("integer", "double", "numeric"),
+                       "y" = c("integer", "double", "numeric"))
+    )
+
+    TRUE
+
+  }, error = function(error){
+
+    base::return(FALSE)
+
+  })
+
+  base::return(res)
+
+}
+
+
+
+# m -----------------------------------------------------------------------
+
+#' @export
+make_pretty_model_names <- function(model_names){
+
+  stringr::str_replace_all(
+    string = model_names,
+    pattern = c(
+      "abrupt_desc" = "Abrupt descending",
+      "abrupt_asc" = "Abrupt ascending",
+      "gradient_desc" = "Gradient descending",
+      "gradient_asc" = "Gradient ascending",
+      "lin_desc" = "Linear descending",
+      "lin_asc" = "Linear ascending",
+      "late_desc" = "Late descending",
+      "late_asc" = "Late ascending",
+      "immediate_desc" = "Immediate descending",
+      "immediate_asc" = "Immediate ascending",
+      "one_peak" = "One peak",
+      "one_peak_rev" = "One peak reversed"
+    )
+  )
+
+}
+
+# p -----------------------------------------------------------------------
+
+#' @rdname plotDendrogram
+#' @export
+plotDendrogramCnv <- function(object,
+                              method_dist = NULL,
+                              method_aggl = NULL,
+                              k = NULL,
+                              h = NULL,
+                              type = "rectangle",
+                              direction = "bt",
+                              branch_size = 1,
+                              clrp = NULL,
+                              clrp_adjust = NULL,
+                              display_legend = NULL,
+                              display_title = NULL,
+                              ncol = NULL,
+                              nrow = NULL,
+                              of_sample = NA,
+                              verbose = NULL){
+
+  deprecated(fn = TRUE)
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+
+  of_sample <- check_sample(object, of_sample = of_sample, of.lengh = 1)
+
+  # -----
+
+
+  # 2. Plotting -------------------------------------------------------------
+
+  cnv_results <- getCnvResults(object, of_sample)
+
+  hcl_obj <- cnv_results$clustering[["hierarchical"]]
+
+  if(base::any(base::length(method_dist) > 1, base::length(method_aggl) > 1)){
+
+    confuns::give_feedback(msg = "Plotting dendrograms. This might take a few moments.",
+                           verbose = verbose)
+
+    confuns::plot_dendrograms(
+      hcl.obj = hcl_obj,
+      methods.dist = method_dist,
+      methods.aggl = method_aggl,
+      k = k,
+      h = h,
+      type = type,
+      direction = direction,
+      branch.size = branch_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      display.labels = FALSE,
+      display.legend = display_legend,
+      display.title = display_title
+    )
+
+  } else {
+
+    confuns::give_feedback(msg = "Plotting dendrogram. This might take a few moments.",
+                           verbose = verbose)
+
+    confuns::plot_dendrogram(
+      hcl.obj = hcl_obj,
+      method.dist = method_dist,
+      method.aggl = method_aggl,
+      k = k,
+      h = h,
+      type = type,
+      direction = direction,
+      branch.size = branch_size,
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      display.labels = FALSE,
+      display.legend = display_legend,
+      display.title = display_title
+    )
+
+  }
+
+
+
+
+}
+
+
+# v -----------------------------------------------------------------------
+
+#' @title Validate a spata object
+#'
+#' @description Takes a spata object and checks whether all slots contain suitable
+#' data. If not it attempts to provide a helpful report.
+#'
+#' @param object A spata-object.
+#'
+#' @return A character string that is printed by \code{base::writeLines()}
+#' @export
+#'
+
+validateSpataObject <- function(object){
+
+  deprecated(fn = TRUE)
+
+  validation(x = object)
+
+  # 1. Examine the slot names -----------------------------------------------
+
+  input_slots <- methods::slotNames(object) %>% sort()
+  input_slots <- input_slots[!input_slots %in% c("version", "scvelo", "additional")]
+  spata_slots <- c("coordinates", "data", "dim_red", "fdata",
+                   "image", "samples", "scvelo", "trajectories", "used_genesets", "version")
+
+  # check for missing input_slots
+  if(!base::all(spata_slots %in% input_slots)){
+
+    not_found <-
+      stringr::str_c(spata_slots[!spata_slots %in% input_slots], collapse = "', '")
+
+    base::message(stringr::str_c("Could not find slots: '", not_found,
+                                 "'. Can not validate slots that do not exist." )
+    )
+
+
+  }
+
+  # check for unknown input slots
+  if(base::any(!input_slots %in% spata_slots)){
+
+    unknown <-
+      stringr::str_c(input_slots[!input_slots %in% spata_slots], collapse = "', '")
+
+    base::message(stringr::str_c("Ignorign unknown slots: '", unknown, "'."))
+
+    # keep only valid input_slots
+    input_slots <- spata_slots[spata_slots %in% input_slots]
+
+  }
+
+  feedback <- base::vector(mode = "list")
+
+  for(slot in input_slots){
+
+    fun <- stringr::str_c("check_slot_", slot, sep = "")
+
+    feedback[[slot]] <-
+      base::do.call(fun, list(object)) %>%
+      stringr::str_c("\n", sep = "")
+
+  }
+
+  feedback <- base::lapply(X = feedback,
+                           FUN = function(i){
+
+                             stringr::str_c(i, collapse = "\n")
+
+
+                           })
+
+  # unlist feedback
+  feedback_vec <- base::unlist(x = feedback) %>% unname()
+  prefix <- stringr::str_c("Slot '", base::names(feedback), "': ", sep = "")
+  separating_lines <- "--------------------------------------------------"
+
+
+  # combine with descriptive prefix
+  final_feedback <- stringr::str_c(prefix, feedback_vec, separating_lines, "", sep = "\n")
+
+  # return results
+  base::writeLines(final_feedback)
 
 }
 

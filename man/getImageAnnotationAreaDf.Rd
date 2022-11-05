@@ -43,15 +43,14 @@ How to use arguments \code{tags} and \code{test} to specify
 the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
 Argument \code{test} decides about how the specified tags are used to select
 the image annotations of interest. There are three options:
-
-1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+\enumerate{
+\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 must be tagged with at least one of the input tags.
-
-2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
 must be tagged with all of the input tags.
-
-3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
 must be tagged with all of the input tags and must not be tagged with anything else.
+}
 
 Note that the filtering process happens in addition to / after the filtering by input for argument
 \code{ids}.

@@ -30,10 +30,10 @@ of interest.}
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
 \itemize{
-  \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-  \item{ \strong{Genes} Must be in \code{getGenes()}}
-  \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-  }}
+\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} Must be in \code{getGenes()}}
+\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+}}
 
 \item{binwidth}{Distance value. The width of the bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
@@ -82,13 +82,13 @@ every observation refers to the mean-value of one of the specified variable-elem
 gene set) of the particular sub-rectangle. The returned data.frame contains the following variables:
 
 \itemize{
- \item{\emph{trajectory_part}: Character. Specifies the trajectory's sub-part of the observation. (Negligible if there is
- only one trajectory part.)}
- \item{\emph{trajectory_part_order}: Numeric. Indicates the order within the trajectory-part. (Negligible if there is
- only one trajectory part.)}
- \item{\emph{trajectory_order}: Numeric. Indicates the order within the whole trajectory.}
- \item{\emph{variables}: Character. The respective gene sets, gene or feature the value refers to.}
- \item{\emph{values}: Numeric. The summarized values.}}
+\item{\emph{trajectory_part}: Character. Specifies the trajectory's sub-part of the observation. (Negligible if there is
+only one trajectory part.)}
+\item{\emph{trajectory_part_order}: Numeric. Indicates the order within the trajectory-part. (Negligible if there is
+only one trajectory part.)}
+\item{\emph{trajectory_order}: Numeric. Indicates the order within the whole trajectory.}
+\item{\emph{variables}: Character. The respective gene sets, gene or feature the value refers to.}
+\item{\emph{values}: Numeric. The summarized values.}}
 }
 \note{
 \code{getTrajectoryScreeningDf()} summarizes by bins by default.

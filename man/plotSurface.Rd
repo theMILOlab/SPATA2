@@ -55,12 +55,12 @@ plotSurfaceInteractive(object)
 
 \item{color_by}{The variable to be displayed by color:
 
- \itemize{
-  \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-  \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-  expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-  \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
-  }}
+\itemize{
+\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
+expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
+\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
+}}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
@@ -123,10 +123,10 @@ spata-objects can store more than one sample.}
 
 \item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
 \itemize{
- \item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
- \item{\emph{sample} Character. The sample belonging of every barcode-spot.}
- \item{\emph{x} Numeric. The x-coordinates of every barcode.}
- \item{\emph{y} Numeric. The y-coordinates of every barcode.}
+\item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
+\item{\emph{sample} Character. The sample belonging of every barcode-spot.}
+\item{\emph{x} Numeric. The x-coordinates of every barcode.}
+\item{\emph{y} Numeric. The y-coordinates of every barcode.}
 }}
 
 \item{image}{An image of class \emph{Image} to be displayed in the background.
@@ -138,11 +138,11 @@ surface according to the expression of genes, gene sets or features.
 
 \itemize{
 
- \item{ \code{plotSurface()} Takes the spata-object as the starting point and creates the
- necessary data.frame from scratch according to additional parameters.}
- \item{ \code{plotSurface2()} Takes a data.frame as the starting point.}
- \item{ \code{plotSurfaceInteractive()} Takes only the spata-object and opens a shiny
- application which allows for interactive plotting.}
+\item{ \code{plotSurface()} Takes the spata-object as the starting point and creates the
+necessary data.frame from scratch according to additional parameters.}
+\item{ \code{plotSurface2()} Takes a data.frame as the starting point.}
+\item{ \code{plotSurfaceInteractive()} Takes only the spata-object and opens a shiny
+application which allows for interactive plotting.}
 
 }
 }

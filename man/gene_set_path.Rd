@@ -10,12 +10,12 @@ gene_set_path(gene_set_path)
 \item{gene_set_path}{Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.
 
- Must have the character-variables
+Must have the character-variables
 
-   \itemize{
-    \item{\emph{'ont'}: The gene set names.}
-    \item{\emph{'gene'}: The belonging gene names.}
-    }
+\itemize{
+\item{\emph{'ont'}: The gene set names.}
+\item{\emph{'gene'}: The belonging gene names.}
+}
 
 If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.}
 }

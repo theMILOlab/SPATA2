@@ -16,11 +16,11 @@ examineTrajectoryAssessment(
 \arguments{
 \item{atdf}{A data.frame containing the results of trajectory-modelling. Must contain the variables:
 
- \describe{
-  \item{\emph{variables}}{Character. The genes, gene-sets and features that have been assessed.}
-  \item{\emph{pattern}}{Character. The respective trajectory pattern.}
-  \item{\emph{auc}}{Numeric. The assessment value which is the residual's area under the curve.}
- }}
+\describe{
+\item{\emph{variables}}{Character. The genes, gene-sets and features that have been assessed.}
+\item{\emph{pattern}}{Character. The respective trajectory pattern.}
+\item{\emph{auc}}{Numeric. The assessment value which is the residual's area under the curve.}
+}}
 
 \item{limits}{The minimum and maximum auc-values to include. Given to
 \code{ggplot2::scale_x_continuous()}.}
@@ -35,5 +35,5 @@ to the rules of the ggplot2-framework.
 }
 \description{
 Visualizes the distribution of the assessment-scores
- (residuals-area-under-the-curve) of a trajectory.
+(residuals-area-under-the-curve) of a trajectory.
 }

@@ -37,11 +37,13 @@ extract_unit <- function(input){
 
   is_dist(input = input, error = TRUE)
 
-  out <- stringr::str_extract(input, pattern = "[a-z]*$")
+  out <- stringr::str_extract(input, pattern = regex_unit)
 
-  no_units <- !stringr::str_detect(out, pattern = "[a-z]*$")
+  no_units <-
+    !stringr::str_detect(out, pattern = regex_unit)|
+    base::is.na(out)
 
-  out[no_units] <- stringr::str_c(out[no_units], "px")
+  out[no_units] <- "px"
 
   return(out)
 

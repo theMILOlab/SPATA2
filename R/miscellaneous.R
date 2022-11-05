@@ -138,8 +138,17 @@ process_ranges <- function(xrange = getImageRange(object)$x,
                            persp = "image",
                            object = NULL){
 
-  xrange <- asPixel(input = xrange, object = object, as_numeric = TRUE)
-  yrange <- asPixel(input = yrange, object = object, as_numeric = TRUE)
+  if(!base::is.null(xrange)){
+
+    xrange <- asPixel(input = xrange, object = object, as_numeric = TRUE)
+
+  }
+
+  if(!base::is.null(yrange)){
+
+    yrange <- asPixel(input = yrange, object = object, as_numeric = TRUE)
+
+  }
 
   expand_input <- expand
 

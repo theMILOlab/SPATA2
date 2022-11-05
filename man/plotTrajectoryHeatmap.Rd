@@ -39,9 +39,9 @@ plotTrajectoryHeatmap(
 \item{variables}{The variables of interest specified as a character vector:
 
 \itemize{
- \item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
- \item{ \strong{Genes}: Must be in \code{getGenes()}}
- }
+\item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
+\item{ \strong{Genes}: Must be in \code{getGenes()}}
+}
 
 All elements of the specified character vector must either belong to
 gene sets or to genes.}

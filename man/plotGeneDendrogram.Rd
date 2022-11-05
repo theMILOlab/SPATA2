@@ -11,7 +11,7 @@ plotGeneDendrogram(object, method_hclust = "complete", of_sample = NA, ...)
 
 \item{method_hclust}{Character value. Denotes the hierarchical clustering method  according
 to which the clustering is performed. Valid input options are \emph{'ward.D', 'ward.D2', 'single',
- 'complete', 'average', 'mcquitty', 'median'} and \emph{'centroid'}.}
+'complete', 'average', 'mcquitty', 'median'} and \emph{'centroid'}.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}

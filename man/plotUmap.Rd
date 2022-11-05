@@ -96,12 +96,12 @@ plotPca(
 
 \item{color_by}{The variable to be displayed by color:
 
- \itemize{
-  \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-  \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-  expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-  \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
-  }}
+\itemize{
+\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
+expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
+\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
+}}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean

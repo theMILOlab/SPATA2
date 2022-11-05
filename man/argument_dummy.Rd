@@ -62,6 +62,9 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{dir}{Character value. The chosen directory. See details for possible
+requirements.}
+
 \item{discrete_feature}{Character value. Specifies the name of the grouping variable
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 
@@ -94,7 +97,7 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units.
 
-See details section of \code{?is_dist} for more information.}
+See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
@@ -203,16 +206,17 @@ of the plot.}
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
 
-\item{xrange, yrange}{Vectors of length two or \code{NULL}. If not \code{NULL},
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
 \code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200 up to x-coordinate 500.
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units.
 
-See details section of \code{?is_dist} for more information.}
+See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 }
 \description{
 Argument dummy

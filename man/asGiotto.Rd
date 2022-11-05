@@ -25,7 +25,7 @@ An object of class \code{Giotto}.
 }
 \description{
 Transforms an \code{SPATA2} object to an object of class
- \code{Giotto}. See details for more information.
+\code{Giotto}. See details for more information.
 }
 \details{
 The object is created using the count matrix of the input as

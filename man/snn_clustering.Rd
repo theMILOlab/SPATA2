@@ -13,6 +13,6 @@ snn_clustering
 }
 \description{
 @docType data
- @usage data(snn_clustering)
+@usage data(snn_clustering)
 }
 \keyword{datasets}

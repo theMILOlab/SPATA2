@@ -24,6 +24,6 @@ to identify genes with spatial expression pattern with SPARK-X.
 }
 \author{
 Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables
- scalable and robust detection of spatial expression patterns for large spatial
- transcriptomic studies. Genome Biol 22, 184 (2021). https://doi.org/10.1186/s13059-021-02404-0
+scalable and robust detection of spatial expression patterns for large spatial
+transcriptomic studies. Genome Biol 22, 184 (2021). https://doi.org/10.1186/s13059-021-02404-0
 }

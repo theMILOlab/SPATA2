@@ -162,10 +162,10 @@ plotVioBoxplot(
 \item{variables}{Character vector. The variables of interest:
 
 \itemize{
- \item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
- \item{ \strong{Genes}: Must be in \code{getGenes()}}
- \item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
- }}
+\item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
+\item{ \strong{Genes}: Must be in \code{getGenes()}}
+\item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
+}}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
