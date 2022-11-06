@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerAxesEUOL}
 \alias{ggpLayerAxesEUOL}
-\title{Display axes with European Units of Length}
+\title{Display axes with European units of length}
 \usage{
 ggpLayerAxesEUOL(
   object,
@@ -20,7 +20,7 @@ ggpLayerAxesEUOL(
 
 \item{eUOL}{The desired unit in wich the axes are displayed. Defaults to the unit
 in which the original size of the image of the spatial method is
-provided. Obtain valid input options with \code{validUnitsOfLength()}.}
+provided. Obtain valid input options with \code{validEuropeanUnitsOfLength()}.}
 
 \item{which}{One or two of \emph{'x'} and \emph{'y'}. Specifies
 for which axes the transformation is performed. Defaults to both.}
@@ -44,7 +44,7 @@ A list of \code{ggproto}-objects.
 }
 \description{
 Performs necessary transformations to display axes of
-surface plots with European Units of Length.
+surface plots with European units of length.
 }
 \details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

@@ -667,7 +667,7 @@ regex_unit <- stringr::str_c(regex_eUOL, regex_pxl, sep = "|")
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
 
 
-spatial_methods <- c("SlideSeq", "Visium10X")
+spatial_methods <- c("Visium")
 
 
 smrd_projection_df_names <- c("trajectory_part", "proj_length_binned", "trajectory_order", "trajectory_part_order")

@@ -215,7 +215,8 @@ transfer_slot_content <- function(recipient, donor, skip = character(0), verbose
 #' @param input Distance as European unit of length. See details for more.
 #' @inherit transform_pixel_to_eUOL params details
 #'
-#' @return Transformed input. Numeric vector of the same length as \code{input}.
+#' @return Transformed input. Vector of the same length as \code{input}.
+#' `transform_eUOL_to_pixel()` returns always a numeric value.
 #'
 #' @note \code{transform_eUOL_to_pixel()} transforms only single values. \code{transform_eUOL_to_pixels()}
 #' transforms vectors of lengths one or more.
@@ -312,18 +313,42 @@ transform_eUOL_to_pixels <- function(input,
                                      object = NULL,
                                      image_dims = NULL,
                                      method = NULL,
-                                     round = FALSE){
+                                     round = FALSE,
+                                     as_numeric = FALSE){
 
   is_eUOL_dist(input = input, error = TRUE)
 
-  purrr::map_dbl(
-    .x = input,
-    .f = transform_eUOL_to_pixel,
-    object = object,
-    image_dims = image_dims,
-    method = method,
-    round = round
-  )
+  if(base::isTRUE(as_numeric)){
+
+    out <-
+      purrr::map_dbl(
+        .x = input,
+        .f = transform_eUOL_to_pixel,
+        object = object,
+        image_dims = image_dims,
+        method = method,
+        round = round
+      ) %>%
+        magrittr::set_attr(which = "unit", value = "px")
+
+
+  } else {
+
+    out <-
+      purrr::map_dbl(
+        .x = input,
+        .f = transform_eUOL_to_pixel,
+        object = object,
+        image_dims = image_dims,
+        method = method,
+        round = round
+      ) %>%
+      base::as.character() %>%
+      stringr::str_c(., "px")
+
+  }
+
+  return(out)
 
 }
 
@@ -344,13 +369,13 @@ transform_eUOL_to_pixels <- function(input,
 #' of the image to which the distance is scaled. First value corresponds to
 #' the width, second value corresponds to the height of the image.
 #'
-#' Ignored if \code{object} is specified.
+#' Ignored if \code{object} is specified (carries needed information).
 #'
 #' @param method The spatial -omic method by name as a character value or S4 object
-#' of class \code{SpatialMethod}. Specifies the method and thus the original
-#' size in European units of length. If character, must be one of \code{validSpatialMethods()}.
+#' of class \code{SpatialMethod}. Specifies the method and thus the frame size of
+#' the original image in European units of length. If character, must be one of \code{validSpatialMethods()}.
 #'
-#' Ignored if \code{object} is specified.
+#' Ignored if \code{object} is specified (carries needed information).
 #'
 #' @param round Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 #' of \code{base::round()}. Rounds transformed values before they are returned.
@@ -360,7 +385,10 @@ transform_eUOL_to_pixels <- function(input,
 #'
 #' @inherit is_dist details
 #'
-#' @return Transformed input. Character vector of the same length as \code{input}.
+#' @return Transformed input. Vector of the same length as \code{input}. By default,
+#' the output is returned as a character vector with the units as suffix.
+#' If `as_numeric` is `TRUE`, the suffix is removed and the output vector is
+#' returned as a numeric one. The unit is added as an attribute.
 #'
 #' @note \code{transform_pixel_to_eUOL()} transforms only single values. \code{transform_pixels_to_eUOL()}
 #' transforms vectors of lengths one or more.
@@ -484,7 +512,8 @@ transform_pixels_to_eUOL <- function(input,
         method = method,
         round = round,
         as_numeric = as_numeric
-      )
+      ) %>%
+      magrittr::set_attr(which = "unit", value = eUOL)
 
   } else {
 

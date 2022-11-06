@@ -438,7 +438,7 @@ is_eUOL_dist <- function(input, error = FALSE){
 #' @param input Character or numeric vector. Elements must match the
 #' requirements of the \code{SPATA2} distance framework. See details
 #' for more information.
-#' @param verbose Logical. If \code{TRUE} and the input is invalid the
+#' @param error Logical. If \code{TRUE} and the input is invalid the
 #' function throws an error.
 #'
 #' @return Logical value and/or error if \code{verbose} is \code{TRUE}

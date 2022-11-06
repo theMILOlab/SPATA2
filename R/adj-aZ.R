@@ -1509,7 +1509,11 @@ as_unit <- function(input,
   }
 
 
-  if(base::isFALSE(as_numeric)){
+  if(base::isTRUE(as_numeric)){
+
+    base::attr(out, which = "unit") <- unit
+
+  } else {
 
     not_suffixed <- !stringr::str_detect(out, pattern = stringr::str_c(unit, "$"))
 
@@ -1523,6 +1527,7 @@ as_unit <- function(input,
     base::names(out) <- base::names(input)
 
   }
+
 
   base::options(scipen = 0)
 
@@ -2095,4 +2100,71 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 
 
 
+# attach ------------------------------------------------------------------
+
+#' @title Attach unit to distance
+#'
+#' @description Reattaches the unit in form of a character suffix
+#' to the distance values.
+#'
+#' @inherit is_dist params details
+#'
+#' @return Character vector of the same length as `input`.
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object <- downloadSpataObject("313_T")
+#'
+#' pixel_values <- c(300, 400, 500)
+#'
+#' mm_norm <- asMillimeter(pixel_values, object = object, round = 2)
+#'
+#' mm_norm
+#'
+#' mm_num <- asMillimeter(pixel_values, object = object, round = 2, as_numeric = TRUE)
+#'
+#' mm_num
+#'
+#' attachUnit(mm_num)
+#'
+#'
+#' @export
+attachUnit <- function(input){
+
+  is_dist(input, error = TRUE)
+
+  if(base::is.numeric(input)){
+
+    unit <- base::attr(x = input, which = "unit")
+
+    if(base::is.null(unit)){
+
+      stop("Attribute 'unit' of input is NULL.")
+
+    } else if(!confuns::is_value(x = unit, mode = "character", verbose = FALSE)){
+
+      stop("Attribute 'unit' of input is not a character value.")
+
+    } else if(!unit %in% validUnits()){
+
+      stop("Attribute 'unit' of input must be one of `validUnits()`.")
+
+    } else {
+
+      out <- stringr::str_c(input, unit)
+
+    }
+
+  } else {
+
+    out <- input
+
+  }
+
+  return(out)
+
+}
 

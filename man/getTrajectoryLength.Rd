@@ -21,7 +21,10 @@ of \code{base::round()}. Rounds transformed values before they are returned.}
 This means that the unit is not \bold{not} suffixed.}
 }
 \value{
-Transformed input. Character vector of the same length as \code{input}.
+Transformed input. Vector of the same length as \code{input}. By default,
+the output is returned as a character vector with the units as suffix.
+If \code{as_numeric} is \code{TRUE}, the suffix is removed and the output vector is
+returned as a numeric one. The unit is added as an attribute.
 }
 \description{
 Computes and returns the length of a trajectory.

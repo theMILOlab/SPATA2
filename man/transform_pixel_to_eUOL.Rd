@@ -39,13 +39,13 @@ the object. If \code{NULL}, \code{image_dims} and \code{method} must be specifie
 of the image to which the distance is scaled. First value corresponds to
 the width, second value corresponds to the height of the image.
 
-Ignored if \code{object} is specified.}
+Ignored if \code{object} is specified (carries needed information).}
 
 \item{method}{The spatial -omic method by name as a character value or S4 object
-of class \code{SpatialMethod}. Specifies the method and thus the original
-size in European units of length. If character, must be one of \code{validSpatialMethods()}.
+of class \code{SpatialMethod}. Specifies the method and thus the frame size of
+the original image in European units of length. If character, must be one of \code{validSpatialMethods()}.
 
-Ignored if \code{object} is specified.}
+Ignored if \code{object} is specified (carries needed information).}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}
@@ -54,7 +54,10 @@ of \code{base::round()}. Rounds transformed values before they are returned.}
 This means that the unit is not \bold{not} suffixed.}
 }
 \value{
-Transformed input. Character vector of the same length as \code{input}.
+Transformed input. Vector of the same length as \code{input}. By default,
+the output is returned as a character vector with the units as suffix.
+If \code{as_numeric} is \code{TRUE}, the suffix is removed and the output vector is
+returned as a numeric one. The unit is added as an attribute.
 }
 \description{
 Transforms pixel values to European units
