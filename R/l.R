@@ -254,9 +254,9 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
 
   }
 
-  if(base::is.null(object@information$method)){
+  if(base::is.null(spata_obj@information$method)){
 
-    object@information$method <- Visium
+    spata_obj@information$method <- Visium
 
   }
 
