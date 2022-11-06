@@ -58,9 +58,6 @@ is displayed underneath the plot.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \description{
 This function calculates the quantiles specified in \code{n_qntl}

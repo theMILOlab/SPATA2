@@ -12,7 +12,7 @@ plotSurface(
   alpha_by = NULL,
   method_gs = NULL,
   normalize = NULL,
-  smooth = NULL,
+  smooth = FALSE,
   smooth_span = NULL,
   pt_alpha = NULL,
   pt_clr = NULL,
@@ -21,6 +21,7 @@ plotSurface(
   pt_size = NULL,
   pt_size_fixed = NULL,
   clrp_adjust = NULL,
+  use_scattermore = FALSE,
   display_image = NULL,
   display_title = NULL,
   complete = NULL,
@@ -30,7 +31,6 @@ plotSurface(
   bcsp_rm = NULL,
   na_rm = FALSE,
   pt_size_legend = 10,
-  of_sample = NA,
   ...
 )
 
@@ -117,9 +117,6 @@ respective \code{<aes>_trans} argument.}
 
 \item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
 are removed before plotting.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
 \itemize{

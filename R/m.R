@@ -19,6 +19,64 @@ make_angle_bins <- function(n){
 }
 
 
+#' @export
+make_scattermore_add_on <- function(mapping,
+                                    alpha,
+                                    color,
+                                    pointsize,
+                                    alpha_by,
+                                    color_by,
+                                    na_rm = TRUE){
+
+
+  if(base::is.character(color_by) & base::is.character(alpha_by)){
+
+    point_add_on <-
+      scattermore::geom_scattermore(
+        na.rm = na_rm,
+        mapping = mapping,
+        pointsize = pointsize
+      )
+
+  } else if(base::is.character(color_by)){
+
+    point_add_on <-
+      scattermore::geom_scattermore(
+        na.rm = na_rm,
+        mapping = mapping,
+        pointsize = pointsize,
+        alpha = alpha
+      )
+
+  } else if(base::is.character(alpha_by)){
+
+    point_add_on <-
+      scattermore::geom_scattermore(
+        na.rm = na_rm,
+        mapping = mapping,
+        pointsize = pointsize,
+        color = color
+      )
+
+  } else {
+
+    point_add_on <-
+      scattermore::geom_scattermore(
+        na.rm = na_rm,
+        mapping = mapping,
+        pointsize = pointsize,
+        color = color,
+        alpha = alpha
+      )
+
+  }
+
+  return(point_add_on )
+
+}
+
+
+
 
 # map ---------------------------------------------------------------------
 

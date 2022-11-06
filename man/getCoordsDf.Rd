@@ -12,8 +12,6 @@ getCoordsDf(object, of_sample = NA, type = "both", ...)
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{segment_names}{Character vector. Specifies the segments of interest.}
-
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 }

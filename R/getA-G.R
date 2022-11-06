@@ -503,7 +503,6 @@ getCnvResults <- function(object, ...){
 #' @title Obtain spatial coordinates
 #'
 #' @inherit check_sample params
-#' @param segment_names Character vector. Specifies the segments of interest.
 #'
 #' @return A data.frame containing the variables \emph{barcods, sample, x, y}
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
@@ -511,13 +510,12 @@ getCnvResults <- function(object, ...){
 
 getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
 
+  deprecated(...)
+
   # 1. Control --------------------------------------------------------------
 
   # lazy check
   check_object(object)
-
-  # adjusting check
-  of_sample <- check_sample(object, of_sample, 1)
 
   # -----
 
@@ -549,7 +547,7 @@ getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
 
   } else {
 
-    coords_df <- object@coordinates[[of_sample]] %>% tibble::as_tibble()
+    coords_df <- object@coordinates[[1]] %>% tibble::as_tibble()
 
   }
 
@@ -1929,7 +1927,7 @@ getGenesInteractive <- function(object){
 #' barcode spots to groups.
 #' @export
 
-getGroupingOptions <- function(object, ....){
+getGroupingOptions <- function(object, ...){
 
   deprecated(...)
 

@@ -32,9 +32,6 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \description{
 Displays the spatial dimension of the sample and colors the

@@ -581,8 +581,30 @@ rotate_coords_df <- function(df, angle, x = "Location_Center_X", y = "Location_C
 }
 
 
-# SPATA2 object
-rotateCoords <- function(object, angle){
+#' @title Rotate image
+#'
+#' @description Rotates the coordinates clockwise. Can be used to align
+#' with coordinates.
+
+#' @inherit argument_dummy params
+#'
+#' @param angle Numeric value. The angle by which the coordinates
+#' are rotated.
+#'
+#' @param stepwise Logical value. If TRUE, the function allows
+#' only step wise rotation by values that can be divided
+#' by 45.
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+rotateCoords <- function(object, angle, stepwise = TRUE){
+
+  if(base::isTRUE(stepwise)){
+
+    stopifnot(angle %in% c(45, 90, 135, 180, 225, 270, 315))
+
+  }
 
   coords_df <- getCoordsDf(object)
 
@@ -611,11 +633,30 @@ rotateCoords <- function(object, angle){
 }
 
 
-#' @rdname flipImage
+#' @title Rotate image
+#'
+#' @description Rotates the image clockwise. Can be used to align
+#' with coordinates.
+#'
+#' @inherit argument_dummy params
+#'
+#' @param angle Numeric value. The angle by which the image
+#' is rotated.
+#'
+#' @param stepwise Logical value. If TRUE, the function allows
+#' only step wise rotation by values that can be divided
+#' by 45.
+#'
+#' @inherit update_dummy return
+#'
 #' @export
-rotateImage <- function(object, angle){
+rotateImage <- function(object, angle, stepwise = TRUE){
 
-  stopifnot(angle %in% c(90, 180))
+  if(base::isTRUE(stepwise)){
+
+    stopifnot(angle %in% c(45, 90, 135, 180, 225, 270, 315))
+
+  }
 
   io <- getImageObject(object)
 

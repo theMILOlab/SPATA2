@@ -38,7 +38,7 @@ plotSurface <- function(object,
                         alpha_by = NULL,
                         method_gs = NULL,
                         normalize = NULL,
-                        smooth = NULL,
+                        smooth = FALSE,
                         smooth_span = NULL,
                         pt_alpha = NULL,
                         pt_clr = NULL,
@@ -47,6 +47,7 @@ plotSurface <- function(object,
                         pt_size = NULL,
                         pt_size_fixed = NULL,
                         clrp_adjust = NULL,
+                        use_scattermore = FALSE,
                         display_image = NULL,
                         display_title = NULL,
                         complete = NULL,
@@ -56,8 +57,9 @@ plotSurface <- function(object,
                         bcsp_rm = NULL,
                         na_rm = FALSE,
                         pt_size_legend = 10,
-                        of_sample = NA,
                         ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -73,17 +75,12 @@ plotSurface <- function(object,
   check_pt(pt_size, pt_alpha, pt_clrsp)
   check_display(display_title, display_image)
 
-  # adjusting check
-  of_sample <- check_sample(object = object,
-                            of_sample = of_sample,
-                            desired_length = 1)
-
   # -----
 
   # 2. Data extraction and plot preparation ---------------------------------
 
   coords_df <-
-    getCoordsDf(object, of_sample = of_sample) %>%
+    getCoordsDf(object) %>%
     hlpr_join_with_aes(
       object = object,
       df = .,
@@ -117,13 +114,30 @@ plotSurface <- function(object,
       params = list(color = pt_color, size = pt_size, alpha = pt_alpha)
     )
 
-  if(base::isTRUE(pt_size_fixed)){
+  n_points <- base::nrow(coords_df)
+
+  mapping <- ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+
+  if(n_points >= 10000 | base::isTRUE(use_scattermore)){
+
+    point_add_on <-
+      make_scattermore_add_on(
+        mapping = mapping,
+        alpha = pt_alpha,
+        color = pt_color,
+        pointsize = pt_size,
+        alpha_by = alpha_by,
+        color_by = color_by,
+        na_rm = na_rm
+      )
+
+  } else if(base::isTRUE(pt_size_fixed)){
 
     point_add_on <-
       geom_point_fixed(
         params,
         na.rm = na_rm,
-        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+        mapping = mapping
       )
 
   } else {
@@ -134,7 +148,7 @@ plotSurface <- function(object,
         stat = "identity",
         position = "identity",
         params = params,
-        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+        mapping = mapping
       )
 
   }
@@ -180,7 +194,7 @@ plotSurface <- function(object,
   }
 
   ggplot2::ggplot(data = coords_df) +
-    hlpr_image_add_on(object, display_image, of_sample) +
+    hlpr_image_add_on(object, display_image = display_image) +
     point_add_on +
     scale_color_add_on(
       aes = "color",

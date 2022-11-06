@@ -37,6 +37,7 @@ Imports:
     rlang,
     readr,
     reticulate,
+    scattermore,
     shiny,
     shinyWidgets,
     shinybusy,

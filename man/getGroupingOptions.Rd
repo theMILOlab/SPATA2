@@ -4,7 +4,7 @@
 \alias{getGroupingOptions}
 \title{Obtain variable names that group the barcode spots}
 \usage{
-getGroupingOptions(object, ....)
+getGroupingOptions(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
