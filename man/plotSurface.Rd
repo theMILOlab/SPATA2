@@ -22,6 +22,8 @@ plotSurface(
   pt_size_fixed = NULL,
   clrp_adjust = NULL,
   use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
+  sctm_interpolate = FALSE,
   display_image = NULL,
   display_title = NULL,
   complete = NULL,
@@ -31,6 +33,8 @@ plotSurface(
   bcsp_rm = NULL,
   na_rm = FALSE,
   pt_size_legend = 10,
+  order_by = NULL,
+  order_desc = FALSE,
   ...
 )
 
@@ -45,6 +49,11 @@ plotSurface2(
   pt_size = 2,
   image = NULL,
   clrp_adjust = NULL,
+  use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
+  sctm_interpolate = FALSE,
+  order_by = NULL,
+  order_desc = FALSE,
   ...
 )
 
@@ -92,6 +101,10 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
+
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
@@ -117,6 +130,12 @@ respective \code{<aes>_trans} argument.}
 
 \item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
 are removed before plotting.}
+
+\item{order_by}{Character value or \code{NULL}. If character, the specified
+variable is used to order the data points.}
+
+\item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
+via \code{order_by} and/or \code{order}.}
 
 \item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
 \itemize{

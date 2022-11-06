@@ -368,6 +368,13 @@ variables_num <- function(variables){}
 #'
 #' @param object An object of class \code{SPATA2}.
 #'
+#' @param order Logical value. If `TRUE`, data points are ordered according
+#' to their values before beeing plotted.
+#' @param order_by Character value or `NULL`. If character, the specified
+#' variable is used to order the data points.
+#' @param order_desc Logical value. If `TRUE`, reverses the arrangement specified
+#' via `order_by` and/or `order`.
+#'
 #' @param pt_alpha Numeric value. Specifies the degree of transparency of all points.
 #' @param pt_clr Character value. Specifies the color of all points.
 #' @param pt_clrp The color palette to be used if the specified variable displayed by
@@ -382,6 +389,11 @@ variables_num <- function(variables){}
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
+#'
+#' @param sctm_interpolate,sctm_pixels Given to the corresponding arguments
+#' of `scattermore::geom_scattermore()`. Note: With increasing `sctm_pixels`
+#' the point size must be adjusted with the argument `pt_size`.
+#'
 #' @param signif_var Character value. Determines what to be considered while checking
 #' for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).
 #' @param signif_threshold Numeric value. Significance values below \code{signif_threshold}

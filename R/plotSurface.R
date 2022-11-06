@@ -48,6 +48,8 @@ plotSurface <- function(object,
                         pt_size_fixed = NULL,
                         clrp_adjust = NULL,
                         use_scattermore = FALSE,
+                        sctm_pixels = c(1024, 1024),
+                        sctm_interpolate = FALSE,
                         display_image = NULL,
                         display_title = NULL,
                         complete = NULL,
@@ -57,6 +59,8 @@ plotSurface <- function(object,
                         bcsp_rm = NULL,
                         na_rm = FALSE,
                         pt_size_legend = 10,
+                        order_by = NULL,
+                        order_desc = FALSE,
                         ...){
 
   deprecated(...)
@@ -96,6 +100,13 @@ plotSurface <- function(object,
       transform.with = transform_with
     )
 
+  coords_df <-
+    order_df(
+      df = coords_df,
+      order_by = order_by,
+      order_desc = order_desc
+      )
+
   if(base::is.character(alpha_by) && !base::is.numeric(coords_df[[alpha_by]])){
 
     stop("Variable specified in argument 'alpha_by' must be numeric.")
@@ -121,14 +132,16 @@ plotSurface <- function(object,
   if(n_points >= 10000 | base::isTRUE(use_scattermore)){
 
     point_add_on <-
-      make_scattermore_add_on(
+      confuns::make_scattermore_add_on(
         mapping = mapping,
-        alpha = pt_alpha,
-        color = pt_color,
-        pointsize = pt_size,
-        alpha_by = alpha_by,
-        color_by = color_by,
-        na_rm = na_rm
+        pt.alpha = pt_alpha,
+        pt.color = pt_color,
+        pt.size = pt_size,
+        alpha.by = alpha_by,
+        color.by = color_by,
+        sctm.interpolate = sctm_interpolate,
+        sctm.pixels = sctm_pixels,
+        na.rm = na_rm
       )
 
   } else if(base::isTRUE(pt_size_fixed)){
@@ -226,6 +239,11 @@ plotSurface2 <- function(coords_df,
                          pt_size = 2,
                          image = NULL,
                          clrp_adjust = NULL,
+                         use_scattermore = FALSE,
+                         sctm_pixels = c(1024, 1024),
+                         sctm_interpolate = FALSE,
+                         order_by = NULL,
+                         order_desc = FALSE,
                          ...){
 
   # 1. Control --------------------------------------------------------------
@@ -242,16 +260,47 @@ plotSurface2 <- function(coords_df,
 
   # 2. Plotting -------------------------------------------------------------
 
+  coords_df <-
+    order_df(
+      df = coords_df,
+      order_by = order_by,
+      order_desc = order_desc
+      )
+
   pt_color <- pt_clr
 
   params <- adjust_ggplot_params(params = list(alpha = pt_alpha, color = pt_color, size = pt_size))
 
+  n_points <- base::nrow(coords_df)
+
+  if(n_points >= 10000 | base::isTRUE(use_scattermore)){
+
+    point_add_on <-
+      confuns::make_scattermore_add_on(
+        mapping = mapping,
+        pt.alpha = pt_alpha,
+        pt.color = pt_color,
+        pt.size = pt_size,
+        alpha.by = alpha_by,
+        color.by = color_by,
+        sctm.interpolate = sctm_interpolate,
+        sctm.pixels = sctm_pixels,
+        na.rm = na_rm
+      )
+
+  } else {
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+      )
+
+  }
+
   ggplot2::ggplot(data = coords_df) +
     hlpr_image_add_on2(image) +
-    geom_point_fixed(
-      params,
-      mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
-    ) +
+    point_add_on +
     confuns::scale_color_add_on(
       clrp = pt_clrp,
       clrsp = pt_clrsp,
@@ -293,21 +342,29 @@ plotSurface2 <- function(coords_df,
 #'                       Example2 = c("METRN", "GFAP")
 #'                       )
 #'
-#' plotSurfaceAverage(object = spata_obj,
-#'                    color_by = color_by_list)
+#' plotSurfaceAverage(
+#'    object = spata_obj,
+#'    color_by = color_by_list
+#'  )
 #'
 plotSurfaceAverage <- function(object,
                                color_by,
                                pt_alpha = NULL,
                                pt_clrsp = NULL,
                                pt_size = NULL,
-                               smooth = NULL,
+                               smooth = FALSE,
                                smooth_span = NULL,
-                               of_sample = NA){
+                               use_scattermore = FALSE,
+                               sctm_pixels = c(1024, 1024),
+                               sctm_interpolate = FALSE,
+                               display_image = NULL,
+                               bcsp_rm = NULL,
+                               na_rm = FALSE,
+                               ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
 
   if(confuns::is_list(input = color_by)){
 
@@ -319,6 +376,10 @@ plotSurfaceAverage <- function(object,
 
   }
 
+  coords_df <-
+    getCoordsDf(object) %>%
+    dplyr::filter(!barcodes %in% {{bcsp_rm}})
+
   plot_df <-
     purrr::imap_dfr(
       .x = color_by,
@@ -326,7 +387,7 @@ plotSurfaceAverage <- function(object,
 
         joinWith(
           object = object,
-          spata_df = getCoordsDf(object, of_sample = of_sample),
+          spata_df = coords_df,
           genes = genes,
           smooth = smooth,
           smooth_span = smooth_span,
@@ -339,8 +400,33 @@ plotSurfaceAverage <- function(object,
       }
     )
 
-  ggplot2::ggplot(plot_df, mapping = ggplot2::aes(x = x, y = y, color = mean_genes)) +
-    geom_point_fixed(alpha = pt_alpha, size = pt_size) +
+  mapping <- ggplot2::aes_string(x = "x", y = "y", color = "mean_genes")
+
+  if(base::nrow(coords_df) > 10000 |
+     base::isTRUE(use_scattermore)){
+
+    point_add_on <-
+      confuns::make_scattermore_add_on(
+        mapping = mapping,
+        pt.alpha = pt_alpha,
+        pt.color = NULL,
+        pt.size = pt_size,
+        alpha.by = NULL,
+        color.by = "mean_genes",
+        sctm.interpolate = sctm_interpolate,
+        sctm.pixels = sctm_pixels,
+        na.rm = na_rm
+      )
+
+  } else {
+
+    point_add_on <- geom_point_fixed(alpha = pt_alpha, size = pt_size)
+
+  }
+
+  ggplot2::ggplot(plot_df, mapping = mapping) +
+    hlpr_image_add_on(object, display_image = display_image) +
+    point_add_on +
     ggplot2::theme_void() +
     ggplot2::facet_wrap(. ~ name) +
     scale_color_add_on(clrsp = pt_clrsp) +
@@ -385,8 +471,7 @@ plotSurfaceBase <- function(object,
                             adjust_pt_size = TRUE,
                             expand = 0,
                             verbose = NULL,
-                            ...
-){
+                            ...){
 
   # work around pt_alpha
   scale_alpha <- base::is.character(alpha_by)
@@ -608,6 +693,9 @@ plotSurfaceBase <- function(object,
 #'  \item{ \code{plotSurfaceComparison2()} Takes a data.frame as the starting point. }
 #'  }
 #'
+#' @param alpha_by Here, logical value. If TRUE, alpha of points is scaled
+#' to gene expression values in addition to the color of points.
+#'
 #' @inherit check_display params
 #' @inherit check_method params
 #' @inherit check_pt params
@@ -620,18 +708,26 @@ plotSurfaceBase <- function(object,
 
 plotSurfaceComparison <- function(object,
                                   color_by,
+                                  alpha_by = FALSE,
                                   method_gs = NULL,
                                   normalize = NULL,
-                                  smooth = NULL,
+                                  smooth = FALSE,
                                   smooth_span = NULL,
                                   pt_size = NULL,
                                   pt_alpha = NULL,
                                   pt_clrsp = NULL,
                                   display_image = NULL,
                                   bcsp_rm = NULL,
+                                  na_rm = TRUE,
+                                  use_scattermore = FALSE,
+                                  sctm_pixels = c(1024, 1024),
+                                  sctm_interpolate = FALSE,
+                                  order = TRUE,
+                                  order_desc = FALSE,
                                   verbose = NULL,
-                                  of_sample = NA,
                                   ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -648,25 +744,32 @@ plotSurfaceComparison <- function(object,
                      valid_classes = "numeric")
     )
 
-  variables <- check_variables(variables = color_by,
-                               all_gene_sets = all_gene_sets,
-                               all_genes = all_genes,
-                               all_features = all_features,
-                               simplify = FALSE)
+  variables <-
+    check_variables(
+      variables = color_by,
+      all_gene_sets = all_gene_sets,
+      all_genes = all_genes,
+      all_features = all_features,
+      simplify = FALSE
+    )
   # -----
 
   # 2. Extract and join data ------------------------------------------------
 
+  coords_df <- getCoordsDf(object)
+
   joined_df <-
-    joinWithVariables(object = object,
-                      spata_df = getCoordsDf(object),
-                      variables = variables,
-                      average_genes = FALSE,
-                      method_gs = method_gs,
-                      smooth = smooth,
-                      smooth_span = smooth_span,
-                      normalize = normalize,
-                      verbose = verbose)
+    joinWithVariables(
+      object = object,
+      spata_df = coords_df,
+      variables = variables,
+      average_genes = FALSE,
+      method_gs = method_gs,
+      smooth = smooth,
+      smooth_span = smooth_span,
+      normalize = normalize,
+      verbose = verbose
+    )
   # -----
 
   # adjust data.frame for use of ggplot2::facets
@@ -674,6 +777,9 @@ plotSurfaceComparison <- function(object,
   variables <- base::unname(base::unlist(variables))
   n_variables <- base::length(variables)
 
+  joined_df <- dplyr::filter(joined_df, !barcodes %in% {{bcsp_rm}})
+
+  # shift
   plot_df <-
     tidyr::pivot_longer(
       data = joined_df,
@@ -683,27 +789,78 @@ plotSurfaceComparison <- function(object,
     ) %>%
     dplyr::mutate(variables = base::factor(variables, levels = base::unique(color_by)))
 
-  # plotting
+  # order by values
+  if(base::isTRUE(order)){
 
+    order_by <- "values"
+
+  } else {
+
+    order_by <- NULL
+
+  }
+
+  plot_df <-
+    order_df(
+      df = plot_df,
+      order_by = order_by,
+      order_desc = order_desc,
+      across = "variables"
+    )
+
+  # order variables
+  plot_df$variables <- base::factor(plot_df$variables, levels = variables)
+
+
+  # plot
   confuns::give_feedback(
     msg = glue::glue("Plotting {n_variables} different variables. (This can take a few seconds.)"),
     verbose = verbose
   )
 
-  plot_df$variables <- base::factor(plot_df$variables, levels = variables)
+  if(!base::isFALSE(alpha_by)){
 
-  if(base::is.character(bcsp_rm)){
+    alpha_by <- "values"
 
-    plot_df <- dplyr::filter(plot_df, !barcodes %in% {{bcsp_rm}})
+  } else {
+
+    alpha_by <- NULL
 
   }
 
-  ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x, y = y)) +
-    hlpr_image_add_on(object, display_image, of_sample) +
-    geom_point_fixed(
-      mapping = ggplot2::aes(color = values),
-      size = pt_size, alpha = pt_alpha
-    ) +
+  params <- adjust_ggplot_params(params = list(alpha = pt_alpha, size = pt_size))
+  mapping <- ggplot2::aes_string(x = "x", y = "y", color = "values", alpha = alpha_by)
+
+  n_points <- base::nrow(coords_df)
+
+  if(n_points > threshold_scattermore | base::isTRUE(use_scattermore)){
+
+    point_add_on <-
+      confuns::make_scattermore_add_on(
+        mapping = mapping,
+        pt.alpha = pt_alpha,
+        pt.color = NULL,
+        pt.size = pt_size,
+        alpha.by = alpha_by,
+        color.by = "values",
+        sctm.interpolate = sctm_interpolate,
+        sctm.pixels = sctm_pixels,
+        na.rm = na_rm
+      )
+
+  } else {
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        mapping = mapping
+      )
+
+  }
+
+  ggplot2::ggplot(data = plot_df) +
+    hlpr_image_add_on(object, display_image = display_image) +
+    point_add_on +
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
     ggplot2::theme_void() +
     ggplot2::coord_equal() +
@@ -715,11 +872,19 @@ plotSurfaceComparison <- function(object,
 #' @rdname plotSurfaceComparison
 #' @export
 plotSurfaceComparison2 <- function(coords_df,
-                                   color_by = NULL,
+                                   color_by,
+                                   alpha_by = FALSE,
                                    pt_alpha = 0.9,
                                    pt_clrsp = "inferno",
                                    pt_size = 2,
                                    image = NULL,
+                                   use_scattermore = FALSE,
+                                   sctm_pixels = c(1024, 1024),
+                                   sctm_interpolate = FALSE,
+                                   bcsp_rm = NULL,
+                                   na_rm = TRUE,
+                                   order = TRUE,
+                                   order_desc = FALSE,
                                    verbose = TRUE,
                                    ...){
 
@@ -731,7 +896,11 @@ plotSurfaceComparison2 <- function(coords_df,
 
   check_pt(pt_size, pt_alpha, pt_clrsp)
 
-  shifted_df <-
+  coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcsp_rm}})
+
+  n_points <- base::nrow(coords_df)
+
+  plot_df <-
     confuns::process_and_shift_df(
       df = coords_df,
       variables = color_by,
@@ -740,19 +909,80 @@ plotSurfaceComparison2 <- function(coords_df,
       keep = c("x", "y")
     )
 
+  if(base::isTRUE(order)){
+
+    order_by <- "values"
+
+  } else {
+
+    order_by <- NULL
+
+  }
+
+  plot_df <-
+    order_df(
+      df = plot_df,
+      order_by = order_by,
+      order_desc = order_desc,
+      across = "variables"
+    )
+
+
   # plotting
 
-  plot_df$variables <- base::factor(shifted_df$variables, levels = variables)
+  if(base::is.character(color_by)){
 
-  ggplot2::ggplot(data = shifted_df, mapping = ggplot2::aes(x = x, y = y)) +
+    plot_df$variables <- base::factor(plot_df$variables, levels = color_by)
+
+  }
+
+  if(!base::isFALSE(alpha_by)){
+
+    alpha_by <- "values"
+
+  } else {
+
+    alpha_by <- NULL
+
+  }
+
+  params <- adjust_ggplot_params(params = list(alpha = pt_alpha, size = pt_size))
+  mapping <- ggplot2::aes_string(x = "x", y = "y", color = "values", alpha = alpha_by)
+
+  n_points <- base::nrow(coords_df)
+
+  if(n_points > threshold_scattermore | base::isTRUE(use_scattermore)){
+
+    point_add_on <-
+      confuns::make_scattermore_add_on(
+        mapping = mapping,
+        pt.alpha = pt_alpha,
+        pt.color = NULL,
+        pt.size = pt_size,
+        alpha.by = alpha_by,
+        color.by = "values",
+        sctm.interpolate = sctm_interpolate,
+        sctm.pixels = sctm_pixels,
+        na.rm = na_rm
+      )
+
+  } else {
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        mapping = mapping
+      )
+
+  }
+
+  ggplot2::ggplot(data = plot_df, mapping = ggplot2::aes(x = x, y = y)) +
     hlpr_image_add_on2(image) +
-    geom_point_fixed(
-      mapping = ggplot2::aes(color = values),
-      size = pt_size, alpha = pt_alpha
-    ) +
-    confuns::scale_color_add_on(variable = shifted_df$values, clrsp = pt_clrsp) +
+    point_add_on +
+    confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
     ggplot2::theme_void() +
     ggplot2::facet_wrap(facets = ~ variables, ...) +
+    ggplot2::coord_equal() +
     ggplot2::labs(color = NULL)
 
 }
@@ -1126,10 +1356,12 @@ plotSurfaceInteractive <- function(object){
 
           # module return list
           module_return <-
-            moduleSurfacePlotServer(id = "isp",
-                                    object = object,
-                                    final_plot = shiny::reactive(module_return()$assembled_plot()),
-                                    reactive_object = shiny::reactive(object))
+            moduleSurfacePlotServer(
+              id = "isp",
+              object = object,
+              final_plot = shiny::reactive(module_return()$assembled_plot()),
+              reactive_object = shiny::reactive(object)
+            )
 
           # final plot
           final_plot <- shiny::reactive({
@@ -1550,13 +1782,16 @@ plotSurfaceQuantiles <- function(object,
                                  smooth = NULL,
                                  smooth_span = NULL,
                                  display_image = NULL,
+                                 bcsp_rm = NULL,
+                                 use_scattermore = FALSE,
+                                 sctm_pixels = c(1024, 1024),
+                                 sctm_interpolate = FALSE,
                                  verbose = NULL,
-                                 of_sample = NA,
                                  ...){
 
-  hlpr_assign_arguments(object)
+  deprecated(...)
 
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
+  hlpr_assign_arguments(object)
 
   confuns::is_value(x = color_by, mode = "character")
   confuns::is_value(x = n_qntls, mode = "numeric")
@@ -1565,15 +1800,19 @@ plotSurfaceQuantiles <- function(object,
   color_to_list <-
     check_color_to(
       color_to = color_by,
-      all_features = getFeatureNames(object, of_sample = of_sample, of_class = numeric_classes),
-      all_genes = getGenes(object, of_sample = of_sample),
+      all_features = getFeatureNames(object, of_class = numeric_classes),
+      all_genes = getGenes(object),
       all_gene_sets = getGeneSets(object)
     )
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    dplyr::filter(!barcodes %in% {{bcsp_rm}})
 
   plot_df <-
     joinWithVariables(
       object = object,
-      spata_df = getCoordsDf(object, of_sample = of_sample),
+      spata_df = coords_df,
       variables = color_to_list,
       smooth = smooth,
       smooth_span = smooth_span,
@@ -1617,22 +1856,24 @@ plotSurfaceQuantiles <- function(object,
 
   }
 
-  plotSurface2(coords_df = plot_df,
-               color_by = "values",
-               alpha_by = alpha_by,
-               pt_alpha = pt_alpha,
-               pt_clrp = pt_clrp,
-               pt_size = pt_size,
-               image = img,
-               clrp_adjust = clrp_adjust) +
+  plotSurface2(
+    coords_df = plot_df,
+    color_by = "values",
+    alpha_by = alpha_by,
+    pt_alpha = pt_alpha,
+    pt_clrp = pt_clrp,
+    pt_size = pt_size,
+    image = img,
+    clrp_adjust = clrp_adjust,
+    use_scattermore = use_scattermore,
+    sctm_pixels = sctm_pixels,
+    sctm_interpolate = sctm_interpolate,
+    ...
+  ) +
     ggplot2::facet_wrap(facets = . ~ variables) +
     ggplot2::labs(color = "Quantiles")
 
 }
 
-
-
-
-# plotSurfaceT ------------------------------------------------------------
 
 

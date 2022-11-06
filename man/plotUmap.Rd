@@ -20,7 +20,6 @@ plotPca(
   pt_clr = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -42,8 +41,10 @@ plotTsne(
   pt_clr = NULL,
   clrp_adjust = NULL,
   normalize = NULL,
+  use_scattermore = FALSE,
+  sctm_interpolate = FALSE,
+  sctm_pixels = c(1024, 1024),
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -76,8 +77,10 @@ plotUmap(
   clrp_adjust = NULL,
   normalize = NULL,
   transform_with = list(),
+  use_scattermore = FALSE,
+  sctm_interpolate = FALSE,
+  sctm_pixels = c(1024, 1024),
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -131,13 +134,20 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
+\item{order_by}{Character value or \code{NULL}. If character, the specified
+variable is used to order the data points.}
+
+\item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
+via \code{order_by} and/or \code{order}.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
 
 \item{add_ons}{A list of ggplot add ons to add to each plot.}
 

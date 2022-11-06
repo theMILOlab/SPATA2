@@ -8,32 +8,49 @@
 plotSurfaceComparison(
   object,
   color_by,
+  alpha_by = FALSE,
   method_gs = NULL,
   normalize = NULL,
-  smooth = NULL,
+  smooth = FALSE,
   smooth_span = NULL,
   pt_size = NULL,
   pt_alpha = NULL,
   pt_clrsp = NULL,
   display_image = NULL,
   bcsp_rm = NULL,
+  na_rm = TRUE,
+  use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
+  sctm_interpolate = FALSE,
+  order = TRUE,
+  order_desc = FALSE,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
 plotSurfaceComparison2(
   coords_df,
-  color_by = NULL,
+  color_by,
+  alpha_by = FALSE,
   pt_alpha = 0.9,
   pt_clrsp = "inferno",
   pt_size = 2,
   image = NULL,
+  use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
+  sctm_interpolate = FALSE,
+  bcsp_rm = NULL,
+  na_rm = TRUE,
+  order = TRUE,
+  order_desc = FALSE,
   verbose = TRUE,
   ...
 )
 }
 \arguments{
+\item{alpha_by}{Here, logical value. If TRUE, alpha of points is scaled
+to gene expression values in addition to the color of points.}
+
 \item{method_gs}{Character value. The method according to which gene sets will be handled
 specified as a character of length one. This can be either \emph{'mean'} or one
 of \emph{'gsva', 'ssgsea', 'zscore', or 'plage'}. The latter four will be given to

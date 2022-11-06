@@ -805,11 +805,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     if(FALSE){
 
-
-
     }
-
-
 
     slice <-
       getFromSeurat(

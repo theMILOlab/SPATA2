@@ -10,9 +10,15 @@ plotSurfaceAverage(
   pt_alpha = NULL,
   pt_clrsp = NULL,
   pt_size = NULL,
-  smooth = NULL,
+  smooth = FALSE,
   smooth_span = NULL,
-  of_sample = NA
+  use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
+  sctm_interpolate = FALSE,
+  display_image = NULL,
+  bcsp_rm = NULL,
+  na_rm = FALSE,
+  ...
 )
 }
 \arguments{
@@ -32,6 +38,16 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
+
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
+
+\item{display_image}{Logical. If set to TRUE the histology image of the specified sample
+is displayed underneath the plot.}
+
+\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
+are removed before plotting.}
 }
 \description{
 Displays the spatial dimension of the sample and colors the
@@ -46,7 +62,9 @@ color_by_list <- list(Example1 = c("PGK1", "PDK1", "GBE1"),
                       Example2 = c("METRN", "GFAP")
                       )
 
-plotSurfaceAverage(object = spata_obj,
-                   color_by = color_by_list)
+plotSurfaceAverage(
+   object = spata_obj,
+   color_by = color_by_list
+ )
 
 }

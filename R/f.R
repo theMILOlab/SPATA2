@@ -780,8 +780,8 @@ flipImageAndCoords <- function(object, axis){
 #' the axis around which the image is flipped.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy params
 #'
-#' @return An updated spata-object.
 #' @export
 #'
 

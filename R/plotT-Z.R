@@ -866,9 +866,13 @@ plotTsne <- function(object,
                      pt_clr = NULL,
                      clrp_adjust = NULL,
                      normalize = NULL,
+                     use_scattermore = FALSE,
+                     sctm_interpolate = FALSE,
+                     sctm_pixels = c(1024, 1024),
                      verbose = NULL,
-                     of_sample = NA,
                      ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
@@ -881,7 +885,6 @@ plotTsne <- function(object,
     order_by = order_by,
     order_desc = order_desc,
     shape_by = shape_by,
-    of_sample = of_sample,
     clrp_adjust = clrp_adjust,
     color_by = color_by,
     method_gs = method_gs,
@@ -892,6 +895,9 @@ plotTsne <- function(object,
     pt_clrp = pt_clrp,
     pt_clr = pt_clr,
     normalize = normalize,
+    use_scattermore = use_scattermore,
+    sctm_interpolate = sctm_interpolate,
+    sctm_pixels = sctm_pixels,
     verbose = verbose,
     ...
   )
@@ -985,9 +991,13 @@ plotUmap <- function(object,
                      clrp_adjust = NULL,
                      normalize = NULL,
                      transform_with = list(),
+                     use_scattermore = FALSE,
+                     sctm_interpolate = FALSE,
+                     sctm_pixels = c(1024, 1024),
                      verbose = NULL,
-                     of_sample = NA,
                      ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
@@ -1000,7 +1010,6 @@ plotUmap <- function(object,
     order_by = order_by,
     order_desc = order_desc,
     shape_by = shape_by,
-    of_sample = of_sample,
     color_by = color_by,
     clrp_adjust = clrp_adjust,
     method_gs = method_gs,
@@ -1012,6 +1021,9 @@ plotUmap <- function(object,
     pt_clr = pt_clr,
     normalize = normalize,
     transform_with = transform_with,
+    use_scattermore = use_scattermore,
+    sctm_interpolate = sctm_interpolate,
+    sctm_pixels = sctm_pixels,
     verbose = verbose,
     ...
   )

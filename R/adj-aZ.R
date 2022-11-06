@@ -808,7 +808,8 @@ methods::setMethod(
 
     new_object@image <-
       EBImage::Image(object@image, colormode = "Color") %>%
-      EBImage::transpose()
+      EBImage::transpose() %>%
+      EBImage::flip()
 
     new_object@info$flipped <- FALSE
 

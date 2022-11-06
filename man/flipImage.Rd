@@ -12,9 +12,6 @@ flipImage(object, axis = "x")
 \item{axis}{Character value. Either \emph{'x'} or \emph{'y'}. Denotes
 the axis around which the image is flipped.}
 }
-\value{
-An updated spata-object.
-}
 \description{
 Flips image to align with coordinates in case
 of non matching image and coordinates.

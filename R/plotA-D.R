@@ -2438,9 +2438,13 @@ plotDimRed <- function(object,
                        clrp_adjust = NULL,
                        normalize = TRUE,
                        transform_with = NULL,
+                       use_scattermore = FALSE,
+                       sctm_interpolate = FALSE,
+                       sctm_pixels = c(1024, 1024),
                        verbose = TRUE,
-                       of_sample = NA,
                        ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -2450,14 +2454,13 @@ plotDimRed <- function(object,
   check_pt(pt_size = pt_size, pt_alpha = pt_alpha, pt_clrsp = pt_clrsp)
 
   # adjusting check
-  of_sample <- check_sample(object = object, of_sample = of_sample)
 
   # -----
 
 
   # 2. Data extraction and plot preparation ---------------------------------
 
-  df <- getDimRedDf(object, method_dr = method_dr, of_sample = of_sample)
+  df <- getDimRedDf(object, method_dr = method_dr)
 
   df <-
     hlpr_join_with_aes(
@@ -2472,6 +2475,12 @@ plotDimRed <- function(object,
   # -----
 
   # 3. Plotting -------------------------------------------------------------
+
+  if(base::nrow(df) >= threshold_scattermore){
+
+    use_scattermore <- TRUE
+
+  }
 
   x <- stringr::str_c(method_dr, 1, sep = "")
   y <- stringr::str_c(method_dr, 2, sep = "")
@@ -2497,6 +2506,9 @@ plotDimRed <- function(object,
     order.by = order_by,
     order.desc = order_desc,
     transform.with = transform_with,
+    use.scattermore = use_scattermore,
+    sctm.interpolate = sctm_interpolate,
+    sctm.pixels = sctm_pixels,
     ...
   )
 

@@ -16,8 +16,11 @@ plotSurfaceQuantiles(
   smooth = NULL,
   smooth_span = NULL,
   display_image = NULL,
+  bcsp_rm = NULL,
+  use_scattermore = FALSE,
+  sctm_pixels = c(1024, 1024),
+  sctm_interpolate = FALSE,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 }
@@ -53,6 +56,13 @@ Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
+
+\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
+are removed before plotting.}
+
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

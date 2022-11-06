@@ -115,7 +115,6 @@ plotPca <- function(object,
                     pt_clr = NULL,
                     normalize = NULL,
                     verbose = NULL,
-                    of_sample = NA,
                     ...){
 
   # 1. Control --------------------------------------------------------------
@@ -124,9 +123,6 @@ plotPca <- function(object,
 
   # check input
   hlpr_assign_arguments(object)
-
-  of_sample <-
-    check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   if(!base::is.null(color_by)){
 
@@ -144,7 +140,7 @@ plotPca <- function(object,
   }
 
   # get data
-  pca_df <- getPcaDf(object, of_sample = of_sample)
+  pca_df <- getPcaDf(object)
 
   # check principal component input
   confuns::is_value(x = n_pcs, mode = "numeric")
@@ -182,10 +178,13 @@ plotPca <- function(object,
       cols = dplyr::all_of(even_pcs),
       names_to = "even_pcs",
       values_to = "y"
-    ) %>% dplyr::select(-dplyr::all_of(x = c(uneven_pcs))) %>%
-    dplyr::mutate(pc_numeric_even = stringr::str_remove(even_pcs, pattern = "PC") %>%
+    ) %>%
+    dplyr::select(-dplyr::all_of(x = c(uneven_pcs))) %>%
+    dplyr::mutate(
+      pc_numeric_even = stringr::str_remove(even_pcs, pattern = "PC") %>%
                     base::as.numeric(),
-                  pc_partner = pc_numeric_even - 1 )
+      pc_partner = pc_numeric_even - 1
+      )
 
   uneven_df <-
     tidyr::pivot_longer(
@@ -193,10 +192,13 @@ plotPca <- function(object,
       cols = dplyr::all_of(uneven_pcs),
       names_to = "uneven_pcs",
       values_to = "x"
-    ) %>% dplyr::select(-dplyr::all_of(even_pcs)) %>%
-    dplyr::mutate(pc_numeric_uneven = stringr::str_remove(uneven_pcs, pattern = "PC") %>%
-                    base::as.numeric(),
-                  pc_partner = pc_numeric_uneven)
+    ) %>%
+    dplyr::select(-dplyr::all_of(even_pcs)) %>%
+    dplyr::mutate(
+      pc_numeric_uneven = stringr::str_remove(uneven_pcs, pattern = "PC") %>%
+        base::as.numeric(),
+      pc_partner = pc_numeric_uneven
+      )
 
   joined_df <-
     dplyr::left_join(x = even_df, y = uneven_df, by = c("barcodes", "sample", "pc_partner")) %>%
@@ -205,21 +207,26 @@ plotPca <- function(object,
   unique_pc_pairs <- dplyr::pull(joined_df, var = "pc_pairs") %>% base::unique()
 
   dim_red_df <-
-    dplyr::mutate(.data = joined_df, pc_pairs = base::factor(pc_pairs, levels = unique_pc_pairs))
+    dplyr::mutate(
+      .data = joined_df,
+      pc_pairs = base::factor(pc_pairs, levels = unique_pc_pairs)
+      )
 
   # -----
 
   plot_list <-
-    hlpr_scatterplot(object = object,
-                     spata_df = dim_red_df,
-                     color_to = color_by,
-                     pt_size = pt_size,
-                     pt_alpha = pt_alpha,
-                     pt_clrp = pt_clrp,
-                     pt_clrsp = pt_clrsp,
-                     method_gs = method_gs,
-                     normalize = normalize,
-                     verbose = verbose)
+    hlpr_scatterplot(
+      object = object,
+      spata_df = dim_red_df,
+      color_to = color_by,
+      pt_size = pt_size,
+      pt_alpha = pt_alpha,
+      pt_clrp = pt_clrp,
+      pt_clrsp = pt_clrsp,
+      method_gs = method_gs,
+      normalize = normalize,
+      verbose = verbose
+    )
 
   ggplot2::ggplot(data = plot_list$data, mapping = ggplot2::aes(x = x, y = y)) +
     plot_list$add_on +

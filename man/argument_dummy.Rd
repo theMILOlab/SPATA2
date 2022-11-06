@@ -147,6 +147,15 @@ that control the appearance of the main line(s) of the plot.}
 
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{order}{Logical value. If \code{TRUE}, data points are ordered according
+to their values before beeing plotted.}
+
+\item{order_by}{Character value or \code{NULL}. If character, the specified
+variable is used to order the data points.}
+
+\item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
+via \code{order_by} and/or \code{order}.}
+
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_clr}{Character value. Specifies the color of all points.}
@@ -162,6 +171,10 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
+
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
 
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
