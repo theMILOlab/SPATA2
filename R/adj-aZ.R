@@ -338,22 +338,74 @@ adjustGseaDf <- function(df,
 
 # as_ ---------------------------------------------------------------------
 
-#' @title Transform distance values
+
+#' @title Distance transformation
 #'
-#' @description Collection of functions to transform distance values.
+#' @description Ensures that distance input can be read by `SPATA2` functions
+#' that convert European units of length to pixels and vice versa.
 #'
-#' @param input Distance values to transform.
+#' @inherit is_dist params details
+#'
+#' @return Character vector of the same length as `input`.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' mms <- stringr::str_c(1:8, "mm")
+#'
+#' as_SPATA2_dist(mms)
+#'
+#' pixels_a <- 1:8
+#'
+#' as_SPATA2_dist(pixels_a)
+#'
+#' pixels_b <- stringr::str_c(1:8, "px)
+#'
+#' as_SPATA2_dist(pixels_b)
+#'
+
+as_SPATA2_dist <- function(input){
+
+  is_dist(input, error = TRUE)
+
+  units <- extract_unit(input) %>% base::unique()
+
+  vals <- extract_value(input)
+
+  out <- stringr::str_c(vals, units, sep = "")
+
+  return(out)
+
+}
+
+#' @title Transform distance and area values
+#'
+#' @description Collection of functions to transform distance and area values.
+#' If pixels are involved, additional `SPATA2` specific content is needed.
+#'
+#' @param input Values that represent spatial measures.
 #' @param unit Character value. Specifies the desired unit.
 #' @inherit argument_dummy params
 #' @inherit getCCD params
-#' @inherit transform_eUOL_to_pixels params
-#' @inherit transform_pixels_to_eUOL params return
+#' @inherit transform_euol_to_pixels params
+#' @inherit transform_pixels_to_euol params return
 #'
 #' @param ... Needed arguments that depend on the input/unit combination. If
-#' one of both is \emph{'px'} the \code{SPATA2} object is need or \code{method}
-#' \code{image_dims}.
+#' one of both is \emph{'px'}, either the argument `obejct` must be specified or
+#' `method` and `image_dims`.
 #'
-#' @inherit is_dist details
+#' @return All functions return an output vector of the same length as the input
+#' vector.
+#'
+#' If argument `unit` is among `validEuropeanUnitsOfLength()` or `validUnitsOfArea()`
+#' the output vector is of class `units`. If argument `unit` is *'px'*, the output
+#' vector is a character vector or numeric vector if `as_numeric` is `TRUE`.
+#'
+#' @details For more information about area values, see details of `?is_area`. Fore
+#' more information about distance values, see details of `?is_dist`.
 #'
 #' @export
 #'
@@ -366,17 +418,17 @@ adjustGseaDf <- function(df,
 #'
 #' pixel_values <- c(200, 450, 500)
 #'
-#' euol_values <- c("2mm", "400um", "0.8dm")
+#' euol_values <- c("2mm", "400mm", "0.2mm")
 #'
 #' # spata object must be provided to scale based on current image resolution
-#' asMillimeter(input = pixel_values, object = object, round = 2)
+#' as_millimeter(input = pixel_values, object = object, round = 2)
 #'
-#' asMicrometer(input = pixel_values, object = object, round = 4)
+#' as_micrometer(input = pixel_values, object = object, round = 4)
 #'
-#' asPixel(input = euol_values, object = object)
+#' as_pixel(input = euol_values, object = object)
 #'
 #' # spata object must not be provided
-#' asMicrometer(input = euol_values)
+#' as_micrometer(input = euol_values)
 #'
 #'
 as_unit <- function(input,
@@ -384,15 +436,15 @@ as_unit <- function(input,
                     object = NULL,
                     image_dims = NULL,
                     method = NULL,
-                    as_numeric = FALSE,
                     round = FALSE,
-                    verbose = FALSE){
+                    verbose = FALSE,
+                    ...){
+
+  deprecated(...)
 
   base::options(scipen = 999)
 
-  input <- base::as.character(input)
-
-  is_dist(input, error = TRUE)
+  is_spatial_measure(input, error = TRUE)
 
   confuns::is_value(x = unit, mode = "character")
 
@@ -402,6 +454,17 @@ as_unit <- function(input,
   )
 
   input_units <- extract_unit(input)
+
+  # check if both inputs are of length or of area
+  all_dist <- base::all(c(input_units, unit) %in% validUnitsOfLength())
+
+  all_area <- base::all(c(input_units, unit) %in% validUnitsOfArea())
+
+  if(!base::any(all_area, all_dist)){
+
+    stop("`input` and `unit` must both refer to distance or area.")
+
+  }
 
   input_units_ref <-
     base::unique(input_units) %>%
@@ -413,78 +476,93 @@ as_unit <- function(input,
     with.time = FALSE
   )
 
-  if(base::isTRUE(as_numeric)){
+  # if either of both arguments refers to pixel SPATA2 functions are needed
+  if(base::any(c(input_units, unit) == "px")){
 
-    mode <- "numeric"
+    out <- base::vector(mode = "numeric", length = base::length(input))
 
-  } else {
+    for(i in base::seq_along(input)){
 
-    mode <- "character"
+      if(input_units[i] == unit){ # needs no transformation both pixel
 
-  }
+        out <- input
 
-  out <- base::vector(mode = mode, length = base::length(input))
+      } else if(is_dist_euol(input[i]) & unit == "px"){
 
-  for(i in base::seq_along(input)){
+        out[i] <-
+          transform_euol_to_pixel(
+            input = input[i],
+            object = object,
+            method = method,
+            round = round
+          )
 
-    if(input_units[i] == unit){ # needs no transformation
+      } else if(is_dist_pixel(input[i]) & unit %in% validEuropeanUnitsOfLength()){
 
-      out <- input
-
-      if(base::isTRUE(as_numeric)){
-
-        out <- extract_value(out)
+        out[i] <-
+          transform_pixel_to_euol(
+            input = input[i],
+            euol = unit,
+            object = object,
+            image_dims = image_dims,
+            method = method,
+            round = round
+          )
 
       }
 
-    } else if(is_eUOL_dist(input[i]) & unit == "px"){
+    }
 
-      out[i] <-
-        transform_eUOL_to_pixel(
-          input = input[i],
-          object = object,
-          method = method,
-          round = round
-        )
+    # attach pixel as attribute if necessary
+    if(unit == "px"){
 
-    } else if(is_pixel_dist(input[i]) & unit %in% validEuropeanUnitsOfLength()){
+      base::attr(out, which = "unit") <- "px"
 
-      out[i] <-
-        transform_pixel_to_eUOL(
-          input = input[i],
-          eUOL = unit,
-          object = object,
-          image_dims = image_dims,
-          method = method,
-          round = round,
-          as_numeric = as_numeric
-        )
+    } else if(unit != "px") {
 
-    } else {
+      vals <- extract_value(out)
 
-      fct_scale <- eUOL_to_eUOL_fct(from = input_units[i], to = unit)
-
-      input_val <- extract_value(input[i])
-
-      out[i] <- input_val*fct_scale
+      out <- units::set_units(x = vals, value = unit, mode = "standard")
 
     }
 
-  }
-
-
-  if(base::isTRUE(as_numeric)){
-
-    base::attr(out, which = "unit") <- unit
-
+  # else use units package
   } else {
 
-    not_suffixed <- !stringr::str_detect(out, pattern = stringr::str_c(unit, "$"))
+    uiu <- base::unique(input_units)
 
-    out[not_suffixed] <- stringr::str_c(out[not_suffixed], unit)
+    out_list <-
+      base::vector(mode = "list", length = base::length(uiu)) %>%
+      purrr::set_names(nm = uiu)
+
+    # iterate over unique units in input
+    # and convert separately to desired unit
+    for(iu in uiu){
+
+      x <- input[input_units == iu]
+
+      # ensure a `units` input
+      if(!base::all(base::class(x) == "units")){
+
+        vals <- extract_value(x)
+
+        x <- units::set_units(x = vals, value = iu, mode = "standard")
+
+      }
+
+      # convert input of unit 'iu' to desired input
+      out_list[[iu]] <-
+        units::set_units(x = x, value = unit, mode = "standard") %>%
+        base::as.numeric()
+
+    }
+
+    # merge all converted inputs (all slots have vectors of the same unit)
+    out <-
+      purrr::flatten_dbl(.x = out_list) %>%
+      units::set_units(x = ., value = unit, mode = "standard")
 
   }
-
 
   if(confuns::is_named(input)){
 
@@ -492,20 +570,18 @@ as_unit <- function(input,
 
   }
 
-
   base::options(scipen = 0)
 
   return(out)
 
 }
 
-
 # asC-asH -----------------------------------------------------------------
 
 
 #' @rdname as_unit
 #' @export
-asCentimeter <- function(input, ...){
+as_centimeter <- function(input, ...){
 
   as_unit(
     input = input,
@@ -515,14 +591,38 @@ asCentimeter <- function(input, ...){
 
 }
 
+#' @rdname as_unit
+#' @export
+as_centimeter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "cm2",
+    ...
+  )
+
+}
+
 
 #' @rdname as_unit
 #' @export
-asDecimeter <- function(input, ...){
+as_decimeter <- function(input, ...){
 
   as_unit(
     input = input,
     unit = "dm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_decimeter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "dm2",
     ...
   )
 
@@ -832,7 +932,7 @@ methods::setMethod(
 
 #' @rdname as_unit
 #' @export
-asMeter <- function(input, ...){
+as_meter <- function(input, ...){
 
   as_unit(
     input = input,
@@ -844,7 +944,19 @@ asMeter <- function(input, ...){
 
 #' @rdname as_unit
 #' @export
-asMicrometer <- function(input, ...){
+as_meter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m2",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_micrometer <- function(input, ...){
 
   as_unit(
     input = input,
@@ -854,10 +966,22 @@ asMicrometer <- function(input, ...){
 
 }
 
+#' @rdname as_unit
+#' @export
+as_micrometer2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um2",
+    ...
+  )
+
+}
+
 
 #' @rdname as_unit
 #' @export
-asMillimeter <- function(input, ...){
+as_millimeter <- function(input, ...){
 
   as_unit(
     input = input,
@@ -867,12 +991,33 @@ asMillimeter <- function(input, ...){
 
 }
 
+#' @rdname as_unit
+#' @export
+as_millimeter2 <- function(input, ...){
 
+  as_unit(
+    input = input,
+    unit = "mm2",
+    ...
+  )
 
+}
 
 #' @rdname as_unit
 #' @export
-asNanometer <- function(input, ...){
+as_nanometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_nanometer2 <- function(input, ...){
 
   as_unit(
     input = input,
@@ -883,15 +1028,14 @@ asNanometer <- function(input, ...){
 }
 
 
-
-
 #' @rdname as_unit
 #' @export
-asPixel <- function(input, ...){
+as_pixel <- function(input, object = NULL, ...){
 
   as_unit(
     input = input,
     unit = "px",
+    object = object,
     ...
   )
 
@@ -1065,6 +1209,8 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 
 
 
+
+
 # attach ------------------------------------------------------------------
 
 #' @title Attach unit to distance
@@ -1097,6 +1243,7 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 #'
 #'
 #' @export
+#'
 attachUnit <- function(input){
 
   is_dist(input, error = TRUE)
@@ -1132,4 +1279,9 @@ attachUnit <- function(input){
   return(out)
 
 }
+
+
+#' @rdname attachUnit
+#' @export
+attach_uni <- attachUnit
 

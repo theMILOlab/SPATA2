@@ -95,8 +95,7 @@ gene_set_path <- function(gene_set_path){}
 
 #' @title ggpLayer
 #'
-#' @return A list of \code{ggproto}-objects.
-#' @details \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+#' @return \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 #' that can be added to ggplots via the \code{+} operator. In most of the cases
 #' they are supposed to be added to plots created with the \code{plotSurface*()}
 #' family.
@@ -292,6 +291,9 @@ variables_num <- function(variables){}
 #' @param display_ribbon Logical value. If TRUE, a ribbon is displayed around
 #' the main line of the plot visualizing uncertainty using standard deviation.
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
+#'
+#' @param error Logical. If \code{TRUE} and the input is invalid the
+#' function throws an error.
 #'
 #' @param expand Vector of length one or two. Specifies the extent to which the  x- and y-span
 #' of the cropped image section is expanded. There are two options to provide values:

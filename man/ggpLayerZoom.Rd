@@ -18,15 +18,12 @@ immediately converted to pixel units.
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 }
 \value{
-A list of \code{ggproto}-objects.
-}
-\description{
-Sets the limits on the x- and y-axis of a ggplot based on
-manual input.
-}
-\details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
 they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
+}
+\description{
+Sets the limits on the x- and y-axis of a ggplot based on
+manual input.
 }

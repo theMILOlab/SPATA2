@@ -1,6 +1,94 @@
 
 
 
+
+# deprecated --------------------------------------------------------------
+
+
+# functions to facilitate deprecating functions and/or arguments
+
+deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
+
+  if(base::isTRUE(fn)){
+
+    fn_name <-
+      rlang::caller_call() %>%
+      rlang::call_name()
+
+    replaced_by <- depr_info$fns[[fn_name]]
+
+    if(base::is.character(replaced_by)){
+
+      msg <-
+        glue::glue(
+          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022. Please use `{replaced_by}()` instead."
+        )
+
+    } else {
+
+      msg <-
+        glue::glue(
+          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022."
+        )
+
+    }
+
+    confuns::give_feedback(
+      msg = msg,
+      fdb.fn = fdb_fn,
+      with.time = FALSE
+    )
+
+  }
+
+  args <- list(...)
+
+  args_named <- confuns::keep_named(args)
+
+  if(base::length(args_named) >= 1){
+
+    args_named <- args_named[base::names(args_named) %in% deprecatedArguments()]
+
+    for(old_arg_name in base::names(args_named)){
+
+      new_arg_name <- depr_info$args[[old_arg_name]]
+
+      if(base::is.na(new_arg_name)){
+
+        msg <- glue::glue("Argument `{old_arg_name}` is deprecated and no longer in use.")
+
+      } else {
+
+        msg <-
+          glue::glue(
+            "Argument `{old_arg_name}` is deprecated.
+            It will be removed in the near future.
+            Please use argument `{new_arg_name}` instead."
+          )
+
+        ce <- rlang::caller_env()
+
+        base::assign(x = new_arg_name, value = args[[old_arg_name]], envir = ce)
+
+      }
+
+      confuns::give_feedback(
+        msg = msg,
+        fdb.fn = fdb_fn,
+        with.time = FALSE
+      )
+
+    }
+
+  }
+
+}
+
+deprecatedArguments <- function(){ depr_info$args %>% base::names() }
+
+
+
+
 # discard -----------------------------------------------------------------
 
 

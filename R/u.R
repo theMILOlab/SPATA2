@@ -460,7 +460,8 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 9, patch = 0)
 
-    object@information$bcsp_dist <- getBarcodeSpotDistance(object)
+    # superseded
+    #object@information$bcsp_dist <- getBarcodeSpotDistance(object)
 
   }
 
@@ -568,7 +569,25 @@ updateSpataObject <- function(object,
 
     # update method slot
 
+    confuns::give_feedback(
+      msg = "Setting `Visium` as spatial method.",
+      verbose = verbose
+    )
+
     object@information$method <- Visium
+
+  }
+
+  if(object@version$major == 1 && object@version$minor == 11){
+
+    object@version <- list(major = 1, minor = 12, patch = 0)
+
+    confuns::give_feedback(
+      msg = "Computing pixel scale factor.",
+      verbose = verbose
+    )
+
+    object <- setPixelScaleFactor(object)
 
   }
 

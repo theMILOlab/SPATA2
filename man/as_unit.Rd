@@ -2,14 +2,20 @@
 % Please edit documentation in R/adj-aZ.R
 \name{as_unit}
 \alias{as_unit}
-\alias{asCentimeter}
-\alias{asDecimeter}
-\alias{asMeter}
-\alias{asMicrometer}
-\alias{asMillimeter}
-\alias{asNanometer}
-\alias{asPixel}
-\title{Transform distance values}
+\alias{as_centimeter}
+\alias{as_centimeter2}
+\alias{as_decimeter}
+\alias{as_decimeter2}
+\alias{as_meter}
+\alias{as_meter2}
+\alias{as_micrometer}
+\alias{as_micrometer2}
+\alias{as_millimeter}
+\alias{as_millimeter2}
+\alias{as_nanometer}
+\alias{as_nanometer2}
+\alias{as_pixel}
+\title{Transform distance and area values}
 \usage{
 as_unit(
   input,
@@ -17,27 +23,39 @@ as_unit(
   object = NULL,
   image_dims = NULL,
   method = NULL,
-  as_numeric = FALSE,
   round = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  ...
 )
 
-asCentimeter(input, ...)
+as_centimeter(input, ...)
 
-asDecimeter(input, ...)
+as_centimeter2(input, ...)
 
-asMeter(input, ...)
+as_decimeter(input, ...)
 
-asMicrometer(input, ...)
+as_decimeter2(input, ...)
 
-asMillimeter(input, ...)
+as_meter(input, ...)
 
-asNanometer(input, ...)
+as_meter2(input, ...)
 
-asPixel(input, ...)
+as_micrometer(input, ...)
+
+as_micrometer2(input, ...)
+
+as_millimeter(input, ...)
+
+as_millimeter2(input, ...)
+
+as_nanometer(input, ...)
+
+as_nanometer2(input, ...)
+
+as_pixel(input, object = NULL, ...)
 }
 \arguments{
-\item{input}{Distance values to transform.}
+\item{input}{Values that represent spatial measures.}
 
 \item{unit}{Character value. Specifies the desired unit.}
 
@@ -55,9 +73,6 @@ the original image in European units of length. If character, must be one of \co
 
 Ignored if \code{object} is specified (carries needed information).}
 
-\item{as_numeric}{Logical value. If \code{TRUE}, forces the output to be numeric.
-This means that the unit is not \bold{not} suffixed.}
-
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}
 
@@ -67,38 +82,24 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Needed arguments that depend on the input/unit combination. If
-one of both is \emph{'px'} the \code{SPATA2} object is need or \code{method}
-\code{image_dims}.}
+one of both is \emph{'px'}, either the argument \code{obejct} must be specified or
+\code{method} and \code{image_dims}.}
 }
 \value{
-Transformed input. Vector of the same length as \code{input}. By default,
-the output is returned as a character vector with the units as suffix.
-If \code{as_numeric} is \code{TRUE}, the suffix is removed and the output vector is
-returned as a numeric one. The unit is added as an attribute.
+All functions return an output vector of the same length as the input
+vector.
+
+If argument \code{unit} is among \code{validEuropeanUnitsOfLength()} or \code{validUnitsOfArea()}
+the output vector is of class \code{units}. If argument \code{unit} is \emph{'px'}, the output
+vector is a character vector or numeric vector if \code{as_numeric} is \code{TRUE}.
 }
 \description{
-Collection of functions to transform distance values.
+Collection of functions to transform distance and area values.
+If pixels are involved, additional \code{SPATA2} specific content is needed.
 }
 \details{
-Input to specify a distance can be provided in two different
-ways.
-
-\bold{Distance in pixel}:
-
-There are two valid input options to specify the distance in pixel:
-
-\itemize{
-\item{numeric:}{ Single numeric values, e.g. 2, 3.554, 69, 100.67. If no unit
-is specified the input will be interpreted as pixels.}
-\item{character:}{ Suffixed with \emph{'px'}, e.g. \emph{'2px'}, \emph{'3.554px'}}
-}
-
-\bold{Distance in European units of length (eUOL)}:
-
-Specifying distances in European units of length e.g. \emph{'2mm'}, \emph{'400um'} etc.
-requires the input to be a character as the unit must be provided as suffix. Between the numeric
-value and the unit must be no empty space! Unit suffixes must be one of
-\emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
+For more information about area values, see details of \code{?is_area}. Fore
+more information about distance values, see details of \code{?is_dist}.
 }
 \examples{
 
@@ -109,17 +110,17 @@ object <- downloadSpataObject("269_T")
 
 pixel_values <- c(200, 450, 500)
 
-euol_values <- c("2mm", "400um", "0.8dm")
+euol_values <- c("2mm", "400mm", "0.2mm")
 
 # spata object must be provided to scale based on current image resolution
-asMillimeter(input = pixel_values, object = object, round = 2)
+as_millimeter(input = pixel_values, object = object, round = 2)
 
-asMicrometer(input = pixel_values, object = object, round = 4)
+as_micrometer(input = pixel_values, object = object, round = 4)
 
-asPixel(input = euol_values, object = object)
+as_pixel(input = euol_values, object = object)
 
 # spata object must not be provided
-asMicrometer(input = euol_values)
+as_micrometer(input = euol_values)
 
 
 }

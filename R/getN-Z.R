@@ -39,6 +39,171 @@ getPcaMtr <- function(object,
 
 }
 
+
+#' @title Obtain scale factor for pixel to Euol conversion
+#'
+#' @description Extracts or computes the side length of a pixel depending
+#' on the current resolution of the image.
+#'
+#' @param switch Logical value. If `TRUE`, the unit of the output is switched.
+#' See details for more.
+#' @param force Logical value. If `TRUE`, the scale factor is computed
+#' regardless of what the function finds in the respective slot.
+#' @inherit ggpLayerAxesEUOL params
+#' @inherit argument_dummy params
+#' @inherit is_dist params
+#'
+#' @return A single numeric value with the unit defined in attribute *unit*.
+#'
+#' If `switch` is `FALSE`, the default, the output is to be interpreted as
+#' unit/pixel. E.g. an output of *15 'um/px'* means that under the current resolution
+#' of the image height and width of one pixel corresponds to *15 um* in height and
+#' width in the original tissue.
+#'
+#' If `switch` is `TRUE`, the output is to be interpreted as pixel/unit.  E.g.
+#' an output value of *0.07 'px/um'* means that under the current image resolution
+#' one micrometer corresponds to 0.07 pixel in the image.
+#'
+#' @seealso `setPixelScaleFactor()`
+#'
+#' @export
+getPixelScaleFactor <- function(object,
+                                euol = NULL,
+                                switch = FALSE,
+                                force = FALSE,
+                                add_attr = TRUE,
+                                verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(base::is.null(euol)){
+
+    euol <- getMethodUnit(object)
+
+  }
+
+  # extract set scale factor
+  pxl_scale_fct <- object@information$pxl_scale_fct
+
+  # if no factor found or force is TRUE - compute
+  if(base::is.null(pxl_scale_fct) | base::isTRUE(force)){
+
+    if(base::isFALSE(force)){
+
+      rlang::warn(
+        message = "Pixel scale factor is not set. Consider using `setPixelScaleFactor()` to save time.",
+        .frequency = "once",
+        .frequency_id = "pxl_scale_fct_not_set"
+      )
+
+    }
+
+    ccd <- getCCD(object, unit = euol)
+
+    # if ccd found use ccd and bcsp_dist
+    if(is_dist_euol(ccd, error = FALSE)){
+
+      confuns::give_feedback(
+        msg = "Using center to center distance to compute pixel scale factor.",
+        verbose = verbose
+        )
+
+      bcsp_dist <-
+        getBarcodeSpotDistances(object, verbose = verbose) %>%
+        dplyr::filter(bc_origin != bc_destination) %>%
+        dplyr::group_by(bc_origin) %>%
+        dplyr::filter(distance == base::min(distance)) %>%
+        dplyr::ungroup()
+
+      bcsp_ex <-
+        dplyr::filter(bcsp_dist, distance == base::min(distance)) %>%
+        utils::head(1)
+
+      bcsp_dist_pixel <- bcsp_ex[["distance"]]
+
+      ccd_val <- extract_value(ccd)
+      ccd_unit <- extract_unit(ccd)
+
+      pxl_scale_fct <-
+        units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+        units::set_units(x = ., value = euol, mode = "standard")
+
+    } else { # if ccd not found use image frame with protocol ground truth
+
+      confuns::give_feedback(
+        msg = "Using image frame and method information to compute pixel scale factor.",
+        verbose = verbose
+        )
+
+      method <- getMethod(object)
+      image_dims <- getImageDims(object)[1:2]
+
+      img_height_px <- image_dims[2] # height of image in pixel (e.g = 2000px)
+
+      img_height <- method@fiducial_frame$y # height of image in eUOL (e.g. '8mm')
+
+      img_height_eUOL <- extract_value(img_height) # the value (e.g = 8)
+      img_unit <- extract_unit(img_height) # the unit (e.g. 'mm')
+
+      if(base::is.null(euol)){
+
+        euol <- img_unit
+
+      }
+
+      pxl_scale_fct <-
+        units::set_units(img_height_eUOL/img_height_px, value = img_unit, mode = "standard") %>%
+        units::set_units(x = ., value = euol, mode = "standard")
+
+    }
+
+  # if scale factor found adjust to euol input
+  } else {
+
+    unit_scale_fct <-
+      confuns::str_extract_before(
+        string = base::attr(pxl_scale_fct, which = "unit"),
+        pattern = "\\/"
+      )
+
+    pxl_scale_fct <-
+      units::set_units(x = pxl_scale_fct, value = unit_scale_fct, mode = "standard") %>%
+      units::set_units(x = ., value = euol, mode = "standard")
+
+  }
+
+
+  # if argument switch is TRUE provide scale factor as px/euol
+  if(base::isTRUE(switch)){
+
+    pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
+
+    pxl_scale_fct <- 1/pxl_scale_fct
+
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c("px/", euol, sep = "")
+
+  } else {
+
+    pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
+
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(euol, "/px", sep = "")
+
+  }
+
+  if(!base::isTRUE(add_attr)){
+
+    base::attr(pxl_scale_fct, which = "unit") <- NULL
+
+  }
+
+  base::class(pxl_scale_fct) <- c(base::unique(base::class(pxl_scale_fct)))
+
+  return(pxl_scale_fct)
+
+}
+
+
+
 #' @title Obtain trajectory projection
 #'
 #' @description Extracts the projection data.frame of a trajectory. If \code{variables}
@@ -593,9 +758,6 @@ getSmrdResultsDf <-  function(ias,
   return(rdf)
 
 }
-
-
-
 
 
 

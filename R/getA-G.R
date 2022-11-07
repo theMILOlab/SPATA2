@@ -308,7 +308,7 @@ getBarcodeSpotDistances <- function(object,
 
 # getC --------------------------------------------------------------------
 
-#' @title Obtain Center to Center distance
+#' @title Obtain center to center distance
 #'
 #' @description Extracts the center to center distance from
 #' barcode-spots depending on the method used.
@@ -316,7 +316,7 @@ getBarcodeSpotDistances <- function(object,
 #' @inherit argument_dummy params
 #' @param unit Character value or \code{NULL}. If character, specifies
 #' the unit in which the distance is supposed to be returned.
-#' Use \code{validUnits()} to obtain  all valid input options.
+#' Use \code{validUnitsOfLength()} to obtain  all valid input options.
 #'
 #' @return Character value.
 #' @export
@@ -332,40 +332,20 @@ getCCD <- function(object,
 
   ccd <- method@info[["ccd"]]
 
-  if(base::is.character(unit)){
+  ccd_unit <- extract_unit(ccd)
 
-    ccd_unit <- extract_unit(ccd)
+  if(base::is.null(unit)){ unit <- ccd_unit }
 
-    if(ccd_unit != unit){
+  out <-
+    as_unit(
+      input = ccd,
+      unit = unit,
+      object = object,
+      as_numeric = as_numeric,
+      round = round
+    )
 
-      if(unit == "px"){
-
-        ccd <-
-          asPixel(
-            input = ccd,
-            object = object,
-            as_numeric = as_numeric,
-            round = round
-          )
-
-      } else {
-
-        ccd <-
-          as_unit(
-            input = ccd,
-            unit = unit,
-            object = object,
-            as_numeric = as_numeric,
-            round = round
-          )
-
-      }
-
-    }
-
-  }
-
-  return(ccd)
+  return(out)
 
 }
 
@@ -1011,6 +991,10 @@ getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_obj
 
 }
 # getE --------------------------------------------------------------------
+
+
+
+
 
 #' @rdname getMatrix
 #' @export

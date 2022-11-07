@@ -33,17 +33,14 @@ denoted in \code{binwidth}.
 (See details for more.)}
 }
 \value{
-A list of \code{ggproto}-objects.
+\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+that can be added to ggplots via the \code{+} operator. In most of the cases
+they are supposed to be added to plots created with the \code{plotSurface*()}
+family.
 }
 \description{
 Adds the last circular expansion used by the IAS-algorithm
 of the area of  an image annotation to a surface plot in order to
 visualize the border between screened tissue and everything beyond that
 is not included in the IAS.
-}
-\details{
-\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
-that can be added to ggplots via the \code{+} operator. In most of the cases
-they are supposed to be added to plots created with the \code{plotSurface*()}
-family.
 }

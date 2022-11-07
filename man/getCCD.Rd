@@ -2,7 +2,7 @@
 % Please edit documentation in R/getA-G.R
 \name{getCCD}
 \alias{getCCD}
-\title{Obtain Center to Center distance}
+\title{Obtain center to center distance}
 \usage{
 getCCD(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 }
@@ -11,7 +11,7 @@ getCCD(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 
 \item{unit}{Character value or \code{NULL}. If character, specifies
 the unit in which the distance is supposed to be returned.
-Use \code{validUnits()} to obtain  all valid input options.}
+Use \code{validUnitsOfLength()} to obtain  all valid input options.}
 }
 \value{
 Character value.

@@ -25,16 +25,13 @@ specifies the exact groups that are encircled. If NULL, all groups
 are encircled.}
 }
 \value{
-A list of \code{ggproto}-objects.
+\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+that can be added to ggplots via the \code{+} operator. In most of the cases
+they are supposed to be added to plots created with the \code{plotSurface*()}
+family.
 }
 \description{
 Highlights groups of barcode-spots by encircling them.
 Depending on the \code{plot_type} this can be added to a surface plot
 or a dimensional reduction plot.
-}
-\details{
-\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
-that can be added to ggplots via the \code{+} operator. In most of the cases
-they are supposed to be added to plots created with the \code{plotSurface*()}
-family.
 }

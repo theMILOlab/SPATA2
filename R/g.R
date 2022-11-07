@@ -45,9 +45,9 @@ geom_point_fixed <- function(...,
 #' surface plots with European units of length.
 #'
 #' @inherit argument_dummy params
-#' @inherit transform_eUOL_to_pixels params
-#' @inherit ggpLayer_dummy return details
-#' @param eUOL The desired unit in wich the axes are displayed. Defaults to the unit
+#' @inherit transform_euol_to_pixels params
+#' @inherit ggpLayer_dummy return
+#' @param euol The desired unit. Defaults to the unit
 #' in which the original size of the image of the spatial method is
 #' provided. Obtain valid input options with \code{validEuropeanUnitsOfLength()}.
 #' @param which One or two of \emph{'x'} and \emph{'y'}. Specifies
@@ -61,10 +61,12 @@ geom_point_fixed <- function(...,
 #' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
 #' the plot.
 #'
+#' @inherit is_dist details
+#'
 #' @export
 #'
 ggpLayerAxesEUOL <- function(object,
-                             eUOL = getMethodUnit(object),
+                             euol = getMethodUnit(object),
                              which = c("x", "y"),
                              frame_by = "coords",
                              breaks_x = NULL,
@@ -73,25 +75,25 @@ ggpLayerAxesEUOL <- function(object,
                              round = 2){
 
   confuns::check_one_of(
-    input = eUOL,
+    input = euol,
     against = validEuropeanUnitsOfLength(),
     suggest = TRUE
   )
 
   if(!base::is.null(breaks_x)){
 
-    are_eUOL <-
-      purrr::map_lgl(.x = breaks_x, .f = is_eUOL_dist) %>%
+    are_euol <-
+      purrr::map_lgl(.x = breaks_x, .f = is_dist_euol) %>%
       base::all()
 
     are_pixels <-
-      purrr::map_lgl(.x = breaks_x, .f = is_pixel_dist) %>%
+      purrr::map_lgl(.x = breaks_x, .f = is_dist_pixel) %>%
       base::all()
 
-    if(are_eUOL){
+    if(are_euol){
 
       breaks_x <-
-        transform_eUOL_to_pixels(
+        transform_euol_to_pixels(
           input = breaks_x,
           object = object,
           as_numeric = TRUE
@@ -119,18 +121,18 @@ ggpLayerAxesEUOL <- function(object,
 
   if(!base::is.null(breaks_y)){
 
-    are_eUOL <-
-      purrr::map_lgl(.x = breaks_y, .f = is_eUOL_dist) %>%
+    are_euol <-
+      purrr::map_lgl(.x = breaks_y, .f = is_dist_euol) %>%
       base::all()
 
     are_pixels <-
-      purrr::map_lgl(.x = breaks_y, .f = is_pixel_dist) %>%
+      purrr::map_lgl(.x = breaks_y, .f = is_dist_pixel) %>%
       base::all()
 
-    if(are_eUOL){
+    if(are_euol){
 
       breaks_y <-
-        transform_eUOL_to_pixels(
+        transform_euol_to_pixels(
           input = breaks_y,
           object = object,
           as_numeric = TRUE
@@ -176,9 +178,9 @@ ggpLayerAxesEUOL <- function(object,
   axes <-
     list(
       ggplot2::scale_x_continuous(
-        labels = ~ transform_pixels_to_eUOL(
+        labels = ~ transform_pixels_to_euol(
           input = .x,
-          eUOL = eUOL,
+          euol = euol,
           object = object,
           as_numeric = TRUE,
           round = round
@@ -187,9 +189,9 @@ ggpLayerAxesEUOL <- function(object,
         breaks = breaks_x
       ),
       ggplot2::scale_y_continuous(
-        labels = ~ transform_pixels_to_eUOL(
+        labels = ~ transform_pixels_to_euol(
           input = .x,
-          eUOL = eUOL,
+          euol = euol,
           object = object,
           as_numeric = TRUE,
           round = round
@@ -205,8 +207,8 @@ ggpLayerAxesEUOL <- function(object,
 
     labs_add_on <-
       list(
-        x = ggplot2::labs(x = glue::glue("x-coordinates ({eUOL})")),
-        y = ggplot2::labs(y = glue::glue("y-coordinates ({eUOL})"))
+        x = ggplot2::labs(x = glue::glue("x-coordinates [{euol}]")),
+        y = ggplot2::labs(y = glue::glue("y-coordinates [{euol}]"))
       )
 
   } else {
@@ -259,7 +261,7 @@ ggpLayerAxesEUOL <- function(object,
 #' are encircled.
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #'
 #' @export
 #'
@@ -317,7 +319,7 @@ ggpLayerEncirclingGroups <- function(object,
 #'
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #'
 #' @export
 #'
@@ -401,7 +403,7 @@ ggpLayerEncirclingIAS <- function(object,
 #' @description Fixes the frame of an surface plot based
 #' on the coordinates range of the \code{SPATA2} object.
 #'
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #'
 #' @export
 ggpLayerFixFrame <- function(object){
@@ -430,7 +432,7 @@ ggpLayerFixFrame <- function(object){
 #' If \emph{'coords'}, \code{ggplot2::coord_cartesian()} is used.
 #'
 #' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #'
 #' @note If \emph{'scale'}, always adds \code{ggplot2::coord_equal()}.
 #'
@@ -512,7 +514,7 @@ ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
 #'
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #'
 #' @export
 #'
@@ -613,7 +615,7 @@ ggpLayerHorizonIAS <- function(object,
 #' @description Creates ggplot2 layer with the histology image
 #' as a raster annotation.
 #'
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #' @inherit argument_dummy params
 #'
 #' @note The returned list contains an additional \code{ggplot2::geom_point()}
@@ -673,7 +675,7 @@ ggpLayerImage <- function(object = "object"){
 #' @param ... Additional arguments given to \code{scale_color_add_on()}. Used to
 #' set the color adjustments of the polygon (fill and color).
 #'
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #' @inherit getImageAnnotations details
 #'
 #' @note Adds two additional layers to set the scales for the color- and
@@ -774,7 +776,7 @@ ggpLayerImageAnnotation <- function(object = "object",
 #'
 #' @param ... Additional arguments given to \code{ggplot2::geom_rect()}.
 #'
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #' @inherit argument_dummy params
 #'
 #' @export
@@ -858,7 +860,7 @@ ggpLayerThemeCoords <- function(){
 #' on which the trajectories are plotted.
 #' @param ... Additional arguments given to \code{ggplot2::geom_segment()}.
 #'
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #' @inherit argument_dummy params
 #'
 #' @export
@@ -902,7 +904,7 @@ ggpLayerTrajectories <- function(object = "object",
 #' manual input.
 #'
 #' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
+#' @inherit ggpLayer_dummy return
 #' @param xrange,yrange Vector of length two. Specifies the x- and y-range
 #' of zooming. E.g. \code{xrange = c(200, 500)} results in the plot
 #' being cropped from x-coordinate 200px up to x-coordinate 500px.

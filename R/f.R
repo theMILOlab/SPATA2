@@ -3,7 +3,20 @@
 
 # fe ----------------------------------------------------------------------
 
+feedback_area_input <- function(x, error = TRUE){
+
+  feedback_pos(x = x, error = error, ref_input = "area", ref_info = "`?is_area`")
+
+}
+
 feedback_distance_input <- function(x, error = TRUE){
+
+  feedback_pos(x = x, error = error, ref_input = "distance", ref_info = "`?is_dist`")
+
+}
+
+
+feedback_pos <- function(x, error, ref_input, ref_info){
 
   pos <- base::which(x == FALSE)
 
@@ -15,9 +28,21 @@ feedback_distance_input <- function(x, error = TRUE){
 
     ref2 <- confuns::scollapse(pos)
 
-    stop(glue::glue("Invalid distance input at {ref1} {ref2}. Please see details at `?is_dist` for more information"))
+    if(base::is.character(ref_info)){
+
+      ref_info <- glue::glue(" Please see details at {ref_info} for more information.")
+
+    } else {
+
+      ref_info <- ""
+
+    }
+
+    stop(glue::glue("Invalid {ref_input} input at {ref1} {ref2}.{ref_info}"))
 
   }
+
+  base::invisible(TRUE)
 
 }
 
@@ -39,6 +64,19 @@ feedback_range_input <- function(xrange = NULL, yrange = NULL, error = TRUE){
     is_dist(input = yrange, error = error)
 
   }
+
+  base::invisible(TRUE)
+
+}
+
+feedback_spatial_measure <- function(x, error = TRUE){
+
+  feedback_pos(
+    x = x,
+    ref_input = "spatial measure",
+    ref_info = "`?is_dist` and `?is_area`",
+    error = error
+    )
 
 }
 

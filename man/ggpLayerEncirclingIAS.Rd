@@ -34,15 +34,12 @@ information about distance values.}
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 }
 \value{
-A list of \code{ggproto}-objects.
-}
-\description{
-Adds the circular expansion used by the IAS-algorithm
-of the area of  an image annotation to a surface plot.
-}
-\details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
 they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
+}
+\description{
+Adds the circular expansion used by the IAS-algorithm
+of the area of  an image annotation to a surface plot.
 }

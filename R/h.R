@@ -4,6 +4,13 @@
 NULL
 
 
+hide_unit <- function(input){
+
+  unit <- stringr::str_remove(string = input, pattern = regex_dist_value)
+
+}
+
+
 #' Make sure that barcodes are spata-like
 #'
 #' @param input A matrix with columns = barcodes, or a data.frame with a barcode-variable

@@ -7,14 +7,11 @@
 ggpLayer_dummy()
 }
 \value{
-A list of \code{ggproto}-objects.
-}
-\description{
-ggpLayer
-}
-\details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
 they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
+}
+\description{
+ggpLayer
 }

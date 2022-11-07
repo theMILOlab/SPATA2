@@ -463,7 +463,7 @@ create_spatial_trajectories_descr <- list(
 
 
 
-current_spata_version <- list(major = 1, minor = 11, patch = 0)
+current_spata_version <- list(major = 1, minor = 12, patch = 0)
 
 
 # d -----------------------------------------------------------------------
@@ -481,6 +481,8 @@ depr_info <-
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
+      "is_euol_dist" = "is_dist_euol",
+      "is_pixel_dist" = "is_dist_pixel",
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
@@ -518,15 +520,25 @@ dist_units <- c(base::names(dist_unit_abbr))
 
 # e -----------------------------------------------------------------------
 
-eUOL_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
+euol_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
 
-eUOL_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
+euol_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
 
 
 # i -----------------------------------------------------------------------
 
 
-invalid_dist_input <- "Invalid distance input. Please see details at `?is_dist` for more information."
+invalid_area_input <-
+  "Input can not be interpreted as an area. Please see details at `?is_area` for more information."
+
+invalid_dist_input <-
+  "Input can not be interpreted as a distance. Please see details at `?is_dist` for more information."
+
+invalid_dist_euol_input <-
+  "Input can not be interpreted as a distance in European units of length. Please see details at `?is_dist_euol` for more information."
+
+invalid_dist_pixel_input <-
+  "Input can not be interpreted as a distance in pixel. Please see details at `?is_dist_pixel` for more information."
 
 
 
@@ -620,11 +632,25 @@ regex_number <- "^\\d{1,}(?!.*\\.)"
 # ignores unit-suffix -> use for extraction of value
 regex_dec_number <- "^\\d{1,}\\.{1}\\d{1,}"
 
-# matches either normal number or decimal number
-regex_dist_value <- stringr::str_c(regex_number, regex_dec_number, sep = "|")
+regex_scientific_notation <- "[0-9]*e(\\+|-)[0-9]*"
 
-# matches eUOL
-regex_eUOL <- stringr::str_c(string = base::unname(eUOL_abbr), "$", collapse = "|")
+# matches either normal number or decimal number
+regex_dist_value <-
+  stringr::str_c(
+    "(", regex_scientific_notation, ")|",
+    "(", regex_number, ")|",
+    "(", regex_dec_number, ")"
+
+    )
+
+# matches euol
+regex_euol <- stringr::str_c(string = base::unname(euol_abbr), "$", collapse = "|")
+
+# matches area units
+regex_area_units <-
+  stringr::str_c(euol_abbr, "2", sep = "") %>%
+  stringr::str_c("$") %>%
+  stringr::str_c(collapse = "|")
 
 # matches pixel if single numeric value
 # does NOT ignore suffix -> use to test pixel input
@@ -647,19 +673,21 @@ regex_pxl_dist <-
   )
 
 
-# matches dist_value if combined with an eUOL
-# does NOT, ignore suffix -> use to test eUOL input
-regex_eUOL_dist <- stringr::str_c("(", regex_dist_value, ")(", regex_eUOL, ")", sep = "")
+# matches dist_value if combined with an euol
+# does NOT, ignore suffix -> use to test euol input
+regex_euol_dist <- stringr::str_c("(", regex_dist_value, ")(", regex_euol, ")", sep = "")
 
-# matches distance input either provided as eUOL or px
+regex_area <- stringr::str_c("(", regex_dist_value, ")(",regex_area_units, ")", sep = "")
+
+# matches distance input either provided as euol or px
 regex_dist <-
   stringr::str_c(
     stringr::str_c(regex_pxl_dist),
-    stringr::str_c(regex_eUOL_dist),
+    stringr::str_c(regex_euol_dist),
     sep = "|"
   )
 
-regex_unit <- stringr::str_c(regex_eUOL, regex_pxl, sep = "|")
+regex_unit <- stringr::str_c(regex_euol, regex_pxl, regex_area_units, sep = "|")
 
 
 # s -----------------------------------------------------------------------
@@ -708,30 +736,21 @@ threshold_scattermore <- 100000
 
 
 
+
+
+
 # V -----------------------------------------------------------------------
 
-# image dims are not equal
-
-width <- 592
-height <- 600
-
-scale_fct <- width/height
-
-# visium capture frame 8mmx8mm
-# assumin that 600px == 8mm
-
-x_mm <- width/height*8
 
 #' @title Visium meta data
 #' @export
 Visium <-
   SpatialMethod(
-    image_frame = list(x = stringr::str_c(x_mm, "mm"), y = "8mm"),
-    info = list(ccd = "110um"),
+    fiducial_frame = list(x = "8mm", y = "8mm"),
+    info = list(ccd = "100um"),
     name = "Visium",
     observational_unit = "barcode-spot"
   )
-
 
 
 

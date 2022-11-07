@@ -27,17 +27,31 @@ ggpLayerImageAnnotation(
 set the color adjustments of the polygon (fill and color).}
 }
 \value{
-A list of \code{ggproto}-objects.
+\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+that can be added to ggplots via the \code{+} operator. In most of the cases
+they are supposed to be added to plots created with the \code{plotSurface*()}
+family.
 }
 \description{
 Adds ggplot2 layer of polygons of structures that were annotated within the image
 with \code{createImageAnnotations()}.
 }
 \details{
-\code{ggpLayer*()}-functions return lists of \code{ggproto} objects
-that can be added to ggplots via the \code{+} operator. In most of the cases
-they are supposed to be added to plots created with the \code{plotSurface*()}
-family.
+How to use arguments \code{tags} and \code{test} to specify
+the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
+Argument \code{test} decides about how the specified tags are used to select
+the image annotations of interest. There are three options:
+\enumerate{
+\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+must be tagged with at least one of the input tags.
+\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+must be tagged with all of the input tags.
+\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+must be tagged with all of the input tags and must not be tagged with anything else.
+}
+
+Note that the filtering process happens in addition to / after the filtering by input for argument
+\code{ids}.
 }
 \note{
 Adds two additional layers to set the scales for the color- and

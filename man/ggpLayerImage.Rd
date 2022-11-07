@@ -10,17 +10,14 @@ ggpLayerImage(object = "object")
 \item{object}{An object of class \code{SPATA2}.}
 }
 \value{
-A list of \code{ggproto}-objects.
-}
-\description{
-Creates ggplot2 layer with the histology image
-as a raster annotation.
-}
-\details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
 they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
+}
+\description{
+Creates ggplot2 layer with the histology image
+as a raster annotation.
 }
 \note{
 The returned list contains an additional \code{ggplot2::geom_point()}

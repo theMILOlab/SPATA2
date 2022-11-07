@@ -626,7 +626,6 @@ setInitiationInfo <- function(object, additional_input = list()){
 
 
 
-
 # setP --------------------------------------------------------------------
 
 #' @title Set dimensional reductions data.frames
@@ -686,6 +685,42 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 }
 
 
+#' @title Set pixel scale factor
+#'
+#' @description Sets pixel scale factor.
+#'
+#' @param pxl_scale_fct Numeric value with an attribute named
+#' *unit* with the unit euol/px.
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setPixelScaleFactor <- function(object, pxl_scale_fct = NULL){
+
+  if(base::is.null(pxl_scale_fct)){
+
+    object@information$pxl_scale_fct <-
+      getPixelScaleFactor(
+        object = object,
+        euol = getCCD(object) %>% extract_unit(),
+        force = TRUE
+      )
+
+  } else {
+
+    base::stopifnot(base::length(pxl_scale_fct) == 1)
+
+    base::stopifnot(base::all(base::class(pxl_scale_fct) == "units"))
+
+    object@information$pxl_scale_fct <- pxl_scale_fct
+
+  }
+
+  return(object)
+
+}
 
 
 # setS --------------------------------------------------------------------

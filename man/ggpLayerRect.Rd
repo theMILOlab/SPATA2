@@ -59,14 +59,11 @@ See details and examples of \code{?is_dist} and \code{?as_unit} for more informa
 \item{...}{Additional arguments given to \code{ggplot2::geom_rect()}.}
 }
 \value{
-A list of \code{ggproto}-objects.
-}
-\description{
-Adds a rectangular to the plot.
-}
-\details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
 they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
+}
+\description{
+Adds a rectangular to the plot.
 }

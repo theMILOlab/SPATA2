@@ -73,6 +73,9 @@ the main line of the plot visualizing uncertainty using standard deviation.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 
+\item{error}{Logical. If \code{TRUE} and the input is invalid the
+function throws an error.}
+
 \item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
 

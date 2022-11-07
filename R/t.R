@@ -213,28 +213,32 @@ transfer_slot_content <- function(recipient, donor, skip = character(0), verbose
 #' to pixel values depending on the original size of spatial -omic methods.
 #'
 #' @param input Distance as European unit of length. See details for more.
-#' @inherit transform_pixel_to_eUOL params details
+#' @inherit transform_pixel_to_euol params details
 #'
 #' @return Transformed input. Vector of the same length as \code{input}.
-#' `transform_eUOL_to_pixel()` returns always a numeric value.
+#' `transform_euol_to_pixel()` returns always a single numeric value.
 #'
-#' @note \code{transform_eUOL_to_pixel()} transforms only single values. \code{transform_eUOL_to_pixels()}
+#' @note \code{transform_euol_to_pixel()} transforms only single values. \code{transform_euol_to_pixels()}
 #' transforms vectors of lengths one or more.
 #'
 #' @export
 #'
-transform_eUOL_to_pixel <- function(input,
+transform_euol_to_pixel <- function(input,
                                     object = NULL,
                                     image_dims = NULL,
                                     method = NULL,
                                     round = FALSE){
 
-  # eUOL must be character due to unit suffix
-  confuns::is_value(x = input, mode = "character")
+  is_dist_euol(input, error = TRUE)
 
-  is_eUOL_dist(input, error = TRUE)
+  input <- as_SPATA2_dist(input)
 
-  if(base::is.null(object)){
+  # e.g. 1000um
+  input_val <- extract_value(input)  # e.g. 1000
+  input_unit <- extract_unit(input) # e.g 'um'
+
+  # get scale factor
+  if(FALSE){ # currently requires getPixelScaleFactor()
 
     if(base::is.character(method)){
 
@@ -251,13 +255,29 @@ transform_eUOL_to_pixel <- function(input,
 
       if(!methods::is(object = method, class2 = "SpatialMethod")){
 
-        stop("Invalid input for argument `method`.")
+        stop("Invalid input for argument `method`. Must be of class `SpatialMethod`.")
 
       }
 
     }
 
     confuns::is_vec(x = image_dims, mode = "numeric", min.length = 2)
+
+    # 1. calculate scale factor between current image resolutation (px) and
+
+    # original imaga size (euol)
+    img_height_px <- image_dims[2] # height of image in pixel (e.g = 2000px)
+
+    # get information about original height of image
+    img_height <- method@fiducial_frame$y # height of image in euol (e.g. '8mm')
+
+    img_height_euol <- extract_value(img_height) # the value (e.g = 8)
+    img_unit <- extract_unit(img_height) # the unit (e.g. 'mm')
+
+    # scale input to image unit
+    scale_fct <- euol_to_euol_fct(from = input_unit, to = img_unit) # e.g. 'um' -> 'mm': 0.001 one
+
+    out <- input_val * scale_fct
 
   } else {
 
@@ -267,34 +287,17 @@ transform_eUOL_to_pixel <- function(input,
 
     method <- getMethod(object)
 
+    scale_fct <-
+      getPixelScaleFactor(
+        object = object,
+        euol = input_unit,
+        switch = TRUE,
+        add_attr = FALSE
+        )
+
+    out <- input_val * scale_fct
+
   }
-
-  # 1. calculate scale factor between current image resolutation (px) and
-
-  # original imaga size (eUOL)
-  img_height_px <- image_dims[2] # height of image in pixel (e.g = 2000px)
-
-  # get information about original height of image
-  img_height <- method@image_frame$y # height of image in eUOL (e.g. '8mm')
-
-  img_height_eUOL <- extract_value(img_height) # the value (e.g = 8)
-  img_unit <- extract_unit(img_height) # the unit (e.g. 'mm')
-
-  # e.g. 1000um
-  input_val <- extract_value(input)  # e.g. 1000
-  input_unit <- extract_unit(input) # e.g 'um'
-
-  # scale input to image unit
-  scale_fct <- eUOL_to_eUOL_fct(from = input_unit, to = img_unit) # e.g. 'um' -> 'mm': 0.001 one
-
-  input_val_scaled <- input_val * scale_fct # 1000um * 0.001 = 1 -> 1mm
-
-  # how many pixel is one unit of length (e.g. 'mm')?
-  # divide current height of image (px) by original height (eUOL)
-  n_pixel_per_eUOL <- img_height_px/img_height_eUOL # e.g. 2000px / 8mm = 250px/mm -> 250
-
-  # 2. convert input eUOL values to unit of length values
-  out <- input_val_scaled*n_pixel_per_eUOL # e.g 1mm * 250px/mm = 250px -> 250
 
   if(base::is.numeric(round)){
 
@@ -307,23 +310,23 @@ transform_eUOL_to_pixel <- function(input,
 }
 
 
-#' @rdname transform_eUOL_to_pixel
+#' @rdname transform_euol_to_pixel
 #' @export
-transform_eUOL_to_pixels <- function(input,
+transform_euol_to_pixels <- function(input,
                                      object = NULL,
                                      image_dims = NULL,
                                      method = NULL,
                                      round = FALSE,
                                      as_numeric = FALSE){
 
-  is_eUOL_dist(input = input, error = TRUE)
+  is_dist_euol(input = input, error = TRUE)
 
   if(base::isTRUE(as_numeric)){
 
     out <-
       purrr::map_dbl(
         .x = input,
-        .f = transform_eUOL_to_pixel,
+        .f = transform_euol_to_pixel,
         object = object,
         image_dims = image_dims,
         method = method,
@@ -337,7 +340,7 @@ transform_eUOL_to_pixels <- function(input,
     out <-
       purrr::map_dbl(
         .x = input,
-        .f = transform_eUOL_to_pixel,
+        .f = transform_euol_to_pixel,
         object = object,
         image_dims = image_dims,
         method = method,
@@ -353,14 +356,15 @@ transform_eUOL_to_pixels <- function(input,
 }
 
 
-#' @title Scales from pixels and European Units of Length
+#' @title Scales from pixels and European units of length
 #'
 #' @description Transforms pixel values to European units
 #' of length (e.g. \emph{'2mm'}, \emph{'400.50um'}) depending one
-#' the original size of spatial -omic methods.
+#' the original size of spatial -omic methods and the resolution
+#' of the current image.
 #'
-#' @param input Distance as pixel input. See details for more.
-#' @param eUOL Character value. The desired European unit of length. Must be
+#' @param input Distance as pixel input. See details for more information.
+#' @param euol Character value. The desired European unit of length. Must be
 #' one of \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
 #' @param object A valid \code{SPATA2} object or \code{NULL}. If specified the
 #' distance scaling is adjusted to the current resolution of the image inside
@@ -385,23 +389,22 @@ transform_eUOL_to_pixels <- function(input,
 #'
 #' @inherit is_dist details
 #'
-#' @return Transformed input. Vector of the same length as \code{input}. By default,
-#' the output is returned as a character vector with the units as suffix.
-#' If `as_numeric` is `TRUE`, the suffix is removed and the output vector is
-#' returned as a numeric one. The unit is added as an attribute.
+#' @return Transformed input. Vector of the same length as `input` and of class `units`.
 #'
-#' @note \code{transform_pixel_to_eUOL()} transforms only single values. \code{transform_pixels_to_eUOL()}
+#' @note \code{transform_pixel_to_euol()} transforms only single values. \code{transform_pixels_to_euol()}
 #' transforms vectors of lengths one or more.
 #'
 #' @export
 #'
-transform_pixel_to_eUOL <- function(input,
-                                    eUOL,
+transform_pixel_to_euol <- function(input,
+                                    euol,
                                     object = NULL,
                                     image_dims = NULL,
                                     method = NULL,
                                     round = FALSE,
-                                    as_numeric = FALSE){
+                                    ...){
+
+  deprecated(...)
 
   if(base::length(input) != 1){
 
@@ -409,16 +412,20 @@ transform_pixel_to_eUOL <- function(input,
 
   }
 
-  is_pixel_dist(input = input, error = TRUE)
+  is_dist_pixel(input = input, error = TRUE)
+
+  input <- as_SPATA2_dist(input)
+
+  input_val <- extract_value(input) # force  pixel input in numeric value
 
   confuns::check_one_of(
-    input = eUOL,
+    input = euol,
     against = validEuropeanUnitsOfLength(name = FALSE)
   )
 
-  desired_eUOL <- eUOL
+  desired_euol <- euol
 
-  if(base::is.null(object)){
+  if(FALSE){
 
     confuns::check_one_of(
       input = method,
@@ -431,105 +438,58 @@ transform_pixel_to_eUOL <- function(input,
 
     check_object(object)
 
-    image_dims <- getImageDims(object)[1:2]
+    scale_fct <-
+      getPixelScaleFactor(
+        object = object,
+        euol = euol,
+        add_attr = FALSE
+        )
 
-    method <- getMethod(object)
+    out_val <- input_val * scale_fct
 
   }
 
-  input_val <- extract_value(input)
-
-  # calculate scale factor between current image resolution's (px) and
-  # original imaga size (eUOL)
-  img_height_px <- image_dims[2] # height of image in pixel (e.g = 2000px)
-
-  # get information about original height of image
-  img_height <- method@image_frame$y # height of image in eUOL (e.g. '8mm')
-
-  img_height_eUOL <- extract_value(img_height) # the value (e.g = 8)
-  img_unit <- extract_unit(img_height) # the unit (e.g. 'mm')
-
-  # how many 'unit of length' (e.g. 'mm') is one pixel?
-  # divide height of original image (eUOL) by current height in pixel
-  n_eUOL_per_pixel <- img_height_eUOL/img_height_px # (e.g. 0.004)
-
-  # convert input pixel values  to unit of length values
-  # preliminary as unit corresponds to unit of original image
-  prel_val <- input_val*n_eUOL_per_pixel # e.g 200 * 0.004 = 0.8 -> 200pixel correspond to 0.8mm
-
-  prel_eUOL <- stringr::str_c(prel_val, img_unit) # e.g. '0.8mm'
-
-  # factor to convert original eUOL to desired eUOL (e.g. 'um')
-  scale_fct <- eUOL_to_eUOL_fct(from = img_unit, to = desired_eUOL) # e.g. 1000 -> one 1mm == 1000um
-
-  out_val <- prel_val * scale_fct # 0.8 (mm) * 1000 = 800 -> 800um == 0.8mm
 
   if(base::is.numeric(round)){
 
     out_val <- base::round(x = out_val, digits = round)
 
-
   }
 
-  if(base::isFALSE(as_numeric)){
-
-    out <- stringr::str_c(out_val, eUOL)
-
-  } else {
-
-    base::attr(x = out_val, which = "unit") <- eUOL
-
-    out <- base::as.numeric(out_val)
-
-  }
+  out <- units::set_units(x = out_val, value = euol, mode = "standard")
 
   return(out)
 
 }
 
-#' @rdname transform_pixel_to_eUOL
+#' @rdname transform_pixel_to_euol
 #' @export
-transform_pixels_to_eUOL <- function(input,
-                                     eUOL,
+transform_pixels_to_euol <- function(input,
+                                     euol,
                                      object = NULL,
                                      image_dims = NULL,
                                      method = NULL,
                                      round = FALSE,
-                                     as_numeric = FALSE
+                                     ...
                                      ){
 
-  is_pixel_dist(input = input, error = TRUE)
+  deprecated(...)
 
-  if(base::isTRUE(as_numeric)){
+  is_dist_pixel(input = input, error = TRUE)
 
-    out <-
-      purrr::map_dbl(
-        .x = input,
-        .f = transform_pixel_to_eUOL,
-        eUOL = eUOL,
-        object = object,
-        image_dims = image_dims,
-        method = method,
-        round = round,
-        as_numeric = as_numeric
-      ) %>%
-      magrittr::set_attr(which = "unit", value = eUOL)
+  out <-
+    purrr::map_dbl(
+      .x = input,
+      .f = transform_pixel_to_euol,
+      euol = euol,
+      object = object,
+      image_dims = image_dims,
+      method = method,
+      round = round,
+      as_numeric = TRUE
+    )
 
-  } else {
-
-    out <-
-      purrr::map_chr(
-        .x = input,
-        .f = transform_pixel_to_eUOL,
-        eUOL = eUOL,
-        object = object,
-        image_dims = image_dims,
-        method = method,
-        round = round,
-        as_numeric = as_numeric
-      )
-
-  }
+  out <- units::set_units(x = out, value = euol, mode = "standard")
 
   return(out)
 
@@ -986,7 +946,6 @@ transformSeuratToSpata <- function(seurat_object,
 
   fdata <-
     tibble::rownames_to_column(.data = seurat_object@meta.data, var = "barcodes") %>%
-    dplyr::mutate(segmentation = "none") %>%
     dplyr::select(barcodes, dplyr::everything())
 
   # savely discard colum 'orig.ident'

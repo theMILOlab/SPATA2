@@ -20,6 +20,7 @@
 \alias{validSpatialMethods}
 \alias{validTrajectoryTrends}
 \alias{validUnits}
+\alias{validUnitsOfArea}
 \alias{validUnitsOfLength}
 \alias{validEuropeanUnitsOfLength}
 \title{Obtain valid argument inputs}
@@ -61,6 +62,8 @@ validSpatialMethods()
 validTrajectoryTrends()
 
 validUnits()
+
+validUnitsOfArea()
 
 validUnitsOfLength()
 

@@ -17,17 +17,14 @@ ggpLayerFrameByImage(object = "object", opt = "scale")
 If \emph{'coords'}, \code{ggplot2::coord_cartesian()} is used.}
 }
 \value{
-A list of \code{ggproto}-objects.
-}
-\description{
-Sets the limits on the x- and y-axis of a ggplot based on the coordinate
-range or the image range.
-}
-\details{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
 that can be added to ggplots via the \code{+} operator. In most of the cases
 they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
+}
+\description{
+Sets the limits on the x- and y-axis of a ggplot based on the coordinate
+range or the image range.
 }
 \note{
 If \emph{'scale'}, always adds \code{ggplot2::coord_equal()}.

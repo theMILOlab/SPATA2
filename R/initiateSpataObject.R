@@ -27,7 +27,7 @@ initiateSpataObject_Empty <- function(sample_name){
 
   object@version <- current_spata_version
 
-  spata_object@information$method <- Visium
+  object@information$method <- Visium
 
   return(object)
 
@@ -407,6 +407,8 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 
   spata_object@information$method <- Visium
 
+  spata_object <- setPixelScaleFactor(spata_object)
+
 
   # -----
 
@@ -705,6 +707,8 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
   spata_object@information$method <- Visium
 
+  spata_object <- setPixelScaleFactor(spata_object)
+
 
   # -----
 
@@ -977,6 +981,8 @@ initiateSpataObject_10X <- function(directory_10X,
   )
 
   spata_object@information$method <- Visium
+
+  spata_object <- setPixelScaleFactor(spata_object)
 
   # -----
 

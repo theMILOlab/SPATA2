@@ -248,7 +248,19 @@ validTrajectoryTrends <- function(){
 #' @export
 validUnits <- function(){
 
-  c(eUOL_abbr, "px")
+  c(
+    validUnitsOfLength(),
+    validUnitsOfArea()
+  ) %>%
+    base::unname()
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
+validUnitsOfArea <- function(){
+
+  stringr::str_c(c(euol_abbr), "2")
 
 }
 
@@ -256,9 +268,7 @@ validUnits <- function(){
 #' @export
 validUnitsOfLength <- function(){
 
-  deprecated(fn = TRUE)
-
-  eUOL_abbr
+  c(euol_abbr, "px")
 
 }
 
@@ -266,7 +276,7 @@ validUnitsOfLength <- function(){
 #' @export
 validEuropeanUnitsOfLength <- function(name = T){
 
-  out <- eUOL_abbr
+  out <- euol_abbr
 
   if(base::isFALSE(name)){
 

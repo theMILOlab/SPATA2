@@ -49,7 +49,8 @@ Imports:
     tidyr,
     tidytext,
     viridis,
-    umap
+    umap,
+    units
 Collate: 
     'GeomPointFixed.R'
     'S4-documentation.R'
@@ -62,7 +63,8 @@ Collate:
     'create.R'
     'd.R'
     'data.R'
-    'deprecated.R'
+    'deprecated_a-i.R'
+    'deprecated_j-z.R'
     'documentation-dummies.R'
     'e.R'
     'f.R'

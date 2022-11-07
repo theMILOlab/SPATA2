@@ -419,55 +419,216 @@ imageAnnotationToSegmentation <- function(object,
 
 
 
-#' @rdname is_dist
+#' @title Test area input
+#'
+#' @description Tests if input refers to an area using international area
+#' units according to the `SPATA2` area framework.
+#'
+#' @param input Character vector. Elements must match the requirements of
+#' the `SPATA2` area framework. See details for more information.
+#'
+#' @return Logical vector of the same length as input and/or an error if `verbose`
+#' is `TRUE`.
+#'
+#' @details Several functions in `SPATA2` have arguments that take *area input*.
+#' To specifically refer to an area the unit must be specified. There are
+#' two ways to create valid input for these arguments.
+#'
+#' **1. Suffixed with the unit:**
+#'
+#' Although inherently of numeric meaning, values can be specified as characters
+#' with a suffix that specifies the unit: `arg_input <- c(*'40mm2', '342.2mm2', 80mm2'*)`.
+#' Valid suffixes can be obtained using the function `validUnitsOfArea()`.
+#'
+#' **2. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units`-package. Character input
+#' is converted into vectors of class `units`. Therefore, input can be directly
+#' provided this way: `arg_input <- units::set_unit(x = c(20.2, 30), value = "mm2)`
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' ##### provide input as character vectors
+#'
+#' # will return TRUE
+#'
+#' is_area(input = c('200mm2', '0.4cm2'))
+#'
+#' # will return FALSE
+#'
+#' is_area(input = c(200, 0.4)) # no unit
+#'
+#' is_area(input = c('200 m2')) # space between value and unit
+#'
+#' # will return TRUE
+#'
+#' area_values <- c(200, 400)
+#'
+#' area_values <- as_area(area_values, unit = "mm2")
+#'
+#' is_area(input = area_values)
+#'
+#' ###### use units package
+#'
+#' library(units)
+#'
+#' area_values2 <- set_units(x = c(200, 300), value = "mm2")
+#'
+#' is_area(area_values2)
+#'
+#'
 #' @export
-is_eUOL_dist <- function(input, error = FALSE){
+#'
+is_area <- function(input, error = FALSE){
 
-  res <- stringr::str_detect(input, pattern = regex_eUOL_dist)
+  if(base::is.character(input)){
 
-  feedback_distance_input(x = res, error = error)
+    res <- stringr::str_detect(string = input, pattern = regex_area)
+
+    feedback_area_input(x = res, error = error)
+
+  }  else if(base::is.numeric(input)){
+
+    res <- base::rep(TRUE, base::length(input))
+
+  }  else if(base::all(base::class(input) == "units")){
+
+    unit_attr <- attr(input, which = "units")
+
+    test <- base::logical(2)
+
+    test[1] <- base::length(unit_attr$numerator) == 2
+
+    test[2] <-
+      purrr::map_lgl(
+        .x = unit_attr$numerator,
+        .f = ~ .x %in% validEuropeanUnitsOfLength()
+        ) %>%
+      base::all()
+
+    res <- base::all(test)
+
+    if(base::isFALSE(res) & base::isTRUE(error)){
+
+      stop("Input is of class 'units' but does not correspond to an area.")
+
+    }
+
+    res <- base::rep(res, base::length(input))
+
+  }
 
   return(res)
 
 }
 
+
+#' @title Test area or distance input
+#'
+#' @description Tests if input can be safely converted to distance
+#' or to area values.
+#'
+#' @inherit is_area params return
+#'
+#' @note Only returns `TRUE` if all values are valid distance inputs
+#' or all values are valid area inputs.
+#'
+#' @export
+are_all_area_or_dist <- function(input, error = FALSE){
+
+  are_areas <- stringr::str_detect(string = input, pattern = regex_area)
+
+  if(!base::all(are_areas)){
+
+    are_distances <- stringr::str_detect(string = input, pattern = regex_dist)
+
+    if(!base::all(are_distances)){
+
+      out <- FALSE
+
+      if(base::isTRUE(error)){
+
+        stop(invalid_area_dist_input)
+
+      }
+
+    } else {
+
+      out <- TRUE
+
+    }
+
+  } else {
+
+    out <- TRUE
+
+  }
+
+  return(out)
+
+}
+
+
 #' @title Test distance input
 #'
 #' @description Tests if input that refers to a distance is of valid input.
 #'
+#' \itemize{
+#'  \item{`is_dist()`:}{ Tests if input can be interpreted as a distance.}
+#'  \item{`is_dist_euol()`:} {Tests if input can be interpreted as a distance in
+#'  European units of length.}
+#'  \item{`is_dist_pixel()`:} {Tests if input can be interpreted as a distance
+#'  in pixel.}
+#'  }
+#'
 #' @param input Character or numeric vector. Elements must match the
 #' requirements of the \code{SPATA2} distance framework. See details
 #' for more information.
-#' @param error Logical. If \code{TRUE} and the input is invalid the
-#' function throws an error.
 #'
-#' @return Logical value and/or error if \code{verbose} is \code{TRUE}
+#' @inherit argument_dummy params
 #'
-#' @details Input to specify a distance can be provided in two different
-#' ways.
+#' @return Logical vector of the same length as `input`. If `error` is `TRUE`
+#' and one or more elements of the input values can not be interpreted approapriately
+#' the functions throws an error.
 #'
-#' \bold{Distance in pixel}:
+#' @details Several functions in `SPATA2` have arguments that take *distance input*.
+#' To specifically refer to a distance the unit must be specified. There are
+#' three ways to create valid input for these arguments.
+#'
+#' \bold{1. Distance in pixel}:
 #'
 #' There are two valid input options to specify the distance in pixel:
 #'
 #' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. 2, 3.554, 69, 100.67. If no unit
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input <- c(2, 3.554, 69, 100.67)`. If no unit
 #'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with \emph{'px'}, e.g. \emph{'2px'}, \emph{'3.554px'}}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input <- c('2px', '3.554px', '69px', '100.67px')`}
 #'  }
 #'
-#' \bold{Distance in European units of length (eUOL)}:
+#' \bold{2. Distance in European units of length (euol)}:
 #'
-#'  Specifying distances in European units of length e.g. \emph{'2mm'}, \emph{'400um'} etc.
+#'  Specifying distances in European units of length e.g. `arg_input <- c('2mm', '4mm')` etc.
 #'  requires the input to be a character as the unit must be provided as suffix. Between the numeric
 #'  value and the unit must be no empty space! Unit suffixes must be one of
 #'  \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
 #'
-#' @seealso `?as_unit`
+#'  **3. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units`-package. Input
+#' is converted into vectors of class `units`. Therefore, input can be directly
+#' provided this way: `arg_input <- units::set_unit(x = c(2,4), value = 'mm')`
+#' Note that *pixel* is not a valid unit in the `units` package. If you want
+#' to specify the input in pixel you have to use input option 1. Distance in pixel.
 #'
 #' @export
 #'
 #' @examples
+#'
+#' ##### use numeric or character vectors
+#'
+#' library(SPATA2)
 #'
 #' # will return TRUE
 #' is_dist(input = 200) # -> 200 pixel
@@ -480,13 +641,101 @@ is_eUOL_dist <- function(input, error = FALSE){
 #'
 #' is_dist(input = ".4mm") # -> must start with a number
 #'
+#' ##### use units package
+#'
+#' library(units)
+#'
+#' dist_input <- set_units(x = c(2, 3, 4.4), value = "mm")
+#'
+#' is_dist(dist_input)
+#'
 is_dist <- function(input, error = FALSE){
 
-  res <-
-    stringr::str_detect(string = input, pattern = regex_pxl_dist)|
-    stringr::str_detect(string = input, pattern = regex_eUOL_dist)
+  res <- is_dist_euol(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
 
   feedback_distance_input(x = res, error = error)
+
+  return(res)
+
+}
+
+#' @rdname is_dist
+#' @export
+is_dist_euol <- function(input, error = FALSE){
+
+  if(base::is.character(input)){
+
+    res <- stringr::str_detect(input, pattern = regex_euol_dist)
+
+    feedback_distance_input(x = res, error = error)
+
+  } else if(base::is.numeric(input)){
+
+    res <- base::rep(TRUE, base::length(input))
+
+  }  else if(base::all(base::class(input) == "units")){
+
+    unit_attr <- base::attr(input, which = "units")
+
+    test <- base::logical(2)
+
+    test[1] <- base::length(unit_attr$numerator) == 1
+
+    test[2] <- base::all(unit_attr$numerator %in% validEuropeanUnitsOfLength())
+
+    res <- base::all(test)
+
+    if(base::isFALSE(res) & base::isTRUE(error)){
+
+      stop("Input is of class 'units' but can not be interpreted as a distance of European units of length.")
+
+    }
+
+    res <- base::rep(res, base::length(input))
+
+  } else {
+
+    if(base::isTRUE(error)){
+
+      stop(invalid_dist_euol_input)
+
+    } else {
+
+      res <- base::rep(res, base::length(input))
+
+    }
+
+
+
+  }
+
+  return(res)
+
+}
+
+#' @rdname is_dist
+#' @export
+is_dist_pixel <- function(input, error = FALSE){
+
+  if(base::is.character(input) | is_numeric_input(input)){
+
+    res <- stringr::str_detect(input, pattern = regex_pxl_dist)
+
+    feedback_distance_input(x = res, error = error)
+
+  } else {
+
+    if(base::isTRUE(error)){
+
+      stop(invalid_dist_pixel_input)
+
+    } else {
+
+      res <- base::rep(FALSE, base::length(input))
+
+    }
+
+  }
 
   return(res)
 
@@ -499,18 +748,87 @@ is_number <- function(x){
 
 }
 
+is_numeric_input <- function(input){
 
-#' @rdname is_dist
-#' @export
-is_pixel_dist <- function(input, error = FALSE){
+  (base::is.numeric(input)) &
+  (!"units" %in% base::class(input))
 
-  res <- stringr::str_detect(input, pattern = regex_pxl_dist)
+}
 
-  feedback_distance_input(x = res, error = error)
+
+is_spatial_measure <- function(input, error = FALSE){
+
+  res <- is_dist(input, error = FALSE) | is_area(input, error = FALSE)
+
+  feedback_spatial_measure(res, error = error)
 
   return(res)
 
 }
+
+
+
+#' @title Test unit of area input
+#'
+#' @description Tests if input is a valid unit of area.
+#'
+#' @param input Character vector of area units. Obtain valid
+#' input options with `validUnitsOfArea()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value and/or error if argument `error` is `TRUE`.
+#'
+#' @export
+is_unit_area <- function(input, error = FALSE){
+
+  res <- input %in% validUnitsOfArea()
+
+  if(base::isFALSE(res) & base::isTRUE(error)){
+
+    stop("Invalid unit input. Must be a valid unit of area. Obtain valid input options with `validUnitsOfArea().`")
+
+  }
+
+  return(res)
+
+}
+
+#' @title Test unit of length input
+#'
+#' @description Tests if input is a valid unit of distance.
+#'
+#' @param input Character vector of distance units. Obtain valid
+#' input options with `validUnitsOfLength()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value and/or error if argument `error` is `TRUE`.
+#'
+#' @export
+is_unit_dist <- function(input, error = FALSE){
+
+  res <- input %in% validUnitsOfLength()
+
+  if(base::isFALSE(res) & base::isTRUE(error)){
+
+    stop("Invalid unit input. Must be a valid unit of length. Obtain valid input options with `validUnitsOfLength().`")
+
+  }
+
+  return(res)
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

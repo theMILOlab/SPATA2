@@ -89,6 +89,90 @@ getImageAnnotation <- function(object,
 }
 
 
+#' @title Obtain area of image annotation
+#'
+#' @description Computes the area of an image annotation in units of area.
+#'
+#' @inherit argument_dummy params
+#' @inherit as_unit params
+#' @inherit getImageAnnotation params
+#'
+#' @return Single numeric value, the area of the image annotation in the squared
+#' unit of length that is specified in `unit`. The unit is attached to the
+#' output as an attribute named *unit*. E.g. if `unit = *mm*` the output value
+#' has the unit *mm^2*.
+#'
+#' @details First, the area of each pixel is calculated by using the center
+#' to center distance of the underlying method as ground truth to scale
+#' the current number of pixels in the image.
+#'
+#' Second, the number of pixels that fall in the area of the image annotation
+#' is computed with `sp::point.in.polygon()` using the area data.frame of
+#' the image annotation as the polygon.
+#'
+#' Third, the number of pixels that fall in the area is multiplied with
+#' the area per pixel.
+#'
+#' @seealso `getImageAnnotationAreaDf()`, `geCCD()`, `as_unit()`
+#'
+#' @export
+#'
+getImageAnnotationSize <- function(object,
+                                   id,
+                                   unit = NULL,
+                                   as_numeric = TRUE){
+
+  # determine pixel area
+  ccd_px <- getCCD(object, unit = "px", as_numeric = TRUE)
+
+  ccd_euol <- getCCD(object, unit = unit, as_numeric = TRUE)
+
+  pixel_length <- ccd_euol/ccd_px
+
+  unit <- base::attr(pixel_length, which = "unit")
+
+  pixel_area <-
+    magrittr::set_attr(
+      x = pixel_length^2,
+      which = "unit",
+      value = stringr::str_c(unit, "2")
+    )
+
+  # determine how many pixels lay inside the image annotation
+  img_ann <- getImageAnnotation(object, id = id)
+
+  img_dims <- getImageDims(object)[1:2]
+
+  pixel_df <- tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2])
+
+  area_df <- img_ann@area
+
+  pixel_loc <-
+    sp::point.in.polygon(
+      point.x = pixel_df[["x"]],
+      point.y = pixel_df[["y"]],
+      pol.x = area_df[["x"]],
+      pol.y = area_df[["y"]]
+    )
+
+  pixel_inside <- pixel_loc[pixel_loc != 0]
+
+  n_pixel_inside <- base::length(pixel_inside)
+
+  # multiply number of pixels with area per pixel
+  area_img_ann <- pixel_area * n_pixel_inside
+
+  if(base::isFALSE(as_numeric)){
+
+    area_img_ann <- attachUnit(area_img_ann)
+
+  }
+
+  return(area_img_ann)
+
+}
+
+
 #' @title Obtain image annotation area data.frame
 #'
 #' @description Extracts the coordinates of the polygon that was drawn to
@@ -1100,6 +1184,19 @@ getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
 
 }
 
+
+#' @title Obtain spatial method
+#'
+#' @description Extracts an S4 object of class `SpatialMethod` that contains
+#' meta data about the set up of the protocol that was followed to create
+#' the data used for the `SPATA2` object.
+#'
+#' @inherit argument_dummy
+#'
+#' @return Character value.
+#'
+#' @seealso `?SpatialMethod`
+#'
 #' @export
 getMethod <- function(object){
 
@@ -1107,10 +1204,22 @@ getMethod <- function(object){
 
 }
 
+
+#' @title Obtain unit of method
+#'
+#' @description Extracts the European unit of length in which the size of
+#' the fiducial frame of the underlying spatial method is specified.
+#'
+#' @inherit argument_dummy
+#'
+#' @return Character value.
+#'
 #' @export
 getMethodUnit <- function(object){
 
-  getMethod(object)@image_frame[["x"]] %>%
+  method <- getMethod(object)
+
+  getMethod(object)@fiducial_frame[["x"]] %>%
     extract_unit()
 
 }

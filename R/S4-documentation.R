@@ -173,23 +173,23 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 #' @title The \code{SpatialMethod} - class
 #'
 #' @description Abstracts the concept of spatial biology experiments
-#' such as \emph{Visium10X} or \emph{SlideSeq}.
+#' such as \emph{Visium1} or \emph{SlideSeq}.
 #'
-#' @slot image_frame list. List of length two or three. Provides
-#' measures of the sample length in units of length.
-#' @slot observational_unit character. Single word that describes
-#' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
-#' case of @@name == \emph{'Visium10X'}.
-#' @slot meta list. List of miscellaneous meta data for the method.
+#' @slot fiducial_frame list. List of length two or three. Provides
+#' standardized measures of the sample image in units of length.
+#' @slot info list. List of miscellaneous meta data for the method.
 #' @slot name character. The name of the spatial method. Should
 #' be one of \code{validSpatialMethods()}.
+#' @slot observational_unit character. Single word that describes
+#' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
+#' case of @@name == \emph{'Visium'}.
 #'
 SpatialMethod <- setClass(Class = "SpatialMethod",
                           slots = list(
-                            image_frame = "list",
-                            observational_unit = "character",
+                            fiducial_frame = "list",
                             info = "list",
-                            name = "character"
+                            name = "character",
+                            observational_unit = "character"
                           ))
 
 

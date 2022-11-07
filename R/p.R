@@ -270,13 +270,13 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
   if(!base::is.null(xrange)){
 
-    xrange <- asPixel(input = xrange, object = object, as_numeric = TRUE)
+    xrange <- as_pixel(input = xrange, object = object, as_numeric = TRUE)
 
   }
 
   if(!base::is.null(yrange)){
 
-    yrange <- asPixel(input = yrange, object = object, as_numeric = TRUE)
+    yrange <- as_pixel(input = yrange, object = object, as_numeric = TRUE)
 
   }
 

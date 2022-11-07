@@ -2,8 +2,8 @@
 
 
 # returns scale factor with which to multiply `input` in order to scale to
-# desired eUOL
-eUOL_to_eUOL_fct <- function(from, to){
+# desired euol
+euol_to_euol_fct <- function(from, to){
 
   confuns::check_one_of(
     input = to,
@@ -11,9 +11,9 @@ eUOL_to_eUOL_fct <- function(from, to){
     suggest = FALSE
     )
 
-  fct_from <- base::unname(eUOL_factors[from])
+  fct_from <- base::unname(euol_factors[from])
 
-  fct_to <- base::unname(eUOL_factors[to])
+  fct_to <- base::unname(euol_factors[to])
 
   fct_out <- fct_from/fct_to
 
@@ -271,30 +271,65 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
 
 
 
-#' @title Extract distance unit
+#' @title Extract distance units
 #'
 #' @description Extracts unit of distance input.
 #'
 #' @inherit is_dist params details
 #'
-#' @return Character value.
+#' @return Character vector of the same length as `input`. If `input` is numeric,
+#' the extracted unit will be *px*.
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' dist_vals <- c("2mm", "2.3mm")
+#'
+#' extrat_unit(dist_vals)
+#'
+#' pixels <- c(2,5, 500)
+#'
+#' extract_unit(pixels)
+#'
 #' @export
 #'
 extract_unit <- function(input){
 
-  is_dist(input = input, error = TRUE)
+  is_spatial_measure(input = input, error = TRUE)
 
-  out <- stringr::str_extract(input, pattern = regex_unit)
+  if(base::is.character(input) | is_numeric_input(input)){
 
-  no_units <-
-    !stringr::str_detect(out, pattern = regex_unit)|
-    base::is.na(out)
+    out <- stringr::str_extract(input, pattern = regex_unit)
 
-  out[no_units] <- "px"
+    no_units <-
+      !stringr::str_detect(out, pattern = regex_unit)|
+      base::is.na(out)
+
+    out[no_units] <- "px"
+
+  } else {
+
+    unit_attr <- base::attr(input, which = "units")
+
+    if(base::length(unit_attr$numerator) == 2){
+
+      out <- stringr::str_c(unit_attr$numerator[1], "2", sep = "")
+
+    } else {
+
+      out <- unit_attr$numerator
+
+    }
+
+    out <- base::rep(out, base::length(input))
+
+  }
 
   return(out)
 
 }
+
 
 #' @title Extract distance value
 #'
@@ -307,6 +342,7 @@ extract_unit <- function(input){
 #'
 extract_value <- function(input){
 
+  # regex works for area and distance values
   stringr::str_extract(input, pattern = regex_dist_value) %>%
     base::as.numeric()
 
