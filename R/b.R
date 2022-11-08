@@ -292,6 +292,7 @@ bin_by_area <- function(coords_df,
                         binwidth,
                         n_bins_circle,
                         remove = FALSE,
+                        bcsp_exclude=NULL,
                         drop = TRUE){
 
   n_bins_circle <- base::max(n_bins_circle)
@@ -337,6 +338,11 @@ bin_by_area <- function(coords_df,
           TRUE ~ bins_circle
         )
       )
+  }
+
+  # Option: Rename manually selected spots to "Outside"
+  if(base::is.character(bcsp_exclude)){
+      coords_df[coords_df$barcodes %in% bcsp_exclude,]$bins_circle <- "Outside"
   }
 
   bin_levels <- c(base::names(binwidth_vec), "Outside")

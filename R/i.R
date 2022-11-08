@@ -37,6 +37,8 @@
 #' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
 #' Specifies the function with which the bins are summarized.
 #'
+#' @param bcsp_exclude Character value containing name(s) of barcode-spots to be excluded from the analysis.
+#'
 #' @inherit add_models params
 #' @inherit argument_dummy params
 #' @inherit buffer_area params
@@ -149,6 +151,7 @@ imageAnnotationScreening <- function(object,
                                      model_remove = NULL,
                                      model_add = NULL,
                                      mtr_name = NULL,
+                                     bcsp_exclude = NA_character_,
                                      verbose = NULL,
                                      ...){
 
@@ -195,6 +198,7 @@ imageAnnotationScreening <- function(object,
       n_bins_angle = n_bins_angle,
       remove_circle_bins = TRUE,
       remove_angle_bins = TRUE,
+      bcsp_exclude=bcsp_exclude,
       drop = FALSE,
       summarize_by = c("bins_circle", "bins_angle"),
       normalize_by = normalize_by
@@ -343,7 +347,8 @@ imageAnnotationScreening <- function(object,
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
       results_primary = results_primary,
-      sample = object@samples
+      sample = object@samples,
+      bcsp_exclude=bcsp_exclude
     ) %>%
     summarizeIAS(method_padj = method_padj)
 

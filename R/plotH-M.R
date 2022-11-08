@@ -187,6 +187,7 @@ plotIasHeatmap <- function(object,
                            .cols = dplyr::everything(),
                            summarize_with = "mean",
                            .f = NULL,
+                           bcsp_exclude=NULL,
                            verbose = TRUE,
                            ...){
 
@@ -212,7 +213,8 @@ plotIasHeatmap <- function(object,
       angle_span = angle_span,
       variables = variables,
       summarize_by = "bins_circle",
-      summarize_with = summarize_with
+      summarize_with = summarize_with,
+      bcsp_exclude=bcsp_exclude
     ) %>%
     tidyr::pivot_longer(
       cols = dplyr::any_of(variables),
@@ -401,6 +403,7 @@ plotIasLineplot <- function(object,
                             facet_by = "variables",
                             normalize_by = "sample",
                             summarize_with = "mean",
+                            bcsp_exclude=NULL,
                             nrow = NULL,
                             ncol = NULL,
                             display_axis_text = "x",
@@ -459,6 +462,7 @@ plotIasLineplot <- function(object,
       normalize_by = normalize_by,
       remove_angle_bins = TRUE,
       remove_circle_bins = !include_area,
+      bcsp_exclude=bcsp_exclude,
       normalize = c(FALSE, FALSE),
       verbose = TRUE
     )
