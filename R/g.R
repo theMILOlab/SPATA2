@@ -80,6 +80,41 @@ ggpLayerAxesEUOL <- function(object,
     suggest = TRUE
   )
 
+
+  # output limits
+  if(base::is.character(frame_by)){
+
+    confuns::check_one_of(
+      input = frame_by,
+      against = c("coords", "image")
+    )
+
+    if(frame_by == "coords"){
+
+      xlim <- getCoordsRange(object)$x
+      ylim <- getCoordsRange(object)$y
+
+    } else if(frame_by == "image"){
+
+      xlim <- getImageRange(object)$x
+      ylim <- getImageRange(object)$y
+
+    }
+
+  } else if(confuns::is_list(frame_by)){
+
+    xlim <- frame_by[["x"]][c(1, 2)] %>% as_pixel(object = object)
+
+    ylim <- frame_by[["y"]][c(1, 2)] %>% as_pixel(object = object)
+
+  } else {
+
+    stop("Invalid input for `frame_by`. Must be character or list.")
+
+  }
+
+
+  # output breaks
   if(!base::is.null(breaks_x)){
 
     are_euol <-
@@ -114,7 +149,9 @@ ggpLayerAxesEUOL <- function(object,
   } else {
 
     breaks_x <-
-      getCoordsDf(object)$x %>%
+      getPixelDf(object) %>%
+      dplyr::filter(dplyr::between(x = x, left = xlim[1], right = xlim[2])) %>%
+      dplyr::pull(x) %>%
       stats::quantile()
 
   }
@@ -153,28 +190,14 @@ ggpLayerAxesEUOL <- function(object,
   } else {
 
     breaks_y <-
-      getCoordsDf(object)$y %>%
+      getPixelDf(object) %>%
+      dplyr::filter(dplyr::between(x = y, left = ylim[1], right = ylim[2])) %>%
+      dplyr::pull(y) %>%
       stats::quantile()
 
   }
 
-  if(frame_by == "coords"){
-
-    xlim <- getCoordsRange(object)$x
-    ylim <- getCoordsRange(object)$y
-
-  } else if(frame_by == "image"){
-
-    xlim <- getImageRange(object)$x
-    ylim <- getImageRange(object)$y
-
-  } else {
-
-    xlim <- NULL
-    ylim <- NULL
-
-  }
-
+  # make add on
   axes <-
     list(
       ggplot2::scale_x_continuous(
@@ -788,6 +811,7 @@ ggpLayerRect <- function(object = "object",
                          color = "black",
                          size = 1,
                          expand = 0,
+                         persp = "coords",
                          ...){
 
   # process range input
@@ -797,7 +821,7 @@ ggpLayerRect <- function(object = "object",
       xrange = xrange,
       yrange = yrange,
       expand = expand,
-      persp = "coords"
+      persp = persp
     )
 
   xrange <- c(pri$xmin, pri$xmax)
@@ -827,6 +851,214 @@ ggpLayerRect <- function(object = "object",
 
 }
 
+
+
+#' @title Add a European units of length scale bar
+#'
+#' @description Adds a scale bar to the surface plot that visualizes
+#' distance in European units of length. Segment of the line is drawn
+#' with `ggplot2::geom_segment()`. Text is drawn with `ggplot2::geom_text()`.
+#'
+#' @param pos Character value or vector of length two. If character,
+#' one of *top_right*, *top_left*, *bottom_right* or *bottom_left*. The scale
+#' bar is positioned accordingly. If vector of length two, distance measures
+#' that specify the positioning. First value is taken for positioning on x-
+#' and second value is taken for positioning on the y-axis.
+#'
+#' @param dist The distance in European units of length that the scale bar
+#' illustrates.
+#'
+#' @param xrange,yrange The range of the image that is considered if the positioning
+#' of the scale is calculated via `pos` as one of *top_right*, *top_left*, *bottom_right*
+#' or *bottom_left*. Defaults to the image range.
+#'
+#' @param fct If `pos` one of *top_right*, *top_left*, *bottom_right* or *bottom_left*,
+#' used to repell the scale bar from the borders.
+#'
+#' @inherit argument_dummy params
+#' @inherit is_dist details
+#' @inherit ggpLayers_dummy return
+#'
+#' @export
+ggpLayerScaleBarEUOL <- function(object,
+                                 pos = "top_right",
+                                 dist = "1mm",
+                                 sgmt_alpha = 0.9,
+                                 sgmt_color = "black",
+                                 sgmt_size = 1.25,
+                                 sgmt_type = "solid",
+                                 text_alpha = 0.9,
+                                 text_color = "black",
+                                 text_nudge_x = 0,
+                                 text_nudge_y = 12.5,
+                                 text_size = 5.5,
+                                 text_type = 0.9,
+                                 xrange = NULL,
+                                 yrange = NULL,
+                                 offset = c(0.75, 0.75),
+                                 theme_opt = "none"){
+
+  is_dist_euol(input = dist, error = TRUE)
+
+  if(base::length(pos) == 2){
+
+    pos_x_px <- as_pixel(input = pos[1], object = object)
+
+    pos_y_px <- as_pixel(input = pos[2], object = object)
+
+  } else if(base::is.character(pos)){
+
+    pos <- pos[1]
+
+    confuns::check_one_of(
+      input = pos,
+      against = plot_positions
+    )
+
+    # scale range
+    if(base::is.null(xrange)){
+
+      xrange <- getImageRange(object)$x
+
+    }
+
+    if(base::is.null(yrange)){
+
+      yrange <- getImageRange(object)$y
+
+    }
+
+    xmean <- base::mean(xrange)
+    ymean <- base::mean(yrange)
+
+    # scale offset
+    if(base::length(offset) == 1){
+
+      offset <- base::rep(offset, 2)
+
+    }
+
+    print(xmean)
+    print(ymean)
+
+    if(base::is.numeric(offset[[1]]) && offset[[1]] < 1){
+
+      offset_x <- xmean * offset[[1]]
+
+    } else {
+
+      offset_x <- as_pixel(input = offset[[1]], object = object, add_attr = FALSE)
+
+    }
+
+    if(base::is.numeric(offset[[2]]) && offset[[2]] < 1){
+
+      offset_y <- ymean * offset[[2]]
+
+    } else {
+
+      offset_y <- as_pixel(input = offset[[2]], object = object, add_attr = FALSE)
+
+    }
+
+    if(pos == "top_right"){
+
+      pos_x_px <- xmean - offset_x
+      pos_y_px <- ymean - offset_y
+
+    } else if(pos == "top_left"){
+
+      pos_x_px <- xmean + offset_x
+      pos_y_px <- ymean - offset_y
+
+    } else if(pos == "bottom_right"){
+
+      pos_x_px <- xmean - offset_x
+      pos_y_px <- ymean + offset_y
+
+    } else if(pos == "bottom_left"){
+
+      pos_x_px <- xmean + offset_x
+      pos_y_px <- ymean + offset_y
+
+    }
+
+  }
+
+  dist_px <- as_pixel(input = dist, object = object)
+
+  xstart <- pos_x_px - dist_px/2
+  xend <- pos_x_px + dist_px/2
+
+  # create segment
+  sgmt_df <-
+    tibble::tibble(
+      x = xstart,
+      xend = xend,
+      y = pos_y_px,
+      yend = pos_y_px
+    )
+
+  sgmt_add_on <-
+    ggplot2::geom_segment(
+      data = sgmt_df,
+      mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = yend),
+      alpha = sgmt_alpha, color = sgmt_color, size = sgmt_size, linetype = sgmt_type
+    )
+
+  # create text
+  text_df <-
+    tibble::tibble(
+      x = pos_x_px,
+      y = pos_y_px,
+      label = dist
+    )
+
+
+  text_add_on <-
+    ggplot2::geom_text(
+      data = text_df,
+      mapping = ggplot2::aes(x = x, y = y, label = label),
+      alpha = text_alpha, color = text_color, size = text_size,
+      nudge_x = text_nudge_x, nudge_y = text_nudge_y
+    )
+
+  if(theme_opt == "void"){
+
+    theme_add_on <-
+      ggplot2::theme(
+        axis.text = ggplot2::element_blank(),
+        axis.ticks = ggplot2::element_blank(),
+        axis.title = ggplot2::element_blank(),
+        panel.background = ggplot2::element_blank(),
+        panel.border = ggplot2::element_blank(),
+        panel.grid = ggplot2::element_blank()
+      )
+
+  } else {
+
+    theme_add_on <-
+      ggplot2::theme(
+        panel.grid = ggplot2::element_blank()
+      )
+
+  }
+
+  # assemble list
+  add_on_list <-
+    list(
+      ggplot2::theme_bw(), # override theme_void -> clashes with geom_segment (???)
+      ggplot2::labs(x = NULL, y = NULL),
+      theme_add_on,
+      sgmt_add_on,
+      text_add_on
+    )
+
+
+  return(add_on_list)
+
+
+}
 
 #' @title Add coordinates theme
 #'
@@ -912,34 +1144,48 @@ ggpLayerTrajectories <- function(object = "object",
 #' This argument works within the \code{SPATA2} distance framework.
 #' If values are specified in European units of length the input is
 #' immediately converted to pixel units.
+#' @param expand_x,expand_y Given to `expand` of `ggplot2::scale_x/y_continuous()`.
 #'
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
 #'
 #' @export
-ggpLayerZoom <- function(xrange = NULL, yrange = NULL){
+ggpLayerZoom <- function(object = NULL,
+                         xrange = NULL,
+                         yrange = NULL,
+                         expand_x = c(0,0),
+                         expand_y = c(0,0)
+                         ){
 
   layers <- list()
 
-  if(base::is.numeric(xrange)){
+  if(!base::is.null(xrange)){
 
-    confuns::is_vec(xrange, mode = "numeric", of.length = 2)
+    xrange <-
+      as_pixel(input = xrange, object = object, as_numeric = TRUE) %>%
+      magrittr::set_attr(which = "unit", NULL)
+
+    base::stopifnot(base::length(xrange) == 2)
 
     layers <-
       c(
         layers,
-        ggplot2::scale_x_continuous(limits = xrange)
+        ggplot2::scale_x_continuous(limits = xrange, expand = expand_x)
       )
 
   }
 
-  if(base::is.numeric(yrange)){
+  if(!base::is.null(yrange)){
 
-    confuns::is_vec(yrange, mode = "numeric", of.length = 2)
+    yrange <-
+      as_pixel(input = yrange, object = object, as_numeric = TRUE) %>%
+      magrittr::set_attr(which = "unit", NULL)
+
+    base::stopifnot(base::length(yrange) == 2)
 
     layers <-
       c(
         layers,
-        ggplot2::scale_y_continuous(limits = yrange)
+        ggplot2::scale_y_continuous(limits = yrange, expand = expand_y)
       )
 
   }

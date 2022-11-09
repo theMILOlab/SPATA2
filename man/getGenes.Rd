@@ -32,6 +32,8 @@ is equal to the input for argument \code{top_n}.}
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}
 
+\item{...}{Used to absorb deprecated Arguments or functions.}
+
 \item{in_sample}{Deprecated.}
 }
 \value{

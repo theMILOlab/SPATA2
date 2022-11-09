@@ -9,6 +9,18 @@ feedback_area_input <- function(x, error = TRUE){
 
 }
 
+feedback_area_pixel_input <- function(x, error = TRUE){
+
+  feedback_pos(x = x, error = error, ref_input = "'area in pixel'", ref_info = "`?is_area`")
+
+}
+
+feedback_area_si_input <- function(x, error = TRUE){
+
+  feedback_pos(x = x, error = error, ref_input = "'area in SI units'", ref_info = "`is_area`")
+
+}
+
 feedback_distance_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "distance", ref_info = "`?is_dist`")
@@ -724,6 +736,11 @@ findSeuratClusters <- function(object,
 
 # fl ----------------------------------------------------------------------
 
+
+
+
+
+
 #' @title Flip coordinates
 #'
 #' @description Flips coordinates to align with image in case
@@ -733,16 +750,19 @@ findSeuratClusters <- function(object,
 #' around which the coordinates are flipped.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @note Make sure to flip coordinates \bold{before} adding image annotations
-#' via \code{createImageAnnotations()} or adding spatial trajectories
-#' via \code{createTrajectories()}!
+#' @details `flipCoordinates()` flips every spatial unit in the `SPATA2`
+#' object around the denoted axis. `flipCoordsDf()`, `flipImageAnnotations()`
+#' and `flipTrajectories()` flip single spatial aspects without affecting
+#' the rest.
 #'
-#' @return An updated spata-object.
+#' @seealso `flipImage()`
 #'
 #' @export
 #'
-flipCoords <- function(object, axis = "x", verbose = FALSE){
+
+flipCoordinates <- function(object, axis, verbose = FALSE){
 
   if(!containsImage(object)){
 
@@ -752,34 +772,168 @@ flipCoords <- function(object, axis = "x", verbose = FALSE){
 
     }
 
-  } else if(axis == "x") {
+  } else {
 
-    yrange <- getImageRange(object)$y
-
-    coords_df <- getCoordsDf(object)
-
-    coords_df$y <- yrange[2] - coords_df$y + yrange[1]
-
-    object <- setCoordsDf(object, coords_df)
-
-    object@images[[1]]@coordinates <- coords_df
-
-  } else if(axis == "y"){
-
-    xrange <- getImageRange(object)$x
-
-    coords_df <- getCoordsDf(object)
-
-    coords_df$x <- xrange[2] - coords_df$x + xrange[1]
-
-    object <- setCoordsDf(object, coords_df = coords_df)
-
-    object@images[[1]]@coordinates <- coords_df
+    object <- flipCoordsDf(object, axis = axis, verbose = verbose)
+    object <- flipImageAnnotations(object, axis = axis, verbose = verbose)
+    object <- flipSpatialTrajectories(object, axis = axis, verbose = verbose)
 
   }
 
   return(object)
 
+}
+
+#' @rdname flipCoordinates
+#' @export
+flipCoordsDf <- function(object, axis, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(!containsImage(object)){
+
+    warning("Can not flip coordinates data.frame without an image.")
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "Flipping coordinates data.frame.",
+      verbose = verbose
+    )
+
+    axes <- c("x", "y")
+    axis <- axes[axes != axis]
+    ax_range <- getImageRange(object)[[axis]]
+
+    # img annotations
+    img_anns <- getImageObject(object)@annotations
+
+    if(base::length(img_annotations) >= 1){
+
+      axes <- c("x", "y")
+      axis <- axes[axes != axis]
+      ax_range <- getImageRange(object)[[axis]]
+
+      # coords df
+      coords_df <- getCoordsDf(object)
+
+      coords_df[[axis]] <- ax_range[2] - coords_df[[axis]] + ax_range[1]
+
+      object <- setCoordsDf(object, coords_df)
+
+      object@images[[1]]@coordinates <- coords_df
+
+    }
+
+  }
+
+  return(object)
+
+}
+
+
+#' @rdname flipCoordinates
+#' @export
+flipImageAnnotations <- function(object, axis, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(!containsImage(object)){
+
+    warning("Can not flip image annotations without an image.")
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "Flipping image annotaions.",
+      verbose = verbose
+    )
+
+    axes <- c("x", "y")
+    axis <- axes[axes != axis]
+    ax_range <- getImageRange(object)[[axis]]
+
+    # img annotations
+    img_anns <- getImageObject(object)@annotations
+
+    if(base::length(img_annotations) >= 1){
+
+      img_anns <-
+        purrr::map(
+          .x = img_anns,
+          .f = function(img_ann){
+
+            area_df <- img_ann@area
+
+            area_df[[axis]] <- ax_range[2] - area_df[[axis]] + ax_range[1]
+
+            img_ann@area <- area_df
+
+            return(img_ann)
+
+          }
+        )
+
+      object <- setImageAnnotations(object, img_anns = img_anns, overwrite = TRUE)
+
+    }
+
+  }
+
+  return(object)
+
+}
+
+#' @rdname flipCoordinates
+#' @export
+flipSpatialTrajectories <- function(object, axis, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(!containsImage(object)){
+
+    warning("Can not flip spatial trajectories without an image.")
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "Flipping spatial trajectories.",
+      verbose = verbose
+    )
+
+    axes <- c("x", "y")
+    axis <- axes[axes != axis]
+    ax_range <- getImageRange(object)[[axis]]
+
+    trajectories <- object@trajectories[[1]]
+
+    if(base::length(trajectories) >= 1){
+
+      trajectories <-
+        purrr::map(
+          .x = trajectories,
+          .f = function(traj){
+
+            traj@segment[[axis]] <- ax_range[2] - traj@segment[[axis]] + ax_range[1]
+
+            traj@segment[[stringr::str_c(axis, "end", sep = "")]] <-
+              ax_range[2] - traj@segment[[stringr::str_c(axis, "end", sep = "")]] + ax_range[1]
+
+            traj@projection[[axis]] <-
+              ax_range[2] - traj@projection[[axis]] + ax_range[1]
+
+            return(traj)
+
+          }
+        )
+
+      object@trajectories[[1]] <- trajectories
+
+    }
+
+  }
+
+  return(object)
 }
 
 

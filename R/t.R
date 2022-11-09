@@ -207,7 +207,7 @@ transfer_slot_content <- function(recipient, donor, skip = character(0), verbose
 }
 
 
-#' @title Transforms European Units of Length to pixels
+#' @title Convert from European Units of Length to pixels
 #'
 #' @description Transforms European units of length (e.g. \emph{'2mm'}, \emph{'400.50um'})
 #' to pixel values depending on the original size of spatial -omic methods.
@@ -215,11 +215,10 @@ transfer_slot_content <- function(recipient, donor, skip = character(0), verbose
 #' @param input Distance as European unit of length. See details for more.
 #' @inherit transform_pixel_to_euol params details
 #'
-#' @return Transformed input. Vector of the same length as \code{input}.
-#' `transform_euol_to_pixel()` returns always a single numeric value.
-#'
-#' @note \code{transform_euol_to_pixel()} transforms only single values. \code{transform_euol_to_pixels()}
-#' transforms vectors of lengths one or more.
+#' @return Transformed input. Vector of the same length as input. Function
+#' `transform_euol_to_pixel()` always returns a single numeric value. Function
+#' `transform_euol_to_pixels()` returns a numeric vector by default. If `as_numeric`
+#' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
 #'
@@ -290,7 +289,7 @@ transform_euol_to_pixel <- function(input,
     scale_fct <-
       getPixelScaleFactor(
         object = object,
-        euol = input_unit,
+        unit = input_unit,
         switch = TRUE,
         add_attr = FALSE
         )
@@ -317,7 +316,7 @@ transform_euol_to_pixels <- function(input,
                                      image_dims = NULL,
                                      method = NULL,
                                      round = FALSE,
-                                     as_numeric = FALSE){
+                                     as_numeric = TRUE){
 
   is_dist_euol(input = input, error = TRUE)
 
@@ -331,9 +330,7 @@ transform_euol_to_pixels <- function(input,
         image_dims = image_dims,
         method = method,
         round = round
-      ) %>%
-        magrittr::set_attr(which = "unit", value = "px")
-
+      )
 
   } else {
 
@@ -356,7 +353,7 @@ transform_euol_to_pixels <- function(input,
 }
 
 
-#' @title Scales from pixels and European units of length
+#' @title Convert from pixels to European units of length
 #'
 #' @description Transforms pixel values to European units
 #' of length (e.g. \emph{'2mm'}, \emph{'400.50um'}) depending one
@@ -441,7 +438,7 @@ transform_pixel_to_euol <- function(input,
     scale_fct <-
       getPixelScaleFactor(
         object = object,
-        euol = euol,
+        unit = euol,
         add_attr = FALSE
         )
 
@@ -494,6 +491,93 @@ transform_pixels_to_euol <- function(input,
   return(out)
 
 }
+
+
+#' @title Converts from pixel to area in SI units
+#'
+#' @description Transforms pixel values to SI units (e.g. '*7.5mm2'*, '20um2')
+#'
+#' @param input Area as pixel input. See details for more information.
+#' @param unit The SI area unit. Use `validUnitsOfAreaSI()` to obtain all
+#' valid input options.
+#' @inherit argument_dummy params
+#' @inherit transform_pixel_to_euol params return
+#'
+#' @export
+#'
+transform_pixel_to_si <- function(input,
+                                  unit,
+                                  object,
+                                  round = FALSE){
+
+  # check input
+  is_area(input, error = TRUE)
+
+  if(extract_unit(input) != "px"){
+
+    stop("`input` must be pixel.")
+
+  }
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfArea()
+  )
+
+  input_val <- extract_value(input)
+
+  # transform
+  scale_fct <-
+    getPixelScaleFactor(
+      object = object,
+      unit = unit,
+      add_attr = FALSE
+    )
+
+  out_val <- input_val * scale_fct
+
+  if(base::is.numeric(round)){
+
+    out_val <- base::round(out_val, digits = round)
+
+  }
+
+  out <- units::set_units(x = out_val, value = unit, mode = "standard")
+
+  return(out)
+
+}
+
+
+#' @rdname transform_pixel_to_si
+#' @export
+transform_pixels_to_si <- function(input,
+                                   unit,
+                                   object,
+                                   round = FALSE){
+
+  is_area_pixel(input, error = TRUE)
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfAreaSI()
+  )
+
+  out <-
+    purrr::map_dbl(
+      .x = input,
+      .f = transform_pixel_to_si,
+      unit = unit,
+      object = object,
+      round = round
+    )
+
+  out <- units::set_units(x = out, value = unit, mode = "standard")
+
+  return(out)
+
+}
+
 
 
 #' @title Transform seurat-object to spata-object
@@ -1110,6 +1194,98 @@ transformSeuratToSpata <- function(seurat_object,
 }
 
 
+
+
+
+#' @title Convert area in SI units to pixel
+#'
+#' @description Transforms area in SI units to pixel based on the current
+#' resolution of the image in the `SPATA2` object.
+#'
+#' @param input Area in SI units. See details for more information.
+#' @inherit transform_euol_to_pixel params
+#' @inherit argument_dummy params
+#'
+#' @return Transformed input. Vector of the same length as input. Function
+#' `transform_si_to_pixel()` always returns a single numeric value. Function
+#' `transform_si_to_pixels()` returns a numeric vector by default. If `as_numeric`
+#' is `FALSE`, the output is a string suffixed with *px*.
+#'
+#' @export
+#'
+transform_si_to_pixel <- function(input,
+                                  object,
+                                  round = FALSE){
+
+  # check input
+  is_area(input, error = TRUE)
+
+  if(extract_unit(input) == "px"){
+
+    stop("`input` must not be pixel.")
+
+  }
+
+  input_val <- extract_value(input)
+  input_unit <- extract_unit(input)
+
+  # transform
+  scale_fct <-
+    getPixelScaleFactor(
+      object = object,
+      unit = input_unit,
+      switch = TRUE,
+      add_attr = FALSE
+    )
+
+  out <- input_val * scale_fct
+
+  if(base::is.numeric(round)){
+
+    out <- base::round(out, digits = round)
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname transform_si_to_pixel
+#' @export
+transform_si_to_pixels <- function(input,
+                                   object,
+                                   round = FALSE,
+                                   as_numeric = TRUE){
+
+  is_area_si(input = input, error = TRUE)
+
+  if(base::isTRUE(as_numeric)){
+
+    out <-
+      purrr::map_dbl(
+        .x = input,
+        .f = transform_si_to_pixel,
+        object = object,
+        round = round
+      )
+
+  } else {
+
+    out <-
+      purrr::map_dbl(
+        .x = input,
+        .f = transform_si_to_pixel,
+        object = object,
+        round = round
+      ) %>%
+      base::as.character() %>%
+      stringr::str_c(., "px")
+
+  }
+
+  return(out)
+
+}
 
 #' @title Transform spata-object to cell-data-set (Monocle3)
 #'

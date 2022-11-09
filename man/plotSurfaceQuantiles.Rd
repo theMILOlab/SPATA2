@@ -68,6 +68,8 @@ the point size must be adjusted with the argument \code{pt_size}.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \description{
 This function calculates the quantiles specified in \code{n_qntl}

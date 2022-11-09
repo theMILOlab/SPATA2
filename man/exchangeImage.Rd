@@ -2,18 +2,22 @@
 % Please edit documentation in R/e.R
 \name{exchangeImage}
 \alias{exchangeImage}
-\title{Exchange HE-Image}
+\title{Exchange image}
 \usage{
-exchangeImage(object, image_dir, resize = NULL, verbose = NULL)
+exchangeImage(object, image, resize = NULL, verbose = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{image_dir}{Character value. Directory to the image you want to
-exchange the current image with. Should be .png.}
+\item{image}{Image input or character value. If character, input is interpreted as a directory
+to a file or to an URL and is read with \code{EBImage::readImage()}. The read image
+should be of type \emph{.png}, \emph{.jpeg} or \emph{.tiff}.
+
+If not character, the function ensures that the input is - or is convertible - to
+class \code{Image} via \code{EBimage::as.Image()}. If it fails, an error is thrown.}
 
 \item{resize}{Numeric vector of length two, numeric value or NULL. If numeric,
-specifies the size with which the loaded image is eventually saved.
+specifies the size with which the image is eventually saved.
 
 If \code{resize} is of length one, e.g. \code{resize} = 3, the image dimensions
 of the old image are multiplied with the \code{resize}, here with 3, to create the dimensions
@@ -29,9 +33,8 @@ the second value sets the height.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-}
-\value{
-An updated spata object.
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \description{
 Exchanges histology images and scales the coordinates
@@ -39,7 +42,7 @@ accordingly. Use argument \code{resize} to downscale images that
 are too big for R to handle.
 }
 \details{
-The function requires the spata object to already contain an
+The function requires the \code{SPATA2} object to already contain an
 image. This is because images of different resolution (total number of pixels)
 require the barcode-spots x- and y-coordinates to be scaled. The scale
 factor is computed by comparing the resolution of the old image with

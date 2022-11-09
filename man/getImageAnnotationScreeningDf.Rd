@@ -81,6 +81,8 @@ variables are dropped.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 The final output depends on the input for \code{variables} and

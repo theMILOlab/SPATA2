@@ -97,10 +97,10 @@ getImageAnnotation <- function(object,
 #' @inherit as_unit params
 #' @inherit getImageAnnotation params
 #'
-#' @return Single numeric value, the area of the image annotation in the squared
-#' unit of length that is specified in `unit`. The unit is attached to the
-#' output as an attribute named *unit*. E.g. if `unit = *mm*` the output value
-#' has the unit *mm^2*.
+#' @return Numeric vector of the same length as `ids`. Named accordingly.
+#' Contains the area of the image annotations in the unit that is specified in `unit`.
+#' The unit is attached to the output as an attribute named *unit*. E.g. if
+#' `unit = *mm2*` the output value has the unit *mm^2*.
 #'
 #' @details First, the area of each pixel is calculated by using the center
 #' to center distance of the underlying method as ground truth to scale
@@ -113,62 +113,80 @@ getImageAnnotation <- function(object,
 #' Third, the number of pixels that fall in the area is multiplied with
 #' the area per pixel.
 #'
-#' @seealso `getImageAnnotationAreaDf()`, `geCCD()`, `as_unit()`
+#' @seealso `getImageAnnotationAreaDf()`, `getCCD()`, `as_unit()`
 #'
 #' @export
 #'
-getImageAnnotationSize <- function(object,
-                                   id,
-                                   unit = NULL,
-                                   as_numeric = TRUE){
+getImageAnnotationAreaSize <- function(object,
+                                       unit,
+                                       ids = NULL,
+                                       tags = NULL,
+                                       test = "any",
+                                       as_numeric = TRUE,
+                                       ...){
 
-  # determine pixel area
-  ccd_px <- getCCD(object, unit = "px", as_numeric = TRUE)
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfArea()
+  )
 
-  ccd_euol <- getCCD(object, unit = unit, as_numeric = TRUE)
+  if(base::is.character(ids)){
 
-  pixel_length <- ccd_euol/ccd_px
-
-  unit <- base::attr(pixel_length, which = "unit")
-
-  pixel_area <-
-    magrittr::set_attr(
-      x = pixel_length^2,
-      which = "unit",
-      value = stringr::str_c(unit, "2")
+    confuns::check_one_of(
+      input = ids,
+      against = getImageAnnotationIds(object)
     )
 
-  # determine how many pixels lay inside the image annotation
-  img_ann <- getImageAnnotation(object, id = id)
+  } else {
 
-  img_dims <- getImageDims(object)[1:2]
-
-  pixel_df <- tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2])
-
-  area_df <- img_ann@area
-
-  pixel_loc <-
-    sp::point.in.polygon(
-      point.x = pixel_df[["x"]],
-      point.y = pixel_df[["y"]],
-      pol.x = area_df[["x"]],
-      pol.y = area_df[["y"]]
-    )
-
-  pixel_inside <- pixel_loc[pixel_loc != 0]
-
-  n_pixel_inside <- base::length(pixel_inside)
-
-  # multiply number of pixels with area per pixel
-  area_img_ann <- pixel_area * n_pixel_inside
-
-  if(base::isFALSE(as_numeric)){
-
-    area_img_ann <- attachUnit(area_img_ann)
+    ids <-
+      getImageAnnotationIds(
+        object = object,
+        ...
+      )
 
   }
 
-  return(area_img_ann)
+  unit_length <- stringr::str_extract(string = unit, pattern = "[a-z]*")
+
+  # determine pixel area
+  scale_fct <- getPixelScaleFactor(object, unit = unit)
+
+  # determine how many pixels lay inside the image annotation
+
+  pixel_df <- getPixelDf(object = object)
+
+  out <-
+    purrr::map_dbl(
+      .x = ids,
+      .f = function(id){
+
+        area_df <- getImageAnnotationAreaDf(object, ids = id)
+
+        pixel_loc <-
+          sp::point.in.polygon(
+            point.x = pixel_df[["x"]],
+            point.y = pixel_df[["y"]],
+            pol.x = area_df[["x"]],
+            pol.y = area_df[["y"]]
+          )
+
+        pixel_inside <- pixel_loc[pixel_loc != 0]
+
+        n_pixel_inside <- base::length(pixel_inside)
+
+        # multiply number of pixels with area per pixel
+        area_img_ann <- n_pixel_inside * scale_fct
+
+        base::as.numeric(area_img_ann)
+
+      }
+    ) %>%
+    purrr::set_names(nm = ids) %>%
+    units::set_units(value = unit, mode = "standard")
+
+
+  return(out)
 
 }
 
@@ -399,16 +417,22 @@ getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
 #' @details How to use arguments \code{tags} and \code{test} to specify
 #' the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
 #' Argument \code{test} decides about how the specified tags are used to select
-#' the image annotations of interest. There are three options:
+#' the image annotations of interest. There are multiple options:
 #'
 #' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 #' must be tagged with at least one of the input tags.
 #'
 #' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-#' must be tagged with all of the input tags.
+#' must be tagged with all of the input tags. Can contain tags that are not specified.
 #'
 #' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-#' must be tagged with all of the input tags and must not be tagged with anything else.
+#' must be tagged with all of the input tags. Can not be tagged with anything else.
+#'
+#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
+#' annotation must **not** be tagged with the combination of input tags.
+#'
+#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
+#' must **not** contain any of the input tags.
 #'
 #' Note that the filtering process happens in addition to / after the filtering by input for argument
 #' \code{ids}.
@@ -434,7 +458,7 @@ getImageAnnotations <- function(object,
     check_availability(
       test = base::length(img_annotations) >= 1,
       ref_x = "any image annotations",
-      ref_fns = "`annotateImage()`"
+      ref_fns = "`createImageAnnotations()`"
     )
 
   }
@@ -477,9 +501,20 @@ getImageAnnotations <- function(object,
 
             out <- base::identical(tags_input, tags_img_ann)
 
+          } else if(test == "not_identical" | test == 4){
+
+            tags_input <- base::sort(tags)
+            tags_img_ann <- base::sort(img_ann@tags)
+
+            out <- !base::identical(tags_input, tags_img_ann)
+
+          } else if(test == "none" | test == 5){
+
+            out <- !base::any(tags %in% img_ann@tags)
+
           } else {
 
-            stop("Invalid input for argument `test`. Must be either 'any', 'all' or 'identical'.")
+            stop(invalid_img_ann_tests)
 
           }
 

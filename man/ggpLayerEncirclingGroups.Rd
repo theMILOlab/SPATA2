@@ -23,6 +23,8 @@ ggpLayerEncirclingGroups(
 \item{groups_subset}{Character value or NULL. If character,
 specifies the exact groups that are encircled. If NULL, all groups
 are encircled.}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

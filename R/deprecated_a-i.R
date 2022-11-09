@@ -1257,6 +1257,23 @@ examineTrajectoryAssessment <- function(atdf,
 
 }
 
+
+
+# f -----------------------------------------------------------------------
+
+#' @title Deprecated
+#'
+#' @description Use `flipCoordinates()`.
+#'
+#' @export
+flipCoords <- function(...){
+
+  deprecated(fn = TRUE)
+
+  flipCoordinates(...)
+
+}
+
 # g -----------------------------------------------------------------------
 
 #' @title Obtain information about object initiation

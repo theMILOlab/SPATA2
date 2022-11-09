@@ -74,6 +74,8 @@ same length as the input vector. Test models with \code{showModels()}.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 An object of class \code{ImageAnnotationScreening}. See documentation

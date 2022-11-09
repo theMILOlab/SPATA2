@@ -46,6 +46,8 @@ If values are specified in European units of length the input is
 immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 An image of class \emph{EBImage}.

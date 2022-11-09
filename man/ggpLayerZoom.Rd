@@ -4,16 +4,26 @@
 \alias{ggpLayerZoom}
 \title{Set plot limits manually}
 \usage{
-ggpLayerZoom(xrange = NULL, yrange = NULL)
+ggpLayerZoom(
+  object = NULL,
+  xrange = NULL,
+  yrange = NULL,
+  expand_x = c(0, 0),
+  expand_y = c(0, 0)
+)
 }
 \arguments{
+\item{object}{An object of class \code{SPATA2}.}
+
 \item{xrange, yrange}{Vector of length two. Specifies the x- and y-range
 of zooming. E.g. \code{xrange = c(200, 500)} results in the plot
 being cropped from x-coordinate 200px up to x-coordinate 500px.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
+immediately converted to pixel units.}
+
+\item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 }

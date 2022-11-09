@@ -106,6 +106,8 @@ See details and examples of \code{?is_dist} and \code{?as_unit} for more informa
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 Plots right into the plotting window.

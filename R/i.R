@@ -524,6 +524,63 @@ is_area <- function(input, error = FALSE){
 
 }
 
+#' @rdname is_area
+#' @export
+
+is_area_pixel <- function(input, error = FALSE){
+
+  if(base::is.character(input) | is_numeric_input(input)){
+
+    res <- stringr::str_detect(input, pattern = regex_pxl_area)
+
+    feedback_area_pixel_input(x = res, error = error)
+
+  } else {
+
+    if(base::isTRUE(error)){
+
+      stop(invalid_area_pixel_input)
+
+    } else {
+
+      res <- base::rep(FALSE, base::length(input))
+
+    }
+
+  }
+
+  return(res)
+
+}
+
+#' @rdname is_area
+#' @export
+is_area_si <- function(input, error = FALSE){
+
+  if(base::is.character(input) | is_numeric_input(input)){
+
+    res <- stringr::str_detect(input, pattern = regex_si_area)
+
+    feedback_area_si_input(x = res, error = error)
+
+  } else {
+
+    if(base::isTRUE(error)){
+
+      stop(invalid_area_si_input)
+
+    } else {
+
+      res <- base::rep(FALSE, base::length(input))
+
+    }
+
+  }
+
+  return(res)
+
+}
+
 
 #' @title Test area or distance input
 #'

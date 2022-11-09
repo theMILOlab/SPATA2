@@ -702,7 +702,14 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' @param display_caption Logial value. If TRUE, the tags of each image annotation
 #' are plotted in the caption.
 #' @param encircle Logical value. If TRUE, are polygon is drawn around the
-#' exact extent of the annotated structure (as was drawn in \code{annotateImage()}).
+#' exact extent of the annotated structure (as was drawn in \code{createImageAnnotations()}).
+#' @param unit Character value. The unit in which the x- and y-axis ticks
+#' are displayed. Use `validUnitsOfLength()` to obtain all valid input options.
+#' @param display_scale_bar Logical value. If `TRUE`, a scale bar is displayed
+#' using `ggpLayerScaleBarEUOL()`.
+#' @param ... Additional parameters given to `ggpLayerScaleBarEUOL()`. Exception:
+#' Arguments `xrange` and `yrange` correspond to the dimensions of the cropped
+#' image that displayes the image annotation.
 #' @inherit argument_dummy params
 #'
 #' @inherit getImageAnnotations details
@@ -717,21 +724,31 @@ plotImageAnnotations <- function(object,
                                  tags = NULL,
                                  test = "any",
                                  expand = 0.05,
-                                 square = FALSE,
+                                 square = TRUE,
                                  encircle = TRUE,
+                                 unit = "px",
+                                 round = 2,
                                  linecolor = "black",
                                  linesize = 1.5,
                                  linetype = "solid",
                                  fill = "orange",
                                  alpha = 0.25,
+                                 display_scale_bar = FALSE,
                                  display_title = FALSE,
                                  display_subtitle = TRUE,
                                  display_caption = TRUE,
+                                 expand_x = c(0,0),
+                                 expand_y = c(0,0),
                                  ggpLayers = list(),
                                  nrow = NULL,
                                  ncol = NULL,
                                  plot = TRUE,
                                  ...){
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfLength()
+  )
 
   img_annotations <-
     getImageAnnotations(
@@ -772,8 +789,49 @@ plotImageAnnotations <- function(object,
 
         }
 
+        if(unit == "px"){
+
+          labels <- ggplot2::waiver()
+
+        } else {
+
+          labels  <-
+            ~ transform_pixels_to_euol(
+                input = .x,
+                euol = unit,
+                object = object,
+                as_numeric = TRUE,
+                round = round
+              )
+
+        }
+
+        if(base::isTRUE(display_scale_bar)){
+
+          scale_bar_add_on <-
+            ggpLayerScaleBarEUOL(
+              object = object,
+              xrange = c(img_info$xmin, img_info$xmax),
+              yrange = c(img_info$ymin_coords, img_info$ymax_coords),
+              ...
+            )
+
+          limits_x <- NULL
+          limits_y <- NULL
+
+        } else {
+
+          scale_bar_add_on <- ggpLayerThemeCoords()
+
+          limits_x <- c(img_info$xmin, img_info$xmax)
+          limits_y <- c(img_info$ymin_coords, img_info$ymax_coords)
+
+        }
+
+        coords_df <- getCoordsDf(object)
+
         plot_out <-
-          ggplot2::ggplot() +
+          ggplot2::ggplot(data = coords_df) +
           ggplot2::theme_bw() +
           ggplot2::annotation_raster(
             raster = image_raster,
@@ -783,10 +841,19 @@ plotImageAnnotations <- function(object,
             ymax = img_info$ymax_coords
           ) +
           encircle_add_on +
-          ggplot2::scale_x_continuous(limits = c(img_info$xmin, img_info$xmax), expand = c(0, 0)) +
-          ggplot2::scale_y_continuous(limits = c(img_info$ymin_coords, img_info$ymax_coords), expand = c(0,0)) +
+          ggplot2::scale_x_continuous(
+            limits = limits_x,
+            expand = expand_x,
+            labels = labels
+            ) +
+          ggplot2::scale_y_continuous(
+            limits = limits_y,
+            expand = expand_y,
+            labels = labels
+            ) +
+          scale_bar_add_on +
           ggplot2::coord_fixed() +
-          ggpLayerThemeCoords() +
+          ggplot2::labs(x = NULL, y = NULL) +
           ggpLayers
 
         if(base::isTRUE(display_title)){
@@ -849,14 +916,53 @@ plotImageAnnotations <- function(object,
 
 
 
-#' @rdname plotImage
+
+#' @title Plot histology image (ggplot2)
+#'
+#' @description Plots the histology image with `ggplot2`.
+#'
+#' @param unit Character value. Units of x- and y-axes. Defaults
+#' to *'px'*.
+#' @param ... Additional arguments given to `ggpLayerAxesEUOL()` if
+#' `unit` is not *'px'*.
+#' @inherit argument_dummy params
+#'
+#' @inherit ggplot_dummy return
 #' @export
-plotImageGgplot <- function(object){
+#'
+plotImageGgplot <- function(object, unit = "px", xrange = NULL, yrange = NULL, ...){
+
+  if(unit %in% validEuropeanUnitsOfLength()){
+
+    if(!base::is.null(xrange) | !base::is.null(yrange)){
+
+      frame_by <- list(x = xrange, y = yrange)
+
+    } else {
+
+      frame_by <- "image"
+
+    }
+
+    axes_add_on <-
+      ggpLayerAxesEUOL(
+        object = object,
+        euol = unit,
+        frame_by = frame_by,
+        ...
+      )
+
+  } else{
+
+    axes_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
+
+  }
 
   ggpInit(object) +
     ggpLayerImage(object) +
     ggpLayerFrameByImage(object) +
-    ggpLayerThemeCoords()
+    axes_add_on
+
 
 }
 

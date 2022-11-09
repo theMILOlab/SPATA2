@@ -119,7 +119,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Additional arguments given to \code{scale_color_add_on()}.}
+\item{...}{Used to absorb deprecated Arguments or functions.}
 
 \item{reverse_whitin}{Logical. If TRUE the gene sets are displayed in a reversed
 order within the groups.}

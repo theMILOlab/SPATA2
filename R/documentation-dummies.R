@@ -295,6 +295,8 @@ variables_num <- function(variables){}
 #' @param error Logical. If \code{TRUE} and the input is invalid the
 #' function throws an error.
 #'
+#' @param expand_x,expand_y Given to argument `expand` of `ggplot2:scale_x/y_continuous()`.
+#'
 #' @param expand Vector of length one or two. Specifies the extent to which the  x- and y-span
 #' of the cropped image section is expanded. There are two options to provide values:
 #'
@@ -396,6 +398,10 @@ variables_num <- function(variables){}
 #' of `scattermore::geom_scattermore()`. Note: With increasing `sctm_pixels`
 #' the point size must be adjusted with the argument `pt_size`.
 #'
+#' @param sgmt_alpha,sgmt_color,sgmt_size,sgmt_type Parameters given to
+#' \code{ggplot2::geom_segment()} that control the appearance of segments
+#' of the plot.
+#'
 #' @param signif_var Character value. Determines what to be considered while checking
 #' for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).
 #' @param signif_threshold Numeric value. Significance values below \code{signif_threshold}
@@ -419,6 +425,9 @@ variables_num <- function(variables){}
 #' @param test Character value. Specifies how the input of \code{tags} is used to
 #' subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
 #' See details for more information.
+#'
+#' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters
+#' given to `ggplot2::geom_text()` that control the appearance of text of the plot.
 #'
 #' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -457,6 +466,9 @@ variables_num <- function(variables){}
 #' immediately converted to pixel units.
 #'
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
+#'
+#'
+#' @param ... Used to absorb deprecated Arguments or functions.
 #'
 
 argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}

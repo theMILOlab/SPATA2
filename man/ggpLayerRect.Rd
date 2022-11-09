@@ -12,6 +12,7 @@ ggpLayerRect(
   color = "black",
   size = 1,
   expand = 0,
+  persp = "coords",
   ...
 )
 }

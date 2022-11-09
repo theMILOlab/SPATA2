@@ -48,6 +48,8 @@ is displayed underneath the plot.}
 
 \item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
 are removed before plotting.}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \description{
 Displays the spatial dimension of the sample and colors the

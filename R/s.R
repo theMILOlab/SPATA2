@@ -294,6 +294,159 @@ scale_nuclei_df <- function(object,
 
 }
 
+
+
+
+#' @title Scale coordinates
+#'
+#' @description Scales coordinates of spatial aspects in the `SPATA2` object.
+#'
+#' @param scale_fct Numeric vector of length two. Scale factors with which the coordinates
+#' are multiplied. First value is used for x-, second value is used for y-coordinates.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+scaleCoordinates <- function(object, scale_fct, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  object <-
+    scaleCoordsDf(
+      object = object,
+      scale_fct = scale_fct,
+      verbose = verbose
+    )
+
+  object <-
+    scaleImageAnnotations(
+      object = object,
+      scale_fct = scale_fct,
+      verbose = verbose
+    )
+
+  object <-
+    scaleSpatialTrajectories(
+      object = object,
+      scale_fct = scale_fct,
+      verbose = verbose
+    )
+
+  return(object)
+
+}
+
+#' @rdname scaleCoordinates
+#' @export
+scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::give_feedback(
+    msg = "Scaling coordinate data.frame.",
+    verbose = verbose
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  coords_df_new <-
+    dplyr::mutate(
+      .data = coords_df,
+      x = x * scale_fct[1],
+      y = y * scale_fct[2]
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df_new)
+
+  return(object)
+
+}
+
+
+#' @rdname scaleCoordinates
+#' @export
+scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(nImageAnnotations(object) >= 1){
+
+    confuns::give_feedback(
+      msg = "Scaling image annotations.",
+      verbose = verbose
+    )
+
+  }
+
+  image_obj <- getImageObject(object)
+
+  image_obj@annotations <-
+    purrr::map(
+      .x = image_obj@annotations,
+      .f = function(img_ann){
+
+        img_ann@area$x <- img_ann@area$x * scale_fct[1]
+        img_ann@area$y <- img_ann@area$y * scale_fct[2]
+
+        return(img_ann)
+
+      }
+    )
+
+  object <- setImageObject(object, image_object = image_obj)
+
+  return(object)
+
+}
+
+
+#' @rdname scaleCoordinates
+#' @export
+scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(nSpatialTrajectories(object) >= 1){
+
+    confuns::give_feedback(
+      msg = "Scaling spatial trajectories.",
+      verbose = verbose
+    )
+
+  }
+
+  object@trajectories[[1]] <-
+    purrr::map(
+      .x = object@trajectories[[1]],
+      .f = function(traj){
+
+        traj@projection <-
+          traj@projection %>%
+          dplyr::mutate(x = x * scale_fct[1], y = y * scale_fct[2])
+
+        traj@segment <-
+          traj@segment %>%
+          dplyr::mutate(
+            x = x * scale_fct[1], xend = xend * scale_fct[1],
+            y = y * scale_fct[2], yend = yend * scale_fct[2]
+          )
+
+        return(traj)
+
+      }
+    )
+
+  return(object)
+
+}
+
+
+
+
+
+
+
 #' @title Set SPATA2 directory
 #'
 #' @description Sets a directory under which the `SPATA2` object is

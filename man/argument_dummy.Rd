@@ -76,6 +76,8 @@ the main line of the plot visualizing uncertainty using standard deviation.}
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}
 
+\item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
+
 \item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
 of the cropped image section is expanded. There are two options to provide values:
 
@@ -179,6 +181,10 @@ are not included are dropped which affects the colors with which they are displa
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
 the point size must be adjusted with the argument \code{pt_size}.}
 
+\item{sgmt_alpha, sgmt_color, sgmt_size, sgmt_type}{Parameters given to
+\code{ggplot2::geom_segment()} that control the appearance of segments
+of the plot.}
+
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
 
@@ -205,6 +211,9 @@ of the annotated structure and the input for argument \code{expand}.}
 \item{test}{Character value. Specifies how the input of \code{tags} is used to
 subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
 See details for more information.}
+
+\item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
+given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -233,6 +242,8 @@ If values are specified in European units of length the input is
 immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \description{
 Argument dummy

@@ -260,7 +260,16 @@ validUnits <- function(){
 #' @export
 validUnitsOfArea <- function(){
 
-  stringr::str_c(c(euol_abbr), "2")
+  stringr::str_c(c(euol_abbr), "2") %>%
+    c(., "px")
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
+validUnitsOfAreaSI <- function(){
+
+  stringr::str_c(euol_abbr, "2")
 
 }
 
@@ -269,6 +278,13 @@ validUnitsOfArea <- function(){
 validUnitsOfLength <- function(){
 
   c(euol_abbr, "px")
+
+}
+
+#' @rdname validActivationFunctions
+validUnitsOfLengthSI <- function(){
+
+  euol_abbr
 
 }
 

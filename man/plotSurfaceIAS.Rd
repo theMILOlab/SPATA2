@@ -51,6 +51,8 @@ plotSurfaceIAS(object, ...)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{...}{Used to absorb deprecated Arguments or functions.}
+
 \item{id}{Character value. The ID of the image annotation of interest.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the

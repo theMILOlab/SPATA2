@@ -42,14 +42,18 @@ annotate structures in the histology image in a data.frame.
 How to use arguments \code{tags} and \code{test} to specify
 the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
 Argument \code{test} decides about how the specified tags are used to select
-the image annotations of interest. There are three options:
+the image annotations of interest. There are multiple options:
 \enumerate{
 \item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 must be tagged with at least one of the input tags.
 \item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags.
+must be tagged with all of the input tags. Can contain tags that are not specified.
 \item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags and must not be tagged with anything else.
+must be tagged with all of the input tags. Can not be tagged with anything else.
+\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
+annotation must \strong{not} be tagged with the combination of input tags.
+\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
+must \strong{not} contain any of the input tags.
 }
 
 Note that the filtering process happens in addition to / after the filtering by input for argument

@@ -73,6 +73,8 @@ for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 A spata-object.

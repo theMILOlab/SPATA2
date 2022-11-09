@@ -835,6 +835,7 @@ check_image_annotation_tags <- function(object, tags = NULL, ...){
       against = getImageAnnotationTags(object),
       fdb.opt = 2,
       ref.opt = "image annotation tags",
+      fdb.fn = "warning",
       ...
     )
 

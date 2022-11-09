@@ -12,6 +12,8 @@ getTrajectorySegmentDf(
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
+
+\item{...}{Used to absorb deprecated Arguments or functions.}
 }
 \value{
 Data.frame.

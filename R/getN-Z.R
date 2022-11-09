@@ -40,15 +40,41 @@ getPcaMtr <- function(object,
 }
 
 
+
+
+#' @title Obtain pixel data.frame
+#'
+#' @description Extracts a data.frame in which each row corresponds
+#' to a pixel in the current image with x- and y-coordinates.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame with `nrow()` equal to the number of pixels.
+#' @export
+#'
+getPixelDf <- function(object, xrange = NULL, yrange = NULL){
+
+  img <- getImage(object, xrange = xrange, yrange = yrange)
+
+  img_dims <- base::dim(img)
+
+  tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2])
+
+}
+
+
 #' @title Obtain scale factor for pixel to Euol conversion
 #'
-#' @description Extracts or computes the side length of a pixel depending
+#' @description Extracts or computes the side length of pixel sides depending
 #' on the current resolution of the image.
 #'
 #' @param switch Logical value. If `TRUE`, the unit of the output is switched.
 #' See details for more.
 #' @param force Logical value. If `TRUE`, the scale factor is computed
 #' regardless of what the function finds in the respective slot.
+#' @param square Logical value. If `TRUE`, returns a scale factor for areas
+#' instead of distances: The scale factor is squared and input for European units
+#' of length is taken as a unit of area.
 #' @inherit ggpLayerAxesEUOL params
 #' @inherit argument_dummy params
 #' @inherit is_dist params
@@ -68,26 +94,34 @@ getPcaMtr <- function(object,
 #'
 #' @export
 getPixelScaleFactor <- function(object,
-                                euol = NULL,
+                                unit,
                                 switch = FALSE,
+                                square = FALSE,
                                 force = FALSE,
                                 add_attr = TRUE,
-                                verbose = NULL){
+                                verbose = NULL,
+                                ...){
 
   hlpr_assign_arguments(object)
 
-  if(base::is.null(euol)){
+  if("eoul" %in% names(list(...))){
 
-    euol <- getMethodUnit(object)
+    warning("`euol` is deprecated.")
 
   }
 
   # extract set scale factor
   pxl_scale_fct <- object@information$pxl_scale_fct
 
+  square <- unit %in% validUnitsOfAreaSI()
+
+  # extract euol to compute (equal to unit if square == FALSE)
+  euol <- stringr::str_extract(unit, pattern = "[a-z]*")
+
   # if no factor found or force is TRUE - compute
   if(base::is.null(pxl_scale_fct) | base::isTRUE(force)){
 
+    # no feedback if force == FALSE
     if(base::isFALSE(force)){
 
       rlang::warn(
@@ -98,77 +132,54 @@ getPixelScaleFactor <- function(object,
 
     }
 
+    # extract center to center distance
     ccd <- getCCD(object, unit = euol)
 
-    # if ccd found use ccd and bcsp_dist
-    if(is_dist_euol(ccd, error = FALSE)){
+    confuns::give_feedback(
+      msg = "Using center to center distance to compute pixel scale factor.",
+      verbose = verbose
+    )
 
-      confuns::give_feedback(
-        msg = "Using center to center distance to compute pixel scale factor.",
-        verbose = verbose
-        )
+    bcsp_neighbors <-
+      getBarcodeSpotDistances(object, verbose = verbose) %>%
+      dplyr::filter(bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::mutate(dist_round = round(distance, digits = 0)) %>%
+      dplyr::filter(dist_round == base::min(dist_round)) %>%
+      dplyr::ungroup()
 
-      bcsp_dist <-
-        getBarcodeSpotDistances(object, verbose = verbose) %>%
-        dplyr::filter(bc_origin != bc_destination) %>%
-        dplyr::group_by(bc_origin) %>%
-        dplyr::filter(distance == base::min(distance)) %>%
-        dplyr::ungroup()
+    # account for variance in neighbor to neighbor distance
+    bcsp_dist_pixel <- median(bcsp_neighbors[["distance"]])
 
-      bcsp_ex <-
-        dplyr::filter(bcsp_dist, distance == base::min(distance)) %>%
-        utils::head(1)
+    ccd_val <- extract_value(ccd)
+    ccd_unit <- extract_unit(ccd)
 
-      bcsp_dist_pixel <- bcsp_ex[["distance"]]
+    pxl_scale_fct <-
+      units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+      units::set_units(x = ., value = euol, mode = "standard")
 
-      ccd_val <- extract_value(ccd)
-      ccd_unit <- extract_unit(ccd)
-
-      pxl_scale_fct <-
-        units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
-        units::set_units(x = ., value = euol, mode = "standard")
-
-    } else { # if ccd not found use image frame with protocol ground truth
-
-      confuns::give_feedback(
-        msg = "Using image frame and method information to compute pixel scale factor.",
-        verbose = verbose
-        )
-
-      method <- getMethod(object)
-      image_dims <- getImageDims(object)[1:2]
-
-      img_height_px <- image_dims[2] # height of image in pixel (e.g = 2000px)
-
-      img_height <- method@fiducial_frame$y # height of image in eUOL (e.g. '8mm')
-
-      img_height_eUOL <- extract_value(img_height) # the value (e.g = 8)
-      img_unit <- extract_unit(img_height) # the unit (e.g. 'mm')
-
-      if(base::is.null(euol)){
-
-        euol <- img_unit
-
-      }
-
-      pxl_scale_fct <-
-        units::set_units(img_height_eUOL/img_height_px, value = img_unit, mode = "standard") %>%
-        units::set_units(x = ., value = euol, mode = "standard")
-
-    }
-
-  # if scale factor found adjust to euol input
+  # if scale factor found adjust to unit input
   } else {
 
-    unit_scale_fct <-
+    # scale factors are stored with unit/px unit
+    # extracts unit unit
+    unit_per_px <-
       confuns::str_extract_before(
         string = base::attr(pxl_scale_fct, which = "unit"),
         pattern = "\\/"
       )
 
     pxl_scale_fct <-
-      units::set_units(x = pxl_scale_fct, value = unit_scale_fct, mode = "standard") %>%
+      units::set_units(x = pxl_scale_fct, value = unit_per_px, mode = "standard") %>%
       units::set_units(x = ., value = euol, mode = "standard")
+
+  }
+
+
+  # adjust for areas if needed
+  if(base::isTRUE(square)){
+
+    pxl_scale_fct <- pxl_scale_fct^2
 
   }
 
@@ -180,23 +191,25 @@ getPixelScaleFactor <- function(object,
 
     pxl_scale_fct <- 1/pxl_scale_fct
 
-    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c("px/", euol, sep = "")
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c("px/", unit, sep = "")
 
   } else {
 
     pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
 
-    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(euol, "/px", sep = "")
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(unit, "/px", sep = "")
 
   }
 
+
+  # remove attribute if needed
   if(!base::isTRUE(add_attr)){
 
     base::attr(pxl_scale_fct, which = "unit") <- NULL
 
   }
 
-  base::class(pxl_scale_fct) <- c(base::unique(base::class(pxl_scale_fct)))
+
 
   return(pxl_scale_fct)
 
@@ -455,6 +468,73 @@ setMethod(
 
 
 # getS --------------------------------------------------------------------
+
+
+
+#' @title Obtain sample area size
+#'
+#' @description Computes and extracts the area size of the tissue sample.
+#'
+#' @param unit Character value. Output unit. Must be one of `validUnitsOfArea()`.
+#'
+#' @return Single value. Numeric if `unit` is *px*. Else value of class `unit`.
+#' @export
+#'
+getSampleAreaSize <- function(object, unit){
+
+  confuns::is_value(x = unit, mode = "character")
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfArea()
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  hull_pos <- grDevices::chull(x = coords_df$x, y = coords_df$y)
+
+  hull_coords <- coords_df[hull_pos, ]
+
+  pixel_df <- getPixelDf(object)
+
+  pixel_loc <-
+    sp::point.in.polygon(
+      point.x = pixel_df[["x"]],
+      point.y = pixel_df[["y"]],
+      pol.x = hull_coords[["x"]],
+      pol.y = hull_coords[["y"]]
+    )
+
+  pixel_inside <- pixel_loc != 0
+
+  if(unit == "px"){
+
+    out <-
+      magrittr::set_attr(
+        x = base::sum(pixel_inside),
+        which = "unit",
+        value = "px"
+      )
+
+  } else {
+
+    pixel_df_inside <- pixel_df[pixel_inside, ]
+
+    n_pixel_inside <- base::nrow(pixel_df_inside)
+
+    scale_fct <- getPixelScaleFactor(object, unit = unit, add_attr = FALSE)
+
+    out_val <- n_pixel_inside * scale_fct
+
+    out <- units::set_units(x = out_val, value = unit, mode = "standard")
+
+  }
+
+
+
+  return(out)
+
+}
 
 
 #' @title Obtain name of \code{SPATA2} object

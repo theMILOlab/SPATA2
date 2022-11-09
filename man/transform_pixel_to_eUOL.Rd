@@ -3,7 +3,7 @@
 \name{transform_pixel_to_euol}
 \alias{transform_pixel_to_euol}
 \alias{transform_pixels_to_euol}
-\title{Scales from pixels and European units of length}
+\title{Convert from pixels to European units of length}
 \usage{
 transform_pixel_to_euol(
   input,

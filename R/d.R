@@ -9,11 +9,11 @@
 
 deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
-  if(base::isTRUE(fn)){
+  fn_name <-
+    rlang::caller_call() %>%
+    rlang::call_name()
 
-    fn_name <-
-      rlang::caller_call() %>%
-      rlang::call_name()
+  if(base::isTRUE(fn)){
 
     replaced_by <- depr_info$fns[[fn_name]]
 
@@ -47,7 +47,49 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
   if(base::length(args_named) >= 1){
 
-    args_named <- args_named[base::names(args_named) %in% deprecatedArguments()]
+    # first check for fucntion specific deprecated args
+    fn_args_depr <- deprecatedArguments(opt = "function", fn_name = fn_name)
+
+    # get specific arguments
+    args_named_fn <- args_named[base::names(args_named) %in% fn_args_depr]
+
+    # remove specific arguments from rest
+    args_named <- args_named[!args_named %in% args_named_fn]
+
+    for(old_arg_name in base::names(args_named_fn)){
+
+      new_arg_name <- depr_info[["args_spec"]][[fn_name]][[old_arg_name]]
+
+      if(base::is.na(new_arg_name)){
+
+        msg <-
+          glue::glue(
+            "In function `{fn_name}()`, argument `{old_arg_name}` is deprecated and no longer in use."
+            )
+
+      } else {
+
+        msg <-
+          glue::glue(
+            "In function `{fn_name}()`, argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead."
+          )
+
+        ce <- rlang::caller_env()
+
+        base::assign(x = new_arg_name, value = args[[old_arg_name]], envir = ce)
+
+      }
+
+      confuns::give_feedback(
+        msg = msg,
+        fdb.fn = fdb_fn,
+        with.time = FALSE
+      )
+
+    }
+
+    # second, check for generally deprecated args
+    args_named <- args_named[base::names(args_named) %in% deprecatedArguments(opt = "generally")]
 
     for(old_arg_name in base::names(args_named)){
 
@@ -61,9 +103,7 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
         msg <-
           glue::glue(
-            "Argument `{old_arg_name}` is deprecated.
-            It will be removed in the near future.
-            Please use argument `{new_arg_name}` instead."
+            "Argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead."
           )
 
         ce <- rlang::caller_env()
@@ -82,9 +122,26 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
   }
 
+
+
+
 }
 
-deprecatedArguments <- function(){ depr_info$args %>% base::names() }
+deprecatedArguments <- function(opt = "generally", fn_name = NULL){
+
+  if(opt == "generally"){
+
+    out <- depr_info[["args"]] %>% base::names()
+
+  } else if(opt == "function"){
+
+    out <- depr_info[["args_spec"]][[fn_name]] %>% base::names()
+
+  }
+
+  return(out)
+
+}
 
 
 

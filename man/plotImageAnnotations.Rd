@@ -10,16 +10,21 @@ plotImageAnnotations(
   tags = NULL,
   test = "any",
   expand = 0.05,
-  square = FALSE,
+  square = TRUE,
   encircle = TRUE,
+  unit = "px",
+  round = 2,
   linecolor = "black",
   linesize = 1.5,
   linetype = "solid",
   fill = "orange",
   alpha = 0.25,
+  display_scale_bar = FALSE,
   display_title = FALSE,
   display_subtitle = TRUE,
   display_caption = TRUE,
+  expand_x = c(0, 0),
+  expand_y = c(0, 0),
   ggpLayers = list(),
   nrow = NULL,
   ncol = NULL,
@@ -71,9 +76,15 @@ that is the biggest. If FALSE, the section is cropped according to the extent
 of the annotated structure and the input for argument \code{expand}.}
 
 \item{encircle}{Logical value. If TRUE, are polygon is drawn around the
-exact extent of the annotated structure (as was drawn in \code{annotateImage()}).}
+exact extent of the annotated structure (as was drawn in \code{createImageAnnotations()}).}
+
+\item{unit}{Character value. The unit in which the x- and y-axis ticks
+are displayed. Use \code{validUnitsOfLength()} to obtain all valid input options.}
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
+
+\item{display_scale_bar}{Logical value. If \code{TRUE}, a scale bar is displayed
+using \code{ggpLayerScaleBarEUOL()}.}
 
 \item{display_title}{Logical value. If TRUE, the number of each image annotation
 is plotted in the title.}
@@ -84,6 +95,8 @@ is plotted in the subtitle.}
 \item{display_caption}{Logial value. If TRUE, the tags of each image annotation
 are plotted in the caption.}
 
+\item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
+
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 
@@ -92,6 +105,10 @@ Skim \code{ggpLayer*()}-functions for more options.}
 \item{plot}{Logical value. If TRUE, the plots are plotted immediately
 via \code{gridExtra.grid.arrange()} and the list of plots is returned
 invisibly. Else the list of plots is simply returned.}
+
+\item{...}{Additional parameters given to \code{ggpLayerScaleBarEUOL()}. Exception:
+Arguments \code{xrange} and \code{yrange} correspond to the dimensions of the cropped
+image that displayes the image annotation.}
 }
 \value{
 A list of ggplots. Each slot contains a plot
@@ -104,14 +121,18 @@ Plots annotated
 How to use arguments \code{tags} and \code{test} to specify
 the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
 Argument \code{test} decides about how the specified tags are used to select
-the image annotations of interest. There are three options:
+the image annotations of interest. There are multiple options:
 \enumerate{
 \item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 must be tagged with at least one of the input tags.
 \item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags.
+must be tagged with all of the input tags. Can contain tags that are not specified.
 \item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags and must not be tagged with anything else.
+must be tagged with all of the input tags. Can not be tagged with anything else.
+\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
+annotation must \strong{not} be tagged with the combination of input tags.
+\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
+must \strong{not} contain any of the input tags.
 }
 
 Note that the filtering process happens in addition to / after the filtering by input for argument
