@@ -101,7 +101,13 @@ ggpLayerAxesEUOL <- function(object,
   )
 
   # output limits
-  if(base::is.character(frame_by)){
+  if(confuns::is_list(frame_by)){
+
+    xlim <- frame_by[["x"]][c(1, 2)] %>% as_pixel(object = object)
+
+    ylim <- frame_by[["y"]][c(1, 2)] %>% as_pixel(object = object)
+
+  } else if(base::is.character(frame_by)){
 
     confuns::check_one_of(
       input = frame_by,
@@ -119,12 +125,6 @@ ggpLayerAxesEUOL <- function(object,
       ylim <- getImageRange(object)$y
 
     }
-
-  } else if(confuns::is_list(frame_by)){
-
-    xlim <- frame_by[["x"]][c(1, 2)] %>% as_pixel(object = object)
-
-    ylim <- frame_by[["y"]][c(1, 2)] %>% as_pixel(object = object)
 
   } else {
 

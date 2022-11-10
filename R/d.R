@@ -9,9 +9,27 @@
 
 deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
+  # which function is checked
   fn_name <-
     rlang::caller_call() %>%
     rlang::call_name()
+
+
+  # in which function is it used
+  calling_fn <- rlang::caller_call(n = 2)
+
+  if(!base::is.null(calling_fn)){
+
+    caller_fn <- rlang::call_name(calling_fn)
+
+    ref_caller <- glue::glue("( used by {caller_fn}() )")
+
+  } else {
+
+    ref_caller <- ""
+
+  }
+
 
   if(base::isTRUE(fn)){
 
@@ -21,14 +39,14 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022. Please use `{replaced_by}()` instead."
+          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022. Please use `{replaced_by}()` instead.{ref_caller}"
         )
 
     } else {
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022."
+          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022.{ref_caller}"
         )
 
     }
@@ -64,14 +82,14 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
         msg <-
           glue::glue(
-            "In function `{fn_name}()`, argument `{old_arg_name}` is deprecated and no longer in use."
+            "In function `{fn_name}()`, argument `{old_arg_name}` is deprecated and no longer in use.{ref_caller}"
             )
 
       } else {
 
         msg <-
           glue::glue(
-            "In function `{fn_name}()`, argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead."
+            "In function `{fn_name}()`, argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead.{ref_caller}"
           )
 
         ce <- rlang::caller_env()
@@ -97,13 +115,13 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
       if(base::is.na(new_arg_name)){
 
-        msg <- glue::glue("Argument `{old_arg_name}` is deprecated and no longer in use.")
+        msg <- glue::glue("Argument `{old_arg_name}` is deprecated and no longer in use.{ref_caller}")
 
       } else {
 
         msg <-
           glue::glue(
-            "Argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead."
+            "Argument `{old_arg_name}` is deprecated. Please use argument `{new_arg_name}` instead.{ref_caller}"
           )
 
         ce <- rlang::caller_env()

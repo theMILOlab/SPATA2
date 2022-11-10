@@ -733,7 +733,7 @@ check_ias_input <- function(distance = NA_integer_,
   if(binwidth_spec){
 
     binwidth <-
-      asPixel(
+      as_pixel(
         input = binwidth,
         object = object,
         as_numeric = TRUE
@@ -744,7 +744,7 @@ check_ias_input <- function(distance = NA_integer_,
   if(dist_spec){
 
     distance <-
-      asPixel(
+      as_pixel(
         input = distance,
         object = object,
         as_numeric = TRUE,
