@@ -14,8 +14,10 @@ ggpLayerTrajectories(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
-interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{arrow}{A list of arguments given to \code{ggplot2::arrow()}. Based
 on which the trajectories are plotted.}

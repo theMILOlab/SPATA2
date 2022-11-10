@@ -7,20 +7,20 @@
 ggpLayerScaleBarEUOL(
   object,
   pos = "top_right",
-  dist = "1mm",
-  sgmt_alpha = 0.9,
+  dist_sb = "1mm",
+  sgmt_alpha = 1,
   sgmt_color = "black",
   sgmt_size = 1.25,
   sgmt_type = "solid",
-  text_alpha = 0.9,
+  text_alpha = 1,
   text_color = "black",
   text_nudge_x = 0,
-  text_nudge_y = 12.5,
+  text_nudge_y = NULL,
   text_size = 5.5,
   text_type = 0.9,
   xrange = NULL,
   yrange = NULL,
-  offset = c(0.75, 0.75),
+  offset = c(0.9, 0.9),
   theme_opt = "none"
 )
 }
@@ -33,22 +33,24 @@ bar is positioned accordingly. If vector of length two, distance measures
 that specify the positioning. First value is taken for positioning on x-
 and second value is taken for positioning on the y-axis.}
 
-\item{dist}{The distance in European units of length that the scale bar
+\item{dist_sb}{The distance in European units of length that the scale bar
 illustrates.}
 
 \item{sgmt_alpha, sgmt_color, sgmt_size, sgmt_type}{Parameters given to
 \code{ggplot2::geom_segment()} that control the appearance of segments
 of the plot.}
 
-\item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
-given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}
+\item{text_nudge_y}{Numeric value or \code{NULL}. Moves the scale bar text away from
+the scale bar. If \code{NULL}, nudging is computed based on the input of \code{yrange}.
+Set manually, if the positioning fails.}
 
 \item{xrange, yrange}{The range of the image that is considered if the positioning
 of the scale is calculated via \code{pos} as one of \emph{top_right}, \emph{top_left}, \emph{bottom_right}
 or \emph{bottom_left}. Defaults to the image range.}
 
-\item{fct}{If \code{pos} one of \emph{top_right}, \emph{top_left}, \emph{bottom_right} or \emph{bottom_left},
-used to repell the scale bar from the borders.}
+\item{offset}{Numeric vector of length two. Used to move the position of
+the scale bar away from the center. Values should range from 0 to 1. First
+value is used to move along the x-axis. Second value is used for the y-axis.}
 }
 \description{
 Adds a scale bar to the surface plot that visualizes
@@ -56,32 +58,14 @@ distance in European units of length. Segment of the line is drawn
 with \code{ggplot2::geom_segment()}. Text is drawn with \code{ggplot2::geom_text()}.
 }
 \details{
-Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
-To specifically refer to a distance the unit must be specified. There are
-three ways to create valid input for these arguments.
-
-\bold{1. Distance in pixel}:
-
-There are two valid input options to specify the distance in pixel:
-
-\itemize{
-\item{numeric:}{ Single numeric values, e.g. \code{arg_input <- c(2, 3.554, 69, 100.67)}. If no unit
-is specified the input will be interpreted as pixels.}
-\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input <- c('2px', '3.554px', '69px', '100.67px')}}
-}
-
-\bold{2. Distance in European units of length (euol)}:
-
-Specifying distances in European units of length e.g. \code{arg_input <- c('2mm', '4mm')} etc.
-requires the input to be a character as the unit must be provided as suffix. Between the numeric
-value and the unit must be no empty space! Unit suffixes must be one of
-\emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
-
-\strong{3. As vectors of class \code{unit}:}
-
-Behind the scenes \code{SPATA2} works with the \code{units}-package. Input
-is converted into vectors of class \code{units}. Therefore, input can be directly
-provided this way: \code{arg_input <- units::set_unit(x = c(2,4), value = 'mm')}
-Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
-to specify the input in pixel you have to use input option 1. Distance in pixel.
+If \code{pos} is one of \emph{top_right}, \emph{top_left}, \emph{bottom_right}
+or \emph{bottom_left}, the position of the scale bar is computed in combination
+with the input for argument \code{offset}. Argument \code{offset} is used to repel
+the scale bar away from the center into the corner specified in \code{pos}. Thus,
+if \code{offset = c(0,0)}, the scale bar is positioned in the center of the plot
+regardless of the specification of \code{pos}. Offset values specify the percentage
+of the distanec between the center of the plot and its limits. For instance,
+if \code{pos = c(0.5, 0.75)} and \code{pos = 'top_right'} to the right (50\% of the distance
+to the border - x-axis) and to the top (75\% of the distance between the center
+and the ceiling).
 }

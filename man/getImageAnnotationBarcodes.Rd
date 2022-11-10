@@ -9,14 +9,29 @@ getImageAnnotationBarcodes(object, ids = NULL, tags = NULL, test = "any")
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
-interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
-\item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
+\item{tags, test}{Input for argument \code{tags} specifies the tags of interest.
+Argument \code{test} decides about how the specified tags are used to select
+the image annotations of interest. There are multiple options:
+\enumerate{
+\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+must be tagged with at least one of the input tags.
+\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+must be tagged with all of the input tags. Can contain tags that are not specified.
+\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+must be tagged with all of the input tags. Can not be tagged with anything else.
+\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
+annotation must \strong{not} be tagged with the combination of input tags.
+\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
+must \strong{not} contain any of the input tags.
+}
 
-\item{test}{Character value. Specifies how the input of \code{tags} is used to
-subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
-See details for more information.}
+Note that the filtering process happens in addition to / after the filtering by input for argument
+\code{ids}.}
 }
 \value{
 Character vector.

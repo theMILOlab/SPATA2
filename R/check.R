@@ -333,6 +333,21 @@ check_display <- function(display_title = FALSE,
 }
 
 
+
+# check_e -----------------------------------------------------------------
+
+check_expand <- function(expand, error = FALSE){
+
+  res <- is_dist(expand) | is_percentage(expand) | is_exclam(expand)
+
+  feedback_expand_input(x = res, error = error)
+
+  return(res)
+
+}
+
+
+
 # check_f -----------------------------------------------------------------
 
 #' @title Check feature data.frame

@@ -46,7 +46,7 @@ plotOverview(object, ...)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{eval}{Character value. The variable to use for the x-axis.}
 

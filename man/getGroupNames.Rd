@@ -9,7 +9,7 @@ getGroupNames(object, grouping_variable, ...)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Character vector

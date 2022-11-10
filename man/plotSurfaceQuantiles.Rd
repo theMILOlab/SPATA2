@@ -69,7 +69,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 This function calculates the quantiles specified in \code{n_qntl}

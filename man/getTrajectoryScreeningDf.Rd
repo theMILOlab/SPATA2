@@ -24,7 +24,7 @@ getTrajectoryScreeningDf(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}

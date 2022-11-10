@@ -21,7 +21,7 @@ immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A plot that is immediately plotted.

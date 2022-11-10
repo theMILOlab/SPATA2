@@ -27,6 +27,19 @@ feedback_distance_input <- function(x, error = TRUE){
 
 }
 
+feedback_expand_input <- function(x, error = TRUE){
+
+  feedback_pos(x = x, error = error, ref_input = "expand", ref_info = "`?process_ranges`")
+
+}
+
+
+feedback_percentage_input <- function(x, error = TRUE){
+
+  feedback_pos(x = x, error = error, ref_input = "percentage", ref_info = "`?is_percentage?`")
+
+}
+
 
 feedback_pos <- function(x, error, ref_input, ref_info){
 

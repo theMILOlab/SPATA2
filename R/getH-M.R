@@ -11,8 +11,9 @@
 #' @inherit argument_dummy params
 #' @inherit check_sample params
 #'
-#' @return An image of class \emph{EBImage}.
 #' @export
+
+
 
 getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
@@ -21,8 +22,6 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
   check_object(object)
 
   feedback_range_input(xrange = xrange, yrange = yrange)
-
-  confuns::is_vec(x = expand, mode = "numeric", max.length = 2)
 
   out <- object@images[[1]]@image
 
@@ -224,8 +223,18 @@ getImageAnnotationAreaDf <- function(object,
                                      sep = " & ",
                                      last = " & "){
 
+
+  img_anns <-
+    getImageAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      add_image = FALSE
+      )
+
   purrr::map_df(
-    .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
+    .x = img_anns,
     .f = function(img_ann){
 
       tag <-
@@ -405,39 +414,43 @@ getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
 
 
 
+#' @title Obtain image annotations range
+#'
+#' @description Extracts the minimum and maximum x- and y-coordinates
+#' of the image annotation border.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return List of length two. Named with *x* and *y*. Each slot
+#' contains a vector of length two with the minima and maxima in pixel.
+#' @export
+#'
+getImageAnnotationRange <- function(object, id){
+
+  getImageAnnotationAreaDf(object, ids = id) %>%
+    dplyr::select(x, y) %>%
+    purrr::map(.f = base::range)
+
+}
+
+
 #' @title Obtain list of \code{ImageAnnotation}-objects
 #'
 #' @description Extracts a list of objects of class \code{ImageAnnotaion}.
 #'
-#' @inherit argument_dummy params
 #' @param add_image Logical. If TRUE, the area of the histology image that
 #' is occupied by the annotated structure is added to the \code{ImageAnnotation}
 #' object in slot @@image.
 #'
-#' @details How to use arguments \code{tags} and \code{test} to specify
-#' the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
-#' Argument \code{test} decides about how the specified tags are used to select
-#' the image annotations of interest. There are multiple options:
+#' @inherit argument_dummy params
+#' @inherit getImage details
 #'
-#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-#' must be tagged with at least one of the input tags.
-#'
-#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can contain tags that are not specified.
-#'
-#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can not be tagged with anything else.
-#'
-#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
-#' annotation must **not** be tagged with the combination of input tags.
-#'
-#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
-#' must **not** contain any of the input tags.
-#'
-#' Note that the filtering process happens in addition to / after the filtering by input for argument
-#' \code{ids}.
+#' @note To test how the extracted image section looks like depending
+#' on input for argument `square` and `expand` use
+#' `plotImageAnnotations(..., encircle = FALSE)`.
 #'
 #' @return An object of class \code{ImageAnnotation}.
+#'
 #' @export
 #'
 getImageAnnotations <- function(object,
@@ -539,6 +552,7 @@ getImageAnnotations <- function(object,
       xmean <- base::mean(xrange)
       ymean <- base::mean(yrange)
 
+      # make image section to square
       if(base::isTRUE(square)){
 
         xdist <- xrange[2] - xrange[1]
@@ -565,7 +579,6 @@ getImageAnnotations <- function(object,
 
       }
 
-
       img_ann@image <-
         getImage(
           object = object,
@@ -590,11 +603,20 @@ getImageAnnotations <- function(object,
       })
 
 
-      for(val in base::names(range_list)){
+      for(val in base::names(range_list)){ # sets xmin - ymax
 
         img_list[[val]] <- range_list[[val]]
 
       }
+
+      img_list$orig_ranges <- list(x = xrange, y = yrange)
+
+      img_list$expand <- process_expand_input(expand)
+
+      img_list$square <- square
+
+      img_list$xmin_parent <- 0
+      img_list$ymin_parent <- 0
 
       img_list$xmax_parent <- getImageRange(object)$x[2]
       img_list$ymax_parent <- getImageRange(object)$y[2]
@@ -605,10 +627,7 @@ getImageAnnotations <- function(object,
       img_list$ymax_coords <-
         img_list$ymax_parent - img_list$ymin
 
-      img_list$expand <- expand
-
-      img_list$square <- square
-
+      # set list
       img_ann@image_info <- img_list
 
     }
@@ -996,10 +1015,34 @@ getImageAnnotationTags <- function(object){
 
 #' @title Obtain image dimensions/ranges
 #'
+#' @description Extracts information regarding the image.
+#'
+#' \itemize{
+#'  \item{`getImageDims()`:}{ Extracts dimensions of the image, namely width, height and depth.}
+#'  \item{`getImageRange()`:} Extracts range of the image axis.
+#'  }
+#'
 #' @inherit argument_dummy params
 #'
+#' @return Similar output, different data structure:
+#'
+#' \itemize{
+#'  \item{`getImageDims()`:}{ Vector of length three: image width, image height, image depth}
+#'  \item{`getImageRange()`:}{ Named list, names are *x* and *y*. Each slot contains a
+#'  vector of length two that describes the range of the x- and y-axis. Used for intersection
+#'  between histology image and scatterplots.}
+#' }
+#'
+#' @details In case of confusion due to overlapping naming conventions: X-axis,
+#' x and x-range in terms of coordinates, corresponds to image width in terms of
+#' image analysis. Y-axis, y  and y-range, in terms of coordinates, refers to
+#' image-height in terms of image analysis. `SPATA2` primarily uses coordinates
+#' naming convention.
+#'
 #' @export
-getImageDims <- function(object, xrange = NULL, yrange = NULL){
+getImageDims <- function(object, ...){
+
+  deprecated(...)
 
   img <- object@images[[1]]@image
 
@@ -1087,11 +1130,13 @@ getImageObject <- function(object){
 
 #' @rdname getImageDims
 #' @export
-getImageRange <- function(object, xrange = NULL, yrange = NULL){
+getImageRange <- function(object, ...){
+
+  deprecated(...)
 
   out <- list()
 
-  img_dims <- getImageDims(object, xrange = xrange, yrange = yrange)
+  img_dims <- getImageDims(object, ...)
 
   out$x <- c(0,img_dims[[1]])
   out$y <- c(0,img_dims[[2]])

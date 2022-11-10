@@ -4,7 +4,14 @@
 \alias{plotImageGgplot}
 \title{Plot histology image (ggplot2)}
 \usage{
-plotImageGgplot(object, unit = "px", xrange = NULL, yrange = NULL, ...)
+plotImageGgplot(
+  object,
+  unit = "px",
+  frame_by = "image",
+  xrange = NULL,
+  yrange = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

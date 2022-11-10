@@ -24,7 +24,7 @@ ggpLayerEncirclingGroups(
 specifies the exact groups that are encircled. If NULL, all groups
 are encircled.}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

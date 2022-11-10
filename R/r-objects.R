@@ -501,6 +501,9 @@ depr_info <-
     ),
     args = list(
       "discrete_feature" = "grouping_variable",
+      "linealpha" = "line_alpha",
+      "linecolor" = "line_color",
+      "linesize" = "line_size",
       "of_sample" = NA_character_,
       "trajectory_name" = "id"
     ),
@@ -600,6 +603,10 @@ model_formulas <-
   )
 
 
+
+msg_scale_bar_bad_pos <-
+  c("Can not properly position text without `yrange`. If bad position: Use `text_nudge_y' to adjust.'")
+
 # p -----------------------------------------------------------------------
 
 pattern_formulas <-
@@ -655,8 +662,9 @@ regex_dist_value <-
     "(", regex_scientific_notation, ")|",
     "(", regex_number, ")|",
     "(", regex_dec_number, ")"
-
     )
+
+regex_num_value <- regex_dist_value
 
 # matches euol
 regex_euol <- stringr::str_c(string = base::unname(euol_abbr), "$", collapse = "|")
@@ -672,6 +680,9 @@ regex_area_units_si <-
   stringr::str_c(euol_abbr, "2", sep = "") %>%
   stringr::str_c("$") %>%
   stringr::str_c(collapse = "|")
+
+
+regex_percentage <- stringr::str_c("(", regex_num_value, ")%$", sep = "")
 
 # matches pixel if single numeric value
 # does NOT ignore suffix -> use to test pixel input
@@ -700,9 +711,9 @@ regex_pxl_dist <- regex_pxl_area
 # does NOT, ignore suffix -> use to test euol input
 regex_euol_dist <- stringr::str_c("(", regex_dist_value, ")(", regex_euol, ")", sep = "")
 
-regex_area <- stringr::str_c("(", regex_dist_value, ")(",regex_area_units, ")", sep = "")
+regex_area <- stringr::str_c("(", regex_dist_value, ")(", regex_area_units, ")", sep = "")
 
-regex_si_area <- stringr::str_c("(", regex_dist_value, ")(",regex_area_units_si, ")", sep = "")
+regex_si_area <- stringr::str_c("(", regex_dist_value, ")(", regex_area_units_si, ")", sep = "")
 
 # matches distance input either provided as euol or px
 regex_dist <-
@@ -711,6 +722,17 @@ regex_dist <-
     stringr::str_c(regex_euol_dist),
     sep = "|"
   )
+
+regex_exclam1 <-
+  stringr::str_c(
+    "(", regex_dist_value, ")",
+    "(", stringr::str_c(c(euol_abbr, "px"), collapse = "|"), ")",
+    "!$"
+  )
+
+regex_exclam2 <- stringr::str_c(regex_dist_value, "!$")
+
+regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 
 regex_unit <- stringr::str_c(regex_euol, regex_pxl, regex_area_units, sep = "|")
 

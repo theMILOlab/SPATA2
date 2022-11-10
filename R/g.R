@@ -39,6 +39,26 @@ geom_point_fixed <- function(...,
 
 # ggp ---------------------------------------------------------------------
 
+
+#' @title Display clean axes
+#'
+#' @description Removes axis text, -ticks and -titles (labs) from the plot.
+#'
+#' @inherit ggpLayer_dummy return
+#' @export
+#'
+ggpLayerAxesClean <- function(..., object = NULL){
+
+  ggplot2::theme(
+    axis.text = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    axis.title = ggplot2::element_blank()
+  )
+
+}
+
+
+
 #' @title Display axes with European units of length
 #'
 #' @description Performs necessary transformations to display axes of
@@ -79,7 +99,6 @@ ggpLayerAxesEUOL <- function(object,
     against = validEuropeanUnitsOfLength(),
     suggest = TRUE
   )
-
 
   # output limits
   if(base::is.character(frame_by)){
@@ -196,6 +215,7 @@ ggpLayerAxesEUOL <- function(object,
       stats::quantile()
 
   }
+
 
   # make add on
   axes <-
@@ -689,7 +709,7 @@ ggpLayerImage <- function(object = "object"){
 
 }
 
-#' @title Add polygons of annotated structures
+#' @title Add borders of annotated structures
 #'
 #' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
 #' with \code{createImageAnnotations()}.
@@ -712,74 +732,82 @@ ggpLayerImageAnnotation <- function(object = "object",
                                     test = "any",
                                     alpha = 0.5,
                                     fill = NA,
-                                    linecolor = "black",
-                                    linesize = 1.5,
-                                    linetype = "solid",
+                                    line_color = "black",
+                                    line_size = 1.5,
+                                    line_type = "solid",
                                     display_color = FALSE,
                                     clrp = NULL,
                                     clrp_adjust = NULL,
                                     ...){
 
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+        deprecated(...)
 
-  hlpr_assign_arguments(object)
+        if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
-  img_ann_df <-
-    getImageAnnotationAreaDf(
-      object = object,
-      ids = ids,
-      tags = tags,
-      test = test
-    )
+        hlpr_assign_arguments(object)
 
-  out <- list()
+        img_ann_df <-
+          getImageAnnotationAreaDf(
+            object = object,
+            ids = ids,
+            tags = tags,
+            test = test
+          )
 
-  if(base::isTRUE(display_color)){
+        out <- list()
 
-    out$image_annotation <-
-      ggplot2::layer(
-        stat = "identity",
-        position = "identity",
-        geom = ggplot2::GeomPolygon,
-        mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
-        data = img_ann_df,
-        params = list(alpha = alpha, size = linesize, linetype = linetype)
-      )
+        if(base::isTRUE(display_color)){
 
-    out$scale_color_add_on <-
-      scale_color_add_on(
-        aes = "fill",
-        variable = img_ann_df[["ids"]],
-        clrp = clrp,
-        clrp.adjust = clrp_adjust,
-        ...
-      )
+          out$image_annotation <-
+            ggplot2::layer(
+              stat = "identity",
+              position = "identity",
+              geom = ggplot2::GeomPolygon,
+              mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
+              data = img_ann_df,
+              params = list(alpha = alpha, size = linesize, linetype = linetype)
+            )
 
-    out$scale_fill_add_on <-
-      scale_color_add_on(
-        aes = "color",
-        variable = img_ann_df[["ids"]],
-        clrp = clrp,
-        clrp.adjust = clrp_adjust,
-        ...
-      )
+          out$scale_color_add_on <-
+            scale_color_add_on(
+              aes = "fill",
+              variable = img_ann_df[["ids"]],
+              clrp = clrp,
+              clrp.adjust = clrp_adjust,
+              ...
+            )
 
-  } else {
+          out$scale_fill_add_on <-
+            scale_color_add_on(
+              aes = "color",
+              variable = img_ann_df[["ids"]],
+              clrp = clrp,
+              clrp.adjust = clrp_adjust,
+              ...
+            )
 
-    out$image_annotation <-
-      ggplot2::layer(
-        stat = "identity",
-        position = "identity",
-        geom = ggplot2::GeomPolygon,
-        mapping = ggplot2::aes(x = x, y = y, group = ids),
-        data = img_ann_df,
-        params = list(alpha = alpha, size = linesize, linetype = linetype, fill = fill, color = linecolor)
-      )
-  }
+        } else {
 
-  return(out)
+          out$image_annotation <-
+            ggplot2::layer(
+              stat = "identity",
+              position = "identity",
+              geom = ggplot2::GeomPolygon,
+              mapping = ggplot2::aes(x = x, y = y, group = ids),
+              data = img_ann_df,
+              params = list(
+                alpha = alpha,
+                size = line_size,
+                linetype = line_type,
+                fill = fill,
+                color = line_color
+                )
+            )
+        }
 
-}
+        return(out)
+
+      }
 
 
 #' @title Add a rectangular to the plot
@@ -865,46 +893,113 @@ ggpLayerRect <- function(object = "object",
 #' that specify the positioning. First value is taken for positioning on x-
 #' and second value is taken for positioning on the y-axis.
 #'
-#' @param dist The distance in European units of length that the scale bar
+#' @param dist_sb The distance in European units of length that the scale bar
 #' illustrates.
 #'
 #' @param xrange,yrange The range of the image that is considered if the positioning
 #' of the scale is calculated via `pos` as one of *top_right*, *top_left*, *bottom_right*
 #' or *bottom_left*. Defaults to the image range.
 #'
-#' @param fct If `pos` one of *top_right*, *top_left*, *bottom_right* or *bottom_left*,
-#' used to repell the scale bar from the borders.
+#' @param offset Numeric vector of length two. Used to move the position of
+#' the scale bar away from the center. Values should range from 0 to 1. First
+#' value is used to move along the x-axis. Second value is used for the y-axis.
+#' @param text_nudge_y Numeric value or `NULL`. Moves the scale bar text away from
+#' the scale bar. If `NULL`, nudging is computed based on the input of `yrange`.
+#' Set manually, if the positioning fails.
 #'
 #' @inherit argument_dummy params
 #' @inherit is_dist details
 #' @inherit ggpLayers_dummy return
 #'
+#' @details If `pos` is one of *top_right*, *top_left*, *bottom_right*
+#' or *bottom_left*, the position of the scale bar is computed in combination
+#' with the input for argument `offset`. Argument `offset` is used to repel
+#' the scale bar away from the center into the corner specified in `pos`. Thus,
+#' if `offset = c(0,0)`, the scale bar is positioned in the center of the plot
+#' regardless of the specification of `pos`. Offset values specify the percentage
+#' of the distanec between the center of the plot and its limits. For instance,
+#' if `pos = c(0.5, 0.75)` and `pos = 'top_right'` to the right (50% of the distance
+#' to the border - x-axis) and to the top (75% of the distance between the center
+#' and the ceiling).
+#'
+#'
 #' @export
 ggpLayerScaleBarEUOL <- function(object,
                                  pos = "top_right",
-                                 dist = "1mm",
-                                 sgmt_alpha = 0.9,
+                                 dist_sb = "1mm",
+                                 sgmt_alpha = 1,
                                  sgmt_color = "black",
                                  sgmt_size = 1.25,
                                  sgmt_type = "solid",
-                                 text_alpha = 0.9,
+                                 text_alpha = 1,
                                  text_color = "black",
                                  text_nudge_x = 0,
-                                 text_nudge_y = 12.5,
+                                 text_nudge_y = NULL,
                                  text_size = 5.5,
                                  text_type = 0.9,
                                  xrange = NULL,
                                  yrange = NULL,
-                                 offset = c(0.75, 0.75),
+                                 offset = c(0.9, 0.9),
                                  theme_opt = "none"){
 
-  is_dist_euol(input = dist, error = TRUE)
+  # check text nudging
+  is_dist_euol(input = dist_sb, error = TRUE)
 
+  if(is_dist(text_nudge_y)){
+
+    text_nudge_y <-
+      as_pixel(
+        input = text_nudge_y,
+        object = object,
+        add_attr = FALSE
+        )
+
+  }
+
+  # check xrange
+  if(base::is.null(xrange)){
+
+    xrange <- getImageRange(object)$x
+
+  }
+
+  # check yrange
+  if(base::is.null(yrange)){
+
+    if(!base::is.numeric(text_nudge_y)){
+
+      rlang::warn(
+        message = msg_scale_bar_bad_pos,
+        .frequency = "once",
+        .frequency_id = "bad_pos_scale_bar"
+      )
+
+    }
+
+    yrange <- getImageRange(object)$y
+
+  }
+
+  if(!base::is.numeric(text_nudge_y)){
+
+      ydist <- yrange[2]-yrange[1]
+
+      text_nudge_y <- ydist * 0.029
+
+  }
+
+  dist_sb_px <- as_pixel(input = dist_sb, object = object)
+
+  # calc positioning of segment and text
   if(base::length(pos) == 2){
 
     pos_x_px <- as_pixel(input = pos[1], object = object)
+    pos_x_px_text <- pos_x_px
 
     pos_y_px <- as_pixel(input = pos[2], object = object)
+
+    xstart <- pos_x_px - dist_sb_px/2
+    xend <- pos_x_px + dist_sb_px/2
 
   } else if(base::is.character(pos)){
 
@@ -915,21 +1010,11 @@ ggpLayerScaleBarEUOL <- function(object,
       against = plot_positions
     )
 
-    # scale range
-    if(base::is.null(xrange)){
-
-      xrange <- getImageRange(object)$x
-
-    }
-
-    if(base::is.null(yrange)){
-
-      yrange <- getImageRange(object)$y
-
-    }
-
     xmean <- base::mean(xrange)
     ymean <- base::mean(yrange)
+
+    xdist <- xrange[2]-xrange[1]
+    ydist <- yrange[2]-yrange[1]
 
     # scale offset
     if(base::length(offset) == 1){
@@ -938,57 +1023,72 @@ ggpLayerScaleBarEUOL <- function(object,
 
     }
 
-    print(xmean)
-    print(ymean)
-
+    # calc absolute x offset
     if(base::is.numeric(offset[[1]]) && offset[[1]] < 1){
 
-      offset_x <- xmean * offset[[1]]
+      abs_offset_x <- xdist/2 * offset[[1]]
 
     } else {
 
-      offset_x <- as_pixel(input = offset[[1]], object = object, add_attr = FALSE)
+      abs_offset_x <- as_pixel(input = offset[[1]], object = object, add_attr = FALSE)
 
     }
 
+    # calc absolute x offset
     if(base::is.numeric(offset[[2]]) && offset[[2]] < 1){
 
-      offset_y <- ymean * offset[[2]]
+      abs_offset_y <- ydist/2 * offset[[2]]
 
     } else {
 
-      offset_y <- as_pixel(input = offset[[2]], object = object, add_attr = FALSE)
+      abs_offset_y <- as_pixel(input = offset[[2]], object = object, add_attr = FALSE)
 
     }
 
+    # specify position
     if(pos == "top_right"){
 
-      pos_x_px <- xmean - offset_x
-      pos_y_px <- ymean - offset_y
+      pos_x_px <- xmean + abs_offset_x
+      pos_x_px_text <- pos_x_px - dist_sb_px/2
+
+      pos_y_px <- ymean + abs_offset_y
+
+      xstart <- pos_x_px - dist_sb_px
+      xend <- pos_x_px
 
     } else if(pos == "top_left"){
 
-      pos_x_px <- xmean + offset_x
-      pos_y_px <- ymean - offset_y
+      pos_x_px <- xmean - abs_offset_x
+      pos_x_px_text <- pos_x_px + dist_sb_px/2
+
+      pos_y_px <- ymean + abs_offset_y
+
+      xstart <- pos_x_px
+      xend <- pos_x_px + dist_sb_px
 
     } else if(pos == "bottom_right"){
 
-      pos_x_px <- xmean - offset_x
-      pos_y_px <- ymean + offset_y
+      pos_x_px <- xmean + abs_offset_x
+      pos_x_px_text <- pos_x_px - dist_sb_px/2
+
+      pos_y_px <- ymean - abs_offset_y
+
+      xstart <- pos_x_px - dist_sb_px
+      xend <- pos_x_px
 
     } else if(pos == "bottom_left"){
 
-      pos_x_px <- xmean + offset_x
-      pos_y_px <- ymean + offset_y
+      pos_x_px <- xmean - abs_offset_x
+      pos_x_px_text <- pos_x_px - dist_sb_px/2
+
+      pos_y_px <- ymean - abs_offset_y
+
+      xstart <- pos_x_px
+      xend <- pos_x_px + dist_sb_px/2
 
     }
 
   }
-
-  dist_px <- as_pixel(input = dist, object = object)
-
-  xstart <- pos_x_px - dist_px/2
-  xend <- pos_x_px + dist_px/2
 
   # create segment
   sgmt_df <-
@@ -1009,11 +1109,10 @@ ggpLayerScaleBarEUOL <- function(object,
   # create text
   text_df <-
     tibble::tibble(
-      x = pos_x_px,
-      y = pos_y_px,
-      label = dist
+      x = pos_x_px_text,
+      y = pos_y_px, # !!! change back to pos_y_px
+      label = dist_sb
     )
-
 
   text_add_on <-
     ggplot2::geom_text(
@@ -1059,6 +1158,44 @@ ggpLayerScaleBarEUOL <- function(object,
 
 
 }
+
+
+
+
+#' @title Add a hull that enricles the sample
+#'
+#' @description Adds a hull that encircles the sample. Usefull, if you want
+#' to plot numeric variables by color against white.
+#'
+#' @param expand Given to `ggforce::geom_mark_hull()`.
+#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return
+#' @export
+#'
+ggpLayerSampleMask <- function(object,
+                               line_color = "black",
+                               line_size = 0.5,
+                               expand = ggplot2::unit(2.25, "cm"),
+                               ...){
+
+
+  out <-
+    getCoordsDf(object) %>%
+    ggforce::geom_mark_hull(
+      mapping = ggplot2::aes(x = x, y = y, group = sample),
+      alpha = 1,
+      color = line_color,
+      size = line_size,
+      ...
+
+    )
+
+  return(list(out))
+
+}
+
 
 #' @title Add coordinates theme
 #'

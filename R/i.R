@@ -758,11 +758,9 @@ is_dist_euol <- function(input, error = FALSE){
 
     } else {
 
-      res <- base::rep(res, base::length(input))
+      res <- base::rep(FALSE, base::length(input))
 
     }
-
-
 
   }
 
@@ -799,6 +797,16 @@ is_dist_pixel <- function(input, error = FALSE){
 }
 
 
+is_exclam <- function(input, error = FALSE){
+
+  res <-
+    stringr::str_detect(string = input, pattern = regex_exclam) &
+    stringr::str_detect(string = input , pattern = "!$")
+
+  return(res)
+
+}
+
 is_number <- function(x){
 
   !(base::is.na(x) | base::is.na(x) | base::is.infinite(x))
@@ -809,6 +817,17 @@ is_numeric_input <- function(input){
 
   (base::is.numeric(input)) &
   (!"units" %in% base::class(input))
+
+}
+
+
+is_percentage <- function(input, error = FALSE){
+
+  res <- stringr::str_detect(string = input, pattern = regex_percentage)
+
+  feedback_percentage_input(x = res, error = error)
+
+  return(res)
 
 }
 

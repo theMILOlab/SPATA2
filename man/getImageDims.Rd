@@ -5,25 +5,37 @@
 \alias{getImageRange}
 \title{Obtain image dimensions/ranges}
 \usage{
-getImageDims(object, xrange = NULL, yrange = NULL)
+getImageDims(object, ...)
 
-getImageRange(object, xrange = NULL, yrange = NULL)
+getImageRange(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
+\item{...}{Used to absorb deprecated arguments or functions.}
+}
+\value{
+Similar output, different data structure:
 
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+\itemize{
+\item{\code{getImageDims()}:}{ Vector of length three: image width, image height, image depth}
+\item{\code{getImageRange()}:}{ Named list, names are \emph{x} and \emph{y}. Each slot contains a
+vector of length two that describes the range of the x- and y-axis. Used for intersection
+between histology image and scatterplots.}
+}
 }
 \description{
-Obtain image dimensions/ranges
+Extracts information regarding the image.
+
+\itemize{
+\item{\code{getImageDims()}:}{ Extracts dimensions of the image, namely width, height and depth.}
+\item{\code{getImageRange()}:} Extracts range of the image axis.
+}
+}
+\details{
+In case of confusion due to overlapping naming conventions: X-axis,
+x and x-range in terms of coordinates, corresponds to image width in terms of
+image analysis. Y-axis, y  and y-range, in terms of coordinates, refers to
+image-height in terms of image analysis. \code{SPATA2} primarily uses coordinates
+naming convention.
 }

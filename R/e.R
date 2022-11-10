@@ -333,3 +333,180 @@ extract_value <- function(input){
     base::as.numeric()
 
 }
+
+
+
+
+# expand ------------------------------------------------------------------
+
+expand_image_range <- function(range,
+                               expand_with,
+                               object,
+                               ref_axis,
+                               limits = NULL){
+
+  if(base::length(expand_with) == 1){
+
+    expand_with <- base::rep(expand_with, 2)
+
+  }
+
+  # handle exclam input
+  if(base::any(is_exclam(expand_with))){
+
+    abs_axes_length <-
+      stringr::str_remove(string = expand_with, pattern = "!$") %>%
+      base::unique() %>%
+      as_pixel(input = ., object = object, add_attr = FALSE)
+
+    center <- base::mean(range)
+
+    out1 <- center - abs_axes_length/2
+
+    out2 <- center + abs_axes_length/2
+
+    if(base::is.numeric(limits)){
+
+      if(out1 < limits[1]){
+
+        warning(
+          glue::glue(
+            "Min. of image {ref_axis} is {out1} due to `expand` but must not be lower than {limit}px. Returning {limit}px.",
+            out1 = base::round(out1, digits = 5) %>% stringr::str_c(., "px"),
+            limit = limits[1]
+          )
+        )
+
+        out1 <- limits[1]
+
+      }
+
+      if(out2 > limits[2]){
+
+        warning(
+          glue::glue(
+            "Max. of image {ref_axis} is {out2} due to `expand` but must not be higher than {limit}px. Returning {limit}px.",
+            out2 = base::round(out2, digits = 5) %>% stringr::str_c(., "px"),
+            limit = limits[2]
+          )
+        )
+
+        out2 <- limits[2]
+      }
+
+    }
+
+  # handle normal input
+  } else {
+
+    out1 <-
+      expand_image_side(
+        side = 1,
+        range = range,
+        expand_with = expand_with[1],
+        object = object,
+        ref_axis = ref_axis,
+        limit = limits[1]
+      )
+
+    out2 <-
+      expand_image_side(
+        side = 2,
+        range = range,
+        expand_with = expand_with[2],
+        object = object,
+        ref_axis = ref_axis,
+        limit = limits[2]
+      )
+
+
+
+  }
+
+
+
+  out <- c(out1, out2)
+
+  return(out)
+
+
+}
+
+
+expand_image_side <- function(expand_with,
+                              range,
+                              side = c(1,2),
+                              object,
+                              ref_axis,
+                              limit = NULL){
+
+  if(is_dist(expand_with)){ # expand in absolute measures
+
+    expand_abs <- as_pixel(expand_with, object = object, add_attr = FALSE)
+
+    if(side == 1){
+
+      out <- range[side] - expand_abs
+
+    } else if(side == 2){
+
+      out <- range[side] + expand_abs
+
+    }
+
+  } else { # expand in relative measures from the center
+
+    rdist <- range[2]-range[1]
+    rmean <- base::mean(range)
+
+    expand_perc <-
+      stringr::str_remove(expand_with, pattern = "%") %>%
+      base::as.numeric() %>%
+      base::abs()
+
+    expand_fct <- (expand_perc/100) + 1
+
+    expand_abs <- (rdist/2)*expand_fct
+
+    if(side == 1){
+
+      out <- rmean - expand_abs
+
+    } else if(side == 2){
+
+      out <- rmean + expand_abs
+
+    }
+
+  }
+
+  if(base::is.numeric(limit)){
+
+    if(side == 1 & out < limit){
+
+      warning(
+        glue::glue(
+          "Min.of image {ref_axis} is {out} but must not be lower than {limit}px. Returning {limit}px.",
+          out = base::round(out, digits = 5) %>% stringr::str_c(., "px")
+        )
+      )
+
+      out <- limit
+
+    } else if(side == 2 & out > limit){
+
+      warning(
+        glue::glue(
+          "Max. of image {ref_axis} is {out} but must not be higher than {limit}px. Returning {limit}px.",
+          out = base::round(out, digits = 5) %>% stringr::str_c(., "px")
+        )
+      )
+
+      out <- limit
+    }
+
+  }
+
+  return(out)
+
+}

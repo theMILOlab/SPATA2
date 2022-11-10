@@ -262,12 +262,172 @@ printGeneSetOverview <- function(object){
 # process -----------------------------------------------------------------
 
 
+#' @title Process expand input
+#' @return Returns always a list of length two. Two slots named h (height)
+#' and x (width).
+#'
+#' @section Expand
+#' This is a new section.
+#'
+#' @export
+#'
+process_expand_input <- function(expand){
+
+
+  # not a list -> applied to width AND height
+  if(!confuns::is_list(expand) & base::is.vector(expand)){
+
+    check_expand(expand, error = TRUE)
+
+    # expand input type 1 -> nothing happens
+    if(base::length(expand) == 0){
+
+      expand <- list(x = c(0,0), y = c(0,0))
+
+      # input for expand is applied to min and max of axis span
+    } else if(base::length(expand) == 1){
+
+      expand <- base::rep(expand, 2)
+
+      expand <- list(x = expand, y = expand)
+
+    } else { # at least of length 2
+
+      expand <- list(x = expand[1:2], y = expand[1:2])
+
+    }
+
+  } else if(confuns::is_list(expand)){
+
+    if(!confuns::is_named(expand)){
+
+      stop("If specified as a list, input for `expand` must be named.")
+
+    } else {
+
+      expand <-
+        purrr::imap(
+          .x = confuns::lselect(expand, dplyr::any_of(c("x", "y"))),
+          .f = function(axis_expand, axis){
+
+
+            if(!base::is.vector(axis_expand)){
+
+              stop(
+                glue::glue("Expand input for {axis}-axis must be a vector.")
+              )
+
+            }
+
+            if(base::length(axis_expand) == 0){
+
+              axis_expand <- c(0, 0)
+
+            } else if(base::length(axis_expand) == 1){
+
+              axis_expand <- base::rep(axis_expand, 2)
+
+            } else {
+
+              axis_expand <- axis_expand[1:2]
+
+            }
+
+            valid <- check_expand(axis_expand)
+
+            if(base::any(!valid)){
+
+              which_ref <-
+                base::which(valid == FALSE) %>%
+                base::as.character() %>%
+                confuns::scollapse(sep = ", ", last = " and ")
+
+              stop(glue::glue("Expand input for axis-{axis} is invalid at position {which_ref}."))
+
+            }
+
+            return(axis_expand)
+
+          }
+        )
+
+      for(axis in c("x", "y")){ # fill empty slots with c(0,0) -> no expansion
+
+        if(!axis %in% base::names(expand)){
+
+          expand[[axis]] <- c(0,0)
+
+        }
+
+      }
+
+    }
+
+  }
+
+  expand <-
+    purrr::imap(
+      .x = expand,
+      .f = function(input, axis){
+
+        if(base::any(is_exclam(input))){
+
+          if(!base::identical(input[1], input[2])){
+
+            stop(
+              glue::glue(
+                "Invalid input for {axis}-axis. Exclam input must not differ within one and the same axis."
+              )
+            )
+
+          }
+
+        }
+
+        return(input)
+
+      }
+    ) %>%
+    purrr::map(
+      .x = .,
+      .f = ~ purrr::set_names(.x, nm = c("min", "max"))
+    )
+
+  return(expand)
+
+}
+
+
+#' @title Process input ranges
+#'
+#' @description Processes x- and y-ranges.
+#'
+#' @param expand Parameter to adjust how the image is expanded. See section
+#' Image expansion for more information.
+#' @param persp If *image*, adjusts the logic of the function to the fact
+#' that the height of images starts on top and not on the bottom.
+#' @inherit argument_dummy params
+#'
+#' @return List of 4 slots. Named *xmin*, *xmax*, *ymin* and *ymax*. Adjusted range
+#' in pixel.
+#' @export
+#'
 process_ranges <- function(xrange = getImageRange(object)$x,
-                           yrange = getImageRange(object)$y,
+                           yrange = getImageRange(objet)$y,
                            expand = 0,
                            persp = "image",
                            object = NULL){
 
+  # process input
+  expand_input <- process_expand_input(expand)
+
+  # image meta data
+  img_dims <- getImageDims(object)
+
+  img_xmax <- img_dims[1]
+  img_ymax <- img_dims[2]
+
+  # convert ranges to pixel
   if(!base::is.null(xrange)){
 
     xrange <- as_pixel(input = xrange, object = object, as_numeric = TRUE)
@@ -278,188 +438,55 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
     yrange <- as_pixel(input = yrange, object = object, as_numeric = TRUE)
 
-  }
-
-  expand_input <- expand
-
-  out <-
-    list(
-      xmin = xrange[1],
-      xmax = xrange[2],
-      ymin = yrange[1],
-      ymax = yrange[2]
-    )
-
-  img_dims <- getImageDims(object)
-
-  actual_xmax <- img_dims[1]
-  actual_ymax <- img_dims[2]
-
-  if(base::is.numeric(xrange)){
-
-    # first value is always used for xrange
-    expand <- expand_input[1]
-
-    # check if expand is treated as a percentage or an absolute number
-    if(expand <= 1){
-
-      expand_val <- (base::max(xrange) - base::min(xrange)) * expand
-
-      expand_opt <- "percentage"
-
-    } else {
-
-      expand_val <- expand/2
-
-      expand_opt <- "absolute"
-
-    }
-
-    # add a percentage
-    if(expand_opt == "percentage"){
-
-      xmin <- xrange[1] - expand_val
-
-      if(xmin < 0){ xmin <- 0 }
-
-      xmax <- xrange[2] + expand_val
-
-      if(xmax > actual_xmax){ xmax <- actual_xmax }
-
-      out$xmin <- xmin
-      out$xmax <- xmax
-
-      # consider as absolute
-    } else if(expand_opt == "absolute") {
-
-      xspan <- xrange[2] - xrange[1]
-
-      if(expand < xspan){
-
-        xspan_ref <- base::round(xspan, digits = 2)
-
-        warning(
-          glue::glue(
-            "Value for `expand` to set the xrange is {expand} and thus lower than the actual span of the xrange of
-            the requested image which is {xspan_ref}. Returning original xrange."
-          )
-        )
-
-        expand_val <- xspan/2
-
-      }
-
-      xcenter <- base::mean(x = xrange)
-
-      xmin <- xcenter - expand_val
-
-      if(xmin < 0){ xmin <- 0}
-
-      xmax <- xcenter + expand_val
-
-      if(xmax > actual_xmax){ xmax <- actual_xmax}
-
-      out$xmin <- xmin
-      out$xmax <- xmax
-
-    }
-
-  }
-
-  if(base::is.numeric(yrange)){
-
     # input for x- and yrange often come from the perspective of the
-    # coordinates. however, the yaxis is flipped in the image
+    # coordinates. however, the yaxis is flipped in the image and starts
+    # from the top
     # -> flip range
+
     if(persp == "image"){
 
-      yrange <- c((actual_ymax - yrange[1]), (actual_ymax - yrange[2]))
+      yrange <- c((img_ymax - yrange[1]), (img_ymax - yrange[2]))
 
       # switch yrange min and max back to first and last place
       yrange <- base::rev(yrange)
 
-    }
-
-    # if length == 2 second value is used for yrange
-    if(base::length(expand_input) == 2){
-
-      expand <- expand_input[2]
-
-
-    } else {
-
-      expand <- expand_input[1]
-
-    }
-
-    if(expand <= 1){
-
-      expand_val <- (base::max(yrange) - base::min(yrange)) * expand
-
-      expand_opt <- "percentage"
-
-    } else {
-
-      expand_val <- expand/2
-
-      expand_opt <- "absolute"
-
-    }
-
-    # add a percentage
-    if(expand_opt == "percentage"){
-
-      ymin <- yrange[1] - expand_val
-
-      if(ymin < 0){ ymin <- 0 }
-
-      ymax <- yrange[2] + expand_val
-
-      if(ymax > actual_ymax){ ymax <- actual_ymax }
-
-      out$ymin <- ymin
-      out$ymax <- ymax
-
-      # consider as absolute
-    } else if(expand_opt == "absolute") {
-
-      yspan <- yrange[2] - yrange[1]
-
-      if(expand < yspan){
-
-        yspan_ref <- base::round(yspan, digits = 2)
-
-        warning(
-          glue::glue(
-            "Value for `expand` to set the yrange is {expand} and thus lower than the actual span of the yrange of
-            the requested image which is {yspan_ref}. Returning original yrange."
-          )
-        )
-
-        expand_val <- yspan/2
-
-      }
-
-      ycenter <- base::mean(x = yrange)
-
-      ymin <- ycenter - expand_val
-
-      if(ymin < 0){ ymin <- 0}
-
-      ymax <- ycenter + expand_val
-
-      if(ymax > actual_ymax){ ymax <- actual_ymax}
-
-      out$ymin <- ymin
-      out$ymax <- ymax
+      expand_input[["y"]] <- base::rev(expand_input[["y"]])
 
     }
 
   }
 
+  xrange_out <-
+    expand_image_range(
+      range = xrange,
+      expand_with = expand_input[["x"]], # width
+      object = object,
+      ref_axis = "x-axis",
+      limits = c(0, img_xmax)
+    )
+
+  yrange_out <-
+    expand_image_range(
+      range = yrange,
+      expand_with = expand_input[["y"]],
+      object = object,
+      ref_axis = "y-axis",
+      limits = c(0, img_ymax)
+    )
+
+  out <- list(
+    xmin = xrange_out %>% base::min(),
+    xmax = xrange_out %>% base::max(),
+    ymin = yrange_out %>% base::min(),
+    ymax = yrange_out %>% base::max()
+  )
+
   return(out)
 
 }
+
+
+
 
 
 #' @title Wrapper around Seurat processing functions

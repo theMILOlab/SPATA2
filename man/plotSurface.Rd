@@ -137,7 +137,7 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
-\item{...}{Used to absorb deprecated Arguments or functions.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
 \itemize{

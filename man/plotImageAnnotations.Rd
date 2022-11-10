@@ -14,17 +14,15 @@ plotImageAnnotations(
   encircle = TRUE,
   unit = "px",
   round = 2,
-  linecolor = "black",
-  linesize = 1.5,
-  linetype = "solid",
+  line_color = "black",
+  line_size = 1.5,
+  line_type = "solid",
   fill = "orange",
   alpha = 0.25,
-  display_scale_bar = FALSE,
+  dist_sb = FALSE,
   display_title = FALSE,
   display_subtitle = TRUE,
-  display_caption = TRUE,
-  expand_x = c(0, 0),
-  expand_y = c(0, 0),
+  display_caption = FALSE,
   ggpLayers = list(),
   nrow = NULL,
   ncol = NULL,
@@ -35,91 +33,12 @@ plotImageAnnotations(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
-interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
-\item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
-
-\item{test}{Character value. Specifies how the input of \code{tags} is used to
-subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
-See details for more information.}
-
-\item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
-of the cropped image section is expanded. There are two options to provide values:
-
-Values from 0 to 1 are used to calculate the corresponding percentage of the image
-span which is then \bold{added} to it. E.g. \code{expand} = 1 doubles the span,
-\code{expand} = 0.5 results in 150 percent of the span and \code{expand} = 0 returns the
-original span.
-
-Values bigger than 1 are considered to be absolute values. The returned image
-section has the exact x- and y- spans as specified in \code{expand}.
-E.g. \code{expand} = 200 results in an image section with x- and y-span of
-200. If the input value is bigger than 1 it must be at least as big as the
-original span of the image annotation.
-
-To adjust x- and y-span specifically you can provide a vector of length 2.
-If you do so the first value is taken to adjust the x-span and the second
-value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
-of the original x-span to the x-span of the image section and does not adjust
-the y-span.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
-
-\item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
-structure is forced into a square. X- and yspan of the square are equal to the span
-that is the biggest. If FALSE, the section is cropped according to the extent
-of the annotated structure and the input for argument \code{expand}.}
-
-\item{encircle}{Logical value. If TRUE, are polygon is drawn around the
-exact extent of the annotated structure (as was drawn in \code{createImageAnnotations()}).}
-
-\item{unit}{Character value. The unit in which the x- and y-axis ticks
-are displayed. Use \code{validUnitsOfLength()} to obtain all valid input options.}
-
-\item{linesize}{Numeric value. The size of the line(s) plotted.}
-
-\item{display_scale_bar}{Logical value. If \code{TRUE}, a scale bar is displayed
-using \code{ggpLayerScaleBarEUOL()}.}
-
-\item{display_title}{Logical value. If TRUE, the number of each image annotation
-is plotted in the title.}
-
-\item{display_subtitle}{Logical value. If TRUE, the ID of each image annotation
-is plotted in the subtitle.}
-
-\item{display_caption}{Logial value. If TRUE, the tags of each image annotation
-are plotted in the caption.}
-
-\item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
-
-\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
-Skim \code{ggpLayer*()}-functions for more options.}
-
-\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
-
-\item{plot}{Logical value. If TRUE, the plots are plotted immediately
-via \code{gridExtra.grid.arrange()} and the list of plots is returned
-invisibly. Else the list of plots is simply returned.}
-
-\item{...}{Additional parameters given to \code{ggpLayerScaleBarEUOL()}. Exception:
-Arguments \code{xrange} and \code{yrange} correspond to the dimensions of the cropped
-image that displayes the image annotation.}
-}
-\value{
-A list of ggplots. Each slot contains a plot
-that visualizes an image annotation.
-}
-\description{
-Plots annotated
-}
-\details{
-How to use arguments \code{tags} and \code{test} to specify
-the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
+\item{tags, test}{Input for argument \code{tags} specifies the tags of interest.
 Argument \code{test} decides about how the specified tags are used to select
 the image annotations of interest. There are multiple options:
 \enumerate{
@@ -136,5 +55,176 @@ must \strong{not} contain any of the input tags.
 }
 
 Note that the filtering process happens in addition to / after the filtering by input for argument
-\code{ids}.
+\code{ids}.}
+
+\item{expand}{Specifies image expansion. An image that is cropped based on an image
+annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
+that is width/x-axis and height/y-axis, are set to include only the image annotation area
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
+for more information.}
+
+\item{square}{Logical value. Most image annotations come in variable shapes and
+have different horizontal and vertical diameters. Therefore, height and width of the image
+section are usually not equal. If \code{square = TRUE}, the cropped section of the image that
+contains the annotated structure is forced into a square: the bigger diameter of both is taken
+as default. E.g. if the horizontal diameter of the image annotation is 1mm and the
+vertical diameter is 1.5mm, the output image will have height and width of 1.5mm. That is,
+in terms of coordinates, an x-range and a y-range of 1.5mm.
+
+Processing of the image output depending on argument \code{expand} happens afterwards.}
+
+\item{encircle}{Logical value. If TRUE, a polygon is drawn around the
+exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.}
+
+\item{unit}{Character value. The unit in which the x- and y-axis text
+are displayed. Use \code{validUnitsOfLength()} to obtain all valid input options.}
+
+\item{round}{Numeric value or \code{FALSE}. If numeric and \code{unit} is not \emph{px}, rounds
+axes text.}
+
+\item{dist_sb}{Distance measure or FALSE. If distance measure,
+defines the distance in European units of length that a scale bar
+illustrates. Scale bar is plotted with \code{ggpLayerScaleBarEUOL()}. If \code{FALSE},
+no scale bar is plotted.}
+
+\item{display_title}{Logical value. If TRUE, the number of each image annotation
+is plotted in the title.}
+
+\item{display_subtitle}{Logical value. If TRUE, the ID of each image annotation
+is plotted in the subtitle.}
+
+\item{display_caption}{Logial value. If TRUE, the tags of each image annotation
+are plotted in the caption.}
+
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
+\item{plot}{Logical value. If TRUE, the plots are plotted immediately
+via \code{gridExtra.grid.arrange()} and the list of plots is returned
+invisibly. Else the list of plots is simply returned.}
+
+\item{...}{Additional arguments given to \code{ggpLayerScaleBarEUOL()} if input for
+\code{dist_sb} is a valid distance measure. Exception: \code{xrange} and \code{yrange} are
+set to the ranges of the image that was cropped according to the image
+annotation.}
+}
+\value{
+A list of ggplots. Each slot contains a plot
+that visualizes an image annotation.
+
+An image of class \emph{EBImage}.
+}
+\description{
+Plots structures and areas that were annotated with \code{createImageAnnotations()}.
+}
+\details{
+The argument \code{expand} is a versatile way, to specify how a cropped
+image section is extracted. If you want the cropped image as is, specify
+\code{expand = 0}. Else, there are multiple options. In general, \code{expand} takes
+three kinds of values:
+
+\itemize{
+\item{Percentage:}{ A string suffixed with \emph{\%}. See details of \code{is_percentage}
+for more information. E.g. \code{expand = '100\%'}, \code{expand = '75.5\%'}}
+\item{Distance measures:}{ In pixel or European units of length. See details of
+\code{is_dist} for more information. E.g. \verb{expand = 200'}, \code{expand = '1mm'}}
+\item{Exclam distance measures:}{ Distance measure with an exclamation mark
+suffix. E.g. \verb{expand = 1mm!} centers the image and forces an axis length of
+1 millimeter. (Example 5) }
+}
+
+Single values, like \code{expand = 50}, are recycled: Every end of each image axis
+is expanded by 50 pixel. (Example 2)
+
+Vectors of length two, like \code{expand = c('1mm', '2mm')}, are recycled: The beginning
+of each axis is expanded by 1 millimeter. The end of each axis is expanded by
+2mm. (Example 3)
+
+Named lists can be more precise. \code{expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm'))}.
+Applies the vectors to expand the corresponding axis. (Example 4)
+
+Using exclam input the side of the axis must not be specified as the
+axis is fixed as a whole. E.g \code{expand = list(x = '1mm!', y = '2mm!')} results
+in the same output as \verb{expand = list(x = c('1mm!', '1mm'), y = c('2mm!', '2mm!')}.
+}
+\examples{
+
+library(SPATA2)
+library(SPATAData)
+
+object <- downloadSpataObjet(sample_name = "275_T")
+
+data("image_annotations")
+
+object <- setImageAnnotations(object, img_anns = image_annotations[["275_T"]])
+
+plotImageAnnotations(
+ object = object,
+ ids = "img_ann_1",
+ expand = "0.5mm",
+ encircle = T # no encircling possible if expand = 0
+ )
+
+### Example 1
+
+plotImageAnnotations(
+ object = object,
+ ids = "img_ann_1",
+ expand = 0,
+ encircle = FALSE # no encircling possible if expand = 0
+ )
+
+ process_expand_input(0)
+
+### Example 2
+plotImageAnnotations(
+ object = object,
+ ids = "img_ann_1",
+ expand = 50, # all sides are expanded with 50px -> 100px gain per axis
+ encircle = TRUE
+ )
+
+ process_expand_input(50)
+
+### Example 3
+plotImageAnnotations(
+ object = object,
+ ids = "img_ann_1",
+ expand = c("1mm", "2mm"),
+ encircle = TRUE
+ )
+
+ process_expand_input(c("1mm", "2mm"))
+
+### Example 4
+plotImageAnnotations(
+ object = object,
+ ids = "img_ann_1",
+ expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')),
+ encircle = TRUE
+ )
+
+ process_expand_input(list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')))
+
+
+### Example 5
+plotImageAnnotations(
+ object = object,
+ ids = "img_ann_1",
+ expand = "1mm!", # center image and force axis length of 1mm
+ encircle = TRUE,
+ dist_sb = "100um",
+ text_color = "white",
+ sgmt_color = "white",
+ pos = "bottom_right",
+ )
+
+ process_expand_input("1mm!")
+
+
+}
+\seealso{
+\code{\link[=getImageAnnotations]{getImageAnnotations()}}
 }

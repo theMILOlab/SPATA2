@@ -17,30 +17,12 @@ getImageAnnotationAreaDf(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
-interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
-\item{tags}{Character vector or NULL. If character, the image annotation tags of interest.}
-
-\item{test}{Character value. Specifies how the input of \code{tags} is used to
-subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
-See details for more information.}
-}
-\value{
-A data.frame that contains the grouping variables \emph{id} and \emph{tags}
-and the numeric variables \emph{x} and \emph{y}. The returned data.frame can contain
-the spatial extent of more than just
-one annotated structure, depending on the input of arguments \code{ids}, \code{tags}
-and \code{test}. The variable \emph{ids} of the returned data.frame is used to
-uniquely mark the belonging of each x- and y-coordinate.
-}
-\description{
-Extracts the coordinates of the polygon that was drawn to
-annotate structures in the histology image in a data.frame.
-}
-\details{
-How to use arguments \code{tags} and \code{test} to specify
-the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
+\item{tags, test}{Input for argument \code{tags} specifies the tags of interest.
 Argument \code{test} decides about how the specified tags are used to select
 the image annotations of interest. There are multiple options:
 \enumerate{
@@ -57,7 +39,19 @@ must \strong{not} contain any of the input tags.
 }
 
 Note that the filtering process happens in addition to / after the filtering by input for argument
-\code{ids}.
+\code{ids}.}
+}
+\value{
+A data.frame that contains the grouping variables \emph{id} and \emph{tags}
+and the numeric variables \emph{x} and \emph{y}. The returned data.frame can contain
+the spatial extent of more than just
+one annotated structure, depending on the input of arguments \code{ids}, \code{tags}
+and \code{test}. The variable \emph{ids} of the returned data.frame is used to
+uniquely mark the belonging of each x- and y-coordinate.
+}
+\description{
+Extracts the coordinates of the polygon that was drawn to
+annotate structures in the histology image in a data.frame.
 }
 \note{
 The variables \emph{x} and \emph{y} correspond to the coordinates
