@@ -123,17 +123,21 @@ Plots structures and areas that were annotated with \code{createImageAnnotations
 The argument \code{expand} is a versatile way, to specify how a cropped
 image section is extracted. If you want the cropped image as is, specify
 \code{expand = 0}. Else, there are multiple options. In general, \code{expand} takes
-three kinds of values:
+three kinds of values, namely percentages, distances and distance exclamations.
 
 \itemize{
 \item{Percentage:}{ A string suffixed with \emph{\%}. See details of \code{is_percentage}
 for more information. E.g. \code{expand = '100\%'}, \code{expand = '75.5\%'}}
-\item{Distance measures:}{ In pixel or European units of length. See details of
-\code{is_dist} for more information. E.g. \verb{expand = 200'}, \code{expand = '1mm'}}
+\item{Distance measures:}{ In pixel or European units of length. E.g. \code{expand =  list(x = '1mm')}
+expands the x-axis on both sides with 1mm. \verb{expand = list(x = c('0.5mm', 1.5mm')}
+expands the x-axis on the left side with 0.5mm and on the right side with 1.5mm.}
 \item{Exclam distance measures:}{ Distance measure with an exclamation mark
-suffix. E.g. \verb{expand = 1mm!} centers the image and forces an axis length of
+suffix. E.g. \code{expand = '1mm!'} centers the image and forces an axis length of
 1 millimeter. (Example 5) }
 }
+
+Depending on how the values are specified different parts of the image can be
+expanded.
 
 Single values, like \code{expand = 50}, are recycled: Every end of each image axis
 is expanded by 50 pixel. (Example 2)

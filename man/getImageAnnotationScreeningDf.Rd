@@ -22,7 +22,7 @@ getImageAnnotationScreeningDf(
   remove_angle_bins = FALSE,
   rename_angle_bins = FALSE,
   drop = TRUE,
-  verbose = TRUE,
+  verbose = NULL,
   ...
 )
 }

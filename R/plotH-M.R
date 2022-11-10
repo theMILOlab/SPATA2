@@ -732,17 +732,21 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' @details The argument `expand` is a versatile way, to specify how a cropped
 #' image section is extracted. If you want the cropped image as is, specify
 #' `expand = 0`. Else, there are multiple options. In general, `expand` takes
-#'  three kinds of values:
+#'  three kinds of values, namely percentages, distances and distance exclamations.
 #'
 #' \itemize{
 #'  \item{Percentage:}{ A string suffixed with *%*. See details of `is_percentage`
 #'  for more information. E.g. `expand = '100%'`, `expand = '75.5%'`}
-#'  \item{Distance measures:}{ In pixel or European units of length. See details of
-#'  `is_dist` for more information. E.g. `expand = 200'`, `expand = '1mm'`}
+#'  \item{Distance measures:}{ In pixel or European units of length. E.g. `expand =  list(x = '1mm')`
+#'  expands the x-axis on both sides with 1mm. `expand = list(x = c('0.5mm', 1.5mm')`
+#'  expands the x-axis on the left side with 0.5mm and on the right side with 1.5mm.}
 #'  \item{Exclam distance measures:}{ Distance measure with an exclamation mark
-#'  suffix. E.g. `expand = 1mm!` centers the image and forces an axis length of
+#'  suffix. E.g. `expand = '1mm!'` centers the image and forces an axis length of
 #'  1 millimeter. (Example 5) }
 #'  }
+#'
+#' Depending on how the values are specified different parts of the image can be
+#' expanded.
 #'
 #' Single values, like `expand = 50`, are recycled: Every end of each image axis
 #' is expanded by 50 pixel. (Example 2)

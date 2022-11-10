@@ -1148,9 +1148,8 @@ transformSeuratToSpata <- function(seurat_object,
 
     spata_object <- setImageObject(spata_object, image_object = image_object)
 
-    spata_object <- flipImage(spata_object)
-
     spata_object <- flipImageAndCoords(spata_object, axis = "x")
+
 
   } else {
 
@@ -1158,7 +1157,6 @@ transformSeuratToSpata <- function(seurat_object,
 
   }
 
-  spata_object <- flipCoords(object = spata_object)
 
   # other lists
   spata_object@information <-

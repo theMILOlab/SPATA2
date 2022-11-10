@@ -818,25 +818,14 @@ flipCoordsDf <- function(object, axis, verbose = NULL){
     axis <- axes[axes != axis]
     ax_range <- getImageRange(object)[[axis]]
 
-    # img annotations
-    img_anns <- getImageObject(object)@annotations
+    # coords df
+    coords_df <- getCoordsDf(object)
 
-    if(base::length(img_annotations) >= 1){
+    coords_df[[axis]] <- ax_range[2] - coords_df[[axis]] + ax_range[1]
 
-      axes <- c("x", "y")
-      axis <- axes[axes != axis]
-      ax_range <- getImageRange(object)[[axis]]
+    object <- setCoordsDf(object, coords_df)
 
-      # coords df
-      coords_df <- getCoordsDf(object)
-
-      coords_df[[axis]] <- ax_range[2] - coords_df[[axis]] + ax_range[1]
-
-      object <- setCoordsDf(object, coords_df)
-
-      object@images[[1]]@coordinates <- coords_df
-
-    }
+    object@images[[1]]@coordinates <- coords_df
 
   }
 
@@ -869,7 +858,7 @@ flipImageAnnotations <- function(object, axis, verbose = NULL){
     # img annotations
     img_anns <- getImageObject(object)@annotations
 
-    if(base::length(img_annotations) >= 1){
+    if(base::length(img_anns) >= 1){
 
       img_anns <-
         purrr::map(
@@ -917,6 +906,16 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
     axes <- c("x", "y")
     axis <- axes[axes != axis]
     ax_range <- getImageRange(object)[[axis]]
+
+    if(base::length(object@trajectories) == 0){
+
+      object@trajectories <-
+        purrr::set_names(
+          x = list(list()),
+          nm = object@samples
+        )
+
+    }
 
     trajectories <- object@trajectories[[1]]
 
@@ -968,7 +967,7 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
 #'
 flipImageAndCoords <- function(object, axis){
 
-  object <- flipCoords(object, axis = axis)
+  object <- flipCoordinates(object, axis = axis)
 
   object <- flipImage(object, axis = axis)
 

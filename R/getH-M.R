@@ -802,7 +802,7 @@ getImageAnnotationScreeningDf <- function(object,
                                           remove_angle_bins = FALSE,
                                           rename_angle_bins = FALSE,
                                           drop = TRUE,
-                                          verbose = TRUE,
+                                          verbose = NULL,
                                           ...){
 
   hlpr_assign_arguments(object)
@@ -850,7 +850,7 @@ getImageAnnotationScreeningDf <- function(object,
       rename = rename_angle_bins,
       remove = remove_angle_bins,
       drop = drop[2],
-      verbose = TRUE
+      verbose = verbose
     )
 
   # join with variables if desired

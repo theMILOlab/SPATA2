@@ -140,9 +140,6 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
   }
 
-
-
-
 }
 
 deprecatedArguments <- function(opt = "generally", fn_name = NULL){
