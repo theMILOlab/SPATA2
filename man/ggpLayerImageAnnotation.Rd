@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerImageAnnotation}
 \alias{ggpLayerImageAnnotation}
-\title{Add polygons of annotated structures}
+\title{Add borders of annotated structures}
 \usage{
 ggpLayerImageAnnotation(
   object = "object",
@@ -11,9 +11,9 @@ ggpLayerImageAnnotation(
   test = "any",
   alpha = 0.5,
   fill = NA,
-  linecolor = "black",
-  linesize = 1.5,
-  linetype = "solid",
+  line_color = "black",
+  line_size = 1.5,
+  line_type = "solid",
   display_color = FALSE,
   clrp = NULL,
   clrp_adjust = NULL,
@@ -35,23 +35,6 @@ family.
 \description{
 Adds ggplot2 layer of polygons of structures that were annotated within the image
 with \code{createImageAnnotations()}.
-}
-\details{
-How to use arguments \code{tags} and \code{test} to specify
-the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
-Argument \code{test} decides about how the specified tags are used to select
-the image annotations of interest. There are three options:
-\enumerate{
-\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-must be tagged with at least one of the input tags.
-\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags.
-\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags and must not be tagged with anything else.
-}
-
-Note that the filtering process happens in addition to / after the filtering by input for argument
-\code{ids}.
 }
 \note{
 Adds two additional layers to set the scales for the color- and

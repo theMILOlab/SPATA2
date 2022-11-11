@@ -3,7 +3,7 @@
 \name{transform_euol_to_pixel}
 \alias{transform_euol_to_pixel}
 \alias{transform_euol_to_pixels}
-\title{Transforms European Units of Length to pixels}
+\title{Convert from European Units of Length to pixels}
 \usage{
 transform_euol_to_pixel(
   input,
@@ -19,7 +19,7 @@ transform_euol_to_pixels(
   image_dims = NULL,
   method = NULL,
   round = FALSE,
-  as_numeric = FALSE
+  as_numeric = TRUE
 )
 }
 \arguments{
@@ -48,8 +48,10 @@ of \code{base::round()}. Rounds transformed values before they are returned.}
 This means that the unit is not \bold{not} suffixed.}
 }
 \value{
-Transformed input. Vector of the same length as \code{input}.
-\code{transform_euol_to_pixel()} returns always a single numeric value.
+Transformed input. Vector of the same length as input. Function
+\code{transform_euol_to_pixel()} always returns a single numeric value. Function
+\code{transform_euol_to_pixels()} returns a numeric vector by default. If \code{as_numeric}
+is \code{FALSE}, the output is a string suffixed with \emph{px}.
 }
 \description{
 Transforms European units of length (e.g. \emph{'2mm'}, \emph{'400.50um'})
@@ -84,8 +86,4 @@ is converted into vectors of class \code{units}. Therefore, input can be directl
 provided this way: \code{arg_input <- units::set_unit(x = c(2,4), value = 'mm')}
 Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
 to specify the input in pixel you have to use input option 1. Distance in pixel.
-}
-\note{
-\code{transform_euol_to_pixel()} transforms only single values. \code{transform_euol_to_pixels()}
-transforms vectors of lengths one or more.
 }

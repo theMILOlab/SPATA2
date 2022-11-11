@@ -1919,7 +1919,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
             choices <-
               getGroupNames(
                 object = spata_object(),
-                discrete_feature = input$segm_var_name
+                grouping_variable = input$segm_var_name
               ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
@@ -1965,7 +1965,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
             choices <-
               getGroupNames(
                 object = spata_object(),
-                discrete_feature = input$segm_var_name
+                grouping_variable = input$segm_var_name
               ) %>%
               stringr::str_subset(pattern = "^unnamed$", negate = TRUE)
 
@@ -2434,7 +2434,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
             rename_input <- purrr::set_names(x = input$segm_group, nm = "unnamed")
 
-            object <- renameGroups(object, discrete_feature = input$segm_var_name, rename_input)
+            object <- renameGroups(object, grouping_variable = input$segm_var_name, rename_input)
 
             spata_object(object)
 
@@ -2483,7 +2483,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
             rename_input <- purrr::set_names(x = input$segm_group, nm = new_name)
 
-            object <- renameGroups(object, discrete_feature = input$segm_var_name, rename_input)
+            object <- renameGroups(object, grouping_variable = input$segm_var_name, rename_input)
 
             spata_object(object)
 

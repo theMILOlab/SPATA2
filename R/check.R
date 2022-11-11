@@ -333,6 +333,21 @@ check_display <- function(display_title = FALSE,
 }
 
 
+
+# check_e -----------------------------------------------------------------
+
+check_expand <- function(expand, error = FALSE){
+
+  res <- is_dist(expand) | is_percentage(expand) | is_exclam(expand)
+
+  feedback_expand_input(x = res, error = error)
+
+  return(res)
+
+}
+
+
+
 # check_f -----------------------------------------------------------------
 
 #' @title Check feature data.frame
@@ -718,7 +733,7 @@ check_ias_input <- function(distance = NA_integer_,
   if(binwidth_spec){
 
     binwidth <-
-      asPixel(
+      as_pixel(
         input = binwidth,
         object = object,
         as_numeric = TRUE
@@ -729,7 +744,7 @@ check_ias_input <- function(distance = NA_integer_,
   if(dist_spec){
 
     distance <-
-      asPixel(
+      as_pixel(
         input = distance,
         object = object,
         as_numeric = TRUE,
@@ -835,6 +850,7 @@ check_image_annotation_tags <- function(object, tags = NULL, ...){
       against = getImageAnnotationTags(object),
       fdb.opt = 2,
       ref.opt = "image annotation tags",
+      fdb.fn = "warning",
       ...
     )
 

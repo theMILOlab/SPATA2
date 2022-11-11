@@ -694,7 +694,8 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 
 #' @title Plot image annotations
 #'
-#' @description Plots annotated
+#' @description Plots structures and areas that were annotated with `createImageAnnotations()`.
+#'
 #'
 #' @param plot Logical value. If TRUE, the plots are plotted immediately
 #' via \code{gridExtra.grid.arrange()} and the list of plots is returned
@@ -705,37 +706,173 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' is plotted in the subtitle.
 #' @param display_caption Logial value. If TRUE, the tags of each image annotation
 #' are plotted in the caption.
-#' @param encircle Logical value. If TRUE, are polygon is drawn around the
-#' exact extent of the annotated structure (as was drawn in \code{annotateImage()}).
-#' @inherit argument_dummy params
+#' @param encircle Logical value. If TRUE, a polygon is drawn around the
+#' exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.
+#' @param unit Character value. The unit in which the x- and y-axis text
+#' are displayed. Use `validUnitsOfLength()` to obtain all valid input options.
+#' @param round Numeric value or `FALSE`. If numeric and `unit` is not *px*, rounds
+#' axes text.
+#' @param ... Additional parameters given to `ggpLayerScaleBarEUOL()`. Exception:
+#' Arguments `xrange` and `yrange` correspond to the dimensions of the cropped
+#' image that displayes the image annotation.
+#' @param dist_sb Distance measure or FALSE. If distance measure,
+#' defines the distance in European units of length that a scale bar
+#' illustrates. Scale bar is plotted with `ggpLayerScaleBarEUOL()`. If `FALSE`,
+#' no scale bar is plotted.
+#' @param ... Additional arguments given to `ggpLayerScaleBarEUOL()` if input for
+#' `dist_sb` is a valid distance measure. Exception: `xrange` and `yrange` are
+#' set to the ranges of the image that was cropped according to the image
+#' annotation.
 #'
-#' @inherit getImageAnnotations details
+#' @seealso [getImageAnnotations()]
+#'
+#' @inherit argument_dummy params
 #'
 #' @return A list of ggplots. Each slot contains a plot
 #' that visualizes an image annotation.
 #'
 #' @export
 #'
+#' @details The argument `expand` is a versatile way, to specify how a cropped
+#' image section is extracted. If you want the cropped image as is, specify
+#' `expand = 0`. Else, there are multiple options. In general, `expand` takes
+#'  three kinds of values, namely percentages, distances and distance exclamations.
+#'
+#' \itemize{
+#'  \item{Percentage:}{ A string suffixed with *%*. See details of `is_percentage`
+#'  for more information. E.g. `expand = '100%'`, `expand = '75.5%'`}
+#'  \item{Distance measures:}{ In pixel or European units of length. E.g. `expand =  list(x = '1mm')`
+#'  expands the x-axis on both sides with 1mm. `expand = list(x = c('0.5mm', 1.5mm')`
+#'  expands the x-axis on the left side with 0.5mm and on the right side with 1.5mm.}
+#'  \item{Exclam distance measures:}{ Distance measure with an exclamation mark
+#'  suffix. E.g. `expand = '1mm!'` centers the image and forces an axis length of
+#'  1 millimeter. (Example 5) }
+#'  }
+#'
+#' Depending on how the values are specified different parts of the image can be
+#' expanded.
+#'
+#' Single values, like `expand = 50`, are recycled: Every end of each image axis
+#' is expanded by 50 pixel. (Example 2)
+#'
+#' Vectors of length two, like `expand = c('1mm', '2mm')`, are recycled: The beginning
+#' of each axis is expanded by 1 millimeter. The end of each axis is expanded by
+#' 2mm. (Example 3)
+#'
+#' Named lists can be more precise. `expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm'))`.
+#' Applies the vectors to expand the corresponding axis. (Example 4)
+#'
+#' Using exclam input the side of the axis must not be specified as the
+#' axis is fixed as a whole. E.g `expand = list(x = '1mm!', y = '2mm!')` results
+#' in the same output as `expand = list(x = c('1mm!', '1mm'), y = c('2mm!', '2mm!')`.
+#'
+#' @return An image of class \emph{EBImage}.
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object <- downloadSpataObjet(sample_name = "275_T")
+#'
+#' data("image_annotations")
+#'
+#' object <- setImageAnnotations(object, img_anns = image_annotations[["275_T"]])
+#'
+#' plotImageAnnotations(
+#'  object = object,
+#'  ids = "img_ann_1",
+#'  expand = "0.5mm",
+#'  encircle = T # no encircling possible if expand = 0
+#'  )
+#'
+#' ### Example 1
+#'
+#' plotImageAnnotations(
+#'  object = object,
+#'  ids = "img_ann_1",
+#'  expand = 0,
+#'  encircle = FALSE # no encircling possible if expand = 0
+#'  )
+#'
+#'  process_expand_input(0)
+#'
+#' ### Example 2
+#' plotImageAnnotations(
+#'  object = object,
+#'  ids = "img_ann_1",
+#'  expand = 50, # all sides are expanded with 50px -> 100px gain per axis
+#'  encircle = TRUE
+#'  )
+#'
+#'  process_expand_input(50)
+#'
+#' ### Example 3
+#' plotImageAnnotations(
+#'  object = object,
+#'  ids = "img_ann_1",
+#'  expand = c("1mm", "2mm"),
+#'  encircle = TRUE
+#'  )
+#'
+#'  process_expand_input(c("1mm", "2mm"))
+#'
+#' ### Example 4
+#' plotImageAnnotations(
+#'  object = object,
+#'  ids = "img_ann_1",
+#'  expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')),
+#'  encircle = TRUE
+#'  )
+#'
+#'  process_expand_input(list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')))
+#'
+#'
+#' ### Example 5
+#' plotImageAnnotations(
+#'  object = object,
+#'  ids = "img_ann_1",
+#'  expand = "1mm!", # center image and force axis length of 1mm
+#'  encircle = TRUE,
+#'  dist_sb = "100um",
+#'  text_color = "white",
+#'  sgmt_color = "white",
+#'  pos = "bottom_right",
+#'  )
+#'
+#'  process_expand_input("1mm!")
+#'
+#'
 plotImageAnnotations <- function(object,
                                  ids = NULL,
                                  tags = NULL,
                                  test = "any",
                                  expand = 0.05,
-                                 square = FALSE,
+                                 square = TRUE,
                                  encircle = TRUE,
-                                 linecolor = "black",
-                                 linesize = 1.5,
-                                 linetype = "solid",
+                                 unit = "px",
+                                 round = 2,
+                                 line_color = "black",
+                                 line_size = 1.5,
+                                 line_type = "solid",
                                  fill = "orange",
                                  alpha = 0.25,
+                                 dist_sb = FALSE,
                                  display_title = FALSE,
                                  display_subtitle = TRUE,
-                                 display_caption = TRUE,
+                                 display_caption = FALSE,
                                  ggpLayers = list(),
                                  nrow = NULL,
                                  ncol = NULL,
                                  plot = TRUE,
                                  ...){
+
+  deprecated(...)
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfLength()
+  )
 
   img_annotations <-
     getImageAnnotations(
@@ -757,15 +894,18 @@ plotImageAnnotations <- function(object,
 
         img_info <- img_ann@image_info
 
+        limits_x <- c(img_info$xmin, img_info$xmax)
+        limits_y <- c(img_info$ymin_coords, img_info$ymax_coords)
+
         if(base::isTRUE(encircle)){
 
           encircle_add_on <-
             ggplot2::geom_polygon(
               data = img_ann@area,
               mapping = ggplot2::aes(x = x, y = y),
-              size = linesize,
-              color = linecolor,
-              linetype = linetype,
+              size = line_size,
+              color = line_color,
+              linetype = line_type,
               alpha = alpha,
               fill = fill
             )
@@ -776,8 +916,44 @@ plotImageAnnotations <- function(object,
 
         }
 
+        if(unit == "px"){
+
+          labels <- ggplot2::waiver()
+
+        } else {
+
+          labels  <-
+            ~ transform_pixels_to_euol(
+                input = .x,
+                euol = unit,
+                object = object,
+                as_numeric = TRUE,
+                round = round
+              )
+
+        }
+
+        if(is_dist_euol(input = dist_sb)){
+
+          scale_bar_add_on <-
+            ggpLayerScaleBarEUOL(
+              object = object,
+              dist_sb = dist_sb,
+              xrange = c(img_info$xmin, img_info$xmax),
+              yrange = c(img_info$ymin_coords, img_info$ymax_coords),
+              ...
+            )
+
+        } else {
+
+          scale_bar_add_on <- ggpLayerThemeCoords()
+
+        }
+
+        coords_df <- getCoordsDf(object)
+
         plot_out <-
-          ggplot2::ggplot() +
+          ggplot2::ggplot(data = coords_df) +
           ggplot2::theme_bw() +
           ggplot2::annotation_raster(
             raster = image_raster,
@@ -787,10 +963,19 @@ plotImageAnnotations <- function(object,
             ymax = img_info$ymax_coords
           ) +
           encircle_add_on +
-          ggplot2::scale_x_continuous(limits = c(img_info$xmin, img_info$xmax), expand = c(0, 0)) +
-          ggplot2::scale_y_continuous(limits = c(img_info$ymin_coords, img_info$ymax_coords), expand = c(0,0)) +
+          ggplot2::scale_x_continuous(
+            limits = limits_x,
+            expand = c(0, 0),
+            labels = labels
+            ) +
+          ggplot2::scale_y_continuous(
+            limits = limits_y,
+            expand = c(0, 0),
+            labels = labels
+            ) +
+          scale_bar_add_on +
           ggplot2::coord_fixed() +
-          ggpLayerThemeCoords() +
+          ggplot2::labs(x = NULL, y = NULL) +
           ggpLayers
 
         if(base::isTRUE(display_title)){
@@ -853,14 +1038,64 @@ plotImageAnnotations <- function(object,
 
 
 
-#' @rdname plotImage
+
+#' @title Plot histology image (ggplot2)
+#'
+#' @description Plots the histology image with `ggplot2`.
+#'
+#' @param unit Character value. Units of x- and y-axes. Defaults
+#' to *'px'*.
+#' @param ... Additional arguments given to `ggpLayerAxesEUOL()` if
+#' `unit` is not *'px'*.
+#' @inherit argument_dummy params
+#'
+#' @inherit ggplot_dummy return
 #' @export
-plotImageGgplot <- function(object){
+#'
+plotImageGgplot <- function(object,
+                            unit = "px",
+                            frame_by = "image",
+                            xrange = NULL,
+                            yrange = NULL,
+                            ...){
+
+  if(unit %in% validEuropeanUnitsOfLength()){
+
+    if(!base::is.null(xrange) | !base::is.null(yrange)){
+
+      frame_by <- list(x = xrange, y = yrange)
+
+    }
+
+    axes_add_on <-
+      ggpLayerAxesEUOL(
+        object = object,
+        euol = unit,
+        frame_by = frame_by,
+        ...
+      )
+
+  } else{
+
+    axes_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
+
+  }
+
+  if(frame_by == "image"){
+
+    frame_add_on <- ggpLayerFrameByImage(object)
+
+  } else {
+
+    frame_add_on <- ggpLayerFrameByCoords(object)
+
+  }
 
   ggpInit(object) +
     ggpLayerImage(object) +
-    ggpLayerFrameByImage(object) +
-    ggpLayerThemeCoords()
+    frame_add_on +
+    axes_add_on
+
 
 }
 

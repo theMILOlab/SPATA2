@@ -2,9 +2,15 @@
 % Please edit documentation in R/i.R
 \name{is_area}
 \alias{is_area}
+\alias{is_area_pixel}
+\alias{is_area_si}
 \title{Test area input}
 \usage{
 is_area(input, error = FALSE)
+
+is_area_pixel(input, error = FALSE)
+
+is_area_si(input, error = FALSE)
 }
 \arguments{
 \item{input}{Character vector. Elements must match the requirements of

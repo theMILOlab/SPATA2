@@ -17,16 +17,7 @@
 \alias{as_pixel}
 \title{Transform distance and area values}
 \usage{
-as_unit(
-  input,
-  unit,
-  object = NULL,
-  image_dims = NULL,
-  method = NULL,
-  round = FALSE,
-  verbose = FALSE,
-  ...
-)
+as_unit(input, unit, object = NULL, round = FALSE, verbose = FALSE, ...)
 
 as_centimeter(input, ...)
 
@@ -52,7 +43,7 @@ as_nanometer(input, ...)
 
 as_nanometer2(input, ...)
 
-as_pixel(input, object = NULL, ...)
+as_pixel(input, object = NULL, ..., add_attr = TRUE)
 }
 \arguments{
 \item{input}{Values that represent spatial measures.}
@@ -60,18 +51,6 @@ as_pixel(input, object = NULL, ...)
 \item{unit}{Character value. Specifies the desired unit.}
 
 \item{object}{An object of class \code{SPATA2}.}
-
-\item{image_dims}{Numeric vector of length two. Specifies the dimensions
-of the image to which the distance is scaled. First value corresponds to
-the width, second value corresponds to the height of the image.
-
-Ignored if \code{object} is specified (carries needed information).}
-
-\item{method}{The spatial -omic method by name as a character value or S4 object
-of class \code{SpatialMethod}. Specifies the method and thus the frame size of
-the original image in European units of length. If character, must be one of \code{validSpatialMethods()}.
-
-Ignored if \code{object} is specified (carries needed information).}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}

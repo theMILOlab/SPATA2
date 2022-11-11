@@ -105,17 +105,21 @@ examineClusterResults <- function(cluster_df){
 
 
 
-#' @title Exchange HE-Image
+#' @title Exchange image
 #'
 #' @description Exchanges histology images and scales the coordinates
 #' accordingly. Use argument \code{resize} to downscale images that
 #' are too big for R to handle.
 #'
-#' @param image_dir Character value. Directory to the image you want to
-#' exchange the current image with. Should be .png.
+#' @param image Image input or character value. If character, input is interpreted as a directory
+#' to a file or to an URL and is read with `EBImage::readImage()`. The read image
+#' should be of type *.png*, *.jpeg* or *.tiff*.
+#'
+#' If not character, the function ensures that the input is - or is convertible - to
+#' class `Image` via `EBimage::as.Image()`. If it fails, an error is thrown.
 #'
 #' @param resize Numeric vector of length two, numeric value or NULL. If numeric,
-#' specifies the size with which the loaded image is eventually saved.
+#' specifies the size with which the image is eventually saved.
 #'
 #' If \code{resize} is of length one, e.g. \code{resize} = 3, the image dimensions
 #' of the old image are multiplied with the \code{resize}, here with 3, to create the dimensions
@@ -128,34 +132,58 @@ examineClusterResults <- function(cluster_df){
 #' the second value sets the height.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy params
 #'
-#' @details The function requires the spata object to already contain an
+#' @details The function requires the `SPATA2` object to already contain an
 #' image. This is because images of different resolution (total number of pixels)
 #' require the barcode-spots x- and y-coordinates to be scaled. The scale
 #' factor is computed by comparing the resolution of the old image with
 #' the one from the image that is supposed to replace the old one (after resizing,
 #' if resizing is desired).
 #'
-#' @return An updated spata object.
-#'
 #' @export
 
-exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
+exchangeImage <- function(object,
+                          image,
+                          resize = NULL,
+                          verbose = NULL,
+                          ...){
+
+  deprecated(...)
 
   check_object(object)
 
   hlpr_assign_arguments(object)
 
-  sample <- getSampleNames(object)[1]
-
+  # extract old image
   old_image <- getImage(object)
 
   if(base::is.null(old_image)){
 
-    stop("Spata object does not contain an image that can be exchanged.")
+    stop("`SPATA2` object does not contain an image that can be exchanged.")
 
   }
 
+  dim_old <- base::dim(old_image)
+
+
+  # handle input
+  if(base::is.character(image) && base::length(image) == 1){
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading image from '{image}'."),
+      verbose = verbose
+    )
+
+    new_image <-  EBImage::readImage(files = image)
+
+  } else {
+
+    new_image <- EBImage::as.Image(x = image)
+
+  }
+
+  # resize input if needed
   confuns::is_vec(
     x = resize,
     mode = "numeric",
@@ -163,15 +191,6 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
     skip.allow = TRUE,
     skip.val = NULL
   )
-
-  dim_old <- base::dim(old_image)
-
-  confuns::give_feedback(
-    msg = glue::glue("Reading image from '{image_dir}'."),
-    verbose = verbose
-  )
-
-  new_image <- EBImage::readImage(files = image_dir)
 
   if(base::is.numeric(resize)){
 
@@ -202,64 +221,31 @@ exchangeImage <- function(object, image_dir, resize = NULL, verbose = NULL){
 
   }
 
-  confuns::give_feedback(
-    msg = "Scaling coordinates.",
-    verbose = verbose
-  )
-
+  # calc factor
   dim_new <- base::dim(new_image)
 
   dim_fct <- c(dim_new[1]/dim_old[1], dim_new[2]/dim_old[2])
 
-  coords_df <- getCoordsDf(object)
+  # scale spatial aspects
+  object <-
+    scaleCoordinates(
+      object = object,
+      scale_fct = dim_fct,
+      verbose = verbose
+      )
 
-  coords_df_new <- dplyr::mutate(coords_df, x = x * dim_fct[1], y = y * dim_fct[2])
-
-  object <- setCoordsDf(object, coords_df = coords_df_new)
-
-  object@trajectories[[sample]] <-
-    purrr::map(
-      .x = object@trajectories[[sample]],
-      .f = function(traj){
-
-        traj@projection <-
-          traj@projection %>%
-          dplyr::mutate( x = x * dim_fct[1], y = y * dim_fct[2])
-
-        traj@segment <-
-          traj@segment %>%
-          dplyr::mutate(
-            x = x * dim_fct[1], xend = xend * dim_fct[1],
-            y = y * dim_fct[2], yend = yend * dim_fct[2]
-          )
-
-        return(traj)
-
-      }
-    )
-
+  # set new image
   image_obj <- getImageObject(object)
-
-  image_obj@annotations <-
-    purrr::map(
-      .x = image_obj@annotations,
-      .f = function(img_ann){
-
-        img_ann@area$x <- img_ann@area$x * dim_fct[1]
-        img_ann@area$y <- img_ann@area$y * dim_fct[2]
-
-        return(img_ann)
-
-      }
-    )
 
   image_obj@image <- new_image
 
-  object@information$bcsp_dist <- NULL
-
-  object@information$bcsp_dist <- getBarcodeSpotDistance(object)
-
   object <- setImageObject(object, image_object = image_obj)
+
+  object <-
+    setPixelScaleFactor(
+      object = object,
+      pxl_scale_fct = NULL # forces computation
+      )
 
   give_feedback(msg = "Image exchanged.", verbose = verbose)
 
@@ -345,5 +331,182 @@ extract_value <- function(input){
   # regex works for area and distance values
   stringr::str_extract(input, pattern = regex_dist_value) %>%
     base::as.numeric()
+
+}
+
+
+
+
+# expand ------------------------------------------------------------------
+
+expand_image_range <- function(range,
+                               expand_with,
+                               object,
+                               ref_axis,
+                               limits = NULL){
+
+  if(base::length(expand_with) == 1){
+
+    expand_with <- base::rep(expand_with, 2)
+
+  }
+
+  # handle exclam input
+  if(base::any(is_exclam(expand_with))){
+
+    abs_axes_length <-
+      stringr::str_remove(string = expand_with, pattern = "!$") %>%
+      base::unique() %>%
+      as_pixel(input = ., object = object, add_attr = FALSE)
+
+    center <- base::mean(range)
+
+    out1 <- center - abs_axes_length/2
+
+    out2 <- center + abs_axes_length/2
+
+    if(base::is.numeric(limits)){
+
+      if(out1 < limits[1]){
+
+        warning(
+          glue::glue(
+            "Min. of image {ref_axis} is {out1} due to `expand` but must not be lower than {limit}px. Returning {limit}px.",
+            out1 = base::round(out1, digits = 5) %>% stringr::str_c(., "px"),
+            limit = limits[1]
+          )
+        )
+
+        out1 <- limits[1]
+
+      }
+
+      if(out2 > limits[2]){
+
+        warning(
+          glue::glue(
+            "Max. of image {ref_axis} is {out2} due to `expand` but must not be higher than {limit}px. Returning {limit}px.",
+            out2 = base::round(out2, digits = 5) %>% stringr::str_c(., "px"),
+            limit = limits[2]
+          )
+        )
+
+        out2 <- limits[2]
+      }
+
+    }
+
+  # handle normal input
+  } else {
+
+    out1 <-
+      expand_image_side(
+        side = 1,
+        range = range,
+        expand_with = expand_with[1],
+        object = object,
+        ref_axis = ref_axis,
+        limit = limits[1]
+      )
+
+    out2 <-
+      expand_image_side(
+        side = 2,
+        range = range,
+        expand_with = expand_with[2],
+        object = object,
+        ref_axis = ref_axis,
+        limit = limits[2]
+      )
+
+
+
+  }
+
+
+
+  out <- c(out1, out2)
+
+  return(out)
+
+
+}
+
+
+expand_image_side <- function(expand_with,
+                              range,
+                              side = c(1,2),
+                              object,
+                              ref_axis,
+                              limit = NULL){
+
+  if(is_dist(expand_with)){ # expand in absolute measures
+
+    expand_abs <- as_pixel(expand_with, object = object, add_attr = FALSE)
+
+    if(side == 1){
+
+      out <- range[side] - expand_abs
+
+    } else if(side == 2){
+
+      out <- range[side] + expand_abs
+
+    }
+
+  } else { # expand in relative measures from the center
+
+    rdist <- range[2]-range[1]
+    rmean <- base::mean(range)
+
+    expand_perc <-
+      stringr::str_remove(expand_with, pattern = "%") %>%
+      base::as.numeric() %>%
+      base::abs()
+
+    expand_fct <- (expand_perc/100) + 1
+
+    expand_abs <- (rdist/2)*expand_fct
+
+    if(side == 1){
+
+      out <- rmean - expand_abs
+
+    } else if(side == 2){
+
+      out <- rmean + expand_abs
+
+    }
+
+  }
+
+  if(base::is.numeric(limit)){
+
+    if(side == 1 & out < limit){
+
+      warning(
+        glue::glue(
+          "Min.of image {ref_axis} is {out} but must not be lower than {limit}px. Returning {limit}px.",
+          out = base::round(out, digits = 5) %>% stringr::str_c(., "px")
+        )
+      )
+
+      out <- limit
+
+    } else if(side == 2 & out > limit){
+
+      warning(
+        glue::glue(
+          "Max. of image {ref_axis} is {out} but must not be higher than {limit}px. Returning {limit}px.",
+          out = base::round(out, digits = 5) %>% stringr::str_c(., "px")
+        )
+      )
+
+      out <- limit
+    }
+
+  }
+
+  return(out)
 
 }

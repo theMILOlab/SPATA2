@@ -241,7 +241,20 @@ initiateSpataObject_CountMtr <- function(coords_df,
       verbose = verbose
     )
 
+    # updates
     spata_object@information$method <- Visium
+
+
+    if(!"histology" %in% getFeatureNames(spata_object)){
+
+      spata_object <-
+        addSegmentationVariable(
+          object = spata_object,
+          name = "histology",
+          verbose = FALSE
+        )
+
+    }
 
 
     # -----
@@ -408,6 +421,17 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
   spata_object@information$method <- Visium
 
   spata_object <- setPixelScaleFactor(spata_object)
+
+  if(!"histology" %in% getFeatureNames(spata_object)){
+
+    spata_object <-
+      addSegmentationVariable(
+        object = spata_object,
+        name = "histology",
+        verbose = FALSE
+      )
+
+  }
 
 
   # -----
@@ -710,6 +734,12 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   spata_object <- setPixelScaleFactor(spata_object)
 
 
+  if(!"histology" %in% getFeatureNames(spata_object)){
+
+    spata_object <- addSegmentationVariable(object = spata_object, name = "histology")
+
+  }
+
   # -----
 
   base::return(spata_object)
@@ -983,6 +1013,18 @@ initiateSpataObject_10X <- function(directory_10X,
   spata_object@information$method <- Visium
 
   spata_object <- setPixelScaleFactor(spata_object)
+
+  if(!"histology" %in% getFeatureNames(spata_object)){
+
+    spata_object <-
+      addSegmentationVariable(
+        object = spata_object,
+        name = "histology",
+        verbose = FALSE
+        )
+
+  }
+
 
   # -----
 

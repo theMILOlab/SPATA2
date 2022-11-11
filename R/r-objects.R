@@ -476,6 +476,7 @@ depr_info <-
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
+      "flipCoords" = "flipCoordinates",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
       "getSampleNames" = "getSampleName",
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
@@ -500,8 +501,14 @@ depr_info <-
     ),
     args = list(
       "discrete_feature" = "grouping_variable",
+      "linealpha" = "line_alpha",
+      "linecolor" = "line_color",
+      "linesize" = "line_size",
       "of_sample" = NA_character_,
       "trajectory_name" = "id"
+    ),
+    args_spec = list(
+      "exchangeImage" = list("image_dir" = "image")
     )
   )
 
@@ -531,6 +538,12 @@ euol_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10
 invalid_area_input <-
   "Input can not be interpreted as an area. Please see details at `?is_area` for more information."
 
+invalid_area_pixel_input <-
+  "Input can not be interpreted as an area in pixel. Please see details at `?is_area` for more information."
+
+invalid_area_si_input <-
+  "Input can not be interpreted as an area in SI units. Please see details at `?is_area` for more information."
+
 invalid_dist_input <-
   "Input can not be interpreted as a distance. Please see details at `?is_dist` for more information."
 
@@ -540,6 +553,8 @@ invalid_dist_euol_input <-
 invalid_dist_pixel_input <-
   "Input can not be interpreted as a distance in pixel. Please see details at `?is_dist_pixel` for more information."
 
+invalid_img_ann_tests <-
+  "Invalid input for argument `test`. See details of `getImageAnnotationIds()`for more information."
 
 
 # m -----------------------------------------------------------------------
@@ -588,6 +603,10 @@ model_formulas <-
   )
 
 
+
+msg_scale_bar_bad_pos <-
+  c("Can not properly position text without `yrange`. If bad position: Use `text_nudge_y' to adjust.'")
+
 # p -----------------------------------------------------------------------
 
 pattern_formulas <-
@@ -612,6 +631,9 @@ pattern_formulas <-
     p_abrupt_asc = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
     p_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
   )
+
+
+plot_positions <- c("top_right", "top_left", "bottom_right", "bottom_left")
 
 projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")
 
@@ -640,8 +662,9 @@ regex_dist_value <-
     "(", regex_scientific_notation, ")|",
     "(", regex_number, ")|",
     "(", regex_dec_number, ")"
-
     )
+
+regex_num_value <- regex_dist_value
 
 # matches euol
 regex_euol <- stringr::str_c(string = base::unname(euol_abbr), "$", collapse = "|")
@@ -649,8 +672,17 @@ regex_euol <- stringr::str_c(string = base::unname(euol_abbr), "$", collapse = "
 # matches area units
 regex_area_units <-
   stringr::str_c(euol_abbr, "2", sep = "") %>%
+  c("px") %>%
   stringr::str_c("$") %>%
   stringr::str_c(collapse = "|")
+
+regex_area_units_si <-
+  stringr::str_c(euol_abbr, "2", sep = "") %>%
+  stringr::str_c("$") %>%
+  stringr::str_c(collapse = "|")
+
+
+regex_percentage <- stringr::str_c("(", regex_num_value, ")%$", sep = "")
 
 # matches pixel if single numeric value
 # does NOT ignore suffix -> use to test pixel input
@@ -663,7 +695,7 @@ regex_pxl_dec_num <- stringr::str_c(regex_dec_number, "$", sep = "")
 regex_pxl <- "px$"
 
 # matches dist_value if combined with "px" or if only a number
-regex_pxl_dist <-
+regex_pxl_area <-
   stringr::str_c(
     stringr::str_c(regex_number, regex_pxl, sep = ""),
     stringr::str_c(regex_dec_number, regex_pxl, sep = ""),
@@ -672,12 +704,16 @@ regex_pxl_dist <-
     sep = "|"
   )
 
+regex_pxl_dist <- regex_pxl_area
+
 
 # matches dist_value if combined with an euol
 # does NOT, ignore suffix -> use to test euol input
 regex_euol_dist <- stringr::str_c("(", regex_dist_value, ")(", regex_euol, ")", sep = "")
 
-regex_area <- stringr::str_c("(", regex_dist_value, ")(",regex_area_units, ")", sep = "")
+regex_area <- stringr::str_c("(", regex_dist_value, ")(", regex_area_units, ")", sep = "")
+
+regex_si_area <- stringr::str_c("(", regex_dist_value, ")(", regex_area_units_si, ")", sep = "")
 
 # matches distance input either provided as euol or px
 regex_dist <-
@@ -686,6 +722,17 @@ regex_dist <-
     stringr::str_c(regex_euol_dist),
     sep = "|"
   )
+
+regex_exclam1 <-
+  stringr::str_c(
+    "(", regex_dist_value, ")",
+    "(", stringr::str_c(c(euol_abbr, "px"), collapse = "|"), ")",
+    "!$"
+  )
+
+regex_exclam2 <- stringr::str_c(regex_dist_value, "!$")
+
+regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 
 regex_unit <- stringr::str_c(regex_euol, regex_pxl, regex_area_units, sep = "|")
 

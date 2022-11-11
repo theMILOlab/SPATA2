@@ -19,6 +19,8 @@ getBarcodeSpotDistance(
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 If \code{unit} is \emph{'pixel'} a numeric value that scales

@@ -31,8 +31,7 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
-function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

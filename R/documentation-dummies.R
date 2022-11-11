@@ -295,31 +295,13 @@ variables_num <- function(variables){}
 #' @param error Logical. If \code{TRUE} and the input is invalid the
 #' function throws an error.
 #'
-#' @param expand Vector of length one or two. Specifies the extent to which the  x- and y-span
-#' of the cropped image section is expanded. There are two options to provide values:
+#' @param expand_x,expand_y Given to argument `expand` of `ggplot2:scale_x/y_continuous()`.
 #'
-#' Values from 0 to 1 are used to calculate the corresponding percentage of the image
-#' span which is then \bold{added} to it. E.g. \code{expand} = 1 doubles the span,
-#' \code{expand} = 0.5 results in 150 percent of the span and \code{expand} = 0 returns the
-#' original span.
-#'
-#' Values bigger than 1 are considered to be absolute values. The returned image
-#' section has the exact x- and y- spans as specified in \code{expand}.
-#' E.g. \code{expand} = 200 results in an image section with x- and y-span of
-#' 200. If the input value is bigger than 1 it must be at least as big as the
-#' original span of the image annotation.
-#'
-#' To adjust x- and y-span specifically you can provide a vector of length 2.
-#' If you do so the first value is taken to adjust the x-span and the second
-#' value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
-#' of the original x-span to the x-span of the image section and does not adjust
-#' the y-span.
-#'
-#' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in European units of length the input is
-#' immediately converted to pixel units.
-#'
-#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
+#' @param expand Specifies image expansion. An image that is cropped based on an image
+#' annotation centers around the image annotation. If `expand = 0`, the default, the dimensions of the image,
+#' that is width/x-axis and height/y-axis, are set to include only the image annotation area
+#' and nothing more. Using `expand`, the cropped image section can be adjusted. See details
+#' for more information.
 #'
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
@@ -331,8 +313,10 @@ variables_num <- function(variables){}
 #' \code{ggplot2::geom_hline()} that control the appearance of vertical lines
 #' of the plot.
 #'
-#' @param ids Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
-#' interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.
+#' @param ids Character vector or `NULL`. If character, specifies the IDs
+#' of the image annotations of interest. If numeric, the image annotations are picked by number.
+#' If `NULL`, all image annotations are included - subsequent selection with `tags` and
+#' `test` is possible.
 #'
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
@@ -396,6 +380,10 @@ variables_num <- function(variables){}
 #' of `scattermore::geom_scattermore()`. Note: With increasing `sctm_pixels`
 #' the point size must be adjusted with the argument `pt_size`.
 #'
+#' @param sgmt_alpha,sgmt_color,sgmt_size,sgmt_type Parameters given to
+#' \code{ggplot2::geom_segment()} that control the appearance of segments
+#' of the plot.
+#'
 #' @param signif_var Character value. Determines what to be considered while checking
 #' for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).
 #' @param signif_threshold Numeric value. Significance values below \code{signif_threshold}
@@ -407,18 +395,42 @@ variables_num <- function(variables){}
 #' @param smooth_span Numeric value. Controls the degree of smoothing.
 #' Given to argument \code{span} of \code{stats::loess()}.
 #'
-#' @param square Logical. If TRUE, the cropped section of the image that contains the annotated
-#' structure is forced into a square. X- and yspan of the square are equal to the span
-#' that is the biggest. If FALSE, the section is cropped according to the extent
-#' of the annotated structure and the input for argument \code{expand}.
+#' @param square Logical value. Most image annotations come in variable shapes and
+#' have different horizontal and vertical diameters. Therefore, height and width of the image
+#' section are usually not equal. If `square = TRUE`, the cropped section of the image that
+#' contains the annotated structure is forced into a square: the bigger diameter of both is taken
+#' as default. E.g. if the horizontal diameter of the image annotation is 1mm and the
+#' vertical diameter is 1.5mm, the output image will have height and width of 1.5mm. That is,
+#' in terms of coordinates, an x-range and a y-range of 1.5mm.
+#'
+#' Processing of the image output depending on argument `expand` happens afterwards.
 #'
 #' @param summarize_with Character value. Name of the function with which to summarize.
 #'
-#' @param tags Character vector or NULL. If character, the image annotation tags of interest.
+#' @param tags,test Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the image annotations of interest. There are multiple options:
 #'
-#' @param test Character value. Specifies how the input of \code{tags} is used to
-#' subset the image annotations. One of \emph{'any'}, \emph{'all'} or \emph{'identical'}.
-#' See details for more information.
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can contain tags that are not specified.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can not be tagged with anything else.
+#'
+#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
+#' annotation must **not** be tagged with the combination of input tags.
+#'
+#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
+#' must **not** contain any of the input tags.
+#'
+#' Note that the filtering process happens in addition to / after the filtering by input for argument
+#' \code{ids}.
+#'
+#' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters
+#' given to `ggplot2::geom_text()` that control the appearance of text of the plot.
 #'
 #' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -457,6 +469,9 @@ variables_num <- function(variables){}
 #' immediately converted to pixel units.
 #'
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
+#'
+#'
+#' @param ... Used to absorb deprecated arguments or functions.
 #'
 
 argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}

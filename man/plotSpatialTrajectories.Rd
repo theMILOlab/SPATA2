@@ -34,8 +34,10 @@ plotSpatialTrajectories(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{ids}{Character vector, numeric vector, or NULL. If character, the IDs of the image annotations of
-interest. If numeric, the image annotations are picked by number. If NULL, all image annotations are included.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{color_by}{The variable to be displayed by color:
 
@@ -93,6 +95,8 @@ the computational progress will be printed.
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

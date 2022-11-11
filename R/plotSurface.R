@@ -306,7 +306,8 @@ plotSurface2 <- function(coords_df,
       clrsp = pt_clrsp,
       variable = dplyr::pull(coords_df, {{color_by}}),
       clrp.adjust = clrp_adjust,
-      ...) +
+      ...
+      ) +
     ggplot2::theme_void() +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank()

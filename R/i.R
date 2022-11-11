@@ -529,6 +529,63 @@ is_area <- function(input, error = FALSE){
 
 }
 
+#' @rdname is_area
+#' @export
+
+is_area_pixel <- function(input, error = FALSE){
+
+  if(base::is.character(input) | is_numeric_input(input)){
+
+    res <- stringr::str_detect(input, pattern = regex_pxl_area)
+
+    feedback_area_pixel_input(x = res, error = error)
+
+  } else {
+
+    if(base::isTRUE(error)){
+
+      stop(invalid_area_pixel_input)
+
+    } else {
+
+      res <- base::rep(FALSE, base::length(input))
+
+    }
+
+  }
+
+  return(res)
+
+}
+
+#' @rdname is_area
+#' @export
+is_area_si <- function(input, error = FALSE){
+
+  if(base::is.character(input) | is_numeric_input(input)){
+
+    res <- stringr::str_detect(input, pattern = regex_si_area)
+
+    feedback_area_si_input(x = res, error = error)
+
+  } else {
+
+    if(base::isTRUE(error)){
+
+      stop(invalid_area_si_input)
+
+    } else {
+
+      res <- base::rep(FALSE, base::length(input))
+
+    }
+
+  }
+
+  return(res)
+
+}
+
 
 #' @title Test area or distance input
 #'
@@ -706,11 +763,9 @@ is_dist_euol <- function(input, error = FALSE){
 
     } else {
 
-      res <- base::rep(res, base::length(input))
+      res <- base::rep(FALSE, base::length(input))
 
     }
-
-
 
   }
 
@@ -747,6 +802,16 @@ is_dist_pixel <- function(input, error = FALSE){
 }
 
 
+is_exclam <- function(input, error = FALSE){
+
+  res <-
+    stringr::str_detect(string = input, pattern = regex_exclam) &
+    stringr::str_detect(string = input , pattern = "!$")
+
+  return(res)
+
+}
+
 is_number <- function(x){
 
   !(base::is.na(x) | base::is.na(x) | base::is.infinite(x))
@@ -757,6 +822,17 @@ is_numeric_input <- function(input){
 
   (base::is.numeric(input)) &
   (!"units" %in% base::class(input))
+
+}
+
+
+is_percentage <- function(input, error = FALSE){
+
+  res <- stringr::str_detect(string = input, pattern = regex_percentage)
+
+  feedback_percentage_input(x = res, error = error)
+
+  return(res)
 
 }
 

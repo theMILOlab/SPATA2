@@ -2,12 +2,9 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotImage}
 \alias{plotImage}
-\alias{plotImageGgplot}
 \title{Plot histology image}
 \usage{
 plotImage(object, xrange = NULL, yrange = NULL, ...)
-
-plotImageGgplot(object)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
@@ -23,6 +20,8 @@ If values are specified in European units of length the input is
 immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A plot that is immediately plotted.

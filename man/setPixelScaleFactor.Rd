@@ -4,13 +4,18 @@
 \alias{setPixelScaleFactor}
 \title{Set pixel scale factor}
 \usage{
-setPixelScaleFactor(object, pxl_scale_fct = NULL)
+setPixelScaleFactor(object, pxl_scale_fct = NULL, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{pxl_scale_fct}{Numeric value with an attribute named
 \emph{unit} with the unit euol/px.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 The input \code{SPATA2} object containing the added or computed

@@ -134,6 +134,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{...}{Used to absorb deprecated arguments or functions.}
+
 \item{order_by}{Character value or \code{NULL}. If character, the specified
 variable is used to order the data points.}
 

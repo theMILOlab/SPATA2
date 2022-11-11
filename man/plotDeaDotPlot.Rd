@@ -86,7 +86,7 @@ Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
-\item{...}{Additional arguments given to \code{scale_color_add_on()}.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{x}{Character value. Specifies what is plotted on the x-axis.
 If \emph{p_val_adj} the scale is reversed. Ignored if \code{by_group} = FALSE.}

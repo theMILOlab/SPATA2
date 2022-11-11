@@ -870,20 +870,16 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   gs_names <- getGeneSets(object)
 
-  if(base::is.character(ann_names)){
+  new <- !name %in% c(feature_names, gene_names, gs_names, c("x", "y"))
 
-    new <- !name %in% c(feature_names, gene_names, gs_names)
+  if(base::isFALSE(new)){
 
-    if(base::isFALSE(new)){
-
-      give_feedback(
-        msg = glue::glue("Name '{name}' is already used by a feature, gene or gene set.."),
-        fdb.fn = "stop",
-        with.time = FALSE,
-        ...
-      )
-
-    }
+    give_feedback(
+      msg = glue::glue("Name '{name}' is already used by a feature, gene or gene set.."),
+      fdb.fn = "stop",
+      with.time = FALSE,
+      ...
+    )
 
   }
 

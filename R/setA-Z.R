@@ -697,14 +697,21 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 #'
 #' @export
 #'
-setPixelScaleFactor <- function(object, pxl_scale_fct = NULL){
+setPixelScaleFactor <- function(object, pxl_scale_fct = NULL, verbose = NULL){
+
+  hlpr_assign_arguments(object)
 
   if(base::is.null(pxl_scale_fct)){
+
+    confuns::give_feedback(
+      msg = "Computing pixel scale factor.",
+      verbose = verbose
+    )
 
     object@information$pxl_scale_fct <-
       getPixelScaleFactor(
         object = object,
-        euol = getCCD(object) %>% extract_unit(),
+        unit =  getMethodUnit(object),
         force = TRUE
       )
 

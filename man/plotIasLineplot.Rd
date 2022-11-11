@@ -96,8 +96,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Additional parameters given to \code{pheatmap::pheatmap()}. If argument
-\code{with_ggplot} is TRUE given to \code{scale_color_add_on()}.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A ggplot.

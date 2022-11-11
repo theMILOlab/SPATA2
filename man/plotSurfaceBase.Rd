@@ -76,36 +76,18 @@ immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
-\item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
-of the cropped image section is expanded. There are two options to provide values:
-
-Values from 0 to 1 are used to calculate the corresponding percentage of the image
-span which is then \bold{added} to it. E.g. \code{expand} = 1 doubles the span,
-\code{expand} = 0.5 results in 150 percent of the span and \code{expand} = 0 returns the
-original span.
-
-Values bigger than 1 are considered to be absolute values. The returned image
-section has the exact x- and y- spans as specified in \code{expand}.
-E.g. \code{expand} = 200 results in an image section with x- and y-span of
-200. If the input value is bigger than 1 it must be at least as big as the
-original span of the image annotation.
-
-To adjust x- and y-span specifically you can provide a vector of length 2.
-If you do so the first value is taken to adjust the x-span and the second
-value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
-of the original x-span to the x-span of the image section and does not adjust
-the y-span.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+\item{expand}{Specifies image expansion. An image that is cropped based on an image
+annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
+that is width/x-axis and height/y-axis, are set to include only the image annotation area
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
+for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Plots right into the plotting window.

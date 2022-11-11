@@ -8,6 +8,7 @@ getBarcodeSpotDistances(
   object,
   barcodes = NULL,
   unit = "pixel",
+  arrange = FALSE,
   verbose = NULL
 )
 }

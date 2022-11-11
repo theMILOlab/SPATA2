@@ -22,7 +22,7 @@ getImageAnnotationScreeningDf(
   remove_angle_bins = FALSE,
   rename_angle_bins = FALSE,
   drop = TRUE,
-  verbose = TRUE,
+  verbose = NULL,
   ...
 )
 }
@@ -81,6 +81,8 @@ variables are dropped.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 The final output depends on the input for \code{variables} and

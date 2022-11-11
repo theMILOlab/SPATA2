@@ -76,6 +76,22 @@ nImageAnnotations <- function(object){
 
 }
 
+#' @title Number of spatial trajectories
+#'
+#' @description Returns the number of \code{SpatialTrajectries}-objects in the sample.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value.
+#'
+#' @export
+nSpatialTrajectories <- function(object){
+
+  getSpatialTrajectoryIds(object) %>%
+    base::length()
+
+}
+
 
 
 

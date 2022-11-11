@@ -11,36 +11,21 @@ getImageAnnotation(object, id, add_image = TRUE, expand = 0, square = FALSE)
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
-\item{expand}{Vector of length one or two. Specifies the extent to which the  x- and y-span
-of the cropped image section is expanded. There are two options to provide values:
+\item{expand}{Specifies image expansion. An image that is cropped based on an image
+annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
+that is width/x-axis and height/y-axis, are set to include only the image annotation area
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
+for more information.}
 
-Values from 0 to 1 are used to calculate the corresponding percentage of the image
-span which is then \bold{added} to it. E.g. \code{expand} = 1 doubles the span,
-\code{expand} = 0.5 results in 150 percent of the span and \code{expand} = 0 returns the
-original span.
+\item{square}{Logical value. Most image annotations come in variable shapes and
+have different horizontal and vertical diameters. Therefore, height and width of the image
+section are usually not equal. If \code{square = TRUE}, the cropped section of the image that
+contains the annotated structure is forced into a square: the bigger diameter of both is taken
+as default. E.g. if the horizontal diameter of the image annotation is 1mm and the
+vertical diameter is 1.5mm, the output image will have height and width of 1.5mm. That is,
+in terms of coordinates, an x-range and a y-range of 1.5mm.
 
-Values bigger than 1 are considered to be absolute values. The returned image
-section has the exact x- and y- spans as specified in \code{expand}.
-E.g. \code{expand} = 200 results in an image section with x- and y-span of
-200. If the input value is bigger than 1 it must be at least as big as the
-original span of the image annotation.
-
-To adjust x- and y-span specifically you can provide a vector of length 2.
-If you do so the first value is taken to adjust the x-span and the second
-value is used to adjust the y-span E.g. \code{expand} = c(0.5, 0) adds 50 percent
-of the original x-span to the x-span of the image section and does not adjust
-the y-span.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
-
-\item{square}{Logical. If TRUE, the cropped section of the image that contains the annotated
-structure is forced into a square. X- and yspan of the square are equal to the span
-that is the biggest. If FALSE, the section is cropped according to the extent
-of the annotated structure and the input for argument \code{expand}.}
+Processing of the image output depending on argument \code{expand} happens afterwards.}
 }
 \value{
 An object of class \code{ImageAnnotation}.

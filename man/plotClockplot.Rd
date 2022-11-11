@@ -41,6 +41,8 @@ plotClockplot(object, ...)
 \arguments{
 \item{object}{Any object for which a method has been defined.}
 
+\item{...}{Used to absorb deprecated arguments or functions.}
+
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
 \itemize{

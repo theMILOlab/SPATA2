@@ -434,15 +434,12 @@ as_SPATA2_dist <- function(input){
 as_unit <- function(input,
                     unit,
                     object = NULL,
-                    image_dims = NULL,
-                    method = NULL,
                     round = FALSE,
                     verbose = FALSE,
                     ...){
 
+  # check input
   deprecated(...)
-
-  base::options(scipen = 999)
 
   is_spatial_measure(input, error = TRUE)
 
@@ -453,6 +450,7 @@ as_unit <- function(input,
     against = validUnits()
   )
 
+  input_values <- extract_value(input)
   input_units <- extract_unit(input)
 
   # check if both inputs are of length or of area
@@ -466,6 +464,7 @@ as_unit <- function(input,
 
   }
 
+  # give feedback
   input_units_ref <-
     base::unique(input_units) %>%
     confuns::scollapse(string = ., sep = ", ", last = " and ")
@@ -476,38 +475,77 @@ as_unit <- function(input,
     with.time = FALSE
   )
 
-  # if either of both arguments refers to pixel SPATA2 functions are needed
+  # if one argument refers to pixel SPATA2 functions are needed
   if(base::any(c(input_units, unit) == "px")){
 
     out <- base::vector(mode = "numeric", length = base::length(input))
 
     for(i in base::seq_along(input)){
 
-      if(input_units[i] == unit){ # needs no transformation both pixel
+      if(input_units[i] == unit){ # needs no transformation if both are pixel
 
-        out <- input
+        out[i] <- input_values[i]
 
-      } else if(is_dist_euol(input[i]) & unit == "px"){
+      } else if(is_dist_euol(input[i]) & unit == "px"){ # converts euol to pixel
 
         out[i] <-
           transform_euol_to_pixel(
-            input = input[i],
+            input = input[i], # provide from `input`, not from `input_values` due to unit
             object = object,
             method = method,
             round = round
           )
 
-      } else if(is_dist_pixel(input[i]) & unit %in% validEuropeanUnitsOfLength()){
+      } else if(is_dist_pixel(input[i]) & unit %in% validEuropeanUnitsOfLength()){ # converts pixel to euol
 
         out[i] <-
           transform_pixel_to_euol(
-            input = input[i],
+            input = input[i], # provide from `input`, not from `input_values` due to unit
             euol = unit,
             object = object,
-            image_dims = image_dims,
-            method = method,
             round = round
           )
+
+      } else if(is_dist(input[i]) & unit %in% validEuropeanUnitsOfLength()){ # converts euol to euol
+
+        x <-
+          units::set_units(
+            x = input_values[i],
+            value = input_units[i],
+            mode = "standard"
+          )
+
+        out[i] <- units::set_units(x = x, value = unit, mode = "standard")
+
+      } else if(is_area(input = input[i]) & unit == "px"){ # converts si area to pixel
+
+        out[i] <-
+          transform_si_to_pixel(
+            input = input[i], # provide from `input`, not from `input_values` due to unit
+            object = object,
+            round = round
+          )
+
+      } else if(is_area_pixel(input = input[i]) & unit %in% validUnitsOfAreaSI()){ # converts pixel to si area
+
+        out[i] <-
+          transform_pixel_to_si(
+            input = input[i],
+            unit = unit,
+            object = object,
+            round = round
+          )
+
+      } else if(is_area(input[i]) & unit %in% validUnitsOfArea()){ # converts si area to si area
+
+        x <-
+          units::set_units(
+            x = input_values[i],
+            value = input_units[i],
+            mode = "standard"
+          )
+
+        out[i] <- units::set_units(x = x, value = input_units[i], mode = "standard")
 
       }
 
@@ -526,7 +564,8 @@ as_unit <- function(input,
 
     }
 
-  # else use units package
+  # else if all input units are EUOL of SI and output unit is, too -> use units package
+  # no need for for loop
   } else {
 
     uiu <- base::unique(input_units)
@@ -569,8 +608,6 @@ as_unit <- function(input,
     base::names(out) <- base::names(input)
 
   }
-
-  base::options(scipen = 0)
 
   return(out)
 
@@ -1030,14 +1067,23 @@ as_nanometer2 <- function(input, ...){
 
 #' @rdname as_unit
 #' @export
-as_pixel <- function(input, object = NULL, ...){
+as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
 
-  as_unit(
-    input = input,
-    unit = "px",
-    object = object,
-    ...
-  )
+  out <-
+    as_unit(
+      input = input,
+      unit = "px",
+      object = object,
+      ...
+    )
+
+  if(base::isFALSE(add_attr)){
+
+    base::attr(out, which = "unit") <- NULL
+
+  }
+
+  return(out)
 
 }
 

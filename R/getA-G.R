@@ -274,6 +274,7 @@ getBarcodeSpotDistance <- function(object,
 getBarcodeSpotDistances <- function(object,
                                     barcodes = NULL,
                                     unit = "pixel",
+                                    arrange = FALSE,
                                     verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -293,6 +294,19 @@ getBarcodeSpotDistances <- function(object,
     dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y), by = "bc_origin") %>%
     dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y), by = "bc_destination") %>%
     dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+
+  if(base::isTRUE(arrange)){
+
+    confuns::give_feedback(
+      msg = "Arranging barcodes.",
+      verbose = verbose
+    )
+
+    distance_df <-
+      dplyr::ungroup(distance_df) %>%
+      dplyr::arrange(bc_origin)
+
+  }
 
   confuns::give_feedback(
     msg = "Done.",
@@ -331,6 +345,12 @@ getCCD <- function(object,
   method <- getMethod(object)
 
   ccd <- method@info[["ccd"]]
+
+  if(base::is.null(ccd)){
+
+    stop("No center to center distance found. Set manually with `setCCD()`.")
+
+  }
 
   ccd_unit <- extract_unit(ccd)
 

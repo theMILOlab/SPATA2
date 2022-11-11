@@ -77,6 +77,8 @@ that are supposed to be labeled by name. If NULL, no genes are labeled.}
 
 \item{use_pseudolog}{Logical value. If TRUE, avglogFC is transformed with log10. Requires
 package \code{ggallin} to be installed.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A ggplot.

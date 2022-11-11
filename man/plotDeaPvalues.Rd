@@ -84,6 +84,8 @@ of the x-axis.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

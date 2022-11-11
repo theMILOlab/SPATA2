@@ -21,7 +21,9 @@
 \alias{validTrajectoryTrends}
 \alias{validUnits}
 \alias{validUnitsOfArea}
+\alias{validUnitsOfAreaSI}
 \alias{validUnitsOfLength}
+\alias{validUnitsOfLengthSI}
 \alias{validEuropeanUnitsOfLength}
 \title{Obtain valid argument inputs}
 \usage{
@@ -65,7 +67,11 @@ validUnits()
 
 validUnitsOfArea()
 
+validUnitsOfAreaSI()
+
 validUnitsOfLength()
+
+validUnitsOfLengthSI()
 
 validEuropeanUnitsOfLength(name = T)
 }

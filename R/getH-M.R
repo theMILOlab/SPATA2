@@ -11,8 +11,9 @@
 #' @inherit argument_dummy params
 #' @inherit check_sample params
 #'
-#' @return An image of class \emph{EBImage}.
 #' @export
+
+
 
 getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
@@ -21,8 +22,6 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
   check_object(object)
 
   feedback_range_input(xrange = xrange, yrange = yrange)
-
-  confuns::is_vec(x = expand, mode = "numeric", max.length = 2)
 
   out <- object@images[[1]]@image
 
@@ -97,10 +96,10 @@ getImageAnnotation <- function(object,
 #' @inherit as_unit params
 #' @inherit getImageAnnotation params
 #'
-#' @return Single numeric value, the area of the image annotation in the squared
-#' unit of length that is specified in `unit`. The unit is attached to the
-#' output as an attribute named *unit*. E.g. if `unit = *mm*` the output value
-#' has the unit *mm^2*.
+#' @return Numeric vector of the same length as `ids`. Named accordingly.
+#' Contains the area of the image annotations in the unit that is specified in `unit`.
+#' The unit is attached to the output as an attribute named *unit*. E.g. if
+#' `unit = *mm2*` the output value has the unit *mm^2*.
 #'
 #' @details First, the area of each pixel is calculated by using the center
 #' to center distance of the underlying method as ground truth to scale
@@ -113,62 +112,80 @@ getImageAnnotation <- function(object,
 #' Third, the number of pixels that fall in the area is multiplied with
 #' the area per pixel.
 #'
-#' @seealso `getImageAnnotationAreaDf()`, `geCCD()`, `as_unit()`
+#' @seealso `getImageAnnotationAreaDf()`, `getCCD()`, `as_unit()`
 #'
 #' @export
 #'
-getImageAnnotationSize <- function(object,
-                                   id,
-                                   unit = NULL,
-                                   as_numeric = TRUE){
+getImageAnnotationAreaSize <- function(object,
+                                       unit,
+                                       ids = NULL,
+                                       tags = NULL,
+                                       test = "any",
+                                       as_numeric = TRUE,
+                                       ...){
 
-  # determine pixel area
-  ccd_px <- getCCD(object, unit = "px", as_numeric = TRUE)
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfArea()
+  )
 
-  ccd_euol <- getCCD(object, unit = unit, as_numeric = TRUE)
+  if(base::is.character(ids)){
 
-  pixel_length <- ccd_euol/ccd_px
-
-  unit <- base::attr(pixel_length, which = "unit")
-
-  pixel_area <-
-    magrittr::set_attr(
-      x = pixel_length^2,
-      which = "unit",
-      value = stringr::str_c(unit, "2")
+    confuns::check_one_of(
+      input = ids,
+      against = getImageAnnotationIds(object)
     )
 
-  # determine how many pixels lay inside the image annotation
-  img_ann <- getImageAnnotation(object, id = id)
+  } else {
 
-  img_dims <- getImageDims(object)[1:2]
-
-  pixel_df <- tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2])
-
-  area_df <- img_ann@area
-
-  pixel_loc <-
-    sp::point.in.polygon(
-      point.x = pixel_df[["x"]],
-      point.y = pixel_df[["y"]],
-      pol.x = area_df[["x"]],
-      pol.y = area_df[["y"]]
-    )
-
-  pixel_inside <- pixel_loc[pixel_loc != 0]
-
-  n_pixel_inside <- base::length(pixel_inside)
-
-  # multiply number of pixels with area per pixel
-  area_img_ann <- pixel_area * n_pixel_inside
-
-  if(base::isFALSE(as_numeric)){
-
-    area_img_ann <- attachUnit(area_img_ann)
+    ids <-
+      getImageAnnotationIds(
+        object = object,
+        ...
+      )
 
   }
 
-  return(area_img_ann)
+  unit_length <- stringr::str_extract(string = unit, pattern = "[a-z]*")
+
+  # determine pixel area
+  scale_fct <- getPixelScaleFactor(object, unit = unit)
+
+  # determine how many pixels lay inside the image annotation
+
+  pixel_df <- getPixelDf(object = object)
+
+  out <-
+    purrr::map_dbl(
+      .x = ids,
+      .f = function(id){
+
+        area_df <- getImageAnnotationAreaDf(object, ids = id)
+
+        pixel_loc <-
+          sp::point.in.polygon(
+            point.x = pixel_df[["x"]],
+            point.y = pixel_df[["y"]],
+            pol.x = area_df[["x"]],
+            pol.y = area_df[["y"]]
+          )
+
+        pixel_inside <- pixel_loc[pixel_loc != 0]
+
+        n_pixel_inside <- base::length(pixel_inside)
+
+        # multiply number of pixels with area per pixel
+        area_img_ann <- n_pixel_inside * scale_fct
+
+        base::as.numeric(area_img_ann)
+
+      }
+    ) %>%
+    purrr::set_names(nm = ids) %>%
+    units::set_units(value = unit, mode = "standard")
+
+
+  return(out)
 
 }
 
@@ -206,8 +223,18 @@ getImageAnnotationAreaDf <- function(object,
                                      sep = " & ",
                                      last = " & "){
 
+
+  img_anns <-
+    getImageAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      add_image = FALSE
+      )
+
   purrr::map_df(
-    .x = getImageAnnotations(object = object, ids = ids, tags = tags, test = test),
+    .x = img_anns,
     .f = function(img_ann){
 
       tag <-
@@ -387,33 +414,43 @@ getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
 
 
 
+#' @title Obtain image annotations range
+#'
+#' @description Extracts the minimum and maximum x- and y-coordinates
+#' of the image annotation border.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return List of length two. Named with *x* and *y*. Each slot
+#' contains a vector of length two with the minima and maxima in pixel.
+#' @export
+#'
+getImageAnnotationRange <- function(object, id){
+
+  getImageAnnotationAreaDf(object, ids = id) %>%
+    dplyr::select(x, y) %>%
+    purrr::map(.f = base::range)
+
+}
+
+
 #' @title Obtain list of \code{ImageAnnotation}-objects
 #'
 #' @description Extracts a list of objects of class \code{ImageAnnotaion}.
 #'
-#' @inherit argument_dummy params
 #' @param add_image Logical. If TRUE, the area of the histology image that
 #' is occupied by the annotated structure is added to the \code{ImageAnnotation}
 #' object in slot @@image.
 #'
-#' @details How to use arguments \code{tags} and \code{test} to specify
-#' the image annotations of interest: Input for argument \code{tags} specifies the tags of interest.
-#' Argument \code{test} decides about how the specified tags are used to select
-#' the image annotations of interest. There are three options:
+#' @inherit argument_dummy params
+#' @inherit getImage details
 #'
-#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-#' must be tagged with at least one of the input tags.
-#'
-#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-#' must be tagged with all of the input tags.
-#'
-#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-#' must be tagged with all of the input tags and must not be tagged with anything else.
-#'
-#' Note that the filtering process happens in addition to / after the filtering by input for argument
-#' \code{ids}.
+#' @note To test how the extracted image section looks like depending
+#' on input for argument `square` and `expand` use
+#' `plotImageAnnotations(..., encircle = FALSE)`.
 #'
 #' @return An object of class \code{ImageAnnotation}.
+#'
 #' @export
 #'
 getImageAnnotations <- function(object,
@@ -434,7 +471,7 @@ getImageAnnotations <- function(object,
     check_availability(
       test = base::length(img_annotations) >= 1,
       ref_x = "any image annotations",
-      ref_fns = "`annotateImage()`"
+      ref_fns = "`createImageAnnotations()`"
     )
 
   }
@@ -477,9 +514,20 @@ getImageAnnotations <- function(object,
 
             out <- base::identical(tags_input, tags_img_ann)
 
+          } else if(test == "not_identical" | test == 4){
+
+            tags_input <- base::sort(tags)
+            tags_img_ann <- base::sort(img_ann@tags)
+
+            out <- !base::identical(tags_input, tags_img_ann)
+
+          } else if(test == "none" | test == 5){
+
+            out <- !base::any(tags %in% img_ann@tags)
+
           } else {
 
-            stop("Invalid input for argument `test`. Must be either 'any', 'all' or 'identical'.")
+            stop(invalid_img_ann_tests)
 
           }
 
@@ -504,6 +552,7 @@ getImageAnnotations <- function(object,
       xmean <- base::mean(xrange)
       ymean <- base::mean(yrange)
 
+      # make image section to square
       if(base::isTRUE(square)){
 
         xdist <- xrange[2] - xrange[1]
@@ -530,7 +579,6 @@ getImageAnnotations <- function(object,
 
       }
 
-
       img_ann@image <-
         getImage(
           object = object,
@@ -555,11 +603,20 @@ getImageAnnotations <- function(object,
       })
 
 
-      for(val in base::names(range_list)){
+      for(val in base::names(range_list)){ # sets xmin - ymax
 
         img_list[[val]] <- range_list[[val]]
 
       }
+
+      img_list$orig_ranges <- list(x = xrange, y = yrange)
+
+      img_list$expand <- process_expand_input(expand)
+
+      img_list$square <- square
+
+      img_list$xmin_parent <- 0
+      img_list$ymin_parent <- 0
 
       img_list$xmax_parent <- getImageRange(object)$x[2]
       img_list$ymax_parent <- getImageRange(object)$y[2]
@@ -570,10 +627,7 @@ getImageAnnotations <- function(object,
       img_list$ymax_coords <-
         img_list$ymax_parent - img_list$ymin
 
-      img_list$expand <- expand
-
-      img_list$square <- square
-
+      # set list
       img_ann@image_info <- img_list
 
     }
@@ -749,7 +803,7 @@ getImageAnnotationScreeningDf <- function(object,
                                           rename_angle_bins = FALSE,
                                           bcsp_exclude=NULL,
                                           drop = TRUE,
-                                          verbose = TRUE,
+                                          verbose = NULL,
                                           ...){
 
   hlpr_assign_arguments(object)
@@ -798,7 +852,7 @@ getImageAnnotationScreeningDf <- function(object,
       rename = rename_angle_bins,
       remove = remove_angle_bins,
       drop = drop[2],
-      verbose = TRUE
+      verbose = verbose
     )
 
   # join with variables if desired
@@ -963,10 +1017,34 @@ getImageAnnotationTags <- function(object){
 
 #' @title Obtain image dimensions/ranges
 #'
+#' @description Extracts information regarding the image.
+#'
+#' \itemize{
+#'  \item{`getImageDims()`:}{ Extracts dimensions of the image, namely width, height and depth.}
+#'  \item{`getImageRange()`:} Extracts range of the image axis.
+#'  }
+#'
 #' @inherit argument_dummy params
 #'
+#' @return Similar output, different data structure:
+#'
+#' \itemize{
+#'  \item{`getImageDims()`:}{ Vector of length three: image width, image height, image depth}
+#'  \item{`getImageRange()`:}{ Named list, names are *x* and *y*. Each slot contains a
+#'  vector of length two that describes the range of the x- and y-axis. Used for intersection
+#'  between histology image and scatterplots.}
+#' }
+#'
+#' @details In case of confusion due to overlapping naming conventions: X-axis,
+#' x and x-range in terms of coordinates, corresponds to image width in terms of
+#' image analysis. Y-axis, y  and y-range, in terms of coordinates, refers to
+#' image-height in terms of image analysis. `SPATA2` primarily uses coordinates
+#' naming convention.
+#'
 #' @export
-getImageDims <- function(object, xrange = NULL, yrange = NULL){
+getImageDims <- function(object, ...){
+
+  deprecated(...)
 
   img <- object@images[[1]]@image
 
@@ -1054,11 +1132,13 @@ getImageObject <- function(object){
 
 #' @rdname getImageDims
 #' @export
-getImageRange <- function(object, xrange = NULL, yrange = NULL){
+getImageRange <- function(object, ...){
+
+  deprecated(...)
 
   out <- list()
 
-  img_dims <- getImageDims(object, xrange = xrange, yrange = yrange)
+  img_dims <- getImageDims(object, ...)
 
   out$x <- c(0,img_dims[[1]])
   out$y <- c(0,img_dims[[2]])
