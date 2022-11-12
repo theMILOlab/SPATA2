@@ -912,13 +912,13 @@ transformSeuratToSpata <- function(seurat_object,
 
       if("imagecol" %in% c_cnames){
 
-        coords_df <- dplyr::rename(coords_df, x = imagecol)
+        coords_df <- dplyr::mutate(coords_df, x = imagecol)
 
       }
 
       if("imagerow" %in% c_cnames){
 
-        coords_df <- dplyr::rename(coords_df, y = imagerow)
+        coords_df <- dplyr::mutate(coords_df, y = imagerow)
 
       }
 

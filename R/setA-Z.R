@@ -502,7 +502,9 @@ setImageAnnotations <- function(object, img_anns, overwrite = FALSE){
 
 #' @rdname setImageDirLowres
 #' @export
-setImageDirHighres <- function(object, dir_highres, check = TRUE){
+setImageDirHighres <- function(object, dir_highres, check = TRUE, verbose = NULL){
+
+  hlpr_assign_arguments(object)
 
   if(base::isTRUE(check)){
 
@@ -515,6 +517,11 @@ setImageDirHighres <- function(object, dir_highres, check = TRUE){
   img_object@dir_highres <- dir_highres
 
   object <- setImageObject(object, image_object = img_object)
+
+  confuns::give_feedback(
+    msg = glue::glue("Image directory high resolution set to '{dir_highres}'."),
+    verbose = verbose
+  )
 
   return(object)
 
@@ -533,7 +540,9 @@ setImageDirHighres <- function(object, dir_highres, check = TRUE){
 #' @return An updated spata object.
 #' @export
 #'
-setImageDirLowres <- function(object, dir_lowres, check = TRUE){
+setImageDirLowres <- function(object, dir_lowres, check = TRUE, verbose = NULL){
+
+  hlpr_assign_arguments(object)
 
   if(base::isTRUE(check)){
 
@@ -546,6 +555,11 @@ setImageDirLowres <- function(object, dir_lowres, check = TRUE){
   img_object@dir_lowres <- dir_lowres
 
   object <- setImageObject(object, image_object = img_object)
+
+  confuns::give_feedback(
+    msg = glue::glue("Image directory low resolution set to '{dir_lowres}'."),
+    verbose = verbose
+  )
 
   return(object)
 

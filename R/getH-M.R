@@ -1238,6 +1238,62 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 }
 
+
+
+#' @title Obtain information about object initiation
+#'
+#' @description Information about the object's initiation is stored in
+#' a list of three slots:
+#'
+#' \itemize{
+#'  \item{\emph{init_fn}: Contains the name of the initation function as a character value.}
+#'  \item{\emph{input}: Contains a list of which every slot refers to the input of one argument with which the
+#'  initiation function has been called.}
+#'  \item{\emph{time}: Contains the time at which the object was initiated.}
+#'  }
+#'
+#'  \code{getInitiationInput()} returns only slot \emph{input}.
+#'
+#' @inherit check_object params
+#' @inherit argument_dummy params
+#'
+#' @details \code{initiateSpataObject_CountMtr()} and \code{initiateSpataObject_ExprMtr()} each require
+#' a matrix and a coordinate data.frame as input. These are not included in the output
+#' of this function but can be obtained via \code{getCoordsDf()} and \code{getCountMtr()} or \code{getExpressionMtr()}.
+#'
+#' @return A list. See description.
+#' @export
+
+getInitiationInfo <- function(object){
+
+  check_object(object)
+
+  info <- object@information$initiation
+
+  return(info)
+
+}
+
+#' @rdname getInitiationInfo
+#' @export
+getInitiationInput <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  info <- getInitiationInfo(object)
+
+  init_fn <- info$init_fn
+
+  confuns::give_feedback(
+    msg = glue::glue("Initiation function used: '{init_fn}()'."),
+    verbose = verbose,
+    with.time = FALSE
+  )
+
+  return(info$input)
+
+}
+
 # getM --------------------------------------------------------------------
 
 #' @title Obtain count and expression matrix

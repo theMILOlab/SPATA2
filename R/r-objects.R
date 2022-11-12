@@ -508,7 +508,8 @@ depr_info <-
       "trajectory_name" = "id"
     ),
     args_spec = list(
-      "exchangeImage" = list("image_dir" = "image")
+      "exchangeImage" = list("image_dir" = "image"),
+      "runBayesSpaceClustering" = list("dirname" = "directory_10X")
     )
   )
 

@@ -284,11 +284,24 @@ runAutoencoderDenoising <- function(object,
 #'
 #' @inherit BayesSpace::readVisium params
 #' @inherit BayesSpace::qTune params
+
+#' @param q_force Numeric value or `FALSE`. If numeric, it forces the number
+#' of output clusters with input value. If `FALSE`, the optimal number
+#' of clusters is chosen for `q` determined by the elbow point of `BayesSpace::qTune()`.
 #' @param name Character value. The name the cluster variable has in
 #' the feature data of the \code{SPATA2} object. Defaults to \emph{bayes_space}.
 #' @param prefix Character value. Prefix of the cluster groups.
 #' @param overwrite Logical value. If TRUE, \code{name} overwrites features
 #' in feature data of the \code{SPATA2} object.
+#' @param assign_sce Character value or `NULL`. If character, specifies the
+#' name under which the bayes space output (object of class `SingleCellExperiment`)
+#' is assigned to the global environment. This makes the whole output
+#' of the bayes space pipeline available instead of only adding the clustering
+#' output as a grouping variable to the `SPATA2` object.
+#'
+#' @param ... Additional arguments given to `BayesSpace::spatialCluster()`. Exception:
+#' `sce`, `q` are specified within the function.
+#'
 #' @inherit argument_dummy params
 #'
 #' @details This function is a wrapper around \code{readVisium()},
@@ -307,17 +320,51 @@ runAutoencoderDenoising <- function(object,
 #' @export
 #'
 runBayesSpaceClustering <- function(object,
-                                    dirname,
+                                    directory_10X = NULL,
                                     name = "bayes_space",
-                                    qs = seq(2,15),
+                                    # given to spatialPreprocess()
+                                    n.Pcs = 15,
+                                    n.HVGs = 2000,
+                                    skip.PCA = FALSE,
+                                    log.normalize = TRUE,
+                                    assay.type = "logcounts",
+                                    BSPARAM = BiocSingular::ExactParam(),
+                                    # given to qTune()
+                                    qs = seq(3,7),
+                                    burn.in = c(100, 1000),
+                                    nrep = c(1000, 5000),
+                                    # given to spatialCluster()
+                                    q = NULL,
+                                    use.dimred = "PCA",
+                                    d = 15,
+                                    init.method = "mclust",
+                                    model = "t",
+                                    gamma = 3,
+                                    mu0 = NULL,
+                                    lambda0 = NULL,
+                                    alpha = 1,
+                                    beta = 0.01,
+                                    save.chain = FALSE,
+                                    chain.fname = NULL,
+                                    # miscellaneous
                                     prefix = "",
                                     return_model = TRUE,
                                     empty_remove = FALSE,
                                     overwrite = FALSE,
+                                    assign_sce = NULL,
                                     seed = NULL,
-                                    verbose = NULL){
+                                    verbose = NULL,
+
+                                    ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
+
+  confuns::is_vec(x = burn.in, of.length = 2)
+  confuns::is_vec(x = nrep, of.length = 2)
+
+  platform <- getMethod(object)@name
 
   confuns::check_none_of(
     input = name,
@@ -325,7 +372,8 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  sce <- BayesSpace::readVisium(dirname)
+  # use asSingleCellExperiment
+  sce <- asSingleCellExperiment(object, "spot" = "barcodes")
 
   if(base::isTRUE(empty_remove)){
 
@@ -367,54 +415,91 @@ runBayesSpaceClustering <- function(object,
 
   if(base::is.numeric(seed)){ base::set.seed(seed) }
 
-  object@data[[1]]$SCE <-
-    list(
-      colData = SingleCellExperiment::colData(sce),
-      rowData = SingleCellExperiment::rowData(sce)
-    )
+  confuns::give_feedback(
+    msg = "Running BayesSpace::spatialPreprocess().",
+    verbose = verbose
+  )
 
-  space <-
+  bayes_space_out <-
     BayesSpace::spatialPreprocess(
       sce = sce,
-      platform = "Visium",
-      n.PCs = 30,
-      n.HVGs = 2000,
-      log.normalize = TRUE
+      platform = platform,
+      n.PCs = n.Pcs,
+      n.HVGs = n.HVGs,
+      skip.PCA = skip.PCA,
+      log.normalize = log.normalize,
+      assay.type = assay.type,
+      BSPARAM = BSPARAM
     )
 
+  confuns::give_feedback(
+    msg = "Running BayesSpace::qTune().",
+    verbose = verbose
+  )
 
-  space <-
-    BayesSpace::qTune(
-      sce = space,
-      qs = qs,
-      platform = "Visium"
+  if(!base::is.numeric(q)){
+
+    bayes_space_out <-
+      BayesSpace::qTune(
+        sce = bayes_space_out,
+        qs = qs,
+        burn.in = burn.in[1],
+        nrep = nrep[1]
+      )
+
+    logliks <- base::attr(bayes_space_out, "q.logliks")
+
+    optimal_cluster <-
+      akmedoids::elbow_point(
+        x = logliks$q,
+        y = logliks$loglik)$x %>%
+      base::round()
+
+    confuns::give_feedback(
+      msg = glue::glue("Calculated optimal input for `q`: {optimal_cluster}."),
+      verbose = verbose
     )
 
-  logliks <- base::attr(space, "q.logliks")
+  } else {
 
-  optimal_cluster <-
-    akmedoids::elbow_point(
-      x = logliks$q,
-      y = logliks$loglik)$x %>%
-    round()
+    optimal_cluster <- base::as.integer(q[1])
 
-  space <-
+    confuns::give_feedback(
+      msg = glue::glue("Using input for `q`: {optimal_cluster}."),
+      verbose = verbose
+    )
+
+  }
+
+  confuns::give_feedback(
+    msg = "Running BayesSpace::spatialCluster().",
+    verbose = verbose
+  )
+
+  bayes_space_out <-
     BayesSpace::spatialCluster(
-      sce = space,
+      sce = bayes_space_out,
       q = optimal_cluster,
-      platform = "Visium",
-      d = 7,
-      init.method = "mclust",
-      model = "t",
-      gamma = 2,
-      nrep = 1000,
-      burn.in = 100,
-      save.chain = TRUE
+      use.dimred = use.dimred,
+      d = d,
+      platform = platform,
+      init.method = init.method,
+      model = model,
+      nrep = nrep[2],
+      burn.in = burn.in[2],
+      gamma = gamma,
+      mu0 = mu0,
+      lambda0 = lambda0,
+      alpha = alpha,
+      beta = beta,
+      save.chain = save.chain,
+      chain.fname = chain.fname
     )
 
   cluster_df <-
-    space@colData %>%
+    bayes_space_out@colData %>%
     base::as.data.frame() %>%
+    tibble::as_tibble() %>%
     dplyr::select(spot, spatial.cluster) %>%
     dplyr::rename(barcodes = spot, {{name}} := spatial.cluster) %>%
     dplyr::mutate({{name}} := base::as.factor(!!rlang::sym(name)))
@@ -430,7 +515,13 @@ runBayesSpaceClustering <- function(object,
       {{name}} := base::factor(!!rlang::sym(name), levels = cluster_levels)
     )
 
-  object <- SPATA2::addFeatures(object, cluster_df)
+  if(base::is.character(assign_sce)){
+
+    assign(x = assign_sce, value = bayes_space_out, envir = .GlobalEnv)
+
+  }
+
+  object <- SPATA2::addFeatures(object, feature_df = cluster_df, overwrite = overwrite)
 
   return(object)
 

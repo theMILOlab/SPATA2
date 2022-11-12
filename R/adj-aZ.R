@@ -339,6 +339,128 @@ adjustGseaDf <- function(df,
 # as_ ---------------------------------------------------------------------
 
 
+#' @rdname as_unit
+#' @export
+as_meter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_meter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m2",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_micrometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_micrometer2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um2",
+    ...
+  )
+
+}
+
+
+#' @rdname as_unit
+#' @export
+as_millimeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "mm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_millimeter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "mm2",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_nanometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_nanometer2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nm",
+    ...
+  )
+
+}
+
+
+#' @rdname as_unit
+#' @export
+as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
+
+  out <-
+    as_unit(
+      input = input,
+      unit = "px",
+      object = object,
+      ...
+    )
+
+  if(base::isFALSE(add_attr)){
+
+    base::attr(out, which = "unit") <- NULL
+
+  }
+
+  return(out)
+
+}
+
+
+
 #' @title Distance transformation
 #'
 #' @description Ensures that distance input can be read by `SPATA2` functions
@@ -789,9 +911,6 @@ assessAutoencoderOptions <- function(expr_mtr,
 
 
 
-
-
-
 #' @title Transform \code{SPATA2} to \code{Giotto}
 #'
 #' @description Transforms an \code{SPATA2} object to an object of class
@@ -937,8 +1056,11 @@ methods::setMethod(
 
     new_object@coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
-      dplyr::select(barcodes, x = imagecol, y = imagerow, row, col) %>%
-      dplyr::mutate(x = x*scale_fct, y = y*scale_fct) %>%
+      dplyr::mutate(
+        x = imagecol * scale_fct,
+        y = imagerow * scale_fct
+      ) %>%
+      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
       tibble::as_tibble()
 
     new_object@id <- object@key
@@ -966,126 +1088,134 @@ methods::setMethod(
 
 # asM-asS -----------------------------------------------------------------
 
-
-#' @rdname as_unit
+#' @title Transform to `SingleCellExperiment`
+#'
+#' @description Transforms an `SPATA2` object to an object of class
+#' `SingleCellExperiment`. See details for more information.
+#'
+#' @inherit argument_dummy params
+#' @param ... The features to be renamed specified according to
+#' the following syntax: 'new_feature_name' = 'old_feature_name'. This applies
+#' to coordinates, too. E.g. ... ~ *'image_col' = 'x', 'image_row' = 'y'*
+#' renames the coordinate variables to *'image_col'* and *'image_row'*.
+#'
+#' @details Output object contains the count matrix in slot @@assays and
+#' feature data.frame combined with barcode-spot coordinates
+#' in slot @@colData.
+#'
+#' Slot @@metadata is a list that contains the image object.
+#'
+#' @return An object of class `SingleCellExperiment`.
 #' @export
-as_meter <- function(input, ...){
 
-  as_unit(
-    input = input,
-    unit = "m",
-    ...
-  )
+asSingleCellExperiment <- function(object, ...){
 
-}
+    colData <-
+      joinWith(
+        object = object,
+        spata_df = getCoordsDf(object),
+        features = getFeatureNames(object),
+        verbose = FALSE
+      ) %>%
+      base::as.data.frame()
 
-#' @rdname as_unit
-#' @export
-as_meter2 <- function(input, ...){
+    base::rownames(colData) <- colData[["barcodes"]]
 
-  as_unit(
-    input = input,
-    unit = "m2",
-    ...
-  )
+    dot_list <- list(...)
 
-}
+    renaming <-
+      confuns::keep_named(dot_list) %>%
+      purrr::keep(.p = base::is.character)
 
-#' @rdname as_unit
-#' @export
-as_micrometer <- function(input, ...){
+    if(base::length(renaming) >= 1){
 
-  as_unit(
-    input = input,
-    unit = "um",
-    ...
-  )
+      renaming_vec <-
+        purrr::set_names(
+          x = purrr::flatten_chr(renaming),
+          nm = base::names(renaming)
+        )
 
-}
+      colData <- dplyr::rename(colData, renaming_vec)
 
-#' @rdname as_unit
-#' @export
-as_micrometer2 <- function(input, ...){
+    }
 
-  as_unit(
-    input = input,
-    unit = "um2",
-    ...
-  )
+    sce <-
+      SingleCellExperiment::SingleCellExperiment(
+        assays = list(counts = getCountMatrix(object)),
+        colData = colData,
+        metadata = list(
+          converted_from = base::class(object)
+        )
+      )
 
-}
+    sce@metadata[["sample"]] <- getSampleName(object)
+    sce@metadata[["origin_class"]] <- base::class(object)
 
+    if(containsImageObject(object)){
 
-#' @rdname as_unit
-#' @export
-as_millimeter <- function(input, ...){
+      sce@metadata[["image"]] <- getImageObject(object)
 
-  as_unit(
-    input = input,
-    unit = "mm",
-    ...
-  )
+    }
 
-}
-
-#' @rdname as_unit
-#' @export
-as_millimeter2 <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "mm2",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-as_nanometer <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "nm",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-as_nanometer2 <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "nm",
-    ...
-  )
-
-}
-
-
-#' @rdname as_unit
-#' @export
-as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
-
-  out <-
-    as_unit(
-      input = input,
-      unit = "px",
-      object = object,
-      ...
-    )
-
-  if(base::isFALSE(add_attr)){
-
-    base::attr(out, which = "unit") <- NULL
+    return(sce)
 
   }
 
-  return(out)
+
+#' @title Transform to `SummarizedExperiment`
+#'
+#' @description Transforms an `SPATA2` object to an object of class
+#' `SummarizedExperiment`. See details for more information.
+#'
+#' @inherit asSingleCellExperiment params
+#' @inherit argument_dummy params
+#'
+#' @details Output object contains the count matrix in slot @@assays and
+#' feature data.frame combined with barcode-spot coordinates
+#' in slot @@colData.
+#'
+#' Slot @@metadata is a list that contains the image object in slot $image.
+#'
+#' @return An object of class `SummarizedExperiment`.
+#' @export
+
+asSummarizedExperiment <- function(object, ...){
+
+    colData <-
+      joinWith(
+        object = object,
+        spata_df = getCoordsDf(object),
+        features = getFeatureNames(object),
+        verbose = FALSE
+      ) %>%
+      base::as.data.frame()
+
+    base::rownames(colData) <- colData[["barcodes"]]
+
+     se <-
+       SummarizedExperiment::SummarizedExperiment(
+        assays = list(counts = getCountMatrix(object)),
+        colData = colData,
+        metadata = list(
+          converted_from = base::class(object)
+        )
+     )
+
+     se@metadata[["sample"]] <- getSampleName(object)
+     se@metadata[["origin_class"]] <- base::class(object)
+
+     if(containsImageObject(object)){
+
+       se@metadata[["image"]] <- getImageObject(object)
+
+     }
+
+     return(se)
 
 }
+
+
+
 
 
 #' @title Transform to \code{SPATA2} object

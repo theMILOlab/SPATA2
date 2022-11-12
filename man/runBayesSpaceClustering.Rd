@@ -6,40 +6,72 @@
 \usage{
 runBayesSpaceClustering(
   object,
-  dirname,
+  directory_10X = NULL,
   name = "bayes_space",
-  qs = seq(2, 15),
+  n.PCs = 15,
+  n.HVGs = 2000,
+  skip.PCA = FALSE,
+  log.normalize = TRUE,
+  assay.type = "logcounts",
+  BSPARAM = BiocSingular::ExactParam(),
+  qs = seq(3, 7),
+  burn.in = c(100, 1000),
+  nrep = c(1000, 5000),
+  q = NULL,
+  use.dimred = "PCA",
+  d = 15,
+  init.method = "mclust",
+  model = model,
+  gamma = 3,
+  mu0 = NULL,
+  lamda0 = NULL,
+  alpha = 1,
+  beta = 0.01,
+  save.chain = FALSE,
+  chain.fname = NULL,
   prefix = "",
   return_model = TRUE,
   empty_remove = FALSE,
   overwrite = FALSE,
+  assign_sce = NULL,
   seed = NULL,
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
-
-\item{dirname}{Path to spaceranger output directory (e.g. "sampleID/outs/").
-This directory must contain the counts matrix and feature/barcode TSVs in
-\code{filtered_feature_bc_matrix/}, and the spot positions at
-\code{spatial/tissue_positions_list.csv}. (These are default locations for
-spaceranger outputs.)}
 
 \item{name}{Character value. The name the cluster variable has in
 the feature data of the \code{SPATA2} object. Defaults to \emph{bayes_space}.}
 
 \item{qs}{The values of q to evaluate.}
 
+\item{burn.in, nrep}{Integers specifying the range of repetitions to
+compute.}
+
 \item{prefix}{Character value. Prefix of the cluster groups.}
 
 \item{overwrite}{Logical value. If TRUE, \code{name} overwrites features
 in feature data of the \code{SPATA2} object.}
 
+\item{assign_sce}{Character value or \code{NULL}. If character, specifies the
+name under which the bayes space output (object of class \code{SingleCellExperiment})
+is assigned to the global environment. This makes the whole output
+of the bayes space pipeline available instead of only adding the clustering
+output as a grouping variable to the \code{SPATA2} object.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Additional arguments given to \code{BayesSpace::spatialCluster()}. Exception:
+\code{sce}, \code{q} are specified within the function.}
+
+\item{q_force}{Numeric value or \code{FALSE}. If numeric, it forces the number
+of output clusters with input value. If \code{FALSE}, the optimal number
+of clusters is chosen for \code{q} determined by the elbow point of \code{BayesSpace::qTune()}.}
 }
 \value{
 An updated \code{SPATA2} object.
