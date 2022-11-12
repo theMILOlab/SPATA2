@@ -56,7 +56,7 @@ adjustDefaultInstructions <- function(object, ...){
 
   object@information$instructions$default <- dflt_instr
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -103,7 +103,7 @@ adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_
     verbose = TRUE
   )
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -177,7 +177,7 @@ adjustGeneSetDf <- function(object, limit = 50){
   object@used_genesets <-
     dplyr::select(filtered_df, ont, gene)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -905,7 +905,7 @@ assessAutoencoderOptions <- function(expr_mtr,
                           "set_up" = list("epochs" = epochs, "dropout" = dropout, "layers" = layers),
                           "scaled_var" = pca_scaled$totalvar)
 
-  base::return(assessment_list)
+  return(assessment_list)
 
 }
 
@@ -1506,6 +1506,244 @@ setMethod(
 
   }
 )
+
+#' @rdname asSPATA2
+#' @export
+setMethod(
+  f = "asSPATA2",
+  signature = "Seurat",
+  definition = function(object,
+                        sample_name,
+                        assay_name = "Spatial",
+                        image_name = "slice1",
+                        transfer_meta_data = TRUE,
+                        transfer_dim_red = TRUE,
+                        verbose = TRUE){
+
+    # create empty spata object
+    spata_object <-
+      initiateSpataObject_Empty(
+        sample_name = sample_name,
+        verbose = verbose
+        )
+
+
+    confuns::give_feedback(
+      msg = "Transferring data.",
+      verbose = verbose
+    )
+
+    # check assays
+    assay_names <- base::names(object@assays)
+
+    if(base::length(assay_names) >= 1){
+
+      confuns::check_one_of(
+        input = assay_name,
+        against = assay_names,
+        ref.opt.2 = "assays in Seurat object",
+        fdb.opt = 2
+      )
+
+    } else {
+
+      stop("Seurat object contains no assays.")
+
+    }
+
+    # check and transfer image
+    if(base::is.character(image_name)){
+
+      image_names <- base::names(object@images)
+
+      if(base::length(image_names) >= 1){
+
+        confuns::check_one_of(
+          input = image_name,
+          against = image_names,
+          ref.opt.2 = "images in Seurat object",
+          fdb.opt = 2
+        )
+
+        image_obj <- asHistologyImage(object = object@images[[image_name]])
+
+        spata_object <- setImageObject(spata_object, image_object = image_obj)
+
+        # !!! decide where to store the coordinates
+        spata_object <- setCoordsDf(spata_object, coords_df = image_obj@coordinates)
+
+      } else {
+
+        confuns::give_feedback(
+          msg = "Seurat object contains no images.",
+          verbose = verbose
+        )
+
+        image_obj <- NULL
+
+      }
+
+    }
+
+    # transfer features
+    feature_df <-
+      tibble::rownames_to_column(object@meta.data, var = "barcodes") %>%
+      tibble::as_tibble()
+
+    if(base::isFALSE(transfer_meta_data)){
+
+      feature_df <- dplyr::select(feature_df, barcodes)
+
+    }
+
+    spata_object <- setFeatureDf(spata_object, feature_df = feature_df)
+
+    # transfer matrices
+    assay <- object@assays[[assay_name]]
+
+    count_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = "counts"),
+        error_handling = "stop",
+        error_ref = "count matrix"
+      )
+
+    spata_object <-
+      setCountMatrix(
+        object = spata_object,
+        count_mtr = count_mtr[base::rowSums(base::as.matrix(count_mtr)) != 0, ]
+        )
+
+    scaled_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = "scale.data"),
+        error_handling = "stop",
+        error_ref = "scaled matrix",
+        error_value = NULL
+      )
+
+    spata_object <-
+      setScaledMatrix(
+        object = spata_object,
+        scaled_mtr = scaled_mtr[base::rowSums(base::as.matrix(scaled_mtr)) != 0, ]
+        )
+
+    # transfer dim red data
+    if(base::isTRUE(transfer_dim_red)){
+
+      # pca
+      pca_df <- base::tryCatch({
+
+        pca_df <-
+          base::as.data.frame(object@reductions$pca@cell.embeddings) %>%
+          tibble::rownames_to_column(var = "barcodes") %>%
+          dplyr::select(barcodes, dplyr::everything())
+
+        base::colnames(pca_df) <- stringr::str_remove_all(base::colnames(pca_df), pattern = "_")
+
+        pca_df
+
+      },
+
+      error = function(error){
+
+        warning("Could not find or transfer PCA-data. Did you process the seurat-object correctly?")
+
+        return(data.frame())
+
+      }
+
+      )
+
+      if(!base::nrow(pca_df) == 0){
+
+        spata_object <- setPcaDf(spata_object, pca_df = pca_df)
+
+      }
+
+
+      # tsne
+      tsne_df <- base::tryCatch({
+
+        base::data.frame(
+          barcodes = base::rownames(object@reductions$tsne@cell.embeddings),
+          tsne1 = object@reductions$tsne@cell.embeddings[,1],
+          tsne2 = object@reductions$tsne@cell.embeddings[,2],
+          stringsAsFactors = FALSE
+        ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer TSNE-data. Did you process the seurat-object correctly?")
+
+        return(data.frame())
+
+      }
+
+      )
+
+      if(!base::nrow(tsne_df) == 0){
+
+        spata_object <- setTsneDf(object = spata_object, tsne_df = tsne_df)
+
+      }
+
+      # umap
+      umap_df <- base::tryCatch({
+
+        base::data.frame(
+          barcodes = base::rownames(object@reductions$umap@cell.embeddings),
+          umap1 = object@reductions$umap@cell.embeddings[,1],
+          umap2 = object@reductions$umap@cell.embeddings[,2],
+          stringsAsFactors = FALSE
+        ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer UMAP-data. Did you process the seurat-object correctly?")
+
+        return(data.frame())
+
+      }
+
+      )
+
+      if(!base::nrow(umap_df) == 0){
+
+        spata_object <- setUmapDf(object = spata_object, umap_df = umap_df)
+
+      }
+
+    } else {
+
+      confuns::give_feedback(
+        msg = "`transfer_dim_red = FALSE`: Skip transferring dimensional reduction data.",
+        verbose = verbose
+      )
+
+    }
+
+    # conclude
+    spata_object <- setBarcodes(spata_object, barcodes = base::colnames(count_mtr))
+
+    spata_object <- setInitiationInfo(spata_object)
+
+    spata_object <-
+      setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+
+    spata_object <-
+      setActiveExpressionMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+
+    confuns::give_feedback(
+      msg = "Done.",
+      verbose = verbose
+    )
+
+    return(spata_object)
+
+  }
+)
+
 
 
 #' @title Title

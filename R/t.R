@@ -860,7 +860,6 @@ transformSeuratToSpata <- function(seurat_object,
       )
 
     # get scaled matrix
-
     assay <- seurat_object@assays[[assay_name]]
 
     scaled_mtr <-
@@ -879,6 +878,7 @@ transformSeuratToSpata <- function(seurat_object,
         error_value = base::matrix(),
         error_ref = "count matrix"
       )
+
 
     # get image
     image_object <-
@@ -1047,7 +1047,6 @@ transformSeuratToSpata <- function(seurat_object,
 
 
   # dimensional reduction: pca
-
   pca_df <- base::tryCatch({
 
     pca_df <-
@@ -1067,7 +1066,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
-    base::return(data.frame())
+   return(data.frame())
 
   }
 
@@ -1093,7 +1092,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
-    base::return(data.frame())
+   return(data.frame())
 
   }
 
@@ -1119,7 +1118,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
-    base::return(data.frame())
+   return(data.frame())
 
   }
 
@@ -1159,12 +1158,7 @@ transformSeuratToSpata <- function(seurat_object,
 
 
   # other lists
-  spata_object@information <-
-    list("barcodes" = magrittr::set_names(x = list(barcodes_matrix), value = sample_name))
-
-  spata_object <-
-    setDefaultInstructions(spata_object) %>%
-    setDirectoryInstructions()
+  spata_object <- setBarcodes(spata_object, barcodes = barcodes_matrix)
 
   spata_object <- setInitiationInfo(spata_object)
 
@@ -1177,17 +1171,9 @@ transformSeuratToSpata <- function(seurat_object,
   #äspata_object <-
   #  computeGeneMetaData(object = spata_object, verbose = verbose)
 
-  spata_object@spatial <-
-    magrittr::set_names(x = list(list()), value = sample_name)
-
-  spata_object@trajectories <-
-    magrittr::set_names(x = list(list()), value = sample_name)
-
-  spata_object@version <- current_spata_version
-
   # 5. Return spata object ---------------------------------------------------
 
-  base::return(spata_object)
+ return(spata_object)
 
 }
 
@@ -1484,7 +1470,7 @@ transformSpataToCDS <- function(object,
   # -----
 
 
-  base::return(cds)
+ return(cds)
 
 }
 
@@ -1602,7 +1588,7 @@ transformSpataToSeurat <- function(object,
       "To use spatial features of the Seurat package you need to add that manually."
     )
 
-    base::return(seurat_object)
+   return(seurat_object)
 
   }
   )

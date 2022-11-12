@@ -6,28 +6,49 @@
 #'
 #' @inherit initiateSpataObject_ExprMtr params
 #'
-#' @return An empty spata-object.
+#' @return An empty object of class `SPATA2`.
 #' @export
 #'
 
-initiateSpataObject_Empty <- function(sample_name){
+initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
-  confuns::give_feedback(msg = "Setting up new spata-object.", verbose = TRUE)
+  confuns::give_feedback(
+    msg = "Setting up new spata-object.",
+    verbose = TRUE
+    )
 
-  confuns::is_value("sample_name",  mode = "character")
+  # check input
+  confuns::is_value(sample_name,  mode = "character")
 
+  confuns::check_one_of(
+    input = platform,
+    against = validSpatialMethods()
+  )
+
+  # create object
   class_string <- "spata2"
 
   base::attr(class_string, which = "package") <- "SPATA2"
 
-  object <-
-    methods::new(Class = class_string, samples = sample_name)
+  object <- methods::new(Class = class_string, samples = sample_name)
 
-  object@images[[sample_name]] <- HistologyImage()
+  # set basic slots
+  object@information$method <- spatial_methods[[spatial_method]]
 
+  object <- setDefaultInstructions(object)
+
+  # empty slots
+  empty_list <- purrr::set_names(x = list(list()), nm = sample_name)
+
+  object@autoencoder <- empty_list
+  object@cnv <- empty_list
+  object@dea <- empty_list
+  object@images <- empty_list
+  object@spatial <- empty_list
+  object@trajectories <- empty_list
+
+  # set version
   object@version <- current_spata_version
-
-  object@information$method <- Visium
 
   return(object)
 
@@ -964,8 +985,6 @@ initiateSpataObject_10X <- function(directory_10X,
       verbose = verbose
     )
 
-  spata_object <- setInitiationInfo(spata_object)
-
 
   # -----
 
@@ -1008,6 +1027,41 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
+  assign("spata_object", spata_object, envir = .GlobalEnv)
+
+  # miscellaneous
+  spata_object <- setPixelScaleFactor(spata_object)
+
+  if(!"histology" %in% getFeatureNames(spata_object)){
+
+    spata_object <-
+      addSegmentationVariable(
+        object = spata_object,
+        name = "histology",
+        verbose = FALSE
+      )
+
+  }
+
+  # set image directories
+  dir_lowres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
+
+  if(base::file.exists(dir_lowres)){
+
+    spata_object <- setImageDirLowres(spata_object, dir_lowres = dir_lowres, check = FALSE)
+
+  }
+
+  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_hires_image.png")
+
+  if(base::file.exists(dir_highres)){
+
+    spata_object <- setImageDirHighres(spata_object, dir_highres = dir_highres, check = FALSE)
+
+  }
+
+  spata_object <- setInitiationInfo(spata_object)
+  # save spata object
   if(base::is.character(directory_spata)){
 
     spata_object <-
@@ -1037,40 +1091,6 @@ initiateSpataObject_10X <- function(directory_10X,
       msg = "No directory specified. Skip saving spata-object.",
       verbose = verbose
     )
-
-  }
-
-
-  # miscellaneous
-  spata_object@information$method <- Visium
-
-  spata_object <- setPixelScaleFactor(spata_object)
-
-  if(!"histology" %in% getFeatureNames(spata_object)){
-
-    spata_object <-
-      addSegmentationVariable(
-        object = spata_object,
-        name = "histology",
-        verbose = FALSE
-      )
-
-  }
-
-  # set image directories
-  dir_lowres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
-
-  if(base::file.exists(dir_lowres)){
-
-    spata_object <- setImageDirLowres(spata_object, dir_lowres = dir_lowres, check = FALSE)
-
-  }
-
-  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_hires_image.png")
-
-  if(base::file.exists(dir_highres)){
-
-    spata_object <- setImageDirHighres(spata_object, dir_highres = dir_highres, check = FALSE)
 
   }
 

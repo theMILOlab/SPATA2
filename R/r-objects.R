@@ -463,7 +463,7 @@ create_spatial_trajectories_descr <- list(
 
 
 
-current_spata_version <- list(major = 1, minor = 12, patch = 0)
+current_spata_version <- list(major = 1, minor = 13, patch = 0)
 
 
 # d -----------------------------------------------------------------------

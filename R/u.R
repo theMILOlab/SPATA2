@@ -596,9 +596,19 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 13, patch = 0)
 
+    # method
     mname <- getSpatialMethod(object)@name
 
-    object@method$information <- spatial_methods[[mname]]
+    object@method$information$method <- spatial_methods[[mname]]
+
+    # change positioning of active expr mtr
+
+    active_mtr <- object@information$active_mtr[[1]]
+    object@information$active_mtr <- active_mtr
+
+    active_expr_mtr <- object@information$active_expr_mtr[[1]]
+    object@information$active_expr_mtr <- active_expr_mtr
+
 
   }
 

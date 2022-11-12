@@ -14,7 +14,7 @@ setActiveMatrix <- function(object, mtr_name, verbose = NULL){
     suggest = TRUE
   )
 
-  object@information$active_mtr[[1]] <- mtr_name
+  object@information$active_mtr <- mtr_name
 
   confuns::give_feedback(
     msg = glue::glue("Active matrix set to {mtr_name}."),
@@ -35,12 +35,15 @@ setActiveMatrix <- function(object, mtr_name, verbose = NULL){
 #' @return An updated spta-object.
 #' @export
 
-setActiveExpressionMatrix <- function(object, mtr_name, of_sample = NA){
+setActiveExpressionMatrix <- function(object, mtr_name, verbose = NULL, ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
 
   check_object(object)
-  confuns::is_value(x = mtr_name, mode = "character")
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  confuns::is_value(x = mtr_name, mode = "character")
 
   # check if 'name' is slot in @data
   mtr_names <- getExpressionMatrixNames(object = object, of_sample = of_sample)
@@ -53,12 +56,12 @@ setActiveExpressionMatrix <- function(object, mtr_name, of_sample = NA){
 
   msg <- glue::glue("Active expression matrix set to '{mtr_name}'.")
 
-  confuns::give_feedback(msg = msg)
+  confuns::give_feedback(msg = msg, verbose = verbose)
 
   # set name
-  object@information$active_expr_mtr[[of_sample]] <- mtr_name
+  object@information$active_expr_mtr <- mtr_name
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -93,6 +96,28 @@ setAutoencoderAssessment <- function(object, assessment_list, of_sample = ""){
 
 
 
+
+
+#' @title Set barcodes
+#'
+#' @description Sets the reference barcode ids.
+#'
+#' @inherit argument_dummy params
+#' @param barcodes Character vector. Barcode ids.
+#'
+#' @inherit set_dummy params return details
+#' @export
+
+setBarcodes <- function(object, barcodes){
+
+  confuns::is_vec(x = barcodes, mode = "character")
+
+  object@information$barcodes <- barcodes
+
+  return(object)
+
+}
+
 # setC --------------------------------------------------------------------
 
 #' @title Set cnv-results
@@ -102,9 +127,8 @@ setAutoencoderAssessment <- function(object, assessment_list, of_sample = ""){
 #'
 #' @param cnv_list The list containing the results from \code{runCnvAnalysis()}.
 #'
-#' @return An updated spata-object.
+#' @inherit set_dummy params return details
 #' @export
-#'
 
 setCnvResults <- function(object, cnv_list, ...){
 
@@ -145,7 +169,7 @@ setCoordsDf <- function(object, coords_df, of_sample = ""){
   object@coordinates[[of_sample]] <- coords_df
   object@images[[of_sample]]@coordinates <- coords_df
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -191,7 +215,7 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
 
   object@data[[of_sample]][["counts"]] <- count_mtr
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -271,7 +295,7 @@ setDefaultInstructions <- function(object, ...){
   object@information$instructions$default <-
     default_instructions_object
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -323,7 +347,7 @@ setDenoisedMatrix <- function(object, denoised_mtr, of_sample = NA){
 
   object@data[[of_sample]][["denoised"]] <- denoised_mtr
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -340,7 +364,7 @@ setDirectoryInstructions <- function(object){
       "spata_object" = "not defined"
     )
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -372,7 +396,7 @@ setFeatureDf <- function(object, feature_df, of_sample = ""){
 
   object@fdata[[of_sample]] <- feature_df
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -400,7 +424,7 @@ setGeneSetDf <- function(object, gene_set_df){
 
   object@used_genesets <- gene_set_df
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -419,7 +443,7 @@ setImage <- function(object, image, of_sample = ""){
 
   object@images[[of_sample]]@image <- image
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -627,10 +651,9 @@ setInitiationInfo <- function(object, additional_input = list()){
     time = base::Sys.time()
   )
 
-  object@information$initiation <-
-    initiation_list
+  object@information$initiation <- initiation_list
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -694,7 +717,7 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 
   object@dim_red[[of_sample]][["pca"]] <- pca_df
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -725,7 +748,7 @@ setPixelScaleFactor <- function(object, pxl_scale_fct = NULL, verbose = NULL){
     object@information$pxl_scale_fct <-
       getPixelScaleFactor(
         object = object,
-        unit =  getMethodUnit(object),
+        unit =  getSpatialMethod(object)@unit,
         force = TRUE
       )
 
@@ -756,7 +779,7 @@ setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
 
   object@data[[of_sample]][["scaled"]] <- scaled_mtr
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -805,7 +828,7 @@ setTsneDf <- function(object, tsne_df, of_sample = ""){
 
   object@dim_red[[of_sample]][["tsne"]] <- tsne_df
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -845,7 +868,7 @@ setUmapDf <- function(object, umap_df, of_sample = ""){
 
   object@dim_red[[of_sample]][["umap"]] <- umap_df
 
-  base::return(object)
+  return(object)
 
 }
 

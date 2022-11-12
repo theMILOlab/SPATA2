@@ -15,12 +15,11 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
   hlpr_assign_arguments(object)
 
-
-  mtr_name <- object@information$active_mtr[[1]]
+  mtr_name <- object@information$active_mtr
 
   if(base::is.null(mtr_name)){
 
-    stop("Please set an active matrix with `setActivenMatrixName()`")
+    stop("Please set an active matrix with `setActivenMatrix()`")
 
   }
 
@@ -37,17 +36,17 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 #' @export
 getActiveExpressionMatrixName <- function(object, verbose = NULL, ...){
 
-  deprecated(... = )
+  deprecated(...)
 
   check_object(object)
 
   hlpr_assign_arguments(object)
 
-  expr_mtr_name <- object@information$active_expr_mtr[[1]]
+  expr_mtr_name <- object@information$active_expr_mtr
 
   if(base::is.null(expr_mtr_name)){
 
-    stop("Please set an active expression matrix with `setActiveExpressionMatrixName()`")
+    stop("Please set an active expression matrix with `setActiveExpressionMatrix()`")
 
   }
 
@@ -342,7 +341,7 @@ getCCD <- function(object,
 
   check_object(object)
 
-  method <- getMethod(object)
+  method <- getSpatialMethod(object)
 
   ccd <- method@info[["ccd"]]
 

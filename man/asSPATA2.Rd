@@ -3,11 +3,22 @@
 \name{asSPATA2}
 \alias{asSPATA2}
 \alias{asSPATA2,giotto-method}
+\alias{asSPATA2,Seurat-method}
 \title{Transform to \code{SPATA2} object}
 \usage{
 asSPATA2(object, ...)
 
 \S4method{asSPATA2}{giotto}(object, sample_name, transfer_meta_data = TRUE, verbose = TRUE, ...)
+
+\S4method{asSPATA2}{Seurat}(
+  object,
+  sample_name,
+  assay_name = "Spatial",
+  image_name = "slice1",
+  transfer_meta_data = TRUE,
+  transfer_dim_red = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
