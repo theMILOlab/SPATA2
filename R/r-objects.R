@@ -477,6 +477,9 @@ depr_info <-
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "flipCoords" = "flipCoordinates",
+      "getMethod" = "getSpatialMethod",
+      "getMethodUnit" = "getSpatialMethod()@unit",
+      "getMethodName" = "getSpatialMethod()@name",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
       "getSampleNames" = "getSampleName",
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
@@ -743,7 +746,18 @@ regex_unit <- stringr::str_c(regex_euol, regex_pxl, regex_area_units, sep = "|")
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
 
 
-spatial_methods <- c("Visium")
+#' @export
+spatial_methods <-
+  list(
+    Visium =
+      SpatialMethod(
+        fiducial_frame = list(x = "8mm", y = "8mm"),
+        info = list(ccd = "100um"),
+        name = "Visium",
+        unit = "mm",
+        observational_unit = "barcode-spot"
+      )
+  )
 
 
 smrd_projection_df_names <- c("trajectory_part", "proj_length_binned", "trajectory_order", "trajectory_part_order")
@@ -790,15 +804,20 @@ threshold_scattermore <- 100000
 # V -----------------------------------------------------------------------
 
 
-#' @title Visium meta data
-#' @export
-Visium <-
+Visium <- function(){
+
+  deprecated(fn = TRUE)
+
   SpatialMethod(
     fiducial_frame = list(x = "8mm", y = "8mm"),
     info = list(ccd = "100um"),
     name = "Visium",
+    unit = "mm",
     observational_unit = "barcode-spot"
   )
+
+}
+
 
 
 

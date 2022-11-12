@@ -232,7 +232,7 @@ validPlotTypes <- function(fn_name){
 #' @export
 validSpatialMethods <- function(){
 
-  spatial_methods
+  base::names(spatial_methods)
 
 }
 

@@ -1276,6 +1276,47 @@ flipCoords <- function(...){
 
 # g -----------------------------------------------------------------------
 
+#' @title Obtain unit of method
+#'
+#' @description Extracts the European unit of length in which the size of
+#' the fiducial frame of the underlying spatial method is specified.
+#'
+#' @inherit argument_dummy
+#'
+#' @return Character value.
+#'
+#' @export
+#'
+#'
+
+
+getMethod <- function(object){
+
+  deprecated(fn = TRUE)
+
+  object@information$method
+
+}
+
+getMethodUnit <- function(object){
+
+  deprecated(fn = TRUE)
+
+  method <- getMethod(object)
+
+  getMethod(object)@fiducial_frame[["x"]] %>%
+    extract_unit()
+
+}
+
+getMethodName <- function(object){
+
+  deprecated(fn = TRUE)
+
+  object@information$method@name
+
+}
+
 #' @rdname getSampleName
 #' @export
 getSampleNames <- function(object){

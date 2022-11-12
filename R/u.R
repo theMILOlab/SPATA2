@@ -574,7 +574,7 @@ updateSpataObject <- function(object,
       verbose = verbose
     )
 
-    object@information$method <- Visium
+    object@information$method <- spatial_methods[["Visium"]]
 
   }
 
@@ -588,6 +588,17 @@ updateSpataObject <- function(object,
     )
 
     object <- setPixelScaleFactor(object)
+
+  }
+
+
+  if(object@version$major == 1 && object@version$minor == 12){
+
+    object@version <- list(major = 1, minor = 13, patch = 0)
+
+    mname <- getSpatialMethod(object)@name
+
+    object@method$information <- spatial_methods[[mname]]
 
   }
 

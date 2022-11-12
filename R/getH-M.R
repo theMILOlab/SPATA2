@@ -1121,7 +1121,15 @@ getImageObject <- function(object){
 
   out <- object@images[[1]]
 
-  out@id <- getSampleName(object)
+  if(!base::is.null(out)){
+
+    out@id <- getSampleName(object)
+
+  } else {
+
+    warning("No image object found. Returning `NULL`.")
+
+  }
 
   return(out)
 
@@ -1334,38 +1342,14 @@ getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
 #' @seealso `?SpatialMethod`
 #'
 #' @export
-getMethod <- function(object){
+
+
+getSpatialMethod <- function(object){
 
   object@information$method
 
 }
 
-
-#' @title Obtain unit of method
-#'
-#' @description Extracts the European unit of length in which the size of
-#' the fiducial frame of the underlying spatial method is specified.
-#'
-#' @inherit argument_dummy
-#'
-#' @return Character value.
-#'
-#' @export
-getMethodUnit <- function(object){
-
-  method <- getMethod(object)
-
-  getMethod(object)@fiducial_frame[["x"]] %>%
-    extract_unit()
-
-}
-
-#' @export
-getMethodName <- function(object){
-
-  object@information$method@name
-
-}
 
 
 #' @title Obtain model evaluation

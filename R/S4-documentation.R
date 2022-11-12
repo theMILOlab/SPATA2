@@ -189,6 +189,7 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
                             fiducial_frame = "list",
                             info = "list",
                             name = "character",
+                            unit = "character",
                             observational_unit = "character"
                           ))
 
@@ -251,33 +252,6 @@ SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
 # T -----------------------------------------------------------------------
 
 # Trajectory - other S4 classes inherit from it. Is listed on top under 0
-
-# V -----------------------------------------------------------------------
-
-#' @title The Visium - Class
-#'
-#' @description S4 class that represents spatial information from 10X Genomics
-#' Visium experiments.
-#'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot grid data.frame. A data.frame that contains at least a the numeric variables
-#' named \emph{x} and \emph{y} as well as the character variable \emph{barcodes}.
-#' @slot dir_default character. Directory to the default version of the image.
-#' @slot dir_highres character. Directory to the high resolution version of the image.
-#' @slot grid data.frame. A data.frame that contains at least a variable
-#' named \emph{x} and a variable named \emph{y} representing a grid. Must contain
-#' a character variable named \emph{barcodes}, too.
-#' @slot image Image.
-#'
-#' @export
-Visium <- setClass(Class = "Visium",
-                            contains = "HistologyImage",
-                            slots = list()
-)
-
-
-
-
 
 
 

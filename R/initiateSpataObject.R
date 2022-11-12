@@ -1066,7 +1066,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
-  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
+  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_hires_image.png")
 
   if(base::file.exists(dir_highres)){
 

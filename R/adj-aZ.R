@@ -1036,7 +1036,7 @@ asGiotto <- function(object,
 #' @return An object of class \code{Visium}.
 #' @export
 #'
-methods::setGeneric(name = "asHistologyImage", def = function(object, ...){
+setGeneric(name = "asHistologyImage", def = function(object, ...){
 
   standardGeneric(f = "asHistologyImage")
 
@@ -1045,7 +1045,7 @@ methods::setGeneric(name = "asHistologyImage", def = function(object, ...){
 
 #' @rdname asHistologyImage
 #' @export
-methods::setMethod(
+setMethod(
   f = "asHistologyImage",
   signature = "VisiumV1",
   definition = function(object, scale_with = "lowres"){
@@ -1086,7 +1086,157 @@ methods::setMethod(
 
 
 
+
 # asM-asS -----------------------------------------------------------------
+
+
+#' @title Transform `SPATA2` to `Seurat`
+#'
+#' @description Transforms an `SPATA2` object to an object of class `Seurat`.
+#' See details for more information.
+#'
+#' @param process Logical value. If `TRUE`, count matrix is processed.
+#' See details for more.
+#'
+#' Use `getInitiationInfo()` to obtain argument input of your `SPATA2` object
+#' initiation.
+#'
+#' @param assay_name,image_name Character values. Define the name with which
+#' to refer to the assay or the image in the `Seurat` object. Defaults to
+#' the default of the `Seurat` package.
+#'
+#' @inherit argument_dummy params
+#' @inherit asGiotto params
+#'
+#' If you have used `initiateSpataObject_10X()`, chances are that you have
+#' already specified input for various processing functions. `asSeurat()`
+#' creates a `Seurat` object from scratch. It has to, because even though
+#' many processing steps are run with the Seurat object as background `SPATA2`
+#' does not net all its content and to keep `SPATA2` objects as small as
+#' possible not everything is transferred from the `Seurat` object.
+#'
+#' If `process = TRUE`, the input you've given to `initiateSpataObject_10X()` is taken to
+#' conduct the same processing. To check what you have defined as input, you
+#' can use the function `getInititationInfo()`.
+#'
+#' @return An object of class `Seurat`.
+#' @export
+#'
+
+asSeurat <- function(object,
+                     process = TRUE,
+                     transfer_features = TRUE,
+                     assay_name = "Spatial",
+                     image_name = "slice1",
+                     verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # get data
+  count_mtr <- getCountMatrix(object)
+
+  if(base::isTRUE(transfer_features)){
+
+    meta_data <-
+      getFeatureDf(object) %>%
+      tibble::column_to_rownames(var = "barcodes") %>%
+      base::as.data.frame()
+
+  } else {
+
+    meta_data <- NULL
+
+  }
+
+  # init infor
+  initiated_with <- getInitiationInfo(object)[["input"]]
+
+  # create raw seurat object
+  seurat_object <-
+    Seurat::CreateSeuratObject(
+      counts = count_mtr,
+      project = getSampleName(object),
+      meta.data = meta_data,
+      assay = assay_name
+    )
+
+  if(base::isTRUE(process)){
+
+    process_seurat_object(
+      seurat_object = seurat_object,
+      assay_name = assay_name,
+      calculate_rb_and_mt = TRUE,
+      remove_stress_and_mt = TRUE,
+      SCTransform = initiated_with$SCTransform,
+      NormalizeData = initiated_with$NormalizeData,
+      FindVariableFeatures = initiated_with$FindVariableFeatures,
+      ScaleData = initiated_with$ScaleData,
+      RunPCA = initiated_with$RunPCA,
+      RunTSNE = initiated_with$RunTSNE,
+      RunUMAP = initiated_with$RunUMAP,
+      verbose = verbose
+    )
+
+  } else {
+
+    confuns::give_feedback(
+      msg = " `process` = FALSE. Returning raw Seurat object with count matrix.",
+      verbose = verbose
+    )
+
+  }
+
+  # set image
+  if(containsImageObject(object)){
+
+    # adjust array justification for Seurat
+    image_obj <-
+      rotateImage(object = object, angle = 90) %>%
+      flipImage(axis = "y") %>%
+      getImageObject()
+
+    platform <- getSpatialMethod(object)@name
+
+    if(platform == "Visium"){
+
+      img_obj_seurat <- asVisiumV1(object = image_obj, name = image_name)
+
+    } else {
+
+      warning(glue::glue("Platform '{platform}' is unknown to Seurat. Can not set image."))
+
+      img_obj_seurat <- NULL
+
+    }
+
+  } else {
+
+    img_obj_seurat <- NULL
+
+  }
+
+
+  if(!base::is.null(img_obj_seurat)){
+
+    seurat_object@images[[image_name]] <- img_obj_seurat
+
+  }
+
+  # give feedback and return
+  confuns::give_feedback(
+    msg = glue::glue("Assay name: {assay_name}. Image name: {image_name}."),
+    verbose = verbose
+  )
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  return(seurat_object)
+
+}
+
 
 #' @title Transform to `SingleCellExperiment`
 #'
@@ -1384,6 +1534,44 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 
 
 
+# asV ---------------------------------------------------------------------
+
+
+
+#' @title Transform `HistologyImage` to `VisiumV1`
+#'
+#' @description Transforms an `HistologyImage` obejct to an object of
+#' class `VisiumV1` from the `Seurat` package.
+#'
+#' @param object An object of class `HistologyImage`.
+#' @param name Name of the `VisiumV1` object. Suffixed with *_* to fill
+#' slot @@key.
+#'
+#' @return An object of class `VisiumV1` from the `Seurat` package.
+#' @export
+#'
+asVisiumV1 <- function(object, name = "slice1"){
+
+  require(Seurat)
+
+  coords_df_seurat <-
+    dplyr::select(object@coordinates, -dplyr::any_of(c("x", "y", "sample"))) %>%
+    tibble::column_to_rownames(var = "barcodes") %>%
+    base::as.data.frame()
+
+  out <-
+    methods::new(
+      Class = magrittr::set_attr(x = "VisiumV1", which = "package", value = "Seurat"),
+      image = base::as.array(object@image),
+      scale.factors = object@misc$scale.factors,
+      coordinates = coords_df_seurat,
+      spot.radius = object@misc$spot.radius,
+      key = stringr::str_c(name, "_")
+    )
+
+  return(out)
+
+}
 
 
 
