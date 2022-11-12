@@ -3,11 +3,11 @@
 \docType{data}
 \name{spatial_segmentations}
 \alias{spatial_segmentations}
-\title{A list of lists of spatial segmentations. Every slot in list \code{spatial_segmentations}
-is named by the sample the segmentations belong to. Every sample specific slot
-is a data.frame with two variables: \emph{barcodes} and the spatial segmentation
-variable (usually named \emph{histolgoy}). The segmentation variable can be
-added to the corresponding sample using the function \code{addFeatures()}.}
+\title{A list of lists of spatial segmentations for specific \code{SPATA2}
+objects - available via the \code{SPATAData} package. Names of the list slots
+correspond to the sample names in variable  \emph{sample} of \code{SPATAData::source_df}.
+Every sample specific slot is a data.frame with two variables: \emph{barcodes}
+and the spatial segmentation variable (usually named \emph{histolgoy}).}
 \format{
 An object of class \code{list} of length 1.
 }
@@ -15,6 +15,10 @@ An object of class \code{list} of length 1.
 spatial_segmentations
 }
 \description{
+The segmentation variable can be added to the corresponding sample using the
+function \code{addFeatures()}.
+}
+\details{
 @docType data
 @usage data(spatial_segmentations)
 }

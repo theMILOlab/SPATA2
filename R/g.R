@@ -765,7 +765,7 @@ ggpLayerImageAnnotation <- function(object = "object",
               geom = ggplot2::GeomPolygon,
               mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
               data = img_ann_df,
-              params = list(alpha = alpha, size = linesize, linetype = linetype)
+              params = list(alpha = alpha, size = line_size, linetype = line_type)
             )
 
           out$scale_color_add_on <-
