@@ -224,6 +224,11 @@ Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
+
 \item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
 \code{ggplot2::geom_vline()} that control the appearance of vertical lines
 of the plot.}

@@ -1077,9 +1077,10 @@ strongH5 <- function(text){
 #' @description Removes unwanted barcode spots from the object without any significant
 #' post processing.
 #'
-#' @param object
 #' @param barcodes Character vector. The barcodes of the barcode spots that are
 #' supposed to be \bold{kept}.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @return An updated \code{spata2} object.
 #'

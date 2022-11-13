@@ -60,6 +60,11 @@ is displayed underneath the plot.}
 \item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
 are removed before plotting.}
 
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
+
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
 the point size must be adjusted with the argument \code{pt_size}.}
@@ -70,6 +75,9 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+}
+\value{
+A ggplot.
 }
 \description{
 This function calculates the quantiles specified in \code{n_qntl}

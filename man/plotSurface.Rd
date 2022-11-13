@@ -101,6 +101,11 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
+
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
 the point size must be adjusted with the argument \code{pt_size}.}
@@ -110,7 +115,7 @@ is displayed underneath the plot.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 
-\item{complete}{Logical. If the provided spata-object has been subsetted by
+\item{complete}{Logical. If the provided \code{SPATA2} object has been subsetted by
 \code{subsetBySegment()} the original sample is completed with grey barcode
 spots.}
 
@@ -156,10 +161,10 @@ surface according to the expression of genes, gene sets or features.
 
 \itemize{
 
-\item{ \code{plotSurface()} Takes the spata-object as the starting point and creates the
+\item{ \code{plotSurface()} Takes the \code{SPATA2} object as the starting point and creates the
 necessary data.frame from scratch according to additional parameters.}
 \item{ \code{plotSurface2()} Takes a data.frame as the starting point.}
-\item{ \code{plotSurfaceInteractive()} Takes only the spata-object and opens a shiny
+\item{ \code{plotSurfaceInteractive()} Takes only the \code{SPATA2} object and opens a shiny
 application which allows for interactive plotting.}
 
 }

@@ -49,8 +49,7 @@ as_decimeter2(input, ...)
 \item{input}{Values that represent spatial measures.}
 
 \item{...}{Needed arguments that depend on the input/unit combination. If
-one of both is \emph{'px'}, either the argument \code{obejct} must be specified or
-\code{method} and \code{image_dims}.}
+one of both is \emph{'px'}, argument \code{object} must be specified.}
 
 \item{object}{An object of class \code{SPATA2}.}
 
@@ -68,7 +67,7 @@ the computational progress will be printed.
 All functions return an output vector of the same length as the input
 vector.
 
-If argument \code{unit} is among \code{validEuropeanUnitsOfLength()} or \code{validUnitsOfArea()}
+If argument \code{unit} is among \code{validUnitsOfLengthSI()} or \code{validUnitsOfAreaSI()}
 the output vector is of class \code{units}. If argument \code{unit} is \emph{'px'}, the output
 vector is a character vector or numeric vector if \code{as_numeric} is \code{TRUE}.
 }
@@ -89,17 +88,17 @@ object <- downloadSpataObject("269_T")
 
 pixel_values <- c(200, 450, 500)
 
-euol_values <- c("2mm", "400mm", "0.2mm")
+si_dist_values <- c("2mm", "400mm", "0.2mm")
 
 # spata object must be provided to scale based on current image resolution
 as_millimeter(input = pixel_values, object = object, round = 2)
 
 as_micrometer(input = pixel_values, object = object, round = 4)
 
-as_pixel(input = euol_values, object = object)
+as_pixel(input = si_dist_values, object = object)
 
 # spata object must not be provided
-as_micrometer(input = euol_values)
+as_micrometer(input = si_dist_values)
 
 
 }

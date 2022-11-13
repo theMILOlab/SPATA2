@@ -164,7 +164,6 @@ getBarcodes <- function(object,
 
   of_sample <- check_sample(object, of_sample, of.length = 1)
 
-
   # if variable is specified
   if(!base::is.null(across)){
 
@@ -204,9 +203,7 @@ getBarcodes <- function(object,
 
   } else {
 
-    res_barcodes <-
-      getExpressionMatrix(object, of_sample = of_sample) %>%
-      base::colnames()
+    res_barcodes <- object@information$barcodes
 
   }
 
@@ -263,13 +260,12 @@ getBarcodeSpotDistance <- function(object,
 #' @param barcdoes Character vector or NULL. If character,
 #' only input barcodes are considered.
 #'
-#'
 #' @return A data.frame in which each observation/row corresponds to a barcodes-spot ~
 #' barcode-spot pair.
 #'
 #' @export
 #'
-#' @examples
+
 getBarcodeSpotDistances <- function(object,
                                     barcodes = NULL,
                                     unit = "pixel",
@@ -373,10 +369,11 @@ getCCD <- function(object,
 #' @description Extracts information regarding
 #' start, end and length of chromosomal arms.
 #'
-#' @param object
 #' @param format Character. If \emph{'long'} rows correspond to chromosome
 #' arms if \emph{'wide'} rows correspond to chromosomes and information
 #' about the respective arms is stored in separate columns.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame.
 #' @export
@@ -442,9 +439,9 @@ getCnvFeatureNames <- function(object, ...){
 #'
 #' @description Extracts CNV results in form of barcode ~ pairs in a data.frame.
 #'
-#' @param object
 #' @param add_meta Logical value. If TRUE, meta information obtained by
 #' \code{getGenePosDf()} every gene is added to the data.frame
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame.
 #' @export
@@ -941,7 +938,7 @@ getDefaultTrajectory <- function(object, ...){
 getDefaultTrajectoryId <- getDefaultTrajectory
 
 
-
+#' @title Get dim red df
 getDimRedDf <- function(object,
                         method_dr = c("pca", "tsne", "umap"),
                         of_sample = NA){
@@ -1445,10 +1442,11 @@ getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
 #' @description Extracts information regarding gene positioning
 #' on chromosomes and/or chromosome arms.
 #'
-#' @param object
 #' @param keep Logical value, TRUE the columns \emph{ensemble_gene_id} and
 #' \emph{hgnc_symbol} are included. The content of \emph{hgnc_symbol} is
 #' identical to the content of column \emph{genes}.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame.
 #' @export
@@ -1483,7 +1481,6 @@ getGenePosDf <- function(object, keep = FALSE){
 #' is equal to the input for argument \code{top_n}.
 #' @param top_n Numeric value. Denotes the number of genes to be returned if argument
 #' \code{similar_to} is specified.
-#' @param in_sample Deprecated.
 #'
 #' @details If neither \code{of_gene_sets} nor \code{similar_to} is specified all
 #' genes found in the active expression matrix are returned in a character vector.

@@ -727,7 +727,7 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 #' @description Sets pixel scale factor.
 #'
 #' @param pxl_scale_fct Numeric value with an attribute named
-#' *unit* with the unit euol/px.
+#' *unit* with the unit dist_si/px.
 #' @inherit argument_dummy params
 #'
 #' @inherit update_dummy return

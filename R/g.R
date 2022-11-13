@@ -40,6 +40,47 @@ geom_point_fixed <- function(...,
 # ggp ---------------------------------------------------------------------
 
 
+#' @title Initiate ggplot2 layering
+#'
+#' @description Initiates a ggplot object to which \code{ggpLayer}-
+#' functions can be added for individual plotting ideas.
+#'
+#' @inherit argument_dummy params
+#' @param theme Character value. String that denotes the default
+#' theme. Defaults to \code{void}
+#'
+#' @return An empty ggplot.
+#'
+#' @export
+#'
+ggpInit <- function(object = "object", theme = "void", data = "coords"){
+
+  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+
+  out <- list()
+
+  out$theme <- rlang::exec(.fn = stringr::str_c("theme_", theme))
+
+  df <-
+    rlang::exec(
+      .fn = stringr::str_c("get", make_capital_letters(data), "Df"),
+      object = object
+    )
+
+  out$data_invis <-
+    geom_point_fixed(
+      data = df,
+      mapping = ggplot2::aes(x = x, y = y),
+      alpha = 0
+    )
+
+  ggplot2::ggplot() + out
+
+}
+
+
+
+
 #' @title Display clean axes
 #'
 #' @description Removes axis text, -ticks and -titles (labs) from the plot.
@@ -65,11 +106,11 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' surface plots with European units of length.
 #'
 #' @inherit argument_dummy params
-#' @inherit transform_euol_to_pixels params
+#' @inherit transform_dist_si_to_pixels params
 #' @inherit ggpLayer_dummy return
-#' @param euol The desired unit. Defaults to the unit
+#' @param unit The desired unit. Defaults to the unit
 #' in which the original size of the image of the spatial method is
-#' provided. Obtain valid input options with \code{validEuropeanUnitsOfLength()}.
+#' provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.
 #' @param which One or two of \emph{'x'} and \emph{'y'}. Specifies
 #' for which axes the transformation is performed. Defaults to both.
 #' @param frame_by Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
@@ -85,18 +126,18 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'
 #' @export
 #'
-ggpLayerAxesEUOL <- function(object,
-                             euol = getMethodUnit(object),
-                             which = c("x", "y"),
-                             frame_by = "coords",
-                             breaks_x = NULL,
-                             breaks_y = NULL,
-                             add_labs = TRUE,
-                             round = 2){
+ggpLayerAxesSI <- function(object,
+                           unit = getSpatialMethod(object)@unit,
+                           which = c("x", "y"),
+                           frame_by = "coords",
+                           breaks_x = NULL,
+                           breaks_y = NULL,
+                           add_labs = TRUE,
+                           round = 2){
 
   confuns::check_one_of(
-    input = euol,
-    against = validEuropeanUnitsOfLength(),
+    input = unit,
+    against = validUnitsOfLengthSI(),
     suggest = TRUE
   )
 
@@ -136,18 +177,18 @@ ggpLayerAxesEUOL <- function(object,
   # output breaks
   if(!base::is.null(breaks_x)){
 
-    are_euol <-
-      purrr::map_lgl(.x = breaks_x, .f = is_dist_euol) %>%
+    are_si <-
+      purrr::map_lgl(.x = breaks_x, .f = is_dist_si) %>%
       base::all()
 
     are_pixels <-
       purrr::map_lgl(.x = breaks_x, .f = is_dist_pixel) %>%
       base::all()
 
-    if(are_euol){
+    if(are_si){
 
       breaks_x <-
-        transform_euol_to_pixels(
+        as_pixel(
           input = breaks_x,
           object = object,
           as_numeric = TRUE
@@ -177,18 +218,18 @@ ggpLayerAxesEUOL <- function(object,
 
   if(!base::is.null(breaks_y)){
 
-    are_euol <-
-      purrr::map_lgl(.x = breaks_y, .f = is_dist_euol) %>%
+    are_si <-
+      purrr::map_lgl(.x = breaks_y, .f = is_dist_si) %>%
       base::all()
 
     are_pixels <-
       purrr::map_lgl(.x = breaks_y, .f = is_dist_pixel) %>%
       base::all()
 
-    if(are_euol){
+    if(are_si){
 
       breaks_y <-
-        transform_euol_to_pixels(
+        as_pixel(
           input = breaks_y,
           object = object,
           as_numeric = TRUE
@@ -221,9 +262,9 @@ ggpLayerAxesEUOL <- function(object,
   axes <-
     list(
       ggplot2::scale_x_continuous(
-        labels = ~ transform_pixels_to_euol(
+        labels = ~ transform_pixels_to_dist_si(
           input = .x,
-          euol = euol,
+          unit = unit,
           object = object,
           as_numeric = TRUE,
           round = round
@@ -232,9 +273,9 @@ ggpLayerAxesEUOL <- function(object,
         breaks = breaks_x
       ),
       ggplot2::scale_y_continuous(
-        labels = ~ transform_pixels_to_euol(
+        labels = ~ transform_pixels_to_dist_si(
           input = .x,
-          euol = euol,
+          unit = unit,
           object = object,
           as_numeric = TRUE,
           round = round
@@ -250,8 +291,8 @@ ggpLayerAxesEUOL <- function(object,
 
     labs_add_on <-
       list(
-        x = ggplot2::labs(x = glue::glue("x-coordinates [{euol}]")),
-        y = ggplot2::labs(y = glue::glue("y-coordinates [{euol}]"))
+        x = ggplot2::labs(x = glue::glue("x-coordinates [{unit}]")),
+        y = ggplot2::labs(y = glue::glue("y-coordinates [{unit}]"))
       )
 
   } else {
@@ -909,7 +950,7 @@ ggpLayerRect <- function(object = "object",
 #'
 #' @inherit argument_dummy params
 #' @inherit is_dist details
-#' @inherit ggpLayers_dummy return
+#' @inherit ggpLayer_dummy return
 #'
 #' @details If `pos` is one of *top_right*, *top_left*, *bottom_right*
 #' or *bottom_left*, the position of the scale bar is computed in combination
@@ -924,28 +965,28 @@ ggpLayerRect <- function(object = "object",
 #'
 #'
 #' @export
-ggpLayerScaleBarEUOL <- function(object,
-                                 pos = "top_right",
-                                 dist_sb = "1mm",
-                                 sgmt_alpha = 1,
-                                 sgmt_color = "black",
-                                 sgmt_size = 1.25,
-                                 sgmt_type = "solid",
-                                 text_alpha = 1,
-                                 text_color = "black",
-                                 text_nudge_x = 0,
-                                 text_nudge_y = NULL,
-                                 text_size = 5.5,
-                                 text_type = 0.9,
-                                 xrange = NULL,
-                                 yrange = NULL,
-                                 offset = c(0.9, 0.9),
-                                 theme_opt = "none"){
+ggpLayerScaleBarSI <- function(object,
+                               pos = "top_right",
+                               dist_sb = "1mm",
+                               sgmt_alpha = 1,
+                               sgmt_color = "black",
+                               sgmt_size = 1.25,
+                               sgmt_type = "solid",
+                               text_alpha = 1,
+                               text_color = "black",
+                               text_nudge_x = 0,
+                               text_nudge_y = NULL,
+                               text_size = 5.5,
+                               text_type = 0.9,
+                               xrange = NULL,
+                               yrange = NULL,
+                               offset = c(0.9, 0.9),
+                               theme_opt = "none"){
 
   # check text nudging
-  is_dist_euol(input = dist_sb, error = TRUE)
+  is_dist_si(input = dist_sb, error = TRUE)
 
-  if(is_dist(text_nudge_y)){
+  if(!base::is.null(text_nudge_y) && is_dist(text_nudge_y)){
 
     text_nudge_y <-
       as_pixel(
@@ -1328,45 +1369,6 @@ ggpLayerZoom <- function(object = NULL,
   }
 
   return(layers)
-
-}
-
-
-#' @title Initiate ggplot2 layering
-#'
-#' @description Initiates a ggplot object to which \code{ggpLayer}-
-#' functions can be added for individual plotting ideas.
-#'
-#' @inherit argument_dummy params
-#' @param theme Character value. String that denotes the default
-#' theme. Defaults to \code{void}
-#'
-#' @return An empty ggplot.
-#'
-#' @export
-#'
-ggpInit <- function(object = "object", theme = "void", data = "coords"){
-
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
-  out <- list()
-
-  out$theme <- rlang::exec(.fn = stringr::str_c("theme_", theme))
-
-  df <-
-    rlang::exec(
-      .fn = stringr::str_c("get", make_capital_letters(data), "Df"),
-      object = object
-    )
-
-  out$data_invis <-
-    geom_point_fixed(
-      data = df,
-      mapping = ggplot2::aes(x = x, y = y),
-      alpha = 0
-    )
-
-  ggplot2::ggplot() + out
 
 }
 

@@ -1070,8 +1070,6 @@ check_method <- function(method_aggl = NULL,
 #' num_iter is greater than 1, the random_seed argument will be ignored
 #' for the louvain method.
 #'
-#' @return
-#'
 #' @details With respect to the arguments \code{preprocess_method},
 #' \code{reduction_method} and \code{cluster_method}:
 #'
@@ -1853,8 +1851,6 @@ check_variables <- function(variables,
 #' uniformly expressed across all barcode-spots of the specified coordinates
 #' data.frame are discarded. If set to \emph{'keep'} they are kept.
 #'
-#' @return
-
 check_uniform_genes <- function(uniform_genes){
 
   confuns::is_value(uniform_genes, "character", "uniform_genes")

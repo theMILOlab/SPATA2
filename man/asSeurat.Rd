@@ -38,3 +38,15 @@ An object of class \code{Seurat}.
 Transforms an \code{SPATA2} object to an object of class \code{Seurat}.
 See details for more information.
 }
+\details{
+If you have used \code{initiateSpataObject_10X()}, chances are that you have
+already specified input for various processing functions. \code{asSeurat()}
+creates a \code{Seurat} object from scratch. It has to, because even though
+many processing steps are run with the Seurat object as background \code{SPATA2}
+does not net all its content and to keep \code{SPATA2} objects as small as
+possible not everything is transferred from the \code{Seurat} object.
+
+If \code{process = TRUE}, the input you've given to \code{initiateSpataObject_10X()} is taken to
+conduct the same processing. To check what you have defined as input, you
+can use the function \code{getInititationInfo()}.
+}

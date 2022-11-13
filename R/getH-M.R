@@ -782,7 +782,6 @@ getImageAnnotations <- function(object,
 #'    summarize_by = c("bins_circle", "bins_angle")
 #'    )
 #'
-#'  plot
 #'
 
 getImageAnnotationScreeningDf <- function(object,

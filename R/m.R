@@ -202,10 +202,8 @@ mapImageAnnotationTags <- function(object,
 #' If \code{grouping_variable_new} is NULL DE analysis results of the specified
 #' grouping variable is resetted.
 #'
-#' @return
 #' @export
 #'
-#' @examples
 mergeGroups <- function(object,
                         grouping_variable,
                         grouping_variable_new,

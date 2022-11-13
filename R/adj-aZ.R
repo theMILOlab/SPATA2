@@ -471,23 +471,6 @@ as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
 #' @return Character vector of the same length as `input`.
 #'
 #' @export
-#'
-#' @examples
-#'
-#' library(SPATA2)
-#'
-#' mms <- stringr::str_c(1:8, "mm")
-#'
-#' as_SPATA2_dist(mms)
-#'
-#' pixels_a <- 1:8
-#'
-#' as_SPATA2_dist(pixels_a)
-#'
-#' pixels_b <- stringr::str_c(1:8, "px)
-#'
-#' as_SPATA2_dist(pixels_b)
-#'
 
 as_SPATA2_dist <- function(input){
 
@@ -512,17 +495,16 @@ as_SPATA2_dist <- function(input){
 #' @param unit Character value. Specifies the desired unit.
 #' @inherit argument_dummy params
 #' @inherit getCCD params
-#' @inherit transform_euol_to_pixels params
-#' @inherit transform_pixels_to_euol params return
+#' @inherit transform_dist_si_to_pixels params
+#' @inherit transform_pixels_to_dist_si params return
 #'
 #' @param ... Needed arguments that depend on the input/unit combination. If
-#' one of both is \emph{'px'}, either the argument `obejct` must be specified or
-#' `method` and `image_dims`.
+#' one of both is \emph{'px'}, argument `object` must be specified.
 #'
 #' @return All functions return an output vector of the same length as the input
 #' vector.
 #'
-#' If argument `unit` is among `validEuropeanUnitsOfLength()` or `validUnitsOfArea()`
+#' If argument `unit` is among `validUnitsOfLengthSI()` or `validUnitsOfAreaSI()`
 #' the output vector is of class `units`. If argument `unit` is *'px'*, the output
 #' vector is a character vector or numeric vector if `as_numeric` is `TRUE`.
 #'
@@ -540,17 +522,17 @@ as_SPATA2_dist <- function(input){
 #'
 #' pixel_values <- c(200, 450, 500)
 #'
-#' euol_values <- c("2mm", "400mm", "0.2mm")
+#' si_dist_values <- c("2mm", "400mm", "0.2mm")
 #'
 #' # spata object must be provided to scale based on current image resolution
 #' as_millimeter(input = pixel_values, object = object, round = 2)
 #'
 #' as_micrometer(input = pixel_values, object = object, round = 4)
 #'
-#' as_pixel(input = euol_values, object = object)
+#' as_pixel(input = si_dist_values, object = object)
 #'
 #' # spata object must not be provided
-#' as_micrometer(input = euol_values)
+#' as_micrometer(input = si_dist_values)
 #'
 #'
 as_unit <- function(input,
@@ -608,27 +590,26 @@ as_unit <- function(input,
 
         out[i] <- input_values[i]
 
-      } else if(is_dist_euol(input[i]) & unit == "px"){ # converts euol to pixel
+      } else if(is_dist_si(input[i]) & unit == "px"){ # converts euol to pixel
 
         out[i] <-
-          transform_euol_to_pixel(
+          transform_dist_si_to_pixel(
             input = input[i], # provide from `input`, not from `input_values` due to unit
             object = object,
-            method = method,
             round = round
           )
 
-      } else if(is_dist_pixel(input[i]) & unit %in% validEuropeanUnitsOfLength()){ # converts pixel to euol
+      } else if(is_dist_pixel(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts pixel to euol
 
         out[i] <-
-          transform_pixel_to_euol(
+          transform_pixel_to_dist_si(
             input = input[i], # provide from `input`, not from `input_values` due to unit
             euol = unit,
             object = object,
             round = round
           )
 
-      } else if(is_dist(input[i]) & unit %in% validEuropeanUnitsOfLength()){ # converts euol to euol
+      } else if(is_dist(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts euol to si dist unit
 
         x <-
           units::set_units(
@@ -642,7 +623,7 @@ as_unit <- function(input,
       } else if(is_area(input = input[i]) & unit == "px"){ # converts si area to pixel
 
         out[i] <-
-          transform_si_to_pixel(
+          transform_area_si_to_pixel(
             input = input[i], # provide from `input`, not from `input_values` due to unit
             object = object,
             round = round
@@ -686,7 +667,7 @@ as_unit <- function(input,
 
     }
 
-  # else if all input units are EUOL of SI and output unit is, too -> use units package
+  # else if all input units are si dist unit of SI and output unit is, too -> use units package
   # no need for for loop
   } else {
 
@@ -1108,7 +1089,7 @@ setMethod(
 #' @inherit argument_dummy params
 #' @inherit asGiotto params
 #'
-#' If you have used `initiateSpataObject_10X()`, chances are that you have
+#' @details If you have used `initiateSpataObject_10X()`, chances are that you have
 #' already specified input for various processing functions. `asSeurat()`
 #' creates a `Seurat` object from scratch. It has to, because even though
 #' many processing steps are run with the Seurat object as background `SPATA2`

@@ -168,7 +168,7 @@ plotIasEvaluation <- function(object,
 #' @inherit imageAnnotationScreening params details
 #' @inherit plotTrajectoryHeatmap params
 #' @inherit ggplot_dummy return
-#' @inherit documentation_dummy params
+#' @inherit argument_dummy params
 #'
 #' @export
 
@@ -705,17 +705,14 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' @param encircle Logical value. If TRUE, a polygon is drawn around the
 #' exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.
 #' @param unit Character value. The unit in which the x- and y-axis text
-#' are displayed. Use `validUnitsOfLength()` to obtain all valid input options.
+#' are displayed. Use `validUnitsOfLengthSI()` to obtain all valid input options.
 #' @param round Numeric value or `FALSE`. If numeric and `unit` is not *px*, rounds
 #' axes text.
-#' @param ... Additional parameters given to `ggpLayerScaleBarEUOL()`. Exception:
-#' Arguments `xrange` and `yrange` correspond to the dimensions of the cropped
-#' image that displayes the image annotation.
-#' @param dist_sb Distance measure or FALSE. If distance measure,
-#' defines the distance in European units of length that a scale bar
-#' illustrates. Scale bar is plotted with `ggpLayerScaleBarEUOL()`. If `FALSE`,
+#' @param dist_sb Distance measure or `FALSE`. If distance measure,
+#' defines the distance in SI units that a scale bar illustrates.
+#' Scale bar is plotted with `ggpLayerScaleBarSI()`. If `FALSE`,
 #' no scale bar is plotted.
-#' @param ... Additional arguments given to `ggpLayerScaleBarEUOL()` if input for
+#' @param ... Additional arguments given to `ggpLayerScaleBarSI()` if input for
 #' `dist_sb` is a valid distance measure. Exception: `xrange` and `yrange` are
 #' set to the ranges of the image that was cropped according to the image
 #' annotation.
@@ -761,8 +758,6 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' Using exclam input the side of the axis must not be specified as the
 #' axis is fixed as a whole. E.g `expand = list(x = '1mm!', y = '2mm!')` results
 #' in the same output as `expand = list(x = c('1mm!', '1mm'), y = c('2mm!', '2mm!')`.
-#'
-#' @return An image of class \emph{EBImage}.
 #'
 #' @examples
 #'
@@ -843,7 +838,7 @@ plotImageAnnotations <- function(object,
                                  ids = NULL,
                                  tags = NULL,
                                  test = "any",
-                                 expand = 0.05,
+                                 expand = "25%",
                                  square = TRUE,
                                  encircle = TRUE,
                                  unit = "px",
@@ -919,9 +914,9 @@ plotImageAnnotations <- function(object,
         } else {
 
           labels  <-
-            ~ transform_pixels_to_euol(
+            ~ transform_pixels_to_dist_si(
                 input = .x,
-                euol = unit,
+                unit = unit,
                 object = object,
                 as_numeric = TRUE,
                 round = round
@@ -929,10 +924,10 @@ plotImageAnnotations <- function(object,
 
         }
 
-        if(is_dist_euol(input = dist_sb)){
+        if(is_dist_si(input = dist_sb)){
 
           scale_bar_add_on <-
-            ggpLayerScaleBarEUOL(
+            ggpLayerScaleBarSI(
               object = object,
               dist_sb = dist_sb,
               xrange = c(img_info$xmin, img_info$xmax),
@@ -1041,7 +1036,7 @@ plotImageAnnotations <- function(object,
 #'
 #' @param unit Character value. Units of x- and y-axes. Defaults
 #' to *'px'*.
-#' @param ... Additional arguments given to `ggpLayerAxesEUOL()` if
+#' @param ... Additional arguments given to `ggpLayerAxesSI()` if
 #' `unit` is not *'px'*.
 #' @inherit argument_dummy params
 #'
@@ -1055,7 +1050,7 @@ plotImageGgplot <- function(object,
                             yrange = NULL,
                             ...){
 
-  if(unit %in% validEuropeanUnitsOfLength()){
+  if(unit %in% validUnitsOfLengthSI()){
 
     if(!base::is.null(xrange) | !base::is.null(yrange)){
 
@@ -1064,7 +1059,7 @@ plotImageGgplot <- function(object,
     }
 
     axes_add_on <-
-      ggpLayerAxesEUOL(
+      ggpLayerAxesSI(
         object = object,
         euol = unit,
         frame_by = frame_by,
@@ -1110,7 +1105,7 @@ plotImageGgplot <- function(object,
 #' @param fill_by Character value. The grouping variable that is used to
 #' fill the mosaic.
 #'
-#' @inherit confuns::plot_moasic params
+#' @inherit confuns::plot_mosaic params
 #' @inherit argument_dummy params
 #' @inherit plotBarchart params return
 #'

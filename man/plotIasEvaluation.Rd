@@ -34,6 +34,8 @@ plotIasEvaluation(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{id}{Character value. The ID of the image annotation of interest.}
+
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}

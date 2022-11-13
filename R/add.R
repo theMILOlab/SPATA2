@@ -754,12 +754,10 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 #' @description Adds a point layer to a base surface plot.
 #'
 #' @inherit argument_dummy params
-#' @param scale_alpha
+#' @inherit plotSurfaceBase params return
 #'
-#' @return
 #' @export
-#'
-#' @examples
+
 addPointsBase <- function(object,
                           color_by,
                           alpha_by = NULL,

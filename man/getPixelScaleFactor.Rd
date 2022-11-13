@@ -8,7 +8,6 @@ getPixelScaleFactor(
   object,
   unit,
   switch = FALSE,
-  square = FALSE,
   force = FALSE,
   add_attr = TRUE,
   verbose = NULL,
@@ -18,12 +17,12 @@ getPixelScaleFactor(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{unit}{The desired unit. Defaults to the unit
+in which the original size of the image of the spatial method is
+provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.}
+
 \item{switch}{Logical value. If \code{TRUE}, the unit of the output is switched.
 See details for more.}
-
-\item{square}{Logical value. If \code{TRUE}, returns a scale factor for areas
-instead of distances: The scale factor is squared and input for European units
-of length is taken as a unit of area.}
 
 \item{force}{Logical value. If \code{TRUE}, the scale factor is computed
 regardless of what the function finds in the respective slot.}

@@ -370,6 +370,7 @@ bin_by_area <- function(coords_df,
 
 }
 
+#' @rdname bin_by_area
 #' @export
 bin_by_expansion <- bin_by_area
 

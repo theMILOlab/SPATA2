@@ -49,7 +49,7 @@ runAutoencoderAssessment <- function(object,
 
   object <- setAutoencoderAssessment(object = object, assessment_list = assessment_list)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -1675,7 +1675,7 @@ runPca <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
 
   object <- setPcaDf(object = object, pca_df = pca_df)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -1691,7 +1691,7 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
 
   pca_res <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = n_pcs, ...)
 
-  base::return(pca_res)
+  return(pca_res)
 
 }
 
@@ -1703,8 +1703,8 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
 #' @description A wrapper around the algorithm introduced by \emph{Zhu et al. 2021}
 #' to identify genes with spatial expression pattern with SPARK-X.
 #'
-#' @inerit SPARK::sparkx param
-#' @inherit argument_dummy param
+#' @inherit SPARK::sparkx params
+#' @inherit argument_dummy params
 #'
 #' @author Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables
 #'  scalable and robust detection of spatial expression patterns for large spatial
@@ -1800,7 +1800,7 @@ runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, .
 
   tsne_res <- Rtsne::Rtsne(pca_mtr, perplexity = tsne_perplexity, ...)
 
-  base::return(tsne_res)
+  return(tsne_res)
 
 }
 
@@ -1849,7 +1849,7 @@ runUmap <- function(object, n_pcs = 20, of_sample = NA, ...){
 
   object <- setUmapDf(object = object, umap_df = umap_df, of_sample = of_sample)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -1865,6 +1865,6 @@ runUmap2 <- function(object, n_pcs = 20, of_sample = NA, ...){
 
   umap_res <- umap::umap(d = pca_mtr, ...)
 
-  base::return(umap_res)
+  return(umap_res)
 
 }

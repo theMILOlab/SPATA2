@@ -2,9 +2,19 @@
 % Please edit documentation in R/b.R
 \name{bin_by_area}
 \alias{bin_by_area}
+\alias{bin_by_expansion}
 \title{Bin barcode-spots by area extension}
 \usage{
 bin_by_area(
+  coords_df,
+  area_df,
+  binwidth,
+  n_bins_circle,
+  remove = FALSE,
+  drop = TRUE
+)
+
+bin_by_expansion(
   coords_df,
   area_df,
   binwidth,

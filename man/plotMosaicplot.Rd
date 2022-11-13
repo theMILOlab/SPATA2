@@ -31,7 +31,7 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{ggmosaic::geom_mosaic()}}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

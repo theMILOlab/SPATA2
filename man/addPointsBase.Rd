@@ -22,6 +22,15 @@ addPointsBase(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{color_by}{The variable to be displayed by color:
+
+\itemize{
+\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
+expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
+\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
+}}
+
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
@@ -53,8 +62,9 @@ If values are specified in European units of length the input is
 immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
-
-\item{scale_alpha}{}
+}
+\value{
+Plots right into the plotting window.
 }
 \description{
 Adds a point layer to a base surface plot.

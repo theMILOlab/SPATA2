@@ -25,18 +25,10 @@ asPixel <- function(input, ...){
 # c -----------------------------------------------------------------------
 
 #' @title Check assessed trajectory data.frame
-#'
-#' @param atdf A data.frame containing the results of trajectory-modelling. Must contain the variables:
-#'
-#'  \describe{
-#'   \item{\emph{variables}}{Character. The genes, gene-sets and features that have been assessed.}
-#'   \item{\emph{pattern}}{Character. The respective trajectory pattern.}
-#'   \item{\emph{auc}}{Numeric. The assessment value which is the residual's area under the curve.}
-#'  }
-#'
-#' @inherit lazy_check_dummy description details return
 
 check_atdf <- function(atdf){
+
+  deprecated(fn = TRUE)
 
   confuns::check_data_frame(
     df = atdf,
@@ -54,8 +46,6 @@ check_atdf <- function(atdf){
 #'
 #' @param ctdf A compiled trajectory data.frame containing the variables
 #' \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.
-#'
-#' @inherit lazy_check_dummy description details return
 
 check_compiled_trajectory_df <- function(ctdf){
 
@@ -1574,6 +1564,7 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, 
 
 }
 
+#' @title Title
 #' @param df data.frame that contains a column with the values against which the residuals for
 #' every pattern (remaining columns) are computed.
 #' @export

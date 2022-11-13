@@ -7,10 +7,10 @@
 #'
 #' \itemize{
 #'
-#'  \item{ \code{plotSurface()} Takes the spata-object as the starting point and creates the
+#'  \item{ \code{plotSurface()} Takes the `SPATA2` object as the starting point and creates the
 #'  necessary data.frame from scratch according to additional parameters.}
 #'  \item{ \code{plotSurface2()} Takes a data.frame as the starting point.}
-#'  \item{ \code{plotSurfaceInteractive()} Takes only the spata-object and opens a shiny
+#'  \item{ \code{plotSurfaceInteractive()} Takes only the `SPATA2` object and opens a shiny
 #'  application which allows for interactive plotting.}
 #'
 #' }
@@ -25,7 +25,7 @@
 #' @inherit check_sample params
 #' @inherit check_smooth params
 
-#' @param complete Logical. If the provided spata-object has been subsetted by
+#' @param complete Logical. If the provided `SPATA2` object has been subsetted by
 #'  \code{subsetBySegment()} the original sample is completed with grey barcode
 #'  spots.
 #'
@@ -689,7 +689,7 @@ plotSurfaceBase <- function(object,
 #' in argument \code{color_by}.
 #'
 #' \itemize{
-#'  \item{ \code{plotSurfaceComparison()} Takes the spata-object as the starting point and creates the
+#'  \item{ \code{plotSurfaceComparison()} Takes the `SPATA2` object as the starting point and creates the
 #'  necessary data.frame from scratch according to additional parameters.}
 #'  \item{ \code{plotSurfaceComparison2()} Takes a data.frame as the starting point. }
 #'  }
@@ -1769,7 +1769,8 @@ plotSurfaceInteractiveDiet <- function(object){
 #' @param keep_qntls Numeric vector. Specifies the quantiles to highlight by
 #' color. The remaining ones are displayed in grey.
 #'
-#' @return
+#' @inherit ggplot_dummy return
+#'
 #' @export
 
 plotSurfaceQuantiles <- function(object,

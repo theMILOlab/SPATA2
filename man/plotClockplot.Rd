@@ -43,6 +43,8 @@ plotClockplot(object, ...)
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
+\item{id}{Character value. The ID of the image annotation of interest.}
+
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
 \itemize{
