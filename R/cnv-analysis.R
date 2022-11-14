@@ -367,7 +367,10 @@ runCnvAnalysis <- function(object,
   confuns::give_feedback(msg = "Combining input and reference data.", verbose = verbose)
 
   genes_inter <-
-    base::intersect(x = base::rownames(count_mtr), y = base::rownames(ref_mtr)) %>% base::unique()
+    base::intersect(
+      x = base::rownames(count_mtr),
+      y = base::rownames(ref_mtr)
+      ) %>% base::unique()
 
   if(base::length(genes_inter) < 500){
 
@@ -685,6 +688,16 @@ runCnvAnalysis <- function(object,
     stringr::str_c(directory_cnv_folder, "/", plot_cnv$output_filename, ".observations.txt")
 
   results <- utils::read.table(result_dir)
+
+  bcs_object <-
+    getFeatureDf(object) %>%
+    dplyr::pull(barcodes)
+
+  if(!base::any(stringr::str_detect(bcs_object, pattern = "^X|^x"))){
+
+    base::colnames(results) <- stringr::str_remove(base::colnames(results), pattern = "^X|^x")
+
+  }
 
   barcodes <- base::colnames(results)
 
