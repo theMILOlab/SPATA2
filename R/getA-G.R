@@ -211,7 +211,50 @@ getBarcodes <- function(object,
 
 }
 
+#' @title Obtain barcodes in polygon
+#'
+#' @description Extracts barcodes of barcode-spots that fall in a given
+#' polygon. Works closely with `sp::point.in.polygon()`.
+#'
+#' @param polygon_df A data.frame that contains the vertices of the polygon
+#' in form of two variables: *x* and *y*.
+#' @param strictly Logical value. If `TRUE`, only barcode spots that are strictly
+#' interior to the polygon are returned. If `FALSE`, barcodes that are
+#' on the relative interior the polygon border or that are vertices themselves
+#' are returned, too.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#' @export
+#'
+getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
 
+  confuns::check_data_frame(
+    df = polygon_df,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  res <-
+    sp::point.in.polygon(
+      point.x = coords_df[["x"]],
+      point.y = coords_df[["y"]],
+      pol.x = coords_df[["x"]],
+      poly = coords_df[["y"]]
+    )
+
+
+  valid_res <- base::ifelse(strictly, yes = 1, no = c(1,2,3))
+
+  coords_df_sub <- coords_df[res %in% valis_res, ]
+
+  out <- coords_df_sub[["barcodes"]]
+
+  return(out)
+
+}
 
 #' @title Obtain barcode spot distances
 #'

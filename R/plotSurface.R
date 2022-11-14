@@ -568,8 +568,6 @@ plotSurfaceBase <- function(object,
 
     cropped_surface <- xrange[2] * yrange[2]
 
-    whole_surface/cropped_surface
-
     fct <- sqrt(whole_surface/cropped_surface)
 
     pt_size <- pt_size*fct

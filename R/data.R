@@ -131,3 +131,15 @@
 #'
 "trajectories"
 
+
+
+#' A data.frame that contains all barcode spots of the Visium method including
+#' their spatial positioning. Variable names: *barcodes*, *col*, *row*, *imagecol*,
+#' *imagerow*.
+#'
+#'  @docType data
+#'  @usage data(visium_coords_lowres)
+"visium_coords_lowres"
+
+
+

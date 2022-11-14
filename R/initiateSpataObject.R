@@ -21,7 +21,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   confuns::is_value(sample_name,  mode = "character")
 
   confuns::check_one_of(
-    input = platform,
+    input = spatial_method,
     against = validSpatialMethods()
   )
 
