@@ -46,12 +46,12 @@ GeomPointFixed <- ggplot2::ggproto(
 #' @format NULL
 #' @usage NULL
 #' @export
-GeomSegmentFixed <- ggproto(
+GeomSegmentFixed <- ggplot2::ggproto(
   `_class` = "GeomSegmentFixed",
-  `_inherit` = Geom,
+  `_inherit` = ggplot2::Geom,
   required_aes = c("x", "y", "xend", "yend"),
   non_missing_aes = c("linetype", "linewidth", "shape"),
-  default_aes = aes(colour = "black", linewidth = 0.5, linetype = 1, alpha = NA),
+  default_aes = ggplot2::aes(colour = "black", linewidth = 0.5, linetype = 1, alpha = NA),
   draw_panel = function(self, data, panel_params, coord, arrow = NULL, arrow.fill = NULL,
                         lineend = "butt", linejoin = "round", na.rm = FALSE) {
 
@@ -104,38 +104,10 @@ GeomSegmentFixed <- ggproto(
                         lineend = lineend)
   },
 
-  draw_key = draw_key_path,
+  draw_key = ggplot2::draw_key_path,
 
   rename_size = TRUE
 )
-
-
-
-
-geom_segment_fixed <- function(...,
-                               mapping = ggplot2::aes(),
-                               data = NULL,
-                               stat = "identity",
-                               position = "identity",
-                               na.rm = FALSE,
-                               show.legend = NA,
-                               inherit.aes = TRUE){
-
-  ggplot2::layer(
-    geom = GeomSegmentFixed,
-    data = data,
-    stat = stat,
-    position = position,
-    params = c(..., list(na.rm = na.rm)),
-    show.legend = show.legend,
-    inherit.aes = inherit.aes,
-    mapping = mapping
-  )
-
-}
-
-
-
 
 
 #' @title GeomTextFixed

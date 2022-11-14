@@ -565,26 +565,6 @@ invalid_img_ann_tests <-
 # m -----------------------------------------------------------------------
 
 #' @export
-model_formulas <-
-  list(
-    m_one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
-    m_one_peak_rev = ~ confuns::fit_curve(.x, fn = "one_peak", rev = "y"),
-    m_two_peaks = ~ confuns::fit_curve(.x, fn = "two_peaks"),
-    m_two_peaks_rev = ~ confuns::fit_curve(.x, fn = "two_peaks", rev = "y"),
-    m_immediate_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "y"), # immediate_desc
-    m_late_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "y")),
-    m_late_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "x"), # log_desc
-    m_immediate_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")), # immediate_asc
-    m_lin_asc = ~ confuns::fit_curve(.x, fn = "linear"),
-    m_lin_desc = ~ confuns::fit_curve(.x, fn = "linear", rev = "x"),
-    m_sharp_peak = ~ confuns::fit_curve(.x, fn = "sharp_peak"),
-    m_sin = ~ confuns::fit_curve(.x, fn = "sinus"),
-    m_sin_rev = ~ confuns::fit_curve(.x, fn = "sinus", rev = "x"),
-    m_early_peak = ~ confuns::fit_curve(.x, fn = "early_peak"),
-    m_late_peak = ~ confuns::fit_curve(.x, fn = "late_peak"),
-    m_abrupt_asc = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
-    m_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
-  )
 
 model_formulas <-
   list(

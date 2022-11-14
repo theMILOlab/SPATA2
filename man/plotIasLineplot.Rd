@@ -85,7 +85,7 @@ Given to argument \code{span} of \code{stats::loess()}.}
 \item{unit}{Character value. The unit in which the distance
 to the image annotation is displayed on the x-axis.
 
-If \code{FALSE}, plot the bin numbers instead.}
+If \code{FALSE}, plots the bin numbers instead.}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}

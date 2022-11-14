@@ -377,7 +377,7 @@ plotIasHeatmap <- function(object,
 #' @param unit Character value. The unit in which the distance
 #' to the image annotation is displayed on the x-axis.
 #'
-#' If `FALSE`, plot the bin numbers instead.
+#' If `FALSE`, plots the bin numbers instead.
 #'
 #' @param x_nth Numeric value. If the number of breaks/labels on the
 #' x-axis becomes too high `x_nth` can be used to reduce it. If `x_nth` is 1,

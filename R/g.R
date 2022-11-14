@@ -1,9 +1,9 @@
 
 
 
-# ge ----------------------------------------------------------------------
+# geom ----------------------------------------------------------------------
 
-#' @title Points (fixed pointsize ~ window ratio)
+#' @title Points (fixed size ~ window ratio)
 #'
 #' @description A slightly changed version of \code{geom_point()}. In contrast
 #' to the default the size rescales to the size of the plotting device.
@@ -33,13 +33,40 @@ geom_point_fixed <- function(...,
 
 }
 
+#' @title Segments (fixed size ~ window ratio)
+#'
+#' @description A slightly changed version of \code{geom_segment()}. In contrast
+#' to the default the size rescales to the size of the plotting device.
+#'
+#' @inherit ggplot2::geom_point params
+#'
+#' @export
+geom_segment_fixed <- function(...,
+                               mapping = ggplot2::aes(),
+                               data = NULL,
+                               stat = "identity",
+                               position = "identity",
+                               na.rm = FALSE,
+                               show.legend = NA,
+                               inherit.aes = TRUE){
 
+  ggplot2::layer(
+    geom = GeomSegmentFixed,
+    data = data,
+    stat = stat,
+    position = position,
+    params = c(..., list(na.rm = na.rm)),
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    mapping = mapping
+  )
 
+}
 
 # Inspired by
 # https://stackoverflow.com/questions/74421586/r-ggplot2-geom-text-with-fontsize-scaled-to-window-size
 
-#' @title Text (fixed fontsize ~ window ratio)
+#' @title Text (fixed size ~ window ratio)
 #'
 #' @description A slightly changed version of \code{geom_text()}. In contrast
 #' to the default the size rescales to the size of the plotting device.
