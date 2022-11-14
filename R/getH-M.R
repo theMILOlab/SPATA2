@@ -122,7 +122,12 @@ getImageAnnotationAreaSize <- function(object,
                                        tags = NULL,
                                        test = "any",
                                        as_numeric = TRUE,
+                                       verbose = NULL,
                                        ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
 
   confuns::check_one_of(
     input = unit,
@@ -155,10 +160,26 @@ getImageAnnotationAreaSize <- function(object,
 
   pixel_df <- getPixelDf(object = object)
 
+  n_ids <- base::length(ids)
+
+  ref_ia <- confuns::adapt_reference(ids, sg = "image annotation")
+
+  pb <- confuns::create_progress_bar(total = n_ids)
+
+  confuns::give_feedback(
+    msg = glue::glue("Computing area size for {nids} {ref_ia}."),
+    verbose = verbose
+  )
   out <-
     purrr::map_dbl(
       .x = ids,
       .f = function(id){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
 
         area_df <- getImageAnnotationAreaDf(object, ids = id)
 

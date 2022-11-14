@@ -487,10 +487,6 @@ plotDendrogram <- function(){}
 #' @export
 transform_pixel_to_si <- function(){}
 
-#' @title dummy
-#' @export
-`ggplot2-ggproto` <- function(){}
-
 #' @title Set results of pattern recognition methods
 #'
 #' @inherit check_sample params

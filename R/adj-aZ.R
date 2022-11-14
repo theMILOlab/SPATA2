@@ -590,7 +590,7 @@ as_unit <- function(input,
 
         out[i] <- input_values[i]
 
-      } else if(is_dist_si(input[i]) & unit == "px"){ # converts euol to pixel
+      } else if(is_dist_si(input[i]) & unit == "px"){ # converts si to pixel
 
         out[i] <-
           transform_dist_si_to_pixel(
@@ -599,17 +599,17 @@ as_unit <- function(input,
             round = round
           )
 
-      } else if(is_dist_pixel(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts pixel to euol
+      } else if(is_dist_pixel(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts pixel to si units
 
         out[i] <-
           transform_pixel_to_dist_si(
             input = input[i], # provide from `input`, not from `input_values` due to unit
-            euol = unit,
+            unit = unit,
             object = object,
             round = round
           )
 
-      } else if(is_dist(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts euol to si dist unit
+      } else if(is_dist(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts si to si dist unit
 
         x <-
           units::set_units(
@@ -632,7 +632,7 @@ as_unit <- function(input,
       } else if(is_area_pixel(input = input[i]) & unit %in% validUnitsOfAreaSI()){ # converts pixel to si area
 
         out[i] <-
-          transform_pixel_to_si(
+          transform_pixel_to_area_si(
             input = input[i],
             unit = unit,
             object = object,
@@ -648,7 +648,7 @@ as_unit <- function(input,
             mode = "standard"
           )
 
-        out[i] <- units::set_units(x = x, value = input_units[i], mode = "standard")
+        out[i] <- units::set_units(x = x, value = unit, mode = "standard")
 
       }
 

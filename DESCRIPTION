@@ -25,6 +25,7 @@ Imports:
     ggridges,
     ggsci,
     glue,
+    grid,
     keys,
     lubridate,
     magick,
@@ -52,7 +53,7 @@ Imports:
     umap,
     units
 Collate: 
-    'GeomPointFixed.R'
+    'Geoms.R'
     'S4-documentation.R'
     'S4-generic-functions.R'
     'add.R'
@@ -69,7 +70,6 @@ Collate:
     'e.R'
     'f.R'
     'g.R'
-    'geom_point_fixed.R'
     'getA-G.R'
     'getH-M.R'
     'getN-Z.R'

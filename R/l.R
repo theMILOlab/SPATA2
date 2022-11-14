@@ -174,7 +174,7 @@ loadImageHighres <- function(object, verbose = NULL){
 
   dir <- getImageDirHighres(object)
 
-  object <- exchangeImage(object, image_dir = dir)
+  object <- exchangeImage(object, image = dir)
 
   return(object)
 
@@ -198,7 +198,7 @@ loadImageLowres <- function(object, verbose = NULL){
 
   dir <- getImageDirLowres(object)
 
-  object <- exchangeImage(object, image_dir = dir)
+  object <- exchangeImage(object, image = dir)
 
   return(object)
 

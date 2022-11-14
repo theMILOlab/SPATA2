@@ -19,7 +19,7 @@ plotImageAnnotations(
   line_type = "solid",
   fill = "orange",
   alpha = 0.25,
-  dist_sb = FALSE,
+  sb_dist = FALSE,
   display_title = FALSE,
   display_subtitle = TRUE,
   display_caption = FALSE,
@@ -82,7 +82,7 @@ are displayed. Use \code{validUnitsOfLengthSI()} to obtain all valid input optio
 \item{round}{Numeric value or \code{FALSE}. If numeric and \code{unit} is not \emph{px}, rounds
 axes text.}
 
-\item{dist_sb}{Distance measure or \code{FALSE}. If distance measure,
+\item{sb_dist}{Distance measure or \code{FALSE}. If distance measure,
 defines the distance in SI units that a scale bar illustrates.
 Scale bar is plotted with \code{ggpLayerScaleBarSI()}. If \code{FALSE},
 no scale bar is plotted.}
@@ -106,7 +106,7 @@ via \code{gridExtra.grid.arrange()} and the list of plots is returned
 invisibly. Else the list of plots is simply returned.}
 
 \item{...}{Additional arguments given to \code{ggpLayerScaleBarSI()} if input for
-\code{dist_sb} is a valid distance measure. Exception: \code{xrange} and \code{yrange} are
+\code{sb_dist} is a valid distance measure. Exception: \code{xrange} and \code{yrange} are
 set to the ranges of the image that was cropped according to the image
 annotation.}
 }

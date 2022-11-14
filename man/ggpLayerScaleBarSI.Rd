@@ -2,50 +2,57 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerScaleBarSI}
 \alias{ggpLayerScaleBarSI}
-\title{Add a European units of length scale bar}
+\title{Add a scale bar in SI units}
 \usage{
 ggpLayerScaleBarSI(
   object,
-  pos = "top_right",
-  dist_sb = "1mm",
-  sgmt_alpha = 1,
-  sgmt_color = "black",
-  sgmt_size = 1.25,
+  sb_dist = "1mm",
+  sb_pos = "bottom_right",
+  sb_alpha = 1,
+  sb_color = "black",
+  sgmt_size = 1,
   sgmt_type = "solid",
-  text_alpha = 1,
-  text_color = "black",
   text_nudge_x = 0,
-  text_nudge_y = NULL,
+  text_nudge_y = 0,
+  text_pos = NULL,
   text_size = 5.5,
-  text_type = 0.9,
   xrange = NULL,
   yrange = NULL,
-  offset = c(0.9, 0.9),
+  offset = c(0.8, 0.8),
   theme_opt = "none"
 )
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{pos}{Character value or vector of length two. If character,
-one of \emph{top_right}, \emph{top_left}, \emph{bottom_right} or \emph{bottom_left}. The scale
-bar is positioned accordingly. If vector of length two, distance measures
-that specify the positioning. First value is taken for positioning on x-
-and second value is taken for positioning on the y-axis.}
+\item{sb_dist}{The distance in SI units that the scale bar
+illustrates (e.g. \emph{'1mm'}, \emph{'200um'}). Must not be bigger than
+the range of the image of the plot.}
 
-\item{dist_sb}{The distance in European units of length that the scale bar
-illustrates.}
+\item{sb_pos}{Character value or vector of length two.
 
-\item{sgmt_alpha, sgmt_color, sgmt_size, sgmt_type}{Parameters given to
-\code{ggplot2::geom_segment()} that control the appearance of segments
-of the plot.}
+If character, one of \emph{top_right}, \emph{top_left}, \emph{bottom_right} or \emph{bottom_left}.
+The scale bar is positioned accordingly.
 
-\item{text_nudge_y}{Numeric value or \code{NULL}. Moves the scale bar text away from
-the scale bar. If \code{NULL}, nudging is computed based on the input of \code{yrange}.
-Set manually, if the positioning fails.}
+If vector of length two, distance measures that specify the positioning of
+the segment. Text is lifted slightly to hover above. First value sets
+positioning on the x- and second value sets positioning on the y-axis.}
+
+\item{sb_color}{The color in which the scale bar is displayed.}
+
+\item{sgmt_size, sgmt_type}{Affect the appearance of the segment. \code{sgmt_type}
+should be one of \code{validLineTypes()}.}
+
+\item{text_nudge_x, text_nudge_y}{Numeric value or \code{NULL}. Moves the scale bar
+along the axis in pixel units. If \code{NULL}, nudging is computed based on the input
+of \code{yrange}.}
+
+\item{text_pos}{Numeric vector of length two or \code{NULL}. If numeric, sets the
+position of the scale bar text precisely. \code{text_nudge_x} and \code{text_nudge_y}
+is still applied.}
 
 \item{xrange, yrange}{The range of the image that is considered if the positioning
-of the scale is calculated via \code{pos} as one of \emph{top_right}, \emph{top_left}, \emph{bottom_right}
+of the scale is calculated via \code{sb_pos} as one of \emph{top_right}, \emph{top_left}, \emph{bottom_right}
 or \emph{bottom_left}. Defaults to the image range.}
 
 \item{offset}{Numeric vector of length two. Used to move the position of
@@ -60,18 +67,26 @@ family.
 }
 \description{
 Adds a scale bar to the surface plot that visualizes
-distance in European units of length. Segment of the line is drawn
-with \code{ggplot2::geom_segment()}. Text is drawn with \code{ggplot2::geom_text()}.
+distance in SI units.
 }
 \details{
-If \code{pos} is one of \emph{top_right}, \emph{top_left}, \emph{bottom_right}
+The scale bar consists of two graphical objects. The segment of the
+scale bar is plotted with \code{geom_segment_fixed()}. The text of the scale bar is
+plotted with \code{geom_text_fixed()}.
+
+If \code{sb_pos} is one of \emph{top_right}, \emph{top_left}, \emph{bottom_right}
 or \emph{bottom_left}, the position of the scale bar is computed in combination
 with the input for argument \code{offset}. Argument \code{offset} is used to repel
-the scale bar away from the center into the corner specified in \code{pos}. Thus,
+the scale bar away from the center into the corner specified in \code{sb_pos}. Thus,
 if \code{offset = c(0,0)}, the scale bar is positioned in the center of the plot
-regardless of the specification of \code{pos}. Offset values specify the percentage
+regardless of the specification of \code{sb_pos}. Offset values specify the percentage
 of the distanec between the center of the plot and its limits. For instance,
-if \code{pos = c(0.5, 0.75)} and \code{pos = 'top_right'} to the right (50\% of the distance
-to the border - x-axis) and to the top (75\% of the distance between the center
-and the ceiling).
+if \code{sb_pos = c(0.5, 0.75)} and \code{sb_pos = 'top_right'} to the right (50\% of the distance
+between the center the limits of the x-axis) and to the top (75\% of the distance between the center
+and the limits of the y-axis).
+
+If numeric, \code{sb_pos} actually sets positioning of the segment (not the text).
+The text is automatically lifted such that it hovers over the segment. If this
+does not work or you want to manipulate the text positioning you can use arguments
+\code{text_nudge_x} and \code{text_nudge_y} or set the position precisely with \code{text_pos}.
 }

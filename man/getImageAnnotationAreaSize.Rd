@@ -11,6 +11,7 @@ getImageAnnotationAreaSize(
   tags = NULL,
   test = "any",
   as_numeric = TRUE,
+  verbose = NULL,
   ...
 )
 }
@@ -42,6 +43,11 @@ must \strong{not} contain any of the input tags.
 
 Note that the filtering process happens in addition to / after the filtering by input for argument
 \code{ids}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
