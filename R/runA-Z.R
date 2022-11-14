@@ -1184,7 +1184,6 @@ runCnvAnalysis <- function(object,
     ) %>%
     dplyr::select(chrom, start_p, end_p, start_q, end_q)
 
-
   gene_pos_df <-
     tibble::as_tibble(cnv_res$gene_pos_df) %>%
     dplyr::rename(chrom = chromosome_name) %>%
@@ -1204,7 +1203,7 @@ runCnvAnalysis <- function(object,
         # if gene starts at position bigger than end of arm p it must be located
         # on arm q
         start_position > end_p ~ "q",
-        # else it' lays's located on arm p
+        # else it's located on arm p
         TRUE ~ "p"
       ),
       arm = base::factor(x = arm, levels = c("p", "q")),

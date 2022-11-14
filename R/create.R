@@ -917,7 +917,35 @@ createImageAnnotations <- function(object, ...){
 
           current_zooming <- shiny::reactive({
 
-            input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
+            prel_out <- input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
+
+            xdist <- prel_out[["xmax"]] - prel_out[["xmin"]]
+            ydist <- prel_out[["ymax"]] - prel_out[["ymin"]]
+
+            if(xdist > ydist){
+
+              expand <- xdist
+
+            } else {
+
+              expand <- ydist
+
+            }
+
+            out <-
+              base::suppressWarnings({
+
+                process_ranges(
+                  xrange = c(prel_out[["xmin"]], prel_out[["xmax"]]),
+                  yrange = c(prel_out[["ymin"]], prel_out[["ymax"]]),
+                  expand = stringr::str_c(expand, "!"), # fix to square
+                  object = spata_object(),
+                  persp = "coords"
+                )
+
+              })
+
+            return(out)
 
           })
 
@@ -1782,7 +1810,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
                             align = "left",
                             shiny::sliderInput(
                               inputId = "pt_transparency", label = "Transparency:",
-                              min = 0, max = 1, value = 0.5, step = 0.01
+                              min = 0, max = 1, value = 1, step = 0.01
                             ) %>% add_helper(content = text$createSegmentation$transparency_point),
                             shiny::sliderInput(
                               inputId = "pt_size", label = "Point size:",
@@ -2071,7 +2099,35 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           current_zooming <- shiny::reactive({
 
-            input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
+            prel_out <- input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
+
+            xdist <- prel_out[["xmax"]] - prel_out[["xmin"]]
+            ydist <- prel_out[["ymax"]] - prel_out[["ymin"]]
+
+            if(xdist > ydist){
+
+              expand <- xdist
+
+            } else {
+
+              expand <- ydist
+
+            }
+
+            out <-
+              base::suppressWarnings({
+
+                process_ranges(
+                  xrange = c(prel_out[["xmin"]], prel_out[["xmax"]]),
+                  yrange = c(prel_out[["ymin"]], prel_out[["ymax"]]),
+                  expand = stringr::str_c(expand, "!"), # fix to square
+                  object = spata_object(),
+                  persp = "coords"
+                )
+
+              })
+
+            return(out)
 
           })
 

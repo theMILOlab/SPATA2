@@ -471,6 +471,7 @@ plotSurfaceBase <- function(object,
                             yrange = NULL,
                             adjust_pt_size = TRUE,
                             expand = 0,
+                            pty = "s",
                             verbose = NULL,
                             ...){
 
@@ -579,7 +580,7 @@ plotSurfaceBase <- function(object,
 
     # plot
     graphics::plot.new()
-    graphics::par(pty = "s", ...)
+    graphics::par(pty = pty, ...)
     graphics::plot(
       x = coords_df$x,
       y = coords_df$y,
@@ -622,7 +623,7 @@ plotSurfaceBase <- function(object,
 
     # plot
     graphics::plot.new()
-    graphics::par(pty = "s", ...)
+    graphics::par(pty = pty, ...)
     graphics::plot(
       x = coords_df$x,
       y = coords_df$y,
