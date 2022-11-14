@@ -3,8 +3,9 @@
 \docType{data}
 \name{image_annotations}
 \alias{image_annotations}
-\title{A list of lists of image annotations. Every slot in list \code{image_annotations}
-is named by the sample the image annotations belong to.}
+\title{A list of lists of image annotations for specific \code{SPATA2}
+objects - available via the \code{SPATAData} package. Names of the list slots
+correspond to the sample names in variable  \emph{sample} of \code{SPATAData::source_df}.}
 \format{
 An object of class \code{list} of length 3.
 }
@@ -12,6 +13,10 @@ An object of class \code{list} of length 3.
 image_annotations
 }
 \description{
+Use \code{setImageAnnotation()} to add one and \code{setImageAnnotations()} to add
+multiple image annotations to the object.
+}
+\details{
 @docType data
 @usage data(image_annotations)
 }

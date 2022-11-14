@@ -122,7 +122,12 @@ getImageAnnotationAreaSize <- function(object,
                                        tags = NULL,
                                        test = "any",
                                        as_numeric = TRUE,
+                                       verbose = NULL,
                                        ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
 
   confuns::check_one_of(
     input = unit,
@@ -155,10 +160,26 @@ getImageAnnotationAreaSize <- function(object,
 
   pixel_df <- getPixelDf(object = object)
 
+  n_ids <- base::length(ids)
+
+  ref_ia <- confuns::adapt_reference(ids, sg = "image annotation")
+
+  pb <- confuns::create_progress_bar(total = n_ids)
+
+  confuns::give_feedback(
+    msg = glue::glue("Computing area size for {nids} {ref_ia}."),
+    verbose = verbose
+  )
   out <-
     purrr::map_dbl(
       .x = ids,
       .f = function(id){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
 
         area_df <- getImageAnnotationAreaDf(object, ids = id)
 
@@ -782,7 +803,6 @@ getImageAnnotations <- function(object,
 #'    summarize_by = c("bins_circle", "bins_angle")
 #'    )
 #'
-#'  plot
 #'
 
 getImageAnnotationScreeningDf <- function(object,
@@ -1123,7 +1143,15 @@ getImageObject <- function(object){
 
   out <- object@images[[1]]
 
-  out@id <- getSampleName(object)
+  if(!base::is.null(out)){
+
+    out@id <- getSampleName(object)
+
+  } else {
+
+    warning("No image object found. Returning `NULL`.")
+
+  }
 
   return(out)
 
@@ -1240,6 +1268,62 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 }
 
+
+
+#' @title Obtain information about object initiation
+#'
+#' @description Information about the object's initiation is stored in
+#' a list of three slots:
+#'
+#' \itemize{
+#'  \item{\emph{init_fn}: Contains the name of the initation function as a character value.}
+#'  \item{\emph{input}: Contains a list of which every slot refers to the input of one argument with which the
+#'  initiation function has been called.}
+#'  \item{\emph{time}: Contains the time at which the object was initiated.}
+#'  }
+#'
+#'  \code{getInitiationInput()} returns only slot \emph{input}.
+#'
+#' @inherit check_object params
+#' @inherit argument_dummy params
+#'
+#' @details \code{initiateSpataObject_CountMtr()} and \code{initiateSpataObject_ExprMtr()} each require
+#' a matrix and a coordinate data.frame as input. These are not included in the output
+#' of this function but can be obtained via \code{getCoordsDf()} and \code{getCountMtr()} or \code{getExpressionMtr()}.
+#'
+#' @return A list. See description.
+#' @export
+
+getInitiationInfo <- function(object){
+
+  check_object(object)
+
+  info <- object@information$initiation
+
+  return(info)
+
+}
+
+#' @rdname getInitiationInfo
+#' @export
+getInitiationInput <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  info <- getInitiationInfo(object)
+
+  init_fn <- info$init_fn
+
+  confuns::give_feedback(
+    msg = glue::glue("Initiation function used: '{init_fn}()'."),
+    verbose = verbose,
+    with.time = FALSE
+  )
+
+  return(info$input)
+
+}
+
 # getM --------------------------------------------------------------------
 
 #' @title Obtain count and expression matrix
@@ -1280,38 +1364,14 @@ getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
 #' @seealso `?SpatialMethod`
 #'
 #' @export
-getMethod <- function(object){
+
+
+getSpatialMethod <- function(object){
 
   object@information$method
 
 }
 
-
-#' @title Obtain unit of method
-#'
-#' @description Extracts the European unit of length in which the size of
-#' the fiducial frame of the underlying spatial method is specified.
-#'
-#' @inherit argument_dummy
-#'
-#' @return Character value.
-#'
-#' @export
-getMethodUnit <- function(object){
-
-  method <- getMethod(object)
-
-  getMethod(object)@fiducial_frame[["x"]] %>%
-    extract_unit()
-
-}
-
-#' @export
-getMethodName <- function(object){
-
-  object@information$method@name
-
-}
 
 
 #' @title Obtain model evaluation

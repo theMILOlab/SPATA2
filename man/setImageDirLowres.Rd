@@ -5,15 +5,20 @@
 \alias{setImageDirLowres}
 \title{Set image directories}
 \usage{
-setImageDirHighres(object, dir_highres, check = TRUE)
+setImageDirHighres(object, dir_highres, check = TRUE, verbose = NULL)
 
-setImageDirLowres(object, dir_lowres, check = TRUE)
+setImageDirLowres(object, dir_lowres, check = TRUE, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{check}{Logical value. If set to TRUE the input directory is checked
 for validity and it is checked if the file actually exists.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 
 \item{dir_lowres, dir_highres}{Character value. The file directories to
 the corresponding images.}

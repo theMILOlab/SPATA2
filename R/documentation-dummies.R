@@ -198,6 +198,7 @@ set_dummy <- function(){}
 seurat_object_dummy <- function(seurat_object){}
 
 
+#' @title update
 #' @return The input `SPATA2` object containing the added or computed
 #' results.
 update_dummy <- function(){}
@@ -441,7 +442,7 @@ variables_num <- function(variables){}
 #' plotting aesthetics. Input for \code{transform_with} is applied before the
 #' respective \code{<aes>_trans} argument.
 #'
-#' @use_scattermore Logical value. If `TRUE`, data points are plotted with
+#' @param use_scattermore Logical value. If `TRUE`, data points are plotted with
 #' `scattermore::geom_scattermore()` which allows quick plotting of several
 #' thousand data points. If the number of data points plotted is bigger than
 #' 10.000 it is used anyway.

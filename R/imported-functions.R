@@ -40,9 +40,6 @@ allColorpalettes <- confuns::all_color_palettes
 allColorspectra <- confuns::all_color_spectra
 
 
-
-# a -----------------------------------------------------------------------
-
 adapt_reference <- confuns::adapt_reference
 
 adjust_ggplot_params <- confuns::adjust_ggplot_params
@@ -62,6 +59,13 @@ check_none_of <- confuns::check_none_of
 check_one_of <- confuns::check_one_of
 
 create_progress_bar <- confuns::create_progress_bar
+
+
+
+# d -----------------------------------------------------------------------
+
+# imported from grid - see p.R
+#drawDetails <- grid::drawDetails
 
 
 # g -----------------------------------------------------------------------
@@ -105,6 +109,11 @@ plot_ridgeplot <- confuns::plot_ridgeplot
 plot_scatterplot <- confuns::plot_scatterplot
 plot_violinplot <- confuns::plot_violinplot
 
+# imported from grid - see p.R
+
+#postDrawDetails <- grid::postDrawDetails
+
+#preDrawDtails <- grid::preDrawDetails
 
 # s -----------------------------------------------------------------------
 

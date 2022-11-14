@@ -81,7 +81,7 @@ Displays a surface plot for every variable specified
 in argument \code{color_by}.
 
 \itemize{
-\item{ \code{plotSurfaceComparison()} Takes the spata-object as the starting point and creates the
+\item{ \code{plotSurfaceComparison()} Takes the \code{SPATA2} object as the starting point and creates the
 necessary data.frame from scratch according to additional parameters.}
 \item{ \code{plotSurfaceComparison2()} Takes a data.frame as the starting point. }
 }

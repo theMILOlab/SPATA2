@@ -56,7 +56,7 @@ adjustDefaultInstructions <- function(object, ...){
 
   object@information$instructions$default <- dflt_instr
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -103,7 +103,7 @@ adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_
     verbose = TRUE
   )
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -177,7 +177,7 @@ adjustGeneSetDf <- function(object, limit = 50){
   object@used_genesets <-
     dplyr::select(filtered_df, ont, gene)
 
-  base::return(object)
+  return(object)
 
 }
 
@@ -339,6 +339,128 @@ adjustGseaDf <- function(df,
 # as_ ---------------------------------------------------------------------
 
 
+#' @rdname as_unit
+#' @export
+as_meter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_meter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "m2",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_micrometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_micrometer2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "um2",
+    ...
+  )
+
+}
+
+
+#' @rdname as_unit
+#' @export
+as_millimeter <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "mm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_millimeter2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "mm2",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_nanometer <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nm",
+    ...
+  )
+
+}
+
+#' @rdname as_unit
+#' @export
+as_nanometer2 <- function(input, ...){
+
+  as_unit(
+    input = input,
+    unit = "nm",
+    ...
+  )
+
+}
+
+
+#' @rdname as_unit
+#' @export
+as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
+
+  out <-
+    as_unit(
+      input = input,
+      unit = "px",
+      object = object,
+      ...
+    )
+
+  if(base::isFALSE(add_attr)){
+
+    base::attr(out, which = "unit") <- NULL
+
+  }
+
+  return(out)
+
+}
+
+
+
 #' @title Distance transformation
 #'
 #' @description Ensures that distance input can be read by `SPATA2` functions
@@ -349,23 +471,6 @@ adjustGseaDf <- function(df,
 #' @return Character vector of the same length as `input`.
 #'
 #' @export
-#'
-#' @examples
-#'
-#' library(SPATA2)
-#'
-#' mms <- stringr::str_c(1:8, "mm")
-#'
-#' as_SPATA2_dist(mms)
-#'
-#' pixels_a <- 1:8
-#'
-#' as_SPATA2_dist(pixels_a)
-#'
-#' pixels_b <- stringr::str_c(1:8, "px)
-#'
-#' as_SPATA2_dist(pixels_b)
-#'
 
 as_SPATA2_dist <- function(input){
 
@@ -390,17 +495,16 @@ as_SPATA2_dist <- function(input){
 #' @param unit Character value. Specifies the desired unit.
 #' @inherit argument_dummy params
 #' @inherit getCCD params
-#' @inherit transform_euol_to_pixels params
-#' @inherit transform_pixels_to_euol params return
+#' @inherit transform_dist_si_to_pixels params
+#' @inherit transform_pixels_to_dist_si params return
 #'
 #' @param ... Needed arguments that depend on the input/unit combination. If
-#' one of both is \emph{'px'}, either the argument `obejct` must be specified or
-#' `method` and `image_dims`.
+#' one of both is \emph{'px'}, argument `object` must be specified.
 #'
 #' @return All functions return an output vector of the same length as the input
 #' vector.
 #'
-#' If argument `unit` is among `validEuropeanUnitsOfLength()` or `validUnitsOfArea()`
+#' If argument `unit` is among `validUnitsOfLengthSI()` or `validUnitsOfAreaSI()`
 #' the output vector is of class `units`. If argument `unit` is *'px'*, the output
 #' vector is a character vector or numeric vector if `as_numeric` is `TRUE`.
 #'
@@ -418,17 +522,17 @@ as_SPATA2_dist <- function(input){
 #'
 #' pixel_values <- c(200, 450, 500)
 #'
-#' euol_values <- c("2mm", "400mm", "0.2mm")
+#' si_dist_values <- c("2mm", "400mm", "0.2mm")
 #'
 #' # spata object must be provided to scale based on current image resolution
 #' as_millimeter(input = pixel_values, object = object, round = 2)
 #'
 #' as_micrometer(input = pixel_values, object = object, round = 4)
 #'
-#' as_pixel(input = euol_values, object = object)
+#' as_pixel(input = si_dist_values, object = object)
 #'
 #' # spata object must not be provided
-#' as_micrometer(input = euol_values)
+#' as_micrometer(input = si_dist_values)
 #'
 #'
 as_unit <- function(input,
@@ -486,27 +590,26 @@ as_unit <- function(input,
 
         out[i] <- input_values[i]
 
-      } else if(is_dist_euol(input[i]) & unit == "px"){ # converts euol to pixel
+      } else if(is_dist_si(input[i]) & unit == "px"){ # converts si to pixel
 
         out[i] <-
-          transform_euol_to_pixel(
+          transform_dist_si_to_pixel(
             input = input[i], # provide from `input`, not from `input_values` due to unit
-            object = object,
-            method = method,
-            round = round
-          )
-
-      } else if(is_dist_pixel(input[i]) & unit %in% validEuropeanUnitsOfLength()){ # converts pixel to euol
-
-        out[i] <-
-          transform_pixel_to_euol(
-            input = input[i], # provide from `input`, not from `input_values` due to unit
-            euol = unit,
             object = object,
             round = round
           )
 
-      } else if(is_dist(input[i]) & unit %in% validEuropeanUnitsOfLength()){ # converts euol to euol
+      } else if(is_dist_pixel(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts pixel to si units
+
+        out[i] <-
+          transform_pixel_to_dist_si(
+            input = input[i], # provide from `input`, not from `input_values` due to unit
+            unit = unit,
+            object = object,
+            round = round
+          )
+
+      } else if(is_dist(input[i]) & unit %in% validUnitsOfLengthSI()){ # converts si to si dist unit
 
         x <-
           units::set_units(
@@ -520,7 +623,7 @@ as_unit <- function(input,
       } else if(is_area(input = input[i]) & unit == "px"){ # converts si area to pixel
 
         out[i] <-
-          transform_si_to_pixel(
+          transform_area_si_to_pixel(
             input = input[i], # provide from `input`, not from `input_values` due to unit
             object = object,
             round = round
@@ -529,7 +632,7 @@ as_unit <- function(input,
       } else if(is_area_pixel(input = input[i]) & unit %in% validUnitsOfAreaSI()){ # converts pixel to si area
 
         out[i] <-
-          transform_pixel_to_si(
+          transform_pixel_to_area_si(
             input = input[i],
             unit = unit,
             object = object,
@@ -545,7 +648,7 @@ as_unit <- function(input,
             mode = "standard"
           )
 
-        out[i] <- units::set_units(x = x, value = input_units[i], mode = "standard")
+        out[i] <- units::set_units(x = x, value = unit, mode = "standard")
 
       }
 
@@ -564,7 +667,7 @@ as_unit <- function(input,
 
     }
 
-  # else if all input units are EUOL of SI and output unit is, too -> use units package
+  # else if all input units are si dist unit of SI and output unit is, too -> use units package
   # no need for for loop
   } else {
 
@@ -783,12 +886,9 @@ assessAutoencoderOptions <- function(expr_mtr,
                           "set_up" = list("epochs" = epochs, "dropout" = dropout, "layers" = layers),
                           "scaled_var" = pca_scaled$totalvar)
 
-  base::return(assessment_list)
+  return(assessment_list)
 
 }
-
-
-
 
 
 
@@ -917,7 +1017,7 @@ asGiotto <- function(object,
 #' @return An object of class \code{Visium}.
 #' @export
 #'
-methods::setGeneric(name = "asHistologyImage", def = function(object, ...){
+setGeneric(name = "asHistologyImage", def = function(object, ...){
 
   standardGeneric(f = "asHistologyImage")
 
@@ -926,7 +1026,7 @@ methods::setGeneric(name = "asHistologyImage", def = function(object, ...){
 
 #' @rdname asHistologyImage
 #' @export
-methods::setMethod(
+setMethod(
   f = "asHistologyImage",
   signature = "VisiumV1",
   definition = function(object, scale_with = "lowres"){
@@ -937,8 +1037,11 @@ methods::setMethod(
 
     new_object@coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
-      dplyr::select(barcodes, x = imagecol, y = imagerow, row, col) %>%
-      dplyr::mutate(x = x*scale_fct, y = y*scale_fct) %>%
+      dplyr::mutate(
+        x = imagecol * scale_fct,
+        y = imagerow * scale_fct
+      ) %>%
+      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
       tibble::as_tibble()
 
     new_object@id <- object@key
@@ -964,128 +1067,286 @@ methods::setMethod(
 
 
 
+
 # asM-asS -----------------------------------------------------------------
 
 
-#' @rdname as_unit
+#' @title Transform `SPATA2` to `Seurat`
+#'
+#' @description Transforms an `SPATA2` object to an object of class `Seurat`.
+#' See details for more information.
+#'
+#' @param process Logical value. If `TRUE`, count matrix is processed.
+#' See details for more.
+#'
+#' Use `getInitiationInfo()` to obtain argument input of your `SPATA2` object
+#' initiation.
+#'
+#' @param assay_name,image_name Character values. Define the name with which
+#' to refer to the assay or the image in the `Seurat` object. Defaults to
+#' the default of the `Seurat` package.
+#'
+#' @inherit argument_dummy params
+#' @inherit asGiotto params
+#'
+#' @details If you have used `initiateSpataObject_10X()`, chances are that you have
+#' already specified input for various processing functions. `asSeurat()`
+#' creates a `Seurat` object from scratch. It has to, because even though
+#' many processing steps are run with the Seurat object as background `SPATA2`
+#' does not net all its content and to keep `SPATA2` objects as small as
+#' possible not everything is transferred from the `Seurat` object.
+#'
+#' If `process = TRUE`, the input you've given to `initiateSpataObject_10X()` is taken to
+#' conduct the same processing. To check what you have defined as input, you
+#' can use the function `getInititationInfo()`.
+#'
+#' @return An object of class `Seurat`.
 #' @export
-as_meter <- function(input, ...){
+#'
 
-  as_unit(
-    input = input,
-    unit = "m",
-    ...
-  )
+asSeurat <- function(object,
+                     process = TRUE,
+                     transfer_features = TRUE,
+                     assay_name = "Spatial",
+                     image_name = "slice1",
+                     verbose = NULL){
 
-}
+  hlpr_assign_arguments(object)
 
-#' @rdname as_unit
-#' @export
-as_meter2 <- function(input, ...){
+  # get data
+  count_mtr <- getCountMatrix(object)
 
-  as_unit(
-    input = input,
-    unit = "m2",
-    ...
-  )
+  if(base::isTRUE(transfer_features)){
 
-}
+    meta_data <-
+      getFeatureDf(object) %>%
+      tibble::column_to_rownames(var = "barcodes") %>%
+      base::as.data.frame()
 
-#' @rdname as_unit
-#' @export
-as_micrometer <- function(input, ...){
+  } else {
 
-  as_unit(
-    input = input,
-    unit = "um",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-as_micrometer2 <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "um2",
-    ...
-  )
-
-}
-
-
-#' @rdname as_unit
-#' @export
-as_millimeter <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "mm",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-as_millimeter2 <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "mm2",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-as_nanometer <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "nm",
-    ...
-  )
-
-}
-
-#' @rdname as_unit
-#' @export
-as_nanometer2 <- function(input, ...){
-
-  as_unit(
-    input = input,
-    unit = "nm",
-    ...
-  )
-
-}
-
-
-#' @rdname as_unit
-#' @export
-as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
-
-  out <-
-    as_unit(
-      input = input,
-      unit = "px",
-      object = object,
-      ...
-    )
-
-  if(base::isFALSE(add_attr)){
-
-    base::attr(out, which = "unit") <- NULL
+    meta_data <- NULL
 
   }
 
-  return(out)
+  # init infor
+  initiated_with <- getInitiationInfo(object)[["input"]]
+
+  # create raw seurat object
+  seurat_object <-
+    Seurat::CreateSeuratObject(
+      counts = count_mtr,
+      project = getSampleName(object),
+      meta.data = meta_data,
+      assay = assay_name
+    )
+
+  if(base::isTRUE(process)){
+
+    process_seurat_object(
+      seurat_object = seurat_object,
+      assay_name = assay_name,
+      calculate_rb_and_mt = TRUE,
+      remove_stress_and_mt = TRUE,
+      SCTransform = initiated_with$SCTransform,
+      NormalizeData = initiated_with$NormalizeData,
+      FindVariableFeatures = initiated_with$FindVariableFeatures,
+      ScaleData = initiated_with$ScaleData,
+      RunPCA = initiated_with$RunPCA,
+      RunTSNE = initiated_with$RunTSNE,
+      RunUMAP = initiated_with$RunUMAP,
+      verbose = verbose
+    )
+
+  } else {
+
+    confuns::give_feedback(
+      msg = " `process` = FALSE. Returning raw Seurat object with count matrix.",
+      verbose = verbose
+    )
+
+  }
+
+  # set image
+  if(containsImageObject(object)){
+
+    # adjust array justification for Seurat
+    image_obj <-
+      rotateImage(object = object, angle = 90) %>%
+      flipImage(axis = "y") %>%
+      getImageObject()
+
+    platform <- getSpatialMethod(object)@name
+
+    if(platform == "Visium"){
+
+      img_obj_seurat <- asVisiumV1(object = image_obj, name = image_name)
+
+    } else {
+
+      warning(glue::glue("Platform '{platform}' is unknown to Seurat. Can not set image."))
+
+      img_obj_seurat <- NULL
+
+    }
+
+  } else {
+
+    img_obj_seurat <- NULL
+
+  }
+
+
+  if(!base::is.null(img_obj_seurat)){
+
+    seurat_object@images[[image_name]] <- img_obj_seurat
+
+  }
+
+  # give feedback and return
+  confuns::give_feedback(
+    msg = glue::glue("Assay name: {assay_name}. Image name: {image_name}."),
+    verbose = verbose
+  )
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  return(seurat_object)
 
 }
+
+
+#' @title Transform to `SingleCellExperiment`
+#'
+#' @description Transforms an `SPATA2` object to an object of class
+#' `SingleCellExperiment`. See details for more information.
+#'
+#' @inherit argument_dummy params
+#' @param ... The features to be renamed specified according to
+#' the following syntax: 'new_feature_name' = 'old_feature_name'. This applies
+#' to coordinates, too. E.g. ... ~ *'image_col' = 'x', 'image_row' = 'y'*
+#' renames the coordinate variables to *'image_col'* and *'image_row'*.
+#'
+#' @details Output object contains the count matrix in slot @@assays and
+#' feature data.frame combined with barcode-spot coordinates
+#' in slot @@colData.
+#'
+#' Slot @@metadata is a list that contains the image object.
+#'
+#' @return An object of class `SingleCellExperiment`.
+#' @export
+
+asSingleCellExperiment <- function(object, ...){
+
+    colData <-
+      joinWith(
+        object = object,
+        spata_df = getCoordsDf(object),
+        features = getFeatureNames(object),
+        verbose = FALSE
+      ) %>%
+      base::as.data.frame()
+
+    base::rownames(colData) <- colData[["barcodes"]]
+
+    dot_list <- list(...)
+
+    renaming <-
+      confuns::keep_named(dot_list) %>%
+      purrr::keep(.p = base::is.character)
+
+    if(base::length(renaming) >= 1){
+
+      renaming_vec <-
+        purrr::set_names(
+          x = purrr::flatten_chr(renaming),
+          nm = base::names(renaming)
+        )
+
+      colData <- dplyr::rename(colData, renaming_vec)
+
+    }
+
+    sce <-
+      SingleCellExperiment::SingleCellExperiment(
+        assays = list(counts = getCountMatrix(object)),
+        colData = colData,
+        metadata = list(
+          converted_from = base::class(object)
+        )
+      )
+
+    sce@metadata[["sample"]] <- getSampleName(object)
+    sce@metadata[["origin_class"]] <- base::class(object)
+
+    if(containsImageObject(object)){
+
+      sce@metadata[["image"]] <- getImageObject(object)
+
+    }
+
+    return(sce)
+
+  }
+
+
+#' @title Transform to `SummarizedExperiment`
+#'
+#' @description Transforms an `SPATA2` object to an object of class
+#' `SummarizedExperiment`. See details for more information.
+#'
+#' @inherit asSingleCellExperiment params
+#' @inherit argument_dummy params
+#'
+#' @details Output object contains the count matrix in slot @@assays and
+#' feature data.frame combined with barcode-spot coordinates
+#' in slot @@colData.
+#'
+#' Slot @@metadata is a list that contains the image object in slot $image.
+#'
+#' @return An object of class `SummarizedExperiment`.
+#' @export
+
+asSummarizedExperiment <- function(object, ...){
+
+    colData <-
+      joinWith(
+        object = object,
+        spata_df = getCoordsDf(object),
+        features = getFeatureNames(object),
+        verbose = FALSE
+      ) %>%
+      base::as.data.frame()
+
+    base::rownames(colData) <- colData[["barcodes"]]
+
+     se <-
+       SummarizedExperiment::SummarizedExperiment(
+        assays = list(counts = getCountMatrix(object)),
+        colData = colData,
+        metadata = list(
+          converted_from = base::class(object)
+        )
+     )
+
+     se@metadata[["sample"]] <- getSampleName(object)
+     se@metadata[["origin_class"]] <- base::class(object)
+
+     if(containsImageObject(object)){
+
+       se@metadata[["image"]] <- getImageObject(object)
+
+     }
+
+     return(se)
+
+}
+
+
+
 
 
 #' @title Transform to \code{SPATA2} object
@@ -1227,6 +1488,244 @@ setMethod(
   }
 )
 
+#' @rdname asSPATA2
+#' @export
+setMethod(
+  f = "asSPATA2",
+  signature = "Seurat",
+  definition = function(object,
+                        sample_name,
+                        assay_name = "Spatial",
+                        image_name = "slice1",
+                        transfer_meta_data = TRUE,
+                        transfer_dim_red = TRUE,
+                        verbose = TRUE){
+
+    # create empty spata object
+    spata_object <-
+      initiateSpataObject_Empty(
+        sample_name = sample_name,
+        verbose = verbose
+        )
+
+
+    confuns::give_feedback(
+      msg = "Transferring data.",
+      verbose = verbose
+    )
+
+    # check assays
+    assay_names <- base::names(object@assays)
+
+    if(base::length(assay_names) >= 1){
+
+      confuns::check_one_of(
+        input = assay_name,
+        against = assay_names,
+        ref.opt.2 = "assays in Seurat object",
+        fdb.opt = 2
+      )
+
+    } else {
+
+      stop("Seurat object contains no assays.")
+
+    }
+
+    # check and transfer image
+    if(base::is.character(image_name)){
+
+      image_names <- base::names(object@images)
+
+      if(base::length(image_names) >= 1){
+
+        confuns::check_one_of(
+          input = image_name,
+          against = image_names,
+          ref.opt.2 = "images in Seurat object",
+          fdb.opt = 2
+        )
+
+        image_obj <- asHistologyImage(object = object@images[[image_name]])
+
+        spata_object <- setImageObject(spata_object, image_object = image_obj)
+
+        # !!! decide where to store the coordinates
+        spata_object <- setCoordsDf(spata_object, coords_df = image_obj@coordinates)
+
+      } else {
+
+        confuns::give_feedback(
+          msg = "Seurat object contains no images.",
+          verbose = verbose
+        )
+
+        image_obj <- NULL
+
+      }
+
+    }
+
+    # transfer features
+    feature_df <-
+      tibble::rownames_to_column(object@meta.data, var = "barcodes") %>%
+      tibble::as_tibble()
+
+    if(base::isFALSE(transfer_meta_data)){
+
+      feature_df <- dplyr::select(feature_df, barcodes)
+
+    }
+
+    spata_object <- setFeatureDf(spata_object, feature_df = feature_df)
+
+    # transfer matrices
+    assay <- object@assays[[assay_name]]
+
+    count_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = "counts"),
+        error_handling = "stop",
+        error_ref = "count matrix"
+      )
+
+    spata_object <-
+      setCountMatrix(
+        object = spata_object,
+        count_mtr = count_mtr[base::rowSums(base::as.matrix(count_mtr)) != 0, ]
+        )
+
+    scaled_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = "scale.data"),
+        error_handling = "stop",
+        error_ref = "scaled matrix",
+        error_value = NULL
+      )
+
+    spata_object <-
+      setScaledMatrix(
+        object = spata_object,
+        scaled_mtr = scaled_mtr[base::rowSums(base::as.matrix(scaled_mtr)) != 0, ]
+        )
+
+    # transfer dim red data
+    if(base::isTRUE(transfer_dim_red)){
+
+      # pca
+      pca_df <- base::tryCatch({
+
+        pca_df <-
+          base::as.data.frame(object@reductions$pca@cell.embeddings) %>%
+          tibble::rownames_to_column(var = "barcodes") %>%
+          dplyr::select(barcodes, dplyr::everything())
+
+        base::colnames(pca_df) <- stringr::str_remove_all(base::colnames(pca_df), pattern = "_")
+
+        pca_df
+
+      },
+
+      error = function(error){
+
+        warning("Could not find or transfer PCA-data. Did you process the seurat-object correctly?")
+
+        return(data.frame())
+
+      }
+
+      )
+
+      if(!base::nrow(pca_df) == 0){
+
+        spata_object <- setPcaDf(spata_object, pca_df = pca_df)
+
+      }
+
+
+      # tsne
+      tsne_df <- base::tryCatch({
+
+        base::data.frame(
+          barcodes = base::rownames(object@reductions$tsne@cell.embeddings),
+          tsne1 = object@reductions$tsne@cell.embeddings[,1],
+          tsne2 = object@reductions$tsne@cell.embeddings[,2],
+          stringsAsFactors = FALSE
+        ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer TSNE-data. Did you process the seurat-object correctly?")
+
+        return(data.frame())
+
+      }
+
+      )
+
+      if(!base::nrow(tsne_df) == 0){
+
+        spata_object <- setTsneDf(object = spata_object, tsne_df = tsne_df)
+
+      }
+
+      # umap
+      umap_df <- base::tryCatch({
+
+        base::data.frame(
+          barcodes = base::rownames(object@reductions$umap@cell.embeddings),
+          umap1 = object@reductions$umap@cell.embeddings[,1],
+          umap2 = object@reductions$umap@cell.embeddings[,2],
+          stringsAsFactors = FALSE
+        ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer UMAP-data. Did you process the seurat-object correctly?")
+
+        return(data.frame())
+
+      }
+
+      )
+
+      if(!base::nrow(umap_df) == 0){
+
+        spata_object <- setUmapDf(object = spata_object, umap_df = umap_df)
+
+      }
+
+    } else {
+
+      confuns::give_feedback(
+        msg = "`transfer_dim_red = FALSE`: Skip transferring dimensional reduction data.",
+        verbose = verbose
+      )
+
+    }
+
+    # conclude
+    spata_object <- setBarcodes(spata_object, barcodes = base::colnames(count_mtr))
+
+    spata_object <- setInitiationInfo(spata_object)
+
+    spata_object <-
+      setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+
+    spata_object <-
+      setActiveExpressionMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+
+    confuns::give_feedback(
+      msg = "Done.",
+      verbose = verbose
+    )
+
+    return(spata_object)
+
+  }
+)
+
+
 
 #' @title Title
 #' @export
@@ -1254,6 +1753,44 @@ setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definitio
 
 
 
+# asV ---------------------------------------------------------------------
+
+
+
+#' @title Transform `HistologyImage` to `VisiumV1`
+#'
+#' @description Transforms an `HistologyImage` obejct to an object of
+#' class `VisiumV1` from the `Seurat` package.
+#'
+#' @param object An object of class `HistologyImage`.
+#' @param name Name of the `VisiumV1` object. Suffixed with *_* to fill
+#' slot @@key.
+#'
+#' @return An object of class `VisiumV1` from the `Seurat` package.
+#' @export
+#'
+asVisiumV1 <- function(object, name = "slice1"){
+
+  require(Seurat)
+
+  coords_df_seurat <-
+    dplyr::select(object@coordinates, -dplyr::any_of(c("x", "y", "sample"))) %>%
+    tibble::column_to_rownames(var = "barcodes") %>%
+    base::as.data.frame()
+
+  out <-
+    methods::new(
+      Class = magrittr::set_attr(x = "VisiumV1", which = "package", value = "Seurat"),
+      image = base::as.array(object@image),
+      scale.factors = object@misc$scale.factors,
+      coordinates = coords_df_seurat,
+      spot.radius = object@misc$spot.radius,
+      key = stringr::str_c(name, "_")
+    )
+
+  return(out)
+
+}
 
 
 

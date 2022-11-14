@@ -15,6 +15,14 @@ getSparkxResults(object, test = TRUE)
 
 runSparkx(object, numCores = 1, option = "mixture", verbose = NULL)
 }
+\arguments{
+\item{object}{An object of class \code{SPATA2}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+}
 \value{
 An updated spata object.
 }

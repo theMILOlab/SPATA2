@@ -4,14 +4,14 @@
 \alias{initiateSpataObject_Empty}
 \title{Initiate an empty spata-object}
 \usage{
-initiateSpataObject_Empty(sample_name)
+initiateSpataObject_Empty(sample_name, spatial_method = "Visium")
 }
 \arguments{
 \item{sample_name}{Character value. Denotes the name of the sample you are
 analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.}
 }
 \value{
-An empty spata-object.
+An empty object of class \code{SPATA2}.
 }
 \description{
 Initiate an empty spata-object

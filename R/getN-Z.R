@@ -72,10 +72,7 @@ getPixelDf <- function(object, xrange = NULL, yrange = NULL){
 #' See details for more.
 #' @param force Logical value. If `TRUE`, the scale factor is computed
 #' regardless of what the function finds in the respective slot.
-#' @param square Logical value. If `TRUE`, returns a scale factor for areas
-#' instead of distances: The scale factor is squared and input for European units
-#' of length is taken as a unit of area.
-#' @inherit ggpLayerAxesEUOL params
+#' @inherit ggpLayerAxesSI params
 #' @inherit argument_dummy params
 #' @inherit is_dist params
 #'
@@ -96,7 +93,6 @@ getPixelDf <- function(object, xrange = NULL, yrange = NULL){
 getPixelScaleFactor <- function(object,
                                 unit,
                                 switch = FALSE,
-                                square = FALSE,
                                 force = FALSE,
                                 add_attr = TRUE,
                                 verbose = NULL,
@@ -104,19 +100,14 @@ getPixelScaleFactor <- function(object,
 
   hlpr_assign_arguments(object)
 
-  if("eoul" %in% names(list(...))){
-
-    warning("`euol` is deprecated.")
-
-  }
-
   # extract set scale factor
   pxl_scale_fct <- object@information$pxl_scale_fct
 
   square <- unit %in% validUnitsOfAreaSI()
 
-  # extract euol to compute (equal to unit if square == FALSE)
-  euol <- stringr::str_extract(unit, pattern = "[a-z]*")
+  # extract dist_unit_si as scale factor is stored/computed with distance values
+  # (equal to unit if square == FALSE)
+  dist_unit_si <- stringr::str_extract(unit, pattern = "[a-z]*")
 
   # if no factor found or force is TRUE - compute
   if(base::is.null(pxl_scale_fct) | base::isTRUE(force)){
@@ -133,7 +124,7 @@ getPixelScaleFactor <- function(object,
     }
 
     # extract center to center distance
-    ccd <- getCCD(object, unit = euol)
+    ccd <- getCCD(object, unit = dist_unit_si)
 
     confuns::give_feedback(
       msg = "Using center to center distance to compute pixel scale factor.",
@@ -156,7 +147,7 @@ getPixelScaleFactor <- function(object,
 
     pxl_scale_fct <-
       units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
-      units::set_units(x = ., value = euol, mode = "standard")
+      units::set_units(x = ., value = dist_unit_si, mode = "standard")
 
   # if scale factor found adjust to unit input
   } else {
@@ -171,7 +162,7 @@ getPixelScaleFactor <- function(object,
 
     pxl_scale_fct <-
       units::set_units(x = pxl_scale_fct, value = unit_per_px, mode = "standard") %>%
-      units::set_units(x = ., value = euol, mode = "standard")
+      units::set_units(x = ., value = dist_unit_si, mode = "standard")
 
   }
 
@@ -201,15 +192,12 @@ getPixelScaleFactor <- function(object,
 
   }
 
-
   # remove attribute if needed
   if(!base::isTRUE(add_attr)){
 
     base::attr(pxl_scale_fct, which = "unit") <- NULL
 
   }
-
-
 
   return(pxl_scale_fct)
 
@@ -776,6 +764,15 @@ getSpatialTrajectory <- function(object, id){
 }
 
 
+#' @title Obtain spatial trajectory IDs
+#'
+#' @description Extracts IDs of spatial trajectories that were
+#' drawn with `createSpatialTrajectories()`
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
 #' @export
 getSpatialTrajectoryIds <- function(object){
 
@@ -877,7 +874,7 @@ getTrajectoryDf <- function(object, ...){
 #' @description Extracts the ids of all objects of class \code{Trajectory}
 #' in the SPATA2 object.
 #'
-#' @inherit argument_dummy params.
+#' @inherit argument_dummy params
 #'
 #' @return Character vector.
 #' @export

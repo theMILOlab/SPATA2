@@ -9,15 +9,6 @@ check_atdf(atdf)
 
 check_rtdf(rtdf, variable = NULL)
 }
-\arguments{
-\item{atdf}{A data.frame containing the results of trajectory-modelling. Must contain the variables:
-
-\describe{
-\item{\emph{variables}}{Character. The genes, gene-sets and features that have been assessed.}
-\item{\emph{pattern}}{Character. The respective trajectory pattern.}
-\item{\emph{auc}}{Numeric. The assessment value which is the residual's area under the curve.}
-}}
-}
 \description{
 Check assessed trajectory data.frame
 }

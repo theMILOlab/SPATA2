@@ -6,28 +6,49 @@
 #'
 #' @inherit initiateSpataObject_ExprMtr params
 #'
-#' @return An empty spata-object.
+#' @return An empty object of class `SPATA2`.
 #' @export
 #'
 
-initiateSpataObject_Empty <- function(sample_name){
+initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
-  confuns::give_feedback(msg = "Setting up new spata-object.", verbose = TRUE)
+  confuns::give_feedback(
+    msg = "Setting up new spata-object.",
+    verbose = TRUE
+    )
 
-  confuns::is_value("sample_name",  mode = "character")
+  # check input
+  confuns::is_value(sample_name,  mode = "character")
 
+  confuns::check_one_of(
+    input = spatial_method,
+    against = validSpatialMethods()
+  )
+
+  # create object
   class_string <- "spata2"
 
   base::attr(class_string, which = "package") <- "SPATA2"
 
-  object <-
-    methods::new(Class = class_string, samples = sample_name)
+  object <- methods::new(Class = class_string, samples = sample_name)
 
-  object@images[[sample_name]] <- HistologyImage()
+  # set basic slots
+  object@information$method <- spatial_methods[[spatial_method]]
 
+  object <- setDefaultInstructions(object)
+
+  # empty slots
+  empty_list <- purrr::set_names(x = list(list()), nm = sample_name)
+
+  object@autoencoder <- empty_list
+  object@cnv <- empty_list
+  object@dea <- empty_list
+  object@images <- empty_list
+  object@spatial <- empty_list
+  object@trajectories <- empty_list
+
+  # set version
   object@version <- current_spata_version
-
-  object@information$method <- Visium
 
   return(object)
 
@@ -101,15 +122,15 @@ initiateSpataObject_CountMtr <- function(coords_df,
 
     if(!methods::is(count_mtr, "Matrix")){
 
-      base::stop("'count_mtr'-input needs to be of type 'Matrix'.")
+      stop("'count_mtr'-input needs to be of type 'Matrix'.")
 
     } else if(base::is.null(base::colnames(count_mtr))){
 
-      base::stop("'count_mtr'-input needs to have column names")
+      stop("'count_mtr'-input needs to have column names")
 
     } else if(base::is.null(base::rownames(count_mtr))){
 
-      base::stop("'count_mtr'-input needs to have row names.")
+      stop("'count_mtr'-input needs to have row names.")
 
     }
 
@@ -119,7 +140,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
     # check identical barcodes
     if(!base::identical(barcodes_count_mtr, barcodes_coords_df)){
 
-      base::stop("Barcodes of 'coords_df'-input and column names of 'count_mtr'-input need to be identical.")
+      stop("Barcodes of 'coords_df'-input and column names of 'count_mtr'-input need to be identical.")
 
     }
 
@@ -259,7 +280,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
 
     # -----
 
-    base::return(spata_object)
+    return(spata_object)
 
 }
 
@@ -436,7 +457,7 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 
   # -----
 
-  base::return(spata_object)
+  return(spata_object)
 
 }
 
@@ -513,7 +534,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   # check if expr matrix is a matrix
   if(!base::is.matrix(expr_mtr) | base::length(base::dim(expr_mtr)) != 2){
 
-    base::stop(glue::glue("Input for argument 'expr_mtr' must be a matrix."))
+    stop(glue::glue("Input for argument 'expr_mtr' must be a matrix."))
 
   }
 
@@ -549,7 +570,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
   if(!base::identical(barcodes_coords, barcodes_expr_mtr)){
 
-    base::stop("Barcodes of expression matrix and barcodes of the coordinate data.frame must match.")
+    stop("Barcodes of expression matrix and barcodes of the coordinate data.frame must match.")
 
   }
 
@@ -742,7 +763,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
   # -----
 
-  base::return(spata_object)
+  return(spata_object)
 
 }
 
@@ -760,9 +781,11 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #' which to load the information. This folder must contain the following sub directories:
 #'
 #' \itemize{
-#'  \item{\emph{'/outs/filtered_feature_bc_matrix.h5'}}
-#'  \item{\emph{'/outs/spatial/*.jpg}}
+#'  \item{\emph{'/filtered_feature_bc_matrix.h5'}}
+#'  \item{\emph{'/spatial/*.jpg}}
 #'  }
+#'
+#' (It is no longer required that the folder contains an */outs/* sub directory.)
 #'
 #' @param sample_name Character value. The sample name with which to refer to the
 #' respective sample. Should start with a letter.
@@ -822,7 +845,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   if(sample_name %in% c("", "all")){
 
-    base::stop(glue::glue("' ' and 'all' are invalid sample names."))
+    stop(glue::glue("' ' and 'all' are invalid sample names."))
 
   }
 
@@ -846,7 +869,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
     if(base::is.data.frame(input) | (!base::isTRUE(input) && !base::is.list(input) &&!base::isFALSE(input))){
 
-      base::stop(glue::glue("Invalid input for argument '{fn}'. Must either be TRUE, FALSE or a named list."))
+      stop(glue::glue("Invalid input for argument '{fn}'. Must either be TRUE, FALSE or a named list."))
 
     }
 
@@ -858,16 +881,49 @@ initiateSpataObject_10X <- function(directory_10X,
 
   # 2. Read in data ---------------------------------------------------------
 
-  confuns::give_feedback(msg = "Reading in .h5 file.")
+  dir_test_one <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
 
-  data_dir <- base::paste0(directory_10X, "/outs")
-  file_dir <- base::paste0(directory_10X, "/outs/filtered_feature_bc_matrix.h5")
+  # if FALSE, might have been specified with \\outs subdirectories
+  # old requirements
+  if(!base::file.exists(dir_test_one)){
+
+    directory_10X <- stringr::str_c(directory_10X, "\\outs", sep = "")
+
+    dir_test_two <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+
+    if(base::file.exists(dir_test_two)){
+
+      confuns::give_feedback(msg = "10X folder found.", verbose = verbose)
+
+      msg <- "'~outs//' as sub directories are no longer required. See `?initiateSpataObject_10X`."
+
+      rlang::warn(
+        message = msg,
+        .frequency = "once",
+        .frequency_id = "changed_dir_10X"
+      )
+
+    } else {
+
+      stop("Can not find Visium output. Please check input for argument `directory_10X`.")
+
+    }
+
+  }
+
+  confuns::give_feedback(msg = "Reading in .h5 file.", verbose = verbose)
+
+  file_dir <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5", sep = "")
 
   if(base::file.exists(paths = file_dir)){
 
-   confuns::give_feedback(msg = glue::glue("Loading from directory: '{data_dir}'"), verbose = verbose)
+   confuns::give_feedback(msg = glue::glue("Loading from directory: '{directory_10X}'"), verbose = verbose)
 
-   seurat_object <- Seurat::Load10X_Spatial(data.dir = data_dir, filename = "filtered_feature_bc_matrix.h5")
+   seurat_object <-
+     Seurat::Load10X_Spatial(
+       data.dir = directory_10X,
+       filename = "filtered_feature_bc_matrix.h5"
+       )
 
   } else {
 
@@ -929,8 +985,6 @@ initiateSpataObject_10X <- function(directory_10X,
       verbose = verbose
     )
 
-  spata_object <- setInitiationInfo(spata_object)
-
 
   # -----
 
@@ -973,6 +1027,41 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
+  assign("spata_object", spata_object, envir = .GlobalEnv)
+
+  # miscellaneous
+  spata_object <- setPixelScaleFactor(spata_object)
+
+  if(!"histology" %in% getFeatureNames(spata_object)){
+
+    spata_object <-
+      addSegmentationVariable(
+        object = spata_object,
+        name = "histology",
+        verbose = FALSE
+      )
+
+  }
+
+  # set image directories
+  dir_lowres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
+
+  if(base::file.exists(dir_lowres)){
+
+    spata_object <- setImageDirLowres(spata_object, dir_lowres = dir_lowres, check = FALSE)
+
+  }
+
+  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_hires_image.png")
+
+  if(base::file.exists(dir_highres)){
+
+    spata_object <- setImageDirHighres(spata_object, dir_highres = dir_highres, check = FALSE)
+
+  }
+
+  spata_object <- setInitiationInfo(spata_object)
+  # save spata object
   if(base::is.character(directory_spata)){
 
     spata_object <-
@@ -1005,29 +1094,17 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
+  # return output
   confuns::give_feedback(
     msg = "Initiation finished.",
     verbose = verbose
   )
 
-  spata_object@information$method <- Visium
 
-  spata_object <- setPixelScaleFactor(spata_object)
-
-  if(!"histology" %in% getFeatureNames(spata_object)){
-
-    spata_object <-
-      addSegmentationVariable(
-        object = spata_object,
-        name = "histology",
-        verbose = FALSE
-        )
-
-  }
 
 
   # -----
 
-  base::return(spata_object)
+  return(spata_object)
 
 }

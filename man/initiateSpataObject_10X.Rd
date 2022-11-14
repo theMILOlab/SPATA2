@@ -29,9 +29,11 @@ initiateSpataObject_10X(
 which to load the information. This folder must contain the following sub directories:
 
 \itemize{
-\item{\emph{'/outs/filtered_feature_bc_matrix.h5'}}
-\item{\emph{'/outs/spatial/*.jpg}}
-}}
+\item{\emph{'/filtered_feature_bc_matrix.h5'}}
+\item{\emph{'/spatial/*.jpg}}
+}
+
+(It is no longer required that the folder contains an \emph{/outs/} sub directory.)}
 
 \item{sample_name}{Character value. The sample name with which to refer to the
 respective sample. Should start with a letter.}

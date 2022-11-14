@@ -33,8 +33,6 @@ is equal to the input for argument \code{top_n}.}
 to FALSE a list is returned.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
-
-\item{in_sample}{Deprecated.}
 }
 \value{
 A list of character vectors or a single character vector.

@@ -1,8 +1,12 @@
 
+#' @import grid
+#'
+NULL
+
+
 
 
 # make --------------------------------------------------------------------
-
 
 
 make_angle_bins <- function(n){
@@ -15,6 +19,46 @@ make_angle_bins <- function(n){
 
   base::cut(x = 0:360, breaks = breaks) %>%
     base::levels()
+
+}
+
+
+#' @title Make content for segments grob
+#' @description Used in conjunction with GeomSegmentFixed
+#' @export
+#' @method makeContent resizingSegmentsGrob
+makeContent.resizingSegmentsGrob <- function(x) {
+
+  width <- grid::convertWidth(grid::unit(1, "snpc"), "pt", valueOnly = TRUE)
+
+  lwd <-  x$children[[1]]$gp$lwd
+
+  lwd <- if(base::is.null(lwd)){ 12 } else { lwd}
+
+  # rescale to normal sizes
+  lwd <- lwd/2.6667
+
+  x$children[[1]]$gp$lwd <- lwd * width / 100
+
+  x
+
+}
+
+#' @title Make content for text grob
+#' @description Used in conjunction with GeomTextFixed
+#' @export
+#' @method makeContent resizingTextGrob
+makeContent.resizingTextGrob <- function(x) {
+
+  width <- grid::convertWidth(grid::unit(1, "snpc"), "pt", valueOnly = TRUE)
+
+  fontsize <-  x$children[[1]]$gp$fontsize
+
+  fontsize <- if(base::is.null(fontsize)){ 12 } else { fontsize}
+
+  x$children[[1]]$gp$fontsize <- fontsize * width / 100
+
+  return(x)
 
 }
 
@@ -202,10 +246,8 @@ mapImageAnnotationTags <- function(object,
 #' If \code{grouping_variable_new} is NULL DE analysis results of the specified
 #' grouping variable is resetted.
 #'
-#' @return
 #' @export
 #'
-#' @examples
 mergeGroups <- function(object,
                         grouping_variable,
                         grouping_variable_new,

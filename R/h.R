@@ -57,7 +57,6 @@ hlpr_add_barcode_suffix <- function(input, sample_name){
 #' @param plot_df The plot_df.
 #' @param complete Logical.
 #'
-#' @return
 #' @export
 
 hlpr_add_old_coords <- function(object, plot_df, complete){
@@ -775,7 +774,6 @@ hlpr_normalize_vctr <- function(variable){
 #' @param rna_assay Expression matrix
 #' @param pb Progress bar object
 #'
-#' @return
 #' @export
 #'
 

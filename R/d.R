@@ -1,7 +1,6 @@
 
 
 
-
 # deprecated --------------------------------------------------------------
 
 
@@ -575,3 +574,8 @@ discardSpatialTrajectory <- function(object, id){
   return(object)
 
 }
+
+
+
+
+

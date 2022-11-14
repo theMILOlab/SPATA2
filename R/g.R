@@ -1,9 +1,9 @@
 
 
 
-# ge ----------------------------------------------------------------------
+# geom ----------------------------------------------------------------------
 
-#' @title Points (fixed)
+#' @title Points (fixed size ~ window ratio)
 #'
 #' @description A slightly changed version of \code{geom_point()}. In contrast
 #' to the default the size rescales to the size of the plotting device.
@@ -33,11 +33,113 @@ geom_point_fixed <- function(...,
 
 }
 
+#' @title Segments (fixed size ~ window ratio)
+#'
+#' @description A slightly changed version of \code{geom_segment()}. In contrast
+#' to the default the size rescales to the size of the plotting device.
+#'
+#' @inherit ggplot2::geom_point params
+#'
+#' @export
+geom_segment_fixed <- function(...,
+                               mapping = ggplot2::aes(),
+                               data = NULL,
+                               stat = "identity",
+                               position = "identity",
+                               na.rm = FALSE,
+                               show.legend = NA,
+                               inherit.aes = TRUE){
 
+  ggplot2::layer(
+    geom = GeomSegmentFixed,
+    data = data,
+    stat = stat,
+    position = position,
+    params = c(..., list(na.rm = na.rm)),
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    mapping = mapping
+  )
 
+}
+
+# Inspired by
+# https://stackoverflow.com/questions/74421586/r-ggplot2-geom-text-with-fontsize-scaled-to-window-size
+
+#' @title Text (fixed size ~ window ratio)
+#'
+#' @description A slightly changed version of \code{geom_text()}. In contrast
+#' to the default the size rescales to the size of the plotting device.
+#'
+#' @inherit ggplot2::geom_point params
+#'
+#' @export
+#' @export
+geom_text_fixed <- function(...,
+                            mapping = ggplot2::aes(),
+                            data = NULL,
+                            stat = "identity",
+                            position = "identity",
+                            na.rm = FALSE,
+                            show.legend = NA,
+                            inherit.aes = TRUE){
+
+  ggplot2::layer(
+    geom = GeomTextFixed,
+    data = data,
+    stat = stat,
+    position = position,
+    params = c(..., list(na.rm = na.rm)),
+    show.legend = show.legend,
+    inherit.aes = inherit.aes,
+    mapping = mapping
+  )
+
+}
 
 
 # ggp ---------------------------------------------------------------------
+
+
+#' @title Initiate ggplot2 layering
+#'
+#' @description Initiates a ggplot object to which \code{ggpLayer}-
+#' functions can be added for individual plotting ideas.
+#'
+#' @inherit argument_dummy params
+#' @param theme Character value. String that denotes the default
+#' theme. Defaults to \code{void}
+#'
+#' @return An empty ggplot.
+#'
+#' @export
+#'
+ggpInit <- function(object = "object", theme = "void", data = "coords"){
+
+  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+
+  out <- list()
+
+  out$theme <- rlang::exec(.fn = stringr::str_c("theme_", theme))
+
+  df <-
+    rlang::exec(
+      .fn = stringr::str_c("get", make_capital_letters(data), "Df"),
+      object = object
+    )
+
+  out$data_invis <-
+    geom_point_fixed(
+      data = df,
+      mapping = ggplot2::aes(x = x, y = y),
+      alpha = 0
+    )
+
+  ggplot2::ggplot() + out
+
+}
+
+
 
 
 #' @title Display clean axes
@@ -65,11 +167,11 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' surface plots with European units of length.
 #'
 #' @inherit argument_dummy params
-#' @inherit transform_euol_to_pixels params
+#' @inherit transform_dist_si_to_pixels params
 #' @inherit ggpLayer_dummy return
-#' @param euol The desired unit. Defaults to the unit
+#' @param unit The desired unit. Defaults to the unit
 #' in which the original size of the image of the spatial method is
-#' provided. Obtain valid input options with \code{validEuropeanUnitsOfLength()}.
+#' provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.
 #' @param which One or two of \emph{'x'} and \emph{'y'}. Specifies
 #' for which axes the transformation is performed. Defaults to both.
 #' @param frame_by Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
@@ -85,18 +187,18 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'
 #' @export
 #'
-ggpLayerAxesEUOL <- function(object,
-                             euol = getMethodUnit(object),
-                             which = c("x", "y"),
-                             frame_by = "coords",
-                             breaks_x = NULL,
-                             breaks_y = NULL,
-                             add_labs = TRUE,
-                             round = 2){
+ggpLayerAxesSI <- function(object,
+                           unit = getSpatialMethod(object)@unit,
+                           which = c("x", "y"),
+                           frame_by = "coords",
+                           breaks_x = NULL,
+                           breaks_y = NULL,
+                           add_labs = TRUE,
+                           round = 2){
 
   confuns::check_one_of(
-    input = euol,
-    against = validEuropeanUnitsOfLength(),
+    input = unit,
+    against = validUnitsOfLengthSI(),
     suggest = TRUE
   )
 
@@ -136,18 +238,18 @@ ggpLayerAxesEUOL <- function(object,
   # output breaks
   if(!base::is.null(breaks_x)){
 
-    are_euol <-
-      purrr::map_lgl(.x = breaks_x, .f = is_dist_euol) %>%
+    are_si <-
+      purrr::map_lgl(.x = breaks_x, .f = is_dist_si) %>%
       base::all()
 
     are_pixels <-
       purrr::map_lgl(.x = breaks_x, .f = is_dist_pixel) %>%
       base::all()
 
-    if(are_euol){
+    if(are_si){
 
       breaks_x <-
-        transform_euol_to_pixels(
+        as_pixel(
           input = breaks_x,
           object = object,
           as_numeric = TRUE
@@ -177,18 +279,18 @@ ggpLayerAxesEUOL <- function(object,
 
   if(!base::is.null(breaks_y)){
 
-    are_euol <-
-      purrr::map_lgl(.x = breaks_y, .f = is_dist_euol) %>%
+    are_si <-
+      purrr::map_lgl(.x = breaks_y, .f = is_dist_si) %>%
       base::all()
 
     are_pixels <-
       purrr::map_lgl(.x = breaks_y, .f = is_dist_pixel) %>%
       base::all()
 
-    if(are_euol){
+    if(are_si){
 
       breaks_y <-
-        transform_euol_to_pixels(
+        as_pixel(
           input = breaks_y,
           object = object,
           as_numeric = TRUE
@@ -221,9 +323,9 @@ ggpLayerAxesEUOL <- function(object,
   axes <-
     list(
       ggplot2::scale_x_continuous(
-        labels = ~ transform_pixels_to_euol(
+        labels = ~ transform_pixels_to_dist_si(
           input = .x,
-          euol = euol,
+          unit = unit,
           object = object,
           as_numeric = TRUE,
           round = round
@@ -232,9 +334,9 @@ ggpLayerAxesEUOL <- function(object,
         breaks = breaks_x
       ),
       ggplot2::scale_y_continuous(
-        labels = ~ transform_pixels_to_euol(
+        labels = ~ transform_pixels_to_dist_si(
           input = .x,
-          euol = euol,
+          unit = unit,
           object = object,
           as_numeric = TRUE,
           round = round
@@ -250,8 +352,8 @@ ggpLayerAxesEUOL <- function(object,
 
     labs_add_on <-
       list(
-        x = ggplot2::labs(x = glue::glue("x-coordinates [{euol}]")),
-        y = ggplot2::labs(y = glue::glue("y-coordinates [{euol}]"))
+        x = ggplot2::labs(x = glue::glue("x-coordinates [{unit}]")),
+        y = ggplot2::labs(y = glue::glue("y-coordinates [{unit}]"))
       )
 
   } else {
@@ -765,7 +867,7 @@ ggpLayerImageAnnotation <- function(object = "object",
               geom = ggplot2::GeomPolygon,
               mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
               data = img_ann_df,
-              params = list(alpha = alpha, size = linesize, linetype = linetype)
+              params = list(alpha = alpha, size = line_size, linetype = line_type)
             )
 
           out$scale_color_add_on <-
@@ -881,71 +983,90 @@ ggpLayerRect <- function(object = "object",
 
 
 
-#' @title Add a European units of length scale bar
+#' @title Add a scale bar in SI units
 #'
 #' @description Adds a scale bar to the surface plot that visualizes
-#' distance in European units of length. Segment of the line is drawn
-#' with `ggplot2::geom_segment()`. Text is drawn with `ggplot2::geom_text()`.
+#' distance in SI units.
 #'
-#' @param pos Character value or vector of length two. If character,
-#' one of *top_right*, *top_left*, *bottom_right* or *bottom_left*. The scale
-#' bar is positioned accordingly. If vector of length two, distance measures
-#' that specify the positioning. First value is taken for positioning on x-
-#' and second value is taken for positioning on the y-axis.
+#' @param sb_dist The distance in SI units that the scale bar
+#' illustrates (e.g. *'1mm'*, *'200um'*). Must not be bigger than
+#' the range of the image of the plot.
 #'
-#' @param dist_sb The distance in European units of length that the scale bar
-#' illustrates.
+#' @param sb_pos Character value or vector of length two.
+#'
+#' If character, one of *top_right*, *top_left*, *bottom_right* or *bottom_left*.
+#' The scale bar is positioned accordingly.
+#'
+#' If vector of length two, distance measures that specify the positioning of
+#' the segment. Text is lifted slightly to hover above. First value sets
+#' positioning on the x- and second value sets positioning on the y-axis.
+#'
+#' @param sb_color The color in which the scale bar is displayed.
+#'
+#' @param sgmt_size,sgmt_type Affect the appearance of the segment. `sgmt_type`
+#' should be one of `validLineTypes()`.
 #'
 #' @param xrange,yrange The range of the image that is considered if the positioning
-#' of the scale is calculated via `pos` as one of *top_right*, *top_left*, *bottom_right*
+#' of the scale is calculated via `sb_pos` as one of *top_right*, *top_left*, *bottom_right*
 #' or *bottom_left*. Defaults to the image range.
 #'
 #' @param offset Numeric vector of length two. Used to move the position of
 #' the scale bar away from the center. Values should range from 0 to 1. First
 #' value is used to move along the x-axis. Second value is used for the y-axis.
-#' @param text_nudge_y Numeric value or `NULL`. Moves the scale bar text away from
-#' the scale bar. If `NULL`, nudging is computed based on the input of `yrange`.
-#' Set manually, if the positioning fails.
+#' @param text_nudge_x,text_nudge_y Numeric value or `NULL`. Moves the scale bar
+#' along the axis in pixel units. If `NULL`, nudging is computed based on the input
+#' of `yrange`.
+#' @param text_pos Numeric vector of length two or `NULL`. If numeric, sets the
+#' position of the scale bar text precisely. `text_nudge_x` and `text_nudge_y`
+#' is still applied.
 #'
 #' @inherit argument_dummy params
 #' @inherit is_dist details
-#' @inherit ggpLayers_dummy return
+#' @inherit ggpLayer_dummy return
 #'
-#' @details If `pos` is one of *top_right*, *top_left*, *bottom_right*
+#' @details  The scale bar consists of two graphical objects. The segment of the
+#' scale bar is plotted with `geom_segment_fixed()`. The text of the scale bar is
+#' plotted with `geom_text_fixed()`.
+#'
+#' If `sb_pos` is one of *top_right*, *top_left*, *bottom_right*
 #' or *bottom_left*, the position of the scale bar is computed in combination
 #' with the input for argument `offset`. Argument `offset` is used to repel
-#' the scale bar away from the center into the corner specified in `pos`. Thus,
+#' the scale bar away from the center into the corner specified in `sb_pos`. Thus,
 #' if `offset = c(0,0)`, the scale bar is positioned in the center of the plot
-#' regardless of the specification of `pos`. Offset values specify the percentage
+#' regardless of the specification of `sb_pos`. Offset values specify the percentage
 #' of the distanec between the center of the plot and its limits. For instance,
-#' if `pos = c(0.5, 0.75)` and `pos = 'top_right'` to the right (50% of the distance
-#' to the border - x-axis) and to the top (75% of the distance between the center
-#' and the ceiling).
+#' if `sb_pos = c(0.5, 0.75)` and `sb_pos = 'top_right'` to the right (50% of the distance
+#' between the center the limits of the x-axis) and to the top (75% of the distance between the center
+#' and the limits of the y-axis).
 #'
+#' If numeric, `sb_pos` actually sets positioning of the segment (not the text).
+#' The text is automatically lifted such that it hovers over the segment. If this
+#' does not work or you want to manipulate the text positioning you can use arguments
+#' `text_nudge_x` and `text_nudge_y` or set the position precisely with `text_pos`.
 #'
 #' @export
-ggpLayerScaleBarEUOL <- function(object,
-                                 pos = "top_right",
-                                 dist_sb = "1mm",
-                                 sgmt_alpha = 1,
-                                 sgmt_color = "black",
-                                 sgmt_size = 1.25,
-                                 sgmt_type = "solid",
-                                 text_alpha = 1,
-                                 text_color = "black",
-                                 text_nudge_x = 0,
-                                 text_nudge_y = NULL,
-                                 text_size = 5.5,
-                                 text_type = 0.9,
-                                 xrange = NULL,
-                                 yrange = NULL,
-                                 offset = c(0.9, 0.9),
-                                 theme_opt = "none"){
+ggpLayerScaleBarSI <- function(object,
+                               sb_dist = "1mm",
+                               sb_pos = "bottom_right",
+                               sb_alpha = 1,
+                               sb_color = "black",
+                               sgmt_size = 1,
+                               sgmt_type = "solid",
+                               text_nudge_x = 0,
+                               text_nudge_y = 0,
+                               text_pos = NULL,
+                               text_size = 5.5,
+                               xrange = NULL,
+                               yrange = NULL,
+                               offset = c(0.8, 0.8),
+                               theme_opt = "none"){
 
   # check text nudging
-  is_dist_euol(input = dist_sb, error = TRUE)
+  is_dist_si(input = sb_dist, error = TRUE)
 
-  if(is_dist(text_nudge_y)){
+  confuns::are_values(c("text_nudge_x", "text_nudge_y"), mode = "numeric")
+
+  if(!base::is.null(text_nudge_y) && is_dist(text_nudge_y)){
 
     text_nudge_y <-
       as_pixel(
@@ -966,47 +1087,30 @@ ggpLayerScaleBarEUOL <- function(object,
   # check yrange
   if(base::is.null(yrange)){
 
-    if(!base::is.numeric(text_nudge_y)){
-
-      rlang::warn(
-        message = msg_scale_bar_bad_pos,
-        .frequency = "once",
-        .frequency_id = "bad_pos_scale_bar"
-      )
-
-    }
-
     yrange <- getImageRange(object)$y
 
   }
 
-  if(!base::is.numeric(text_nudge_y)){
 
-      ydist <- yrange[2]-yrange[1]
-
-      text_nudge_y <- ydist * 0.029
-
-  }
-
-  dist_sb_px <- as_pixel(input = dist_sb, object = object)
+  sb_dist_px <- as_pixel(input = sb_dist, object = object)
 
   # calc positioning of segment and text
-  if(base::length(pos) == 2){
+  if(base::length(sb_pos) == 2){
 
-    pos_x_px <- as_pixel(input = pos[1], object = object)
+    pos_x_px <- as_pixel(input = sb_pos[1], object = object)
     pos_x_px_text <- pos_x_px
 
-    pos_y_px <- as_pixel(input = pos[2], object = object)
+    pos_y_px <- as_pixel(input = sb_pos[2], object = object)
 
-    xstart <- pos_x_px - dist_sb_px/2
-    xend <- pos_x_px + dist_sb_px/2
+    xstart <- pos_x_px - sb_dist_px/2
+    xend <- pos_x_px + sb_dist_px/2
 
-  } else if(base::is.character(pos)){
+  } else if(base::is.character(sb_pos)){
 
-    pos <- pos[1]
+    sb_pos <- sb_pos[1]
 
     confuns::check_one_of(
-      input = pos,
+      input = sb_pos,
       against = plot_positions
     )
 
@@ -1046,49 +1150,77 @@ ggpLayerScaleBarEUOL <- function(object,
     }
 
     # specify position
-    if(pos == "top_right"){
+    if(sb_pos == "top_right"){
 
       pos_x_px <- xmean + abs_offset_x
-      pos_x_px_text <- pos_x_px - dist_sb_px/2
+      pos_x_px_text <- pos_x_px - sb_dist_px/2
 
       pos_y_px <- ymean + abs_offset_y
 
-      xstart <- pos_x_px - dist_sb_px
+      xstart <- pos_x_px - sb_dist_px
       xend <- pos_x_px
 
-    } else if(pos == "top_left"){
+    } else if(sb_pos == "top_left"){
 
       pos_x_px <- xmean - abs_offset_x
-      pos_x_px_text <- pos_x_px + dist_sb_px/2
+      pos_x_px_text <- pos_x_px + sb_dist_px/2
 
       pos_y_px <- ymean + abs_offset_y
 
       xstart <- pos_x_px
-      xend <- pos_x_px + dist_sb_px
+      xend <- pos_x_px + sb_dist_px
 
-    } else if(pos == "bottom_right"){
+    } else if(sb_pos == "bottom_right"){
 
       pos_x_px <- xmean + abs_offset_x
-      pos_x_px_text <- pos_x_px - dist_sb_px/2
+      pos_x_px_text <- pos_x_px - sb_dist_px/2
 
       pos_y_px <- ymean - abs_offset_y
 
-      xstart <- pos_x_px - dist_sb_px
+      xstart <- pos_x_px - sb_dist_px
       xend <- pos_x_px
 
-    } else if(pos == "bottom_left"){
+    } else if(sb_pos == "bottom_left"){
 
       pos_x_px <- xmean - abs_offset_x
-      pos_x_px_text <- pos_x_px - dist_sb_px/2
+      pos_x_px_text <- pos_x_px - sb_dist_px/2
 
       pos_y_px <- ymean - abs_offset_y
 
       xstart <- pos_x_px
-      xend <- pos_x_px + dist_sb_px/2
+      xend <- pos_x_px + sb_dist_px/2
 
     }
 
   }
+
+  if(base::is.numeric(text_pos)){
+
+    pos_x_px_text <- text_pos[1]
+    pos_y_px_text <- text_pos[2]
+
+  } else {
+
+    # lift text y automatically
+    ydist <- yrange[2]-yrange[1]
+    pos_y_px_text <- pos_y_px + ydist * 0.0275
+
+  }
+
+
+  # nudge text
+  if(base::is.numeric(text_nudge_x)){
+
+    pos_x_px_text <- pos_x_px_text + text_nudge_x[1]
+
+  }
+
+  if(base::is.numeric(text_nudge_y)){
+
+    pos_y_px_text <- pos_y_px_text + text_nudge_y[1]
+
+  }
+
 
   # create segment
   sgmt_df <-
@@ -1100,26 +1232,25 @@ ggpLayerScaleBarEUOL <- function(object,
     )
 
   sgmt_add_on <-
-    ggplot2::geom_segment(
+    geom_segment_fixed(
       data = sgmt_df,
       mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = yend),
-      alpha = sgmt_alpha, color = sgmt_color, size = sgmt_size, linetype = sgmt_type
+      alpha = sb_alpha, color = sb_color, linewidth = sgmt_size, linetype = sgmt_type
     )
 
   # create text
   text_df <-
     tibble::tibble(
       x = pos_x_px_text,
-      y = pos_y_px, # !!! change back to pos_y_px
-      label = dist_sb
+      y = pos_y_px_text,
+      label = sb_dist
     )
 
   text_add_on <-
-    ggplot2::geom_text(
+    geom_text_fixed(
       data = text_df,
       mapping = ggplot2::aes(x = x, y = y, label = label),
-      alpha = text_alpha, color = text_color, size = text_size,
-      nudge_x = text_nudge_x, nudge_y = text_nudge_y
+      alpha = sb_alpha, color = sb_color, size = text_size
     )
 
   if(theme_opt == "void"){
@@ -1328,45 +1459,6 @@ ggpLayerZoom <- function(object = NULL,
   }
 
   return(layers)
-
-}
-
-
-#' @title Initiate ggplot2 layering
-#'
-#' @description Initiates a ggplot object to which \code{ggpLayer}-
-#' functions can be added for individual plotting ideas.
-#'
-#' @inherit argument_dummy params
-#' @param theme Character value. String that denotes the default
-#' theme. Defaults to \code{void}
-#'
-#' @return An empty ggplot.
-#'
-#' @export
-#'
-ggpInit <- function(object = "object", theme = "void", data = "coords"){
-
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
-  out <- list()
-
-  out$theme <- rlang::exec(.fn = stringr::str_c("theme_", theme))
-
-  df <-
-    rlang::exec(
-      .fn = stringr::str_c("get", make_capital_letters(data), "Df"),
-      object = object
-    )
-
-  out$data_invis <-
-    geom_point_fixed(
-      data = df,
-      mapping = ggplot2::aes(x = x, y = y),
-      alpha = 0
-    )
-
-  ggplot2::ggplot() + out
 
 }
 

@@ -15,12 +15,11 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
   hlpr_assign_arguments(object)
 
-
-  mtr_name <- object@information$active_mtr[[1]]
+  mtr_name <- object@information$active_mtr
 
   if(base::is.null(mtr_name)){
 
-    stop("Please set an active matrix with `setActivenMatrixName()`")
+    stop("Please set an active matrix with `setActivenMatrix()`")
 
   }
 
@@ -37,17 +36,17 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 #' @export
 getActiveExpressionMatrixName <- function(object, verbose = NULL, ...){
 
-  deprecated(... = )
+  deprecated(...)
 
   check_object(object)
 
   hlpr_assign_arguments(object)
 
-  expr_mtr_name <- object@information$active_expr_mtr[[1]]
+  expr_mtr_name <- object@information$active_expr_mtr
 
   if(base::is.null(expr_mtr_name)){
 
-    stop("Please set an active expression matrix with `setActiveExpressionMatrixName()`")
+    stop("Please set an active expression matrix with `setActiveExpressionMatrix()`")
 
   }
 
@@ -165,7 +164,6 @@ getBarcodes <- function(object,
 
   of_sample <- check_sample(object, of_sample, of.length = 1)
 
-
   # if variable is specified
   if(!base::is.null(across)){
 
@@ -205,9 +203,7 @@ getBarcodes <- function(object,
 
   } else {
 
-    res_barcodes <-
-      getExpressionMatrix(object, of_sample = of_sample) %>%
-      base::colnames()
+    res_barcodes <- object@information$barcodes
 
   }
 
@@ -215,7 +211,50 @@ getBarcodes <- function(object,
 
 }
 
+#' @title Obtain barcodes in polygon
+#'
+#' @description Extracts barcodes of barcode-spots that fall in a given
+#' polygon. Works closely with `sp::point.in.polygon()`.
+#'
+#' @param polygon_df A data.frame that contains the vertices of the polygon
+#' in form of two variables: *x* and *y*.
+#' @param strictly Logical value. If `TRUE`, only barcode spots that are strictly
+#' interior to the polygon are returned. If `FALSE`, barcodes that are
+#' on the relative interior the polygon border or that are vertices themselves
+#' are returned, too.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#' @export
+#'
+getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
 
+  confuns::check_data_frame(
+    df = polygon_df,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  coords_df <- getCoordsDf(object)
+
+  res <-
+    sp::point.in.polygon(
+      point.x = coords_df[["x"]],
+      point.y = coords_df[["y"]],
+      pol.x = coords_df[["x"]],
+      poly = coords_df[["y"]]
+    )
+
+
+  valid_res <- base::ifelse(strictly, yes = 1, no = c(1,2,3))
+
+  coords_df_sub <- coords_df[res %in% valis_res, ]
+
+  out <- coords_df_sub[["barcodes"]]
+
+  return(out)
+
+}
 
 #' @title Obtain barcode spot distances
 #'
@@ -264,13 +303,12 @@ getBarcodeSpotDistance <- function(object,
 #' @param barcdoes Character vector or NULL. If character,
 #' only input barcodes are considered.
 #'
-#'
 #' @return A data.frame in which each observation/row corresponds to a barcodes-spot ~
 #' barcode-spot pair.
 #'
 #' @export
 #'
-#' @examples
+
 getBarcodeSpotDistances <- function(object,
                                     barcodes = NULL,
                                     unit = "pixel",
@@ -342,7 +380,7 @@ getCCD <- function(object,
 
   check_object(object)
 
-  method <- getMethod(object)
+  method <- getSpatialMethod(object)
 
   ccd <- method@info[["ccd"]]
 
@@ -374,10 +412,11 @@ getCCD <- function(object,
 #' @description Extracts information regarding
 #' start, end and length of chromosomal arms.
 #'
-#' @param object
 #' @param format Character. If \emph{'long'} rows correspond to chromosome
 #' arms if \emph{'wide'} rows correspond to chromosomes and information
 #' about the respective arms is stored in separate columns.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame.
 #' @export
@@ -443,9 +482,9 @@ getCnvFeatureNames <- function(object, ...){
 #'
 #' @description Extracts CNV results in form of barcode ~ pairs in a data.frame.
 #'
-#' @param object
 #' @param add_meta Logical value. If TRUE, meta information obtained by
 #' \code{getGenePosDf()} every gene is added to the data.frame
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame.
 #' @export
@@ -942,7 +981,7 @@ getDefaultTrajectory <- function(object, ...){
 getDefaultTrajectoryId <- getDefaultTrajectory
 
 
-
+#' @title Get dim red df
 getDimRedDf <- function(object,
                         method_dr = c("pca", "tsne", "umap"),
                         of_sample = NA){
@@ -1446,10 +1485,11 @@ getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
 #' @description Extracts information regarding gene positioning
 #' on chromosomes and/or chromosome arms.
 #'
-#' @param object
 #' @param keep Logical value, TRUE the columns \emph{ensemble_gene_id} and
 #' \emph{hgnc_symbol} are included. The content of \emph{hgnc_symbol} is
 #' identical to the content of column \emph{genes}.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame.
 #' @export
@@ -1484,7 +1524,6 @@ getGenePosDf <- function(object, keep = FALSE){
 #' is equal to the input for argument \code{top_n}.
 #' @param top_n Numeric value. Denotes the number of genes to be returned if argument
 #' \code{similar_to} is specified.
-#' @param in_sample Deprecated.
 #'
 #' @details If neither \code{of_gene_sets} nor \code{similar_to} is specified all
 #' genes found in the active expression matrix are returned in a character vector.

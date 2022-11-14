@@ -7,8 +7,15 @@
 subsetByBarcodes(object, barcodes, verbose = NULL)
 }
 \arguments{
+\item{object}{An object of class \code{SPATA2}.}
+
 \item{barcodes}{Character vector. The barcodes of the barcode spots that are
 supposed to be \bold{kept}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 An updated \code{spata2} object.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{geom_point_fixed}
 \alias{geom_point_fixed}
-\title{Points (fixed)}
+\title{Points (fixed size ~ window ratio)}
 \usage{
 geom_point_fixed(
   ...,

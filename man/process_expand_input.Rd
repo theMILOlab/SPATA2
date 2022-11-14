@@ -13,3 +13,7 @@ and x (width).
 \description{
 Process expand input
 }
+\section{Expand}{
+ this is a new section.
+}
+

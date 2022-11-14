@@ -25,18 +25,10 @@ asPixel <- function(input, ...){
 # c -----------------------------------------------------------------------
 
 #' @title Check assessed trajectory data.frame
-#'
-#' @param atdf A data.frame containing the results of trajectory-modelling. Must contain the variables:
-#'
-#'  \describe{
-#'   \item{\emph{variables}}{Character. The genes, gene-sets and features that have been assessed.}
-#'   \item{\emph{pattern}}{Character. The respective trajectory pattern.}
-#'   \item{\emph{auc}}{Numeric. The assessment value which is the residual's area under the curve.}
-#'  }
-#'
-#' @inherit lazy_check_dummy description details return
 
 check_atdf <- function(atdf){
+
+  deprecated(fn = TRUE)
 
   confuns::check_data_frame(
     df = atdf,
@@ -54,8 +46,6 @@ check_atdf <- function(atdf){
 #'
 #' @param ctdf A compiled trajectory data.frame containing the variables
 #' \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.
-#'
-#' @inherit lazy_check_dummy description details return
 
 check_compiled_trajectory_df <- function(ctdf){
 
@@ -1276,61 +1266,44 @@ flipCoords <- function(...){
 
 # g -----------------------------------------------------------------------
 
-#' @title Obtain information about object initiation
+#' @title Obtain unit of method
 #'
-#' @description Information about the object's initiation is stored in
-#' a list of three slots:
+#' @description Extracts the European unit of length in which the size of
+#' the fiducial frame of the underlying spatial method is specified.
 #'
-#' \itemize{
-#'  \item{\emph{init_fn}: Contains the name of the initation function as a character value.}
-#'  \item{\emph{input}: Contains a list of which every slot refers to the input of one argument with which the
-#'  initiation function has been called.}
-#'  \item{\emph{time}: Contains the time at which the object was initiated.}
-#'  }
+#' @inherit argument_dummy
 #'
-#'  \code{getInitiationInput()} returns only slot \emph{input}.
+#' @return Character value.
 #'
-#' @inherit check_object params
-#' @inherit argument_dummy params
-#'
-#' @details \code{initiateSpataObject_CountMtr()} and \code{initiateSpataObject_ExprMtr()} each require
-#' a matrix and a coordinate data.frame as input. These are not included in the output
-#' of this function but can be obtained via \code{getCoordsDf()} and \code{getCountMtr()} or \code{getExpressionMtr()}.
-#'
-#' @return A list. See description.
 #' @export
+#'
+#'
 
-getInitiationInfo <- function(object){
+
+getMethod <- function(object){
 
   deprecated(fn = TRUE)
 
-  check_object(object)
-
-  info <- object@information$initiation
-
-  return(info)
+  object@information$method
 
 }
 
-#' @rdname getInitiationInfo
-#' @export
-getInitiationInput <- function(object, verbose = NULL){
+getMethodUnit <- function(object){
 
   deprecated(fn = TRUE)
 
-  hlpr_assign_arguments(object)
+  method <- getMethod(object)
 
-  info <- getInitiationInfo(object)
+  getMethod(object)@fiducial_frame[["x"]] %>%
+    extract_unit()
 
-  init_fn <- info$init_fn
+}
 
-  confuns::give_feedback(
-    msg = glue::glue("Initiation function used: '{init_fn}()'."),
-    verbose = verbose,
-    with.time = FALSE
-  )
+getMethodName <- function(object){
 
-  return(info$input)
+  deprecated(fn = TRUE)
+
+  object@information$method@name
 
 }
 
@@ -1591,6 +1564,7 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, 
 
 }
 
+#' @title Title
 #' @param df data.frame that contains a column with the values against which the residuals for
 #' every pattern (remaining columns) are computed.
 #' @export

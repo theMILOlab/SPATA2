@@ -12,7 +12,7 @@ setCnvResults(object, cnv_list, ...)
 \item{cnv_list}{The list containing the results from \code{runCnvAnalysis()}.}
 }
 \value{
-An updated spata-object.
+A spata object containing the set input.
 }
 \description{
 Set cnv-results

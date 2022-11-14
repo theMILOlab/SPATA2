@@ -256,15 +256,6 @@ trajectory_df_colnames <- c("trajectory_part", "trajectory_order", "trajectory_p
 
 ############ alphabetical
 
-
-
-
-
-
-
-
-
-
 # b -----------------------------------------------------------------------
 
 bcsp_dist <- 7
@@ -463,7 +454,7 @@ create_spatial_trajectories_descr <- list(
 
 
 
-current_spata_version <- list(major = 1, minor = 12, patch = 0)
+current_spata_version <- list(major = 1, minor = 13, patch = 0)
 
 
 # d -----------------------------------------------------------------------
@@ -477,6 +468,9 @@ depr_info <-
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "flipCoords" = "flipCoordinates",
+      "getMethod" = "getSpatialMethod",
+      "getMethodUnit" = "getSpatialMethod()@unit",
+      "getMethodName" = "getSpatialMethod()@name",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
       "getSampleNames" = "getSampleName",
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
@@ -484,6 +478,15 @@ depr_info <-
       "getTrajectoryObject" = "getTrajectory",
       "is_euol_dist" = "is_dist_euol",
       "is_pixel_dist" = "is_dist_pixel",
+
+      "is_dist_euol" = "is_dist_si", # start
+      "transform_euol_to_pixel" = "transform_dist_si_to_pixel",
+      "transform_euol_to_pixels" = "transform_dist_si_to_pixels",
+      "transform_pixel_to_euol" = "transform_pixel_to_dist_si",
+      "transform_pixels_to_euol" = "transform_pixels_to_dist_si",
+      "transform_si_to_pixel" = "transform_area_si_to_pixel",
+      "transform_si_to_pixels" = "transform_area_si_to_pixels", # end?
+
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
@@ -500,6 +503,7 @@ depr_info <-
       "subsetBySegment_ExprMtr" = "subsetByBarcodes"
     ),
     args = list(
+      "euol" = "unit",
       "discrete_feature" = "grouping_variable",
       "linealpha" = "line_alpha",
       "linecolor" = "line_color",
@@ -508,7 +512,8 @@ depr_info <-
       "trajectory_name" = "id"
     ),
     args_spec = list(
-      "exchangeImage" = list("image_dir" = "image")
+      "exchangeImage" = list("image_dir" = "image"),
+      "runBayesSpaceClustering" = list("dirname" = "directory_10X")
     )
   )
 
@@ -527,9 +532,9 @@ dist_units <- c(base::names(dist_unit_abbr))
 
 # e -----------------------------------------------------------------------
 
-euol_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
+uol_si_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
 
-euol_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
+si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
 
 
 # i -----------------------------------------------------------------------
@@ -547,8 +552,8 @@ invalid_area_si_input <-
 invalid_dist_input <-
   "Input can not be interpreted as a distance. Please see details at `?is_dist` for more information."
 
-invalid_dist_euol_input <-
-  "Input can not be interpreted as a distance in European units of length. Please see details at `?is_dist_euol` for more information."
+invalid_dist_si_input <-
+  "Input can not be interpreted as a distance in SI units. Please see details at `?is_dist_euol` for more information."
 
 invalid_dist_pixel_input <-
   "Input can not be interpreted as a distance in pixel. Please see details at `?is_dist_pixel` for more information."
@@ -560,26 +565,6 @@ invalid_img_ann_tests <-
 # m -----------------------------------------------------------------------
 
 #' @export
-model_formulas <-
-  list(
-    m_one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
-    m_one_peak_rev = ~ confuns::fit_curve(.x, fn = "one_peak", rev = "y"),
-    m_two_peaks = ~ confuns::fit_curve(.x, fn = "two_peaks"),
-    m_two_peaks_rev = ~ confuns::fit_curve(.x, fn = "two_peaks", rev = "y"),
-    m_immediate_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "y"), # immediate_desc
-    m_late_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "y")),
-    m_late_desc = ~ confuns::fit_curve(.x, fn = "log", rev = "x"), # log_desc
-    m_immediate_asc = ~ base::rev(confuns::fit_curve(.x, fn = "log", rev = "x")), # immediate_asc
-    m_lin_asc = ~ confuns::fit_curve(.x, fn = "linear"),
-    m_lin_desc = ~ confuns::fit_curve(.x, fn = "linear", rev = "x"),
-    m_sharp_peak = ~ confuns::fit_curve(.x, fn = "sharp_peak"),
-    m_sin = ~ confuns::fit_curve(.x, fn = "sinus"),
-    m_sin_rev = ~ confuns::fit_curve(.x, fn = "sinus", rev = "x"),
-    m_early_peak = ~ confuns::fit_curve(.x, fn = "early_peak"),
-    m_late_peak = ~ confuns::fit_curve(.x, fn = "late_peak"),
-    m_abrupt_asc = ~ confuns::fit_curve(.x, fn = "abrupt_ascending"),
-    m_abrupt_desc = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
-  )
 
 model_formulas <-
   list(
@@ -643,8 +628,8 @@ projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "t
 
 
 
-# NOTE: regular expressions party depend on each other. therefore
-# they are not listed in alphabetical order but in function order
+# NOTE: regular expressions partly depend on each other
+# they are not listed in alphabetical order
 
 # matches normal number: only digits (no points!!)
 # ignores unit-suffix -> use for extraction of value
@@ -657,27 +642,26 @@ regex_dec_number <- "^\\d{1,}\\.{1}\\d{1,}"
 regex_scientific_notation <- "[0-9]*e(\\+|-)[0-9]*"
 
 # matches either normal number or decimal number
-regex_dist_value <-
+regex_num_value <-
   stringr::str_c(
     "(", regex_scientific_notation, ")|",
     "(", regex_number, ")|",
     "(", regex_dec_number, ")"
     )
 
-regex_num_value <- regex_dist_value
 
 # matches euol
-regex_euol <- stringr::str_c(string = base::unname(euol_abbr), "$", collapse = "|")
+regex_dist_units_si <- stringr::str_c(string = base::unname(uol_si_abbr), "$", collapse = "|")
 
 # matches area units
 regex_area_units <-
-  stringr::str_c(euol_abbr, "2", sep = "") %>%
+  stringr::str_c(uol_si_abbr, "2", sep = "") %>%
   c("px") %>%
   stringr::str_c("$") %>%
   stringr::str_c(collapse = "|")
 
 regex_area_units_si <-
-  stringr::str_c(euol_abbr, "2", sep = "") %>%
+  stringr::str_c(uol_si_abbr, "2", sep = "") %>%
   stringr::str_c("$") %>%
   stringr::str_c(collapse = "|")
 
@@ -709,32 +693,32 @@ regex_pxl_dist <- regex_pxl_area
 
 # matches dist_value if combined with an euol
 # does NOT, ignore suffix -> use to test euol input
-regex_euol_dist <- stringr::str_c("(", regex_dist_value, ")(", regex_euol, ")", sep = "")
+regex_si_dist <- stringr::str_c("(", regex_num_value, ")(", regex_dist_units_si, ")", sep = "")
 
-regex_area <- stringr::str_c("(", regex_dist_value, ")(", regex_area_units, ")", sep = "")
+regex_area <- stringr::str_c("(", regex_num_value, ")(", regex_area_units, ")", sep = "")
 
-regex_si_area <- stringr::str_c("(", regex_dist_value, ")(", regex_area_units_si, ")", sep = "")
+regex_area_si <- stringr::str_c("(", regex_num_value, ")(", regex_area_units_si, ")", sep = "")
 
 # matches distance input either provided as euol or px
 regex_dist <-
   stringr::str_c(
     stringr::str_c(regex_pxl_dist),
-    stringr::str_c(regex_euol_dist),
+    stringr::str_c(regex_si_dist),
     sep = "|"
   )
 
 regex_exclam1 <-
   stringr::str_c(
-    "(", regex_dist_value, ")",
-    "(", stringr::str_c(c(euol_abbr, "px"), collapse = "|"), ")",
+    "(", regex_num_value, ")",
+    "(", stringr::str_c(c(uol_si_abbr, "px"), collapse = "|"), ")",
     "!$"
   )
 
-regex_exclam2 <- stringr::str_c(regex_dist_value, "!$")
+regex_exclam2 <- stringr::str_c(regex_num_value, "!$")
 
 regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 
-regex_unit <- stringr::str_c(regex_euol, regex_pxl, regex_area_units, sep = "|")
+regex_unit <- stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
 
 
 # s -----------------------------------------------------------------------
@@ -742,7 +726,18 @@ regex_unit <- stringr::str_c(regex_euol, regex_pxl, regex_area_units, sep = "|")
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
 
 
-spatial_methods <- c("Visium")
+#' @export
+spatial_methods <-
+  list(
+    Visium =
+      SpatialMethod(
+        fiducial_frame = list(x = "8mm", y = "8mm"),
+        info = list(ccd = "100um"),
+        name = "Visium",
+        unit = "mm",
+        observational_unit = "barcode-spot"
+      )
+  )
 
 
 smrd_projection_df_names <- c("trajectory_part", "proj_length_binned", "trajectory_order", "trajectory_part_order")
@@ -789,15 +784,20 @@ threshold_scattermore <- 100000
 # V -----------------------------------------------------------------------
 
 
-#' @title Visium meta data
-#' @export
-Visium <-
+Visium <- function(){
+
+  deprecated(fn = TRUE)
+
   SpatialMethod(
     fiducial_frame = list(x = "8mm", y = "8mm"),
     info = list(ccd = "100um"),
     name = "Visium",
+    unit = "mm",
     observational_unit = "barcode-spot"
   )
+
+}
+
 
 
 

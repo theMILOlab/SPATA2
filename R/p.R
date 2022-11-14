@@ -96,6 +96,9 @@ pick_vars <- function(df, input, order_by, neg_log){
 }
 
 
+
+
+
 # print -------------------------------------------------------------------
 
 #' @title Print autoencoder summary
@@ -266,8 +269,7 @@ printGeneSetOverview <- function(object){
 #' @return Returns always a list of length two. Two slots named h (height)
 #' and x (width).
 #'
-#' @section Expand
-#' This is a new section.
+#' @section Expand: this is a new section.
 #'
 #' @export
 #'

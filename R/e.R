@@ -3,11 +3,11 @@
 
 # returns scale factor with which to multiply `input` in order to scale to
 # desired euol
-euol_to_euol_fct <- function(from, to){
+si_dist_to_si_dist_fct <- function(from, to){
 
   confuns::check_one_of(
     input = to,
-    against = validEuropeanUnitsOfLength(),
+    against = validUnitsOfLengthSI(),
     suggest = FALSE
     )
 
@@ -329,7 +329,7 @@ extract_unit <- function(input){
 extract_value <- function(input){
 
   # regex works for area and distance values
-  stringr::str_extract(input, pattern = regex_dist_value) %>%
+  stringr::str_extract(input, pattern = regex_num_value) %>%
     base::as.numeric()
 
 }

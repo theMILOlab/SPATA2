@@ -29,6 +29,8 @@ getImageAnnotationScreeningDf(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{id}{Character value. The ID of the image annotation of interest.}
+
 \item{distance}{Distance value. Specifies the distance from the border of the
 image annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
@@ -181,6 +183,5 @@ getImageAnnotationScreeningDf(
    summarize_by = c("bins_circle", "bins_angle")
    )
 
- plot
 
 }

@@ -13,7 +13,7 @@
 #' \code{n_bins_circle}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
 #' see details section.
 #'
-#' @inherit getImageAnnotatation params
+#' @inherit getImageAnnotation params
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
@@ -46,7 +46,7 @@
 #' @return An object of class \code{ImageAnnotationScreening}. See documentation
 #' with \code{?ImageAnnotationScreening} for more information.
 #'
-#' @seealso createImageAnnotations()
+#' @seealso [`createImageAnnotations`]
 #'
 #' @details In conjunction with argument \code{id} which provides the
 #' ID of the image annotation of interest the arguments \code{distance},
@@ -429,6 +429,13 @@ imageAnnotationToSegmentation <- function(object,
 #' @description Tests if input refers to an area using international area
 #' units according to the `SPATA2` area framework.
 #'
+#' \itemize{
+#'  \item{`is_area()`:}{ Tests if input can be interpreted as an area}
+#'  \item{`is_area_si()`:} {Tests if input can be interpreted as an area in SI units.}
+#'  \item{`is_area_pixel()`:} {Tests if input can be interpreted as an area
+#'  in pixel.}
+#'  }
+#'
 #' @param input Character vector. Elements must match the requirements of
 #' the `SPATA2` area framework. See details for more information.
 #'
@@ -437,19 +444,36 @@ imageAnnotationToSegmentation <- function(object,
 #'
 #' @details Several functions in `SPATA2` have arguments that take *area input*.
 #' To specifically refer to an area the unit must be specified. There are
-#' two ways to create valid input for these arguments.
+#' three ways to create valid input for these arguments.
 #'
-#' **1. Suffixed with the unit:**
+#' **1. In pixel:**
 #'
-#' Although inherently of numeric meaning, values can be specified as characters
-#' with a suffix that specifies the unit: `arg_input <- c(*'40mm2', '342.2mm2', 80mm2'*)`.
-#' Valid suffixes can be obtained using the function `validUnitsOfArea()`.
+#' There are two valid input options to specify an area in pixel:
 #'
-#' **2. As vectors of class `unit`:**
+#' \itemize{
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input <- c(2, 3.554, 69, 100.67)`. If no unit
+#'  is specified the input will be interpreted as pixels.}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input <- c('2px', '3.554px', '69px', '100.67px')`}
+#'  }
 #'
-#' Behind the scenes `SPATA2` works with the `units`-package. Character input
+#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
+#'  number of pixels is meant.
+#'
+#' **2. According to the Systeme international d`unites (SI):**
+#'
+#'  Specifying areas in SI units e.g. `arg_input <- c('2mm2', '4mm2')` etc.
+#'  requires the input to be a character as the unit must be provided as suffix.
+#'  Between the numeric value and the unit must be no empty space! Valid suffixes
+#'  can be obtained using the function `validUnitsOfAreaSI()`.
+#'
+#'  **3. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units` package. Input
 #' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input <- units::set_unit(x = c(20.2, 30), value = "mm2)`
+#' provided this way: `arg_input <- units::set_unit(x = c(2,4), value = 'mm2')`
+#' Note that *pixel* is not a valid unit in the `units` package. If you want
+#' to specify the input in pixel you have to use input option 1. In pixel.
 #'
 #' @examples
 #'
@@ -459,11 +483,9 @@ imageAnnotationToSegmentation <- function(object,
 #'
 #' # will return TRUE
 #'
-#' is_area(input = c('200mm2', '0.4cm2'))
+#' is_area(input = c('2mm2', '4mm2'))
 #'
 #' # will return FALSE
-#'
-#' is_area(input = c(200, 0.4)) # no unit
 #'
 #' is_area(input = c('200 m2')) # space between value and unit
 #'
@@ -639,8 +661,7 @@ are_all_area_or_dist <- function(input, error = FALSE){
 #'
 #' \itemize{
 #'  \item{`is_dist()`:}{ Tests if input can be interpreted as a distance.}
-#'  \item{`is_dist_euol()`:} {Tests if input can be interpreted as a distance in
-#'  European units of length.}
+#'  \item{`is_dist_si()`:} {Tests if input can be interpreted as a distance in SI units.}
 #'  \item{`is_dist_pixel()`:} {Tests if input can be interpreted as a distance
 #'  in pixel.}
 #'  }
@@ -659,7 +680,7 @@ are_all_area_or_dist <- function(input, error = FALSE){
 #' To specifically refer to a distance the unit must be specified. There are
 #' three ways to create valid input for these arguments.
 #'
-#' \bold{1. Distance in pixel}:
+#' **1. In pixel:**
 #'
 #' There are two valid input options to specify the distance in pixel:
 #'
@@ -669,20 +690,24 @@ are_all_area_or_dist <- function(input, error = FALSE){
 #'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input <- c('2px', '3.554px', '69px', '100.67px')`}
 #'  }
 #'
-#' \bold{2. Distance in European units of length (euol)}:
+#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
+#'  number of pixels is meant.
 #'
-#'  Specifying distances in European units of length e.g. `arg_input <- c('2mm', '4mm')` etc.
-#'  requires the input to be a character as the unit must be provided as suffix. Between the numeric
-#'  value and the unit must be no empty space! Unit suffixes must be one of
-#'  \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
+#' **2. According to the Systeme international d`unites (SI):**
+#'
+#'  Specifying distances in SI units e.g. `arg_input <- c('2mm', '4mm')` etc.
+#'  requires the input to be a character as the unit must be provided as suffix.
+#'  Between the numeric value and the unit must be no empty space! Valid suffixes
+#'  can be obtained using the function `validUnitsOfLengthSI()`.
 #'
 #'  **3. As vectors of class `unit`:**
 #'
-#' Behind the scenes `SPATA2` works with the `units`-package. Input
+#' Behind the scenes `SPATA2` works with the `units` package. Input
 #' is converted into vectors of class `units`. Therefore, input can be directly
 #' provided this way: `arg_input <- units::set_unit(x = c(2,4), value = 'mm')`
 #' Note that *pixel* is not a valid unit in the `units` package. If you want
-#' to specify the input in pixel you have to use input option 1. Distance in pixel.
+#' to specify the input in pixel you have to use input option 1. In pixel.
 #'
 #' @export
 #'
@@ -713,7 +738,7 @@ are_all_area_or_dist <- function(input, error = FALSE){
 #'
 is_dist <- function(input, error = FALSE){
 
-  res <- is_dist_euol(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
+  res <- is_dist_si(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
 
   feedback_distance_input(x = res, error = error)
 
@@ -723,11 +748,11 @@ is_dist <- function(input, error = FALSE){
 
 #' @rdname is_dist
 #' @export
-is_dist_euol <- function(input, error = FALSE){
+is_dist_si <- function(input, error = FALSE){
 
   if(base::is.character(input)){
 
-    res <- stringr::str_detect(input, pattern = regex_euol_dist)
+    res <- stringr::str_detect(input, pattern = regex_si_dist)
 
     feedback_distance_input(x = res, error = error)
 
@@ -759,7 +784,7 @@ is_dist_euol <- function(input, error = FALSE){
 
     if(base::isTRUE(error)){
 
-      stop(invalid_dist_euol_input)
+      stop(invalid_dist_si_input)
 
     } else {
 

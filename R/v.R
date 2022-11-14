@@ -232,7 +232,7 @@ validPlotTypes <- function(fn_name){
 #' @export
 validSpatialMethods <- function(){
 
-  spatial_methods
+  base::names(spatial_methods)
 
 }
 
@@ -260,7 +260,7 @@ validUnits <- function(){
 #' @export
 validUnitsOfArea <- function(){
 
-  stringr::str_c(c(euol_abbr), "2") %>%
+  stringr::str_c(c(uol_si_abbr), "2") %>%
     c(., "px")
 
 }
@@ -269,7 +269,7 @@ validUnitsOfArea <- function(){
 #' @export
 validUnitsOfAreaSI <- function(){
 
-  stringr::str_c(euol_abbr, "2")
+  stringr::str_c(uol_si_abbr, "2")
 
 }
 
@@ -277,14 +277,14 @@ validUnitsOfAreaSI <- function(){
 #' @export
 validUnitsOfLength <- function(){
 
-  c(euol_abbr, "px")
+  c(uol_si_abbr, "px")
 
 }
 
 #' @rdname validActivationFunctions
 validUnitsOfLengthSI <- function(){
 
-  euol_abbr
+  uol_si_abbr
 
 }
 
@@ -292,7 +292,7 @@ validUnitsOfLengthSI <- function(){
 #' @export
 validEuropeanUnitsOfLength <- function(name = T){
 
-  out <- euol_abbr
+  out <- uol_si_abbr
 
   if(base::isFALSE(name)){
 

@@ -7,6 +7,8 @@
 getChrRegionsDf(object, format = "long")
 }
 \arguments{
+\item{object}{An object of class \code{SPATA2}.}
+
 \item{format}{Character. If \emph{'long'} rows correspond to chromosome
 arms if \emph{'wide'} rows correspond to chromosomes and information
 about the respective arms is stored in separate columns.}

@@ -558,23 +558,10 @@ updateSpataObject <- function(object,
     # update differences between active matrix / expression matrix
     active_mtr <- object@information$active_mtr[[1]]
 
-    if(base::is.null(active_mtr)){
-
-      active_mtr <- "scaled"
-
-    }
+    if(base::is.null(active_mtr)){ active_mtr <- "scaled" }
 
     object@information$active_mtr[[1]] <- active_mtr
     object@information$active_expr_mtr[[1]] <- active_mtr
-
-    # update method slot
-
-    confuns::give_feedback(
-      msg = "Setting `Visium` as spatial method.",
-      verbose = verbose
-    )
-
-    object@information$method <- Visium
 
   }
 
@@ -582,12 +569,28 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 12, patch = 0)
 
-    confuns::give_feedback(
-      msg = "Computing pixel scale factor.",
-      verbose = verbose
-    )
+  }
 
-    object <- setPixelScaleFactor(object)
+
+  if(object@version$major == 1 && object@version$minor == 12){
+
+    object@version <- list(major = 1, minor = 13, patch = 0)
+
+    # method
+    mname <- getSpatialMethod(object)@name
+
+    object@information$method <- spatial_methods[[mname]]
+
+    object <- setPixelScaleFactor(object, verbose = verbose)
+
+    # change positioning of active expr mtr
+
+    active_mtr <- object@information$active_mtr[[1]]
+    object@information$active_mtr <- active_mtr
+
+    active_expr_mtr <- object@information$active_expr_mtr[[1]]
+    object@information$active_expr_mtr <- active_expr_mtr
+
 
   }
 

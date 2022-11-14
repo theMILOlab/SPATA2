@@ -10,7 +10,7 @@ setPixelScaleFactor(object, pxl_scale_fct = NULL, verbose = NULL)
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{pxl_scale_fct}{Numeric value with an attribute named
-\emph{unit} with the unit euol/px.}
+\emph{unit} with the unit dist_si/px.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

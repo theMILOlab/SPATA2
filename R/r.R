@@ -1,6 +1,28 @@
 
 
+#' @title Reduces vector length
+#' @export
+reduce_vec <- function(x, n, start.with = 1){
 
+  if(n == 1){
+
+    out <- x
+
+  } else {
+
+    xshifted <- x[(start.with + 1):base::length(x)]
+
+    xseq <- base::seq_along(xshifted)
+
+    prel_out <- xshifted[xseq %% n == 0]
+
+    out <- c(x[start.with], prel_out)
+
+  }
+
+  return(out)
+
+}
 
 
 #' @title Relevel groups of grouping variable
@@ -489,6 +511,26 @@ renameSegments <- function(object, ..., of_sample = NA){
   return(object)
 
 }
+
+
+
+#' @title Used for GeomSegmentFixed
+#' @export
+resizingSegmentsGrob <- function(...){
+
+  grid::grobTree(tg = grid::segmentsGrob(...), cl = "resizingSegmentsGrob")
+
+}
+
+
+#' @title Used for GeomTextScaled
+#' @export
+resizingTextGrob <- function(...){
+
+  grid::grobTree(tg = grid::textGrob(...), cl = "resizingTextGrob")
+
+}
+
 
 
 

@@ -31,7 +31,7 @@ immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
 
-\item{...}{Additional arguments given to \code{ggpLayerAxesEUOL()} if
+\item{...}{Additional arguments given to \code{ggpLayerAxesSI()} if
 \code{unit} is not \emph{'px'}.}
 }
 \value{

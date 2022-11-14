@@ -10,13 +10,15 @@ plotIasLineplot(
   variables,
   distance = NA_integer_,
   n_bins_circle = NA_integer_,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
   method_gs = NULL,
   smooth_method = "loess",
   smooth_span = 0.2,
   smooth_se = FALSE,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
   clrp = NULL,
   clrp_adjust = NULL,
   line_color = NULL,
@@ -33,12 +35,15 @@ plotIasLineplot(
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
+  x_nth = 1,
   verbose = NULL,
   ...
 )
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
+
+\item{id}{Character value. The ID of the image annotation of interest.}
 
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
@@ -62,6 +67,9 @@ information about distance values.}
 an angle span relative to the center of the image annotation.
 (See details fore more.)}
 
+\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
+(See details for more.)}
+
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
@@ -73,6 +81,14 @@ single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
 Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
+
+\item{unit}{Character value. The unit in which the distance
+to the image annotation is displayed on the x-axis.
+
+If \code{FALSE}, plots the bin numbers instead.}
+
+\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
+of \code{base::round()}. Rounds transformed values before they are returned.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
@@ -86,17 +102,32 @@ represent the group.}
 \item{facet_by}{Either \emph{'variables'} or \emph{'bins_angle'}.
 If \emph{'bins_angle'} length of \code{variables} must be one.}
 
+\item{normalize_by}{Character value or FALSE. If character, there are two options:
+\itemize{
+\item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
+\item{\code{normalize_by} = \emph{'bins_angle'}:}{
+Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
+is bigger than 1.
+}
+}}
+
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Needed arguments that depend on the input/unit combination. If
+one of both is \emph{'px'}, argument \code{object} must be specified.}
 }
 \value{
 A ggplot.

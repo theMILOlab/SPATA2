@@ -168,7 +168,7 @@ plotIasEvaluation <- function(object,
 #' @inherit imageAnnotationScreening params details
 #' @inherit plotTrajectoryHeatmap params
 #' @inherit ggplot_dummy return
-#' @inherit documentation_dummy params
+#' @inherit argument_dummy params
 #'
 #' @export
 
@@ -376,7 +376,18 @@ plotIasHeatmap <- function(object,
 #'
 #' @param facet_by Either \emph{'variables'} or \emph{'bins_angle'}.
 #' If \emph{'bins_angle'} length of \code{variables} must be one.
+#' @param unit Character value. The unit in which the distance
+#' to the image annotation is displayed on the x-axis.
 #'
+#' If `FALSE`, plots the bin numbers instead.
+#'
+#' @param x_nth Numeric value. If the number of breaks/labels on the
+#' x-axis becomes too high `x_nth` can be used to reduce it. If `x_nth` is 1,
+#' every label is kept. If 2, every second label is kept. If 3, every
+#' third label is kept. And so on.
+#'
+#' @inherit as_unit params
+#' @inherit getImageAnnotationScreeningDf params
 #' @inherit plotIasHeatmap params details
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
@@ -389,13 +400,15 @@ plotIasLineplot <- function(object,
                             variables,
                             distance = NA_integer_,
                             n_bins_circle = NA_integer_,
-                            binwidth = ccDist(object),
+                            binwidth = getCCD(object),
                             angle_span = c(0,360),
                             n_bins_angle = 1,
                             method_gs = NULL,
                             smooth_method = "loess",
                             smooth_span = 0.2,
                             smooth_se = FALSE,
+                            unit = getSpatialMethod(object)@unit,
+                            round = 2,
                             clrp = NULL,
                             clrp_adjust = NULL,
                             line_color = NULL,
@@ -413,6 +426,7 @@ plotIasLineplot <- function(object,
                             border_linecolor = "black",
                             border_linesize = 1,
                             border_linetype = "dashed",
+                            x_nth = 1,
                             verbose = NULL,
                             ...){
 
@@ -448,6 +462,17 @@ plotIasLineplot <- function(object,
 
   }
 
+  ias_input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = FALSE
+    )
+
+  variables <- base::unique(variables)
+
   ias_df <-
     getImageAnnotationScreeningDf(
       object = object,
@@ -464,18 +489,44 @@ plotIasLineplot <- function(object,
       remove_circle_bins = !include_area,
       bcsp_exclude=bcsp_exclude,
       normalize = c(FALSE, FALSE),
-      verbose = TRUE
+      verbose = verbose
+    )
+
+  # in case of an image annotation that is too small to contain barcode spots
+  if(base::isTRUE(include_area)){
+
+    n_core_spots <-
+      dplyr::filter(ias_df, bins_circle == "Core") %>%
+      base::nrow()
+
+    include_area <- n_core_spots >= 1
+
+    if(n_core_spots == 0){
+
+      warning(
+        glue::glue(
+          "`include_area` is TRUE but image annotation {id} is too small to contain barcode spots."
+        )
+      )
+
+    }
+
+  }
+
+  plot_df <-
+    tidyr::pivot_longer(
+      data = ias_df,
+      cols = dplyr::any_of(variables),
+      names_to = "variables",
+      values_to = "values"
+    ) %>%
+    dplyr::mutate(
+      # bin 1 -> 0. 0 * dist = 0 for bin 1 -> no distance to img an
+      breaks = bins_order - 1,
+      variables = base::factor(variables, levels = {{variables}})
     )
 
   if(facet_by == "variables"){
-
-    plot_df <-
-      tidyr::pivot_longer(
-        data = ias_df,
-        cols = dplyr::any_of(variables),
-        names_to = "variables",
-        values_to = "values"
-      )
 
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow)
@@ -484,28 +535,20 @@ plotIasLineplot <- function(object,
 
   } else if(facet_by == "bins_angle"){
 
-    plot_df <-
-      tidyr::pivot_longer(
-        data = ias_df,
-        cols = dplyr::any_of(variables),
-        names_to = "variables",
-        values_to = "values"
-      )
-
     facet_add_on <-
       ggplot2::facet_wrap(facets = . ~ bins_angle, ncol = ncol, nrow = nrow)
 
+    # variables must be of length 1 if facet_by == bins_angle
     ylab <- stringr::str_c("Inferred expression change (", variables, ")")
 
   }
 
+  # add border if desired
   if(base::isTRUE(display_border)){
-
-    xintercept <- base::ifelse(base::isTRUE(include_area), yes = 2, no = 1)
 
     border_add_on <-
       ggplot2::geom_vline(
-        xintercept = xintercept,
+        xintercept = 0,
         alpha = border_linealpha,
         color = border_linecolor,
         size = border_linesize,
@@ -518,29 +561,46 @@ plotIasLineplot <- function(object,
 
   }
 
+  # labels
+  if(unit %in% validUnitsOfLength()){
+
+    # is unit
+    bw_dist <-
+      as_unit(
+        input = ias_input$binwidth,
+        unit = unit,
+        object = object,
+        round = round
+        )
+
+    plot_df[["labels"]] <- plot_df[["breaks"]] * bw_dist
+
+    xlab <-  glue::glue("Dist. to {id} [{unit}]")
+
+  } else {
+
+    plot_df[["labels"]] <- base::as.character(plot_df[["bins_order"]])
+
+    plot_df[["labels"]][plot_df[["breaks"]] < 0 ] <- "IA"
+
+    xlab <- "Bins"
+
+  }
+
+  # set axes theme
   if(base::isTRUE(display_axis_text)){ display_axis_text <- c("x", "y")}
 
   theme_add_on <- list()
 
-  if("x" %in% display_axis_text){
-
-    theme_add_on <-
-      c(
-        theme_add_on,
-        list(ggplot2::theme(
-          axis.text.x = ggplot2::element_text(vjust = 0.85, hjust = 1),
-          axis.ticks.x = ggplot2::element_line()
-        )
-        )
+  theme_add_on <-
+    c(
+      theme_add_on,
+      list(ggplot2::theme(
+        axis.text.x = ggplot2::element_text(vjust = 0.85),
+        axis.ticks.x = ggplot2::element_line()
       )
-
-    xlab <- "bins_circle"
-
-  } else {
-
-    xlab <- stringr::str_c("Distance to '", id, "'")
-
-  }
+      )
+    )
 
   if("y" %in% display_axis_text){
 
@@ -552,6 +612,7 @@ plotIasLineplot <- function(object,
 
   }
 
+  # line colors
   if(base::is.character(line_color) & base::length(line_color) == 1){
 
     lvls <- base::levels(plot_df[[facet_by]])
@@ -597,16 +658,28 @@ plotIasLineplot <- function(object,
 
   }
 
+  breaks <-
+    base::as.numeric(plot_df[["breaks"]]) %>%
+    base::unique() %>%
+    reduce_vec(n = x_nth)
 
-  mapping <- ggplot2::aes(x = bins_order, y = values, color = .data[[facet_by]])
+  labels <-
+    base::as.character(plot_df[["labels"]]) %>%
+    base::unique() %>%
+    reduce_vec(n = x_nth)
 
-  ggplot2::ggplot(data = plot_df, mapping = mapping) +
+  # plot
+  ggplot2::ggplot(
+    data = plot_df,
+    mapping = ggplot2::aes(x = breaks, y = values, color = .data[[facet_by]])
+    ) +
     line_add_on +
     confuns::scale_color_add_on(
       variable = plot_df[[facet_by]],
       clrp = clrp,
       clrp.adjust = clrp_adjust
     ) +
+    ggplot2::scale_x_continuous(breaks = breaks, labels = labels) +
     scale_y_add_on +
     ggplot2::theme_classic() +
     ggplot2::theme(
@@ -614,11 +687,7 @@ plotIasLineplot <- function(object,
       axis.line.y = ggplot2::element_line(),
       strip.background = ggplot2::element_blank()
     ) +
-    ggplot2::labs(
-      x = xlab,
-      y = ylab,
-      color = facet_by
-    ) +
+    ggplot2::labs(x = xlab, y = ylab, color = facet_by) +
     facet_add_on +
     border_add_on +
     theme_add_on
@@ -709,18 +778,15 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' @param encircle Logical value. If TRUE, a polygon is drawn around the
 #' exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.
 #' @param unit Character value. The unit in which the x- and y-axis text
-#' are displayed. Use `validUnitsOfLength()` to obtain all valid input options.
+#' are displayed. Use `validUnitsOfLengthSI()` to obtain all valid input options.
 #' @param round Numeric value or `FALSE`. If numeric and `unit` is not *px*, rounds
 #' axes text.
-#' @param ... Additional parameters given to `ggpLayerScaleBarEUOL()`. Exception:
-#' Arguments `xrange` and `yrange` correspond to the dimensions of the cropped
-#' image that displayes the image annotation.
-#' @param dist_sb Distance measure or FALSE. If distance measure,
-#' defines the distance in European units of length that a scale bar
-#' illustrates. Scale bar is plotted with `ggpLayerScaleBarEUOL()`. If `FALSE`,
+#' @param sb_dist Distance measure or `FALSE`. If distance measure,
+#' defines the distance in SI units that a scale bar illustrates.
+#' Scale bar is plotted with `ggpLayerScaleBarSI()`. If `FALSE`,
 #' no scale bar is plotted.
-#' @param ... Additional arguments given to `ggpLayerScaleBarEUOL()` if input for
-#' `dist_sb` is a valid distance measure. Exception: `xrange` and `yrange` are
+#' @param ... Additional arguments given to `ggpLayerScaleBarSI()` if input for
+#' `sb_dist` is a valid distance measure. Exception: `xrange` and `yrange` are
 #' set to the ranges of the image that was cropped according to the image
 #' annotation.
 #'
@@ -765,8 +831,6 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' Using exclam input the side of the axis must not be specified as the
 #' axis is fixed as a whole. E.g `expand = list(x = '1mm!', y = '2mm!')` results
 #' in the same output as `expand = list(x = c('1mm!', '1mm'), y = c('2mm!', '2mm!')`.
-#'
-#' @return An image of class \emph{EBImage}.
 #'
 #' @examples
 #'
@@ -847,7 +911,7 @@ plotImageAnnotations <- function(object,
                                  ids = NULL,
                                  tags = NULL,
                                  test = "any",
-                                 expand = 0.05,
+                                 expand = "25%",
                                  square = TRUE,
                                  encircle = TRUE,
                                  unit = "px",
@@ -857,7 +921,7 @@ plotImageAnnotations <- function(object,
                                  line_type = "solid",
                                  fill = "orange",
                                  alpha = 0.25,
-                                 dist_sb = FALSE,
+                                 sb_dist = FALSE,
                                  display_title = FALSE,
                                  display_subtitle = TRUE,
                                  display_caption = FALSE,
@@ -923,9 +987,9 @@ plotImageAnnotations <- function(object,
         } else {
 
           labels  <-
-            ~ transform_pixels_to_euol(
+            ~ transform_pixels_to_dist_si(
                 input = .x,
-                euol = unit,
+                unit = unit,
                 object = object,
                 as_numeric = TRUE,
                 round = round
@@ -933,12 +997,12 @@ plotImageAnnotations <- function(object,
 
         }
 
-        if(is_dist_euol(input = dist_sb)){
+        if(is_dist_si(input = sb_dist)){
 
           scale_bar_add_on <-
-            ggpLayerScaleBarEUOL(
+            ggpLayerScaleBarSI(
               object = object,
-              dist_sb = dist_sb,
+              sb_dist = sb_dist,
               xrange = c(img_info$xmin, img_info$xmax),
               yrange = c(img_info$ymin_coords, img_info$ymax_coords),
               ...
@@ -1045,7 +1109,7 @@ plotImageAnnotations <- function(object,
 #'
 #' @param unit Character value. Units of x- and y-axes. Defaults
 #' to *'px'*.
-#' @param ... Additional arguments given to `ggpLayerAxesEUOL()` if
+#' @param ... Additional arguments given to `ggpLayerAxesSI()` if
 #' `unit` is not *'px'*.
 #' @inherit argument_dummy params
 #'
@@ -1059,7 +1123,7 @@ plotImageGgplot <- function(object,
                             yrange = NULL,
                             ...){
 
-  if(unit %in% validEuropeanUnitsOfLength()){
+  if(unit %in% validUnitsOfLengthSI()){
 
     if(!base::is.null(xrange) | !base::is.null(yrange)){
 
@@ -1068,9 +1132,9 @@ plotImageGgplot <- function(object,
     }
 
     axes_add_on <-
-      ggpLayerAxesEUOL(
+      ggpLayerAxesSI(
         object = object,
-        euol = unit,
+        unit = unit,
         frame_by = frame_by,
         ...
       )
@@ -1114,7 +1178,7 @@ plotImageGgplot <- function(object,
 #' @param fill_by Character value. The grouping variable that is used to
 #' fill the mosaic.
 #'
-#' @inherit confuns::plot_moasic params
+#' @inherit confuns::plot_mosaic params
 #' @inherit argument_dummy params
 #' @inherit plotBarchart params return
 #'

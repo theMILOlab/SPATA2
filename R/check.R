@@ -758,9 +758,12 @@ check_ias_input <- function(distance = NA_integer_,
 
     n_bins_circle <- base::ceiling(distance / binwidth)
 
+    ud <- extract_unit(distance_orig)
+    ub <- extract_unit(binwidth_orig)
+
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {distance_orig} and `binwidth` = {binwidth_orig}. Calculated `n_bins_circle` = {n_bins_circle}."
+        "Specified `distance` = {distance_orig}{ud} and `binwidth` = {binwidth_orig}{ub}. Calculated `n_bins_circle` = {n_bins_circle}."
         ),
       verbose = verbose
     )
@@ -769,19 +772,19 @@ check_ias_input <- function(distance = NA_integer_,
 
     binwidth <- distance / n_bins_circle
 
-    unit_dist <- extract_unit(distance_orig)
+    ud <- extract_unit(distance_orig)
 
     binwidth_ref <-
       as_unit(
         input = binwidth,
-        unit = unit_dist,
+        unit = ud,
         object = object,
         round = 4
         )
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {distance_orig} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth_ref}."
+        "Specified `distance` = {distance_orig}{ud} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth_ref}{ud}."
         ),
       verbose = verbose
     )
@@ -790,19 +793,19 @@ check_ias_input <- function(distance = NA_integer_,
 
     distance <- n_bins_circle * binwidth
 
-    unit_binwidth <- extract_unit(binwidth_orig)
+    ubw <- extract_unit(binwidth_orig)
 
     distance_ref <-
       as_unit(
         input = distance,
-        unit = unit_binwidth,
+        unit = ubw,
         object = object,
         round = round
         )
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `binwidth` = {binwidth_orig} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance_ref}."
+        "Specified `binwidth` = {binwidth_orig}{ubw} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance_ref}{ubw}."
         ),
       verbose = verbose
     )
@@ -1069,8 +1072,6 @@ check_method <- function(method_aggl = NULL,
 #' used as the final clustering result. Default is 1. Note that if
 #' num_iter is greater than 1, the random_seed argument will be ignored
 #' for the louvain method.
-#'
-#' @return
 #'
 #' @details With respect to the arguments \code{preprocess_method},
 #' \code{reduction_method} and \code{cluster_method}:
@@ -1853,8 +1854,6 @@ check_variables <- function(variables,
 #' uniformly expressed across all barcode-spots of the specified coordinates
 #' data.frame are discarded. If set to \emph{'keep'} they are kept.
 #'
-#' @return
-
 check_uniform_genes <- function(uniform_genes){
 
   confuns::is_value(uniform_genes, "character", "uniform_genes")

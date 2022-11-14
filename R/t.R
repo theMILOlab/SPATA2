@@ -212,23 +212,25 @@ transfer_slot_content <- function(recipient, donor, skip = character(0), verbose
 #' @description Transforms European units of length (e.g. \emph{'2mm'}, \emph{'400.50um'})
 #' to pixel values depending on the original size of spatial -omic methods.
 #'
-#' @param input Distance as European unit of length. See details for more.
-#' @inherit transform_pixel_to_euol params details
+#' @param input Distance as SI unit of length. See details for more.
+#' @inherit transform_pixel_to_dist_si params details
 #'
 #' @return Transformed input. Vector of the same length as input. Function
-#' `transform_euol_to_pixel()` always returns a single numeric value. Function
-#' `transform_euol_to_pixels()` returns a numeric vector by default. If `as_numeric`
+#' `transform_dist_si_to_pixel()` always returns a single numeric value. Function
+#' `transform_dist_si_to_pixels()` returns a numeric vector by default. If `as_numeric`
 #' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
 #'
-transform_euol_to_pixel <- function(input,
-                                    object = NULL,
-                                    image_dims = NULL,
-                                    method = NULL,
-                                    round = FALSE){
+transform_dist_si_to_pixel <- function(input,
+                                       object = NULL,
+                                       image_dims = NULL,
+                                       round = FALSE,
+                                       ...){
 
-  is_dist_euol(input, error = TRUE)
+  deprecated(...)
+
+  is_dist_si(input, error = TRUE)
 
   input <- as_SPATA2_dist(input)
 
@@ -236,67 +238,17 @@ transform_euol_to_pixel <- function(input,
   input_val <- extract_value(input)  # e.g. 1000
   input_unit <- extract_unit(input) # e.g 'um'
 
-  # get scale factor
-  if(FALSE){ # currently requires getPixelScaleFactor()
+  method <- getSpatialMethod(object)
 
-    if(base::is.character(method)){
+  scale_fct <-
+    getPixelScaleFactor(
+      object = object,
+      unit = input_unit,
+      switch = TRUE,
+      add_attr = FALSE
+    )
 
-      confuns::check_one_of(
-        input = method,
-        against = validSpatialMethods()
-      )
-
-      method <-
-        base::parse(text = method) %>%
-        base::eval()
-
-    } else {
-
-      if(!methods::is(object = method, class2 = "SpatialMethod")){
-
-        stop("Invalid input for argument `method`. Must be of class `SpatialMethod`.")
-
-      }
-
-    }
-
-    confuns::is_vec(x = image_dims, mode = "numeric", min.length = 2)
-
-    # 1. calculate scale factor between current image resolutation (px) and
-
-    # original imaga size (euol)
-    img_height_px <- image_dims[2] # height of image in pixel (e.g = 2000px)
-
-    # get information about original height of image
-    img_height <- method@fiducial_frame$y # height of image in euol (e.g. '8mm')
-
-    img_height_euol <- extract_value(img_height) # the value (e.g = 8)
-    img_unit <- extract_unit(img_height) # the unit (e.g. 'mm')
-
-    # scale input to image unit
-    scale_fct <- euol_to_euol_fct(from = input_unit, to = img_unit) # e.g. 'um' -> 'mm': 0.001 one
-
-    out <- input_val * scale_fct
-
-  } else {
-
-    check_object(object)
-
-    image_dims <- getImageDims(object)[1:2]
-
-    method <- getMethod(object)
-
-    scale_fct <-
-      getPixelScaleFactor(
-        object = object,
-        unit = input_unit,
-        switch = TRUE,
-        add_attr = FALSE
-        )
-
-    out <- input_val * scale_fct
-
-  }
+  out <- input_val * scale_fct
 
   if(base::is.numeric(round)){
 
@@ -309,26 +261,27 @@ transform_euol_to_pixel <- function(input,
 }
 
 
-#' @rdname transform_euol_to_pixel
+#' @rdname transform_dist_si_to_pixel
 #' @export
-transform_euol_to_pixels <- function(input,
-                                     object = NULL,
-                                     image_dims = NULL,
-                                     method = NULL,
-                                     round = FALSE,
-                                     as_numeric = TRUE){
+transform_dist_si_to_pixels <- function(input,
+                                        object = NULL,
+                                        image_dims = NULL,
+                                        round = FALSE,
+                                        as_numeric = TRUE,
+                                        ...){
 
-  is_dist_euol(input = input, error = TRUE)
+  deprecated(...)
+
+  is_dist_si(input = input, error = TRUE)
 
   if(base::isTRUE(as_numeric)){
 
     out <-
       purrr::map_dbl(
         .x = input,
-        .f = transform_euol_to_pixel,
+        .f = transform_dist_si_to_pixel,
         object = object,
         image_dims = image_dims,
-        method = method,
         round = round
       )
 
@@ -337,10 +290,9 @@ transform_euol_to_pixels <- function(input,
     out <-
       purrr::map_dbl(
         .x = input,
-        .f = transform_euol_to_pixel,
+        .f = transform_dist_si_to_pixel,
         object = object,
         image_dims = image_dims,
-        method = method,
         round = round
       ) %>%
       base::as.character() %>%
@@ -361,23 +313,11 @@ transform_euol_to_pixels <- function(input,
 #' of the current image.
 #'
 #' @param input Distance as pixel input. See details for more information.
-#' @param euol Character value. The desired European unit of length. Must be
-#' one of \emph{'m', 'dm', 'cm', 'mm', 'um', 'nm'}.
+#' @param unit Character value. The desired SI unit of length. Use
+#' `validUnitsOfLengthSI()` to obtain all valid input options.
 #' @param object A valid \code{SPATA2} object or \code{NULL}. If specified the
 #' distance scaling is adjusted to the current resolution of the image inside
 #' the object. If \code{NULL}, \code{image_dims} and \code{method} must be specified.
-#' @param image_dims Numeric vector of length two. Specifies the dimensions
-#' of the image to which the distance is scaled. First value corresponds to
-#' the width, second value corresponds to the height of the image.
-#'
-#' Ignored if \code{object} is specified (carries needed information).
-#'
-#' @param method The spatial -omic method by name as a character value or S4 object
-#' of class \code{SpatialMethod}. Specifies the method and thus the frame size of
-#' the original image in European units of length. If character, must be one of \code{validSpatialMethods()}.
-#'
-#' Ignored if \code{object} is specified (carries needed information).
-#'
 #' @param round Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 #' of \code{base::round()}. Rounds transformed values before they are returned.
 #'
@@ -388,18 +328,17 @@ transform_euol_to_pixels <- function(input,
 #'
 #' @return Transformed input. Vector of the same length as `input` and of class `units`.
 #'
-#' @note \code{transform_pixel_to_euol()} transforms only single values. \code{transform_pixels_to_euol()}
+#' @note \code{transform_pixel_to_dist_si()} transforms only single values. \code{transform_pixels_to_dist_si()}
 #' transforms vectors of lengths one or more.
 #'
 #' @export
 #'
-transform_pixel_to_euol <- function(input,
-                                    euol,
-                                    object = NULL,
-                                    image_dims = NULL,
-                                    method = NULL,
-                                    round = FALSE,
-                                    ...){
+transform_pixel_to_dist_si <- function(input,
+                                       unit,
+                                       object = NULL,
+                                       image_dims = NULL,
+                                       round = FALSE,
+                                       ...){
 
   deprecated(...)
 
@@ -416,36 +355,22 @@ transform_pixel_to_euol <- function(input,
   input_val <- extract_value(input) # force  pixel input in numeric value
 
   confuns::check_one_of(
-    input = euol,
-    against = validEuropeanUnitsOfLength(name = FALSE)
+    input = unit,
+    against = validUnitsOfLengthSI()
   )
 
-  desired_euol <- euol
+  desired_unit <- unit
 
-  if(FALSE){
+  check_object(object)
 
-    confuns::check_one_of(
-      input = method,
-      against = validSpatialMethods()
+  scale_fct <-
+    getPixelScaleFactor(
+      object = object,
+      unit = unit,
+      add_attr = FALSE
     )
 
-    confuns::is_vec(x = image_dims, mode = "numeric", min.length = 2)
-
-  } else {
-
-    check_object(object)
-
-    scale_fct <-
-      getPixelScaleFactor(
-        object = object,
-        unit = euol,
-        add_attr = FALSE
-        )
-
-    out_val <- input_val * scale_fct
-
-  }
-
+  out_val <- input_val * scale_fct
 
   if(base::is.numeric(round)){
 
@@ -453,22 +378,21 @@ transform_pixel_to_euol <- function(input,
 
   }
 
-  out <- units::set_units(x = out_val, value = euol, mode = "standard")
+  out <- units::set_units(x = out_val, value = unit, mode = "standard")
 
   return(out)
 
 }
 
-#' @rdname transform_pixel_to_euol
+#' @rdname transform_pixel_to_dist_si
 #' @export
-transform_pixels_to_euol <- function(input,
-                                     euol,
-                                     object = NULL,
-                                     image_dims = NULL,
-                                     method = NULL,
-                                     round = FALSE,
-                                     ...
-                                     ){
+transform_pixels_to_dist_si <- function(input,
+                                        unit,
+                                        object = NULL,
+                                        image_dims = NULL,
+                                        method = NULL,
+                                        round = FALSE,
+                                        ...){
 
   deprecated(...)
 
@@ -477,8 +401,8 @@ transform_pixels_to_euol <- function(input,
   out <-
     purrr::map_dbl(
       .x = input,
-      .f = transform_pixel_to_euol,
-      euol = euol,
+      .f = transform_pixel_to_dist_si,
+      unit = unit,
       object = object,
       image_dims = image_dims,
       method = method,
@@ -486,7 +410,7 @@ transform_pixels_to_euol <- function(input,
       as_numeric = TRUE
     )
 
-  out <- units::set_units(x = out, value = euol, mode = "standard")
+  out <- units::set_units(x = out, value = unit, mode = "standard")
 
   return(out)
 
@@ -501,14 +425,14 @@ transform_pixels_to_euol <- function(input,
 #' @param unit The SI area unit. Use `validUnitsOfAreaSI()` to obtain all
 #' valid input options.
 #' @inherit argument_dummy params
-#' @inherit transform_pixel_to_euol params return
+#' @inherit transform_pixel_to_dist_si params return
 #'
 #' @export
 #'
-transform_pixel_to_si <- function(input,
-                                  unit,
-                                  object,
-                                  round = FALSE){
+transform_pixel_to_area_si <- function(input,
+                                       unit,
+                                       object,
+                                       round = FALSE){
 
   # check input
   is_area(input, error = TRUE)
@@ -551,10 +475,10 @@ transform_pixel_to_si <- function(input,
 
 #' @rdname transform_pixel_to_si
 #' @export
-transform_pixels_to_si <- function(input,
-                                   unit,
-                                   object,
-                                   round = FALSE){
+transform_pixels_to_area_si <- function(input,
+                                        unit,
+                                        object,
+                                        round = FALSE){
 
   is_area_pixel(input, error = TRUE)
 
@@ -860,7 +784,6 @@ transformSeuratToSpata <- function(seurat_object,
       )
 
     # get scaled matrix
-
     assay <- seurat_object@assays[[assay_name]]
 
     scaled_mtr <-
@@ -879,6 +802,7 @@ transformSeuratToSpata <- function(seurat_object,
         error_value = base::matrix(),
         error_ref = "count matrix"
       )
+
 
     # get image
     image_object <-
@@ -912,13 +836,13 @@ transformSeuratToSpata <- function(seurat_object,
 
       if("imagecol" %in% c_cnames){
 
-        coords_df <- dplyr::rename(coords_df, x = imagecol)
+        coords_df <- dplyr::mutate(coords_df, x = imagecol)
 
       }
 
       if("imagerow" %in% c_cnames){
 
-        coords_df <- dplyr::rename(coords_df, y = imagerow)
+        coords_df <- dplyr::mutate(coords_df, y = imagerow)
 
       }
 
@@ -1047,7 +971,6 @@ transformSeuratToSpata <- function(seurat_object,
 
 
   # dimensional reduction: pca
-
   pca_df <- base::tryCatch({
 
     pca_df <-
@@ -1067,7 +990,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
-    base::return(data.frame())
+   return(data.frame())
 
   }
 
@@ -1093,7 +1016,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
-    base::return(data.frame())
+   return(data.frame())
 
   }
 
@@ -1119,7 +1042,7 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::give_feedback(msg = msg, fdb.fn = "warning")
 
-    base::return(data.frame())
+   return(data.frame())
 
   }
 
@@ -1159,12 +1082,7 @@ transformSeuratToSpata <- function(seurat_object,
 
 
   # other lists
-  spata_object@information <-
-    list("barcodes" = magrittr::set_names(x = list(barcodes_matrix), value = sample_name))
-
-  spata_object <-
-    setDefaultInstructions(spata_object) %>%
-    setDirectoryInstructions()
+  spata_object <- setBarcodes(spata_object, barcodes = barcodes_matrix)
 
   spata_object <- setInitiationInfo(spata_object)
 
@@ -1177,17 +1095,9 @@ transformSeuratToSpata <- function(seurat_object,
   #äspata_object <-
   #  computeGeneMetaData(object = spata_object, verbose = verbose)
 
-  spata_object@spatial <-
-    magrittr::set_names(x = list(list()), value = sample_name)
-
-  spata_object@trajectories <-
-    magrittr::set_names(x = list(list()), value = sample_name)
-
-  spata_object@version <- current_spata_version
-
   # 5. Return spata object ---------------------------------------------------
 
-  base::return(spata_object)
+ return(spata_object)
 
 }
 
@@ -1201,17 +1111,17 @@ transformSeuratToSpata <- function(seurat_object,
 #' resolution of the image in the `SPATA2` object.
 #'
 #' @param input Area in SI units. See details for more information.
-#' @inherit transform_euol_to_pixel params
+#' @inherit transform_dist_si_to_pixel params
 #' @inherit argument_dummy params
 #'
 #' @return Transformed input. Vector of the same length as input. Function
-#' `transform_si_to_pixel()` always returns a single numeric value. Function
+#' `transform_area_si_to_pixel()` always returns a single numeric value. Function
 #' `transform_si_to_pixels()` returns a numeric vector by default. If `as_numeric`
 #' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
 #'
-transform_si_to_pixel <- function(input,
+transform_area_si_to_pixel <- function(input,
                                   object,
                                   round = FALSE){
 
@@ -1248,12 +1158,12 @@ transform_si_to_pixel <- function(input,
 
 }
 
-#' @rdname transform_si_to_pixel
+#' @rdname transform_area_si_to_pixel
 #' @export
-transform_si_to_pixels <- function(input,
-                                   object,
-                                   round = FALSE,
-                                   as_numeric = TRUE){
+transform_area_si_to_pixels <- function(input,
+                                        object,
+                                        round = FALSE,
+                                        as_numeric = TRUE){
 
   is_area_si(input = input, error = TRUE)
 
@@ -1262,7 +1172,7 @@ transform_si_to_pixels <- function(input,
     out <-
       purrr::map_dbl(
         .x = input,
-        .f = transform_si_to_pixel,
+        .f = transform_area_si_to_pixel,
         object = object,
         round = round
       )
@@ -1272,7 +1182,7 @@ transform_si_to_pixels <- function(input,
     out <-
       purrr::map_dbl(
         .x = input,
-        .f = transform_si_to_pixel,
+        .f = transform_area_si_to_pixel,
         object = object,
         round = round
       ) %>%
@@ -1484,7 +1394,7 @@ transformSpataToCDS <- function(object,
   # -----
 
 
-  base::return(cds)
+ return(cds)
 
 }
 
@@ -1602,7 +1512,7 @@ transformSpataToSeurat <- function(object,
       "To use spatial features of the Seurat package you need to add that manually."
     )
 
-    base::return(seurat_object)
+   return(seurat_object)
 
   }
   )

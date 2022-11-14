@@ -3,10 +3,9 @@
 \docType{data}
 \name{trajectories}
 \alias{trajectories}
-\title{A list of lists of spatial trajectories. Every slot in list \code{trajectories}
-is named by the sample the trajectory belongs to. Every sample specific slot
-is an S4 object of class \code{SpatialTrajectory}. Use \code{setSpatialTrajectory()}
-to add them to the corresponding object.}
+\title{A list of lists of spatial trajectories for specific \code{SPATA2}
+objects - available via the \code{SPATAData} package. Names of the list slots
+correspond to the sample names in variable  \emph{sample} of \code{SPATAData::source_df}.}
 \format{
 An object of class \code{list} of length 1.
 }
@@ -14,6 +13,10 @@ An object of class \code{list} of length 1.
 trajectories
 }
 \description{
+Every sample specific slot is another list that contains S4 objects of class \code{SpatialTrajectory}.
+Use \code{setSpatialTrajectory()} to add them to the corresponding object.
+}
+\details{
 @docType data
 @usage data(trajectories)
 }

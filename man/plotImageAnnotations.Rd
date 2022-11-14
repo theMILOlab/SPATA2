@@ -9,7 +9,7 @@ plotImageAnnotations(
   ids = NULL,
   tags = NULL,
   test = "any",
-  expand = 0.05,
+  expand = "25\%",
   square = TRUE,
   encircle = TRUE,
   unit = "px",
@@ -19,7 +19,7 @@ plotImageAnnotations(
   line_type = "solid",
   fill = "orange",
   alpha = 0.25,
-  dist_sb = FALSE,
+  sb_dist = FALSE,
   display_title = FALSE,
   display_subtitle = TRUE,
   display_caption = FALSE,
@@ -77,14 +77,14 @@ Processing of the image output depending on argument \code{expand} happens after
 exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.}
 
 \item{unit}{Character value. The unit in which the x- and y-axis text
-are displayed. Use \code{validUnitsOfLength()} to obtain all valid input options.}
+are displayed. Use \code{validUnitsOfLengthSI()} to obtain all valid input options.}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric and \code{unit} is not \emph{px}, rounds
 axes text.}
 
-\item{dist_sb}{Distance measure or FALSE. If distance measure,
-defines the distance in European units of length that a scale bar
-illustrates. Scale bar is plotted with \code{ggpLayerScaleBarEUOL()}. If \code{FALSE},
+\item{sb_dist}{Distance measure or \code{FALSE}. If distance measure,
+defines the distance in SI units that a scale bar illustrates.
+Scale bar is plotted with \code{ggpLayerScaleBarSI()}. If \code{FALSE},
 no scale bar is plotted.}
 
 \item{display_title}{Logical value. If TRUE, the number of each image annotation
@@ -105,16 +105,14 @@ Skim \code{ggpLayer*()}-functions for more options.}
 via \code{gridExtra.grid.arrange()} and the list of plots is returned
 invisibly. Else the list of plots is simply returned.}
 
-\item{...}{Additional arguments given to \code{ggpLayerScaleBarEUOL()} if input for
-\code{dist_sb} is a valid distance measure. Exception: \code{xrange} and \code{yrange} are
+\item{...}{Additional arguments given to \code{ggpLayerScaleBarSI()} if input for
+\code{sb_dist} is a valid distance measure. Exception: \code{xrange} and \code{yrange} are
 set to the ranges of the image that was cropped according to the image
 annotation.}
 }
 \value{
 A list of ggplots. Each slot contains a plot
 that visualizes an image annotation.
-
-An image of class \emph{EBImage}.
 }
 \description{
 Plots structures and areas that were annotated with \code{createImageAnnotations()}.
