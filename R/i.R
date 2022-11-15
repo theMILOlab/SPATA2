@@ -201,7 +201,8 @@ imageAnnotationScreening <- function(object,
       bcsp_exclude=bcsp_exclude,
       drop = FALSE,
       summarize_by = c("bins_circle", "bins_angle"),
-      normalize_by = normalize_by
+      normalize_by = normalize_by,
+      verbose = verbose
     )
 
   bins_angle <- base::levels(ias_df$bins_angle)
