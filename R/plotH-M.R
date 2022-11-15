@@ -188,7 +188,7 @@ plotIasHeatmap <- function(object,
                            summarize_with = "mean",
                            .f = NULL,
                            bcsp_exclude=NULL,
-                           verbose = TRUE,
+                           verbose = NULL,
                            ...){
 
   # 1. Control --------------------------------------------------------------
