@@ -247,7 +247,7 @@ imageAnnotationScreening <- function(object,
 
         confuns::give_feedback(
           msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
-          verbose = TRUE
+          verbose = verbose
         )
 
         bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
