@@ -415,7 +415,7 @@ imageAnnotationToSegmentation <- function(object,
 
 }
 
-# is ----------------------------------------------------------------------
+# is_ ----------------------------------------------------------------------
 
 
 
@@ -832,6 +832,26 @@ is_exclam <- function(input, error = FALSE){
 
 }
 
+
+is_image_dir <- function(input, error = FALSE){
+
+  res <-
+    stringr::str_detect(
+      string = input,
+      pattern = "\\.png$|\\.jpeg$\\.tiff$|\\.PNG$|\\.JPEG$\\.TIFF$"
+      )
+
+  if(base::any(!res)){
+
+    stop("Image directories must end with either '.png', '.jpeg', '.tiff'")
+
+  }
+
+  return(res)
+
+}
+
+
 is_number <- function(x){
 
   !(base::is.na(x) | base::is.na(x) | base::is.infinite(x))
@@ -930,7 +950,7 @@ is_unit_dist <- function(input, error = FALSE){
 
 
 
-
+# isG ---------------------------------------------------------------------
 
 
 #' @export
@@ -955,6 +975,12 @@ isGeneSet <- function(object, gene_set){
 
 }
 
+
+
+# isF ---------------------------------------------------------------------
+
+
+
 #' @export
 isFeature <- function(object, feature){
 
@@ -976,6 +1002,8 @@ isFlipped <- function(object){
 }
 
 
+# isN ---------------------------------------------------------------------
+
 #' @export
 isNumericVariable <- function(object, variable){
 
@@ -992,4 +1020,21 @@ isNumericVariable <- function(object, variable){
 
 
 }
+
+
+
+
+# isT ---------------------------------------------------------------------
+
+#' @export
+isTrajectory <- function(object){
+
+  class_test <-
+    Trajectory() %>%
+    base::class()
+
+  methods::is(object = object, class = class_test)
+
+}
+
 

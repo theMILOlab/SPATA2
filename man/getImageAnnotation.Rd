@@ -4,12 +4,34 @@
 \alias{getImageAnnotation}
 \title{Obtain object of class \code{ImageAnnotation}}
 \usage{
-getImageAnnotation(object, id, add_image = TRUE, expand = 0, square = FALSE)
+getImageAnnotation(
+  object,
+  id,
+  add_barcodes = TRUE,
+  strictly = FALSE,
+  add_image = TRUE,
+  expand = 0,
+  square = FALSE
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
+
+\item{add_barcodes}{Logical. If \code{TRUE}, barcodes of spots that fall into the
+area of an image annotation are identified and added to slot @misc$barcodes
+of the output image annotations.}
+
+\item{strictly}{Logical. If \code{TRUE}, only barcodes of spots that are strictly interior
+to the area of an image annotation are added to the output. If \code{FALSE},
+barcodes of spots that are on the relative interior of the area or are
+vertices of the border are added, too.}
+
+\item{add_image}{Logical. If TRUE, the area of the histology image that
+is occupied by the annotated structure is added to the \code{ImageAnnotation}
+object in slot @image. Dimensions of the image can be adjusted with \code{square}
+and \code{expand}.}
 
 \item{expand}{Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,

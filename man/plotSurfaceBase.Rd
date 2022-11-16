@@ -25,6 +25,7 @@ plotSurfaceBase(
   yrange = NULL,
   adjust_pt_size = TRUE,
   expand = 0,
+  pty = "s",
   verbose = NULL,
   ...
 )

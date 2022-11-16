@@ -732,13 +732,18 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
 
 
-#' @title Obtain object of class \code{SpatialTrajectory}.
+#' @title Obtain objects of class \code{SpatialTrajectory}.
 #'
 #' @inherit argument_dummy params
 #' @param id Character value. Denotes the spatial trajectory
 #' of interest.
+#' @param ids Character vector. Denotes the spatial trajectories
+#' of interest.
 #'
-#' @return An object of class \code{SpatialTrajectory.}
+#' @return An object of class `SpatialTrajectory` in case of `getSpatialTrajectory()`
+#' or a named list of `SpatialTrajectory` objects in case of `getSpatialTrajectories()`.
+#' An empty list if `nSpatialTrajectories() == 0`.
+#'
 #' @export
 #'
 
@@ -763,6 +768,37 @@ getSpatialTrajectory <- function(object, id){
 
 }
 
+#' @rdname getSpatialTrajectory
+#' @export
+getSpatialTrajectories <- function(object, ids = NULL){
+
+  if(nSpatialTrajectories(object) != 0){
+
+    if(base::is.character(ids)){
+
+      confuns::check_one_of(
+        input = ids,
+        against = getSpatialTrajectoryIds(object)
+      )
+
+      out <- object@trajectories[[1]][ids]
+
+    } else {
+
+      out <- object@trajectories[[1]]
+
+    }
+
+  } else {
+
+    out <- list()
+
+  }
+
+  return(out)
+
+}
+
 
 #' @title Obtain spatial trajectory IDs
 #'
@@ -776,11 +812,20 @@ getSpatialTrajectory <- function(object, id){
 #' @export
 getSpatialTrajectoryIds <- function(object){
 
-  purrr::keep(
-    .x = object@trajectories[[1]],
-    .p = ~ base::class(.x) == "SpatialTrajectory"
-  ) %>%
+  out <-
+    purrr::keep(
+      .x = object@trajectories[[1]],
+      .p = ~ base::class(.x) == "SpatialTrajectory"
+    ) %>%
     base::names()
+
+  if(base::is.null(out)){
+
+    out <- base::character(0)
+
+  }
+
+  return(out)
 
 }
 

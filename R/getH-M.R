@@ -59,6 +59,8 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 #' its id.
 #'
 #' @param id Character value. The ID of the image annotation of interest.
+#'
+#' @inherit getImageAnnotations params
 #' @inherit argument_dummy params
 #'
 #' @return An object of class \code{ImageAnnotation}.
@@ -67,6 +69,8 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
 getImageAnnotation <- function(object,
                                id,
+                               add_barcodes = TRUE,
+                               strictly = FALSE,
                                add_image = TRUE,
                                expand = 0,
                                square = FALSE){
@@ -304,7 +308,7 @@ getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "
     tags = tags,
     test = test
   ) %>%
-    purrr::map(.f = ~ .x@barcodes) %>%
+    purrr::map(.f = ~ .x@misc[["barcodes"]]) %>%
     purrr::flatten_chr() %>%
     base::unique()
 
@@ -459,10 +463,21 @@ getImageAnnotationRange <- function(object, id){
 #'
 #' @description Extracts a list of objects of class \code{ImageAnnotaion}.
 #'
+#' @param add_barcodes Logical. If `TRUE`, barcodes of spots that fall into the
+#' area of an image annotation are identified and added to slot @@misc$barcodes
+#' of the output image annotations.
+#'
+#' @param strictly Logical. If `TRUE`, only barcodes of spots that are strictly interior
+#' to the area of an image annotation are added to the output. If `FALSE`,
+#' barcodes of spots that are on the relative interior of the area or are
+#' vertices of the border are added, too.
+#'
 #' @param add_image Logical. If TRUE, the area of the histology image that
 #' is occupied by the annotated structure is added to the \code{ImageAnnotation}
-#' object in slot @@image.
+#' object in slot @@image. Dimensions of the image can be adjusted with `square`
+#' and `expand`.
 #'
+#' @inherit getBarcodesInPolygon params
 #' @inherit argument_dummy params
 #' @inherit getImage details
 #'
@@ -479,6 +494,7 @@ getImageAnnotations <- function(object,
                                 tags = NULL,
                                 test = "any",
                                 add_barcodes = TRUE,
+                                strictly = FALSE,
                                 add_image = TRUE,
                                 expand = 0,
                                 square = FALSE,
@@ -657,23 +673,16 @@ getImageAnnotations <- function(object,
 
       polygon_df <- img_ann@area
 
-      barcodes_pos <-
-        sp::point.in.polygon(
-          point.x = coords_df$x, # x coordinates of all spatial positions
-          point.y = coords_df$y, # y coordinates of all spatial positions
-          pol.x = polygon_df$x, # x coordinates of the segments vertices
-          pol.y = polygon_df$y
+      img_ann@misc$barcodes <-
+        getBarcodesInPolygon(
+          object = object,
+          polygon_df = polygon_df,
+          strictly = strictly
         )
-
-      barcodes_to_add <-
-        coords_df$barcodes[barcodes_pos != 0]
-
-      img_ann@barcodes <- barcodes_to_add
 
     }
 
     img_annotations[[nm]] <- img_ann
-
 
   }
 
@@ -884,6 +893,7 @@ getImageAnnotationScreeningDf <- function(object,
         smooth = FALSE,
         normalize = FALSE,
         method_gs = method_gs,
+        verbose = verbose,
         ...
       )
 
@@ -1073,15 +1083,66 @@ getImageDims <- function(object, ...){
 }
 
 
+
+
 #' @rdname getImageDirLowres
 #' @export
-getImageDirHighres <- function(object, check = TRUE){
+getImageDir <- function(object, name){
+
+  io <- getImageObject(object)
+
+  if(base::length(io@dir_misc) == 0){
+
+    stop("No specific image directories found.")
+
+  } else {
+
+    confuns::check_one_of(
+      input = name,
+      against = base::names(io@dir_misc),
+      ref.opt.2 = "specific image directories",
+      fdb.opt = 2
+    )
+
+  }
+
+  out <- io@dir_misc[[name]]
+
+  return(out)
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirectories <- function(object){
+
+  io <- getImageObject(object)
+
+  c(
+    "default" = io@dir_default,
+    "lowres" = io@dir_lowres,
+    "highres" = io@dir_highres,
+    purrr::map_chr(
+      .x = io@dir_misc,
+      .f = ~ .x
+    )
+  )
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 
   dir_highres <- getImageObject(object)@dir_highres
 
   if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
 
-    stop("Could not find directory to high resolution image. Set with `setImageHighresDir()`.")
+    msg <- "Could not find directory to high resolution image. Set with `setImageHighresDir()`."
+
+    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
 
   }
 
@@ -1098,22 +1159,36 @@ getImageDirHighres <- function(object, check = TRUE){
 
 #' @title Obtain image directories
 #'
-#' @description Extracts image directories.
+#' @description Extracts image directories known to the `SPATA2` object.
+#'
+#' @param check Logical value. If `TRUE`, it is checked if the file actually exists.
+#' @param name Character value. The name of the specific image to load.
 #'
 #' @inherit argument_dummy params
-#' @param check Logical value. If set to TRUE the input directory is checked
-#' for validity and it is checked if the file actually exists.
 #'
-#' @return Character value.
+#' @return Character vector.
+#'
+#' @details `getImageDirectories()` returns all image directories known to
+#' the `SPATA2` object. `getImageDirLowres()`, `getImageDirHighres()` and
+#' `getImageDirDefault()` return the directories of the respective slot of
+#' the `HistologyImaging` object. `getImageDir()` extracts specific directories
+#' that were set with `setImageDir()` by name.
+#'
+#' @seealso [`setImageDir()`] to set specific image directories. [`loadImage()`],
+#' [`loadImageHighres()`], [`loadImageLowres()`], [`loadImageDefault()`] to
+#' exchange images.
+#'
 #' @export
 #'
-getImageDirLowres <- function(object, check = TRUE){
+getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
 
   dir_lowres <- getImageObject(object)@dir_lowres
 
   if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
 
-    stop("Could not find directory to low resolution image. Set with `setImageLowresDir()`.")
+    msg <- "Could not find directory to low resolution image. Set with `setImageLowresDir()`."
+
+    confuns::give_feedback(msg = msg, fdb.fn = fdb_fn, with.time = FALSE)
 
   }
 
@@ -1126,6 +1201,7 @@ getImageDirLowres <- function(object, check = TRUE){
   return(dir_lowres)
 
 }
+
 
 
 #' @title Obtain object of class \code{HistologyImage}

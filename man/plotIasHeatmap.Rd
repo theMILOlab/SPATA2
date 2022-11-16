@@ -20,7 +20,7 @@ plotIasHeatmap(
   .cols = dplyr::everything(),
   summarize_with = "mean",
   .f = NULL,
-  verbose = TRUE,
+  verbose = NULL,
   ...
 )
 }

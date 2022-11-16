@@ -2,9 +2,12 @@
 % Please edit documentation in R/n.R
 \name{nSpatialTrajectories}
 \alias{nSpatialTrajectories}
+\alias{nTrajectories}
 \title{Number of spatial trajectories}
 \usage{
 nSpatialTrajectories(object)
+
+nTrajectories(objcect)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

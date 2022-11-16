@@ -92,6 +92,15 @@ nSpatialTrajectories <- function(object){
 
 }
 
+#' @rdname nSpatialTrajectories
+#' @export
+nTrajectories <- function(objcect){
+
+  getTrajectoryIds(object) %>%
+    base::length()
+
+}
+
 
 
 

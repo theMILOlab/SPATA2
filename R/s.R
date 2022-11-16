@@ -267,6 +267,91 @@ saveSpataObject <- function(object,
 
 # scale -------------------------------------------------------------------
 
+
+
+#' @title Scale coordinate variable pairs
+#'
+#' @description Scales coordinate variable pairs in a data.frame by multiplying
+#' them with a scale factor.
+#'
+#' @param scale_fct Numeric bigger than 0. If length 1, is recycled to
+#' scale x- and y-coordinates. If length 2, first value scales x- and
+#' second value scales y-coordinates.
+#'
+#' @inherit rotate_coords_df params details return
+#'
+#' @export
+#'
+scale_coords_df <- function(df,
+                            scale_fct = 1,
+                            coord_vars = list(pair1 = c("x", "y"),
+                                              pair2 = c("xend", "yend"),
+                                              pair3 = c("col", "row"),
+                                              pair4 = c("imagecol", "imagerow")
+                            ),
+                            verbose = FALSE,
+                            error = FALSE,
+                            ...){
+
+  confuns::is_vec(scale_fct, mode = "numeric", min.length = 1)
+
+  if(base::length(scale_fct) == 1){
+
+    scale_fct <- base::rep(scale_fct, 2)
+
+  }
+
+  if(base::is.vector(coord_vars, mode = "character")){
+
+    coords_vars <- list(coord_vars[1:2])
+
+  } else {
+
+    base::stopifnot(confuns::is_list(input = coord_vars))
+
+    coord_vars <-
+      purrr::keep(.x = coord_vars, .p = base::is.character) %>%
+      purrr::map(.x = ., .f = ~.x[1:2])
+
+  }
+
+  for(pair in coord_vars){
+
+    if(base::all(pair %in% base::colnames(df))){
+
+      df[[pair[1]]] <- df[[pair[1]]] * scale_fct[1]
+      df[[pair[2]]] <- df[[pair[2]]] * scale_fct[2]
+
+    } else {
+
+      ref <- confuns::scollapse(string = pair)
+
+      msg <- glue::glue("Coords-var pair {ref} does not exist in input data.frame. Skipping.")
+
+      if(base::isTRUE(error)){
+
+        stop(msg)
+
+      } else {
+
+        confuns::give_feedback(
+          msg = msg,
+          verbose = verbose,
+          ...
+        )
+
+      }
+
+
+    }
+
+  }
+
+  return(df)
+
+}
+
+
 scale_nuclei_df <- function(object,
                             nuclei_df,
                             x = "Location_Center_X",
@@ -295,19 +380,72 @@ scale_nuclei_df <- function(object,
 }
 
 
-
-
-#' @title Scale coordinates
+#' @title Scale image and coordinates
 #'
-#' @description Scales coordinates of spatial aspects in the `SPATA2` object.
+#' @description The `rotate*()` family scales the current image
+#' or coordinates of spatial aspects or everything. See details
+#' for more information.
 #'
-#' @param scale_fct Numeric vector of length two. Scale factors with which the coordinates
-#' are multiplied. First value is used for x-, second value is used for y-coordinates.
+#' @inherit flipAll params
+#' @inherit scale_coords_df params
 #' @inherit argument_dummy params
-#' @inherit update_dummy return
+#' @inherit update_dummy params
+#'
+#' @details The `scale*()` functions can be used to scale the complete `SPATA2`
+#' object content or to scale single aspects.
+#'
+#' \itemize{
+#'  \item{`scaleAll()`:}{ Scales image as well as every single spatial aspect.
+#'  **Always tracks the justification.**}
+#'  \item{`scaleImage()`:}{ Scales the image.}
+#'  \item{`scaleCoordinates()`:}{ Scales the coordinates data.frame, image annotations
+#'  and spatial trajectories.}
+#'  \item{`scaleCoordsDf()`:}{ Scales the coordinates data.frame.}
+#'  \item{`scaleImageAnnotations()`:}{ Scales image annotations.}
+#'  \item{`scaleSpatialTrajectories()`:}{ Scales spatial trajectories.}
+#'  }
+#'
+#'  @seealso [`flipAll()`], [`rotateAll()`]
 #'
 #' @export
-#'
+
+
+scaleAll <- function(object, scale_fct){
+
+  object <- scaleImage(object, scale_fct = scale_fct)
+
+  object <- scaleCoordinates(object, scale_fct = scale_fct, verbose = FALSE)
+
+  return(object)
+
+}
+
+
+#' @rdname scaleAll
+#' @export
+scaleImage <- function(object, scale_fct){
+
+  io <- getImageObject(object)
+
+  width <- io@image_info$dim_stored[1] * scale_fct
+  height <- io@image_info$dim_stored[2] * scale_fct
+
+  io@image <- EBImage::resize(x = io@image, w = width, h = height)
+
+  io@image_info$dim_stored <- base::dim(io@image)
+  io@image_info$img_scale_fct * io@image_info$img_scale_fct * scale_fct
+
+  object <- setImageObject(object, image_object = io)
+
+  object@information$pxl_scale_fct <-
+    object@information$pxl_scale_fct * scale_fct
+
+  return(object)
+
+}
+
+#' @rdname scaleAll
+#' @export
 scaleCoordinates <- function(object, scale_fct, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -337,7 +475,7 @@ scaleCoordinates <- function(object, scale_fct, verbose = NULL){
 
 }
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
 
@@ -351,10 +489,10 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
   coords_df <- getCoordsDf(object)
 
   coords_df_new <-
-    dplyr::mutate(
-      .data = coords_df,
-      x = x * scale_fct[1],
-      y = y * scale_fct[2]
+    scale_coords_df(
+      df = coords_df,
+      scale_fct = scale_fct,
+      verbose = FALSE
     )
 
   object <- setCoordsDf(object, coords_df = coords_df_new)
@@ -362,7 +500,6 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
   return(object)
 
 }
-
 
 #' @rdname scaleCoordinates
 #' @export
@@ -379,22 +516,23 @@ scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 
   }
 
-  image_obj <- getImageObject(object)
+  io <- getImageObject(object)
 
-  image_obj@annotations <-
+  io@annotations <-
     purrr::map(
-      .x = image_obj@annotations,
+      .x = io@annotations,
       .f = function(img_ann){
 
-        img_ann@area$x <- img_ann@area$x * scale_fct[1]
-        img_ann@area$y <- img_ann@area$y * scale_fct[2]
+        img_ann@area <- scale_coords_df(df = img_ann@area, scale_fct = scale_fct)
+
+        img_ann@info$current_dim <- img_ann@info$current_dim * scale_fct
 
         return(img_ann)
 
       }
     )
 
-  object <- setImageObject(object, image_object = image_obj)
+  object <- setImageObject(object, image_object = io)
 
   return(object)
 
@@ -422,15 +560,10 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
       .f = function(traj){
 
         traj@projection <-
-          traj@projection %>%
-          dplyr::mutate(x = x * scale_fct[1], y = y * scale_fct[2])
+          scale_coords_df(df = traj@projection, scale_fct = scale_fct)
 
         traj@segment <-
-          traj@segment %>%
-          dplyr::mutate(
-            x = x * scale_fct[1], xend = xend * scale_fct[1],
-            y = y * scale_fct[2], yend = yend * scale_fct[2]
-          )
+          scale_coords_df(df = traj@segment, scale_fct = scale_fct)
 
         return(traj)
 
@@ -615,7 +748,7 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
     setNames(slotNames(object))
 
 
-  n_bcsp <- base::length(object@barcodes)
+  n_bcsp <- base::length(object@misc[["barcodes"]])
 
   n_vert <- base::nrow(object@area)
 

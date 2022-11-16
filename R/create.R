@@ -847,7 +847,7 @@ createImageAnnotations <- function(object, ...){
                   object = spata_object(),
                   ids = input$img_ann_ids,
                   display_color = TRUE,
-                  linesize = input$linesize2,
+                  line_size = input$linesize2,
                   alpha = (1 - input$transparency),
                   clrp = "default"
                 )
@@ -1455,81 +1455,168 @@ createImageAnnotations <- function(object, ...){
 
 #' @title Create S4 Image object for SPATA2
 #'
-#' @description Creates the basic S4 image object that is put
-#' in slot @@images in the \code{SPATA2} object.
+#' @description Creates an object of class `HistologyImaging` that is used to
+#' store the image, image meta data and image annotations.
 #'
-#' @param image Image of class \code{EBImage}.
-#' @param image_class Name of the S4 object. One of \code{validImageClasses()}.
-#' @param ...
+#' Located in slot @@images in the \code{SPATA2} object.
 #'
-#' @return An object of class \code{image_class}.
+#' @param image Image input or character value. If character, input is interpreted as a directory
+#' to a file or to an URL and is read with `EBImage::readImage()`. The read image
+#' should be of type *.png*, *.jpeg* or *.tiff*. Capital letters work, too.
+#'
+#' If not character, the function ensures that the input is - or is convertible - to
+#' class `Image` via `EBimage::as.Image()`. If that fails, an error is thrown.
+#'
+#' @return An object of class `HistologyImaging`.
+#'
+#' @seealso `?HistologyImaging` for the documentation of all slots.
+#'
 #' @export
-#'
-createImageObject <- function(image, image_class = "HistologyImage", ...){
 
-  if(!base::is.null(image) && base::isFALSE(stop_if_null)){
+createHistologyImaging <- function(image,
+                                   id,
+                                   img_scale_fct = 1,
+                                   meta = list(),
+                                   pxl_scale_fct = NULL,
+                                   coordinates = NULL,
+                                   verbose = TRUE,
+                                   ...){
 
-    confuns::check_one_of(
-      input = image_class,
-      against = validImageClasses()
+  # empty image object
+  hist_im <- HistologyImaging()
+
+  hist_im@id <- id[1]
+
+  # set image
+  if(base::is.character(image)){
+
+    # ensure character value
+    image <- image[1]
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading image from '{image}'."),
+      verbose = verbose
     )
 
-    image_obj <-
-      methods::new(
-        Class = image_class,
-        image = image,
-        ...
-      )
+    hist_im@image <- EBImage::readImage(files = image[1])
 
+    hist_im@dir_default <- image
+
+    origin <- image
 
   } else {
 
-    image_obj <- NULL
+    hist_im@image <- EBImage::as.Image(x = image)
+
+    origin <- base::substitute(expr = image)
 
   }
 
-  return(image_obj)
+  dim_input <- base::dim(hist_im@image)
+  dim_stored <- base::dim(hist_im@image)
+
+  # rescale default image if needed
+  if(img_scale_fct > 1){
+
+    stop("`img_scale_fct` must not be > 1.")
+
+  } else if(img_scale_fct < 1){
+
+    dim_stored <- dim_input
+
+    dim_stored[1:2] <- dim_input[1:2] * img_scale_fct
+
+    hist_im@image <-
+      EBImage::resize(
+        x = hist_im@image,
+        w = dim_stored[1],
+        h = dim_stored[2]
+      )
+
+  }
+
+  # set info slot
+  hist_im@image_info <-
+    list(
+      dim_input = dim_input,
+      dim_stored = dim_stored,
+      img_scale_fct = img_scale_fct,
+      origin = origin
+    )
+
+  # set justification
+  hist_im@justification <-
+    list(
+      angle = 0,
+      flipped = list(horizontal = FALSE, vertical = FALSE)
+      # track = TRUE/FALSE as an instruction?
+    )
+
+  # set coordinates
+  if(base::is.null(coordinates)){
+
+    hist_im@coordinates <-
+      tidyr::expand_grid(
+        x = reduce_vec(x = 1:hist_im@image_info$dim_input[1], n = 10), # take every 10th element
+        y = reduce_vec(x = 1:hist_im@image_info$dim_input[2], n = 10)
+      )
+
+  } else if(base::is.data.frame(coordinates)){
+
+    confuns::check_data_frame(
+      df = coordinates,
+      var.class = list(x = "numeric", y = "numeric")
+    )
+
+    hist_im@coordinates <- coordinates
+
+  }
+
+
+  # set misc
+  hist_im@misc <- list(...)
+
+  return(hist_im)
 
 }
+
 
 # createS -----------------------------------------------------------------
 
 
 #' @title Interactive sample segmentation
 #'
-#' @description This function gives access to an interactive user interface
-#' barcode spots can be interactively annotated.
-#'
-#' Not to confuse with \code{annotateImage()}.
+#' @description Gives access to an interactive user interface where barcode-spots
+#' can be interactively annotated.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy params
 #'
 #' @details Segmentation variables are grouping variables that are stored in
-#' the feature data.frame of the spata object (such as clustering variables).
-#' They differ from clustering variables in so far as that
-#' they are not the result of unsupervised cluster algorithms but results from
-#' group assignment the researcher conducted him/herself.
-#' (E.g. histologial classification.)
+#' the feature data.frame of the `SPATA2` object (such as clustering variables).
+#' They differ from clustering variables in so far as that they are not the result
+#' of unsupervised cluster algorithms but from group assignment the researcher
+#' conducts him/herself (e.g. histological classification).
 #'
 #' Therefore, all segmentation variables can be extracted via \code{getFeatureNames()}
 #' as they are part of those. To specifically extract variables that were created
-#' with \code{createSegmentation()} use \code{getSegmentationVariableNames()}. To remove
+#' with \code{createSpatialSegmentation()} use \code{getSegmentationVariableNames()}. To remove
 #' annotations you no longer need use \code{discardSegmentationVariable()}.
 #'
 #' @note The interface allows to zoom in on the sample. This is useful if your
-#' spata object contains an HE-image as background and you want to classify
+#' `SPATA2` object contains an HE-image as background and you want to classify
 #' barcode spots based on the histology. As these images are displayed by pixels
 #' the resolution decreases the more you zoom in. Many experiments (such as
 #' the Visium output) contain high resolution images. You can use the function
 #' \code{exchangeImage()} to read in images of higher resolution for a better
 #' histological classification.
 #'
+#'
 #' @seealso exchangeImage()
 #'
-#' @return An updated spata object.
 #' @export
 #'
-createSegmentation <- function(object, height = 500, break_add = NULL, box_widths = c(4,4,4)){
+createSpatialSegmentation <- function(object, height = 500, break_add = NULL, box_widths = c(4,4,4)){
 
   new_object <-
     shiny::runApp(
@@ -2828,15 +2915,11 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
 }
 
-#' @rdname createSegmentation
-#' @export
-createSpatialSegmentation <- createSegmentation
 
-
-#' @title Spatial Trajectories
+#' @title Create spatial trajectories
 #'
 #' @description Provides access to an interactive shiny application
-#' where trajectories can be drawn..
+#' where trajectories can be drawn.
 #'
 #' @inherit argument_dummy params
 #'

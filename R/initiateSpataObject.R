@@ -46,6 +46,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   object@images <- empty_list
   object@spatial <- empty_list
   object@trajectories <- empty_list
+  object@used_genesets <- SPATA2::gsdf
 
   # set version
   object@version <- current_spata_version
@@ -976,14 +977,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   confuns::give_feedback(msg = "Initiating spata-object.", verbose = verbose)
 
-  spata_object <-
-    transformSeuratToSpata(
-      seurat_object = processed_seurat_object,
-      sample_name = sample_name,
-      gene_set_path = gene_set_path,
-      method = "spatial",
-      verbose = verbose
-    )
+  spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name)
 
 
   # -----
@@ -1027,8 +1021,6 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
-  assign("spata_object", spata_object, envir = .GlobalEnv)
-
   # miscellaneous
   spata_object <- setPixelScaleFactor(spata_object)
 
@@ -1044,11 +1036,14 @@ initiateSpataObject_10X <- function(directory_10X,
   }
 
   # set image directories
+
+
+
   dir_lowres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
 
   if(base::file.exists(dir_lowres)){
 
-    spata_object <- setImageDirLowres(spata_object, dir_lowres = dir_lowres, check = FALSE)
+    spata_object <- setImageDirLowres(spata_object, dir = dir_lowres, check = FALSE)
 
   }
 
@@ -1056,7 +1051,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   if(base::file.exists(dir_highres)){
 
-    spata_object <- setImageDirHighres(spata_object, dir_highres = dir_highres, check = FALSE)
+    spata_object <- setImageDirHighres(spata_object, dir = dir_highres, check = FALSE)
 
   }
 

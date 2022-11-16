@@ -463,8 +463,12 @@ depr_info <-
   list(
     fns = list(
       # deprecated            ~   replaced by
+      "adjustdDefaultInstructions" = "setDefault",
       "assessTrajectoryTrends" = "spatialTrajectoryScreening",
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
+      "createImageObject" = "createHistologyImage",
+      "createHistologyImage" = "createHistologyImaging",
+      "createSegmentation" = "createSpatialSegmentation",
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "flipCoords" = "flipCoordinates",
@@ -477,16 +481,8 @@ depr_info <-
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
       "is_euol_dist" = "is_dist_euol",
+      "is_dist_euol" = "is_dist_si",
       "is_pixel_dist" = "is_dist_pixel",
-
-      "is_dist_euol" = "is_dist_si", # start
-      "transform_euol_to_pixel" = "transform_dist_si_to_pixel",
-      "transform_euol_to_pixels" = "transform_dist_si_to_pixels",
-      "transform_pixel_to_euol" = "transform_pixel_to_dist_si",
-      "transform_pixels_to_euol" = "transform_pixels_to_dist_si",
-      "transform_si_to_pixel" = "transform_area_si_to_pixel",
-      "transform_si_to_pixels" = "transform_area_si_to_pixels", # end?
-
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
@@ -500,7 +496,13 @@ depr_info <-
       "subsetByBarcodes_CountMtr" = "subsetByBarcodes",
       "subsetByBarcodes_ExprMtr" = "subsetByBarcodes",
       "subsetBySegment_CountMtr" = "subsetByBarcodes",
-      "subsetBySegment_ExprMtr" = "subsetByBarcodes"
+      "subsetBySegment_ExprMtr" = "subsetByBarcodes",
+      "transform_euol_to_pixel" = "transform_dist_si_to_pixel",
+      "transform_euol_to_pixels" = "transform_dist_si_to_pixels",
+      "transform_pixel_to_euol" = "transform_pixel_to_dist_si",
+      "transform_pixels_to_euol" = "transform_pixels_to_dist_si",
+      "transform_si_to_pixel" = "transform_area_si_to_pixel",
+      "transform_si_to_pixels" = "transform_area_si_to_pixels"
     ),
     args = list(
       "euol" = "unit",
@@ -512,8 +514,10 @@ depr_info <-
       "trajectory_name" = "id"
     ),
     args_spec = list(
-      "exchangeImage" = list("image_dir" = "image"),
-      "runBayesSpaceClustering" = list("dirname" = "directory_10X")
+      "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
+      "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
+      "setImageDirHighres" = list("dir_highres" = "dir"),
+      "setImageDirLowres" = list("dir_lowres" = "dir")
     )
   )
 

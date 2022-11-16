@@ -150,11 +150,9 @@ setCnvResults <- function(object, cnv_list, ...){
 #' @inherit set_dummy params return details
 #' @export
 
-setCoordsDf <- function(object, coords_df, of_sample = ""){
+setCoordsDf <- function(object, coords_df, ...){
 
   check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
 
   confuns::check_data_frame(
     df = coords_df,
@@ -164,10 +162,10 @@ setCoordsDf <- function(object, coords_df, of_sample = ""){
     ref = "coords_df"
   )
 
-  coords_df <- dplyr::mutate(.data = coords_df, sample = {{of_sample}})
+  coords_df <- dplyr::mutate(.data = coords_df, sample = getSampleName(object))
 
-  object@coordinates[[of_sample]] <- coords_df
-  object@images[[of_sample]]@coordinates <- coords_df
+  object@coordinates[[1]] <- coords_df
+  object@images[[1]]@coordinates <- coords_df
 
   return(object)
 
@@ -244,6 +242,53 @@ setDeaResults <- function(object, dea_results, across, method_de, ...){
   return(object)
 
 }
+
+
+#' @title Set object specific default
+#'
+#' @description Sets object specific default for recurring arguments
+#' such as `pt_alpha`, `pt_clrp`, `verbose`.
+#'
+#' @param ... Named arguments whoose default input you want to override.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+
+setDefault <- function(object, ...){
+
+  named_list <-
+    confuns::keep_named(input = list(...))
+
+  names_args <- base::names(named_list)
+
+  valid_arg_names <-
+    confuns::check_vector(
+      input = names_args,
+      against = validDefaultInstructionSlots(),
+      fdb.fn = "warning",
+      ref.input = "the named input",
+      ref.against = "valid instruction slots. run validDefaultInstructionSlots() to obtain all valid input options"
+    )
+
+  valid_list <- named_list[valid_arg_names]
+
+  dflt_instr <- getDefaultInstructions(object)
+
+  for(nm in valid_arg_names){
+
+    methods::slot(dflt_instr, name = nm) <- valid_list[[nm]]
+
+  }
+
+  object@information$instructions$default <- dflt_instr
+
+  return(object)
+
+
+}
+
 
 #' @title Default grouping
 #'
@@ -460,8 +505,7 @@ setImage <- function(object, image, of_sample = ""){
 #' @inherit argument_dummy params
 #'
 #' @export
-setImageAnnotation <- function(object, img_ann, overwrite = FALSE){
-
+setImageAnnotation <- function(object, img_ann, align = TRUE, overwrite = FALSE){
 
   check <-
     base::identical(
@@ -483,7 +527,23 @@ setImageAnnotation <- function(object, img_ann, overwrite = FALSE){
     overwrite = overwrite
   )
 
-  object@images[[1]]@annotations[[img_ann@id]] <- img_ann
+  io <- getImageObject(object)
+
+  if(base::isTRUE(align)){
+
+    img_ann <- alignImageAnnotation(img_ann = img_ann, image_object = io)
+
+  }
+
+  # ensure empty image
+  img_ann@image <- EBImage::as.Image(base::matrix())
+
+  # ensure no barcodes
+  img_ann@misc$barcodes <- NULL
+
+  io@annotations[[img_ann@id]] <- img_ann
+
+  object <- setImageObject(object, image_object = io)
 
   return(object)
 
@@ -491,7 +551,7 @@ setImageAnnotation <- function(object, img_ann, overwrite = FALSE){
 
 #' @rdname setImageAnnotation
 #' @export
-setImageAnnotations <- function(object, img_anns, overwrite = FALSE){
+setImageAnnotations <- function(object, img_anns, align = TRUE, overwrite = FALSE){
 
   if(!base::isTRUE(overwrite)){
 
@@ -514,6 +574,7 @@ setImageAnnotations <- function(object, img_anns, overwrite = FALSE){
       setImageAnnotation(
         object = object,
         img_ann = img_anns[[img_ann]],
+        align = align,
         overwrite = overwrite
       )
 
@@ -524,26 +585,57 @@ setImageAnnotations <- function(object, img_anns, overwrite = FALSE){
 }
 
 
+
 #' @rdname setImageDirLowres
 #' @export
-setImageDirHighres <- function(object, dir_highres, check = TRUE, verbose = NULL){
+setImageDirDefault <- function(object, dir, check = TRUE, verbose = NULL, ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
   if(base::isTRUE(check)){
 
-    confuns::check_directories(directories = dir_highres, type = "files")
+    confuns::check_directories(directories = dir, type = "files")
 
   }
 
   img_object <- getImageObject(object)
 
-  img_object@dir_highres <- dir_highres
+  img_object@dir_default <- dir
 
   object <- setImageObject(object, image_object = img_object)
 
   confuns::give_feedback(
-    msg = glue::glue("Image directory high resolution set to '{dir_highres}'."),
+    msg = glue::glue("Default image directory set to '{dir}'."),
+    verbose = verbose
+  )
+
+}
+
+
+#' @rdname setImageDirLowres
+#' @export
+setImageDirHighres <- function(object, dir, check = TRUE, verbose = NULL, ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir, type = "files")
+
+  }
+
+  img_object <- getImageObject(object)
+
+  img_object@dir_highres <- dir
+
+  object <- setImageObject(object, image_object = img_object)
+
+  confuns::give_feedback(
+    msg = glue::glue("Image directory high resolution set to '{dir}'."),
     verbose = verbose
   )
 
@@ -555,33 +647,37 @@ setImageDirHighres <- function(object, dir_highres, check = TRUE, verbose = NULL
 #'
 #' @description Sets image directories that facilitate image exchanges.
 #'
-#' @inherit argument_dummy params
-#' @param dir_lowres,dir_highres Character value. The file directories to
-#' the corresponding images.
 #' @param check Logical value. If set to TRUE the input directory is checked
 #' for validity and it is checked if the file actually exists.
 #'
-#' @return An updated spata object.
+#' @inherit addImageDir params
+#' @inherit argument_dummy params
+#' @inherit update_dummy params
+#'
+#' @seealso [`addImageDir()`]
+#'
 #' @export
 #'
-setImageDirLowres <- function(object, dir_lowres, check = TRUE, verbose = NULL){
+setImageDirLowres <- function(object, dir, check = TRUE, verbose = NULL, ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
   if(base::isTRUE(check)){
 
-    confuns::check_directories(directories = dir_lowres, type = "files")
+    confuns::check_directories(directories = dir, type = "files")
 
   }
 
   img_object <- getImageObject(object)
 
-  img_object@dir_lowres <- dir_lowres
+  img_object@dir_lowres <- dir
 
   object <- setImageObject(object, image_object = img_object)
 
   confuns::give_feedback(
-    msg = glue::glue("Image directory low resolution set to '{dir_lowres}'."),
+    msg = glue::glue("Image directory low resolution set to '{dir}'."),
     verbose = verbose
   )
 
@@ -590,6 +686,10 @@ setImageDirLowres <- function(object, dir_lowres, check = TRUE, verbose = NULL){
 }
 
 
+#' @title Set image object
+#'
+#' @export
+#'
 setImageObject <- function(object, image_object){
 
   sample_name<- getSampleNames(object)
@@ -786,9 +886,64 @@ setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
 # setT --------------------------------------------------------------------
 
 
-setTrajectory <- function(object, trajectory){
+#' @title Set trajectories
+#' @export
 
-  object@trajectories[[1]][[trajectory@id]] <- trajectory
+setTrajectory <- function(object, trajectory, overwrite = FALSE){
+
+
+  if(nTrajectories(object) != 0 ){
+
+    confuns::check_none_of(
+      input = trajectory@id,
+      against = getTrajectoryIds(object),
+      ref.input = "input trajectories",
+      ref.against = "existing trajectories",
+      overwrite = overwrite
+    )
+
+    object@trajectories[[1]][[trajectory@id]] <- trajectory
+
+
+  } else {
+
+    object@trajectories[[1]][[trajectory@id]] <- trajectory
+
+  }
+
+  return(object)
+
+}
+
+#' @rdname setTrajectory
+#' @export
+setTrajectories <- function(object, trajectories, overwrite = FALSE){
+
+  trajectories <-
+    purrr::keep(.x = trajectories, .p = isTrajectory) %>%
+    purrr::set_names(nm = purrr::map_chr(.x = ., .f = ~ .x@id))
+
+  if(nTrajectories(object) == 0){
+
+    # replace empty list
+    object@trajectories[[1]] <- trajectories
+
+  } else {
+
+    tnames <- base::names(trajectories)
+
+    confuns::check_none_of(
+      input = tnames,
+      against = getTrajectoryIds(object),
+      ref.input = "input trajectories",
+      ref.against = "existing trajectories",
+      overwrite = overwrite
+    )
+
+    # set in existing list
+    object@trajectories[[1]][tnames] <- trajectories
+
+  }
 
   return(object)
 

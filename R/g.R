@@ -820,8 +820,8 @@ ggpLayerImage <- function(object = "object"){
 #' @param ... Additional arguments given to \code{scale_color_add_on()}. Used to
 #' set the color adjustments of the polygon (fill and color).
 #'
+#' @inherit getImageAnnotations params details
 #' @inherit ggpLayer_dummy return
-#' @inherit getImageAnnotations details
 #'
 #' @note Adds two additional layers to set the scales for the color- and
 #' fill aesthetic of the plot.

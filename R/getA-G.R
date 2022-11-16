@@ -241,14 +241,13 @@ getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
     sp::point.in.polygon(
       point.x = coords_df[["x"]],
       point.y = coords_df[["y"]],
-      pol.x = coords_df[["x"]],
-      poly = coords_df[["y"]]
+      pol.x = polygon_df[["x"]],
+      pol.y = polygon_df[["y"]]
     )
 
+  valid_res <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
 
-  valid_res <- base::ifelse(strictly, yes = 1, no = c(1,2,3))
-
-  coords_df_sub <- coords_df[res %in% valis_res, ]
+  coords_df_sub <- coords_df[res %in% valid_res, ]
 
   out <- coords_df_sub[["barcodes"]]
 

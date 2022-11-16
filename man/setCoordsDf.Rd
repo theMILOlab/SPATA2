@@ -4,7 +4,7 @@
 \alias{setCoordsDf}
 \title{Set the coordinates}
 \usage{
-setCoordsDf(object, coords_df, of_sample = "")
+setCoordsDf(object, coords_df, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -16,9 +16,6 @@ setCoordsDf(object, coords_df, of_sample = "")
 \item{\emph{x} Numeric. The x-coordinates of every barcode.}
 \item{\emph{y} Numeric. The y-coordinates of every barcode.}
 }}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A spata object containing the set input.

@@ -5,9 +5,9 @@
 \alias{setImageAnnotations}
 \title{Set image annotations}
 \usage{
-setImageAnnotation(object, img_ann, overwrite = FALSE)
+setImageAnnotation(object, img_ann, align = TRUE, overwrite = FALSE)
 
-setImageAnnotations(object, img_anns, overwrite = FALSE)
+setImageAnnotations(object, img_anns, align = TRUE, overwrite = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

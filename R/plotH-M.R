@@ -187,8 +187,10 @@ plotIasHeatmap <- function(object,
                            .cols = dplyr::everything(),
                            summarize_with = "mean",
                            .f = NULL,
-                           verbose = TRUE,
+                           verbose = NULL,
                            ...){
+
+  hlpr_assign_arguments(object)
 
   # 1. Control --------------------------------------------------------------
 
@@ -657,12 +659,12 @@ plotIasLineplot <- function(object,
   breaks <-
     base::as.numeric(plot_df[["breaks"]]) %>%
     base::unique() %>%
-    reduce_vec(n = x_nth)
+    reduce_vec(nth = x_nth)
 
   labels <-
     base::as.character(plot_df[["labels"]]) %>%
     base::unique() %>%
-    reduce_vec(n = x_nth)
+    reduce_vec(nth = x_nth)
 
   # plot
   ggplot2::ggplot(

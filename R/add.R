@@ -735,17 +735,82 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
 
-  image_obj <- getImageObject(object)
+  io <- getImageObject(object)
 
-  image_obj@annotations[[id]] <- img_ann
+  img_ann@info[["parent_id"]] <- io@id
+  img_ann@info[["parent_origin"]] <- io@image_info[["origin"]]
+  img_ann@info[["current_dim"]] <- io@image_info[["dim_stored"]][1:2]
+  img_ann@info[["current_just"]] <- io@justification
 
-  object <- setImageObject(object, image_obj)
+  io@annotations[[id]] <- img_ann
+
+  object <- setImageObject(object, io)
 
   return(object)
 
 }
 
 
+#' @title Add individual image directories
+#'
+#' @description Adds specific image directories beyond *lowres*
+#' *highres* and *default* with a simple name.
+#'
+#' @param dir Character value. Directory to specific image. Should end
+#' with either *.png*, *.jpeg* or *.tiff*. (Capital endings work, too.)
+#' @param name Character value. Name with which to refer to this image.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+addImageDir <- function(object,
+                        dir,
+                        name,
+                        check = TRUE,
+                        overwrite = FALSE,
+                        verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  io <- getImageObject(object)
+
+  confuns::check_none_of(
+    input = name,
+    against = base::names(io@dir_misc),
+    ref.against = "specific image directory names",
+    overwrite = overwrite
+  )
+
+  confuns::check_none_of(
+    input = dir,
+    against = purrr::map_chr(io@dir_misc, .f = ~ .x),
+    ref.against = "specific image directory names",
+    overwrite = overwrite
+  )
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(dir, type = "file")
+
+  }
+
+  new_dir <- purrr::set_names(x = dir, nm = name)
+
+  io@dir_misc <- c(io@dir_misc, new_dir)
+
+  object <- setImageObject(object, image_object = io)
+
+  msg <- glue::glue("Added new directory named '{name}': {dir}")
+
+  confuns::give_feedback(
+    msg = msg,
+    verbose = verbose
+  )
+
+  return(object)
+
+}
 
 # addP --------------------------------------------------------------------
 

@@ -298,6 +298,17 @@ containsCNV <- function(object){
 
 }
 
+
+
+#' @title Check availability of `HistologyImage` object
+#'
+#' @description Checks if slot @@images contains an object
+#' of class `HistologyImage` or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
 containsHistologyImage <- function(object){
 
@@ -309,6 +320,16 @@ containsHistologyImage <- function(object){
 
 }
 
+
+#' @title Check availability of an image
+#'
+#' @description Checks if slot @@image of the `HistologyImage` object
+#' in the `SPATA2` object contains an image or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
 containsImage <- function(object){
 

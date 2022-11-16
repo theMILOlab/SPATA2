@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{createSpatialTrajectories}
 \alias{createSpatialTrajectories}
-\title{Spatial Trajectories}
+\title{Create spatial trajectories}
 \usage{
 createSpatialTrajectories(object)
 }
@@ -14,5 +14,5 @@ An updated \code{SPATA2} object.
 }
 \description{
 Provides access to an interactive shiny application
-where trajectories can be drawn..
+where trajectories can be drawn.
 }

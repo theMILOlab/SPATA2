@@ -576,10 +576,7 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 13, patch = 0)
 
-    # method
-    mname <- getSpatialMethod(object)@name
-
-    object@information$method <- spatial_methods[[mname]]
+    object@information$method <- spatial_methods[["Visium"]]
 
     object <- setPixelScaleFactor(object, verbose = verbose)
 
@@ -590,6 +587,19 @@ updateSpataObject <- function(object,
 
     active_expr_mtr <- object@information$active_expr_mtr[[1]]
     object@information$active_expr_mtr <- active_expr_mtr
+
+    # add angle and flip data
+    if(containsImageObject(object)){
+
+      io <- getImageObject(object)
+
+      io@info$angle <- 0
+      io@info$flipped <- list(x = FALSE, y = FALSE)
+
+      object <- setImageObject(object, image_object = io)
+
+    }
+
 
 
   }

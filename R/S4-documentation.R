@@ -44,74 +44,165 @@ Trajectory <- setClass(Class = "Trajectory",
 image_class <- "Image"
 base::attr(x = image_class, which = "package") <- "EBImage"
 
-#' @title The \code{HistologyImage} - Class
+
+#' @title The \code{HistologyImaging} - Class
 #'
-#' @description S4 class that represents histology images.
+#' @description S4 class that represents a set of histological images from one
+#' and the same tissue slide.
 #'
 #' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot dir_default character. The default directory that is used to load
-#' the image if slot @@image is empty. Or a string linking to the default slot
-#' ('highres' or 'lowres').
-#' @slot dir_highres character. Directory to the high resolution version of the image.
-#' @slot dir_lowres character. Directory to the low resolution version of the image.
-#' @slot grid data.frame. A data.frame that contains at least a variable
-#' named \emph{x} and a variable named \emph{y} representing a grid.
-#' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
-#' @slot image Image.
-#' @slot info list. A flexible list that is supposed to store miscellaneous
-#' information around the image.
+#' @slot coordinates data.frame. A data.frame of observational units that underlie
+#' the image in case of spatially resolved multi-omic studies. Should contain at least
+#' the  two variables: *x*, *y* and a variable that identifies the observational
+#' units (e.g. *barcodes*).
+#' @slot dir_default character. Directory that leads to the default image for save
+#' exchanging via `loadDefaultImage()`.
+#' @slot dir_highres character. Directory that leads to a high resolution version of the image
+#' for save exchanging via `loadHighresImage()`.
+#' @slot dir_lowres character. Directory that leads to a low resolution version of the image
+#' for save exchanging via `loadLowresImage()`.
+#' @slot dir_misc list. Named list of directories that contain different versions
+#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
+#' `loadImage()`.
+#' @slot grid list. That contains information about spatial grids.
+#' @slot id character. String to identify the imaged tissue.
+#' @slot image Image. Should be compatible with the `EBImage` package.
+#' @slot image_info list. Stores meta data and miscellaneous information regarding the
+#' image that is currently stored in slot @@image. Slots that should always exist:
+#' \itemize{
+#'  \item{*origin*:}{ Character string. Either the directory from where the current image was read
+#'  in or a substitute of the object name that was used from the global environment.}
+#'  \item{*dim_input*:}{ The dimensions with which the image was given to argument `image` of
+#'  `createHistologyImaging()` or `exchangeImage()`.}
+#'  \item{*dim_stored*:}{ The dimensions with which the image is currently stored.}
+#'  \item{*img_scale_fct*:}{ The scale factor input that was used to resize the current image within
+#'  `createHistologyImaging()` or `exchangeImage()` before setting it. If 1, *dim_stored* and *dim_input*
+#'  should be identical. See argument `scale_fct` of `exchangeImage()` for more details on its interpretation.}
+#'   \item{*pxl_scale_fct*:}{ Numeric value that gives the side length of one pixel an SI unit that is stated
+#'   in an attribute called *unit* as nSI-units/px.}
+#'  }
+#' @slot justification list. List of two slots that track justification changes. See corresponding
+#' section below the slot descriptions for more information.
+#' \itemize{
+#'  \item{*angle*:}{ Numeric value that ranges from 0-360.}
+#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'  }
+#' @slot meta list. List for meta data regarding the tissue.
 #' @slot misc list. A flexible list for miscellaneous input.
 #'
+#' @section Requirements:
+#' The `HistologyImaging` framework assumes that all read in images have the same
+#' axes-ratio.
+#'
+#' @section Tracking changes in image justification:
+#' The histology image that is used while creating the object is considered the
+#' default image. By default, the framework assumes that all related images (high resolution,
+#' low resolution, fluorescent images, RAMAN spectroscopy etc.) have the same justification
+#' in terms of angle rotation and axes-flipping. Flipping an image in the `SPATA2` object via
+#'  `flipImage()` or rotating images via `rotateImage()` changes their justification in space.
+#' These changes in justification are tracked (if `track` is not set to `FALSE`) and applied
+#' whenever an image is exchanged via `exchangeImage()` (if `adjust` is not set to `FALSE`).
+#' This ensures consistent image exchanges using the different directories.
+#'
 #' @export
-HistologyImage <- setClass(Class = "HistologyImage",
-                                    slots = list(
-                                      annotations = "list",
-                                      coordinates = "data.frame",
-                                      dir_default = "character",
-                                      dir_highres = "character",
-                                      dir_lowres = "character",
-                                      grid = "list",
-                                      id = "character",
-                                      info = "list",
-                                      image = image_class,
-                                      misc = "list"
-                                    ))
+HistologyImaging <- setClass(Class = "HistologyImaging",
+                             slots = list(
+                               annotations = "list",
+                               coordinates = "data.frame",
+                               dir_default = "character",
+                               dir_highres = "character",
+                               dir_lowres = "character",
+                               dir_misc = "list",
+                               grid = "list",
+                               id = "character",
+                               image = image_class,
+                               image_info = "list",
+                               justification = "list",
+                               meta = "list",
+                               misc = "list")
+                             )
 
 
 # I -----------------------------------------------------------------------
 
 #' @title The \code{ImageAnnotation} - Class
 #'
-#' @description S4 class that contains information used to identify and
-#' annotate structures in histology images.
+#' @description S4 class that represents manually annotated structures in
+#' histology images.
 #'
 #' @slot area data.frame. A data.frame that contains at least the numeric
-#' variables \emph{x} and \emph{y}. Data corresponds to the polygong that
-#' captures the spatial extent of the identified structure.
-#' @slot barcodes character. Character vector of barcodes that fall into the polygon
-#' that encircles the annotated structure.
+#' variables \emph{x} and \emph{y}. Data corresponds to the polygon that
+#' captures the spatial extent/borders of the identified structure.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
-#' @slot image image. Cropped version of the annotated image that only contains
-#' the area where the annotated structure is located (plus expand). This slot is
-#' empty as long as the \code{ImageAnnotation} object is located in an
-#' object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
-#' or \code{getImageAnnotations()} adds the cropped image to the slot.
-#' @slot image_info list. List of infos around the image of slot @@image.
+#' @slot image image. Cropped version of the annotated parent image that only contains
+#' the area where the annotated structure is located (plus expand). This slot should
+#' be empty as long as the \code{ImageAnnotation} object is located in an
+#' object of class \code{HistologyImaging}. Extracting it with \code{getImageAnnotation()}
+#' or \code{getImageAnnotations()} can add a cropped image to the slot. The parameters
+#' with which the image was cropped should be in the list of slot @@image_info.
+#' @slot image_info list. List of information around the image that is currently
+#' stored in slot @@image after being cropped and set within \code{getImageAnnotation()}
+#' or \code{getImageAnnotations()}.
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' image annotation. Slots that should always exist:
+#' \itemize{
+#'  \item{parent_origin:}{ Character string. Content from slot @@info$origin of the `HistologyImaging`
+#'  object the annotation belongs to.}
+#'  \item{parent_id:}{ Character string. Content from slot @@id of the `HistologyImaging`
+#'  object the annotation belongs to.}
+#'  \item{current_dim:}{ Numeric vector of length two. Width and height of the image
+#'  the @@area data.frame is currently scaled to. Used to scale the @@area data.frame
+#'  if the image annotation is extracted and added to a `SPATA2` object with different image resolution.}
+#'  \item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
+#'  @@area data.frame if the image annotation is extracted and added to a `SPATA2` object with
+#'  different justifications.
+#'    \itemize{
+#'     \item{*angle*:}{ Numeric value that ranges from 0-360.}
+#'     \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'   }}
+#'  }
 #' @slot misc list. A flexible list for miscellaneous input.
-#' @slot tags character. Tags that can be used to group iamge annotations in different manners.
-#' This can be a single or multiple strings.
+#' @slot tags character. Vector of arbitrary length. Contains tags that can be used
+#' to group and select image annotations in different manners.
+#'
+#' @section Image annotation tags:
+#' Slot @@tags contains a character vector of arbitrary length that allows
+#' to filter image annotations using a combination of arguments `tags` and
+#' `test` in functions that refer to one or more image annotations like
+#' `getImageAnnotations()` or `plotImageAnnotations()`.
+#'
+#' Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the image annotations of interest. There are multiple options:
+#'
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can contain tags that are not specified.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can not be tagged with anything else.
+#'
+#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
+#' annotation must **not** be tagged with the combination of input tags.
+#'
+#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
+#' must **not** contain any of the input tags.
+#'
+#' Note that the filtering process happens in addition to / after the filtering by input for argument
+#' \code{ids}.
 #'
 #' @export
 #'
 ImageAnnotation <- setClass(Class = "ImageAnnotation",
                                      slots = list(
                                        area = "data.frame",
-                                       barcodes = "character",
                                        id = "character",
                                        image = image_class,
                                        image_info = "list",
+                                       info = "list",
                                        misc = "list",
                                        tags = "character"
                                      )
@@ -291,6 +382,41 @@ data_counts <- setClass("data_counts",
 dim_red <- setClass("dim_red",
                              slots = c(UMAP =  "data.frame",
                                        TSNE ="data.frame"))
+
+
+#' @title The \code{HistologyImage} - Class
+#'
+#' @description S4 class that represents histology images.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot dir_default character. The default directory that is used to load
+#' the image if slot @@image is empty. Or a string linking to the default slot
+#' ('highres' or 'lowres').
+#' @slot dir_highres character. Directory to the high resolution version of the image.
+#' @slot dir_lowres character. Directory to the low resolution version of the image.
+#' @slot grid data.frame. A data.frame that contains at least a variable
+#' named \emph{x} and a variable named \emph{y} representing a grid.
+#' @slot id character. String to identify the object in a list of multiple objects
+#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
+#' @slot image Image.
+#' @slot info list. A flexible list that is supposed to store miscellaneous
+#' information around the image.
+#' @slot misc list. A flexible list for miscellaneous input.
+#'
+#' @export
+HistologyImage <- setClass(Class = "HistologyImage",
+                           slots = list(
+                             annotations = "list",
+                             coordinates = "data.frame",
+                             dir_default = "character",
+                             dir_highres = "character",
+                             dir_lowres = "character",
+                             grid = "list",
+                             id = "character",
+                             info = "list",
+                             image = image_class,
+                             misc = "list"
+                           ))
 
 
 #' spatial_trajectory object

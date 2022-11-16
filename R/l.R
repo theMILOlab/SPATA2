@@ -164,41 +164,66 @@ loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 loadGeneSetDf <- loadGSDF
 
 
-
-
 #' @rdname loadImageLowres
 #' @export
-loadImageHighres <- function(object, verbose = NULL){
+loadImage <- function(object, name, ...){
 
-  hlpr_assign_arguments(object)
+  dir <- getImageDir(object, name = name)
 
-  dir <- getImageDirHighres(object)
-
-  object <- exchangeImage(object, image = dir)
+  object <- exchangeImage(object, image = dir, ...)
 
   return(object)
 
 }
 
-#' @title Exchange images
+
+#' @rdname loadImageLowres
+#' @export
+loadImageDefault <- function(object, ...){
+
+  dir <- getImageDirDefault(object, fdb_fn = TRUE, check = TRUE)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
+
+#' @rdname loadImageLowres
+#' @export
+loadImageHighres <- function(object, ...){
+
+  dir <- getImageDirHighres(object)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
+#' @title Load known images
 #'
-#' @description Exchanges the image of the spata object by using
-#' the directories that have been set with \code{setImageDirLowres()} or
-#' \code{setImageDirHighres()} and scales the barcodes spots coordinates
-#' accordingly.
+#' @description Wrapper around the required `getImageDir*()` function and
+#' `exchangeImage()`. Exchanges the image of the `SPATA2` object by using
+#' the directories that have been set with \code{setImageDir*()} family
+#' or with `addImageDir()`.
 #'
+#' @param ... Additional arguments given to `exchangeImage()`.
+#' @param name Character value. Name of the image directory.
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @return An updated spata object.
+#' @seealso [`setImageDirLowres()`], [`setImageDirHighres()`],
+#' [`setImageDirDefault()`], [`addImageDir()`],  [`exchangeImage()`], [getImagaDirectories()]
+#'
 #' @export
 #'
-loadImageLowres <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
+loadImageLowres <- function(object, ...){
 
   dir <- getImageDirLowres(object)
 
-  object <- exchangeImage(object, image = dir)
+  object <- exchangeImage(object, image = dir, ...)
 
   return(object)
 
