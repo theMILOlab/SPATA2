@@ -785,50 +785,25 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' no scale bar is plotted.
 #' @param ... Additional arguments given to `ggpLayerScaleBarSI()` if input for
 #' `sb_dist` is a valid distance measure. Exception: `xrange` and `yrange` are
-#' set to the ranges of the image that was cropped according to the image
-#' annotation.
-#'
-#' @seealso [getImageAnnotations()]
+#' set to the ranges of the image that was cropped to display the image annotation.
 #'
 #' @inherit argument_dummy params
+#'
+#' @details At first, the image section that contains the image annotation is
+#' cropped such that it only contains the extent of the polygon that represents
+#' the borders of the annotation (ranges can be obtained with `getImageAnnotatationRange()`).
+#' Using arguments `square` and `expand` can be used to expand the displayed
+#' image section individually.
+#'
+#' @inheritSection section_dummy Expansion of cropped image sections
+#' @inheritSection section_dummy Selection of image annotations with tags
 #'
 #' @return A list of ggplots. Each slot contains a plot
 #' that visualizes an image annotation.
 #'
+#' @seealso [getImageAnnotations()]
+#'
 #' @export
-#'
-#' @details The argument `expand` is a versatile way, to specify how a cropped
-#' image section is extracted. If you want the cropped image as is, specify
-#' `expand = 0`. Else, there are multiple options. In general, `expand` takes
-#'  three kinds of values, namely percentages, distances and distance exclamations.
-#'
-#' \itemize{
-#'  \item{Percentage:}{ A string suffixed with *%*. See details of `is_percentage`
-#'  for more information. E.g. `expand = '100%'`, `expand = '75.5%'`}
-#'  \item{Distance measures:}{ In pixel or European units of length. E.g. `expand =  list(x = '1mm')`
-#'  expands the x-axis on both sides with 1mm. `expand = list(x = c('0.5mm', 1.5mm')`
-#'  expands the x-axis on the left side with 0.5mm and on the right side with 1.5mm.}
-#'  \item{Exclam distance measures:}{ Distance measure with an exclamation mark
-#'  suffix. E.g. `expand = '1mm!'` centers the image and forces an axis length of
-#'  1 millimeter. (Example 5) }
-#'  }
-#'
-#' Depending on how the values are specified different parts of the image can be
-#' expanded.
-#'
-#' Single values, like `expand = 50`, are recycled: Every end of each image axis
-#' is expanded by 50 pixel. (Example 2)
-#'
-#' Vectors of length two, like `expand = c('1mm', '2mm')`, are recycled: The beginning
-#' of each axis is expanded by 1 millimeter. The end of each axis is expanded by
-#' 2mm. (Example 3)
-#'
-#' Named lists can be more precise. `expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm'))`.
-#' Applies the vectors to expand the corresponding axis. (Example 4)
-#'
-#' Using exclam input the side of the axis must not be specified as the
-#' axis is fixed as a whole. E.g `expand = list(x = '1mm!', y = '2mm!')` results
-#' in the same output as `expand = list(x = c('1mm!', '1mm'), y = c('2mm!', '2mm!')`.
 #'
 #' @examples
 #'

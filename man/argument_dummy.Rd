@@ -81,8 +81,8 @@ function throws an error.}
 \item{expand}{Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
-and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
-for more information.}
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
@@ -195,24 +195,12 @@ Processing of the image output depending on argument \code{expand} happens after
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 
-\item{tags, test}{Input for argument \code{tags} specifies the tags of interest.
-Argument \code{test} decides about how the specified tags are used to select
-the image annotations of interest. There are multiple options:
-\enumerate{
-\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-must be tagged with at least one of the input tags.
-\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags. Can contain tags that are not specified.
-\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags. Can not be tagged with anything else.
-\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
-annotation must \strong{not} be tagged with the combination of input tags.
-\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
-must \strong{not} contain any of the input tags.
-}
+\item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
+selection. See section \emph{Selection of image annotation with tags} for more information.}
 
-Note that the filtering process happens in addition to / after the filtering by input for argument
-\code{ids}.}
+\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
+\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+See section \emph{Selection of image annotation with tags} for more information.}
 
 \item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
 given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}

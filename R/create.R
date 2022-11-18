@@ -1460,12 +1460,19 @@ createImageAnnotations <- function(object, ...){
 #'
 #' Located in slot @@images in the \code{SPATA2} object.
 #'
+#' @param id Character value. Name of the `HistologyImaging` object.
 #' @param image Image input or character value. If character, input is interpreted as a directory
 #' to a file or to an URL and is read with `EBImage::readImage()`. The read image
 #' should be of type *.png*, *.jpeg* or *.tiff*. Capital letters work, too.
 #'
 #' If not character, the function ensures that the input is - or is convertible - to
 #' class `Image` via `EBimage::as.Image()`. If that fails, an error is thrown.
+#'
+#' @param img_scale_fct Numeric value between 0 and 1. If lower than 1, is used
+#' to downscale the image before setting it.
+#' @param coordinates  A data.frame of observational units that underlie the image
+#'  in case of spatially resolved multi-omic studies. Should contain at least the
+#'  two variables: *x*, *y* and a variable that identifies the observational units (e.g. *barcodes*).
 #'
 #' @return An object of class `HistologyImaging`.
 #'

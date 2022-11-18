@@ -678,6 +678,7 @@ updateSpataObject <- function(object,
       # overwrite `info`
       info <-
         list(
+          parent_origin = NA_character_,
           parent_id = io@id,
           current_dim = io@image_info$dim_stored,
           current_just = list(

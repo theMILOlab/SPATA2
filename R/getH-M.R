@@ -63,6 +63,8 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 #' @inherit getImageAnnotations params
 #' @inherit argument_dummy params
 #'
+#' @inheritSection section_dummy Expansion of cropped image sections
+#'
 #' @return An object of class \code{ImageAnnotation}.
 #' @export
 #'
@@ -115,6 +117,8 @@ getImageAnnotation <- function(object,
 #'
 #' Third, the number of pixels that fall in the area is multiplied with
 #' the area per pixel.
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
 #'
 #' @seealso `getImageAnnotationAreaDf()`, `getCCD()`, `as_unit()`
 #'
@@ -171,7 +175,7 @@ getImageAnnotationAreaSize <- function(object,
   pb <- confuns::create_progress_bar(total = n_ids)
 
   confuns::give_feedback(
-    msg = glue::glue("Computing area size for {nids} {ref_ia}."),
+    msg = glue::glue("Computing area size for {n_ids} {ref_ia}."),
     verbose = verbose
   )
   out <-
@@ -238,6 +242,8 @@ getImageAnnotationAreaSize <- function(object,
 #' the spatial extent of the annotated structure along with their coordinates
 #' use \code{getImageAnnotationBarcodes()}.
 #'
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
 #' @export
 #'
 getImageAnnotationAreaDf <- function(object,
@@ -295,6 +301,8 @@ getImageAnnotationAreaDf <- function(object,
 #' annotated structures of interest.
 #'
 #' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
 #'
 #' @return Character vector.
 #'
@@ -405,6 +413,212 @@ getImageAnnotationCenterBcsp <- function(object, id){
 }
 
 
+#' @title Obtain image annotation data
+#'
+#' @description Extracts information about image annotations in a
+#' data.frame.
+#'
+#' @param area Logical. If `TRUE`, the area of each image annotation
+#' is added in a variable named *area*.
+#' @param unit_area The unit of the *area* variable.
+#' @param center Logical. If `TRUE`, two variables named *center_x* and
+#' *center_y* area added providing the center coordinates of the image
+#' annotation.
+#' @param unit_center The unit of the center variables.
+#' @param genes Character value or `NULL`. If character, the gene expression
+#' of the named genes is summarized among all barcode spots that fall in the
+#' area of the image annotation and are added as a variable.
+#' @param summarize_with Character value. The summarizing function with
+#' which the gene expression values are summarized.
+#' @param tags_to_lgl Logical. If `TRUE`, tag information is displayed in logical
+#' variables where each variable is named like one of the unique tags and
+#' every value is either `TRUE` if the annotation cotnains the tag or `FALSE`
+#' if not.
+#' @param tags_keep Logical. If `TRUE`, variable *tags* is not removed if
+#' `tags_to_lgl` is `TRUE`.
+#'
+#' @inherit getImageAnnotations params
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
+#' @return Data.frame in which each row corresponds to an image annotation identified
+#' by the variable *id*.
+#'
+#' @export
+#'
+getImageAnnotationDf <- function(object,
+                                 ids = NULL,
+                                 area = TRUE,
+                                 unit_area = "mm2",
+                                 center = TRUE,
+                                 unit_center = "px",
+                                 genes = NULL,
+                                 summarize_with = "mean",
+                                 tags_to_lgl = TRUE,
+                                 tags_keep = FALSE,
+                                 verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(base::is.character(ids)){
+
+    confuns::check_one_of(
+      input = ids,
+      against = getImageAnnotationIds(object)
+    )
+
+  } else {
+
+    ids <- getImageAnnotationIds(object)
+
+  }
+
+
+  confuns::check_one_of(
+    input = unit_area,
+    against = validUnitsOfArea()
+  )
+
+  confuns::check_one_of(
+    input = unit_center,
+    against = validUnitsOfLength()
+  )
+
+  if(base::is.character(genes)){
+
+    gene_df <-
+      joinWith(
+        object = object,
+        spata_df = getSpataDf(object),
+        genes = genes,
+        smooth = FALSE,
+        verbose = verbose
+      )
+
+  }
+
+
+  prel_df <-
+    purrr::map_df(
+      .x = ids,
+      .f = function(id){
+
+        img_ann <-
+          getImageAnnotation(
+            object = object,
+            id = id,
+            add_barcodes = TRUE,
+            add_image = FALSE
+          )
+
+        df <-
+          tibble::tibble(
+            id = img_ann@id,
+            parent_id = img_ann@info$parent_id,
+            parent_origin = img_ann@info$parent_origin
+          )
+
+        if(base::isTRUE(center)){
+
+          center_pos <-
+            getImageAnnotationCenter(object, id = id) %>%
+            as_unit(input = ., unit = unit_center, object = object)
+
+          df$center_x <- center_pos["x"]
+          df$center_y <- center_pos["y"]
+
+        }
+
+        df$tags <- stringr::str_c(img_ann@tags, collapse = "|")
+
+        if(base::is.character(genes)){
+
+          smrd_df <-
+            dplyr::filter(gene_df, barcodes %in% img_ann@misc$barcodes) %>%
+            dplyr::summarise(
+              dplyr::across(
+                .cols = dplyr::all_of(genes),
+                .fns = summarize_formulas[[summarize_with]]
+              )
+            )
+
+          df <-
+            base::cbind(df, smrd_df) %>%
+            tibble::as_tibble()
+
+        }
+
+        return(df)
+
+      }
+    )
+
+  # add area measure
+  if(base::isTRUE(area)){
+
+    area_df <-
+      getImageAnnotationAreaSize(
+        object = object,
+        ids = ids,
+        unit = unit_area
+      ) %>%
+      base::as.data.frame() %>%
+      tibble::rownames_to_column(var = "id") %>%
+      magrittr::set_colnames(value = c("id", "area"))
+
+    prel_df <-
+      dplyr::left_join(
+        x = prel_df,
+        y = area_df,
+        by = "id"
+      ) %>%
+      dplyr::select(
+        id, parent_id, parent_origin, dplyr::any_of(c("center_x", "center_y")),
+        area,
+        dplyr::everything()
+      )
+
+  }
+
+  # shift tags
+  if(base::isTRUE(tags_to_lgl)){
+
+    all_tags <-
+      stringr::str_c(prel_df$tags, collapse = "|") %>%
+      stringr::str_split(pattern = "\\|") %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    for(tag in all_tags){
+
+      prel_df[[tag]] <- FALSE
+
+      prel_df <-
+        dplyr::mutate(
+          .data = prel_df,
+          {{tag}} := stringr::str_detect(string = tags, pattern = tag)
+        )
+
+    }
+
+  }
+
+  if(base::isTRUE(tags_keep)){
+
+    out <- prel_df
+
+  } else {
+
+    out <- dplyr::select(prel_df, -tags)
+
+  }
+
+
+  return(out)
+
+}
+
 
 
 #' @title Obtain image annotations ids
@@ -412,6 +626,8 @@ getImageAnnotationCenterBcsp <- function(object, id){
 #' @description Extracts image annotation IDs as a character vector.
 #'
 #' @inherit argument_dummy
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
 #'
 #' @return Character vector.
 #' @export
@@ -485,7 +701,10 @@ getImageAnnotationRange <- function(object, id){
 #' on input for argument `square` and `expand` use
 #' `plotImageAnnotations(..., encircle = FALSE)`.
 #'
-#' @return An object of class \code{ImageAnnotation}.
+#' @inheritSection section_dummy Expansion of cropped image sections
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
+#' @return A list of objects of class \code{ImageAnnotation}.
 #'
 #' @export
 #'

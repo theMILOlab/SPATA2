@@ -22,6 +22,15 @@ should be of type \emph{.png}, \emph{.jpeg} or \emph{.tiff}. Capital letters wor
 
 If not character, the function ensures that the input is - or is convertible - to
 class \code{Image} via \code{EBimage::as.Image()}. If that fails, an error is thrown.}
+
+\item{id}{Character value. Name of the \code{HistologyImaging} object.}
+
+\item{img_scale_fct}{Numeric value between 0 and 1. If lower than 1, is used
+to downscale the image before setting it.}
+
+\item{coordinates}{A data.frame of observational units that underlie the image
+in case of spatially resolved multi-omic studies. Should contain at least the
+two variables: \emph{x}, \emph{y} and a variable that identifies the observational units (e.g. \emph{barcodes}).}
 }
 \value{
 An object of class \code{HistologyImaging}.

@@ -7,7 +7,7 @@
 \usage{
 nSpatialTrajectories(object)
 
-nTrajectories(objcect)
+nTrajectories(object)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

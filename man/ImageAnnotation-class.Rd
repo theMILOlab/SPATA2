@@ -34,9 +34,10 @@ or \code{getImageAnnotations()}.}
 image annotation. Slots that should always exist:
 \itemize{
 \item{parent_origin:}{ Character string. Content from slot @info$origin of the \code{HistologyImaging}
-object the annotation belongs to.}
+object the annotation belongs to. Identifies the exact image on which the annotation was drawn in.}
 \item{parent_id:}{ Character string. Content from slot @id of the \code{HistologyImaging}
-object the annotation belongs to.}
+object the annotation belongs to. Identifies the \code{HistologyImaging} object (the tissue) the annotation
+belongs to.}
 \item{current_dim:}{ Numeric vector of length two. Width and height of the image
 the @area data.frame is currently scaled to. Used to scale the @area data.frame
 if the image annotation is extracted and added to a \code{SPATA2} object with different image resolution.}
