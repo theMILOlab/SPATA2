@@ -368,6 +368,35 @@ containsImageObject <- function(object){
 
 
 
+#' @title Check availability of pixel scale factor
+#'
+#' @description Checks if a pixel scale factor is present in the `SPATA2`
+#' object
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+containsPixelScaleFactor <- function(object){
+
+  pxl_scale_fct <- object@information$pxl_scale_fct
+
+  if(base::is.null(pxl_scale_fct)){
+
+    out <- FALSE
+
+  } else {
+
+    out <- TRUE
+
+  }
+
+  return(out)
+
+}
+
+
 
 # count -------------------------------------------------------------------
 

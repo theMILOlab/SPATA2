@@ -498,9 +498,11 @@ setImage <- function(object, image, of_sample = ""){
 #'
 #' @description Sets image annotations in the correct slot.
 #'
-#' @param overwrite Logical Value. If TRUE and the ID of the
-#' input image annotation is already used by an image annotation
-#' it is overwritten.
+#' @param img_ann An object of class `ImageAnnotation`.
+#' @param img_anns List of objects of class `ImageAnnotation`.
+#' @param align Logical value. If `TRUE`, image annotations
+#' are aligned with image justification changes of the image of the
+#' `SPATA2` object.
 #'
 #' @inherit argument_dummy params
 #'
@@ -887,10 +889,31 @@ setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
 
 
 #' @title Set trajectories
+#'
+#' @description Sets trajectories in the correct slot.
+#'
+#' @param trajectory An object of class `Trajectory.`
+#' @param trajectories List of objects of class `Trajectory`.
+#' @param align Logical value. If `TRUE`, trajecectories of class `SpatialTrajectory`
+#' are aligned with image justification changes of the image of the
+#' `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
 #' @export
 
-setTrajectory <- function(object, trajectory, overwrite = FALSE){
+setTrajectory <- function(object, trajectory, align = TRUE, overwrite = FALSE){
 
+  if(isSpatialTrajectory(trajectory) & base::isTRUE(align)){
+
+    trajectory <-
+      alignSpatialTrajectory(
+        spat_traj = trajectory,
+        image_object = getImageObject(object)
+      )
+
+  }
 
   if(nTrajectories(object) != 0 ){
 
@@ -917,31 +940,19 @@ setTrajectory <- function(object, trajectory, overwrite = FALSE){
 
 #' @rdname setTrajectory
 #' @export
-setTrajectories <- function(object, trajectories, overwrite = FALSE){
+setTrajectories <- function(object, trajectories, align = TRUE, overwrite = FALSE){
 
-  trajectories <-
-    purrr::keep(.x = trajectories, .p = isTrajectory) %>%
-    purrr::set_names(nm = purrr::map_chr(.x = ., .f = ~ .x@id))
+  trajectories <- purrr::keep(.x = trajectories, .p = isTrajectory)
 
-  if(nTrajectories(object) == 0){
+  for(traj in trajectories){
 
-    # replace empty list
-    object@trajectories[[1]] <- trajectories
-
-  } else {
-
-    tnames <- base::names(trajectories)
-
-    confuns::check_none_of(
-      input = tnames,
-      against = getTrajectoryIds(object),
-      ref.input = "input trajectories",
-      ref.against = "existing trajectories",
-      overwrite = overwrite
-    )
-
-    # set in existing list
-    object@trajectories[[1]][tnames] <- trajectories
+    object <-
+      setTrajectory(
+        object = object,
+        trajectory = traj,
+        align = align,
+        overwrite = overwrite
+      )
 
   }
 

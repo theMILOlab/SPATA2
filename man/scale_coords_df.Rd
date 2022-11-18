@@ -17,9 +17,9 @@ scale_coords_df(
 \arguments{
 \item{df}{Data.frame with numeric coordinate variable pairs.}
 
-\item{scale_fct}{Numeric bigger than 0. If length 1, is recycled to
-scale x- and y-coordinates. If length 2, first value scales x- and
-second value scales y-coordinates.}
+\item{scale_fct}{Numeric value bigger than 0. If used within \code{flipImage()}
+must range between 0 and 1. If only applied to spatial aspects that
+base on coordinates, can be bigger than 1.}
 
 \item{coord_vars}{Input that denotes the variable pairs. Can be
 a vector of length two. Or a list of vectors of length two. First

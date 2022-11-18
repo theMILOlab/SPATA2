@@ -274,9 +274,9 @@ saveSpataObject <- function(object,
 #' @description Scales coordinate variable pairs in a data.frame by multiplying
 #' them with a scale factor.
 #'
-#' @param scale_fct Numeric bigger than 0. If length 1, is recycled to
-#' scale x- and y-coordinates. If length 2, first value scales x- and
-#' second value scales y-coordinates.
+#' @param scale_fct Numeric value bigger than 0. If used within `flipImage()`
+#' must range between 0 and 1. If only applied to spatial aspects that
+#' base on coordinates, can be bigger than 1.
 #'
 #' @inherit rotate_coords_df params details return
 #'
@@ -405,7 +405,7 @@ scale_nuclei_df <- function(object,
 #'  \item{`scaleSpatialTrajectories()`:}{ Scales spatial trajectories.}
 #'  }
 #'
-#'  @seealso [`flipAll()`], [`rotateAll()`]
+#' @seealso [`flipAll()`], [`rotateAll()`]
 #'
 #' @export
 
@@ -501,7 +501,7 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
 
 }
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 
@@ -539,7 +539,7 @@ scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 }
 
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 

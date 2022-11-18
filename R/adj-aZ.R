@@ -429,6 +429,164 @@ alignImageAnnotation <- function(img_ann, image_object){
 }
 
 
+#' @rdname alignImageAnnotation
+#' @export
+
+alignSpatialTrajectory <- function(spat_traj, image_object){
+
+  io <- image_object
+
+  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
+
+  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
+
+  # scale
+  dim_img_ann <- spat_traj@info$current_dim[1:2]
+
+  scale_fct <- base::mean(dim_stored/dim_img_ann)
+
+  if(base::length(scale_fct) != 1){
+
+    stop("Parent image of spatial trajectory and current image of `SPATA2` object do not have the same axes ratio.")
+
+  }
+
+  if(scale_fct != 1){
+
+    spat_traj@projection <-
+      scale_coords_df(
+        df = spat_traj@projection,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      scale_coords_df(
+        df = spat_traj@segment,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+  }
+
+  spat_traj@info$current_dim <- dim_stored
+
+
+  # flip horizontal
+  spat_traj_flipped_h <- spat_traj@info$current_just$flipped$horizontal
+  image_flipped_h <- io@justification$flipped$horizontal
+
+  if(spat_traj_flipped_h != image_flipped_h){
+
+    spat_traj@projection <-
+      flip_coords_df(
+        df = spat_traj@projection,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      flip_coords_df(
+        df = spat_traj@segment,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@info$current_just$flipped$horizontal <- image_flipped_h
+
+  }
+
+  # flip vertical
+  spat_traj_flipped_v <- spat_traj@info$current_just$flipped$vertical
+  image_flipped_v <- io@justification$flipped$vertical
+
+  if(spat_traj_flipped_v != image_flipped_v){
+
+    spat_traj@projection <-
+      flip_coords_df(
+        df = spat_traj@projection,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      flip_coords_df(
+        df = spat_traj@segment,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@info$current_just$flipped$vertical <- image_flipped_v
+
+  }
+
+  # rotate
+  spat_traj_angle <- spat_traj@info$current_just$angle
+  image_angle <- io@justification$angle
+
+  angle_just <- image_angle - spat_traj_angle
+
+  if(angle_just != 0){
+
+    if(image_angle < spat_traj_angle){
+
+      spat_traj@projection <-
+        rotate_coords_df(
+          df = spat_traj@projection,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+      spat_traj@segment <-
+        rotate_coords_df(
+          df = spat_traj@segment,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+    } else if(image_angle > spat_traj_angle) {
+
+      spat_traj@projection <-
+        rotate_coords_df(
+          df = spat_traj@projection,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+      spat_traj@segment <-
+        rotate_coords_df(
+          df = spat_traj@segment,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+    }
+
+    spat_traj@info$current_just$angle <- image_angle
+
+  }
+
+  return(spat_traj)
+
+}
+
+
+
+
+
+
 # as_ ---------------------------------------------------------------------
 
 

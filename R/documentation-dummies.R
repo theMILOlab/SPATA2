@@ -362,6 +362,8 @@ variables_num <- function(variables){}
 #' @param order_desc Logical value. If `TRUE`, reverses the arrangement specified
 #' via `order_by` and/or `order`.
 #'
+#' @param overwrite Logical value. Must be `TRUE` to allow overwriting.
+#'
 #' @param pt_alpha Numeric value. Specifies the degree of transparency of all points.
 #' @param pt_clr Character value. Specifies the color of all points.
 #' @param pt_clrp The color palette to be used if the specified variable displayed by

@@ -5,10 +5,27 @@
 \alias{setTrajectories}
 \title{Set trajectories}
 \usage{
-setTrajectory(object, trajectory, overwrite = FALSE)
+setTrajectory(object, trajectory, align = TRUE, overwrite = FALSE)
 
-setTrajectories(object, trajectories, overwrite = FALSE)
+setTrajectories(object, trajectories, align = TRUE, overwrite = FALSE)
+}
+\arguments{
+\item{object}{An object of class \code{SPATA2}.}
+
+\item{trajectory}{An object of class \code{Trajectory.}}
+
+\item{align}{Logical value. If \code{TRUE}, trajecectories of class \code{SpatialTrajectory}
+are aligned with image justification changes of the image of the
+\code{SPATA2} object.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
+\item{trajectories}{List of objects of class \code{Trajectory}.}
+}
+\value{
+The input \code{SPATA2} object containing the added or computed
+results.
 }
 \description{
-Set trajectories
+Sets trajectories in the correct slot.
 }

@@ -143,6 +143,8 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_clr}{Character value. Specifies the color of all points.}

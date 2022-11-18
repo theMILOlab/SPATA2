@@ -2,9 +2,12 @@
 % Please edit documentation in R/adj-aZ.R
 \name{alignImageAnnotation}
 \alias{alignImageAnnotation}
+\alias{alignSpatialTrajectory}
 \title{Align image annotation}
 \usage{
 alignImageAnnotation(img_ann, image_object)
+
+alignSpatialTrajectory(spat_traj, image_object)
 }
 \arguments{
 \item{img_ann}{An object of class \code{ImageAnnotation}.}

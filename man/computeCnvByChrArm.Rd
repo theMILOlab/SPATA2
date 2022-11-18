@@ -16,6 +16,8 @@ computeCnvByChrArm(
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

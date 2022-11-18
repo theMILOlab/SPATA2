@@ -542,13 +542,14 @@ create_model_df <- function(input,
 
 #' @title Interactive image annotations
 #'
-#' @description This function gives access to an interactive interface in
-#' which \code{ImageAnnotations} are created by encircling regions or
-#' structures of interest in the histology image.
+#' @description Functions to add image annotations the `SPATA2` object. For
+#' interactive drawing use `createImageAnnotaions()`. To set them with code
+#' use `addImageAnnotation()`.
 #'
 #' Not to confuse with \code{createSegmentation()}.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @note The interface allows to zoom in on the sample. This is useful if your
 #' spata object contains an HE-image as background and you want to classify
@@ -560,7 +561,6 @@ create_model_df <- function(input,
 #'
 #' @seealso exchangeImage(), plotImageAnnotations(), getImageAnnotations()
 #'
-#' @return An updated spata object.
 #' @export
 #'
 createImageAnnotations <- function(object, ...){
@@ -2918,9 +2918,19 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
 #' @title Create spatial trajectories
 #'
-#' @description Provides access to an interactive shiny application
-#' where trajectories can be drawn.
+#' @description Functions to add spatial trajectories to the `SPATA2`
+#' object. For interactive drawing use `createSpatialTrajectories()`.
+#' To set them precisely with code use `addSpatialTrajectory()`.
 #'
+#' @param id Character value. The id of the spatial trajectory.
+#' @param width Distance measure. The width of the spatial trajectory.
+#' @param segment_df Data.frame with four numeric variables that describe the
+#' course of the trajectory, namely *x*, *y*, *xend* and *yend*.
+#' @param start,end Numeric vectors of length two. Can be provided instead of
+#' `segment_df`. If so, `start` corresponds to *x* and *y* and `end` corresponds to
+#' *xend* and *yend* of the segment.
+#' @param vertices List of numeric vectors of length two or `NULL`. If list,
+#' sets additional vertices along the trajectory.
 #' @inherit argument_dummy params
 #'
 #' @return An updated \code{SPATA2} object.
@@ -2975,18 +2985,27 @@ createSpatialTrajectories <- function(object){
                       shiny::HTML("<br>"),
                       shiny::helpText("3. Enter a value for the trajectory width and highlight or reset the trajectory by clicking the respective button below."),
                       shiny::HTML("<br>"),
-                      shiny::splitLayout(
-                        shiny::numericInput(
-                          inputId = "width_trajectory",
-                          label = NULL,
-                          value = 20,
-                          min = 0.1,
-                          max = Inf,
-                          step = 0.1
+                      shiny::fluidRow(
+                        shiny::column(
+                          width = 6,
+                          shiny::numericInput(
+                            inputId = "width_trajectory",
+                            label = NULL,
+                            value = 20,
+                            min = 0.1,
+                            max = Inf,
+                            step = 0.1
+                          )
                         ),
-                        shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
-                        shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
-                        cellWidths = c("33%", "33%", "33%")
+                        shiny::column(
+                          width = 6,
+                          shiny::uiOutput(outputId = "unit")
+                        )
+                      ),
+                      shiny::splitLayout(
+                          shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
+                          shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
+                          cellWidths = c("50%", "50%")
                       ),
                       shiny::HTML("<br>"),
                       shiny::helpText("4. Enter the ID you want to give the trajectory as well as a 'guiding comment' and click the 'Save'-button."),
@@ -3147,6 +3166,29 @@ createSpatialTrajectories <- function(object){
           })
 
 
+          output$unit <- shiny::renderUI({
+
+            if(containsPixelScaleFactor(object)){
+
+              choices <- validUnitsOfLength()
+
+            } else {
+
+              choices <- "px"
+
+            }
+
+            shiny::selectInput(
+              inputId = "unit",
+              label = NULL,
+              choices = choices,
+              selected = "px"
+            )
+
+
+          })
+
+
           # Modularized plot surface part -------------------------------------------
 
 
@@ -3190,6 +3232,28 @@ createSpatialTrajectories <- function(object){
             }
 
           })
+
+
+          width <- shiny::reactive({
+
+            stringr::str_c(
+              input$width_trajectory,
+              input$unit,
+              sep = ""
+            )
+
+          })
+
+          width_pixel <- shiny::reactive({
+
+            as_pixel(
+              input = width(),
+              object = spata_obj(),
+              add_attr = FALSE
+            )
+
+          })
+
 
           # update current()
           oe <- shiny::observeEvent(module_return()$current_setting(), {
@@ -3366,7 +3430,7 @@ createSpatialTrajectories <- function(object){
             projection_df <-
               project_on_trajectory(
                 segment_df = segment_df(),
-                width = input$width_trajectory,
+                width = width_pixel(),
                 coords_df = getCoordsDf(object = spata_obj())
               )
 
@@ -3418,7 +3482,7 @@ createSpatialTrajectories <- function(object){
                 id = input$id_trajectory,
                 segment_df = segment_df(),
                 comment = input$comment_trajectory,
-                width = input$width_trajectory
+                width = width()
               )
 
             spata_obj(spata_obj)

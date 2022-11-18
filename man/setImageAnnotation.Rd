@@ -12,9 +12,15 @@ setImageAnnotations(object, img_anns, align = TRUE, overwrite = FALSE)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{overwrite}{Logical Value. If TRUE and the ID of the
-input image annotation is already used by an image annotation
-it is overwritten.}
+\item{img_ann}{An object of class \code{ImageAnnotation}.}
+
+\item{align}{Logical value. If \code{TRUE}, image annotations
+are aligned with image justification changes of the image of the
+\code{SPATA2} object.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
+\item{img_anns}{List of objects of class \code{ImageAnnotation}.}
 }
 \description{
 Sets image annotations in the correct slot.

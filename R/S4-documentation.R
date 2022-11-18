@@ -84,7 +84,7 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' @slot justification list. List of two slots that track justification changes. See corresponding
 #' section below the slot descriptions for more information.
 #' \itemize{
-#'  \item{*angle*:}{ Numeric value that ranges from 0-360.}
+#'  \item{*angle*:}{ Numeric value that ranges from 0-359.}
 #'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
 #'  }
 #' @slot meta list. List for meta data regarding the tissue.
@@ -148,9 +148,10 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
 #' image annotation. Slots that should always exist:
 #' \itemize{
 #'  \item{parent_origin:}{ Character string. Content from slot @@info$origin of the `HistologyImaging`
-#'  object the annotation belongs to.}
+#'  object the annotation belongs to. Identifies the exact image on which the annotation was drawn in.}
 #'  \item{parent_id:}{ Character string. Content from slot @@id of the `HistologyImaging`
-#'  object the annotation belongs to.}
+#'  object the annotation belongs to. Identifies the `HistologyImaging` object (the tissue) the annotation
+#'  belongs to.}
 #'  \item{current_dim:}{ Numeric vector of length two. Width and height of the image
 #'  the @@area data.frame is currently scaled to. Used to scale the @@area data.frame
 #'  if the image annotation is extracted and added to a `SPATA2` object with different image resolution.}
@@ -158,7 +159,7 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
 #'  @@area data.frame if the image annotation is extracted and added to a `SPATA2` object with
 #'  different justifications.
 #'    \itemize{
-#'     \item{*angle*:}{ Numeric value that ranges from 0-360.}
+#'     \item{*angle*:}{ Numeric value that ranges from 0-359.}
 #'     \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
 #'   }}
 #'  }
@@ -289,14 +290,40 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' @title The \code{SpatialTrajectory} - class
 #'
 #' @description Extension of the \code{Trajectory} for trajectories
-#' that have been drawn in real space.
+#' that have been drawn on a surface plot.
 #'
+#' @slot comment character. A comment about why the trajectory was drawn.
 #' @slot coords data.frame. The coordinates data.frame of the sample.
-#'
+#' @slot id character. ID that uniquely identfies the trajectory in a sample.
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' image annotation. Slots that should always exist:
+#' \itemize{
+#'  \item{current_dim:}{ Numeric vector of length two. Width and height of the image
+#'  the @@area data.frame is currently scaled to. Used to scale the @@area data.frame
+#'  if the image annotation is extracted and added to a `SPATA2` object with different image resolution.}
+#'  \item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
+#'  @@area data.frame if the image annotation is extracted and added to a `SPATA2` object with
+#'  different justifications.
+#'    \itemize{
+#'     \item{*angle*:}{ Numeric value that ranges from 0-359.}
+#'     \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'   }}
+#'  }
+#' @slot projection data.frame. Data.frame that contains the length of the
+#' projection of each barcode spot onto the trajectory.
+#' @slot sample character. The sample name.
+#' @slot segment data.frame. Contains the course of the trajetory in
+#' form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}
+#' @slot width numeric. The width of the rectangle that was spanned along
+#' the trajectory. (Length of the rectangle corresponds to the length of
+#' the segment.)
+#' @slot with_unit character. The unit in which the width was specified.
 #' @export
 SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
                               slots = list(
-                                coords = "data.frame"
+                                coords = "data.frame",
+                                info = "list",
+                                width_unit = "character"
                               ),
                               contains = "Trajectory")
 

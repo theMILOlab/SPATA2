@@ -14,6 +14,8 @@ with either \emph{.png}, \emph{.jpeg} or \emph{.tiff}. (Capital endings work, to
 
 \item{name}{Character value. Name with which to refer to this image.}
 
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

@@ -56,7 +56,7 @@ in an attribute called \emph{unit} as nSI-units/px.}
 \item{\code{justification}}{list. List of two slots that track justification changes. See corresponding
 section below the slot descriptions for more information.
 \itemize{
-\item{\emph{angle}:}{ Numeric value that ranges from 0-360.}
+\item{\emph{angle}:}{ Numeric value that ranges from 0-359.}
 \item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}.}
 }}
 

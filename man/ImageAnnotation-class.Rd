@@ -44,7 +44,7 @@ if the image annotation is extracted and added to a \code{SPATA2} object with di
 @area data.frame if the image annotation is extracted and added to a \code{SPATA2} object with
 different justifications.
 \itemize{
-\item{\emph{angle}:}{ Numeric value that ranges from 0-360.}
+\item{\emph{angle}:}{ Numeric value that ranges from 0-359.}
 \item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}.}
 }}
 }}

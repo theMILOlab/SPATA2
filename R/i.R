@@ -1023,6 +1023,19 @@ isNumericVariable <- function(object, variable){
 
 
 
+# isS ---------------------------------------------------------------------
+
+#' @export
+isSpatialTrajectory <- function(object){
+
+  class_test <-
+    SpatialTrajectory() %>%
+    base::class()
+
+  methods::is(object = object, class = class_test)
+
+}
+
 
 # isT ---------------------------------------------------------------------
 

@@ -692,14 +692,11 @@ addGeneSetsInteractive <- function(object){
 
 # addI --------------------------------------------------------------------
 
-#' @title Add image annotation
-#'
-#' @description Creates and adds an object of class \code{ImageAnnotation}.
-#'
+#' @rdname createImageAnnotations
 #' @param area_df A data.frame that contains at least two numeric variables named
 #' \emph{x} and \emph{y}.
+#' @param tags Character vector of tags that describe the image annotation.
 #'
-#' @return An updated spata object.
 #' @export
 #'
 addImageAnnotation <- function(object, tags, area_df, id = NULL){
@@ -967,7 +964,27 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 }
 
 
+#' @rdname createSpatialTrajectories
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object_t269 <- loadSpataObject(sample_name = "269_T")
+#'
+#' object_t269 <-
+#'    addSpatialTrajectory(
+#'      object = object_t269,
+#'      id = "cross_sample",
+#'      width = "1mm",
+#'      segment_df = data.frame(x = 100, y = 200, xend = 510, yend = 200),
+#'      overwrite = TRUE
+#'      )
+#'
+#'  plotSpatialTrajectories(object_t269, ids = "cross_sample")
+#'
 addSpatialTrajectory <- function(object,
                                  id,
                                  width,
@@ -975,10 +992,23 @@ addSpatialTrajectory <- function(object,
                                  start = NULL,
                                  end = NULL,
                                  vertices = NULL,
-                                 comment = base::character(1)
-){
+                                 comment = base::character(1),
+                                 overwrite = FALSE){
 
-  confuns::is_value(x = width, mode = "numeric")
+
+  is_dist(input = width, error = TRUE)
+
+  width_unit <- extract_unit(width)
+
+  if(width_unit != "px"){
+
+    width <- as_pixel(input = width, object = object, add_attr = FALSE)
+
+  } else {
+
+    width <- extract_value(input = width)
+
+  }
 
   if(!base::is.data.frame(segment_df)){
 
@@ -1036,17 +1066,45 @@ addSpatialTrajectory <- function(object,
       width = width
     )
 
+
+  if(containsImage(object)){
+
+    io <- getImageObject(object)
+
+    info <-
+      list(
+        current_dim = io@image_info$dim_stored,
+        current_just = list(
+          angle = io@justification$angle,
+          flipped = io@justification$flipped
+        )
+      )
+
+  } else {
+
+    info <- list()
+
+  }
+
   spat_traj <-
     SpatialTrajectory(
       comment = comment,
       id = id,
+      info = info,
       projection = projection_df,
       segment = segment_df,
       sample = object@samples,
-      width = width
+      width = width,
+      width_unit = width_unit
     )
 
-  object@trajectories[[1]][[id]] <- spat_traj
+  object <-
+    setTrajectory(
+      object = object,
+      trajectory = spat_traj,
+      align = FALSE,
+      overwrite = overwrite
+      )
 
   return(object)
 

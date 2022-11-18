@@ -5,6 +5,8 @@
 \alias{scaleImage}
 \alias{scaleCoordinates}
 \alias{scaleCoordsDf}
+\alias{scaleImageAnnotations}
+\alias{scaleSpatialTrajectories}
 \title{Scale image and coordinates}
 \usage{
 scaleAll(object, scale_fct)
@@ -14,13 +16,17 @@ scaleImage(object, scale_fct)
 scaleCoordinates(object, scale_fct, verbose = NULL)
 
 scaleCoordsDf(object, scale_fct, verbose = NULL)
+
+scaleImageAnnotations(object, scale_fct, verbose = NULL)
+
+scaleSpatialTrajectories(object, scale_fct, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{scale_fct}{Numeric bigger than 0. If length 1, is recycled to
-scale x- and y-coordinates. If length 2, first value scales x- and
-second value scales y-coordinates.}
+\item{scale_fct}{Numeric value bigger than 0. If used within \code{flipImage()}
+must range between 0 and 1. If only applied to spatial aspects that
+base on coordinates, can be bigger than 1.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -46,6 +52,7 @@ and spatial trajectories.}
 \item{\code{scaleImageAnnotations()}:}{ Scales image annotations.}
 \item{\code{scaleSpatialTrajectories()}:}{ Scales spatial trajectories.}
 }
-
-@seealso \code{\link[=flipAll]{flipAll()}}, \code{\link[=rotateAll]{rotateAll()}}
+}
+\seealso{
+\code{\link[=flipAll]{flipAll()}}, \code{\link[=rotateAll]{rotateAll()}}
 }
