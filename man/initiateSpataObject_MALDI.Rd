@@ -40,9 +40,6 @@ analyzing with the spata-object. The future input for SPATA's \code{of_sample}-a
     }
 
 If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.}
-
-\item{nn}{Numeric value. Given to argument \code{k} of function \code{RANN::nn2()}: Determines to maximum number
-of nearest neighbours to compute. (\code{nn} is deprecated.)}
 }
 \value{
 A spata-object.

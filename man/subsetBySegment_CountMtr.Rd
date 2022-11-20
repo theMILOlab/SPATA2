@@ -101,10 +101,7 @@ for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 
 \item{barcodes}{Character vector. The barcodes that you want to keep.}
 
-\item{k}{Numeric value. Given to argument \code{k} of function \code{RANN::nn2()}: Determines to maximum number
-of nearest neighbours to compute. (\code{nn} is deprecated.)}
-
-\item{nn}{Numeric value. Given to argument \code{k} of function \code{RANN::nn2()}: Determines to maximum number
+\item{k, nn}{Numeric value. Given to argument \code{k} of function \code{RANN::nn2()}: Determines to maximum number
 of nearest neighbours to compute. (\code{nn} is deprecated.)}
 }
 \value{

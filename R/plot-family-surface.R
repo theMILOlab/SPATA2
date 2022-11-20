@@ -14,6 +14,9 @@
 #'
 #' }
 #'
+#' @param use_scattermore Logical value. If `TRUE`, plots points with `scattermore::geom_scattermore()`.
+#' Recommended if your spata object contains several thousands spots. Might require adjustments of `pt_size`.
+#'
 #' @inherit argument_dummy params
 #' @inherit check_color_to params
 #' @inherit check_coords_df params
@@ -48,6 +51,7 @@ plotSurface <- function(object,
                         display_title = NULL,
                         complete = NULL,
                         verbose = NULL,
+                        use_scattermore = FALSE,
                         of_sample = NA,
                         ...){
 
@@ -104,6 +108,7 @@ plotSurface <- function(object,
                      complete = complete,
                      clrp.adjust = c("subs.by.segm" = "lightgrey", clrp_adjust),
                      display_title = display_title,
+                     use_scattermore = use_scattermore,
                      ...)
 
   # -----

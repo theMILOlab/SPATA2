@@ -45,9 +45,6 @@ for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 
 \item{RunUMAP}{A named list of arguments given to \code{Seurat::RunUMAP()}, TRUE or FALSE.}
 }
-\value{
-
-}
 \description{
 Takes the count matrix of your spata-object and creates a
 Seurat-object with it. The spata-object's feature-data is passed as input

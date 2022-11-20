@@ -13,9 +13,6 @@ hlpr_add_old_coords(object, plot_df, complete)
 
 \item{complete}{Logical.}
 }
-\value{
-
-}
 \description{
 Adds old coordinates of subsetted object to
 plot_df in \code{plotSurface()}.

@@ -872,6 +872,7 @@ hlpr_scatterplot <- function(object,
                              normalize = TRUE,
                              verbose = TRUE,
                              complete = FALSE,
+                             use_scattermore = FALSE,
                              ...){
 
   # if feature
@@ -897,10 +898,31 @@ hlpr_scatterplot <- function(object,
 
     }
 
+    mapping <- ggplot2::aes(color = .data[[feature]])
+
+    if(base::isTRUE(use_scattermore)){
+
+      point_add_on <-
+        scattermore::geom_scattermore(
+          data = spata_df,
+          mapping = mapping,
+          pointsize = pt_size,
+          alpha = pt_alpha
+        )
+
+    } else {
+
+      point_add_on <-
+        ggplot2::geom_point(
+          data = spata_df, size = pt_size, alpha = pt_alpha,
+          mapping = mapping
+        )
+
+    }
+
     # assemble ggplot add on
     ggplot_add_on <- list(
-      ggplot2::geom_point(data = spata_df, size = pt_size, alpha = pt_alpha,
-                          mapping = ggplot2::aes(color = .data[[feature]])),
+      point_add_on,
       confuns::scale_color_add_on(aes = "color", clrsp = pt_clrsp, clrp = pt_clrp,
                                   variable = spata_df[[feature]], ...),
       hlpr_adjust_legend_size(aes = "color", pt_size = pt_size, variable = spata_df[[feature]]),
@@ -946,11 +968,31 @@ hlpr_scatterplot <- function(object,
 
     }
 
+    mapping <- ggplot2::aes(color = .data[[gene_set]])
+
+    if(base::isTRUE(use_scattermore)){
+
+      point_add_on <-
+        scattermore::geom_scattermore(
+          data = spata_df,
+          mapping = mapping,
+          pointsize = pt_size,
+          alpha = pt_alpha
+        )
+
+    } else {
+
+      point_add_on <-
+        ggplot2::geom_point(
+          data = spata_df, size = pt_size, alpha = pt_alpha,
+          mapping = mapping
+        )
+
+    }
 
     # assemble ggplot add-on
     ggplot_add_on <- list(
-      ggplot2::geom_point(data = spata_df, size = pt_size, alpha = pt_alpha,
-                          mapping = ggplot2::aes(color = .data[[gene_set]])),
+      point_add_on,
       confuns::scale_color_add_on(aes = "color", clrsp = pt_clrsp, ...),
       ggplot2::labs(color = NULL, title = title, caption = gene_set)
     )
@@ -994,11 +1036,31 @@ hlpr_scatterplot <- function(object,
 
     }
 
+    mapping <- ggplot2::aes(color = .data[["mean_genes"]])
+
+    if(base::isTRUE(use_scattermore)){
+
+      point_add_on <-
+        scattermore::geom_scattermore(
+          data = spata_df,
+          mapping = mapping,
+          pointsize = pt_size,
+          alpha = pt_alpha
+        )
+
+    } else {
+
+      point_add_on <-
+        ggplot2::geom_point(
+          data = spata_df, size = pt_size, alpha = pt_alpha,
+          mapping = mapping
+        )
+
+    }
 
     # assemble ggplot add-on
     ggplot_add_on <- list(
-      ggplot2::geom_point(data = spata_df, size = pt_size, alpha = pt_alpha,
-                          mapping = ggplot2::aes(color = .data[["mean_genes"]])),
+      point_add_on ,
       confuns::scale_color_add_on(aes = "color", clrsp = pt_clrsp, ...),
       ggplot2::labs(color = base::ifelse(base:::length(genes) == 1, genes, "Mean\nExpr."), title = title)
     )

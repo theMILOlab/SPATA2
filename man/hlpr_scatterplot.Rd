@@ -20,6 +20,7 @@ hlpr_scatterplot(
   normalize = TRUE,
   verbose = TRUE,
   complete = FALSE,
+  use_scattermore = FALSE,
   ...
 )
 }

@@ -15,7 +15,8 @@ checkpoint(
     segment_name_not_found = "Could not find the specified segment.",
     occupied_segment_name = "This segment name is already taken.",
     occupied_trajectory_name = "This trajectory name is already taken.",
-    invalid_trajectory_name = "Please enter a valid name for the trajectory.",     
+    invalid_trajectory_name = "Please enter a valid name for the trajectory.", 
+    
     insufficient_n_genes = "Please determine at least two genes.", invalid_gs_string1 =
     "The class-prefix must not contain '_'.", invalid_gs_string2 =
     "Please enter a valid string for the class-prefix and the gene-set name.",

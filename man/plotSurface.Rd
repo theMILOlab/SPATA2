@@ -23,6 +23,7 @@ plotSurface(
   display_title = NULL,
   complete = NULL,
   verbose = NULL,
+  use_scattermore = FALSE,
   of_sample = NA,
   ...
 )
@@ -94,6 +95,9 @@ spots.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{use_scattermore}{Logical value. If `TRUE`, plots points with `scattermore::geom_scattermore()`.
+Recommended if your spata object contains several thousands spots. Might require adjustments of `pt_size`.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
