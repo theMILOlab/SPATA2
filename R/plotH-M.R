@@ -1128,6 +1128,12 @@ plotImageGgplot <- function(object,
 
   }
 
+  frame_add_on <-
+    list(
+      frame_add_on,
+      ggpLayerThemeCoords()
+    )
+
   ggpInit(object) +
     ggpLayerImage(object) +
     frame_add_on +

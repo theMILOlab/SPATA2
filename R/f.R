@@ -1090,7 +1090,7 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
 #' @export
 #'
 
-flipImage <- function(object, axis, track = TRUE, verbose = FALSE){
+flipImage <- function(object, axis, track = FALSE, verbose = FALSE){
 
   io <- getImageObject(object)
 

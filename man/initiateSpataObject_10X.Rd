@@ -7,6 +7,7 @@
 initiateSpataObject_10X(
   directory_10X,
   sample_name,
+  image_name = "tissue_lowres_image.png",
   directory_spata = NULL,
   directory_seurat = NULL,
   combine_with_wd = "/",
@@ -37,6 +38,9 @@ which to load the information. This folder must contain the following sub direct
 
 \item{sample_name}{Character value. The sample name with which to refer to the
 respective sample. Should start with a letter.}
+
+\item{image_name}{Character value. The filename of the image that is read in
+as the default image. Should be in subdirectory \emph{directory_10X/spatial/}.}
 
 \item{gene_set_path}{Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.

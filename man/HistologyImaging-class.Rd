@@ -19,6 +19,10 @@ the image in case of spatially resolved multi-omic studies. Should contain at le
 the  two variables: \emph{x}, \emph{y} and a variable that identifies the observational
 units (e.g. \emph{barcodes}).}
 
+\item{\code{dir_add}}{list. Named list of directories that contain different versions
+of tissue images. Can be arbitrarily expanded for convenient exchanging via
+\code{loadImage()}.}
+
 \item{\code{dir_default}}{character. Directory that leads to the default image for save
 exchanging via \code{loadDefaultImage()}.}
 
@@ -27,10 +31,6 @@ for save exchanging via \code{loadHighresImage()}.}
 
 \item{\code{dir_lowres}}{character. Directory that leads to a low resolution version of the image
 for save exchanging via \code{loadLowresImage()}.}
-
-\item{\code{dir_misc}}{list. Named list of directories that contain different versions
-of tissue images. Can be arbitrarily expanded for convenient exchanging via
-\code{loadImage()}.}
 
 \item{\code{grid}}{list. That contains information about spatial grids.}
 

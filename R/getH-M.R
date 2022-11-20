@@ -13,8 +13,6 @@
 #'
 #' @export
 
-
-
 getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
   deprecated(...)
@@ -1262,6 +1260,27 @@ getImageAnnotationTags <- function(object){
 }
 
 
+
+#' @title Obtain melted image
+#'
+#' @description Melts image array in a data.frame where each
+#' row corresponds to a pixel-color value.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame.
+#' @export
+#'
+getImageDf <- function(object, xrange = NULL, yrange = NULL){
+
+  getImage(object, xrange = xrange, yrange = yrange) %>%
+    reshape2::melt(value.name = "intensity") %>%
+    dplyr::select(-dplyr::any_of("Var3")) %>%
+    magrittr::set_names(value = c("pixel_x", "pixel_y", "intensity"))
+
+}
+
+
 #' @title Obtain image dimensions/ranges
 #'
 #' @description Extracts information regarding the image.
@@ -1301,33 +1320,62 @@ getImageDims <- function(object, ...){
 
 }
 
-
-
-
 #' @rdname getImageDirLowres
 #' @export
 getImageDir <- function(object, name){
 
   io <- getImageObject(object)
 
-  if(base::length(io@dir_misc) == 0){
+  if(name %in% c("default", "highres", "lowres")){
 
-    stop("No specific image directories found.")
+    out <- methods::slot(io, name = stringr::str_c("dir_", name))
 
   } else {
 
-    confuns::check_one_of(
-      input = name,
-      against = base::names(io@dir_misc),
-      ref.opt.2 = "specific image directories",
-      fdb.opt = 2
-    )
+    if(base::length(io@dir_add) == 0){
+
+      stop("No additional image directories found.")
+
+    } else {
+
+      confuns::check_one_of(
+        input = name,
+        against = base::names(io@dir_add),
+        ref.opt.2 = "additional image directories",
+        fdb.opt = 2
+      )
+
+    }
+
+    out <- io@dir_add[[name]]
 
   }
 
-  out <- io@dir_misc[[name]]
-
   return(out)
+
+}
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){
+
+  dir_default <- getImageObject(object)@dir_default
+
+  if(base::length(dir_default) == 0 || base::is.na(dir_default)){
+
+    msg <- "Could not find directory to default image. Set with `setImageDirDefault()`."
+
+    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_default, type = "files")
+
+  }
+
+  return(dir_default)
 
 }
 
@@ -1343,7 +1391,7 @@ getImageDirectories <- function(object){
     "lowres" = io@dir_lowres,
     "highres" = io@dir_highres,
     purrr::map_chr(
-      .x = io@dir_misc,
+      .x = io@dir_add,
       .f = ~ .x
     )
   )
@@ -1381,7 +1429,8 @@ getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 #' @description Extracts image directories known to the `SPATA2` object.
 #'
 #' @param check Logical value. If `TRUE`, it is checked if the file actually exists.
-#' @param name Character value. The name of the specific image to load.
+#' @param name Character value. The name of the image of interest. Should be one
+#' of Get
 #'
 #' @inherit argument_dummy params
 #'
@@ -1422,6 +1471,29 @@ getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
 }
 
 
+#' @title Obatain image information
+#'
+#' @description Extracts a list of information about the currently set
+#' image.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return List that contains information of slots @@image_info and @@justification
+#' of the `HistologyImaging` object.
+#' @export
+#'
+getImageInfo <- function(object){
+
+  io <- getImageObject(object)
+
+  c(
+    io@image_info,
+    io@justification
+  )
+
+}
+
+
 
 #' @title Obtain object of class \code{HistologyImage}
 #'
@@ -1447,6 +1519,24 @@ getImageObject <- function(object){
   }
 
   return(out)
+
+}
+
+
+#' @title Obtain image origin
+#'
+#' @description Extrats the origin of the image that is currently set.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Either a directory or *Global.Env.* if it was read in from
+#' the global environment.
+#'
+getImageOrigin <- function(object){
+
+  io <- getImageObject(object)
+
+  io@image_info$origin
 
 }
 

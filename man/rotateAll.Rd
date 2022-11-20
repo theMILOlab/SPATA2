@@ -11,7 +11,7 @@
 \usage{
 rotateAll(object, angle, clockwise = TRUE)
 
-rotateImage(object, angle, clockwise = TRUE, track = TRUE)
+rotateImage(object, angle, clockwise = TRUE, track = FALSE)
 
 rotateCoordinates(object, angle, clockwise = TRUE, verbose = NULL)
 

@@ -760,6 +760,8 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
+#' @seealso [`getImageDirectories()`]
+#'
 #' @export
 addImageDir <- function(object,
                         dir,
@@ -774,27 +776,27 @@ addImageDir <- function(object,
 
   confuns::check_none_of(
     input = name,
-    against = base::names(io@dir_misc),
-    ref.against = "specific image directory names",
+    against = base::names(io@dir_add),
+    ref.against = "additional image directory names",
     overwrite = overwrite
   )
 
   confuns::check_none_of(
     input = dir,
-    against = purrr::map_chr(io@dir_misc, .f = ~ .x),
-    ref.against = "specific image directory names",
+    against = purrr::map_chr(io@dir_add, .f = ~ .x),
+    ref.against = "additional image directory names",
     overwrite = overwrite
   )
 
   if(base::isTRUE(check)){
 
-    confuns::check_directories(dir, type = "file")
+    confuns::check_directories(dir, type = "files")
 
   }
 
   new_dir <- purrr::set_names(x = dir, nm = name)
 
-  io@dir_misc <- c(io@dir_misc, new_dir)
+  io@dir_add <- c(io@dir_add, new_dir)
 
   object <- setImageObject(object, image_object = io)
 

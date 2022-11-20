@@ -29,3 +29,6 @@ results.
 Adds specific image directories beyond \emph{lowres}
 \emph{highres} and \emph{default} with a simple name.
 }
+\seealso{
+\code{\link[=getImageDirectories]{getImageDirectories()}}
+}

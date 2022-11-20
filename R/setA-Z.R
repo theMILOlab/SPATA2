@@ -613,6 +613,8 @@ setImageDirDefault <- function(object, dir, check = TRUE, verbose = NULL, ...){
     verbose = verbose
   )
 
+  return(object)
+
 }
 
 
@@ -697,6 +699,32 @@ setImageObject <- function(object, image_object){
   sample_name<- getSampleNames(object)
 
   object@images[[sample_name]] <- image_object
+
+  return(object)
+
+}
+
+#' @title Set image origin
+#'
+#' @description Sets the origin info of the current image.
+#'
+#' @param origin Character value. Directory or name of the object
+#' from the global environment.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setImageOrigin <- function(object, origin){
+
+  confuns::is_value(x = origin, mode = "character")
+
+  io <- getImageObject(object)
+
+  io@image_info$origin <- origin
+
+  object <- setImageObject(object, image_object = io)
 
   return(object)
 

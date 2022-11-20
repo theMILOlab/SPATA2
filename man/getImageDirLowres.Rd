@@ -2,12 +2,15 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageDir}
 \alias{getImageDir}
+\alias{getImageDirDefault}
 \alias{getImageDirectories}
 \alias{getImageDirHighres}
 \alias{getImageDirLowres}
 \title{Obtain image directories}
 \usage{
 getImageDir(object, name)
+
+getImageDirDefault(object, fdb_fn = "warning", check = FALSE, ...)
 
 getImageDirectories(object)
 
@@ -18,7 +21,8 @@ getImageDirLowres(object, fdb_fn = "warning", check = FALSE)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{name}{Character value. The name of the specific image to load.}
+\item{name}{Character value. The name of the image of interest. Should be one
+of Get}
 
 \item{check}{Logical value. If \code{TRUE}, it is checked if the file actually exists.}
 

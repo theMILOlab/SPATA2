@@ -585,14 +585,27 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 #' @description Sets a directory under which the `SPATA2` object is
 #' always stored using the function `saveSpataObject()`.
 #'
+#' @param dir Character value. The directory under which to store the
+#' `SPATA2` object.
+#' @param add_wd Logical value. If `TRUE`, the working directory is added to
+#' the directory separated by *'\\'*.
+#'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
 #'
-setSpataDir <- function(object, dir){
+setSpataDir <- function(object, dir, add_wd = FALSE){
 
   confuns::is_value(x = dir, mode = "character")
+
+  if(base::isTRUE(add_wd)){
+
+    wd_string <- base::getwd()
+
+    dir <- stringr::str_c(wd_string, "\\", dir)
+
+  }
 
   object@information$instructions$directories$spata_object <- dir
 

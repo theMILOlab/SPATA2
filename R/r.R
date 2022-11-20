@@ -849,7 +849,7 @@ rotateAll <- function(object, angle, clockwise = TRUE){
 rotateImage <- function(object,
                         angle,
                         clockwise = TRUE,
-                        track = TRUE){
+                        track = FALSE){
 
   base::stopifnot(angle > 0 & angle < 360)
 

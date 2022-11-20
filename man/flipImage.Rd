@@ -4,7 +4,7 @@
 \alias{flipImage}
 \title{Flip coordinates}
 \usage{
-flipImage(object, axis, track = TRUE, verbose = FALSE)
+flipImage(object, axis, track = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}

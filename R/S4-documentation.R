@@ -55,15 +55,15 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' the image in case of spatially resolved multi-omic studies. Should contain at least
 #' the  two variables: *x*, *y* and a variable that identifies the observational
 #' units (e.g. *barcodes*).
+#' @slot dir_add list. Named list of directories that contain different versions
+#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
+#' `loadImage()`.
 #' @slot dir_default character. Directory that leads to the default image for save
 #' exchanging via `loadDefaultImage()`.
 #' @slot dir_highres character. Directory that leads to a high resolution version of the image
 #' for save exchanging via `loadHighresImage()`.
 #' @slot dir_lowres character. Directory that leads to a low resolution version of the image
 #' for save exchanging via `loadLowresImage()`.
-#' @slot dir_misc list. Named list of directories that contain different versions
-#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
-#' `loadImage()`.
 #' @slot grid list. That contains information about spatial grids.
 #' @slot id character. String to identify the imaged tissue.
 #' @slot image Image. Should be compatible with the `EBImage` package.
@@ -112,7 +112,7 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
                                dir_default = "character",
                                dir_highres = "character",
                                dir_lowres = "character",
-                               dir_misc = "list",
+                               dir_add = "list",
                                grid = "list",
                                id = "character",
                                image = image_class,
