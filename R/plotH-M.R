@@ -348,6 +348,7 @@ plotIasEvaluation <- function(object,
 #' an the image annotation using a heatmap.
 #'
 #' @inherit imageAnnotationScreening params details
+#' @inherit plotIasLineplot params
 #' @inherit plotTrajectoryHeatmap params
 #' @inherit ggplot_dummy return
 #' @inherit argument_dummy params
@@ -361,7 +362,7 @@ plotIasHeatmap <- function(object,
                            variables,
                            distance = NA_integer_,
                            n_bins_circle = NA_integer_,
-                           binwidth = ccDist(object),
+                           binwidth = getCCD(object),
                            angle_span = c(0,360),
                            arrange_rows = "input",
                            method_gs = "mean",
@@ -371,6 +372,12 @@ plotIasHeatmap <- function(object,
                            .cols = dplyr::everything(),
                            summarize_with = "mean",
                            .f = NULL,
+                           include_area = FALSE,
+                           display_border = FALSE,
+                           border_linealpha = 0.75,
+                           border_linecolor = "black",
+                           border_linesize = 1,
+                           border_linetype = "dashed",
                            verbose = NULL,
                            ...){
 
@@ -398,7 +405,8 @@ plotIasHeatmap <- function(object,
       angle_span = angle_span,
       variables = variables,
       summarize_by = "bins_circle",
-      summarize_with = summarize_with
+      summarize_with = summarize_with,
+      remove_circle_bins = !include_area
     ) %>%
     tidyr::pivot_longer(
       cols = dplyr::any_of(variables),
@@ -529,9 +537,29 @@ plotIasHeatmap <- function(object,
 
   }
 
+  if(base::isTRUE(display_border)){
+
+    xintercept <- if(base::isTRUE(include_area)){ multiplier + 0.5 } else { 0.5 }
+
+    border_add_on <-
+      ggplot2::geom_vline(
+        xintercept = xintercept,
+        alpha = border_linealpha,
+        color = border_linecolor,
+        size = border_linesize,
+        linetype = border_linetype
+      )
+
+  } else {
+
+    border_add_on <- NULL
+
+  }
+
   out <-
-    ggplot2::ggplot(data = df_smoothed, mapping = ggplot2::aes(x = ias_ord_num, y = variables, fill = values)) +
-    ggplot2::geom_tile() +
+    ggplot2::ggplot(data = df_smoothed) +
+    ggplot2::geom_tile(mapping = ggplot2::aes(x = ias_ord_num, y = variables, fill = values)) +
+    border_add_on +
     ggplot2::theme_classic() +
     ggplot2::labs(x = NULL, y = NULL, fill = "Expr.") +
     ggplot2::theme(

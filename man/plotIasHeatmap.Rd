@@ -10,7 +10,7 @@ plotIasHeatmap(
   variables,
   distance = NA_integer_,
   n_bins_circle = NA_integer_,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   angle_span = c(0, 360),
   arrange_rows = "input",
   method_gs = "mean",
@@ -20,6 +20,12 @@ plotIasHeatmap(
   .cols = dplyr::everything(),
   summarize_with = "mean",
   .f = NULL,
+  include_area = FALSE,
+  display_border = FALSE,
+  border_linealpha = 0.75,
+  border_linecolor = "black",
+  border_linesize = 1,
+  border_linetype = "dashed",
   verbose = NULL,
   ...
 )
@@ -73,6 +79,13 @@ valid input options.}
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
+
+\item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
+to highlight where the border of the image annotation runs.}
+
+\item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
+to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
+represents the border of the image annotation.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
