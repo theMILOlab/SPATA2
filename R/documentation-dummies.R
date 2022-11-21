@@ -85,6 +85,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
 #'
+#' @param grouping_variable Character value. The grouping variable of interest. Use
+#' `getGroupingOptions()` to obtain all valid input options.
+#'
 #' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
 #' the dendrogom is cut.
 #'
@@ -223,6 +226,11 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param whole_sample Logical. If TRUE, normalization of the values used
 #' takes place in the light of the complete sample.
+#'
+#' @param x_nth Numeric value. If the number of breaks/labels on the
+#' x-axis becomes too high `x_nth` can be used to reduce it. If `x_nth` is 1,
+#' every label is kept. If 2, every second label is kept. If 3, every
+#' third label is kept. And so on.
 #'
 #' @param xrange,yrange Vector of length two or \code{NULL}. If not \code{NULL},
 #' specifies the x- and y-range to which the output image is cropped. E.g.
@@ -403,6 +411,77 @@ sample_name <- function(sample_name){}
 
 
 #' Section dummy
+#'
+#' @section Area measures:
+#'
+#' Several functions in `SPATA2` have arguments that take *area input*.
+#' To specifically refer to an area the unit must be specified. There are
+#' three ways to create valid input for these arguments.
+#'
+#' **1. In pixel:**
+#'
+#' There are two valid input options to specify an area in pixel:
+#'
+#' \itemize{
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
+#'  is specified the input will be interpreted as pixels.}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
+#'  }
+#'
+#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
+#'  number of pixels is meant.
+#'
+#' **2. According to the Systeme international d`unites (SI):**
+#'
+#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
+#'  requires the input to be a character as the unit must be provided as suffix.
+#'  Between the numeric value and the unit must be no empty space! Valid suffixes
+#'  can be obtained using the function `validUnitsOfAreaSI()`.
+#'
+#'  **3. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units` package. Input
+#' is converted into vectors of class `units`. Therefore, input can be directly
+#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
+#' Note that *pixel* is not a valid unit in the `units` package. If you want
+#' to specify the input in pixel you have to use input option 1. In pixel.
+#'
+#'
+#' @section Distance measures:
+#'
+#' Several functions in `SPATA2` have arguments that take *distance input*.
+#' To specifically refer to a distance the unit must be specified. There are
+#' three ways to create valid input for these arguments.
+#'
+#' **1. In pixel:**
+#'
+#' There are two valid input options to specify the distance in pixel:
+#'
+#' \itemize{
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
+#'  is specified the input will be interpreted as pixels.}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
+#'  }
+#'
+#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
+#'  number of pixels is meant.
+#'
+#' **2. According to the Systeme international d`unites (SI):**
+#'
+#'  Specifying distances in SI units e.g. `arg_input = c('2mm', '4mm')` etc.
+#'  requires the input to be a character as the unit must be provided as suffix.
+#'  Between the numeric value and the unit must be no empty space! Valid suffixes
+#'  can be obtained using the function `validUnitsOfLengthSI()`.
+#'
+#'  **3. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units` package. Input
+#' is converted into vectors of class `units`. Therefore, input can be directly
+#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm')`
+#' Note that *pixel* is not a valid unit in the `units` package. If you want
+#' to specify the input in pixel you have to use input option 1. In pixel.
 #'
 #' @section Expansion of cropped image sections:
 #'

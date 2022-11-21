@@ -9,6 +9,9 @@ relevelGroups(object, grouping_variable, new_levels)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{grouping_variable}{Character value. The grouping variable of interest. Use
+\code{getGroupingOptions()} to obtain all valid input options.}
+
 \item{new_levels}{Character vector of group names in the order in which
 the new ordering is supposed to be stored. Must contain all groups of the
 grouping variable.}

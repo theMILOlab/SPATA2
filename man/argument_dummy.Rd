@@ -87,6 +87,9 @@ and nothing more. Using \code{expand}, the cropped image section can be adjusted
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 
+\item{grouping_variable}{Character value. The grouping variable of interest. Use
+\code{getGroupingOptions()} to obtain all valid input options.}
+
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
 
@@ -225,6 +228,11 @@ of the plot.}
 
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.

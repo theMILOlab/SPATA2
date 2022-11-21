@@ -446,9 +446,9 @@ imageAnnotationToSegmentation <- function(object,
 #' There are two valid input options to specify an area in pixel:
 #'
 #' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. `arg_input <- c(2, 3.554, 69, 100.67)`. If no unit
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
 #'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input <- c('2px', '3.554px', '69px', '100.67px')`}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
 #'  }
 #'
 #'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
@@ -457,7 +457,7 @@ imageAnnotationToSegmentation <- function(object,
 #'
 #' **2. According to the Systeme international d`unites (SI):**
 #'
-#'  Specifying areas in SI units e.g. `arg_input <- c('2mm2', '4mm2')` etc.
+#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
 #'  requires the input to be a character as the unit must be provided as suffix.
 #'  Between the numeric value and the unit must be no empty space! Valid suffixes
 #'  can be obtained using the function `validUnitsOfAreaSI()`.
@@ -466,7 +466,7 @@ imageAnnotationToSegmentation <- function(object,
 #'
 #' Behind the scenes `SPATA2` works with the `units` package. Input
 #' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input <- units::set_unit(x = c(2,4), value = 'mm2')`
+#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
 #' Note that *pixel* is not a valid unit in the `units` package. If you want
 #' to specify the input in pixel you have to use input option 1. In pixel.
 #'

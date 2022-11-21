@@ -75,6 +75,186 @@ plotHistogram <- function(object,
 
 # plotI -------------------------------------------------------------------
 
+#' @title Plot IAS barplot
+#'
+#' @description Plots changes in clustering proportion against the distance to
+#' an image annotation.
+#'
+#' @inherit plotIasLineplot params return
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @export
+#'
+plotIasBarplot <- function(object,
+                           id,
+                           grouping_variable,
+                           distance = NA_integer_,
+                           binwidth = getCCD(object),
+                           n_bins_circle = NA_integer_,
+                           include_area = FALSE,
+                           unit = getSpatialMethod(object)@unit,
+                           round = 2,
+                           clrp = NULL,
+                           clrp_adjust = NULL,
+                           position = "fill",
+                           display_border = TRUE,
+                           border_linealpha = 0.75,
+                           border_linecolor = "black",
+                           border_linesize = 1,
+                           border_linetype = "dashed",
+                           x_nth = 1,
+                           verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  ias_input <-
+    check_ias_input(
+      binwidth = binwidth,
+      distance = distance,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = FALSE
+    )
+
+  # extract data
+  ias_df <-
+    getImageAnnotationScreeningDf(
+      object = object,
+      id = id,
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      summarize_by = FALSE,
+      remove_circle_bins = !include_area,
+      verbose = verbose
+    ) %>%
+    joinWith(
+      object = object,
+      spata_df = .,
+      features = grouping_variable,
+      verbose = verbose
+    )
+
+  plot_df <-
+    dplyr::mutate(
+      .data = ias_df,
+      # bin 1 -> 0. 0 * dist = 0 for bin 1 -> no distance to img an
+      breaks = bins_order - 1
+    )
+
+
+  # in case of an image annotation that is too small to contain barcode spots
+  if(base::isTRUE(include_area)){
+
+    n_core_spots <-
+      dplyr::filter(ias_df, bins_circle == "Core") %>%
+      base::nrow()
+
+    include_area <- n_core_spots >= 1
+
+    if(n_core_spots == 0){
+
+      warning(
+        glue::glue(
+          "`include_area` is TRUE but image annotation {id} is too small to contain barcode spots."
+        )
+      )
+
+    }
+
+  }
+
+  # add border if desired
+  if(base::isTRUE(display_border)){
+
+    border_add_on <-
+      ggplot2::geom_vline(
+        xintercept = - .50,
+        alpha = border_linealpha,
+        color = border_linecolor,
+        size = border_linesize,
+        linetype = border_linetype
+      )
+
+  } else {
+
+    border_add_on <- NULL
+
+  }
+
+  # labels
+  if(unit %in% validUnitsOfLength()){
+
+    # is unit
+    bw_dist <-
+      as_unit(
+        input = ias_input$binwidth,
+        unit = unit,
+        object = object,
+        round = round
+      )
+
+    plot_df[["labels"]] <- plot_df[["breaks"]] * bw_dist
+
+    plot_df <-
+      dplyr::mutate(
+        .data = plot_df,
+        labels = base::as.character(labels),
+        labels = dplyr::if_else(
+          condition = bins_circle == "Core",
+          true = "IA",
+          false = labels
+        )
+      )
+
+    xlab <-  glue::glue("Dist. to {id} [{unit}]")
+
+  } else {
+
+    plot_df[["labels"]] <- base::as.character(plot_df[["bins_order"]])
+
+    plot_df[["labels"]][plot_df[["breaks"]] < 0 ] <- "IA"
+
+    xlab <- "Bins"
+
+  }
+
+  breaks <-
+    base::as.numeric(plot_df[["breaks"]]) %>%
+    base::unique() %>%
+    reduce_vec(nth = x_nth)
+
+  labels <-
+    base::as.character(plot_df[["labels"]]) %>%
+    base::unique() %>%
+    reduce_vec(nth = x_nth)
+
+  ggplot2::ggplot(data = plot_df) +
+    ggplot2::geom_bar(
+      mapping = ggplot2::aes(x = breaks, fill = .data[[grouping_variable]]),
+      color = "black",
+      position = position
+    ) +
+    border_add_on +
+    ggplot2::scale_x_continuous(breaks = breaks, labels = labels) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.line.y = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed"))
+    ) +
+    ggplot2::labs(x = xlab, y = NULL) +
+    scale_color_add_on(
+      aes = "fill",
+      variable = plot_df[[grouping_variable]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    )
+
+}
+
 #' @title Plot IAS evaluation per variable-model pair
 #'
 #' @description Plots inferred gene expression along the distance to an image
@@ -90,6 +270,8 @@ plotHistogram <- function(object,
 #' @param corr_text_sep Character value used to separate correlation value and
 #' corresponding p-value.
 #' @param corr_text_size Numeric value. Size of text.
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @export
 #'
@@ -169,6 +351,8 @@ plotIasEvaluation <- function(object,
 #' @inherit plotTrajectoryHeatmap params
 #' @inherit ggplot_dummy return
 #' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @export
 
@@ -365,10 +549,6 @@ plotIasHeatmap <- function(object,
 }
 
 
-
-
-
-
 #' @title Plot IAS lineplot
 #'
 #' @description Plots gene expression changes against the distance to
@@ -381,10 +561,11 @@ plotIasHeatmap <- function(object,
 #'
 #' If `FALSE`, plots the bin numbers instead.
 #'
-#' @param x_nth Numeric value. If the number of breaks/labels on the
-#' x-axis becomes too high `x_nth` can be used to reduce it. If `x_nth` is 1,
-#' every label is kept. If 2, every second label is kept. If 3, every
-#' third label is kept. And so on.
+#' @param display_border Logical value. If `TRUE`, displays a vertical line
+#' to highlight where the border of the image annotation runs.
+#' @param border_linealpha,border_linecolor,border_linesize,border_linetype Given
+#' to `ggplot2::geom_vline()`. Adjusts appearance of the vertical line that
+#' represents the border of the image annotation.
 #'
 #' @inherit as_unit params
 #' @inherit getImageAnnotationScreeningDf params
@@ -392,6 +573,8 @@ plotIasHeatmap <- function(object,
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @export
 #'
@@ -572,6 +755,17 @@ plotIasLineplot <- function(object,
         )
 
     plot_df[["labels"]] <- plot_df[["breaks"]] * bw_dist
+
+    plot_df <-
+      dplyr::mutate(
+        .data = plot_df,
+        labels = base::as.character(labels),
+        labels = dplyr::if_else(
+          condition = bins_circle == "Core",
+          true = "IA",
+          false = labels
+        )
+      )
 
     xlab <-  glue::glue("Dist. to {id} [{unit}]")
 
@@ -795,6 +989,7 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' Using arguments `square` and `expand` can be used to expand the displayed
 #' image section individually.
 #'
+#' @inheritSection section_dummy Distance measures
 #' @inheritSection section_dummy Expansion of cropped image sections
 #' @inheritSection section_dummy Selection of image annotations with tags
 #'
