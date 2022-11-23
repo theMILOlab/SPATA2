@@ -221,7 +221,12 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
 
 # setD --------------------------------------------------------------------
 
-setDeaResults <- function(object, dea_results, across, method_de, ...){
+setDeaResultsDf <- function(object, dea_results, grouping_variable, method_de, ...){
+
+  confuns::check_one_of(
+    input = grouping_variable,
+    against = getGroupingOptions(object)
+  )
 
   if(base::length(object@dea) == 0){
 
@@ -231,13 +236,23 @@ setDeaResults <- function(object, dea_results, across, method_de, ...){
 
   }
 
+  if("cluster" %in% base::colnames(dea_results)){
+
+    grouping_name <- "cluster"
+
+  } else {
+
+    grouping_name <- grouping_variable
+
+  }
+
   # set data.frame
-  object@dea[[1]][[across]][[method_de]][["data"]] <-
+  object@dea[[1]][[grouping_variable]][[method_de]][["data"]] <-
     tibble::remove_rownames(.data = dea_results) %>%
-    dplyr::rename(!!rlang::sym(across) := "cluster") %>%
+    dplyr::rename(!!rlang::sym(grouping_variable) := {{grouping_name}}) %>%
     tibble::as_tibble()
 
-  object@dea[[1]][[across]][[method_de]][["adjustments"]] <- list(...)
+  object@dea[[1]][[grouping_variable]][[method_de]][["adjustments"]] <- list(...)
 
   return(object)
 

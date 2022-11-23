@@ -33,9 +33,9 @@ validAgglomerationMethods()
 
 validAlluvialTypes()
 
-validColorPalettes()
+validColorPalettes(flatten = FALSE)
 
-validColorSpectra()
+validColorSpectra(flatten = FALSE)
 
 validDeAnalysisMethods()
 

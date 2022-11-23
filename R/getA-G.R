@@ -640,19 +640,19 @@ getCoordsRange <- function(object){
 
 #' @rdname getMatrix
 #' @export
-getCountMatrix <- function(object, of_sample = NA){
+getCountMatrix <- function(object, ...){
+
+  deprecated(...)
 
   # lazy control
   check_object(object)
 
   # adjusting control
-  of_sample <- check_sample(object = object, of_sample = of_sample)
-
-  count_mtr <- object@data[[of_sample]][["counts"]]
+  count_mtr <- object@data[[1]][["counts"]]
 
   if(base::is.null(count_mtr)){
 
-    stop(glue::glue("Did not find count matrix of sample '{of_sample}' in provided spata-object."))
+    stop(glue::glue("Did not find count matrix in provided spata-object."))
 
   }
 
@@ -1076,7 +1076,7 @@ getExpressionMatrix <- function(object,
 
       active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
 
-      stop(glue::glue("Did not find active expression matrix '{active_mtr}' in data slot of sample '{of_sample}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
+      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
 
     }
 
@@ -1095,7 +1095,7 @@ getExpressionMatrix <- function(object,
   confuns::give_feedback(msg = glue::glue("Using expression matrix '{active_mtr}'."), verbose = verbose)
 
   expr_mtr <-
-    object@data[[of_sample]][[active_mtr]] %>%
+    object@data[[1]][[active_mtr]] %>%
     base::as.matrix()
 
   return(expr_mtr)

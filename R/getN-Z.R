@@ -996,7 +996,7 @@ getTrajectoryScreeningDf <- function(object,
 
   hlpr_assign_arguments(object)
 
-  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+  binwidth <- as_pixel(input = binwidth, object = object, as_numeric = TRUE)
 
   check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
 

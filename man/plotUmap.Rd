@@ -51,7 +51,7 @@ plotTsne(
 plotTsneComparison(
   object,
   color_by,
-  add_ons = list(),
+  ggpLayers = list(),
   display_title = FALSE,
   nrow = NULL,
   ncol = NULL,
@@ -87,7 +87,7 @@ plotUmap(
 plotUmapComparison(
   object,
   color_by,
-  add_ons = list(),
+  ggpLayers = list(),
   display_title = FALSE,
   nrow = NULL,
   ncol = NULL,
@@ -156,7 +156,7 @@ thousand data points. If the number of data points plotted is bigger than
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
 the point size must be adjusted with the argument \code{pt_size}.}
 
-\item{add_ons}{A list of ggplot add ons to add to each plot.}
+\item{ggpLayers}{A list of ggplot add ons to add to each plot.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 

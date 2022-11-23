@@ -10,9 +10,6 @@ getAutoencoderSetUp(object, mtr_name, of_sample = NA)
 \item{object}{A valid spata-object.}
 
 \item{mtr_name}{Character value. The name of the matrix of interest.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A named list.

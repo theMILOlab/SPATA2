@@ -116,17 +116,33 @@ validate_only_one_arg_specified <- function(input){
 
 #' @rdname validActivationFunctions
 #' @export
-validColorPalettes <- function(){
+validColorPalettes <- function(flatten = FALSE){
 
-  confuns::all_color_palettes()
+  x <- confuns::all_color_palettes()
+
+  if(base::isTRUE(flatten)){
+
+    x <- purrr::flatten_chr(x)
+
+  }
+
+  return(x)
 
 }
 
 #' @rdname validActivationFunctions
 #' @export
-validColorSpectra <- function(){
+validColorSpectra <- function(flatten = FALSE){
 
-  confuns::all_color_spectra()
+  x <- confuns::all_color_spectra()
+
+  if(base::isTRUE(flatten)){
+
+    x <- purrr::flatten_chr(x)
+
+  }
+
+  return(x)
 
 }
 

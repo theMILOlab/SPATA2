@@ -802,47 +802,222 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
 #'
 showColors <- function(input, n = 20, title_size = 10){
 
-  plot_list <-
-    purrr::map(
-      .x = input,
-      .f = function(x){
+  if(confuns::is_list(input)){
 
-        if(x %in% confuns::diverging){
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
 
-          vec <- base::seq(-1, 1, len = n)
+  }
 
-        } else {
+  input <- input[input != "default"]
 
-          vec <- 1:n
+  input_spectra <- input[input %in% validColorSpectra(flatten = TRUE)]
+
+  if(base::length(input_spectra) != 0){
+
+    plot_list1 <-
+      purrr::map(
+        .x = input_spectra,
+        .f = function(x){
+
+          if(x %in% confuns::diverging){
+
+            vec <- base::seq(-1, 1, len = n)
+
+          } else {
+
+            vec <- 1:n
+
+          }
+
+          df <- base::data.frame(x = vec, y = 1)
+
+          out <-
+            ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+            confuns::scale_color_add_on(aes = "fill", clrsp = x, variable = vec) +
+            ggplot2::scale_y_continuous() +
+            ggplot2::theme_void() +
+            ggplot2::theme(
+              legend.position = "none",
+              plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+            ) +
+            ggplot2::labs(title = x)
+
+          return(out)
 
         }
+      ) %>%
+      patchwork::wrap_plots()
 
-        if(x %in% c(confuns::colorpalettes)){
+  } else {
 
-          vec <- base::as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+    plot_list1 <- NULL
+
+  }
+
+
+  input_palettes <- input[input %in% validColorPalettes(flatten = TRUE)]
+
+  if(base::length(input_palettes) != 0){
+
+    plot_list2 <-
+      purrr::map(
+        .x = input_palettes,
+        .f = function(x){
+
+          vec <- base::as.character(1:n)
+
+          if(x %in% validColorPalettes()[["Viridis Options"]]){
+
+            vec <- base::as.character(vec[1:9])
+
+          } else {
+
+            vec <- as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+
+          }
+
+          df <- base::data.frame(x = vec, y = 1)
+
+          out <-
+            ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+            confuns::scale_color_add_on(aes = "fill", clrp = x, variable = vec) +
+            ggplot2::scale_y_continuous() +
+            ggplot2::theme_void() +
+            ggplot2::theme(
+              legend.position = "none",
+              plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+            ) +
+            ggplot2::labs(title = x)
+
+          return(out)
 
         }
+      ) %>%
+      patchwork::wrap_plots()
 
-        df <- base::data.frame(x = vec, y = 1)
+  } else {
 
-        out <-
-          ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
-          ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
-          confuns::scale_color_add_on(aes = "fill", clrsp = x, clrp = x, variable = vec) +
-          ggplot2::scale_y_continuous() +
-          ggplot2::theme_void() +
-          ggplot2::theme(
-            legend.position = "none",
-            plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
-          ) +
-          ggplot2::labs(title = x)
+    plot_list2 <- NULL
 
-        return(out)
+  }
+
+  plot_list1 / plot_list2
+
+}
+
+#' @rdname showColors
+#' @export
+showColorPalettes <- function(input = validColorPalettes(flatten = TRUE)){
+
+  if(confuns::is_list(input)){
+
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
+
+  }
+
+  input <- input[input != "default"]
+
+  confuns::check_one_of(
+    input = input,
+    against = validColorPalettes(flatten = TRUE)
+  )
+
+  purrr::map(
+    .x = input,
+    .f = function(x){
+
+      vec <- base::as.character(1:n)
+
+      if(x %in% validColorPalettes()[["Viridis Options"]]){
+
+        vec <- base::as.character(vec[1:9])
+
+      } else {
+
+        vec <- as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
 
       }
-    )
 
-  gridExtra::grid.arrange(grobs = plot_list)
+      df <- base::data.frame(x = vec, y = 1)
+
+      out <-
+        ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+        ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+        confuns::scale_color_add_on(aes = "fill", clrp = x, variable = vec) +
+        ggplot2::scale_y_continuous() +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          legend.position = "none",
+          plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+        ) +
+        ggplot2::labs(title = x)
+
+      return(out)
+
+    }
+  ) %>%
+    patchwork::wrap_plots()
+
+}
+
+#' @rdname showColors
+#' @export
+showColorSpectra <- function(input = validColorSpectra(flatten = TRUE)){
+
+  if(confuns::is_list(input)){
+
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
+
+  }
+
+  input <- input[input != "default"]
+
+  confuns::check_one_of(
+    input = input,
+    against = validColorSpectra(flatten = TRUE)
+  )
+
+  purrr::map(
+    .x = input,
+    .f = function(x){
+
+      if(x %in% confuns::diverging){
+
+        vec <- base::seq(-1, 1, len = n)
+
+      } else {
+
+        vec <- 1:n
+
+      }
+
+      df <- base::data.frame(x = vec, y = 1)
+
+      out <-
+        ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+        ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+        confuns::scale_color_add_on(aes = "fill", clrsp = x, variable = vec) +
+        ggplot2::scale_y_continuous() +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          legend.position = "none",
+          plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+        ) +
+        ggplot2::labs(title = x)
+
+      return(out)
+
+    }
+  ) %>%
+    patchwork::wrap_plots()
 
 }
 

@@ -6,7 +6,7 @@
 \alias{getMatrix}
 \title{Obtain count and expression matrix}
 \usage{
-getCountMatrix(object, of_sample = NA)
+getCountMatrix(object, ...)
 
 getExpressionMatrix(object, mtr_name = NULL, verbose = FALSE, ...)
 
@@ -14,9 +14,6 @@ getMatrix(object, mtr_name = NULL, verbose = NULL, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{mtr_name}{Character value. The name of the matrix of interest.}
 }
