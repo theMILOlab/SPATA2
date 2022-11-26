@@ -1628,6 +1628,18 @@ getTrajectoryObject <- function(object, trajectory_name, of_sample = NA){
 
 # Slot: used_genesets ----------------------------------------------
 
+#' @export
+getGeneSetList <- function(object){
+
+  getGeneSetDf(object) %>%
+    base::split(f = .["ont"]) %>%
+    purrr::map(.f = function(x){
+
+      x[,base::setdiff(base::names(x), "ont")][[1]]
+
+    })
+
+}
 
 #' @title Obtain gene set names
 #'

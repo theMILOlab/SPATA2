@@ -90,6 +90,8 @@ runGSEA <- function(object,
 
   } else {
 
+    gene_set_list <- getGeneSetList(object)
+
     if(base::is.character(gene_set_names)){
 
       give_feedback(msg = "Using subset of default gene set list.", verbose = verbose)
@@ -99,15 +101,13 @@ runGSEA <- function(object,
         against = getGeneSets(object)
       )
 
+      gene_set_list <- gene_set_list[gene_set_names]
+
     } else {
 
       give_feedback(msg = "Using default gene set list.", verbose = verbose)
 
-      gene_set_names <- getGeneSets(object)
-
     }
-
-    gene_set_list <- getGenes(object, of_gene_sets = gene_set_names, simplify = FALSE)
 
   }
 
@@ -150,42 +150,52 @@ runGSEA <- function(object,
                 dplyr::filter(dea_df, !!rlang::sym(across_value) == {{group}}) %>%
                 dplyr::pull(var = "gene")
 
-              give_feedback(
-                msg = glue::glue("Working on group: '{group}' ({index}/{n_groups})"),
-                verbose = verbose
-              )
+              if(base::length(signature) == 0){
 
-              message("Step 1")
+                message(glue::glue("No upregulated genes found for group '{group}'. Skipping."))
 
-              out <-
-                hypeR::hypeR(
-                  signature = signature,
-                  genesets = gene_set_list,
-                  test = test,
-                  background = background,
-                  power = power,
-                  absolute = absolute,
-                  fdr = fdr,
-                  pval = pval,
-                  quiet = quiet
+                out <- NULL
+
+              } else {
+
+                give_feedback(
+                  msg = glue::glue("Working on group: '{group}' ({index}/{n_groups})"),
+                  verbose = verbose
                 )
 
-              message("Step 2")
+                message("Step 1")
 
-              if(base::isTRUE(reduce)){
+                out <-
+                  hypeR::hypeR(
+                    signature = signature,
+                    genesets = gene_set_list,
+                    test = test,
+                    background = background,
+                    power = power,
+                    absolute = absolute,
+                    fdr = fdr,
+                    pval = pval,
+                    quiet = quiet
+                  )
 
-                out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
+                message("Step 2")
+
+                if(base::isTRUE(reduce)){
+
+                  out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
+
+                }
+
+                message("Step 3")
+
+                out$data <-
+                  dplyr::mutate(
+                    .data = out$data,
+                    overlap_perc = overlap/geneset,
+                    label = base::as.factor(label)
+                  )
 
               }
-
-              message("Step 3")
-
-              out$data <-
-                dplyr::mutate(
-                  .data = out$data,
-                  overlap_perc = overlap/geneset,
-                  label = base::as.factor(label)
-                  )
 
               return(out)
 
