@@ -1428,18 +1428,7 @@ runDeAnalysis <- function(...){
 #' @export
 #'
 
-setGeneric(name = "runGSEA", def = function(object, ...){
-
-  standardGeneric(f = "runGSEA")
-
-})
-
-#' @rdname runGSEA
-#' @export
-setMethod(
-  f = "runGSEA",
-  signature = "spata2",
-  definition = function(object,
+runGSEA <- function(object,
                         across,
                         methods_de = "wilcox",
                         max_adj_pval = 0.05,
@@ -1626,7 +1615,6 @@ setMethod(
     return(object)
 
   }
-)
 
 # runP --------------------------------------------------------------------
 

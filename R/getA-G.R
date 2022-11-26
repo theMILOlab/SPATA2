@@ -546,7 +546,7 @@ getCnvResults <- function(object, ...){
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
+getCoordsDf <- function(object, type = "both", ...){
 
   deprecated(...)
 

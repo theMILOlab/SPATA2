@@ -2,12 +2,9 @@
 % Please edit documentation in R/runA-Z.R
 \name{runGSEA}
 \alias{runGSEA}
-\alias{runGSEA,spata2-method}
 \title{Compute gene set enrichment}
 \usage{
-runGSEA(object, ...)
-
-\S4method{runGSEA}{spata2}(
+runGSEA(
   object,
   across,
   methods_de = "wilcox",
@@ -31,8 +28,6 @@ runGSEA(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
 
 \item{across}{Character vector. All grouping variables of interest.}
 

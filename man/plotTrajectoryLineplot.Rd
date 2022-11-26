@@ -8,12 +8,14 @@ plotTrajectoryLineplot(
   object,
   id,
   variables,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins = NA_integer_,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
   method_gs = NULL,
-  smooth_method = NULL,
-  smooth_span = NULL,
-  smooth_se = NULL,
+  smooth_method = "loess",
+  smooth_span = 0.2,
+  smooth_se = TRUE,
   clrp = NULL,
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,
@@ -22,6 +24,8 @@ plotTrajectoryLineplot(
   vlinecolor = "grey",
   vlinesize = 1,
   vlinetype = "dashed",
+  x_nth = 1,
+  expand_x = c(0, 0),
   summarize_with = "mean",
   verbose = NULL,
   ...
@@ -73,6 +77,11 @@ display the trajectory parts.}
 
 \item{vlinetype}{Adjusts the type of the vertical lines that display the trajectory
 parts.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 

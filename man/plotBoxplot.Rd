@@ -93,7 +93,6 @@ plotRidgeplot(
   method_gs = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
