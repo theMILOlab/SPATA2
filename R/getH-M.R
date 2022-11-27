@@ -1261,6 +1261,22 @@ getImageAnnotationTags <- function(object){
 
 
 
+#' @title Obtain image center
+#'
+#' @description Computes and extracts center of the image frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+getImageCenter <- function(object){
+
+  getImageRange(object) %>%
+    purrr::map_dbl(.f = base::mean)
+
+}
+
+
 #' @title Obtain melted image
 #'
 #' @description Melts image array in a data.frame where each
@@ -1273,10 +1289,35 @@ getImageAnnotationTags <- function(object){
 #'
 getImageDf <- function(object, xrange = NULL, yrange = NULL){
 
-  getImage(object, xrange = xrange, yrange = yrange) %>%
-    reshape2::melt(value.name = "intensity") %>%
-    dplyr::select(-dplyr::any_of("Var3")) %>%
-    magrittr::set_names(value = c("pixel_x", "pixel_y", "intensity"))
+  img <- getImage(object)
+  img_dims <- getImageDims(object)
+
+  # red, green, blue
+  channels = c("red", "green", "blue")
+
+  out <-
+    purrr::map_df(
+      .x = 1:img_dims[3],
+      .f = function(cdim){ # iterate over color dimensions
+
+        reshape2::melt(img[,,cdim], value.name = "intensity") %>%
+          dplyr::select(-dplyr::any_of("Var3")) %>%
+          magrittr::set_names(value = c("x", "y", "intensity")) %>%
+          dplyr::mutate(channel = channels[cdim]) %>%
+          tibble::as_tibble()
+
+      }
+    ) %>%
+    tidyr::pivot_wider(
+      id_cols = c("x", "y"),
+      names_from = "channel",
+      values_from = "intensity"
+    ) %>%
+    dplyr::mutate(
+      color = grDevices::rgb(green = green, red = red, blue = blue)
+    )
+
+  return(out)
 
 }
 
@@ -1407,7 +1448,7 @@ getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 
   if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
 
-    msg <- "Could not find directory to high resolution image. Set with `setImageHighresDir()`."
+    msg <- "Could not find directory to high resolution image. Set with `setImageDirHighres()`."
 
     give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
 
@@ -1454,7 +1495,7 @@ getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
 
   if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
 
-    msg <- "Could not find directory to low resolution image. Set with `setImageLowresDir()`."
+    msg <- "Could not find directory to low resolution image. Set with `setImageDirLowres()`."
 
     confuns::give_feedback(msg = msg, fdb.fn = fdb_fn, with.time = FALSE)
 

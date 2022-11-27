@@ -859,9 +859,9 @@ flip_coords_df <- function(df,
 #' object or to flip single aspects.
 #'
 #' \itemize{
-#'  \item{`flipAll()`:}{ Flips image as well as every single spatial aspect.
+#'  \item{`flipAll()`:}{ Flips the image as well as every single spatial aspect.
 #'  **Always tracks the justification.**}
-#'  \item{`flipImage()`:}{ Flips the image.}
+#'  \item{`flipImage()`:}{ Flips only the image.}
 #'  \item{`flipCoordinates()`:}{ Flips the coordinates data.frame, image annotations
 #'  and spatial trajectories.}
 #'  \item{`flipCoordsDf()`:}{ Flips the coordinates data.frame.}
@@ -942,6 +942,54 @@ flipCoordsDf <- function(object, axis, verbose = NULL){
 
 }
 
+#' @rdname flipAll
+#' @export
+
+flipImage <- function(object, axis, track = FALSE, verbose = FALSE){
+
+  io <- getImageObject(object)
+
+  axis <- process_axis(axis)
+
+  if(axis == "h" | axis == "horizontal"){
+
+    confuns::give_feedback(
+      msg = "Flipping image horizontally.",
+      verbose = verbose
+    )
+
+    io@image <- EBImage::flip(io@image)
+
+    if(base::isTRUE(track)){
+
+      io@justification$flipped$horizontal <-
+        !io@justification$flipped$horizontal
+
+    }
+
+  } else if(axis == "v" | axis == "vertical"){
+
+    confuns::give_feedback(
+      msg = "Flipping image vertically.",
+      verbose = verbose
+    )
+
+    io@image <- EBImage::flop(io@image)
+
+    if(base::isTRUE(track)){
+
+      io@justification$flipped$vertical <-
+        !io@justification$flipped$vertical
+
+    }
+
+  }
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+
+}
 
 #' @rdname flipAll
 #' @export
@@ -1061,77 +1109,8 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
 
 
 
-#' @title Flip coordinates
-#'
-#' @description Function `flipCoordinates()` flips the coordinates of all spatial
-#' aspects in the `SPATA2` object. Functions `flip<spatial_aspect>()` do so for
-#' every aspect isolated.
-#'
-#' @inherit flip_coords_df params
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @seealso [`flipImage()`], [`rotateCoordinates()`], [`rotateImage()`]
-#'
-#' @export
-#'
 
 
 
-#' @title Flip image
-#'
-#' @description Flips image to align with coordinates in case
-#' of non matching image and coordinates.
-#'
-#' @param axis Character value. Either \emph{'h'} to flip horizontally
-#' or \emph{'v'} to flip vertically.
 
-#'
-#' @export
-#'
 
-flipImage <- function(object, axis, track = FALSE, verbose = FALSE){
-
-  io <- getImageObject(object)
-
-  axis <- process_axis(axis)
-
-  if(axis == "h" | axis == "horizontal"){
-
-    confuns::give_feedback(
-      msg = "Flipping image horizontally.",
-      verbose = verbose
-    )
-
-    io@image <- EBImage::flip(io@image)
-
-    if(base::isTRUE(track)){
-
-      io@justification$flipped$horizontal <-
-        !io@justification$flipped$horizontal
-
-    }
-
-  } else if(axis == "v" | axis == "vertical"){
-
-    confuns::give_feedback(
-      msg = "Flipping image vertically.",
-      verbose = verbose
-    )
-
-    io@image <- EBImage::flop(io@image)
-
-    if(base::isTRUE(track)){
-
-      io@justification$flipped$vertical <-
-        !io@justification$flipped$vertical
-
-    }
-
-  }
-
-  object <- setImageObject(object, image_object = io)
-
-  return(object)
-
-}

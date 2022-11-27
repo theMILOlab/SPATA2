@@ -580,10 +580,18 @@ rm_na <- function(x){ x[!base::is.na(x)] }
 
 # inspired by https://rdrr.io/github/ErasmusOIC/SMoLR/src/R/rotate.R
 # basic function
-rotate_coord <- function(x,y,angle, type=c("degrees","radial"), method=c("transform","polar","polar_extended"), center=c(0,0), translate=NULL, stretch=NULL, flip=FALSE){
+rotate_coord <- function(x,
+                         y,
+                         angle,
+                         type = c("degrees","radial"),
+                         method = c("transform","polar","polar_extended"),
+                         center = c(x = 0, y =0),
+                         translate = NULL,
+                         stretch = NULL,
+                         flip = FALSE){
 
   # stepwise
-  stopifnot(angle %in% c(0, 90, 180, 270, 360))
+  #stopifnot(angle %in% c(0, 90, 180, 270, 360))
 
   type <- match.arg(type)
   method <- match.arg(method)
@@ -603,8 +611,8 @@ rotate_coord <- function(x,y,angle, type=c("degrees","radial"), method=c("transf
   }
 
 
-  x <- x-center[1]
-  y <- y-center[2]
+  x <- x-center["x"]
+  y <- y-center["y"]
 
 
   if(type=="degrees"){angle <- angle*pi/180}
@@ -686,12 +694,12 @@ rotate_coord <- function(x,y,angle, type=c("degrees","radial"), method=c("transf
 #'
 rotate_coords_df <- function(df,
                              angle,
-                             ranges,
                              clockwise = TRUE,
                              coord_vars = list(pair1 = c("x", "y"),
                                                pair2 = c("xend", "yend")),
                              verbose = FALSE,
                              error = FALSE,
+                             center = c(0,0),
                              ...
                              ){
 
@@ -715,31 +723,17 @@ rotate_coords_df <- function(df,
 
   }
 
-  irange_x <- ranges[["x"]]
-  irange_y <- ranges[["y"]]
-
   for(pair in coord_vars){
 
     if(base::all(pair %in% base::colnames(df))){
 
-      x_coords <- df[[pair[1]]]
-      y_coords <- df[[pair[2]]]
-
-      crange_x <- base::range(x_coords)
-      crange_y <- base::range(y_coords)
-
-      lower_dist_x <- irange_y[1] + crange_x[1]
-      upper_dist_x <- irange_y[2] - crange_x[2]
-
-      lower_dist_y <- irange_x[1] + crange_y[1]
-      upper_dist_y <- irange_x[2] - crange_y[2]
-
-      center <- c(x=base::mean(irange_y), y=base::mean(irange_x)) %>% rev()
+      x_coords <- df[[pair[1]]] #-8.4
+      y_coords <- df[[pair[2]]] #-6.78
 
       coords_df_rotated <-
         rotate_coord(
-          x = x_coords,# - base::abs((lower_dist_x - upper_dist_x)),
-          y = y_coords,# - base::abs((upper_dist_y - lower_dist_y)),
+          x = x_coords, # - base::abs((lower_dist_x - upper_dist_x)),
+          y = y_coords, # - base::abs((upper_dist_y - lower_dist_y)),
           center = center,
           angle = angle
         ) %>%
@@ -747,21 +741,8 @@ rotate_coords_df <- function(df,
         magrittr::set_names(value = c("x", "y")) %>%
         tibble::as_tibble()
 
-      if(T){
-
-        crange_x <- base::range(coords_df_rotated[["x"]])
-        crange_y <- base::range(coords_df_rotated[["y"]])
-
-        lower_dist_x <- irange_x[1] + crange_x[1]
-        upper_dist_x <- irange_x[2] - crange_x[2]
-
-        lower_dist_y <- irange_y[1] + crange_y[1]
-        upper_dist_y <- irange_y[2] - crange_y[2]
-
-      }
-
-      df[[pair[1]]] <- coords_df_rotated[["x"]]# + base::abs((upper_dist_x - lower_dist_x))
-      df[[pair[2]]] <- coords_df_rotated[["y"]]# - base::abs((upper_dist_y - lower_dist_y))
+      df[[pair[1]]] <- coords_df_rotated[["x"]]
+      df[[pair[2]]] <- coords_df_rotated[["y"]]
 
     } else {
 
@@ -840,7 +821,7 @@ rotateAll <- function(object, angle, clockwise = TRUE){
       verbose = FALSE
       )
 
-  return(Object)
+  return(object)
 
 }
 
@@ -861,7 +842,15 @@ rotateImage <- function(object,
 
   io <- getImageObject(object)
 
-  io@image <- EBImage::rotate(x = io@image, angle = angle)
+  image_dims <- getImageDims(object)
+
+  io@image <-
+    EBImage::rotate(
+      x = io@image,
+      angle = angle,
+      output.dim = image_dims[1:2],
+      bg.col = "white"
+      )
 
   # save rotation
   new_angle <- io@justification$angle + angle
@@ -938,7 +927,7 @@ rotateCoordsDf <- function(object,
     rotate_coords_df(
       df = coords_df,
       angle = angle,
-      ranges = getImageRange(object),
+      center = getImageCenter(object),
       clockwise = clockwise,
       verbose = FALSE
     )
@@ -979,7 +968,7 @@ rotateImageAnnotations <- function(object,
             rotate_coords_df(
               df = img_ann@area,
               angle = angle,
-              ranges = getImageRange(object),
+              center = getImageCenter(object),
               clockwise = clockwise,
               verbose = FALSE
             )
@@ -1039,7 +1028,7 @@ rotateSpatialTrajectories <- function(object,
             rotate_coords_df(
               df = spat_traj@projection,
               angle = angle,
-              ranges = getImageRange(object),
+              center = getImageCenter(object),
               clockwise = clockwise,
               verbose = FALSE
             )
@@ -1049,7 +1038,7 @@ rotateSpatialTrajectories <- function(object,
               df = spat_traj@projection,
               angle = angle,
               clockwise = clockwise,
-              ranges = getImageRange(object),
+              center = getImageCenter(object),
               coord_vars = list(pair1 = c("x", "y"), pair2 = c("xend", "yend")),
               verbose = FALSE
             )
@@ -1060,7 +1049,7 @@ rotateSpatialTrajectories <- function(object,
       )
 
     # write set trajectories!!!
-    object <- setTrajectories(object, trajectories = spat_trajectories)
+    object <- setTrajectories(object, trajectories = spat_trajectories, overwrite = TRUE)
 
   } else {
 

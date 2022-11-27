@@ -538,6 +538,21 @@ getCnvResults <- function(object, ...){
 }
 
 
+#' @title Obtain coordinate center
+#'
+#' @description Calculates and extracts center of the coordinate frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+getCoordsCenter <- function(object){
+
+  getCoordsRange(object) %>%
+    purrr::map_dbl(.f = base::mean)
+
+}
+
 #' @title Obtain spatial coordinates
 #'
 #' @inherit check_sample params

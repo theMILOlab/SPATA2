@@ -4,6 +4,7 @@
 \alias{flipAll}
 \alias{flipCoordinates}
 \alias{flipCoordsDf}
+\alias{flipImage}
 \alias{flipImageAnnotations}
 \alias{flipSpatialTrajectories}
 \title{Mirror invert image and coordinates}
@@ -13,6 +14,8 @@ flipAll(object, axis, verbose = FALSE)
 flipCoordinates(object, axis, verbose = FALSE)
 
 flipCoordsDf(object, axis, verbose = NULL)
+
+flipImage(object, axis, track = FALSE, verbose = FALSE)
 
 flipImageAnnotations(object, axis, verbose = NULL)
 
@@ -45,9 +48,9 @@ The \verb{flip*()} functions can be used to flip the complete \code{SPATA2}
 object or to flip single aspects.
 
 \itemize{
-\item{\code{flipAll()}:}{ Flips image as well as every single spatial aspect.
+\item{\code{flipAll()}:}{ Flips the image as well as every single spatial aspect.
 \strong{Always tracks the justification.}}
-\item{\code{flipImage()}:}{ Flips the image.}
+\item{\code{flipImage()}:}{ Flips only the image.}
 \item{\code{flipCoordinates()}:}{ Flips the coordinates data.frame, image annotations
 and spatial trajectories.}
 \item{\code{flipCoordsDf()}:}{ Flips the coordinates data.frame.}

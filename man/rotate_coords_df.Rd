@@ -7,11 +7,11 @@
 rotate_coords_df(
   df,
   angle,
-  ranges,
   clockwise = TRUE,
   coord_vars = list(pair1 = c("x", "y"), pair2 = c("xend", "yend")),
   verbose = FALSE,
   error = FALSE,
+  center = c(0, 0),
   ...
 )
 }
