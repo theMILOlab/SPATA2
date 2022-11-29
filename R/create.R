@@ -861,7 +861,7 @@ createImageAnnotations <- function(object, ...){
                 expand = input$expand,
                 square = input$square,
                 encircle = input$encircle,
-                linesize = input$linesize2,
+                line_size = input$linesize2,
                 alpha = (1 - input$transparency),
                 display_title = FALSE,
                 display_subtitle = input$subtitle,

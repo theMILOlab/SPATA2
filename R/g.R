@@ -1421,12 +1421,21 @@ ggpLayerZoom <- function(object = NULL,
                          xrange = NULL,
                          yrange = NULL,
                          expand_x = c(0,0),
-                         expand_y = c(0,0)
+                         expand_y = c(0,0),
+                         round = 2
                          ){
+
+  if(base::any(is_dist_si(xrange), is_dist_si(yrange))){
+
+    check_object(object)
+
+  }
 
   layers <- list()
 
   if(!base::is.null(xrange)){
+
+    xunit <- extract_unit(input = xrange)[1]
 
     xrange <-
       as_pixel(input = xrange, object = object, as_numeric = TRUE) %>%
@@ -1437,12 +1446,18 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_x_continuous(limits = xrange, expand = expand_x)
+        ggplot2::scale_x_continuous(
+          limits = xrange,
+          expand = expand_x,
+          labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
+        )
       )
 
   }
 
   if(!base::is.null(yrange)){
+
+    yunit <- extract_unit(input = yrange)[1]
 
     yrange <-
       as_pixel(input = yrange, object = object, as_numeric = TRUE) %>%
@@ -1453,7 +1468,11 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_y_continuous(limits = yrange, expand = expand_y)
+        ggplot2::scale_y_continuous(
+          limits = yrange,
+          expand = expand_y,
+          labels = ~ as_unit(input = .x, unit = yunit, object = object, unit = unit)
+          )
       )
 
   }

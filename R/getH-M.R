@@ -354,8 +354,8 @@ setMethod(
 
     area_df <- img_ann@area
 
-    x <- base::mean(area_df$x)
-    y <- base::mean(area_df$y)
+    x <- base::mean(base::range(area_df$x))
+    y <- base::mean(base::range(area_df$y))
 
     out <- c(x = x, y = y)
 
@@ -374,8 +374,8 @@ setMethod(
 
     area_df <- object@area
 
-    x <- base::mean(area_df$x)
-    y <- base::mean(area_df$y)
+    x <- base::mean(base::range(area_df$x))
+    y <- base::mean(base::range(area_df$y))
 
     out <- c(x = x, y = y)
 
