@@ -480,6 +480,7 @@ depr_info <-
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
+      "ggpLayerImageAnnotation" = "ggpLayerImgAnnBorder",
       "is_euol_dist" = "is_dist_euol",
       "is_dist_euol" = "is_dist_si",
       "is_pixel_dist" = "is_dist_pixel",

@@ -1213,6 +1213,17 @@ getTrajectoryNames <- function(object, ...){
 }
 
 
+#' @export
+ggpLayerImageAnnotation <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerImgAnnBorder(...)
+
+}
+
+
+
 # h -----------------------------------------------------------------------
 
 #' run pca on the cnv-matrix

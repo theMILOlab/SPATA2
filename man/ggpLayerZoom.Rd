@@ -9,7 +9,8 @@ ggpLayerZoom(
   xrange = NULL,
   yrange = NULL,
   expand_x = c(0, 0),
-  expand_y = c(0, 0)
+  expand_y = c(0, 0),
+  round = 2
 )
 }
 \arguments{

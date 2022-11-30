@@ -55,109 +55,12 @@ initiateSpataObject_Counts <- function(count_mtr,
 }
 
 
+check_length <- function(input,
+                         length_ctrl){
 
 
-
-ggpLayerImgAnnLabel <- function(object,
-                                ids = NULL,
-                                tags = NULL,
-                                test = "any",
-                                labels = NULL,
-                                point_at = "center",
-                                color_by_ids = FALSE,
-                                ...){
-
-  confuns::check_one_of(
-    input = point_at,
-    against = c("center", "border")
-  )
-
-  img_anns <-
-    getImageAnnotations(
-      object = object,
-      ids = ids,
-      tags = tags,
-      test = test,
-      add_barcodes = FALSE,
-      add_image = FALSE,
-      check = TRUE
-    )
-
-  if(base::is.character(labels)){
-
-    if(base::length(labels) == 1){
-
-      labels <- base::rep(labels, base::length(img_anns))
-
-    } else if(base::length(labels) != base::length(img_anns)){
-
-      stop("If character, length of input for argument `labels` must be 1 or equal to number of image annotations.")
-
-    }
-
-  } else {
-
-    labels <-
-      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
-      base::unname()
-
-  }
-
-  plot_df <-
-    purrr::map2_dfr(
-      .x = img_anns,
-      .y = labels,
-      .f = function(img_ann, label){
-
-        if(point_at == "center"){
-
-          point <- getImageAnnotationCenter(img_ann)
-
-        } else {
-
-          area <- img_ann@area
-
-          point <-
-            area[base::sample(x = 1:base::nrow(area), size = 1),] %>%
-            base::as.numeric()
-
-        }
-
-        base::data.frame(
-          x = base::unname(point[1]),
-          y = base::unname(point[2]),
-          label = label
-        )
-
-      }
-    )
-
-  if(base::isTRUE(color_by_ids)){
-
-    out <-
-      ggrepel::geom_text_repel(
-        data = plot_df,
-        mapping = ggplot2::aes(x = x, y = y, label = label, color = label),
-        ...
-      )
-
-  } else {
-
-    out <-
-      ggrepel::geom_text_repel(
-        data = plot_df,
-        mapping = ggplot2::aes(x = x, y = y, label = label),
-        ...
-      )
-
-  }
-
-  return(out)
 
 }
-
-
-
 
 
 
