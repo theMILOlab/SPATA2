@@ -894,7 +894,8 @@ setPixelScaleFactor <- function(object, pxl_scale_fct = NULL, verbose = NULL){
       getPixelScaleFactor(
         object = object,
         unit =  getSpatialMethod(object)@unit,
-        force = TRUE
+        force = TRUE,
+        verbose = verbose
       )
 
   } else {

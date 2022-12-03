@@ -506,6 +506,7 @@ depr_info <-
       "transform_si_to_pixels" = "transform_area_si_to_pixels"
     ),
     args = list(
+      "combine_with_wd" = "add_wd",
       "euol" = "unit",
       "discrete_feature" = "grouping_variable",
       "linealpha" = "line_alpha",

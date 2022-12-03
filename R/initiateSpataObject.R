@@ -822,7 +822,7 @@ initiateSpataObject_10X <- function(directory_10X,
                                     image_name = "tissue_lowres_image.png",
                                     directory_spata = NULL,
                                     directory_seurat = NULL,
-                                    combine_with_wd = "/",
+                                    add_wd = "/",
                                     gene_set_path = NULL,
                                     SCTransform = FALSE,
                                     NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
@@ -835,6 +835,8 @@ initiateSpataObject_10X <- function(directory_10X,
                                     RunUMAP = list(dims = 1:30),
                                     verbose = TRUE,
                                     ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -886,15 +888,15 @@ initiateSpataObject_10X <- function(directory_10X,
 
   # 2. Read in data ---------------------------------------------------------
 
-  dir_test_one <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+  dir_test_one <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5")
 
-  # if FALSE, might have been specified with \\outs subdirectories
+  # if FALSE, might have been specified with /outs subdirectories
   # old requirements
   if(!base::file.exists(dir_test_one)){
 
-    directory_10X <- stringr::str_c(directory_10X, "\\outs", sep = "")
+    directory_10X <- stringr::str_c(directory_10X, "/outs", sep = "")
 
-    dir_test_two <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+    dir_test_two <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5")
 
     if(base::file.exists(dir_test_two)){
 
@@ -918,13 +920,13 @@ initiateSpataObject_10X <- function(directory_10X,
 
   confuns::give_feedback(msg = "Reading in .h5 file.", verbose = verbose)
 
-  file_dir <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5", sep = "")
+  file_dir <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5", sep = "")
 
   if(base::file.exists(paths = file_dir)){
 
    confuns::give_feedback(msg = glue::glue("Loading from directory: '{directory_10X}'"), verbose = verbose)
 
-   image_dir <- stringr::str_c(directory_10X, "\\spatial")
+   image_dir <- stringr::str_c(directory_10X, "/spatial")
 
    seurat_object <-
      Seurat::Load10X_Spatial(
@@ -1046,7 +1048,7 @@ initiateSpataObject_10X <- function(directory_10X,
   }
 
   # set image directories
-  dir_default <- stringr::str_c(directory_10X, "\\spatial\\", image_name)
+  dir_default <- stringr::str_c(directory_10X, "/spatial/", image_name)
 
   spata_object <- setImageOrigin(object = spata_object, origin = dir_default)
 
@@ -1060,7 +1062,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
-  dir_lowres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
+  dir_lowres <- stringr::str_c(directory_10X, "/spatial/tissue_lowres_image.png")
 
   if(base::file.exists(dir_lowres)){
 
@@ -1072,7 +1074,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
-  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_hires_image.png")
+  dir_highres <- stringr::str_c(directory_10X, "/spatial/tissue_hires_image.png")
 
   if(base::file.exists(dir_highres)){
 
@@ -1096,7 +1098,7 @@ initiateSpataObject_10X <- function(directory_10X,
           saveSpataObject(
             object = spata_object,
             directory_spata = directory_spata,
-            combine_with_wd = combine_with_wd,
+            add_wd = add_wd,
             verbose = verbose
           )
 

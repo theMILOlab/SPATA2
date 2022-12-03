@@ -310,7 +310,8 @@ exchangeImage <- function(object,
   object <-
     setPixelScaleFactor(
       object = object,
-      pxl_scale_fct = NULL # forces computation
+      pxl_scale_fct = NULL, # forces computation
+      verbose = verbose
       )
 
   return(object)

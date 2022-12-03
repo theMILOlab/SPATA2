@@ -1307,9 +1307,12 @@ plotImageAnnotations <- function(object,
 #' to *'px'*.
 #' @param ... Additional arguments given to `ggpLayerAxesSI()` if
 #' `unit` is not *'px'*.
-#' @inherit argument_dummy params
 #'
+#' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
+#'
+#' @inheritSection section_dummy Distance measures
+#'
 #' @export
 #'
 plotImageGgplot <- function(object,
@@ -1365,6 +1368,73 @@ plotImageGgplot <- function(object,
 
 }
 
+
+#' @title Plot histology images (ggplot2)
+#'
+#' @description Reads in and plots all images known to the `SPATA2` object.
+#'
+#' @param names Character vector or `NULL`. If character, specifies the images
+#' by name. If `NULL`, all images are plotted.
+#' @param ... Additionel arguments given to `plotImageGgplot()`.
+#'
+#' @return A ggplot assembled with via `patchwork::wrap_plots()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @seealso [`getImageDirectories()`]
+#'
+#' @export
+#'
+plotImagesGgplot <- function(object,
+                             names = NULL,
+                             verbose = NULL,
+                             nrow = NULL,
+                             ncol = NULL,
+                             ...){
+
+  hlpr_assign_arguments(object)
+
+  image_names <-
+    getImageDirectories(object) %>%
+    base::names()
+
+  if(base::is.character(names)){
+
+    confuns::check_one_of(
+      input = names,
+      against = image_names
+    )
+
+    image_names <- names
+
+  }
+
+  image_list <-
+    purrr::map(
+      .x = image_names,
+      verbose = verbose,
+      ...,
+      .f = function(name, ...){
+
+        confuns::give_feedback(
+          msg = glue::glue("Reading image {name}."),
+          verbose = verbose
+        )
+
+        object <- loadImage(object, name = name, verbose = FALSE)
+
+        plotImageGgplot(object, ...) +
+          ggplot2::labs(subtitle = name)
+
+      }
+    ) %>%
+    purrr::set_names(nm = image_names)
+
+  patchwork::wrap_plots(image_list, nrow = nrow, ncol = ncol)
+
+}
 
 
 

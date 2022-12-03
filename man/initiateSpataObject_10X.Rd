@@ -10,7 +10,7 @@ initiateSpataObject_10X(
   image_name = "tissue_lowres_image.png",
   directory_spata = NULL,
   directory_seurat = NULL,
-  combine_with_wd = "/",
+  add_wd = "/",
   gene_set_path = NULL,
   SCTransform = FALSE,
   NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),

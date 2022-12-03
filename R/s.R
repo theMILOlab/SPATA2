@@ -199,8 +199,9 @@ saveGeneSetDf <- function(object, directory){
 #' @export
 saveSpataObject <- function(object,
                             directory_spata = NULL,
-                            combine_with_wd = FALSE,
-                            verbose = NULL){
+                            add_wd = FALSE,
+                            verbose = NULL,
+                            ...){
 
   hlpr_assign_arguments(object)
 
@@ -208,13 +209,7 @@ saveSpataObject <- function(object,
 
   if(base::is.character(directory_spata)){
 
-    object <-
-      adjustDirectoryInstructions(
-        object = object,
-        to = "spata_object",
-        directory_new = directory_spata,
-        combine_with_wd = combine_with_wd
-      )
+    object <- setSpataDir(object, dir = directory_spata, add_wd = add_wd)
 
   }
 
@@ -588,14 +583,16 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 #' @param dir Character value. The directory under which to store the
 #' `SPATA2` object.
 #' @param add_wd Logical value. If `TRUE`, the working directory is added to
-#' the directory separated by *'\\'*.
+#' the directory separated by *'/'*.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
 #'
-setSpataDir <- function(object, dir, add_wd = FALSE){
+setSpataDir <- function(object, dir, add_wd = FALSE, ...){
+
+  deprecated(...)
 
   confuns::is_value(x = dir, mode = "character")
 
@@ -603,7 +600,7 @@ setSpataDir <- function(object, dir, add_wd = FALSE){
 
     wd_string <- base::getwd()
 
-    dir <- stringr::str_c(wd_string, "\\", dir)
+    dir <- stringr::str_c(wd_string, "/", dir)
 
   }
 

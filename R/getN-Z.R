@@ -699,6 +699,35 @@ getSpataDf <- function(object, of_sample = NA){
 
 }
 
+
+#' @title Obtain SPATA2 object directory
+#'
+#' @description Extracts the file directory under which the `SPATA2` object
+#' is saved by default with `saveSpataObject()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value or an error if no directory is set.
+#'
+#' @seealso [`setSpataDir()`]
+#'
+#' @export
+#'
+getSpataDir <- function(object){
+
+  out <- object@information$instructions$directories$spata_object
+
+  if(base::is.null(out)){
+
+    stop("No spata directory set.")
+
+  }
+
+  return(out)
+
+}
+
+
 getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
   if(base::exists(x = "name.spata.object", where = envir) && base::exists(name.spata.object)){
