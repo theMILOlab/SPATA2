@@ -881,21 +881,21 @@ initiateSpataObject_10X <- function(directory_10X,
 
   # 2. Read in data ---------------------------------------------------------
 
-  dir_test_one <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+  dir_test_one <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5")
 
   # if FALSE, might have been specified with \\outs subdirectories
   # old requirements
   if(!base::file.exists(dir_test_one)){
 
-    directory_10X <- stringr::str_c(directory_10X, "\\outs", sep = "")
+    directory_10X <- stringr::str_c(directory_10X, "/outs", sep = "")
 
-    dir_test_two <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+    dir_test_two <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5")
 
     if(base::file.exists(dir_test_two)){
 
       confuns::give_feedback(msg = "10X folder found.", verbose = verbose)
 
-      msg <- "'~outs//' as sub directories are no longer required. See `?initiateSpataObject_10X`."
+      msg <- "'~outs/' as sub directories are no longer required. See `?initiateSpataObject_10X`."
 
       rlang::warn(
         message = msg,
@@ -913,7 +913,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   confuns::give_feedback(msg = "Reading in .h5 file.", verbose = verbose)
 
-  file_dir <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5", sep = "")
+  file_dir <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5", sep = "")
 
   if(base::file.exists(paths = file_dir)){
 
