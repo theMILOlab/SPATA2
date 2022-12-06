@@ -25,8 +25,9 @@ saveCorrespondingSeuratObject(
 saveSpataObject(
   object,
   directory_spata = NULL,
-  combine_with_wd = FALSE,
-  verbose = NULL
+  add_wd = FALSE,
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ is taken as is.}
 \item{seurat_object}{A valid seurat-object. (from the Seurat platform)}
 
 \item{directory_spata, directory_cds_directory_seurat_object}{Character value or NULL. Set details for more.}
+
+\item{...}{Named arguments whoose default input you want to override.}
 }
 \value{
 Apart from their side effect (saving the object of interest) all three functions

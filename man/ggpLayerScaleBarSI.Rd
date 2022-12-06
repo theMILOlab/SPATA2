@@ -15,7 +15,7 @@ ggpLayerScaleBarSI(
   text_nudge_x = 0,
   text_nudge_y = 0,
   text_pos = NULL,
-  text_size = 5.5,
+  text_size = 6.5,
   xrange = NULL,
   yrange = NULL,
   offset = c(0.8, 0.8),

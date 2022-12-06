@@ -70,7 +70,10 @@ evaluate_model_fits <- function(input_df,
 
 
 
-# examine -----------------------------------------------------------------
+
+
+
+# ex ----------------------------------------------------------------------
 
 #' @title Examine clustering results
 #'
@@ -107,54 +110,75 @@ examineClusterResults <- function(cluster_df){
 
 #' @title Exchange image
 #'
-#' @description Exchanges histology images and scales the coordinates
-#' accordingly. Use argument \code{resize} to downscale images that
-#' are too big for R to handle.
+#' @description Exchanges the image and scales the coordinates of all
+#' spatial aspects in the `SPATA2` object accordingly.
 #'
-#' @param image Image input or character value. If character, input is interpreted as a directory
-#' to a file or to an URL and is read with `EBImage::readImage()`. The read image
-#' should be of type *.png*, *.jpeg* or *.tiff*.
+#' @param img_scale_fct Numeric value or `NULL`. If numeric, used as a scale factor
+#' to manipulate the size of the new image. The scale factor can be lower or bigger
+#' than one. But must be bigger than 0. See details for more information.
+#' @param adjust Logical value. If `TRUE`, the function assumes that
+#' the new image has the same justification as the image that was first loaded when the
+#' `SPATA2` object was created and it assumes that it needs the same rotation and flipping
+#' to be aligned with the coordinates. Thus, tracked flipping and rotation that has been applied and
+#' the old image is applied to adjust the new image accordingly. If `FALSE`, the
+#' image is stored as it is read in.
 #'
-#' If not character, the function ensures that the input is - or is convertible - to
-#' class `Image` via `EBimage::as.Image()`. If it fails, an error is thrown.
-#'
-#' @param resize Numeric vector of length two, numeric value or NULL. If numeric,
-#' specifies the size with which the image is eventually saved.
-#'
-#' If \code{resize} is of length one, e.g. \code{resize} = 3, the image dimensions
-#' of the old image are multiplied with the \code{resize}, here with 3, to create the dimensions
-#' under which the new image is saved. This is useful, as the relation between width
-#' and height of the new image should not change to ensure that the barcode-spots
-#' overlap perfectly with the histology image.
-#'
-#' If \code{resize} is of length two, e.g. \code{resize} = c(1000, 1200), the image
-#' dimensions of the new image are set to exactly that. First value sets the width,
-#' the second value sets the height.
-#'
+#' @inherit createHistologyImaging params
 #' @inherit argument_dummy params
 #' @inherit update_dummy params
 #'
-#' @details The function requires the `SPATA2` object to already contain an
+#' @details Using argument `img_scale_fct`:
+#'
+#' This argument can either be used to downscale very big images by a factor or
+#' it can be used to effectively multiply the resolution of the old image.
+#'
+#' \itemize{
+#'  \item{`img_scale_fct` < 1}{: The scale factor is used to simply scale down the width and height of the
+#'  new image. E.g. width is 800px and height is 1000px and `img_scale_fct = 0.5`. In this case,
+#'  the new image is stored with the dimensions width of 400px and height of 500px.}
+#'  \item{`img_scale_fct` > 1}{: The scale factor is used to set the width and height in relation
+#'  to the old image. E.g. width and height of the old image are both 1000px and `img_scale_fct = 1.5`
+#'  the new image will be stored with the dimensions width = 1500px and height = 1500px - three
+#'  times as high of a resolution than the old image. If the basic resolution of the new image
+#'  is not bigger or equal than the required one an error is thrown. - Setting `img_scale_fct` to a
+#'  value bigger than 1 only makes sense if the new image is bigger than the old one.}
+#'  }
+#'
+#' @note The function requires the `SPATA2` object to already contain an
 #' image. This is because images of different resolution (total number of pixels)
-#' require the barcode-spots x- and y-coordinates to be scaled. The scale
-#' factor is computed by comparing the resolution of the old image with
-#' the one from the image that is supposed to replace the old one (after resizing,
-#' if resizing is desired).
+#' require the x- and y-coordinates to be scaled. The function assumes
+#' that the coordinates are properly scaled to the old image. The scale factor with
+#' which the coordinates are scaled to the new image is then computed by comparing the resolution
+#' of the old image with the one from the new image.
+#'
+#' Images are stored in form of the `Image` class from the `EBImage` package. To
+#' be precise, they are stored in an S4 object of class `HistologyImaging` altogether
+#' with meta data.
+#'
+#' @seealso [`rescaleImage()`] to downscale the current image. [`createHistologyImaging()`] to see
+#' information on how to set up the container in which the image is stored. [`containsImage()`]
+#' and [`containsHistologyImaging()`] to read more information about the difference between
+#' both.
 #'
 #' @export
 
 exchangeImage <- function(object,
                           image,
-                          resize = NULL,
+                          img_scale_fct = 1,
+                          adjust = TRUE,
                           verbose = NULL,
                           ...){
 
   deprecated(...)
 
-  check_object(object)
-
   hlpr_assign_arguments(object)
 
+  stopifnot(containsImage(object))
+
+  # check input
+  confuns::is_value(x = img_scale_fct, mode = "numeric", skip.allow = TRUE, skip.val = NULL)
+
+  # get imaging object
   # extract old image
   old_image <- getImage(object)
 
@@ -165,7 +189,6 @@ exchangeImage <- function(object,
   }
 
   dim_old <- base::dim(old_image)
-
 
   # handle input
   if(base::is.character(image) && base::length(image) == 1){
@@ -183,71 +206,113 @@ exchangeImage <- function(object,
 
   }
 
-  # resize input if needed
-  confuns::is_vec(
-    x = resize,
-    mode = "numeric",
-    max.length = 2,
-    skip.allow = TRUE,
-    skip.val = NULL
-  )
+  dim_input <- base::dim(new_image)
 
-  if(base::is.numeric(resize)){
+  # rescale
+  if(img_scale_fct != 1){
 
-    if(base::length(resize) == 1){
+    if(img_scale_fct < 0 ){
 
-      resize_input <- getImageDims(object)[c(1,2)]*resize
+      stop("`img_scale_fct` must be bigger than 0")
 
-    } else {
+    } else if(img_scale_fct < 1){
 
-      resize_input <- resize[c(1,2)]
+      # decrease size
+      dim_resize <- dim_input[1:2] * img_scale_fct
+
+    } else if(img_scale_fct > 1){
+
+      # increase size
+      dim_resize <- dim_old[1:2] * img_scale_fct
+
+      if(dim_resize[1] > dim_input[1] | dim_resize[2] > dim_input[2]){
+
+        dn <- stringr::str_c("width = ", dim_input[1], "px and height = ", dim_input[2], "px")
+
+        dr <- stringr::str_c("width = ", dim_resize[1], "px and height = ", dim_resize[2], "px")
+
+        stop(glue::glue("Can not rescale to {dr}. Max. resolution is {dn}."))
+
+      }
 
     }
 
-    width <- resize[1]
-    height <- resize[2]
+    width <- dim_resize[1]
+    height <- dim_resize[2]
 
     confuns::give_feedback(
       msg = glue::glue("Resizing new image to width = {width} and height = {height}."),
       verbose = verbose
     )
 
-    new_image <-
-      EBImage::resize(
-        x = new_image,
-        w = width,
-        h = height
-      )
+    new_image <- EBImage::resize(x = new_image, w = width, h = height)
 
   }
 
-  # calc factor
-  dim_new <- base::dim(new_image)
+  # calc factor with new dims , include resizing
+  dim_final <- base::dim(new_image)
 
-  dim_fct <- c(dim_new[1]/dim_old[1], dim_new[2]/dim_old[2])
+  dim_fct <- c(dim_final[1]/dim_old[1], dim_final[2]/dim_old[2])
 
   # scale spatial aspects
-  object <-
-    scaleCoordinates(
-      object = object,
-      scale_fct = dim_fct,
-      verbose = verbose
-      )
+  object <- scaleCoordinates(object = object, scale_fct = dim_fct, verbose = verbose)
 
-  # set new image
-  image_obj <- getImageObject(object)
+  # set new image and information
+  io <- getImageObject(object)
 
-  image_obj@image <- new_image
+  io@image <- new_image # adjustments are applied after setting the whole object
 
-  object <- setImageObject(object, image_object = image_obj)
+  io@image_info$img_scale_fct <- img_scale_fct
 
+  io@image_info$dim_input <- dim_input
+  io@image_info$dim_stored <- dim_final
+
+
+  if(base::is.character(image)){
+
+    io@image_info$origin <- image
+
+  } else {
+
+    io@image_info$origin <- "Global.Env."
+
+  }
+
+  # set image object
+  object <- setImageObject(object, image_object = io)
+
+  if(!base::isFALSE(adjust)){
+
+    # check previous rotations and flipping
+    if(io@justification$angle != 0){
+
+      object <- rotateImage(object, angle = io@justification$angle, clockwise = TRUE, track = FALSE)
+
+    }
+
+    if(base::isTRUE(io@justification$flipped$horizontal)){
+
+      object <- flipImage(object, axis = "h", track = FALSE)
+
+    }
+
+    if(base::isTRUE(io@justification$flipped$vertical)){
+
+      object <- flipImage(object, axis = "v", track = FALSE)
+
+    }
+
+  }
+
+  give_feedback(msg = "Image exchanged.", verbose = verbose)
+
+  # calc new pixel scale factor
   object <-
     setPixelScaleFactor(
       object = object,
-      pxl_scale_fct = NULL # forces computation
+      pxl_scale_fct = NULL, # forces computation
+      verbose = verbose
       )
-
-  give_feedback(msg = "Image exchanged.", verbose = verbose)
 
   return(object)
 

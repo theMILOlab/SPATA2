@@ -524,10 +524,13 @@ hlpr_image_add_on <- function(object, display_image, ...){
         magick::image_read()
 
       image_add_on <-
-        ggplot2::annotation_raster(raster = st_image,
-                                   xmin = 0, ymin = 0,
-                                   xmax = img_info$width,
-                                   ymax = img_info$height)
+        ggplot2::annotation_raster(
+          raster = st_image,
+          xmax = 0,
+          ymax = 0,
+          xmin = img_info$width,
+          ymin = img_info$height
+        )
 
     } else {
 

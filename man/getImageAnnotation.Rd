@@ -4,18 +4,40 @@
 \alias{getImageAnnotation}
 \title{Obtain object of class \code{ImageAnnotation}}
 \usage{
-getImageAnnotation(object, id, add_image = TRUE, expand = 0, square = FALSE)
+getImageAnnotation(
+  object,
+  id,
+  add_barcodes = TRUE,
+  strictly = FALSE,
+  add_image = TRUE,
+  expand = 0,
+  square = FALSE
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
+\item{add_barcodes}{Logical. If \code{TRUE}, barcodes of spots that fall into the
+area of an image annotation are identified and added to slot @misc$barcodes
+of the output image annotations.}
+
+\item{strictly}{Logical. If \code{TRUE}, only barcodes of spots that are strictly interior
+to the area of an image annotation are added to the output. If \code{FALSE},
+barcodes of spots that are on the relative interior of the area or are
+vertices of the border are added, too.}
+
+\item{add_image}{Logical. If TRUE, the area of the histology image that
+is occupied by the annotated structure is added to the \code{ImageAnnotation}
+object in slot @image. Dimensions of the image can be adjusted with \code{square}
+and \code{expand}.}
+
 \item{expand}{Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
-and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
-for more information.}
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
 
 \item{square}{Logical value. Most image annotations come in variable shapes and
 have different horizontal and vertical diameters. Therefore, height and width of the image
@@ -34,3 +56,41 @@ An object of class \code{ImageAnnotation}.
 Extracts object of class \code{ImageAnnotaion} by
 its id.
 }
+\section{Expansion of cropped image sections}{
+
+
+The argument \code{expand} is a versatile way, to specify how a cropped
+image section is extracted. If you want the cropped image as is, specify
+\code{expand = 0}. Else, there are multiple options. In general, \code{expand} takes
+three kinds of values, namely percentages, distances and distance exclamations.
+
+\itemize{
+\item{Percentage:}{ A string suffixed with \emph{\%}. E.g. \code{expand = '50\%'}
+adds 50\% of the distance from the center to the border of the image annotation
+to the image frame.}
+\item{Distance measures:}{ In pixel or European units of length. E.g. \code{expand =  list(x = '1mm')}
+expands the x-axis on both sides with 1mm. \verb{expand = list(x = c('0.5mm', 1.5mm')}
+expands the x-axis on the left side with 0.5mm and on the right side with 1.5mm.}
+\item{Exclam distance measures:}{ Distance measure with an exclamation mark
+suffix. E.g. \code{expand = '1mm!'} centers the image and forces an axis length of
+1 millimeter. (Example 5) }
+}
+
+Depending on how the values are specified different parts of the image can be
+expanded.
+
+Single values, like \code{expand = 50}, are recycled: Every end of each image axis
+is expanded by 50 pixel. (Example 2)
+
+Vectors of length two, like \code{expand = c('1mm', '2mm')}, are recycled: The beginning
+of each axis is expanded by 1 millimeter. The end of each axis is expanded by
+2mm. (Example 3)
+
+Named lists can be more precise. \code{expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm'))}.
+Applies the vectors to expand the corresponding axis. (Example 4)
+
+Using exclam input the side of the axis must not be specified as the
+axis is fixed as a whole. E.g \code{expand = list(x = '1mm!', y = '2mm!')} results
+in the same output as \verb{expand = list(x = c('1mm!', '1mm!'), y = c('2mm!', '2mm!')}.
+}
+

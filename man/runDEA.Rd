@@ -12,7 +12,6 @@ runDEA(
   verbose = NULL,
   base = 2,
   fc_name = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -31,9 +30,6 @@ Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-functio
 to obtain all valid input options.}
 
 \item{fc_name, base}{Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
 }

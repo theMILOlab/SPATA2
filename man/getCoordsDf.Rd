@@ -7,13 +7,10 @@
 \usage{
 getSegmentDf(object, segment_names, ...)
 
-getCoordsDf(object, of_sample = NA, type = "both", ...)
+getCoordsDf(object, type = "both", ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A data.frame containing the variables \emph{barcods, sample, x, y}

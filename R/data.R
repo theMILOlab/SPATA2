@@ -36,6 +36,18 @@
 "cnv_ref"
 
 
+#' A nested list. First layer is named by the sample name. Second layer is named
+#' by the grouping variable. Third layer is named by the method. Contains
+#' data.frames of differential gene expression analysis results from the
+#' function `Seurat::FindAllMarkers()`. Set with `setDeaResultsDf()`.
+#'
+#' Corresponding grouping variables can be added from the `clustering` list.
+#'
+#'  @docType data
+#'  @usage data(dea)
+#'
+"dea"
+
 
 #' A data.frame necessary for cnv-analysis. Contains information about the gene positions
 #' on chromosomes. Contains the following variables:

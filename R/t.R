@@ -167,7 +167,21 @@ theme_trajectory_fit <- function(){
 
 # tr ----------------------------------------------------------------------
 
-transfer_slot_content <- function(recipient, donor, skip = character(0), verbose = TRUE){
+#' @title Transfer S4 slot content
+#'
+#' @description Transfers slot content from one S4 object (donor) to a newer
+#' version (recepient).
+#'
+#' @param recipient Empty and new S4 object.
+#' @param donor Old S4 object.
+#' @param skip Slot names whose content is not transferred.
+#'
+#' @return Updated S4 object.
+#'
+transfer_slot_content <- function(recipient,
+                                  donor,
+                                  skip = character(0),
+                                  verbose = TRUE){
 
   snames_rec <- methods::slotNames(recipient)
   snames_don <- methods::slotNames(donor)
@@ -1070,9 +1084,6 @@ transformSeuratToSpata <- function(seurat_object,
   if(!base::is.null(image_object)){
 
     spata_object <- setImageObject(spata_object, image_object = image_object)
-
-    spata_object <- flipImageAndCoords(spata_object, axis = "x")
-
 
   } else {
 

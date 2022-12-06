@@ -585,12 +585,14 @@ plotTrajectoryHeatmap <- function(object,
 plotTrajectoryLineplot <- function(object,
                                    id,
                                    variables,
-                                   binwidth = ccDist(object),
+                                   binwidth = getCCD(object),
                                    n_bins = NA_integer_,
+                                   unit = getSpatialMethod(object)@unit,
+                                   round = 2,
                                    method_gs = NULL,
-                                   smooth_method = NULL,
-                                   smooth_span = NULL,
-                                   smooth_se = NULL,
+                                   smooth_method = "loess",
+                                   smooth_span = 0.2,
+                                   smooth_se = TRUE,
                                    clrp = NULL,
                                    clrp_adjust = NULL,
                                    display_trajectory_parts = NULL,
@@ -599,6 +601,8 @@ plotTrajectoryLineplot <- function(object,
                                    vlinecolor = "grey",
                                    vlinesize = 1,
                                    vlinetype = "dashed",
+                                   x_nth = 1,
+                                   expand_x = c(0,0),
                                    summarize_with = "mean",
                                    verbose = NULL,
                                    ...){
@@ -626,7 +630,12 @@ plotTrajectoryLineplot <- function(object,
       n_bins = n_bins,
       binwidth = binwidth,
       summarize_with = summarize_with,
-      format = "long"
+      format = "long",
+      verbose = verbose
+    ) %>%
+    dplyr::mutate(
+      breaks = trajectory_order - 1,
+      breaks_dist = as_unit(input = breaks, unit = unit, object = object, round = round)
     )
 
   if(base::isTRUE(display_trajectory_parts)){
@@ -669,23 +678,46 @@ plotTrajectoryLineplot <- function(object,
 
   # -----
 
+  bl_df <- dplyr::distinct(result_df, breaks, breaks_dist)
+
+  if(!base::is.numeric(breaks)){
+
+    breaks <- reduce_vec(x = base::unique(result_df[["breaks"]]), nth = x_nth)
+
+    labels <- reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth)
+
+  } else {
+
+    breaks <- base::as.integer(breaks)
+
+    labels <- bl_df[bl_df$breaks %in% breaks, "breaks_dist"]
+
+  }
+
+
   ggplot2::ggplot(
     data = result_df,
-    mapping = ggplot2::aes(x = trajectory_order, y = values, color = variables)
+    mapping = ggplot2::aes(x = breaks, y = values, color = variables)
   ) +
     trajectory_part_add_on +
     ggplot2::geom_smooth(size = linesize, span = smooth_span, method = smooth_method, formula = y ~ x,
                          se = smooth_se) +
     confuns::scale_color_add_on(variable = result_df$variables, clrp = clrp, clrp.adjust = clrp_adjust) +
+    ggplot2::scale_x_continuous(
+      breaks = breaks,
+      labels = labels,
+      expand = expand_x
+    ) +
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
     ggplot2::theme_classic() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_blank(),
-      axis.ticks.x = ggplot2::element_blank(),
-      axis.line.x = trajectory.line.x,
-      axis.line.y = ggplot2::element_line()
+      axis.line.x = ggplot2::element_line(
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
+        ),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(color = "black", size = 10)
     ) +
-    ggplot2::labs(x = "Trajectory Direction", y = NULL, color = "Variable") +
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL, color = "Variable") +
     facet_add_on
 
 
@@ -908,7 +940,7 @@ plotTsne <- function(object,
 #' @export
 plotTsneComparison <- function(object,
                                color_by,
-                               add_ons = list(),
+                               ggpLayers = list(),
                                display_title = FALSE,
                                nrow = NULL,
                                ncol = NULL,
@@ -923,7 +955,7 @@ plotTsneComparison <- function(object,
 
       out <-
         plotTsne(object, color_by = cb, ...) +
-        add_ons
+        ggpLayers
 
       if(base::isTRUE(display_title)){
 
@@ -940,7 +972,7 @@ plotTsneComparison <- function(object,
 
     }
   ) %>%
-    gridExtra::grid.arrange(grobs = ., nrow = nrow, ncol = ncol)
+    patchwork::wrap_plots()
 
 }
 
@@ -954,7 +986,7 @@ plotTsneComparison <- function(object,
 #' @description Displays the dimensional reduction and maps gene, gene-set
 #' or feature information onto the color-aesthetic.
 #'
-#' @param add_ons A list of ggplot add ons to add to each plot.
+#' @param ggpLayers A list of ggplot add ons to add to each plot.
 #' @inherit argument_dummy
 #' @inherit check_color_to params
 #' @inherit check_method params
@@ -1035,7 +1067,7 @@ plotUmap <- function(object,
 #' @export
 plotUmapComparison <- function(object,
                                color_by,
-                               add_ons = list(),
+                               ggpLayers = list(),
                                display_title = FALSE,
                                nrow = NULL,
                                ncol = NULL,
@@ -1043,34 +1075,31 @@ plotUmapComparison <- function(object,
 
   hlpr_assign_arguments(object)
 
-  grid_of_plots <-
-    purrr::map(
-      .x = color_by,
-      ...,
-      .f = function(cb, ...){
+  purrr::map(
+    .x = color_by,
+    ...,
+    .f = function(cb, ...){
+
+      out <-
+        plotUmap(object, color_by = cb, ..., verbose = FALSE) +
+        ggpLayers
+
+      if(base::isTRUE(display_title)){
 
         out <-
-          plotUmap(object, color_by = cb, ...) +
-          add_ons
-
-        if(base::isTRUE(display_title)){
-
-          out <-
-            out +
-            list(
-              ggplot2::labs(title = cb),
-              ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-            )
-
-        }
-
-        return(out)
+          out +
+          list(
+            ggplot2::labs(title = cb),
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+          )
 
       }
-    ) %>%
-    gridExtra::grid.arrange(grobs = ., nrow = nrow, ncol = ncol)
 
-  plot(grid_of_plots)
+      return(out)
+
+    }
+  ) %>%
+    patchwork::wrap_plots()
 
 }
 

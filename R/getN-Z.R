@@ -699,6 +699,35 @@ getSpataDf <- function(object, of_sample = NA){
 
 }
 
+
+#' @title Obtain SPATA2 object directory
+#'
+#' @description Extracts the file directory under which the `SPATA2` object
+#' is saved by default with `saveSpataObject()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value or an error if no directory is set.
+#'
+#' @seealso [`setSpataDir()`]
+#'
+#' @export
+#'
+getSpataDir <- function(object){
+
+  out <- object@information$instructions$directories$spata_object
+
+  if(base::is.null(out)){
+
+    stop("No spata directory set.")
+
+  }
+
+  return(out)
+
+}
+
+
 getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
   if(base::exists(x = "name.spata.object", where = envir) && base::exists(name.spata.object)){
@@ -732,13 +761,18 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
 
 
-#' @title Obtain object of class \code{SpatialTrajectory}.
+#' @title Obtain objects of class \code{SpatialTrajectory}.
 #'
 #' @inherit argument_dummy params
 #' @param id Character value. Denotes the spatial trajectory
 #' of interest.
+#' @param ids Character vector. Denotes the spatial trajectories
+#' of interest.
 #'
-#' @return An object of class \code{SpatialTrajectory.}
+#' @return An object of class `SpatialTrajectory` in case of `getSpatialTrajectory()`
+#' or a named list of `SpatialTrajectory` objects in case of `getSpatialTrajectories()`.
+#' An empty list if `nSpatialTrajectories() == 0`.
+#'
 #' @export
 #'
 
@@ -763,6 +797,37 @@ getSpatialTrajectory <- function(object, id){
 
 }
 
+#' @rdname getSpatialTrajectory
+#' @export
+getSpatialTrajectories <- function(object, ids = NULL){
+
+  if(nSpatialTrajectories(object) != 0){
+
+    if(base::is.character(ids)){
+
+      confuns::check_one_of(
+        input = ids,
+        against = getSpatialTrajectoryIds(object)
+      )
+
+      out <- object@trajectories[[1]][ids]
+
+    } else {
+
+      out <- object@trajectories[[1]]
+
+    }
+
+  } else {
+
+    out <- list()
+
+  }
+
+  return(out)
+
+}
+
 
 #' @title Obtain spatial trajectory IDs
 #'
@@ -776,11 +841,20 @@ getSpatialTrajectory <- function(object, id){
 #' @export
 getSpatialTrajectoryIds <- function(object){
 
-  purrr::keep(
-    .x = object@trajectories[[1]],
-    .p = ~ base::class(.x) == "SpatialTrajectory"
-  ) %>%
+  out <-
+    purrr::keep(
+      .x = object@trajectories[[1]],
+      .p = ~ base::class(.x) == "SpatialTrajectory"
+    ) %>%
     base::names()
+
+  if(base::is.null(out)){
+
+    out <- base::character(0)
+
+  }
+
+  return(out)
 
 }
 
@@ -951,7 +1025,7 @@ getTrajectoryScreeningDf <- function(object,
 
   hlpr_assign_arguments(object)
 
-  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+  binwidth <- as_pixel(input = binwidth, object = object, as_numeric = TRUE)
 
   check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
 

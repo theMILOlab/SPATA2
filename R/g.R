@@ -820,27 +820,27 @@ ggpLayerImage <- function(object = "object"){
 #' @param ... Additional arguments given to \code{scale_color_add_on()}. Used to
 #' set the color adjustments of the polygon (fill and color).
 #'
+#' @inherit getImageAnnotations params details
 #' @inherit ggpLayer_dummy return
-#' @inherit getImageAnnotations details
 #'
 #' @note Adds two additional layers to set the scales for the color- and
 #' fill aesthetic of the plot.
 #'
 #' @export
 #'
-ggpLayerImageAnnotation <- function(object = "object",
-                                    ids = NULL,
-                                    tags = NULL,
-                                    test = "any",
-                                    alpha = 0.5,
-                                    fill = NA,
-                                    line_color = "black",
-                                    line_size = 1.5,
-                                    line_type = "solid",
-                                    display_color = FALSE,
-                                    clrp = NULL,
-                                    clrp_adjust = NULL,
-                                    ...){
+ggpLayerImgAnnBorder <- function(object = "object",
+                                 ids = NULL,
+                                 tags = NULL,
+                                 test = "any",
+                                 alpha = 0.5,
+                                 fill = NA,
+                                 line_color = "black",
+                                 line_size = 1.5,
+                                 line_type = "solid",
+                                 display_color = FALSE,
+                                 clrp = NULL,
+                                 clrp_adjust = NULL,
+                                 ...){
 
         deprecated(...)
 
@@ -911,6 +911,287 @@ ggpLayerImageAnnotation <- function(object = "object",
 
       }
 
+#' @title Add pointer towards image annotations
+#'
+#' @description Adds segments and, if desired, labels to the surface plot that
+#' point towards and highlight the position of image annotations.
+#'
+#' @param color_by Character value or `NULL`. If character, one of *'id'* or *'label'*
+#' which colors the the pointers accordingly.
+#' @param ptr_angles,ptr_lengths Numeric value of length 1 or of length equal to the number
+#' of image annotations. Specifies the angle from which the segments points
+#' towards the image annotation as well as their length. `ptr_lengths` works
+#' within the SPATA2 distance framework. See section *Distance measures* for more
+#' information.
+#' @param ptr_labels Specifies if and how the pointers are labeled. If `NULL`,
+#' the default, the image annotations are labeled by their ID. If character,
+#' specifies the exact label of each image annotation and should be of length 1
+#' or of length equal to the number of image annotations. If `FALSE`, no text
+#' is displayed.
+#' @param ptr_alpha Numeric value. Specifies the transparency of the pointers.
+#' @param ptr_arrow `NULL` or `arrow` as displayed by `grid::arrow()`.
+#' @param ptr_color Character value. Specifies the color of the pointers if
+#' `color_by` is not a character.
+#' @param ptr_size Numeric value. Specifies the size (thickness) of the pointers.
+#' @param text_dist Distance measure. Specifies the distance from the text to
+#' the pointer.
+#' @param point_at Character value. If *'center'*, the pointer is directed at
+#' the center of the image annotation. If *'border'*, the pointer points
+#' at a random point of the image annotation border - recommended if the
+#' image annotation is big.
+#' @param seed Numeric value or `NULL`. If numeric, sets seed before picking
+#' a random point of the image annotation border if `point_at = 'border'`.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @export
+ggpLayerImgAnnPointer <- function(object,
+                                  ids = NULL,
+                                  tags = NULL,
+                                  test = "any",
+                                  color_by = NULL,
+                                  ptr_angles = 45,
+                                  ptr_labels = NULL,
+                                  ptr_lengths = "250um",
+                                  ptr_alpha = 0.9,
+                                  ptr_arrow = NULL,
+                                  ptr_color = "black",
+                                  ptr_size = 1,
+                                  text_alpha = 0.9,
+                                  text_color = "black",
+                                  text_dist = 0,
+                                  text_nudge_x = 0,
+                                  text_nudge_y = 0,
+                                  text_size = 4,
+                                  point_at = "center",
+                                  seed = NULL,
+                                  clrp = NULL,
+                                  clrp_adjust = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # check and get image annotations
+  img_anns <-
+    getImageAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      add_barcodes = FALSE,
+      add_image = FALSE,
+      check = TRUE
+    )
+
+
+  # check ptr_angles
+  if(base::is.numeric(ptr_angles)){
+
+    if(base::length(ptr_angles) == 1){
+
+      ptr_angles <- base::rep(ptr_angles, base::length(ptr_angles))
+
+    } else if(base::length(ptr_angles) != base::length(ptr_angles)){
+
+      stop("If numeric, length of input for argument `ptr_angles` must be 1 or equal to number of image annotations.")
+
+    }
+
+  } else {
+
+    stop("Invalid input for argument `ptr_angles`. Must be numeric.")
+
+  }
+
+  # check ptr_labels
+  if(base::is.character(ptr_labels)){
+
+    if(base::length(ptr_labels) == 1){
+
+      ptr_labels <- base::rep(ptr_labels, base::length(img_anns))
+
+    } else if(base::length(ptr_labels) != base::length(img_anns)){
+
+      stop("If character, length of input for argument `ptr_labels` must be 1 or equal to number of image annotations.")
+
+    }
+
+  } else {
+
+    ptr_labels <-
+      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
+      base::unname()
+
+  }
+
+  # check ptr_lengths
+  is_dist(input = ptr_lengths, error = TRUE)
+
+  ptr_lengths <- as_pixel(input = ptr_lengths, object = object, add_attr = FALSE)
+
+  if(base::length(ptr_lengths) == 1){
+
+    ptr_lengths <- base::rep(ptr_lengths, base::length(img_anns))
+
+  }
+
+  if(base::length(text_dist) == 1){
+
+    text_dist <- base::rep(text_dist, base::length(img_anns))
+
+  }
+
+
+  plot_df <-
+    purrr::pmap_dfr(
+      .l = list(img_anns, ptr_angles, ptr_labels, ptr_lengths, text_dist),
+      .f = function(img_ann, angle, label, len, prolong){
+
+        area <- img_ann@area
+
+        if(point_at == "center"){
+
+          center <- getImageAnnotationCenter(img_ann)
+
+        } else if(point_at == "border"){
+
+          if(base::is.numeric(seed)){
+
+            set.seed(seed)
+
+          }
+
+          center <-
+            area[base::sample(x = 1:base::nrow(area), size = 1),] %>%
+            base::as.numeric() %>%
+            purrr::set_names(nm = c("x", "y"))
+
+        }
+
+        dist <- as_pixel(input = len, object = object, add_attr = FALSE)
+
+        confuns::make_trig_vec(
+          start = center,
+          angle = angle,
+          dist = dist,
+          prolong = as_pixel(prolong, object = object, add_attr = FALSE),
+          prolong.opt = "a"
+        ) %>%
+          dplyr::mutate(label = label, id = img_ann@id) %>%
+          dplyr::select(label, dplyr::everything())
+
+      }
+    )
+
+  if(base::is.character(color_by)){
+
+    confuns::check_one_of(
+      input = color_by,
+      against = c("label", "id")
+    )
+
+  }
+
+
+  # segment
+  if(base::is.character(color_by)){
+
+    segm_add_on <-
+      ggplot2::geom_segment(
+        data = plot_df,
+        mapping = ggplot2::aes(
+          x = xend,
+          y = yend,
+          xend = x,
+          yend = y,
+          color = .data[[color_by]],
+        ),
+        alpha = ptr_alpha,
+        arrow = ptr_arrow,
+        size = ptr_size
+      )
+
+  } else {
+
+    segm_add_on <-
+      ggplot2::geom_segment(
+        data = plot_df,
+        mapping = ggplot2::aes(
+          x = xend,
+          y = yend,
+          xend = x,
+          yend = y,
+        ),
+        alpha = ptr_alpha,
+        arrow = ptr_arrow,
+        color = ptr_color,
+        size = ptr_size
+      )
+
+  }
+
+  # text
+  if(!base::any(base::isFALSE(ptr_labels))){
+
+    if(base::is.character(color_by)){
+
+      text_add_on <-
+        ggplot2::geom_text(
+          data = plot_df,
+          mapping = ggplot2::aes(
+            x = xend_p1,
+            y = yend_p1,
+            label = label,
+            color = .data[[color_by]]
+          ),
+          alpha = text_alpha,
+          size = text_size
+        )
+
+    } else {
+
+      text_add_on <-
+        ggplot2::geom_text(
+          data = plot_df,
+          mapping = ggplot2::aes(
+            x = xend_p1,
+            y = yend_p1,
+            label = label
+          ),
+          alpha = text_alpha,
+          color = text_color,
+          size = text_size
+        )
+
+    }
+
+  }
+
+  if(base::is.character(color_by)){
+
+    color_add_on <-
+      scale_color_add_on(
+        variable = plot_df[[color_by]],
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
+      )
+
+  } else {
+
+    color_add_on <- NULL
+
+  }
+
+  # return
+  list(
+    segm_add_on,
+    text_add_on,
+    color_add_on
+  )
+
+}
 
 #' @title Add a rectangular to the plot
 #'
@@ -1055,7 +1336,7 @@ ggpLayerScaleBarSI <- function(object,
                                text_nudge_x = 0,
                                text_nudge_y = 0,
                                text_pos = NULL,
-                               text_size = 5.5,
+                               text_size = 6.5,
                                xrange = NULL,
                                yrange = NULL,
                                offset = c(0.8, 0.8),
@@ -1421,12 +1702,21 @@ ggpLayerZoom <- function(object = NULL,
                          xrange = NULL,
                          yrange = NULL,
                          expand_x = c(0,0),
-                         expand_y = c(0,0)
+                         expand_y = c(0,0),
+                         round = 2
                          ){
+
+  if(base::any(is_dist_si(xrange), is_dist_si(yrange))){
+
+    check_object(object)
+
+  }
 
   layers <- list()
 
   if(!base::is.null(xrange)){
+
+    xunit <- extract_unit(input = xrange)[1]
 
     xrange <-
       as_pixel(input = xrange, object = object, as_numeric = TRUE) %>%
@@ -1437,12 +1727,18 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_x_continuous(limits = xrange, expand = expand_x)
+        ggplot2::scale_x_continuous(
+          limits = xrange,
+          expand = expand_x,
+          labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
+        )
       )
 
   }
 
   if(!base::is.null(yrange)){
+
+    yunit <- extract_unit(input = yrange)[1]
 
     yrange <-
       as_pixel(input = yrange, object = object, as_numeric = TRUE) %>%
@@ -1453,7 +1749,11 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_y_continuous(limits = yrange, expand = expand_y)
+        ggplot2::scale_y_continuous(
+          limits = yrange,
+          expand = expand_y,
+          labels = ~ as_unit(input = .x, unit = yunit, object = object, unit = unit)
+          )
       )
 
   }

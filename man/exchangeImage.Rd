@@ -4,30 +4,35 @@
 \alias{exchangeImage}
 \title{Exchange image}
 \usage{
-exchangeImage(object, image, resize = NULL, verbose = NULL, ...)
+exchangeImage(
+  object,
+  image,
+  img_scale_fct = 1,
+  adjust = TRUE,
+  verbose = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
 \item{image}{Image input or character value. If character, input is interpreted as a directory
 to a file or to an URL and is read with \code{EBImage::readImage()}. The read image
-should be of type \emph{.png}, \emph{.jpeg} or \emph{.tiff}.
+should be of type \emph{.png}, \emph{.jpeg} or \emph{.tiff}. Capital letters work, too.
 
 If not character, the function ensures that the input is - or is convertible - to
-class \code{Image} via \code{EBimage::as.Image()}. If it fails, an error is thrown.}
+class \code{Image} via \code{EBimage::as.Image()}. If that fails, an error is thrown.}
 
-\item{resize}{Numeric vector of length two, numeric value or NULL. If numeric,
-specifies the size with which the image is eventually saved.
+\item{img_scale_fct}{Numeric value or \code{NULL}. If numeric, used as a scale factor
+to manipulate the size of the new image. The scale factor can be lower or bigger
+than one. But must be bigger than 0. See details for more information.}
 
-If \code{resize} is of length one, e.g. \code{resize} = 3, the image dimensions
-of the old image are multiplied with the \code{resize}, here with 3, to create the dimensions
-under which the new image is saved. This is useful, as the relation between width
-and height of the new image should not change to ensure that the barcode-spots
-overlap perfectly with the histology image.
-
-If \code{resize} is of length two, e.g. \code{resize} = c(1000, 1200), the image
-dimensions of the new image are set to exactly that. First value sets the width,
-the second value sets the height.}
+\item{adjust}{Logical value. If \code{TRUE}, the function assumes that
+the new image has the same justification as the image that was first loaded when the
+\code{SPATA2} object was created and it assumes that it needs the same rotation and flipping
+to be aligned with the coordinates. Thus, tracked flipping and rotation that has been applied and
+the old image is applied to adjust the new image accordingly. If \code{FALSE}, the
+image is stored as it is read in.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -37,15 +42,42 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
-Exchanges histology images and scales the coordinates
-accordingly. Use argument \code{resize} to downscale images that
-are too big for R to handle.
+Exchanges the image and scales the coordinates of all
+spatial aspects in the \code{SPATA2} object accordingly.
 }
 \details{
+Using argument \code{img_scale_fct}:
+
+This argument can either be used to downscale very big images by a factor or
+it can be used to effectively multiply the resolution of the old image.
+
+\itemize{
+\item{\code{img_scale_fct} < 1}{: The scale factor is used to simply scale down the width and height of the
+new image. E.g. width is 800px and height is 1000px and \code{img_scale_fct = 0.5}. In this case,
+the new image is stored with the dimensions width of 400px and height of 500px.}
+\item{\code{img_scale_fct} > 1}{: The scale factor is used to set the width and height in relation
+to the old image. E.g. width and height of the old image are both 1000px and \code{img_scale_fct = 1.5}
+the new image will be stored with the dimensions width = 1500px and height = 1500px - three
+times as high of a resolution than the old image. If the basic resolution of the new image
+is not bigger or equal than the required one an error is thrown. - Setting \code{img_scale_fct} to a
+value bigger than 1 only makes sense if the new image is bigger than the old one.}
+}
+}
+\note{
 The function requires the \code{SPATA2} object to already contain an
 image. This is because images of different resolution (total number of pixels)
-require the barcode-spots x- and y-coordinates to be scaled. The scale
-factor is computed by comparing the resolution of the old image with
-the one from the image that is supposed to replace the old one (after resizing,
-if resizing is desired).
+require the x- and y-coordinates to be scaled. The function assumes
+that the coordinates are properly scaled to the old image. The scale factor with
+which the coordinates are scaled to the new image is then computed by comparing the resolution
+of the old image with the one from the new image.
+
+Images are stored in form of the \code{Image} class from the \code{EBImage} package. To
+be precise, they are stored in an S4 object of class \code{HistologyImaging} altogether
+with meta data.
+}
+\seealso{
+\code{\link[=rescaleImage]{rescaleImage()}} to downscale the current image. \code{\link[=createHistologyImaging]{createHistologyImaging()}} to see
+information on how to set up the container in which the image is stored. \code{\link[=containsImage]{containsImage()}}
+and \code{\link[=containsHistologyImaging]{containsHistologyImaging()}} to read more information about the difference between
+both.
 }

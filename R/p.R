@@ -264,6 +264,57 @@ printGeneSetOverview <- function(object){
 
 # process -----------------------------------------------------------------
 
+#' @export
+process_angle_justification <- function(angle, angle_just, clockwise){
+
+  if(base::isTRUE(clockwise)){
+
+    angle_out <- angle + angle_just
+
+    if(angle_out >= 360){
+
+      angle_out <- 360 - angle_out
+
+    }
+
+  } else {
+
+    angle_out <- angle - angle_just
+
+    if(angle_out < 0){
+
+      angle_out <- 360 + angle_out
+
+    }
+
+  }
+
+  return(angle_out)
+
+}
+
+
+process_axis <- function(axis){
+
+  confuns::check_one_of(
+    input = axis,
+    against = c("h", "horizontal", "v", "vertical")
+  )
+
+  if(axis %in% c("h", "horizontal")){
+
+    out <- "horizontal"
+
+  } else {
+
+    out <- "vertical"
+
+  }
+
+  return(out)
+
+}
+
 
 #' @title Process expand input
 #' @return Returns always a list of length two. Two slots named h (height)

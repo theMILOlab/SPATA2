@@ -199,8 +199,9 @@ saveGeneSetDf <- function(object, directory){
 #' @export
 saveSpataObject <- function(object,
                             directory_spata = NULL,
-                            combine_with_wd = FALSE,
-                            verbose = NULL){
+                            add_wd = FALSE,
+                            verbose = NULL,
+                            ...){
 
   hlpr_assign_arguments(object)
 
@@ -208,13 +209,7 @@ saveSpataObject <- function(object,
 
   if(base::is.character(directory_spata)){
 
-    object <-
-      adjustDirectoryInstructions(
-        object = object,
-        to = "spata_object",
-        directory_new = directory_spata,
-        combine_with_wd = combine_with_wd
-      )
+    object <- setSpataDir(object, dir = directory_spata, add_wd = add_wd)
 
   }
 
@@ -267,6 +262,91 @@ saveSpataObject <- function(object,
 
 # scale -------------------------------------------------------------------
 
+
+
+#' @title Scale coordinate variable pairs
+#'
+#' @description Scales coordinate variable pairs in a data.frame by multiplying
+#' them with a scale factor.
+#'
+#' @param scale_fct Numeric value bigger than 0. If used within `flipImage()`
+#' must range between 0 and 1. If only applied to spatial aspects that
+#' base on coordinates, can be bigger than 1.
+#'
+#' @inherit rotate_coords_df params details return
+#'
+#' @export
+#'
+scale_coords_df <- function(df,
+                            scale_fct = 1,
+                            coord_vars = list(pair1 = c("x", "y"),
+                                              pair2 = c("xend", "yend"),
+                                              pair3 = c("col", "row"),
+                                              pair4 = c("imagecol", "imagerow")
+                            ),
+                            verbose = FALSE,
+                            error = FALSE,
+                            ...){
+
+  confuns::is_vec(scale_fct, mode = "numeric", min.length = 1)
+
+  if(base::length(scale_fct) == 1){
+
+    scale_fct <- base::rep(scale_fct, 2)
+
+  }
+
+  if(base::is.vector(coord_vars, mode = "character")){
+
+    coords_vars <- list(coord_vars[1:2])
+
+  } else {
+
+    base::stopifnot(confuns::is_list(input = coord_vars))
+
+    coord_vars <-
+      purrr::keep(.x = coord_vars, .p = base::is.character) %>%
+      purrr::map(.x = ., .f = ~.x[1:2])
+
+  }
+
+  for(pair in coord_vars){
+
+    if(base::all(pair %in% base::colnames(df))){
+
+      df[[pair[1]]] <- df[[pair[1]]] * scale_fct[1]
+      df[[pair[2]]] <- df[[pair[2]]] * scale_fct[2]
+
+    } else {
+
+      ref <- confuns::scollapse(string = pair)
+
+      msg <- glue::glue("Coords-var pair {ref} does not exist in input data.frame. Skipping.")
+
+      if(base::isTRUE(error)){
+
+        stop(msg)
+
+      } else {
+
+        confuns::give_feedback(
+          msg = msg,
+          verbose = verbose,
+          ...
+        )
+
+      }
+
+
+    }
+
+  }
+
+  return(df)
+
+}
+
+
 scale_nuclei_df <- function(object,
                             nuclei_df,
                             x = "Location_Center_X",
@@ -295,19 +375,72 @@ scale_nuclei_df <- function(object,
 }
 
 
-
-
-#' @title Scale coordinates
+#' @title Scale image and coordinates
 #'
-#' @description Scales coordinates of spatial aspects in the `SPATA2` object.
+#' @description The `rotate*()` family scales the current image
+#' or coordinates of spatial aspects or everything. See details
+#' for more information.
 #'
-#' @param scale_fct Numeric vector of length two. Scale factors with which the coordinates
-#' are multiplied. First value is used for x-, second value is used for y-coordinates.
+#' @inherit flipAll params
+#' @inherit scale_coords_df params
 #' @inherit argument_dummy params
-#' @inherit update_dummy return
+#' @inherit update_dummy params
+#'
+#' @details The `scale*()` functions can be used to scale the complete `SPATA2`
+#' object content or to scale single aspects.
+#'
+#' \itemize{
+#'  \item{`scaleAll()`:}{ Scales image as well as every single spatial aspect.
+#'  **Always tracks the justification.**}
+#'  \item{`scaleImage()`:}{ Scales the image.}
+#'  \item{`scaleCoordinates()`:}{ Scales the coordinates data.frame, image annotations
+#'  and spatial trajectories.}
+#'  \item{`scaleCoordsDf()`:}{ Scales the coordinates data.frame.}
+#'  \item{`scaleImageAnnotations()`:}{ Scales image annotations.}
+#'  \item{`scaleSpatialTrajectories()`:}{ Scales spatial trajectories.}
+#'  }
+#'
+#' @seealso [`flipAll()`], [`rotateAll()`]
 #'
 #' @export
-#'
+
+
+scaleAll <- function(object, scale_fct){
+
+  object <- scaleImage(object, scale_fct = scale_fct)
+
+  object <- scaleCoordinates(object, scale_fct = scale_fct, verbose = FALSE)
+
+  return(object)
+
+}
+
+
+#' @rdname scaleAll
+#' @export
+scaleImage <- function(object, scale_fct){
+
+  io <- getImageObject(object)
+
+  width <- io@image_info$dim_stored[1] * scale_fct
+  height <- io@image_info$dim_stored[2] * scale_fct
+
+  io@image <- EBImage::resize(x = io@image, w = width, h = height)
+
+  io@image_info$dim_stored <- base::dim(io@image)
+  io@image_info$img_scale_fct * io@image_info$img_scale_fct * scale_fct
+
+  object <- setImageObject(object, image_object = io)
+
+  object@information$pxl_scale_fct <-
+    object@information$pxl_scale_fct * scale_fct
+
+  return(object)
+
+}
+
+#' @rdname scaleAll
+#' @export
 scaleCoordinates <- function(object, scale_fct, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -337,7 +470,7 @@ scaleCoordinates <- function(object, scale_fct, verbose = NULL){
 
 }
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
 
@@ -351,10 +484,10 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
   coords_df <- getCoordsDf(object)
 
   coords_df_new <-
-    dplyr::mutate(
-      .data = coords_df,
-      x = x * scale_fct[1],
-      y = y * scale_fct[2]
+    scale_coords_df(
+      df = coords_df,
+      scale_fct = scale_fct,
+      verbose = FALSE
     )
 
   object <- setCoordsDf(object, coords_df = coords_df_new)
@@ -363,8 +496,7 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
 
 }
 
-
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 
@@ -379,29 +511,30 @@ scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 
   }
 
-  image_obj <- getImageObject(object)
+  io <- getImageObject(object)
 
-  image_obj@annotations <-
+  io@annotations <-
     purrr::map(
-      .x = image_obj@annotations,
+      .x = io@annotations,
       .f = function(img_ann){
 
-        img_ann@area$x <- img_ann@area$x * scale_fct[1]
-        img_ann@area$y <- img_ann@area$y * scale_fct[2]
+        img_ann@area <- scale_coords_df(df = img_ann@area, scale_fct = scale_fct)
+
+        img_ann@info$current_dim <- img_ann@info$current_dim * scale_fct
 
         return(img_ann)
 
       }
     )
 
-  object <- setImageObject(object, image_object = image_obj)
+  object <- setImageObject(object, image_object = io)
 
   return(object)
 
 }
 
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 
@@ -422,15 +555,10 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
       .f = function(traj){
 
         traj@projection <-
-          traj@projection %>%
-          dplyr::mutate(x = x * scale_fct[1], y = y * scale_fct[2])
+          scale_coords_df(df = traj@projection, scale_fct = scale_fct)
 
         traj@segment <-
-          traj@segment %>%
-          dplyr::mutate(
-            x = x * scale_fct[1], xend = xend * scale_fct[1],
-            y = y * scale_fct[2], yend = yend * scale_fct[2]
-          )
+          scale_coords_df(df = traj@segment, scale_fct = scale_fct)
 
         return(traj)
 
@@ -452,14 +580,29 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 #' @description Sets a directory under which the `SPATA2` object is
 #' always stored using the function `saveSpataObject()`.
 #'
+#' @param dir Character value. The directory under which to store the
+#' `SPATA2` object.
+#' @param add_wd Logical value. If `TRUE`, the working directory is added to
+#' the directory separated by *'/'*.
+#'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
 #'
-setSpataDir <- function(object, dir){
+setSpataDir <- function(object, dir, add_wd = FALSE, ...){
+
+  deprecated(...)
 
   confuns::is_value(x = dir, mode = "character")
+
+  if(base::isTRUE(add_wd)){
+
+    wd_string <- base::getwd()
+
+    dir <- stringr::str_c(wd_string, "/", dir)
+
+  }
 
   object@information$instructions$directories$spata_object <- dir
 
@@ -615,7 +758,7 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
     setNames(slotNames(object))
 
 
-  n_bcsp <- base::length(object@barcodes)
+  n_bcsp <- base::length(object@misc[["barcodes"]])
 
   n_vert <- base::nrow(object@area)
 
@@ -656,47 +799,222 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
 #'
 showColors <- function(input, n = 20, title_size = 10){
 
-  plot_list <-
-    purrr::map(
-      .x = input,
-      .f = function(x){
+  if(confuns::is_list(input)){
 
-        if(x %in% confuns::diverging){
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
 
-          vec <- base::seq(-1, 1, len = n)
+  }
 
-        } else {
+  input <- input[input != "default"]
 
-          vec <- 1:n
+  input_spectra <- input[input %in% validColorSpectra(flatten = TRUE)]
+
+  if(base::length(input_spectra) != 0){
+
+    plot_list1 <-
+      purrr::map(
+        .x = input_spectra,
+        .f = function(x){
+
+          if(x %in% confuns::diverging){
+
+            vec <- base::seq(-1, 1, len = n)
+
+          } else {
+
+            vec <- 1:n
+
+          }
+
+          df <- base::data.frame(x = vec, y = 1)
+
+          out <-
+            ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+            confuns::scale_color_add_on(aes = "fill", clrsp = x, variable = vec) +
+            ggplot2::scale_y_continuous() +
+            ggplot2::theme_void() +
+            ggplot2::theme(
+              legend.position = "none",
+              plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+            ) +
+            ggplot2::labs(title = x)
+
+          return(out)
 
         }
+      ) %>%
+      patchwork::wrap_plots()
 
-        if(x %in% c(confuns::colorpalettes)){
+  } else {
 
-          vec <- base::as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+    plot_list1 <- NULL
+
+  }
+
+
+  input_palettes <- input[input %in% validColorPalettes(flatten = TRUE)]
+
+  if(base::length(input_palettes) != 0){
+
+    plot_list2 <-
+      purrr::map(
+        .x = input_palettes,
+        .f = function(x){
+
+          vec <- base::as.character(1:n)
+
+          if(x %in% validColorPalettes()[["Viridis Options"]]){
+
+            vec <- base::as.character(vec[1:9])
+
+          } else {
+
+            vec <- as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+
+          }
+
+          df <- base::data.frame(x = vec, y = 1)
+
+          out <-
+            ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+            confuns::scale_color_add_on(aes = "fill", clrp = x, variable = vec) +
+            ggplot2::scale_y_continuous() +
+            ggplot2::theme_void() +
+            ggplot2::theme(
+              legend.position = "none",
+              plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+            ) +
+            ggplot2::labs(title = x)
+
+          return(out)
 
         }
+      ) %>%
+      patchwork::wrap_plots()
 
-        df <- base::data.frame(x = vec, y = 1)
+  } else {
 
-        out <-
-          ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
-          ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
-          confuns::scale_color_add_on(aes = "fill", clrsp = x, clrp = x, variable = vec) +
-          ggplot2::scale_y_continuous() +
-          ggplot2::theme_void() +
-          ggplot2::theme(
-            legend.position = "none",
-            plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
-          ) +
-          ggplot2::labs(title = x)
+    plot_list2 <- NULL
 
-        return(out)
+  }
+
+  plot_list1 / plot_list2
+
+}
+
+#' @rdname showColors
+#' @export
+showColorPalettes <- function(input = validColorPalettes(flatten = TRUE)){
+
+  if(confuns::is_list(input)){
+
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
+
+  }
+
+  input <- input[input != "default"]
+
+  confuns::check_one_of(
+    input = input,
+    against = validColorPalettes(flatten = TRUE)
+  )
+
+  purrr::map(
+    .x = input,
+    .f = function(x){
+
+      vec <- base::as.character(1:n)
+
+      if(x %in% validColorPalettes()[["Viridis Options"]]){
+
+        vec <- base::as.character(vec[1:9])
+
+      } else {
+
+        vec <- as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
 
       }
-    )
 
-  gridExtra::grid.arrange(grobs = plot_list)
+      df <- base::data.frame(x = vec, y = 1)
+
+      out <-
+        ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+        ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+        confuns::scale_color_add_on(aes = "fill", clrp = x, variable = vec) +
+        ggplot2::scale_y_continuous() +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          legend.position = "none",
+          plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+        ) +
+        ggplot2::labs(title = x)
+
+      return(out)
+
+    }
+  ) %>%
+    patchwork::wrap_plots()
+
+}
+
+#' @rdname showColors
+#' @export
+showColorSpectra <- function(input = validColorSpectra(flatten = TRUE)){
+
+  if(confuns::is_list(input)){
+
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
+
+  }
+
+  input <- input[input != "default"]
+
+  confuns::check_one_of(
+    input = input,
+    against = validColorSpectra(flatten = TRUE)
+  )
+
+  purrr::map(
+    .x = input,
+    .f = function(x){
+
+      if(x %in% confuns::diverging){
+
+        vec <- base::seq(-1, 1, len = n)
+
+      } else {
+
+        vec <- 1:n
+
+      }
+
+      df <- base::data.frame(x = vec, y = 1)
+
+      out <-
+        ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+        ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+        confuns::scale_color_add_on(aes = "fill", clrsp = x, variable = vec) +
+        ggplot2::scale_y_continuous() +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          legend.position = "none",
+          plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+        ) +
+        ggplot2::labs(title = x)
+
+      return(out)
+
+    }
+  ) %>%
+    patchwork::wrap_plots()
 
 }
 

@@ -2,10 +2,16 @@
 % Please edit documentation in R/s.R
 \name{showColors}
 \alias{showColors}
+\alias{showColorPalettes}
+\alias{showColorSpectra}
 \alias{showModels}
 \title{Show color palettes and spectra}
 \usage{
 showColors(input, n = 20, title_size = 10)
+
+showColorPalettes(input = validColorPalettes(flatten = TRUE))
+
+showColorSpectra(input = validColorSpectra(flatten = TRUE))
 
 showModels(
   input = 100,

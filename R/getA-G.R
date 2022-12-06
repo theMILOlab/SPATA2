@@ -241,14 +241,13 @@ getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
     sp::point.in.polygon(
       point.x = coords_df[["x"]],
       point.y = coords_df[["y"]],
-      pol.x = coords_df[["x"]],
-      poly = coords_df[["y"]]
+      pol.x = polygon_df[["x"]],
+      pol.y = polygon_df[["y"]]
     )
 
+  valid_res <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
 
-  valid_res <- base::ifelse(strictly, yes = 1, no = c(1,2,3))
-
-  coords_df_sub <- coords_df[res %in% valis_res, ]
+  coords_df_sub <- coords_df[res %in% valid_res, ]
 
   out <- coords_df_sub[["barcodes"]]
 
@@ -539,6 +538,21 @@ getCnvResults <- function(object, ...){
 }
 
 
+#' @title Obtain coordinate center
+#'
+#' @description Calculates and extracts center of the coordinate frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+getCoordsCenter <- function(object){
+
+  getCoordsRange(object) %>%
+    purrr::map_dbl(.f = base::mean)
+
+}
+
 #' @title Obtain spatial coordinates
 #'
 #' @inherit check_sample params
@@ -547,7 +561,7 @@ getCnvResults <- function(object, ...){
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
+getCoordsDf <- function(object, type = "both", ...){
 
   deprecated(...)
 
@@ -641,19 +655,19 @@ getCoordsRange <- function(object){
 
 #' @rdname getMatrix
 #' @export
-getCountMatrix <- function(object, of_sample = NA){
+getCountMatrix <- function(object, ...){
+
+  deprecated(...)
 
   # lazy control
   check_object(object)
 
   # adjusting control
-  of_sample <- check_sample(object = object, of_sample = of_sample)
-
-  count_mtr <- object@data[[of_sample]][["counts"]]
+  count_mtr <- object@data[[1]][["counts"]]
 
   if(base::is.null(count_mtr)){
 
-    stop(glue::glue("Did not find count matrix of sample '{of_sample}' in provided spata-object."))
+    stop(glue::glue("Did not find count matrix in provided spata-object."))
 
   }
 
@@ -1077,7 +1091,7 @@ getExpressionMatrix <- function(object,
 
       active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
 
-      stop(glue::glue("Did not find active expression matrix '{active_mtr}' in data slot of sample '{of_sample}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
+      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
 
     }
 
@@ -1096,7 +1110,7 @@ getExpressionMatrix <- function(object,
   confuns::give_feedback(msg = glue::glue("Using expression matrix '{active_mtr}'."), verbose = verbose)
 
   expr_mtr <-
-    object@data[[of_sample]][[active_mtr]] %>%
+    object@data[[1]][[active_mtr]] %>%
     base::as.matrix()
 
   return(expr_mtr)

@@ -23,6 +23,9 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
+\item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
+selection. See section \emph{Selection of image annotation with tags} for more information.}
+
 \item{merge}{Logical value. If TRUE, the results are merged in a single variable.}
 
 \item{merge_name}{Character value. The name of the merged variable.}

@@ -22,6 +22,9 @@ plotTrajectoryBarplot(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{grouping_variable}{Character value. The grouping variable of interest. Use
+\code{getGroupingOptions()} to obtain all valid input options.}
+
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}

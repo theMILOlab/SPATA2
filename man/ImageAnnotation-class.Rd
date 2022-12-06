@@ -6,33 +6,80 @@
 \alias{ImageAnnotation}
 \title{The \code{ImageAnnotation} - Class}
 \description{
-S4 class that contains information used to identify and
-annotate structures in histology images.
+S4 class that represents manually annotated structures in
+histology images.
 }
 \section{Slots}{
 
 \describe{
 \item{\code{area}}{data.frame. A data.frame that contains at least the numeric
-variables \emph{x} and \emph{y}. Data corresponds to the polygong that
-captures the spatial extent of the identified structure.}
-
-\item{\code{barcodes}}{character. Character vector of barcodes that fall into the polygon
-that encircles the annotated structure.}
+variables \emph{x} and \emph{y}. Data corresponds to the polygon that
+captures the spatial extent/borders of the identified structure.}
 
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}
 
-\item{\code{image}}{image. Cropped version of the annotated image that only contains
-the area where the annotated structure is located (plus expand). This slot is
-empty as long as the \code{ImageAnnotation} object is located in an
-object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
-or \code{getImageAnnotations()} adds the cropped image to the slot.}
+\item{\code{image}}{image. Cropped version of the annotated parent image that only contains
+the area where the annotated structure is located (plus expand). This slot should
+be empty as long as the \code{ImageAnnotation} object is located in an
+object of class \code{HistologyImaging}. Extracting it with \code{getImageAnnotation()}
+or \code{getImageAnnotations()} can add a cropped image to the slot. The parameters
+with which the image was cropped should be in the list of slot @image_info.}
 
-\item{\code{image_info}}{list. List of infos around the image of slot @image.}
+\item{\code{image_info}}{list. List of information around the image that is currently
+stored in slot @image after being cropped and set within \code{getImageAnnotation()}
+or \code{getImageAnnotations()}.}
+
+\item{\code{info}}{list. Stores meta data and miscellaneous information regarding the
+image annotation. Slots that should always exist:
+\itemize{
+\item{parent_origin:}{ Character string. Content from slot @info$origin of the \code{HistologyImaging}
+object the annotation belongs to. Identifies the exact image on which the annotation was drawn in.}
+\item{parent_id:}{ Character string. Content from slot @id of the \code{HistologyImaging}
+object the annotation belongs to. Identifies the \code{HistologyImaging} object (the tissue) the annotation
+belongs to.}
+\item{current_dim:}{ Numeric vector of length two. Width and height of the image
+the @area data.frame is currently scaled to. Used to scale the @area data.frame
+if the image annotation is extracted and added to a \code{SPATA2} object with different image resolution.}
+\item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
+@area data.frame if the image annotation is extracted and added to a \code{SPATA2} object with
+different justifications.
+\itemize{
+\item{\emph{angle}:}{ Numeric value that ranges from 0-359.}
+\item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}.}
+}}
+}}
 
 \item{\code{misc}}{list. A flexible list for miscellaneous input.}
 
-\item{\code{tags}}{character. Tags that can be used to group iamge annotations in different manners.
-This can be a single or multiple strings.}
+\item{\code{tags}}{character. Vector of arbitrary length. Contains tags that can be used
+to group and select image annotations in different manners.}
 }}
+
+\section{Image annotation tags}{
+
+Slot @tags contains a character vector of arbitrary length that allows
+to filter image annotations using a combination of arguments \code{tags} and
+\code{test} in functions that refer to one or more image annotations like
+\code{getImageAnnotations()} or \code{plotImageAnnotations()}.
+
+Input for argument \code{tags} specifies the tags of interest.
+Argument \code{test} decides about how the specified tags are used to select
+the image annotations of interest. There are multiple options:
+\enumerate{
+\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+must be tagged with at least one of the input tags.
+\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+must be tagged with all of the input tags. Can contain tags that are not specified.
+\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+must be tagged with all of the input tags. Can not be tagged with anything else.
+\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
+annotation must \strong{not} be tagged with the combination of input tags.
+\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
+must \strong{not} contain any of the input tags.
+}
+
+Note that the filtering process happens in addition to / after the filtering by input for argument
+\code{ids}.
+}
 

@@ -20,7 +20,6 @@
 #' @param ... Named arguments whoose default input you want to override.
 #'
 #' @return An updated spata object.
-#' @export
 #'
 #' @examples
 #'
@@ -28,40 +27,6 @@
 #'
 #'  object <- adjustDefaultInstructions(object, pt_size = 4, smooth = FALSE)
 
-adjustDefaultInstructions <- function(object, ...){
-
-  named_list <-
-    confuns::keep_named(input = list(...))
-
-  names_args <- base::names(named_list)
-
-  valid_arg_names <-
-    confuns::check_vector(
-      input = names_args,
-      against = validDefaultInstructionSlots(),
-      fdb.fn = "warning",
-      ref.input = "the named input",
-      ref.against = "valid instruction slots. run validDefaultInstructionSlots() to obtain all valid input options"
-    )
-
-  valid_list <- named_list[valid_arg_names]
-
-  dflt_instr <- getDefaultInstructions(object)
-
-  for(nm in valid_arg_names){
-
-    methods::slot(dflt_instr, name = nm) <- valid_list[[nm]]
-
-  }
-
-  object@information$instructions$default <- dflt_instr
-
-  return(object)
-
-}
-
-
-#' @rdname adjustDefaultInstructions
 #' @export
 adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_wd = FALSE){
 
@@ -330,6 +295,292 @@ adjustGseaDf <- function(df,
 
 
 
+
+
+
+
+# align -------------------------------------------------------------------
+
+#' @title Align image annotation
+#'
+#' @description Aligns an image annotation with the current image justification.
+#'
+#' @param img_ann An object of class `ImageAnnotation`.
+#' @param image_object An object of class `HistologyImaging` to which the image
+#' annotation is aligned.
+#'
+#' @details Information of the current justification of the image annotation
+#' is stored in slot @@info. This function aligns justification regarding
+#' horizontal and vertical flipping, scaling and rotation.
+#'
+#' @seealso Read documentation on `?ImageAnnotation` and `?HistologyImaging`
+#' for more information.
+#'
+#' @return Aligned input for `img_ann`.
+#' @export
+#'
+alignImageAnnotation <- function(img_ann, image_object){
+
+  io <- image_object
+
+  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
+
+  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
+
+  # scale
+  dim_img_ann <- img_ann@info$current_dim[1:2]
+
+  scale_fct <- base::mean(dim_stored/dim_img_ann)
+
+  if(base::length(scale_fct) != 1){
+
+    stop("Parent image of image annotation and current image of `SPATA2` object do not have the same axes ratio.")
+
+  }
+
+  if(scale_fct != 1){
+
+    img_ann@area <-
+      scale_coords_df(
+        df = img_ann@area,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+  }
+
+  img_ann@info$current_dim <- dim_stored
+
+
+  # flip horizontal
+  img_ann_flipped_h <- img_ann@info$current_just$flipped$horizontal
+  image_flipped_h <- io@justification$flipped$horizontal
+
+  if(img_ann_flipped_h != image_flipped_h){
+
+    img_ann@area <-
+      flip_coords_df(
+        df = img_ann@area,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    img_ann@info$current_just$flipped$horizontal <- image_flipped_h
+
+  }
+
+  # flip vertical
+  img_ann_flipped_v <- img_ann@info$current_just$flipped$vertical
+  image_flipped_v <- io@justification$flipped$vertical
+
+  if(img_ann_flipped_v != image_flipped_v){
+
+    img_ann@area <-
+      flip_coords_df(
+        df = img_ann@area,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    img_ann@info$current_just$flipped$vertical <- image_flipped_v
+
+  }
+
+  # rotate
+  img_ann_angle <- img_ann@info$current_just$angle
+  image_angle <- io@justification$angle
+
+  angle_just <- image_angle - img_ann_angle
+
+  if(angle_just != 0){
+
+    if(image_angle < img_ann_angle){
+
+      img_ann@area <-
+        rotate_coords_df(
+          df = img_ann@area,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+    } else if(image_angle > img_ann_angle) {
+
+      img_ann@area <-
+        rotate_coords_df(
+          df = img_ann@area,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+    }
+
+    img_ann@info$current_just$angle <- image_angle
+
+  }
+
+  return(img_ann)
+
+}
+
+
+#' @rdname alignImageAnnotation
+#' @export
+
+alignSpatialTrajectory <- function(spat_traj, image_object){
+
+  io <- image_object
+
+  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
+
+  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
+
+  # scale
+  dim_img_ann <- spat_traj@info$current_dim[1:2]
+
+  scale_fct <- base::mean(dim_stored/dim_img_ann)
+
+  if(base::length(scale_fct) != 1){
+
+    stop("Parent image of spatial trajectory and current image of `SPATA2` object do not have the same axes ratio.")
+
+  }
+
+  if(scale_fct != 1){
+
+    spat_traj@projection <-
+      scale_coords_df(
+        df = spat_traj@projection,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      scale_coords_df(
+        df = spat_traj@segment,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+  }
+
+  spat_traj@info$current_dim <- dim_stored
+
+
+  # flip horizontal
+  spat_traj_flipped_h <- spat_traj@info$current_just$flipped$horizontal
+  image_flipped_h <- io@justification$flipped$horizontal
+
+  if(spat_traj_flipped_h != image_flipped_h){
+
+    spat_traj@projection <-
+      flip_coords_df(
+        df = spat_traj@projection,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      flip_coords_df(
+        df = spat_traj@segment,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@info$current_just$flipped$horizontal <- image_flipped_h
+
+  }
+
+  # flip vertical
+  spat_traj_flipped_v <- spat_traj@info$current_just$flipped$vertical
+  image_flipped_v <- io@justification$flipped$vertical
+
+  if(spat_traj_flipped_v != image_flipped_v){
+
+    spat_traj@projection <-
+      flip_coords_df(
+        df = spat_traj@projection,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      flip_coords_df(
+        df = spat_traj@segment,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@info$current_just$flipped$vertical <- image_flipped_v
+
+  }
+
+  # rotate
+  spat_traj_angle <- spat_traj@info$current_just$angle
+  image_angle <- io@justification$angle
+
+  angle_just <- image_angle - spat_traj_angle
+
+  if(angle_just != 0){
+
+    if(image_angle < spat_traj_angle){
+
+      spat_traj@projection <-
+        rotate_coords_df(
+          df = spat_traj@projection,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+      spat_traj@segment <-
+        rotate_coords_df(
+          df = spat_traj@segment,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+    } else if(image_angle > spat_traj_angle) {
+
+      spat_traj@projection <-
+        rotate_coords_df(
+          df = spat_traj@projection,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+      spat_traj@segment <-
+        rotate_coords_df(
+          df = spat_traj@segment,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+    }
+
+    spat_traj@info$current_just$angle <- image_angle
+
+  }
+
+  return(spat_traj)
+
+}
 
 
 
@@ -1007,14 +1258,14 @@ asGiotto <- function(object,
 
 }
 
-#' @title Convert to class \code{Visium}
+#' @title Convert to class \code{HistologyImage}
 #'
 #' @description Coverts objects of specific classes to objects
-#' of class \code{Visium}.
+#' of class \code{HistologyImage}.
 #'
 #' @param object Any object for which a method has been defined.
 #'
-#' @return An object of class \code{Visium}.
+#' @return An object of class \code{HistologyImage}.
 #' @export
 #'
 setGeneric(name = "asHistologyImage", def = function(object, ...){
@@ -1031,11 +1282,9 @@ setMethod(
   signature = "VisiumV1",
   definition = function(object, scale_with = "lowres"){
 
-    new_object <- HistologyImage()
-
     scale_fct <- object@scale.factors[[scale_with]]
 
-    new_object@coordinates <-
+    coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
       dplyr::mutate(
         x = imagecol * scale_fct,
@@ -1044,20 +1293,103 @@ setMethod(
       dplyr::select(barcodes, x, y, dplyr::everything()) %>%
       tibble::as_tibble()
 
-    new_object@id <- object@key
-
-    new_object@image <-
+    image <-
       EBImage::Image(object@image, colormode = "Color") %>%
       EBImage::transpose() %>%
       EBImage::flip()
 
-    new_object@info$flipped <- FALSE
+    # transfer VisiumV1 meta data
+    misc <- list()
 
-    new_object@misc$origin <- "VisiumV1"
+    misc$origin <- "VisiumV1"
+    misc$scale.factors <- object@scale.factors
+    misc$assay <- object@assay
+    misc$spot.radius <- object@spot.radius
+    misc$key <- object@key
 
-    new_object@misc$scale.factors <- object@scale.factors
-    new_object@misc$assay <- object@assay
-    new_object@misc$spot.radius <- object@spot.radius
+    new_object <-
+      createHistologyImage(
+        image = image,
+        misc = misc,
+        coordinates = coordinates
+      )
+
+    return(new_object)
+
+  }
+)
+
+
+#' @title Convert to class \code{HistologyImaging}
+#'
+#' @description Coverts objects of specific classes to objects
+#' of class \code{HistologyImaging}.
+#'
+#' @param object Any object for which a method has been defined.
+#'
+#' @return An object of class \code{HistologyImaging}.
+#' @export
+#'
+setGeneric(name = "asHistologyImaging", def = function(object, ...){
+
+  standardGeneric(f = "asHistologyImaging")
+
+})
+
+
+#' @rdname asHistologyImaging
+#' @export
+setMethod(
+  f = "asHistologyImaging",
+  signature = "VisiumV1",
+  definition = function(object, id, scale_with = "lowres", verbose = TRUE){
+
+    scale_fct <- object@scale.factors[[scale_with]]
+
+    coordinates <-
+      tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
+      dplyr::mutate(
+        x = imagecol * scale_fct,
+        y = imagerow * scale_fct
+      ) %>%
+      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
+      tibble::as_tibble()
+
+    image <-
+      EBImage::Image(object@image, colormode = "Color") %>%
+      EBImage::transpose()
+
+    img_dim <- base::dim(image)
+
+    coordinates <-
+      flip_coords_df(
+        df = coordinates,
+        axis = "h",
+        ranges = list(y = c(ymin = 0, ymax = img_dim[2])),
+        verbose = FALSE
+      )
+
+    # transfer VisiumV1 meta data
+    VisiumV1 <-
+      list(
+        origin = "VisiumV1",
+        scale.factors = object@scale.factors,
+        assay = object@assay,
+        spot.radius = object@spot.radius,
+        key = object@key
+      )
+
+    new_object <-
+      createHistologyImaging(
+        image = image,
+        id = id,
+        coordinates = coordinates,
+        verbose = verbose,
+        VisiumV1 = VisiumV1 # given to @misc$VisiumV1
+      )
+
+    new_object@image_info$origin <-
+      magrittr::set_attr("VisiumV1", which = "unit", value = "Seurat")
 
     return(new_object)
 
@@ -1502,12 +1834,7 @@ setMethod(
                         verbose = TRUE){
 
     # create empty spata object
-    spata_object <-
-      initiateSpataObject_Empty(
-        sample_name = sample_name,
-        verbose = verbose
-        )
-
+    spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
 
     confuns::give_feedback(
       msg = "Transferring data.",
@@ -1546,7 +1873,11 @@ setMethod(
           fdb.opt = 2
         )
 
-        image_obj <- asHistologyImage(object = object@images[[image_name]])
+        image_obj <-
+          asHistologyImaging(
+            object = object@images[[image_name]],
+            id = sample_name
+            )
 
         spata_object <- setImageObject(spata_object, image_object = image_obj)
 

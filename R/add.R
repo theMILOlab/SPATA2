@@ -692,14 +692,11 @@ addGeneSetsInteractive <- function(object){
 
 # addI --------------------------------------------------------------------
 
-#' @title Add image annotation
-#'
-#' @description Creates and adds an object of class \code{ImageAnnotation}.
-#'
+#' @rdname createImageAnnotations
 #' @param area_df A data.frame that contains at least two numeric variables named
 #' \emph{x} and \emph{y}.
+#' @param tags Character vector of tags that describe the image annotation.
 #'
-#' @return An updated spata object.
 #' @export
 #'
 addImageAnnotation <- function(object, tags, area_df, id = NULL){
@@ -735,17 +732,84 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
 
-  image_obj <- getImageObject(object)
+  io <- getImageObject(object)
 
-  image_obj@annotations[[id]] <- img_ann
+  img_ann@info[["parent_id"]] <- io@id
+  img_ann@info[["parent_origin"]] <- io@image_info[["origin"]]
+  img_ann@info[["current_dim"]] <- io@image_info[["dim_stored"]][1:2]
+  img_ann@info[["current_just"]] <- io@justification
 
-  object <- setImageObject(object, image_obj)
+  io@annotations[[id]] <- img_ann
+
+  object <- setImageObject(object, io)
 
   return(object)
 
 }
 
 
+#' @title Add individual image directories
+#'
+#' @description Adds specific image directories beyond *lowres*
+#' *highres* and *default* with a simple name.
+#'
+#' @param dir Character value. Directory to specific image. Should end
+#' with either *.png*, *.jpeg* or *.tiff*. (Capital endings work, too.)
+#' @param name Character value. Name with which to refer to this image.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`getImageDirectories()`]
+#'
+#' @export
+addImageDir <- function(object,
+                        dir,
+                        name,
+                        check = TRUE,
+                        overwrite = FALSE,
+                        verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  io <- getImageObject(object)
+
+  confuns::check_none_of(
+    input = name,
+    against = base::names(io@dir_add),
+    ref.against = "additional image directory names",
+    overwrite = overwrite
+  )
+
+  confuns::check_none_of(
+    input = dir,
+    against = purrr::map_chr(io@dir_add, .f = ~ .x),
+    ref.against = "additional image directory names",
+    overwrite = overwrite
+  )
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(dir, type = "files")
+
+  }
+
+  new_dir <- purrr::set_names(x = dir, nm = name)
+
+  io@dir_add <- c(io@dir_add, new_dir)
+
+  object <- setImageObject(object, image_object = io)
+
+  msg <- glue::glue("Added new directory named '{name}': {dir}")
+
+  confuns::give_feedback(
+    msg = msg,
+    verbose = verbose
+  )
+
+  return(object)
+
+}
 
 # addP --------------------------------------------------------------------
 
@@ -902,7 +966,27 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 }
 
 
+#' @rdname createSpatialTrajectories
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object_t269 <- loadSpataObject(sample_name = "269_T")
+#'
+#' object_t269 <-
+#'    addSpatialTrajectory(
+#'      object = object_t269,
+#'      id = "cross_sample",
+#'      width = "1mm",
+#'      segment_df = data.frame(x = 100, y = 200, xend = 510, yend = 200),
+#'      overwrite = TRUE
+#'      )
+#'
+#'  plotSpatialTrajectories(object_t269, ids = "cross_sample")
+#'
 addSpatialTrajectory <- function(object,
                                  id,
                                  width,
@@ -910,10 +994,23 @@ addSpatialTrajectory <- function(object,
                                  start = NULL,
                                  end = NULL,
                                  vertices = NULL,
-                                 comment = base::character(1)
-){
+                                 comment = base::character(1),
+                                 overwrite = FALSE){
 
-  confuns::is_value(x = width, mode = "numeric")
+
+  is_dist(input = width, error = TRUE)
+
+  width_unit <- extract_unit(width)
+
+  if(width_unit != "px"){
+
+    width <- as_pixel(input = width, object = object, add_attr = FALSE)
+
+  } else {
+
+    width <- extract_value(input = width)
+
+  }
 
   if(!base::is.data.frame(segment_df)){
 
@@ -971,17 +1068,45 @@ addSpatialTrajectory <- function(object,
       width = width
     )
 
+
+  if(containsImage(object)){
+
+    io <- getImageObject(object)
+
+    info <-
+      list(
+        current_dim = io@image_info$dim_stored,
+        current_just = list(
+          angle = io@justification$angle,
+          flipped = io@justification$flipped
+        )
+      )
+
+  } else {
+
+    info <- list()
+
+  }
+
   spat_traj <-
     SpatialTrajectory(
       comment = comment,
       id = id,
+      info = info,
       projection = projection_df,
       segment = segment_df,
       sample = object@samples,
-      width = width
+      width = width,
+      width_unit = width_unit
     )
 
-  object@trajectories[[1]][[id]] <- spat_traj
+  object <-
+    setTrajectory(
+      object = object,
+      trajectory = spat_traj,
+      align = FALSE,
+      overwrite = overwrite
+      )
 
   return(object)
 

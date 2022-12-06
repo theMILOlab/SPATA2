@@ -46,6 +46,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   object@images <- empty_list
   object@spatial <- empty_list
   object@trajectories <- empty_list
+  object@used_genesets <- SPATA2::gsdf
 
   # set version
   object@version <- current_spata_version
@@ -772,11 +773,6 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #' @description Creates, saves and returns an object of class spata
 #' from 10X Visium results. See details for more information.
 #'
-#' @inherit argument_dummy params
-#' @inherit check_saving params
-#' @inherit gene_set_path params
-#' @inherit process_seurat_object params
-#'
 #' @param directory_10X Character value. Specifies the 10X visium-folder from
 #' which to load the information. This folder must contain the following sub directories:
 #'
@@ -789,6 +785,14 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #'
 #' @param sample_name Character value. The sample name with which to refer to the
 #' respective sample. Should start with a letter.
+#'
+#' @param image_name Character value. The filename of the image that is read in
+#' as the default image. Should be in subdirectory *directory_10X/spatial/*.
+#'
+#' @inherit argument_dummy params
+#' @inherit check_saving params
+#' @inherit gene_set_path params
+#' @inherit process_seurat_object params
 #'
 #' @details The loading and preprocessing of the spata-object  currently relies on the Seurat-package. Before any pre processing function is applied
 #' mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
@@ -815,9 +819,10 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
 initiateSpataObject_10X <- function(directory_10X,
                                     sample_name,
+                                    image_name = "tissue_lowres_image.png",
                                     directory_spata = NULL,
                                     directory_seurat = NULL,
-                                    combine_with_wd = "/",
+                                    add_wd = "/",
                                     gene_set_path = NULL,
                                     SCTransform = FALSE,
                                     NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
@@ -830,6 +835,8 @@ initiateSpataObject_10X <- function(directory_10X,
                                     RunUMAP = list(dims = 1:30),
                                     verbose = TRUE,
                                     ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -881,15 +888,15 @@ initiateSpataObject_10X <- function(directory_10X,
 
   # 2. Read in data ---------------------------------------------------------
 
-  dir_test_one <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+  dir_test_one <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5")
 
-  # if FALSE, might have been specified with \\outs subdirectories
+  # if FALSE, might have been specified with /outs subdirectories
   # old requirements
   if(!base::file.exists(dir_test_one)){
 
-    directory_10X <- stringr::str_c(directory_10X, "\\outs", sep = "")
+    directory_10X <- stringr::str_c(directory_10X, "/outs", sep = "")
 
-    dir_test_two <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5")
+    dir_test_two <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5")
 
     if(base::file.exists(dir_test_two)){
 
@@ -913,16 +920,22 @@ initiateSpataObject_10X <- function(directory_10X,
 
   confuns::give_feedback(msg = "Reading in .h5 file.", verbose = verbose)
 
-  file_dir <- stringr::str_c(directory_10X, "\\filtered_feature_bc_matrix.h5", sep = "")
+  file_dir <- stringr::str_c(directory_10X, "/filtered_feature_bc_matrix.h5", sep = "")
 
   if(base::file.exists(paths = file_dir)){
 
    confuns::give_feedback(msg = glue::glue("Loading from directory: '{directory_10X}'"), verbose = verbose)
 
+   image_dir <- stringr::str_c(directory_10X, "/spatial")
+
    seurat_object <-
      Seurat::Load10X_Spatial(
        data.dir = directory_10X,
-       filename = "filtered_feature_bc_matrix.h5"
+       filename = "filtered_feature_bc_matrix.h5",
+       image = Seurat::Read10X_Image(
+         image.dir = image_dir,
+         image.name = image_name
+         )
        )
 
   } else {
@@ -976,14 +989,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   confuns::give_feedback(msg = "Initiating spata-object.", verbose = verbose)
 
-  spata_object <-
-    transformSeuratToSpata(
-      seurat_object = processed_seurat_object,
-      sample_name = sample_name,
-      gene_set_path = gene_set_path,
-      method = "spatial",
-      verbose = verbose
-    )
+  spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name)
 
 
   # -----
@@ -1027,8 +1033,6 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
-  assign("spata_object", spata_object, envir = .GlobalEnv)
-
   # miscellaneous
   spata_object <- setPixelScaleFactor(spata_object)
 
@@ -1044,23 +1048,46 @@ initiateSpataObject_10X <- function(directory_10X,
   }
 
   # set image directories
-  dir_lowres <- stringr::str_c(directory_10X, "\\spatial\\tissue_lowres_image.png")
+  dir_default <- stringr::str_c(directory_10X, "/spatial/", image_name)
 
-  if(base::file.exists(dir_lowres)){
+  spata_object <- setImageOrigin(object = spata_object, origin = dir_default)
 
-    spata_object <- setImageDirLowres(spata_object, dir_lowres = dir_lowres, check = FALSE)
+  if(base::file.exists(dir_default)){
+
+    spata_object <- setImageDirDefault(object = spata_object, dir = dir_default)
+
+  } else {
+
+    warning(glue::glue("Directory {dir_default} not found. No default image set. Set with `setImageDirDefault()`."))
 
   }
 
-  dir_highres <- stringr::str_c(directory_10X, "\\spatial\\tissue_hires_image.png")
+  dir_lowres <- stringr::str_c(directory_10X, "/spatial/tissue_lowres_image.png")
+
+  if(base::file.exists(dir_lowres)){
+
+    spata_object <- setImageDirLowres(spata_object, dir = dir_lowres, check = FALSE)
+
+  } else {
+
+    warning(glue::glue("Directory {dir_lowres} not found. No low resolution image set. Set with `setImageDirLowres()`."))
+
+  }
+
+  dir_highres <- stringr::str_c(directory_10X, "/spatial/tissue_hires_image.png")
 
   if(base::file.exists(dir_highres)){
 
-    spata_object <- setImageDirHighres(spata_object, dir_highres = dir_highres, check = FALSE)
+    spata_object <- setImageDirHighres(spata_object, dir = dir_highres, check = FALSE)
+
+  } else {
+
+    warning(glue::glue("Directory {dir_highres} not found. No high resolution image set. Set with `setImageDirHighres()`."))
 
   }
 
   spata_object <- setInitiationInfo(spata_object)
+
   # save spata object
   if(base::is.character(directory_spata)){
 
@@ -1071,7 +1098,7 @@ initiateSpataObject_10X <- function(directory_10X,
           saveSpataObject(
             object = spata_object,
             directory_spata = directory_spata,
-            combine_with_wd = combine_with_wd,
+            add_wd = add_wd,
             verbose = verbose
           )
 

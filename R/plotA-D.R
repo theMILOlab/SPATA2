@@ -2441,19 +2441,31 @@ plotDimRed <- function(object,
                        use_scattermore = FALSE,
                        sctm_interpolate = FALSE,
                        sctm_pixels = c(1024, 1024),
-                       verbose = TRUE,
+                       verbose = NULL,
                        ...){
 
   deprecated(...)
 
+  hlpr_assign_arguments(object)
+
   # 1. Control --------------------------------------------------------------
 
-
-  # lazy check
   hlpr_assign_arguments(object)
   check_pt(pt_size = pt_size, pt_alpha = pt_alpha, pt_clrsp = pt_clrsp)
 
-  # adjusting check
+  color_by <- base::unname(color_by)
+
+  confuns::are_values("alpha_by", "order_by", mode = "character", skip.allow = TRUE, skip.val = NULL)
+
+  if(base::is.character(alpha_by)){
+
+    if(base::length(color_by) != 1){
+
+      stop("If `alpha_by` is a character value `color_by` must be of length 1.")
+
+    }
+
+  }
 
   # -----
 
@@ -2466,11 +2478,34 @@ plotDimRed <- function(object,
     hlpr_join_with_aes(
       object = object,
       df = df,
-      variables = c(color_by, alpha_by),
+      variables = c(color_by, alpha_by, order_by),
       normalize = normalize,
       method_gs = method_gs,
       smooth = FALSE,
+      verbose = FALSE
     )
+
+  if(base::length(color_by) > 1){
+
+    df <-
+      tidyr::pivot_longer(
+        data = df,
+        cols = dplyr::all_of(color_by),
+        names_to = "variables",
+        values_to = "values"
+      ) %>%
+      dplyr::mutate(variables = base::factor(variables, levels = color_by))
+
+    color_by <- "values"
+    facet_by <- "variables"
+    lab_color <- "Expr."
+
+  } else {
+
+    facet_by <- NULL
+    lab_color <- color_by
+
+  }
 
   # -----
 
@@ -2489,6 +2524,7 @@ plotDimRed <- function(object,
     df = df,
     x = x,
     y = y,
+    across = facet_by,
     pt.alpha = pt_alpha,
     pt.color = pt_clr,
     pt.clrp = pt_clrp,
@@ -2510,7 +2546,8 @@ plotDimRed <- function(object,
     sctm.interpolate = sctm_interpolate,
     sctm.pixels = sctm_pixels,
     ...
-  )
+  ) +
+    ggplot2::labs(color = lab_color, fill = lab_color)
 
   # -----
 

@@ -9,6 +9,9 @@ getGroupNames(object, grouping_variable, ...)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
+\item{grouping_variable}{Character value. The grouping variable of interest. Use
+\code{getGroupingOptions()} to obtain all valid input options.}
+
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{

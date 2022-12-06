@@ -539,7 +539,7 @@ moduleSurfacePlotUI <- function(id){
                                         shiny::column(width = 8,
                                                       shinyWidgets::checkboxGroupButtons(inputId = ns("display_add_ons"),
                                                                                          label = NULL,
-                                                                                         selected = "legend",
+                                                                                         selected = c("legend", "image"),
                                                                                          choices = c("Legend" = "legend",
                                                                                                      "Image" = "image",
                                                                                                      "Title" = "title",
@@ -906,20 +906,22 @@ moduleSurfacePlotServer <- function(id,
 
           ## extract image info
           img_info <-
-            getImage(object, of_sample = current$sample) %>%
+            getImage(object) %>%
             grDevices::as.raster() %>%
             magick::image_read() %>%
             magick::image_info()
 
           st_image <-
-            grDevices::as.raster(getImage(object, of_sample = current$sample)) %>%
+            grDevices::as.raster(getImage(object)) %>%
             magick::image_read()
 
           image_add_on <-
-            ggplot2::annotation_raster(raster = st_image,
-                                       xmin = 0, ymin = 0,
-                                       xmax = img_info$width,
-                                       ymax = img_info$height)
+            ggplot2::annotation_raster(
+              raster = st_image,
+              xmin = 0, ymin = 0,
+              xmax = img_info$width,
+              ymax = img_info$height
+            )
 
 
         } else {
@@ -1027,7 +1029,7 @@ moduleSurfacePlotServer <- function(id,
       fdata <- shiny::reactive({
 
         fdata <-
-          getFeatureDf(object = object, of_sample = current$sample)[, c("barcodes", current$feature)]
+          getFeatureDf(object = object)[, c("barcodes", current$feature)]
 
         return(fdata)
 
@@ -1112,17 +1114,21 @@ moduleSurfacePlotServer <- function(id,
         if(base::as.numeric(input$pt_smooth) != 0){
 
           smoothed_df <-
-            hlpr_smooth_shiny(coords_df = joined_df(),
-                              variable = variable(),
-                              smooth_span = base::as.numeric(input$pt_smooth))
+            hlpr_smooth_shiny(
+              coords_df = joined_df(),
+              variable = variable(),
+              smooth_span = base::as.numeric(input$pt_smooth)
+            )
 
           if(current$color_code %in% c("genes", "gene_sets")){
 
             smoothed_df <-
-              purrr::imap_dfr(.x = smoothed_df,
-                              .f = hlpr_normalize_imap,
-                              aspect = "",
-                              subset = variable())
+              purrr::imap_dfr(
+                .x = smoothed_df,
+                .f = hlpr_normalize_imap,
+                aspect = "",
+                subset = variable()
+              )
 
           }
 
@@ -1133,10 +1139,12 @@ moduleSurfacePlotServer <- function(id,
           if(current$color_code %in% c("genes", "gene_sets")){
 
             smoothed_df <-
-              purrr::imap_dfr(.x = joined_df(),
-                              .f = hlpr_normalize_imap,
-                              aspect = "",
-                              subset = variable())
+              purrr::imap_dfr(
+                .x = joined_df(),
+                .f = hlpr_normalize_imap,
+                aspect = "",
+                subset = variable()
+              )
 
             return(smoothed_df)
 
@@ -1184,19 +1192,22 @@ moduleSurfacePlotServer <- function(id,
           if(current$pt_clrsp %in% validColorSpectra()[["Diverging"]]){
 
             add_on <-
-              confuns::scale_color_add_on(clrsp = current$pt_clrsp,
-                                          limits = c(color_min,
-                                                     color_max),
-                                          mid = color_mid,
-                                          oob = scales::squish)
+              confuns::scale_color_add_on(
+                clrsp = current$pt_clrsp,
+                limits = c(color_min,
+                           color_max),
+                mid = color_mid,
+                oob = scales::squish
+              )
 
           } else {
 
             add_on <-
-              confuns::scale_color_add_on(clrsp = current$pt_clrsp,
-                                          limits = c(color_min,
-                                                     color_max),
-                                          oob = scales::squish)
+              confuns::scale_color_add_on(
+                clrsp = current$pt_clrsp,
+                limits = c(color_min, color_max),
+                oob = scales::squish
+              )
 
           }
 

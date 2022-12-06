@@ -3,7 +3,7 @@
 \name{asHistologyImage}
 \alias{asHistologyImage}
 \alias{asHistologyImage,VisiumV1-method}
-\title{Convert to class \code{Visium}}
+\title{Convert to class \code{HistologyImage}}
 \usage{
 asHistologyImage(object, ...)
 
@@ -13,9 +13,9 @@ asHistologyImage(object, ...)
 \item{object}{Any object for which a method has been defined.}
 }
 \value{
-An object of class \code{Visium}.
+An object of class \code{HistologyImage}.
 }
 \description{
 Coverts objects of specific classes to objects
-of class \code{Visium}.
+of class \code{HistologyImage}.
 }

@@ -4,13 +4,18 @@
 \alias{setSpataDir}
 \title{Set SPATA2 directory}
 \usage{
-setSpataDir(object, dir)
+setSpataDir(object, dir, add_wd = FALSE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{dir}{Character value. The chosen directory. See details for possible
-requirements.}
+\item{dir}{Character value. The directory under which to store the
+\code{SPATA2} object.}
+
+\item{add_wd}{Logical value. If \code{TRUE}, the working directory is added to
+the directory separated by \emph{'/'}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 The input \code{SPATA2} object containing the added or computed

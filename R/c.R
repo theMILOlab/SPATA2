@@ -298,6 +298,17 @@ containsCNV <- function(object){
 
 }
 
+
+
+#' @title Check availability of `HistologyImage` object
+#'
+#' @description Checks if slot @@images contains an object
+#' of class `HistologyImage` or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
 containsHistologyImage <- function(object){
 
@@ -309,6 +320,16 @@ containsHistologyImage <- function(object){
 
 }
 
+
+#' @title Check availability of an image
+#'
+#' @description Checks if slot @@image of the `HistologyImage` object
+#' in the `SPATA2` object contains an image or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
 containsImage <- function(object){
 
@@ -345,6 +366,35 @@ containsImageObject <- function(object){
 
 }
 
+
+
+#' @title Check availability of pixel scale factor
+#'
+#' @description Checks if a pixel scale factor is present in the `SPATA2`
+#' object
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+containsPixelScaleFactor <- function(object){
+
+  pxl_scale_fct <- object@information$pxl_scale_fct
+
+  if(base::is.null(pxl_scale_fct)){
+
+    out <- FALSE
+
+  } else {
+
+    out <- TRUE
+
+  }
+
+  return(out)
+
+}
 
 
 

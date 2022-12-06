@@ -576,10 +576,7 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 13, patch = 0)
 
-    # method
-    mname <- getSpatialMethod(object)@name
-
-    object@information$method <- spatial_methods[[mname]]
+    object@information$method <- spatial_methods[["Visium"]]
 
     object <- setPixelScaleFactor(object, verbose = verbose)
 
@@ -591,6 +588,142 @@ updateSpataObject <- function(object,
     active_expr_mtr <- object@information$active_expr_mtr[[1]]
     object@information$active_expr_mtr <- active_expr_mtr
 
+    # add angle and flip data
+    if(containsImageObject(object)){
+
+      io <- getImageObject(object)
+
+      io@info$angle <- 0
+      io@info$flipped <- list(x = FALSE, y = FALSE)
+
+      object <- setImageObject(object, image_object = io)
+
+    }
+
+  }
+
+  if(object@version$major == 1 & object@version$minor == 13){
+
+    object@version <- list(major = 1, minor = 14, patch = 0)
+
+    info <-
+      list(
+        current_just = list(
+          angle = 0,
+          flipped = list(horizontal = FALSE, vertical = FALSE)
+        )
+      )
+
+    if(containsImage(object)){
+
+      info$current_dim <- getImageDims(object)
+
+    }
+
+    # spatial trajectories
+    if(nSpatialTrajectories(object) >= 1){
+
+      info$parent_id <- NULL
+
+      for(id in getSpatialTrajectoryIds(object)){
+
+        spat_traj <- getSpatialTrajectory(object, id = id)
+
+        spat_traj <-
+          transfer_slot_content(
+            recipient = SpatialTrajectory(),
+            donor = spat_traj,
+            verbose = FALSE
+          )
+
+        spat_traj@width_unit <- "px"
+
+        spat_traj@info <- info
+
+        object <-
+          setTrajectory(
+            object = object,
+            trajectory = spat_traj,
+            align = FALSE,
+            overwrite = TRUE
+          )
+
+      }
+
+    }
+
+    if(containsImageObject(object)){
+
+      io <- getImageObject(object)
+
+      # transfer from HistologyImage -> HistologyImaging
+      io <-
+        transfer_slot_content(
+          recipient = HistologyImaging(),
+          donor = io,
+          verbose = FALSE
+        )
+
+      # add new required data
+      io@image_info$dim_input <- base::dim(io@image)
+      io@image_info$dim_stored <- base::dim(io@image)
+      io@image_info$img_scale_fct <- 1
+
+      io@justification <-
+        list(
+          angle = 0,
+          flipped = list(horizontal = FALSE, vertical = FALSE)
+        )
+
+      # overwrite `info`
+      info <-
+        list(
+          parent_origin = NA_character_,
+          parent_id = io@id,
+          current_dim = io@image_info$dim_stored,
+          current_just = list(
+            angle = 0,
+            flipped = list(horizontal = FALSE, vertical = FALSE)
+          )
+        )
+
+      object <- setImageObject(object, image_object = io)
+
+      # image annotations
+      if(nImageAnnotations(object) >= 1){
+
+          for(id in getImageAnnotationIds(object)){
+
+            img_ann <-
+              getImageAnnotation(
+                object = object,
+                id = id,
+                add_image = FALSE,
+                add_barcodes = FALSE
+              )
+
+            img_ann <-
+              transfer_slot_content(
+                recipient = ImageAnnotation(),
+                donor = img_ann,
+                verbose = FALSE
+              )
+
+            img_ann@info <- info
+
+            object <-
+              setImageAnnotation(
+                object = object,
+                img_ann = img_ann,
+                align = FALSE,
+                overwrite = TRUE
+                )
+
+          }
+
+      }
+
+    }
 
   }
 

@@ -1272,18 +1272,13 @@ runDEA <- function(object,
                    verbose = NULL,
                    base = 2,
                    fc_name = NULL,
-                   of_sample = NA,
                    ...){
 
   hlpr_assign_arguments(object)
 
   purrr::walk(.x = method_de, .f = ~ check_method(method_de = .x))
 
-  valid_across <-
-    check_features(object = object, valid_classes = c("factor"), features = across)
-
-  # adjusting
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
+  valid_across <- check_features(object = object, valid_classes = c("factor"), features = across)
 
   for(across in valid_across){
 
@@ -1327,9 +1322,9 @@ runDEA <- function(object,
           # De analysis ----------------------------------------------------------
 
           # prepare seurat object
-          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object, of_sample = of_sample))
+          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object))
 
-          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, of_sample = of_sample, verbose = FALSE)
+          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, verbose = FALSE)
 
           seurat_object@meta.data$orig.ident <- groups
 
@@ -1351,7 +1346,7 @@ runDEA <- function(object,
 
           # save results in spata object
           object <-
-            setDeaResults(
+            setDeaResultsDf(
               object = object,
               dea_results = dea_results,
               across = across,
@@ -1433,18 +1428,7 @@ runDeAnalysis <- function(...){
 #' @export
 #'
 
-setGeneric(name = "runGSEA", def = function(object, ...){
-
-  standardGeneric(f = "runGSEA")
-
-})
-
-#' @rdname runGSEA
-#' @export
-setMethod(
-  f = "runGSEA",
-  signature = "spata2",
-  definition = function(object,
+runGSEA <- function(object,
                         across,
                         methods_de = "wilcox",
                         max_adj_pval = 0.05,
@@ -1631,7 +1615,6 @@ setMethod(
     return(object)
 
   }
-)
 
 # runP --------------------------------------------------------------------
 
