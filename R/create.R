@@ -2945,22 +2945,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
             object <- setFeatureDf(object, feature_df = fdata)
 
-            object@spatial[[1]][["segmentation"]][["histology"]]@segments <-
-              base::append(
-                x = object@spatial[[1]][["segmentation"]][["histology"]]@segments,
-                values = SpatialSegment(
-                  info = list(
-                    parent_id = "histology",
-                    pot = Sys.time(),
-                    sample = getSampleName(object)
-                    ),
-                  label = new_group_name,
-                  polygons = list(
-                    outer = tibble::tibble(x = polygon_vals$x, y = polygon_vals$y)
-                  )
-                )
-              )
-
             spata_object(object)
 
             # reset region
