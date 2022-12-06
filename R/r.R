@@ -965,12 +965,16 @@ rotateImageAnnotations <- function(object,
         .f = function(img_ann){
 
           img_ann@area <-
-            rotate_coords_df(
-              df = img_ann@area,
-              angle = angle,
-              center = getImageCenter(object),
-              clockwise = clockwise,
-              verbose = FALSE
+            purrr::map(
+              .x = img_ann@area,
+              .f = ~
+                 rotate_coords_df(
+                  df = .x,
+                  angle = angle,
+                  center = getImageCenter(object),
+                  clockwise = clockwise,
+                  verbose = FALSE
+                )
             )
 
           img_ann@info$current_just$angle <-

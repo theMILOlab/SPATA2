@@ -199,7 +199,7 @@ validHierarchicalClusterMethods <- function(){
 #' @export
 validImageClasses <- function(){
 
-  "HistologyImage"
+  "HistologyImaging"
 
 }
 

@@ -346,6 +346,37 @@ check_expand <- function(expand, error = FALSE){
 
 }
 
+check_expand_shiny <- function(expand, ...){
+
+  expand <- expand[1]
+
+  if(!shiny::isTruthy(expand)){
+
+    expand <- 0
+
+  } else {
+
+    valid <- is_percentage(expand) | is_dist(expand) | is_exclam(expand)
+
+    if(!valid){
+
+      confuns::give_feedback(
+        msg = "Invalid expand input. Using `expand = 0`. Must be percentage, distance or exclam input.",
+        fdb.fn = "stop",
+        in.shiny = TRUE,
+        with.time = FALSE
+      )
+
+      expand <- 0
+
+    }
+
+  }
+
+  return(expand)
+
+}
+
 
 
 # check_f -----------------------------------------------------------------
@@ -758,12 +789,14 @@ check_ias_input <- function(distance = NA_integer_,
 
     n_bins_circle <- base::ceiling(distance / binwidth)
 
+    vd <- extract_value(distance_orig)
+    vb <- extract_value(binwidth_orig)
     ud <- extract_unit(distance_orig)
     ub <- extract_unit(binwidth_orig)
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {distance_orig}{ud} and `binwidth` = {binwidth_orig}{ub}. Calculated `n_bins_circle` = {n_bins_circle}."
+        "Specified `distance` = {vd}{ud} and `binwidth` = {vb}{ub}. Calculated `n_bins_circle` = {n_bins_circle}."
         ),
       verbose = verbose
     )
@@ -772,6 +805,7 @@ check_ias_input <- function(distance = NA_integer_,
 
     binwidth <- distance / n_bins_circle
 
+    vd <- extract_value(distance_orig)
     ud <- extract_unit(distance_orig)
 
     binwidth_ref <-
@@ -784,7 +818,7 @@ check_ias_input <- function(distance = NA_integer_,
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {distance_orig}{ud} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth_ref}{ud}."
+        "Specified `distance` = {vd}{ud} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth_ref}{ud}."
         ),
       verbose = verbose
     )
@@ -793,7 +827,8 @@ check_ias_input <- function(distance = NA_integer_,
 
     distance <- n_bins_circle * binwidth
 
-    ubw <- extract_unit(binwidth_orig)
+    vb <- extract_value(binwidth_orig)
+    ub <- extract_unit(binwidth_orig)
 
     distance_ref <-
       as_unit(
@@ -805,7 +840,7 @@ check_ias_input <- function(distance = NA_integer_,
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `binwidth` = {binwidth_orig}{ubw} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance_ref}{ubw}."
+        "Specified `binwidth` = {vb}{ub} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance_ref}{ub}."
         ),
       verbose = verbose
     )
@@ -1925,7 +1960,11 @@ checkpoint <- function(evaluate = TRUE,
                          insufficient_n_genes = "Please determine at least two genes.",
                          invalid_gs_string1 = "The class-prefix must not contain '_'.",
                          invalid_gs_string2 = "Please enter a valid string for the class-prefix and the gene-set name.",
-                         occupied_gs_name = "This gene-set name is already taken."
+                         occupied_gs_name = "This gene-set name is already taken.",
+
+                         # image anntations
+                         no_img_anns_selected = "No image annotations selected to plot.",
+                         invalid_expand = "Invalid expand input."
 
                        ),
                        warning_notifications = list(),

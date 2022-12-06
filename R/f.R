@@ -1021,12 +1021,17 @@ flipImageAnnotations <- function(object, axis, verbose = NULL){
           .f = function(img_ann){
 
             img_ann@area <-
-              flip_coords_df(
-                df = img_ann@area,
-                axis = axis,
-                ranges = getImageRange(object),
-                verbose = FALSE
+              purrr::map(
+                .x = img_ann@area,
+                .f = ~
+                  flip_coords_df(
+                    df = .x,
+                    axis = axis,
+                    ranges = getImageRange(object),
+                    verbose = FALSE
+                  )
               )
+
 
             # justifications of annotations are always tracked
             img_ann@info$current_just$flipped[[axis]] <- !img_ann@info$current_just$flipped[[axis]]

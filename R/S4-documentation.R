@@ -130,9 +130,12 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
 #' @description S4 class that represents manually annotated structures in
 #' histology images.
 #'
-#' @slot area data.frame. A data.frame that contains at least the numeric
-#' variables \emph{x} and \emph{y}. Data corresponds to the polygon that
-#' captures the spatial extent/borders of the identified structure.
+#' @slot area list. A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
+#' Observations correspond to the vertices of the polygons that are needed to represent the
+#' image annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' with numbers that correspond to inner polygons - holes within the annotation. If so,
+#' slot @@mode should be *'Complex'*.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
 #' @slot image image. Cropped version of the annotated parent image that only contains
@@ -199,7 +202,7 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
 #'
 ImageAnnotation <- setClass(Class = "ImageAnnotation",
                                      slots = list(
-                                       area = "data.frame",
+                                       area = "list",
                                        id = "character",
                                        image = image_class,
                                        image_info = "list",
@@ -208,6 +211,9 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
                                        tags = "character"
                                      )
 )
+
+
+
 
 
 
@@ -276,6 +282,7 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 #' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
 #' case of @@name == \emph{'Visium'}.
 #'
+#' @export
 SpatialMethod <- setClass(Class = "SpatialMethod",
                           slots = list(
                             fiducial_frame = "list",
@@ -284,6 +291,67 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
                             unit = "character",
                             observational_unit = "character"
                           ))
+
+
+#' @title The `SpatialSegmentation` - class
+#'
+#' @description Abstracts the concept of manual segmentation/annotation
+#' of the sample surface.
+#'
+#' @slot id character. String to identify the object in a list of multiple objects of
+#' the same class.
+#'
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' spatial segmentation. Slots that should always exist:
+#'  \itemize{
+#'   \item{sample:}{ Character string. The name of the sample (slot @@sample of the `SPATA2` object.)}
+#'   }
+#'
+#' @slot segments list. A named, nested list. Named according to the labels
+#' given to each segment. E.g. list of length two with slot *necrosis* and *vivid*.
+#' Each named slot is a unnamed list. In this list each slot is a list of data.frames with
+#' a *x* and a *y* variable. First data.frame, named *exterior* corresponds to the exterior border of
+#' the segment. Every following data.frame is named *interior*-suffix where the suffix is a number
+#' and corresponds to interior holes of the segment.
+#'
+#' @export
+#'
+SpatialSegmentation <- setClass(Class = "SpatialSegmentation",
+                                slots = list(
+                                  id = "character",
+                                  info = "list",
+                                  segments = "list"
+                                ))
+
+#' @title The `SpatialSegment` - class
+#'
+#' @description Abstracts the concept of an annotated segment within a spatial
+#' segmentation.
+#'
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' spatial segment. Slots that should always exist:
+#'  \itemize{
+#'   \item{image_origin:}{ Character string. Content of slot @@info$origin of the `HistologyImaging` at the
+#'   time the segment was drawn.}
+#'   \item{parent_id:}{ Character string. The ID of the spatial segmentation this segment is part of.}
+#'   \item{pot:}{ POSIXct. The point of time when the segment was drawn. Used to handle overlapping
+#'   segments.}
+#'   \item{sample:}{ Character string. The name of the sample (slot @@sample of the `SPATA2` object.)}
+#'   }
+#' @slot label character. Character string. The label that was given to the segment.
+#' Corresponds to the group name of the barcode-spots that fall into the segment.
+#' @slot polygons list. List of data.frames with *x* and *y* variables that contain
+#' the vertices of the polygon. The first polygon (should be named *outer*) defines
+#' the outer ring of the segment. Further polygons (should be named *inner* suffixed
+#' with a number) define holes within the segment.
+#'
+#' @export
+SpatialSegment <- setClass(Class = "SpatialSegment",
+                           slots = list(
+                             info = "list",
+                             label = "character",
+                             polygons = "list"
+                           ))
 
 
 

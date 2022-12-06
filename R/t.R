@@ -144,6 +144,50 @@ tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_p
 
 
 
+# te ----------------------------------------------------------------------
+
+textInputWrapper <- function(inputId,
+                             label = NULL,
+                             width = "80%",
+                             app = "createImageAnnotations",
+                             helper = TRUE,
+                             hslot = inputId,
+                             ...){
+
+  if(base::is.null(label)){
+
+    label <-
+      confuns::make_pretty_name(inputId)  %>%
+      stringr::str_c(., ":", sep = "")
+
+  }
+
+  shiny::textInput(
+    inputId = inputId,
+    label = label,
+    width = width,
+    ...
+  ) %>%
+    {
+      if(base::isTRUE(helper)){
+
+        add_helper(
+          shiny_tag = .,
+          content = text[[app]][[hslot]]
+        )
+
+      } else {
+
+        .
+
+      }
+
+    }
+
+}
+
+
+
 # theme -------------------------------------------------------------------
 
 #' @export

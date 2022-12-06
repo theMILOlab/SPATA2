@@ -71,7 +71,7 @@ nGenes <- function(object, mtr_name = NULL){
 #' @export
 nImageAnnotations <- function(object){
 
-  getImageAnnotations(object, add_image = FALSE) %>%
+  getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
     base::length()
 
 }
@@ -129,7 +129,7 @@ normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
 }
 
 
-numericSlider <- function(inputId, label = NULL, width = "80%",  app = "annotateImage", helper = TRUE, hslot = inputId, ...){
+numericSlider <- function(inputId, label = NULL, width = "80%",  app = "createImageAnnotations", helper = TRUE, hslot = inputId, ...){
 
   if(base::is.null(label)){
 

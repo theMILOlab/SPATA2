@@ -32,7 +32,8 @@ are located outside the area of the image annotation(s).}
 the same name.}
 }
 \value{
-An updated spata object.
+The input \code{SPATA2} object containing the added or computed
+results.
 }
 \description{
 Converts one or more image annotations to a binary

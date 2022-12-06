@@ -120,7 +120,7 @@ plotIasBarplot <- function(object,
 
   # extract data
   ias_df <-
-    getImageAnnotationScreeningDf(
+    getIasDf(
       object = object,
       id = id,
       distance = distance,
@@ -303,7 +303,7 @@ plotIasEvaluation <- function(object,
   hlpr_assign_arguments(object)
 
   ias_df <-
-    getImageAnnotationScreeningDf(
+    getIasDf(
       object = object,
       id = id,
       distance = distance,
@@ -395,7 +395,7 @@ plotIasHeatmap <- function(object,
   # 2. Data wrangling -------------------------------------------------------
 
   img_ann_df <-
-    getImageAnnotationScreeningDf(
+    getIasDf(
       object = object,
       id = id,
       distance = distance,
@@ -596,7 +596,7 @@ plotIasHeatmap <- function(object,
 #' represents the border of the image annotation.
 #'
 #' @inherit as_unit params
-#' @inherit getImageAnnotationScreeningDf params
+#' @inherit getIasDf params
 #' @inherit plotIasHeatmap params details
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
@@ -614,6 +614,8 @@ plotIasLineplot <- function(object,
                             binwidth = getCCD(object),
                             angle_span = c(0,360),
                             n_bins_angle = 1,
+                            outer = TRUE,
+                            inner = FALSE,
                             method_gs = NULL,
                             smooth_method = "loess",
                             smooth_span = 0.2,
@@ -684,7 +686,7 @@ plotIasLineplot <- function(object,
   variables <- base::unique(variables)
 
   ias_df <-
-    getImageAnnotationScreeningDf(
+    getIasDf(
       object = object,
       id = id,
       binwidth = binwidth,
@@ -692,6 +694,8 @@ plotIasLineplot <- function(object,
       n_bins_circle = n_bins_circle,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
+      outer = outer,
+      inner = inner,
       variables = variables,
       summarize_by = summarize_by,
       normalize_by = normalize_by,
@@ -1142,6 +1146,7 @@ plotImageAnnotations <- function(object,
       test = test,
       expand = expand,
       square = square,
+      add_barcodes = FALSE,
       check = TRUE
     )
 
@@ -1159,10 +1164,11 @@ plotImageAnnotations <- function(object,
 
         if(base::isTRUE(encircle)){
 
+          img_ann_sf <- getImgAnnSf(object, id = img_ann@id)
+
           encircle_add_on <-
-            ggplot2::geom_polygon(
-              data = img_ann@area,
-              mapping = ggplot2::aes(x = x, y = y),
+            ggplot2::geom_sf(
+              data = img_ann_sf,
               size = line_size,
               color = line_color,
               linetype = line_type,
@@ -1213,7 +1219,7 @@ plotImageAnnotations <- function(object,
         coords_df <- getCoordsDf(object)
 
         plot_out <-
-          ggplot2::ggplot(data = coords_df) +
+          ggplot2::ggplot() +
           ggplot2::theme_bw() +
           ggplot2::annotation_raster(
             raster = image_raster,
@@ -1234,7 +1240,6 @@ plotImageAnnotations <- function(object,
             labels = labels
             ) +
           scale_bar_add_on +
-          ggplot2::coord_fixed() +
           ggplot2::labs(x = NULL, y = NULL) +
           ggpLayers
 

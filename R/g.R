@@ -404,6 +404,9 @@ ggpLayerAxesSI <- function(object,
 #' @param groups_subset Character value or NULL. If character,
 #' specifies the exact groups that are encircled. If NULL, all groups
 #' are encircled.
+#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`. Affects
+#' the encircling.
+#'
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
@@ -476,7 +479,9 @@ ggpLayerEncirclingIAS <- function(object,
                                   linecolor = "black",
                                   linesize = 1){
 
-  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+  border_df <-
+    getImgAnnBorderDf(object, id = id, inner = FALSE) %>%
+    dplyr::select(x, y)
 
   input <-
     check_ias_input(
@@ -504,7 +509,7 @@ ggpLayerEncirclingIAS <- function(object,
     purrr::imap(
       .x = binwidth_vec,
       .f =
-        ~ buffer_area(df = img_ann@area, buffer = .x) %>%
+        ~ buffer_area(df = border_df, buffer = .x) %>%
         dplyr::mutate(., circle = .y)
     )
 
@@ -674,6 +679,8 @@ ggpLayerHorizonIAS <- function(object,
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
 
+  border_df <- getImgAnnBorderDf(object, id, inner = FALSE)
+
   input <-
     check_ias_input(
       distance = distance,
@@ -701,7 +708,7 @@ ggpLayerHorizonIAS <- function(object,
     purrr::imap(
       .x = binwidth_vec,
       .f =
-        ~ buffer_area(df = img_ann@area, buffer = .x) %>%
+        ~ buffer_area(df = border_df, buffer = .x) %>%
         dplyr::mutate(., circle = .y)
     )
 
@@ -817,8 +824,6 @@ ggpLayerImage <- function(object = "object"){
 #' with \code{createImageAnnotations()}.
 #'
 #' @param alpha,size Numeric values. Given to \code{ggplot2::geom_polygon()}.
-#' @param ... Additional arguments given to \code{scale_color_add_on()}. Used to
-#' set the color adjustments of the polygon (fill and color).
 #'
 #' @inherit getImageAnnotations params details
 #' @inherit ggpLayer_dummy return
@@ -837,9 +842,6 @@ ggpLayerImgAnnBorder <- function(object = "object",
                                  line_color = "black",
                                  line_size = 1.5,
                                  line_type = "solid",
-                                 display_color = FALSE,
-                                 clrp = NULL,
-                                 clrp_adjust = NULL,
                                  ...){
 
         deprecated(...)
@@ -848,66 +850,23 @@ ggpLayerImgAnnBorder <- function(object = "object",
 
         hlpr_assign_arguments(object)
 
-        img_ann_df <-
-          getImageAnnotationAreaDf(
-            object = object,
-            ids = ids,
-            tags = tags,
-            test = test
-          )
+        ids <- getImageAnnotationIds(object, tags = tags, test = test, ids = ids)
 
-        out <- list()
+        purrr::map(
+          .x = ids,
+          .f = function(id){
 
-        if(base::isTRUE(display_color)){
-
-          out$image_annotation <-
-            ggplot2::layer(
-              stat = "identity",
-              position = "identity",
-              geom = ggplot2::GeomPolygon,
-              mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
-              data = img_ann_df,
-              params = list(alpha = alpha, size = line_size, linetype = line_type)
+            ggplot2::geom_sf(
+              data = getImgAnnSf(object, id),
+              size = line_size,
+              color = line_color,
+              linetype = line_type,
+              alpha = alpha,
+              fill = fill
             )
 
-          out$scale_color_add_on <-
-            scale_color_add_on(
-              aes = "fill",
-              variable = img_ann_df[["ids"]],
-              clrp = clrp,
-              clrp.adjust = clrp_adjust,
-              ...
-            )
-
-          out$scale_fill_add_on <-
-            scale_color_add_on(
-              aes = "color",
-              variable = img_ann_df[["ids"]],
-              clrp = clrp,
-              clrp.adjust = clrp_adjust,
-              ...
-            )
-
-        } else {
-
-          out$image_annotation <-
-            ggplot2::layer(
-              stat = "identity",
-              position = "identity",
-              geom = ggplot2::GeomPolygon,
-              mapping = ggplot2::aes(x = x, y = y, group = ids),
-              data = img_ann_df,
-              params = list(
-                alpha = alpha,
-                size = line_size,
-                linetype = line_type,
-                fill = fill,
-                color = line_color
-                )
-            )
-        }
-
-        return(out)
+          }
+        )
 
       }
 
@@ -1043,17 +1002,16 @@ ggpLayerImgAnnPointer <- function(object,
 
   }
 
-
   plot_df <-
     purrr::pmap_dfr(
       .l = list(img_anns, ptr_angles, ptr_labels, ptr_lengths, text_dist),
       .f = function(img_ann, angle, label, len, prolong){
 
-        area <- img_ann@area
+        area <- img_ann@area[["outer"]]
 
         if(point_at == "center"){
 
-          center <- getImageAnnotationCenter(img_ann)
+          center <- getImgAnnCenter(img_ann)
 
         } else if(point_at == "border"){
 
@@ -1146,6 +1104,8 @@ ggpLayerImgAnnPointer <- function(object,
             label = label,
             color = .data[[color_by]]
           ),
+          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
+          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
           alpha = text_alpha,
           size = text_size
         )
@@ -1160,6 +1120,8 @@ ggpLayerImgAnnPointer <- function(object,
             y = yend_p1,
             label = label
           ),
+          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
+          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
           alpha = text_alpha,
           color = text_color,
           size = text_size
@@ -1304,6 +1266,8 @@ ggpLayerRect <- function(object = "object",
 #' @inherit argument_dummy params
 #' @inherit is_dist details
 #' @inherit ggpLayer_dummy return
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @details  The scale bar consists of two graphical objects. The segment of the
 #' scale bar is plotted with `geom_segment_fixed()`. The text of the scale bar is

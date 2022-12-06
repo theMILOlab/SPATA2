@@ -1035,6 +1035,8 @@ setMethod(
                         n_bins_circle = NA_integer_,
                         angle_span = c(0,360),
                         n_bins_angle = 1,
+                        outer = TRUE,
+                        inner = TRUE,
                         pt_alpha = NA_integer_,
                         pt_clrp = c("inferno", "default"),
                         pt_clrsp = "inferno",
@@ -1055,7 +1057,7 @@ setMethod(
     if(base::length(pt_clrp) != 2){ pt_clrp <- base::rep(pt_clrp, 2)}
 
     ias_df <-
-      getImageAnnotationScreeningDf(
+      getIasDf(
         object = object,
         id = id,
         variables = NULL,
@@ -1063,6 +1065,8 @@ setMethod(
         binwidth = binwidth,
         n_bins_circle = n_bins_circle,
         angle_span = angle_span,
+        outer = outer,
+        inner = inner,
         n_bins_angle = n_bins_angle,
         remove_circle_bins = remove_circle_bins,
         rename_angle_bins = TRUE,
@@ -1129,15 +1133,32 @@ setMethod(
 
     }
 
+
     if(base::isTRUE(display_angle)){
 
       p$angle <-
         plotSurface2(
-          coords_df = ias_df,
+          coords_df = dplyr::filter(ias_df, !bins_circle %in% c("Core", "Outside")),
           color_by = "angle",
+          pt_size = pt_size,
           pt_clrsp = pt_clrsp,
-          pt_size = pt_size
-        ) + ggpLayers
+          pt_alpha = pt_alpha
+        ) +
+        geom_point_fixed(
+          data = dplyr::filter(ias_df, bins_circle == "Core"),
+          mapping = ggplot2::aes(x = x, y = y),
+          size = pt_size,
+          color = color_core,
+          alpha = pt_alpha
+        ) +
+        geom_point_fixed(
+          data = dplyr::filter(ias_df, bins_circle == "Outside"),
+          mapping = ggplot2::aes(x = x, y = y),
+          size = pt_size,
+          color = color_outside,
+          alpha = pt_alpha
+        )  +
+        ggpLayers
 
     }
 
@@ -1178,7 +1199,7 @@ setMethod(
     min_circles <- base::min(object@n_bins_circle)
 
     img_ann <- object@img_annotation
-    img_ann_center <- getImageAnnotationCenter(img_ann)
+    img_ann_center <- getImgAnnCenter(img_ann)
 
     coords_df <- object@coords
 
@@ -1265,12 +1286,27 @@ setMethod(
 
       p$angle <-
         plotSurface2(
-          coords_df = ias_df,
+          coords_df = dplyr::filter(ias_df, !bins_circle %in% c("Core", "Outside")),
           color_by = "angle",
           pt_size = pt_size,
           pt_clrsp = pt_clrsp,
           pt_alpha = pt_alpha
-        ) + ggpLayers
+        ) +
+        geom_point_fixed(
+          data = dplyr::filter(ias_df, bins_circle == "Core"),
+          mapping = ggplot2::aes(x = x, y = y),
+          size = pt_size,
+          color = color_core,
+          alpha = pt_alpha
+        ) +
+        geom_point_fixed(
+          data = dplyr::filter(ias_df, bins_circle == "Outside"),
+          mapping = ggplot2::aes(x = x, y = y),
+          size = pt_size,
+          color = color_outside,
+          alpha = pt_alpha
+        )  +
+        ggpLayers
 
     }
 

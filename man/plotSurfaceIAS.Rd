@@ -16,6 +16,8 @@ plotSurfaceIAS(object, ...)
   n_bins_circle = NA_integer_,
   angle_span = c(0, 360),
   n_bins_angle = 1,
+  outer = TRUE,
+  inner = TRUE,
   pt_alpha = NA_integer_,
   pt_clrp = c("inferno", "default"),
   pt_clrsp = "inferno",
@@ -75,6 +77,12 @@ an angle span relative to the center of the image annotation.
 
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
+
+\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
+is not included in the output.}
+
+\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

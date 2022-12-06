@@ -27,9 +27,8 @@ ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{...}{Additional arguments given to \code{ggpLayerAxesSI()} if
 \code{unit} is not \emph{'px'}.}

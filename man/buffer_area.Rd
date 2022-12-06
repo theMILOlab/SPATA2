@@ -13,7 +13,7 @@ are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
 
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the image annotation screening. Given to argument
-\code{dist} of function \code{sf::st_buffer()}. (See details for more.)}
+\code{dist} of function \code{sf::st_buffer()}.}
 }
 \description{
 Buffers the area of a polygon.

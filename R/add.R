@@ -693,18 +693,16 @@ addGeneSetsInteractive <- function(object){
 # addI --------------------------------------------------------------------
 
 #' @rdname createImageAnnotations
-#' @param area_df A data.frame that contains at least two numeric variables named
-#' \emph{x} and \emph{y}.
-#' @param tags Character vector of tags that describe the image annotation.
+#' @param area A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
+#' Observations correspond to the vertices of the polygons that are needed to represent the
+#' image annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' with numbers that correspond to inner polygons - holes within the annotation. If so,
+#' slot @@mode should be *'Complex'*.
 #'
 #' @export
 #'
-addImageAnnotation <- function(object, tags, area_df, id = NULL){
-
-  confuns::check_data_frame(
-    df = area_df,
-    var.class = list(x = "numeric", y = "numeric")
-  )
+addImageAnnotation <- function(object, tags, area,  id = NULL){
 
   if(base::is.character(id)){
 
@@ -728,9 +726,14 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   }
 
-  area_df <- tibble::as_tibble(area_df)
+  area <- purrr::map(.x = area, .f = tibble::as_tibble)
 
-  img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
+  img_ann <-
+    ImageAnnotation(
+      area = area,
+      id = id,
+      tags = tags
+      )
 
   io <- getImageObject(object)
 

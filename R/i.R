@@ -5,6 +5,21 @@
 # im ----------------------------------------------------------------------
 
 
+img_ann_highlight_group_button <- function(){
+
+  shiny::splitLayout(
+    shinyWidgets::checkboxGroupButtons(
+      inputId = "highlight",
+      label = NULL,
+      choices = c("Highlight" = "highlight"),
+      status = "default",
+      justified = TRUE
+    ),
+    cellWidths = "100%"
+  )
+
+}
+
 #' @title Implementation of the IAS-algorithm
 #'
 #' @description Screens the sample for numeric variables that stand
@@ -142,6 +157,8 @@ imageAnnotationScreening <- function(object,
                                      binwidth = getCCD(object),
                                      angle_span = c(0,360),
                                      n_bins_angle = 1,
+                                     outer = TRUE,
+                                     inner = TRUE,
                                      summarize_with = "mean",
                                      normalize_by = "sample",
                                      method_padj = "fdr",
@@ -184,12 +201,14 @@ imageAnnotationScreening <- function(object,
   }
 
   ias_df <-
-    getImageAnnotationScreeningDf(
+    getIasDf(
       object = object,
       id = id,
       variables = variables,
       distance = distance,
       binwidth = binwidth,
+      outer = outer,
+      inner = inner,
       n_bins_circle = n_bins_circle,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
@@ -374,8 +393,8 @@ imageAnnotationScreening <- function(object,
 #' the same name.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @return An updated spata object.
 #' @export
 #'
 imageAnnotationToSegmentation <- function(object,
@@ -394,7 +413,7 @@ imageAnnotationToSegmentation <- function(object,
     overwrite = overwrite
   )
 
-  bcsp_inside <- getImageAnnotationBarcodes(object, ids = ids)
+  bcsp_inside <- getImgAnnBarcodes(object, ids = ids)
 
   fdata <-
     getFeatureDf(object) %>%
@@ -414,6 +433,48 @@ imageAnnotationToSegmentation <- function(object,
   return(object)
 
 }
+
+
+
+# in ----------------------------------------------------------------------
+
+#' @title Test polygon intersection
+#'
+#' @description Tests which vertices of polygon `a` lay inside polygon `b`.
+#'
+#' @param a,b Matrix or data.frame with columns *x* and *y*.
+#' @inherit getBarcodesInPolygon params
+#'
+#' @return Logical vector of the same length as the number of rows in `a`.
+#' @export
+#'
+intersect_polygons <- function(a, b, strictly = FALSE){
+
+  a <- as.data.frame(a)
+  b <- as.data.frame(b)
+
+  res <-
+    sp::point.in.polygon(
+      point.x = a[["x"]],
+      point.y = a[["y"]],
+      pol.x = b[["x"]],
+      pol.y = b[["y"]]
+    )
+
+  if(base::isTRUE(strictly)){
+
+    out <- res == 1
+
+  } else {
+
+    out <- res %in% c(1,2)
+
+  }
+
+  return(out)
+
+}
+
 
 # is_ ----------------------------------------------------------------------
 

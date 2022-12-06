@@ -21,7 +21,7 @@
 #' Set \code{remove} to FALSE in order not to remove the renamed
 #' barcode-spots.
 #'
-#' @inherit bin_by_area params
+#' @inherit bin_by_expansion params
 #'
 #' @export
 bin_by_angle <- function(coords_df,
@@ -67,18 +67,44 @@ bin_by_angle <- function(coords_df,
 
   }
 
-  # compute angle
-  prel_angle_df <-
-    dplyr::group_by(.data = coords_df, barcodes) %>%
-    dplyr::mutate(
-      angle = compute_angle_between_two_points(
-        p1 = c(x = x, y = y),
-        p2 = center
+  if(confuns::is_list(center)) {
+
+    base::stopifnot("border" %in% base::colnames(coords_df))
+
+    prel_angle_df <-
+      purrr::imap_dfr(
+        .x = center,
+        .f = function(c, b){
+
+          dplyr::filter(coords_df, border == {{b}}) %>%
+            dplyr::group_by(barcodes) %>%
+            dplyr::mutate(
+              angle = compute_angle_between_two_points(
+                p1 = c(x = x, y = y),
+                p2 = {{c}}
+              )
+            )
+
+        }
       )
-    )
+
+  } else {
+
+    # compute angle
+    prel_angle_df <-
+      dplyr::group_by(.data = coords_df, barcodes) %>%
+      dplyr::mutate(
+        angle = compute_angle_between_two_points(
+          p1 = c(x = x, y = y),
+          p2 = center
+        )
+      )
+
+  }
+
+
 
   # create angle bins
-
   if(angle_span[["from"]] > angle_span[["to"]]){
 
     range_vec <- c(
@@ -285,14 +311,14 @@ bin_by_angle <- function(coords_df,
 #' @param drop Logical value. If TRUE, unused levels of the \emph{bins_circle}
 #' variables are dropped.
 #' @inherit imageAnnotationScreening params
-#'
 #' @export
-bin_by_area <- function(coords_df,
-                        area_df,
-                        binwidth,
-                        n_bins_circle,
-                        remove = FALSE,
-                        drop = TRUE){
+#'
+bin_by_expansion <- function(coords_df,
+                             area_df,
+                             binwidth,
+                             n_bins_circle,
+                             remove = FALSE,
+                             drop = TRUE){
 
   n_bins_circle <- base::max(n_bins_circle)
 
@@ -306,37 +332,112 @@ bin_by_area <- function(coords_df,
 
   binwidth_vec <- c("Core" = 0, circles)
 
-  areas <-
-    purrr::imap(
-      .x = binwidth_vec,
-      .f = ~ buffer_area(df = area_df, buffer = .x)
-    )
-
   # create new variable. Default is 'Outside'.
   # values will be overwritten with every additional loop
   coords_df$bins_circle <- "Outside"
+  coords_df$border <- NA_character_
 
-  for(area in base::names(areas)){
+  # if outer circles exist
+  if("outer" %in% area_df[["border"]]){
 
-    area_df <- areas[[area]]
+    outer_df <- dplyr::filter(area_df, border == "outer")
 
-    coords_df$pt_in_plg <-
-      sp::point.in.polygon(
-        point.x = coords_df$x,
-        point.y = coords_df$y,
-        pol.x = area_df$x,
-        pol.y = area_df$y
+    expansions_pos <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~ buffer_area(df = outer_df[c("x", "y")], buffer = .x)
       )
 
-    coords_df <-
-      dplyr::mutate(
-        .data = coords_df,
-        bins_circle = dplyr::case_when(
-          # if bins_circle is NOT 'Outside' it has already bin binned
-          bins_circle == "Outside" & pt_in_plg %in% c(1,2) ~ {{area}},
-          TRUE ~ bins_circle
+    for(exp in base::names(expansions_pos)){
+
+      exp_df <- expansions_pos[[exp]]
+
+      coords_df$pt_in_plg <-
+        sp::point.in.polygon(
+          point.x = coords_df$x,
+          point.y = coords_df$y,
+          pol.x = exp_df$x,
+          pol.y = exp_df$y
         )
+
+      coords_df <-
+        dplyr::mutate(
+          .data = coords_df,
+          bins_circle = dplyr::case_when(
+            # if bins_circle is NOT 'Outside' it has already bin binned
+            bins_circle == "Outside" & pt_in_plg %in% c(1,2) ~ {{exp}},
+            TRUE ~ bins_circle
+          ),
+          border = dplyr::case_when(
+            pt_in_plg %in% c(1,2) ~ "outer",
+            TRUE ~ border
+          )
+        )
+    }
+
+  }
+
+
+  # if inner circles exist
+  if("inner1" %in% area_df[["border"]]){
+
+    holes <-
+      stringr::str_subset(area_df[["border"]], pattern = "inner") %>%
+      base::unique()
+
+    # correct binwidth vec for screening towards the inside
+    binwidth_vec_neg <-
+      purrr::set_names(
+        x = (-binwidth_vec[1:(n_bins_circle-1)]),
+        nm = base::names(binwidth_vec)[2:n_bins_circle]
       )
+
+    for(h in base::seq_along(holes)){
+
+      hole <- holes[h]
+
+      hole_df <- dplyr::filter(area_df, border == {{hole}})
+
+      expansions_neg <-
+        purrr::imap(
+          .x = binwidth_vec_neg,
+          .f = ~ buffer_area(df = hole_df[c("x", "y")], buffer = .x)
+        ) %>%
+        purrr::discard(.p = base::is.null) %>%
+        purrr::map(.f = tibble::as_tibble)
+
+      for(exp in base::rev(base::names(expansions_neg))){
+
+        exp_df <- expansions_neg[[exp]]
+
+        coords_df$pt_in_plg <-
+          sp::point.in.polygon(
+            point.x = coords_df$x,
+            point.y = coords_df$y,
+            pol.x = exp_df$x,
+            pol.y = exp_df$y
+          )
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            bins_circle = dplyr::case_when(
+              # if bins_circle is NOT 'Outside' it has already bin binned
+              # if bins_circle is 'Core' it can be overwritten as 'Core'
+              # means everything inside the outer border
+              bins_circle %in% c("Outside", "Core") & pt_in_plg %in% c(1,2) ~ {{exp}},
+              TRUE ~ bins_circle
+            ),
+            border = dplyr::case_when(
+              pt_in_plg %in% c(1,2) ~ {{hole}},
+              TRUE ~ border
+            )
+          )
+
+      }
+
+    }
+
   }
 
   bin_levels <- c(base::names(binwidth_vec), "Outside")
@@ -369,10 +470,6 @@ bin_by_area <- function(coords_df,
   return(out_df)
 
 }
-
-#' @rdname bin_by_area
-#' @export
-bin_by_expansion <- bin_by_area
 
 
 #' @export
@@ -440,7 +537,7 @@ breaks <- function(n){
 #'
 #' @param buffer The distance by which to consecutively expand the
 #' area that covers the image annotation screening. Given to argument
-#' \code{dist} of function \code{sf::st_buffer()}. (See details for more.)
+#' \code{dist} of function \code{sf::st_buffer()}.
 #'
 #' @export
 buffer_area <- function(df, buffer){
@@ -458,11 +555,21 @@ buffer_area <- function(df, buffer){
     sf::st_polygon(x = list(base::as.matrix(df[,c("x", "y")]))) %>%
     sf::st_buffer(dist = buffer) %>%
     base::as.matrix() %>%
-    base::as.data.frame() %>%
-    magrittr::set_colnames(value = c("x", "y")) %>%
-    tibble::as_tibble()
+    base::as.data.frame()
 
-  return(area_grown)
+  if(purrr::is_empty(area_grown)){
+
+    out <- NULL
+
+  } else {
+
+    out <-
+      magrittr::set_colnames(area_grown, value = c("x", "y")) %>%
+      tibble::as_tibble()
+
+  }
+
+  return(out)
 
 }
 

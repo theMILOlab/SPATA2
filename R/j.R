@@ -162,7 +162,7 @@ joinWithFeatures <- function(object,
   # 2. Join data ------------------------------------------------------------
 
   fdata <-
-    getFeatureDf(object, of_sample = base::unique(spata_df$sample)) %>%
+    getFeatureDf(object) %>%
     dplyr::select(dplyr::all_of(x = c("barcodes", features)))
 
   joined_df <-
@@ -236,7 +236,7 @@ joinWithGenes <- function(object,
   n_bcsp <- base::nrow(spata_df)
   sample <- spata_df$sample %>% base::unique()
 
-  total_n_bcsp <- getCoordsDf(object, of_sample = sample) %>% base::nrow()
+  total_n_bcsp <- getCoordsDf(object) %>% base::nrow()
 
   if(uniform_genes == "discard" & n_bcsp != total_n_bcsp){
 
@@ -886,41 +886,47 @@ joinWithVariables <- function(object,
   if("features" %in% base::names(variables)){
 
     spata_df <-
-      joinWithFeatures(object = object,
-                       features = variables$features,
-                       spata_df = spata_df,
-                       smooth = smooth,
-                       smooth_span = smooth_span,
-                       verbose = verbose)
+      joinWithFeatures(
+        object = object,
+        features = variables$features,
+        spata_df = spata_df,
+        smooth = smooth,
+        smooth_span = smooth_span,
+        verbose = verbose
+      )
 
   }
 
   if("genes" %in% base::names(variables)){
 
     spata_df <-
-      joinWithGenes(object = object,
-                    spata_df = spata_df,
-                    genes = variables$genes,
-                    average_genes = average_genes,
-                    uniform_genes = uniform_genes,
-                    smooth = smooth,
-                    smooth_span = smooth_span,
-                    normalize = normalize,
-                    verbose = verbose)
+      joinWithGenes(
+        object = object,
+        spata_df = spata_df,
+        genes = variables$genes,
+        average_genes = average_genes,
+        uniform_genes = uniform_genes,
+        smooth = smooth,
+        smooth_span = smooth_span,
+        normalize = normalize,
+        verbose = verbose
+      )
 
   }
 
   if("gene_sets" %in% base::names(variables)){
 
     spata_df <-
-      joinWithGeneSets(object = object,
-                       spata_df = spata_df,
-                       gene_sets = variables$gene_sets,
-                       method_gs = method_gs,
-                       smooth = smooth,
-                       smooth_span = smooth_span,
-                       normalize = normalize,
-                       verbose = verbose)
+      joinWithGeneSets(
+        object = object,
+        spata_df = spata_df,
+        gene_sets = variables$gene_sets,
+        method_gs = method_gs,
+        smooth = smooth,
+        smooth_span = smooth_span,
+        normalize = normalize,
+        verbose = verbose
+      )
   }
 
   return(spata_df)

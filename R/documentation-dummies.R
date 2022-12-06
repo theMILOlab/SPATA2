@@ -100,6 +100,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' If `NULL`, all image annotations are included - subsequent selection with `tags` and
 #' `test` is possible.
 #'
+#' @param inner Logical value. If `FALSE`, the inner borders of the image annotation
+#' are not included in the output.
+#'
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
 #'
@@ -142,6 +145,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' variable is used to order the data points.
 #' @param order_desc Logical value. If `TRUE`, reverses the arrangement specified
 #' via `order_by` and/or `order`.
+#'
+#' @param outer Logical value. If `FALSE`, the outer border of the image annotation
+#' is not included in the output.
 #'
 #' @param overwrite Logical value. Must be `TRUE` to allow overwriting.
 #'
@@ -240,9 +246,8 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' This argument works within the \code{SPATA2} distance framework.
 #' If values are specified in European units of length the input is
-#' immediately converted to pixel units.
-#'
-#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
+#' immediately converted to pixel units. See info section *Distance measures*
+#' for more information.
 #'
 #'
 #' @param ... Used to absorb deprecated arguments or functions.

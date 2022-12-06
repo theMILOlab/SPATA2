@@ -652,7 +652,7 @@ updateSpataObject <- function(object,
 
     }
 
-    if(containsImageObject(object)){
+    if(containsHistologyImage(object)){
 
       io <- getImageObject(object)
 
@@ -727,6 +727,43 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 & object@version$minor == 14){
+
+    object@version <- list(major = 1, minor = 15, patch = 0)
+
+    if(nImageAnnotations(object) >= 1){
+
+      io <- getImageObject(object)
+
+      io@annotations <-
+        purrr::map(
+          .x = io@annotations,
+          .f = function(img_ann){
+
+            outer_border <-
+              base::as.data.frame(img_ann@area) %>%
+              tibble::as_tibble()
+
+            img_ann_new <-
+              transfer_slot_content(
+                recipient = ImageAnnotation(),
+                donor = img_ann,
+                skip = "area",
+                verbose = FALSE
+              )
+
+            img_ann_new@area <- list(outer = outer_border)
+
+            return(img_ann_new)
+
+          }
+        )
+
+      object <- setImageObject(object, image_object = io)
+
+    }
+
+  }
 
   # default adjustment ------------------------------------------------------
 
