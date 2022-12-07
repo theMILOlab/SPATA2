@@ -31,6 +31,17 @@ asPixel <- function(input, ...){
 }
 
 
+
+# b -----------------------------------------------------------------------
+
+bin_by_area <- function(...){
+
+  deprecated(fn = TRUE, ...)
+
+  bin_by_expansion(...)
+
+}
+
 # c -----------------------------------------------------------------------
 
 #' @title Check assessed trajectory data.frame
@@ -1035,6 +1046,15 @@ flipCoords <- function(...){
 }
 
 # g -----------------------------------------------------------------------
+
+
+getImageAnnotationAreaDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnBorderDf(...)
+
+}
 
 #' @title Obtain unit of method
 #'

@@ -286,13 +286,12 @@ create_image_annotations_descr <- list(
 
   caption = c("Display the image annotation tags as a caption. (If display mode: One by one.)"),
   encircle = c("Display the polygon with which the structure has been encircled. (If display mode: One by one.)"),
-  expand = c(""),
   color_by = c("Use SPATA variables to color the surface of the image."),
   display_mode =
     c(
-      "If 'Surface', the image annotations are projected on the whole histology image.",
+      "If 'One by one', each image annotations is displayed in a separate window.",
       "",
-      "If 'One by one', each image annotations is displayed in a separate window."
+      "If 'Surface', the image annotations are projected on the whole histology image."
     ),
   drawing_mode =
     c(
@@ -303,11 +302,12 @@ create_image_annotations_descr <- list(
     Additionally, you can provide a specific image annotation ID.",
       "",
       "Multiple: Mode that allows to quickly encircle several similar structures, thus adding multiple image
-    annotations at the same time. Exiting the drawing mode immediately highlights the structure and
+    annotations at the same time. Exiting the drawing mode immediately closes the polygon and
     entering it again starts the encircling of a new structure. Image annotation IDs are created as
     a combination of 'img_ann' and the position the annotations have in the list of image annotations
     named according to this pattern."
     ),
+  expand = c("Distance, percentage or exlam input to expand the image section of the plot."),
   img_ann_id = c("The ID that uniquely identifes the image annotation."),
   img_ann_ids_select = c("The image annotations that you want to include in the plot above."),
   img_ann_tags =
@@ -335,20 +335,25 @@ create_image_annotations_descr <- list(
   nrow = c("Number of rows in which the windows are displyed. Ignored if 0."),
   pick_action_single =
     c(
-      "Highlight: Closes the drawn circle and highlights the area that it includes marking
-    the exact structure that you have annotated. Before you cann add an image annotation
-    it must be higlighted. Alternatively you can use the keyboard-shortcut 'h'.",
+      "Connect: Closes the drawn polygon. If it is the first polygon you have drawn it
+      marks the outer border of the annotation. If the structure contains holes you can
+      draw consecutive polygons marking these holes.
+      Alternatively you can use keyboard-shortcut 'c'.",
       "",
-      "Reset: Removes any drawing that is currently displayed on the interactive plot.
-    Alternatively you can use the keyboard-shortcut 'r'."
+      "Reset all: Removes every current drawing from the image.",
+      "",
+      "Reset last: Removes the last drawn polygon/line.",
+      "",
+      "Highlight: Highlights the area that covers the annotated structure."
     ),
   pick_action_multiple =
     c(
-      "Reset all: Removes any drawing that is currently displayed on the interactive plot
-    including already highlighted structures. Alternatively you can use the keyboard-shortcut 'a'.",
+      "Reset all: Removes every current drawing from the image.",
       "",
-      "Reset last: Removes the most recently highlighted annotation. Alternatively you can
-    use the keyboard-shortcut 'l'."
+      "Reset last: Removes the last drawn polygon/line.",
+      "",
+      "Highlight: Highlights the area that covers the annotated structure. Alternatively,
+      you can use keyboard-shortcut 'h'."
     ),
   pointsize = c("The size with which points are displayed if color the surface by a SPATA2 variable."),
   square = c("Force the image annoatation to be displayed in a square. (If display mode: One by one.)"),
@@ -367,8 +372,12 @@ create_image_annotations_descr <- list(
       you are using drawing mode 'Single'.",
       "",
       "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
-      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
-      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
+      the cursor. By double clicking again or pressing 'e' you exit/stop the drawing. If drawing mode is set to 'Multiple' the drawn polygon
+      is immediately connected/closed and you can encircle a new structure. Drawing mode 'Single' allows to encircle with more details.
+      First, exiting the drawing does not result in immediate closing. This means that you can exit the drawing, adjust the zooming,
+      and start drawing again. This can be repeated until you click on connect. This closes the lines and sets the outer border
+      of the image annotation. You can now draw inside the outer border which determines holes within the image annotation. Use
+      the Highlight button to see the area that is currently considered your image annotation.",
       "",
       "Tagging: Provide additional information about the annotated structure in form of bullet points that can be used later on
       to group and/or separate them.",
@@ -383,8 +392,8 @@ create_image_annotations_descr <- list(
   zooming_options = c(
     "Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
     back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
-    you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
-    zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+    you are drawing. If you want to stop drawing to zoom in on the image you have to exit the drawing mode via shortcut 'e'
+    zoom in. Then start drawing again via doubleclicking or pressing 'd'. This is only possible if
     you are using drawing mode 'Single'."
   )
 )
@@ -454,7 +463,7 @@ create_spatial_trajectories_descr <- list(
 
 
 
-current_spata_version <- list(major = 1, minor = 13, patch = 0)
+current_spata_version <- list(major = 1, minor = 15, patch = 0)
 
 
 # d -----------------------------------------------------------------------
@@ -466,12 +475,16 @@ depr_info <-
       "adjustdDefaultInstructions" = "setDefault",
       "assessTrajectoryTrends" = "spatialTrajectoryScreening",
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
+      "bin_by_area" = "bin_by_expansion",
       "createImageObject" = "createHistologyImage",
       "createHistologyImage" = "createHistologyImaging",
       "createSegmentation" = "createSpatialSegmentation",
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "flipCoords" = "flipCoordinates",
+      "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
+      "getImageAnnotationCenter" = "getImgAnnCenter",
+      "getImageAnnotationScreeningDf" = "getIasDf",
       "getMethod" = "getSpatialMethod",
       "getMethodUnit" = "getSpatialMethod()@unit",
       "getMethodName" = "getSpatialMethod()@name",

@@ -102,6 +102,9 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
+\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
+
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
 
@@ -145,6 +148,9 @@ variable is used to order the data points.}
 
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
+
+\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
+is not included in the output.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
@@ -242,9 +248,8 @@ ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

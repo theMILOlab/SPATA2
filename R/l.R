@@ -9,7 +9,7 @@ NULL
 lastImageAnnotation <- function(object){
 
   ios <-
-    getImageAnnotations(object, add_image = FALSE) %>%
+    getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
     purrr::keep(.p = ~ stringr::str_detect(string = .x@id, pattern = "^img_ann_\\d*$"))
 
   if(base::length(ios) == 0){

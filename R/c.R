@@ -262,6 +262,28 @@ computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
 
 
+# concatenate -------------------------------------------------------------
+
+
+concatenate_polypaths <- function(lst, axis){
+
+  path <- lst[["outer"]][[axis]]
+
+  ll <- base::length(lst)
+
+  if(ll > 1){
+
+    inner <-
+      purrr::map( .x = lst[2:ll], .f = ~ c(NA, .x[[axis]])) %>%
+      purrr::flatten_dbl()
+
+    path <- c(path, inner)
+
+  }
+
+  return(path)
+
+}
 
 
 
@@ -299,17 +321,7 @@ containsCNV <- function(object){
 }
 
 
-
-#' @title Check availability of `HistologyImage` object
-#'
-#' @description Checks if slot @@images contains an object
-#' of class `HistologyImage` or if it is empty.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Logical value.
-#'
-#' @export
+# required for updating
 containsHistologyImage <- function(object){
 
   img <- object@images[[1]]
@@ -319,6 +331,27 @@ containsHistologyImage <- function(object){
   return(out)
 
 }
+
+#' @title Check availability of `HistologyImaging` object
+#'
+#' @description Checks if slot @@images contains an object
+#' of class `HistologyImaging` or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+containsHistologyImaging <- function(object){
+
+  img <- object@images[[1]]
+
+  out <- methods::is(object = img, class2 = "HistologyImaging")
+
+  return(out)
+
+}
+
 
 
 #' @title Check availability of an image

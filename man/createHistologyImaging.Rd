@@ -21,7 +21,7 @@ to a file or to an URL and is read with \code{EBImage::readImage()}. The read im
 should be of type \emph{.png}, \emph{.jpeg} or \emph{.tiff}. Capital letters work, too.
 
 If not character, the function ensures that the input is - or is convertible - to
-class \code{Image} via \code{EBimage::as.Image()}. If that fails, an error is thrown.}
+class \code{Image} via \code{EBImage::as.Image()}. If that fails, an error is thrown.}
 
 \item{id}{Character value. Name of the \code{HistologyImaging} object.}
 

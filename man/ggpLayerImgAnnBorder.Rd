@@ -14,9 +14,6 @@ ggpLayerImgAnnBorder(
   line_color = "black",
   line_size = 1.5,
   line_type = "solid",
-  display_color = FALSE,
-  clrp = NULL,
-  clrp_adjust = NULL,
   ...
 )
 }
@@ -36,9 +33,6 @@ selection. See section \emph{Selection of image annotation with tags} for more i
 See section \emph{Selection of image annotation with tags} for more information.}
 
 \item{alpha, size}{Numeric values. Given to \code{ggplot2::geom_polygon()}.}
-
-\item{...}{Additional arguments given to \code{scale_color_add_on()}. Used to
-set the color adjustments of the polygon (fill and color).}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

@@ -58,7 +58,9 @@ getPixelDf <- function(object, xrange = NULL, yrange = NULL){
 
   img_dims <- base::dim(img)
 
-  tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2])
+  tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2]) %>%
+    dplyr::mutate(pixel = stringr::str_c("px", 1:base::nrow(.))) %>%
+    dplyr::select(pixel, x, y)
 
 }
 

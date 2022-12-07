@@ -341,10 +341,9 @@ alignImageAnnotation <- function(img_ann, image_object){
   if(scale_fct != 1){
 
     img_ann@area <-
-      scale_coords_df(
-        df = img_ann@area,
-        scale_fct = scale_fct,
-        verbose = FALSE
+      purrr::map(
+        .x = img_ann@area,
+        .f = ~ scale_coords_df(df = .x, scale_fct = scale_fct, verbose = FALSE)
       )
 
   }
@@ -359,11 +358,9 @@ alignImageAnnotation <- function(img_ann, image_object){
   if(img_ann_flipped_h != image_flipped_h){
 
     img_ann@area <-
-      flip_coords_df(
-        df = img_ann@area,
-        axis = "horizontal",
-        ranges = ranges,
-        verbose = FALSE
+      purrr::map(
+        .x = img_ann@area,
+        .f = ~ flip_coords_df(df = .x, axis = "horizontal", ranges = ranges, verbose = FALSE)
       )
 
     img_ann@info$current_just$flipped$horizontal <- image_flipped_h
@@ -377,11 +374,9 @@ alignImageAnnotation <- function(img_ann, image_object){
   if(img_ann_flipped_v != image_flipped_v){
 
     img_ann@area <-
-      flip_coords_df(
-        df = img_ann@area,
-        axis = "vertical",
-        ranges = ranges,
-        verbose = FALSE
+      purrr::map(
+        .x = img_ann@area,
+        .f = ~ flip_coords_df(df = .x, axis = "vertical", ranges = ranges, verbose = FALSE)
       )
 
     img_ann@info$current_just$flipped$vertical <- image_flipped_v
@@ -399,23 +394,32 @@ alignImageAnnotation <- function(img_ann, image_object){
     if(image_angle < img_ann_angle){
 
       img_ann@area <-
-        rotate_coords_df(
-          df = img_ann@area,
-          angle = angle_just,
-          ranges = ranges,
-          clockwise = FALSE,  # rotate dif. backwards
-          verbose = FALSE
+        purrr::map(
+          .x = img_ann@area,
+          .f = ~
+            rotate_coords_df(
+              df = .x,
+              angle = angle_just,
+              ranges = ranges,
+              clockwise = FALSE,  # rotate dif. backwards
+              verbose = FALSE
+            )
         )
+
 
     } else if(image_angle > img_ann_angle) {
 
       img_ann@area <-
-        rotate_coords_df(
-          df = img_ann@area,
-          angle = angle_just,
-          ranges = ranges,
-          clockwise = TRUE, # roate diff. forwards
-          verbose = FALSE
+        purrr::map(
+          .x = img_ann@area,
+          .f = ~
+            rotate_coords_df(
+              df = .x,
+              angle = angle_just,
+              ranges = ranges,
+              clockwise = TRUE, # roate diff. forwards
+              verbose = FALSE
+            )
         )
 
     }
@@ -584,6 +588,99 @@ alignSpatialTrajectory <- function(spat_traj, image_object){
 
 
 
+# append ------------------------------------------------------------------
+
+
+#' @title Append polygon df
+#'
+#' @description Appends df to list of polygon data.frames and names it
+#' accordingly in case of complex polygons.
+#'
+#' @param lst Polygon list the new polygon is appended to.
+#' @param plg New polygon data.frame.
+append_polygon_df <- function(lst,
+                              plg,
+                              allow_intersect = TRUE,
+                              in_outer = TRUE,
+                              ...){
+
+  ll <- base::length(lst)
+
+  if(ll == 0){
+
+    lst[["outer"]] <- plg
+
+  } else {
+
+    if(base::isTRUE(in_outer)){
+
+      is_in_outer <- base::all(intersect_polygons(a = plg, b = lst[["outer"]]))
+
+      if(!is_in_outer){
+
+        confuns::give_feedback(
+          msg = "Can not add polygon. Must be located inside the outer border.",
+          fdb.fn = "stop",
+          ...
+        )
+
+      }
+
+    }
+
+
+    if(base::isFALSE(allow_intersect)){
+
+      plg_intersect <-
+        purrr::map_lgl(
+          .x = lst,
+          .f = ~ base::any(intersect_polygons(a = .x, b = plg, strictly = FALSE))
+        )
+
+      if(base::any(plg_intersect)){
+
+        confuns::give_feedback(
+          msg = "Can not add polygon. Additional polygons must not intersect.",
+          fdb.fn = "stop",
+          ...
+        )
+
+      }
+
+    }
+
+    if(base::length(lst) >= 2){
+
+      lies_inside_hole <-
+        purrr::map_lgl(
+          .x = lst[2:base::length(lst)],
+          # do all points of plg are located inside inner polygons/holes?
+          .f = ~ base::all(intersect_polygons(a = plg, b = .x, strictly = FALSE))
+        ) %>%
+        base::any()
+
+      if(base::isTRUE(lies_inside_hole)){
+
+        confuns::give_feedback(
+          msg = glue::glue("Can not add polygon. Must not be located in a hole."),
+          fdb.fn = "stop",
+          ...
+        )
+
+      }
+
+    }
+
+
+
+
+    lst[[stringr::str_c("inner", ll)]] <- plg
+
+  }
+
+  return(lst)
+
+}
 
 
 

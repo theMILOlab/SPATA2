@@ -5,17 +5,22 @@
 \alias{createImageAnnotations}
 \title{Interactive image annotations}
 \usage{
-addImageAnnotation(object, tags, area_df, id = NULL)
+addImageAnnotation(object, tags, area, id = NULL)
 
 createImageAnnotations(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{tags}{Character vector of tags that describe the image annotation.}
+\item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
+selection. See section \emph{Selection of image annotation with tags} for more information.}
 
-\item{area_df}{A data.frame that contains at least two numeric variables named
-\emph{x} and \emph{y}.}
+\item{area}{A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
+Observations correspond to the vertices of the polygons that are needed to represent the
+image annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
+of the image annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
+with numbers that correspond to inner polygons - holes within the annotation. If so,
+slot @mode should be \emph{'Complex'}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

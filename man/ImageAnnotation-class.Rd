@@ -12,9 +12,12 @@ histology images.
 \section{Slots}{
 
 \describe{
-\item{\code{area}}{data.frame. A data.frame that contains at least the numeric
-variables \emph{x} and \emph{y}. Data corresponds to the polygon that
-captures the spatial extent/borders of the identified structure.}
+\item{\code{area}}{list. A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
+Observations correspond to the vertices of the polygons that are needed to represent the
+image annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
+of the image annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
+with numbers that correspond to inner polygons - holes within the annotation. If so,
+slot @mode should be \emph{'Complex'}.}
 
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}

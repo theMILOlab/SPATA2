@@ -13,6 +13,8 @@ plotIasLineplot(
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
+  outer = TRUE,
+  inner = FALSE,
   method_gs = NULL,
   smooth_method = "loess",
   smooth_span = 0.2,
@@ -69,6 +71,12 @@ an angle span relative to the center of the image annotation.
 
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
+
+\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
+is not included in the output.}
+
+\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean

@@ -24,7 +24,8 @@ ggpLayerEncirclingGroups(
 specifies the exact groups that are encircled. If NULL, all groups
 are encircled.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}. Affects
+the encircling.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

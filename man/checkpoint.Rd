@@ -32,7 +32,9 @@ checkpoint(
     insufficient_n_genes = "Please determine at least two genes.", invalid_gs_string1 =
     "The class-prefix must not contain '_'.", invalid_gs_string2 =
     "Please enter a valid string for the class-prefix and the gene-set name.",
-    occupied_gs_name = "This gene-set name is already taken."),
+    occupied_gs_name = "This gene-set name is already taken.", 
+     no_img_anns_selected
+    = "No image annotations selected to plot.", invalid_expand = "Invalid expand input."),
   warning_notifications = list(),
   duration = 4,
   stop_process = TRUE,

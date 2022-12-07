@@ -4,7 +4,7 @@
 \alias{getImageAnnotationIds}
 \title{Obtain image annotations ids}
 \usage{
-getImageAnnotationIds(object, tags = NULL, test = "any")
+getImageAnnotationIds(object, tags = NULL, test = "any", ...)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
@@ -15,6 +15,8 @@ selection. See section \emph{Selection of image annotation with tags} for more i
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of image annotation with tags} for more information.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Character vector.

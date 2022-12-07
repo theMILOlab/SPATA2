@@ -518,7 +518,11 @@ scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
       .x = io@annotations,
       .f = function(img_ann){
 
-        img_ann@area <- scale_coords_df(df = img_ann@area, scale_fct = scale_fct)
+        img_ann@area <-
+          purrr::map(
+            .x = img_ann@area,
+            .f = ~ scale_coords_df(df = .x, scale_fct = scale_fct)
+          )
 
         img_ann@info$current_dim <- img_ann@info$current_dim * scale_fct
 
