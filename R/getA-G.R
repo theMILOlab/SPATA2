@@ -218,6 +218,14 @@ getBarcodes <- function(object,
 #'
 #' @param polygon_df A data.frame that contains the vertices of the polygon
 #' in form of two variables: *x* and *y*.
+#'
+#' @param polygon_list  A named list of data.frames with the numeric variables x and y.
+#' Observations correspond to the vertices of the polygons that confine spatial areas.
+#' Must contain a slot named *outer* which sets the outer border of
+#' the spatial area. Can contain multiple slots named *inner* (suffixed with numbers)
+#' that correspond to inner polygons - holes within the annotation. Like *inner1*,
+#' *inner2*.
+#'
 #' @param strictly Logical value. If `TRUE`, only barcode spots that are strictly
 #' interior to the polygon are returned. If `FALSE`, barcodes that are
 #' on the relative interior the polygon border or that are vertices themselves
@@ -254,6 +262,43 @@ getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
   return(out)
 
 }
+
+#' @rdname getBarcodesInPolygon
+#' @export
+getBarcodesInPolygonList <- function(object, polygon_list, strictly = TRUE){
+
+  polygon_list <- confuns::lselect(polygon_list, outer, dplyr::matches("inner\\d*$"))
+
+  barcodes <-
+    getBarcodesInPolygon(
+      object = object,
+      polygon_df = polygon_list[["outer"]],
+      strictly = strictly
+    )
+
+  n_holes <- base::length(polygon_list)
+
+  if(n_holes > 1){
+
+    for(i in 2:n_holes){
+
+      barcodes_inner <-
+        getBarcodesInPolygon(
+          object = object,
+          polygon_df = polygon_list[[i]],
+          strictly = strictly
+        )
+
+      barcodes <- barcodes[!barcodes %in% barcodes_inner]
+
+    }
+
+  }
+
+  return(barcodes)
+
+}
+
 
 #' @title Obtain barcode spot distances
 #'

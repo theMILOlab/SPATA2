@@ -335,16 +335,15 @@ create_image_annotations_descr <- list(
   nrow = c("Number of rows in which the windows are displyed. Ignored if 0."),
   pick_action_single =
     c(
-      "Connect: Closes the drawn polygon. If it is the first polygon you have drawn it
+      "Connect (c): Closes the drawn polygon. If it is the first polygon you have drawn it
       marks the outer border of the annotation. If the structure contains holes you can
-      draw consecutive polygons marking these holes.
-      Alternatively you can use keyboard-shortcut 'c'.",
+      draw consecutive polygons marking these holes.",
       "",
       "Reset all: Removes every current drawing from the image.",
       "",
-      "Reset last: Removes the last drawn polygon/line.",
+      "Reset last: Removes the lastly drawn polygon/line.",
       "",
-      "Highlight: Highlights the area that covers the annotated structure."
+      "Highlight (h): Highlights the area that covers the annotated structure. Requires one connected polygon."
     ),
   pick_action_multiple =
     c(
@@ -405,31 +404,46 @@ create_segmentation_descr <- list(
 
   color_by = c("Use SPATA variables to color the surface of the image."),
   linesize = create_image_annotations_descr$linesize,
-  pick_action_interaction =     c(
-    "Highlight: Closes the drawn circle and highlights the area that it includes marking
-    the exact structure that you have annotated. Before you cann add an image annotation
-    it must be higlighted.",
-    "",
-    "Reset: Removes any drawing that is currently displayed on the interactive plot."
-  ),
-
+  pick_action_interaction =
+    c(
+      "Connect (c): Closes the drawn polygon. If it is the first polygon you have drawn it
+      marks the outer border of the annotation. If the structure contains holes you can
+      draw consecutive polygons marking these holes.",
+      "",
+      "Reset all: Removes every current drawing from the image.",
+      "",
+      "Reset last: Removes the lastly drawn polygon/line.",
+      "",
+      "Highlight (h): Highlights the area that covers the annotated structure. Requires one connected polygon."
+    ),
   pick_action_overview = c(
     "The segment chosen on the left under 'Choose a group/segment'. Can either be renamed
    or discarded. Clicking on either of the two buttons opens a model in which to specify
    the action."),
-  plot_interaction = c(
-    "This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
-    "",
-    "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
-      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
-      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
-    "",
-    "Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate.
-     You are then prompted to choose the name you want to annotate the barcode spots with that fall into this area.
-     This can either be a new name or one that has already been assigned within the variable. Then click on 'Name'.
-     The 'Overview'-plot on the left should now display the named region in addition to all the other regions that
-     you have annotated already. Naming barcode spots that have already been named results in overwriting the previous name."
-  ),
+  plot_interaction =
+    c(
+      "This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+      "",
+      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
+      you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
+      zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+      you are using drawing mode 'Single'.",
+      "",
+      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to name by simply moving
+      the cursor. By double clicking again or pressing 'e' you exit/stop the drawing. The drawn line remains on the plot until you
+      click 'Connect' or use shortcut 'c', which will connect start an end of the drawn line to a polygon that encircles the
+      area of interest. This means that you can exit the drawing, adjust the zooming, and start drawing again. This can be repeated
+      until you click on connect. This closes the lines and sets the outer border of the named area. You can now draw inside the
+      outer border which determines holes within the area. If you want to draw holes to omit some areas within the drawn area
+      you can draw them inside the connected polygon. Click again on 'Connect' to connect the hole polygons. Use the 'Highlight' button to see the area that is currently considered
+      your area of interest and to see the barcode-spots that would currently be named.",
+      "",
+      "Naming: This provides the name of the group you assign the encircled barcode-spots within the segmentation variable.
+      After setting the outer border of the area by clicking on 'Connect' you can provide a name you want to assign to
+      the barcode-spots that fall into the polygon you have drawn. After clicking on 'Name' the barcode-spots are named/labeled
+      and the plot on the left should be updated."
+    ),
   plot_orientation = create_image_annotations_descr$tab_panel_orientation,
   plot_overview = c(
     "Choose the segmentation variable that you want to alter. If you want to create a new one
@@ -443,8 +457,8 @@ create_segmentation_descr <- list(
   zooming_options = c(
     "Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
     back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
-    you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
-    zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+    you are drawing. If you want to stop drawing to zoom in on the image you have to exit the drawing mode via shortcut 'e'
+    zoom in. Then start drawing again via doubleclicking or pressing 'd'. This is only possible if
     you are using drawing mode 'Single'."
   )
 

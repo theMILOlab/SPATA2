@@ -881,34 +881,12 @@ getImageAnnotations <- function(object,
 
     if(base::isTRUE(add_barcodes)){
 
-
-      barcodes <-
-        getBarcodesInPolygon(
+      img_ann@misc$barcodes <-
+        getBarcodesInPolygonList(
           object = object,
-          polygon_df = img_ann@area[["outer"]],
+          polygon_list = img_ann@area,
           strictly = strictly
-        )
-
-      n_holes <- base::length(img_ann@area)
-
-      if(n_holes > 1){
-
-        for(i in 2:n_holes){
-
-          barcodes_inner <-
-            getBarcodesInPolygon(
-              object = object,
-              polygon_df = img_ann@area[[i]],
-              strictly = strictly
-            )
-
-          barcodes <- barcodes[!barcodes %in% barcodes_inner]
-
-        }
-
-      }
-
-      img_ann@misc$barcodes <- barcodes
+          )
 
     }
 

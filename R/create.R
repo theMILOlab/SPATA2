@@ -735,7 +735,7 @@ createImageAnnotations <- function(object, ...){
                     shiny::textInput(inputId = "img_ann_id", label = NULL, value = val, width = "100%")
                   ),
                   shiny::fluidRow(
-                    strongH5("Add to SPATA object:")
+                    strongH5("Add to SPATA2 object:")
                   ),
                   shiny::fluidRow(
                     shiny::actionButton(
@@ -778,7 +778,7 @@ createImageAnnotations <- function(object, ...){
                     shiny::uiOutput(outputId = "tags")
                   ),
                   shiny::fluidRow(
-                    strongH5("Add to SPATA object:")
+                    strongH5("Add to SPATA2 object:")
                   ),
                   shiny::fluidRow(
                     shiny::actionButton(
@@ -1807,13 +1807,18 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                               container(
                                 width = 12,
                                 shiny::column(
-                                  width = 6,
+                                  width = 3,
                                   strongH5("Choose variable:"),
                                   shiny::uiOutput(outputId = "segm_var_name")
                                 ),
                                 shiny::column(
+                                  width = 3,
+                                  strongH5("Show variables:"),
+                                  shiny::actionButton(inputId = "show_segm_variables", label = "Display", width = "100%")
+                                ),
+                                shiny::column(
                                   width = 6,
-                                  strongH5("If no variable exists:"),
+                                  strongH5("Create variable:"),
                                   shiny::actionButton(inputId = "new_segm_var", label = "Create new segmentation variable", width = "100%")
                                 )
                               ),
@@ -1947,21 +1952,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                                   cellWidths = "33%"
                                 )
                               )
-                            ),
-                            breaks(1),
-                            shiny::fluidRow(
-                              shiny::column(
-                                width = 12,
-                                container(
-                                  width = 12,
-                                  shinyWidgets::radioGroupButtons(
-                                    inputId = "drawing_mode",
-                                    label = "Drawing mode:",
-                                    choices = c("Single", "Multiple"),
-                                    selected = "Single"
-                                  ) %>% add_helper(content = text$createImageAnnotations$drawing_mode)
-                                )
-                              )
                             )
                           ),
                           shiny::column(
@@ -1979,17 +1969,23 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                                   width = 12,
                                   shiny::splitLayout(
                                     shiny::actionButton(
-                                      inputId = "highlight_region",
-                                      label = "Highlight",
+                                      inputId = "connect",
+                                      label = "Connect",
+                                      width = "100%",
+                                    ),
+                                    shiny::actionButton(
+                                      inputId = "reset_all",
+                                      label = "Reset all",
                                       width = "100%"
                                     ),
                                     shiny::actionButton(
-                                      inputId = "reset_region",
-                                      label = "Reset ",
+                                      inputId = "reset_last",
+                                      label = "Reset last",
                                       width = "100%"
                                     ),
-                                    cellWidths = "50%"
-                                  )
+                                    cellWidths = "33%"
+                                  ),
+                                  img_ann_highlight_group_button()
                                 )
                               )
                             ),
@@ -2138,6 +2134,8 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           )
 
+          segment <- shiny::reactiveVal(value = list())
+
           selected <- shiny::reactiveValues(
 
             segm_var = NULL,
@@ -2205,7 +2203,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           output$new_region_name <- shiny::renderUI({
 
-
             shiny::validate(
               shiny::need(
                 expr = shiny::isTruthy(input$segm_var_name),
@@ -2216,7 +2213,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             shiny::validate(
               shiny::need(
                 expr = base::length(encircled_barcodes()) >= 1,
-                message = "Encircle and highlight a region."
+                message = "Encircle a region. By drawing the border and clicking on 'Connect'."
               )
             )
 
@@ -2373,10 +2370,37 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           })
 
+          encircled_barcodes <- shiny::reactive({
+
+            if(base::length(segment()) >= 1){
+
+              out <-
+                getBarcodesInPolygonList(
+                  object = object,
+                  polygon_list = segment(),
+                  strictly = TRUE
+                )
+
+            } else {
+
+              out <- NULL
+
+            }
+
+            return(out)
+
+          })
+
           final_orientation_plot <- shiny::reactive({
 
             orientation_plot() +
               plot_add_ons$orientation_rect
+
+          })
+
+          highlight <- shiny::reactive({
+
+            "highlight" %in% input$highlight
 
           })
 
@@ -2411,6 +2435,8 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             return(out)
 
           })
+
+          n_polygons <- shiny::reactive({ base::length(segment()) })
 
           n_zooms <- shiny::reactive({ base::length(interactive$zooming) })
 
@@ -2587,9 +2613,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           })
 
-
-
-
           # observe events
 
           # keys d/e
@@ -2608,21 +2631,6 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             }
 
           })
-
-          # segments
-          oe <- shiny::observeEvent(input$segm_var_name, {
-
-            selected$segm_var <- input$segm_var_name
-
-          })
-
-          oe <- shiny::observeEvent(input$segm_group, {
-
-            selected$segm_group <- input$segm_group
-
-          })
-
-          # drawing
 
           oe <- shiny::observeEvent(input$dbl_click, {
 
@@ -2666,6 +2674,38 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                 )
               )
             )
+
+          })
+
+          oe <- shiny::observeEvent(input$segm_group, {
+
+            selected$segm_group <- input$segm_group
+
+          })
+
+          oe <- shiny::observeEvent(input$segm_var_name, {
+
+            selected$segm_var <- input$segm_var_name
+
+          })
+
+          oe <- shiny::observeEvent(input$show_segm_variables, {
+
+            shiny::showModal(
+              ui = shiny::modalDialog(
+                title = "Segmentation variables:",
+                DT::dataTableOutput(outputId = "segm_var_table"),
+                footer = shiny::fluidRow(
+                  shiny::actionButton(inputId = "close_segm_var_table", label = "Close")
+                )
+              )
+            )
+
+          })
+
+          oe <- shiny::observeEvent(input$close_segm_var_table, {
+
+            shiny::removeModal()
 
           })
 
@@ -2783,16 +2823,35 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           })
 
-          oe <- shiny::observeEvent(input$reset_region, {
+          oe <- shiny::observeEvent(input$reset_all, {
 
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
-            encircled_barcodes(base::character(0))
-
-            highlighted(FALSE)
+            segment(list())
 
           })
+
+          oe <- shiny::observeEvent(input$reset_last, {
+
+            if(base::nrow(polygon_df()) != 0){
+
+              polygon_vals$x <- NULL
+              polygon_vals$y <- NULL
+
+            } else if(n_polygons() >= 1){
+
+              segm <- segment()
+
+              segm[n_polygons()] <- NULL
+
+              segment(segm)
+
+            }
+
+          })
+
+
 
           oe <- shiny::observeEvent(input$save_region, {
 
@@ -2861,45 +2920,21 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
           })
 
           # new3
+          oe <- shiny::observeEvent(input$connect, {
 
-          oe <- shiny::observeEvent(c(input$highlight_region), {
+              append_polygon_df(
+                lst = segment(),
+                plg = polygon_df(),
+                allow_intersect = FALSE,
+                with.time = FALSE,
+                in.shiny = TRUE
+              ) %>%
+              segment()
 
-            checkpoint(
-              evaluate = shiny::isTruthy(current_segm_var()),
-              case_false = "no_segm_var_chosen"
-            )
+            polygon_vals$x <- NULL
+            polygon_vals$y <- NULL
 
-            positions <-
-              sp::point.in.polygon(
-                point.x = coords_df()$x, # x coordinates of all spatial positions
-                point.y = coords_df()$y, # y coordinates of all spatial positions
-                pol.x = polygon_df()$x, # x coordinates of the segments vertices
-                pol.y = polygon_df()$y
-              )
-
-            out <-
-              getCoordsDf(object = spata_object()) %>%
-              dplyr::mutate(positions = {{positions}}) %>%
-              dplyr::filter(positions %in% c(1,2,3)) %>%
-              dplyr::pull(barcodes)
-
-            if(base::length(out) == 0){
-
-              give_feedback(
-                fdb.fn = "stop",
-                in.shiny = TRUE,
-                msg = "The polygon you have drawn does not include any barcode spots."
-              )
-
-            } else {
-
-              encircled_barcodes(out)
-
-              highlighted(TRUE)
-
-            }
-
-          }, ignoreInit = TRUE)
+          })
 
           # new4
           oe <- shiny::observeEvent(input$name_region, {
@@ -2951,9 +2986,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
-            encircled_barcodes(base::character(0))
-
-            highlighted(FALSE)
+            segment(list())
 
           })
 
@@ -2979,6 +3012,13 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           }, options = list(scrollX = TRUE))
 
+          output$segm_var_table <- DT::renderDataTable({
+
+            getFeatureDf(object = spata_object()) %>%
+              dplyr::select(barcodes, dplyr::all_of(x = getSegmentationNames(object)))
+
+          }, options = list(scrollX = TRUE))
+
           output$orientation_plot <- shiny::renderPlot({
 
             final_orientation_plot()
@@ -2986,6 +3026,16 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
           })
 
           output$plot_bg <- shiny::renderPlot({
+
+            if(highlight()){
+
+              col <- ggplot2::alpha("orange", 0.5)
+
+            } else {
+
+              col <- NA
+
+            }
 
             plotSurfaceBase(
               object = object,
@@ -2997,52 +3047,44 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
               display_image = TRUE,
               display_axes = FALSE,
               highlight_barcodes = encircled_barcodes(),
-              highlight_color = "orange",
+              highlight_color = col,
               xrange = xrange(),
               yrange = yrange(),
               mai = mai_vec,
               verbose = FALSE
             )
 
+            # reactive
+            if(!purrr::is_empty(segment())){
+
+              graphics::polypath(
+                x = concatenate_polypaths(segment(), axis = "x"),
+                y = concatenate_polypaths(segment(), axis = "y"),
+                col = col,
+                lwd = input$linesize,
+                lty = "solid"
+              )
+
+            }
+
           })
 
           output$plot_sm <- shiny::renderPlot({
 
-            if(!highlighted()){
-
-              graphics::par(pty = "s", mai = mai_vec)
-              graphics::plot(
-                x = polygon_vals$x,
-                y = polygon_vals$y,
-                type = "l",
-                xlim = xrange(),
-                ylim = yrange(),
-                xlab = NA_character_,
-                ylab = NA_character_,
-                lwd = input$linesize,
-                axes = FALSE,
-                main = main()
-              )
-
-            } else if(highlighted()){
-
-              graphics::par(pty = "s", mai = mai_vec)
-              graphics::plot(
-                x = NULL,
-                y = NULL,
-                xlim = xrange(),
-                ylim = yrange(),
-                xlab = NA_character_,
-                ylab = NA_character_,
-                axes = FALSE
-              )
-              graphics::polygon(
-                x = polygon_vals$x,
-                y = polygon_vals$y,
-                lwd = input$linesize
-              )
-
-            }
+            graphics::par(pty = "s", mai = mai_vec)
+            graphics::plot(
+              x = polygon_vals$x,
+              y = polygon_vals$y,
+              type = "l",
+              lwd = input$linesize,
+              xlim = xrange(),
+              ylim = yrange(),
+              xlab = NA_character_,
+              ylab = NA_character_,
+              #lwd = input$linesize,
+              axes = FALSE,
+              main = base::ifelse(test = drawing(), yes = "You are drawing", no = "")
+            )
 
           }, bg = "transparent")
 
@@ -3664,8 +3706,6 @@ createSpatialTrajectories <- function(object){
             trajectory_plot()
 
           })
-
-
 
 
         }))

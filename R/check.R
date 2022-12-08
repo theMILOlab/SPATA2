@@ -833,7 +833,7 @@ check_ias_input <- function(distance = NA_integer_,
     distance_ref <-
       as_unit(
         input = distance,
-        unit = ubw,
+        unit = ub,
         object = object,
         round = round
         )
