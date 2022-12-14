@@ -220,6 +220,7 @@ addFeatures <- function(object,
   confuns::check_none_of(
     input = feature_names,
     against = getGenes(object),
+    ref.input = "new features",
     ref.against = "gene names - must be renamed before being added"
   )
 
