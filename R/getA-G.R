@@ -523,7 +523,7 @@ getCnvGenesDf <- function(object, add_meta = TRUE){
 
 getCnvResults <- function(object, ...){
 
-  deprecate(...)
+  deprecated(...)
 
   check_object(object)
 
