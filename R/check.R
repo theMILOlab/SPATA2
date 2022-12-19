@@ -413,7 +413,9 @@ check_features <- function(object,
                            features,
                            valid_classes = NULL,
                            max_length = NULL,
-                           of_sample = NA){
+                           ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -421,7 +423,7 @@ check_features <- function(object,
 
   # -----
 
-  fnames <- getFeatureNames(object = object, of_sample = of_sample)
+  fnames <- getFeatureNames(object = object)
 
   # 2. Check if/how many features actually exist  ---------------------------
 

@@ -354,26 +354,35 @@ runBayesSpaceClustering <- function(object,
                                     assign_sce = NULL,
                                     seed = NULL,
                                     verbose = NULL,
-
                                     ...){
 
   deprecated(...)
 
   hlpr_assign_arguments(object)
 
-  confuns::is_vec(x = burn.in, of.length = 2)
-  confuns::is_vec(x = nrep, of.length = 2)
+  confuns::is_vec(x = burn.in, mode = "numeric", of.length = 2)
+  confuns::is_vec(x = nrep, mode = "numeric", of.length = 2)
 
-  platform <- getMethod(object)@name
+  platform <- getSpatialMethod(object)@name
 
   confuns::check_none_of(
     input = name,
     against = getFeatureNames(object),
+    ref.against = "feature names",
     overwrite = overwrite
   )
 
   # use asSingleCellExperiment
-  sce <- asSingleCellExperiment(object, "spot" = "barcodes")
+
+  if(base::is.null(directory_10X)){
+
+    sce <- asSingleCellExperiment(object, "spot" = "barcodes")
+
+  } else {
+
+    sce <- BayesSpace::readVisium(dirname = directory_10X)
+
+  }
 
   if(base::isTRUE(empty_remove)){
 
