@@ -8,7 +8,7 @@ plotTrajectoryEvaluation(
   object,
   id,
   variables,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins_circle = NA_integer_,
   model_subset = NULL,
   model_remove = NULL,

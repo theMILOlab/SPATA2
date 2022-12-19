@@ -976,7 +976,7 @@ getTrajectoryIds <- function(object){
 #' @inherit getSpatialTrajectory params
 #' @param binwidth Distance value. The width of the bins to which
 #' the barcode-spots are assigned. We recommend to set it equal to the center-center
-#' distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
+#' distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details
 #' of \code{?is_dist} for more information about distance values.
 #'
 #' @return Data.frame. (See details for more.)
@@ -1016,7 +1016,7 @@ getTrajectoryIds <- function(object){
 getTrajectoryScreeningDf <- function(object,
                                      id,
                                      variables,
-                                     binwidth = ccDist(object),
+                                     binwidth = getCCD(object),
                                      n_bins = NA_integer_,
                                      method_gs = "mean",
                                      normalize = TRUE,

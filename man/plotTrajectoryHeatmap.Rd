@@ -8,7 +8,7 @@ plotTrajectoryHeatmap(
   object,
   id,
   variables,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins = NA_integer_,
   arrange_rows = "none",
   colors = NULL,

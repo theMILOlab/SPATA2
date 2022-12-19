@@ -409,7 +409,7 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 
 #' @title Rename image annotation ID
 #'
-#' @description Renames image annotation created with \code{annotateImage()}.
+#' @description Renames image annotation created with \code{createImageAnnotations()}.
 #'
 #' @param id Character value. The current ID of the image annotation to be
 #' renamed.
@@ -419,7 +419,7 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 #' @return An updates spata object.
 #' @export
 #'
-renameImageAnnotationId <- function(object, id, new_id){
+renameImgAnn <- function(object, id, new_id){
 
   confuns::are_values(c("id", "new_id"), mode = "character")
 

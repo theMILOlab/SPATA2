@@ -564,6 +564,19 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
         traj@segment <-
           scale_coords_df(df = traj@segment, scale_fct = scale_fct)
 
+        scale_fct <- base::unique(scale_fct)
+
+        if(base::length(scale_fct) != 1){
+
+          warning(glue::glue("Can not scale projection length with scale factor of length 2."))
+
+        } else {
+
+          traj@projection[["projection_length"]] <-
+            traj@projection[["projection_length"]] * scale_fct
+
+        }
+
         return(traj)
 
       }
@@ -1394,7 +1407,7 @@ strongH5 <- function(text){
 # subset ------------------------------------------------------------------
 
 
-#' @title Simple subsetting by barcodes
+#' @title Subsetting by barcodes
 #'
 #' @description Removes unwanted barcode spots from the object without any significant
 #' post processing.
@@ -1415,9 +1428,11 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
+  bcs_keep <- barcodes
+
   object <-
     getFeatureDf(object) %>%
-    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     dplyr::mutate(
       dplyr::across(
         .cols = where(base::is.factor),
@@ -1428,28 +1443,18 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   object <-
     getCoordsDf(object) %>%
-    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     setCoordsDf(object, coords_df = .)
 
-  object@data[[1]] <-
-    purrr::map(
-      .x = object@data[[1]],
-      .f = function(mtr){
-
-        out <- mtr[,barcodes]
-
-        return(out)
-
-      }
-    )
+  object@data[[1]] <- purrr::map(.x = object@data[[1]], .f = ~ .x[, bcs_keep])
 
   object@images[[1]]@annotations <-
     purrr::map(
       .x = object@images[[1]]@annotations,
       .f = function(img_ann){
 
-        img_ann@barcodes <-
-          img_ann@barcodes[img_ann@barcodes %in% barcodes]
+        img_ann@misc$barcodes <-
+          img_ann@misc$barcodes[img_ann@misc$barcodes %in% bcs_keep]
 
         return(img_ann)
 
@@ -1462,7 +1467,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
       .f = function(traj){
 
         traj@projection <-
-          dplyr::filter(traj@projection, barcodes %in% {{barcodes}})
+          dplyr::filter(traj@projection, barcodes %in% {{bcs_keep}})
 
         return(traj)
 
@@ -1470,7 +1475,10 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
     )
 
   object@information$barcodes <-
-    object@information$barcodes[object@information$barcodes %in% barcodes]
+    object@information$barcodes[object@information$barcodes %in% bcs_keep]
+
+  object@information$subset$barcodes <-
+    c(barcodes, object@information$subset$barcodes)
 
   if(base::is.numeric(object@information$subsetted)){
 
@@ -1492,6 +1500,51 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
   return(object)
 
 }
+
+
+#' @title Subset by genes
+#'
+#' @description Removes genes from the data set. This affects count- and expression matrices
+#' and can drastically decrease object size.
+#'
+#' @param genes Character vector of gene names that are kept.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @note Gene dependent analysis results such as DEA or SPARKX
+#' are **not** subsetted. Stored results are kept as they are. To update them run
+#' the algorithms again.
+#'
+#' @export
+subsetByGenes <- function(object, genes, verbose = NULL){
+
+  confuns::check_one_of(
+    input = genes,
+    against = getGenes(object)
+  )
+
+  object@data[[1]] <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = function(mtr){
+
+
+
+        mtr[genes, ]
+
+
+        }
+    )
+
+  object@information$subset$genes <-
+    c(genes, object@information$subset$genes) %>%
+    base::unique()
+
+  return(object)
+
+}
+
 
 #' @rdname export
 subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NULL, verbose = TRUE){

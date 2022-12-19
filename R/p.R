@@ -539,7 +539,89 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 }
 
 
+process_sce_bayes_space <- function(sce,
+                                    spatialPreprocess = list(),
+                                    qTune = list(qs = 3:7),
+                                    spatialCluster = list(),
+                                    verbose = TRUE
+                                    ){
 
+  confuns::give_feedback(
+    msg = "Running BayesSpace::spatialPreprocess().",
+    verbose = verbose
+  )
+
+  sce <-
+    confuns::call_flexibly(
+      fn = "spatialPreprocess",
+      fn.ns = "BayesSpace",
+      default = list(
+        sce = sce,
+        log.normalize = TRUE,
+        skip.PCA = FALSE,
+        assay.type = "logcounts",
+        BSPARAM = BiocSingular::ExactParam()
+        )
+    )
+
+  if(base::is.numeric(spatialCluster$q)){
+
+    optimal_cluster <- spatialCluster$q[1]
+
+    spatialCluster$q <- NULL
+
+  } else if(base::length(qTune$qs) >= 2){
+
+    confuns::give_feedback(
+      msg = "Running BayesSpace::qTune().",
+      verbose = verbose
+    )
+
+    sce <-
+      confuns::call_flexibly(
+        fn = "qTune",
+        fn.ns = "BayesSpace",
+        default = list(sce = sce)
+      )
+
+    logliks <- base::attr(sce, "q.logliks")
+
+    optimal_cluster <-
+      akmedoids::elbow_point(
+        x = logliks$q,
+        y = logliks$loglik)$x %>%
+      base::round()
+
+    confuns::give_feedback(
+      msg = glue::glue("Calculated optimal input for `q`: {optimal_cluster}."),
+      verbose = verbose
+    )
+
+  } else if(base::length(qTune$qs) == 1){
+
+    optimal_cluster <- qTune$qs
+
+  } else {
+
+    stop("Need either `q` or `qs` as input.")
+
+  }
+
+  confuns::give_feedback(
+    msg = "Running BayesSpace::spatialCluster().",
+    verbose = verbose
+  )
+
+  sce <-
+    confuns::call_flexibly(
+      fn = "spatialCluster",
+      fn.ns = "BayesSpace",
+      default = list(sce = sce, q = optimal_cluster, use.dimred = "PCA")
+    )
+
+  return(sce)
+
+}
 
 
 #' @title Wrapper around Seurat processing functions

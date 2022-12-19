@@ -6,7 +6,6 @@
 \usage{
 runBayesSpaceClustering(
   object,
-  directory_10X = NULL,
   name = "bayes_space",
   n.Pcs = 15,
   n.HVGs = 2000,
@@ -14,10 +13,9 @@ runBayesSpaceClustering(
   log.normalize = TRUE,
   assay.type = "logcounts",
   BSPARAM = BiocSingular::ExactParam(),
-  qs = seq(3, 7),
+  qs = 3:7,
   burn.in = c(100, 1000),
   nrep = c(1000, 5000),
-  q = NULL,
   use.dimred = "PCA",
   d = 15,
   init.method = "mclust",
@@ -34,6 +32,7 @@ runBayesSpaceClustering(
   empty_remove = FALSE,
   overwrite = FALSE,
   assign_sce = NULL,
+  assign_envir = .GlobalEnv,
   seed = NULL,
   verbose = NULL,
   ...

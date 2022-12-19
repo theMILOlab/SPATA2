@@ -8,7 +8,7 @@ plotTrajectoryLineplotFitted(
   object,
   id,
   variable,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins = NA_integer_,
   model_subset = NULL,
   model_remove = NULL,

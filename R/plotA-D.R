@@ -609,6 +609,7 @@ setMethod(
 plotCnvHeatmap <- function(object,
                            across = NULL,
                            across_subset = NULL,
+                           relevel = NULL,
                            arm_subset = c("p", "q"),
                            chrom_subset = 1:22,
                            chrom_separate = 1:22,

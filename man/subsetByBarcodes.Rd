@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{subsetByBarcodes}
 \alias{subsetByBarcodes}
-\title{Simple subsetting by barcodes}
+\title{Subsetting by barcodes}
 \usage{
 subsetByBarcodes(object, barcodes, verbose = NULL)
 }

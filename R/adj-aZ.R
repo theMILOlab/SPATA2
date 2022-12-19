@@ -1447,7 +1447,9 @@ setMethod(
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
       dplyr::mutate(
         x = imagecol * scale_fct,
-        y = imagerow * scale_fct
+        y = imagerow * scale_fct,
+        col = base::as.integer(col),
+        row = base::as.integer(row)
       ) %>%
       dplyr::select(barcodes, x, y, dplyr::everything()) %>%
       tibble::as_tibble()
@@ -1668,7 +1670,7 @@ asSeurat <- function(object,
 #' @return An object of class `SingleCellExperiment`.
 #' @export
 
-asSingleCellExperiment <- function(object, ...){
+asSingleCellExperiment <- function(object, type = "none", ...){
 
     colData <-
       joinWith(
@@ -1682,6 +1684,16 @@ asSingleCellExperiment <- function(object, ...){
     base::rownames(colData) <- colData[["barcodes"]]
 
     dot_list <- list(...)
+
+    if(type == "BayesSpace"){
+
+      if(!"spot" %in% base::names(dot_list)){
+
+        dot_list[["spot"]] <- "barcodes"
+
+      }
+
+    }
 
     renaming <-
       confuns::keep_named(dot_list) %>%
@@ -1710,6 +1722,17 @@ asSingleCellExperiment <- function(object, ...){
 
     sce@metadata[["sample"]] <- getSampleName(object)
     sce@metadata[["origin_class"]] <- base::class(object)
+
+    if(type == "BayesSpace"){
+
+      sce@metadata[["BayesSpace.data"]] <-
+        list(
+          platform = getSpatialMethod(object)@name,
+          is.enhanced = FALSE
+        )
+
+    }
+
 
     if(containsImageObject(object)){
 

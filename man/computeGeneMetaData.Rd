@@ -5,13 +5,7 @@
 \alias{computeGeneMetaData2}
 \title{Compute gene summary statistics}
 \usage{
-computeGeneMetaData(
-  object,
-  mtr_name = NULL,
-  verbose = TRUE,
-  of_sample = NA,
-  ...
-)
+computeGeneMetaData(object, mtr_name = NULL, verbose = TRUE, ...)
 
 computeGeneMetaData2(expr_mtr, verbose = TRUE, ...)
 }
@@ -25,9 +19,6 @@ which one can refer to it in subsequent functions.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{psych::describe()}}
 

@@ -67,6 +67,7 @@ Collate:
     'deprecated_a-i.R'
     'deprecated_j-z.R'
     'dev.R'
+    'dev2.R'
     'documentation-dummies.R'
     'e.R'
     'f.R'

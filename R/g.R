@@ -1667,12 +1667,19 @@ ggpLayerZoom <- function(object = NULL,
                          yrange = NULL,
                          expand_x = c(0,0),
                          expand_y = c(0,0),
-                         round = 2
+                         round = 2,
+                         n_breaks = 5
                          ){
 
   if(base::any(is_dist_si(xrange), is_dist_si(yrange))){
 
     check_object(object)
+
+  }
+
+  if(base::length(n_breaks) == 1){
+
+    n_breaks <- base::rep(n_breaks, 2)
 
   }
 
@@ -1691,10 +1698,14 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_x_continuous(
-          limits = xrange,
-          expand = expand_x,
-          labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
+        list(
+          ggplot2::scale_x_continuous(
+            limits = xrange,
+            breaks = base::seq(xrange[1], xrange[2], length.out = n_breaks[1]),
+            expand = expand_x,
+            labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
+          ),
+          ggplot2::labs(x = glue::glue("x-coordinates [{xunit}]"))
         )
       )
 
@@ -1713,11 +1724,15 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_y_continuous(
-          limits = yrange,
-          expand = expand_y,
-          labels = ~ as_unit(input = .x, unit = yunit, object = object, unit = unit)
-          )
+        list(
+          ggplot2::scale_y_continuous(
+            limits = yrange,
+            breaks = base::seq(yrange[1], yrange[2], length.out = n_breaks[2]),
+            expand = expand_y,
+            labels = ~ as_unit(input = .x, unit = yunit, object = object, round = round)
+          ),
+          ggplot2::labs(y = glue::glue("y-coordinates [{yunit}]"))
+        )
       )
 
   }

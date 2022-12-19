@@ -320,7 +320,6 @@ runAutoencoderDenoising <- function(object,
 #' @export
 #'
 runBayesSpaceClustering <- function(object,
-                                    directory_10X = NULL,
                                     name = "bayes_space",
                                     # given to spatialPreprocess()
                                     n.Pcs = 15,
@@ -330,11 +329,10 @@ runBayesSpaceClustering <- function(object,
                                     assay.type = "logcounts",
                                     BSPARAM = BiocSingular::ExactParam(),
                                     # given to qTune()
-                                    qs = seq(3,7),
+                                    qs = 3:7,
                                     burn.in = c(100, 1000),
                                     nrep = c(1000, 5000),
                                     # given to spatialCluster()
-                                    q = NULL,
                                     use.dimred = "PCA",
                                     d = 15,
                                     init.method = "mclust",
@@ -352,28 +350,48 @@ runBayesSpaceClustering <- function(object,
                                     empty_remove = FALSE,
                                     overwrite = FALSE,
                                     assign_sce = NULL,
+                                    assign_envir = .GlobalEnv,
                                     seed = NULL,
                                     verbose = NULL,
-
                                     ...){
 
   deprecated(...)
 
   hlpr_assign_arguments(object)
 
-  confuns::is_vec(x = burn.in, of.length = 2)
-  confuns::is_vec(x = nrep, of.length = 2)
+  confuns::is_vec(x = burn.in, mode = "numeric", of.length = 2)
+  confuns::is_vec(x = nrep, mode = "numeric", of.length = 2)
 
-  platform <- getMethod(object)@name
+  platform <- getSpatialMethod(object)@name
 
   confuns::check_none_of(
     input = name,
     against = getFeatureNames(object),
+    ref.against = "feature names",
     overwrite = overwrite
   )
 
-  # use asSingleCellExperiment
-  sce <- asSingleCellExperiment(object, "spot" = "barcodes")
+  directory_10X <- object@information$initiation$input$directory_10X
+
+  if(base::is.character(directory_10X) & base::dir.exists(directory_10X)){
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading from {directory_10X}."),
+      verbose = verbose
+    )
+
+    sce <- BayesSpace::readVisium(dirname = directory_10X)
+
+    barcodes <- getBarcodes(object)
+
+    sce <- sce[,barcodes]
+
+  } else {
+
+    # use asSingleCellExperiment
+    sce <- asSingleCellExperiment(object, type = "BayesSpace")
+
+  }
 
   if(base::isTRUE(empty_remove)){
 
@@ -437,7 +455,7 @@ runBayesSpaceClustering <- function(object,
     verbose = verbose
   )
 
-  if(!base::is.numeric(q)){
+  if(base::length(qs) >= 2){
 
     bayes_space_out <-
       BayesSpace::qTune(
@@ -462,7 +480,7 @@ runBayesSpaceClustering <- function(object,
 
   } else {
 
-    optimal_cluster <- base::as.integer(q[1])
+    optimal_cluster <- base::as.integer(qs[1])
 
     confuns::give_feedback(
       msg = glue::glue("Using input for `q`: {optimal_cluster}."),
@@ -517,7 +535,9 @@ runBayesSpaceClustering <- function(object,
 
   if(base::is.character(assign_sce)){
 
-    assign(x = assign_sce, value = bayes_space_out, envir = .GlobalEnv)
+    print("assigning")
+    print(assign_envir)
+    assign(x = assign_sce, value = bayes_space_out, envir = assign_envir)
 
   }
 
@@ -1337,7 +1357,6 @@ runDEA <- function(object,
             Seurat::FindAllMarkers(
               object = seurat_object,
               test.use = method_de,
-              slot = "counts",
               base = base,
               ...
             )
@@ -1348,6 +1367,7 @@ runDEA <- function(object,
           object <-
             setDeaResultsDf(
               object = object,
+              grouping_variable = across,
               dea_results = dea_results,
               across = across,
               method_de = method_de,

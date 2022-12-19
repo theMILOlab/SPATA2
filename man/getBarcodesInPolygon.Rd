@@ -2,9 +2,12 @@
 % Please edit documentation in R/getA-G.R
 \name{getBarcodesInPolygon}
 \alias{getBarcodesInPolygon}
+\alias{getBarcodesInPolygonList}
 \title{Obtain barcodes in polygon}
 \usage{
 getBarcodesInPolygon(object, polygon_df, strictly = TRUE)
+
+getBarcodesInPolygonList(object, polygon_list, strictly = TRUE)
 }
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
@@ -16,6 +19,13 @@ in form of two variables: \emph{x} and \emph{y}.}
 interior to the polygon are returned. If \code{FALSE}, barcodes that are
 on the relative interior the polygon border or that are vertices themselves
 are returned, too.}
+
+\item{polygon_list}{A named list of data.frames with the numeric variables x and y.
+Observations correspond to the vertices of the polygons that confine spatial areas.
+Must contain a slot named \emph{outer} which sets the outer border of
+the spatial area. Can contain multiple slots named \emph{inner} (suffixed with numbers)
+that correspond to inner polygons - holes within the annotation. Like \emph{inner1},
+\emph{inner2}.}
 }
 \value{
 Character vector.

@@ -1054,9 +1054,12 @@ isFeature <- function(object, feature){
 }
 
 #' @export
-isFlipped <- function(object){
+isFlipped <- function(object, axis){
 
-  out <- getImageObject(object)@info$flipped
+  if(axis == "h"){ axis <- "horizontal"}
+  if(axis == "v"){ axis <- "vertical" }
+
+  out <- getImageInfo(object)$flipped[[axis]]
 
   base::isTRUE(out)
 

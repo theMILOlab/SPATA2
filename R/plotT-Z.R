@@ -3,7 +3,6 @@
 
 # plotT -------------------------------------------------------------------
 
-
 #' @title Plot categorical trajectory dynamics
 #'
 #' @description Displays discrete variables along a trajectory.
@@ -15,22 +14,28 @@
 #' @param display_trajectory_parts Logical. If set to TRUE the returned plot
 #' visualizes the parts in which the trajectory has been partitioned while beeing
 #' drawn.
-#' @inherit argument_dummy params
 #' @param ... Additional arguments given to \code{ggplot2::facet_wrap()}.
 #'
-#' @inherit ggplot_family return
+#' @inherit argument_dummy params
+#' @inherit plotIasLineplot params
+#' @inherit ggplot_dummy return
+#'
 #' @export
 plotTrajectoryBarplot <- function(object,
                                   id,
                                   grouping_variable,
-                                  binwidth = ccDist(object),
+                                  binwidth = getCCD(object),
+                                  unit = getSpatialMethod(object)@unit,
+                                  round = 2,
                                   clrp = NULL,
                                   clrp_adjust = NULL,
                                   display_trajectory_parts = NULL,
                                   position = "fill",
                                   scales = "free_x",
+                                  x_nth = 2,
+                                  expand_x = c(0.025, 0),
+                                  expand_y = c(0.0125, 0),
                                   verbose = NULL,
-                                  of_sample = NA,
                                   ...){
 
   deprecated(...)
@@ -38,11 +43,13 @@ plotTrajectoryBarplot <- function(object,
   # 1. Control --------------------------------------------------------------
 
   hlpr_assign_arguments(object)
-  check_trajectory_binwidth(binwidth)
 
-  of_sample <- check_sample(object, of_sample = of_sample, 1)
+  confuns::check_one_of(
+    input = grouping_variable,
+    against = getFeatureNames(object)
+  )
 
-  grouping_variable <- check_features(object, grouping_variable, valid_classes = c("character", "factor"), 1)
+  binwidth <- as_pixel(input = binwidth, object = object)[1]
 
   # -----
 
@@ -51,7 +58,14 @@ plotTrajectoryBarplot <- function(object,
 
   tobj <- getTrajectory(object, id = id)
 
-  joined_df <- joinWith(object, spata_df = tobj@projection,  features = grouping_variable)
+  joined_df <-
+    joinWith(
+      object = object,
+      spata_df = tobj@projection,
+      features = grouping_variable
+    )
+
+  binwidth <- as_pixel(input = binwidth, objet = object)
 
   plot_df <-
     dplyr::mutate(
@@ -60,9 +74,21 @@ plotTrajectoryBarplot <- function(object,
       trajectory_order = stringr::str_c(trajectory_part, proj_length_binned, sep = "_")
     )
 
-  plot_df$trajectory_order <-
-    plot_df$trajectory_order %>%
-    base::factor(levels = base::unique(plot_df$trajectory_order))
+  plot_df[["breaks"]] <-
+    base::factor(
+      x = plot_df[["trajectory_order"]],
+      levels = base::unique(plot_df[["trajectory_order"]])
+    )
+
+  breaks <-
+    base::unique(plot_df[["breaks"]]) %>%
+    reduce_vec(x = ., nth = x_nth)
+
+  labels <-
+    base::unique(plot_df[["proj_length_binned"]] + (binwidth/2)) %>%
+    as_unit(input = ., unit = unit, object = object) %>%
+    base::round(x = ., digits = round) %>%
+    reduce_vec(x = ., nth = x_nth)
 
   if(base::isTRUE(display_trajectory_parts)){
 
@@ -79,19 +105,35 @@ plotTrajectoryBarplot <- function(object,
 
   ggplot2::ggplot(data = plot_df) +
     ggplot2::geom_bar(
-      mapping = ggplot2::aes(x = trajectory_order, fill = .data[[grouping_variable]]),
+      mapping = ggplot2::aes(x = breaks, fill = .data[[grouping_variable]]),
       position = position,
-      width = 0.9) +
-    confuns::scale_color_add_on(aes = "fill", variable = plot_df[[grouping_variable]], clrp = clrp, clrp.adjust = clrp_adjust) +
+      width = 0.9
+      ) +
     facet_add_on +
+    ggplot2::scale_x_discrete(
+      breaks = breaks,
+      labels = labels,
+      expand = expand_x
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = c(0, 0.25, 0.5, 0.75, 1),
+      labels = stringr::str_c(c(0, 25, 50, 75, 100), "%"),
+      expand = expand_y
+    ) +
+    confuns::scale_color_add_on(
+      aes = "fill",
+      variable = plot_df[[grouping_variable]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.1, "inches"))),
+      axis.ticks = ggplot2::element_line(),
+      axis.line.x = trajectory.line.x,
+      axis.line.y = ggplot2::element_line(),
       panel.grid = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = "Trajectory Direction", y = NULL)
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL)
 
 }
 
@@ -117,7 +159,7 @@ plotTrajectoryBarplot <- function(object,
 plotTrajectoryEvaluation <- function(object,
                                      id,
                                      variables,
-                                     binwidth = ccDist(object),
+                                     binwidth = getCCD(object),
                                      n_bins_circle = NA_integer_,
                                      model_subset = NULL,
                                      model_remove = NULL,
@@ -224,7 +266,7 @@ plotTrajectoryEvaluation <- function(object,
 plotTrajectoryHeatmap <- function(object,
                                   id,
                                   variables,
-                                  binwidth = ccDist(object),
+                                  binwidth = getCCD(object),
                                   n_bins = NA_integer_,
                                   arrange_rows = "none",
                                   colors = NULL,
@@ -621,6 +663,8 @@ plotTrajectoryLineplot <- function(object,
 
   # 2. Data wrangling -------------------------------------------------------
 
+  binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+
   result_df <-
     getTrajectoryScreeningDf(
       object = object,
@@ -634,8 +678,8 @@ plotTrajectoryLineplot <- function(object,
       verbose = verbose
     ) %>%
     dplyr::mutate(
-      breaks = trajectory_order - 1,
-      breaks_dist = as_unit(input = breaks, unit = unit, object = object, round = round)
+      breaks = (trajectory_order - 1) * binwidth,
+      breaks_dist = as_unit(input = breaks, unit = unit, object = object)
     )
 
   if(base::isTRUE(display_trajectory_parts)){
@@ -678,22 +722,11 @@ plotTrajectoryLineplot <- function(object,
 
   # -----
 
-  bl_df <- dplyr::distinct(result_df, breaks, breaks_dist)
+  breaks <- reduce_vec(x = base::unique(result_df[["breaks"]]), nth = x_nth)
 
-  if(!base::is.numeric(breaks)){
-
-    breaks <- reduce_vec(x = base::unique(result_df[["breaks"]]), nth = x_nth)
-
-    labels <- reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth)
-
-  } else {
-
-    breaks <- base::as.integer(breaks)
-
-    labels <- bl_df[bl_df$breaks %in% breaks, "breaks_dist"]
-
-  }
-
+  labels <-
+    reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth) %>%
+    base::round(digits = round)
 
   ggplot2::ggplot(
     data = result_df,
@@ -713,15 +746,12 @@ plotTrajectoryLineplot <- function(object,
     ggplot2::theme(
       axis.line.x = ggplot2::element_line(
         arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
-        ),
+      ),
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_text(color = "black", size = 10)
     ) +
     ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL, color = "Variable") +
     facet_add_on
-
-
-
 
 }
 
@@ -752,7 +782,7 @@ plotTrajectoryLineplot <- function(object,
 plotTrajectoryLineplotFitted <- function(object,
                                          id,
                                          variable,
-                                         binwidth = ccDist(object),
+                                         binwidth = getCCD(object),
                                          n_bins = NA_integer_,
                                          model_subset = NULL,
                                          model_remove = NULL,

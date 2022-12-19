@@ -567,7 +567,7 @@ getCnvGenesDf <- function(object, add_meta = TRUE){
 
 getCnvResults <- function(object, ...){
 
-  deprecate(...)
+  deprecated(...)
 
   check_object(object)
 
@@ -650,6 +650,15 @@ getCoordsDf <- function(object, type = "both", ...){
   }
 
   coords_df$sample <- object@samples
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      dplyr::across(
+        .cols = dplyr::any_of(c("col", "row")),
+        .fns = base::as.integer
+      )
+    )
 
   joinWith <- confuns::keep_named(list(...))
 
@@ -1498,22 +1507,23 @@ getGeneFeatureNames <- function(object, mtr_name = NULL, of_sample = NA){
 #' @return A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.
 #' @export
 
-getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, of_sample = NA){
+getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, ...){
+
+  deprecated(...)
 
   check_object(object)
-  of_sample <- check_sample(object = object, of_sample = of_sample)
 
   if(base::is.null(mtr_name)){
 
-    mtr_name <- getActiveMatrixName(object, of_sample = of_sample)
+    mtr_name <- getActiveMatrixName(object )
 
   }
 
-  gdata <- object@gdata[[of_sample]][[mtr_name]]
+  gdata <- object@gdata[[1]][[mtr_name]]
 
   check_availability(
     test = (base::is.list(gdata) & !base::identical(gdata, list())),
-    ref_x = glue::glue("gene meta data for expression matrix '{mtr_name}' of sample '{of_sample}'"),
+    ref_x = glue::glue("gene meta data for expression matrix '{mtr_name}'.'"),
     ref_fns = "computeGeneMetaData() or addGeneMetaData()"
   )
 
@@ -1531,10 +1541,10 @@ getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, of_sample 
 
 #' @rdname getGeneMetaData
 #' @export
-getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
+getGeneMetaDf <- function(object, mtr_name = NULL){
 
-  getGeneMetaData(object = object, of_sample = of_sample, mtr_name = mtr_name, only_df = TRUE) %>%
-    tidyr::as_tibble()
+  getGeneMetaData(object = object, mtr_name = mtr_name, only_df = TRUE) %>%
+    tibble::as_tibble()
 
 }
 

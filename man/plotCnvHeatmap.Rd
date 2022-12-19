@@ -8,6 +8,7 @@ plotCnvHeatmap(
   object,
   across = NULL,
   across_subset = NULL,
+  relevel = NULL,
   arm_subset = c("p", "q"),
   chrom_subset = 1:22,
   chrom_separate = 1:22,
@@ -62,6 +63,10 @@ with a \emph{'-'}. (Saves writing if there are more groups you are interested in
 than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
+determines the order in which the groups of interest are displayed. Groups that
+are not included are dropped which affects the colors with which they are displayed.}
 
 \item{arm_subset}{Character vector. A combination of \emph{'p'} and/or \emph{'q'}.
 Denotes which chromosome arms are included. Defaults to both.}

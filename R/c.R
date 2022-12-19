@@ -207,39 +207,40 @@ computeCnvByChrArm <- function(object,
 #'
 #' @export
 
-computeGeneMetaData <- function(object, mtr_name = NULL, verbose = TRUE, of_sample = NA, ...){
+computeGeneMetaData <- function(object, mtr_name = NULL, verbose = TRUE, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object, of_sample, of.length = 1)
+  deprecated(...)
 
-  expr_mtr <- getExpressionMatrix(object,
-                                  of_sample = of_sample,
-                                  mtr_name = mtr_name,
-                                  verbose = verbose)
+  expr_mtr <- getExpressionMatrix(object = object, verbose = verbose)
 
   if(base::is.null(mtr_name)){
 
-    mtr_name <- getActiveMatrixName(object, of_sample = of_sample)
+    mtr_name <- getActiveMatrixName(object)
 
   }
 
-  meta_data <- computeGeneMetaData2(expr_mtr = expr_mtr,
-                                    verbose = verbose,
-                                    ...)
+  meta_data <-
+    computeGeneMetaData2(
+      expr_mtr = expr_mtr,
+      verbose = verbose,
+      ...
+      )
 
-  object <- addGeneMetaData(object = object,
-                            of_sample = of_sample,
-                            meta_data_list = c(meta_data, "mtr_name" = mtr_name))
+  object <-
+    addGeneMetaData(
+      object = object,
+      meta_data_list = c(meta_data, "mtr_name" = mtr_name)
+      )
 
-  base::return(object)
+  return(object)
 
 }
 
 #' @rdname computeGeneMetaData
 #' @export
 computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
-
 
   confuns::give_feedback(
     msg = glue::glue("Calculating summary statistics for {base::nrow(expr_mtr)} genes."),
@@ -254,11 +255,60 @@ computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
   res_list <- list("df" = res_df, "describe_args" = list(...))
 
-  base::return(res_list)
+  return(res_list)
 
 }
 
+computeGeneNormality <- function(object, mtr_name = "scaled", verbose = NULL){
 
+  hlpr_assign_arguments(object)
+
+  if(nBarcodes(object) >= 5000){
+
+    stop("Number of barcode-spots must be below 5000.")
+
+  }
+
+  gene_meta_df <- getGeneMetaDf(object, mtr_name = mtr_name)
+
+  mtr <- getMatrix(object, mtr_name = mtr_name, verbose = FALSE)
+
+  pb <- confuns::create_progress_bar(total = nGenes(object))
+
+  gene_normality <-
+    purrr::map(
+      .x = base::rownames(mtr),
+      .f = purrr::safely(.f = function(gene){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
+
+        out <- stats::shapiro.test(x = base::as.numeric(mtr[gene,]))
+
+        data.frame(
+          genes = gene,
+          sw = out$statistic
+        )
+
+      }, otherwise = NA)
+    ) %>%
+    purrr::set_names(nm = base::rownames(mtr))
+
+  gns <-
+    purrr::keep(.x = gene_normality, .p = ~ base::is.data.frame(.x$result)) %>%
+    purrr::map_df(.f = ~ .x$result) %>%
+    tibble::as_tibble()
+
+  gene_meta_df <- dplyr::left_join(x = gene_meta_df, y = gns, by = "genes")
+
+  object@gdata[[1]][[mtr_name]][["df"]] <- gene_meta_df
+
+  return(object)
+
+}
 
 
 
@@ -497,3 +547,40 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
 }
 
+
+#' @title Subset object by x- and y-range
+#'
+#' @description Creates a subset of the original `SPATA2` object
+#' based on x- and y-range. Barcode-spots that fall into the
+#' rectangle given by `xrange` and `yrange` are kept.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`ggpLayerRect()`] to visualize the rectangle based on which
+#' the subsetting is done.
+#'
+#' @export
+#'
+cropSpataObject <- function(object, xrange, yrange, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  xrange <- as_pixel(input = xrange, object = object, add_attr = FALSE)
+  yrange <- as_pixel(input = yrange, object = object, add_attr = FALSE)
+
+  barcodes <-
+    dplyr::filter(
+      .data = getCoordsDf(object),
+      dplyr::between(x = x, left = base::min({{xrange}}), right = base::max({{xrange}})),
+      dplyr::between(x = y, left = base::min({{yrange}}), right = base::max({{yrange}}))
+    ) %>%
+    dplyr::pull(barcodes)
+
+  object_cropped <- subsetByBarcodes(object, barcodes = barcodes, verbose = verbose)
+
+  object_cropped@information$cropped <- list(xrange = xrange, yrange = yrange)
+
+  return(object_cropped)
+
+}

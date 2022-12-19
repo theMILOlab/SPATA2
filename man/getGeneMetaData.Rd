@@ -5,9 +5,9 @@
 \alias{getGeneMetaDf}
 \title{Obtain gene meta data}
 \usage{
-getGeneMetaData(object, mtr_name = NULL, only_df = FALSE, of_sample = NA)
+getGeneMetaData(object, mtr_name = NULL, only_df = FALSE, ...)
 
-getGeneMetaDf(object, mtr_name = NULL, of_sample = NA)
+getGeneMetaDf(object, mtr_name = NULL)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -16,9 +16,6 @@ getGeneMetaDf(object, mtr_name = NULL, of_sample = NA)
 
 \item{only_df}{Logical. If set to TRUE only the data.frame is returned.
 If set to FALSE (the default) the whole list is returned.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.
