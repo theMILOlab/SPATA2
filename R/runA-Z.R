@@ -669,7 +669,6 @@ runCnvAnalysis <- function(object,
                            cnv_prefix = "Chr",
                            save_infercnv_object = TRUE,
                            verbose = NULL,
-                           of_sample = NA,
                            CreateInfercnvObject = list(ref_group_names = "ref"),
                            require_above_min_mean_expr_cutoff = list(min_mean_expr_cutoff = 0.1),
                            require_above_min_cells_ref = list(min_cells_per_gene = 3),
@@ -691,7 +690,6 @@ runCnvAnalysis <- function(object,
   # 1. Control --------------------------------------------------------------
 
   hlpr_assign_arguments(object)
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.lenght = 1)
 
   confuns::are_values(c("save_infercnv_object"), mode = "logical")
 
@@ -719,10 +717,10 @@ runCnvAnalysis <- function(object,
   # 2. Data extraction ------------------------------------------------------
 
   # preparing object derived data
-  count_mtr <- getCountMatrix(object = object, of_sample = of_sample)
+  count_mtr <- getCountMatrix(object = object)
 
   obj_anno <-
-    getFeatureDf(object = object, of_sample = of_sample) %>%
+    getFeatureDf(object = object) %>%
     dplyr::select(barcodes, sample) %>%
     tibble::column_to_rownames(var = "barcodes")
 
@@ -1222,8 +1220,7 @@ runCnvAnalysis <- function(object,
   object <-
     setCnvResults(
       object = object,
-      cnv_list = cnv_res,
-      of_sample = of_sample
+      cnv_list = cnv_res
     )
 
   object <- computeCnvByChrArm(object, overwrite = TRUE)
@@ -1272,8 +1269,9 @@ runDEA <- function(object,
                    verbose = NULL,
                    base = 2,
                    fc_name = NULL,
-                   of_sample = NA,
                    ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
@@ -1283,7 +1281,7 @@ runDEA <- function(object,
     check_features(object = object, valid_classes = c("factor"), features = across)
 
   # adjusting
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
+  of_sample <- check_sample(object, desired_length = 1)
 
   for(across in valid_across){
 
@@ -1295,10 +1293,7 @@ runDEA <- function(object,
         base::tryCatch({
 
           # make sure across-input is valid
-          groups <- getFeatureVariables(object = object,
-                                        features = across,
-                                        of_sample = of_sample,
-                                        return = "vector")
+          groups <- getGroupNames(object = object, grouping_variable = across)
 
           # make sure that across-input is passed as a factor
 
@@ -1327,9 +1322,9 @@ runDEA <- function(object,
           # De analysis ----------------------------------------------------------
 
           # prepare seurat object
-          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object, of_sample = of_sample))
+          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object))
 
-          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, of_sample = of_sample, verbose = FALSE)
+          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, verbose = FALSE)
 
           seurat_object@meta.data$orig.ident <- groups
 
@@ -1342,7 +1337,6 @@ runDEA <- function(object,
             Seurat::FindAllMarkers(
               object = seurat_object,
               test.use = method_de,
-              slot = "counts",
               base = base,
               ...
             )

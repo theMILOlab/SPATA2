@@ -198,8 +198,8 @@ addFeatures <- function(object,
                         feature_df,
                         feature_names = NULL,
                         key_variable = "barcodes",
-                        overwrite = FALSE,
-                        of_sample = NA){
+                        overwrite = FALSE
+                        ){
 
   # 1. Control --------------------------------------------------------------
   check_object(object)
@@ -237,8 +237,6 @@ addFeatures <- function(object,
     ref.input = "specified feature names",
     ref.against = "variables of provided feature data.frame")
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
   if(key_variable  == "barcodes"){
 
     confuns::check_data_frame(df = feature_df,
@@ -258,7 +256,7 @@ addFeatures <- function(object,
 
   # 2. Extract and compare --------------------------------------------------
 
-  existing_fnames <- getFeatureNames(object = object, of_sample = of_sample)
+  existing_fnames <- getFeatureNames(object = object)
 
   # throw error if there intersecting feature names and overwrite is FALSE
   if(base::any(feature_names %in% existing_fnames) && !base::isTRUE(overwrite)){
@@ -290,13 +288,13 @@ addFeatures <- function(object,
     overwrite_features <- existing_fnames[existing_fnames %in% feature_names]
 
     fdata <-
-      getFeatureDf(object, of_sample = of_sample) %>%
+      getFeatureDf(object) %>%
       dplyr::select(-dplyr::all_of(overwrite_features))
 
     #
   } else {
 
-    fdata <- getFeatureDf(object, of_sample = of_sample)
+    fdata <- getFeatureDf(object)
 
   }
 
@@ -304,7 +302,7 @@ addFeatures <- function(object,
   if(key_variable == "coordinates"){
 
     coords_df <-
-      getCoordsDf(object, of_sample = of_sample) %>%
+      getCoordsDf(object) %>%
       purrr::map_at(.at = c("x", "y"), .f = function(i){ base::round(i, digits = 0)}) %>%
       purrr::map_df(.f = function(i){ return(i) })
 
@@ -339,7 +337,7 @@ addFeatures <- function(object,
                        by = c("x", "y")) %>%
       dplyr::select(-x, -y)
 
-    object <- setFeatureDf(object = object, feature_df = new_feature_df, of_sample = of_sample)
+    object <- setFeatureDf(object = object, feature_df = new_feature_df)
 
     # join over coordinates
   } else if(key_variable == "barcodes") {
@@ -369,7 +367,7 @@ addFeatures <- function(object,
         by = "barcodes"
       )
 
-    object <- setFeatureDf(object = object, feature_df = new_feature_df, of_sample = of_sample)
+    object <- setFeatureDf(object = object, feature_df = new_feature_df)
 
   }
 

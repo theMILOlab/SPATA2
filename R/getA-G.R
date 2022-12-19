@@ -1096,7 +1096,7 @@ getExpressionMatrix <- function(object,
   confuns::give_feedback(msg = glue::glue("Using expression matrix '{active_mtr}'."), verbose = verbose)
 
   expr_mtr <-
-    object@data[[of_sample]][[active_mtr]] %>%
+    object@data[[1]][[active_mtr]] %>%
     base::as.matrix()
 
   return(expr_mtr)
@@ -1112,8 +1112,9 @@ getExpressionMatrix <- function(object,
 
 getExpressionMatrixNames <- function(object, ...){
 
-  check_object(object)
+  deprecated(...)
 
+  check_object(object)
 
   mtr_names <-
     object@data[[1]] %>% base::names() %>%
@@ -1142,18 +1143,19 @@ getExpressionMatrixNames <- function(object, ...){
 #' @return The feature data data.frame of the specified object and sample(s).
 #' @export
 
-getFeatureDf <- function(object, of_sample = NA){
+getFeatureDf <- function(object, ...){
+
+  deprecated(...)
 
   check_object(object)
-  of_sample <- check_sample(object, of_sample)
 
   fdata <-
-    object@fdata[[of_sample]] %>%
+    object@fdata[[1]] %>%
     tibble::as_tibble()
 
   if(base::is.null(fdata) | base::nrow(fdata) == 0){
 
-    stop(glue::glue("Could not find feature data for sample '{of_sample}'."))
+    stop(glue::glue("Could not find feature data."))
 
   }
 
@@ -1173,14 +1175,14 @@ getFeatureDf <- function(object, of_sample = NA){
 #' @return A named character vector of the variables in the feature data slot.
 #' @export
 
-getFeatureNames <- function(object, of_class = NULL, of_sample = NA){
+getFeatureNames <- function(object, of_class = NULL, ...){
+
+  deprecated(...)
 
   check_object(object)
   confuns::is_vec(x = of_class, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  feature_df <- getFeatureDf(object = object, of_sample = of_sample)
+  feature_df <- getFeatureDf(object = object)
 
   feature_names <- base::colnames(feature_df)
 
