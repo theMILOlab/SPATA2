@@ -138,6 +138,7 @@ getIasDf <- function(object,
                      remove_circle_bins = FALSE,
                      remove_angle_bins = FALSE,
                      rename_angle_bins = FALSE,
+                     bcsp_exclude = NULL,
                      drop = TRUE,
                      verbose = NULL,
                      ...){
@@ -179,6 +180,7 @@ getIasDf <- function(object,
       binwidth = binwidth,
       n_bins_circle = max_circles,
       remove = remove_circle_bins,
+      bcsp_exclude = bcsp_exclude,
       drop = drop[1]
     ) %>%
     bin_by_angle(
