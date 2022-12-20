@@ -416,7 +416,8 @@ plotIasHeatmap <- function(object,
       summarize_by = "bins_circle",
       summarize_with = summarize_with,
       remove_circle_bins = !include_area,
-      bcsp_exclude = bcsp_exclude
+      bcsp_exclude = bcsp_exclude,
+      verbose = verbose
     ) %>%
     tidyr::pivot_longer(
       cols = dplyr::any_of(variables),
