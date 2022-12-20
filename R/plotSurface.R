@@ -1073,7 +1073,8 @@ setMethod(
         rename_angle_bins = TRUE,
         bcsp_exclude = bcsp_exclude,
         drop = c(FALSE, TRUE),
-        summarize_by = FALSE
+        summarize_by = FALSE,
+        verbose = verbose
       )
 
     if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
