@@ -219,7 +219,8 @@ imageAnnotationScreening <- function(object,
       bcsp_exclude = bcsp_exclude,
       drop = FALSE,
       summarize_by = c("bins_circle", "bins_angle"),
-      normalize_by = normalize_by
+      normalize_by = normalize_by,
+      verbose = verbose
     )
 
   bins_angle <- base::levels(ias_df$bins_angle)
@@ -265,7 +266,7 @@ imageAnnotationScreening <- function(object,
 
         confuns::give_feedback(
           msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
-          verbose = TRUE
+          verbose = verbose
         )
 
         bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
