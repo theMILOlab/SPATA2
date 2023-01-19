@@ -165,7 +165,12 @@ setCoordsDf <- function(object, coords_df, ...){
   coords_df <- dplyr::mutate(.data = coords_df, sample = getSampleName(object))
 
   object@coordinates[[1]] <- coords_df
-  object@images[[1]]@coordinates <- coords_df
+
+  if(containsImageObject(object)){
+
+    object@images[[1]]@coordinates <- coords_df
+
+  }
 
   return(object)
 
@@ -221,6 +226,7 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
 
 # setD --------------------------------------------------------------------
 
+#' @export
 setDeaResultsDf <- function(object, dea_results, grouping_variable, method_de, ...){
 
   confuns::check_one_of(

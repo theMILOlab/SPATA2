@@ -8,6 +8,7 @@ plotSpatialTrajectories(
   object,
   ids = NULL,
   color_by = NULL,
+  alpha_by = NULL,
   method_gs = NULL,
   smooth = NULL,
   smooth_span = NULL,

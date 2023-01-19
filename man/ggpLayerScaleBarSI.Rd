@@ -80,12 +80,12 @@ with the input for argument \code{offset}. Argument \code{offset} is used to rep
 the scale bar away from the center into the corner specified in \code{sb_pos}. Thus,
 if \code{offset = c(0,0)}, the scale bar is positioned in the center of the plot
 regardless of the specification of \code{sb_pos}. Offset values specify the percentage
-of the distanec between the center of the plot and its limits. For instance,
-if \code{sb_pos = c(0.5, 0.75)} and \code{sb_pos = 'top_right'} to the right (50\% of the distance
-between the center the limits of the x-axis) and to the top (75\% of the distance between the center
-and the limits of the y-axis).
+of the distance between the center of the plot and its limits. For instance,
+if \code{sb_pos = c(0.5, 0.75)} and \code{sb_pos = 'top_right'} the scale bar is moved
+to the right (50\% of the distance between the center the limits of the x-axis)
+and to the top (75\% of the distance between the center and the limits of the y-axis).
 
-If numeric, \code{sb_pos} actually sets positioning of the segment (not the text).
+If numeric, \code{sb_pos} explicitly sets positioning of the segment (not the text).
 The text is automatically lifted such that it hovers over the segment. If this
 does not work or you want to manipulate the text positioning you can use arguments
 \code{text_nudge_x} and \code{text_nudge_y} or set the position precisely with \code{text_pos}.

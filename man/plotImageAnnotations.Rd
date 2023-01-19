@@ -12,6 +12,7 @@ plotImageAnnotations(
   expand = "25\%",
   square = TRUE,
   encircle = TRUE,
+  inner = TRUE,
   unit = "px",
   round = 2,
   line_color = "black",
@@ -63,6 +64,9 @@ Processing of the image output depending on argument \code{expand} happens after
 
 \item{encircle}{Logical value. If TRUE, a polygon is drawn around the
 exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.}
+
+\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
 
 \item{unit}{Character value. The unit in which the x- and y-axis text
 are displayed. Use \code{validUnitsOfLengthSI()} to obtain all valid input options.}

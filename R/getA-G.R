@@ -800,6 +800,7 @@ getDeaGenes <- function(object,
 #'
 #' @return Character value.
 #'
+#' @export
 
 getDeaLfcName <- function(object,
                           across = getDefaultGrouping(object) ,

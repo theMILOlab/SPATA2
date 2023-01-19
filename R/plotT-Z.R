@@ -332,7 +332,7 @@ plotTrajectoryHeatmap <- function(object,
       variables = variables,
       method_gs = method_gs
     ) %>%
-    summarize_projection_df(binwidth = binwidth, n_bins = n_bins, summarize_with = summarize_with) %>%
+    summarize_projection_df(binwidth = as_pixel(binwidth, object = object), n_bins = n_bins, summarize_with = summarize_with) %>%
     normalize_smrd_projection_df() %>%
     shift_smrd_projection_df(trajectory_part, trajectory_order)
 
@@ -621,6 +621,8 @@ plotTrajectoryHeatmap <- function(object,
 #' @param vlinetype Adjusts the type of the vertical lines that display the trajectory
 #' parts.
 #'
+#' @inherit ggpLayerLineplotAid params
+#'
 #' @inherit ggplot_family return
 #'
 #' @export
@@ -639,13 +641,18 @@ plotTrajectoryLineplot <- function(object,
                                    clrp_adjust = NULL,
                                    display_trajectory_parts = NULL,
                                    display_facets = NULL,
+                                   linecolor = NULL,
                                    linesize = 1.5,
                                    vlinecolor = "grey",
                                    vlinesize = 1,
                                    vlinetype = "dashed",
                                    x_nth = 1,
+                                   xi = NULL,
+                                   yi = NULL,
                                    expand_x = c(0,0),
                                    summarize_with = "mean",
+                                   ncol = NULL,
+                                   nrow = NULL,
                                    verbose = NULL,
                                    ...){
 
@@ -665,6 +672,8 @@ plotTrajectoryLineplot <- function(object,
 
   binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
 
+  vars <- base::unique(variables)
+
   result_df <-
     getTrajectoryScreeningDf(
       object = object,
@@ -679,7 +688,8 @@ plotTrajectoryLineplot <- function(object,
     ) %>%
     dplyr::mutate(
       breaks = (trajectory_order - 1) * binwidth,
-      breaks_dist = as_unit(input = breaks, unit = unit, object = object)
+      breaks_dist = as_unit(input = breaks, unit = unit, object = object),
+      variables = base::factor(variables, levels = vars)
     )
 
   if(base::isTRUE(display_trajectory_parts)){
@@ -710,7 +720,7 @@ plotTrajectoryLineplot <- function(object,
 
     facet_add_on <-
       list(
-        ggplot2::facet_wrap(facets = . ~ variables, ...),
+        ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow),
         ggplot2::theme(strip.background = ggplot2::element_blank(), legend.position = "none")
       )
 
@@ -728,14 +738,45 @@ plotTrajectoryLineplot <- function(object,
     reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth) %>%
     base::round(digits = round)
 
+  if(base::is.character(linecolor)){
+
+    clrp_adjust <-
+      base::rep(linecolor[1], base::length(vars)) %>%
+      purrr::set_names(nm = vars)
+
+    color_add_on <-
+      confuns::scale_color_add_on(
+        variable = result_df$variables,
+        clrp = clrp,
+        clrp.adjust = clrp_adjust,
+        guide = "none"
+        )
+
+  } else {
+
+    color_add_on <-
+      confuns::scale_color_add_on(
+        variable = result_df$variables,
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
+        )
+
+  }
+
   ggplot2::ggplot(
     data = result_df,
     mapping = ggplot2::aes(x = breaks, y = values, color = variables)
   ) +
+    ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi, ...) +
     trajectory_part_add_on +
-    ggplot2::geom_smooth(size = linesize, span = smooth_span, method = smooth_method, formula = y ~ x,
-                         se = smooth_se) +
-    confuns::scale_color_add_on(variable = result_df$variables, clrp = clrp, clrp.adjust = clrp_adjust) +
+    ggplot2::geom_smooth(
+      size = linesize,
+      span = smooth_span,
+      method = smooth_method,
+      se = smooth_se,
+      formula = y ~ x
+      ) +
+    color_add_on +
     ggplot2::scale_x_continuous(
       breaks = breaks,
       labels = labels,

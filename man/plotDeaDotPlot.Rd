@@ -16,6 +16,7 @@ plotDeaDotPlot(
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
   genes = NULL,
+  color_by = "avg_log2FC",
   alpha_by = NULL,
   alpha_trans = "identity",
   color_trans = "identity",

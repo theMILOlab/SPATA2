@@ -9,7 +9,8 @@ process_ranges(
   yrange = getImageRange(objet)$y,
   expand = 0,
   persp = "image",
-  object = NULL
+  object = NULL,
+  ranges = NULL
 )
 }
 \arguments{

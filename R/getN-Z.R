@@ -225,7 +225,7 @@ getProjectionDf <- function(object,
                             id,
                             ...){
 
-  traj_obj <- getTrajectoryObject(object = object, id = id)
+  traj_obj <- getTrajectory(object = object, id = id)
 
   if(base::is.character(list(...)[["variables"]])){
 

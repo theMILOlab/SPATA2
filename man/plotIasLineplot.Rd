@@ -37,7 +37,9 @@ plotIasLineplot(
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
-  x_nth = 1,
+  x_nth = 3,
+  xi = NULL,
+  yi = NULL,
   verbose = NULL,
   ...
 )
@@ -135,6 +137,10 @@ represents the border of the image annotation.}
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
+
+\item{xi}{Distance measures of where to add vertical lines.}
+
+\item{yi}{Expression values of where to add horizontal lines.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

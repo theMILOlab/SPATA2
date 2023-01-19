@@ -605,6 +605,7 @@ plotIasHeatmap <- function(object,
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
+#' @inherit ggpLayerLineplotAid params
 #'
 #' @inheritSection section_dummy Distance measures
 #'
@@ -642,7 +643,9 @@ plotIasLineplot <- function(object,
                             border_linecolor = "black",
                             border_linesize = 1,
                             border_linetype = "dashed",
-                            x_nth = 1,
+                            x_nth = 3,
+                            xi = NULL,
+                            yi = NULL,
                             verbose = NULL,
                             ...){
 
@@ -730,6 +733,15 @@ plotIasLineplot <- function(object,
 
   }
 
+
+  # is unit
+  bw_dist <-
+    as_unit(
+      input = ias_input$binwidth,
+      unit = unit,
+      object = object
+    )
+
   plot_df <-
     tidyr::pivot_longer(
       data = ias_df,
@@ -738,8 +750,9 @@ plotIasLineplot <- function(object,
       values_to = "values"
     ) %>%
     dplyr::mutate(
-      # bin 1 -> 0. 0 * dist = 0 for bin 1 -> no distance to img an
-      breaks = bins_order - 1,
+      # bin 1 -> 0. 0 * dist = 0 for first bin -> no distance to img an
+      breaks = (bins_order - 1),
+      breaks = as_pixel(input = (breaks * bw_dist), object = object), # multiply with binwidth to get actual distance
       variables = base::factor(variables, levels = {{variables}})
     )
 
@@ -781,16 +794,13 @@ plotIasLineplot <- function(object,
   # labels
   if(unit %in% validUnitsOfLength()){
 
-    # is unit
-    bw_dist <-
+    plot_df[["labels"]] <-
       as_unit(
-        input = ias_input$binwidth,
+        input = plot_df[["breaks"]],
         unit = unit,
         object = object,
         round = round
         )
-
-    plot_df[["labels"]] <- plot_df[["breaks"]] * bw_dist
 
     plot_df <-
       dplyr::mutate(
@@ -803,7 +813,7 @@ plotIasLineplot <- function(object,
         )
       )
 
-    xlab <-  glue::glue("Dist. to {id} [{unit}]")
+    xlab <-  glue::glue("Distance to '{id}' [{unit}]")
 
   } else {
 
@@ -856,7 +866,11 @@ plotIasLineplot <- function(object,
   # create line
   if(smooth_span == 0){
 
-    line_add_on <- ggplot2::geom_path(size = line_size)
+    line_add_on <-
+      ggplot2::geom_path(
+        size = line_size,
+        mapping = ggplot2::aes(color = .data[[facet_by]])
+        )
 
   } else {
 
@@ -866,7 +880,8 @@ plotIasLineplot <- function(object,
         span = smooth_span,
         method = smooth_method,
         formula = y ~ x,
-        se = smooth_se
+        se = smooth_se,
+        mapping = ggplot2::aes(color = .data[[facet_by]])
       )
 
   }
@@ -897,9 +912,17 @@ plotIasLineplot <- function(object,
     reduce_vec(nth = x_nth)
 
   # plot
-  ggplot2::ggplot(
+  p <-
+    ggplot2::ggplot(
     data = plot_df,
-    mapping = ggplot2::aes(x = breaks, y = values, color = .data[[facet_by]])
+    mapping = ggplot2::aes(x = breaks, y = values)
+    ) +
+    ggpLayerLineplotAid(
+      object = object,
+      xi = xi,
+      yi = yi,
+      l = as_pixel(ias_input$distance, object = object),
+      ...
     ) +
     line_add_on +
     confuns::scale_color_add_on(
@@ -919,6 +942,8 @@ plotIasLineplot <- function(object,
     facet_add_on +
     border_add_on +
     theme_add_on
+
+  return(p)
 
 }
 
@@ -1018,6 +1043,7 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' set to the ranges of the image that was cropped to display the image annotation.
 #'
 #' @inherit argument_dummy params
+#' @inherit ggpLayerImgAnnBorder params
 #'
 #' @details At first, the image section that contains the image annotation is
 #' cropped such that it only contains the extent of the polygon that represents
@@ -1118,6 +1144,7 @@ plotImageAnnotations <- function(object,
                                  expand = "25%",
                                  square = TRUE,
                                  encircle = TRUE,
+                                 inner = TRUE,
                                  unit = "px",
                                  round = 2,
                                  line_color = "black",
@@ -1169,6 +1196,12 @@ plotImageAnnotations <- function(object,
         if(base::isTRUE(encircle)){
 
           img_ann_sf <- getImgAnnSf(object, id = img_ann@id)
+
+          if(base::isFALSE(inner)){
+
+            img_ann_sf <- img_ann_sf["outer"]
+
+          }
 
           encircle_add_on <-
             ggplot2::geom_sf(

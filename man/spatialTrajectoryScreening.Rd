@@ -33,7 +33,7 @@ created. (See details for more.)}
 
 \item{binwidth}{Distance value. The width of the bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
+distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details
 of \code{?is_dist} for more information about distance values.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.

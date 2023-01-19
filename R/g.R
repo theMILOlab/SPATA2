@@ -154,7 +154,8 @@ ggpLayerAxesClean <- function(..., object = NULL){
   ggplot2::theme(
     axis.text = ggplot2::element_blank(),
     axis.ticks = ggplot2::element_blank(),
-    axis.title = ggplot2::element_blank()
+    axis.title = ggplot2::element_blank(),
+    ...
   )
 
 }
@@ -823,7 +824,9 @@ ggpLayerImage <- function(object = "object"){
 #' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
 #' with \code{createImageAnnotations()}.
 #'
-#' @param alpha,size Numeric values. Given to \code{ggplot2::geom_polygon()}.
+#' @param alpha,fill,size, Numeric values. Given to \code{ggplot2::geom_polygon()}.
+#' @param inner Logical value. If `FALSE`, only outer borders of the image annotation
+#' are displayed.
 #'
 #' @inherit getImageAnnotations params details
 #' @inherit ggpLayer_dummy return
@@ -842,6 +845,7 @@ ggpLayerImgAnnBorder <- function(object = "object",
                                  line_color = "black",
                                  line_size = 1.5,
                                  line_type = "solid",
+                                 inner = TRUE,
                                  ...){
 
         deprecated(...)
@@ -856,13 +860,22 @@ ggpLayerImgAnnBorder <- function(object = "object",
           .x = ids,
           .f = function(id){
 
+            df <- getImgAnnSf(object, id)
+
+            if(base::isFALSE(inner)){
+
+              df <- df["outer"]
+
+            }
+
             ggplot2::geom_sf(
-              data = getImgAnnSf(object, id),
+              data = df,
               size = line_size,
               color = line_color,
               linetype = line_type,
               alpha = alpha,
-              fill = fill
+              fill = fill,
+              ...
             )
 
           }
@@ -1155,6 +1168,74 @@ ggpLayerImgAnnPointer <- function(object,
 
 }
 
+
+#' @title Add horizontal and vertical lines
+#'
+#' @param xi Distance measures of where to add vertical lines.
+#' @param yi Expression values of where to add horizontal lines.
+#' @param ... Additional arguments given to `ggplot2::geom_h/vline()`
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+ggpLayerLineplotAid <- function(object, xi, yi = 0.5, l = NULL, id = NULL, ...){
+
+  if(base::is.null(l)){
+
+    l <- getTrajectoryLength(object, id = id, unit = "px")
+
+  }
+
+  mapping <- ggplot2::aes(x = x, y = y, xend = xend, yend = yend)
+
+  if(!base::is.null(yi)){
+
+    nyi <- base::length(yi)
+
+    df <-
+      base::data.frame(
+        x = base::rep(0, nyi),
+        xend = base::rep(l, nyi),
+        y = yi,
+        yend = yi
+      )
+
+    hlines <- ggplot2::geom_segment(data = df, mapping = mapping, ...)
+
+  } else {
+
+    hlines <- NULL
+
+  }
+
+  if(!base::is.null(xi)){
+
+    xi <- as_pixel(input = xi, object = object)
+
+    nxi <- base::length(xi)
+
+    df <-
+      base::data.frame(
+        x = xi,
+        xend = xi,
+        y = base::rep(0, nxi),
+        yend = base::rep(1, nxi)
+      )
+
+    vlines <- ggplot2::geom_segment(data = df, mapping = mapping, ...)
+
+  } else {
+
+    vlines <- NULL
+
+  }
+
+  out <- c(hlines, vlines)
+
+  return(out)
+
+}
+
 #' @title Add a rectangular to the plot
 #'
 #' @description Adds a rectangular to the plot.
@@ -1279,12 +1360,12 @@ ggpLayerRect <- function(object = "object",
 #' the scale bar away from the center into the corner specified in `sb_pos`. Thus,
 #' if `offset = c(0,0)`, the scale bar is positioned in the center of the plot
 #' regardless of the specification of `sb_pos`. Offset values specify the percentage
-#' of the distanec between the center of the plot and its limits. For instance,
-#' if `sb_pos = c(0.5, 0.75)` and `sb_pos = 'top_right'` to the right (50% of the distance
-#' between the center the limits of the x-axis) and to the top (75% of the distance between the center
-#' and the limits of the y-axis).
+#' of the distance between the center of the plot and its limits. For instance,
+#' if `sb_pos = c(0.5, 0.75)` and `sb_pos = 'top_right'` the scale bar is moved
+#' to the right (50% of the distance between the center the limits of the x-axis)
+#' and to the top (75% of the distance between the center and the limits of the y-axis).
 #'
-#' If numeric, `sb_pos` actually sets positioning of the segment (not the text).
+#' If numeric, `sb_pos` explicitly sets positioning of the segment (not the text).
 #' The text is automatically lifted such that it hovers over the segment. If this
 #' does not work or you want to manipulate the text positioning you can use arguments
 #' `text_nudge_x` and `text_nudge_y` or set the position precisely with `text_pos`.

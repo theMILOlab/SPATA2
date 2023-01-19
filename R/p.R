@@ -469,7 +469,15 @@ process_ranges <- function(xrange = getImageRange(object)$x,
                            yrange = getImageRange(objet)$y,
                            expand = 0,
                            persp = "image",
-                           object = NULL){
+                           object = NULL,
+                           ranges = NULL){
+
+  if(base::is.list(ranges)){
+
+    xrange <- ranges$x
+    yrange <- ranges$y
+
+  }
 
   # process input
   expand_input <- process_expand_input(expand)

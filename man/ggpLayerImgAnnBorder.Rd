@@ -14,6 +14,7 @@ ggpLayerImgAnnBorder(
   line_color = "black",
   line_size = 1.5,
   line_type = "solid",
+  inner = TRUE,
   ...
 )
 }
@@ -32,7 +33,10 @@ selection. See section \emph{Selection of image annotation with tags} for more i
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of image annotation with tags} for more information.}
 
-\item{alpha, size}{Numeric values. Given to \code{ggplot2::geom_polygon()}.}
+\item{alpha, fill, size, }{Numeric values. Given to \code{ggplot2::geom_polygon()}.}
+
+\item{inner}{Logical value. If \code{FALSE}, only outer borders of the image annotation
+are displayed.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

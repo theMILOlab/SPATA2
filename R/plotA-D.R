@@ -639,6 +639,7 @@ plotCnvHeatmap <- function(object,
                            border_color = "black",
                            border_size = 0.5,
                            clrp = NULL,
+                           clrp_adjust = NULL,
                            clrsp = "Blue-Red 3",
                            limits = NULL,
                            annotation_size_top = 0.0125,
@@ -867,7 +868,8 @@ plotCnvHeatmap <- function(object,
       scale_color_add_on(
         aes = "fill",
         variable = grouping_df[[across]],
-        clrp = clrp
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
       ) +
       ggplot2::scale_x_continuous(expand = c(0,0)) +
       ggplot2::scale_y_continuous(expand = c(0,0)) +
@@ -1489,6 +1491,7 @@ plotDeaDotPlot <- function(object,
                            n_highest_lfc = NULL,
                            n_lowest_pval = NULL,
                            genes = NULL,
+                           color_by = "avg_log2FC",
                            alpha_by = NULL,
                            alpha_trans = "identity",
                            color_trans = "identity",
@@ -1563,7 +1566,6 @@ plotDeaDotPlot <- function(object,
   }
 
   x <- lfc_name
-  color_by <- lfc_name
 
   if(base::isTRUE(by_group)){
 
@@ -2220,7 +2222,7 @@ plotDeaSummary <- function(object,
 #' @param label_genes Specify which genes are labeled in the plot. If numeric,
 #' specifies the number of genes that are labeled. E.g. if \code{label_genes} = 5,
 #' the default, the top 5 genes are labeled. If character, specifies the genes
-#' that are supposed to be labeled by name. If NULL, no genes are labeled.
+#' that are supposed to be labeled by name. If `NULL` or `FALSE`, no genes are labeled.
 #' @param use_pseudolog Logical value. If TRUE, avglogFC is transformed with log10. Requires
 #' package \code{ggallin} to be installed.
 #'
@@ -2251,11 +2253,6 @@ plotDeaVolcano <- function(object,
 
   hlpr_assign_arguments(object)
 
-  col_pval <- "p_val_adj"
-  col_logFC <- "avg_logFC"
-  col_genes <- "gene"
-  col_groups <- across
-
   # get data
   dea_df <-
     getDeaResultsDf(
@@ -2265,6 +2262,11 @@ plotDeaVolcano <- function(object,
       max_adj_pval = 1,
       min_lfc = NULL
     )
+
+  col_pval <- "p_val_adj"
+  col_logFC <- getDeaLfcName(object, across = across, method_de = method_de)
+  col_genes <- "gene"
+  col_groups <- across
 
   # create formula
   facet_formula <-
@@ -2307,7 +2309,7 @@ plotDeaVolcano <- function(object,
   dea_df[["pval_log10"]] <- -base::log10(dea_df[[col_pval]])
 
   # label genes if desired
-  if(!base::is.null(label_genes)){
+  if(!base::is.null(label_genes) & !base::isFALSE(label_genes)){
 
     if(base::is.character(label_genes)){
 

@@ -71,7 +71,7 @@ a p-value above are displayed as not significant.}
 \item{label_genes}{Specify which genes are labeled in the plot. If numeric,
 specifies the number of genes that are labeled. E.g. if \code{label_genes} = 5,
 the default, the top 5 genes are labeled. If character, specifies the genes
-that are supposed to be labeled by name. If NULL, no genes are labeled.}
+that are supposed to be labeled by name. If \code{NULL} or \code{FALSE}, no genes are labeled.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 

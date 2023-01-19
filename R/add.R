@@ -1069,7 +1069,8 @@ addSpatialTrajectory <- function(object,
       coords_df = coords_df,
       segment_df = segment_df,
       width = width
-    )
+    ) %>%
+    dplyr::select(barcodes, sample, x, y, projection_length, trajectory_part)
 
 
   if(containsImage(object)){

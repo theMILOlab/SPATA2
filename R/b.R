@@ -475,6 +475,8 @@ bin_by_expansion <- function(coords_df,
 #' @export
 bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
 
+  is_dist_pixel(input = binwidth, error = TRUE)
+
   if(base::is.numeric(binwidth)){
 
     binned_projection_df <-

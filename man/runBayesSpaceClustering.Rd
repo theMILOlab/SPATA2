@@ -15,7 +15,7 @@ runBayesSpaceClustering(
   BSPARAM = BiocSingular::ExactParam(),
   qs = 3:7,
   burn.in = c(100, 1000),
-  nrep = c(1000, 5000),
+  nrep = c(1000, 50000),
   use.dimred = "PCA",
   d = 15,
   init.method = "mclust",
@@ -44,10 +44,57 @@ runBayesSpaceClustering(
 \item{name}{Character value. The name the cluster variable has in
 the feature data of the \code{SPATA2} object. Defaults to \emph{bayes_space}.}
 
+\item{n.HVGs}{Number of highly variable genes to run PCA upon.}
+
+\item{skip.PCA}{Skip PCA (if dimensionality reduction was previously
+computed.)}
+
+\item{log.normalize}{Whether to log-normalize the input data with scater. May
+be omitted if log-normalization previously computed.}
+
+\item{assay.type}{Name of assay in \code{sce} containing normalized counts.
+Leave as "logcounts" unless you explicitly pre-computed a different
+normalization and added it to \code{sce} under another assay. Note that we
+do not recommend running BayesSpace on PCs computed from raw counts.}
+
+\item{BSPARAM}{A \linkS4class{BiocSingularParam} object specifying which
+algorithm should be used to perform the PCA. By default, an exact PCA is
+performed, as current spatial datasets are generally small (<10,000 spots).
+To perform a faster approximate PCA, please specify
+\code{FastAutoParam()} and set a random seed to ensure
+reproducibility.}
+
 \item{qs}{The values of q to evaluate.}
 
 \item{burn.in, nrep}{Integers specifying the range of repetitions to
 compute.}
+
+\item{use.dimred}{Name of a reduced dimensionality result in 
+\code{reducedDims(sce)}. If provided, cluster on these features directly.}
+
+\item{d}{Number of top principal components to use when clustering.}
+
+\item{init.method}{If \code{init} is not provided, cluster the top \code{d} 
+PCs with this method to obtain initial cluster assignments.}
+
+\item{model}{Error model. ('normal' or 't')}
+
+\item{gamma}{Smoothing parameter. Defaults to 2 for \code{platform="ST"} and
+3 for \code{platform="Visium"}. (Values in range of 1-3 seem to work well.)}
+
+\item{mu0}{Prior mean hyperparameter for mu. If not provided, mu0 is set to
+the mean of PCs over all spots.}
+
+\item{lambda0}{Prior precision hyperparam for mu. If not provided, lambda0
+is set to a diagonal matrix \eqn{0.01 I}.}
+
+\item{alpha}{Hyperparameter for Wishart distributed precision lambda.}
+
+\item{beta}{Hyperparameter for Wishart distributed precision lambda.}
+
+\item{save.chain}{If true, save the MCMC chain to an HDF5 file.}
+
+\item{chain.fname}{File path for saved chain. Tempfile used if not provided.}
 
 \item{prefix}{Character value. Prefix of the cluster groups.}
 

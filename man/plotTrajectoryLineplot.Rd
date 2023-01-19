@@ -20,13 +20,18 @@ plotTrajectoryLineplot(
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,
   display_facets = NULL,
+  linecolor = NULL,
   linesize = 1.5,
   vlinecolor = "grey",
   vlinesize = 1,
   vlinetype = "dashed",
   x_nth = 1,
+  xi = NULL,
+  yi = NULL,
   expand_x = c(0, 0),
   summarize_with = "mean",
+  ncol = NULL,
+  nrow = NULL,
   verbose = NULL,
   ...
 )
@@ -83,7 +88,13 @@ x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} i
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
 
+\item{xi}{Distance measures of where to add vertical lines.}
+
+\item{yi}{Expression values of where to add horizontal lines.}
+
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

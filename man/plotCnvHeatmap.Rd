@@ -38,6 +38,7 @@ plotCnvHeatmap(
   border_color = "black",
   border_size = 0.5,
   clrp = NULL,
+  clrp_adjust = NULL,
   clrsp = "Blue-Red 3",
   limits = NULL,
   annotation_size_top = 0.0125,
@@ -133,6 +134,11 @@ is TRUE.}
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{clrsp}{Character vector. The colorspectrum with which the tiles of the heatmap
 are colored. Should be one of \code{validColorSpectra()[[\emph{'Diverging'}]]}.}
