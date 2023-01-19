@@ -13,7 +13,7 @@ runBayesSpaceClustering(
   log.normalize = TRUE,
   assay.type = "logcounts",
   BSPARAM = BiocSingular::ExactParam(),
-  qs = 3:7,
+  qs = 3:10,
   burn.in = c(100, 1000),
   nrep = c(1000, 50000),
   use.dimred = "PCA",
@@ -64,7 +64,9 @@ To perform a faster approximate PCA, please specify
 \code{FastAutoParam()} and set a random seed to ensure
 reproducibility.}
 
-\item{qs}{The values of q to evaluate.}
+\item{qs}{The values of q to evaluate. If \code{qs} is only one value exactly
+that is given to \code{q} of \code{BayesSpace::spatialCluster()}. Else the optimal
+\code{q} from all provided values is identified using \code{BayesSpace::qTune()}.}
 
 \item{burn.in, nrep}{Integers specifying the range of repetitions to
 compute.}
@@ -129,7 +131,7 @@ by \emph{Zhao et al. 2021}.
 \details{
 This function is a wrapper around \code{readVisium()},
 \code{spatialPreprocess()}, \code{qTune()} and \code{spatialCluster()}
-of the BayesSpace package. The results are stored in form of a grouping
+of the \code{BayesSpace} package. The results are stored in form of a grouping
 variable in the feature data.frame of the returned \code{SPATA2} object.
 }
 \author{

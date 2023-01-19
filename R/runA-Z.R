@@ -295,6 +295,9 @@ runAutoencoderDenoising <- function(object,
 #' is assigned to the global environment. This makes the whole output
 #' of the bayes space pipeline available instead of only adding the clustering
 #' output as a grouping variable to the `SPATA2` object.
+#' @param qs The values of q to evaluate. If `qs` is only one value exactly
+#' that is given to `q` of `BayesSpace::spatialCluster()`. Else the optimal
+#' `q` from all provided values is identified using `BayesSpace::qTune()`.
 #'
 #' @inherit BayesSpace::readVisium params
 #' @inherit BayesSpace::qTune params
@@ -308,7 +311,7 @@ runAutoencoderDenoising <- function(object,
 #'
 #' @details This function is a wrapper around \code{readVisium()},
 #' \code{spatialPreprocess()}, \code{qTune()} and \code{spatialCluster()}
-#' of the BayesSpace package. The results are stored in form of a grouping
+#' of the `BayesSpace` package. The results are stored in form of a grouping
 #' variable in the feature data.frame of the returned \code{SPATA2} object.
 #'
 #' @author Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
@@ -331,7 +334,7 @@ runBayesSpaceClustering <- function(object,
                                     assay.type = "logcounts",
                                     BSPARAM = BiocSingular::ExactParam(),
                                     # given to qTune()
-                                    qs = 3:7,
+                                    qs = 3:10,
                                     burn.in = c(100, 1000),
                                     nrep = c(1000, 50000),
                                     # given to spatialCluster()
