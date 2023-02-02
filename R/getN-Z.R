@@ -951,7 +951,7 @@ getTrajectoryScreeningDf <- function(object,
 
   hlpr_assign_arguments(object)
 
-  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
+  binwidth <- as_pixel(input = binwidth, object = object, as_numeric = TRUE)
 
   check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
 
@@ -985,7 +985,8 @@ getTrajectoryScreeningDf <- function(object,
       verbose = verbose
     ) %>%
     dplyr::select(barcodes, dplyr::all_of(variables)) %>%
-    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes")
+    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes") %>%
+    dplyr::select(-dplyr::any_of(c("col", "row")))
 
   if(base::is.character(summarize_with)){
 
