@@ -301,9 +301,17 @@ containsCNV <- function(object){
 #' @export
 containsHistologyImage <- function(object){
 
-  img <- object@images[[1]]
+  if(base::length(object@images) == 0){
+  
+    out <- FALSE
+  
+  } else {
+        
+    img <- object@images[[1]]
 
-  out <- methods::is(object = img, class2 = "HistologyImage")
+    out <- methods::is(object = img, class2 = "HistologyImage")
+  
+  }
 
   return(out)
 
@@ -312,6 +320,8 @@ containsHistologyImage <- function(object){
 #' @export
 containsImage <- function(object){
 
+  if(base::length(object@images) == 0))
+  
   img <- object@images[[1]]
 
   dims <- base::dim(img@image)
@@ -325,20 +335,23 @@ containsImage <- function(object){
 #' @export
 containsImageObject <- function(object){
 
-  if(!is.null(object@images[[1]])){
-
-    out <-
-      base::any(
-        purrr::map_lgl(
-          .x = validImageClasses(),
-          .f = ~ methods::is(object@images[[1]], class2 = .x)
-        )
-      )
-
-  } else {
-
+  if(base::length(object@images) == 0){
+  
     out <- FALSE
-
+  
+  } else {
+  
+   if(!is.null(object@images[[1]])){
+     
+     out <- 
+      base::any(purrr::map_lgl(.x = validImageClasses(), .f = ~methods::is(object@images[[1]], class2 = .x)))
+     
+   } else {
+     
+     out <- FALSE
+     
+   }  
+  
   }
 
   return(out)
