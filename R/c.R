@@ -318,6 +318,25 @@ containsHistologyImage <- function(object){
 }
 
 #' @export
+containsImage <- function(object){
+
+  if(containsImageObject(object)){
+  
+    img <- object@images[[1]]
+    dims <- base::dim(img@image)
+    out <- !base::any(dims == 0)
+  
+  } else {
+    
+    out <- FALSE
+    
+  }
+  
+  return(out)
+
+}
+
+#' @export
 containsImageObject <- function(object){
 
   if(base::length(object@images) == 0){
