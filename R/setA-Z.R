@@ -167,8 +167,13 @@ setCoordsDf <- function(object, coords_df, of_sample = ""){
   coords_df <- dplyr::mutate(.data = coords_df, sample = {{of_sample}})
 
   object@coordinates[[of_sample]] <- coords_df
-  object@images[[of_sample]]@coordinates <- coords_df
-
+  
+  if(containsImageObject(object)){
+    
+    object@images[[of_sample]]@coordinates <- coords_df
+    
+  }
+  
   return(object)
 
 }
