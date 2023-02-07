@@ -42,6 +42,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
   object@autoencoder <- empty_list
   object@cnv <- empty_list
+  object@coordinates <- empty_list
   object@dea <- empty_list
   object@images <- empty_list
   object@spatial <- empty_list
