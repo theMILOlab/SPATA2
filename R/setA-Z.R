@@ -46,7 +46,7 @@ setActiveExpressionMatrix <- function(object, mtr_name, verbose = NULL, ...){
   confuns::is_value(x = mtr_name, mode = "character")
 
   # check if 'name' is slot in @data
-  mtr_names <- getExpressionMatrixNames(object = object, of_sample = of_sample)
+  mtr_names <- getExpressionMatrixNames(object = object)
 
   confuns::check_one_of(
     input = mtr_name,
