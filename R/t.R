@@ -869,13 +869,6 @@ transformSeuratToSpata <- function(seurat_object,
 
     confuns::is_value(x = coords_from, mode = "character", ref = "coords_from")
 
-    confuns::check_one_of(
-      input = coords_from,
-      against = seurat_coords_from_opts
-      , ref.input = "input for argument 'coords_from'"
-    )
-
-
     # get coordinates/ umap cell embedding
     coords_df <-
       getFromSeurat(
