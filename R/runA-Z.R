@@ -1316,7 +1316,7 @@ runDEA <- function(object,
 
           if(n_groups >= 20){
 
-            base::stop(glue::glue("The number of different groups is to high for DE-analysis. Is currently {n_groups}. Must be lower than 20. "))
+            base::warning(glue::glue("The number of different groups is to high for DE-analysis. Is currently {n_groups}. Should be lower than 20. "))
 
           } else if(n_groups < 2){
 
