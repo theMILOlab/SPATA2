@@ -1301,18 +1301,33 @@ runDEA <- function(object,
       object <-
         base::tryCatch({
 
-          # make sure across-input is valid
-          groups <- getGroupNames(object = object, grouping_variable = across)
+          # De analysis ----------------------------------------------------------
+
+          # prepare seurat object
+          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object))
+          
+          seurat_object@meta.data <-
+            getFeatureDf(object) %>%
+            tibble::column_to_rownames(var = "barcodes") %>%
+            base::as.data.frame()
+
+          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, verbose = FALSE)
+          
+          # convert grouping variable 
+           groups <-
+            purrr::set_names(
+              x = seurat_object@meta.data[[across]],
+              nm = base::rownames(seurat_object@meta.data) # set barcodes as names
+            )
 
           # make sure that across-input is passed as a factor
-
           if(!base::is.factor(groups)){
 
             groups <- base::factor(x = groups, levels = base::unique(groups))
 
           }
 
-          n_groups <- dplyr::n_distinct(groups)
+          n_groups <- base::levels(groups) %>% base::length()
 
           if(n_groups >= 20){
 
@@ -1327,19 +1342,9 @@ runDEA <- function(object,
             base::message(glue::glue("Number of groups/clusters: {n_groups}"))
 
           }
-
-          # De analysis ----------------------------------------------------------
-
-          # prepare seurat object
-          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object))
-
-          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, verbose = FALSE)
-
-          seurat_object@meta.data$orig.ident <- groups
-
-          seurat_object@active.ident <- seurat_object@meta.data[,"orig.ident"]
-
-          base::names(seurat_object@active.ident) <- base::rownames(seurat_object@meta.data)
+          
+          # set active identity
+          seurat_object@active.ident <- groups     
 
           # perform analysis and remove seurat object afterwards
           dea_results <-
