@@ -687,7 +687,7 @@ runCnvAnalysis <- function(object,
   result_dir <-
     stringr::str_c(directory_cnv_folder, "/", plot_cnv$output_filename, ".observations.txt")
 
-  results <- utils::read.table(result_dir)
+  results <- utils::read.table(result_dir, check.names = FALSE)
 
   bcs_object <-
     getFeatureDf(object) %>%
@@ -724,7 +724,6 @@ runCnvAnalysis <- function(object,
     base::as.data.frame() %>%
     tibble::rownames_to_column(var = "barcodes") %>%
     magrittr::set_colnames(value = cnames) %>%
-    dplyr::mutate(barcodes = stringr::str_replace_all(string = barcodes, pattern = "\\.", replacement = "-")) %>%
     dplyr::mutate(dplyr::across(dplyr::starts_with(match = cnv_prefix), .fns = base::as.numeric)) %>%
     tibble::as_tibble()
 
@@ -740,12 +739,6 @@ runCnvAnalysis <- function(object,
       )
 
   # cnv matrix
-  base::colnames(results) <-
-    stringr::str_replace_all(
-      string = base::colnames(results),
-      pattern = "\\.",
-      replacement = "-"
-      )
 
   cnv_mtr <- base::as.matrix(results)
 
