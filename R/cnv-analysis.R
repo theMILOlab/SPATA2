@@ -739,7 +739,6 @@ runCnvAnalysis <- function(object,
       )
 
   # cnv matrix
-
   cnv_mtr <- base::as.matrix(results)
 
   # cnv list
