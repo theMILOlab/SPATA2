@@ -989,7 +989,7 @@ plotSurfaceComparison2 <- function(coords_df,
 
 # plotSurfaceI ------------------------------------------------------------
 
-#' @title Visualize screening areaof IAS-algorithm
+#' @title Visualize screening area of IAS-algorithm
 #'
 #' @description Plots the surface of the sample three times with different
 #' coloring to visualize how \code{imageAnnotationScreening()} screens
@@ -1049,6 +1049,7 @@ setMethod(
                         display_bins_circle = TRUE,
                         ggpLayers = list(),
                         remove_circle_bins = FALSE,
+                        bcsp_exclude = NULL,
                         verbose = NULL,
                         ...){
 
@@ -1070,8 +1071,10 @@ setMethod(
         n_bins_angle = n_bins_angle,
         remove_circle_bins = remove_circle_bins,
         rename_angle_bins = TRUE,
+        bcsp_exclude = bcsp_exclude,
         drop = c(FALSE, TRUE),
-        summarize_by = FALSE
+        summarize_by = FALSE,
+        verbose = verbose
       )
 
     if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
@@ -1212,7 +1215,8 @@ setMethod(
         area_df = img_ann@area,
         binwidth = binwidth,
         n_bins_circle = max_circles,
-        remove = "Core"
+        remove = "Core",
+        bcsp_exclude = object@bcsp_exclude
       ) %>%
       bin_by_angle(
         center = img_ann_center,
