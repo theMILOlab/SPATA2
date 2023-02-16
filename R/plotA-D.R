@@ -593,7 +593,7 @@ setMethod(
 #'  \item{grouping:} The grouping annotation on the left side of the heatmap if \code{across} is not NULL.
 #'  }
 #'
-#' \code{ggpLayers} takes a list as input. Unnamed elements of the list are added
+#' \code{ggpLayers} takes a list as input. Unnamed elements of the listare added
 #' to all elements of the plot. E.g.: \code{ggpLayers} = \code{list(theme(legend.position = "none"))}
 #' removes all legends.
 #'
@@ -649,7 +649,6 @@ plotCnvHeatmap <- function(object,
                            verbose = NULL){
 
   hlpr_assign_arguments(object)
-
 
   # extract and prepare data ------------------------------------------------
 
@@ -799,16 +798,29 @@ plotCnvHeatmap <- function(object,
         .f = ~ c(.x, unnamed_elements) # add unnamed elements to each slot
       )
 
+    # add elements in slot 'all' to each slot
+    if(confuns::is_list(ggpLayers[["all"]])){
+
+      ggpLayers_add_on <-
+        purrr::map(
+          .x = ggpLayers_add_on,
+          .f = ~ c(., list(ggpLayers[["all"]]))
+        )
+
+    }
+
     # distribute named elements
+    ggpLayers[["all"]] <- NULL
     named_elements <- confuns::keep_named(ggpLayers)
 
     if(base::length(named_elements) >= 1){
 
       ggpLayers_add_on <-
         purrr::imap(
-          .x = named_elements, # iterate over named elements
-          .f = ~ list(.x, ggpLayers_add_on[[.y]]) # combine content with respective slot
-        )
+          .x = ggpLayers_add_on, # iterate over named elements
+          .f = ~ list(.x, named_elements[[.y]]) # combine content with respective slot
+        ) %>%
+        purrr::map(.f = ~ purrr::discard(.x = .x, .p = base::is.null))
 
     }
 
@@ -1540,7 +1552,7 @@ plotDeaDotPlot <- function(object,
     df <-
       dplyr::filter(df, gene %in% genes) %>%
       dplyr::mutate(
-        gene = base::factor(gene, levels = genes),
+        gene = base::factor(gene, levels = base::unique(genes)),
         {{lfc_name}} := base::round(!!rlang::sym(lfc_name), digits = 2)
       )
 
@@ -2223,6 +2235,10 @@ plotDeaSummary <- function(object,
 #' specifies the number of genes that are labeled. E.g. if \code{label_genes} = 5,
 #' the default, the top 5 genes are labeled. If character, specifies the genes
 #' that are supposed to be labeled by name. If `NULL` or `FALSE`, no genes are labeled.
+#' @param label_side Character vector. Decides on which side to label genes. Valid input
+#' are *'up'* and/or *'down'*.
+#' @param label_insignificant Logical value. If `FALSE`, insignifcant genes are
+#' not labeled.
 #' @param use_pseudolog Logical value. If TRUE, avglogFC is transformed with log10. Requires
 #' package \code{ggallin} to be installed.
 #'
@@ -2244,6 +2260,8 @@ plotDeaVolcano <- function(object,
                            threshold_logFC = 1,
                            threshold_pval = 0.01,
                            label_genes = 5,
+                           label_insignificant = TRUE,
+                           label_side = c("up", "down"),
                            label_size = 1,
                            nrow = NULL,
                            ncol = NULL,
@@ -2311,10 +2329,25 @@ plotDeaVolcano <- function(object,
   # label genes if desired
   if(!base::is.null(label_genes) & !base::isFALSE(label_genes)){
 
+    if(base::is.character(label_side)){
+
+      confuns::check_one_of(
+        input = label_side,
+        against = c("up", "down")
+      )
+
+    } else {
+
+      label_side <- NULL
+
+    }
+
+    # chose genes to be labeled by name
     if(base::is.character(label_genes)){
 
       label_df <- dplyr::filter(dea_df, !!rlang::sym(col_genes) %in% {{label_genes}})
 
+    # chose genes to be labeled by position in list
     } else if(base::is.numeric(label_genes)){
 
       if(base::is.character(col_groups)){
@@ -2364,6 +2397,29 @@ plotDeaVolcano <- function(object,
       label_df <- base::rbind(label_df1, label_df2)
 
     }
+
+    # decide if genes are labeled on upreg., downreg. or on both sides
+    if(base::length(label_side) != 2){
+
+      if("up" %in% label_side){
+
+        label_df <- dplyr::filter(label_df, !!rlang::sym(col_logFC) > 0)
+
+      } else if("down" %in% label_side){
+
+        label_df <- dplyr::filter(label_df, !!rlang::sym(col_logFC) < 0)
+
+      }
+
+    }
+
+    # decide if genes are labeled if insignificant
+    if(base::isFALSE(label_insignificant)){
+
+      label_df <- dplyr::filter(label_df, status != "Insignificant")
+
+    }
+
     label_add_on <-
       ggrepel::geom_text_repel(
         data = label_df,
@@ -2394,6 +2450,8 @@ plotDeaVolcano <- function(object,
 
   }
 
+  dea_df <- dplyr::arrange(dea_df, dplyr::desc(stats))
+
   # assemble final plot
   ggplot2::ggplot(
     data = dea_df,
@@ -2417,7 +2475,204 @@ plotDeaVolcano <- function(object,
 
 }
 
+#' @rdname plotDeaVolcano
+#' @export
+plotDeaVolcano1v1 <- function(object,
+                              across,
+                              method_de = NULL,
+                              clrp = NULL,
+                              clrp_adjust = NULL,
+                              color_insignif = "lightgrey",
+                              pt_alpha = 0.9,
+                              pt_size = 1,
+                              threshold_logFC = 1,
+                              threshold_pval = 0.01,
+                              col_pval = "p_val_adj",
+                              label_genes = 5,
+                              label_size = 1,
+                              use_pseudolog = FALSE,
+                              limits = NULL,
+                              display_title = TRUE,
+                              title_size = 2,
+                              digits = 2,
+                              ...){
 
+
+  hlpr_assign_arguments(object)
+
+  # get data
+  dea_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      method_de = method_de,
+      min_lfc = 0,
+      max_adj_pval = 1
+    )
+
+  group_names <- base::levels(dea_df[[across]])
+
+  g1 <- group_names[1]
+
+  if(base::length(group_names) != 2){
+
+    stop("Number of groups in grouping variable must be exactly 2.")
+
+  }
+
+  col_logFC <- getDeaLfcName(object, across = across, method_de = method_de)
+  col_genes <- "gene"
+
+  # denote significance and up/downregulation genes
+
+  neg_threshold_lgFC <- -threshold_logFC
+
+  dea_df <-
+    dplyr::mutate(
+      .data = dea_df,
+      group_names = base::as.character(!!rlang::sym(across)),
+      status = dplyr::if_else(
+        condition =
+          !!rlang::sym(col_pval) < {{threshold_pval}} &
+          !!rlang::sym(col_logFC) > {{threshold_logFC}},
+        true = group_names,
+        false = "x.insignif.x"
+      ),
+      status = base::factor(status),
+      !!rlang::sym(col_logFC) := dplyr::if_else(
+        condition = !!rlang::sym(across) == {{g1}},
+        true = !!rlang::sym(col_logFC)*-1,
+        false = !!rlang::sym(col_logFC)
+      )
+    )
+
+  dea_df[["pval_log10"]] <- -base::log10(dea_df[[col_pval]])
+
+  # label genes if desired
+  if(!base::is.null(label_genes) & !base::isFALSE(label_genes)){
+
+    if(base::is.character(label_genes)){
+
+      label_df <- dplyr::filter(dea_df, gene %in% {{label_genes}})
+
+    } else if(base::is.numeric(label_genes)){
+
+      dea_df <- dplyr::group_by(dea_df, !!rlang::sym(across))
+
+      if(base::length(label_genes) == 1){
+
+        label_genes <- base::rep(label_genes, 2)
+
+      }
+
+      if(label_genes[1] != 0){
+
+        label_df1 <-
+          dplyr::slice_min(
+            .data = dea_df,
+            order_by = !!rlang::sym(col_pval),
+            n = label_genes[1],
+            with_ties = FALSE
+          )
+
+      } else {
+
+        label_df1 <- NULL
+
+      }
+
+      if(label_genes[2] != 0){
+
+        label_df2 <-
+          dplyr::slice_min(
+            .data = dea_df,
+            order_by = !!rlang::sym(col_pval),
+            n = label_genes[2],
+            with_ties = FALSE
+          )
+
+      } else {
+
+        label_df2 <- NULL
+
+      }
+
+      label_df <-
+        base::rbind(label_df1, label_df2) %>%
+        dplyr::distinct()
+
+    }
+
+    label_add_on <-
+      ggrepel::geom_text_repel(
+        data = label_df,
+        mapping = ggplot2::aes(label = .data[[col_genes]]),
+        size = label_size,
+        ...
+      )
+
+  } else {
+
+    label_add_on <- NULL
+
+  }
+
+  if(base::isTRUE(use_pseudolog)){
+
+    scale_x_add_on <-
+      ggplot2::scale_x_continuous(
+        trans = ggallin::pseudolog10_trans
+      )
+
+    xlab <- stringr::str_c(col_logFC, "(pseudolog10)")
+
+  } else {
+
+    scale_x_add_on <- NULL
+    xlab <- col_logFC
+
+  }
+
+  if(!base::is.numeric(limits) | !base::length(limits) == 2){
+
+    limits <-
+      base::max(dea_df[[col_logFC]]) %>%
+      base::ceiling() %>%
+      c((-.), .)
+
+  }
+
+  # assemble final plot
+  ggplot2::ggplot(
+    data = dea_df,
+    mapping = ggplot2::aes(x = .data[[col_logFC]], y = pval_log10)
+  ) +
+    ggplot2::geom_point(
+      mapping = ggplot2::aes(color = status),
+      alpha = pt_alpha, size = pt_size
+    ) +
+    scale_color_add_on(
+      variable = dea_df[["status"]],
+      clrp = clrp,
+      clrp.adjust = c(clrp_adjust, "x.insignif.x" = color_insignif)
+    ) +
+    ggplot2::scale_x_continuous(
+      limits = limits,
+      labels = function(x){
+
+        base::round(x, digits = digits) %>%
+          base::as.character() %>%
+          stringr::str_remove(string = ., pattern = "^-")
+
+      }
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(x = xlab, y = "Adjusted p-value (-log10)", color = NULL) +
+    label_add_on +
+    scale_x_add_on
+
+
+}
 
 
 

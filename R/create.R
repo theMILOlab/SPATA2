@@ -457,17 +457,6 @@ create_model_df <- function(input,
 
   fns_input <- model_formulas
 
-  # select models of interest
-  if(base::is.character(model_subset)){
-
-    fns_input <-
-      confuns::lselect(
-        lst = fns_input,
-        dplyr::contains(model_subset)
-      )
-
-  }
-
   # remove unwanted models
   if(base::is.character(model_remove)){
 
@@ -475,7 +464,7 @@ create_model_df <- function(input,
       confuns::lselect(
         lst = fns_input,
         -dplyr::contains(model_remove),
-        out.fail =
+        out.fail = list()
       )
 
   }
@@ -524,6 +513,28 @@ create_model_df <- function(input,
 
   }
 
+  # select models of interest
+  if(base::is.character(model_subset)){
+
+    fns_input <-
+      confuns::lselect(
+        lst = fns_input,
+        dplyr::all_of(model_subset)
+      )
+
+  }
+
+  if(base::is.character(model_subset) & base::length(fns_numeric) >= 1){
+
+    fns_numeric <-
+      confuns::lselect(
+        lst = fns_numeric,
+        dplyr::all_of(model_subset)
+      )
+
+  }
+
+  # create model df
   n_models <- base::length(fns_input) + base::length(fns_numeric)
 
   confuns::give_feedback(
@@ -1602,7 +1613,7 @@ createImageAnnotations <- function(object, ...){
 #' @export
 
 createHistologyImaging <- function(image,
-                                   id,
+                                   id = 'imageid',
                                    img_scale_fct = 1,
                                    meta = list(),
                                    pxl_scale_fct = NULL,

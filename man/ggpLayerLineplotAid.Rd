@@ -9,9 +9,9 @@ ggpLayerLineplotAid(object, xi, yi = 0.5, l = NULL, id = NULL, ...)
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{xi}{Distance measures of where to add vertical lines.}
+\item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
 
-\item{yi}{Expression values of where to add horizontal lines.}
+\item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
 
 \item{...}{Additional arguments given to \code{ggplot2::geom_h/vline()}}
 }

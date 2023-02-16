@@ -40,6 +40,7 @@ plotIasLineplot(
   x_nth = 3,
   xi = NULL,
   yi = NULL,
+  model_aid = NULL,
   verbose = NULL,
   ...
 )
@@ -138,9 +139,9 @@ x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} i
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
 
-\item{xi}{Distance measures of where to add vertical lines.}
+\item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
 
-\item{yi}{Expression values of where to add horizontal lines.}
+\item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

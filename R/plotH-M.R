@@ -105,6 +105,7 @@ plotIasBarplot <- function(object,
                            border_linesize = 1,
                            border_linetype = "dashed",
                            x_nth = 1,
+                           bcsp_exclude = NULL,
                            verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -128,6 +129,7 @@ plotIasBarplot <- function(object,
       n_bins_circle = n_bins_circle,
       summarize_by = FALSE,
       remove_circle_bins = !include_area,
+      bcsp_exclude = bcsp_exclude,
       verbose = verbose
     ) %>%
     joinWith(
@@ -262,6 +264,7 @@ plotIasBarplot <- function(object,
 #'
 #' @inherit imageAnnotationScreening params
 #' @inherit plotScatterplot params
+#' @inherit plot_screening_evaluation
 #' @inherit argument_dummy params
 #' @param display_corr Logical. If TRUE, correlation values are added to the plots.
 #' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
@@ -298,6 +301,11 @@ plotIasEvaluation <- function(object,
                               corr_pos_y = NULL,
                               corr_text_sep = "\n",
                               corr_text_size = 1,
+<<<<<<< HEAD
+                              force_grid = FALSE,
+=======
+                              bcsp_exclude = NULL,
+>>>>>>> 50a87dd6a1aabb82c26ab1d6606eb2cb9b9d6f83
                               verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -312,7 +320,8 @@ plotIasEvaluation <- function(object,
       variables = variables,
       remove_circle_bins = "Core",
       summarize_by = "bins_circle",
-      normalize_by = "sample"
+      normalize_by = "sample",
+      bcsp_exclude = bcsp_exclude
     )
 
 
@@ -335,6 +344,7 @@ plotIasEvaluation <- function(object,
     corr_pos_y = corr_pos_y,
     corr_text_sep = corr_text_sep,
     corr_text_size = corr_text_size,
+    force_grid = force_grid,
     verbose = verbose
   )
 
@@ -374,6 +384,7 @@ plotIasHeatmap <- function(object,
                            .cols = dplyr::everything(),
                            summarize_with = "mean",
                            .f = NULL,
+                           bcsp_exclude = NULL,
                            include_area = FALSE,
                            display_border = FALSE,
                            border_linealpha = 0.75,
@@ -410,7 +421,9 @@ plotIasHeatmap <- function(object,
       variables = variables,
       summarize_by = "bins_circle",
       summarize_with = summarize_with,
-      remove_circle_bins = !include_area
+      remove_circle_bins = !include_area,
+      bcsp_exclude = bcsp_exclude,
+      verbose = verbose
     ) %>%
     tidyr::pivot_longer(
       cols = dplyr::any_of(variables),
@@ -634,6 +647,7 @@ plotIasLineplot <- function(object,
                             facet_by = "variables",
                             normalize_by = "sample",
                             summarize_with = "mean",
+                            bcsp_exclude = NULL,
                             nrow = NULL,
                             ncol = NULL,
                             display_axis_text = "x",
@@ -646,6 +660,7 @@ plotIasLineplot <- function(object,
                             x_nth = 3,
                             xi = NULL,
                             yi = NULL,
+                            model_aid = NULL,
                             verbose = NULL,
                             ...){
 
@@ -709,6 +724,7 @@ plotIasLineplot <- function(object,
       remove_angle_bins = TRUE,
       remove_circle_bins = !include_area,
       normalize = c(FALSE, FALSE),
+      bcsp_exclude = bcsp_exclude,
       verbose = verbose
     )
 
@@ -911,6 +927,39 @@ plotIasLineplot <- function(object,
     base::unique() %>%
     reduce_vec(nth = x_nth)
 
+  # add model to background
+
+  if(!base::is.null(model_aid)){
+
+    model <- model_aid[["model"]]
+
+    mdf <-
+      create_model_df(
+        input = dplyr::n_distinct(plot_df[["breaks"]])
+      ) %>%
+      dplyr::select(!!rlang::sym(model)) %>%
+      purrr::set_names(nm = "values") %>%
+      dplyr::mutate(
+        breaks = base::unique(plot_df[["breaks"]])
+      )
+
+    params <- model_aid[["params"]]
+
+    model_add_on <-
+      ggplot2::layer(
+        geom = ggplot2::GeomLine,
+        stat = "identity",
+        position = "identity",
+        data = mdf,
+        params = params
+      )
+
+  } else {
+
+    model_add_on <- NULL
+
+  }
+
   # plot
   p <-
     ggplot2::ggplot(
@@ -924,6 +973,7 @@ plotIasLineplot <- function(object,
       l = as_pixel(ias_input$distance, object = object),
       ...
     ) +
+    model_add_on +
     line_add_on +
     confuns::scale_color_add_on(
       variable = plot_df[[facet_by]],
@@ -947,6 +997,207 @@ plotIasLineplot <- function(object,
 
 }
 
+
+
+
+#' @title Plot IAS model fitting
+#'
+#' @description Plots an IAS lineplot in combination with models
+#' fitted to the binned distance towards the image annotation.
+#'
+#' @param area_alpha Numeric value. The alpha value for the area under the curve
+#' of the resiudals.
+#' @param linecolors,linetypes The colors and types of the three lines. First value stands for the
+#' values of the variable, second on for the models, third one for the residuals.
+#' @param display_residuals Logical value. If TRUE, the residuals curve is displayed.
+#'
+#' @inherit plotSurfaceIAS
+#' @inherit argument_dummy params
+#' @inherit getSpatialTrajectoryIds params
+#' @inherit add_models params
+#' @inherit variable_num params
+#'
+#' @inherit ggplot_dummy return
+#'
+#' @export
+#'
+plotIasLineplotFitted <- function(object,
+                                  id,
+                                  variables,
+                                  distance,
+                                  binwidth = getCCD(object),
+                                  n_bins = NA_integer_,
+                                  model_subset = NULL,
+                                  model_remove = NULL,
+                                  model_add = NULL,
+                                  method_gs = NULL,
+                                  lineorder = c(1,2,3),
+                                  linesize = 1,
+                                  linecolors = c("forestgreen", "blue4", "red3"),
+                                  linetypes = c("solid", "solid", "dotted"),
+                                  display_residuals = TRUE,
+                                  area_alpha = 0.25,
+                                  nrow = NULL,
+                                  ncol = NULL,
+                                  force_grid = FALSE,
+                                  verbose = NULL,
+                                  ...){
+
+  hlpr_assign_arguments(object)
+
+  lv <- base::length(variables)
+
+  if(lv > 1){
+
+    variable <- "Variables"
+
+  } else if(lv == 1) {
+
+    variable <- variables
+
+  }
+
+
+  plot_df <-
+    purrr::map_df(
+      .x = variables,
+      .f = function(v){
+
+        stdf <-
+          getIasDf(
+            object = object,
+            id = id,
+            variables = v,
+            distance = distance,
+            n_bins_circle = n_bins_circle,
+            binwidth = binwidth,
+            method_gs = method_gs,
+            summarize_by = "bins_circle",
+            remove_circle_bins = TRUE,
+            normalize = TRUE ,
+            format = "long",
+            verbose = FALSE
+          ) %>%
+          tidyr::pivot_longer(
+            cols = dplyr::all_of(v),
+            names_to = "variables",
+            values_to = "values"
+          ) %>%
+          dplyr::select(-bins_circle)
+
+        out_df <-
+          add_models(
+            input_df = stdf,
+            var_order = "bins_order",
+            model_subset = model_subset,
+            model_remove = model_remove,
+            model_add = model_add,
+            verbose = FALSE
+          ) %>%
+          shift_for_plotting(var_order = "bins_order") %>%
+          dplyr::mutate(
+            origin = stringr::str_replace_all(string = origin, pattern = v, replacement = "Variables"),
+            origin = base::factor(origin, levels = c("Models", "Residuals", "Variables")[lineorder]),
+            models = base::factor(models),
+            variables = {{v}}
+          )
+
+        return(out_df)
+
+      }
+    )
+
+
+  if(!confuns::is_named(linecolors)){
+
+    linecolors <- purrr::set_names(x = linecolors, nm = c("Variables", "Models", "Residuals"))
+
+  }
+
+  if(!confuns::is_named(linetypes)){
+
+    linetypes <- purrr::set_names(x = linetypes, nm = c("Variables", "Models", "Residuals"))
+
+  }
+
+  if(base::isFALSE(display_residuals)){
+
+    plot_df <- dplyr::filter(plot_df, origin != "Residuals")
+
+    area_add_on <- NULL
+
+  } else {
+
+    area_add_on <-
+      list(
+        ggplot2::geom_area(
+          data = dplyr::filter(plot_df, origin == "Residuals"),
+          mapping = ggplot2::aes(fill = origin),
+          alpha = area_alpha
+        ),
+        ggplot2::scale_fill_manual(values = linecolors)
+      )
+
+  }
+
+  if(base::length(variables) > 1 | base::isTRUE(force_grid)){
+
+    facet_add_on <-
+      ggplot2::facet_grid(
+        rows = ggplot2::vars(variables),
+        cols = ggplot2::vars(models),
+        ...
+      )
+
+  } else {
+
+    facet_add_on <-
+      ggplot2::facet_wrap(
+        facets = . ~ models,
+        nrow = nrow,
+        ncol = ncol,
+        ...
+      )
+
+  }
+
+  if(base::is.na(n_bins)){
+
+    binwidth <- stringr::str_c(extract_value(binwidth), extract_unit(binwidth))
+
+  } else {
+
+    binwidth <-
+      (getTrajectoryLength(object, id = id, unit = "px") / n_bins) %>%
+      as_unit(input = ., unit = extract_unit(getCCD(object)), object = object)
+
+  }
+
+
+  ggplot2::ggplot(
+    data = plot_df,
+    mapping = ggplot2::aes(x = bins_order, y = values)
+  ) +
+    area_add_on +
+    ggplot2::geom_line(
+      mapping = ggplot2::aes(linetype = origin, color = origin),
+      size = linesize
+    ) +
+    facet_add_on +
+    scale_color_add_on(
+      variable = plot_df[["origin"]],
+      clrp = "milo",
+      clrp.adjust = linecolors
+    ) +
+    ggplot2::scale_linetype_manual(values = linetypes) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(
+      x = glue::glue("IAS Bins ({binwidth})"),
+      y = "Inferred Expression"
+    ) +
+    ggplot2::theme_bw()
+
+}
 
 #' @title Plot histology image
 #'

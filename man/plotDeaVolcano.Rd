@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotA-D.R
 \name{plotDeaVolcano}
 \alias{plotDeaVolcano}
+\alias{plotDeaVolcano1v1}
 \title{Visualize gene expression testing}
 \usage{
 plotDeaVolcano(
@@ -18,11 +19,35 @@ plotDeaVolcano(
   threshold_logFC = 1,
   threshold_pval = 0.01,
   label_genes = 5,
+  label_insignificant = TRUE,
+  label_side = c("up", "down"),
   label_size = 1,
   nrow = NULL,
   ncol = NULL,
   scales = "fixed",
   use_pseudolog = FALSE,
+  ...
+)
+
+plotDeaVolcano1v1(
+  object,
+  across,
+  method_de = NULL,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  color_insignif = "lightgrey",
+  pt_alpha = 0.9,
+  pt_size = 1,
+  threshold_logFC = 1,
+  threshold_pval = 0.01,
+  col_pval = "p_val_adj",
+  label_genes = 5,
+  label_size = 1,
+  use_pseudolog = FALSE,
+  limits = NULL,
+  display_title = TRUE,
+  title_size = 2,
+  digits = 2,
   ...
 )
 }
@@ -73,12 +98,29 @@ specifies the number of genes that are labeled. E.g. if \code{label_genes} = 5,
 the default, the top 5 genes are labeled. If character, specifies the genes
 that are supposed to be labeled by name. If \code{NULL} or \code{FALSE}, no genes are labeled.}
 
+\item{label_insignificant}{Logical value. If \code{FALSE}, insignifcant genes are
+not labeled.}
+
+\item{label_side}{Character vector. Decides on which side to label genes. Valid input
+are \emph{'up'} and/or \emph{'down'}.}
+
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{use_pseudolog}{Logical value. If TRUE, avglogFC is transformed with log10. Requires
 package \code{ggallin} to be installed.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{clrp}{Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
+input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
+
+\item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
 }
 \value{
 A ggplot.

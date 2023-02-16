@@ -1,4 +1,7 @@
 
+#' @title Helper
+#' @param force_grid Logical value. If `TRUE`, `facet_grid()` is used regardless
+#' of `variables` being of length 1.
 
 # helper function for plotIas- and plotStsEvaluation
 plot_screening_evaluation <- function(df,
@@ -20,6 +23,7 @@ plot_screening_evaluation <- function(df,
                                       corr_pos_y = NULL,
                                       corr_text_sep = "\n",
                                       corr_text_size = 1,
+                                      force_grid = FALSE,
                                       verbose = TRUE){
 
   model_df <-
@@ -57,11 +61,19 @@ plot_screening_evaluation <- function(df,
   breaks <- c(0,0.25,0.5,0.75,1)
   labels <- c(0.00, 0.25, 0.50, 0.75, 1.00) %>% base::as.character()
 
+  across <- "models"
+
+  if(base::length(variables) > 1 | base::isTRUE(force_grid)){
+
+    across <- c("variables", across)
+
+    }
+
   confuns::plot_scatterplot(
     df = shifted_df,
     x = "model_values",
     y = "variable_values",
-    across = c("variables", "models"),
+    across = across,
     pt.alpha = pt_alpha,
     pt.color = pt_color,
     pt.size = pt_size,
@@ -89,6 +101,10 @@ plot_screening_evaluation <- function(df,
     ) +
     ggplot2::theme(
       strip.background = ggplot2::element_rect()
+    ) +
+    ggplot2::coord_cartesian(
+      xlim = c(0,1),
+      ylim = c(0,1)
     )
 
 }

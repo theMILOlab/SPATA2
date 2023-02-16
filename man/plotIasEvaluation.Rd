@@ -28,6 +28,7 @@ plotIasEvaluation(
   corr_pos_y = NULL,
   corr_text_sep = "\\n",
   corr_text_size = 1,
+  force_grid = FALSE,
   verbose = NULL
 )
 }
@@ -85,6 +86,9 @@ the correlation text with x- and y-coordinates.}
 corresponding p-value.}
 
 \item{corr_text_size}{Numeric value. Size of text.}
+
+\item{force_grid}{Logical value. If \code{TRUE}, \code{facet_grid()} is used regardless
+of \code{variables} being of length 1.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -544,6 +544,7 @@ depr_info <-
     ),
     args_spec = list(
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
+      "plotTrajectoryLineplot" = list("vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
       "setImageDirLowres" = list("dir_lowres" = "dir")

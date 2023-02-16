@@ -427,21 +427,25 @@ ggpLayerEncirclingGroups <- function(object,
 
   if(plot_type == "coords"){
 
-    layer_df <- getCoordsDf(object)
+    layer_df <-
+      getCoordsDf(object) %>%
+      dplyr::select(barcodes, x, y)
 
   } else if(plot_type == "tsne"){
 
-    layer_df <- getTsneDf(object)
+    layer_df <-
+      getTsneDf(object) %>%
+      dplyr::select(barcodes, tsne1, tsne2)
 
   } else if(plot_type == "umap"){
 
-    layer_df <- getUmapDf(object)
+    layer_df <-
+      getUmapDf(object) %>%
+      dplyr::select(barcodes, umap1, umap2)
 
   }
 
-  layer_df <-
-    dplyr::select(layer_df, -sample) %>%
-    magrittr::set_colnames(value = c("barcodes", "x", "y"))
+  layer_df <- magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y"))
 
   layer_df <-
     joinWithVariables(
@@ -1171,8 +1175,8 @@ ggpLayerImgAnnPointer <- function(object,
 
 #' @title Add horizontal and vertical lines
 #'
-#' @param xi Distance measures of where to add vertical lines.
-#' @param yi Expression values of where to add horizontal lines.
+#' @param xi Distance measures of where to add vertical lines. Intercepts on x-axis.
+#' @param yi Expression values of where to add horizontal lines. Intercepts on y-axis.
 #' @param ... Additional arguments given to `ggplot2::geom_h/vline()`
 #'
 #' @inherit argument_dummy params

@@ -186,7 +186,7 @@ Every single element of the output plot is named:
 \item{grouping:} The grouping annotation on the left side of the heatmap if \code{across} is not NULL.
 }
 
-\code{ggpLayers} takes a list as input. Unnamed elements of the list are added
+\code{ggpLayers} takes a list as input. Unnamed elements of the listare added
 to all elements of the plot. E.g.: \code{ggpLayers} = \code{list(theme(legend.position = "none"))}
 removes all legends.
 

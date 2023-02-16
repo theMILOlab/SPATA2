@@ -259,7 +259,8 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                  results_primary = "data.frame",
                                                  results = "data.frame",
                                                  sample = "character",
-                                                 summarize_with = "character"
+                                                 summarize_with = "character",
+                                                 bcsp_exclude = "character"
                                                ))
 
 

@@ -146,6 +146,7 @@ plotTrajectoryBarplot <- function(object,
 #' @inherit imageAnnotationScreening params
 #' @inherit plotScatterplot params
 #' @inherit argument_dummy params
+#' @inherit plot_screening_evaluation
 #' @param display_corr Logical. If TRUE, correlation values are added to the plots.
 #' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
 #' @param corr_pos_x,corr_pos_y Numeric vector of length two. The position of
@@ -177,6 +178,7 @@ plotTrajectoryEvaluation <- function(object,
                                      corr_pos_y = NULL,
                                      corr_text_sep = "\n",
                                      corr_text_size = 1,
+                                     force_grid = FALSE,
                                      verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -209,6 +211,7 @@ plotTrajectoryEvaluation <- function(object,
     corr_pos_y = corr_pos_y,
     corr_text_sep = corr_text_sep,
     corr_text_size = corr_text_size,
+    force_grid = force_grid,
     verbose = verbose
   )
 
@@ -653,6 +656,7 @@ plotTrajectoryLineplot <- function(object,
                                    summarize_with = "mean",
                                    ncol = NULL,
                                    nrow = NULL,
+                                   display_model = NULL,
                                    verbose = NULL,
                                    ...){
 
@@ -763,6 +767,17 @@ plotTrajectoryLineplot <- function(object,
 
   }
 
+  if(base::is.character(display_model)){
+
+    mdf <-
+      create_model_df(
+        input = dplyr::n_distinct(result_df[["breaks"]]),
+        model_sub
+      )
+
+  }
+
+
   ggplot2::ggplot(
     data = result_df,
     mapping = ggplot2::aes(x = breaks, y = values, color = variables)
@@ -822,85 +837,91 @@ plotTrajectoryLineplot <- function(object,
 #'
 plotTrajectoryLineplotFitted <- function(object,
                                          id,
-                                         variable,
+                                         variables,
                                          binwidth = getCCD(object),
                                          n_bins = NA_integer_,
                                          model_subset = NULL,
                                          model_remove = NULL,
                                          model_add = NULL,
                                          method_gs = NULL,
-                                         smooth = FALSE,
-                                         smooth_span = 0.2,
                                          lineorder = c(1,2,3),
                                          linesize = 1,
                                          linecolors = c("forestgreen", "blue4", "red3"),
                                          linetypes = c("solid", "solid", "dotted"),
-                                         display_residuals = NULL,
+                                         display_residuals = TRUE,
                                          area_alpha = 0.25,
                                          nrow = NULL,
                                          ncol = NULL,
-                                         verbose = NULL){
+                                         force_grid = FALSE,
+                                         verbose = NULL,
+                                         ...){
 
-  stdf <-
-    getTrajectoryScreeningDf(
-      object = object,
-      id = id,
-      variables = variable,
-      method_gs = method_gs,
-      n_bins = n_bins,
-      binwidth = binwidth,
-      normalize = TRUE ,
-      verbose = FALSE,
-      format = "long"
-    ) %>%
-    dplyr::select(-dplyr::any_of("trajectory_part"))
+  hlpr_assign_arguments(object)
 
+  lv <- base::length(variables)
 
-  plot_df <-
-    add_models(
-      input_df = stdf,
-      var_order = "trajectory_order",
-      model_subset = model_subset,
-      model_remove = model_remove,
-      model_add = model_add
-    ) %>%
-    shift_for_plotting(var_order = "trajectory_order") %>%
-    dplyr::mutate(
-      origin = base::factor(origin, levels = c("Models", "Residuals", variable)[lineorder]),
-      models = base::factor(models)
-    )
+  if(lv > 1){
 
+    variable <- "Variables"
 
-  if(base::isTRUE(smooth)){
+  } else if(lv == 1) {
 
-    model_df <- dplyr::filter(plot_df, origin == "Models")
-
-    value_df <- dplyr::filter(plot_df, origin != "Models")
-
-    value_df <-
-      dplyr::group_by(value_df, models, origin) %>%
-      dplyr::mutate(
-        values = {
-          stats::loess(formula = values ~ trajectory_order, span = smooth_span) %>%
-            stats::predict(object = .) %>%
-            confuns::normalize()
-        }
-      )
-
-    plot_df <- base::rbind(model_df, value_df)
-
+    variable <- variables
 
   }
 
+
+  plot_df <-
+    purrr::map_df(
+      .x = variables,
+      .f = function(v){
+
+        stdf <-
+          getTrajectoryScreeningDf(
+            object = object,
+            id = id,
+            variables = v,
+            method_gs = method_gs,
+            n_bins = n_bins,
+            binwidth = binwidth,
+            normalize = TRUE ,
+            verbose = FALSE,
+            format = "long"
+          ) %>%
+          dplyr::select(-dplyr::any_of("trajectory_part"))
+
+        out_df <-
+          add_models(
+            input_df = stdf,
+            var_order = "trajectory_order",
+            model_subset = model_subset,
+            model_remove = model_remove,
+            model_add = model_add,
+            verbose = FALSE
+          ) %>%
+          shift_for_plotting(var_order = "trajectory_order") %>%
+          dplyr::mutate(
+            origin = stringr::str_replace_all(string = origin, pattern = v, replacement = "Variables"),
+            origin = base::factor(origin, levels = c("Models", "Residuals", "Variables")[lineorder]),
+            models = base::factor(models),
+            variables = {{v}}
+          )
+
+        return(out_df)
+
+      }
+    )
+
+
   if(!confuns::is_named(linecolors)){
 
-    linecolors <- purrr::set_names(x = linecolors, nm = c(variable, "Models", "Residuals"))
+    linecolors <- purrr::set_names(x = linecolors, nm = c("Variables", "Models", "Residuals"))
 
   }
 
   if(!confuns::is_named(linetypes)){
 
-    linetypes <- purrr::set_names(x = linetypes, nm = c(variable, "Models", "Residuals"))
+    linetypes <- purrr::set_names(x = linetypes, nm = c("Variables", "Models", "Residuals"))
 
   }
 
@@ -924,6 +945,40 @@ plotTrajectoryLineplotFitted <- function(object,
 
   }
 
+  if(base::length(variables) > 1 | base::isTRUE(force_grid)){
+
+    facet_add_on <-
+      ggplot2::facet_grid(
+        rows = ggplot2::vars(variables),
+        cols = ggplot2::vars(models),
+        ...
+      )
+
+  } else {
+
+    facet_add_on <-
+      ggplot2::facet_wrap(
+        facets = . ~ models,
+        nrow = nrow,
+        ncol = ncol,
+        ...
+        )
+
+  }
+
+  if(base::is.na(n_bins)){
+
+    binwidth <- stringr::str_c(extract_value(binwidth), extract_unit(binwidth))
+
+  } else {
+
+    binwidth <-
+      (getTrajectoryLength(object, id = id, unit = "px") / n_bins) %>%
+      as_unit(input = ., unit = extract_unit(getCCD(object)), object = object)
+
+  }
+
+
   ggplot2::ggplot(
     data = plot_df,
     mapping = ggplot2::aes(x = trajectory_order, y = values)
@@ -933,7 +988,7 @@ plotTrajectoryLineplotFitted <- function(object,
       mapping = ggplot2::aes(linetype = origin, color = origin),
       size = linesize
     ) +
-    ggplot2::facet_wrap(facets = . ~ models, nrow = nrow, ncol = ncol) +
+    facet_add_on +
     scale_color_add_on(
       variable = plot_df[["origin"]],
       clrp = "milo",
@@ -941,10 +996,11 @@ plotTrajectoryLineplotFitted <- function(object,
     ) +
     ggplot2::scale_linetype_manual(values = linetypes) +
     ggplot2::theme_classic() +
-    ggplot2::labs(x = "Trajectory Direction", y = NULL) +
-    theme_trajectory_fit()
-
-
+    ggplot2::labs(
+      x = glue::glue("Trajectory Bins ({binwidth})"),
+      y = "Inferred Expression"
+      ) +
+    ggplot2::theme_bw()
 
 }
 
