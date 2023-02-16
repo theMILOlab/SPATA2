@@ -105,7 +105,6 @@ plotIasBarplot <- function(object,
                            border_linesize = 1,
                            border_linetype = "dashed",
                            x_nth = 1,
-                           bcsp_exclude = NULL,
                            verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -129,7 +128,6 @@ plotIasBarplot <- function(object,
       n_bins_circle = n_bins_circle,
       summarize_by = FALSE,
       remove_circle_bins = !include_area,
-      bcsp_exclude = bcsp_exclude,
       verbose = verbose
     ) %>%
     joinWith(
@@ -300,7 +298,6 @@ plotIasEvaluation <- function(object,
                               corr_pos_y = NULL,
                               corr_text_sep = "\n",
                               corr_text_size = 1,
-                              bcsp_exclude = NULL,
                               verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -315,8 +312,7 @@ plotIasEvaluation <- function(object,
       variables = variables,
       remove_circle_bins = "Core",
       summarize_by = "bins_circle",
-      normalize_by = "sample",
-      bcsp_exclude = bcsp_exclude
+      normalize_by = "sample"
     )
 
 
@@ -378,7 +374,6 @@ plotIasHeatmap <- function(object,
                            .cols = dplyr::everything(),
                            summarize_with = "mean",
                            .f = NULL,
-                           bcsp_exclude = NULL,
                            include_area = FALSE,
                            display_border = FALSE,
                            border_linealpha = 0.75,
@@ -415,9 +410,7 @@ plotIasHeatmap <- function(object,
       variables = variables,
       summarize_by = "bins_circle",
       summarize_with = summarize_with,
-      remove_circle_bins = !include_area,
-      bcsp_exclude = bcsp_exclude,
-      verbose = verbose
+      remove_circle_bins = !include_area
     ) %>%
     tidyr::pivot_longer(
       cols = dplyr::any_of(variables),
@@ -641,7 +634,6 @@ plotIasLineplot <- function(object,
                             facet_by = "variables",
                             normalize_by = "sample",
                             summarize_with = "mean",
-                            bcsp_exclude = NULL,
                             nrow = NULL,
                             ncol = NULL,
                             display_axis_text = "x",
@@ -717,7 +709,6 @@ plotIasLineplot <- function(object,
       remove_angle_bins = TRUE,
       remove_circle_bins = !include_area,
       normalize = c(FALSE, FALSE),
-      bcsp_exclude = bcsp_exclude,
       verbose = verbose
     )
 
