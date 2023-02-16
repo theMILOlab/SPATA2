@@ -1602,7 +1602,7 @@ createImageAnnotations <- function(object, ...){
 #' @export
 
 createHistologyImaging <- function(image,
-                                   id = 'imageid',
+                                   id,
                                    img_scale_fct = 1,
                                    meta = list(),
                                    pxl_scale_fct = NULL,

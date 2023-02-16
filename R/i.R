@@ -51,7 +51,6 @@ img_ann_highlight_group_button <- function(){
 #'
 #' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
 #' Specifies the function with which the bins are summarized.
-#' @param bcsp_exclude Character value containing name(s) of barcode-spots to be excluded from the analysis.
 #'
 #' @inherit add_models params
 #' @inherit argument_dummy params
@@ -167,7 +166,6 @@ imageAnnotationScreening <- function(object,
                                      model_remove = NULL,
                                      model_add = NULL,
                                      mtr_name = NULL,
-                                     bcsp_exclude = NA_character_,
                                      verbose = NULL,
                                      ...){
 
@@ -216,11 +214,9 @@ imageAnnotationScreening <- function(object,
       n_bins_angle = n_bins_angle,
       remove_circle_bins = TRUE,
       remove_angle_bins = TRUE,
-      bcsp_exclude = bcsp_exclude,
       drop = FALSE,
       summarize_by = c("bins_circle", "bins_angle"),
-      normalize_by = normalize_by,
-      verbose = verbose
+      normalize_by = normalize_by
     )
 
   bins_angle <- base::levels(ias_df$bins_angle)
@@ -266,7 +262,7 @@ imageAnnotationScreening <- function(object,
 
         confuns::give_feedback(
           msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
-          verbose = verbose
+          verbose = TRUE
         )
 
         bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
@@ -366,8 +362,7 @@ imageAnnotationScreening <- function(object,
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
       results_primary = results_primary,
-      sample = object@samples,
-      bcsp_exclude = bcsp_exclude
+      sample = object@samples
     ) %>%
     summarizeIAS(method_padj = method_padj)
 
