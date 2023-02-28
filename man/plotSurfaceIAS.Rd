@@ -4,7 +4,7 @@
 \alias{plotSurfaceIAS}
 \alias{plotSurfaceIAS,spata2-method}
 \alias{plotSurfaceIAS,ImageAnnotationScreening-method}
-\title{Visualize screening areaof IAS-algorithm}
+\title{Visualize screening area of IAS-algorithm}
 \usage{
 plotSurfaceIAS(object, ...)
 
@@ -30,6 +30,7 @@ plotSurfaceIAS(object, ...)
   display_bins_circle = TRUE,
   ggpLayers = list(),
   remove_circle_bins = FALSE,
+  bcsp_exclude = NULL,
   verbose = NULL,
   ...
 )
@@ -107,6 +108,8 @@ If TRUE, the plot is included. If FALSE, plotting is skipped.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

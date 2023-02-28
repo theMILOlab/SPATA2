@@ -24,6 +24,8 @@ plot_screening_evaluation <- function(df,
                                       corr_text_sep = "\n",
                                       corr_text_size = 1,
                                       force_grid = FALSE,
+                                      nrow = NULL,
+                                      ncol = NULL,
                                       verbose = TRUE){
 
   model_df <-
@@ -89,7 +91,9 @@ plot_screening_evaluation <- function(df,
     corr.pos.y = corr_pos_y,
     corr.text.sep = corr_text_sep,
     corr.text.size = corr_text_size,
-    corr.method = "pearson"
+    corr.method = "pearson",
+    nrow = nrow,
+    ncol = ncol
   ) +
     ggplot2::scale_x_continuous(
       breaks = breaks,

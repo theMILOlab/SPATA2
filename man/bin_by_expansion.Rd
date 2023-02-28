@@ -10,6 +10,7 @@ bin_by_expansion(
   binwidth,
   n_bins_circle,
   remove = FALSE,
+  bcsp_exclude = NULL,
   drop = TRUE
 )
 }
@@ -33,6 +34,8 @@ denoted in \code{binwidth}.
 \item{remove}{Character or logical. If character, denotes circle bins that
 are removed. If TRUE, bins \emph{'Core' and 'Outside'} are removed. If FALSE,
 ignored.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{drop}{Logical value. If TRUE, unused levels of the \emph{bins_circle}
 variables are dropped.}

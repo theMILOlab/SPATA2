@@ -22,6 +22,7 @@ showModels(
   model_add = NULL,
   pretty_names = FALSE,
   x_axis_arrow = TRUE,
+  verbose = NULL,
   ...
 )
 }

@@ -179,6 +179,8 @@ plotTrajectoryEvaluation <- function(object,
                                      corr_text_sep = "\n",
                                      corr_text_size = 1,
                                      force_grid = FALSE,
+                                     ncol = NULL,
+                                     nrow = NULL,
                                      verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -211,6 +213,8 @@ plotTrajectoryEvaluation <- function(object,
     corr_pos_y = corr_pos_y,
     corr_text_sep = corr_text_sep,
     corr_text_size = corr_text_size,
+    ncol = ncol,
+    nrow = nrow,
     force_grid = force_grid,
     verbose = verbose
   )
@@ -844,12 +848,16 @@ plotTrajectoryLineplotFitted <- function(object,
                                          model_remove = NULL,
                                          model_add = NULL,
                                          method_gs = NULL,
+                                         smooth_span = 0,
                                          lineorder = c(1,2,3),
-                                         linesize = 1,
+                                         linesizes = c(1,1,1),
                                          linecolors = c("forestgreen", "blue4", "red3"),
                                          linetypes = c("solid", "solid", "dotted"),
                                          display_residuals = TRUE,
                                          area_alpha = 0.25,
+                                         display_points = TRUE,
+                                         pt_alpha = 0.9,
+                                         pt_size = 1.5,
                                          nrow = NULL,
                                          ncol = NULL,
                                          force_grid = FALSE,
@@ -886,7 +894,8 @@ plotTrajectoryLineplotFitted <- function(object,
             binwidth = binwidth,
             normalize = TRUE ,
             verbose = FALSE,
-            format = "long"
+            format = "long",
+            smooth_span = smooth_span
           ) %>%
           dplyr::select(-dplyr::any_of("trajectory_part"))
 
@@ -912,16 +921,21 @@ plotTrajectoryLineplotFitted <- function(object,
       }
     )
 
-
   if(!confuns::is_named(linecolors)){
 
-    linecolors <- purrr::set_names(x = linecolors, nm = c("Variables", "Models", "Residuals"))
+    linecolors <- purrr::set_names(x = linecolors[1:3], nm = c("Variables", "Models", "Residuals"))
+
+  }
+
+  if(!confuns::is_named(linesizes)){
+
+    linesizes <- purrr::set_names(x = linesizes[1:3], nm = c("Variables", "Models", "Residuals"))
 
   }
 
   if(!confuns::is_named(linetypes)){
 
-    linetypes <- purrr::set_names(x = linetypes, nm = c("Variables", "Models", "Residuals"))
+    linetypes <- purrr::set_names(x = linetypes[1:3], nm = c("Variables", "Models", "Residuals"))
 
   }
 
@@ -978,6 +992,21 @@ plotTrajectoryLineplotFitted <- function(object,
 
   }
 
+  if(base::isTRUE(display_points)){
+
+    point_add_on <-
+      ggplot2::geom_point(
+        mapping = ggplot2::aes(color = origin),
+        size = pt_size,
+        alpha = pt_alpha
+        )
+
+  } else {
+
+    point_add_on <- NULL
+
+  }
+
 
   ggplot2::ggplot(
     data = plot_df,
@@ -985,15 +1014,16 @@ plotTrajectoryLineplotFitted <- function(object,
   ) +
     area_add_on +
     ggplot2::geom_line(
-      mapping = ggplot2::aes(linetype = origin, color = origin),
-      size = linesize
+      mapping = ggplot2::aes(linetype = origin, color = origin, size = origin)
     ) +
+    point_add_on +
     facet_add_on +
     scale_color_add_on(
       variable = plot_df[["origin"]],
       clrp = "milo",
       clrp.adjust = linecolors
     ) +
+    ggplot2::scale_size_manual(values = linesizes) +
     ggplot2::scale_linetype_manual(values = linetypes) +
     ggplot2::theme_classic() +
     ggplot2::labs(

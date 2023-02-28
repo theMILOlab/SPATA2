@@ -14,12 +14,16 @@ plotTrajectoryLineplotFitted(
   model_remove = NULL,
   model_add = NULL,
   method_gs = NULL,
+  smooth_span = 0,
   lineorder = c(1, 2, 3),
-  linesize = 1,
+  linesizes = c(1, 1, 1),
   linecolors = c("forestgreen", "blue4", "red3"),
   linetypes = c("solid", "solid", "dotted"),
   display_residuals = TRUE,
   area_alpha = 0.25,
+  display_points = TRUE,
+  pt_alpha = 0.9,
+  pt_size = 1.5,
   nrow = NULL,
   ncol = NULL,
   force_grid = FALSE,
@@ -49,7 +53,8 @@ same length as the input vector. Test models with \code{showModels()}.}
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{linesize}{Numeric value. The size of the line(s) plotted.}
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{linecolors, linetypes}{The colors and types of the three lines. First value stands for the
 values of the variable, second on for the models, third one for the residuals.}
@@ -58,6 +63,13 @@ values of the variable, second on for the models, third one for the residuals.}
 
 \item{area_alpha}{Numeric value. The alpha value for the area under the curve
 of the resiudals.}
+
+\item{display_points}{Logical value. If set to TRUE points are used additionally
+to display the results.}
+
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 

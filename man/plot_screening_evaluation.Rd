@@ -25,6 +25,8 @@ plot_screening_evaluation(
   corr_text_sep = "\\n",
   corr_text_size = 1,
   force_grid = FALSE,
+  nrow = NULL,
+  ncol = NULL,
   verbose = TRUE
 )
 }

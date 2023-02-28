@@ -16,6 +16,7 @@ getTrajectoryScreeningDf(
   method_gs = "mean",
   normalize = TRUE,
   summarize_with = "mean",
+  smooth_span = 0,
   format = "wide",
   verbose = NULL,
   ...
@@ -54,6 +55,9 @@ or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

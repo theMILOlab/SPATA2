@@ -9,7 +9,7 @@ spatialTrajectoryScreening(
   id,
   variables,
   n_bins = NA_integer_,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,

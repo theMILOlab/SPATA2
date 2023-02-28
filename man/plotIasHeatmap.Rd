@@ -22,6 +22,7 @@ plotIasHeatmap(
   .cols = dplyr::everything(),
   summarize_with = "mean",
   .f = NULL,
+  bcsp_exclude = NULL,
   include_area = FALSE,
   display_border = FALSE,
   border_linealpha = 0.75,
@@ -87,6 +88,8 @@ valid input options.}
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
 to highlight where the border of the image annotation runs.}

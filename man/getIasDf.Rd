@@ -24,6 +24,7 @@ getIasDf(
   remove_circle_bins = FALSE,
   remove_angle_bins = FALSE,
   rename_angle_bins = FALSE,
+  bcsp_exclude = NULL,
   drop = TRUE,
   verbose = NULL,
   ...
@@ -86,6 +87,8 @@ is bigger than 1.
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{drop}{Logical value. If TRUE, unused levels of the \emph{bins_circle}
 variables are dropped.}

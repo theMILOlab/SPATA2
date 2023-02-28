@@ -29,6 +29,7 @@ plotIasEvaluation(
   corr_text_sep = "\\n",
   corr_text_size = 1,
   force_grid = FALSE,
+  bcsp_exclude = NULL,
   verbose = NULL
 )
 }
@@ -89,6 +90,8 @@ corresponding p-value.}
 
 \item{force_grid}{Logical value. If \code{TRUE}, \code{facet_grid()} is used regardless
 of \code{variables} being of length 1.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

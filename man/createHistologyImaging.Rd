@@ -6,7 +6,7 @@
 \usage{
 createHistologyImaging(
   image,
-  id,
+  id = "imageid",
   img_scale_fct = 1,
   meta = list(),
   pxl_scale_fct = NULL,

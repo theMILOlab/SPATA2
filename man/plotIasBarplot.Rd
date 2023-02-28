@@ -23,6 +23,7 @@ plotIasBarplot(
   border_linesize = 1,
   border_linetype = "dashed",
   x_nth = 1,
+  bcsp_exclude = NULL,
   verbose = NULL
 )
 }
@@ -76,6 +77,8 @@ represents the border of the image annotation.}
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

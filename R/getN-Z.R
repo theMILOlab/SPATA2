@@ -1021,6 +1021,7 @@ getTrajectoryScreeningDf <- function(object,
                                      method_gs = "mean",
                                      normalize = TRUE,
                                      summarize_with = "mean",
+                                     smooth_span = 0,
                                      format = "wide",
                                      verbose = NULL,
                                      ...){
@@ -1074,6 +1075,32 @@ getTrajectoryScreeningDf <- function(object,
       ) %>%
       normalize_smrd_projection_df(normalize = normalize[2]) %>%
       tibble::as_tibble()
+
+    if(smooth_span > 0){
+
+      traj_order <- out[["trajectory_order"]]
+
+      confuns::give_feedback(
+        msg = glue::glue("Smoothing with `span` = {smooth_span}."),
+        verbose = verbose
+      )
+
+      out <-
+        dplyr::mutate(
+          .data = out,
+          dplyr::across(
+            .cols = dplyr::all_of(variables),
+            .fns = function(var){
+
+                stats::loess(formula = var ~ traj_order, span = smooth_span) %>%
+                stats::predict() %>%
+                confuns::normalize()
+
+            }
+          )
+        )
+
+    }
 
     if(format == "long"){
 

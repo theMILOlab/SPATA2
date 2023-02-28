@@ -28,6 +28,7 @@ plotIasLineplot(
   facet_by = "variables",
   normalize_by = "sample",
   summarize_with = "mean",
+  bcsp_exclude = NULL,
   nrow = NULL,
   ncol = NULL,
   display_axis_text = "x",
@@ -124,6 +125,8 @@ is bigger than 1.
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 

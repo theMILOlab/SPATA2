@@ -22,6 +22,7 @@ imageAnnotationScreening(
   model_remove = NULL,
   model_add = NULL,
   mtr_name = NULL,
+  bcsp_exclude = NA_character_,
   verbose = NULL,
   ...
 )
@@ -79,6 +80,8 @@ are not supposed to be included.}
 containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
 same length as the input vector. Test models with \code{showModels()}.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -301,11 +301,8 @@ plotIasEvaluation <- function(object,
                               corr_pos_y = NULL,
                               corr_text_sep = "\n",
                               corr_text_size = 1,
-<<<<<<< HEAD
                               force_grid = FALSE,
-=======
                               bcsp_exclude = NULL,
->>>>>>> 50a87dd6a1aabb82c26ab1d6606eb2cb9b9d6f83
                               verbose = NULL){
 
   hlpr_assign_arguments(object)

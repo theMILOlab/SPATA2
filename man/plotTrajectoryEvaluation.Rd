@@ -27,6 +27,8 @@ plotTrajectoryEvaluation(
   corr_text_sep = "\\n",
   corr_text_size = 1,
   force_grid = FALSE,
+  ncol = NULL,
+  nrow = NULL,
   verbose = NULL
 )
 }
@@ -78,6 +80,8 @@ corresponding p-value.}
 
 \item{force_grid}{Logical value. If \code{TRUE}, \code{facet_grid()} is used regardless
 of \code{variables} being of length 1.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
