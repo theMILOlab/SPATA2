@@ -127,7 +127,23 @@ plotSurface <- function(object,
 
   n_points <- base::nrow(coords_df)
 
-  mapping <- ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by)
+  if(base::is.character(color_by) & base::is.character(alpha_by)){
+
+    mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]], alpha = .data[[alpha_by]])
+
+  } else if(base::is.character(color_by)){
+
+    mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]])
+
+  } else if(base::is.character(alpha_by)){
+
+    mapping <- ggplot2::aes(x = x, y = y, alpha = .data[[alpha_by]])
+
+  } else {
+
+    mapping <- ggplot2::aes(x = x, y = y)
+
+  }
 
   if(n_points >= 10000 | base::isTRUE(use_scattermore)){
 
@@ -189,7 +205,6 @@ plotSurface <- function(object,
 
   }
 
-
   if(base::is.character(bcsp_rm)){
 
     coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcsp_rm}})
@@ -214,8 +229,7 @@ plotSurface <- function(object,
       variable = pull_var(coords_df, color_by),
       clrp = pt_clrp,
       clrsp = pt_clrsp,
-      clrp.adjust = clrp_adjust,
-      ...
+      clrp.adjust = clrp_adjust
     ) +
     ggplot2::coord_equal() +
     ggplot2::theme_void() +
