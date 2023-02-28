@@ -2741,7 +2741,24 @@ plotDimRed <- function(object,
       method_gs = method_gs,
       smooth = FALSE,
       verbose = FALSE
+    )  %>%
+    dplyr::rename_with(
+      .cols = dplyr::contains(match = "-"),
+      .fn = ~ stringr::str_replace_all(.x, pattern = "-", replacement = "_")
     )
+
+
+  if(base::is.character(color_by)){
+
+    color_by <- stringr::str_replace_all(color_by, pattern = "-", replacement = "_")
+
+  }
+
+  if(base::is.character(alpha_by)){
+
+    alpha_by <- stringr::str_replace_all(alpha_by, pattern = "-", replacement = "_")
+
+  }
 
   if(base::length(color_by) > 1){
 

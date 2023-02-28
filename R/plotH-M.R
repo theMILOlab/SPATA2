@@ -704,6 +704,14 @@ plotIasLineplot <- function(object,
 
   variables <- base::unique(variables)
 
+  rm_cb <- c("Core", "Outside")
+
+  if(base::isTRUE(include_area)){
+
+    rm_cb <- "Outside"
+
+  }
+
   ias_df <-
     getIasDf(
       object = object,
@@ -719,7 +727,7 @@ plotIasLineplot <- function(object,
       summarize_by = summarize_by,
       normalize_by = normalize_by,
       remove_angle_bins = TRUE,
-      remove_circle_bins = !include_area,
+      remove_circle_bins = rm_cb,
       normalize = c(FALSE, FALSE),
       bcsp_exclude = bcsp_exclude,
       verbose = verbose
@@ -764,7 +772,7 @@ plotIasLineplot <- function(object,
     ) %>%
     dplyr::mutate(
       # bin 1 -> 0. 0 * dist = 0 for first bin -> no distance to img an
-      breaks = (bins_order - 1),
+      breaks = dplyr::if_else(condition = bins_circle == "Core", true = bins_order, false = (bins_order - 0.5)),
       breaks = as_pixel(input = (breaks * bw_dist), object = object), # multiply with binwidth to get actual distance
       variables = base::factor(variables, levels = {{variables}})
     )
@@ -791,7 +799,7 @@ plotIasLineplot <- function(object,
 
     border_add_on <-
       ggplot2::geom_vline(
-        xintercept = 0,
+        xintercept = as_pixel(0.25*bw_dist, object = object),
         alpha = border_linealpha,
         color = border_linecolor,
         size = border_linesize,
