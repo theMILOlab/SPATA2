@@ -6,7 +6,7 @@
 \title{A data.frame necessary for cnv-analysis. Contains information about the gene positions
 on chromosomes. Contains the following variables:}
 \format{
-An object of class \code{data.frame} with 17208 rows and 5 columns.
+An object of class \code{data.frame} with 40249 rows and 5 columns.
 }
 \usage{
 gene_pos_df
