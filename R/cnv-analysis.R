@@ -167,10 +167,16 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 #' character variables \emph{ensembl_gene_id}, \emph{hgnc_symbol}, \emph{chromosome_name}
 #' and two numeric variables \emph{start_position} and \emph{end_position.}.
 #'
-#' If NULL the data.frame is created via \code{CONICsmat::getGenePositions()} using
-#' all gene names that appear in the count matrix and in the reference matrix.
+#' If NULL, the data.frame is created via custom function \code{getGenePositions()}
+#' adapted from \code{CONICsmat::getGenePositions()}
+#' using #' all gene names that retrieved from ensembl.
 #'
 #' Defaults to the SPATA2 intern data.frame \code{SPATA2::gene_pos_df}.
+#'
+#' @param remove_alternative_chr either TRUE or FALSE.
+#' If TRUE, remove the chromosome of 0 (mitochondria and contigs), 23 (X), and 24 (Y).
+#' If FALSE, keep the chromosome of 0 (mitochondria and contigs), 23 (X), and 24 (Y).
+#' Defaults to TRUE to reduce confusion of the user.
 #'
 #' @param cnv_prefix Character value. Denotes the string with which the
 #' the feature variables in which the information about the chromosomal gains and
@@ -253,6 +259,7 @@ runCnvAnalysis <- function(object,
                            ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
                            ref_regions = cnv_ref[["regions"]], # chromosome positions
                            gene_pos_df = SPATA2::gene_pos_df,
+                           remove_alternative_chr = TRUE,
                            directory_cnv_folder = "data-development/cnv-results", # output folder
                            directory_regions_df = NA, # deprecated (chromosome positions)
                            n_pcs = 30,
@@ -401,26 +408,41 @@ runCnvAnalysis <- function(object,
 
   }
 
-  if(base::is.data.frame(gene_pos_df)){
-
-    confuns::check_data_frame(
-      df = gene_pos_df,
-      var.class = list(
-        ensembl_gene_id = "character",
-        hgnc_symbol = "character",
-        chromosome_name = "character",
-        start_position = "integer",
-        end_position = "integer"
-      )
+  if (base::is.data.frame(gene_pos_df)){
+    base::message(
+      "Default or user-provided dataframe is used."
     )
 
+  } else if (base::is.null(gene_pos_df)){
+    base::message(
+      "The function getGenePositions() will be use to extract the gene position dataframe."
+    )
+
+    # custom getGenePositions() is adapted from CONICSmat::getGenePositions()
+    gene_pos_df <- getGenePositions(ignoreAlt = T)
+    # usethis::use_data(gene_pos_df, overwrite = T) # how to make the built-in rda.
 
   } else {
-
-    gene_pos_df <-
-      CONICSmat::getGenePositions(gene_names = base::rownames(expr_inter))
-
+    base::stop("No other options for gene position dataframe.")
   }
+
+  # Validate the column type of the gene_pos_df.
+  confuns::check_data_frame(
+    df = gene_pos_df,
+    var.class = list(
+      ensembl_gene_id = "character",
+      hgnc_symbol = "character",
+      chromosome_name = "character",
+      start_position = "integer",
+      end_position = "integer"
+    )
+  )
+
+  # Remove the chromosome of 0 (mitochondria and contigs), 23 (X), and 24 (Y)
+  if (remove_alternative_chr == TRUE) {
+    gene_pos_df <- dplyr::filter(gene_pos_df, !(chromosome_name %in% c("0", "23", "24")))
+  }
+
 
 
   # -----
@@ -687,7 +709,7 @@ runCnvAnalysis <- function(object,
   result_dir <-
     stringr::str_c(directory_cnv_folder, "/", plot_cnv$output_filename, ".observations.txt")
 
-  results <- utils::read.table(result_dir)
+  results <- utils::read.table(result_dir, check.names = FALSE)
 
   bcs_object <-
     getFeatureDf(object) %>%
@@ -724,7 +746,6 @@ runCnvAnalysis <- function(object,
     base::as.data.frame() %>%
     tibble::rownames_to_column(var = "barcodes") %>%
     magrittr::set_colnames(value = cnames) %>%
-    dplyr::mutate(barcodes = stringr::str_replace_all(string = barcodes, pattern = "\\.", replacement = "-")) %>%
     dplyr::mutate(dplyr::across(dplyr::starts_with(match = cnv_prefix), .fns = base::as.numeric)) %>%
     tibble::as_tibble()
 
@@ -740,13 +761,6 @@ runCnvAnalysis <- function(object,
       )
 
   # cnv matrix
-  base::colnames(results) <-
-    stringr::str_replace_all(
-      string = base::colnames(results),
-      pattern = "\\.",
-      replacement = "-"
-      )
-
   cnv_mtr <- base::as.matrix(results)
 
   # cnv list
