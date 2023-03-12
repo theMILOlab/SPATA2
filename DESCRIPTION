@@ -3,16 +3,17 @@ Type: Package
 Title: A Toolbox for Spatial Gene Expression Analysis
 Version: 0.1.0
 Authors@R: as.person(c(
-    "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]", 
+    "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]",
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]"
   ))
-Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial gene expression data. 
+Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial gene expression data.
 Encoding: UTF-8
 LazyData: true
 License: GPL-3
 BugReports: themilolab-spata@gmx.de
-RoxygenNote: 7.1.1
-Imports: 
+RoxygenNote: 7.2.3
+Imports:
+    biomaRt,
     broom,
     concaveman,
     colorspace,
@@ -33,19 +34,23 @@ Imports:
     rlang,
     readr,
     reticulate,
+    Seurat,
     shiny,
     shinyWidgets,
     shinybusy,
     shinydashboard,
+    SingleCellExperiment,
     sp,
     stringr,
     stringi,
+    SummarizedExperiment,
     tibble,
     tidyr,
     tidytext,
     viridis,
     umap
-Collate: 
+Collate:
+    'GetPositions.R'
     'S4-documentation.R'
     'S4-generic-functions.R'
     'S4-programming-aid.R'
@@ -109,6 +114,6 @@ Collate:
     'update-spata-object.R'
     'valid-input-options.R'
     'validation.R'
-Depends: 
+Depends:
     R (>= 2.10)
 URL: https://themilolab.com/
