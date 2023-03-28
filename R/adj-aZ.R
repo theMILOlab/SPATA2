@@ -1951,6 +1951,8 @@ setMethod(
                         image_name = "slice1",
                         transfer_meta_data = TRUE,
                         transfer_dim_red = TRUE,
+                        count_mtr_name = "counts",
+                        scaled_mtr_name = "scaled.data",
                         verbose = TRUE){
 
     # create empty spata object
@@ -2035,7 +2037,7 @@ setMethod(
 
     count_mtr <-
       getFromSeurat(
-        return_value = methods::slot(assay, name = "counts"),
+        return_value = methods::slot(assay, name = count_mtr_name),
         error_handling = "stop",
         error_ref = "count matrix"
       )
@@ -2048,7 +2050,7 @@ setMethod(
 
     scaled_mtr <-
       getFromSeurat(
-        return_value = methods::slot(assay, name = "scale.data"),
+        return_value = methods::slot(assay, name = scaled_mtr_name),
         error_handling = "stop",
         error_ref = "scaled matrix",
         error_value = NULL
