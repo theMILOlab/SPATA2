@@ -1952,7 +1952,7 @@ setMethod(
                         transfer_meta_data = TRUE,
                         transfer_dim_red = TRUE,
                         count_mtr_name = "counts",
-                        scaled_mtr_name = "scaled.data",
+                        scaled_mtr_name = "scale.data",
                         verbose = TRUE){
 
     # create empty spata object
