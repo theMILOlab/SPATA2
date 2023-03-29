@@ -100,7 +100,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #' If `NULL`, all image annotations are included - subsequent selection with `tags` and
 #' `test` is possible.
 #'
-#' @param inner Logical value. If `FALSE`, the inner borders of the image annotation
+#' @param inner Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If `FALSE`, the inner borders of the image annotation
 #' are not included in the output.
 #'
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
@@ -146,7 +146,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param order_desc Logical value. If `TRUE`, reverses the arrangement specified
 #' via `order_by` and/or `order`.
 #'
-#' @param outer Logical value. If `FALSE`, the outer border of the image annotation
+#' @param outer Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If `FALSE`, the outer border of the image annotation
 #' is not included in the output.
 #'
 #' @param overwrite Logical value. Must be `TRUE` to allow overwriting.
