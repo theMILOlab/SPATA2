@@ -200,7 +200,7 @@ helper_content <- list(
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
-      "Encircling: By doubleckling on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
+      "Encircling: By double clicking on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
       the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
       starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
       "",
@@ -215,7 +215,7 @@ helper_content <- list(
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
-      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
       the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
       or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
       "",
@@ -370,7 +370,7 @@ create_image_annotations_descr <- list(
       zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
       you are using drawing mode 'Single'.",
       "",
-      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
       the cursor. By double clicking again or pressing 'e' you exit/stop the drawing. If drawing mode is set to 'Multiple' the drawn polygon
       is immediately connected/closed and you can encircle a new structure. Drawing mode 'Single' allows to encircle with more details.
       First, exiting the drawing does not result in immediate closing. This means that you can exit the drawing, adjust the zooming,
@@ -430,7 +430,7 @@ create_segmentation_descr <- list(
       zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
       you are using drawing mode 'Single'.",
       "",
-      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to name by simply moving
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to name by simply moving
       the cursor. By double clicking again or pressing 'e' you exit/stop the drawing. The drawn line remains on the plot until you
       click 'Connect' or use shortcut 'c', which will connect start an end of the drawn line to a polygon that encircles the
       area of interest. This means that you can exit the drawing, adjust the zooming, and start drawing again. This can be repeated
