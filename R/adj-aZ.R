@@ -1272,7 +1272,7 @@ asSingleCellExperiment <- function(object, ...){
 
     sce <-
       SingleCellExperiment::SingleCellExperiment(
-        assays = list(counts = getCountMatrix(object)),
+        assays = list(counts = getCountMatrix(object))[,rownames(colData)]),
         colData = colData,
         metadata = list(
           converted_from = base::class(object)
