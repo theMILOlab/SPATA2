@@ -1272,7 +1272,7 @@ asSingleCellExperiment <- function(object, ...){
 
     sce <-
       SingleCellExperiment::SingleCellExperiment(
-        assays = list(counts = getCountMatrix(object))[,rownames(colData)]),
+        assays = list(counts = getCountMatrix(object)[,rownames(colData)]), 
         colData = colData,
         metadata = list(
           converted_from = base::class(object)
@@ -1325,7 +1325,7 @@ asSummarizedExperiment <- function(object, ...){
 
      se <-
        SummarizedExperiment::SummarizedExperiment(
-        assays = list(counts = getCountMatrix(object)),
+        assays = list(counts = getCountMatrix(object)[,rownames(colData)]), 
         colData = colData,
         metadata = list(
           converted_from = base::class(object)
