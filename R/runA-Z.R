@@ -416,7 +416,7 @@ runBayesSpaceClustering <- function(object,
         ) %>%
         base::round()
 
-      sce@assays@data$counts[row_sub, spots.no.read] <-  1
+      sce@assays@data$counts[row_sub, spots_no_read] <-  1
 
     }
 
