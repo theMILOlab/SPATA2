@@ -428,34 +428,34 @@ setMethod(
                         ...){
 
     ias_results_df <-
-      dplyr::filter(object@results_primary, variables %in% {{variables}}) %>%
-      dplyr::mutate(bins_angle = base::factor(bins_angle, levels = make_angle_bins(object@n_bins_angle)))
+      dplyr::filter(object@results_primary, variables %in% {{variables}})
 
-    bins_angle <- base::levels(ias_results_df$bins_angle)
+    bins_angle <- base::unique(ias_results_df$bins_angle)
     models <- base::unique(ias_results_df$models)
 
     plot_df <-
       tidyr::expand_grid(
         variables = variables,
         models = models,
-        bins_angle = base::factor(bins_angle, levels = bins_angle)
+        bins_angle = bins_angle
       ) %>%
       dplyr::left_join(y = ias_results_df, by = c("variables", "models", "bins_angle")) %>%
       dplyr::mutate(
-        corr = tidyr::replace_na(corr, replace = 0),
+        bins_angle = base::factor(bins_angle, levels = bins_angle),
+        corr = tidyr::replace_na(corr, replace = 0)
       )
 
     if(base::is.character(model_subset)){
 
       plot_df <-
-        dplyr::filter(plot_df, stringr::str_detect(pattern, pattern = model_subset))
+        dplyr::filter(plot_df, stringr::str_detect(models, pattern = model_subset))
 
     }
 
     if(base::is.character(model_remove)){
 
       plot_df <-
-        dplyr::filter(plot_df, !stringr::str_detect(pattern, pattern = model_subset))
+        dplyr::filter(plot_df, !stringr::str_detect(models, pattern = model_subset))
     }
 
     if(base::length(variables) == 1){
@@ -487,7 +487,7 @@ setMethod(
 
     }
 
-    plot_df$models <- make_pretty_model_names(plot_df$models)
+    plot_df$models <- make_pretty_names(plot_df$models)
 
     background_df <-
       dplyr::mutate(

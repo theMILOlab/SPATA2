@@ -26,6 +26,7 @@ getIasDf(
   rename_angle_bins = FALSE,
   bcsp_exclude = NULL,
   drop = TRUE,
+  add_sd = FALSE,
   verbose = NULL,
   ...
 )

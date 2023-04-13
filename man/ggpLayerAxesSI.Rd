@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerAxesSI}
 \alias{ggpLayerAxesSI}
-\title{Display axes with European units of length}
+\title{Display axes with SI units of length}
 \usage{
 ggpLayerAxesSI(
   object,
@@ -28,8 +28,8 @@ for which axes the transformation is performed. Defaults to both.}
 \item{frame_by}{Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
 If specified, sets the plot frame accordingly.}
 
-\item{breaks_x, breaks_y}{Vector of distance inputs. Can be pixel or European
-units of lengths. If European unit of lengths, input is transformed to pixels as
+\item{breaks_x, breaks_y}{Vector of distance inputs. Can be pixel or SI
+units of lengths. If SI unit of lengths, input is transformed to pixels as
 the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
 automatically to five breaks equally distributed along the axis.}
 
@@ -47,7 +47,7 @@ family.
 }
 \description{
 Performs necessary transformations to display axes of
-surface plots with European units of length.
+surface plots with SI units of length.
 }
 \details{
 Several functions in \code{SPATA2} have arguments that take \emph{distance input}.

@@ -22,7 +22,7 @@ of zooming. E.g. \code{xrange = c(200, 500)} results in the plot
 being cropped from x-coordinate 200px up to x-coordinate 500px.
 
 This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
+If values are specified in SI units of length the input is
 immediately converted to pixel units.}
 
 \item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.

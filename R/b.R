@@ -245,6 +245,7 @@ bin_by_angle <- function(coords_df,
   bins_to_keep <-
     dplyr::select(angle_df ,bins_circle, bins_angle) %>%
     dplyr::distinct() %>%
+    dplyr::filter(bins_angle != "Outside") %>%
     dplyr::group_by(bins_angle) %>%
     dplyr::tally() %>%
     dplyr::filter(n >= {{min_bins_circle}}) %>%

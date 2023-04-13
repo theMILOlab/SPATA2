@@ -134,12 +134,13 @@ getIasDf <- function(object,
                      summarize_by = FALSE,
                      summarize_with = "mean",
                      normalize_by = "sample",
-                     normalize = TRUE,
+                     normalize = FALSE,
                      remove_circle_bins = FALSE,
                      remove_angle_bins = FALSE,
                      rename_angle_bins = FALSE,
                      bcsp_exclude = NULL,
                      drop = TRUE,
+                     add_sd = FALSE,
                      verbose = NULL,
                      ...){
 
@@ -203,12 +204,12 @@ getIasDf <- function(object,
         spata_df = getSpataDf(object),
         variables = variables,
         smooth = FALSE,
-        normalize = FALSE,
+        normalize = normalize,
         method_gs = method_gs,
         verbose = verbose
       )
 
-    ias_df <-
+    ias_df_joined <-
       dplyr::left_join(
         x = ias_df,
         y = var_df,
@@ -245,11 +246,12 @@ getIasDf <- function(object,
         verbose = verbose
       )
 
+      # keep var bins_order
       groups <- c(groups, "bins_order")
 
-      ias_df <-
+      ias_df1 <-
         dplyr::group_by(
-          .data = ias_df,
+          .data = ias_df_joined,
           dplyr::across(.cols = dplyr::all_of(groups))
         ) %>%
         dplyr::summarise(
@@ -258,6 +260,54 @@ getIasDf <- function(object,
             .fns = summarize_formulas[[summarize_with]]
           )
         )
+
+      if(base::isTRUE(add_sd)){
+
+        ias_df2 <-
+          dplyr::group_by(
+            .data = ias_df_joined,
+            dplyr::across(.cols = dplyr::all_of(groups))
+          ) %>%
+          dplyr::summarise(
+            dplyr::across(
+              .cols = dplyr::any_of(variables),
+              .fns = list(sd = ~ stats::sd(.x, na.rm = TRUE))
+            )
+          ) %>% select(-bins_order)
+
+
+        # store ranges for normalization if required
+        if(base::is.character(normalize_by)){
+
+          original_ranges <-
+            purrr::map(
+              .x = variables,
+              .f = ~ base::range(ias_df_joined[[.x]])
+            ) %>%
+            purrr::set_names(
+              nm = variables
+            )
+
+        }
+
+        ias_df_out <-
+          dplyr::left_join(
+            x = ias_df1,
+            y = ias_df2,
+            by = "bins_circle"
+            )
+
+      } else {
+
+        ias_df_out <- ias_df1
+
+        ias_df_out
+
+      }
+
+    } else {
+
+      ias_df_out <- ias_df_joined
 
     }
 
@@ -290,17 +340,36 @@ getIasDf <- function(object,
         verbose = verbose
       )
 
-      ias_df <-
+      ias_df_norm <-
         dplyr::group_by(
-          .data = ias_df,
+          .data = ias_df_out,
           dplyr::across(.cols = dplyr::all_of(groups))
         ) %>%
         dplyr::mutate(
           dplyr::across(
             .cols = dplyr::any_of(variables),
-            .fns = confuns::normalize
+            .fns = ~ scales::rescale(x = .x, to = c(0,1))
           )
         )
+
+      if(base::isTRUE(add_sd)){
+
+        for(v in variables){
+
+          vcol <- stringr::str_c(v, "_sd")
+
+          ias_df_norm[[vcol]] <-
+            scales::rescale(
+              x = ias_df_norm[[vcol]],
+              from = original_ranges[[v]],
+              to = c(0, 1)
+              )
+
+        }
+
+      }
+
+      ias_df_out <- ias_df_norm
 
     }
 
@@ -311,9 +380,11 @@ getIasDf <- function(object,
       verbose = verbose
     )
 
+    ias_df_out <- ias_df
+
   }
 
-  out <- dplyr::ungroup(ias_df)
+  out <- dplyr::ungroup(ias_df_out)
 
   return(out)
 

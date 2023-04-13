@@ -1601,7 +1601,6 @@ setMethod(
           alpha = label_alpha,
           color = label_color,
           size = label_size,
-
           ...
         )
 

@@ -24,7 +24,7 @@ of the rectangle. E.g. \code{xrange = c(200, 500)} results in a rectangle
 that ranges from 200px to 500px on the x-axis.
 
 This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
+If values are specified in SI units of length the input is
 immediately converted to pixel units.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}

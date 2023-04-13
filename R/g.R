@@ -162,10 +162,10 @@ ggpLayerAxesClean <- function(..., object = NULL){
 
 
 
-#' @title Display axes with European units of length
+#' @title Display axes with SI units of length
 #'
 #' @description Performs necessary transformations to display axes of
-#' surface plots with European units of length.
+#' surface plots with SI units of length.
 #'
 #' @inherit argument_dummy params
 #' @inherit transform_dist_si_to_pixels params
@@ -177,8 +177,8 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' for which axes the transformation is performed. Defaults to both.
 #' @param frame_by Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
 #' If specified, sets the plot frame accordingly.
-#' @param breaks_x,breaks_y Vector of distance inputs. Can be pixel or European
-#' units of lengths. If European unit of lengths, input is transformed to pixels as
+#' @param breaks_x,breaks_y Vector of distance inputs. Can be pixel or SI
+#' units of lengths. If SI unit of lengths, input is transformed to pixels as
 #' the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
 #' automatically to five breaks equally distributed along the axis.
 #' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
@@ -418,6 +418,7 @@ ggpLayerEncirclingGroups <- function(object,
                                      plot_type = "coords",
                                      grouping_variable,
                                      groups_subset = NULL,
+                                     bcsp_rm = NULL,
                                      ...){
 
   confuns::check_one_of(
@@ -442,6 +443,12 @@ ggpLayerEncirclingGroups <- function(object,
     layer_df <-
       getUmapDf(object) %>%
       dplyr::select(barcodes, umap1, umap2)
+
+  }
+
+  if(base::is.character(bcsp_rm)){
+
+    layer_df <-  dplyr::filter(layer_df, !barcodes %in% {{bcsp_rm}})
 
   }
 
@@ -1250,7 +1257,7 @@ ggpLayerLineplotAid <- function(object, xi, yi = 0.5, l = NULL, id = NULL, ...){
 #' that ranges from 200px to 500px on the x-axis.
 #'
 #' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in European units of length the input is
+#' If values are specified in SI units of length the input is
 #' immediately converted to pixel units.
 #'
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
@@ -1740,7 +1747,7 @@ ggpLayerTrajectories <- function(object = "object",
 #' being cropped from x-coordinate 200px up to x-coordinate 500px.
 #'
 #' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in European units of length the input is
+#' If values are specified in SI units of length the input is
 #' immediately converted to pixel units.
 #' @param expand_x,expand_y Given to `expand` of `ggplot2::scale_x/y_continuous()`.
 #'

@@ -632,7 +632,6 @@ plotIasLineplot <- function(object,
                             outer = TRUE,
                             inner = FALSE,
                             method_gs = NULL,
-                            smooth_method = "loess",
                             smooth_span = 0.2,
                             smooth_se = FALSE,
                             unit = getSpatialMethod(object)@unit,
@@ -665,6 +664,16 @@ plotIasLineplot <- function(object,
 
   hlpr_assign_arguments(object)
 
+  # currentyl not in use
+  display_ribbon = FALSE
+  ribbon_alpha = 0.5
+  ribbon_color = "lightgrey"
+  display_error_bar = FALSE
+  sd_alpha = 0.9
+  sd_color = "black"
+
+  add_sd <- FALSE #base::any(base::isTRUE(display_ribbon), base::isTRUE(display_error_bar))
+
   if(facet_by == "bins_angle"){
 
     if(!n_bins_angle > 1){
@@ -682,12 +691,14 @@ plotIasLineplot <- function(object,
     }
 
     summarize_by <- c("bins_angle", "bins_circle")
+    normalize_by <- "bins_angle"
 
 
 
   } else {
 
     summarize_by <- c("bins_circle")
+    normalize_by <- "sample"
 
     n_bins_angle <- 1
 
@@ -730,8 +741,10 @@ plotIasLineplot <- function(object,
       remove_circle_bins = rm_cb,
       normalize = c(FALSE, FALSE),
       bcsp_exclude = bcsp_exclude,
+      add_sd = add_sd,
       verbose = verbose
     )
+
 
   # in case of an image annotation that is too small to contain barcode spots
   if(base::isTRUE(include_area)){
@@ -763,14 +776,26 @@ plotIasLineplot <- function(object,
       object = object
     )
 
+
+  if(base::isTRUE(add_sd)){
+
+    plot_df <- shift_screening_df_to_long(df = ias_df, var_order = "bins_order")
+
+  } else {
+
+    plot_df <-
+      tidyr::pivot_longer(
+        data = ias_df,
+        cols = dplyr::any_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      )
+
+  }
+
   plot_df <-
-    tidyr::pivot_longer(
-      data = ias_df,
-      cols = dplyr::any_of(variables),
-      names_to = "variables",
-      values_to = "values"
-    ) %>%
     dplyr::mutate(
+      .data = plot_df,
       # bin 1 -> 0. 0 * dist = 0 for first bin -> no distance to img an
       breaks = dplyr::if_else(condition = bins_circle == "Core", true = bins_order, false = (bins_order - 0.5)),
       breaks = as_pixel(input = (breaks * bw_dist), object = object), # multiply with binwidth to get actual distance
@@ -899,7 +924,7 @@ plotIasLineplot <- function(object,
       ggplot2::geom_smooth(
         size = line_size,
         span = smooth_span,
-        method = smooth_method,
+        method = "loess",
         formula = y ~ x,
         se = smooth_se,
         mapping = ggplot2::aes(color = .data[[facet_by]])
@@ -965,6 +990,15 @@ plotIasLineplot <- function(object,
 
   }
 
+  # debug later why isnt it removed automatically?
+  plot_df <- dplyr::filter(plot_df, bins_circle != "Outside")
+
+  if(facet_by == "bins_angle"){
+
+    plot_df <- dplyr::filter(plot_df, bins_angle != "Outside")
+
+  }
+
   # plot
   p <-
     ggplot2::ggplot(
@@ -975,8 +1009,7 @@ plotIasLineplot <- function(object,
       object = object,
       xi = xi,
       yi = yi,
-      l = as_pixel(ias_input$distance, object = object),
-      ...
+      l = as_pixel(ias_input$distance, object = object)
     ) +
     model_add_on +
     line_add_on +
@@ -1273,7 +1306,6 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' @title Plot image annotations
 #'
 #' @description Plots structures and areas that were annotated with `createImageAnnotations()`.
-#'
 #'
 #' @param plot Logical value. If TRUE, the plots are plotted immediately
 #' via \code{gridExtra.grid.arrange()} and the list of plots is returned

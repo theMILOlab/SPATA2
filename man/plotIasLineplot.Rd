@@ -16,7 +16,6 @@ plotIasLineplot(
   outer = TRUE,
   inner = FALSE,
   method_gs = NULL,
-  smooth_method = "loess",
   smooth_span = 0.2,
   smooth_se = FALSE,
   unit = getSpatialMethod(object)@unit,
@@ -38,6 +37,12 @@ plotIasLineplot(
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
+  display_ribbon = TRUE,
+  ribbon_alpha = 0.5,
+  ribbon_color = "lightgrey",
+  display_error_bar = FALSE,
+  sd_alpha = 0.9,
+  sd_color = "black",
   x_nth = 3,
   xi = NULL,
   yi = NULL,
@@ -86,9 +91,6 @@ are not included in the output.}
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{smooth_method}{The smoothing method that will be used specified as a
-single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
-
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
@@ -136,6 +138,9 @@ to highlight where the border of the image annotation runs.}
 \item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
 represents the border of the image annotation.}
+
+\item{display_ribbon}{Logical value. If TRUE, a ribbon is displayed around
+the main line of the plot visualizing uncertainty using standard deviation.}
 
 \item{x_nth}{Numeric value. If the number of breaks/labels on the
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,

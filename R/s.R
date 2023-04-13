@@ -734,6 +734,46 @@ shift_frame <- function(current_frame, new_center){
 }
 
 #' @export
+shift_screening_df_to_long <- function(df, var_order = "bins_order", suffix = "_sd"){
+
+  sd_df <-
+    dplyr::select(
+      .data = df,
+      bins_circle,
+      dplyr::all_of(var_order),
+      dplyr::ends_with(suffix)
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::ends_with(suffix),
+      names_to = "variables",
+      values_to = "sd"
+    ) %>%
+    dplyr::mutate(variables = stringr::str_remove(variables, pattern = stringr::str_c(suffix, "$"))) %>%
+    dplyr::select(dplyr::all_of(c(var_order, "variables", "sd")))
+
+  variables <- base::unique(sd_df[["variables"]])
+
+  val_df <-
+    dplyr::select(
+      .data = df,
+      dplyr::all_of(var_order),
+      dplyr::any_of(c("bins_circle", "bins_angle")),
+      dplyr::everything(),
+      -dplyr::ends_with(suffix)
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(variables),
+      names_to = "variables",
+      values_to = "values"
+    )
+
+  out <- dplyr::left_join(x = val_df, y = sd_df, by = c("variables", var_order))
+
+  return(out)
+
+}
+
+#' @export
 shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory_order", ...){
 
   tidyr::pivot_longer(
