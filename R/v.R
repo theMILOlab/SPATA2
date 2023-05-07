@@ -3,10 +3,6 @@
 
 # valid -------------------------------------------------------------------
 
-
-
-
-
 #' @title Obtain valid argument inputs
 #'
 #' @description These function simply return valid input options
@@ -241,6 +237,14 @@ validPlotTypes <- function(fn_name){
   )
 
   plot_types_in_functions[[fn_name]]
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
+validPubExamples <- function(){
+
+  base::names(pub_dropbox_links)
 
 }
 

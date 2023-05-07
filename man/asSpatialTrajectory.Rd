@@ -8,7 +8,13 @@
 asSpatialTrajectory(object, ...)
 
 \S4method{asSpatialTrajectory}{spatial_trajectory}(object, ...)
+
+asSpatialTrajectory(object, ...)
+
+\S4method{asSpatialTrajectory}{spatial_trajectory}(object, ...)
 }
 \description{
+Title
+
 Title
 }

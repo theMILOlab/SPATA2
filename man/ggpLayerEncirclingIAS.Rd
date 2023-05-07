@@ -10,8 +10,17 @@ ggpLayerEncirclingIAS(
   distance = NA_integer_,
   n_bins_circle = NA_integer_,
   binwidth = getCCD(object),
-  linecolor = "black",
-  linesize = 1
+  alpha_core = 0,
+  fill_core = NA,
+  line_color = "black",
+  line_size = 1,
+  line_size_core = 1,
+  xrange = NULL,
+  yrange = NULL,
+  inc_outline = TRUE,
+  direction = "outwards",
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
@@ -33,7 +42,23 @@ the barcode-spots are assigned. We recommend to set it equal to the center-cente
 distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values.}
 
-\item{linesize}{Numeric value. The size of the line(s) plotted.}
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -44,4 +69,16 @@ family.
 \description{
 Adds the circular expansion used by the IAS-algorithm
 of the area of  an image annotation to a surface plot.
+}
+\examples{
+
+object <- downloadPubExample("313_T")
+
+plotImageGgplot(object) +
+ ggpLayerEncirclingIAS(
+   object = object,
+   id = "necrotic_area",
+   distance = "1mm"
+ )
+
 }

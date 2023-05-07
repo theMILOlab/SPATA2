@@ -13,8 +13,7 @@ imageAnnotationScreening(
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  outer = TRUE,
-  inner = TRUE,
+  include_area = FALSE,
   summarize_with = "mean",
   normalize_by = "sample",
   method_padj = "fdr",
@@ -56,12 +55,6 @@ an angle span relative to the center of the image annotation.
 
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
-
-\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
-is not included in the output.}
-
-\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
-are not included in the output.}
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}

@@ -16,7 +16,7 @@ plotTrajectoryBarplot(
   display_trajectory_parts = NULL,
   position = "fill",
   scales = "free_x",
-  x_nth = 2,
+  x_nth = 7L,
   expand_x = c(0.025, 0),
   expand_y = c(0.0125, 0),
   verbose = NULL,

@@ -1497,8 +1497,6 @@ setMethod(
 
 
 
-
-
 # asM-asS -----------------------------------------------------------------
 
 
@@ -1823,6 +1821,30 @@ asSummarizedExperiment <- function(object, ...){
 setGeneric(name = "asSPATA2", def = function(object, ...){
 
   standardGeneric(f = "asSPATA2")
+
+})
+
+
+#' @title Title
+#' @export
+setGeneric(name = "asSpatialTrajectory", def = function(object, ...){
+
+  standardGeneric(f = "asSpatialTrajectory")
+
+})
+
+#' @rdname asSpatialTrajectory
+#' @export
+
+setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definition = function(object, ...){
+
+  SpatialTrajectory(
+    comment = object@comment,
+    id = object@name,
+    projection = object@compiled_trajectory_df,
+    sample = object@sample,
+    segment = object@segment_trajectory_df
+  )
 
 })
 

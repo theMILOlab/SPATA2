@@ -519,7 +519,7 @@ create_model_df <- function(input,
     fns_input <-
       confuns::lselect(
         lst = fns_input,
-        dplyr::all_of(model_subset)
+        dplyr::matches(model_subset)
       )
 
   }
@@ -529,7 +529,7 @@ create_model_df <- function(input,
     fns_numeric <-
       confuns::lselect(
         lst = fns_numeric,
-        dplyr::all_of(model_subset)
+        dplyr::matches(model_subset)
       )
 
   }

@@ -163,6 +163,14 @@ across_dummy <- function(across, across_subset, relevel){}
 #' determines the order in which the groups of interest are displayed. Groups that
 #' are not included are dropped which affects the colors with which they are displayed.
 #'
+#' @param sc_input Data.frame that contains the results from single cell deconvolution.
+#' Must have at least three columns:
+#' \itemize{
+#'  \item{*x* : }{ numeric. Position of cell on the x axis in pixel.},
+#'  \item{*y* :}{ numeric. Position of cell on the y axis in pixel.},
+#'  \item{*cell_type* :}{ character. Cell type of the cell.}
+#' }
+#'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
 #'

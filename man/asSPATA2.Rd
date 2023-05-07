@@ -17,6 +17,8 @@ asSPATA2(object, ...)
   image_name = "slice1",
   transfer_meta_data = TRUE,
   transfer_dim_red = TRUE,
+  count_mtr_name = "counts",
+  scaled_mtr_name = "scale.data",
   verbose = TRUE
 )
 }

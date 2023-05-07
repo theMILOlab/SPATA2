@@ -158,8 +158,7 @@ imageAnnotationScreening <- function(object,
                                      binwidth = getCCD(object),
                                      angle_span = c(0,360),
                                      n_bins_angle = 1,
-                                     outer = TRUE,
-                                     inner = TRUE,
+                                     include_area = FALSE,
                                      summarize_with = "mean",
                                      normalize_by = "sample",
                                      method_padj = "fdr",
@@ -170,6 +169,8 @@ imageAnnotationScreening <- function(object,
                                      bcsp_exclude = NA_character_,
                                      verbose = NULL,
                                      ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
@@ -209,12 +210,10 @@ imageAnnotationScreening <- function(object,
       variables = variables,
       distance = distance,
       binwidth = binwidth,
-      outer = outer,
-      inner = inner,
       n_bins_circle = n_bins_circle,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
-      remove_circle_bins = TRUE,
+      remove_circle_bins = !include_area,
       remove_angle_bins = TRUE,
       bcsp_exclude = bcsp_exclude,
       drop = FALSE,
@@ -229,8 +228,13 @@ imageAnnotationScreening <- function(object,
 
   bins_angle_remaining <- base::levels(ias_df$bins_angle)
 
-  min_bins_circle <- base::min(n_bins_circle)
-  max_bins_circle <- base::max(n_bins_circle)
+  if(base::isTRUE(include_area)){
+
+    ias_df[["bins_order"]] <- ias_df[["bins_order"]] + 1
+
+  }
+
+  max_bins_circle <- base::max(ias_df$bins_order)
 
   # test model input
   model_df <-
@@ -348,6 +352,8 @@ imageAnnotationScreening <- function(object,
   )
 
   info <- list(
+    id = id,
+    include_area = include_area,
     input_binwidth = input_binwidth,
     input_distance = input_distance,
     mtr_name = mtr_name,
@@ -360,7 +366,6 @@ imageAnnotationScreening <- function(object,
       binwidth = binwidth,
       coords = getCoordsDf(object),
       distance = distance,
-      img_annotation = getImageAnnotation(object, id = id),
       info = info,
       models = model_df,
       n_bins_angle = n_bins_angle,
@@ -442,6 +447,383 @@ imageAnnotationToSegmentation <- function(object,
 
 
 # in ----------------------------------------------------------------------
+
+#' @title Include spatial extent of tissue sections in analysis
+#'
+#' @description Ensures section specific processing of observations
+#' in relation to image annotations by identifying the outline of the
+#' tissue section (or -sections in case of multiple tissue sections per sample)
+#' and by relating the observations to it.
+#'
+#' @inherit imageAnnotationScreening params
+#' @param input_df A data.frame that contains at least numeric *x* and *y*
+#' variables.
+#' @inherit argument_dummy params
+#' @param ias_circles Logical value. If `TRUE`, input data.frame is assumed
+#' to contain polygon coordinates of the expanded image annotation encircling
+#' and sorts them after filtering for those that lie inside the tissue section
+#' in order to plot them via `ggplot2::geom_path()`.
+#'
+#' @return Filtered input data.frame.
+#' @export
+#'
+include_tissue_outline <- function(coords_df,
+                                   input_df,
+                                   outline_var = NULL,
+                                   img_ann_center = NULL,
+                                   ias_circles = FALSE,
+                                   ccd = NULL,
+                                   remove = TRUE){
+
+  is_dist_pixel(input = ccd, error = TRUE)
+
+  if(base::is.character(outline_var)){
+
+    sections <- base::levels(coords_df[[outline_var]])
+
+  } else {
+
+    outline_var <- "outline"
+
+    coords_df <- add_outline_variable(coords_df, ccd = ccd)
+
+    coords_df <- dplyr::filter(coords_df, outline != "0")
+
+    sections <- base::unique(coords_df[[outline_var]])
+
+  }
+
+  proc_df <-
+    purrr::map_df(
+      .x = sections,
+      .f = function(section){
+
+        spots_in_part <-
+          dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+
+        hull_points <- grDevices::chull(x = spots_in_part[["x"]], y = spots_in_part[["y"]])
+        hull_df <- spots_in_part[hull_points, ]
+
+        input_df$obs_in_section <-
+          sp::point.in.polygon(
+            point.x = input_df[["x"]],
+            point.y = input_df[["y"]],
+            pol.x = hull_df[["x"]],
+            pol.y = hull_df[["y"]]
+          ) %>%
+          base::as.character()
+
+        out_df <-
+          dplyr::mutate(
+            .data = input_df,
+            pos_rel = dplyr::if_else(obs_in_section == "1", true = "inside", false = "outside"),
+            tissue_section = {{section}}
+          )
+
+        if("inside" %in% out_df[["pos_rel"]]){
+
+          if(base::isTRUE(ias_circles)){
+
+            out_df[["part"]] <- 0
+            out_df[["number"]] <- 0
+
+            parts <- list(outside = 0, inside = 0)
+
+            # walk along the drawing direction and mark entering and exit of line
+            for(i in 1:base::nrow(out_df)){
+
+              current_pos <- base::as.character(out_df[i, "pos_rel"])
+
+              # switch
+              if((i == 1) || (current_pos != prev_pos)){
+
+                parts[[current_pos]] <- parts[[current_pos]]+1
+
+                number <- 1
+
+              } else {
+
+                number <- number + 1
+
+              }
+
+              out_df[i, "part"] <- parts[[current_pos]]
+              out_df[i, "number"] <- number
+
+              prev_pos <- current_pos
+
+            }
+
+            out_df <-
+              dplyr::mutate(
+                .data = out_df,
+                pos_rel_group = stringr::str_c(pos_rel, part),
+                intersect = number == 1
+              ) %>%
+              dplyr::group_by(pos_rel_group) %>%
+              dplyr::arrange(number, .by_group = TRUE) %>%
+              dplyr::ungroup()
+
+          }
+
+          if(base::isTRUE(remove)){
+
+            out_df <- dplyr::filter(out_df, pos_rel == "inside")
+
+          }
+
+        } else {
+
+          out_df <- NULL
+
+        }
+
+        return(out_df)
+
+      }
+    )
+
+  # if multiple sections on visium slide
+  # identify to which image section the img ann belongs
+  if(base::length(sections) > 1 & base::is.numeric(img_ann_center)){
+
+    section_of_img_ann <-
+      dplyr::group_by(.data = coords_df, barcodes) %>%
+      dplyr::mutate(
+        dist = compute_distance(starting_pos = c(x,y), final_pos = img_ann_center )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(dist == base::min(dist)) %>%
+      dplyr::pull({{outline_var}})
+
+    proc_df <- dplyr::filter(proc_df, tissue_section == {{section_of_img_ann}})
+
+  }
+
+
+  return(proc_df)
+
+
+}
+
+#' @title Count cells depending on distance to image annotation
+#'
+#' @description Integration of single cell deconvolution and SPATA2s image annotations.
+#'
+#' @param as_models Adjusts the output to a list that is a valid input for
+#' `models_add`-argument of `imageAnnotationScreening()`.
+#'
+#' @inherit imageAnnotationScreening params
+#' @inherit getIasDf params
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame as is returned by `getIasDf()` with cell types as variables.
+#' @export
+#'
+inferSingleCellGradient <- function(object,
+                                    sc_input,
+                                    id,
+                                    calculate = "density",
+                                    distance = NA_integer_,
+                                    n_bins_circle = NA_integer_,
+                                    binwidth = getCCD(object),
+                                    angle_span = c(0, 360),
+                                    n_bins_angle = 1,
+                                    remove_circle_bins = FALSE,
+                                    normalize = TRUE,
+                                    area_unit = NULL,
+                                    format = "wide",
+                                    as_models = FALSE){
+
+  confuns::check_data_frame(
+    df = sc_input,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  if(!"cell_type" %in% base::colnames(sc_input)){
+
+    stop("Data.frame for argument `sc_input` must contain a variable named 'cell_type'.")
+
+  } else if(!base::class(sc_input[["cell_type"]]) %in% c("character", "factor")){
+
+    stop("Variable 'cell_type' must be of class character or factor.")
+
+  }
+
+  sc_input[["cell_id"]] <- stringr::str_c("cell_", 1:base::nrow(sc_input))
+
+  ias_input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object
+    )
+
+  all_cell_types <- base::unique(sc_input[["cell_type"]])
+
+  bins <- stringr::str_c("Circle ", ias_input$n_bins_circle)
+
+  if(base::all(base::isTRUE(remove_circle_bins))){
+
+    remove_circle_bins <- c("Core", "Outside")
+
+  }
+
+  if(!"Core" %in% remove_circle_bins){
+
+    bins <- c("Core", bins)
+
+  }
+
+  if(!"Outside" %in% remove_circle_bins){
+
+    bins <- c(bins, "Outside")
+
+  }
+
+  all_bins_df <-
+    tibble::tibble(bins_circle = base::factor(bins, levels = bins)) %>%
+    dplyr::mutate()
+
+  if(base::is.null(area_unit)){
+
+    area_unit <- stringr::str_c(extract_unit(binwidth), "2")
+
+  }
+
+  outline_var <- getOutlineVarName(object)
+
+  if(base::is.character(outline_var)){
+
+    coords_df <- getCoordsDf(object, features = outline_var)
+
+  } else {
+
+    coords_df <- getCoordsDf(object)
+
+  }
+
+  out_df <-
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        ref_area_df <-
+          getIasBinAreas(
+            object = object,
+            id = idx,
+            binwidth = binwidth,
+            n_bins_circle = n_bins_circle,
+            distance = distance,
+            remove_circle_bins = remove_circle_bins,
+            angle_span = angle_span,
+            n_bins_angle = n_bins_angle,
+            verbose = FALSE,
+            area_unit = area_unit,
+            use_outline = TRUE
+          )
+
+        sc_input_proc <-
+          incorporate_tissue_outline(
+            coords_df = coords_df,
+            input_df = sc_input,
+            outline_var = outline_var,
+            img_ann_center = getImgAnnCenter(object, id = idx)
+          ) %>%
+          bin_by_expansion(
+            coords_df = .,
+            area_df = getImgAnnBorderDf(object, ids = idx),
+            binwidth = ias_input$binwidth,
+            n_bins_circle = ias_input$n_bins_circle,
+            remove = remove_circle_bins
+          ) %>%
+          bin_by_angle(
+            coords_df = .,
+            center = getImgAnnCenter(object, id = idx),
+            n_bins_angle = n_bins_angle,
+            angle_span = angle_span,
+            var_to_bin = "cell_id",
+            verbose = FALSE
+          )
+
+        out <-
+          dplyr::group_by(sc_input_proc, bins_circle, bins_order, bins_angle, cell_type) %>%
+          dplyr::summarise(cell_type_count = dplyr::n()) %>%
+          dplyr::ungroup() %>%
+          dplyr::group_by(bins_circle, bins_order, bins_angle) %>%
+          dplyr::mutate(cell_count = base::sum(cell_type_count)) %>%
+          dplyr::left_join(x = ref_area_df, y = ., by = c("bins_circle", "bins_angle", "bins_order")) %>%
+          dplyr::ungroup() %>%
+          dplyr::mutate(
+            density = cell_type_count / area,
+            percentage = cell_type_count / area
+          ) %>%
+          tidyr::pivot_wider(
+            id_cols = c("bins_circle", "bins_order", "bins_angle"),
+            names_from = "cell_type",
+            values_from = {{calculate}}
+          ) %>%
+          dplyr::mutate(
+            dplyr::across(
+              .cols = dplyr::all_of(all_cell_types),
+              .fns = ~ tidyr::replace_na(data = .x, replace = 0)
+            )
+          ) %>%
+          dplyr::select(-dplyr::any_of("NA"))
+
+        if(base::isTRUE(normalize)){
+
+          out <-
+            dplyr::mutate(
+              .data = out,
+              dplyr::across(
+                .cols = dplyr::all_of(all_cell_types),
+                .fns = ~
+                  tidyr::replace_na(data = .x, replace = 0) %>%
+                  confuns::normalize()
+              )
+            )
+
+        }
+
+        return(out)
+
+      }
+    ) %>%
+    dplyr::group_by(bins_circle, bins_order, bins_angle) %>%
+    dplyr::summarize(
+      dplyr::across(
+        .cols = dplyr::all_of(all_cell_types),
+        .fns = ~ base::mean(.x, na.rm = T)
+      )
+    )
+
+  if(base::isTRUE(as_models)){
+
+    out_df <-
+      dplyr::select(out_df, dplyr::all_of(all_cell_types)) %>%
+      base::as.list()
+
+  } else {
+
+    if(format == "long"){
+
+      out_df <-
+        tidyr::pivot_longer(
+          data = out_df,
+          cols = dplyr::all_of(all_cell_types),
+          values_to = {{calculate}},
+          names_to = "cell_type"
+        )
+
+    }
+
+  }
+
+  return(out_df)
+
+}
 
 #' @title Test polygon intersection
 #'

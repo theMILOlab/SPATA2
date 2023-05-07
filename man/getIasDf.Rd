@@ -13,21 +13,17 @@ getIasDf(
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  outer = TRUE,
-  inner = TRUE,
   variables = NULL,
   method_gs = NULL,
-  summarize_by = FALSE,
+  summarize_by = c("bins_angle", "bins_circle"),
   summarize_with = "mean",
   normalize_by = "sample",
-  normalize = TRUE,
+  normalize = FALSE,
   remove_circle_bins = FALSE,
   remove_angle_bins = FALSE,
   rename_angle_bins = FALSE,
   bcsp_exclude = NULL,
-  drop = TRUE,
-  add_sd = FALSE,
-  verbose = NULL,
+  verbose = FALSE,
   ...
 )
 
@@ -59,12 +55,6 @@ an angle span relative to the center of the image annotation.
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
 
-\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
-is not included in the output.}
-
-\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
-are not included in the output.}
-
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
@@ -76,23 +66,11 @@ or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
 
-\item{normalize_by}{Character value or FALSE. If character, there are two options:
-\itemize{
-\item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
-\item{\code{normalize_by} = \emph{'bins_angle'}:}{
-Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
-is bigger than 1.
-}
-}}
-
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
 \item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
-
-\item{drop}{Logical value. If TRUE, unused levels of the \emph{bins_circle}
-variables are dropped.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -102,49 +80,11 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-The final output depends on the input for \code{variables} and
-\code{summarize_by}.
-
-By default (both arguments are NULL) the returned data.frame contains
-barcode-spots as observations/rows and variables that describe their position
-to the image annotation denoted with \code{id}. This includes the variables
-\emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
-content depends on the set up via the arguments \code{distance}, \code{binwidth}
-and \code{n_bins_circle}.
-
-\bold{Coordinates data.frame vs. Inferred expression changes}:
-
-If argument \code{variables} is a character the denoted variables are
-joined to the data.frame via \code{joinWith()}. If the set of variables
-contains only numeric ones (genes, gene-sets and numeric features) the
-function argument \code{summarize_by} can be set up in three different ways:
-
-\itemize{
-\item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
-is a coordinates data.frame with each observation/row corresponding to
-a barcode spots with additional information of its relation to the image
-annotation denoted in \code{id}.}
-\item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
-area summarized by each circular expansion of the polygon. This results
-in data.frame with a column named \emph{bins_circle} containing the names of the bin
-(\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
-per variable that contain the summarized expression value by circle bin. Visualization
-of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
-}
-\item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
-each area are summarized by each circular expansion as well as by angle-bin.
-Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
-from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
-is only useful if \code{n_bins_circle} is bigger than 1. Visualization
-of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
-}}
-
-Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
-summary step.
+Data.frame.
 }
 \description{
-Extracts a data.frame that contains information about barcode-spots
-needed for analysis related to \code{imageAnnotationScreening()}.
+Extracts a data.frame of inferred gradients of numeric
+variables as a fucntion of distance to image annotations.
 }
 \examples{
 
@@ -169,7 +109,7 @@ plotSurfaceIAS(
  object = object,
  id = "necrotic_center",
  distance = 200,
- binwidth = getCCD(object)*4 # lower resolution by increasing binwidth for visualization
+ binwidth = getCCD(object)*4, # lower resolution by increasing binwidth for visualization
  n_bins_angle = 12,
  display_angle = TRUE
  )
@@ -185,8 +125,7 @@ getIasDf(
   object = object,
    id = "necrotic_center",
    distance = 200,
-   variables = "VEGFA",
-   summarize_by = "bins_circle"
+   variables = "VEGFA"
    )
 
 getIasDf(
@@ -194,8 +133,7 @@ getIasDf(
    id = "necrotic_center",
    distance = 200,
    variables = "VEGFA",
-   n_bins_angle = 12,
-   summarize_by = c("bins_circle", "bins_angle")
+   n_bins_angle = 12
    )
 
 }

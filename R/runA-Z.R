@@ -546,9 +546,9 @@ runBayesSpaceClustering <- function(object,
 
   if(base::is.character(assign_sce)){
 
-    print("assigning")
-    print(assign_envir)
-    assign(x = assign_sce, value = bayes_space_out, envir = assign_envir)
+    message(glue::glue("Assigning SingleCell Experiment object in global environment under {assign_sce}."))
+
+    base::assign(x = assign_sce, value = bayes_space_out, envir = assign_envir)
 
   }
 
@@ -1716,6 +1716,59 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 
 
 # runS --------------------------------------------------------------------
+
+#' @title Clustering with Seurat
+#'
+#' @description A wrapper around the Seurat clustering pipeline suggested by
+#' *Hao and Hao et al., 2021*.
+#'
+#' @param object
+#' @param name
+#' @param mtr_name
+#' @param FindVariableFeatures,RunPCA,FindNeighbors,FindClusters Each argument
+#' takes a list of arguments that is given to the equivalent function.
+#'
+#' @inherit update_dummy return
+#' @export
+#'
+#' @examples
+#'
+#'  object <- SPATAData::downloadSpataObject("275_T")
+#'
+#'  object <- runSeuratClustering(object, name = "seurat_clusters")
+#'
+#'  plotSurface(object, color_by = "seurat_clusters")
+#'
+runSeuratClustering <- function(object,
+                                name = "seurat_clusters",
+                                mtr_name = getActiveMatrixName(object),
+                                FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
+                                RunPCA = list(npcs = 60),
+                                FindNeighbors = list(dims = 1:30),
+                                FindClusters = list(resolution = 0.8)){
+
+  confuns::check_none_of(
+    input = name,
+    against = getVariableNames(object),
+    ref.against = "known variables"
+  )
+
+  cluster_df <-
+    findSeuratClusters(
+      object = object,
+      mtr_name = mtr_name,
+      FindVariableFeatures = FindVariableFeatures,
+      RunPCA = RunPCA,
+      FindNeighbors = FindNeighbors,
+      FindClusters = FindClusters
+    ) %>%
+    dplyr::select(barcodes, !!rlang::sym(name) := seurat_clusters)
+
+  object <- addFeatures(object, feature_df = cluster_df)
+
+  return(object)
+
+}
 
 #' @title Identify genes of interest with SPARKX
 #'

@@ -4,7 +4,7 @@
 \alias{buffer_area}
 \title{Buffer area}
 \usage{
-buffer_area(df, buffer)
+buffer_area(df, buffer, close_plg = TRUE)
 }
 \arguments{
 \item{df}{Data.frame with variables \emph{x} and \emph{y} describing the

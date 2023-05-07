@@ -34,9 +34,15 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \description{
-The \verb{rotate*()} family scales the current image
+The \verb{scale*()} family scales the current image
 or coordinates of spatial aspects or everything. See details
 for more information.
+
+\strong{NOTE:} \code{scaleImage()} only rescales the image and lets everything else as
+is. Only use it if the image is to big in resolution and thus not aligned with
+the spatial coordinates. If you want to minimize the resolution of the image
+while maintaining alignment with the spatial aspects in the \code{spata2} object
+use \code{scaleAll()}!
 }
 \details{
 The \verb{scale*()} functions can be used to scale the complete \code{SPATA2}

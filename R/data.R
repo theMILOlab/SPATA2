@@ -116,6 +116,17 @@
 "image_annotations"
 
 
+
+#' List of data.frames of single cell deconvolution. Names of
+#' the list correspond to the sample name. Obtain data.frame
+#' using `sc_deconvolution[[*<sample.name>*]]`
+#'
+#'  @docType data
+#'  @usage data(sc_deconvolution)
+#'
+"sc_deconvolution"
+
+
 #' A list of lists of spatial segmentations for specific `SPATA2`
 #' objects - available via the `SPATAData` package. Names of the list slots
 #' correspond to the sample names in variable  *sample* of `SPATAData::source_df`.

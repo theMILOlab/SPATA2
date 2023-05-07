@@ -696,17 +696,16 @@ findSeuratClusters <- function(object,
                                RunPCA = list(npcs = 60),
                                FindNeighbors = list(dims = 1:30),
                                FindClusters = list(resolution = 0.8),
-                               of_sample = NA){
+                               ...){
 
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  deprecated(...)
+  hlpr_assign_arguments(object)
 
   seurat_object <-
-    Seurat::CreateSeuratObject(count = getCountMatrix(object = object, of_sample = of_sample))
+    Seurat::CreateSeuratObject(count = getCountMatrix(object = object))
 
   seurat_object@assays$RNA@scale.data <-
-    getExpressionMatrix(object = object, mtr_name = mtr_name, of_sample = of_sample, verbose = TRUE)
+    getExpressionMatrix(object = object, mtr_name = mtr_name, verbose = TRUE)
 
   seurat_object <-
     confuns::call_flexibly(

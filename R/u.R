@@ -402,7 +402,7 @@ updateSpataObject <- function(object,
 
     object@coordinates[[sample_name]] <- coords_df
 
-    object <- flipImage(object)
+    #object <- flipImage(object, axis = "h")
 
     msg <-
       c("We have aligned the surface plotting to the mechanism used by other packages.

@@ -21,20 +21,12 @@ spatialTrajectoryScreening(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{id}{Character value. Denotes the spatial trajectory
-of interest.}
-
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
 \item{n_bins}{Numeric value or vector of length 2. Specifies exactly how many bins are
 created. (See details for more.)}
-
-\item{binwidth}{Distance value. The width of the bins to which
-the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details
-of \code{?is_dist} for more information about distance values.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}

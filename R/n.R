@@ -76,6 +76,14 @@ nImageAnnotations <- function(object){
 
 }
 
+#' @export
+nImageDims <- function(object){
+
+  getImageDims(object) %>%
+    base::length()
+
+}
+
 #' @title Number of spatial trajectories
 #'
 #' @description Returns the number of \code{SpatialTrajectries}-objects in the sample.

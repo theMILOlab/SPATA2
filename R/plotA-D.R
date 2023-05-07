@@ -593,7 +593,7 @@ setMethod(
 #'  \item{grouping:} The grouping annotation on the left side of the heatmap if \code{across} is not NULL.
 #'  }
 #'
-#' \code{ggpLayers} takes a list as input. Unnamed elements of the listare added
+#' \code{ggpLayers} takes a list as input. Unnamed elements of the list are added
 #' to all elements of the plot. E.g.: \code{ggpLayers} = \code{list(theme(legend.position = "none"))}
 #' removes all legends.
 #'
@@ -1512,6 +1512,7 @@ plotDeaDotPlot <- function(object,
                            pt_alpha = 0.9,
                            pt_size = 2,
                            pt_color = "blue4",
+                           pt_clrp = NULL,
                            pt_clrsp = "plasma",
                            scales = "free",
                            nrow = NULL,
@@ -1614,6 +1615,7 @@ plotDeaDotPlot <- function(object,
         pt.alpha = pt_alpha,
         pt.color = pt_color,
         pt.clrsp = pt_clrsp,
+        pt.clrp = pt_clrp,
         pt.size = pt_size,
         scales = scales,
         nrow = nrow,
@@ -1639,6 +1641,7 @@ plotDeaDotPlot <- function(object,
         pt.alpha = pt_alpha,
         pt.color = pt_color,
         pt.clrsp = pt_clrsp,
+        pt.clrp = pt_clrp,
         pt.size = pt_size,
         transform.with = transform_with,
         arrange.y = arrange_genes,

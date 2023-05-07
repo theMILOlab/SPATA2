@@ -1048,11 +1048,25 @@ flipCoords <- function(...){
 # g -----------------------------------------------------------------------
 
 
+
+#' @rdname getImgAnnBorderDf
+#' @export
 getImageAnnotationAreaDf <- function(...){
 
   deprecated(fn = TRUE)
 
   getImgAnnBorderDf(...)
+
+}
+
+
+#' @rdname getImgAnnCenter
+#' @export
+getImageAnnotationCenter <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnCenter(...)
 
 }
 
@@ -1069,6 +1083,23 @@ getImageAnnotationAreaDf <- function(...){
 #'
 #'
 
+#' @rdname getImgAnnIds
+#' @export
+getImageAnnotationIds <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnIds(...)
+
+}
+
+#' @export
+getImageAnnotationTags <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnTags(...)
+}
 
 getMethod <- function(object){
 
@@ -1215,6 +1246,16 @@ getSegmentNames <- function(object,
 
 }
 
+#' @title Deprecated
+#' @export
+getTrajectoryScreeningDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getStsDf(...)
+
+}
+
 #' @title Deprecated.
 #'
 #' @description This function is deprecated in favor of
@@ -1234,11 +1275,39 @@ getTrajectoryNames <- function(object, ...){
 
 
 #' @export
+ggpLayerEncirclingGroups <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerGroupOutline(...)
+
+}
+
+#' @export
 ggpLayerImageAnnotation <- function(...){
 
   deprecated(fn = TRUE)
 
   ggpLayerImgAnnBorder(...)
+
+}
+
+#' @rdname ggpLayerImgAnnOutline
+#' @export
+ggpLayerImgAnnBorder <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerImgAnnOutline(...)
+
+}
+
+#' @export
+ggpLayerSampleMask <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerTissueOutline(...)
 
 }
 
@@ -1573,6 +1642,15 @@ hlpr_filter_trend <- function(atdf, limit, poi){
 
 
 # i -----------------------------------------------------------------------
+
+
+incorporate_tissue_outline <- function(...){
+
+  deprecated(fn = TRUE)
+
+  include_tissue_outline(...)
+
+}
 
 #' @title Check if object has been subsetted by segment
 #'

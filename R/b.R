@@ -32,6 +32,7 @@ bin_by_angle <- function(coords_df,
                          rename = FALSE,
                          remove = FALSE,
                          drop = TRUE,
+                         var_to_bin = "barcodes",
                          verbose = TRUE){
 
   confuns::is_vec(x = angle_span, mode = "numeric", of.length = 2)
@@ -77,7 +78,7 @@ bin_by_angle <- function(coords_df,
         .f = function(c, b){
 
           dplyr::filter(coords_df, border == {{b}}) %>%
-            dplyr::group_by(barcodes) %>%
+            dplyr::group_by(!!rlang::sym(var_to_bin)) %>%
             dplyr::mutate(
               angle = compute_angle_between_two_points(
                 p1 = c(x = x, y = y),
@@ -92,7 +93,7 @@ bin_by_angle <- function(coords_df,
 
     # compute angle
     prel_angle_df <-
-      dplyr::group_by(.data = coords_df, barcodes) %>%
+      dplyr::group_by(.data = coords_df, !!rlang::sym(var_to_bin)) %>%
       dplyr::mutate(
         angle = compute_angle_between_two_points(
           p1 = c(x = x, y = y),
@@ -146,7 +147,6 @@ bin_by_angle <- function(coords_df,
 
     bin_list[[n_bins_angle]] <-
       c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
-
 
 
     prel_angle_bin_df <-
@@ -218,13 +218,13 @@ bin_by_angle <- function(coords_df,
   angle_df <-
     dplyr::left_join(
       x = coords_df,
-      y = prel_angle_df[,c("barcodes", "angle")],
-      by = "barcodes"
+      y = prel_angle_df[,c(var_to_bin, "angle")],
+      by = var_to_bin
     ) %>%
     dplyr::left_join(
       x = .,
-      y = prel_angle_bin_df[,c("barcodes", "bins_angle")],
-      by = "barcodes"
+      y = prel_angle_bin_df[,c(var_to_bin, "bins_angle")],
+      by = var_to_bin
     ) %>%
     dplyr::mutate(
       bins_angle = base::as.character(bins_angle),
@@ -243,7 +243,7 @@ bin_by_angle <- function(coords_df,
   }
 
   bins_to_keep <-
-    dplyr::select(angle_df ,bins_circle, bins_angle) %>%
+    dplyr::select(angle_df, dplyr::any_of(c("bins_circle")), bins_angle) %>%
     dplyr::distinct() %>%
     dplyr::filter(bins_angle != "Outside") %>%
     dplyr::group_by(bins_angle) %>%
@@ -320,7 +320,8 @@ bin_by_expansion <- function(coords_df,
                              n_bins_circle,
                              remove = FALSE,
                              bcsp_exclude = NULL,
-                             drop = TRUE){
+                             drop = TRUE,
+                             arrange = TRUE){
 
   n_bins_circle <- base::max(n_bins_circle)
 
@@ -474,6 +475,12 @@ bin_by_expansion <- function(coords_df,
 
   }
 
+  if(base::isTRUE(arrange)){
+
+    out_df <- dplyr::arrange(out_df, bins_order)
+
+  }
+
   return(out_df)
 
 }
@@ -482,24 +489,26 @@ bin_by_expansion <- function(coords_df,
 #' @export
 bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
 
-  is_dist_pixel(input = binwidth, error = TRUE)
-
-  if(base::is.numeric(binwidth)){
-
-    binned_projection_df <-
-      dplyr::mutate(
-        .data = projection_df,
-        proj_length_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
-        order_numeric = base::as.factor(proj_length_binned) %>% base::as.numeric()
-      )
-
-  } else if(base::is.numeric(n_bins)){
+  # prioritize n_bins cause binwidth is defined by default with getCCD()
+  # if n_bins is valid numeric input it has been set manually
+  if(base::is.numeric(n_bins) & !base::is.na(n_bins)){
 
     binned_projection_df <-
       dplyr::mutate(
         .data = projection_df,
         proj_length_binned = base::cut(projection_length, breaks = n_bins),
         order_numeric = base::as.numeric(proj_length_binned)
+      )
+
+  } else {
+
+    is_dist_pixel(input = binwidth, error = TRUE)
+
+    binned_projection_df <-
+      dplyr::mutate(
+        .data = projection_df,
+        proj_length_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
+        order_numeric = base::as.factor(proj_length_binned) %>% base::as.numeric()
       )
 
   }
@@ -549,12 +558,12 @@ breaks <- function(n){
 #' \code{dist} of function \code{sf::st_buffer()}.
 #'
 #' @export
-buffer_area <- function(df, buffer){
+buffer_area <- function(df, buffer, close_plg = TRUE){
 
   frow <- df[1, c("x", "y")] %>% base::as.numeric()
   lrow <- df[base::nrow(df), c("x", "y")] %>% base::as.numeric()
 
-  if(!base::identical(frow, lrow)){
+  if(!base::identical(frow, lrow) & base::isTRUE(close_plg)){
 
     df <- close_area_df(df)
 

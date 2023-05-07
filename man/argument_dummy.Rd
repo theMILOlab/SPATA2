@@ -102,7 +102,7 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
-\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
+\item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
 are not included in the output.}
 
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
@@ -149,7 +149,7 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
-\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
+\item{outer}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the outer border of the image annotation
 is not included in the output.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
@@ -169,6 +169,14 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
+
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+}}
 
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}

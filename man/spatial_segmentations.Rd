@@ -9,7 +9,7 @@ correspond to the sample names in variable  \emph{sample} of \code{SPATAData::so
 Every sample specific slot is a data.frame with two variables: \emph{barcodes}
 and the spatial segmentation variable (usually named \emph{histolgoy}).}
 \format{
-An object of class \code{list} of length 1.
+An object of class \code{list} of length 2.
 }
 \usage{
 spatial_segmentations

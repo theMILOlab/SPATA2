@@ -6,8 +6,8 @@
 \usage{
 getImgAnnArea(
   object,
-  unit,
   ids = NULL,
+  unit = "mm2",
   tags = NULL,
   test = "any",
   as_numeric = TRUE,
@@ -18,12 +18,12 @@ getImgAnnArea(
 \arguments{
 \item{object}{An object of class \code{SPATA2}.}
 
-\item{unit}{Character value. Specifies the desired unit.}
-
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
 of the image annotations of interest. If numeric, the image annotations are picked by number.
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
+
+\item{unit}{Character value. Specifies the desired unit.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of image annotation with tags} for more information.}
@@ -49,7 +49,7 @@ The unit is attached to the output as an attribute named \emph{unit}. E.g. if
 Computes the area of an image annotation in SI units of area.
 }
 \details{
-First, the side length each pixel is calculated and based on that the area.
+First, the side length of each pixel is calculated and based on that the area.
 
 Second, the number of pixels that fall in the area given by the outer border
 of the image annotation is computed with \code{sp::point.in.polygon()}.
@@ -87,5 +87,5 @@ the function uses all image annoations.
 }
 
 \seealso{
-\code{getImgAnnBorderDf()}, \code{getCCD()}, \code{as_unit()}
+\code{\link[=getImgAnnBorderDf]{getImgAnnBorderDf()}}, \code{\link[=getCCD]{getCCD()}}, \code{\link[=as_unit]{as_unit()}}
 }

@@ -15,7 +15,7 @@ ggpLayerScaleBarSI(
   text_nudge_x = 0,
   text_nudge_y = 0,
   text_pos = NULL,
-  text_size = 6.5,
+  text_size = 5,
   xrange = NULL,
   yrange = NULL,
   offset = c(0.8, 0.8),
@@ -127,3 +127,20 @@ Note that \emph{pixel} is not a valid unit in the \code{units} package. If you w
 to specify the input in pixel you have to use input option 1. In pixel.
 }
 
+\examples{
+
+object <- downloadPubExample("313_T")
+
+plotImageGgplot(object) +
+ ggpLayerEncirclingIAS(
+   object = object,
+   id = "necrotic_area",
+   distance = "2.25mm"
+ ) +
+ ggpLayerScaleBarSI(
+  object = object,
+  sb_dist = "2.25mm",
+  sb_pos = "top_right"
+  )
+
+}

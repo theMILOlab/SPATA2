@@ -190,6 +190,44 @@ textInputWrapper <- function(inputId,
 
 # theme -------------------------------------------------------------------
 
+theme_lineplot_gradient <- function(){
+
+  list(
+    ggplot2::theme_classic(),
+    ggplot2::theme(
+      axis.line.x = ggplot2::element_line(
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
+      ),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(color = "black", size = 10)
+    )
+  )
+
+}
+
+#' @export
+theme_ridgeplot_gradient <- function(overlap = 0.5){
+
+  list(
+    ggplot2::theme_classic(),
+    ggplot2::theme(
+      axis.line.x = ggplot2::element_line(
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
+      ),
+      axis.line.y = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      strip.background = ggplot2::element_blank(),
+      panel.background = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.spacing.y = ggplot2::unit(-overlap, "lines"),
+      legend.key = ggplot2::element_rect(colour = "black")
+    )
+  )
+
+}
+
 #' @export
 theme_trajectory_fit <- function(){
 

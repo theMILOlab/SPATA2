@@ -12,8 +12,6 @@ plotIasHeatmap(
   n_bins_circle = NA_integer_,
   binwidth = getCCD(object),
   angle_span = c(0, 360),
-  outer = TRUE,
-  inner = TRUE,
   arrange_rows = "input",
   method_gs = "mean",
   smooth_span = 0.4,
@@ -59,12 +57,6 @@ information about distance values.}
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the image annotation.
 (See details fore more.)}
-
-\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
-is not included in the output.}
-
-\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
-are not included in the output.}
 
 \item{arrange_rows}{Alter the way the rows of the heatmap
 are displayed in order to highlight patterns. Currently either \emph{'maxima'},

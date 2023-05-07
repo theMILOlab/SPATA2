@@ -4,66 +4,145 @@
 
 # getI --------------------------------------------------------------------
 
+#' @title Calculate IAS bin area
+#'
+#' @description Computes the area circular bins of the IAS algorithm
+#' cover.
+#'
+#' @param use_outline Logical value. If `TRUE`, uses the outline variable
+#' set with `setOutlineVarName()` or if none is set DBSCAN to identify the
+#' outline of the tissue section or sections in case of multiple tissue sections
+#' on one Visium slide to only compute the area of circle bins that covers the
+#' tissue section.
+#'
+#' @inherit getIasDf params
+#'
+#' @details Approximates the area each circular bin covers
+#' by assigning each pixel to the circular bin it falls into.
+#' Afterwards the number of pixels per bin is multiplied
+#' with the area scale factor as is obtained by `getPixelScaleFactor(object, unit = unit)`
+#' where unit is the squared unit of input for argument `binwidth`. E.g.
+#' if `binwidth` = *'0.1mm'* then `unit` = *mm2*.
+#'
+#' @return Data.frame in which each observation corresponds to a circular bin.
+#'
+#' @note If multiple tissue sections are located on the Visium slide use `createSpatialSegmentation()`
+#' to encircle each section and set the variable name in which you saved the
+#' encircling via `setOutlineVarName()`. Else the areas of the circle bins might
+#' include space that is not covered by tissue. This might distort computation
+#' results.
+#'
+#' @export
+#'
+getIasBinAreas <- function(object,
+                           id,
+                           distance = NA_integer_,
+                           n_bins_circle = NA_integer_,
+                           binwidth = getCCD(object),
+                           angle_span = c(0, 360),
+                           n_bins_angle = 1,
+                           area_unit = NULL,
+                           use_outline = TRUE,
+                           remove_circle_bins = "Outside",
+                           verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(base::is.null(area_unit)){
+
+    area_unit <- stringr::str_c(extract_unit(binwidth), "2")
+
+  }
+
+  ias_input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
+    )
+
+  area_scale_fct <-
+    getPixelScaleFactor(object, unit = area_unit) %>%
+    base::as.numeric()
+
+  pxl_df <- getPixelDf(object)
+
+  if(base::isTRUE(use_outline)){
+
+    outline_var <- getOutlineVarName(object)
+
+    if(base::is.character(outline_var)){
+
+      coords_df <- getCoordsDf(object, features = outline_var)
+
+    } else {
+
+      coords_df <- getCoordsDf(object)
+
+    }
+
+    pxl_df <-
+      incorporate_tissue_outline(
+        coords_df = coords_df,
+        input_df = pxl_df,
+        outline_var = outline_var,
+        img_ann_center = getImgAnnCenter(object, id)
+      )
+
+  }
+
+  out_df <-
+    bin_by_expansion(
+      coords_df = pxl_df,
+      area_df = getImgAnnBorderDf(object, ids = id),
+      binwidth = ias_input$binwidth,
+      n_bins_circle = ias_input$n_bins_circle,
+      remove = remove_circle_bins
+    ) %>%
+      bin_by_angle(
+        coords_df = .,
+        center = getImgAnnCenter(object, id = id),
+        n_bins_angle = n_bins_angle,
+        angle_span = angle_span,
+        var_to_bin = "pixel",
+        verbose = FALSE
+      ) %>%
+      dplyr::group_by(bins_circle, bins_angle) %>%
+      dplyr::summarise(n_pixel = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        id = {{id}},
+        area_scale_fct = {{area_scale_fct}},
+        area = n_pixel * area_scale_fct,
+        unit = area_unit,
+        bins_order =
+          dplyr::case_when(
+            bins_circle == "Core" ~ 0,
+            bins_circle == "Outside" ~ (base::max(ias_input$n_bins_circle)+1),
+            TRUE ~  base::as.numeric(stringr::str_extract(bins_circle, pattern = "\\d*$"))
+          )
+      ) %>%
+      dplyr::select(id, bins_circle, bins_order, bins_angle, dplyr::everything())
+
+  return(out_df)
+
+}
+
 #' @title Obtain image annotation screening data.frame
 #'
-#' @description Extracts a data.frame that contains information about barcode-spots
-#' needed for analysis related to \code{imageAnnotationScreening()}.
+#' @description Extracts a data.frame of inferred gradients of numeric
+#' variables as a fucntion of distance to image annotations.
 #'
 #' @inherit bin_by_expansion params
 #' @inherit bin_by_angle params
-#'
-#' @param normalize_by Character value or FALSE. If character, there are two options:
-#' \itemize{
-#'  \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
-#'  \item{\code{normalize_by} = \emph{'bins_angle'}:}{
-#'  Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
-#'  is bigger than 1.
-#'  }
-#'  }
 #'
 #' @inherit getImgAnnBorderDf params
 #' @inherit imageAnnotationScreening params
 #' @inherit joinWith params
 #'
-#' @return The final output depends on the input for \code{variables} and
-#'  \code{summarize_by}.
-#'
-#'  By default (both arguments are NULL) the returned data.frame contains
-#'  barcode-spots as observations/rows and variables that describe their position
-#'  to the image annotation denoted with \code{id}. This includes the variables
-#'  \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
-#'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
-#'  and \code{n_bins_circle}.
-#'
-#' \bold{Coordinates data.frame vs. Inferred expression changes}:
-#'
-#' If argument \code{variables} is a character the denoted variables are
-#' joined to the data.frame via \code{joinWith()}. If the set of variables
-#' contains only numeric ones (genes, gene-sets and numeric features) the
-#' function argument \code{summarize_by} can be set up in three different ways:
-#'
-#' \itemize{
-#'  \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
-#'  is a coordinates data.frame with each observation/row corresponding to
-#'  a barcode spots with additional information of its relation to the image
-#'  annotation denoted in \code{id}.}
-#'  \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
-#'  area summarized by each circular expansion of the polygon. This results
-#'  in data.frame with a column named \emph{bins_circle} containing the names of the bin
-#'  (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
-#'  per variable that contain the summarized expression value by circle bin. Visualization
-#'  of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
-#'  }
-#'  \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
-#'  each area are summarized by each circular expansion as well as by angle-bin.
-#'  Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
-#'  from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
-#'  is only useful if \code{n_bins_circle} is bigger than 1. Visualization
-#'  of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
-#'  }}
-#'
-#' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
-#' summary step.
+#' @return Data.frame.
 #'
 #' @export
 #'
@@ -90,7 +169,7 @@
 #'  object = object,
 #'  id = "necrotic_center",
 #'  distance = 200,
-#'  binwidth = getCCD(object)*4 # lower resolution by increasing binwidth for visualization
+#'  binwidth = getCCD(object)*4, # lower resolution by increasing binwidth for visualization
 #'  n_bins_angle = 12,
 #'  display_angle = TRUE
 #'  )
@@ -106,8 +185,7 @@
 #'   object = object,
 #'    id = "necrotic_center",
 #'    distance = 200,
-#'    variables = "VEGFA",
-#'    summarize_by = "bins_circle"
+#'    variables = "VEGFA"
 #'    )
 #'
 #' getIasDf(
@@ -115,8 +193,7 @@
 #'    id = "necrotic_center",
 #'    distance = 200,
 #'    variables = "VEGFA",
-#'    n_bins_angle = 12,
-#'    summarize_by = c("bins_circle", "bins_angle")
+#'    n_bins_angle = 12
 #'    )
 #'
 
@@ -127,11 +204,9 @@ getIasDf <- function(object,
                      binwidth = getCCD(object),
                      angle_span = c(0,360),
                      n_bins_angle = 1,
-                     outer = TRUE,
-                     inner = TRUE,
                      variables = NULL,
                      method_gs = NULL,
-                     summarize_by = FALSE,
+                     summarize_by = c("bins_angle", "bins_circle"),
                      summarize_with = "mean",
                      normalize_by = "sample",
                      normalize = FALSE,
@@ -139,14 +214,111 @@ getIasDf <- function(object,
                      remove_angle_bins = FALSE,
                      rename_angle_bins = FALSE,
                      bcsp_exclude = NULL,
-                     drop = TRUE,
-                     add_sd = FALSE,
-                     verbose = NULL,
+                     verbose = FALSE,
                      ...){
+
+  if(base::length(id) > 1){
+
+    base::stopifnot(summarize_with %in% c("mean", "median"))
+
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        get_img_ann_helper(
+          object = object,
+          id = idx,
+          distance = distance,
+          n_bins_circle = n_bins_circle,
+          binwidth = binwidth,
+          angle_span = angle_span,
+          n_bins_angle = n_bins_angle,
+          variables = variables,
+          method_gs = method_gs,
+          summarize_by = summarize_by,
+          summarize_with = summarize_with,
+          normalize_by = normalize_by,
+          normalize = normalize,
+          remove_circle_bins = remove_circle_bins,
+          remove_angle_bins = remove_angle_bins,
+          bcsp_exclude = bcsp_exclude,
+          drop = TRUE,
+          verbose = verbose
+        ) %>%
+          dplyr::mutate(img_ann_id = {{idx}})
+
+      }
+    ) %>%
+      dplyr::group_by(
+        dplyr::pick(
+          dplyr::any_of(c("bins_circle", "bins_order", "bins_angle"))
+          )
+        ) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of(variables),
+          .fns = summarize_formulas[[summarize_with]]
+        )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(variables),
+          .fns = ~ confuns::normalize(.x)
+        )
+      ) %>%
+      dplyr::select(dplyr::everything())
+
+  } else {
+
+    get_img_ann_helper(
+      object = object,
+      id = id,
+      distance = distance,
+      n_bins_circle = n_bins_circle,
+      binwidth = binwidth,
+      angle_span = angle_span,
+      n_bins_angle = n_bins_angle,
+      variables = variables,
+      method_gs = method_gs,
+      summarize_by = summarize_by,
+      summarize_with = summarize_with,
+      normalize_by = normalize_by,
+      normalize = normalize,
+      remove_circle_bins = remove_circle_bins,
+      remove_angle_bins = remove_angle_bins,
+      bcsp_exclude = bcsp_exclude,
+      drop = TRUE,
+      verbose = verbose
+    )
+
+  }
+
+}
+
+
+#' @title Obtain expanded Image Annotation polygons
+#'
+#' @description Expands polygons of image annotations according
+#' to `distance`, `binwidth` and `n_bins_circle` input.
+#'
+#' @inherit imageAnnotationScreening params
+#'
+#' @return List of data.frames.
+#' @export
+#'
+getIasExpansion <- function(object,
+                            id,
+                            distance = NA_integer_,
+                            binwidth = getCCD(object),
+                            n_bins_circle = NA_integer_,
+                            direction = "outwards",
+                            inc_outline = TRUE,
+                            verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  input_list <-
+  ias_input <-
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
@@ -155,238 +327,65 @@ getIasDf <- function(object,
       verbose = verbose
     )
 
-  distance <- input_list$distance
-  n_bins_circle <- input_list$n_bins_circle
-  binwidth  <- input_list$binwidth
+  area_df <- getImgAnnBorderDf(object, ids = id)
 
-  max_circles <- base::max(n_bins_circle)
-  min_circles <- base::min(n_bins_circle)
+  binwidth <- ias_input$binwidth
+  n_bins_circle <- base::max(ias_input$n_bins_circle)
 
-  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
 
-  border_df <- getImgAnnBorderDf(object, ids = id, outer = outer, inner = inner)
-
-  img_ann_center <- getImgAnnCenter(object, id = id)
-
-  coords_df <-
-    getCoordsDf(object) %>%
-    dplyr::select(barcodes, x, y)
-
-  if(base::length(drop) == 1){ drop <- base::rep(drop, 2)}
-
-  ias_df <-
-    bin_by_expansion(
-      coords_df = coords_df,
-      area_df = border_df,
-      binwidth = binwidth,
-      n_bins_circle = max_circles,
-      remove = remove_circle_bins,
-      bcsp_exclude = bcsp_exclude,
-      drop = drop[1]
-    ) %>%
-    bin_by_angle(
-      center = getImgAnnCenters(object, id = id, outer = outer, inner = inner),
-      angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
-      min_bins_circle = min_circles,
-      rename = rename_angle_bins,
-      remove = remove_angle_bins,
-      drop = drop[2],
-      verbose = verbose
+  circles <-
+    purrr::set_names(
+      x = c((1:n_bins_circle)*binwidth),
+      nm = circle_names
     )
 
-  # join with variables if desired
-  if(base::is.character(variables)){
+  binwidth_vec <- c("Core" = 0, circles)
 
-    var_df <-
-      joinWithVariables(
-        object = object,
-        spata_df = getSpataDf(object),
-        variables = variables,
-        smooth = FALSE,
-        normalize = normalize,
-        method_gs = method_gs,
-        verbose = verbose
+  if(direction == "outwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    expansions <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
+          dplyr::mutate(bins_circle = .y)
       )
 
-    ias_df_joined <-
-      dplyr::left_join(
-        x = ias_df,
-        y = var_df,
-        by = "barcodes"
-      )
+    if(base::isTRUE(inc_outline)){
 
-    # summarize if desired
-    if(base::is.character(summarize_by)){
-
-      groups <- base::character()
-
-      if(base::any(stringr::str_detect(summarize_by, "circle"))){
-
-        groups <- c(groups, "bins_circle")
-
-      }
-
-      if(base::any(stringr::str_detect(summarize_by, "angle"))){
-
-        groups <- c(groups, "bins_angle")
-
-      }
-
-      ref <- confuns::scollapse(string = groups)
-
-      if(base::length(groups) == 0){
-
-        stop("Invalid input for argument `summarize_by`. Must contains 'circle' and/or 'angle'.")
-
-      }
-
-      confuns::give_feedback(
-        msg = glue::glue("Summarizing by '{ref}'."),
-        verbose = verbose
-      )
-
-      # keep var bins_order
-      groups <- c(groups, "bins_order")
-
-      ias_df1 <-
-        dplyr::group_by(
-          .data = ias_df_joined,
-          dplyr::across(.cols = dplyr::all_of(groups))
-        ) %>%
-        dplyr::summarise(
-          dplyr::across(
-            .cols = dplyr::any_of(variables),
-            .fns = summarize_formulas[[summarize_with]]
+      expansions <-
+        purrr::map(
+          .x = expansions,
+          .f = ~ include_tissue_outline(
+            coords_df = getCoordsDf(object),
+            input_df = .x,
+            img_ann_center = getImgAnnCenter(object, id = id),
+            remove = FALSE,
+            ias_circles = TRUE,
+            ccd = getCCD(object, unit = "px")
           )
         )
 
-      if(base::isTRUE(add_sd)){
-
-        ias_df2 <-
-          dplyr::group_by(
-            .data = ias_df_joined,
-            dplyr::across(.cols = dplyr::all_of(groups))
-          ) %>%
-          dplyr::summarise(
-            dplyr::across(
-              .cols = dplyr::any_of(variables),
-              .fns = list(sd = ~ stats::sd(.x, na.rm = TRUE))
-            )
-          ) %>% select(-bins_order)
-
-
-        # store ranges for normalization if required
-        if(base::is.character(normalize_by)){
-
-          original_ranges <-
-            purrr::map(
-              .x = variables,
-              .f = ~ base::range(ias_df_joined[[.x]])
-            ) %>%
-            purrr::set_names(
-              nm = variables
-            )
-
-        }
-
-        ias_df_out <-
-          dplyr::left_join(
-            x = ias_df1,
-            y = ias_df2,
-            by = "bins_circle"
-            )
-
-      } else {
-
-        ias_df_out <- ias_df1
-
-        ias_df_out
-
-      }
-
-    } else {
-
-      ias_df_out <- ias_df_joined
-
     }
 
-    # normalize if desired
-    if(base::is.character(normalize_by)){
+  } else if(direction == "inwards"){
 
-      confuns::check_one_of(
-        input = normalize_by,
-        against = c("sample", "bins_angle"),
-        suggest = FALSE
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    expansions <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = -(.x)) %>%
+          dplyr::mutate(bins_circle = .y)
       )
-
-      if(normalize_by == "sample"){
-
-        # no grouping needed
-        groups <- base::character()
-
-        ref = ""
-
-      } else if(normalize_by == "bins_angle"){
-
-        groups <- "bins_angle"
-
-        ref <- " by 'bins_angle'"
-
-      }
-
-      confuns::give_feedback(
-        msg = glue::glue("Normalizing{ref}."),
-        verbose = verbose
-      )
-
-      ias_df_norm <-
-        dplyr::group_by(
-          .data = ias_df_out,
-          dplyr::across(.cols = dplyr::all_of(groups))
-        ) %>%
-        dplyr::mutate(
-          dplyr::across(
-            .cols = dplyr::any_of(variables),
-            .fns = ~ scales::rescale(x = .x, to = c(0,1))
-          )
-        )
-
-      if(base::isTRUE(add_sd)){
-
-        for(v in variables){
-
-          vcol <- stringr::str_c(v, "_sd")
-
-          ias_df_norm[[vcol]] <-
-            scales::rescale(
-              x = ias_df_norm[[vcol]],
-              from = original_ranges[[v]],
-              to = c(0, 1)
-              )
-
-        }
-
-      }
-
-      ias_df_out <- ias_df_norm
-
-    }
-
-  } else {
-
-    confuns::give_feedback(
-      msg = "No variables joined.",
-      verbose = verbose
-    )
-
-    ias_df_out <- ias_df
 
   }
 
-  out <- dplyr::ungroup(ias_df_out)
-
-  return(out)
+  return(expansions)
 
 }
 
@@ -438,8 +437,17 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
   ymin <- range_list$ymin
   ymax <- range_list$ymax
 
-  out <- out[xmin:xmax, , ]
-  out <- out[, ymin:ymax, ]
+  if(nImageDims(object) == 3){
+
+    out <- out[xmin:xmax, , ]
+    out <- out[, ymin:ymax, ]
+
+  } else if(nImageDims(object) == 2){
+
+    out <- out[xmin:xmax, ]
+    out <- out[, ymin:ymax]
+
+  }
 
   return(out)
 
@@ -473,7 +481,7 @@ getImageAnnotation <- function(object,
 
   confuns::check_one_of(
     input = id,
-    against = getImageAnnotationIds(object)
+    against = getImgAnnIds(object)
   )
 
   getImageAnnotations(
@@ -489,7 +497,7 @@ getImageAnnotation <- function(object,
 }
 
 
-#' @title Obtain image annotation data
+#' @title Obtain image annotation summary
 #'
 #' @description Extracts information about image annotations in a
 #' data.frame.
@@ -523,17 +531,17 @@ getImageAnnotation <- function(object,
 #'
 #' @export
 #'
-getImageAnnotationDf <- function(object,
-                                 ids = NULL,
-                                 area = TRUE,
-                                 unit_area = "mm2",
-                                 center = TRUE,
-                                 unit_center = "px",
-                                 genes = NULL,
-                                 summarize_with = "mean",
-                                 tags_to_lgl = TRUE,
-                                 tags_keep = FALSE,
-                                 verbose = NULL){
+getImgAnnSummaryDf <- function(object,
+                               ids = NULL,
+                               area = TRUE,
+                               unit_area = "mm2",
+                               center = TRUE,
+                               unit_center = "px",
+                               genes = NULL,
+                               summarize_with = "mean",
+                               tags_to_lgl = TRUE,
+                               tags_keep = FALSE,
+                               verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -541,12 +549,12 @@ getImageAnnotationDf <- function(object,
 
     confuns::check_one_of(
       input = ids,
-      against = getImageAnnotationIds(object)
+      against = getImgAnnIds(object)
     )
 
   } else {
 
-    ids <- getImageAnnotationIds(object)
+    ids <- getImgAnnIds(object)
 
   }
 
@@ -634,7 +642,7 @@ getImageAnnotationDf <- function(object,
   if(base::isTRUE(area)){
 
     area_df <-
-      getImageAnnotationAreaSize(
+      getImgAnnArea(
         object = object,
         ids = ids,
         unit = unit_area
@@ -690,7 +698,6 @@ getImageAnnotationDf <- function(object,
 
   }
 
-
   return(out)
 
 }
@@ -708,7 +715,7 @@ getImageAnnotationDf <- function(object,
 #' @return Character vector.
 #' @export
 #'
-getImageAnnotationIds <- function(object, tags = NULL , test = "any", ...){
+getImgAnnIds <- function(object, tags = NULL , test = "any", ...){
 
   if(nImageAnnotations(object) >= 1){
 
@@ -988,7 +995,7 @@ getImageAnnotations <- function(object,
 #' @return Character vector.
 #' @export
 #'
-getImageAnnotationTags <- function(object){
+getImgAnnTags <- function(object){
 
   if(nImageAnnotations(object) >= 1){
 
@@ -1461,7 +1468,7 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 #' The unit is attached to the output as an attribute named *unit*. E.g. if
 #' `unit = *mm2*` the output value has the unit *mm^2*.
 #'
-#' @details First, the side length each pixel is calculated and based on that the area.
+#' @details First, the side length of each pixel is calculated and based on that the area.
 #'
 #' Second, the number of pixels that fall in the area given by the outer border
 #' of the image annotation is computed with `sp::point.in.polygon()`.
@@ -1474,13 +1481,13 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 #'
 #' @inheritSection section_dummy Selection of image annotations with tags
 #'
-#' @seealso `getImgAnnBorderDf()`, `getCCD()`, `as_unit()`
+#' @seealso [`getImgAnnBorderDf()`], [`getCCD()`], [`as_unit()`]
 #'
 #' @export
 #'
 getImgAnnArea <- function(object,
-                          unit,
                           ids = NULL,
+                          unit = "mm2",
                           tags = NULL,
                           test = "any",
                           as_numeric = TRUE,
@@ -1500,13 +1507,13 @@ getImgAnnArea <- function(object,
 
     confuns::check_one_of(
       input = ids,
-      against = getImageAnnotationIds(object)
+      against = getImgAnnIds(object)
     )
 
   } else {
 
     ids <-
-      getImageAnnotationIds(
+      getImgAnnIds(
         object = object,
         ...
       )
@@ -1529,7 +1536,7 @@ getImgAnnArea <- function(object,
   pb <- confuns::create_progress_bar(total = n_ids)
 
   confuns::give_feedback(
-    msg = glue::glue("Computing area size for {n_ids} {ref_ia}."),
+    msg = glue::glue("Computing area for {n_ids} {ref_ia}."),
     verbose = verbose
   )
 
@@ -1720,13 +1727,330 @@ getImgAnnBorderDf <- function(object,
 
 }
 
-#' @rdname getImgAnnBorderDf
-#' @export
-getImageAnnotationAreaDf <- function(...){
+#' @title Obtain image annotation screening data.frame
+#'
+#' @description Extracts a data.frame that contains information about barcode-spots
+#' needed for analysis related to \code{imageAnnotationScreening()}.
+#'
+#' @inherit bin_by_expansion params
+#' @inherit bin_by_angle params
+#'
+#' @param normalize_by Character value or FALSE. If character, there are two options:
+#' \itemize{
+#'  \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
+#'  \item{\code{normalize_by} = \emph{'bins_angle'}:}{
+#'  Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
+#'  is bigger than 1.
+#'  }
+#'  }
+#'
+#' @inherit getImgAnnBorderDf params
+#' @inherit imageAnnotationScreening params
+#' @inherit joinWith params
+#'
+#' @return The final output depends on the input for \code{variables} and
+#'  \code{summarize_by}.
+#'
+#'  By default (both arguments are NULL) the returned data.frame contains
+#'  barcode-spots as observations/rows and variables that describe their position
+#'  to the image annotation denoted with \code{id}. This includes the variables
+#'  \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
+#'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
+#'  and \code{n_bins_circle}.
+#'
+#' \bold{Coordinates data.frame vs. Inferred expression changes}:
+#'
+#' If argument \code{variables} is a character the denoted variables are
+#' joined to the data.frame via \code{joinWith()}. If the set of variables
+#' contains only numeric ones (genes, gene-sets and numeric features) the
+#' function argument \code{summarize_by} can be set up in three different ways:
+#'
+#' \itemize{
+#'  \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
+#'  is a coordinates data.frame with each observation/row corresponding to
+#'  a barcode spots with additional information of its relation to the image
+#'  annotation denoted in \code{id}.}
+#'  \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
+#'  area summarized by each circular expansion of the polygon. This results
+#'  in data.frame with a column named \emph{bins_circle} containing the names of the bin
+#'  (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
+#'  per variable that contain the summarized expression value by circle bin. Visualization
+#'  of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
+#'  }
+#'  \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
+#'  each area are summarized by each circular expansion as well as by angle-bin.
+#'  Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
+#'  from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
+#'  is only useful if \code{n_bins_circle} is bigger than 1. Visualization
+#'  of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
+#'  }}
+#'
+#' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
+#' summary step.
+#'
+get_img_ann_helper <- function(object,
+                        id,
+                        distance = NA_integer_,
+                        n_bins_circle = NA_integer_,
+                        binwidth = getCCD(object),
+                        angle_span = c(0,360),
+                        n_bins_angle = 1,
+                        variables = NULL,
+                        method_gs = NULL,
+                        summarize_by = FALSE,
+                        summarize_with = "mean",
+                        normalize_by = "sample",
+                        normalize = FALSE,
+                        remove_circle_bins = FALSE,
+                        remove_angle_bins = FALSE,
+                        rename_angle_bins = FALSE,
+                        bcsp_exclude = NULL,
+                        drop = TRUE,
+                        verbose = NULL,
+                        ...){
 
-  deprecated(fn = TRUE)
+  deprecated(...)
 
-  getImgAnnBorderDf(...)
+  hlpr_assign_arguments(object)
+
+  add_sd <- FALSE
+
+  input_list <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
+    )
+
+  distance <- input_list$distance
+  n_bins_circle <- input_list$n_bins_circle
+  binwidth  <- input_list$binwidth
+
+  max_circles <- base::max(n_bins_circle)
+  min_circles <- base::min(n_bins_circle)
+
+  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+
+  border_df <- getImgAnnBorderDf(object, ids = id, outer = TRUE, inner = TRUE)
+
+  img_ann_center <- getImgAnnCenter(object, id = id)
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    dplyr::select(barcodes, x, y)
+
+  if(base::length(drop) == 1){ drop <- base::rep(drop, 2)}
+
+  ias_df <-
+    bin_by_expansion(
+      coords_df = coords_df,
+      area_df = border_df,
+      binwidth = binwidth,
+      n_bins_circle = max_circles,
+      remove = remove_circle_bins,
+      bcsp_exclude = bcsp_exclude,
+      drop = drop[1]
+    ) %>%
+    bin_by_angle(
+      center = getImgAnnCenters(object, id = id, outer = TRUE, inner = TRUE),
+      angle_span = angle_span,
+      n_bins_angle = n_bins_angle,
+      min_bins_circle = min_circles,
+      rename = rename_angle_bins,
+      remove = remove_angle_bins,
+      drop = drop[2],
+      verbose = verbose
+    )
+
+  # join with variables if desired
+  if(base::is.character(variables)){
+
+    var_df <-
+      joinWithVariables(
+        object = object,
+        spata_df = getSpataDf(object),
+        variables = variables,
+        smooth = FALSE,
+        normalize = normalize,
+        method_gs = method_gs,
+        verbose = verbose
+      )
+
+    ias_df_joined <-
+      dplyr::left_join(
+        x = ias_df,
+        y = var_df,
+        by = "barcodes"
+      )
+
+    # summarize if desired
+    if(base::is.character(summarize_by)){
+
+      groups <- base::character()
+
+      if(base::any(stringr::str_detect(summarize_by, "circle"))){
+
+        groups <- c(groups, "bins_circle")
+
+      }
+
+      if(base::any(stringr::str_detect(summarize_by, "angle"))){
+
+        groups <- c(groups, "bins_angle")
+
+      }
+
+      ref <- confuns::scollapse(string = groups)
+
+      if(base::length(groups) == 0){
+
+        stop("Invalid input for argument `summarize_by`. Must contains 'circle' and/or 'angle'.")
+
+      }
+
+      # keep var bins_order
+      groups <- c(groups, "bins_order")
+
+      ias_df1 <-
+        dplyr::group_by(
+          .data = ias_df_joined,
+          dplyr::across(.cols = dplyr::all_of(groups))
+        ) %>%
+        dplyr::summarise(
+          dplyr::across(
+            .cols = dplyr::any_of(variables),
+            .fns = summarize_formulas[[summarize_with]]
+          )
+        )
+
+      if(base::isTRUE(add_sd)){
+
+        ias_df2 <-
+          dplyr::group_by(
+            .data = ias_df_joined,
+            dplyr::across(.cols = dplyr::all_of(groups))
+          ) %>%
+          dplyr::summarise(
+            dplyr::across(
+              .cols = dplyr::any_of(variables),
+              .fns = list(sd = ~ stats::sd(.x, na.rm = TRUE))
+            )
+          ) %>% select(-bins_order)
+
+
+        # store ranges for normalization if required
+        if(base::is.character(normalize_by)){
+
+          original_ranges <-
+            purrr::map(
+              .x = variables,
+              .f = ~ base::range(ias_df_joined[[.x]])
+            ) %>%
+            purrr::set_names(
+              nm = variables
+            )
+
+        }
+
+        ias_df_out <-
+          dplyr::left_join(
+            x = ias_df1,
+            y = ias_df2,
+            by = "bins_circle"
+          )
+
+      } else {
+
+        ias_df_out <- ias_df1
+
+        ias_df_out
+
+      }
+
+    } else {
+
+      ias_df_out <- ias_df_joined
+
+    }
+
+    # normalize if desired
+    if(base::is.character(normalize_by)){
+
+      confuns::check_one_of(
+        input = normalize_by,
+        against = c("sample", "bins_angle"),
+        suggest = FALSE
+      )
+
+      if(normalize_by == "sample"){
+
+        # no grouping needed
+        groups <- base::character()
+
+        ref = ""
+
+      } else if(normalize_by == "bins_angle"){
+
+        groups <- "bins_angle"
+
+        ref <- " by 'bins_angle'"
+
+      }
+
+      confuns::give_feedback(
+        msg = glue::glue("Normalizing{ref}."),
+        verbose = verbose
+      )
+
+      ias_df_norm <-
+        dplyr::group_by(
+          .data = ias_df_out,
+          dplyr::across(.cols = dplyr::all_of(groups))
+        ) %>%
+        dplyr::mutate(
+          dplyr::across(
+            .cols = dplyr::any_of(variables),
+            .fns = ~ scales::rescale(x = .x, to = c(0,1))
+          )
+        )
+
+      if(base::isTRUE(add_sd)){
+
+        for(v in variables){
+
+          vcol <- stringr::str_c(v, "_sd")
+
+          ias_df_norm[[vcol]] <-
+            scales::rescale(
+              x = ias_df_norm[[vcol]],
+              from = original_ranges[[v]],
+              to = c(0, 1)
+            )
+
+        }
+
+      }
+
+      ias_df_out <- ias_df_norm
+
+    }
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "No variables joined.",
+      verbose = verbose
+    )
+
+    ias_df_out <- ias_df
+
+  }
+
+  out <- dplyr::ungroup(ias_df_out)
+
+  return(out)
 
 }
 
@@ -1876,15 +2200,6 @@ setMethod(
   }
 )
 
-#' @rdname getImgAnnCenter
-#' @export
-getImageAnnotationCenter <- function(...){
-
-  deprecated(fn = TRUE)
-
-  getImgAnnCenter(...)
-
-}
 
 #' @title Obtain center barcode-spot
 #'

@@ -61,9 +61,7 @@ pr_list_slots <-
 pr_methods <- c("hotspot")
 
 
-
 # Images ------------------------------------------------------------------
-
 
 image_classes <- c("HistologyImage", "SlideSeq", "Visium")
 
@@ -498,7 +496,9 @@ depr_info <-
       "flipCoords" = "flipCoordinates",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
       "getImageAnnotationCenter" = "getImgAnnCenter",
+      "getImageAnnotationIds" = "getImgAnnIds",
       "getImageAnnotationScreeningDf" = "getIasDf",
+      "getImageAnnotationTags" = "getImgAnnTags",
       "getMethod" = "getSpatialMethod",
       "getMethodUnit" = "getSpatialMethod()@unit",
       "getMethodName" = "getSpatialMethod()@name",
@@ -507,7 +507,11 @@ depr_info <-
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
+      "getTrajectoryScreeningDf" = "getStsDf",
       "ggpLayerImageAnnotation" = "ggpLayerImgAnnBorder",
+      "ggpLayerImgAnnBorder" = "ggpLayerImgAnnOutline",
+      "ggpLayerSampleMask" = "ggpLayerTissueOutline",
+      "incorporate_tissue_outline" = "include_tissue_outline",
       "is_euol_dist" = "is_dist_euol",
       "is_dist_euol" = "is_dist_si",
       "is_pixel_dist" = "is_dist_pixel",
@@ -544,7 +548,10 @@ depr_info <-
     ),
     args_spec = list(
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
-      "plotTrajectoryLineplot" = list("vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
+      "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
+      "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
+      "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
+      "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
       "setImageDirLowres" = list("dir_lowres" = "dir")
@@ -573,6 +580,8 @@ si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6
 
 # i -----------------------------------------------------------------------
 
+# include_tissue_section names
+its_names <- c("obs_in_section", "pos_rel", "tissue_section")
 
 invalid_area_input <-
   "Input can not be interpreted as an area. Please see details at `?is_area` for more information."
@@ -655,6 +664,13 @@ pattern_formulas <-
 plot_positions <- c("top_right", "top_left", "bottom_right", "bottom_left")
 
 projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")
+
+pub_dropbox_links <- list(
+  "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",
+  "313_T" = "https://www.dropbox.com/s/zxeilq38tqwfx70/313_T.RDS?dl=1",
+  "MCD_LMU" = "https://www.dropbox.com/s/b5zxcqmnx0814fq/mouse_cortex_damaged.RDS?dl=1"
+)
+
 
 
 
@@ -754,6 +770,10 @@ regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 
 regex_unit <- stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
 
+# relateToImageAnnotation names
+rtia_names <-
+  c("angle", "bins_angle", "bins_circle", "dist_to_ia", its_names) %>%
+  base::sort()
 
 # s -----------------------------------------------------------------------
 

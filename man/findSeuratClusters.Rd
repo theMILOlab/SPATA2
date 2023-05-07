@@ -11,7 +11,7 @@ findSeuratClusters(
   RunPCA = list(npcs = 60),
   FindNeighbors = list(dims = 1:30),
   FindClusters = list(resolution = 0.8),
-  of_sample = NA
+  ...
 )
 }
 \arguments{
@@ -26,9 +26,6 @@ findSeuratClusters(
 \item{FindNeighbors}{A named list of arguments given to \code{Seurat::FindNeighbors()}, TRUE or FALSE.}
 
 \item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A tidy spata-data.frame containing the cluster variables.

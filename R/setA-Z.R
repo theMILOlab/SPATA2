@@ -811,6 +811,36 @@ setInitiationInfo <- function(object, additional_input = list()){
 
 
 
+# setO --------------------------------------------------------------------
+
+
+
+#' @title Set outline variable name
+#'
+#' @description Sets the name of the variable in the feature data.frame
+#' that contains grouping of the barcode-spots according to the number
+#' of coherent tissue sections on the capture frame. (E.g. if two brain slices
+#' of a mouse were imaged and permeabilized on the same visium slide).
+#' @param name Name of the variable that contains the outline. Must be a factor
+#' variable in the feature data.frame.
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setOutlineVarName <- function(object, name){
+
+  confuns::check_one_of(
+    input = name,
+    against = getFeatureNames(object, of_class = "factor")
+  )
+
+  object@information$outline_var <- name
+
+  return(object)
+
+}
 
 
 

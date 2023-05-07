@@ -548,7 +548,7 @@ joinWithGeneSets <- function(object,
 
     confuns::give_feedback(
       msg = glue::glue("Of gene set {gs} did not find {ref} {ref2} in assay."),
-      verbose = verbose
+      verbose = FALSE
     )
 
     # calculate percentage of genes found
@@ -568,14 +568,16 @@ joinWithGeneSets <- function(object,
           warning(glue::glue("Only one gene ('{genes}') found of gene set '{gs}'."))
 
           geneset_vls <-
-            base::as.data.frame(rna_assay[genes,]) %>%
+            base::as.matrix(rna_assay[genes,]) %>%
+            base::as.data.frame() %>%
             magrittr::set_colnames(value = gene_sets[i]) %>%
             tibble::rownames_to_column(var = "barcodes")
 
         } else if(method_gs == "mean"){
 
           geneset_vls <-
-            base::colMeans(rna_assay[genes, ]) %>%
+            base::as.matrix(rna_assay[genes, ]) %>%
+            base::colMeans() %>%
             base::as.data.frame() %>%
             magrittr::set_colnames(value = gene_sets[i]) %>%
             tibble::rownames_to_column(var = "barcodes")
@@ -584,7 +586,7 @@ joinWithGeneSets <- function(object,
 
           geneset_vls <-
             GSVA::gsva(
-              expr = rna_assay[genes,],
+              expr = base::as.matrix(rna_assay[genes,]),
               gset.idx.list = gene_set_df,
               mx.diff = 1,
               parallel.sz = 2,

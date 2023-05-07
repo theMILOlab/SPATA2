@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotIasBarplot}
 \alias{plotIasBarplot}
+\alias{plotIasBarplotSC}
 \title{Plot IAS barplot}
 \usage{
 plotIasBarplot(
@@ -11,6 +12,30 @@ plotIasBarplot(
   distance = NA_integer_,
   binwidth = getCCD(object),
   n_bins_circle = NA_integer_,
+  include_area = FALSE,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  position = "fill",
+  display_border = TRUE,
+  border_linealpha = 0.75,
+  border_linecolor = "black",
+  border_linesize = 1,
+  border_linetype = "dashed",
+  x_nth = 1,
+  bcsp_exclude = NULL,
+  verbose = NULL
+)
+
+plotIasBarplotSC(
+  object,
+  id,
+  sc_input,
+  distance = NA_integer_,
+  binwidth = getCCD(object),
+  n_bins_circle = NA_integer_,
+  angle_span = c(0, 360),
   include_area = FALSE,
   unit = getSpatialMethod(object)@unit,
   round = 2,
@@ -84,6 +109,18 @@ third label is kept. And so on.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+}}
+
+\item{angle_span}{Numeric vector of length 2. Confines the area screened by
+an angle span relative to the center of the image annotation.
+(See details fore more.)}
 }
 \value{
 A ggplot.

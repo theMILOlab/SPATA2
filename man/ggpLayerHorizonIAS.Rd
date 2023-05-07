@@ -8,7 +8,7 @@ ggpLayerHorizonIAS(
   object,
   id,
   distance = NA_integer_,
-  binwidth = NA_integer_,
+  binwidth = getCCD(object),
   n_bins_circle = NA_integer_,
   line_color = "black",
   line_size = 1,

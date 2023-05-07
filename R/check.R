@@ -757,7 +757,9 @@ check_ias_input <- function(distance = NA_integer_,
 
   if(base::all(dist_spec, binwidth_spec, n_bins_circle_spec)){
 
-    verbose <- FALSE
+    # binwidth is always set to getCCD() by default
+    # specifying n_bins_circle AND distance manually overwrites binwidth
+    binwidth_spec <- FALSE
 
   }
 
@@ -866,7 +868,7 @@ check_image_annotation_ids <- function(object, ids = NULL, ...){
 
     check_one_of(
       input = ids,
-      against = getImageAnnotationIds(object),
+      against = getImgAnnIds(object),
       fdb.opt = 2,
       ref.opt = "image annotation IDs",
       ...
@@ -885,7 +887,7 @@ check_image_annotation_tags <- function(object, tags = NULL, ...){
 
     check_one_of(
       input = tags,
-      against = getImageAnnotationTags(object),
+      against = getImgAnnTags(object),
       fdb.opt = 2,
       ref.opt = "image annotation tags",
       fdb.fn = "warning",

@@ -17,6 +17,7 @@
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
 \alias{validPlotTypes}
+\alias{validPubExamples}
 \alias{validSpatialMethods}
 \alias{validTrajectoryTrends}
 \alias{validUnits}
@@ -58,6 +59,8 @@ validPatternRecognitionMethods()
 validPadjMethods()
 
 validPlotTypes(fn_name)
+
+validPubExamples()
 
 validSpatialMethods()
 

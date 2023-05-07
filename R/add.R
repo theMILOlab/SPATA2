@@ -83,6 +83,27 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
 
 
 
+
+add_outline_variable <- function(coords_df,
+                                 ccd,
+                                 minPts = 3,
+                                 name = "outline"){
+
+  outline_res <-
+    dbscan::dbscan(
+      x = base::as.matrix(coords_df[, c("x", "y")]),
+      eps = ccd*1.5,
+      minPts = minPts
+    )
+
+  coords_df[[name]] <- base::as.character(outline_res[["cluster"]])
+
+  return(coords_df)
+
+}
+
+
+
 # addA --------------------------------------------------------------------
 
 

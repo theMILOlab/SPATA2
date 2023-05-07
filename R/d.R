@@ -579,3 +579,41 @@ discardSpatialTrajectory <- function(object, id){
 
 
 
+
+
+#' @title Download data from the publication
+#'
+#' @description Downloads processed data from *Kueckelhaus et al., 2023*.
+#'
+#' @param name Name of the data set. Must be in `validPubExamples()`.
+#' @inherit argument_dummy params
+#'
+#' @return The respective data set.
+#' @export
+#'
+downloadPubExample <- function(name, verbose = TRUE){
+
+  confuns::check_one_of(
+    input = name,
+    against = base::names(pub_dropbox_links)
+  )
+
+  confuns::give_feedback(
+    msg = glue::glue("Downloading example '{name}'."),
+    verbose = verbose
+  )
+
+  download_dir <- pub_dropbox_links[[name]]
+
+  downloaded_object <-
+    base::url(download_dir) %>%
+    base::readRDS()
+
+  confuns::give_feedback(
+    msg = glue::glue("Done."),
+    verbose = TRUE
+  )
+
+  return(downloaded_object)
+
+}

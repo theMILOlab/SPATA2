@@ -32,7 +32,7 @@ plotTrajectoryBarplot <- function(object,
                                   display_trajectory_parts = NULL,
                                   position = "fill",
                                   scales = "free_x",
-                                  x_nth = 2,
+                                  x_nth = 7L,
                                   expand_x = c(0.025, 0),
                                   expand_y = c(0.0125, 0),
                                   verbose = NULL,
@@ -186,7 +186,7 @@ plotTrajectoryEvaluation <- function(object,
   hlpr_assign_arguments(object)
 
   sts_df <-
-    getTrajectoryScreeningDf(
+    getStsDf(
       object = object,
       id = id,
       variables = variables,
@@ -599,10 +599,10 @@ plotTrajectoryHeatmap <- function(object,
 
 
 
-#' @title Plot continuous trajectory dynamics in lineplots
+#' @title Plot continuous trajectory dynamics
 #'
 #' @description Displays values along a trajectory direction with
-#' a smoothed lineplot.
+#' a smoothed lineplot or ridgeplot.
 #'
 #' @inherit argument_dummy params
 #' @inherit average_genes params
@@ -621,7 +621,7 @@ plotTrajectoryHeatmap <- function(object,
 #' or feature are displayed via \code{ggplot2::facet_wrap()}
 #' @param ... Additional arguments given to \code{ggplot2::facet_wrap()} if argument
 #' \code{display_facets} is set to TRUE.
-#' @param linesize Numeric value. Specifies the thicknes of the lines with which
+#' @param line_size Numeric value. Specifies the thicknes of the lines with which
 #' the trajectory dynamics are displayed.
 #' @param vlinesize,vlinecolor Adjusts size and color of vertical lines that
 #' display the trajectory parts.
@@ -648,14 +648,14 @@ plotTrajectoryLineplot <- function(object,
                                    clrp_adjust = NULL,
                                    display_trajectory_parts = NULL,
                                    display_facets = NULL,
-                                   linecolor = NULL,
-                                   linesize = 1.5,
+                                   line_color = NULL,
+                                   line_size = 1.5,
                                    vlinecolor = "grey",
                                    vlinesize = 1,
                                    vlinetype = "dashed",
-                                   x_nth = 1,
-                                   xi = NULL,
-                                   yi = NULL,
+                                   x_nth = 7L,
+                                   xi = (getTrajectoryLength(object, id)/2),
+                                   yi = 0.5,
                                    expand_x = c(0,0),
                                    summarize_with = "mean",
                                    ncol = NULL,
@@ -683,7 +683,7 @@ plotTrajectoryLineplot <- function(object,
   vars <- base::unique(variables)
 
   result_df <-
-    getTrajectoryScreeningDf(
+    getStsDf(
       object = object,
       id = id,
       variables = variables,
@@ -746,10 +746,10 @@ plotTrajectoryLineplot <- function(object,
     reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth) %>%
     base::round(digits = round)
 
-  if(base::is.character(linecolor)){
+  if(base::is.character(line_color)){
 
     clrp_adjust <-
-      base::rep(linecolor[1], base::length(vars)) %>%
+      base::rep(line_color[1], base::length(vars)) %>%
       purrr::set_names(nm = vars)
 
     color_add_on <-
@@ -784,16 +784,17 @@ plotTrajectoryLineplot <- function(object,
 
   ggplot2::ggplot(
     data = result_df,
-    mapping = ggplot2::aes(x = breaks, y = values, color = variables)
+    mapping = ggplot2::aes(x = breaks, y = values)
   ) +
     ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi, ...) +
     trajectory_part_add_on +
     ggplot2::geom_smooth(
-      size = linesize,
+      size = line_size,
       span = smooth_span,
       method = smooth_method,
       se = smooth_se,
-      formula = y ~ x
+      formula = y ~ x,
+      mapping = ggplot2::aes(color = variables)
       ) +
     color_add_on +
     ggplot2::scale_x_continuous(
@@ -802,15 +803,9 @@ plotTrajectoryLineplot <- function(object,
       expand = expand_x
     ) +
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.line.x = ggplot2::element_line(
-        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
-      ),
-      strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(color = "black", size = 10)
-    ) +
-    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL, color = "Variable") +
+    ggplot2::coord_cartesian(ylim = c(0,1)) +
+    theme_lineplot_gradient() +
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = "Inferred Expression", color = "Variable") +
     facet_add_on
 
 }
@@ -885,7 +880,7 @@ plotTrajectoryLineplotFitted <- function(object,
       .f = function(v){
 
         stdf <-
-          getTrajectoryScreeningDf(
+          getStsDf(
             object = object,
             id = id,
             variables = v,
@@ -1035,6 +1030,207 @@ plotTrajectoryLineplotFitted <- function(object,
 }
 
 
+
+#' @rdname plotTrajectoryLineplot
+#' @export
+plotTrajectoryRidgeplot <- function(object,
+                                    id,
+                                    variables,
+                                    binwidth = getCCD(object),
+                                    n_bins = NA_integer_,
+                                    unit = getSpatialMethod(object)@unit,
+                                    round = 2,
+                                    method_gs = NULL,
+                                    smooth_method = "loess",
+                                    smooth_span = 0.2,
+                                    smooth_se = TRUE,
+                                    clrp = NULL,
+                                    clrp_adjust = NULL,
+                                    display_trajectory_parts = NULL,
+                                    alpha = 0.9,
+                                    fill = NULL,
+                                    line_color = "black",
+                                    line_size = 1.5,
+                                    vlinecolor = "grey",
+                                    vlinesize = 1,
+                                    vlinetype = "dashed",
+                                    x_nth = 7L,
+                                    xi = NULL,
+                                    yi = NULL,
+                                    expand_x = c(0,0),
+                                    summarize_with = "mean",
+                                    ncol = 1,
+                                    nrow = NULL,
+                                    overlap = 0.5,
+                                    strip_pos = "right",
+                                    display_model = NULL,
+                                    verbose = NULL,
+                                    ...){
+
+  deprecated(...)
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+  check_smooth(smooth_span = smooth_span, smooth_method = smooth_method, smooth_se = smooth_se)
+  check_method(method_gs = method_gs)
+
+  confuns::is_value(clrp, "character", "clrp")
+
+  # -----
+
+  # 2. Data wrangling -------------------------------------------------------
+
+  binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+
+  vars <- base::unique(variables)
+
+  result_df <-
+    getStsDf(
+      object = object,
+      id = id,
+      variables = variables,
+      method_gs = method_gs,
+      n_bins = n_bins,
+      binwidth = binwidth,
+      summarize_with = summarize_with,
+      format = "long",
+      verbose = verbose
+    ) %>%
+    dplyr::mutate(
+      breaks = (trajectory_order - 1) * binwidth,
+      breaks_dist = as_unit(input = breaks, unit = unit, object = object),
+      variables = base::factor(variables, levels = vars)
+    )
+
+  if(base::isTRUE(display_trajectory_parts)){
+
+    vline_df <-
+      result_df %>%
+      dplyr::group_by(trajectory_part) %>%
+      dplyr::filter(
+        trajectory_order %in% c(base::min(trajectory_order), base::max(trajectory_order)) &
+          trajectory_part_order == 1 &
+          trajectory_order != 1
+      )
+
+    trajectory_part_add_on <- list(
+      ggplot2::geom_vline(
+        data = vline_df,
+        mapping = ggplot2::aes(xintercept = trajectory_order),
+        size = vlinesize, color = vlinecolor, linetype = vlinetype
+      )
+    )
+
+  } else {
+
+    trajectory_part_add_on <- NULL
+  }
+
+  facet_add_on <-
+    ggplot2::facet_wrap(
+      facets = . ~ variables,
+      ncol = ncol,
+      nrow = nrow,
+      strip.position = strip_pos
+    )
+
+  # -----
+
+  breaks <- reduce_vec(x = base::unique(result_df[["breaks"]]), nth = x_nth)
+
+  labels <-
+    reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth) %>%
+    base::round(digits = round)
+
+  if(base::is.character(fill)){
+
+    cpa_new <-
+      base::rep(fill, base::length(variables)) %>%
+      purrr::set_names(nm = variables)
+
+    cpa_new <- cpa_new[!base::names(cpa_new) %in% base::names(clrp_adjust)]
+
+    clrp_adjust <- c(clrp_adjust, cpa_new)
+
+  } else {
+
+    clrp_adjust <-
+      confuns::color_vector(
+        clrp = clrp,
+        names = variables,
+        clrp.adjust = clrp_adjust
+      )
+
+  }
+
+  if(base::is.character(display_model)){
+
+    mdf <-
+      create_model_df(
+        input = dplyr::n_distinct(result_df[["breaks"]]),
+        model_sub
+      )
+
+  }
+
+  # create line
+  if(smooth_span == 0){
+
+    stop("`smooth_span` must not be zero in plotIasRidgeplot().")
+
+  } else {
+
+    line_add_on <-
+      ggplot2::geom_smooth(
+        data = result_df,
+        mapping = ggplot2::aes(x = breaks, y = values),
+        color = line_color,
+        size = line_size,
+        span = smooth_span,
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE
+      )
+
+    linefill_add_on <-
+      ggplot2::stat_smooth(
+        data = result_df,
+        mapping = ggplot2::aes(x = breaks, y = values, fill = variables),
+        geom = "area",
+        alpha = alpha,
+        size = 0,
+        span = smooth_span,
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE
+      )
+
+  }
+
+  ggplot2::ggplot(
+    data = result_df,
+    mapping = ggplot2::aes(x = breaks, y = values)
+  ) +
+    ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi) +
+    trajectory_part_add_on +
+    line_add_on +
+    linefill_add_on +
+    ggplot2::scale_x_continuous(
+      breaks = breaks,
+      labels = labels,
+      expand = expand_x
+    ) +
+    ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
+    ggplot2::coord_cartesian(ylim = c(0,1)) +
+    ggplot2::theme_classic() +
+    theme_ridgeplot_gradient() +
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = "Inferred Expression", color = "Variable") +
+    facet_add_on +
+    ggplot2::scale_fill_manual(values = clrp_adjust, name = "Variables")
+
+
+}
 
 #' @rdname plotUmap
 #' @export

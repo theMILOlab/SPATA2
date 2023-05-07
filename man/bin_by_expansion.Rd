@@ -11,7 +11,8 @@ bin_by_expansion(
   n_bins_circle,
   remove = FALSE,
   bcsp_exclude = NULL,
-  drop = TRUE
+  drop = TRUE,
+  arrange = TRUE
 )
 }
 \arguments{

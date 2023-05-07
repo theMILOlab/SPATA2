@@ -26,7 +26,9 @@ provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.}
 for which axes the transformation is performed. Defaults to both.}
 
 \item{frame_by}{Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
-If specified, sets the plot frame accordingly.}
+If specified, sets the plot frame accordingly. Else a list of two vectors of
+length two in SPATA2 distance values can be provided to set the frame range
+precisely. Slots of the list must be named \emph{x} and \emph{y}.}
 
 \item{breaks_x, breaks_y}{Vector of distance inputs. Can be pixel or SI
 units of lengths. If SI unit of lengths, input is transformed to pixels as

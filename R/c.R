@@ -4,7 +4,6 @@
 
 
 
-
 # cl ----------------------------------------------------------------------
 
 #' @title Close area encircling
@@ -15,8 +14,8 @@
 #' @export
 close_area_df <- function(df){
 
-  fr <- base::as.numeric(df[1,])
-  lr <- base::as.numeric(df[base::nrow(df), ])
+  fr <- df[1,]
+  lr <- df[base::nrow(df), ]
 
   if(!base::identical(x = fr, y = lr)){
 

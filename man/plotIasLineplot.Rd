@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotIasLineplot}
 \alias{plotIasLineplot}
+\alias{plotIasLineplotSC}
 \title{Plot IAS lineplot}
 \usage{
 plotIasLineplot(
@@ -13,8 +14,6 @@ plotIasLineplot(
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  outer = TRUE,
-  inner = FALSE,
   method_gs = NULL,
   smooth_span = 0.2,
   smooth_se = FALSE,
@@ -30,19 +29,51 @@ plotIasLineplot(
   bcsp_exclude = NULL,
   nrow = NULL,
   ncol = NULL,
-  display_axis_text = "x",
   include_area = FALSE,
   display_border = TRUE,
   border_linealpha = 0.75,
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
-  display_ribbon = TRUE,
-  ribbon_alpha = 0.5,
-  ribbon_color = "lightgrey",
-  display_error_bar = FALSE,
-  sd_alpha = 0.9,
-  sd_color = "black",
+  x_nth = 3,
+  xi = NULL,
+  yi = NULL,
+  model_aid = NULL,
+  sc_input = NULL,
+  verbose = NULL,
+  ...
+)
+
+plotIasLineplotSC(
+  object,
+  id,
+  sc_input,
+  distance = NA_integer_,
+  n_bins_circle = NA_integer_,
+  binwidth = getCCD(object),
+  angle_span = c(0, 360),
+  n_bins_angle = 1,
+  method_gs = NULL,
+  smooth_span = 0.2,
+  smooth_se = FALSE,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  line_color = NULL,
+  line_size = 1.5,
+  facet_by = "variables",
+  normalize_by = "sample",
+  summarize_with = "mean",
+  bcsp_exclude = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  include_area = FALSE,
+  display_border = TRUE,
+  border_linealpha = 0.75,
+  border_linecolor = "black",
+  border_linesize = 1,
+  border_linetype = "dashed",
   x_nth = 3,
   xi = NULL,
   yi = NULL,
@@ -81,12 +112,6 @@ an angle span relative to the center of the image annotation.
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
 
-\item{outer}{Logical value. If \code{FALSE}, the outer border of the image annotation
-is not included in the output.}
-
-\item{inner}{Logical value. If \code{FALSE}, the inner borders of the image annotation
-are not included in the output.}
-
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
@@ -113,17 +138,11 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
+the trajectory dynamics are displayed.}
+
 \item{facet_by}{Either \emph{'variables'} or \emph{'bins_angle'}.
 If \emph{'bins_angle'} length of \code{variables} must be one.}
-
-\item{normalize_by}{Character value or FALSE. If character, there are two options:
-\itemize{
-\item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
-\item{\code{normalize_by} = \emph{'bins_angle'}:}{
-Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
-is bigger than 1.
-}
-}}
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
@@ -139,9 +158,6 @@ to highlight where the border of the image annotation runs.}
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
 represents the border of the image annotation.}
 
-\item{display_ribbon}{Logical value. If TRUE, a ribbon is displayed around
-the main line of the plot visualizing uncertainty using standard deviation.}
-
 \item{x_nth}{Numeric value. If the number of breaks/labels on the
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
 every label is kept. If 2, every second label is kept. If 3, every
@@ -150,6 +166,14 @@ third label is kept. And so on.}
 \item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
 
 \item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
+
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+}}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -2,7 +2,8 @@
 % Please edit documentation in R/plotT-Z.R
 \name{plotTrajectoryLineplot}
 \alias{plotTrajectoryLineplot}
-\title{Plot continuous trajectory dynamics in lineplots}
+\alias{plotTrajectoryRidgeplot}
+\title{Plot continuous trajectory dynamics}
 \usage{
 plotTrajectoryLineplot(
   object,
@@ -20,18 +21,54 @@ plotTrajectoryLineplot(
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,
   display_facets = NULL,
-  linecolor = NULL,
-  linesize = 1.5,
+  line_color = NULL,
+  line_size = 1.5,
   vlinecolor = "grey",
   vlinesize = 1,
   vlinetype = "dashed",
-  x_nth = 1,
-  xi = NULL,
-  yi = NULL,
+  x_nth = 7L,
+  xi = (getTrajectoryLength(object, id)/2),
+  yi = 0.5,
   expand_x = c(0, 0),
   summarize_with = "mean",
   ncol = NULL,
   nrow = NULL,
+  display_model = NULL,
+  verbose = NULL,
+  ...
+)
+
+plotTrajectoryRidgeplot(
+  object,
+  id,
+  variables,
+  binwidth = getCCD(object),
+  n_bins = NA_integer_,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
+  method_gs = NULL,
+  smooth_method = "loess",
+  smooth_span = 0.2,
+  smooth_se = TRUE,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  display_trajectory_parts = NULL,
+  alpha = 0.9,
+  fill = NULL,
+  line_color = "black",
+  line_size = 1.5,
+  vlinecolor = "grey",
+  vlinesize = 1,
+  vlinetype = "dashed",
+  x_nth = 7L,
+  xi = NULL,
+  yi = NULL,
+  expand_x = c(0, 0),
+  summarize_with = "mean",
+  ncol = 1,
+  nrow = NULL,
+  overlap = 0.5,
+  strip_pos = "right",
   display_model = NULL,
   verbose = NULL,
   ...
@@ -75,7 +112,7 @@ drawn.}
 \item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
 or feature are displayed via \code{ggplot2::facet_wrap()}}
 
-\item{linesize}{Numeric value. Specifies the thicknes of the lines with which
+\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
 the trajectory dynamics are displayed.}
 
 \item{vlinesize, vlinecolor}{Adjusts size and color of vertical lines that
@@ -111,5 +148,5 @@ to the rules of the ggplot2-framework.
 }
 \description{
 Displays values along a trajectory direction with
-a smoothed lineplot.
+a smoothed lineplot or ridgeplot.
 }

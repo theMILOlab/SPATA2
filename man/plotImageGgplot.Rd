@@ -6,7 +6,7 @@
 \usage{
 plotImageGgplot(
   object,
-  unit = "px",
+  unit = getSpatialMethod(object)@unit,
   frame_by = "image",
   xrange = NULL,
   yrange = NULL,

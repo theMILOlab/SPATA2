@@ -83,6 +83,20 @@ plotSurface <- function(object,
 
   # 2. Data extraction and plot preparation ---------------------------------
 
+  if(!base::is.null(transform_with)){
+
+    if(!base::is.list(transform_with) & base::length(transform_with) == 1){
+
+      transform_with <-
+        purrr::set_names(
+          x = transform_with,
+          set_names = color_by
+        )
+
+    }
+
+  }
+
   coords_df <-
     getCoordsDf(object) %>%
     hlpr_join_with_aes(
@@ -1933,4 +1947,150 @@ plotSurfaceQuantiles <- function(object,
 }
 
 
+#' @title Plot single cells on surface
+#'
+#' @description Plots single cell input on the sample surface.
+#'
+#' @param cell_type Character value or `NULL`. If character,
+#' subsets the cell types that are included in the plots.
+#' @param display_density Logical value. If `TRUE`, uses `ggplot2::geom_density2d()`
+#' to visualize cell density with contours.
+#' @param display_image Logical value. If `TRUE`, adds the image of the
+#' tissue.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggplot_family return
+#'
+#' @export
+#'
+#' @examples
+#'
+#' object <- loadPubExample("MCD_LMU")
+#'
+#' data("sc_deconvolution")
+#'
+#' plotSurfaceSC(
+#'  object = object,
+#'  sc_input = sc_deconvolution$MCD_LMU,
+#'  cell_types = c("Astrocytes", "Neurons", "Microglia", "Macrophages/Monocytes"),
+#'  clrp = "sifre"
+#'  )
+#'
+plotSurfaceSC <- function(object,
+                          sc_input,
+                          cell_types = NULL,
+                          line_alpha = 0.9,
+                          line_size = 1,
+                          pt_alpha = 1,
+                          pt_size = 2,
+                          display_density = TRUE,
+                          display_facets = TRUE,
+                          display_image = FALSE,
+                          display_points = TRUE,
+                          clrp = NULL,
+                          clrp_adjust = NULL,
+                          frame_by = "coords",
+                          nrow = NULL,
+                          ncol = NULL){
+
+  hlpr_assign_arguments(object)
+
+  df <- sc_input
+
+  if(base::is.character(cell_types)){
+
+    df <- dplyr::filter(df, cell_type %in% {{cell_types}})
+
+  }
+
+  out_plot <-
+    ggplot2::ggplot(data = df) +
+    scale_color_add_on(
+      clrp = clrp,
+      clrp.adjust = clrp_adjust,
+      variable = df$cell_type
+      ) +
+    ggplot2::coord_equal() +
+    ggplot2::theme_void()
+
+  if(base::isTRUE(display_facets)){
+
+    out_plot <-
+      out_plot +
+      ggplot2::facet_wrap(
+        facets = . ~ cell_type,
+        nrow = nrow,
+        ncol = ncol
+      )
+
+  }
+
+  if(frame_by == "coords"){
+
+    out_plot <-
+      out_plot +
+      ggpLayerFrameByCoords(object, opt = "scale")
+
+  } else if(frame_by == "image"){
+
+    out_plot <-
+      out_plot +
+      ggpLayerFrameByImage(object, opt = "scale")
+
+  }
+
+  if(base::isTRUE(display_image)){
+
+    out_plot <- out_plot + ggpLayerImage(object)
+
+  }
+
+  if(base::isTRUE(display_points)){
+
+    out_plot <-
+      out_plot +
+      ggplot2::geom_point(
+        alpha = pt_alpha,
+        size = pt_size,
+        mapping = aes(x = x, y = y, color = cell_type)
+        )
+
+  }
+
+  if(base::isTRUE(display_density)){
+
+    df <-
+      include_tissue_outline(
+        coords_df = getCoordsDf(object),
+        input_df = df,
+        img_ann_center = NULL
+      )
+
+    density_add_on <-
+      purrr::map(
+        .x = base::unique(df[["tissue_section"]]),
+        .f = function(part){
+
+          df_part <- dplyr::filter(df, tissue_section == {{part}})
+
+          ggplot2::geom_density2d(
+            data = df_part,
+            alpha = line_alpha,
+            size = line_size,
+            mapping = ggplot2::aes(x = x, y = y, color = cell_type)
+          )
+
+        }
+      )
+
+    out_plot <-
+      out_plot +
+      density_add_on
+
+  }
+
+
+  return(out_plot)
+
+}
 

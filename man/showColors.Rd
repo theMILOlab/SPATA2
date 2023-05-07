@@ -9,9 +9,9 @@
 \usage{
 showColors(input, n = 20, title_size = 10)
 
-showColorPalettes(input = validColorPalettes(flatten = TRUE))
+showColorPalettes(input = validColorPalettes(flatten = TRUE), n = 15)
 
-showColorSpectra(input = validColorSpectra(flatten = TRUE))
+showColorSpectra(input = validColorSpectra(flatten = TRUE), n = 20)
 
 showModels(
   input = 100,

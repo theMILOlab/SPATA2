@@ -377,9 +377,15 @@ scale_nuclei_df <- function(object,
 
 #' @title Scale image and coordinates
 #'
-#' @description The `rotate*()` family scales the current image
+#' @description The `scale*()` family scales the current image
 #' or coordinates of spatial aspects or everything. See details
 #' for more information.
+#'
+#' **NOTE:** `scaleImage()` only rescales the image and lets everything else as
+#' is. Only use it if the image is to big in resolution and thus not aligned with
+#' the spatial coordinates. If you want to minimize the resolution of the image
+#' while maintaining alignment with the spatial aspects in the `spata2` object
+#' use `scaleAll()`!
 #'
 #' @inherit flipAll params
 #' @inherit scale_coords_df params
@@ -403,7 +409,6 @@ scale_nuclei_df <- function(object,
 #' @seealso [`flipAll()`], [`rotateAll()`]
 #'
 #' @export
-
 
 scaleAll <- function(object, scale_fct){
 
@@ -965,113 +970,17 @@ showColors <- function(input, n = 20, title_size = 10){
 
 #' @rdname showColors
 #' @export
-showColorPalettes <- function(input = validColorPalettes(flatten = TRUE)){
+showColorPalettes <- function(input = validColorPalettes(flatten = TRUE), n = 15){
 
-  if(confuns::is_list(input)){
-
-    input <-
-      purrr::flatten_chr(input) %>%
-      base::unname()
-
-  }
-
-  input <- input[input != "default"]
-
-  confuns::check_one_of(
-    input = input,
-    against = validColorPalettes(flatten = TRUE)
-  )
-
-  purrr::map(
-    .x = input,
-    .f = function(x){
-
-      vec <- base::as.character(1:n)
-
-      if(x %in% validColorPalettes()[["Viridis Options"]]){
-
-        vec <- base::as.character(vec[1:9])
-
-      } else {
-
-        vec <- as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
-
-      }
-
-      df <- base::data.frame(x = vec, y = 1)
-
-      out <-
-        ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
-        ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
-        confuns::scale_color_add_on(aes = "fill", clrp = x, variable = vec) +
-        ggplot2::scale_y_continuous() +
-        ggplot2::theme_void() +
-        ggplot2::theme(
-          legend.position = "none",
-          plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
-        ) +
-        ggplot2::labs(title = x)
-
-      return(out)
-
-    }
-  ) %>%
-    patchwork::wrap_plots()
+  showColors(input = input, n = n)
 
 }
 
 #' @rdname showColors
 #' @export
-showColorSpectra <- function(input = validColorSpectra(flatten = TRUE)){
+showColorSpectra <- function(input = validColorSpectra(flatten = TRUE), n = 20){
 
-  if(confuns::is_list(input)){
-
-    input <-
-      purrr::flatten_chr(input) %>%
-      base::unname()
-
-  }
-
-  input <- input[input != "default"]
-
-  confuns::check_one_of(
-    input = input,
-    against = validColorSpectra(flatten = TRUE)
-  )
-
-  purrr::map(
-    .x = input,
-    .f = function(x){
-
-      if(x %in% confuns::diverging){
-
-        vec <- base::seq(-1, 1, len = n)
-
-      } else {
-
-        vec <- 1:n
-
-      }
-
-      df <- base::data.frame(x = vec, y = 1)
-
-      out <-
-        ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
-        ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
-        confuns::scale_color_add_on(aes = "fill", clrsp = x, variable = vec) +
-        ggplot2::scale_y_continuous() +
-        ggplot2::theme_void() +
-        ggplot2::theme(
-          legend.position = "none",
-          plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
-        ) +
-        ggplot2::labs(title = x)
-
-      return(out)
-
-    }
-  ) %>%
-    patchwork::wrap_plots()
+  showColors(input = input, n = n)
 
 }
 
@@ -1213,7 +1122,7 @@ smoothSpatially <- function(coords_df,
 #' @description Screens the sample for numeric variables that follow specific expression
 #' changes along the course of the spatial trajectory.
 #'
-#' @inherit getTrajectoryScreeningDf params
+#' @inherit getTrajectoryDf params
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
@@ -1308,7 +1217,6 @@ spatialTrajectoryScreening <- function(object,
       smooth = FALSE,
       normalize = TRUE
     )
-
 
   # bin along trajectory and summarize by bin
   confuns::give_feedback(
@@ -1495,8 +1403,12 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
       .x = object@images[[1]]@annotations,
       .f = function(img_ann){
 
-        img_ann@misc$barcodes <-
-          img_ann@misc$barcodes[img_ann@misc$barcodes %in% bcs_keep]
+        if(base::is.character(img_ann@misc[["barcodes"]])){
+
+          img_ann@misc[["barcodes"]] <-
+            img_ann@misc[["barcodes"]][img_ann@misc[["barcodes"]] %in% bcs_keep]
+
+        }
 
         return(img_ann)
 
@@ -1519,16 +1431,16 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
   object@information$barcodes <-
     object@information$barcodes[object@information$barcodes %in% bcs_keep]
 
-  object@information$subset$barcodes <-
-    c(barcodes, object@information$subset$barcodes)
+  object@information[["subset"]][["barcodes"]] <-
+    c(barcodes, object@information[["subset"]][["barcodes"]])
 
-  if(base::is.numeric(object@information$subsetted)){
+  if(base::is.numeric(object@information[["subsetted"]])){
 
-    object@information$subsetted <- object@information$subsetted + 1
+    object@information[["subsetted"]] <- object@information[["subsetted"]]+ 1
 
   } else {
 
-    object@information$subsetted <- 1
+    object@information[["subsetted"]]<- 1
 
   }
 

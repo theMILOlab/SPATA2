@@ -16,6 +16,14 @@
 #' @export
 reduce_vec <- function(x, nth, start.with = 1){
 
+  if(base::is.integer(nth)){
+
+    l <- base::length(x)
+
+    nth <- base::ceiling(l/nth)
+
+  }
+
   if(nth == 1){
 
     out <- x
@@ -36,6 +44,267 @@ reduce_vec <- function(x, nth, start.with = 1){
 
 }
 
+
+
+
+
+
+#' @title Relate observations to an image annotation
+#'
+#' @description Relates observations in an external data.frame
+#' to the spatial position and extent of an image annotation.
+#'
+#' @param input_df Data.frame with at least three columns.
+#' \itemize{
+#'  \item{*x*: }{numeric. Position of observations on x-axis.}
+#'  \item{*y*: }{numeric. Position of observations on y-axis.}
+#'  }
+#' @param input_id_var Character value or `NULL`. If character, denotes
+#' the variable in `input_df` that uniquely identifies each observation.
+#' If `NULL`, a variable named *inp_id* is created using the prefix *'ID'+
+#' and the rownumber.
+#' @param distance,binwidth,n_bins_circle If exactly two of the three arguments
+#' are not `NA_integer_` but valid input as is documented in [`imageAnnotationScreening()`]
+#' the output contains binning results.
+#' @param calc_dist_to Character. One of *'border'* (the default), *'center'* or
+#' *'none'*. If *'border'*, the distance of every observation to its closest point
+#' on the image annotation **border** is calculated. If *'center'* the distance
+#' of every observation to the **center** of the image annotation is computed,
+#' as is returned by [`getImgAnnCenter()`]. If *'none'*, distance calculation
+#' is skipped.
+#' @param inc_outline Logical value. If `TRUE`, the function [`include_tissue_outline()`]
+#' is used to remove observations that do not fall on the tissue section of the
+#' image annotation. See examples and documentation of [`include_tissue_outline()`]
+#' for more information.
+#' @param unit Character. The unit in which to calculate the distance.
+#'
+#' @inherit argument_dummy params
+#' @inherit imageAnnotationScreening params
+#'
+#' @return The input data.frame with additional columns:
+#'
+#' \itemize{
+#'  \item{*angle* :}{ numeric. The angle between the observation point and the center of the
+#'  image annotation.}
+#'  \item{*bins_angle* :} factor. Groups created based on the variable *angle*. Number of levels
+#'  depends on input for argument `n_bins_angle`.
+#'  \item{*bins_circle* :} factor. Groups created based on the variable *dist_to_ia*. Number of levels
+#'  dpeends on input for arguments `distance`, `binwidth` and/or `n_bins_circle`.
+#'  \item{*dist_to_ia* :} numeric. Distance to the image annotation.
+#'  \item{*dist_unit* :} character. The unit in which distance was measured.
+#' }
+#'
+#' Additionally, if `inc_outline` is `TRUE`, the output variables of the function
+#' [`include_tissue_outline()`] are added.
+#'
+#' @export
+relateToImageAnnotation <- function(object,
+                                    id,
+                                    input_df,
+                                    input_id_var = NULL,
+                                    distance = NA_integer_,
+                                    binwidth = NA_integer_,
+                                    n_bins_circle = NA_integer_,
+                                    n_bins_angle = 12,
+                                    calc_dist_to = "border",
+                                    unit = "px",
+                                    inc_outline = TRUE,
+                                    verbose = NULL,
+                                    ...
+){
+
+  deprecated(...)
+  hlpr_assign_arguments(object)
+
+  confuns::is_value(id, mode = "character")
+
+  if(base::is.null(input_id_var)){
+
+    input_id_var <- "inp_id"
+
+    input_df[["inp_id"]] <- stringr::str_c("ID", 1:base::nrow(input_df))
+
+  }
+
+  confuns::check_data_frame(
+    df = input_df,
+    var.class = purrr::set_names(
+      x = list("numeric", "numeric", "character"),
+      nm = c("x", "y", input_id_var)
+    )
+  )
+
+  input_names <- base::names(input_df)
+
+  if(base::any(input_names %in% rtia_names)){
+
+    stop(
+      glue::glue(
+        "Input data.frame must not contain columns '{cols}'.",
+        cols = confuns::scollapse(rtia_names)
+      )
+    )
+
+  }
+
+  confuns::is_key_variable(
+    df = input_df,
+    key.name = input_id_var,
+    stop.if.false = TRUE
+  )
+
+  img_ann_center <- getImgAnnCenter(object, id = id)
+  img_ann_border <- getImgAnnBorderDf(object, ids = id)
+
+  if(base::isTRUE(inc_outline)){
+
+    out_df <-
+      include_tissue_outline(
+        coords_df = getCoordsDf(object),
+        input_df = input_df,
+        img_ann_center = img_ann_center,
+        remove = TRUE
+      )
+
+  } else {
+
+    out_df <- input_df
+
+  }
+
+  img_ann_border[["bp_id"]] <- stringr::str_c("ID", 1:base::nrow(img_ann_border))
+
+  if(base::sum(base::is.na(c(distance, binwidth, n_bins_circle))) == 1){
+
+    ias_input <-
+      check_ias_input(
+        distance = distance,
+        binwidth = binwidth,
+        n_bins_circle = n_bins_circle,
+        object = object
+      )
+
+    out_df_bbe <-
+      bin_by_expansion(
+        coords_df = out_df,
+        area_df = img_ann_border,
+        binwidth = ias_input$binwidth,
+        n_bins_circle = ias_input$n_bins_circle,
+        verbose = FALSE
+      )
+
+  } else {
+
+    out_df[["bins_circle"]] <- base::factor("none")
+    out_df[["bins_order"]] <- NA_integer_
+    out_df[["border"]] <- "none"
+
+    out_df_bbe <- out_df
+
+  }
+
+  # use bin_by_angle to bin border points as prefiltering
+  img_ann_border[["bins_circle"]] <- base::factor("none")
+  img_ann_border[["bins_order"]] <- NA_integer_
+  img_ann_border[["border"]] <- "none"
+
+  # use angle bins for prefiltering
+  out_df_bba <-
+    bin_by_angle(
+      coords_df = out_df_bbe,
+      center = img_ann_center,
+      var_to_bin = input_id_var,
+      n_bins_angle = n_bins_angle,
+      verbose = FALSE
+    )
+
+  if(calc_dist_to == "border"){
+
+    img_ann_border_bba <-
+      bin_by_angle(
+        coords_df = img_ann_border,
+        center = img_ann_center,
+        var_to_bin = "bp_id",
+        n_bins_angle = n_bins_angle,
+        verbose = FALSE
+      )
+
+    dist_to_border <-
+      # create empty data.frame with all input obs/border points combinations
+      tidyr::expand_grid(
+        bp_id = base::unique(img_ann_border[["bp_id"]]),
+        {{input_id_var}} := base::unique(input_df[[input_id_var]])
+      ) %>%
+      # merge required information
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(img_ann_border_bba, xb = x, yb = y, bins_angle_b = bins_angle, bp_id),
+        by = "bp_id"
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(out_df_bba, xo = x, yo = y, bins_angle_o = bins_angle, !!rlang::sym(input_id_var)),
+        by = input_id_var
+      ) %>%
+      # prefilter based on angle to the center of the image annoation
+      dplyr::mutate(
+        bins_angle_b = base::as.character(bins_angle_b),
+        bins_angle_o = base::as.character(bins_angle_o)
+      ) %>%
+      dplyr::filter(bins_angle_b == bins_angle_o) %>%
+      # compute distance for each remaining input obs/border point pair
+      dplyr::group_by(!!rlang::sym(input_id_var), bp_id) %>%
+      dplyr::mutate(
+        dist_to_ia = compute_distance(starting_pos = c(xo, yo), final_pos = c(xb, yb))
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::group_by(!!rlang::sym(input_id_var)) %>%
+      # keep input obs/border points pair with lowest distance
+      dplyr::filter(dist_to_ia == base::min(dist_to_ia)) %>%
+      dplyr::ungroup()
+
+    out_df_bba <-
+      dplyr::left_join(
+        x = out_df_bba,
+        y = dplyr::select(dist_to_border, !!rlang::sym(input_id_var), dist_to_ia),
+        by = input_id_var
+      )
+
+  } else if(calc_dist_to == "center"){
+
+    out_df_bba <-
+      dplyr::group_by(.data = out_df_bba, !!rlang::sym(input_id_var)) %>%
+      dplyr::mutate(
+        dist_to_ia = compute_distance(starting_pos = c(x, y), final_pos = img_ann_center)
+      ) %>%
+      dplyr::ungroup()
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "Skipping distance calculation.",
+      verbose = verbose
+    )
+
+  }
+
+  if("dist_to_ia" %in% base::names(out_df_bba)){
+
+    out_df_bba[["dist_unit"]] <- unit
+
+    if(unit != "px"){
+
+      out_df_bba[["dist_to_ia"]] <-
+        as_unit(input = out_df_bba[["dist_to_ia"]], unit = unit, object = object) %>%
+        base::as.numeric()
+
+    }
+
+  }
+
+  return(out_df_bba)
+
+}
 
 #' @title Relevel groups of grouping variable
 #'

@@ -1,5 +1,16 @@
 
 
+
+# getO --------------------------------------------------------------------
+
+#' @rdname setOutlineVarName
+#' @export
+getOutlineVarName <- function(object){
+
+  object@information$outline_var
+
+}
+
 # getP --------------------------------------------------------------------
 
 #' @rdname getDimRedDf
@@ -914,6 +925,49 @@ getSmrdResultsDf <-  function(ias,
 
 
 
+#' @title Obtain spatial trajectory screening data.frame
+#'
+#' @description Extracts a data.frame of inferred gradients related to the
+#' course of a trajectory.
+#'
+#' @inherit argument_dummy params
+#' @inherit getTrajectoryDf params
+#'
+#' @return Data.frame.
+#'
+#' @export
+#'
+getStsDf <- function(object,
+                     id,
+                     variables,
+                     binwidth = getCCD(object),
+                     n_bins = NA_integer_,
+                     methods_gs = NULL,
+                     smooth_span = 0,
+                     format = "wide",
+                     verbose = NULL,
+                     ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  getTrajectoryDf(
+    object = object,
+    id = id,
+    variables = variables,
+    binwidth = binwidth,
+    n_bins = n_bins,
+    methods_gs = methods_gs,
+    smooth_span = smooth_span,
+    normalize = TRUE,
+    summarize_with = "mean",
+    format = format,
+    verbose = verbose
+  )
+
+}
+
 
 # getT --------------------------------------------------------------------
 
@@ -964,9 +1018,7 @@ getTrajectoryIds <- function(object){
 }
 
 
-
-
-#' @title Obtain a summarized trajectory data.frame
+#' @title Obtain a trajectory data.frame
 #'
 #' @description Extracts a data.frame that contains information about barcode-spots
 #' needed for analysis related to \code{spatialTrajectoryScreening()}.
@@ -975,56 +1027,26 @@ getTrajectoryIds <- function(object){
 #' @inherit variables_num params
 #' @inherit getSpatialTrajectory params
 #' @param binwidth Distance value. The width of the bins to which
-#' the barcode-spots are assigned. We recommend to set it equal to the center-center
-#' distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details
-#' of \code{?is_dist} for more information about distance values.
+#' the barcode-spots are assigned. Defaults to the center-center
+#' distance: \code{binwidth = getCCD(object)}.
 #'
 #' @return Data.frame. (See details for more.)
-#'
-#' @note \code{getTrajectoryScreeningDf()} summarizes by bins by default.
-#' To obtain the coordinates joined with the projection length set \code{summarize_with}
-#' to \code{FALSE} or use \code{getProjectionDf()}. The same applies if you want to join grouping
-#' variables to the data.frame (can not be summarized).
-#'
-#' @details Initially the projection data.frame of the specified trajectory
-#' is joined with the respective input of variables via \code{joinWithVariables()}.
-#'
-#' The argument \code{binwidth} refers to the amount of which the barcode-spots of the
-#' given trajectory will be summarized with regards to the trajectory's direction:
-#' The amount of \code{binwidth} and the previously specified 'trajectory width' in \code{createTrajectories()}
-#' determine the length and width of the sub-rectangles in which the rectangle the
-#' trajectory embraces is split and in which all barcode-spots are binned.
-#' Via \code{dplyr::summarize()} the variable-means of every sub-rectangle are calculated.
-#' These mean-values are then arranged along to the trajectory's direction.
-#'
-#' Eventually the data.frame is shifted via \code{tidyr::pivot_longer()} to a data.frame in which
-#' every observation refers to the mean-value of one of the specified variable-elements (e.g. a specified
-#' gene set) of the particular sub-rectangle. The returned data.frame contains the following variables:
-#'
-#' \itemize{
-#'  \item{\emph{trajectory_part}: Character. Specifies the trajectory's sub-part of the observation. (Negligible if there is
-#'  only one trajectory part.)}
-#'  \item{\emph{trajectory_part_order}: Numeric. Indicates the order within the trajectory-part. (Negligible if there is
-#'  only one trajectory part.)}
-#'  \item{\emph{trajectory_order}: Numeric. Indicates the order within the whole trajectory.}
-#'  \item{\emph{variables}: Character. The respective gene sets, gene or feature the value refers to.}
-#'  \item{\emph{values}: Numeric. The summarized values.}}
 #'
 #' @export
 #'
 
-getTrajectoryScreeningDf <- function(object,
-                                     id,
-                                     variables,
-                                     binwidth = getCCD(object),
-                                     n_bins = NA_integer_,
-                                     method_gs = "mean",
-                                     normalize = TRUE,
-                                     summarize_with = "mean",
-                                     smooth_span = 0,
-                                     format = "wide",
-                                     verbose = NULL,
-                                     ...){
+getTrajectoryDf <- function(object,
+                            id,
+                            variables,
+                            binwidth = getCCD(object),
+                            n_bins = NA_integer_,
+                            method_gs = NULL,
+                            normalize = TRUE,
+                            summarize_with = FALSE,
+                            smooth_span = 0,
+                            format = "wide",
+                            verbose = NULL,
+                            ...){
 
   hlpr_assign_arguments(object)
 
@@ -1034,10 +1056,14 @@ getTrajectoryScreeningDf <- function(object,
 
   confuns::are_values(c("normalize"), mode = "logical")
 
-  check_one_of(
-    input= summarize_with,
-    against = c("mean", "median")
-  )
+  if(base::is.character(summarize_with)){
+
+    check_one_of(
+      input = summarize_with,
+      against = c("mean", "median")
+    )
+
+  }
 
   check_one_of(
     input = format,
@@ -1123,7 +1149,7 @@ getTrajectoryScreeningDf <- function(object,
 #' @description Computes and returns the length of a trajectory.
 #'
 #' @inherit argument_dummy params
-#' @inherit getTrajectoryScreeningDf params
+#' @inherit getTrajectoryDf params
 #' @inherit as_unit params return
 #' @inherit is_dist details
 #' @export
