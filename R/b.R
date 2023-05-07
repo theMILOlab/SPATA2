@@ -445,7 +445,10 @@ bin_by_expansion <- function(coords_df,
 
   # Option bcsp_exclude: Rename manually selected spots to "Outside"
   if(base::is.character(bcsp_exclude)){
-      coords_df[coords_df$barcodes %in% bcsp_exclude,]$bins_circle <- "Outside"
+    if(any(!bcsp_exclude %in% coords_df$barcodes)){
+      warning("Barcode(s) given in `bcsp_exclude` not found in spata object. Is the format correct?")
+    }
+    coords_df[coords_df$barcodes %in% bcsp_exclude,]$bins_circle <- "Outside"
   }
 
   bin_levels <- c(base::names(binwidth_vec), "Outside")
