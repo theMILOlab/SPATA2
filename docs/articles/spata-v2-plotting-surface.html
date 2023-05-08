@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,32 +33,23 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
 </li>
 <li>
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
+  <a href="../articles/spata-v2-spata-data.html">SPATAData</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -67,39 +60,64 @@
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
+      <a href="../articles/">Genes, Gene Sets and Features</a>
     </li>
-    <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
-    </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
-    <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
-    </li>
+    <li class="dropdown-header">Integrating Different Platforms</li>
     <li>
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
     </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
+    </li>
+    <li class="dropdown-header">Gradient Screening</li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
+      <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Code &amp; Concept
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
+      <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
     </li>
   </ul>
 </li>
@@ -114,7 +132,7 @@
 
       
 
-      </header><script src="spata-v2-plotting-surface_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Surface Plotting</h1>
@@ -127,165 +145,279 @@
 
     
     
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>1. Introduction</h2>
-<p>Surface plotting allows to visualize the barcode-spot’s information with a spatial dimension. Behind the scenes they are scatterplots whereby the x-aesthetic and y-aesthetic of the plot is mapped onto the respective coordinate-variable.</p>
+<div class="section level2">
+<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>Surface plotting allows to visualize the barcode-spot’s information
+with a spatial dimension. Behind the scenes they are scatterplots
+whereby the x-aesthetic and y-aesthetic of the plot is mapped to the
+respective coordinate-variable. <code>SPATA2</code> offers a variety of
+functions and options to visualize expression of genes or other
+variables on the surface of the tissue sample.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># load packages</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/">SPATA2</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SPATAData</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 
-<span class="co"># ggplot2 plots can be easily combined with 'patchwork'</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span> 
+<span class="va">object_t313</span> <span class="op">&lt;-</span> <span class="fu">SPATAData</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SPATAData/man/downloadSpataObject.html" class="external-link">downloadSpataObject</a></span><span class="op">(</span><span class="st">"313_T"</span>, file <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 
-<span class="co"># load objects</span>
-<span class="va">human_cortex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadSpataObject</a></span><span class="op">(</span><span class="st">"data/spata-obj-cortex265.RDS"</span><span class="op">)</span>
-<span class="va">human_gbm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadSpataObject</a></span><span class="op">(</span><span class="st">"data/spata-obj-gbm275.RDS"</span><span class="op">)</span>
+<span class="va">object_t313</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/setDefault.html">setDefault</a></span><span class="op">(</span><span class="va">object_t313</span>, display_image <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
 
-<span class="co"># store example genes of interest as character vectors</span>
-<span class="va">genes_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"TUBA1B"</span>, <span class="st">"HOPX"</span>, <span class="st">"PLP1"</span>, <span class="st">"ACTB"</span><span class="op">)</span>
-<span class="va">genes_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"CARTPT"</span>, <span class="st">"OLIG1"</span>, <span class="st">"GFAP"</span>, <span class="st">"SYNPR"</span>, <span class="st">"HOPX"</span>, <span class="st">"CCK"</span><span class="op">)</span></code></pre></div>
+<span class="co"># load predefined clustering from package</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"clustering"</span><span class="op">)</span>
+
+<span class="va">object_t313</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/addFeatures.html">addFeatures</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_t313</span>, 
+    feature_df <span class="op">=</span> <span class="va">clustering</span><span class="op">[[</span><span class="st">"313_T"</span><span class="op">]</span><span class="op">]</span>, 
+    overwrite <span class="op">=</span> <span class="cn">TRUE</span>
+  <span class="op">)</span>
+
+<span class="co"># load predefined spatial segmentation from package</span>
+<span class="co"># add yourself via createSpatialSegmentation()</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"spatial_segmentations"</span><span class="op">)</span> 
+
+<span class="va">object_t313</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/addFeatures.html">addFeatures</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_t313</span>, 
+    feature_df <span class="op">=</span> <span class="va">spatial_segmentations</span><span class="op">[[</span><span class="st">"313_T"</span><span class="op">]</span><span class="op">]</span>, 
+    overwrite <span class="op">=</span> <span class="cn">TRUE</span>
+  <span class="op">)</span></code></pre></div>
 </div>
-<div id="basic-surface-plots-one-by-one" class="section level2">
-<h2 class="hasAnchor">
-<a href="#basic-surface-plots-one-by-one" class="anchor"></a>2. Basic surface plots one by one</h2>
+<div class="section level2">
+<h2 id="basic-surface-plots-one-by-one">2. Basic surface plots one by one<a class="anchor" aria-label="anchor" href="#basic-surface-plots-one-by-one"></a>
+</h2>
+<p>The most important function to visualize gene expression on top of
+the slide is <code><a href="../reference/plotSurface.html">plotSurface()</a></code>. It comes with a variety of
+options for the plotting of both, continuous and categorical data.</p>
+<div class="section level3">
+<h3 id="categorical-data">2.1 Categorical data<a class="anchor" aria-label="anchor" href="#categorical-data"></a>
+</h3>
+<p>Categorical data includes usually grouping of spots via <a href="spata-v2-clustering.html">clustering</a> or <a href="spata-v2-spatial-segementation.html">spatial manual
+annotation</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># plot a cluster feature</span>
-<span class="va">p1</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>,
-              color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>,
-              pt_clrp <span class="op">=</span> <span class="st">"npg"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"Clusters"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"bspace_7"</span>, 
+  pt_clrp <span class="op">=</span> <span class="st">"jama"</span>
+<span class="op">)</span>
 
-<span class="co"># plot gene expression </span>
-<span class="va">p2</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
-              color_by <span class="op">=</span> <span class="st">"CARTPT"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.2</span>,
-              pt_clrsp <span class="op">=</span> <span class="st">"magma"</span><span class="op">)</span>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"histology"</span>, 
+  pt_clrp <span class="op">=</span> <span class="st">"npg"</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-3-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-3-2.png" width="50%"></p>
+<p>Using <code>pt_clrp</code> you can adjust the color palette used to
+display the groups. The following are predefined within
+<code>SPATA2</code> and can be used by referring to them by name.
+Inspect them via <code><a href="../reference/showColors.html">showColorPalettes()</a></code>. To adjust single
+colors of groups use the <code>clrp_adjust</code> argument.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"bspace_7"</span>, 
+  pt_clrp <span class="op">=</span> <span class="st">"jama"</span>, 
+  clrp_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2"</span> <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="co"># for single adjustments</span>
+<span class="op">)</span>
 
-<span class="co"># combine with patchwork </span>
-<span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendTop</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
- <span class="va">p2</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendTop</a></span><span class="op">(</span><span class="op">)</span> </code></pre></div>
-<div class="figure">
-<img src="spata-v2-plotting-surface_files/figure-html/plotSurface-demo-1.png" alt="Figure 1.1. Basic surface plots" width="100%"><p class="caption">
-Figure 1.1. Basic surface plots
-</p>
-</div>
-<p>The data.frame below shows the underlying data.frame. Note that two different variables were used with respect to the color-aesthetic.</p>
-<pre><code>## # A tibble: 3,676 x 6
-##    barcodes           sample     x     y seurat_clusters    CCK
-##    &lt;chr&gt;              &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;            &lt;dbl&gt;
-##  1 AAACAAGTATCTCCCA-1 C265    444.  374. 2               0.426 
-##  2 AAACACCAATAACTGC-1 C265    132.  434. 5               0.243 
-##  3 AAACAGTGTTCCTGGG-1 C265    223.  525. 4               0.169 
-##  4 AAACATTTCCCGGATT-1 C265    425.  446. 2               0.333 
-##  5 AAACCCGAACGAAATC-1 C265    492.  341. 0               0.367 
-##  6 AAACCGGAAATGTTAA-1 C265    527.  400. 0               0.361 
-##  7 AAACCGGGTAGGTACC-1 C265    166.  323. 5               0.111 
-##  8 AAACCGTTCGTCCAGG-1 C265    218.  388. 4               0.0663
-##  9 AAACCTAAGCAGCCGG-1 C265    373.  472. 1               0.385 
-## 10 AAACCTCATGAAGTTG-1 C265    132.  290. 5               0.376 
-## # ... with 3,666 more rows</code></pre>
-<p>Mapping continuous features on to the color-aesthetic is not always insightful, in particular if the plot is crowded - which is the case for every spatial-transcriptomic plot. In order to visualize the underlying pattern as well as to make the plot more aesthetically pleasing you can use the <code>smooth</code>-arguments.</p>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"histology"</span>, 
+  pt_clrp <span class="op">=</span> <span class="st">"npg"</span>, 
+  clrp_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"necrosis"</span> <span class="op">=</span> <span class="st">"black"</span>, <span class="st">"vivid"</span> <span class="op">=</span> <span class="st">"forestgreen"</span><span class="op">)</span> <span class="co"># ... or for all</span>
+<span class="op">)</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-4-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-4-2.png" width="50%"></p>
+<p>You can use the <code><a href="../reference/ggpLayerGroupOutline.html">ggpLayerGroupOutline()</a></code> function to
+highlight the spatial extent of groups from the same or from other
+grouping variables.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># plot gene expression </span>
-<span class="va">p1</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
-              color_by <span class="op">=</span> <span class="st">"CARTPT"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.2</span>,
-              pt_clrsp <span class="op">=</span> <span class="st">"magma"</span>
-              <span class="op">)</span>
+<code class="sourceCode R"><span class="co"># creates ggproto objects that can be added via `+`</span>
+<span class="va">necrosis_outline</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/ggpLayerGroupOutline.html">ggpLayerGroupOutline</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_t313</span>, 
+    grouping <span class="op">=</span> <span class="st">"histology"</span>,
+    groups_subset <span class="op">=</span> <span class="st">"necrosis"</span>, 
+    line_size <span class="op">=</span> <span class="fl">1.5</span>
+  <span class="op">)</span> 
 
-<span class="co"># plot gene expression (spatially smoothed)</span>
-<span class="va">p2</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
-              color_by <span class="op">=</span> <span class="st">"CARTPT"</span>,
-              pt_size <span class="op">=</span> <span class="fl">1.2</span>,
-              pt_clrsp <span class="op">=</span> <span class="st">"magma"</span>,
-              smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
-              smooth_span <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>
+<span class="va">cluster_outline</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/ggpLayerGroupOutline.html">ggpLayerGroupOutline</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_t313</span>, 
+    grouping <span class="op">=</span> <span class="st">"bspace_7"</span>,
+    groups_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"3"</span>, <span class="st">"5"</span><span class="op">)</span>, 
+    line_size <span class="op">=</span> <span class="fl">1.5</span>
+  <span class="op">)</span> 
 
-<span class="co"># combine with patchwork </span>
-<span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-<span class="va">p2</span> <span class="op">+</span> <span class="fu"><a href="../reference/legendBottom.html">legendTop</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-plotting-surface_files/figure-html/plotSurface-demo-smooth-1.png" alt="Figure 1.2. Not smoothed and smoothed surface plots in contrast" width="100%"><p class="caption">
-Figure 1.2. Not smoothed and smoothed surface plots in contrast
-</p>
+<span class="co"># plot with additional layers</span>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"bspace_7"</span>, 
+  pt_clrp <span class="op">=</span> <span class="st">"jama"</span>
+<span class="op">)</span> <span class="op">+</span> 
+  <span class="va">cluster_outline</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>subtitle <span class="op">=</span> <span class="st">"Cluster Outline"</span><span class="op">)</span>
+
+
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"bspace_7"</span>, 
+  pt_clrp <span class="op">=</span> <span class="st">"jama"</span>
+<span class="op">)</span> <span class="op">+</span> 
+  <span class="va">necrosis_outline</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>subtitle <span class="op">=</span> <span class="st">"Necrosis Outline"</span><span class="op">)</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-5-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-5-2.png" width="50%"></p>
 </div>
-</div>
-<div id="surface-plots-interactive" class="section level2">
-<h2 class="hasAnchor">
-<a href="#surface-plots-interactive" class="anchor"></a>3. Surface plots interactive</h2>
-<p>Another more convenient way is to use <code><a href="../reference/plotSurface.html">plotSurfaceInteractive()</a></code> which let’s you plot your figures interactively and way quicker. It returns a named list of all plots saved during your plotting session.</p>
+<div class="section level3">
+<h3 id="continuous-data-on-the-surface">2.2 Continuous data on the surface<a class="anchor" aria-label="anchor" href="#continuous-data-on-the-surface"></a>
+</h3>
+<p>Continuous data, such as gene expression, gene set expression,
+RNA-count etc. Albeit <em>viridis</em> spectra are a commonly used you
+might want to try different ones. The color spectra implemented in
+<code>SPATA2</code> can be obtained via <code><a href="../reference/validActivationFunctions.html">validColorSpectra()</a></code>
+and inspected via <code><a href="../reference/showColors.html">showColorSpectra()</a></code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># open application to obtain a list of plots</span>
-<span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotSurface.html">plotSurfaceInteractive</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_gbm</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="images/interactive-plotting-hypoxic-area.png" alt="Figure 3.1 The interface of plotSurfaceInteractive()" width="100%"><p class="caption">
-Figure 3.1 The interface of plotSurfaceInteractive()
-</p>
-</div>
-<div class="figure">
-<img src="images/interactive-plotting-metrn_high.png" alt="Figure 3.1 The interface of plotSurfaceInteractive()" width="100%"><p class="caption">
-Figure 3.1 The interface of plotSurfaceInteractive()
-</p>
-</div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>,
+  color_by <span class="op">=</span> <span class="st">"FN1"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"inferno"</span> 
+<span class="op">)</span>  
+
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>,
+  color_by <span class="op">=</span> <span class="st">"FN1"</span>,
+  alpha_by <span class="op">=</span> <span class="st">"FN1"</span>, <span class="co"># use alpha, too </span>
+  pt_clrsp <span class="op">=</span> <span class="st">"inferno"</span>, 
+  display_image <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span> </code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-6-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-6-2.png" width="50%"></p>
+<div class="section level4">
+<h4 id="variable-transformation">2.2.1 Variable transformation<a class="anchor" aria-label="anchor" href="#variable-transformation"></a>
+</h4>
+<p>The plot below does not look insightful due to the distribution of
+the plotted variable. The argument <code>transform_with</code> allows to
+perform mathematical transformation before plotting if needed. As
+<em>nCount_Spatial</em> is not normally distributed you might want to
+logarithmically transform it to better visualize important
+information.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># get plot names</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] "hypoxic_area" "metrn_high"</code></pre>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"plasma"</span> 
+<span class="op">)</span> 
+
+<span class="fu"><a href="../reference/plotBoxplot.html">plotDensityplot</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t313</span>, variables <span class="op">=</span> <span class="st">"nCount_Spatial"</span><span class="op">)</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-7-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-7-2.png" width="50%"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"plasma"</span>, 
+  transform_with <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nCount_Spatial <span class="op">=</span> <span class="va">log10</span><span class="op">)</span> <span class="co"># named list with a function to apply</span>
+<span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"Counts (log10)"</span>, subtitle <span class="op">=</span> <span class="st">"No Outline"</span><span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"plasma"</span>, 
+  transform_with <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nCount_Spatial <span class="op">=</span> <span class="va">log10</span><span class="op">)</span> <span class="co"># named list with a function to apply</span>
+<span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"Counts (log10)"</span>, subtitle <span class="op">=</span> <span class="st">"Necrosis Outline"</span><span class="op">)</span> <span class="op">+</span>
+  <span class="va">necrosis_outline</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-8-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-8-2.png" width="50%"></p>
+</div>
+<div class="section level4">
+<h4 id="tissue-outline">2.2.2 Tissue outline<a class="anchor" aria-label="anchor" href="#tissue-outline"></a>
+</h4>
+<p>Color spectra that plot against white require to outline the tissue.
+Use <code><a href="../reference/ggpLayerTissueOutline.html">ggpLayerTissueOutline()</a></code> for that matter.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># create tissue outline layer to plot against white </span>
+<span class="va">tissue_outline</span> <span class="op">&lt;-</span> 
+  <span class="fu"><a href="../reference/ggpLayerTissueOutline.html">ggpLayerTissueOutline</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t313</span>, line_color <span class="op">=</span> <span class="st">"grey"</span><span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"VEGFA"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Greens 3"</span>
+<span class="op">)</span> 
+
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>,
+  color_by <span class="op">=</span> <span class="st">"VEGFA"</span>,
+  pt_clrsp <span class="op">=</span> <span class="st">"Greens 3"</span>
+<span class="op">)</span> <span class="op">+</span> <span class="va">tissue_outline</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-9-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-9-2.png" width="50%"></p>
+</div>
+<div class="section level4">
+<h4 id="spatial-smoothing">2.2.3 Spatial smoothing<a class="anchor" aria-label="anchor" href="#spatial-smoothing"></a>
+</h4>
+<p>Smoothing of continuous variables is possible, too. Use
+<code>smooth</code> and <code>smooth_span</code> for that matter.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"FN1"</span>, 
+  smooth <span class="op">=</span> <span class="cn">FALSE</span>, <span class="co"># the default</span>
+  pt_clrsp <span class="op">=</span> <span class="st">"Greens 3"</span>
+<span class="op">)</span> <span class="op">+</span> 
+  <span class="va">tissue_outline</span>
+
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="st">"FN1"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Greens 3"</span>,
+  smooth <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># the default</span>
+  smooth_span <span class="op">=</span> <span class="fl">0.2</span>
+<span class="op">)</span>  <span class="op">+</span> 
+  <span class="va">tissue_outline</span></code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-10-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-10-2.png" width="50%"></p>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="surface-plots-interactive">3. Surface plots interactive<a class="anchor" aria-label="anchor" href="#surface-plots-interactive"></a>
+</h2>
+<p>Another more convenient way is to use
+<code><a href="../reference/plotSurface.html">plotSurfaceInteractive()</a></code> which let’s you plot your figures
+interactively and way quicker. It returns a named list of all plots
+saved during your plotting session.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SPATAData/man/downloadSpataObject.html" class="external-link">downloadSpataObject</a></span><span class="op">(</span><span class="st">"275_T"</span>, file <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+
+<span class="co"># open application to obtain a list of plots</span>
+<span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotSurface.html">plotSurfaceInteractive</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t275</span><span class="op">)</span></code></pre></div>
+<p><img src="images/interactive-plotting-hypoxic-area.png" width="100%"><img src="images/interactive-plotting-metrn_high.png" width="100%"></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># get plot names</span>
+<span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## [1] "hypoxic_area" "metrn_high"</span></code></pre>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># plot plots from returned list</span>
 <span class="co"># treat and post-process them like every other ggplot-object</span>
-<span class="va">plots</span><span class="op">$</span><span class="va">hypoxic_area</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Hypoxic Area"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="../reference/legendBottom.html">legendNone</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-<span class="va">plots</span><span class="op">$</span><span class="va">metrn_high</span> <span class="op">+</span> 
-  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Formation of Axonal Networks (METRN)"</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-plotting-surface_files/figure-html/plotSurfaceInteractive-demo2-1.png" alt="Figure 3.2 Plots derived from plotSurfaceInteractive()" width="100%"><p class="caption">
-Figure 3.2 Plots derived from plotSurfaceInteractive()
-</p>
+<span class="va">plots</span><span class="op">$</span><span class="va">hypoxic_area</span> 
+  
+<span class="va">plots</span><span class="op">$</span><span class="va">metrn_high</span> </code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-14-2.png" width="50%"></p>
 </div>
-<p><br></p>
-</div>
-<div id="surface-plots-in-comparison" class="section level2">
-<h2 class="hasAnchor">
-<a href="#surface-plots-in-comparison" class="anchor"></a>4. Surface plots in comparison</h2>
-<p>In order to quickly compare the spatial distribution of a set of variables of the same kind use <code><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison()</a></code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="surface-plots-in-comparison">4. Surface plots in comparison<a class="anchor" aria-label="anchor" href="#surface-plots-in-comparison"></a>
+</h2>
+<p>In order to quickly compare the spatial distribution of a set of
+variables of the same kind use <code><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison()</a></code>.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># compare gene expression on the surface</span>
-<span class="fu"><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_cortex</span>, 
-                      color_by <span class="op">=</span> <span class="va">genes_b</span>,
-                      smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
-                      smooth_span <span class="op">=</span> <span class="fl">0.2</span>, 
-                      pt_size <span class="op">=</span> <span class="fl">0.6</span>, 
-                      pt_clrsp <span class="op">=</span> <span class="st">"inferno"</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-plotting-surface_files/figure-html/plotSurfaceComparison-demo-1.png" alt="Figure 4.1 A quick way to compare several variables" width="100%"><p class="caption">
-Figure 4.1 A quick way to compare several variables
-</p>
-</div>
-<p>To visualize the averaged expression of a subset of genes use <code><a href="../reference/plotSurfaceAverage.html">plotSurfaceAverage()</a></code>. It takes either a named list of gene vectors or simply a vector of gene names.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">input_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Example1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"POSTN"</span>, <span class="st">"MARCH6"</span>, <span class="st">"FABP7"</span>, <span class="st">"TMSB4X"</span><span class="op">)</span>, 
-                   Example2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"CCDC127"</span>, <span class="st">"FTL"</span>, <span class="st">"IGKC"</span>, <span class="st">"SPP1"</span><span class="op">)</span>, 
-                   Example3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ALDH3A2"</span>, <span class="st">"AQP1"</span>, <span class="st">"B2M"</span>, <span class="st">"IFIT1"</span><span class="op">)</span>, 
-                   Example4 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"GAPDH"</span>, <span class="st">"MT2A"</span>, <span class="st">"MT1X"</span>, <span class="st">"GLUL"</span><span class="op">)</span>
-                   <span class="op">)</span>
-
-<span class="fu"><a href="../reference/plotSurfaceAverage.html">plotSurfaceAverage</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">human_gbm</span>, 
-                   color_by <span class="op">=</span> <span class="va">input_list</span>, 
-                   smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
-                   pt_size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-plotting-surface_files/figure-html/plotSurfaceAverage()-1.png" alt="Figure 4.2 Average the expression of several genes" width="100%"><p class="caption">
-Figure 4.2 Average the expression of several genes
-</p>
-</div>
+<span class="fu"><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t313</span>, 
+  color_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CSTB"</span>, <span class="st">"FN1"</span>, <span class="st">"MYL6"</span>, <span class="st">"CCL2"</span><span class="op">)</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Greens 3"</span>, 
+  display_image <span class="op">=</span> <span class="cn">TRUE</span>, 
+  smooth <span class="op">=</span> <span class="cn">TRUE</span>, 
+  alpha_by <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span> </code></pre></div>
+<p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-15-1.png" width="100%"></p>
 </div>
   </div>
 
@@ -300,11 +432,13 @@ Figure 4.2 Average the expression of several genes
 
 
       <footer><div class="copyright">
-  <p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -312,6 +446,8 @@ Figure 4.2 Average the expression of several genes
 
   
 
+
+  
 
   </body>
 </html>
