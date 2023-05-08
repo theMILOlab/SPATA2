@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPATA-Object Set up &amp; Manipulation • SPATA2</title>
+<title>`spata2` object Set up &amp; Manipulation • SPATA2</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="SPATA-Object Set up &amp; Manipulation">
+<script src="../pkgdown.js"></script><meta property="og:title" content="`spata2` object Set up &amp; Manipulation">
 <meta property="og:description" content="SPATA2">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -43,16 +43,13 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
-</li>
-<li>
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
+  <a href="../articles/spata-v2-spata-data.html">SPATAData</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -63,42 +60,64 @@
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
+      <a href="../articles/">Genes, Gene Sets and Features</a>
     </li>
-    <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
-    </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
-    <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
-    </li>
+    <li class="dropdown-header">Integrating Different Platforms</li>
     <li>
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/sapta-v2-gsea.html">Gene Set Enrichment Analysis</a>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
+    <li class="dropdown-header">Gradient Screening</li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
+      <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Code &amp; Concept
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
+      <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
     </li>
   </ul>
 </li>
@@ -113,10 +132,12 @@
 
       
 
-      </header><script src="spata-v2-object-initiation-and-manipulation_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>SPATA-Object Set up &amp; Manipulation</h1>
+      <h1 data-toc-skip>
+<code>spata2</code> object Set up &amp;
+Manipulation</h1>
             
       
       
@@ -126,17 +147,49 @@
 
     
     
-<p>The center of <strong>SPATA2</strong> is an S4-object of class <em>spata2</em>. This vignette explains the basis of it’s structure and more importantly the most basic functions to create one as well as to manipulate it.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># load packages</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></code></pre></div>
+<p>The center of <strong>SPATA2</strong> is an S4-object of class
+<code>spata2</code>. This vignette explains the basis of it’s structure
+and more importantly the most basic functions to create one as well as
+to manipulate it.</p>
 <div class="section level2">
-<h2 id="create-a-spata-object">1. Create a spata-object<a class="anchor" aria-label="anchor" href="#create-a-spata-object"></a>
+<h2 id="create-a-spata2-object">1. Create a <code>spata2</code> object<a class="anchor" aria-label="anchor" href="#create-a-spata2-object"></a>
 </h2>
-<p>The easiest way to create one from scratch with your data is via the <code>initiateSpataObject_*()</code>functions.</p>
+<p>The easiest way to create one from scratch with your data is via the
+<code>initiateSpataObject_*()</code>functions.</p>
 <div class="section level3">
-<h3 id="with-a-matrix-and-coordinates">1.1 With a matrix and coordinates<a class="anchor" aria-label="anchor" href="#with-a-matrix-and-coordinates"></a>
+<h3 id="from-10x-visium-folders">1.1 From 10X Visium folders<a class="anchor" aria-label="anchor" href="#from-10x-visium-folders"></a>
 </h3>
-<p>There are two indispensable inputs needed in order to set up a spata-object. As long as you provide those two you can use <strong>SPATA2</strong> to analyze and visualize data deriving from all kinds of experiments.</p>
+<p>Behind the scenes <code><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X()</a></code> loads the
+necessary data file as well as the histology image from the folder you
+obtain from 10X Visium. It performs a variety of computations e.g. count
+normalization, dimensionality reduction, clustering while relying on
+gold-standard functions of the <a href="https://satijalab.org/seurat/" class="external-link"><code>Seurat</code></a>-package.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object_t275</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X</a></span><span class="op">(</span>
+    directory_10X <span class="op">=</span> <span class="st">"path/to/a/10Xvisium-folder"</span>, <span class="co"># the directory from which to load the data</span>
+    sample_name <span class="op">=</span> <span class="st">"gbm-275"</span>
+    <span class="op">)</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="with-a-matrix-and-coordinates">1.2 With a matrix and coordinates<a class="anchor" aria-label="anchor" href="#with-a-matrix-and-coordinates"></a>
+</h3>
+<p>There are two indispensable inputs needed in order to set up a
+<code>spata2</code> object. As long as you provide those two you can use
+<strong>SPATA2</strong> to analyze and visualize data deriving from all
+kinds of experiments.</p>
 <ul>
-<li>A matrix in which the rows correspond to the gene names and the columns correspond to the unique identifiers of every distinct location (we refer to these locations as barcode-spots). Every cell of the matrix subsequently corresponds to the expression values. This matrix can either be an unprocessed count matrix or an already processed matrix which we refer to as expression matrix. The example is a 10x10 subset of an already processed matrix.</li>
+<li>A matrix in which the rows correspond to the gene names and the
+columns correspond to the unique identifiers of every distinct location
+(we refer to these locations as barcode-spots). Every cell of the matrix
+subsequently corresponds to the expression values. This matrix can
+either be an unprocessed count matrix or an already processed matrix
+which we refer to as expression matrix. The example is a 10x10 subset of
+an already processed matrix.</li>
 </ul>
 <pre><code><span class="co">##            AAACAAGTATCTCCCA-1 AAACACCAATAACTGC-1 AAACAGAGCGACTCCT-1</span>
 <span class="co">## AL627309.1         0.00000000          1.0000000         0.03219694</span>
@@ -183,7 +236,11 @@
 <span class="co">## NOC2L               0.5031803</span>
 <span class="co">## KLHL17              0.4672352</span></code></pre>
 <ul>
-<li>A coordinate data.frame that contains at least a column called <em>barcodes</em> that is identical in it’s content to the column names of the input matrix as well as a <em>x</em>- and a <em>y</em>-column referring to the spatial coordinates of each barcode-spot. (The example below shows a subset that corresponds to the matrix above.)</li>
+<li>A coordinate data.frame that contains at least a column called
+<em>barcodes</em> that is identical in it’s content to the column names
+of the input matrix as well as a <em>x</em>- and a <em>y</em>-column
+referring to the spatial coordinates of each barcode-spot. (The example
+below shows a subset that corresponds to the matrix above.)</li>
 </ul>
 <pre><code><span class="co">##              barcodes      x      y</span>
 <span class="co">## 1  AAACAAGTATCTCCCA-1 434.76 373.80</span>
@@ -196,9 +253,16 @@
 <span class="co">## 8  AAACCGGGTAGGTACC-1 165.36 321.12</span>
 <span class="co">## 9  AAACCGTTCGTCCAGG-1 215.88 384.96</span>
 <span class="co">## 10 AAACCTAAGCAGCCGG-1 364.80 468.48</span></code></pre>
-<p>Depending on whether your input matrix has already undergone processing steps you need to decide whether you want to initiate the spata-object with either <code><a href="../reference/initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr()</a></code> or <code><a href="../reference/initiateSpataObject_ExprMtr.html">initiateSpataObject_ExprMtr()</a></code>. As with any other function run <code>?initiateSpataObject_*()</code> in your console to obtain a detailed report on what is going on in the background and how to manipulate the way your data is read in, processed and stored.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">spata_obj</span> <span class="op">&lt;-</span> 
+<p>Depending on whether your input matrix has already undergone
+processing steps you need to decide whether you want to initiate the
+<code>spata2</code> object with either
+<code><a href="../reference/initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr()</a></code> or
+<code><a href="../reference/initiateSpataObject_ExprMtr.html">initiateSpataObject_ExprMtr()</a></code>. As with any other function
+run <code>?initiateSpataObject_*()</code> in your console to obtain a
+detailed report on what is going on in the background and how to
+manipulate the way your data is read in, processed and stored.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object_t275</span> <span class="op">&lt;-</span> 
  <span class="fu"><a href="../reference/initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr</a></span><span class="op">(</span>
    coords_df <span class="op">=</span> <span class="va">example_coords_df</span>, <span class="co"># your coordinate data.frame</span>
    count_mtr <span class="op">=</span> <span class="va">example_count_mtr</span>, <span class="co"># a matrix with unprocessed count values</span>
@@ -206,7 +270,7 @@
    image <span class="op">=</span> <span class="va">example_image</span>
    <span class="op">)</span>
 
-<span class="va">spata_obj</span> <span class="op">&lt;-</span> 
+<span class="va">object_t275</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/initiateSpataObject_ExprMtr.html">initiateSpataObject_ExprMtr</a></span><span class="op">(</span>
     coords_df <span class="op">=</span> <span class="va">example_coords_df</span>, <span class="co"># your coordinate data.frame</span>
     expr_mtr <span class="op">=</span> <span class="va">example_expr_mtr</span>, <span class="co"># a matrix with already processed (e.g. normalized) values</span>
@@ -214,42 +278,23 @@
     image <span class="op">=</span> <span class="va">example_image</span>
     <span class="op">)</span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="from-10x-visium-folders">1.2 From 10X Visium folders<a class="anchor" aria-label="anchor" href="#from-10x-visium-folders"></a>
-</h3>
-<p>Behind the scenes <code><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X()</a></code> loads the necessary data file as well as the histology image from the folder you obtain from 10X Visium. It performs a variety of computations e.g. count normalization, dimensionality reduction, clustering while relying on gold-standard functions of the <a href="https://satijalab.org/seurat/" class="external-link"><code>Seurat</code></a>-package.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">spata_obj</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X</a></span><span class="op">(</span>
-    directory_10X <span class="op">=</span> <span class="st">"path/to/a/10Xvisium-folder"</span>, <span class="co"># the directory from which to load the data</span>
-    sample_name <span class="op">=</span> <span class="st">"gbm-275"</span>
-    <span class="op">)</span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="from-example-data-sets">1.3 From example data sets<a class="anchor" aria-label="anchor" href="#from-example-data-sets"></a>
-</h3>
-<p>Throughout this website we work with spata-objects that were created with data sets that we have created on our own as well as with data sets that are freely available as example data sets. To create those yourself use <code>initiateSpataObject_Example()</code>. This function currently relies on the package <code>SeuratData</code> and the mouse brain data set. You can change the input for argument type to either <em>‘anterior1’</em> or <em>‘posterior1’</em>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># create a spata-object with a data set deriving from mouse cortex</span>
-<span class="va">spata_obj_mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initiateSpataObject_Examples.html">initiateSpataObject_Examples</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"anterior1"</span><span class="op">)</span></code></pre></div>
-<p>Spata-objects generated this way are compatible with all functions in <strong>SPATA2</strong>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj_mc</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>, pt_size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj_mc</span>, color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, smooth_span <span class="op">=</span> <span class="fl">0.1</span>, pt_size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-examples-1.png" alt="Figure 1.1 Surface plots of an example data set." width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-examples-2.png" alt="Figure 1.1 Surface plots of an example data set." width="50%"><p class="caption">
-Figure 1.1 Surface plots of an example data set.
-</p>
-</div>
-</div>
 </div>
 <div class="section level2">
-<h2 id="saving-and-loading-a-spata-object">2. Saving and loading a spata-object<a class="anchor" aria-label="anchor" href="#saving-and-loading-a-spata-object"></a>
+<h2 id="saving-and-loading-a-spata2-object">2. Saving and loading a <code>spata2</code> object<a class="anchor" aria-label="anchor" href="#saving-and-loading-a-spata2-object"></a>
 </h2>
-<p>As with any other object created in R you can save spata-objects with the function <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">base::saveRDS()</a></code>. However, <strong>SPATA2</strong> provides some functionalities to make working with your objects as convenient as possible. The object itself contains a slot in which you can store the directory under which you want to save it every time you make progress worth saving (after time consuming computations for example). You can use <code><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions()</a></code> to obtain a list of directories that are currently stored in your spata-object. (Click <a href="spata-v2-platform-compatibility.html">here</a> to see how to work with seurat-objects and cell_data_sets.)</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
+<p>As with any other object created in R you can save
+<code>spata2</code> objects with the function
+<code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">base::saveRDS()</a></code>. However, <strong>SPATA2</strong> provides
+some functionalities to make working with your objects as convenient as
+possible. The object itself contains a slot in which you can store the
+directory under which you want to save it every time you make progress
+worth saving (after time consuming computations for example). You can
+use <code><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions()</a></code> to obtain a list of
+directories that are currently stored in your <code>spata2</code>
+object. (Click <a href="spata-v2-platform-compatibility.html">here</a>
+to see how to work with seurat-objects and cell_data_sets.)</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t275</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $cell_data_set</span>
 <span class="co">## [1] "not defined"</span>
 <span class="co">## </span>
@@ -258,162 +303,23 @@ Figure 1.1 Surface plots of an example data set.
 <span class="co">## </span>
 <span class="co">## $spata_object</span>
 <span class="co">## [1] "not defined"</span></code></pre>
-<p>Use <code><a href="../reference/adjustDefaultInstructions.html">adjustDirectoryInstructions()</a></code> to adjust the default directory under which the object of interest is supposed to be stored.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>Use <code><a href="../reference/setSpataDir.html">setSpataDir()</a></code> to adjust the default directory under
+which the object of interest is supposed to be stored.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># set/change the current default directory</span>
-<span class="va">spata_obj</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="../reference/adjustDefaultInstructions.html">adjustDirectoryInstructions</a></span><span class="op">(</span>
-    object <span class="op">=</span> <span class="va">spata_obj</span>,
+<span class="va">object_t275</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="../reference/setSpataDir.html">setSpataDir</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_t275</span>,
     to <span class="op">=</span> <span class="st">"spata_object"</span>,
     directory_new <span class="op">=</span> <span class="st">"data/spata-obj-gbm275.RDS"</span>, <span class="co"># the directory under which to store the object</span>
     <span class="op">)</span>
 
-<span class="fu"><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<p>If a default directory exists you can save the object without any further input using <code><a href="../reference/saveSpataObject.html">saveSpataObject()</a></code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># quickly save the spata-object under the default directory </span>
-<span class="fu"><a href="../reference/saveSpataObject.html">saveSpataObject</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="adjust-default-instructions">3. Adjust default instructions<a class="anchor" aria-label="anchor" href="#adjust-default-instructions"></a>
-</h2>
-<p>R functions come along with arguments who often have a predefined default input. (e.g. the color of points in scatterplots is usually set to black by default and can be changed manually). In <strong>SPATA2</strong> the default input for recurring arguments is carried by the spata-object itself. To see what is currently set as the default use <code>printDefaultInstruction()</code> or <code><a href="../reference/getDefaultInstructions.html">getDefaultInstructions()</a></code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># print what is currently set as the default </span>
-<span class="fu"><a href="../reference/printDefaultInstructions.html">printDefaultInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## The spata object uses the following as default input for recurring arguments: </span>
-<span class="co">## average_genes = FALSE</span>
-<span class="co">## binwidth = 1</span>
-<span class="co">## clrp = milo</span>
-<span class="co">## clrsp = inferno</span>
-<span class="co">## colors = #440154FF, #481B6DFF, #46337EFF, #3F4889FF, #365C8DFF, #2E6E8EFF, #277F8EFF, #21908CFF, #1FA187FF...</span>
-<span class="co">## complete = TRUE</span>
-<span class="co">## display_facets = TRUE</span>
-<span class="co">## display_image = FALSE</span>
-<span class="co">## display_labels = TRUE</span>
-<span class="co">## display_legend = TRUE</span>
-<span class="co">## display_points = FALSE</span>
-<span class="co">## display_residuals = TRUE</span>
-<span class="co">## display_trajectory_parts = FALSE</span>
-<span class="co">## display_title = FALSE</span>
-<span class="co">## max_adj_pval = 0.05</span>
-<span class="co">## method_aggl = ward.D</span>
-<span class="co">## method_dist = euclidean</span>
-<span class="co">## method_de = wilcox</span>
-<span class="co">## method_dr = umap</span>
-<span class="co">## method_hclust = complete</span>
-<span class="co">## method_ovl = classic</span>
-<span class="co">## method_padj = fdr</span>
-<span class="co">## method_gs = mean</span>
-<span class="co">## min_lfc = 0</span>
-<span class="co">## n_highest_lfc = 50</span>
-<span class="co">## n_lowest_pval = 50</span>
-<span class="co">## n_pcs = 10</span>
-<span class="co">## normalize = TRUE</span>
-<span class="co">## position = fill</span>
-<span class="co">## pt_alpha = 0.9</span>
-<span class="co">## pt_clr = lightgrey</span>
-<span class="co">## pt_clrp = milo</span>
-<span class="co">## pt_clrsp = inferno</span>
-<span class="co">## pt_fill = black</span>
-<span class="co">## pt_shape = 21</span>
-<span class="co">## pt_size = 1.8</span>
-<span class="co">## relevel = FALSE</span>
-<span class="co">## scales = free</span>
-<span class="co">## sgmt_clr = black</span>
-<span class="co">## sgmt_size = 2.5</span>
-<span class="co">## show_colnames = FALSE</span>
-<span class="co">## show_rownames = FALSE</span>
-<span class="co">## smooth = TRUE</span>
-<span class="co">## smooth_clr = red</span>
-<span class="co">## smooth_method = loess</span>
-<span class="co">## smooth_se = TRUE</span>
-<span class="co">## smooth_span = 0.25</span>
-<span class="co">## uniform_genes = discard</span>
-<span class="co">## verbose = TRUE</span></code></pre>
-<p>If you want, for example, a different color palette for surface plots for a specific project you can set it via <code><a href="../reference/adjustDefaultInstructions.html">adjustDefaultInstructions()</a></code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># the default</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span> 
-
-<span class="co"># overwrite default by specifying the argument within the function call</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>, pt_clrp <span class="op">=</span> <span class="st">"jco"</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-object-initiation-and-manipulation_files/figure-html/adjust-default-instructions1-1.png" alt="Figure 3.1 Surface plots before adjusting the default instructions" width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/adjust-default-instructions1-2.png" alt="Figure 3.1 Surface plots before adjusting the default instructions" width="50%"><p class="caption">
-Figure 3.1 Surface plots before adjusting the default instructions
-</p>
-</div>
-<p>Change the default setting for the spata-object.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># set new default insructions</span>
-<span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adjustDefaultInstructions.html">adjustDefaultInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, pt_clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span>
-
-<span class="co"># the new default</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span> 
-
-<span class="co"># overwrite default by specifying the argument within the function call</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span>, pt_clrp <span class="op">=</span> <span class="st">"jco"</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-object-initiation-and-manipulation_files/figure-html/adjust-default-instructions2-1.png" alt="Figure 3.2 Surface plots after adjusting the default instructions" width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/adjust-default-instructions2-2.png" alt="Figure 3.2 Surface plots after adjusting the default instructions" width="50%"><p class="caption">
-Figure 3.2 Surface plots after adjusting the default instructions
-</p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="subset-a-spata-object">4. Subset a spata-object<a class="anchor" aria-label="anchor" href="#subset-a-spata-object"></a>
-</h2>
-<p>Surface plots like those displayed in Figure 3.1 and Figure 3.2 are scatterplots that display the barcode-spots on which at least one gene count was detected with their x- and y-coordinates. Sometimes technical artifacts render the quality of barcode-spots poorly which might affect the overall quality of your data set as well as downstream analysis results. Take a look at the example below. The surface plot on the left is colored by the total number of gene counts per barcode-spot. Notice the splintered areas at the top and the right margin that seem to feature almost 0 reads. Notice as well that this splintered area affects the overall clustering results.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span>, color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, smooth_span <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-not-segmented-1.png" alt="Figure 4.1 Surface plots of a sample featuring barcode-spots that seem to be rather technical artifacts with close to zero total reads" width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-not-segmented-2.png" alt="Figure 4.1 Surface plots of a sample featuring barcode-spots that seem to be rather technical artifacts with close to zero total reads" width="50%"><p class="caption">
-Figure 4.1 Surface plots of a sample featuring barcode-spots that seem to be rather technical artifacts with close to zero total reads
-</p>
-</div>
-<p>Although we have a separate tutorial for how to work with spatial segments this chapter covers how to use spatial segmentation to exclude barcode-spots that happen to be rather technical artifacts. Use <code><a href="../reference/createSegmentation.html">createSegmentation()</a></code> to encircle the area that you want to keep.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># segment the "good quality area" as well as the "bad quality area"</span>
-<span class="va">spata_obj2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createSegmentation.html">createSegmentation</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span><span class="op">)</span></code></pre></div>
-<p>The result could be a segmentation that looks somewhat like this.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># obtain segment names</span>
-<span class="fu"><a href="../reference/getSegmentNames.html">getSegmentNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "good_quality" "bad_quality"</span></code></pre>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># visualize the segmentation</span>
-<span class="fu"><a href="../reference/plotSegmentation.html">plotSegmentation</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span>,
-                 segment_subset <span class="op">=</span> <span class="st">"good_quality"</span>,
-                 encircle <span class="op">=</span> <span class="cn">TRUE</span>,
-                 clrp_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"good_quality"</span> <span class="op">=</span> <span class="st">"forestgreen"</span><span class="op">)</span>
-                 <span class="op">)</span>
-
-<span class="fu"><a href="../reference/plotSegmentation.html">plotSegmentation</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span>,
-                 segment_subset <span class="op">=</span> <span class="st">"bad_quality"</span>,
-                 encircle <span class="op">=</span> <span class="cn">FALSE</span>, 
-                 clrp_adjust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"good_quality"</span> <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span>
-                 <span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-segmented-1.png" alt="Figure 4.2 Surface plots of the drawn segmentation" width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-segmented-2.png" alt="Figure 4.2 Surface plots of the drawn segmentation" width="50%"><p class="caption">
-Figure 4.2 Surface plots of the drawn segmentation
-</p>
-</div>
-<p>The function <code>subsetBySegment_*()</code> filters the spata-object by the drawn segmentation and returns a new spata-object that is composed of those barcode-spots that fell into the area encircled by the <em>good_quality</em>-segment. The <code>subsetBy*()</code>-functions extract the relevant data and initiate a new spata-object with it.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># name the segment you want to keep </span>
-<span class="va">spata_obj2_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subsetBySegment_CountMtr.html">subsetBySegment_CountMtr</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2</span>, segment_name <span class="op">=</span> <span class="st">"good_quality"</span><span class="op">)</span></code></pre></div>
-<p>As displayed by the plots below as well as by the new clustering the technical artifacts have been excluded and are no longer displayed nor do they affect downstream analysis results.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2_subset</span>, color_by <span class="op">=</span> <span class="st">"nCount_Spatial"</span>, smooth_span <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj2_subset</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span></code></pre></div>
-<div class="figure">
-<img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-subsetted-1.png" alt="Figure 4.3 Surface plots of the subsetted spata-object" width="50%"><img src="spata-v2-object-initiation-and-manipulation_files/figure-html/plot-surface-subsetted-2.png" alt="Figure 4.3 Surface plots of the subsetted spata-object" width="50%"><p class="caption">
-Figure 4.3 Surface plots of the subsetted spata-object
-</p>
-</div>
-<p>Obviously, there are many other reasons why you would want to subset your sample. <code>subsetByBarcodes_*()</code> lets you subset your spata-object by just the barcode-spots of interest.</p>
+<span class="fu"><a href="../reference/getDefaultInstructions.html">getDirectoryInstructions</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t275</span><span class="op">)</span></code></pre></div>
+<p>If a default directory exists you can save the object without any
+further input using <code><a href="../reference/saveSpataObject.html">saveSpataObject()</a></code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># quickly save the `spata2` object under the default directory </span>
+<span class="fu"><a href="../reference/saveSpataObject.html">saveSpataObject</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t275</span><span class="op">)</span></code></pre></div>
 </div>
   </div>
 
@@ -434,7 +340,7 @@ Figure 4.3 Surface plots of the subsetted spata-object
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

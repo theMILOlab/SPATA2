@@ -43,16 +43,13 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
-</li>
-<li>
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
+  <a href="../articles/spata-v2-spata-data.html">SPATAData</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -63,42 +60,64 @@
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
+      <a href="../articles/">Genes, Gene Sets and Features</a>
     </li>
-    <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
-    </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
-    <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
-    </li>
+    <li class="dropdown-header">Integrating Different Platforms</li>
     <li>
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
     </li>
     <li>
-      <a href="../articles/sapta-v2-gsea.html">Gene Set Enrichment Analysis</a>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
     </li>
+    <li class="dropdown-header">Gradient Screening</li>
     <li>
       <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
+      <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
+    </li>
+  </ul>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Code &amp; Concept
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
+      <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
     </li>
   </ul>
 </li>
@@ -113,7 +132,7 @@
 
       
 
-      </header><script src="spata-v2-cnv-analysis_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Copy Number Variations (CNV)</h1>
@@ -127,36 +146,89 @@
     
     
 <div class="section level2">
-<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+<h2 id="prerequisites">1. Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"></a>
 </h2>
-<p>InferCNV is used to identify large-scale chromosomal copy number alterations in single cell RNA-Seq data including gains or deletions of chromosomes or large segments of such. Several publications have leveraged this technique. (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4123637/" class="external-link">Patel et al., 2014</a>, <a href="https://pubmed.ncbi.nlm.nih.gov/27124452/" class="external-link">Tirosh et al., 2016</a>, <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5519096/" class="external-link">Venteicher et al., 2017</a> )</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># load package</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span>
-
-<span class="co"># load glioblastoma sample</span>
-<span class="va">spata_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadSpataObject.html">loadSpataObject</a></span><span class="op">(</span><span class="st">"data/spata-obj-gbm275.RDS"</span><span class="op">)</span></code></pre></div>
-<p><strong>SPATA2</strong> implements the package <a href="https://github.com/broadinstitute/inferCNV/wiki" class="external-link"><code>infercnv</code></a> published and maintained by Broadinstitute and allows to integrate this technique in your workflow of analysing spatial trancsriptomic data derived from malignancies.</p>
+<p>None.</p>
 </div>
 <div class="section level2">
-<h2 id="running-cnv-analysis">2. Running CNV-Analysis<a class="anchor" aria-label="anchor" href="#running-cnv-analysis"></a>
+<h2 id="introduction">2. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>As with all other functions prefixed with <code>run*()</code> the function <code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> is a wrapper around all necessary functions needed to conduct copy-number-variation-analysis. The results needed for subsequent analysis steps are stored in the specified spata-object (slot: <span class="citation">@cnv</span>). The infercnv-object is stored in the folder specified in the argument <code>directory_cnv_folder</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r code-chunk"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>spata_obj &lt;-</span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="st">  </span><span class="kw">runCnvAnalysis</span>(</span>
-<span id="cb2-3"><a href="#cb2-3"></a>    <span class="dt">object =</span> spata_obj</span>
-<span id="cb2-4"><a href="#cb2-4"></a>    <span class="dt">directory_cnv_folder =</span> <span class="st">"data-gmb275/cnv-results"</span> <span class="co"># example directory</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>    <span class="dt">cnv_prefix =</span> <span class="st">"Chr"</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>    )</span></code></pre></div>
-<p>If your desired set up deviates from the default you can reach any function of the inferncnv-pipeline by entering it’s name as an argument and specify it’s input as a list of arguments with which you want it to be called.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r code-chunk"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># change input</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>spata_obj &lt;-<span class="st"> </span></span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="st">  </span><span class="kw">runCnvAnalysis</span>(</span>
-<span id="cb3-4"><a href="#cb3-4"></a>    <span class="dt">object =</span> spata_obj</span>
-<span id="cb3-5"><a href="#cb3-5"></a>    <span class="dt">directory_cnv_folder =</span> <span class="st">"data-gmb275/cnv-results"</span> <span class="co"># example directory to </span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>    <span class="dt">clear_noise_via_ref_mean_sd =</span> <span class="kw">list</span>(<span class="dt">sd_amplifier =</span> <span class="dv">2</span>)</span>
-<span id="cb3-7"><a href="#cb3-7"></a>    )</span></code></pre></div>
-<p>Copy number variation analysis requires reference data. This includes a count matrix from healthy tissue, an annotation file as well as a data.frame that contains information about the chromosome positions. We provide reference data in the list <code><a href="../reference/cnv_ref.html">SPATA2::cnv_ref</a></code>.</p>
+<p>InferCNV is used to identify large-scale chromosomal copy number
+alterations in single cell RNA-Seq data including gains or deletions of
+chromosomes or large segments of such. Several publications have
+leveraged this technique. (<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4123637/" class="external-link">Patel et
+al., 2014</a>, <a href="https://pubmed.ncbi.nlm.nih.gov/27124452/" class="external-link">Tirosh et al.,
+2016</a>, <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5519096/" class="external-link">Venteicher
+et al., 2017</a> )</p>
+<p>Note: We are currently encountering problems with the function
+<code>infercnv:::plot_cnv()</code>. It does not prevent the copy number
+variation analysis. Sometimes, however, the heatmap is not plotted.
+Checkout your R console for hints in how far the function did not work
+properly. We are working on a solution for that. If you encounter
+warnings raised from <code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> <a href="https://github.com/theMILOlab/SPATA2/issues" class="external-link">let us know</a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-chunk"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load package</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SPATA2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SPATAData)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>object_t269 <span class="ot">&lt;-</span> <span class="fu">downloadSpataObject</span>(<span class="at">sample_name =</span> <span class="st">"269_T"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># load histolgoy segmentations</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">"spatial_segmentations"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>object_t269 <span class="ot">&lt;-</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addFeatures</span>(</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">object =</span> object_t269, </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">feature_df =</span> spatial_segmentations[[<span class="st">"269_T"</span>]], </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">overwrite =</span> <span class="cn">TRUE</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># only histology</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plotSurface</span>(object, <span class="ot">=</span> object_t269, <span class="at">pt_alpha =</span> <span class="dv">0</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># histological grouping</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plotSurface</span>(<span class="at">object =</span> object_t269, <span class="at">color_by =</span> <span class="st">"histology"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># only histology</span>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, pt_alpha <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
+
+<span class="co"># histological grouping</span>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, color_by <span class="op">=</span> <span class="st">"histology"</span>, pt_clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-3-1.png" alt="Fig.1 The example sample raw and colored by histological classification." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-3-2.png" alt="Fig.1 The example sample raw and colored by histological classification." width="50%"><p class="caption">
+Fig.1 The example sample raw and colored by histological classification.
+</p>
+</div>
+<p><strong>SPATA2</strong> implements the package <a href="https://github.com/broadinstitute/inferCNV/wiki" class="external-link"><code>infercnv</code></a>
+published and maintained by Broadinstitute and allows to integrate this
+technique in your workflow of analyzing spatial trancsriptomic data
+derived from malignancies.</p>
+</div>
+<div class="section level2">
+<h2 id="running-cnv-analysis">3. Running CNV-Analysis<a class="anchor" aria-label="anchor" href="#running-cnv-analysis"></a>
+</h2>
+<p>As with all other functions prefixed with <code>run*()</code> the
+function <code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> is a wrapper around all necessary
+functions needed to conduct copy-number-variation-analysis. The results
+needed for subsequent analysis steps are stored in the specified
+<code>spata2</code> object (slot: <span class="citation">@cnv</span>).
+The infercnv-object is stored in the folder specified in the argument
+<code>directory_cnv_folder</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object_t269</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="../reference/runCnvAnalysis.html">runCnvAnalysis</a></span><span class="op">(</span>
+    object <span class="op">=</span> <span class="va">object_t269</span>,
+    directory_cnv_folder <span class="op">=</span> <span class="st">"data-gbm269/cnv-results"</span>, <span class="co"># example directory</span>
+    cnv_prefix <span class="op">=</span> <span class="st">"Chr"</span>
+    <span class="op">)</span></code></pre></div>
+<p>If your desired set up deviates from the default you can reach any
+function of the <code>inferncnv</code> pipeline by entering it’s name as
+an argument and specify it’s input as a list of arguments with which you
+want it to be called.</p>
+<p>Copy number variation analysis requires reference data. This includes
+a count matrix from healthy tissue, an annotation file as well as a
+data.frame that contains information about the chromosome positions. We
+provide reference data in the list <code><a href="../reference/cnv_ref.html">SPATA2::cnv_ref</a></code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cnv_ref</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] "annotation" "mtr"        "regions"</span></code></pre>
@@ -166,95 +238,171 @@
 <span class="co">## annotation        1 data.frame list   </span>
 <span class="co">## mtr        71067022 -none-     numeric</span>
 <span class="co">## regions           4 data.frame list</span></code></pre>
-<p><code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> defaults to the content of this list. The documentation of <code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> contains a detailed description of the requirements each reference input must meet in order for the function to work.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># example on how to use the functions arguments if you want to specify the reference (ref_*)</span>
-<span class="fu"><a href="../reference/runCnvAnalysis.html">runCnvAnalysis</a></span><span class="op">(</span>
-  object <span class="op">=</span> <span class="va">spata_obj</span>,
-  directory_cnv_folder <span class="op">=</span> <span class="st">"data-gmb275/cnv-results"</span>, <span class="co"># example directory to </span>
-  ref_annotation <span class="op">=</span> <span class="va">cnv_ref</span><span class="op">$</span><span class="va">annotation</span>, 
-  ref_mtr <span class="op">=</span> <span class="va">cnv_ref</span><span class="op">$</span><span class="va">mtr</span>, 
-  ref_regions <span class="op">=</span> <span class="va">cnv_ref</span><span class="op">$</span><span class="va">regions</span>
-<span class="op">)</span></code></pre></div>
+<p><code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> defaults to the content of this list.
+The documentation of <code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> contains a detailed
+description of the requirements each reference input must meet in order
+for the function to work.</p>
 </div>
 <div class="section level2">
-<h2 id="cnv-results">3. CNV-Results<a class="anchor" aria-label="anchor" href="#cnv-results"></a>
+<h2 id="cnv-results">4. CNV-Results<a class="anchor" aria-label="anchor" href="#cnv-results"></a>
 </h2>
-<p>The results are stored in a list inside the spata-object. This list can be obtained via <code><a href="../reference/getCnvResults.html">getCnvResults()</a></code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cnv_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCnvResults.html">getCnvResults</a></span><span class="op">(</span><span class="va">spata_obj</span><span class="op">)</span>
+<p>The results are stored in a list inside the <code>spata2</code>
+object. This list can be obtained via <code><a href="../reference/getCnvResults.html">getCnvResults()</a></code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">cnv_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCnvResults.html">getCnvResults</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cnv_results</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "prefix"      "gene_pos_df" "cnv_df"      "cnv_mtr"     "regions_df" </span>
-<span class="co">## [6] "dim_red"     "clustering"</span></code></pre>
+<pre><code><span class="co">## [1] "prefix"      "cnv_df"      "cnv_mtr"     "gene_pos_df" "regions_df"</span></code></pre>
 </div>
 <div class="section level2">
-<h2 id="visualization">4. Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a>
+<h2 id="visualization">5. Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a>
 </h2>
-<p>The gains and losses of chromosomal segments can be displayed via <code><a href="../reference/plotCnvResults.html">plotCnvResults()</a></code>.</p>
+<div class="section level3">
+<h3 id="heatmap">5.1 Heatmap<a class="anchor" aria-label="anchor" href="#heatmap"></a>
+</h3>
+<p>The gains and losses of chromosomal segments can be displayed via
+<code><a href="../reference/plotCnvHeatmap.html">plotCnvHeatmap()</a></code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvHeatmap.html">plotCnvHeatmap</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-8-1.png" alt="Fig.2 Basic CNV-Heatmap." width="100%"><p class="caption">
+Fig.2 Basic CNV-Heatmap.
+</p>
+</div>
+<p>If you want to visualize the results across certain groups to
+identify subclones make use of the <code>across</code>-argument.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvResults.html">plotCnvResults</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvHeatmap.html">plotCnvHeatmap</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, across <span class="op">=</span> <span class="st">"histology"</span>, clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-cnv-analysis_files/figure-html/plotCnvResults()-1.png" alt="Figure 4.1 Copy Number Alterations for the whole sample." width="100%"><p class="caption">
-Figure 4.1 Copy Number Alterations for the whole sample.
+<img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-9-1.png" alt="Fig.3 CNV-Heatmap with meta data displayes chromosomal alterations across histological classification." width="100%"><p class="caption">
+Fig.3 CNV-Heatmap with meta data displayes chromosomal alterations
+across histological classification.
 </p>
 </div>
-<p>If you want to visualize the results across certain groups to identify subclones make use of the <code>across</code>-argument.</p>
+</div>
+<div class="section level3">
+<h3 id="lineplot">5.2 Lineplot<a class="anchor" aria-label="anchor" href="#lineplot"></a>
+</h3>
+<p>An additional option to visualize the results provides
+<code><a href="../reference/plotCnvLineplot.html">plotCnvLineplot()</a></code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/plotCnvResults.html">plotCnvResults</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, across <span class="op">=</span> <span class="st">"seurat_clusters"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvLineplot.html">plotCnvLineplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>,
+  across <span class="op">=</span> <span class="st">"histology"</span>, 
+  n_bins_bcsp <span class="op">=</span> <span class="fl">1000</span>,
+  n_bins_genes <span class="op">=</span> <span class="fl">1000</span>,
+  nrow <span class="op">=</span> <span class="fl">3</span>
+<span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-cnv-analysis_files/figure-html/plotCnvResults()-across-1.png" alt="Figure 4.2 Copy Number Alterations across specific groups." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/plotCnvResults()-across-2.png" alt="Figure 4.2 Copy Number Alterations across specific groups." width="50%"><p class="caption">
-Figure 4.2 Copy Number Alterations across specific groups.
+<img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-10-1.png" alt="Fig.4 CNV-Lineplot displays chromosomal changes across histological classification." width="100%"><p class="caption">
+Fig.4 CNV-Lineplot displays chromosomal changes across histological
+classification.
 </p>
 </div>
-<p>Apart from that you obtain a heatmap that is directly plotted into the folder specified with argument <code>directory_cnv_results</code>.</p>
-<div class="figure">
-<img src="images/cnv-heatmap.png" alt="Figure 4.3 CNV-Heatmap" width="100%"><p class="caption">
-Figure 4.3 CNV-Heatmap
-</p>
 </div>
-<p>Note: We are currently encountering problems with the function <code>infercnv:::plot_cnv()</code>. It does not prevent the copy number variation analysis. Sometimes, however, the heatmap is not plotted. Checkout your R console for hints in how far the function did not work properly. We are working on a solution for that. If you encounter warnings raised from <code><a href="../reference/runCnvAnalysis.html">runCnvAnalysis()</a></code> <a href="https://github.com/theMILOlab/SPATA2/issues" class="external-link">let us know</a>.</p>
-<p>The numeric values by which the copy number variations within each barcode-spot are represented are immediately transferred to the spata-object’s feature data and are thus accessible for all functions that work with numeric variables. The character string specified in argument <code>cnv_prefix</code> combined with the chromosomes number determines the name by which you can refer to these feature variables.</p>
+<div class="section level3">
+<h3 id="surface">5.3 Surface<a class="anchor" aria-label="anchor" href="#surface"></a>
+</h3>
+<p>The numeric values by which the copy number variations of each
+chromosome are represented are immediately transferred to the
+<code>spata2</code> object’s feature data and are thus accessible for
+all functions that work with numeric variables. The character string
+specified in argument <code>cnv_prefix</code> combined with the
+chromosomes number determines the name by which you can refer to these
+feature variables.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># cnv feature names</span>
-<span class="fu"><a href="../reference/getCnvFeatureNames.html">getCnvFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##  [1] "Chr1"  "Chr1"  "Chr2"  "Chr2"  "Chr3"  "Chr3"  "Chr4"  "Chr4"  "Chr5" </span>
-<span class="co">## [10] "Chr5"  "Chr6"  "Chr6"  "Chr7"  "Chr7"  "Chr8"  "Chr8"  "Chr9"  "Chr9" </span>
-<span class="co">## [19] "Chr10" "Chr10" "Chr11" "Chr11" "Chr12" "Chr12" "Chr13" "Chr13" "Chr14"</span>
-<span class="co">## [28] "Chr14" "Chr15" "Chr15" "Chr16" "Chr16" "Chr17" "Chr17" "Chr18" "Chr18"</span>
-<span class="co">## [37] "Chr19" "Chr19" "Chr20" "Chr20" "Chr21" "Chr21" "Chr22" "Chr22"</span></code></pre>
+<span class="fu"><a href="../reference/getCnvFeatureNames.html">getCnvFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">##  [1] "Chr1"  "Chr2"  "Chr3"  "Chr4"  "Chr5"  "Chr6"  "Chr7"  "Chr8"  "Chr9" </span>
+<span class="co">## [10] "Chr10" "Chr11" "Chr12" "Chr13" "Chr14" "Chr15" "Chr16" "Chr17" "Chr18"</span>
+<span class="co">## [19] "Chr19" "Chr20" "Chr21" "Chr22"</span></code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># are part of all feature names</span>
-<span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##            numeric            integer            numeric            numeric </span>
-<span class="co">##   "nCount_Spatial" "nFeature_Spatial"       "percent.mt"       "percent.RB" </span>
-<span class="co">##             factor          character             factor             factor </span>
-<span class="co">##  "seurat_clusters"     "segmentation"      "Leiden_UMAP"          "cluster" </span>
-<span class="co">##            logical            numeric            numeric            numeric </span>
-<span class="co">##             "keep"             "Chr0"             "Chr1"            "Chr10" </span>
+<span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">##            numeric            integer             factor            numeric </span>
+<span class="co">##   "nCount_Spatial" "nFeature_Spatial"  "seurat_clusters"             "Chr0" </span>
 <span class="co">##            numeric            numeric            numeric            numeric </span>
-<span class="co">##            "Chr11"            "Chr12"            "Chr13"            "Chr14" </span>
+<span class="co">##             "Chr1"            "Chr10"            "Chr11"            "Chr12" </span>
 <span class="co">##            numeric            numeric            numeric            numeric </span>
-<span class="co">##            "Chr15"            "Chr16"            "Chr17"            "Chr18" </span>
+<span class="co">##            "Chr13"            "Chr14"            "Chr15"            "Chr16" </span>
 <span class="co">##            numeric            numeric            numeric            numeric </span>
-<span class="co">##            "Chr19"             "Chr2"            "Chr20"            "Chr21" </span>
+<span class="co">##            "Chr17"            "Chr18"            "Chr19"             "Chr2" </span>
 <span class="co">##            numeric            numeric            numeric            numeric </span>
-<span class="co">##            "Chr22"            "Chr23"             "Chr3"             "Chr4" </span>
+<span class="co">##            "Chr20"            "Chr21"            "Chr22"            "Chr23" </span>
 <span class="co">##            numeric            numeric            numeric            numeric </span>
-<span class="co">##             "Chr5"             "Chr6"             "Chr7"             "Chr8" </span>
-<span class="co">##            numeric </span>
-<span class="co">##             "Chr9"</span></code></pre>
-<p>Figure 4.3 as well as figure 4.1 indicate that the glioblastoma sample contains losses in chromosome 10 and gains in chromosome 7 and that these alterations affect cluster <em>1</em> particularly strong while disregarding cluster <em>2</em> (upper-left) of the grouping variable <em>seurat_clusters</em>. Use <code><a href="../reference/plotSurface.html">plotSurface()</a></code> to visualize these subclones on your sample’s surface.</p>
+<span class="co">##             "Chr3"             "Chr4"             "Chr5"             "Chr6" </span>
+<span class="co">##            numeric            numeric            numeric             factor </span>
+<span class="co">##             "Chr7"             "Chr8"             "Chr9"        "histology"</span></code></pre>
+<p>Use <code><a href="../reference/plotSurface.html">plotSurface()</a></code> to visualize chromosomal alterations
+directly on the histology.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"Chr7"</span>, pt_clrsp <span class="op">=</span> <span class="st">"Reds 3"</span>, c1 <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>, 
+  color_by <span class="op">=</span> <span class="st">"Chr7"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Reds"</span>
+<span class="op">)</span>
 
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">spata_obj</span>, color_by <span class="op">=</span> <span class="st">"Chr10"</span>, pt_clrsp <span class="op">=</span> <span class="st">"Blues 3"</span>, rev <span class="op">=</span> <span class="cn">FALSE</span>, c1 <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>, 
+  color_by <span class="op">=</span> <span class="st">"Chr10"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Oslo"</span> 
+<span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-cnv-analysis_files/figure-html/plot-cnv-on-surface-1.png" alt="Figure 4.4 Spatial visualization of areas that are affected by chromosomal alterations." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/plot-cnv-on-surface-2.png" alt="Figure 4.4 Spatial visualization of areas that are affected by chromosomal alterations." width="50%"><p class="caption">
-Figure 4.4 Spatial visualization of areas that are affected by chromosomal alterations.
+<img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-11-1.png" alt="Fig.5 Surface plots display chromosomal alterations directory on the histology." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-11-2.png" alt="Fig.5 Surface plots display chromosomal alterations directory on the histology." width="50%"><p class="caption">
+Fig.5 Surface plots display chromosomal alterations directory on the
+histology.
 </p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="gradients">5.4 Gradients<a class="anchor" aria-label="anchor" href="#gradients"></a>
+</h3>
+<p>As showcased in our corresponding vignette about <a href="spata-v2-spatial-trajectories.html">spatial trajectories</a>
+gradients of numeric variables can be displayed. Chromosomal alterations
+are numeric variables.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">object_t269</span> <span class="op">&lt;-</span> 
+    <span class="fu"><a href="../reference/setTrajectory.html">setTrajectory</a></span><span class="op">(</span>
+      object <span class="op">=</span> <span class="va">object_t269</span>, 
+      trajectory <span class="op">=</span> <span class="va">spatial_trajectories</span><span class="op">[[</span><span class="st">"269_T"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"horizontal_mid"</span><span class="op">]</span><span class="op">]</span>, 
+      overwrite <span class="op">=</span> <span class="cn">TRUE</span>
+    <span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotSpatialTrajectories.html">plotSpatialTrajectories</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>, 
+  ids <span class="op">=</span> <span class="st">"horizontal_mid"</span>, 
+  color_by <span class="op">=</span> <span class="st">"Chr7"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Reds 3"</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotSpatialTrajectories.html">plotSpatialTrajectories</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>, 
+  ids <span class="op">=</span> <span class="st">"horizontal_mid"</span>, 
+  color_by <span class="op">=</span> <span class="st">"Chr10"</span>, 
+  pt_clrsp <span class="op">=</span> <span class="st">"Oslo"</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotTrajectoryLineplot.html">plotTrajectoryLineplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>, 
+  id <span class="op">=</span> <span class="st">"horizontal_mid"</span>, 
+  variables <span class="op">=</span> <span class="st">"Chr7"</span>, 
+  line_color <span class="op">=</span> <span class="st">"red"</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotTrajectoryLineplot.html">plotTrajectoryLineplot</a></span><span class="op">(</span>
+  object <span class="op">=</span> <span class="va">object_t269</span>, 
+  id <span class="op">=</span> <span class="st">"horizontal_mid"</span>, 
+  variables <span class="op">=</span> <span class="st">"Chr10"</span>, 
+  line_color <span class="op">=</span> <span class="st">"blue"</span>, 
+  x_nth <span class="op">=</span> <span class="fl">4</span>
+<span class="op">)</span></code></pre></div>
+<div class="figure">
+<img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-12-1.png" alt="Fig.6 Gradients of Chromosomal alterations along a trajectory in space." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-12-2.png" alt="Fig.6 Gradients of Chromosomal alterations along a trajectory in space." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-12-3.png" alt="Fig.6 Gradients of Chromosomal alterations along a trajectory in space." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-12-4.png" alt="Fig.6 Gradients of Chromosomal alterations along a trajectory in space." width="50%"><p class="caption">
+Fig.6 Gradients of Chromosomal alterations along a trajectory in space.
+</p>
+</div>
+<p>(Note that trajectory lineplots always rescale variables to 0-1 or to
+low-high.)</p>
 </div>
 </div>
   </div>
@@ -276,7 +424,7 @@ Figure 4.4 Spatial visualization of areas that are affected by chromosomal alter
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
