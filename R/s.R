@@ -438,7 +438,7 @@ scaleImage <- function(object, scale_fct){
   object <- setImageObject(object, image_object = io)
 
   object@information$pxl_scale_fct <-
-    object@information$pxl_scale_fct * scale_fct
+    object@information$pxl_scale_fct / scale_fct
 
   return(object)
 

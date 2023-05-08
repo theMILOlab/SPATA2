@@ -2793,7 +2793,10 @@ plotImageAnnotations <- function(object,
             labels = labels
             ) +
           scale_bar_add_on +
-          ggplot2::labs(x = NULL, y = NULL) +
+          ggplot2::labs(
+            x = glue::glue("x-coordinates [{unit}]"),
+            y = glue::glue("y-coordinates [{unit}]")
+            ) +
           ggpLayers
 
         if(base::isTRUE(display_title)){
@@ -2888,7 +2891,7 @@ plotImageGgplot <- function(object,
 
     }
 
-    axes_add_on <-
+    frame_add_on <-
       ggpLayerAxesSI(
         object = object,
         unit = unit,
@@ -2896,21 +2899,30 @@ plotImageGgplot <- function(object,
         ...
       )
 
-  } else{
-
-    axes_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
-
-  }
-
-  if(frame_by == "image"){
-
-    frame_add_on <- ggpLayerFrameByImage(object)
-
   } else {
 
-    frame_add_on <- ggpLayerFrameByCoords(object)
+    if(!base::is.null(xrange) | !base::is.null(yrange)){
+
+      frame_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
+
+
+    } else {
+
+      if(frame_by == "image"){
+
+        frame_add_on <- ggpLayerFrameByImage(object)
+
+      } else {
+
+        frame_add_on <- ggpLayerFrameByCoords(object)
+
+      }
+
+    }
 
   }
+
+
 
   frame_add_on <-
     list(
@@ -2920,8 +2932,11 @@ plotImageGgplot <- function(object,
 
   ggpInit(object) +
     ggpLayerImage(object) +
-    frame_add_on +
-    axes_add_on
+    ggplot2::labs(
+      x = glue::glue("x-coordinates [{unit}]"),
+      y = glue::glue("y-coordinates [{unit}]")
+    ) +
+    frame_add_on
 
 
 }

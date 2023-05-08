@@ -193,7 +193,7 @@ ggpLayerAxesClean <- function(..., object = NULL){
 ggpLayerAxesSI <- function(object,
                            unit = getSpatialMethod(object)@unit,
                            which = c("x", "y"),
-                           frame_by = "coords",
+                           frame_by = "input",
                            breaks_x = NULL,
                            breaks_y = NULL,
                            add_labs = TRUE,
@@ -216,7 +216,7 @@ ggpLayerAxesSI <- function(object,
 
     confuns::check_one_of(
       input = frame_by,
-      against = c("coords", "image")
+      against = c("coords", "image", "input", "none")
     )
 
     if(frame_by == "coords"){
@@ -229,6 +229,16 @@ ggpLayerAxesSI <- function(object,
       xlim <- getImageRange(object)$x
       ylim <- getImageRange(object)$y
 
+    } else  if(frame_by == "input"){
+
+      xlim <- base::range(as_pixel(input = breaks_x, object = object))
+      ylim <- base::range(as_pixel(input = breaks_y, object = object))
+
+    } else if(frame_by == "none"){
+
+      xlim <- NULL
+      ylim <- NULL
+
     }
 
   } else {
@@ -236,7 +246,6 @@ ggpLayerAxesSI <- function(object,
     stop("Invalid input for `frame_by`. Must be character or list.")
 
   }
-
 
   # output breaks
   if(!base::is.null(breaks_x)){
@@ -382,10 +391,10 @@ ggpLayerAxesSI <- function(object,
     )
 
   c(
-    ggpLayerThemeCoords(),
     axes[which],
     labs_add_on[which],
-    theme_add_on[which]
+    theme_add_on[which],
+    ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
   )
 
 }
@@ -835,7 +844,7 @@ ggpLayerFixFrame <- function(object){
 #'
 #' @export
 #'
-ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
+ggpLayerFrameByCoords <- function(object = "object", opt = "coords"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
@@ -858,7 +867,7 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
 
   } else {
 
-    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+    out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
   }
 
@@ -869,7 +878,7 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
 
 #' @rdname ggpLayerFrameByCoords
 #' @export
-ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
+ggpLayerFrameByImage <- function(object = "object", opt = "coords"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
@@ -892,7 +901,7 @@ ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
 
   } else {
 
-    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+    out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
   }
 
@@ -926,7 +935,7 @@ ggpLayerHorizonIAS <- function(object,
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
 
-  border_df <- getImgAnnBorderDf(object, id, inner = FALSE)
+  border_df <- getImgAnnOutlineDf(object, id, inner = FALSE)
 
   input <-
     check_ias_input(
@@ -1117,7 +1126,7 @@ ggpLayerImgAnnOutline <- function(object = "object",
             if(base::isFALSE(inner)){
 
               df <-
-                getImgAnnBorderDf(object, ids = id) %>%
+                getImgAnnOutlineDf(object, ids = id) %>%
                 dplyr::filter(border == "outer")
 
               out <-
@@ -2089,8 +2098,7 @@ ggpLayerThemeCoords <- function(){
   list(
     ggplot2::theme_bw(),
     ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.title = ggplot2::element_blank()
+      panel.grid = ggplot2::element_blank()
     )
   )
 

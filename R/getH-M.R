@@ -96,7 +96,7 @@ getIasBinAreas <- function(object,
   out_df <-
     bin_by_expansion(
       coords_df = pxl_df,
-      area_df = getImgAnnBorderDf(object, ids = id),
+      area_df = getImgAnnOutlineDf(object, ids = id),
       binwidth = ias_input$binwidth,
       n_bins_circle = ias_input$n_bins_circle,
       remove = remove_circle_bins
@@ -138,7 +138,7 @@ getIasBinAreas <- function(object,
 #' @inherit bin_by_expansion params
 #' @inherit bin_by_angle params
 #'
-#' @inherit getImgAnnBorderDf params
+#' @inherit getImgAnnOutlineDf params
 #' @inherit imageAnnotationScreening params
 #' @inherit joinWith params
 #'
@@ -327,7 +327,7 @@ getIasExpansion <- function(object,
       verbose = verbose
     )
 
-  area_df <- getImgAnnBorderDf(object, ids = id)
+  area_df <- getImgAnnOutlineDf(object, ids = id)
 
   binwidth <- ias_input$binwidth
   n_bins_circle <- base::max(ias_input$n_bins_circle)
@@ -1481,7 +1481,7 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 #'
 #' @inheritSection section_dummy Selection of image annotations with tags
 #'
-#' @seealso [`getImgAnnBorderDf()`], [`getCCD()`], [`as_unit()`]
+#' @seealso [`getImgAnnOutlineDf()`], [`getCCD()`], [`as_unit()`]
 #'
 #' @export
 #'
@@ -1551,7 +1551,7 @@ getImgAnnArea <- function(object,
 
         }
 
-        border_df <- getImgAnnBorderDf(object, ids = id)
+        border_df <- getImgAnnOutlineDf(object, ids = id)
 
         pixel_loc <-
           sp::point.in.polygon(
@@ -1651,15 +1651,15 @@ getImgAnnBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
 #'
 #' @export
 #'
-getImgAnnBorderDf <- function(object,
-                              ids = NULL,
-                              tags = NULL,
-                              test = "any",
-                              outer = TRUE,
-                              inner = TRUE,
-                              add_tags = FALSE,
-                              sep = " & ",
-                              last = " & "){
+getImgAnnOutlineDf <- function(object,
+                               ids = NULL,
+                               tags = NULL,
+                               test = "any",
+                               outer = TRUE,
+                               inner = TRUE,
+                               add_tags = FALSE,
+                               sep = " & ",
+                               last = " & "){
 
   img_anns <-
     getImageAnnotations(
@@ -1744,7 +1744,7 @@ getImgAnnBorderDf <- function(object,
 #'  }
 #'  }
 #'
-#' @inherit getImgAnnBorderDf params
+#' @inherit getImgAnnOutlineDf params
 #' @inherit imageAnnotationScreening params
 #' @inherit joinWith params
 #'
@@ -1833,7 +1833,7 @@ get_img_ann_helper <- function(object,
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
 
-  border_df <- getImgAnnBorderDf(object, ids = id, outer = TRUE, inner = TRUE)
+  border_df <- getImgAnnOutlineDf(object, ids = id, outer = TRUE, inner = TRUE)
 
   img_ann_center <- getImgAnnCenter(object, id = id)
 
@@ -2082,7 +2082,7 @@ setMethod(
   signature = "spata2",
   definition = function(object, id){
 
-    border_df <- getImgAnnBorderDf(object, ids = id, inner = FALSE)
+    border_df <- getImgAnnOutlineDf(object, ids = id, inner = FALSE)
 
     x <- base::mean(base::range(border_df$x))
     y <- base::mean(base::range(border_df$y))
@@ -2239,7 +2239,7 @@ getImgAnnCenterBcsp <- function(object, id){
 #'
 getImgAnnRange <- function(object, id){
 
-  getImgAnnBorderDf(object, ids = id) %>%
+  getImgAnnOutlineDf(object, ids = id) %>%
     dplyr::filter(border == "outer") %>%
     dplyr::select(x, y) %>%
     purrr::map(.f = base::range)

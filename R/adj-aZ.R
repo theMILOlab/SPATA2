@@ -328,9 +328,9 @@ alignImageAnnotation <- function(img_ann, image_object){
   ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
 
   # scale
-  dim_img_ann <- img_ann@info$current_dim[1:2]
+  dim_spat_traj <- img_ann@info$current_dim[1:2]
 
-  scale_fct <- base::mean(dim_stored/dim_img_ann)
+  scale_fct <- base::mean(dim_stored/dim_spat_traj)
 
   if(base::length(scale_fct) != 1){
 
@@ -445,9 +445,9 @@ alignSpatialTrajectory <- function(spat_traj, image_object){
   ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
 
   # scale
-  dim_img_ann <- spat_traj@info$current_dim[1:2]
+  dim_spat_traj <- spat_traj@info$current_dim[1:2]
 
-  scale_fct <- base::mean(dim_stored/dim_img_ann)
+  scale_fct <- base::mean(dim_stored/dim_spat_traj)
 
   if(base::length(scale_fct) != 1){
 
@@ -464,6 +464,9 @@ alignSpatialTrajectory <- function(spat_traj, image_object){
         verbose = FALSE
       )
 
+    spat_traj@projection[["projection_length"]] <-
+      spat_traj@projection[["projection_length"]] * scale_fct[1]
+
     spat_traj@segment <-
       scale_coords_df(
         df = spat_traj@segment,
@@ -471,10 +474,11 @@ alignSpatialTrajectory <- function(spat_traj, image_object){
         verbose = FALSE
       )
 
+    spat_traj@width <- spat_traj@width * scale_fct[1]
+
   }
 
   spat_traj@info$current_dim <- dim_stored
-
 
   # flip horizontal
   spat_traj_flipped_h <- spat_traj@info$current_just$flipped$horizontal

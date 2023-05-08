@@ -1,23 +1,28 @@
-pandoc: 2.7.3
-pkgdown: 2.0.1
+pandoc: 2.17.1.1
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
-  spata-v2-autoencoder: spata-v2-autoencoder.html
+  cc-image-annotation-screening: cc-image-annotation-screening.html
+  cc-model-fitting-in-spatial-transcriptomic-studies: cc-model-fitting-in-spatial-transcriptomic-studies.html
+  cc-spatial-measures: cc-spatial-measures.html
+  cc-spatial-segmentation-vs-image-annotations: cc-spatial-segmentation-vs-image-annotations.html
+  cc-spatial-trajectory-screening: cc-spatial-trajectory-screening.html
+  spata-v2-clustering: spata-v2-clustering.html
   spata-v2-cnv-analysis: spata-v2-cnv-analysis.html
-  spata-v2-de-analysis: spata-v2-de-analysis.html
-  spata-v2-extract-add-and-join-data: spata-v2-extract-add-and-join-data.html
+  spata-v2-dea: spata-v2-dea.html
   spata-v2-genes-gene-sets-and-features: spata-v2-genes-gene-sets-and-features.html
   spata-v2-gsea: spata-v2-gsea.html
+  spata-v2-image-annotation-screening: spata-v2-image-annotation-screening.html
+  spata-v2-image-annotations: spata-v2-image-annotations.html
+  spata-v2-image-handling: spata-v2-image-handling.html
   spata-v2-installation: spata-v2-installation.html
-  spata-v2-introduction-and-philosophy: spata-v2-introduction-and-philosophy.html
   spata-v2-object-initiation-and-manipulation: spata-v2-object-initiation-and-manipulation.html
-  spata-v2-platform-compatibility: spata-v2-platform-compatibility.html
-  spata-v2-plotting-descriptive-statistics: spata-v2-plotting-descriptive-statistics.html
-  spata-v2-plotting-dimensional-reduction: spata-v2-plotting-dimensional-reduction.html
-  spata-v2-plotting-miscellaneous: spata-v2-plotting-miscellaneous.html
+  spata-v2-plotting-misc: spata-v2-plotting-misc.html
   spata-v2-plotting-surface: spata-v2-plotting-surface.html
-  spata-v2-segmentation-and-clustering: spata-v2-segmentation-and-clustering.html
-  spata-v2-terminology: spata-v2-terminology.html
-  spata-v2-trajectory-analysis: spata-v2-trajectory-analysis.html
-last_built: 2021-12-07T02:03Z
+  spata-v2-spata-data: spata-v2-spata-data.html
+  spata-v2-spatial-segmentation: spata-v2-spatial-segmentation.html
+  spata-v2-spatial-trajectories: spata-v2-spatial-trajectories.html
+  spata-v2-spatial-trajectory-screening: spata-v2-spatial-trajectory-screening.html
+  spata-v2-subsetting: spata-v2-subsetting.html
+last_built: 2023-05-07T21:31Z
 

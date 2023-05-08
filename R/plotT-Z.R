@@ -678,7 +678,15 @@ plotTrajectoryLineplot <- function(object,
 
   # 2. Data wrangling -------------------------------------------------------
 
-  binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+  if(base::is.numeric(n_bins) & !base::is.na(n_bins)){
+
+    binwidth <- getTrajectoryLength(object, id = id, unit = "px")/n_bins
+
+  } else {
+
+    binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+
+  }
 
   vars <- base::unique(variables)
 
@@ -686,7 +694,7 @@ plotTrajectoryLineplot <- function(object,
     getStsDf(
       object = object,
       id = id,
-      variables = variables,
+      variables = vars,
       method_gs = method_gs,
       n_bins = n_bins,
       binwidth = binwidth,
@@ -1081,7 +1089,16 @@ plotTrajectoryRidgeplot <- function(object,
 
   # 2. Data wrangling -------------------------------------------------------
 
-  binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+  if(base::is.numeric(n_bins) & !base::is.na(n_bins)){
+
+    binwidth <- getTrajectoryLength(object, id = id, unit = "px")/n_bins
+
+  } else {
+
+    binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+
+  }
+
 
   vars <- base::unique(variables)
 

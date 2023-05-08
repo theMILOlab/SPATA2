@@ -42,6 +42,12 @@ can be automatically applied if the image is exchanged via \code{exchangeImage()
 The \verb{flip*()} family mirror inverts the current image
 or coordinates of spatial aspects or everything. See details
 for more information.
+
+\strong{NOTE:} \code{flipImage()} only flips the image and lets everything else as
+is. Only use it if you want to flip the image because it is not aligned
+with the spatial coordinates. If you want to flip the image
+while maintaining alignment with the spatial aspects in the \code{spata2} object
+use \code{flipAll()}!
 }
 \details{
 The \verb{flip*()} functions can be used to flip the complete \code{SPATA2}

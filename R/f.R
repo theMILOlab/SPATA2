@@ -843,6 +843,12 @@ flip_coords_df <- function(df,
 #' or coordinates of spatial aspects or everything. See details
 #' for more information.
 #'
+#' **NOTE:** `flipImage()` only flips the image and lets everything else as
+#' is. Only use it if you want to flip the image because it is not aligned
+#' with the spatial coordinates. If you want to flip the image
+#' while maintaining alignment with the spatial aspects in the `spata2` object
+#' use `flipAll()`!
+#'
 #' @param axis Character value. The axis around which the content is flipped.
 #' Either *'horizontal'*, *'h'*, *'vertical'* or *'v'*.
 #' @param track Logical value. If `TRUE`, changes regarding the image

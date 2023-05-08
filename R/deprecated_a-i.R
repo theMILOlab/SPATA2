@@ -1047,7 +1047,15 @@ flipCoords <- function(...){
 
 # g -----------------------------------------------------------------------
 
+#' @rdname getImgAnnOutlineDf
+#' @export
+getImgAnnBorderDf <- function(...){
 
+  deprecated(fn = TRUE)
+
+  getImgAnnOutlineDf(...)
+
+}
 
 #' @rdname getImgAnnBorderDf
 #' @export

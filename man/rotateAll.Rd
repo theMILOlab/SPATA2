@@ -45,6 +45,12 @@ the computational progress will be printed.
 The \verb{rotate*()} family rotates the current image
 or coordinates of spatial aspects or everything. See details
 for more information.
+
+\strong{NOTE:} \code{rotateImage()} only rotates the image and lets everything else as
+is. Only use it if you want to rotate the image because it is not aligned with
+the spatial coordinates. If you want to rotate the image while maintaining
+alignment with the spatial aspects in the \code{spata2} object
+use \code{rotateAll()}!
 }
 \details{
 The \verb{rotate*()} functions can be used to rotate the complete \code{SPATA2}

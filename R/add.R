@@ -1004,10 +1004,11 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 #'    addSpatialTrajectory(
 #'      object = object_t269,
 #'      id = "cross_sample",
-#'      width = "1mm",
-#'      segment_df = data.frame(x = 100, y = 200, xend = 510, yend = 200),
+#'      width = "1.5mm",
+#'      start = c(x = "1.35mm", y = "4mm"),
+#'      end = c(x = "6.25mm", y = "4mm"),
 #'      overwrite = TRUE
-#'      )
+#'    )
 #'
 #'  plotSpatialTrajectories(object_t269, ids = "cross_sample")
 #'
@@ -1036,10 +1037,15 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  if(!base::is.data.frame(segment_df)){
+  start <-
+    as_pixel(input = start[1:2], object = object, add_attr = FALSE) %>%
+    base::as.numeric()
 
-    # check input
-    confuns::are_vectors(c("start", "end"), mode = "numeric", of.length = 2)
+  end <-
+    as_pixel(input = end[1:2], object = object, add_attr = FALSE) %>%
+    base::as.numeric()
+
+  if(!base::is.data.frame(segment_df)){
 
     confuns::is_value(x = comment, mode = "character")
 

@@ -14,11 +14,15 @@ all_color_palettes <- confuns::all_color_palettes
 
 all_color_spectra <- confuns::all_color_spectra
 
+#' @inherit confuns::color_vector
+#' @export
+color_vector <- confuns::color_vector
 
-#'@inherit confuns::scale_color_add_on
-#'@export
+#' @inherit confuns::scale_color_add_on
+#' @export
 
 scale_color_add_on <- confuns::scale_color_add_on
+
 
 
 #' @importFrom magrittr %>%

@@ -129,10 +129,6 @@ check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL, object = NULL)
       verbose = TRUE
     )
 
-    base::assign(x = "n_bins", value = n_bins, envir = ce)
-
-    base::assign(x = "binwidth", value = NA, envir = ce)
-
   }
 
 }

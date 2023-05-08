@@ -1050,6 +1050,12 @@ rotate_coords_df <- function(df,
 #' or coordinates of spatial aspects or everything. See details
 #' for more information.
 #'
+#' **NOTE:** `rotateImage()` only rotates the image and lets everything else as
+#' is. Only use it if you want to rotate the image because it is not aligned with
+#' the spatial coordinates. If you want to rotate the image while maintaining
+#' alignment with the spatial aspects in the `spata2` object
+#' use `rotateAll()`!
+#'
 #' @inherit flipAll params
 #' @inherit rotate_coords_df params
 #' @inherit argument_dummy params

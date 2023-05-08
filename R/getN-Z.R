@@ -988,16 +988,6 @@ getTrajectory <- function(object, id){
 }
 
 
-#' @rdname getTrajectoryScreeningDf
-#' @export
-getTrajectoryDf <- function(object, ...){
-
-  deprecated(fn = TRUE, ...)
-
-  getTrajectoryScreeningDf(object = object, ...)
-
-
-}
 
 #' @title Obtain trajectory ids
 #'
