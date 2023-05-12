@@ -2,49 +2,19 @@
 % Please edit documentation in R/runA-Z.R
 \name{runGSEA}
 \alias{runGSEA}
-\alias{runGsea}
 \title{Compute gene set enrichment}
 \usage{
 runGSEA(
   object,
   across,
-<<<<<<< HEAD
-  methods_de,
-  max_adj_pval = NULL,
-  min_lfc = NULL,
-=======
   methods_de = "wilcox",
   max_adj_pval = 0.05,
   min_lfc = 0,
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
   gene_set_list = NULL,
   gene_set_names = NULL,
   test = c("hypergeometric", "kstest"),
-  power = 1,
-  background = nGenes(object),
-  absolute = FALSE,
-  pval = 1,
-  fdr = 1,
-  reduce = TRUE,
-  quiet = TRUE,
-  chr_to_fct = TRUE,
-  verbose = NULL
-)
-
-runGsea(
-  object,
-  across,
-  methods_de,
-  max_adj_pval = NULL,
-  min_lfc = NULL,
-  n_highest_lfc = NULL,
-  n_lowest_pval = NULL,
-  gene_set_list = NULL,
-  gene_set_names = NULL,
-  test = c("hypergeometric", "kstest"),
-  power = 1,
   background = nGenes(object),
   absolute = FALSE,
   power = 1,
@@ -84,8 +54,6 @@ from the object's gene set data.frame.}
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of image annotation with tags} for more information.}
-
-\item{power}{Exponent for weights (kstest only)}
 
 \item{background}{Size or character vector of background population genes}
 

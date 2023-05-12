@@ -31,6 +31,8 @@ that observations are vertices of a polygon.
 
  outline_only <- filter(outline_df, outline)
 
+ print(outline_only)
+
  plotSurface(object) +
   geom_point_fixed(data = outline_only, mapping = aes(x = x, y = y), color = "red", size = pt_size)
 

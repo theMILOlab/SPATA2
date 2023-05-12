@@ -19,7 +19,7 @@ spatialTrajectoryScreening(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{A valid spata-object.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}

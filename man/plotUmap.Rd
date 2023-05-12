@@ -11,16 +11,7 @@
 plotPca(
   object,
   color_by = NULL,
-<<<<<<< HEAD
-  color_aes = "color",
-  color_trans = "identity",
-  alpha_by = NULL,
-  order_by = NULL,
-  order_desc = FALSE,
-  shape_by = NULL,
-=======
   n_pcs = NULL,
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
   method_gs = NULL,
   pt_size = NULL,
   pt_alpha = NULL,
@@ -28,7 +19,6 @@ plotPca(
   pt_clrsp = NULL,
   pt_clr = NULL,
   normalize = NULL,
-  transform_with = list(),
   verbose = NULL,
   ...
 )
@@ -157,24 +147,10 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-<<<<<<< HEAD
-\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
-Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
-Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
-Or it can be a list of functions (and function names).
-
-Useful if you want to apply more than one transformation on variables mapped to
-plotting aesthetics. Input for \code{transform_with} is applied before the
-respective \code{<aes>_trans} argument.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-=======
 \item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
 \code{scattermore::geom_scattermore()} which allows quick plotting of several
 thousand data points. If the number of data points plotted is bigger than
 10.000 it is used anyway.}
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}

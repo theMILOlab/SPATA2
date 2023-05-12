@@ -12,6 +12,8 @@ include_tissue_outline(
   ccd = NULL,
   remove = TRUE,
   inside_if = c(1, 2),
+  opt = "concaveman",
+  buffer = 0,
   ...
 )
 }
@@ -23,6 +25,9 @@ variables.}
 to contain polygon coordinates of the expanded image annotation encircling
 and sorts them after filtering for those that lie inside the tissue section
 in order to plot them via \code{ggplot2::geom_path()}.}
+
+\item{opt}{Either \emph{'concaveman'}' or \emph{'chull'}. Defines with which function
+the tissue outline is computed.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
