@@ -22,7 +22,7 @@ plotSurfaceAverage(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{color_by}{A character vector of gene names or a
 named list in which each element is a vector of gene names.}

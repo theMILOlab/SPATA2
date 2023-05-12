@@ -7,7 +7,7 @@
 setPixelScaleFactor(object, pxl_scale_fct = NULL, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{pxl_scale_fct}{Numeric value with an attribute named
 \emph{unit} with the unit dist_si/px.}
@@ -18,7 +18,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

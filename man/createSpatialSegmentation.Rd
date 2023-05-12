@@ -12,7 +12,7 @@ createSpatialSegmentation(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \description{
 Gives access to an interactive user interface where barcode-spots
@@ -38,7 +38,4 @@ the resolution decreases the more you zoom in. Many experiments (such as
 the Visium output) contain high resolution images. You can use the function
 \code{exchangeImage()} to read in images of higher resolution for a better
 histological classification.
-}
-\seealso{
-exchangeImage()
 }

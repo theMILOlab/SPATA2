@@ -15,3 +15,4 @@ Gene set name
 \description{
 Removes the class part of a gene set string
 }
+\keyword{internal}

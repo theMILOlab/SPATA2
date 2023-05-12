@@ -7,7 +7,7 @@
 setBarcodes(object, barcodes)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{barcodes}{Character vector. Barcode ids.}
 }

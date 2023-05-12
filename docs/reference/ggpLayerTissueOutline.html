@@ -18,7 +18,7 @@ to plot numeric variables by color against white."><!-- mathjax --><script src="
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -38,38 +38,54 @@ to plot numeric variables by color against white."><!-- mathjax --><script src="
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -89,7 +105,7 @@ to plot numeric variables by color against white."><!-- mathjax --><script src="
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -125,9 +141,9 @@ to plot numeric variables by color against white.</p>
   <span class="va">object</span>,
   line_color <span class="op">=</span> <span class="st">"grey"</span>,
   line_size <span class="op">=</span> <span class="fl">0.5</span>,
-  expand <span class="op">=</span> <span class="fu"><a href="getCCD.html">getCCD</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"px"</span><span class="op">)</span>,
+  expand_outline <span class="op">=</span> <span class="fu"><a href="getCCD.html">getCCD</a></span><span class="op">(</span><span class="va">object</span>, <span class="st">"px"</span><span class="op">)</span>,
+  concavity <span class="op">=</span> <span class="cn">NULL</span>,
   inc_outline <span class="op">=</span> <span class="cn">TRUE</span>,
-  minPts <span class="op">=</span> <span class="fl">1</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -135,16 +151,29 @@ to plot numeric variables by color against white.</p>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
-<dd><p>An object of class <code>SPATA2</code>.</p></dd>
+<dd><p>An object of class <code>spata2</code>.</p></dd>
 
 
-<dt>expand</dt>
-<dd><p>Given to <code><a href="https://ggforce.data-imaginist.com/reference/geom_mark_hull.html" class="external-link">ggforce::geom_mark_hull()</a></code>.</p></dd>
+<dt>line_color</dt>
+<dd><p>Character. Affects color of the main lines of the plot.</p></dd>
+
+
+<dt>line_size</dt>
+<dd><p>Numeric. Affects size of the main lines of the plot.</p></dd>
+
+
+<dt>expand_outline</dt>
+<dd><p>Distance measure by which the outline of the area is expanded.</p></dd>
+
+
+<dt>concavity</dt>
+<dd><p>Given to <code>concavity</code> of <code><a href="https://ggforce.data-imaginist.com/reference/geom_mark_hull.html" class="external-link">ggforce::geom_mark_hull()</a></code>.
+Can be optimized for every sample via <code>object &lt;- setDefault(object, concavity = ...)</code>.
+Default by object initiation is 1.</p></dd>
 
 
 <dt>inc_outline</dt>
-<dd><p>Employs the function <code>add_outline_variable()</code> which uses
-<code><a href="https://rdrr.io/pkg/dbscan/man/dbscan.html" class="external-link">dbscan::dbscan()</a></code> to identify incoherent tissue sections.</p></dd>
+<dd><p>Logical. If <code>TRUE</code>, include tissue section outline. See examples of <code><a href="getTissueOutlineDf.html">getTissueOutlineDf()</a></code>.</p></dd>
 
 
 <dt>...</dt>
@@ -162,22 +191,47 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
 
 <p>family.</p>
     </div>
+    <div id="distance-measures">
+    <h2>Distance measures</h2>
+    
+
+
+<p>Several functions in <code>SPATA2</code> have arguments that take <em>distance input</em>.
+To specifically refer to a distance the unit must be specified. There are
+three ways to create valid input for these arguments.</p>
+<p><strong>1. In pixel:</strong></p>
+<p>There are two valid input options to specify the distance in pixel:</p>
+<ul><li><p>numeric: Single numeric values, e.g. <code>arg_input = c(2, 3.554, 69, 100.67)</code>. If no unit
+is specified the input will be interpreted as pixels.</p></li>
+<li><p>character: Suffixed with <em>'px'</em>, e.g. <code>arg_input = c('2px', '3.554px', '69px', '100.67px')</code></p></li>
+</ul><p>Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+refers to a distance the pixel side length is meant. If pixel refers to an area the
+number of pixels is meant.</p>
+<p><strong>2. According to the Systeme international d`unites (SI):</strong></p>
+<p>Specifying distances in SI units e.g. <code>arg_input = c('2mm', '4mm')</code> etc.
+requires the input to be a character as the unit must be provided as suffix.
+Between the numeric value and the unit must be no empty space! Valid suffixes
+can be obtained using the function <code><a href="validActivationFunctions.html">validUnitsOfLengthSI()</a></code>.</p>
+<p><strong>3. As vectors of class <code>unit</code>:</strong></p>
+<p>Behind the scenes <code>SPATA2</code> works with the <code>units</code> package. Input
+is converted into vectors of class <code>units</code>. Therefore, input can be directly
+provided this way: <code>arg_input = units::set_unit(x = c(2,4), value = 'mm')</code>
+Note that <em>pixel</em> is not a valid unit in the <code>units</code> package. If you want
+to specify the input in pixel you have to use input option 1. In pixel.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu">donwloadPubExample</span><span class="op">(</span><span class="st">"MCD_LMU"</span><span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in donwloadPubExample("MCD_LMU"):</span> could not find function "donwloadPubExample"</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"mm"</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu">ggpLayerTissueOutline</span><span class="op">(</span><span class="va">object</span>, inc_outline <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in getImageDims(object, ...):</span> object 'object' not found</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"mm"</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu">ggpLayerTissueOutline</span><span class="op">(</span><span class="va">object</span>, inc_outline <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in getImageDims(object, ...):</span> object 'object' not found</span>
-<span class="r-in"></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code>
+<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu">donwloadPubExample</span><span class="op">(</span><span class="st">"MCD_LMU"</span><span class="op">)</span>
+
+<span class="fu"><a href="plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"mm"</span><span class="op">)</span> <span class="op">+</span>
+ <span class="fu">ggpLayerTissueOutline</span><span class="op">(</span><span class="va">object</span>, inc_outline <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+
+<span class="fu"><a href="plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object</span>, unit <span class="op">=</span> <span class="st">"mm"</span><span class="op">)</span> <span class="op">+</span>
+ <span class="fu">ggpLayerTissueOutline</span><span class="op">(</span><span class="va">object</span>, inc_outline <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+
+
 </code></pre></div>
     </div>
   </div>
@@ -188,7 +242,7 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

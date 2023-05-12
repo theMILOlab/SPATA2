@@ -16,7 +16,7 @@ ggpLayerHorizonIAS(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -33,6 +33,10 @@ information about distance values.}
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
 (See details for more.)}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

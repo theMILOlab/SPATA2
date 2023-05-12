@@ -15,3 +15,4 @@ append_polygon_df(lst, plg, allow_intersect = TRUE, in_outer = TRUE, ...)
 Appends df to list of polygon data.frames and names it
 accordingly in case of complex polygons.
 }
+\keyword{internal}

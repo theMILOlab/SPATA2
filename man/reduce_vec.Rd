@@ -22,3 +22,4 @@ Vector of the same class as \code{x}. Content depends on parameter adjustments.
 \description{
 Reduces length of vectors by keeping every \code{nth} element.
 }
+\keyword{internal}

@@ -4,7 +4,7 @@
 \name{SpatialTrajectory-class}
 \alias{SpatialTrajectory-class}
 \alias{SpatialTrajectory}
-\title{The \code{SpatialTrajectory} - class}
+\title{The \code{SpatialTrajectory} - Class}
 \description{
 Extension of the \code{Trajectory} for trajectories
 that have been drawn on a surface plot.

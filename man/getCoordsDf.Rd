@@ -19,3 +19,4 @@ A data.frame containing the variables \emph{barcods, sample, x, y}
 \description{
 Obtain spatial coordinates
 }
+\keyword{internal}

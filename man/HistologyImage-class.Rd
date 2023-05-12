@@ -35,3 +35,4 @@ information around the image.}
 \item{\code{misc}}{list. A flexible list for miscellaneous input.}
 }}
 
+\keyword{internal}

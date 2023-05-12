@@ -15,3 +15,4 @@ A normalized variable
 \description{
 Normalize gene or gene set values
 }
+\keyword{internal}

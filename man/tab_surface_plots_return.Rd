@@ -15,3 +15,4 @@ To use within shinydashboard::tab_items()
 \note{
 Tab for the output returning application
 }
+\keyword{internal}

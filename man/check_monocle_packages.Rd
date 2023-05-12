@@ -9,3 +9,4 @@ check_monocle_packages()
 \description{
 Makes sure that both packages are installed
 }
+\keyword{internal}

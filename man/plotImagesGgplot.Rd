@@ -14,7 +14,7 @@ plotImagesGgplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{names}{Character vector or \code{NULL}. If character, specifies the images
 by name. If \code{NULL}, all images are plotted.}

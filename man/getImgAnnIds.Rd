@@ -12,7 +12,7 @@ getImgAnnIds(object, tags = NULL, test = "any", ...)
 \arguments{
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of image annotation with tags} for more information.}
@@ -58,3 +58,4 @@ among all image annotations via tags and test. And if \code{tags} is also \code{
 the function uses all image annoations.
 }
 
+\keyword{internal}

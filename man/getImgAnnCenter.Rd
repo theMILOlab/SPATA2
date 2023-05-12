@@ -27,7 +27,7 @@ getImgAnnCenters(object, ...)
 \arguments{
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -46,3 +46,4 @@ x- and y- coordinates of the center of the outer border, returns
 a numeric vector of length two. \code{getImgAnnCenters()} computes the center of the outer
 and every inner border and returns a list of numeric vectors of length two.
 }
+\keyword{internal}

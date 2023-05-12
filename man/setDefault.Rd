@@ -7,12 +7,12 @@
 setDefault(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{...}{Named arguments whoose default input you want to override.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

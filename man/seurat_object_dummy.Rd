@@ -12,3 +12,4 @@ seurat_object_dummy(seurat_object)
 \description{
 Title
 }
+\keyword{internal}

@@ -95,3 +95,4 @@ Seurat-objects containing data derived from spatial experiments (\code{method} =
 If you specify argument \code{method} as \emph{'single_cell'} \code{transformSeuratToSpata()}
 uses either tsne or umap embedding as surrogate coordinates.
 }
+\keyword{internal}

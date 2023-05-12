@@ -2,12 +2,15 @@
 % Please edit documentation in R/c.R
 \name{containsHistologyImaging}
 \alias{containsHistologyImaging}
+\alias{containsImageObject}
 \title{Check availability of \code{HistologyImaging} object}
 \usage{
 containsHistologyImaging(object)
+
+containsImageObject(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \value{
 Logical value.

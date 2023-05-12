@@ -36,3 +36,4 @@ part.}
 \item{\code{sample}}{Character value. The sample the trajectory belongs to.}
 }}
 
+\keyword{internal}

@@ -2,16 +2,9 @@
 % Please edit documentation in R/deprecated_j-z.R
 \name{hlpr_rank_trajectory_trends}
 \alias{hlpr_rank_trajectory_trends}
-\alias{hlpr_rank_trajectory_trends_customized}
 \title{Rank trajectory trends.}
 \usage{
 hlpr_rank_trajectory_trends(stdf, verbose = TRUE)
-
-hlpr_rank_trajectory_trends_customized(
-  stdf,
-  verbose = TRUE,
-  customized_trends_df
-)
 }
 \arguments{
 \item{stdf}{A summarized trajectory data.frame. (e.g. obtained by
@@ -26,3 +19,4 @@ Analyze the expression dynamics along
 a specified trajectory by fitting a variety of models to the genes or
 gene sets expression trends.
 }
+\keyword{internal}

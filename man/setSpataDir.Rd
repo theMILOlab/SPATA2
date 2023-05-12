@@ -7,7 +7,7 @@
 setSpataDir(object, dir, add_wd = FALSE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{dir}{Character value. The directory under which to store the
 \code{SPATA2} object.}
@@ -18,7 +18,7 @@ the directory separated by \emph{'/'}.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

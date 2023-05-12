@@ -4,7 +4,7 @@
 \alias{plotSurfaceIAS}
 \alias{plotSurfaceIAS,spata2-method}
 \alias{plotSurfaceIAS,ImageAnnotationScreening-method}
-\title{Visualize screening area of IAS-algorithm}
+\title{Plot screening area of IAS-algorithm}
 \usage{
 plotSurfaceIAS(object, ...)
 
@@ -52,7 +52,7 @@ plotSurfaceIAS(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

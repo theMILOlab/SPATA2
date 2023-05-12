@@ -24,3 +24,4 @@ ggplot_family return
 \description{
 Plots a dendrogram of the distance matrix calculated via \code{runSpatialCorrelation()}.
 }
+\keyword{internal}

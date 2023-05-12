@@ -7,7 +7,7 @@
 getCCD(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{unit}{Character value or \code{NULL}. If character, specifies
 the unit in which the distance is supposed to be returned.

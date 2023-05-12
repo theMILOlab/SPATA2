@@ -7,7 +7,7 @@
 getImageInfo(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \value{
 List that contains information of slots @image_info and @justification

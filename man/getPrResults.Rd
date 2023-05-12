@@ -28,3 +28,4 @@ method returns}
 \description{
 Obtain pattern recognition results
 }
+\keyword{internal}

@@ -14,7 +14,7 @@ exchangeImage(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{image}{Image input or character value. If character, input is interpreted as a directory
 to a file or to an URL and is read with \code{EBImage::readImage()}. The read image

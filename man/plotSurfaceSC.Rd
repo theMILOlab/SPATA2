@@ -8,10 +8,9 @@ plotSurfaceSC(
   object,
   sc_input,
   cell_types = NULL,
-  line_alpha = 0.9,
-  line_size = 1,
+  line_size = 0.5,
   pt_alpha = 1,
-  pt_size = 2,
+  pt_size = 0.5,
   display_density = TRUE,
   display_facets = TRUE,
   display_image = FALSE,
@@ -24,15 +23,17 @@ plotSurfaceSC(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:
 \itemize{
 \item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
-\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
@@ -73,13 +74,13 @@ Plots single cell input on the sample surface.
 }
 \examples{
 
-object <- loadPubExample("MCD_LMU")
+object <- downloadPubExample("MCI_LMU", verbose = FALSE)
 
 data("sc_deconvolution")
 
 plotSurfaceSC(
  object = object,
- sc_input = sc_deconvolution$MCD_LMU,
+ sc_input = sc_deconvolution$MCI_LMU,
  cell_types = c("Astrocytes", "Neurons", "Microglia", "Macrophages/Monocytes"),
  clrp = "sifre"
  )

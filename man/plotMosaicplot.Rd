@@ -14,7 +14,7 @@ plotMosaicplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{grouping_variable}{Character value. The grouping variable that is
 plotted on the x-axis.}

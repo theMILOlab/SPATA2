@@ -9,3 +9,4 @@
 \description{
 Used in conjunction with GeomTextFixed
 }
+\keyword{internal}

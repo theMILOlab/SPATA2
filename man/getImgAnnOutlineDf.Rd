@@ -2,10 +2,13 @@
 % Please edit documentation in R/deprecated_a-i.R, R/getH-M.R
 \name{getImgAnnBorderDf}
 \alias{getImgAnnBorderDf}
+\alias{getImageAnnotationAreaDf}
 \alias{getImgAnnOutlineDf}
 \title{Obtain image annotation border data.frame}
 \usage{
 getImgAnnBorderDf(...)
+
+getImageAnnotationAreaDf(...)
 
 getImgAnnOutlineDf(
   object,
@@ -22,7 +25,7 @@ getImgAnnOutlineDf(
 \arguments{
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
 of the image annotations of interest. If numeric, the image annotations are picked by number.
@@ -81,3 +84,4 @@ among all image annotations via tags and test. And if \code{tags} is also \code{
 the function uses all image annoations.
 }
 
+\keyword{internal}

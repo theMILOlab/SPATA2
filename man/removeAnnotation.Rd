@@ -23,9 +23,4 @@ Removes annotations within annotation variables.
 As the default within every annotation variable is \emph{'unnamed'}
 removing the annotation effectively renames the annotation back to \emph{'unnamed'}.
 }
-\examples{
-
-  object <- createAnnotation(object)
-
-  object <- removeAnnotation(object, ann_var = "cns_layer", groups = c("layer_1", "layer2")
-}
+\keyword{internal}

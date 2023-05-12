@@ -18,3 +18,4 @@ check_coords_df(coords_df)
 \description{
 Check coords data.frame
 }
+\keyword{internal}

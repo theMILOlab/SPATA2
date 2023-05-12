@@ -31,13 +31,7 @@
     <loc>/articles/spata-v2-cnv-analysis.html</loc>
   </url>
   <url>
-    <loc>/articles/spata-v2-de-analysis.html</loc>
-  </url>
-  <url>
     <loc>/articles/spata-v2-dea.html</loc>
-  </url>
-  <url>
-    <loc>/articles/spata-v2-extract-add-and-join-data.html</loc>
   </url>
   <url>
     <loc>/articles/spata-v2-genes-gene-sets-and-features.html</loc>
@@ -58,31 +52,19 @@
     <loc>/articles/spata-v2-installation.html</loc>
   </url>
   <url>
-    <loc>/articles/spata-v2-introduction-and-philosophy.html</loc>
-  </url>
-  <url>
     <loc>/articles/spata-v2-object-initiation-and-manipulation.html</loc>
   </url>
   <url>
     <loc>/articles/spata-v2-platform-compatibility.html</loc>
   </url>
   <url>
-    <loc>/articles/spata-v2-plotting-descriptive-statistics.html</loc>
-  </url>
-  <url>
-    <loc>/articles/spata-v2-plotting-dimensional-reduction.html</loc>
-  </url>
-  <url>
     <loc>/articles/spata-v2-plotting-misc.html</loc>
-  </url>
-  <url>
-    <loc>/articles/spata-v2-plotting-miscellaneous.html</loc>
   </url>
   <url>
     <loc>/articles/spata-v2-plotting-surface.html</loc>
   </url>
   <url>
-    <loc>/articles/spata-v2-segmentation-and-clustering.html</loc>
+    <loc>/articles/spata-v2-scd.html</loc>
   </url>
   <url>
     <loc>/articles/spata-v2-spata-data.html</loc>
@@ -98,15 +80,6 @@
   </url>
   <url>
     <loc>/articles/spata-v2-subsetting.html</loc>
-  </url>
-  <url>
-    <loc>/articles/spata-v2-terminology.html</loc>
-  </url>
-  <url>
-    <loc>/articles/spata-v2-trajectory-analysis.html</loc>
-  </url>
-  <url>
-    <loc>/articles/trajectory-analysis-concept.html</loc>
   </url>
   <url>
     <loc>/authors.html</loc>
@@ -145,7 +118,13 @@
     <loc>/reference/addSpCorCluster.html</loc>
   </url>
   <url>
+    <loc>/reference/add_dbscan_variable.html</loc>
+  </url>
+  <url>
     <loc>/reference/add_models.html</loc>
+  </url>
+  <url>
+    <loc>/reference/add_outline_variable.html</loc>
   </url>
   <url>
     <loc>/reference/adjustDirectoryInstructions.html</loc>
@@ -160,6 +139,9 @@
     <loc>/reference/allColorpalettes.html</loc>
   </url>
   <url>
+    <loc>/reference/all_bcsp_distances.html</loc>
+  </url>
+  <url>
     <loc>/reference/all_color_palettes.html</loc>
   </url>
   <url>
@@ -172,6 +154,9 @@
     <loc>/reference/argument_dummy.html</loc>
   </url>
   <url>
+    <loc>/reference/arrange_as_polygon.html</loc>
+  </url>
+  <url>
     <loc>/reference/asGiotto.html</loc>
   </url>
   <url>
@@ -179,9 +164,6 @@
   </url>
   <url>
     <loc>/reference/asHistologyImaging.html</loc>
-  </url>
-  <url>
-    <loc>/reference/assessTrajectoryTrends.html</loc>
   </url>
   <url>
     <loc>/reference/asSeurat.html</loc>
@@ -352,6 +334,9 @@
     <loc>/reference/cnv_regions_df.html</loc>
   </url>
   <url>
+    <loc>/reference/color_vector.html</loc>
+  </url>
+  <url>
     <loc>/reference/computeCnvByChrArm.html</loc>
   </url>
   <url>
@@ -362,6 +347,9 @@
   </url>
   <url>
     <loc>/reference/compute_distance.html</loc>
+  </url>
+  <url>
+    <loc>/reference/containsCNV.html</loc>
   </url>
   <url>
     <loc>/reference/containsHistologyImaging.html</loc>
@@ -391,10 +379,7 @@
     <loc>/reference/createSpatialTrajectories.html</loc>
   </url>
   <url>
-    <loc>/reference/createTrajectories.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createTrajectoryManually.html</loc>
+    <loc>/reference/create_model_df.html</loc>
   </url>
   <url>
     <loc>/reference/cropSpataObject.html</loc>
@@ -433,13 +418,16 @@
     <loc>/reference/downloadPubExample.html</loc>
   </url>
   <url>
+    <loc>/reference/downloadRawData.html</loc>
+  </url>
+  <url>
+    <loc>/reference/downloadSpataObject.html</loc>
+  </url>
+  <url>
     <loc>/reference/dropped_df_dummy.html</loc>
   </url>
   <url>
     <loc>/reference/examineClusterResults.html</loc>
-  </url>
-  <url>
-    <loc>/reference/examineTrajectoryAssessment.html</loc>
   </url>
   <url>
     <loc>/reference/exchangeImage.html</loc>
@@ -455,9 +443,6 @@
   </url>
   <url>
     <loc>/reference/filterDeaDf.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterTrends.html</loc>
   </url>
   <url>
     <loc>/reference/findMonocleClusters.html</loc>
@@ -766,6 +751,9 @@
     <loc>/reference/getStsDf.html</loc>
   </url>
   <url>
+    <loc>/reference/getTissueOutlineDf.html</loc>
+  </url>
+  <url>
     <loc>/reference/getTrajectoryDf.html</loc>
   </url>
   <url>
@@ -776,9 +764,6 @@
   </url>
   <url>
     <loc>/reference/getTrajectoryNames.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getTrajectoryObject.html</loc>
   </url>
   <url>
     <loc>/reference/getTrajectoryScreeningDf.html</loc>
@@ -874,19 +859,10 @@
     <loc>/reference/hlpr_add_barcode_suffix.html</loc>
   </url>
   <url>
-    <loc>/reference/hlpr_add_models.html</loc>
-  </url>
-  <url>
     <loc>/reference/hlpr_add_old_coords.html</loc>
   </url>
   <url>
-    <loc>/reference/hlpr_add_residuals2.html</loc>
-  </url>
-  <url>
     <loc>/reference/hlpr_adjust_legend_size.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hlpr_assess_trajectory_trends.html</loc>
   </url>
   <url>
     <loc>/reference/hlpr_assign_arguments.html</loc>
@@ -899,9 +875,6 @@
   </url>
   <url>
     <loc>/reference/hlpr_compile_trajectory.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hlpr_display_title.html</loc>
   </url>
   <url>
     <loc>/reference/hlpr_dist_mtr_to_df.html</loc>
@@ -935,9 +908,6 @@
   </url>
   <url>
     <loc>/reference/hlpr_rank_trajectory_trends.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hlpr_run_cnva_pca.html</loc>
   </url>
   <url>
     <loc>/reference/hlpr_save_spata_object.html</loc>
@@ -1015,9 +985,6 @@
     <loc>/reference/is_dist.html</loc>
   </url>
   <url>
-    <loc>/reference/is_subsetted_by_segment.html</loc>
-  </url>
-  <url>
     <loc>/reference/is_unit_area.html</loc>
   </url>
   <url>
@@ -1055,9 +1022,6 @@
   </url>
   <url>
     <loc>/reference/mergeGroups.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mergeSpataObjects.html</loc>
   </url>
   <url>
     <loc>/reference/method_hclust.html</loc>
@@ -1123,12 +1087,6 @@
     <loc>/reference/plotCnvLineplot.html</loc>
   </url>
   <url>
-    <loc>/reference/plotCnvResults.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotCustomizedTrajectoryTrends.html</loc>
-  </url>
-  <url>
     <loc>/reference/plotDeaDotPlot.html</loc>
   </url>
   <url>
@@ -1148,9 +1106,6 @@
   </url>
   <url>
     <loc>/reference/plotDendrogram.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotDistribution.html</loc>
   </url>
   <url>
     <loc>/reference/plotFourStates.html</loc>
@@ -1210,9 +1165,6 @@
     <loc>/reference/plotScatterplot.html</loc>
   </url>
   <url>
-    <loc>/reference/plotSegmentation.html</loc>
-  </url>
-  <url>
     <loc>/reference/plotSpatialTrajectories.html</loc>
   </url>
   <url>
@@ -1240,22 +1192,10 @@
     <loc>/reference/plotSurfaceSC.html</loc>
   </url>
   <url>
-    <loc>/reference/plotTrajectory.html</loc>
-  </url>
-  <url>
     <loc>/reference/plotTrajectoryBarplot.html</loc>
   </url>
   <url>
     <loc>/reference/plotTrajectoryEvaluation.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotTrajectoryFeatures.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotTrajectoryFeaturesDiscrete.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotTrajectoryFit.html</loc>
   </url>
   <url>
     <loc>/reference/plotTrajectoryHeatmap.html</loc>
@@ -1399,6 +1339,9 @@
     <loc>/reference/scale_coords_df.html</loc>
   </url>
   <url>
+    <loc>/reference/scale_factors.html</loc>
+  </url>
+  <url>
     <loc>/reference/sc_deconvolution.html</loc>
   </url>
   <url>
@@ -1474,6 +1417,9 @@
     <loc>/reference/setSpCorResults.html</loc>
   </url>
   <url>
+    <loc>/reference/setTissueOutline.html</loc>
+  </url>
+  <url>
     <loc>/reference/setTrajectory.html</loc>
   </url>
   <url>
@@ -1483,10 +1429,10 @@
     <loc>/reference/seurat_object_dummy.html</loc>
   </url>
   <url>
-    <loc>/reference/shiftTrajectoryDf.html</loc>
+    <loc>/reference/showColors.html</loc>
   </url>
   <url>
-    <loc>/reference/showColors.html</loc>
+    <loc>/reference/showModels.html</loc>
   </url>
   <url>
     <loc>/reference/smoothSpatially.html</loc>
@@ -1516,6 +1462,9 @@
     <loc>/reference/spatial_segmentations.html</loc>
   </url>
   <url>
+    <loc>/reference/spatial_trajectories.html</loc>
+  </url>
+  <url>
     <loc>/reference/spatial_trajectory-class.html</loc>
   </url>
   <url>
@@ -1525,16 +1474,10 @@
     <loc>/reference/subsetByGenes.html</loc>
   </url>
   <url>
-    <loc>/reference/subsetBySegment_CountMtr.html</loc>
-  </url>
-  <url>
     <loc>/reference/summarizeIAS.html</loc>
   </url>
   <url>
     <loc>/reference/summarize_formulas.html</loc>
-  </url>
-  <url>
-    <loc>/reference/tab_create_segmentation_return.html</loc>
   </url>
   <url>
     <loc>/reference/tab_surface_plots_app.html</loc>
@@ -1543,13 +1486,10 @@
     <loc>/reference/tab_surface_plots_return.html</loc>
   </url>
   <url>
-    <loc>/reference/trajectories.html</loc>
+    <loc>/reference/theme_lineplot_gradient.html</loc>
   </url>
   <url>
     <loc>/reference/Trajectory-class.html</loc>
-  </url>
-  <url>
-    <loc>/reference/trajectory_patterns.html</loc>
   </url>
   <url>
     <loc>/reference/transfer_slot_content.html</loc>
@@ -1591,9 +1531,6 @@
     <loc>/reference/validActivationFunctions.html</loc>
   </url>
   <url>
-    <loc>/reference/validateSpataObject.html</loc>
-  </url>
-  <url>
     <loc>/reference/validation.html</loc>
   </url>
   <url>
@@ -1606,7 +1543,7 @@
     <loc>/reference/variable_num.html</loc>
   </url>
   <url>
-    <loc>/reference/visium_coords_lowres.html</loc>
+    <loc>/reference/visium_coords.html</loc>
   </url>
   <url>
     <loc>/reference/vselect.html</loc>

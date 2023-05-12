@@ -27,3 +27,4 @@ slots of your spata-object. They do check the input for validity but
 effectively overwrite everything that is occupying the slot to be set -
 use with caution.
 }
+\keyword{internal}

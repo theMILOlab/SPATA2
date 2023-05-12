@@ -47,3 +47,4 @@ string as input in order to format it.)
 Functions that provide a report regarding the validity of
 the respective slot.
 }
+\keyword{internal}

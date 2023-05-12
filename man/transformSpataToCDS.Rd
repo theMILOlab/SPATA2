@@ -20,7 +20,7 @@ transformSpataToCDS(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{preprocess_method}{Monocle3 - description:
 
@@ -90,3 +90,4 @@ result in running the function with it's default parameters.
 
 The spata-objects feature data (@fdata) is passed to the cell_data_set for it's slot \code{cell_meta_data}.
 }
+\keyword{internal}

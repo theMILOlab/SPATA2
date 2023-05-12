@@ -12,3 +12,4 @@ pb_dummy(pb)
 \description{
 pb
 }
+\keyword{internal}

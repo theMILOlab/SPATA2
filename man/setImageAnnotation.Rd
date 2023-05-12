@@ -10,7 +10,7 @@ setImageAnnotation(object, img_ann, align = TRUE, overwrite = FALSE)
 setImageAnnotations(object, img_anns, align = TRUE, overwrite = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{img_ann}{An object of class \code{ImageAnnotation}.}
 

@@ -20,7 +20,7 @@ addPointsBase(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{color_by}{The variable to be displayed by color:
 

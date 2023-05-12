@@ -18,7 +18,7 @@ range or the image range."><!-- mathjax --><script src="https://cdnjs.cloudflare
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -38,38 +38,54 @@ range or the image range."><!-- mathjax --><script src="https://cdnjs.cloudflare
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -89,7 +105,7 @@ range or the image range."><!-- mathjax --><script src="https://cdnjs.cloudflare
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -121,15 +137,15 @@ range or the image range.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ggpLayerFrameByCoords</span><span class="op">(</span>object <span class="op">=</span> <span class="st">"object"</span>, opt <span class="op">=</span> <span class="st">"scale"</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">ggpLayerFrameByCoords</span><span class="op">(</span>object <span class="op">=</span> <span class="st">"object"</span>, opt <span class="op">=</span> <span class="st">"coords"</span><span class="op">)</span>
 
-<span class="fu">ggpLayerFrameByImage</span><span class="op">(</span>object <span class="op">=</span> <span class="st">"object"</span>, opt <span class="op">=</span> <span class="st">"scale"</span><span class="op">)</span></code></pre></div>
+<span class="fu">ggpLayerFrameByImage</span><span class="op">(</span>object <span class="op">=</span> <span class="st">"object"</span>, opt <span class="op">=</span> <span class="st">"coords"</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
-<dd><p>An object of class <code>SPATA2</code>.</p></dd>
+<dd><p>An object of class <code>spata2</code>.</p></dd>
 
 
 <dt>opt</dt>
@@ -162,7 +178,7 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

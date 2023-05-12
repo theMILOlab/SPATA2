@@ -18,7 +18,7 @@ annotation against model values."><!-- mathjax --><script src="https://cdnjs.clo
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -38,38 +38,54 @@ annotation against model values."><!-- mathjax --><script src="https://cdnjs.clo
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -89,7 +105,7 @@ annotation against model values."><!-- mathjax --><script src="https://cdnjs.clo
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -154,7 +170,7 @@ annotation against model values.</p>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
-<dd><p>An object of class <code>SPATA2</code>.</p></dd>
+<dd><p>An object of class <code>spata2</code>.</p></dd>
 
 
 <dt>id</dt>
@@ -196,7 +212,7 @@ an angle span relative to the center of the image annotation.
 <dt>model_subset</dt>
 <dd><p>Character value. Used as a regex to subset models.
 Use <code><a href="validActivationFunctions.html">validModelNames()</a></code> to obtain all model names that are known to <code>SPATA2</code>
-and <code><a href="showColors.html">showModels()</a></code> to visualize them.</p></dd>
+and <code><a href="showModels.html">showModels()</a></code> to visualize them.</p></dd>
 
 
 <dt>model_remove</dt>
@@ -208,7 +224,7 @@ are not supposed to be included.</p></dd>
 <dd><p>Named list. Every slot in the list must be either a formula
 containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
-same length as the input vector. Test models with <code><a href="showColors.html">showModels()</a></code>.</p></dd>
+same length as the input vector. Test models with <code><a href="showModels.html">showModels()</a></code>.</p></dd>
 
 
 <dt>pt_alpha</dt>
@@ -217,6 +233,18 @@ same length as the input vector. Test models with <code><a href="showColors.html
 
 <dt>pt_size</dt>
 <dd><p>Numeric value. Specifies the size of all points.</p></dd>
+
+
+<dt>line_alpha</dt>
+<dd><p>Numeric. Affects alpha of main lines of the plot.</p></dd>
+
+
+<dt>line_color</dt>
+<dd><p>Character. Affects color of the main lines of the plot.</p></dd>
+
+
+<dt>line_size</dt>
+<dd><p>Numeric. Affects size of the main lines of the plot.</p></dd>
 
 
 <dt>display_corr</dt>
@@ -242,7 +270,7 @@ corresponding p-value.</p></dd>
 
 
 <dt>force_grid</dt>
-<dd><p>Logical value. If <code>TRUE</code>, <code>facet_grid()</code> is used regardless
+<dd><p>Logical value. If <code>TRUE</code>, <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid()</a></code> is used regardless
 of <code>variables</code> being of length 1.</p></dd>
 
 
@@ -293,7 +321,7 @@ to specify the input in pixel you have to use input option 1. In pixel.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

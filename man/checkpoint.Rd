@@ -64,3 +64,4 @@ Wrapper around \code{shiny::req()} and \code{shiny::showNotification()}.
 Prevents application from crashing and displays guiding message about what the user
 is supposed to do in order to continue without this message to appear.
 }
+\keyword{internal}

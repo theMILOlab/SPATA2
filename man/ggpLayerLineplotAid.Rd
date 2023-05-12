@@ -7,7 +7,7 @@
 ggpLayerLineplotAid(object, xi, yi = 0.5, l = NULL, id = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
 

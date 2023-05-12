@@ -2,6 +2,7 @@
 % Please edit documentation in R/g.R
 \name{gradientToModelIAS}
 \alias{gradientToModelIAS}
+\alias{gradientToModelSTS}
 \title{Create input for \code{model_add}}
 \usage{
 gradientToModelIAS(
@@ -14,9 +15,18 @@ gradientToModelIAS(
   include_area = FALSE,
   verbose = TRUE
 )
+
+gradientToModelSTS(
+  object,
+  id,
+  variables,
+  binwidth = getCCD(object, "px"),
+  n_bins = NA_integer_,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. ID of the spatial trajectory or the image annotation
 of interest.}

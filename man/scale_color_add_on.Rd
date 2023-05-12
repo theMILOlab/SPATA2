@@ -77,3 +77,4 @@ ggplot(mtcars, aes(x = qsec, y = wt)) +
 geom_point(aes(color = mpg)) +
 scale_color_add_on(aes = "color", clrsp = "Reds 3")
 }
+\keyword{internal}

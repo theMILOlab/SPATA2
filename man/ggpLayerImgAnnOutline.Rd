@@ -22,7 +22,7 @@ ggpLayerImgAnnOutline(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
 of the image annotations of interest. If numeric, the image annotations are picked by number.
@@ -55,3 +55,4 @@ with \code{createImageAnnotations()}.
 Adds two additional layers to set the scales for the color- and
 fill aesthetic of the plot.
 }
+\keyword{internal}

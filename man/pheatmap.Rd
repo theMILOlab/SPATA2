@@ -14,3 +14,4 @@ variables \emph{cluster, gene}.}
 \description{
 de_df
 }
+\keyword{internal}

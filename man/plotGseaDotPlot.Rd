@@ -42,7 +42,7 @@ plotGseaDotPlot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 

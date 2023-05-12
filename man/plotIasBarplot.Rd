@@ -53,7 +53,7 @@ plotIasBarplotSC(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -115,7 +115,7 @@ Must have at least three columns:
 \itemize{
 \item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
-\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by

@@ -24,7 +24,7 @@ hlpr_scatterplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{color_to}{Named list.}
 
@@ -53,3 +53,4 @@ slot \emph{add_on} contains a list of ggplot-add-ons.
 \description{
 Color to + scatterplot helper
 }
+\keyword{internal}

@@ -70,3 +70,4 @@ matrix needed for subsequent cluster analysis.
 Use \code{getGenes()} and it's argument \code{similar_to} in order to get genes
 that feature a similar expression profile/pattern as a gene of interest.
 }
+\keyword{internal}

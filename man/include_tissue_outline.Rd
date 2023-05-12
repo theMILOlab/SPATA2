@@ -7,11 +7,12 @@
 include_tissue_outline(
   coords_df,
   input_df,
-  outline_var = NULL,
   img_ann_center = NULL,
   ias_circles = FALSE,
   ccd = NULL,
-  remove = TRUE
+  remove = TRUE,
+  inside_if = c(1, 2),
+  ...
 )
 }
 \arguments{
@@ -22,13 +23,16 @@ variables.}
 to contain polygon coordinates of the expanded image annotation encircling
 and sorts them after filtering for those that lie inside the tissue section
 in order to plot them via \code{ggplot2::geom_path()}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Filtered input data.frame.
 }
 \description{
 Ensures section specific processing of observations
-in relation to image annotations by identifying the outline of the
-tissue section (or -sections in case of multiple tissue sections per sample)
-and by relating the observations to it.
+in relation by identifying the outline of the tissue section
+(or -sections in case of multiple tissue sections per sample). Additionally,
+allows to relate observations to the spatial position and extent of image
+annotations.
 }

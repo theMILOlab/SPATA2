@@ -78,7 +78,7 @@ plotIasRidgeplotSC(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -128,6 +128,8 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
 \item{line_size}{Numeric value. Specifies the thicknes of the lines with which
 the trajectory dynamics are displayed.}
 
@@ -153,7 +155,7 @@ Must have at least three columns:
 \itemize{
 \item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
-\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}

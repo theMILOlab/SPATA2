@@ -13,3 +13,4 @@ to the rules of the ggplot2-framework.
 \description{
 ggplot_family
 }
+\keyword{internal}

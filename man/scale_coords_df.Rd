@@ -60,3 +60,4 @@ is skipped and the function gives feedback if \code{verbose = TRUE} or throws an
 error if \code{error = TRUE}. Default sets both to \code{FALSE} which results in
 silent skipping.
 }
+\keyword{internal}

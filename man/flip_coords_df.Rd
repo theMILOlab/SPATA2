@@ -49,3 +49,4 @@ Adjusted data.frame.
 \description{
 Flip coordinate variables in a data.frame.
 }
+\keyword{internal}

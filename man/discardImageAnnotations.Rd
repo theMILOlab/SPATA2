@@ -7,7 +7,7 @@
 discardImageAnnotations(object, ids)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ids}{Character vector. The IDs of the image annotations to
 be discarded.}

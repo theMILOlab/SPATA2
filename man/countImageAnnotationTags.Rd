@@ -7,7 +7,7 @@
 countImageAnnotationTags(object, tags = NULL, collapse = " & ")
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{tags}{Character vector or list or NULL. If character vector only image
 annotations that pass the "tag test" are included in the counting process. If

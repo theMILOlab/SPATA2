@@ -10,13 +10,13 @@ getOutlineVarName(object)
 setOutlineVarName(object, name)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{name}{Name of the variable that contains the outline. Must be a factor
 variable in the feature data.frame.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
@@ -25,3 +25,4 @@ that contains grouping of the barcode-spots according to the number
 of coherent tissue sections on the capture frame. (E.g. if two brain slices
 of a mouse were imaged and permeabilized on the same visium slide).
 }
+\keyword{internal}

@@ -7,4 +7,4 @@
 \description{
 GeomPointFixed
 }
-\keyword{datasets}
+\keyword{internal}

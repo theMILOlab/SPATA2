@@ -7,13 +7,13 @@
 setImageOrigin(object, origin)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{origin}{Character value. Directory or name of the object
 from the global environment.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

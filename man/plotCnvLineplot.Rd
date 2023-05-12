@@ -35,7 +35,7 @@ plotCnvLineplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -66,6 +66,12 @@ that are included.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
+
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{display_ribbon}{Logical value. If TRUE, a ribbon is displayed around
 the main line of the plot visualizing uncertainty using standard deviation.}

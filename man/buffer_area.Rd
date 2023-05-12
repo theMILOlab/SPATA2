@@ -9,7 +9,9 @@ buffer_area(df, buffer, close_plg = TRUE)
 \arguments{
 \item{df}{Data.frame with variables \emph{x} and \emph{y} describing the
 vertices of the polygon that encircles the area based on which the barcode-spots
-are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
+are binned. E.g. slot @area of \code{ImageAnnotation}-objects. Note that the order of
+observations in the data.frame must correspond to the order of vertices
+of the polygon.}
 
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the image annotation screening. Given to argument

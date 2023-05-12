@@ -18,5 +18,6 @@ the computational progress will be printed.
 The respective data set.
 }
 \description{
-Downloads processed data from \emph{Kueckelhaus et al., 2023}.
+Downloads processed data from uses cases of \emph{Kueckelhaus et al., 2023}
+in form of \code{spata2} objects.
 }

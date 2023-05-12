@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -55,38 +55,54 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Around the Spata-Object</li>
+<li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -108,7 +124,7 @@
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -187,7 +203,7 @@ infiltrated cortex.</p>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SPATAData</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 
-<span class="va">object_t269</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SPATAData/man/downloadSpataObject.html" class="external-link">downloadSpataObject</a></span><span class="op">(</span>sample_name <span class="op">=</span> <span class="st">"269_T"</span><span class="op">)</span>
+<span class="va">object_t269</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/downloadSpataObject.html">downloadSpataObject</a></span><span class="op">(</span>sample_name <span class="op">=</span> <span class="st">"269_T"</span><span class="op">)</span>
 
 <span class="co"># load example image annotations</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"image_annotations"</span><span class="op">)</span>
@@ -276,19 +292,19 @@ Extracting the coordinates of all barcode-spots via
 
 <span class="co"># show results </span>
 <span class="va">coords_df</span></code></pre></div>
-<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 3,213 x 4</span></span>
-<span class="co">##    barcodes           sample     x     y</span>
-<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span> AAACAAGTATCTCCCA-1 269_T  <span style="text-decoration: underline;">1</span>450.  731.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span> AAACACCAATAACTGC-1 269_T   411.  547.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span> AAACAGAGCGACTCCT-1 269_T  <span style="text-decoration: underline;">1</span>359. <span style="text-decoration: underline;">1</span>516 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span> AAACATTTCCCGGATT-1 269_T  <span style="text-decoration: underline;">1</span>386.  493.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span> AAACCCGAACGAAATC-1 269_T  <span style="text-decoration: underline;">1</span>614.  838.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span> AAACCGGGTAGGTACC-1 269_T   527.  916.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span> AAACCGTTCGTCCAGG-1 269_T   700.  696 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span> AAACCTAAGCAGCCGG-1 269_T  <span style="text-decoration: underline;">1</span>210.  408.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span> AAACCTCATGAAGTTG-1 269_T   416. <span style="text-decoration: underline;">1</span>026.</span>
-<span class="co">## <span style="color: #BCBCBC;">10</span> AAACGAGACGGTTGAT-1 269_T  <span style="text-decoration: underline;">1</span>167. <span style="text-decoration: underline;">1</span>061.</span>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 3,213 x 6</span></span>
+<span class="co">##    barcodes           sample     x     y section outline</span>
+<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span> AAACAAGTATCTCCCA-1 269_T  <span style="text-decoration: underline;">1</span>450.  731. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span> AAACACCAATAACTGC-1 269_T   411.  547. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span> AAACAGAGCGACTCCT-1 269_T  <span style="text-decoration: underline;">1</span>359. <span style="text-decoration: underline;">1</span>516  1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span> AAACATTTCCCGGATT-1 269_T  <span style="text-decoration: underline;">1</span>386.  493. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span> AAACCCGAACGAAATC-1 269_T  <span style="text-decoration: underline;">1</span>614.  838. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span> AAACCGGGTAGGTACC-1 269_T   527.  916. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span> AAACCGTTCGTCCAGG-1 269_T   700.  696  1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span> AAACCTAAGCAGCCGG-1 269_T  <span style="text-decoration: underline;">1</span>210.  408. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span> AAACCTCATGAAGTTG-1 269_T   416. <span style="text-decoration: underline;">1</span>026. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;">10</span> AAACGAGACGGTTGAT-1 269_T  <span style="text-decoration: underline;">1</span>167. <span style="text-decoration: underline;">1</span>061. 1       FALSE  </span>
 <span class="co">## <span style="color: #949494;"># i 3,203 more rows</span></span></code></pre>
 <p>The start- and endpoint of the trajectory are determined and stored
 in a data.frame like the one shown below.</p>
@@ -548,19 +564,19 @@ between the barcode-spot and the origin of the trajectory.</p>
 
 <span class="co"># show results</span>
 <span class="va">barcode_spots_arranged</span></code></pre></div>
-<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 1,623 x 5</span></span>
-<span class="co">##    barcodes           sample     x     y projection_length</span>
-<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span> GATCGGATAGAACCAT-1 269_T   340.  939.             0.225</span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span> ACGCTGTGAGGCGTAG-1 269_T   341.  983.             0.624</span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span> GTCTACTCAATTACAA-1 269_T   341. <span style="text-decoration: underline;">1</span>026.             1.02 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span> CACTCGGTTAGGAGGA-1 269_T   341. <span style="text-decoration: underline;">1</span>070              1.42 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span> GGTTGTGTAGCCTGGC-1 269_T   342. <span style="text-decoration: underline;">1</span>113.             2.22 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span> GCGTTATATTTGGAAC-1 269_T   343. <span style="text-decoration: underline;">1</span>157.             2.62 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span> GTCAGTTTGGTAGTCG-1 269_T   343. <span style="text-decoration: underline;">1</span>200.             3.02 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span> GCTAAGTAAAGGCGAT-1 269_T   343. <span style="text-decoration: underline;">1</span>244              3.42 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span> GCTCGCGGTTCCGCTC-1 269_T   344. <span style="text-decoration: underline;">1</span>288.             3.82 </span>
-<span class="co">## <span style="color: #BCBCBC;">10</span> GCAGATCCTCGCAAAT-1 269_T   344. <span style="text-decoration: underline;">1</span>331.             4.22 </span>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 1,623 x 7</span></span>
+<span class="co">##    barcodes           sample     x     y section outline projection_length</span>
+<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span> GATCGGATAGAACCAT-1 269_T   340.  939. 1       TRUE                0.225</span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span> ACGCTGTGAGGCGTAG-1 269_T   341.  983. 1       FALSE               0.624</span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span> GTCTACTCAATTACAA-1 269_T   341. <span style="text-decoration: underline;">1</span>026. 1       FALSE               1.02 </span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span> CACTCGGTTAGGAGGA-1 269_T   341. <span style="text-decoration: underline;">1</span>070  1       FALSE               1.42 </span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span> GGTTGTGTAGCCTGGC-1 269_T   342. <span style="text-decoration: underline;">1</span>113. 1       FALSE               2.22 </span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span> GCGTTATATTTGGAAC-1 269_T   343. <span style="text-decoration: underline;">1</span>157. 1       FALSE               2.62 </span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span> GTCAGTTTGGTAGTCG-1 269_T   343. <span style="text-decoration: underline;">1</span>200. 1       FALSE               3.02 </span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span> GCTAAGTAAAGGCGAT-1 269_T   343. <span style="text-decoration: underline;">1</span>244  1       FALSE               3.42 </span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span> GCTCGCGGTTCCGCTC-1 269_T   344. <span style="text-decoration: underline;">1</span>288. 1       FALSE               3.82 </span>
+<span class="co">## <span style="color: #BCBCBC;">10</span> GCAGATCCTCGCAAAT-1 269_T   344. <span style="text-decoration: underline;">1</span>331. 1       FALSE               4.22 </span>
 <span class="co">## <span style="color: #949494;"># i 1,613 more rows</span></span></code></pre>
 <p>The projection length of every barcode spot in relation to the
 spatial trajectory can be visualized by coloring the spots
@@ -595,19 +611,19 @@ object.</p>
 <span class="va">traj_obj</span></code></pre></div>
 <pre><code><span class="co">## An object of class "SpatialTrajectory"</span>
 <span class="co">## Slot "coords":</span>
-<span class="co">## <span style="color: #949494;"># A tibble: 3,213 x 4</span></span>
-<span class="co">##    barcodes           sample     x     y</span>
-<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span> AAACAAGTATCTCCCA-1 269_T  <span style="text-decoration: underline;">1</span>450.  731.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span> AAACACCAATAACTGC-1 269_T   411.  547.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span> AAACAGAGCGACTCCT-1 269_T  <span style="text-decoration: underline;">1</span>359. <span style="text-decoration: underline;">1</span>516 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span> AAACATTTCCCGGATT-1 269_T  <span style="text-decoration: underline;">1</span>386.  493.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span> AAACCCGAACGAAATC-1 269_T  <span style="text-decoration: underline;">1</span>614.  838.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span> AAACCGGGTAGGTACC-1 269_T   527.  916.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span> AAACCGTTCGTCCAGG-1 269_T   700.  696 </span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span> AAACCTAAGCAGCCGG-1 269_T  <span style="text-decoration: underline;">1</span>210.  408.</span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span> AAACCTCATGAAGTTG-1 269_T   416. <span style="text-decoration: underline;">1</span>026.</span>
-<span class="co">## <span style="color: #BCBCBC;">10</span> AAACGAGACGGTTGAT-1 269_T  <span style="text-decoration: underline;">1</span>167. <span style="text-decoration: underline;">1</span>061.</span>
+<span class="co">## <span style="color: #949494;"># A tibble: 3,213 x 6</span></span>
+<span class="co">##    barcodes           sample     x     y section outline</span>
+<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span> AAACAAGTATCTCCCA-1 269_T  <span style="text-decoration: underline;">1</span>450.  731. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span> AAACACCAATAACTGC-1 269_T   411.  547. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span> AAACAGAGCGACTCCT-1 269_T  <span style="text-decoration: underline;">1</span>359. <span style="text-decoration: underline;">1</span>516  1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span> AAACATTTCCCGGATT-1 269_T  <span style="text-decoration: underline;">1</span>386.  493. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span> AAACCCGAACGAAATC-1 269_T  <span style="text-decoration: underline;">1</span>614.  838. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span> AAACCGGGTAGGTACC-1 269_T   527.  916. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span> AAACCGTTCGTCCAGG-1 269_T   700.  696  1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span> AAACCTAAGCAGCCGG-1 269_T  <span style="text-decoration: underline;">1</span>210.  408. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span> AAACCTCATGAAGTTG-1 269_T   416. <span style="text-decoration: underline;">1</span>026. 1       FALSE  </span>
+<span class="co">## <span style="color: #BCBCBC;">10</span> AAACGAGACGGTTGAT-1 269_T  <span style="text-decoration: underline;">1</span>167. <span style="text-decoration: underline;">1</span>061. 1       FALSE  </span>
 <span class="co">## <span style="color: #949494;"># i 3,203 more rows</span></span>
 <span class="co">## </span>
 <span class="co">## Slot "info":</span>
@@ -690,19 +706,19 @@ easy to understand.)</p>
 
 <span class="co"># show results</span>
 <span class="va">barcode_spots_binned</span></code></pre></div>
-<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 1,623 x 6</span></span>
-<span class="co">##    barcodes           sample     x     y projection_length bins_order </span>
-<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>      </span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span> GATCGGATAGAACCAT-1 269_T   340.  939.             0.225 (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span> ACGCTGTGAGGCGTAG-1 269_T   341.  983.             0.624 (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span> GTCTACTCAATTACAA-1 269_T   341. <span style="text-decoration: underline;">1</span>026.             1.02  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span> CACTCGGTTAGGAGGA-1 269_T   341. <span style="text-decoration: underline;">1</span>070              1.42  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span> GGTTGTGTAGCCTGGC-1 269_T   342. <span style="text-decoration: underline;">1</span>113.             2.22  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span> GCGTTATATTTGGAAC-1 269_T   343. <span style="text-decoration: underline;">1</span>157.             2.62  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span> GTCAGTTTGGTAGTCG-1 269_T   343. <span style="text-decoration: underline;">1</span>200.             3.02  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span> GCTAAGTAAAGGCGAT-1 269_T   343. <span style="text-decoration: underline;">1</span>244              3.42  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span> GCTCGCGGTTCCGCTC-1 269_T   344. <span style="text-decoration: underline;">1</span>288.             3.82  (-1.03,126]</span>
-<span class="co">## <span style="color: #BCBCBC;">10</span> GCAGATCCTCGCAAAT-1 269_T   344. <span style="text-decoration: underline;">1</span>331.             4.22  (-1.03,126]</span>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 1,623 x 8</span></span>
+<span class="co">##    barcodes      sample     x     y section outline projection_length bins_order</span>
+<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span> GATCGGATAGAA~ 269_T   340.  939. 1       TRUE                0.225 (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span> ACGCTGTGAGGC~ 269_T   341.  983. 1       FALSE               0.624 (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span> GTCTACTCAATT~ 269_T   341. <span style="text-decoration: underline;">1</span>026. 1       FALSE               1.02  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span> CACTCGGTTAGG~ 269_T   341. <span style="text-decoration: underline;">1</span>070  1       FALSE               1.42  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span> GGTTGTGTAGCC~ 269_T   342. <span style="text-decoration: underline;">1</span>113. 1       FALSE               2.22  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span> GCGTTATATTTG~ 269_T   343. <span style="text-decoration: underline;">1</span>157. 1       FALSE               2.62  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span> GTCAGTTTGGTA~ 269_T   343. <span style="text-decoration: underline;">1</span>200. 1       FALSE               3.02  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span> GCTAAGTAAAGG~ 269_T   343. <span style="text-decoration: underline;">1</span>244  1       FALSE               3.42  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span> GCTCGCGGTTCC~ 269_T   344. <span style="text-decoration: underline;">1</span>288. 1       FALSE               3.82  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;">10</span> GCAGATCCTCGC~ 269_T   344. <span style="text-decoration: underline;">1</span>331. 1       FALSE               4.22  (-1.03,12~</span>
 <span class="co">## <span style="color: #949494;"># i 1,613 more rows</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">averaged_points</span> <span class="op">&lt;-</span> 
@@ -759,20 +775,21 @@ shown in the data.frame below.</p>
   
 <span class="co"># show results </span>
 <span class="va">joined_df</span></code></pre></div>
-<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 1,623 x 8</span></span>
-<span class="co">##    barcodes          sample     x     y projection_length bins_order  EGFR   MAG</span>
-<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span> GATCGGATAGAACCAT~ 269_T   340.  939.             0.225 (-1.03,12~ 0.624     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span> ACGCTGTGAGGCGTAG~ 269_T   341.  983.             0.624 (-1.03,12~ 0.659     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span> GTCTACTCAATTACAA~ 269_T   341. <span style="text-decoration: underline;">1</span>026.             1.02  (-1.03,12~ 0.867     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span> CACTCGGTTAGGAGGA~ 269_T   341. <span style="text-decoration: underline;">1</span>070              1.42  (-1.03,12~ 0.659     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span> GGTTGTGTAGCCTGGC~ 269_T   342. <span style="text-decoration: underline;">1</span>113.             2.22  (-1.03,12~ 0.813     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span> GCGTTATATTTGGAAC~ 269_T   343. <span style="text-decoration: underline;">1</span>157.             2.62  (-1.03,12~ 0.624     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span> GTCAGTTTGGTAGTCG~ 269_T   343. <span style="text-decoration: underline;">1</span>200.             3.02  (-1.03,12~ 0.813     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span> GCTAAGTAAAGGCGAT~ 269_T   343. <span style="text-decoration: underline;">1</span>244              3.42  (-1.03,12~ 0.483     0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span> GCTCGCGGTTCCGCTC~ 269_T   344. <span style="text-decoration: underline;">1</span>288.             3.82  (-1.03,12~ 0.416     0</span>
-<span class="co">## <span style="color: #BCBCBC;">10</span> GCAGATCCTCGCAAAT~ 269_T   344. <span style="text-decoration: underline;">1</span>331.             4.22  (-1.03,12~ 0.792     0</span>
-<span class="co">## <span style="color: #949494;"># i 1,613 more rows</span></span></code></pre>
+<pre><code><span class="co">## <span style="color: #949494;"># A tibble: 1,623 x 10</span></span>
+<span class="co">##    barcodes      sample     x     y section outline projection_length bins_order</span>
+<span class="co">##    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span> GATCGGATAGAA~ 269_T   340.  939. 1       TRUE                0.225 (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span> ACGCTGTGAGGC~ 269_T   341.  983. 1       FALSE               0.624 (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span> GTCTACTCAATT~ 269_T   341. <span style="text-decoration: underline;">1</span>026. 1       FALSE               1.02  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span> CACTCGGTTAGG~ 269_T   341. <span style="text-decoration: underline;">1</span>070  1       FALSE               1.42  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span> GGTTGTGTAGCC~ 269_T   342. <span style="text-decoration: underline;">1</span>113. 1       FALSE               2.22  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span> GCGTTATATTTG~ 269_T   343. <span style="text-decoration: underline;">1</span>157. 1       FALSE               2.62  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span> GTCAGTTTGGTA~ 269_T   343. <span style="text-decoration: underline;">1</span>200. 1       FALSE               3.02  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span> GCTAAGTAAAGG~ 269_T   343. <span style="text-decoration: underline;">1</span>244  1       FALSE               3.42  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span> GCTCGCGGTTCC~ 269_T   344. <span style="text-decoration: underline;">1</span>288. 1       FALSE               3.82  (-1.03,12~</span>
+<span class="co">## <span style="color: #BCBCBC;">10</span> GCAGATCCTCGC~ 269_T   344. <span style="text-decoration: underline;">1</span>331. 1       FALSE               4.22  (-1.03,12~</span>
+<span class="co">## <span style="color: #949494;"># i 1,613 more rows</span></span>
+<span class="co">## <span style="color: #949494;"># i 2 more variables: EGFR &lt;dbl&gt;, MAG &lt;dbl&gt;</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">averaged_df</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">joined_df</span>, <span class="va">bins_order</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
@@ -867,7 +884,7 @@ shown in the data.frame below.</p>
 <code><a href="../reference/plotTrajectoryHeatmap.html">plotTrajectoryHeatmap()</a></code>.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">traj_df</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="https://rdrr.io/pkg/SPATA2/man/getTrajectoryDf.html" class="external-link">getTrajectoryDf</a></span><span class="op">(</span>
+  <span class="fu"><a href="../reference/getTrajectoryDf.html">getTrajectoryDf</a></span><span class="op">(</span>
     object <span class="op">=</span> <span class="va">object_t269</span>,
     id <span class="op">=</span> <span class="st">"horizontal_mid"</span>,
     variables <span class="op">=</span> <span class="va">genes_of_interest</span>,
@@ -970,7 +987,7 @@ along the trajectory.</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

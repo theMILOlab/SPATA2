@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -37,38 +37,54 @@
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -88,7 +104,7 @@
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -197,6 +213,12 @@ to the group and the respective named element denotes the color with which to
 represent the group.</p></dd>
 
 
+<dt>concavity</dt>
+<dd><p>Given to <code>concavity</code> of <code><a href="https://ggforce.data-imaginist.com/reference/geom_mark_hull.html" class="external-link">ggforce::geom_mark_hull()</a></code>.
+Can be optimized for every sample via <code>object &lt;- setDefault(object, concavity = ...)</code>.
+Default by object initiation is 1.</p></dd>
+
+
 <dt>dir</dt>
 <dd><p>Character value. The chosen directory. See details for possible
 requirements.</p></dd>
@@ -231,6 +253,10 @@ annotation centers around the image annotation. If <code>expand = 0</code>, the 
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
 and nothing more. Using <code>expand</code>, the cropped image section can be adjusted. See section
 <em>Expansion of cropped image sections</em> for more information.</p></dd>
+
+
+<dt>expand_outline</dt>
+<dd><p>Distance measure by which the outline of the area is expanded.</p></dd>
 
 
 <dt>ggpLayers</dt>
@@ -308,10 +334,21 @@ The first <code>n_gsets</code> are included starting with the one with the lowes
 <p>Hint: Variables that are uniformly expressed can not be scaled and are discarded.</p></dd>
 
 
-<dt>line_alpha, line_color, line_size, line_type</dt>
-<dd><p>Parameters given to
-<code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">ggplot2::geom_line()</a></code>, <code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">ggplot2::geom_path()</a></code> or <code><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">ggplot2::geom_smooth()</a></code>
-that control the appearance of the main line(s) of the plot.</p></dd>
+<dt>line_alpha</dt>
+<dd><p>Numeric. Affects alpha of main lines of the plot.</p></dd>
+
+
+<dt>line_color</dt>
+<dd><p>Character. Affects color of the main lines of the plot.</p></dd>
+
+
+<dt>line_size</dt>
+<dd><p>Numeric. Affects size of the main lines of the plot.</p></dd>
+
+
+<dt>line_type</dt>
+<dd><p>Character. The line type. One of <em>'blank'</em>, <em>'solid'</em>,
+<em>'dashed'</em>, <em>'dotted'</em>, <em>'dotdash'</em>, <em>'longdash'</em> and <em>'twodash'</em>.</p></dd>
 
 
 <dt>linesize</dt>
@@ -319,7 +356,7 @@ that control the appearance of the main line(s) of the plot.</p></dd>
 
 
 <dt>object</dt>
-<dd><p>An object of class <code>SPATA2</code>.</p></dd>
+<dd><p>An object of class <code>spata2</code>.</p></dd>
 
 
 <dt>order</dt>
@@ -378,7 +415,7 @@ are not included are dropped which affects the colors with which they are displa
 <dd><p>Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:</p><ul><li><p><em>x</em> :  numeric. Position of cell on the x axis in pixel.,</p></li>
 <li><p><em>y</em> : numeric. Position of cell on the y axis in pixel.,</p></li>
-<li><p><em>cell_type</em> : character. Cell type of the cell.</p></li>
+<li><p><em>cell_type</em> : factor Cell type of the cell.</p></li>
 </ul></dd>
 
 
@@ -509,7 +546,7 @@ for more information.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

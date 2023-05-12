@@ -147,3 +147,4 @@ among all image annotations via tags and test. And if \code{tags} is also \code{
 the function uses all image annoations.
 }
 
+\keyword{internal}

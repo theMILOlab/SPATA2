@@ -38,7 +38,8 @@ the computational progress will be printed.
 spata-objects can store more than one sample.}
 }
 \value{
-An updated spata-object.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
 This function allows to savely add features to the

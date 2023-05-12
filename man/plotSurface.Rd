@@ -2,11 +2,14 @@
 % Please edit documentation in R/plotSurface.R
 \name{plotSurface}
 \alias{plotSurface}
-\alias{plotSurface2}
+\alias{plotSurface,spata2-method}
+\alias{plotSurface,data.frame-method}
 \alias{plotSurfaceInteractive}
 \title{Plot the surface of the sample}
 \usage{
-plotSurface(
+plotSurface(object, ...)
+
+\S4method{plotSurface}{spata2}(
   object,
   color_by = NULL,
   alpha_by = NULL,
@@ -38,9 +41,9 @@ plotSurface(
   ...
 )
 
-plotSurface2(
-  coords_df,
-  color_by,
+\S4method{plotSurface}{data.frame}(
+  object,
+  color_by = NULL,
   alpha_by = NULL,
   pt_alpha = 0.9,
   pt_clr = "lightgrey",
@@ -60,7 +63,9 @@ plotSurface2(
 plotSurfaceInteractive(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{color_by}{The variable to be displayed by color:
 
@@ -142,16 +147,6 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
-
-\item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
-\itemize{
-\item{\emph{barcodes} Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-\item{\emph{sample} Character. The sample belonging of every barcode-spot.}
-\item{\emph{x} Numeric. The x-coordinates of every barcode.}
-\item{\emph{y} Numeric. The y-coordinates of every barcode.}
-}}
-
 \item{image}{An image of class \emph{Image} to be displayed in the background.
 Easily accessible via \code{SPATA::image()}.}
 }
@@ -161,9 +156,7 @@ surface according to the expression of genes, gene sets or features.
 
 \itemize{
 
-\item{ \code{plotSurface()} Takes the \code{SPATA2} object as the starting point and creates the
-necessary data.frame from scratch according to additional parameters.}
-\item{ \code{plotSurface2()} Takes a data.frame as the starting point.}
+\item{ \code{plotSurface()} Takes the \code{SPATA2} object or a data.frame.}
 \item{ \code{plotSurfaceInteractive()} Takes only the \code{SPATA2} object and opens a shiny
 application which allows for interactive plotting.}
 

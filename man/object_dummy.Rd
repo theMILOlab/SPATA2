@@ -12,3 +12,4 @@ object_dummy()
 \description{
 object
 }
+\keyword{internal}

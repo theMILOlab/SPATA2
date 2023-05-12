@@ -11,14 +11,17 @@ ggpLayerGroupOutline(
   plot_type = "surface",
   line_color = "black",
   line_size = 1,
+  alpha = 0,
   outlier_rm = TRUE,
-  minPts = 1,
-  expand = getCCD(object, unit = "px"),
+  eps = (getCCD(object, "px") * 1.25),
+  minPts = 3,
+  concavity = NULL,
+  expand_outline = getCCD(object, "px") * 1.1,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{groups_subset}{Character value or NULL. If character,
 specifies the exact groups that are encircled. If NULL, all groups
@@ -27,16 +30,22 @@ are encircled.}
 \item{plot_type}{Character value. Either \emph{'surface', 'tsne'} or
 \emph{'umap'}.}
 
-\item{expand}{Specifies image expansion. An image that is cropped based on an image
-annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
-that is width/x-axis and height/y-axis, are set to include only the image annotation area
-and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
-\emph{Expansion of cropped image sections} for more information.}
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{outlier_rm, minPts}{Logical. If \code{TRUE}, spatial outlier of the group to outline
+are removed from the outline via \verb{dbscan::dbscan(..., minPts = minPts}). Ignored
+if \code{plot_type} is not \emph{'surface'}.}
+
+\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
+Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
+Default by object initiation is 1.}
+
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
 
 \item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}. Affects
 the encircling.}
-
-\item{grouping_variable}{Character value. The grouping variable of choice.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -48,4 +57,18 @@ family.
 Highlights groups of barcode-spots by encircling them.
 Depending on the \code{plot_type} this can be added to a surface plot
 or a dimensional reduction plot.
+}
+\examples{
+
+ object <- downloadPubExample("269_T")
+
+ plotImageGgplot(object) +
+  ggpLayerGroupOutline(
+    object = object,
+    plot_type = "surface",
+    grouping = "histology",
+    groups_subset = "tumor",
+    line_color = color_vector("npg")[1]
+    )
+
 }

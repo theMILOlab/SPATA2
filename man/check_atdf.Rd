@@ -12,3 +12,4 @@ check_rtdf(rtdf, variable = NULL)
 \description{
 Check assessed trajectory data.frame
 }
+\keyword{internal}

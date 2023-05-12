@@ -17,3 +17,4 @@ as the variables needed to map onto the x- and y axis of the plot.}
 \description{
 Check coordinate variables
 }
+\keyword{internal}

@@ -2,12 +2,12 @@
 % Please edit documentation in R/c.R
 \name{cropSpataObject}
 \alias{cropSpataObject}
-\title{Subset object by x- and y-range}
+\title{Subset by x- and y-range}
 \usage{
 cropSpataObject(object, xrange, yrange, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -26,7 +26,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

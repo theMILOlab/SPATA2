@@ -23,7 +23,7 @@ ggpLayerScaleBarSI(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{sb_dist}{The distance in SI units that the scale bar
 illustrates (e.g. \emph{'1mm'}, \emph{'200um'}). Must not be bigger than
@@ -129,7 +129,7 @@ to specify the input in pixel you have to use input option 1. In pixel.
 
 \examples{
 
-object <- downloadPubExample("313_T")
+object <- downloadPubExample("313_T", verbose = FALSE)
 
 plotImageGgplot(object) +
  ggpLayerEncirclingIAS(

@@ -22,3 +22,4 @@ A filtered data.frame, informative messages or an error.
 Checks across and across_subset input and if at least one
 of the across_subset values exists filters the data accordingly.
 }
+\keyword{internal}

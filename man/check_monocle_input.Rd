@@ -60,3 +60,4 @@ If you provide a vector instead of a single character value (string)
 the function will iterate over all inputs via a for-loop to compute all
 valid combinations.
 }
+\keyword{internal}

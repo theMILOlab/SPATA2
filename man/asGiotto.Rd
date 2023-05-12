@@ -2,12 +2,12 @@
 % Please edit documentation in R/adj-aZ.R
 \name{asGiotto}
 \alias{asGiotto}
-\title{Transform \code{SPATA2} to \code{Giotto}}
+\title{Transform \code{spata2} object to \code{Giotto}}
 \usage{
 asGiotto(object, transfer_features = TRUE, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{transfer_features, transfer_meta_data}{Logical or character. Specifies
 if meta/feature, e.g clustering, data from the input object is transferred
@@ -24,7 +24,7 @@ the computational progress will be printed.
 An object of class \code{Giotto}.
 }
 \description{
-Transforms an \code{SPATA2} object to an object of class
+Transforms an \code{spata2} object object to an object of class
 \code{Giotto}. See details for more information.
 }
 \details{

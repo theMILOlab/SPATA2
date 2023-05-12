@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -55,38 +55,54 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Around the Spata-Object</li>
+<li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -108,7 +124,7 @@
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -148,31 +164,29 @@
 <div class="section level2">
 <h2 id="prerequisites">1. Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"></a>
 </h2>
-<p>Make sure to be familiar with the following vignettes:</p>
 <ul>
-<li><a href="spata-v2-dea.html">Differential Expression Analysis
-(DEA)</a></li>
+<li><a href="spata-v2-dea.html">Differential Expression
+Analysis</a></li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>For a deeper into the results of the <a href="spata-v2-de-analysis.html">DEA</a> one can look for gene sets that
-are enriched in the proposed <a href="spata-v2-segmentation-and-clustering.html">clustering</a> or
-created based on <a href="spata-v2-spatial-segmentation.html">histology</a>.
-<strong>SPATA2</strong> implements the <code>hypeR</code> package which
-uses hypergeometric testing for enriched gene sets.</p>
+<p>For a deeper into the results of the DEA one can look for gene sets
+that are enriched in the proposed clustering or created based on
+histology. <code>SPATA2</code> implements the <a href="https://github.com/montilab/hypeR" class="external-link"><code>hypeR</code></a> package
+which uses hypergeometric testing for enriched gene sets.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># load packages </span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span> 
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SPATAData</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
 
-<span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SPATAData/man/downloadSpataObject.html" class="external-link">downloadSpataObject</a></span><span class="op">(</span>sample_name <span class="op">=</span> <span class="st">"275_T"</span><span class="op">)</span>
+<span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/downloadSpataObject.html">downloadSpataObject</a></span><span class="op">(</span>sample_name <span class="op">=</span> <span class="st">"275_T"</span><span class="op">)</span>
 
 <span class="co"># load clustering list</span>
 <span class="va">object_t275</span> <span class="op">&lt;-</span> 
-  <span class="fu">adjustDefaultInstructions</span><span class="op">(</span>
+  <span class="fu"><a href="../reference/setDefault.html">setDefault</a></span><span class="op">(</span>
     object <span class="op">=</span> <span class="va">object_t275</span>, 
     display_image <span class="op">=</span> <span class="cn">TRUE</span>,
     clrp <span class="op">=</span> <span class="st">"jco"</span>,
@@ -194,7 +208,7 @@ uses hypergeometric testing for enriched gene sets.</p>
 <span class="co"># colored by clustering</span>
 <span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t275</span>, color_by <span class="op">=</span> <span class="st">"snn"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-gsea_files/figure-html/unnamed-chunk-1-1.png" alt="Fig.1 Shared Nearest Neighbour clustering will be analyzed with GSEA." width="50%"><img src="spata-v2-gsea_files/figure-html/unnamed-chunk-1-2.png" alt="Fig.1 Shared Nearest Neighbour clustering will be analyzed with GSEA." width="50%"><p class="caption">
+<img src="spata-v2-gsea_files/figure-html/unnamed-chunk-2-1.png" alt="Fig.1 Shared Nearest Neighbour clustering will be analyzed with GSEA." width="50%"><img src="spata-v2-gsea_files/figure-html/unnamed-chunk-2-2.png" alt="Fig.1 Shared Nearest Neighbour clustering will be analyzed with GSEA." width="50%"><p class="caption">
 Fig.1 Shared Nearest Neighbour clustering will be analyzed with GSEA.
 </p>
 </div>
@@ -225,8 +239,8 @@ sets.</p>
 
 <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">gs_list</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 11658</span></code></pre>
-<p>For the sake of clarity, his example only uses <em>Biocarta (BC)</em>
-and <em>Hallmark (HM)</em> gene sets.</p>
+<p>For the sake of clarity, his example only uses Biocarta (BC) and
+Hallmark (HM) gene sets.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># subset gene sets that start with HM or BC</span>
 <span class="va">sub_vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html" class="external-link">str_detect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">gs_list</span><span class="op">)</span>, pattern <span class="op">=</span> <span class="st">"^HM|^BC"</span><span class="op">)</span>
@@ -235,19 +249,9 @@ and <em>Hallmark (HM)</em> gene sets.</p>
 
 <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">gs_list_sub</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 339</span></code></pre>
-<p>Use argument <code>gene_set_list</code> if you want to provide a
-specific list of gene sets. Keep it empty if you want to test against
-all gene sets stored in the <code>spata2</code> object.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">object_t275</span> <span class="op">&lt;-</span> 
-  <span class="fu"><a href="../reference/runGSEA.html">runGSEA</a></span><span class="op">(</span>
-    object <span class="op">=</span> <span class="va">object_t275</span>, 
-    across <span class="op">=</span> <span class="st">"snn"</span>,
-    methods_de <span class="op">=</span> <span class="st">"wilcox"</span>, 
-    gene_set_list <span class="op">=</span> <span class="va">gs_list_sub</span>, 
-    max_adj_pval <span class="op">=</span> <span class="fl">0.05</span>, <span class="co"># only include genes with an adjusted pvalue of =&lt;0.05 (default)</span>
-    min_lfc <span class="op">=</span> <span class="fl">0</span> <span class="co"># only include genes that are upregulated (default)</span>
-  <span class="op">)</span></code></pre></div>
+<p>Use argument gene_set_list if you want to provide a specific list of
+gene sets. Keep it empty if you want to test against all gene sets
+stored in the <code>spata2</code> object.</p>
 </div>
 <div class="section level2">
 <h2 id="extracting-results">3. Extracting results<a class="anchor" aria-label="anchor" href="#extracting-results"></a>
@@ -260,7 +264,7 @@ data.frame that results from merging the data of all <code>hypeR</code>
 objects together. The group belonging of each gene set is saved in the
 variable/column that is named according to the grouping variable - here
 <em>snn</em>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getGseaDf.html">getGseaDf</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">object_t275</span>, 
   across <span class="op">=</span> <span class="st">"snn"</span>,
@@ -288,40 +292,40 @@ variable/column that is named according to the grouping variable - here
 <h2 id="plotting-results">4. Plotting results<a class="anchor" aria-label="anchor" href="#plotting-results"></a>
 </h2>
 <p>Gene set enrichment results can be visualized via dot plots. This can
-be either done by group with <code>by_group</code> = TRUE or merged for
-all groups. Figure 2 visualizes the enrichment for cluster 0 and 5
-highlighting the hypoxia associated activity in this area.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+be either done by group with by_group = TRUE or merged for all groups.
+Figure 2 visualizes the enrichment for cluster 0 and 5 highlighting the
+hypoxia associated activity in this area.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotGseaDotPlot.html">plotGseaDotPlot</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">object_t275</span>,
   across <span class="op">=</span> <span class="st">"snn"</span>,
   across_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0"</span>, <span class="st">"5"</span><span class="op">)</span>,
   n_gsets <span class="op">=</span> <span class="fl">10</span>,
   by_group <span class="op">=</span> <span class="cn">TRUE</span>, 
+  transform_with <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="va">log10</span><span class="op">)</span>,
   nrow <span class="op">=</span> <span class="fl">2</span>
 <span class="op">)</span></code></pre></div>
 <div class="figure">
-<img src="spata-v2-gsea_files/figure-html/unnamed-chunk-6-1.png" alt="Fig.2 Dot plot to display GSEA results by group." width="100%"><p class="caption">
+<img src="spata-v2-gsea_files/figure-html/unnamed-chunk-7-1.png" alt="Fig.2 Dot plot to display GSEA results by group." width="100%"><p class="caption">
 Fig.2 Dot plot to display GSEA results by group.
 </p>
 </div>
-<p>Using <code>by_group</code> = FALSE the results are merged to one
-plot. Note that GSEA did not result in any enrichment fo cluster 1 and
-3. This might be due to the reduced number of gene sets amongst which no
-enriched one was found or due to a low number of upregulated genes.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p>Using by_group = FALSE the results are merged to one plot. Note that
+GSEA did not result in any enrichment fo cluster 1 and 3. This might be
+due to the reduced number of gene sets among which no enriched one was
+found or due to a low number of upregulated genes.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotGseaDotPlot.html">plotGseaDotPlot</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">object_t275</span>,
   across <span class="op">=</span> <span class="st">"snn"</span>,
   across_subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>,
   n_gsets <span class="op">=</span> <span class="fl">7</span>,
   pt_alpha <span class="op">=</span> <span class="fl">0.8</span>,
-  <span class="co">#transform_with = list("fdr" = c("log10")),</span>
+  transform_with <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="va">log10</span><span class="op">)</span>,
   by_group <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># merge in one plot</span>
 <span class="op">)</span> </code></pre></div>
-<pre><code><span class="co">## 23:51:06 No enrichment for groups '1' and '3'. Adjust parameters.</span></code></pre>
 <div class="figure">
-<img src="spata-v2-gsea_files/figure-html/unnamed-chunk-7-1.png" alt="Fig.3 Merged GSEA dot plot." width="100%"><p class="caption">
+<img src="spata-v2-gsea_files/figure-html/unnamed-chunk-8-1.png" alt="Fig.3 Merged GSEA dot plot." width="100%"><p class="caption">
 Fig.3 Merged GSEA dot plot.
 </p>
 </div>
@@ -340,7 +344,7 @@ Fig.3 Merged GSEA dot plot.
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

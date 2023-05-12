@@ -9,3 +9,4 @@ flipCoords(...)
 \description{
 Use \code{flipCoordinates()}.
 }
+\keyword{internal}

@@ -17,3 +17,4 @@ An updated spata-object.
 \description{
 Server of the add gene sets module
 }
+\keyword{internal}

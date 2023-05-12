@@ -32,9 +32,4 @@ An updated spata object.
 \description{
 Adjust default instructions
 }
-\examples{
-
- # Not run
-
- object <- adjustDefaultInstructions(object, pt_size = 4, smooth = FALSE)
-}
+\keyword{internal}

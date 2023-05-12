@@ -14,7 +14,7 @@ plotImageGgplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{unit}{Character value. Units of x- and y-axes. Defaults
 to \emph{'px'}.}

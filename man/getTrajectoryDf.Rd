@@ -20,7 +20,7 @@ getTrajectoryDf(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}

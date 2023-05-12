@@ -18,7 +18,22 @@ getStsDf(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
+
+\item{id}{Character value. Denotes the spatial trajectory
+of interest.}
+
+\item{variables}{Character vector. The numeric variables of interest. Must be inside:
+
+\itemize{
+\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} Must be in \code{getGenes()}}
+\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+}}
+
+\item{binwidth}{Distance value. The width of the bins to which
+the barcode-spots are assigned. Defaults to the center-center
+distance: \code{binwidth = getCCD(object)}.}
 
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}

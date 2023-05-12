@@ -9,8 +9,7 @@ check_segment(object, segment_name, of_sample = NA)
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{segment_name}{The segment of interest specified as a single character
-value.}
+\item{segment_name}{The segment of interest specified as a single character}
 }
 \description{
 A member of the \code{adjusting-check_*()}-family. Takes the
@@ -18,3 +17,4 @@ segment name as a single character value, check whether such a segment
 exists in the specified spata-object. If no an error is raised. Else the
 barcodes of spots belonging to the specified segment are returned.
 }
+\keyword{internal}

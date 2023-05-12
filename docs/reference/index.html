@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -37,38 +37,54 @@
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -88,7 +104,7 @@
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -117,7 +133,7 @@
           <p class="section-desc"></p><p>These functions generate the spata-object you will work with throughot this and other platforms.</p>
         </th>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="initiation-updating">Initiation &amp; Updating <a href="#initiation-updating" class="anchor" aria-hidden="true"></a></h3>
+          <h3 id="object-initiation-updating">Object Initiation &amp; Updating <a href="#object-initiation-updating" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p><p>The initiation-functions create a spata-object from scratch.</p>
         </th>
       </tr></tbody><tbody><tr><td>
@@ -151,7 +167,7 @@
       </tr></tbody><tbody><tr><td>
           <p><code><a href="asGiotto.html">asGiotto()</a></code> </p>
         </td>
-        <td><p>Transform <code>SPATA2</code> to <code>Giotto</code></p></td>
+        <td><p>Transform <code>spata2</code> object to <code>Giotto</code></p></td>
       </tr><tr><td>
           <p><code><a href="asHistologyImage.html">asHistologyImage()</a></code> </p>
         </td>
@@ -171,11 +187,11 @@
       </tr><tr><td>
           <p><code><a href="asSPATA2.html">asSPATA2()</a></code> </p>
         </td>
-        <td><p>Transform to <code>SPATA2</code> object</p></td>
+        <td><p>Transform to <code>spata2</code> object object</p></td>
       </tr><tr><td>
-          <p><code><a href="asSpatialTrajectory.html">asSpatialTrajectory()</a></code> <code><a href="asSpatialTrajectory.html">asSpatialTrajectory()</a></code> </p>
+          <p><code><a href="asSpatialTrajectory.html">asSpatialTrajectory()</a></code> </p>
         </td>
-        <td><p>Title</p></td>
+        <td><p>Transform to <code>SpatialTrajectory</code></p></td>
       </tr><tr><td>
           <p><code><a href="asSummarizedExperiment.html">asSummarizedExperiment()</a></code> </p>
         </td>
@@ -184,60 +200,16 @@
           <p><code><a href="asVisiumV1.html">asVisiumV1()</a></code> </p>
         </td>
         <td><p>Transform <code>HistologyImage</code> to <code>VisiumV1</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="getIasBinAreas.html">getIasBinAreas()</a></code> </p>
-        </td>
-        <td><p>Calculate IAS bin area</p></td>
-      </tr><tr><td>
-          <p><code><a href="getIasDf.html">getIasDf()</a></code> <code><a href="getIasDf.html">getImageAnnotationScreeningDf()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotation screening data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getIasExpansion.html">getIasExpansion()</a></code> </p>
-        </td>
-        <td><p>Obtain expanded Image Annotation polygons</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotIasBarplot.html">plotIasBarplot()</a></code> <code><a href="plotIasBarplot.html">plotIasBarplotSC()</a></code> </p>
-        </td>
-        <td><p>Plot IAS barplot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotIasEvaluation.html">plotIasEvaluation()</a></code> </p>
-        </td>
-        <td><p>Plot IAS evaluation per variable-model pair</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotIasHeatmap.html">plotIasHeatmap()</a></code> </p>
-        </td>
-        <td><p>Plot IAS heatmap</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotIasLineplot.html">plotIasLineplot()</a></code> <code><a href="plotIasLineplot.html">plotIasLineplotSC()</a></code> </p>
-        </td>
-        <td><p>Plot IAS lineplot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotIasLineplotFitted.html">plotIasLineplotFitted()</a></code> </p>
-        </td>
-        <td><p>Plot IAS model fitting</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotIasRidgeplot.html">plotIasRidgeplot()</a></code> <code><a href="plotIasRidgeplot.html">plotIasRidgeplotSC()</a></code> </p>
-        </td>
-        <td><p>Plot IAS rideplot</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="object-loading-and-saving">Object Loading and Saving <a href="#object-loading-and-saving" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Some handy functions that make saving and loading corresponding objects more convenient.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="loadGeneSetDf.html">loadGeneSetDf()</a></code> </p>
-        </td>
-        <td><p>Load gene set data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="loadGSDF.html">loadGSDF()</a></code> </p>
-        </td>
-        <td><p>Original load gene set data.frame</p></td>
-      </tr><tr><td>
           <p><code><a href="loadImageLowres.html">loadImage()</a></code> <code><a href="loadImageLowres.html">loadImageDefault()</a></code> <code><a href="loadImageLowres.html">loadImageHighres()</a></code> <code><a href="loadImageLowres.html">loadImageLowres()</a></code> </p>
         </td>
         <td><p>Load known images</p></td>
       </tr><tr><td>
-          <p><code><a href="loadSpataObject.html">loadCorrespondingCDS()</a></code> <code><a href="loadSpataObject.html">loadCorrespondingSeuratObject()</a></code> <code><a href="loadSpataObject.html">loadSpataObject()</a></code> </p>
+          <p><code><a href="loadSpataObject.html">loadSpataObject()</a></code> </p>
         </td>
         <td><p>Load corresponding objects</p></td>
       </tr><tr><td>
@@ -261,19 +233,123 @@
         </td>
         <td><p>Subset by genes</p></td>
       </tr><tr><td>
-          <p><code><a href="subsetBySegment_CountMtr.html">subsetBySegment_CountMtr()</a></code> <code><a href="subsetBySegment_CountMtr.html">subsetByBarcodes_CountMtr()</a></code> <code><a href="subsetBySegment_CountMtr.html">subsetBySegment_ExprMtr()</a></code> <code><a href="subsetBySegment_CountMtr.html">subsetByBarcodes_ExprMtr()</a></code> </p>
+          <p><code><a href="cropSpataObject.html">cropSpataObject()</a></code> </p>
         </td>
-        <td><p>Subset a spata-object</p></td>
+        <td><p>Subset by x- and y-range</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="object-manipulation">Object Manipulation <a href="#object-manipulation" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>SPATA invites you to extract your analysis and to add the results of your analysis. Constant change of the object’s content is therefore inevitable. The following functions serve as handy, helping hands to add SPATA-extern content to the object without disturbing it’s integrity regarding SPATA-intern processes.</p>
+          <p class="section-desc"></p>
         </th>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="add-content">Add Content <a href="#add-content" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>The add-functions let you add content to the spata-object savely.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="addAutoencoderSetUp.html">addAutoencoderSetUp()</a></code> </p>
+        </td>
+        <td><p>Add the set up of a neural network</p></td>
+      </tr><tr><td>
+          <p><code><a href="addExpressionMatrix.html">addExpressionMatrix()</a></code> </p>
+        </td>
+        <td><p>Add an expression matrix</p></td>
+      </tr><tr><td>
+          <p><code><a href="addFeatures.html">addFeatures()</a></code> </p>
+        </td>
+        <td><p>Add a new feature</p></td>
+      </tr><tr><td>
+          <p><code><a href="addGeneFeatures.html">addGeneFeatures()</a></code> </p>
+        </td>
+        <td><p>Add new gene features</p></td>
+      </tr><tr><td>
+          <p><code><a href="addGeneMetaData.html">addGeneMetaData()</a></code> </p>
+        </td>
+        <td><p>Add gene meta data to the object</p></td>
+      </tr><tr><td>
+          <p><code><a href="addGeneSet.html">addGeneSet()</a></code> <code><a href="addGeneSet.html">addGeneSetsInteractive()</a></code> </p>
+        </td>
+        <td><p>Add a new gene set</p></td>
+      </tr><tr><td>
+          <p><code><a href="addImageDir.html">addImageDir()</a></code> </p>
+        </td>
+        <td><p>Add individual image directories</p></td>
+      </tr><tr><td>
+          <p><code><a href="createImageAnnotations.html">addImageAnnotation()</a></code> <code><a href="createImageAnnotations.html">createImageAnnotations()</a></code> </p>
+        </td>
+        <td><p>Add image annotations</p></td>
+      </tr><tr><td>
+          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
+        </td>
+        <td><p>Add spatial trajectories</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="create-content-interactively">Create Content Interactively <a href="#create-content-interactively" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>The create-functions open an interactive application in which the content to be added needs to be created at first.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="createHistologyImaging.html">createHistologyImaging()</a></code> </p>
+        </td>
+        <td><p>Create S4 Image object for SPATA2</p></td>
+      </tr><tr><td>
+          <p><code><a href="createImageAnnotations.html">addImageAnnotation()</a></code> <code><a href="createImageAnnotations.html">createImageAnnotations()</a></code> </p>
+        </td>
+        <td><p>Add image annotations</p></td>
+      </tr><tr><td>
+          <p><code><a href="createSpatialSegmentation.html">createSpatialSegmentation()</a></code> </p>
+        </td>
+        <td><p>Interactive sample segmentation</p></td>
+      </tr><tr><td>
+          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
+        </td>
+        <td><p>Add spatial trajectories</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="discard-content">Discard Content <a href="#discard-content" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>The discard-functions let you delete unwanted information savely.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="discardExpressionMatrix.html">discardExpressionMatrix()</a></code> </p>
+        </td>
+        <td><p>Discard an expression matrix</p></td>
+      </tr><tr><td>
+          <p><code><a href="discardFeatures.html">discardFeatures()</a></code> </p>
+        </td>
+        <td><p>Discard features</p></td>
+      </tr><tr><td>
+          <p><code><a href="discardGeneFeatures.html">discardGeneFeatures()</a></code> </p>
+        </td>
+        <td><p>Discard gene features</p></td>
+      </tr><tr><td>
+          <p><code><a href="discardGenes.html">discardGenes()</a></code> </p>
+        </td>
+        <td><p>Discard genes</p></td>
+      </tr><tr><td>
+          <p><code><a href="discardGeneSets.html">discardGeneSets()</a></code> </p>
+        </td>
+        <td><p>Discard gene sets</p></td>
+      </tr><tr><td>
+          <p><code><a href="discardImageAnnotations.html">discardImageAnnotations()</a></code> </p>
+        </td>
+        <td><p>Discard image annotations</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="rename-content">Rename Content <a href="#rename-content" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>The rename-functions let you adjust the name of certain content with which you refer to it via arguments</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="renameFeatures.html">renameFeatures()</a></code> </p>
+        </td>
+        <td><p>Rename features</p></td>
+      </tr><tr><td>
+          <p><code><a href="renameGroups.html">renameGroups()</a></code> <code><a href="renameGroups.html">renameSegments()</a></code> </p>
+        </td>
+        <td><p>Rename cluster/group names</p></td>
+      </tr><tr><td>
+          <p><code><a href="renameImgAnn.html">renameImgAnn()</a></code> </p>
+        </td>
+        <td><p>Rename image annotation ID</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="set-content">Set Content <a href="#set-content" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p><p>The set-functions let you set the content of specific slots.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="setActiveExpressionMatrix.html">setActiveExpressionMatrix()</a></code> </p>
+          <p><code><a href="setActiveExpressionMatrix.html">setActiveMatrix()</a></code> <code><a href="setActiveExpressionMatrix.html">setActiveExpressionMatrix()</a></code> </p>
         </td>
         <td><p>Denote the default expression matrix</p></td>
       </tr><tr><td>
@@ -341,10 +417,6 @@
         </td>
         <td><p>Set initiation information</p></td>
       </tr><tr><td>
-          <p><code><a href="setOutlineVarName.html">getOutlineVarName()</a></code> <code><a href="setOutlineVarName.html">setOutlineVarName()</a></code> </p>
-        </td>
-        <td><p>Set outline variable name</p></td>
-      </tr><tr><td>
           <p><code><a href="setPcaDf.html">setPcaDf()</a></code> <code><a href="setPcaDf.html">setTsneDf()</a></code> <code><a href="setPcaDf.html">setUmapDf()</a></code> </p>
         </td>
         <td><p>Set dimensional reductions data.frames</p></td>
@@ -353,195 +425,239 @@
         </td>
         <td><p>Set pixel scale factor</p></td>
       </tr><tr><td>
-          <p><code><a href="setPrResults.html">setPrResults()</a></code> </p>
-        </td>
-        <td><p>Set results of pattern recognition methods</p></td>
-      </tr><tr><td>
           <p><code><a href="setSpataDir.html">setSpataDir()</a></code> </p>
         </td>
         <td><p>Set SPATA2 directory</p></td>
       </tr><tr><td>
-          <p><code><a href="setSpCorResults.html">setSpCorResults()</a></code> </p>
+          <p><code><a href="setTissueOutline.html">setTissueOutline()</a></code> </p>
         </td>
-        <td><p>Set results of spatial correlation analysis</p></td>
+        <td><p>Set tissue outline</p></td>
       </tr><tr><td>
           <p><code><a href="setTrajectory.html">setTrajectory()</a></code> <code><a href="setTrajectory.html">setTrajectories()</a></code> </p>
         </td>
         <td><p>Set trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="set_dummy.html">set_dummy()</a></code> </p>
-        </td>
-        <td><p>set</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="add-content">Add Content <a href="#add-content" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>The add-functions let you add content to the spata-object savely.</p>
+          <h2 id="availability-checks">Availability Checks <a href="#availability-checks" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="addAutoencoderSetUp.html">addAutoencoderSetUp()</a></code> </p>
+          <p><code><a href="containsCNV.html">containsCNV()</a></code> <code><a href="containsCNV.html">containsHistologyImage()</a></code> <code><a href="containsCNV.html">containsTissueOutline()</a></code> </p>
         </td>
-        <td><p>Add the set up of a neural network</p></td>
+        <td><p>Check availability of miscellaneous content</p></td>
       </tr><tr><td>
-          <p><code><a href="addExpressionMatrix.html">addExpressionMatrix()</a></code> </p>
+          <p><code><a href="containsHistologyImaging.html">containsHistologyImaging()</a></code> <code><a href="containsHistologyImaging.html">containsImageObject()</a></code> </p>
         </td>
-        <td><p>Add an expression matrix</p></td>
+        <td><p>Check availability of <code>HistologyImaging</code> object</p></td>
       </tr><tr><td>
-          <p><code><a href="addFeatures.html">addFeatures()</a></code> </p>
+          <p><code><a href="containsImage.html">containsImage()</a></code> </p>
         </td>
-        <td><p>Add a new feature</p></td>
+        <td><p>Check availability of an image</p></td>
       </tr><tr><td>
-          <p><code><a href="addGeneFeatures.html">addGeneFeatures()</a></code> </p>
+          <p><code><a href="containsPixelScaleFactor.html">containsPixelScaleFactor()</a></code> </p>
         </td>
-        <td><p>Add new gene features</p></td>
-      </tr><tr><td>
-          <p><code><a href="addGeneMetaData.html">addGeneMetaData()</a></code> </p>
-        </td>
-        <td><p>Add gene meta data to the object</p></td>
-      </tr><tr><td>
-          <p><code><a href="addGeneSet.html">addGeneSet()</a></code> <code><a href="addGeneSet.html">addGeneSetsInteractive()</a></code> </p>
-        </td>
-        <td><p>Add a new gene set</p></td>
-      </tr><tr><td>
-          <p><code><a href="addImageDir.html">addImageDir()</a></code> </p>
-        </td>
-        <td><p>Add individual image directories</p></td>
-      </tr><tr><td>
-          <p><code><a href="addPointsBase.html">addPointsBase()</a></code> </p>
-        </td>
-        <td><p>Add points to base surface plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="addSpCorCluster.html">addSpCorCluster()</a></code> </p>
-        </td>
-        <td><p>Add cluster results of spatial correlation results</p></td>
-      </tr><tr><td>
-          <p><code><a href="add_models.html">add_models()</a></code> </p>
-        </td>
-        <td><p>Add models to a data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="createImageAnnotations.html">addImageAnnotation()</a></code> <code><a href="createImageAnnotations.html">createImageAnnotations()</a></code> </p>
-        </td>
-        <td><p>Interactive image annotations</p></td>
-      </tr><tr><td>
-          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Create spatial trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSegmentationNames.html">addSegmentationVariable()</a></code> <code><a href="getSegmentationNames.html">discardSegmentationVariable()</a></code> <code><a href="getSegmentationNames.html">getSegmentationNames()</a></code> <code><a href="getSegmentationNames.html">getSegmentationVariableNames()</a></code> </p>
-        </td>
-        <td><p>Obtain segmentation variable names</p></td>
+        <td><p>Check availability of pixel scale factor</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="discard-content">Discard Content <a href="#discard-content" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>The discard-functions let you delete unwanted information savely.</p>
+          <h2 id="built-in-data">Built in Data <a href="#built-in-data" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="discardExpressionMatrix.html">discardExpressionMatrix()</a></code> </p>
+          <p><code><a href="clustering.html">clustering</a></code> </p>
         </td>
-        <td><p>Discard an expression matrix</p></td>
+        <td><p>A list of data.frames that contain clustering variables for specific <code>SPATA2</code>
+objects - available via the <code>SPATAData</code> package. Names of the list slots
+correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.
+Names of the cluster variables in the data.frames corresponds to the algorithm used.</p></td>
       </tr><tr><td>
-          <p><code><a href="discardFeatures.html">discardFeatures()</a></code> </p>
+          <p><code><a href="cnv_ref.html">cnv_ref</a></code> </p>
         </td>
-        <td><p>Discard features</p></td>
+        <td><p>A list of reference data for copy number variation analysis (CNV)</p></td>
       </tr><tr><td>
-          <p><code><a href="discardGeneFeatures.html">discardGeneFeatures()</a></code> </p>
+          <p><code><a href="cnv_regions_df.html">cnv_regions_df</a></code> </p>
         </td>
-        <td><p>Discard gene features</p></td>
+        <td><p>A data.frame necessary for cnv-analysis. Contains information about start and
+end points of chromosomes.</p></td>
       </tr><tr><td>
-          <p><code><a href="discardGenes.html">discardGenes()</a></code> </p>
+          <p><code><a href="dea.html">dea</a></code> </p>
         </td>
-        <td><p>Discard genes</p></td>
+        <td><p>A nested list. First layer is named by the sample name. Second layer is named
+by the grouping variable. Third layer is named by the method. Contains
+data.frames of differential gene expression analysis results from the
+function <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">Seurat::FindAllMarkers()</a></code>. Set with <code>setDeaResultsDf()</code>.</p></td>
       </tr><tr><td>
-          <p><code><a href="discardGeneSets.html">discardGeneSets()</a></code> </p>
+          <p><code><a href="gene_pos_df.html">gene_pos_df</a></code> </p>
         </td>
-        <td><p>Discard gene sets</p></td>
+        <td><p>A data.frame necessary for cnv-analysis. Contains information about the gene positions
+on chromosomes. Contains the following variables:</p></td>
       </tr><tr><td>
-          <p><code><a href="discardImageAnnotations.html">discardImageAnnotations()</a></code> </p>
+          <p><code><a href="gsdf.html">gsdf</a></code> </p>
         </td>
-        <td><p>Discard image annotations</p></td>
+        <td><p>The default collection of frequently used gene-sets</p></td>
       </tr><tr><td>
-          <p><code><a href="getSegmentationNames.html">addSegmentationVariable()</a></code> <code><a href="getSegmentationNames.html">discardSegmentationVariable()</a></code> <code><a href="getSegmentationNames.html">getSegmentationNames()</a></code> <code><a href="getSegmentationNames.html">getSegmentationVariableNames()</a></code> </p>
+          <p><code><a href="image_annotations.html">image_annotations</a></code> </p>
         </td>
-        <td><p>Obtain segmentation variable names</p></td>
+        <td><p>A list of lists of image annotations for specific <code>SPATA2</code>
+objects - available via the <code>SPATAData</code> package. Names of the list slots
+correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.</p></td>
+      </tr><tr><td>
+          <p><code><a href="sc_deconvolution.html">sc_deconvolution</a></code> </p>
+        </td>
+        <td><p>List of data.frames of single cell deconvolution. Names of
+the list correspond to the sample name. Obtain data.frame
+using <code>sc_deconvolution[[*&lt;sample.name&gt;*]]</code></p></td>
+      </tr><tr><td>
+          <p><code><a href="scale_factors.html">scale_factors</a></code> </p>
+        </td>
+        <td><p>List of scale factors for Visium input.</p></td>
+      </tr><tr><td>
+          <p><code><a href="spatial_segmentations.html">spatial_segmentations</a></code> </p>
+        </td>
+        <td><p>A list of lists of spatial segmentations for specific <code>SPATA2</code>
+objects - available via the <code>SPATAData</code> package. Names of the list slots
+correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.
+Every sample specific slot is a data.frame with two variables: <em>barcodes</em>
+and the spatial segmentation variable (usually named <em>histolgoy</em>).</p></td>
+      </tr><tr><td>
+          <p><code><a href="spatial_trajectories.html">spatial_trajectories</a></code> </p>
+        </td>
+        <td><p>A list of lists of spatial spatial_trajectories for specific <code>SPATA2</code>
+objects - available via the <code>SPATAData</code> package. Names of the list slots
+correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.</p></td>
+      </tr><tr><td>
+          <p><code><a href="summarize_formulas.html">summarize_formulas</a></code> </p>
+        </td>
+        <td><p>List of summarizing formulas</p></td>
+      </tr><tr><td>
+          <p><code><a href="visium_coords.html">visium_coords</a></code> </p>
+        </td>
+        <td><p>A data.frame that contains all barcode spots of the Visium method including
+their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>row</em>, <em>imagecol</em>,
+<em>imagerow</em>, <em>xlr</em>, <em>ylr</em>, <em>xhr</em>, <em>yhr</em>. lr = low resolution, hr = high resolution</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="create-content-interactively">Create Content Interactively <a href="#create-content-interactively" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>The create-functions open an interactive application in which the content to be added needs to be created at first.</p>
+          <h2 id="counting">Counting <a href="#counting" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="createHistologyImaging.html">createHistologyImaging()</a></code> </p>
+          <p><code><a href="nBarcodes.html">nBarcodes()</a></code> </p>
         </td>
-        <td><p>Create S4 Image object for SPATA2</p></td>
+        <td><p>Number of barcodes</p></td>
       </tr><tr><td>
-          <p><code><a href="createImageAnnotations.html">addImageAnnotation()</a></code> <code><a href="createImageAnnotations.html">createImageAnnotations()</a></code> </p>
+          <p><code><a href="nCounts.html">nCounts()</a></code> </p>
         </td>
-        <td><p>Interactive image annotations</p></td>
+        <td><p>Number of counts</p></td>
       </tr><tr><td>
-          <p><code><a href="createSegmentation.html">createSegmentation()</a></code> </p>
+          <p><code><a href="nGenes.html">nGenes()</a></code> </p>
         </td>
-        <td><p>Deprecated in favor of <code><a href="../reference/createSpatialSegmentation.html">createSpatialSegmentation()</a></code></p></td>
+        <td><p>Number of genes</p></td>
       </tr><tr><td>
-          <p><code><a href="createSpatialSegmentation.html">createSpatialSegmentation()</a></code> </p>
+          <p><code><a href="nImageAnnotations.html">nImageAnnotations()</a></code> </p>
         </td>
-        <td><p>Interactive sample segmentation</p></td>
+        <td><p>Number of image annotations</p></td>
       </tr><tr><td>
-          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
+          <p><code><a href="nSpatialTrajectories.html">nSpatialTrajectories()</a></code> <code><a href="nSpatialTrajectories.html">nTrajectories()</a></code> </p>
         </td>
-        <td><p>Create spatial trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="createTrajectories.html">createTrajectories()</a></code> </p>
-        </td>
-        <td><p>Spatial Trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="createTrajectoryManually.html">createTrajectoryManually()</a></code> </p>
-        </td>
-        <td><p>Create spatial trajectories manually</p></td>
+        <td><p>Number of spatial trajectories</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="adjust-content">Adjust Content <a href="#adjust-content" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>The adjust-functions let you adjust content of the spata-object without overwriting it in it’s essence.</p>
+          <h2 id="download">Download <a href="#download" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="adjustDirectoryInstructions.html">adjustDirectoryInstructions()</a></code> </p>
+          <p><code><a href="downloadPubExample.html">downloadPubExample()</a></code> </p>
         </td>
-        <td><p>Adjust default instructions</p></td>
+        <td><p>Download data from the publication</p></td>
       </tr><tr><td>
-          <p><code><a href="adjustGeneSetDf.html">adjustGeneSetDf()</a></code> </p>
+          <p><code><a href="downloadSpataObject.html">downloadSpataObject()</a></code> <code><a href="downloadSpataObject.html">downloadSpataObjects()</a></code> </p>
         </td>
-        <td><p>Filter gene-set data.frame</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="rename-content">Rename Content <a href="#rename-content" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>The rename-functions let you adjust the name of certain content with which you refer to it via arguments</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="renameFeatures.html">renameFeatures()</a></code> </p>
-        </td>
-        <td><p>Rename features</p></td>
+        <td><p>Download <code>spata2</code> objects</p></td>
       </tr><tr><td>
-          <p><code><a href="renameGroups.html">renameGroups()</a></code> <code><a href="renameGroups.html">renameSegments()</a></code> </p>
+          <p><code><a href="downloadRawData.html">downloadRawData()</a></code> </p>
         </td>
-        <td><p>Rename cluster/group names</p></td>
-      </tr><tr><td>
-          <p><code><a href="renameImgAnn.html">renameImgAnn()</a></code> </p>
-        </td>
-        <td><p>Rename image annotation ID</p></td>
+        <td><p>Download raw Visium output</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="extract-data">Extract Data <a href="#extract-data" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>SPATA invites you to extract your analysis. get-functions let you access every imaginable aspect of information conveniently.</p>
+          <p class="section-desc"></p>
         </th>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="autoencoder-related">Autoencoder related <a href="#autoencoder-related" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getAutoencoderAssessment.html">getAutoencoderAssessment()</a></code> </p>
+        </td>
+        <td><p>Obtain information about the optimal neural network set up</p></td>
+      </tr><tr><td>
+          <p><code><a href="getAutoencoderSetUp.html">getAutoencoderSetUp()</a></code> </p>
+        </td>
+        <td><p>Obtain information on neural network</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="copy-number-variations">Copy Number Variations <a href="#copy-number-variations" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getChrRegionsDf.html">getChrRegionsDf()</a></code> </p>
+        </td>
+        <td><p>Obtain chromosome information</p></td>
+      </tr><tr><td>
+          <p><code><a href="getCnvFeatureNames.html">getCnvFeatureNames()</a></code> </p>
+        </td>
+        <td><p>Obtain features names under which cnv-analysis results are stored.</p></td>
+      </tr><tr><td>
+          <p><code><a href="getCnvGenesDf.html">getCnvGenesDf()</a></code> </p>
+        </td>
+        <td><p>Obtain CNV results by gene</p></td>
+      </tr><tr><td>
+          <p><code><a href="getCnvResults.html">getCnvResults()</a></code> </p>
+        </td>
+        <td><p>Obtain copy-number-variations results</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="data-matrices">Data matrices <a href="#data-matrices" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getActiveMatrixName.html">getActiveMatrixName()</a></code> <code><a href="getActiveMatrixName.html">getActiveExpressionMatrixName()</a></code> </p>
+        </td>
+        <td><p>Obtain name of currently active expression matrix</p></td>
+      </tr><tr><td>
+          <p><code><a href="getExpressionMatrixNames.html">getExpressionMatrixNames()</a></code> </p>
+        </td>
+        <td><p>Obtain names of stored expression matrices</p></td>
+      </tr><tr><td>
+          <p><code><a href="getMatrix.html">getCountMatrix()</a></code> <code><a href="getMatrix.html">getExpressionMatrix()</a></code> <code><a href="getMatrix.html">getMatrix()</a></code> </p>
+        </td>
+        <td><p>Obtain count and expression matrix</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="dimensional-reduction-and-spatial-coordinates">Dimensional Reduction and Spatial Coordinates <a href="#dimensional-reduction-and-spatial-coordinates" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="getCoordsDf.html">getSegmentDf()</a></code> <code><a href="getCoordsDf.html">getCoordsDf()</a></code> </p>
+          <p><code><a href="getBarcodesInPolygon.html">getBarcodesInPolygon()</a></code> <code><a href="getBarcodesInPolygon.html">getBarcodesInPolygonList()</a></code> </p>
         </td>
-        <td><p>Obtain spatial coordinates</p></td>
+        <td><p>Obtain barcodes in polygon</p></td>
       </tr><tr><td>
-          <p><code><a href="getSegmentNames.html">getSegmentNames()</a></code> </p>
+          <p><code><a href="getBarcodeSpotDistance.html">getBarcodeSpotDistance()</a></code> </p>
         </td>
-        <td><p>Obtain segment names</p></td>
+        <td><p>Obtain barcode spot distances</p></td>
+      </tr><tr><td>
+          <p><code><a href="getBarcodeSpotDistances.html">getBarcodeSpotDistances()</a></code> </p>
+        </td>
+        <td><p>Obtain distances between barcodes</p></td>
+      </tr><tr><td>
+          <p><code><a href="getCoordsCenter.html">getCoordsCenter()</a></code> </p>
+        </td>
+        <td><p>Obtain coordinate center</p></td>
+      </tr><tr><td>
+          <p><code><a href="getCoordsRange.html">getCoordsRange()</a></code> </p>
+        </td>
+        <td><p>Obtain coordinate range</p></td>
       </tr><tr><td>
           <p><code><a href="getDimRedDf.html">getDimRedDf()</a></code> <code><a href="getDimRedDf.html">getPcaDf()</a></code> <code><a href="getDimRedDf.html">getPcaMtr()</a></code> <code><a href="getDimRedDf.html">getTsneDf()</a></code> <code><a href="getDimRedDf.html">getUmapDf()</a></code> </p>
         </td>
-        <td><p>Get dim red df</p></td>
+        <td><p>Obtain dim red data.frame</p></td>
+      </tr><tr><td>
+          <p><code><a href="getTissueOutlineDf.html">getTissueOutlineDf()</a></code> </p>
+        </td>
+        <td><p>Obtain outer barcode spots</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="features">Features <a href="#features" class="anchor" aria-hidden="true"></a></h3>
+          <h3 id="features-grouping">Features &amp; Grouping <a href="#features-grouping" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
@@ -573,6 +689,38 @@
         </td>
         <td><p>Obtain group names a grouping variable contains</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="differential-expression-analysis">Differential Expression Analysis <a href="#differential-expression-analysis" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getDeaLfcName.html">getDeaLfcName()</a></code> </p>
+        </td>
+        <td><p>Obtain LFC name</p></td>
+      </tr><tr><td>
+          <p><code><a href="getDeaOverview.html">getDeaOverview()</a></code> </p>
+        </td>
+        <td><p>Obtain info on de-analysis storage</p></td>
+      </tr><tr><td>
+          <p><code><a href="getDeaResultsDf.html">getDeaGenes()</a></code> <code><a href="getDeaResultsDf.html">getDeaResultsDf()</a></code> </p>
+        </td>
+        <td><p>Obtain de-analysis results</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="gene-set-enrichment-analysis">Gene Set Enrichment Analysis <a href="#gene-set-enrichment-analysis" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getGseaDf.html">getGseaDf()</a></code> </p>
+        </td>
+        <td><p>Obtain enrichment data.frame</p></td>
+      </tr><tr><td>
+          <p><code><a href="getGseaResults.html">getGseaResults()</a></code> </p>
+        </td>
+        <td><p>Obtain enrichment results</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSignatureEnrichment.html">getSignatureEnrichment()</a></code> </p>
+        </td>
+        <td><p>Obtain signature enrichment</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="genes-gene-sets">Genes &amp; Gene-sets <a href="#genes-gene-sets" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
         </th>
@@ -580,10 +728,6 @@
           <p><code><a href="getGeneCounts.html">getGeneCounts()</a></code> </p>
         </td>
         <td><p>Obtain total number of gene counts</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneDistMtr.html">getGeneDistMtr()</a></code> </p>
-        </td>
-        <td><p>Obtain distance measurements of spatially correlated genes</p></td>
       </tr><tr><td>
           <p><code><a href="getGeneFeatureNames.html">getGeneFeatureNames()</a></code> </p>
         </td>
@@ -613,21 +757,17 @@
         </td>
         <td><p>Obtain gene set names</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="data-matrices">Data matrices <a href="#data-matrices" class="anchor" aria-hidden="true"></a></h3>
+          <h3 id="gradient-screening">Gradient Screening <a href="#gradient-screening" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="getBarcodes.html">getBarcodes()</a></code> </p>
+          <p><code><a href="getResultsDf.html">getResultsDf()</a></code> </p>
         </td>
-        <td><p>Obtain specific barcodes</p></td>
+        <td><p>Obtain results stored in data.frames</p></td>
       </tr><tr><td>
-          <p><code><a href="getActiveMatrixName.html">getActiveMatrixName()</a></code> <code><a href="getActiveMatrixName.html">getActiveExpressionMatrixName()</a></code> </p>
+          <p><code><a href="getResultsVec.html">getResultsVec()</a></code> </p>
         </td>
-        <td><p>Obtain name of currently active expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="getMatrix.html">getCountMatrix()</a></code> <code><a href="getMatrix.html">getExpressionMatrix()</a></code> <code><a href="getMatrix.html">getMatrix()</a></code> </p>
-        </td>
-        <td><p>Obtain count and expression matrix</p></td>
+        <td><p>Obtain screening results stored in vectors</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="image">Image <a href="#image" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
@@ -685,45 +825,13 @@
         </td>
         <td><p>Obtain image sections by barcode spot</p></td>
       </tr><tr><td>
-          <p><code><a href="getImgAnnCenter.html">getImageAnnotationCenter()</a></code> <code><a href="getImgAnnCenter.html">getImgAnnCenter()</a></code> <code><a href="getImgAnnCenter.html">getImgAnnCenters()</a></code> </p>
+          <p><code><a href="getPixelDf.html">getPixelDf()</a></code> </p>
         </td>
-        <td><p>Obtain center of an image annotation</p></td>
+        <td><p>Obtain pixel data.frame</p></td>
       </tr><tr><td>
-          <p><code><a href="getImgAnnIds.html">getImageAnnotationIds()</a></code> <code><a href="getImgAnnIds.html">getImgAnnIds()</a></code> </p>
+          <p><code><a href="getPixelScaleFactor.html">getPixelScaleFactor()</a></code> </p>
         </td>
-        <td><p>Obtain unit of method</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="spatial-trajectories">Spatial Trajectories <a href="#spatial-trajectories" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="getTrajectoryDf.html">getTrajectoryDf()</a></code> </p>
-        </td>
-        <td><p>Obtain a trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryIds.html">getTrajectoryIds()</a></code> </p>
-        </td>
-        <td><p>Obtain trajectory ids</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryLength.html">getTrajectoryLength()</a></code> </p>
-        </td>
-        <td><p>Obtain length of trajectory</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryNames.html">getTrajectoryNames()</a></code> </p>
-        </td>
-        <td><p>Deprecated.</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryObject.html">getTrajectoryObject()</a></code> </p>
-        </td>
-        <td><p>Obtain trajectory object</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryScreeningDf.html">getTrajectoryScreeningDf()</a></code> <code><a href="getTrajectoryScreeningDf.html">getTrajectoryDf()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectorySegmentDf.html">getTrajectorySegmentDf()</a></code> </p>
-        </td>
-        <td><p>Obtain trjectory course</p></td>
+        <td><p>Obtain scale factor for pixel to Euol conversion</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="image-annotations">Image Annotations <a href="#image-annotations" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
@@ -741,14 +849,6 @@
         </td>
         <td><p>Obtain list of <code>ImageAnnotation</code>-objects</p></td>
       </tr><tr><td>
-          <p><code><a href="getImgAnnCenter.html">getImageAnnotationCenter()</a></code> <code><a href="getImgAnnCenter.html">getImgAnnCenter()</a></code> <code><a href="getImgAnnCenter.html">getImgAnnCenters()</a></code> </p>
-        </td>
-        <td><p>Obtain center of an image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnIds.html">getImageAnnotationIds()</a></code> <code><a href="getImgAnnIds.html">getImgAnnIds()</a></code> </p>
-        </td>
-        <td><p>Obtain unit of method</p></td>
-      </tr><tr><td>
           <p><code><a href="getImgAnnArea.html">getImgAnnArea()</a></code> </p>
         </td>
         <td><p>Obtain area of image annotation</p></td>
@@ -760,10 +860,6 @@
           <p><code><a href="getImgAnnCenterBcsp.html">getImgAnnCenterBcsp()</a></code> </p>
         </td>
         <td><p>Obtain center barcode-spot</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnOutlineDf.html">getImgAnnBorderDf()</a></code> <code><a href="getImgAnnOutlineDf.html">getImgAnnOutlineDf()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotation border data.frame</p></td>
       </tr><tr><td>
           <p><code><a href="getImgAnnRange.html">getImgAnnRange()</a></code> </p>
         </td>
@@ -785,37 +881,25 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
+          <p><code><a href="getBarcodes.html">getBarcodes()</a></code> </p>
+        </td>
+        <td><p>Obtain specific barcodes</p></td>
+      </tr><tr><td>
           <p><code><a href="getCnvResults.html">getCnvResults()</a></code> </p>
         </td>
         <td><p>Obtain copy-number-variations results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDeaOverview.html">getDeaOverview()</a></code> </p>
-        </td>
-        <td><p>Obtain info on de-analysis storage</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDeaResultsDf.html">getDeaGenes()</a></code> <code><a href="getDeaResultsDf.html">getDeaResultsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain de-analysis results</p></td>
       </tr><tr><td>
           <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> </p>
         </td>
         <td><p>Obtain default argument inputs</p></td>
       </tr><tr><td>
-          <p><code><a href="getGseaDf.html">getGseaDf()</a></code> </p>
-        </td>
-        <td><p>Obtain enrichment data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGseaResults.html">getGseaResults()</a></code> </p>
-        </td>
-        <td><p>Obtain enrichment results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImage.html">getImage()</a></code> </p>
-        </td>
-        <td><p>Obtain histology image</p></td>
-      </tr><tr><td>
           <p><code><a href="getInitiationInfo.html">getInitiationInfo()</a></code> <code><a href="getInitiationInfo.html">getInitiationInput()</a></code> </p>
         </td>
         <td><p>Obtain information about object initiation</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSampleAreaSize.html">getSampleAreaSize()</a></code> </p>
+        </td>
+        <td><p>Obtain sample area size</p></td>
       </tr><tr><td>
           <p><code><a href="getSampleName.html">getSampleNames()</a></code> <code><a href="getSampleName.html">getSampleName()</a></code> </p>
         </td>
@@ -824,6 +908,130 @@
           <p><code><a href="getSpataDf.html">getSpataDf()</a></code> </p>
         </td>
         <td><p>Obtain a spata-data.frame</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSpataDir.html">getSpataDir()</a></code> </p>
+        </td>
+        <td><p>Obtain SPATA2 object directory</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="spatial-measures">Spatial Measures <a href="#spatial-measures" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getCCD.html">getCCD()</a></code> </p>
+        </td>
+        <td><p>Obtain center to center distance</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSampleAreaSize.html">getSampleAreaSize()</a></code> </p>
+        </td>
+        <td><p>Obtain sample area size</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSpatialMethod.html">getSpatialMethod()</a></code> </p>
+        </td>
+        <td><p>Obtain spatial method</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="spatial-trajectories">Spatial Trajectories <a href="#spatial-trajectories" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="getProjectionDf.html">getProjectionDf()</a></code> </p>
+        </td>
+        <td><p>Obtain trajectory projection</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSpatialTrajectory.html">getSpatialTrajectory()</a></code> <code><a href="getSpatialTrajectory.html">getSpatialTrajectories()</a></code> </p>
+        </td>
+        <td><p>Obtain objects of class <code>SpatialTrajectory</code>.</p></td>
+      </tr><tr><td>
+          <p><code><a href="getSpatialTrajectoryIds.html">getSpatialTrajectoryIds()</a></code> </p>
+        </td>
+        <td><p>Obtain spatial trajectory IDs</p></td>
+      </tr><tr><td>
+          <p><code><a href="getTrajectoryDf.html">getTrajectoryDf()</a></code> </p>
+        </td>
+        <td><p>Obtain a trajectory data.frame</p></td>
+      </tr><tr><td>
+          <p><code><a href="getTrajectoryIds.html">getTrajectoryIds()</a></code> </p>
+        </td>
+        <td><p>Obtain trajectory ids</p></td>
+      </tr><tr><td>
+          <p><code><a href="getTrajectoryLength.html">getTrajectoryLength()</a></code> </p>
+        </td>
+        <td><p>Obtain length of trajectory</p></td>
+      </tr><tr><td>
+          <p><code><a href="getTrajectorySegmentDf.html">getTrajectorySegmentDf()</a></code> </p>
+        </td>
+        <td><p>Obtain trjectory course</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="grouping">Grouping <a href="#grouping" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="mergeGroups.html">mergeGroups()</a></code> </p>
+        </td>
+        <td><p>Lump groups together</p></td>
+      </tr><tr><td>
+          <p><code><a href="renameGroups.html">renameGroups()</a></code> <code><a href="renameGroups.html">renameSegments()</a></code> </p>
+        </td>
+        <td><p>Rename cluster/group names</p></td>
+      </tr><tr><td>
+          <p><code><a href="relevelGroups.html">relevelGroups()</a></code> </p>
+        </td>
+        <td><p>Relevel groups of grouping variable</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="image-annotion-related">Image Annotion related <a href="#image-annotion-related" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="bin_by_angle.html">bin_by_angle()</a></code> </p>
+        </td>
+        <td><p>Bin barcode-spots by angle</p></td>
+      </tr><tr><td>
+          <p><code><a href="bin_by_expansion.html">bin_by_expansion()</a></code> </p>
+        </td>
+        <td><p>Bin barcode-spots by area extension</p></td>
+      </tr><tr><td>
+          <p><code><a href="countImageAnnotationTags.html">countImageAnnotationTags()</a></code> </p>
+        </td>
+        <td><p>Count image annotation tags</p></td>
+      </tr><tr><td>
+          <p><code><a href="imageAnnotationToSegmentation.html">imageAnnotationToSegmentation()</a></code> </p>
+        </td>
+        <td><p>Convert image annotation to segmentation</p></td>
+      </tr><tr><td>
+          <p><code><a href="mapImageAnnotationTags.html">mapImageAnnotationTags()</a></code> </p>
+        </td>
+        <td><p>Image annotation and barcode intersection</p></td>
+      </tr><tr><td>
+          <p><code><a href="relateToImageAnnotation.html">relateToImageAnnotation()</a></code> </p>
+        </td>
+        <td><p>Relate observations to an image annotation</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="image-handling-and-image-coordinate-alignment">Image handling and Image-Coordinate Alignment <a href="#image-handling-and-image-coordinate-alignment" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="alignImageAnnotation.html">alignImageAnnotation()</a></code> <code><a href="alignImageAnnotation.html">alignSpatialTrajectory()</a></code> </p>
+        </td>
+        <td><p>Align image annotation</p></td>
+      </tr><tr><td>
+          <p><code><a href="exchangeImage.html">exchangeImage()</a></code> </p>
+        </td>
+        <td><p>Exchange image</p></td>
+      </tr><tr><td>
+          <p><code><a href="flipAll.html">flipAll()</a></code> <code><a href="flipAll.html">flipCoordinates()</a></code> <code><a href="flipAll.html">flipCoordsDf()</a></code> <code><a href="flipAll.html">flipImage()</a></code> <code><a href="flipAll.html">flipImageAnnotations()</a></code> <code><a href="flipAll.html">flipSpatialTrajectories()</a></code> </p>
+        </td>
+        <td><p>Mirror invert image and coordinates</p></td>
+      </tr><tr><td>
+          <p><code><a href="resetImageJustification.html">resetImageJustification()</a></code> </p>
+        </td>
+        <td><p>Reset image justification</p></td>
+      </tr><tr><td>
+          <p><code><a href="rotateAll.html">rotateAll()</a></code> <code><a href="rotateAll.html">rotateImage()</a></code> <code><a href="rotateAll.html">rotateCoordinates()</a></code> <code><a href="rotateAll.html">rotateCoordsDf()</a></code> <code><a href="rotateAll.html">rotateImageAnnotations()</a></code> <code><a href="rotateAll.html">rotateSpatialTrajectories()</a></code> </p>
+        </td>
+        <td><p>Rotate image and coordinates</p></td>
+      </tr><tr><td>
+          <p><code><a href="scaleAll.html">scaleAll()</a></code> <code><a href="scaleAll.html">scaleImage()</a></code> <code><a href="scaleAll.html">scaleCoordinates()</a></code> <code><a href="scaleAll.html">scaleCoordsDf()</a></code> <code><a href="scaleAll.html">scaleImageAnnotations()</a></code> <code><a href="scaleAll.html">scaleSpatialTrajectories()</a></code> </p>
+        </td>
+        <td><p>Scale image and coordinates</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="information-summaries">Information &amp; Summaries <a href="#information-summaries" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Some handy functions that quickly give you an overwiew about the spata-object’s content and the progress you have made.</p>
@@ -844,10 +1052,6 @@
           <p><code><a href="printGeneSetOverview.html">printGeneSetOverview()</a></code> </p>
         </td>
         <td><p>Print overview about the current gene sets</p></td>
-      </tr><tr><td>
-          <p><code><a href="print_family.html">print_family()</a></code> </p>
-        </td>
-        <td><p>print</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="join-information">Join Information <a href="#join-information" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>These functions access the information of interest, perform additional customized computations and join it as additional variables to already existing data.frames in a tidy-data fashion.</p>
@@ -861,7 +1065,7 @@
         </td>
         <td><p>Join barcodes with additional variables</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="analysis">Analysis <a href="#analysis" class="anchor" aria-hidden="true"></a></h2>
+          <h2 id="miscellaneous-algorithms">Miscellaneous Algorithms <a href="#miscellaneous-algorithms" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -876,14 +1080,6 @@
           <p><code><a href="computeGeneMetaData.html">computeGeneMetaData()</a></code> <code><a href="computeGeneMetaData.html">computeGeneMetaData2()</a></code> </p>
         </td>
         <td><p>Compute gene summary statistics</p></td>
-      </tr><tr><td>
-          <p><code><a href="compute_angle_between_two_points.html">compute_angle_between_two_points()</a></code> </p>
-        </td>
-        <td><p>Compute angle between two points</p></td>
-      </tr><tr><td>
-          <p><code><a href="compute_distance.html">compute_distance()</a></code> </p>
-        </td>
-        <td><p>Compute the distance between to points</p></td>
       </tr><tr><td>
           <p><code><a href="runAutoencoderAssessment.html">assessAutoencoderOptions()</a></code> <code><a href="runAutoencoderAssessment.html">runAutoencoderAssessment()</a></code> </p>
         </td>
@@ -921,10 +1117,6 @@
         </td>
         <td><p>Identify genes of interest with SPARKX</p></td>
       </tr><tr><td>
-          <p><code><a href="runSpatialCorrelationAnalysis.html">runSpatialCorrelationAnalysis()</a></code> </p>
-        </td>
-        <td><p>Initiate gene clustering analysis based on spatial patterns</p></td>
-      </tr><tr><td>
           <p><code><a href="runTsne.html">runTsne()</a></code> <code><a href="runTsne.html">runTsne2()</a></code> </p>
         </td>
         <td><p>Run t-Stochastic Neighbour Embedding</p></td>
@@ -932,11 +1124,7 @@
           <p><code><a href="runUmap.html">runUmap()</a></code> <code><a href="runUmap.html">runUmap2()</a></code> </p>
         </td>
         <td><p>Run UMAP-Analysis</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="clustering">Clustering <a href="#clustering" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p>
-        </th>
-      </tr></tbody><tbody><tr><td>
+      </tr><tr><td>
           <p><code><a href="findMonocleClusters.html">findMonocleClusters()</a></code> </p>
         </td>
         <td><p>Cluster sample via monocle3</p></td>
@@ -957,22 +1145,58 @@
         </td>
         <td><p>Postprocess de-analysis results</p></td>
       </tr><tr><td>
-          <p><code><a href="filterTrends.html">filterTrends()</a></code> <code><a href="filterTrends.html">filterTrajectoryTrends()</a></code> </p>
-        </td>
-        <td><p>Filter variables of a certain trend</p></td>
-      </tr><tr><td>
           <p><code><a href="examineClusterResults.html">examineClusterResults()</a></code> </p>
         </td>
         <td><p>Examine clustering results</p></td>
-      </tr><tr><td>
-          <p><code><a href="examineTrajectoryAssessment.html">examineTrajectoryAssessment()</a></code> </p>
-        </td>
-        <td><p>Examine trajectory-moddeling results</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="gradient-screening">Gradient Screening <a href="#gradient-screening" class="anchor" aria-hidden="true"></a></h2>
+          <h2 id="miscellaneous-functions">Miscellaneous Functions <a href="#miscellaneous-functions" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="add_outline_variable.html">add_outline_variable()</a></code> </p>
+        </td>
+        <td><p>Add outline variable</p></td>
+      </tr><tr><td>
+          <p><code><a href="add_dbscan_variable.html">add_dbscan_variable()</a></code> <code><a href="add_dbscan_variable.html">add_tissue_section_variable()</a></code> </p>
+        </td>
+        <td><p>Add tissue section variable</p></td>
+      </tr><tr><td>
+          <p><code><a href="all_bcsp_distances.html">all_bcsp_distances()</a></code> </p>
+        </td>
+        <td><p>Obtain a all barcode-spots distances</p></td>
+      </tr><tr><td>
+          <p><code><a href="arrange_as_polygon.html">arrange_as_polygon()</a></code> </p>
+        </td>
+        <td><p>Arrange observations as polygon</p></td>
+      </tr><tr><td>
+          <p><code><a href="buffer_area.html">buffer_area()</a></code> </p>
+        </td>
+        <td><p>Buffer area</p></td>
+      </tr><tr><td>
+          <p><code><a href="create_model_df.html">create_model_df()</a></code> </p>
+        </td>
+        <td><p>Create model data.frame</p></td>
+      </tr><tr><td>
+          <p><code><a href="include_tissue_outline.html">include_tissue_outline()</a></code> </p>
+        </td>
+        <td><p>Include spatial extent of tissue sections in analysis</p></td>
+      </tr><tr><td>
+          <p><code><a href="intersect_polygons.html">intersect_polygons()</a></code> </p>
+        </td>
+        <td><p>Test polygon intersection</p></td>
+      </tr><tr><td>
+          <p><code><a href="validActivationFunctions.html">validActivationFunctions()</a></code> <code><a href="validActivationFunctions.html">validAgglomerationMethods()</a></code> <code><a href="validActivationFunctions.html">validAlluvialTypes()</a></code> <code><a href="validActivationFunctions.html">validColorPalettes()</a></code> <code><a href="validActivationFunctions.html">validColorSpectra()</a></code> <code><a href="validActivationFunctions.html">validDeAnalysisMethods()</a></code> <code><a href="validActivationFunctions.html">validDefaultInstructionSlots()</a></code> <code><a href="validActivationFunctions.html">validDimRedMethods()</a></code> <code><a href="validActivationFunctions.html">validDirectoryInstructionSlots()</a></code> <code><a href="validActivationFunctions.html">validDistanceMethods()</a></code> <code><a href="validActivationFunctions.html">validHierarchicalClusterMethods()</a></code> <code><a href="validActivationFunctions.html">validImageClasses()</a></code> <code><a href="validActivationFunctions.html">validModelNames()</a></code> <code><a href="validActivationFunctions.html">validPatternRecognitionMethods()</a></code> <code><a href="validActivationFunctions.html">validPadjMethods()</a></code> <code><a href="validActivationFunctions.html">validPlotTypes()</a></code> <code><a href="validActivationFunctions.html">validPubExamples()</a></code> <code><a href="validActivationFunctions.html">validSpatialMethods()</a></code> <code><a href="validActivationFunctions.html">validTrajectoryTrends()</a></code> <code><a href="validActivationFunctions.html">validUnits()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfArea()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfAreaSI()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfLength()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfLengthSI()</a></code> <code><a href="validActivationFunctions.html">validEuropeanUnitsOfLength()</a></code> </p>
+        </td>
+        <td><p>Obtain valid argument inputs</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="spatial-gradient-screening">Spatial Gradient Screening <a href="#spatial-gradient-screening" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p><p>Functions around Spatial Trajectory Screening and Image Annotation Screening.</p>
         </th>
       </tr></tbody><tbody><tr><td>
+          <p><code><a href="gradientToModelIAS.html">gradientToModelIAS()</a></code> <code><a href="gradientToModelIAS.html">gradientToModelSTS()</a></code> </p>
+        </td>
+        <td><p>Create input for <code>model_add</code></p></td>
+      </tr><tr><td>
           <p><code><a href="imageAnnotationScreening.html">imageAnnotationScreening()</a></code> </p>
         </td>
         <td><p>Implementation of the IAS-algorithm</p></td>
@@ -980,6 +1204,10 @@
           <p><code><a href="ImageAnnotationScreening-class.html">ImageAnnotationScreening-class</a></code> <code><a href="ImageAnnotationScreening-class.html">ImageAnnotationScreening</a></code> </p>
         </td>
         <td><p>The <code>ImageAnnotationScreening</code> - Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="inferSingleCellGradient.html">inferSingleCellGradient()</a></code> </p>
+        </td>
+        <td><p>Count cells depending on distance to image annotation</p></td>
       </tr><tr><td>
           <p><code><a href="spatialTrajectoryScreening.html">spatialTrajectoryScreening()</a></code> </p>
         </td>
@@ -1005,149 +1233,109 @@
         </td>
         <td><p>Obtain expanded Image Annotation polygons</p></td>
       </tr><tr><td>
-          <p><code><a href="plotIasBarplot.html">plotIasBarplot()</a></code> <code><a href="plotIasBarplot.html">plotIasBarplotSC()</a></code> </p>
+          <p><code><a href="summarizeIAS.html">summarizeIAS()</a></code> </p>
         </td>
-        <td><p>Plot IAS barplot</p></td>
+        <td><p>Summarize IAS-results</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="spatial-measures">Spatial Measures <a href="#spatial-measures" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="are_all_area_or_dist.html">are_all_area_or_dist()</a></code> </p>
+        </td>
+        <td><p>Test area or distance input</p></td>
       </tr><tr><td>
-          <p><code><a href="plotIasEvaluation.html">plotIasEvaluation()</a></code> </p>
+          <p><code><a href="as_unit.html">as_meter()</a></code> <code><a href="as_unit.html">as_meter2()</a></code> <code><a href="as_unit.html">as_micrometer()</a></code> <code><a href="as_unit.html">as_micrometer2()</a></code> <code><a href="as_unit.html">as_millimeter()</a></code> <code><a href="as_unit.html">as_millimeter2()</a></code> <code><a href="as_unit.html">as_nanometer()</a></code> <code><a href="as_unit.html">as_nanometer2()</a></code> <code><a href="as_unit.html">as_pixel()</a></code> <code><a href="as_unit.html">as_unit()</a></code> <code><a href="as_unit.html">as_centimeter()</a></code> <code><a href="as_unit.html">as_centimeter2()</a></code> <code><a href="as_unit.html">as_decimeter()</a></code> <code><a href="as_unit.html">as_decimeter2()</a></code> </p>
         </td>
-        <td><p>Plot IAS evaluation per variable-model pair</p></td>
+        <td><p>Transform distance and area values</p></td>
       </tr><tr><td>
-          <p><code><a href="plotIasHeatmap.html">plotIasHeatmap()</a></code> </p>
+          <p><code><a href="as_SPATA2_dist.html">as_SPATA2_dist()</a></code> </p>
         </td>
-        <td><p>Plot IAS heatmap</p></td>
+        <td><p>Distance transformation</p></td>
       </tr><tr><td>
-          <p><code><a href="plotIasLineplot.html">plotIasLineplot()</a></code> <code><a href="plotIasLineplot.html">plotIasLineplotSC()</a></code> </p>
+          <p><code><a href="extract_unit.html">extract_unit()</a></code> </p>
         </td>
-        <td><p>Plot IAS lineplot</p></td>
+        <td><p>Extract distance units</p></td>
       </tr><tr><td>
-          <p><code><a href="plotIasLineplotFitted.html">plotIasLineplotFitted()</a></code> </p>
+          <p><code><a href="extract_value.html">extract_value()</a></code> </p>
         </td>
-        <td><p>Plot IAS model fitting</p></td>
+        <td><p>Extract distance value</p></td>
       </tr><tr><td>
-          <p><code><a href="plotIasRidgeplot.html">plotIasRidgeplot()</a></code> <code><a href="plotIasRidgeplot.html">plotIasRidgeplotSC()</a></code> </p>
+          <p><code><a href="is_area.html">is_area()</a></code> <code><a href="is_area.html">is_area_pixel()</a></code> <code><a href="is_area.html">is_area_si()</a></code> </p>
         </td>
-        <td><p>Plot IAS rideplot</p></td>
+        <td><p>Test area input</p></td>
+      </tr><tr><td>
+          <p><code><a href="is_dist.html">is_dist()</a></code> <code><a href="is_dist.html">is_dist_si()</a></code> <code><a href="is_dist.html">is_dist_pixel()</a></code> </p>
+        </td>
+        <td><p>Test distance input</p></td>
+      </tr><tr><td>
+          <p><code><a href="is_unit_area.html">is_unit_area()</a></code> </p>
+        </td>
+        <td><p>Test unit of area input</p></td>
+      </tr><tr><td>
+          <p><code><a href="is_unit_dist.html">is_unit_dist()</a></code> </p>
+        </td>
+        <td><p>Test unit of length input</p></td>
+      </tr><tr><td>
+          <p><code><a href="transform_area_si_to_pixel.html">transform_area_si_to_pixel()</a></code> <code><a href="transform_area_si_to_pixel.html">transform_area_si_to_pixels()</a></code> </p>
+        </td>
+        <td><p>Convert area in SI units to pixel</p></td>
+      </tr><tr><td>
+          <p><code><a href="transform_dist_si_to_pixel.html">transform_dist_si_to_pixel()</a></code> <code><a href="transform_dist_si_to_pixel.html">transform_dist_si_to_pixels()</a></code> </p>
+        </td>
+        <td><p>Convert from European Units of Length to pixels</p></td>
+      </tr><tr><td>
+          <p><code><a href="transform_pixel_to_area_si.html">transform_pixel_to_area_si()</a></code> </p>
+        </td>
+        <td><p>Converts from pixel to area in SI units</p></td>
+      </tr><tr><td>
+          <p><code><a href="transform_pixel_to_dist_si.html">transform_pixel_to_dist_si()</a></code> <code><a href="transform_pixel_to_dist_si.html">transform_pixels_to_dist_si()</a></code> </p>
+        </td>
+        <td><p>Convert from pixels to European units of length</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="s-classes">S4 Classes <a href="#s-classes" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="HistologyImaging-class.html">HistologyImaging-class</a></code> <code><a href="HistologyImaging-class.html">HistologyImaging</a></code> </p>
+        </td>
+        <td><p>The <code>HistologyImaging</code> - Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="ImageAnnotation-class.html">ImageAnnotation-class</a></code> <code><a href="ImageAnnotation-class.html">ImageAnnotation</a></code> </p>
+        </td>
+        <td><p>The <code>ImageAnnotation</code> - Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="spata2-class.html">spata2-class</a></code> <code><a href="spata2-class.html">spata2</a></code> </p>
+        </td>
+        <td><p>The <code>spata2</code>- Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="SpatialMethod-class.html">SpatialMethod-class</a></code> <code><a href="SpatialMethod-class.html">SpatialMethod</a></code> </p>
+        </td>
+        <td><p>The <code>SpatialMethod</code> - Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="SpatialTrajectory-class.html">SpatialTrajectory-class</a></code> <code><a href="SpatialTrajectory-class.html">SpatialTrajectory</a></code> </p>
+        </td>
+        <td><p>The <code>SpatialTrajectory</code> - Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="Trajectory-class.html">Trajectory-class</a></code> <code><a href="Trajectory-class.html">Trajectory</a></code> </p>
+        </td>
+        <td><p>The <code>Trajectory</code> - Class</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="visualization">Visualization <a href="#visualization" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>The plot-family is again split in several subfamilies.</p>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="surface-plots">Surface Plots <a href="#surface-plots" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>Visualize the barcode-spots information with a spatial dimension.</p>
+          <h3 id="autoencoder-related">Autoencoder related <a href="#autoencoder-related" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="plotSurface.html">plotSurface()</a></code> <code><a href="plotSurface.html">plotSurface2()</a></code> <code><a href="plotSurface.html">plotSurfaceInteractive()</a></code> </p>
+          <p><code><a href="plotAutoencoderAssessment.html">plotAutoencoderAssessment()</a></code> </p>
         </td>
-        <td><p>Plot the surface of the sample</p></td>
+        <td><p>Plot total variance of different neural networks</p></td>
       </tr><tr><td>
-          <p><code><a href="plotSurfaceAverage.html">plotSurfaceAverage()</a></code> </p>
+          <p><code><a href="plotAutoencoderResults.html">plotAutoencoderResults()</a></code> </p>
         </td>
-        <td><p>Plot several surface plots colored by gene averages</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSurfaceBase.html">plotSurfaceBase()</a></code> </p>
-        </td>
-        <td><p>Plot surface with R base plotting</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSurfaceComparison.html">plotSurfaceComparison()</a></code> <code><a href="plotSurfaceComparison.html">plotSurfaceComparison2()</a></code> </p>
-        </td>
-        <td><p>Plot several surface plots colored by numeric variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSurfaceIAS.html">plotSurfaceIAS()</a></code> </p>
-        </td>
-        <td><p>Visualize screening area of IAS-algorithm</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSurfaceQuantiles.html">plotSurfaceQuantiles()</a></code> </p>
-        </td>
-        <td><p>Plot a surface plot colored by binned numeric variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSurfaceSC.html">plotSurfaceSC()</a></code> </p>
-        </td>
-        <td><p>Plot single cells on surface</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="ggplayer">ggpLayer <a href="#ggplayer" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>Add ggroto objects to ggplot2 plots.</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="ggpLayerAxesClean.html">ggpLayerAxesClean()</a></code> </p>
-        </td>
-        <td><p>Display clean axes</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerAxesSI.html">ggpLayerAxesSI()</a></code> </p>
-        </td>
-        <td><p>Display axes with SI units of length</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerColorGroupScale.html">ggpLayerColorGroupScale()</a></code> </p>
-        </td>
-        <td><p>Add group specific color spectrum</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerEncirclingIAS.html">ggpLayerEncirclingIAS()</a></code> </p>
-        </td>
-        <td><p>Add IAS area expansion</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerFrame.html">ggpLayerFrame()</a></code> <code><a href="ggpLayerFrame.html">ggpLayerFixFrame()</a></code> </p>
-        </td>
-        <td><p>Fix ggplot frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerFrameByCoords.html">ggpLayerFrameByCoords()</a></code> <code><a href="ggpLayerFrameByCoords.html">ggpLayerFrameByImage()</a></code> </p>
-        </td>
-        <td><p>Set plot limits</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerGroupOutline.html">ggpLayerGroupOutline()</a></code> </p>
-        </td>
-        <td><p>Add group outline</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerHorizonIAS.html">ggpLayerHorizonIAS()</a></code> </p>
-        </td>
-        <td><p>Add IAS area horizon</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerImage.html">ggpLayerImage()</a></code> </p>
-        </td>
-        <td><p>Add histology image</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerImgAnnOutline.html">ggpLayerImgAnnBorder()</a></code> <code><a href="ggpLayerImgAnnOutline.html">ggpLayerImgAnnOutline()</a></code> </p>
-        </td>
-        <td><p>Add borders of annotated structures</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerImgAnnPointer.html">ggpLayerImgAnnPointer()</a></code> </p>
-        </td>
-        <td><p>Add pointer towards image annotations</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerImgAnnRect.html">ggpLayerImgAnnRect()</a></code> </p>
-        </td>
-        <td><p>Add a rectangular around an image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerLineplotAid.html">ggpLayerLineplotAid()</a></code> </p>
-        </td>
-        <td><p>Add horizontal and vertical lines</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerRect.html">ggpLayerRect()</a></code> </p>
-        </td>
-        <td><p>Add a rectangular to the plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerScaleBarSI.html">ggpLayerScaleBarSI()</a></code> </p>
-        </td>
-        <td><p>Add a scale bar in SI units</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerThemeCoords.html">ggpLayerThemeCoords()</a></code> </p>
-        </td>
-        <td><p>Add coordinates theme</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerTissueOutline.html">ggpLayerTissueOutline()</a></code> </p>
-        </td>
-        <td><p>Add a hull that outlines the tissue</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerTrajectories.html">ggpLayerTrajectories()</a></code> </p>
-        </td>
-        <td><p>Add trajectory layer</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayerZoom.html">ggpLayerZoom()</a></code> </p>
-        </td>
-        <td><p>Set plot limits manually</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggpLayer_dummy.html">ggpLayer_dummy()</a></code> </p>
-        </td>
-        <td><p>ggpLayer</p></td>
+        <td><p>Plot scaled vs. denoised expression</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="copy-number-variation">Copy Number Variation <a href="#copy-number-variation" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
@@ -1187,7 +1375,7 @@
       </tr><tr><td>
           <p><code><a href="plotDeaVolcano.html">plotDeaVolcano()</a></code> <code><a href="plotDeaVolcano.html">plotDeaVolcano1v1()</a></code> </p>
         </td>
-        <td><p>Visualize gene expression testing</p></td>
+        <td><p>Plot gene expression testing results</p></td>
       </tr><tr><td>
           <p><code><a href="plotGseaDotPlot.html">plotGseaDotPlot()</a></code> </p>
         </td>
@@ -1205,990 +1393,10 @@
         </td>
         <td><p>Plot Pca Variation</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="spatial-trajectories">Spatial Trajectories <a href="#spatial-trajectories" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>Visualize the barcode-spots information with a directional dimension.</p>
+          <h3 id="ggplayer-and-other-gg-objects">ggpLayer and other gg objects <a href="#ggplayer-and-other-gg-objects" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>Add ggroto objects to ggplot2 plots.</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="plotTrajectory.html">plotTrajectory()</a></code> </p>
-        </td>
-        <td><p>Plot trajectory</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryBarplot.html">plotTrajectoryBarplot()</a></code> </p>
-        </td>
-        <td><p>Plot categorical trajectory dynamics</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryEvaluation.html">plotTrajectoryEvaluation()</a></code> </p>
-        </td>
-        <td><p>Plot STS evaluation per variable-model pair</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryFeatures.html">plotTrajectoryFeatures()</a></code> <code><a href="plotTrajectoryFeatures.html">plotTrajectoryGenes()</a></code> <code><a href="plotTrajectoryFeatures.html">plotTrajectoryGeneSets()</a></code> </p>
-        </td>
-        <td><p>Plot continuous trajectory dynamics in lineplots</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryFeaturesDiscrete.html">plotTrajectoryFeaturesDiscrete()</a></code> </p>
-        </td>
-        <td><p>Plot discrete trajectory dynamics</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryFit.html">plotTrajectoryFit()</a></code> <code><a href="plotTrajectoryFit.html">plotTrajectoryFitCustomized()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryHeatmap.html">plotTrajectoryHeatmap()</a></code> </p>
-        </td>
-        <td><p>Plot trajectory expression dynamic in heatmap</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryLineplot.html">plotTrajectoryLineplot()</a></code> <code><a href="plotTrajectoryLineplot.html">plotTrajectoryRidgeplot()</a></code> </p>
-        </td>
-        <td><p>Plot continuous trajectory dynamics</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryLineplotFitted.html">plotTrajectoryLineplotFitted()</a></code> </p>
-        </td>
-        <td><p>Plot trajectory model fitting</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="statistics">Statistics <a href="#statistics" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>Visualize the distribution of variables across groups or the sample and perform statistical tests.</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="plotBarchart.html">plotBarchart()</a></code> </p>
-        </td>
-        <td><p>Plot distribution of discrete variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotBoxplot.html">plotBoxplot()</a></code> <code><a href="plotBoxplot.html">plotDensityplot()</a></code> <code><a href="plotBoxplot.html">plotHistogram()</a></code> <code><a href="plotBoxplot.html">plotRidgeplot()</a></code> <code><a href="plotBoxplot.html">plotVioBoxplot()</a></code> <code><a href="plotBoxplot.html">plotViolinplot()</a></code> </p>
-        </td>
-        <td><p>Plot numeric distribution and statistical tests</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotStatisticsInteractive.html">plotStatisticsInteractive()</a></code> </p>
-        </td>
-        <td><p>Plot distribution of variables interactively</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h3 id="miscellaneous">Miscellaneous <a href="#miscellaneous" class="anchor" aria-hidden="true"></a></h3>
-          <p class="section-desc"></p><p>Visualize a variety of aspects.</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="plotCnvResults.html">plotCnvResults()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDendrogram.html">plotDendrogramCnv()</a></code> <code><a href="plotDendrogram.html">plotDendrogram()</a></code> </p>
-        </td>
-        <td><p>dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotFourStates.html">plotFourStates()</a></code> <code><a href="plotFourStates.html">plotFourStates2()</a></code> </p>
-        </td>
-        <td><p>Gene set state plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotScatterplot.html">plotScatterplot()</a></code> </p>
-        </td>
-        <td><p>Plot numeric variables as a scatterplot</p></td>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="across.html">across()</a></code> <code><a href="across.html">across_dummy()</a></code> </p>
-        </td>
-        <td><p>across</p></td>
-      </tr><tr><td>
-          <p><code><a href="addAutoencoderSetUp.html">addAutoencoderSetUp()</a></code> </p>
-        </td>
-        <td><p>Add the set up of a neural network</p></td>
-      </tr><tr><td>
-          <p><code><a href="addExpressionMatrix.html">addExpressionMatrix()</a></code> </p>
-        </td>
-        <td><p>Add an expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="addFeatures.html">addFeatures()</a></code> </p>
-        </td>
-        <td><p>Add a new feature</p></td>
-      </tr><tr><td>
-          <p><code><a href="addGeneFeatures.html">addGeneFeatures()</a></code> </p>
-        </td>
-        <td><p>Add new gene features</p></td>
-      </tr><tr><td>
-          <p><code><a href="addGeneMetaData.html">addGeneMetaData()</a></code> </p>
-        </td>
-        <td><p>Add gene meta data to the object</p></td>
-      </tr><tr><td>
-          <p><code><a href="addGeneSet.html">addGeneSet()</a></code> <code><a href="addGeneSet.html">addGeneSetsInteractive()</a></code> </p>
-        </td>
-        <td><p>Add a new gene set</p></td>
-      </tr><tr><td>
-          <p><code><a href="addImageDir.html">addImageDir()</a></code> </p>
-        </td>
-        <td><p>Add individual image directories</p></td>
-      </tr><tr><td>
-          <p><code><a href="addPointsBase.html">addPointsBase()</a></code> </p>
-        </td>
-        <td><p>Add points to base surface plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="addSpCorCluster.html">addSpCorCluster()</a></code> </p>
-        </td>
-        <td><p>Add cluster results of spatial correlation results</p></td>
-      </tr><tr><td>
-          <p><code><a href="add_models.html">add_models()</a></code> </p>
-        </td>
-        <td><p>Add models to a data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="adjustDirectoryInstructions.html">adjustDirectoryInstructions()</a></code> </p>
-        </td>
-        <td><p>Adjust default instructions</p></td>
-      </tr><tr><td>
-          <p><code><a href="adjustGeneSetDf.html">adjustGeneSetDf()</a></code> </p>
-        </td>
-        <td><p>Filter gene-set data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="alignImageAnnotation.html">alignImageAnnotation()</a></code> <code><a href="alignImageAnnotation.html">alignSpatialTrajectory()</a></code> </p>
-        </td>
-        <td><p>Align image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="allColorpalettes.html">allColorpalettes()</a></code> <code><a href="allColorpalettes.html">allColorspectra()</a></code> </p>
-        </td>
-        <td><p>Valid colorpanels &amp; -spectra</p></td>
-      </tr><tr><td>
-          <p><code><a href="all_color_palettes.html">all_color_palettes()</a></code> <code><a href="all_color_palettes.html">all_color_spectra()</a></code> </p>
-        </td>
-        <td><p>Color palette names</p></td>
-      </tr><tr><td>
-          <p><code><a href="append_polygon_df.html">append_polygon_df()</a></code> </p>
-        </td>
-        <td><p>Append polygon df</p></td>
-      </tr><tr><td>
-          <p><code><a href="are_all_area_or_dist.html">are_all_area_or_dist()</a></code> </p>
-        </td>
-        <td><p>Test area or distance input</p></td>
-      </tr><tr><td>
-          <p><code><a href="argument_dummy.html">argument_dummy()</a></code> </p>
-        </td>
-        <td><p>Argument dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="asGiotto.html">asGiotto()</a></code> </p>
-        </td>
-        <td><p>Transform <code>SPATA2</code> to <code>Giotto</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="asHistologyImage.html">asHistologyImage()</a></code> </p>
-        </td>
-        <td><p>Convert to class <code>HistologyImage</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="asHistologyImaging.html">asHistologyImaging()</a></code> </p>
-        </td>
-        <td><p>Convert to class <code>HistologyImaging</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="assessTrajectoryTrends.html">assessTrajectoryTrends()</a></code> <code><a href="assessTrajectoryTrends.html">assessTrajectoryTrends2()</a></code> <code><a href="assessTrajectoryTrends.html">assessTrajectoryTrendsCustomized()</a></code> <code><a href="assessTrajectoryTrends.html">assessTrajectoryTrendsCustomized2()</a></code> </p>
-        </td>
-        <td><p>Trajectory trend analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="asSeurat.html">asSeurat()</a></code> </p>
-        </td>
-        <td><p>Transform <code>SPATA2</code> to <code>Seurat</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="asSingleCellExperiment.html">asSingleCellExperiment()</a></code> </p>
-        </td>
-        <td><p>Transform to <code>SingleCellExperiment</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="asSPATA2.html">asSPATA2()</a></code> </p>
-        </td>
-        <td><p>Transform to <code>SPATA2</code> object</p></td>
-      </tr><tr><td>
-          <p><code><a href="asSpatialTrajectory.html">asSpatialTrajectory()</a></code> <code><a href="asSpatialTrajectory.html">asSpatialTrajectory()</a></code> </p>
-        </td>
-        <td><p>Title</p></td>
-      </tr><tr><td>
-          <p><code><a href="asSummarizedExperiment.html">asSummarizedExperiment()</a></code> </p>
-        </td>
-        <td><p>Transform to <code>SummarizedExperiment</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="asVisiumV1.html">asVisiumV1()</a></code> </p>
-        </td>
-        <td><p>Transform <code>HistologyImage</code> to <code>VisiumV1</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="as_SPATA2_dist.html">as_SPATA2_dist()</a></code> </p>
-        </td>
-        <td><p>Distance transformation</p></td>
-      </tr><tr><td>
-          <p><code><a href="as_unit.html">as_meter()</a></code> <code><a href="as_unit.html">as_meter2()</a></code> <code><a href="as_unit.html">as_micrometer()</a></code> <code><a href="as_unit.html">as_micrometer2()</a></code> <code><a href="as_unit.html">as_millimeter()</a></code> <code><a href="as_unit.html">as_millimeter2()</a></code> <code><a href="as_unit.html">as_nanometer()</a></code> <code><a href="as_unit.html">as_nanometer2()</a></code> <code><a href="as_unit.html">as_pixel()</a></code> <code><a href="as_unit.html">as_unit()</a></code> <code><a href="as_unit.html">as_centimeter()</a></code> <code><a href="as_unit.html">as_centimeter2()</a></code> <code><a href="as_unit.html">as_decimeter()</a></code> <code><a href="as_unit.html">as_decimeter2()</a></code> </p>
-        </td>
-        <td><p>Transform distance and area values</p></td>
-      </tr><tr><td>
-          <p><code><a href="attachUnit.html">attachUnit()</a></code> <code><a href="attachUnit.html">attach_uni()</a></code> </p>
-        </td>
-        <td><p>Attach unit to distance</p></td>
-      </tr><tr><td>
-          <p><code><a href="average_genes.html">average_genes()</a></code> </p>
-        </td>
-        <td><p>average_genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="binwidth_dummy.html">binwidth_dummy()</a></code> </p>
-        </td>
-        <td><p>binwidth</p></td>
-      </tr><tr><td>
-          <p><code><a href="bin_by_angle.html">bin_by_angle()</a></code> </p>
-        </td>
-        <td><p>Bin barcode-spots by angle</p></td>
-      </tr><tr><td>
-          <p><code><a href="bin_by_expansion.html">bin_by_expansion()</a></code> </p>
-        </td>
-        <td><p>Bin barcode-spots by area extension</p></td>
-      </tr><tr><td>
-          <p><code><a href="buffer_area.html">buffer_area()</a></code> </p>
-        </td>
-        <td><p>Buffer area</p></td>
-      </tr><tr><td>
-          <p><code><a href="cds_dummy.html">cds_dummy()</a></code> </p>
-        </td>
-        <td><p>Title</p></td>
-      </tr><tr><td>
-          <p><code><a href="checkpoint.html">checkpoint()</a></code> </p>
-        </td>
-        <td><p>Shiny feedback messages</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_all_barcodes.html">check_all_barcodes()</a></code> </p>
-        </td>
-        <td><p>Check barcodes of all matrices and data.frames</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_assign.html">check_assign()</a></code> </p>
-        </td>
-        <td><p>Check assign input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_atdf.html">check_atdf()</a></code> <code><a href="check_atdf.html">check_rtdf()</a></code> </p>
-        </td>
-        <td><p>Check assessed trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_availability.html">check_availability()</a></code> </p>
-        </td>
-        <td><p>Gives feedback if object was not found</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_color_to.html">check_color_to()</a></code> </p>
-        </td>
-        <td><p>Check color to</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_compiled_trajectory_df.html">check_compiled_trajectory_df()</a></code> </p>
-        </td>
-        <td><p>Check compiled trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_coordinate_variables.html">check_coordinate_variables()</a></code> </p>
-        </td>
-        <td><p>Check coordinate variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_coords_df.html">check_coords_df()</a></code> </p>
-        </td>
-        <td><p>Check coords data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_customized_trends.html">check_customized_trends()</a></code> </p>
-        </td>
-        <td><p>Check customized trend list</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_dea_df.html">check_dea_df()</a></code> </p>
-        </td>
-        <td><p>Check de data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_display.html">check_display()</a></code> </p>
-        </td>
-        <td><p>Check display input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_features.html">check_features()</a></code> </p>
-        </td>
-        <td><p>Check feature variables input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_feature_df.html">check_feature_df()</a></code> </p>
-        </td>
-        <td><p>Check feature data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_genes.html">check_genes()</a></code> </p>
-        </td>
-        <td><p>Check gene input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_gene_sets.html">check_gene_sets()</a></code> </p>
-        </td>
-        <td><p>Check gene set input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_method.html">check_method()</a></code> </p>
-        </td>
-        <td><p>Check method input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_monocle_input.html">check_monocle_input()</a></code> </p>
-        </td>
-        <td><p>Check monocle input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_monocle_packages.html">check_monocle_packages()</a></code> </p>
-        </td>
-        <td><p>Makes sure that both packages are installed</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_object.html">check_object()</a></code> </p>
-        </td>
-        <td><p>Check spata object input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_pattern.html">check_pattern()</a></code> </p>
-        </td>
-        <td><p>Check pattern input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_pt.html">check_pt()</a></code> </p>
-        </td>
-        <td><p>Check pt input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_sample.html">check_sample()</a></code> </p>
-        </td>
-        <td><p>Check sample input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_saving.html">check_saving()</a></code> </p>
-        </td>
-        <td><p>Check saving input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_segment.html">check_segment()</a></code> </p>
-        </td>
-        <td><p>Check segment name</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_slot_coordinates.html">check_slot_coordinates()</a></code> <code><a href="check_slot_coordinates.html">check_slot_data()</a></code> <code><a href="check_slot_coordinates.html">check_slot_dim_red()</a></code> <code><a href="check_slot_coordinates.html">check_slot_fdata()</a></code> <code><a href="check_slot_coordinates.html">check_slot_image()</a></code> <code><a href="check_slot_coordinates.html">check_slot_samples()</a></code> <code><a href="check_slot_coordinates.html">check_slot_scvelo()</a></code> <code><a href="check_slot_coordinates.html">check_slot_trajectories()</a></code> <code><a href="check_slot_coordinates.html">check_trajectory_object()</a></code> <code><a href="check_slot_coordinates.html">check_slot_used_genesets()</a></code> <code><a href="check_slot_coordinates.html">check_slot_version()</a></code> </p>
-        </td>
-        <td><p>Check spata slots</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_smooth.html">check_smooth()</a></code> </p>
-        </td>
-        <td><p>Check smooth input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_spata_df.html">check_spata_df()</a></code> </p>
-        </td>
-        <td><p>Check coordinate data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_stdf.html">check_stdf()</a></code> </p>
-        </td>
-        <td><p>Check summarized trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_summarized_trajectory_df.html">check_summarized_trajectory_df()</a></code> </p>
-        </td>
-        <td><p>Check stdf-input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_to.html">check_to()</a></code> </p>
-        </td>
-        <td><p>Gives feedback about input validity</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_trajectory.html">check_trajectory()</a></code> </p>
-        </td>
-        <td><p>Check trajectory name input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_trajectory_binwidth.html">check_trajectory_binwidth()</a></code> </p>
-        </td>
-        <td><p>Check trajectory binwdith input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_uniform_genes.html">check_uniform_genes()</a></code> </p>
-        </td>
-        <td><p>Check uniform genes input</p></td>
-      </tr><tr><td>
-          <p><code><a href="check_variables.html">check_variables()</a></code> </p>
-        </td>
-        <td><p>Check variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="close_area_df.html">close_area_df()</a></code> </p>
-        </td>
-        <td><p>Close area encircling</p></td>
-      </tr><tr><td>
-          <p><code><a href="clrp.html">clrp()</a></code> <code><a href="clrp.html">clrp_dummy()</a></code> </p>
-        </td>
-        <td><p>clrp</p></td>
-      </tr><tr><td>
-          <p><code><a href="clustering.html">clustering</a></code> </p>
-        </td>
-        <td><p>A list of data.frames that contain clustering variables for specific <code>SPATA2</code>
-objects - available via the <code>SPATAData</code> package. Names of the list slots
-correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.
-Names of the cluster variables in the data.frames corresponds to the algorithm used.</p></td>
-      </tr><tr><td>
-          <p><code><a href="clusterSpCorResults.html">clusterSpCorResults()</a></code> </p>
-        </td>
-        <td><p>Cluster genes according to their expression profile</p></td>
-      </tr><tr><td>
-          <p><code><a href="cnv_ref.html">cnv_ref</a></code> </p>
-        </td>
-        <td><p>A list of reference data for copy number variation analysis (CNV)</p></td>
-      </tr><tr><td>
-          <p><code><a href="cnv_regions_df.html">cnv_regions_df</a></code> </p>
-        </td>
-        <td><p>A data.frame necessary for cnv-analysis. Contains information about start and
-end points of chromosomes.</p></td>
-      </tr><tr><td>
-          <p><code><a href="computeCnvByChrArm.html">computeCnvByChrArm()</a></code> </p>
-        </td>
-        <td><p>Compute CNV by chromosome arm</p></td>
-      </tr><tr><td>
-          <p><code><a href="computeGeneMetaData.html">computeGeneMetaData()</a></code> <code><a href="computeGeneMetaData.html">computeGeneMetaData2()</a></code> </p>
-        </td>
-        <td><p>Compute gene summary statistics</p></td>
-      </tr><tr><td>
-          <p><code><a href="compute_angle_between_two_points.html">compute_angle_between_two_points()</a></code> </p>
-        </td>
-        <td><p>Compute angle between two points</p></td>
-      </tr><tr><td>
-          <p><code><a href="compute_distance.html">compute_distance()</a></code> </p>
-        </td>
-        <td><p>Compute the distance between to points</p></td>
-      </tr><tr><td>
-          <p><code><a href="containsHistologyImaging.html">containsHistologyImaging()</a></code> </p>
-        </td>
-        <td><p>Check availability of <code>HistologyImaging</code> object</p></td>
-      </tr><tr><td>
-          <p><code><a href="containsImage.html">containsImage()</a></code> </p>
-        </td>
-        <td><p>Check availability of an image</p></td>
-      </tr><tr><td>
-          <p><code><a href="containsPixelScaleFactor.html">containsPixelScaleFactor()</a></code> </p>
-        </td>
-        <td><p>Check availability of pixel scale factor</p></td>
-      </tr><tr><td>
-          <p><code><a href="countImageAnnotationTags.html">countImageAnnotationTags()</a></code> </p>
-        </td>
-        <td><p>Count image annotation tags</p></td>
-      </tr><tr><td>
-          <p><code><a href="createHistologyImaging.html">createHistologyImaging()</a></code> </p>
-        </td>
-        <td><p>Create S4 Image object for SPATA2</p></td>
-      </tr><tr><td>
-          <p><code><a href="createImageAnnotations.html">addImageAnnotation()</a></code> <code><a href="createImageAnnotations.html">createImageAnnotations()</a></code> </p>
-        </td>
-        <td><p>Interactive image annotations</p></td>
-      </tr><tr><td>
-          <p><code><a href="createSegmentation.html">createSegmentation()</a></code> </p>
-        </td>
-        <td><p>Deprecated in favor of <code><a href="../reference/createSpatialSegmentation.html">createSpatialSegmentation()</a></code></p></td>
-      </tr><tr><td>
-          <p><code><a href="createSpatialSegmentation.html">createSpatialSegmentation()</a></code> </p>
-        </td>
-        <td><p>Interactive sample segmentation</p></td>
-      </tr><tr><td>
-          <p><code><a href="createSpatialTrajectories.html">addSpatialTrajectory()</a></code> <code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Create spatial trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="createTrajectories.html">createTrajectories()</a></code> </p>
-        </td>
-        <td><p>Spatial Trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="createTrajectoryManually.html">createTrajectoryManually()</a></code> </p>
-        </td>
-        <td><p>Create spatial trajectories manually</p></td>
-      </tr><tr><td>
-          <p><code><a href="cropSpataObject.html">cropSpataObject()</a></code> </p>
-        </td>
-        <td><p>Subset object by x- and y-range</p></td>
-      </tr><tr><td>
-          <p><code><a href="data_counts-class.html">data_counts-class</a></code> <code><a href="data_counts-class.html">data_counts</a></code> </p>
-        </td>
-        <td><p>data_counts object</p></td>
-      </tr><tr><td>
-          <p><code><a href="dea.html">dea</a></code> </p>
-        </td>
-        <td><p>A nested list. First layer is named by the sample name. Second layer is named
-by the grouping variable. Third layer is named by the method. Contains
-data.frames of differential gene expression analysis results from the
-function <code><a href="https://satijalab.org/seurat/reference/FindAllMarkers.html" class="external-link">Seurat::FindAllMarkers()</a></code>. Set with <code>setDeaResultsDf()</code>.</p></td>
-      </tr><tr><td>
-          <p><code><a href="default_instructions-class.html">default_instructions-class</a></code> <code><a href="default_instructions-class.html">default_instructions</a></code> </p>
-        </td>
-        <td><p>default instructions</p></td>
-      </tr><tr><td>
-          <p><code><a href="dim_red-class.html">dim_red-class</a></code> <code><a href="dim_red-class.html">dim_red</a></code> </p>
-        </td>
-        <td><p>dim_red object</p></td>
-      </tr><tr><td>
-          <p><code><a href="discardExpressionMatrix.html">discardExpressionMatrix()</a></code> </p>
-        </td>
-        <td><p>Discard an expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="discardFeatures.html">discardFeatures()</a></code> </p>
-        </td>
-        <td><p>Discard features</p></td>
-      </tr><tr><td>
-          <p><code><a href="discardGeneFeatures.html">discardGeneFeatures()</a></code> </p>
-        </td>
-        <td><p>Discard gene features</p></td>
-      </tr><tr><td>
-          <p><code><a href="discardGenes.html">discardGenes()</a></code> </p>
-        </td>
-        <td><p>Discard genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="discardGeneSets.html">discardGeneSets()</a></code> </p>
-        </td>
-        <td><p>Discard gene sets</p></td>
-      </tr><tr><td>
-          <p><code><a href="discardImageAnnotations.html">discardImageAnnotations()</a></code> </p>
-        </td>
-        <td><p>Discard image annotations</p></td>
-      </tr><tr><td>
-          <p><code><a href="downloadPubExample.html">downloadPubExample()</a></code> </p>
-        </td>
-        <td><p>Download data from the publication</p></td>
-      </tr><tr><td>
-          <p><code><a href="dropped_df_dummy.html">dropped_df_dummy()</a></code> </p>
-        </td>
-        <td><p>dropped_df</p></td>
-      </tr><tr><td>
-          <p><code><a href="examineClusterResults.html">examineClusterResults()</a></code> </p>
-        </td>
-        <td><p>Examine clustering results</p></td>
-      </tr><tr><td>
-          <p><code><a href="examineTrajectoryAssessment.html">examineTrajectoryAssessment()</a></code> </p>
-        </td>
-        <td><p>Examine trajectory-moddeling results</p></td>
-      </tr><tr><td>
-          <p><code><a href="exchangeImage.html">exchangeImage()</a></code> </p>
-        </td>
-        <td><p>Exchange image</p></td>
-      </tr><tr><td>
-          <p><code><a href="export.html">subsetIAS()</a></code> <code><a href="export.html">export()</a></code> </p>
-        </td>
-        <td><p>dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="extract_unit.html">extract_unit()</a></code> </p>
-        </td>
-        <td><p>Extract distance units</p></td>
-      </tr><tr><td>
-          <p><code><a href="extract_value.html">extract_value()</a></code> </p>
-        </td>
-        <td><p>Extract distance value</p></td>
-      </tr><tr><td>
-          <p><code><a href="filterDeaDf.html">filterDeaDf()</a></code> </p>
-        </td>
-        <td><p>Postprocess de-analysis results</p></td>
-      </tr><tr><td>
-          <p><code><a href="filterTrends.html">filterTrends()</a></code> <code><a href="filterTrends.html">filterTrajectoryTrends()</a></code> </p>
-        </td>
-        <td><p>Filter variables of a certain trend</p></td>
-      </tr><tr><td>
-          <p><code><a href="findMonocleClusters.html">findMonocleClusters()</a></code> </p>
-        </td>
-        <td><p>Cluster sample via monocle3</p></td>
-      </tr><tr><td>
-          <p><code><a href="findNearestNeighbourClusters.html">findNearestNeighbourClusters()</a></code> </p>
-        </td>
-        <td><p>Cluster sample via nearest neighbour analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="findSeuratClusters.html">findSeuratClusters()</a></code> </p>
-        </td>
-        <td><p>Cluster sample via Seurat</p></td>
-      </tr><tr><td>
-          <p><code><a href="flexible_call_dummy.html">flexible_call_dummy()</a></code> </p>
-        </td>
-        <td><p>flexible_call_dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="flipAll.html">flipAll()</a></code> <code><a href="flipAll.html">flipCoordinates()</a></code> <code><a href="flipAll.html">flipCoordsDf()</a></code> <code><a href="flipAll.html">flipImage()</a></code> <code><a href="flipAll.html">flipImageAnnotations()</a></code> <code><a href="flipAll.html">flipSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Mirror invert image and coordinates</p></td>
-      </tr><tr><td>
-          <p><code><a href="flipCoords.html">flipCoords()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="flip_coords_df.html">flip_coords_df()</a></code> </p>
-        </td>
-        <td><p>Flip coordinate variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="gene_pos_df.html">gene_pos_df</a></code> </p>
-        </td>
-        <td><p>A data.frame necessary for cnv-analysis. Contains information about the gene positions
-on chromosomes. Contains the following variables:</p></td>
-      </tr><tr><td>
-          <p><code><a href="gene_set_path.html">gene_set_path()</a></code> </p>
-        </td>
-        <td><p>gene_set_path</p></td>
-      </tr><tr><td>
-          <p><code><a href="GeomPointFixed.html">GeomPointFixed</a></code> </p>
-        </td>
-        <td><p>GeomPointFixed</p></td>
-      </tr><tr><td>
-          <p><code><a href="GeomSegmentFixed.html">GeomSegmentFixed</a></code> </p>
-        </td>
-        <td><p>GeomSegmentFixed</p></td>
-      </tr><tr><td>
-          <p><code><a href="GeomTextFixed.html">GeomTextFixed</a></code> </p>
-        </td>
-        <td><p>GeomTextFixed</p></td>
-      </tr><tr><td>
-          <p><code><a href="geom_point_fixed.html">geom_point_fixed()</a></code> </p>
-        </td>
-        <td><p>Points (fixed size ~ window ratio)</p></td>
-      </tr><tr><td>
-          <p><code><a href="geom_segment_fixed.html">geom_segment_fixed()</a></code> </p>
-        </td>
-        <td><p>Segments (fixed size ~ window ratio)</p></td>
-      </tr><tr><td>
-          <p><code><a href="geom_text_fixed.html">geom_text_fixed()</a></code> </p>
-        </td>
-        <td><p>Text (fixed size ~ window ratio)</p></td>
-      </tr><tr><td>
-          <p><code><a href="getActiveMatrixName.html">getActiveMatrixName()</a></code> <code><a href="getActiveMatrixName.html">getActiveExpressionMatrixName()</a></code> </p>
-        </td>
-        <td><p>Obtain name of currently active expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="getAutoencoderAssessment.html">getAutoencoderAssessment()</a></code> </p>
-        </td>
-        <td><p>Obtain information about the optimal neural network set up</p></td>
-      </tr><tr><td>
-          <p><code><a href="getAutoencoderSetUp.html">getAutoencoderSetUp()</a></code> </p>
-        </td>
-        <td><p>Obtain information on neural network</p></td>
-      </tr><tr><td>
-          <p><code><a href="getBarcodes.html">getBarcodes()</a></code> </p>
-        </td>
-        <td><p>Obtain specific barcodes</p></td>
-      </tr><tr><td>
-          <p><code><a href="getBarcodesInPolygon.html">getBarcodesInPolygon()</a></code> <code><a href="getBarcodesInPolygon.html">getBarcodesInPolygonList()</a></code> </p>
-        </td>
-        <td><p>Obtain barcodes in polygon</p></td>
-      </tr><tr><td>
-          <p><code><a href="getBarcodeSpotDistance.html">getBarcodeSpotDistance()</a></code> </p>
-        </td>
-        <td><p>Obtain barcode spot distances</p></td>
-      </tr><tr><td>
-          <p><code><a href="getBarcodeSpotDistances.html">getBarcodeSpotDistances()</a></code> </p>
-        </td>
-        <td><p>Obtain distances between barcodes</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCCD.html">getCCD()</a></code> </p>
-        </td>
-        <td><p>Obtain center to center distance</p></td>
-      </tr><tr><td>
-          <p><code><a href="getChrRegionsDf.html">getChrRegionsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain chromosome information</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCnvFeatureNames.html">getCnvFeatureNames()</a></code> </p>
-        </td>
-        <td><p>Obtain features names under which cnv-analysis results are stored.</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCnvGenesDf.html">getCnvGenesDf()</a></code> </p>
-        </td>
-        <td><p>Obtain CNV results by gene</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCnvResults.html">getCnvResults()</a></code> </p>
-        </td>
-        <td><p>Obtain copy-number-variations results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCoordsCenter.html">getCoordsCenter()</a></code> </p>
-        </td>
-        <td><p>Obtain coordinate center</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCoordsDf.html">getSegmentDf()</a></code> <code><a href="getCoordsDf.html">getCoordsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain spatial coordinates</p></td>
-      </tr><tr><td>
-          <p><code><a href="getCoordsRange.html">getCoordsRange()</a></code> </p>
-        </td>
-        <td><p>Obtain coordinate range</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDeaLfcName.html">getDeaLfcName()</a></code> </p>
-        </td>
-        <td><p>Obtain LFC name</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDeaOverview.html">getDeaOverview()</a></code> </p>
-        </td>
-        <td><p>Obtain info on de-analysis storage</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDeaResultsDf.html">getDeaGenes()</a></code> <code><a href="getDeaResultsDf.html">getDeaResultsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain de-analysis results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> </p>
-        </td>
-        <td><p>Obtain default argument inputs</p></td>
-      </tr><tr><td>
-          <p><code><a href="getDimRedDf.html">getDimRedDf()</a></code> <code><a href="getDimRedDf.html">getPcaDf()</a></code> <code><a href="getDimRedDf.html">getPcaMtr()</a></code> <code><a href="getDimRedDf.html">getTsneDf()</a></code> <code><a href="getDimRedDf.html">getUmapDf()</a></code> </p>
-        </td>
-        <td><p>Get dim red df</p></td>
-      </tr><tr><td>
-          <p><code><a href="getExpressionMatrixNames.html">getExpressionMatrixNames()</a></code> </p>
-        </td>
-        <td><p>Obtain names of stored expression matrices</p></td>
-      </tr><tr><td>
-          <p><code><a href="getFeatureDf.html">getFeatureDf()</a></code> </p>
-        </td>
-        <td><p>Obtain feature data</p></td>
-      </tr><tr><td>
-          <p><code><a href="getFeatureNames.html">getFeatureNames()</a></code> </p>
-        </td>
-        <td><p>Obtain feature names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getFeatureValues.html">getFeatureValues()</a></code> </p>
-        </td>
-        <td><p>Obtain unique categorical feature values</p></td>
-      </tr><tr><td>
-          <p><code><a href="getFeatureVariables.html">getFeatureVariables()</a></code> </p>
-        </td>
-        <td><p>Obtain a feature variable</p></td>
-      </tr><tr><td>
-          <p><code><a href="getFromSeurat.html">getFromSeurat()</a></code> </p>
-        </td>
-        <td><p>Safe extraction</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneCounts.html">getGeneCounts()</a></code> </p>
-        </td>
-        <td><p>Obtain total number of gene counts</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneDistMtr.html">getGeneDistMtr()</a></code> </p>
-        </td>
-        <td><p>Obtain distance measurements of spatially correlated genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneFeatureNames.html">getGeneFeatureNames()</a></code> </p>
-        </td>
-        <td><p>Obtain feature names of the gene meta data</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneMetaData.html">getGeneMetaData()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaDf()</a></code> </p>
-        </td>
-        <td><p>Obtain gene meta data</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGenePosDf.html">getGenePosDf()</a></code> </p>
-        </td>
-        <td><p>Obtain gene information</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGenes.html">getGenes()</a></code> <code><a href="getGenes.html">getGenesInteractive()</a></code> </p>
-        </td>
-        <td><p>Obtain gene names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneSetDf.html">getGeneSetDf()</a></code> <code><a href="getGeneSetDf.html">getGeneSetList()</a></code> </p>
-        </td>
-        <td><p>Obtain gene set data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneSetOverview.html">getGeneSetOverview()</a></code> </p>
-        </td>
-        <td><p>Overview about the current gene sets</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGeneSets.html">getGeneSets()</a></code> <code><a href="getGeneSets.html">getGeneSetsInteractive()</a></code> </p>
-        </td>
-        <td><p>Obtain gene set names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGroupingOptions.html">getGroupingOptions()</a></code> </p>
-        </td>
-        <td><p>Obtain variable names that group the barcode spots</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGroupNames.html">getGroupNames()</a></code> </p>
-        </td>
-        <td><p>Obtain group names a grouping variable contains</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGseaDf.html">getGseaDf()</a></code> </p>
-        </td>
-        <td><p>Obtain enrichment data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getGseaResults.html">getGseaResults()</a></code> </p>
-        </td>
-        <td><p>Obtain enrichment results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getIasBinAreas.html">getIasBinAreas()</a></code> </p>
-        </td>
-        <td><p>Calculate IAS bin area</p></td>
-      </tr><tr><td>
-          <p><code><a href="getIasDf.html">getIasDf()</a></code> <code><a href="getIasDf.html">getImageAnnotationScreeningDf()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotation screening data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getIasExpansion.html">getIasExpansion()</a></code> </p>
-        </td>
-        <td><p>Obtain expanded Image Annotation polygons</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImage.html">getImage()</a></code> </p>
-        </td>
-        <td><p>Obtain histology image</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageAnnotation.html">getImageAnnotation()</a></code> </p>
-        </td>
-        <td><p>Obtain object of class <code>ImageAnnotation</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageAnnotations.html">getImageAnnotations()</a></code> </p>
-        </td>
-        <td><p>Obtain list of <code>ImageAnnotation</code>-objects</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageCenter.html">getImageCenter()</a></code> </p>
-        </td>
-        <td><p>Obtain image center</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageDf.html">getImageDf()</a></code> </p>
-        </td>
-        <td><p>Obtain melted image</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageDims.html">getImageDims()</a></code> <code><a href="getImageDims.html">getImageRange()</a></code> </p>
-        </td>
-        <td><p>Obtain image dimensions/ranges</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageDirLowres.html">getImageDir()</a></code> <code><a href="getImageDirLowres.html">getImageDirDefault()</a></code> <code><a href="getImageDirLowres.html">getImageDirectories()</a></code> <code><a href="getImageDirLowres.html">getImageDirHighres()</a></code> <code><a href="getImageDirLowres.html">getImageDirLowres()</a></code> </p>
-        </td>
-        <td><p>Obtain image directories</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageInfo.html">getImageInfo()</a></code> </p>
-        </td>
-        <td><p>Obatain image information</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageObject.html">getImageObject()</a></code> </p>
-        </td>
-        <td><p>Obtain object of class <code>HistologyImage</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageOrigin.html">getImageOrigin()</a></code> </p>
-        </td>
-        <td><p>Obtain image origin</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageRaster.html">getImageRaster()</a></code> <code><a href="getImageRaster.html">getImageRasterInfo()</a></code> </p>
-        </td>
-        <td><p>Obtain image raster-(information)</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImageSectionsByBarcode.html">getImageSectionsByBarcode()</a></code> </p>
-        </td>
-        <td><p>Obtain image sections by barcode spot</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnArea.html">getImgAnnArea()</a></code> </p>
-        </td>
-        <td><p>Obtain area of image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnBarcodes.html">getImgAnnBarcodes()</a></code> </p>
-        </td>
-        <td><p>Obtain barcodes by image annotation tag</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnCenter.html">getImageAnnotationCenter()</a></code> <code><a href="getImgAnnCenter.html">getImgAnnCenter()</a></code> <code><a href="getImgAnnCenter.html">getImgAnnCenters()</a></code> </p>
-        </td>
-        <td><p>Obtain center of an image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnCenterBcsp.html">getImgAnnCenterBcsp()</a></code> </p>
-        </td>
-        <td><p>Obtain center barcode-spot</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnIds.html">getImageAnnotationIds()</a></code> <code><a href="getImgAnnIds.html">getImgAnnIds()</a></code> </p>
-        </td>
-        <td><p>Obtain unit of method</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnOutlineDf.html">getImgAnnBorderDf()</a></code> <code><a href="getImgAnnOutlineDf.html">getImgAnnOutlineDf()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotation border data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnRange.html">getImgAnnRange()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotations range</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnSf.html">getImgAnnSf()</a></code> </p>
-        </td>
-        <td><p>Obtain simple feature</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnSummaryDf.html">getImgAnnSummaryDf()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotation summary</p></td>
-      </tr><tr><td>
-          <p><code><a href="getImgAnnTags.html">getImgAnnTags()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotations tags</p></td>
-      </tr><tr><td>
-          <p><code><a href="getInitiationInfo.html">getInitiationInfo()</a></code> <code><a href="getInitiationInfo.html">getInitiationInput()</a></code> </p>
-        </td>
-        <td><p>Obtain information about object initiation</p></td>
-      </tr><tr><td>
-          <p><code><a href="getMatrix.html">getCountMatrix()</a></code> <code><a href="getMatrix.html">getExpressionMatrix()</a></code> <code><a href="getMatrix.html">getMatrix()</a></code> </p>
-        </td>
-        <td><p>Obtain count and expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="getModelEvaluationDf.html">getModelEvaluationDf()</a></code> </p>
-        </td>
-        <td><p>Obtain model evaluation</p></td>
-      </tr><tr><td>
-          <p><code><a href="getPixelDf.html">getPixelDf()</a></code> </p>
-        </td>
-        <td><p>Obtain pixel data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getPixelScaleFactor.html">getPixelScaleFactor()</a></code> </p>
-        </td>
-        <td><p>Obtain scale factor for pixel to Euol conversion</p></td>
-      </tr><tr><td>
-          <p><code><a href="getProjectionDf.html">getProjectionDf()</a></code> </p>
-        </td>
-        <td><p>Obtain trajectory projection</p></td>
-      </tr><tr><td>
-          <p><code><a href="getPrResults.html">getPrResults()</a></code> <code><a href="getPrResults.html">getPatternNames()</a></code> </p>
-        </td>
-        <td><p>Obtain pattern recognition results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getResultsDf.html">getResultsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain results stored in data.frames</p></td>
-      </tr><tr><td>
-          <p><code><a href="getResultsVec.html">getResultsVec()</a></code> </p>
-        </td>
-        <td><p>Obtain screening results stored in vectors</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSampleAreaSize.html">getSampleAreaSize()</a></code> </p>
-        </td>
-        <td><p>Obtain sample area size</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSampleName.html">getSampleNames()</a></code> <code><a href="getSampleName.html">getSampleName()</a></code> </p>
-        </td>
-        <td><p>Obtain name of <code>SPATA2</code> object</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSegmentationNames.html">addSegmentationVariable()</a></code> <code><a href="getSegmentationNames.html">discardSegmentationVariable()</a></code> <code><a href="getSegmentationNames.html">getSegmentationNames()</a></code> <code><a href="getSegmentationNames.html">getSegmentationVariableNames()</a></code> </p>
-        </td>
-        <td><p>Obtain segmentation variable names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSegmentNames.html">getSegmentNames()</a></code> </p>
-        </td>
-        <td><p>Obtain segment names</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSignatureEnrichment.html">getSignatureEnrichment()</a></code> </p>
-        </td>
-        <td><p>Obtain signature enrichment</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSmrdResultsDf.html">getSmrdResultsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain IAS results (data.frame)</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpataDf.html">getSpataDf()</a></code> </p>
-        </td>
-        <td><p>Obtain a spata-data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpataDir.html">getSpataDir()</a></code> </p>
-        </td>
-        <td><p>Obtain SPATA2 object directory</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpatialMethod.html">getSpatialMethod()</a></code> </p>
-        </td>
-        <td><p>Obtain spatial method</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpatialTrajectory.html">getSpatialTrajectory()</a></code> <code><a href="getSpatialTrajectory.html">getSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Obtain objects of class <code>SpatialTrajectory</code>.</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpatialTrajectoryIds.html">getSpatialTrajectoryIds()</a></code> </p>
-        </td>
-        <td><p>Obtain spatial trajectory IDs</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpCorCluster.html">getSpCorCluster()</a></code> <code><a href="getSpCorCluster.html">getSpCorClusterNames()</a></code> </p>
-        </td>
-        <td><p>Obtain cluster results based on spatial correlation analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="getSpCorResults.html">getSpCorResults()</a></code> </p>
-        </td>
-        <td><p>Obtain spatial correlation results</p></td>
-      </tr><tr><td>
-          <p><code><a href="getStsDf.html">getStsDf()</a></code> </p>
-        </td>
-        <td><p>Obtain spatial trajectory screening data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryDf.html">getTrajectoryDf()</a></code> </p>
-        </td>
-        <td><p>Obtain a trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryIds.html">getTrajectoryIds()</a></code> </p>
-        </td>
-        <td><p>Obtain trajectory ids</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryLength.html">getTrajectoryLength()</a></code> </p>
-        </td>
-        <td><p>Obtain length of trajectory</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryNames.html">getTrajectoryNames()</a></code> </p>
-        </td>
-        <td><p>Deprecated.</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryObject.html">getTrajectoryObject()</a></code> </p>
-        </td>
-        <td><p>Obtain trajectory object</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectoryScreeningDf.html">getTrajectoryScreeningDf()</a></code> <code><a href="getTrajectoryScreeningDf.html">getTrajectoryDf()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectorySegmentDf.html">getTrajectorySegmentDf()</a></code> </p>
-        </td>
-        <td><p>Obtain trjectory course</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_img_ann_helper.html">get_img_ann_helper()</a></code> </p>
-        </td>
-        <td><p>Obtain image annotation screening data.frame</p></td>
-      </tr><tr><td>
           <p><code><a href="ggpInit.html">ggpInit()</a></code> </p>
         </td>
         <td><p>Initiate ggplot2 layering</p></td>
@@ -2229,10 +1437,6 @@ on chromosomes. Contains the following variables:</p></td>
         </td>
         <td><p>Add histology image</p></td>
       </tr><tr><td>
-          <p><code><a href="ggpLayerImgAnnOutline.html">ggpLayerImgAnnBorder()</a></code> <code><a href="ggpLayerImgAnnOutline.html">ggpLayerImgAnnOutline()</a></code> </p>
-        </td>
-        <td><p>Add borders of annotated structures</p></td>
-      </tr><tr><td>
           <p><code><a href="ggpLayerImgAnnPointer.html">ggpLayerImgAnnPointer()</a></code> </p>
         </td>
         <td><p>Add pointer towards image annotations</p></td>
@@ -2269,419 +1473,81 @@ on chromosomes. Contains the following variables:</p></td>
         </td>
         <td><p>Set plot limits manually</p></td>
       </tr><tr><td>
-          <p><code><a href="ggpLayer_dummy.html">ggpLayer_dummy()</a></code> </p>
+          <p><code><a href="theme_lineplot_gradient.html">theme_lineplot_gradient()</a></code> <code><a href="theme_lineplot_gradient.html">theme_ridgeplot_gradient()</a></code> <code><a href="theme_lineplot_gradient.html">theme_trajectory_fit()</a></code> </p>
         </td>
-        <td><p>ggpLayer</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggplot_dummy.html">ggplot_dummy()</a></code> </p>
-        </td>
-        <td><p>ggplot</p></td>
-      </tr><tr><td>
-          <p><code><a href="ggplot_family.html">ggplot_family()</a></code> </p>
-        </td>
-        <td><p>ggplot_family</p></td>
-      </tr><tr><td>
-          <p><code><a href="gradientToModelIAS.html">gradientToModelIAS()</a></code> </p>
-        </td>
-        <td><p>Create input for <code>model_add</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="gsdf.html">gsdf</a></code> </p>
-        </td>
-        <td><p>The default collection of frequently used gene-sets</p></td>
-      </tr><tr><td>
-          <p><code><a href="HistologyImage-class.html">HistologyImage-class</a></code> <code><a href="HistologyImage-class.html">HistologyImage</a></code> </p>
-        </td>
-        <td><p>The <code>HistologyImage</code> - Class</p></td>
-      </tr><tr><td>
-          <p><code><a href="HistologyImaging-class.html">HistologyImaging-class</a></code> <code><a href="HistologyImaging-class.html">HistologyImaging</a></code> </p>
-        </td>
-        <td><p>The <code>HistologyImaging</code> - Class</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_add_barcode_suffix.html">hlpr_add_barcode_suffix()</a></code> </p>
-        </td>
-        <td><p>Make sure that barcodes are spata-like</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_add_models.html">hlpr_add_models()</a></code> <code><a href="hlpr_add_models.html">hlpr_add_residuals()</a></code> <code><a href="hlpr_add_models.html">hlpr_add_residuals_diet()</a></code> <code><a href="hlpr_add_models.html">hlpr_add_residuals_customized()</a></code> <code><a href="hlpr_add_models.html">hlpr_summarize_residuals()</a></code> <code><a href="hlpr_add_models.html">hlpr_name_models()</a></code> <code><a href="hlpr_add_models.html">hlpr_filter_trend()</a></code> </p>
-        </td>
-        <td><p>Helper functions for trajectory ranking</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_add_old_coords.html">hlpr_add_old_coords()</a></code> </p>
-        </td>
-        <td><p>Adds old coordinates</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_add_residuals2.html">hlpr_add_residuals2()</a></code> </p>
-        </td>
-        <td><p>Title</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_adjust_legend_size.html">hlpr_adjust_legend_size()</a></code> </p>
-        </td>
-        <td><p>Adjusts the size of discrete legend points</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_assess_trajectory_trends.html">hlpr_assess_trajectory_trends()</a></code> <code><a href="hlpr_assess_trajectory_trends.html">hlpr_assess_trajectory_trends_customized()</a></code> </p>
-        </td>
-        <td><p>Assess trajectory ranking.</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_assign_arguments.html">hlpr_assign_arguments()</a></code> </p>
-        </td>
-        <td><p>Assign arguments to calling function</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_breaks.html">hlpr_breaks()</a></code> </p>
-        </td>
-        <td><p>Calculates breaks for heatmap according to input matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_compare_samples.html">hlpr_compare_samples()</a></code> </p>
-        </td>
-        <td><p>Compare samples within an object</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_compile_trajectory.html">hlpr_compile_trajectory()</a></code> </p>
-        </td>
-        <td><p>Compiles a trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_display_title.html">hlpr_display_title()</a></code> <code><a href="hlpr_display_title.html">hlpr_display_subtitle()</a></code> </p>
-        </td>
-        <td><p>No documentation needed</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_dist_mtr_to_df.html">hlpr_dist_mtr_to_df()</a></code> </p>
-        </td>
-        <td><p>Convert distance matrix to distance data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_gene_set_name.html">hlpr_gene_set_name()</a></code> </p>
-        </td>
-        <td><p>Removes the class part of a gene set string</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_geom_trajectory_fit.html">hlpr_geom_trajectory_fit()</a></code> </p>
-        </td>
-        <td><p>Easy switch between geom line and and geom smooth</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_image_add_on.html">hlpr_image_add_on()</a></code> <code><a href="hlpr_image_add_on.html">hlpr_image_add_on2()</a></code> <code><a href="hlpr_image_add_on.html">hlpr_image_to_df()</a></code> </p>
-        </td>
-        <td><p>Provides the image as ggplot background</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_join_with_color_by.html">hlpr_join_with_color_by()</a></code> </p>
-        </td>
-        <td><p>Join with single value</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_labs_add_on.html">hlpr_labs_add_on()</a></code> </p>
-        </td>
-        <td><p>Return customized ggplot:labs()</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_normalize_imap.html">hlpr_normalize_imap()</a></code> </p>
-        </td>
-        <td><p>Normalize gene or gene set values</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_normalize_vctr.html">hlpr_normalize_vctr()</a></code> </p>
-        </td>
-        <td><p>Normalize gene or gene set values</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_one_distinct.html">hlpr_one_distinct()</a></code> </p>
-        </td>
-        <td><p>Number of distinct values equal to 1?</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_process_spatial_correlation_cluster.html">hlpr_process_spatial_correlation_cluster()</a></code> </p>
-        </td>
-        <td><p>Process spatial correlation results</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_rank_trajectory_trends.html">hlpr_rank_trajectory_trends()</a></code> <code><a href="hlpr_rank_trajectory_trends.html">hlpr_rank_trajectory_trends_customized()</a></code> </p>
-        </td>
-        <td><p>Rank trajectory trends.</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_run_cnva_pca.html">hlpr_run_cnva_pca()</a></code> </p>
-        </td>
-        <td><p>run pca on the cnv-matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_save_spata_object.html">hlpr_save_spata_object()</a></code> </p>
-        </td>
-        <td><p>Save spata object inside functions</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_scatterplot.html">hlpr_scatterplot()</a></code> </p>
-        </td>
-        <td><p>Color to + scatterplot helper</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_smooth.html">hlpr_smooth()</a></code> </p>
-        </td>
-        <td><p>Smooth variables spatially</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_smooth_shiny.html">hlpr_smooth_shiny()</a></code> </p>
-        </td>
-        <td><p>Smooth variable spatially in mini-shiny-apps</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_subset_across.html">hlpr_subset_across()</a></code> </p>
-        </td>
-        <td><p>Subset the across-variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_summarize_trajectory_df.html">hlpr_summarize_trajectory_df()</a></code> </p>
-        </td>
-        <td><p>Join and summarize compiled trajectory data.frames</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_vector_projection.html">hlpr_vector_projection()</a></code> </p>
-        </td>
-        <td><p>Perform vector projection</p></td>
-      </tr><tr><td>
-          <p><code><a href="hlpr_widen_trajectory_df.html">hlpr_widen_trajectory_df()</a></code> </p>
-        </td>
-        <td><p>Widen trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="ImageAnnotation-class.html">ImageAnnotation-class</a></code> <code><a href="ImageAnnotation-class.html">ImageAnnotation</a></code> </p>
-        </td>
-        <td><p>The <code>ImageAnnotation</code> - Class</p></td>
-      </tr><tr><td>
-          <p><code><a href="ImageAnnotationScreening-class.html">ImageAnnotationScreening-class</a></code> <code><a href="ImageAnnotationScreening-class.html">ImageAnnotationScreening</a></code> </p>
-        </td>
-        <td><p>The <code>ImageAnnotationScreening</code> - Class</p></td>
-      </tr><tr><td>
-          <p><code><a href="imageAnnotationScreening.html">imageAnnotationScreening()</a></code> </p>
-        </td>
-        <td><p>Implementation of the IAS-algorithm</p></td>
-      </tr><tr><td>
-          <p><code><a href="imageAnnotationToSegmentation.html">imageAnnotationToSegmentation()</a></code> </p>
-        </td>
-        <td><p>Convert image annotation to segmentation</p></td>
-      </tr><tr><td>
-          <p><code><a href="image_annotations.html">image_annotations</a></code> </p>
-        </td>
-        <td><p>A list of lists of image annotations for specific <code>SPATA2</code>
-objects - available via the <code>SPATAData</code> package. Names of the list slots
-correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.</p></td>
-      </tr><tr><td>
-          <p><code><a href="image_dummy.html">image_dummy()</a></code> </p>
-        </td>
-        <td><p>image_dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="include_tissue_outline.html">include_tissue_outline()</a></code> </p>
-        </td>
-        <td><p>Include spatial extent of tissue sections in analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="inferSingleCellGradient.html">inferSingleCellGradient()</a></code> </p>
-        </td>
-        <td><p>Count cells depending on distance to image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="initiateSpataObject_10X.html">initiateSpataObject_10X()</a></code> </p>
-        </td>
-        <td><p>Initiate a spata-object from 10X Visium</p></td>
-      </tr><tr><td>
-          <p><code><a href="initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr()</a></code> </p>
-        </td>
-        <td><p>Initiate a spata-object from a raw count matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="initiateSpataObject_Empty.html">initiateSpataObject_Empty()</a></code> </p>
-        </td>
-        <td><p>Initiate an empty spata-object</p></td>
-      </tr><tr><td>
-          <p><code><a href="initiateSpataObject_Examples.html">initiateSpataObject_Examples()</a></code> </p>
-        </td>
-        <td><p>Initiate a spata-object from example data sets</p></td>
-      </tr><tr><td>
-          <p><code><a href="initiateSpataObject_ExprMtr.html">initiateSpataObject_ExprMtr()</a></code> </p>
-        </td>
-        <td><p>Initiate spata object from scaled expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="intersect_polygons.html">intersect_polygons()</a></code> </p>
-        </td>
-        <td><p>Test polygon intersection</p></td>
-      </tr><tr><td>
-          <p><code><a href="is_area.html">is_area()</a></code> <code><a href="is_area.html">is_area_pixel()</a></code> <code><a href="is_area.html">is_area_si()</a></code> </p>
-        </td>
-        <td><p>Test area input</p></td>
-      </tr><tr><td>
-          <p><code><a href="is_dist.html">is_dist()</a></code> <code><a href="is_dist.html">is_dist_si()</a></code> <code><a href="is_dist.html">is_dist_pixel()</a></code> </p>
-        </td>
-        <td><p>Test distance input</p></td>
-      </tr><tr><td>
-          <p><code><a href="is_subsetted_by_segment.html">is_subsetted_by_segment()</a></code> </p>
-        </td>
-        <td><p>Check if object has been subsetted by segment</p></td>
-      </tr><tr><td>
-          <p><code><a href="is_unit_area.html">is_unit_area()</a></code> </p>
-        </td>
-        <td><p>Test unit of area input</p></td>
-      </tr><tr><td>
-          <p><code><a href="is_unit_dist.html">is_unit_dist()</a></code> </p>
-        </td>
-        <td><p>Test unit of length input</p></td>
-      </tr><tr><td>
-          <p><code><a href="joinWith.html">joinWith()</a></code> <code><a href="joinWith.html">joinWithFeatures()</a></code> <code><a href="joinWith.html">joinWithGenes()</a></code> <code><a href="joinWith.html">joinWithGeneSets()</a></code> <code><a href="joinWith.html">joinWithVariables()</a></code> </p>
-        </td>
-        <td><p>Join barcodes with additional variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="joinWithPca.html">joinWithPca()</a></code> <code><a href="joinWithPca.html">joinWithTsne()</a></code> <code><a href="joinWithPca.html">joinWithUmap()</a></code> </p>
-        </td>
-        <td><p>Join barcodes with additional variables</p></td>
+        <td><p>ggplot2 themes</p></td>
       </tr><tr><td>
           <p><code><a href="legendBottom.html">legendBottom()</a></code> <code><a href="legendBottom.html">legendColor()</a></code> <code><a href="legendBottom.html">legendLeft()</a></code> <code><a href="legendBottom.html">legendNone()</a></code> <code><a href="legendBottom.html">legendRight()</a></code> <code><a href="legendBottom.html">legendTop()</a></code> </p>
         </td>
-        <td><p>Ggplot add on wrapper</p></td>
-      </tr><tr><td>
-          <p><code><a href="loadGeneSetDf.html">loadGeneSetDf()</a></code> </p>
+        <td><p>ggplot2 legend manipulation</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="geoms">geoms <a href="#geoms" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="geom_point_fixed.html">geom_point_fixed()</a></code> </p>
         </td>
-        <td><p>Load gene set data.frame</p></td>
+        <td><p>Points (fixed size ~ window ratio)</p></td>
       </tr><tr><td>
-          <p><code><a href="loadGSDF.html">loadGSDF()</a></code> </p>
+          <p><code><a href="geom_segment_fixed.html">geom_segment_fixed()</a></code> </p>
         </td>
-        <td><p>Original load gene set data.frame</p></td>
+        <td><p>Segments (fixed size ~ window ratio)</p></td>
       </tr><tr><td>
-          <p><code><a href="loadImageLowres.html">loadImage()</a></code> <code><a href="loadImageLowres.html">loadImageDefault()</a></code> <code><a href="loadImageLowres.html">loadImageHighres()</a></code> <code><a href="loadImageLowres.html">loadImageLowres()</a></code> </p>
+          <p><code><a href="geom_text_fixed.html">geom_text_fixed()</a></code> </p>
         </td>
-        <td><p>Load known images</p></td>
-      </tr><tr><td>
-          <p><code><a href="loadSpataObject.html">loadCorrespondingCDS()</a></code> <code><a href="loadSpataObject.html">loadCorrespondingSeuratObject()</a></code> <code><a href="loadSpataObject.html">loadSpataObject()</a></code> </p>
+        <td><p>Text (fixed size ~ window ratio)</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="image-image-annotations">Image &amp; Image Annotations <a href="#image-image-annotations" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="addPointsBase.html">addPointsBase()</a></code> </p>
         </td>
-        <td><p>Load corresponding objects</p></td>
+        <td><p>Add points to base surface plot</p></td>
       </tr><tr><td>
-          <p><code><a href="makeContent.resizingSegmentsGrob.html">makeContent(<i>&lt;resizingSegmentsGrob&gt;</i>)</a></code> </p>
+          <p><code><a href="plotImage.html">plotImage()</a></code> </p>
         </td>
-        <td><p>Make content for segments grob</p></td>
+        <td><p>Plot histology image</p></td>
       </tr><tr><td>
-          <p><code><a href="makeContent.resizingTextGrob.html">makeContent(<i>&lt;resizingTextGrob&gt;</i>)</a></code> </p>
+          <p><code><a href="plotImageGgplot.html">plotImageGgplot()</a></code> </p>
         </td>
-        <td><p>Make content for text grob</p></td>
+        <td><p>Plot histology image (ggplot2)</p></td>
       </tr><tr><td>
-          <p><code><a href="mapImageAnnotationTags.html">mapImageAnnotationTags()</a></code> </p>
+          <p><code><a href="plotImagesGgplot.html">plotImagesGgplot()</a></code> </p>
         </td>
-        <td><p>Image annotation and barcode intersection</p></td>
+        <td><p>Plot histology images (ggplot2)</p></td>
       </tr><tr><td>
-          <p><code><a href="mergeGroups.html">mergeGroups()</a></code> </p>
+          <p><code><a href="plotImageAnnotations.html">plotImageAnnotations()</a></code> </p>
         </td>
-        <td><p>Lump groups together</p></td>
-      </tr><tr><td>
-          <p><code><a href="mergeSpataObjects.html">mergeSpataObjects()</a></code> </p>
+        <td><p>Plot image annotations</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="miscellaneous">Miscellaneous <a href="#miscellaneous" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p><p>Visualize a variety of aspects.</p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="plotFourStates.html">plotFourStates()</a></code> <code><a href="plotFourStates.html">plotFourStates2()</a></code> </p>
         </td>
-        <td><p>Merge Spata Objects</p></td>
+        <td><p>Plot state plot</p></td>
       </tr><tr><td>
-          <p><code><a href="method_hclust.html">method_hclust()</a></code> </p>
+          <p><code><a href="plotScatterplot.html">plotScatterplot()</a></code> </p>
         </td>
-        <td><p>method_hclust</p></td>
+        <td><p>Plot numeric variables as a scatterplot</p></td>
       </tr><tr><td>
-          <p><code><a href="moduleAddGeneSetsServer.html">moduleAddGeneSetsServer()</a></code> </p>
+          <p><code><a href="showColors.html">showColors()</a></code> <code><a href="showColors.html">showColorPalettes()</a></code> <code><a href="showColors.html">showColorSpectra()</a></code> </p>
         </td>
-        <td><p>Server of the add gene sets module</p></td>
+        <td><p>Show color palettes and spectra</p></td>
       </tr><tr><td>
-          <p><code><a href="moduleAddGeneSetsUI.html">moduleAddGeneSetsUI()</a></code> </p>
+          <p><code><a href="showModels.html">showModels()</a></code> </p>
         </td>
-        <td><p>UI of the add gene sets module</p></td>
-      </tr><tr><td>
-          <p><code><a href="moduleSurfacePlotServer.html">moduleSurfacePlotServer()</a></code> </p>
-        </td>
-        <td><p>Server of the surface plot module</p></td>
-      </tr><tr><td>
-          <p><code><a href="moduleSurfacePlotUI.html">moduleSurfacePlotUI()</a></code> </p>
-        </td>
-        <td><p>UI of the surface plot module</p></td>
-      </tr><tr><td>
-          <p><code><a href="nBarcodes.html">nBarcodes()</a></code> </p>
-        </td>
-        <td><p>Number of barcodes</p></td>
-      </tr><tr><td>
-          <p><code><a href="nCounts.html">nCounts()</a></code> </p>
-        </td>
-        <td><p>Number of counts</p></td>
-      </tr><tr><td>
-          <p><code><a href="nGenes.html">nGenes()</a></code> </p>
-        </td>
-        <td><p>Number of genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="nImageAnnotations.html">nImageAnnotations()</a></code> </p>
-        </td>
-        <td><p>Number of image annotations</p></td>
-      </tr><tr><td>
-          <p><code><a href="normalize.html">normalize()</a></code> </p>
-        </td>
-        <td><p>Normalize variable</p></td>
-      </tr><tr><td>
-          <p><code><a href="nSpatialTrajectories.html">nSpatialTrajectories()</a></code> <code><a href="nSpatialTrajectories.html">nTrajectories()</a></code> </p>
-        </td>
-        <td><p>Number of spatial trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="object_dummy.html">object_dummy()</a></code> </p>
-        </td>
-        <td><p>object</p></td>
-      </tr><tr><td>
-          <p><code><a href="pb_dummy.html">pb_dummy()</a></code> </p>
-        </td>
-        <td><p>pb</p></td>
-      </tr><tr><td>
-          <p><code><a href="pheatmap.html">pheatmap()</a></code> </p>
-        </td>
-        <td><p>de_df</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotAutoencoderAssessment.html">plotAutoencoderAssessment()</a></code> </p>
-        </td>
-        <td><p>Plot total variance of different neural networks</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotAutoencoderResults.html">plotAutoencoderResults()</a></code> </p>
-        </td>
-        <td><p>Plot scaled vs. denoised expression</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotBarchart.html">plotBarchart()</a></code> </p>
-        </td>
-        <td><p>Plot distribution of discrete variables</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotBoxplot.html">plotBoxplot()</a></code> <code><a href="plotBoxplot.html">plotDensityplot()</a></code> <code><a href="plotBoxplot.html">plotHistogram()</a></code> <code><a href="plotBoxplot.html">plotRidgeplot()</a></code> <code><a href="plotBoxplot.html">plotVioBoxplot()</a></code> <code><a href="plotBoxplot.html">plotViolinplot()</a></code> </p>
-        </td>
-        <td><p>Plot numeric distribution and statistical tests</p></td>
-      </tr><tr><td>
+        <td><p>Show spatial gradient screening models</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="spatial-gradient">Spatial Gradient <a href="#spatial-gradient" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
           <p><code><a href="plotClockplot.html">plotClockplot()</a></code> </p>
         </td>
         <td><p>Plota clockplot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotCnvHeatmap.html">plotCnvHeatmap()</a></code> </p>
-        </td>
-        <td><p>Plot CNV Heatmap</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotCnvLineplot.html">plotCnvLineplot()</a></code> </p>
-        </td>
-        <td><p>Plot CNV Lineplot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotCnvResults.html">plotCnvResults()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotCustomizedTrajectoryTrends.html">plotCustomizedTrajectoryTrends()</a></code> </p>
-        </td>
-        <td><p>Plot customized trajectory trends</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDeaDotPlot.html">plotDeaDotPlot()</a></code> </p>
-        </td>
-        <td><p>Plot differentially expressed genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDeaGeneCount.html">plotDeaGeneCount()</a></code> </p>
-        </td>
-        <td><p>Plot the number of differently expressed genes of certain groups</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDeaHeatmap.html">plotDeaHeatmap()</a></code> </p>
-        </td>
-        <td><p>Plot differentially expressed genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDeaPvalues.html">plotDeaLogFC()</a></code> <code><a href="plotDeaPvalues.html">plotDeaPvalues()</a></code> </p>
-        </td>
-        <td><p>Plot the p-value and log fold change distribution of de-analysis results</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDeaSummary.html">plotDeaSummary()</a></code> </p>
-        </td>
-        <td><p>Plot a summary of differential expression analysis results</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDeaVolcano.html">plotDeaVolcano()</a></code> <code><a href="plotDeaVolcano.html">plotDeaVolcano1v1()</a></code> </p>
-        </td>
-        <td><p>Visualize gene expression testing</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDendrogram.html">plotDendrogramCnv()</a></code> <code><a href="plotDendrogram.html">plotDendrogram()</a></code> </p>
-        </td>
-        <td><p>dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotDistribution.html">plotDistribution()</a></code> <code><a href="plotDistribution.html">plotDistribution2()</a></code> <code><a href="plotDistribution.html">plotDistributionAcross()</a></code> <code><a href="plotDistribution.html">plotDistributionAcross2()</a></code> <code><a href="plotDistribution.html">plotDistributionDiscrete()</a></code> </p>
-        </td>
-        <td><p>Distribution of continuous values (Deprecated)</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotFourStates.html">plotFourStates()</a></code> <code><a href="plotFourStates.html">plotFourStates2()</a></code> </p>
-        </td>
-        <td><p>Gene set state plot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotGeneDendrogram.html">plotGeneDendrogram()</a></code> </p>
-        </td>
-        <td><p>Visualize clustering results</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotGseaDotPlot.html">plotGseaDotPlot()</a></code> </p>
-        </td>
-        <td><p>Plot gene set enrichment</p></td>
       </tr><tr><td>
           <p><code><a href="plotIasBarplot.html">plotIasBarplot()</a></code> <code><a href="plotIasBarplot.html">plotIasBarplotSC()</a></code> </p>
         </td>
@@ -2707,59 +1573,63 @@ correspond to the sample names in variable  <em>sample</em> of <code><a href="ht
         </td>
         <td><p>Plot IAS rideplot</p></td>
       </tr><tr><td>
-          <p><code><a href="plotImage.html">plotImage()</a></code> </p>
+          <p><code><a href="plotOverview.html">plotOverview()</a></code> </p>
         </td>
-        <td><p>Plot histology image</p></td>
+        <td><p>Plot overview of S4 objects</p></td>
       </tr><tr><td>
-          <p><code><a href="plotImageAnnotations.html">plotImageAnnotations()</a></code> </p>
+          <p><code><a href="plotVolcano.html">plotVolcano()</a></code> </p>
         </td>
-        <td><p>Plot image annotations</p></td>
+        <td><p>Compare evaluation of spatially opposing fits</p></td>
       </tr><tr><td>
-          <p><code><a href="plotImageGgplot.html">plotImageGgplot()</a></code> </p>
+          <p><code><a href="plotTrajectoryBarplot.html">plotTrajectoryBarplot()</a></code> </p>
         </td>
-        <td><p>Plot histology image (ggplot2)</p></td>
+        <td><p>Plot categorical trajectory dynamics</p></td>
       </tr><tr><td>
-          <p><code><a href="plotImagesGgplot.html">plotImagesGgplot()</a></code> </p>
+          <p><code><a href="plotTrajectoryEvaluation.html">plotTrajectoryEvaluation()</a></code> </p>
         </td>
-        <td><p>Plot histology images (ggplot2)</p></td>
+        <td><p>Plot STS evaluation per variable-model pair</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotTrajectoryHeatmap.html">plotTrajectoryHeatmap()</a></code> </p>
+        </td>
+        <td><p>Plot trajectory expression dynamic in heatmap</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotTrajectoryLineplot.html">plotTrajectoryLineplot()</a></code> <code><a href="plotTrajectoryLineplot.html">plotTrajectoryRidgeplot()</a></code> </p>
+        </td>
+        <td><p>Plot continuous trajectory dynamics</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotTrajectoryLineplotFitted.html">plotTrajectoryLineplotFitted()</a></code> </p>
+        </td>
+        <td><p>Plot trajectory model fitting</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="statistics">Statistics <a href="#statistics" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="plotBarchart.html">plotBarchart()</a></code> </p>
+        </td>
+        <td><p>Plot distribution of discrete variables</p></td>
+      </tr><tr><td>
+          <p><code><a href="plotBoxplot.html">plotBoxplot()</a></code> <code><a href="plotBoxplot.html">plotDensityplot()</a></code> <code><a href="plotBoxplot.html">plotHistogram()</a></code> <code><a href="plotBoxplot.html">plotRidgeplot()</a></code> <code><a href="plotBoxplot.html">plotVioBoxplot()</a></code> <code><a href="plotBoxplot.html">plotViolinplot()</a></code> </p>
+        </td>
+        <td><p>Plot numeric distribution and statistical tests</p></td>
       </tr><tr><td>
           <p><code><a href="plotMosaicplot.html">plotMosaicplot()</a></code> </p>
         </td>
         <td><p>Plot mosaic plot</p></td>
       </tr><tr><td>
-          <p><code><a href="plotOverview.html">plotOverview()</a></code> </p>
-        </td>
-        <td><p>Plot overview of S4 objects</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotPcaVariation.html">plotPcaVariation()</a></code> </p>
-        </td>
-        <td><p>Plot Pca Variation</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotPseudotime.html">plotPseudotime()</a></code> </p>
-        </td>
-        <td><p>Monocle3 Pseudotime</p></td>
-      </tr><tr><td>
           <p><code><a href="plotRiverplot.html">plotRiverplot()</a></code> </p>
         </td>
         <td><p>Plot riverplots</p></td>
       </tr><tr><td>
-          <p><code><a href="plotScatterplot.html">plotScatterplot()</a></code> </p>
-        </td>
-        <td><p>Plot numeric variables as a scatterplot</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSegmentation.html">plotSegmentation()</a></code> </p>
-        </td>
-        <td><p>Plot segmentation</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSpatialTrajectories.html">plotSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Plot spatial trajectory</p></td>
-      </tr><tr><td>
           <p><code><a href="plotStatisticsInteractive.html">plotStatisticsInteractive()</a></code> </p>
         </td>
         <td><p>Plot distribution of variables interactively</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotSurface.html">plotSurface()</a></code> <code><a href="plotSurface.html">plotSurface2()</a></code> <code><a href="plotSurface.html">plotSurfaceInteractive()</a></code> </p>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h3 id="surface-plots">Surface Plots <a href="#surface-plots" class="anchor" aria-hidden="true"></a></h3>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="plotSurface.html">plotSurface()</a></code> <code><a href="plotSurface.html">plotSurfaceInteractive()</a></code> </p>
         </td>
         <td><p>Plot the surface of the sample</p></td>
       </tr><tr><td>
@@ -2777,7 +1647,7 @@ correspond to the sample names in variable  <em>sample</em> of <code><a href="ht
       </tr><tr><td>
           <p><code><a href="plotSurfaceIAS.html">plotSurfaceIAS()</a></code> </p>
         </td>
-        <td><p>Visualize screening area of IAS-algorithm</p></td>
+        <td><p>Plot screening area of IAS-algorithm</p></td>
       </tr><tr><td>
           <p><code><a href="plotSurfaceQuantiles.html">plotSurfaceQuantiles()</a></code> </p>
         </td>
@@ -2786,512 +1656,6 @@ correspond to the sample names in variable  <em>sample</em> of <code><a href="ht
           <p><code><a href="plotSurfaceSC.html">plotSurfaceSC()</a></code> </p>
         </td>
         <td><p>Plot single cells on surface</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectory.html">plotTrajectory()</a></code> </p>
-        </td>
-        <td><p>Plot trajectory</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryBarplot.html">plotTrajectoryBarplot()</a></code> </p>
-        </td>
-        <td><p>Plot categorical trajectory dynamics</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryEvaluation.html">plotTrajectoryEvaluation()</a></code> </p>
-        </td>
-        <td><p>Plot STS evaluation per variable-model pair</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryFeatures.html">plotTrajectoryFeatures()</a></code> <code><a href="plotTrajectoryFeatures.html">plotTrajectoryGenes()</a></code> <code><a href="plotTrajectoryFeatures.html">plotTrajectoryGeneSets()</a></code> </p>
-        </td>
-        <td><p>Plot continuous trajectory dynamics in lineplots</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryFeaturesDiscrete.html">plotTrajectoryFeaturesDiscrete()</a></code> </p>
-        </td>
-        <td><p>Plot discrete trajectory dynamics</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryFit.html">plotTrajectoryFit()</a></code> <code><a href="plotTrajectoryFit.html">plotTrajectoryFitCustomized()</a></code> </p>
-        </td>
-        <td><p>Deprecated</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryHeatmap.html">plotTrajectoryHeatmap()</a></code> </p>
-        </td>
-        <td><p>Plot trajectory expression dynamic in heatmap</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryLineplot.html">plotTrajectoryLineplot()</a></code> <code><a href="plotTrajectoryLineplot.html">plotTrajectoryRidgeplot()</a></code> </p>
-        </td>
-        <td><p>Plot continuous trajectory dynamics</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotTrajectoryLineplotFitted.html">plotTrajectoryLineplotFitted()</a></code> </p>
-        </td>
-        <td><p>Plot trajectory model fitting</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotUmap.html">plotPca()</a></code> <code><a href="plotUmap.html">plotTsne()</a></code> <code><a href="plotUmap.html">plotTsneComparison()</a></code> <code><a href="plotUmap.html">plotUmap()</a></code> <code><a href="plotUmap.html">plotUmapComparison()</a></code> </p>
-        </td>
-        <td><p>Plot dimensional reduction</p></td>
-      </tr><tr><td>
-          <p><code><a href="plotVolcano.html">plotVolcano()</a></code> </p>
-        </td>
-        <td><p>Compare evaluation of spatially opposing fits</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_screening_evaluation.html">plot_screening_evaluation()</a></code> </p>
-        </td>
-        <td><p>Helper</p></td>
-      </tr><tr><td>
-          <p><code><a href="plot_type_dummy.html">plot_type_dummy()</a></code> </p>
-        </td>
-        <td><p>plot_type</p></td>
-      </tr><tr><td>
-          <p><code><a href="printAutoencoderSummary.html">printAutoencoderSummary()</a></code> </p>
-        </td>
-        <td><p>Print autoencoder summary</p></td>
-      </tr><tr><td>
-          <p><code><a href="printDeaOverview.html">printDeaOverview()</a></code> </p>
-        </td>
-        <td><p>Print overview of all conducted de-analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="printDefaultInstructions.html">printDefaultInstructions()</a></code> </p>
-        </td>
-        <td><p>Print current default settings</p></td>
-      </tr><tr><td>
-          <p><code><a href="printGeneSetOverview.html">printGeneSetOverview()</a></code> </p>
-        </td>
-        <td><p>Print overview about the current gene sets</p></td>
-      </tr><tr><td>
-          <p><code><a href="print_family.html">print_family()</a></code> </p>
-        </td>
-        <td><p>print</p></td>
-      </tr><tr><td>
-          <p><code><a href="process_expand_input.html">process_expand_input()</a></code> </p>
-        </td>
-        <td><p>Process expand input</p></td>
-      </tr><tr><td>
-          <p><code><a href="process_ranges.html">process_ranges()</a></code> </p>
-        </td>
-        <td><p>Process input ranges</p></td>
-      </tr><tr><td>
-          <p><code><a href="process_seurat_object.html">process_seurat_object()</a></code> </p>
-        </td>
-        <td><p>Wrapper around Seurat processing functions</p></td>
-      </tr><tr><td>
-          <p><code><a href="project_on_trajectory.html">project_on_trajectory()</a></code> </p>
-        </td>
-        <td><p>Project barcode spots on a trajectory</p></td>
-      </tr><tr><td>
-          <p><code><a href="project_on_vector.html">project_on_vector()</a></code> </p>
-        </td>
-        <td><p>Perform vector projection</p></td>
-      </tr><tr><td>
-          <p><code><a href="reduce_vec.html">reduce_vec()</a></code> </p>
-        </td>
-        <td><p>Reduces vector length</p></td>
-      </tr><tr><td>
-          <p><code><a href="relateToImageAnnotation.html">relateToImageAnnotation()</a></code> </p>
-        </td>
-        <td><p>Relate observations to an image annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="relevelGroups.html">relevelGroups()</a></code> </p>
-        </td>
-        <td><p>Relevel groups of grouping variable</p></td>
-      </tr><tr><td>
-          <p><code><a href="removeAnnotation.html">removeAnnotation()</a></code> </p>
-        </td>
-        <td><p>Remove annotation</p></td>
-      </tr><tr><td>
-          <p><code><a href="renameFeatures.html">renameFeatures()</a></code> </p>
-        </td>
-        <td><p>Rename features</p></td>
-      </tr><tr><td>
-          <p><code><a href="renameGroups.html">renameGroups()</a></code> <code><a href="renameGroups.html">renameSegments()</a></code> </p>
-        </td>
-        <td><p>Rename cluster/group names</p></td>
-      </tr><tr><td>
-          <p><code><a href="renameImgAnn.html">renameImgAnn()</a></code> </p>
-        </td>
-        <td><p>Rename image annotation ID</p></td>
-      </tr><tr><td>
-          <p><code><a href="resetImageJustification.html">resetImageJustification()</a></code> </p>
-        </td>
-        <td><p>Reset image justification</p></td>
-      </tr><tr><td>
-          <p><code><a href="resizingSegmentsGrob.html">resizingSegmentsGrob()</a></code> </p>
-        </td>
-        <td><p>Used for GeomSegmentFixed</p></td>
-      </tr><tr><td>
-          <p><code><a href="resizingTextGrob.html">resizingTextGrob()</a></code> </p>
-        </td>
-        <td><p>Used for GeomTextScaled</p></td>
-      </tr><tr><td>
-          <p><code><a href="rotateAll.html">rotateAll()</a></code> <code><a href="rotateAll.html">rotateImage()</a></code> <code><a href="rotateAll.html">rotateCoordinates()</a></code> <code><a href="rotateAll.html">rotateCoordsDf()</a></code> <code><a href="rotateAll.html">rotateImageAnnotations()</a></code> <code><a href="rotateAll.html">rotateSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Rotate image and coordinates</p></td>
-      </tr><tr><td>
-          <p><code><a href="rotate_coords_df.html">rotate_coords_df()</a></code> </p>
-        </td>
-        <td><p>Rotate coordinate variables pairs</p></td>
-      </tr><tr><td>
-          <p><code><a href="runAutoencoderAssessment.html">assessAutoencoderOptions()</a></code> <code><a href="runAutoencoderAssessment.html">runAutoencoderAssessment()</a></code> </p>
-        </td>
-        <td><p>Assessment of Neural Network Set Up</p></td>
-      </tr><tr><td>
-          <p><code><a href="runAutoencoderDenoising.html">runAutoencoderDenoising()</a></code> </p>
-        </td>
-        <td><p>Denoise expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="runBayesSpaceClustering.html">runBayesSpaceClustering()</a></code> </p>
-        </td>
-        <td><p>Clustering with BayesSpace</p></td>
-      </tr><tr><td>
-          <p><code><a href="runCnvAnalysis.html">runCnvAnalysis()</a></code> </p>
-        </td>
-        <td><p>Identify large-scale chromosomal copy number variations</p></td>
-      </tr><tr><td>
-          <p><code><a href="runDEA.html">runDEA()</a></code> <code><a href="runDEA.html">runDeAnalysis()</a></code> </p>
-        </td>
-        <td><p>Find differently expressed genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="runGSEA.html">runGSEA()</a></code> </p>
-        </td>
-        <td><p>Compute gene set enrichment</p></td>
-      </tr><tr><td>
-          <p><code><a href="runPca.html">runPca()</a></code> <code><a href="runPca.html">runPca2()</a></code> </p>
-        </td>
-        <td><p>Run Principal Component Analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="runSeuratClustering.html">runSeuratClustering()</a></code> </p>
-        </td>
-        <td><p>Clustering with Seurat</p></td>
-      </tr><tr><td>
-          <p><code><a href="runSparkx.html">getSparkxGeneDf()</a></code> <code><a href="runSparkx.html">getSparkxGenes()</a></code> <code><a href="runSparkx.html">getSparkxResults()</a></code> <code><a href="runSparkx.html">runSparkx()</a></code> </p>
-        </td>
-        <td><p>Identify genes of interest with SPARKX</p></td>
-      </tr><tr><td>
-          <p><code><a href="runSpatialCorrelationAnalysis.html">runSpatialCorrelationAnalysis()</a></code> </p>
-        </td>
-        <td><p>Initiate gene clustering analysis based on spatial patterns</p></td>
-      </tr><tr><td>
-          <p><code><a href="runTsne.html">runTsne()</a></code> <code><a href="runTsne.html">runTsne2()</a></code> </p>
-        </td>
-        <td><p>Run t-Stochastic Neighbour Embedding</p></td>
-      </tr><tr><td>
-          <p><code><a href="runUmap.html">runUmap()</a></code> <code><a href="runUmap.html">runUmap2()</a></code> </p>
-        </td>
-        <td><p>Run UMAP-Analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="sample_name.html">sample_name()</a></code> </p>
-        </td>
-        <td><p>sample_name</p></td>
-      </tr><tr><td>
-          <p><code><a href="saveGeneSetDf.html">saveGeneSetDf()</a></code> </p>
-        </td>
-        <td><p>Save a gene set data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="saveSpataObject.html">saveCorrespondingCDS()</a></code> <code><a href="saveSpataObject.html">saveCorrespondingSeuratObject()</a></code> <code><a href="saveSpataObject.html">saveSpataObject()</a></code> </p>
-        </td>
-        <td><p>Save corresponding objects</p></td>
-      </tr><tr><td>
-          <p><code><a href="scaleAll.html">scaleAll()</a></code> <code><a href="scaleAll.html">scaleImage()</a></code> <code><a href="scaleAll.html">scaleCoordinates()</a></code> <code><a href="scaleAll.html">scaleCoordsDf()</a></code> <code><a href="scaleAll.html">scaleImageAnnotations()</a></code> <code><a href="scaleAll.html">scaleSpatialTrajectories()</a></code> </p>
-        </td>
-        <td><p>Scale image and coordinates</p></td>
-      </tr><tr><td>
-          <p><code><a href="scale_color_add_on.html">scale_color_add_on()</a></code> </p>
-        </td>
-        <td><p>ggplot2 - color add on</p></td>
-      </tr><tr><td>
-          <p><code><a href="scale_coords_df.html">scale_coords_df()</a></code> </p>
-        </td>
-        <td><p>Scale coordinate variable pairs</p></td>
-      </tr><tr><td>
-          <p><code><a href="sc_deconvolution.html">sc_deconvolution</a></code> </p>
-        </td>
-        <td><p>List of data.frames of single cell deconvolution. Names of
-the list correspond to the sample name. Obtain data.frame
-using <code>sc_deconvolution[[*&lt;sample.name&gt;*]]</code></p></td>
-      </tr><tr><td>
-          <p><code><a href="section_dummy.html">section_dummy()</a></code> </p>
-        </td>
-        <td><p>Section dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="setActiveExpressionMatrix.html">setActiveExpressionMatrix()</a></code> </p>
-        </td>
-        <td><p>Denote the default expression matrix</p></td>
-      </tr><tr><td>
-          <p><code><a href="setAutoencoderAssessment.html">setAutoencoderAssessment()</a></code> </p>
-        </td>
-        <td><p>Set results of autoencoder assessment</p></td>
-      </tr><tr><td>
-          <p><code><a href="setBarcodes.html">setBarcodes()</a></code> </p>
-        </td>
-        <td><p>Set barcodes</p></td>
-      </tr><tr><td>
-          <p><code><a href="setCnvResults.html">setCnvResults()</a></code> </p>
-        </td>
-        <td><p>Set cnv-results</p></td>
-      </tr><tr><td>
-          <p><code><a href="setCoordsDf.html">setCoordsDf()</a></code> </p>
-        </td>
-        <td><p>Set the coordinates</p></td>
-      </tr><tr><td>
-          <p><code><a href="setCountMatrix.html">setCountMatrix()</a></code> <code><a href="setCountMatrix.html">setDenoisedMatrix()</a></code> <code><a href="setCountMatrix.html">setScaledMatrix()</a></code> </p>
-        </td>
-        <td><p>Set data matrices</p></td>
-      </tr><tr><td>
-          <p><code><a href="setDefault.html">setDefault()</a></code> </p>
-        </td>
-        <td><p>Set object specific default</p></td>
-      </tr><tr><td>
-          <p><code><a href="setDefaultGrouping.html">getDefaultGrouping()</a></code> <code><a href="setDefaultGrouping.html">setDefaultGrouping()</a></code> </p>
-        </td>
-        <td><p>Default grouping</p></td>
-      </tr><tr><td>
-          <p><code><a href="setDefaultInstructions.html">setDefaultInstructions()</a></code> <code><a href="setDefaultInstructions.html">setDirectoryInstructions()</a></code> </p>
-        </td>
-        <td><p>Set default instructions</p></td>
-      </tr><tr><td>
-          <p><code><a href="setDefaultTrajectory.html">getDefaultTrajectory()</a></code> <code><a href="setDefaultTrajectory.html">getDefaultTrajectoryId()</a></code> <code><a href="setDefaultTrajectory.html">setDefaultTrajectory()</a></code> <code><a href="setDefaultTrajectory.html">setDefaultTrajectoryId()</a></code> </p>
-        </td>
-        <td><p>Obtain dimensional reduction data</p></td>
-      </tr><tr><td>
-          <p><code><a href="setFeatureDf.html">setFeatureDf()</a></code> </p>
-        </td>
-        <td><p>Set feature data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="setGeneSetDf.html">setGeneSetDf()</a></code> </p>
-        </td>
-        <td><p>Set the gene-set data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="setImageAnnotation.html">setImageAnnotation()</a></code> <code><a href="setImageAnnotation.html">setImageAnnotations()</a></code> </p>
-        </td>
-        <td><p>Set image annotations</p></td>
-      </tr><tr><td>
-          <p><code><a href="setImageDirLowres.html">setImageDirDefault()</a></code> <code><a href="setImageDirLowres.html">setImageDirHighres()</a></code> <code><a href="setImageDirLowres.html">setImageDirLowres()</a></code> </p>
-        </td>
-        <td><p>Set image directories</p></td>
-      </tr><tr><td>
-          <p><code><a href="setImageObject.html">setImageObject()</a></code> </p>
-        </td>
-        <td><p>Set image object</p></td>
-      </tr><tr><td>
-          <p><code><a href="setImageOrigin.html">setImageOrigin()</a></code> </p>
-        </td>
-        <td><p>Set image origin</p></td>
-      </tr><tr><td>
-          <p><code><a href="setInitiationInfo.html">setInitiationInfo()</a></code> </p>
-        </td>
-        <td><p>Set initiation information</p></td>
-      </tr><tr><td>
-          <p><code><a href="setOutlineVarName.html">getOutlineVarName()</a></code> <code><a href="setOutlineVarName.html">setOutlineVarName()</a></code> </p>
-        </td>
-        <td><p>Set outline variable name</p></td>
-      </tr><tr><td>
-          <p><code><a href="setPcaDf.html">setPcaDf()</a></code> <code><a href="setPcaDf.html">setTsneDf()</a></code> <code><a href="setPcaDf.html">setUmapDf()</a></code> </p>
-        </td>
-        <td><p>Set dimensional reductions data.frames</p></td>
-      </tr><tr><td>
-          <p><code><a href="setPixelScaleFactor.html">setPixelScaleFactor()</a></code> </p>
-        </td>
-        <td><p>Set pixel scale factor</p></td>
-      </tr><tr><td>
-          <p><code><a href="setPrResults.html">setPrResults()</a></code> </p>
-        </td>
-        <td><p>Set results of pattern recognition methods</p></td>
-      </tr><tr><td>
-          <p><code><a href="setSpataDir.html">setSpataDir()</a></code> </p>
-        </td>
-        <td><p>Set SPATA2 directory</p></td>
-      </tr><tr><td>
-          <p><code><a href="setSpCorResults.html">setSpCorResults()</a></code> </p>
-        </td>
-        <td><p>Set results of spatial correlation analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="setTrajectory.html">setTrajectory()</a></code> <code><a href="setTrajectory.html">setTrajectories()</a></code> </p>
-        </td>
-        <td><p>Set trajectories</p></td>
-      </tr><tr><td>
-          <p><code><a href="set_dummy.html">set_dummy()</a></code> </p>
-        </td>
-        <td><p>set</p></td>
-      </tr><tr><td>
-          <p><code><a href="seurat_object_dummy.html">seurat_object_dummy()</a></code> </p>
-        </td>
-        <td><p>Title</p></td>
-      </tr><tr><td>
-          <p><code><a href="shiftTrajectoryDf.html">shiftTrajectoryDf()</a></code> </p>
-        </td>
-        <td><p>Shift trajectory data.frame</p></td>
-      </tr><tr><td>
-          <p><code><a href="showColors.html">showColors()</a></code> <code><a href="showColors.html">showColorPalettes()</a></code> <code><a href="showColors.html">showColorSpectra()</a></code> <code><a href="showColors.html">showModels()</a></code> </p>
-        </td>
-        <td><p>Show color palettes and spectra</p></td>
-      </tr><tr><td>
-          <p><code><a href="smoothSpatially.html">smoothSpatially()</a></code> </p>
-        </td>
-        <td><p>Smooth numeric variables spatially</p></td>
-      </tr><tr><td>
-          <p><code><a href="spata2-class.html">spata2-class</a></code> <code><a href="spata2-class.html">spata2</a></code> </p>
-        </td>
-        <td><p>The spata-object</p></td>
-      </tr><tr><td>
-          <p><code><a href="SpatialMethod-class.html">SpatialMethod-class</a></code> <code><a href="SpatialMethod-class.html">SpatialMethod</a></code> </p>
-        </td>
-        <td><p>The <code>SpatialMethod</code> - class</p></td>
-      </tr><tr><td>
-          <p><code><a href="SpatialSegment-class.html">SpatialSegment-class</a></code> <code><a href="SpatialSegment-class.html">SpatialSegment</a></code> </p>
-        </td>
-        <td><p>The <code>SpatialSegment</code> - class</p></td>
-      </tr><tr><td>
-          <p><code><a href="SpatialSegmentation-class.html">SpatialSegmentation-class</a></code> <code><a href="SpatialSegmentation-class.html">SpatialSegmentation</a></code> </p>
-        </td>
-        <td><p>The <code>SpatialSegmentation</code> - class</p></td>
-      </tr><tr><td>
-          <p><code><a href="SpatialTrajectory-class.html">SpatialTrajectory-class</a></code> <code><a href="SpatialTrajectory-class.html">SpatialTrajectory</a></code> </p>
-        </td>
-        <td><p>The <code>SpatialTrajectory</code> - class</p></td>
-      </tr><tr><td>
-          <p><code><a href="SpatialTrajectoryScreening-class.html">SpatialTrajectoryScreening-class</a></code> <code><a href="SpatialTrajectoryScreening-class.html">SpatialTrajectoryScreening</a></code> </p>
-        </td>
-        <td><p>The <code>SpatialTrajectoryScreening</code> - class</p></td>
-      </tr><tr><td>
-          <p><code><a href="spatialTrajectoryScreening.html">spatialTrajectoryScreening()</a></code> </p>
-        </td>
-        <td><p>The Spatial Trajectory Screening algorithm</p></td>
-      </tr><tr><td>
-          <p><code><a href="spatial_segmentations.html">spatial_segmentations</a></code> </p>
-        </td>
-        <td><p>A list of lists of spatial segmentations for specific <code>SPATA2</code>
-objects - available via the <code>SPATAData</code> package. Names of the list slots
-correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.
-Every sample specific slot is a data.frame with two variables: <em>barcodes</em>
-and the spatial segmentation variable (usually named <em>histolgoy</em>).</p></td>
-      </tr><tr><td>
-          <p><code><a href="spatial_trajectory-class.html">spatial_trajectory-class</a></code> <code><a href="spatial_trajectory-class.html">spatial_trajectory</a></code> </p>
-        </td>
-        <td><p>spatial_trajectory object</p></td>
-      </tr><tr><td>
-          <p><code><a href="subsetByBarcodes.html">subsetByBarcodes()</a></code> </p>
-        </td>
-        <td><p>Subsetting by barcodes</p></td>
-      </tr><tr><td>
-          <p><code><a href="subsetByGenes.html">subsetByGenes()</a></code> </p>
-        </td>
-        <td><p>Subset by genes</p></td>
-      </tr><tr><td>
-          <p><code><a href="subsetBySegment_CountMtr.html">subsetBySegment_CountMtr()</a></code> <code><a href="subsetBySegment_CountMtr.html">subsetByBarcodes_CountMtr()</a></code> <code><a href="subsetBySegment_CountMtr.html">subsetBySegment_ExprMtr()</a></code> <code><a href="subsetBySegment_CountMtr.html">subsetByBarcodes_ExprMtr()</a></code> </p>
-        </td>
-        <td><p>Subset a spata-object</p></td>
-      </tr><tr><td>
-          <p><code><a href="summarizeIAS.html">summarizeIAS()</a></code> </p>
-        </td>
-        <td><p>Summarize IAS-results</p></td>
-      </tr><tr><td>
-          <p><code><a href="summarize_formulas.html">summarize_formulas</a></code> </p>
-        </td>
-        <td><p>List of summarizing formulas</p></td>
-      </tr><tr><td>
-          <p><code><a href="tab_create_segmentation_return.html">tab_create_segmentation_return()</a></code> </p>
-        </td>
-        <td><p>Segmentation plot tab - return</p></td>
-      </tr><tr><td>
-          <p><code><a href="tab_surface_plots_app.html">tab_surface_plots_app()</a></code> </p>
-        </td>
-        <td><p>Surface plot tab - classic</p></td>
-      </tr><tr><td>
-          <p><code><a href="tab_surface_plots_return.html">tab_surface_plots_return()</a></code> </p>
-        </td>
-        <td><p>Surface plot tab - return</p></td>
-      </tr><tr><td>
-          <p><code><a href="trajectories.html">trajectories</a></code> </p>
-        </td>
-        <td><p>A list of lists of spatial trajectories for specific <code>SPATA2</code>
-objects - available via the <code>SPATAData</code> package. Names of the list slots
-correspond to the sample names in variable  <em>sample</em> of <code><a href="https://rdrr.io/pkg/SPATAData/man/source_df.html" class="external-link">SPATAData::source_df</a></code>.</p></td>
-      </tr><tr><td>
-          <p><code><a href="Trajectory-class.html">Trajectory-class</a></code> <code><a href="Trajectory-class.html">Trajectory</a></code> </p>
-        </td>
-        <td><p>The <code>Trajectory</code> - Class</p></td>
-      </tr><tr><td>
-          <p><code><a href="trajectory_patterns.html">trajectory_patterns</a></code> </p>
-        </td>
-        <td><p>Trajectory patterns</p></td>
-      </tr><tr><td>
-          <p><code><a href="transfer_slot_content.html">transfer_slot_content()</a></code> </p>
-        </td>
-        <td><p>Transfer S4 slot content</p></td>
-      </tr><tr><td>
-          <p><code><a href="transformSeuratToSpata.html">transformSeuratToSpata()</a></code> </p>
-        </td>
-        <td><p>Transform seurat-object to spata-object</p></td>
-      </tr><tr><td>
-          <p><code><a href="transformSpataToCDS.html">transformSpataToCDS()</a></code> </p>
-        </td>
-        <td><p>Transform spata-object to cell-data-set (Monocle3)</p></td>
-      </tr><tr><td>
-          <p><code><a href="transformSpataToSeurat.html">transformSpataToSeurat()</a></code> </p>
-        </td>
-        <td><p>Transform spata-object to a seurat-object</p></td>
-      </tr><tr><td>
-          <p><code><a href="transform_area_si_to_pixel.html">transform_area_si_to_pixel()</a></code> <code><a href="transform_area_si_to_pixel.html">transform_area_si_to_pixels()</a></code> </p>
-        </td>
-        <td><p>Convert area in SI units to pixel</p></td>
-      </tr><tr><td>
-          <p><code><a href="transform_dist_si_to_pixel.html">transform_dist_si_to_pixel()</a></code> <code><a href="transform_dist_si_to_pixel.html">transform_dist_si_to_pixels()</a></code> </p>
-        </td>
-        <td><p>Convert from European Units of Length to pixels</p></td>
-      </tr><tr><td>
-          <p><code><a href="transform_pixel_to_area_si.html">transform_pixel_to_area_si()</a></code> </p>
-        </td>
-        <td><p>Converts from pixel to area in SI units</p></td>
-      </tr><tr><td>
-          <p><code><a href="transform_pixel_to_dist_si.html">transform_pixel_to_dist_si()</a></code> <code><a href="transform_pixel_to_dist_si.html">transform_pixels_to_dist_si()</a></code> </p>
-        </td>
-        <td><p>Convert from pixels to European units of length</p></td>
-      </tr><tr><td>
-          <p><code><a href="transform_pixel_to_si.html">transform_pixels_to_area_si()</a></code> <code><a href="transform_pixel_to_si.html">transform_pixel_to_si()</a></code> </p>
-        </td>
-        <td><p>dummy</p></td>
-      </tr><tr><td>
-          <p><code><a href="translate_shape_string.html">translate_shape_string()</a></code> </p>
-        </td>
-        <td><p>inspired from https://github.com/tidyverse/ggplot2/blob/main/R/geom-point.r</p></td>
-      </tr><tr><td>
-          <p><code><a href="updateSpataObject.html">updateSpataObject()</a></code> </p>
-        </td>
-        <td><p>Update spata-object from SPATA to SPATA2</p></td>
-      </tr><tr><td>
-          <p><code><a href="update_dummy.html">update_dummy()</a></code> </p>
-        </td>
-        <td><p>update</p></td>
-      </tr><tr><td>
-          <p><code><a href="validActivationFunctions.html">validActivationFunctions()</a></code> <code><a href="validActivationFunctions.html">validAgglomerationMethods()</a></code> <code><a href="validActivationFunctions.html">validAlluvialTypes()</a></code> <code><a href="validActivationFunctions.html">validColorPalettes()</a></code> <code><a href="validActivationFunctions.html">validColorSpectra()</a></code> <code><a href="validActivationFunctions.html">validDeAnalysisMethods()</a></code> <code><a href="validActivationFunctions.html">validDefaultInstructionSlots()</a></code> <code><a href="validActivationFunctions.html">validDimRedMethods()</a></code> <code><a href="validActivationFunctions.html">validDirectoryInstructionSlots()</a></code> <code><a href="validActivationFunctions.html">validDistanceMethods()</a></code> <code><a href="validActivationFunctions.html">validHierarchicalClusterMethods()</a></code> <code><a href="validActivationFunctions.html">validImageClasses()</a></code> <code><a href="validActivationFunctions.html">validModelNames()</a></code> <code><a href="validActivationFunctions.html">validPatternRecognitionMethods()</a></code> <code><a href="validActivationFunctions.html">validPadjMethods()</a></code> <code><a href="validActivationFunctions.html">validPlotTypes()</a></code> <code><a href="validActivationFunctions.html">validPubExamples()</a></code> <code><a href="validActivationFunctions.html">validSpatialMethods()</a></code> <code><a href="validActivationFunctions.html">validTrajectoryTrends()</a></code> <code><a href="validActivationFunctions.html">validUnits()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfArea()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfAreaSI()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfLength()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfLengthSI()</a></code> <code><a href="validActivationFunctions.html">validEuropeanUnitsOfLength()</a></code> </p>
-        </td>
-        <td><p>Obtain valid argument inputs</p></td>
-      </tr><tr><td>
-          <p><code><a href="validateSpataObject.html">validateSpataObject()</a></code> </p>
-        </td>
-        <td><p>Validate a spata object</p></td>
-      </tr><tr><td>
-          <p><code><a href="validation.html">validation()</a></code> </p>
-        </td>
-        <td><p>Validate object input</p></td>
-      </tr><tr><td>
-          <p><code><a href="variable.html">variable()</a></code> </p>
-        </td>
-        <td><p>variable</p></td>
-      </tr><tr><td>
-          <p><code><a href="variables_num.html">variables_num()</a></code> </p>
-        </td>
-        <td><p>variables_num</p></td>
-      </tr><tr><td>
-          <p><code><a href="variable_num.html">variable_num()</a></code> </p>
-        </td>
-        <td><p>variable_num</p></td>
-      </tr><tr><td>
-          <p><code><a href="visium_coords_lowres.html">visium_coords_lowres</a></code> </p>
-        </td>
-        <td><p>A data.frame that contains all barcode spots of the Visium method including
-their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>row</em>, <em>imagecol</em>,
-<em>imagerow</em>.</p></td>
-      </tr><tr><td>
-          <p><code><a href="vselect.html">vselect()</a></code> </p>
-        </td>
-        <td><p>Select vector with tidyselect functions</p></td>
       </tr></tbody></table></div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -3301,7 +1665,7 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

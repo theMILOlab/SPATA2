@@ -25,7 +25,7 @@ plotSurfaceQuantiles(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{color_by}{Character value. Specifies the numeric variable of interest:
 

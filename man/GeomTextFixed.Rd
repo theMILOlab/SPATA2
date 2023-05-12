@@ -7,4 +7,4 @@
 \description{
 GeomTextFixed
 }
-\keyword{datasets}
+\keyword{internal}

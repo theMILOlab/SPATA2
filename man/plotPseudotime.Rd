@@ -44,3 +44,4 @@ to the rules of the ggplot2-framework.
 \description{
 A wrapper around \code{monocle3::plot_cells()}.
 }
+\keyword{internal}

@@ -35,3 +35,4 @@ belongs to.}
 \description{
 Compiles a trajectory data.frame
 }
+\keyword{internal}

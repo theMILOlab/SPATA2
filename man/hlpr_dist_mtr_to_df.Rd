@@ -12,3 +12,4 @@ hlpr_dist_mtr_to_df(dist_mtr, varnames = c("gene1", "gene2"))
 \description{
 Reshapes a distance matrix with a wrapper around \code{reshape2::melt()}.
 }
+\keyword{internal}

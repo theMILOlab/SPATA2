@@ -13,7 +13,7 @@ ggpLayerEncirclingIAS(
   alpha_core = 0,
   fill_core = NA,
   line_color = "black",
-  line_size = 1,
+  line_size = (line_size_core * 0.75),
   line_size_core = 1,
   xrange = NULL,
   yrange = NULL,
@@ -24,7 +24,7 @@ ggpLayerEncirclingIAS(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -41,6 +41,10 @@ denoted in \code{binwidth}.
 the barcode-spots are assigned. We recommend to set it equal to the center-center
 distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.

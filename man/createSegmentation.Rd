@@ -9,3 +9,4 @@ createSegmentation(...)
 \description{
 Deprecated in favor of \code{createSpatialSegmentation()}
 }
+\keyword{internal}

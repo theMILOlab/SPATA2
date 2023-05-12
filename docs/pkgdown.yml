@@ -7,6 +7,7 @@ articles:
   cc-spatial-measures: cc-spatial-measures.html
   cc-spatial-segmentation-vs-image-annotations: cc-spatial-segmentation-vs-image-annotations.html
   cc-spatial-trajectory-screening: cc-spatial-trajectory-screening.html
+  spata-v2-autoencoder: spata-v2-autoencoder.html
   spata-v2-clustering: spata-v2-clustering.html
   spata-v2-cnv-analysis: spata-v2-cnv-analysis.html
   spata-v2-dea: spata-v2-dea.html
@@ -17,12 +18,14 @@ articles:
   spata-v2-image-handling: spata-v2-image-handling.html
   spata-v2-installation: spata-v2-installation.html
   spata-v2-object-initiation-and-manipulation: spata-v2-object-initiation-and-manipulation.html
+  spata-v2-platform-compatibility: spata-v2-platform-compatibility.html
   spata-v2-plotting-misc: spata-v2-plotting-misc.html
   spata-v2-plotting-surface: spata-v2-plotting-surface.html
+  spata-v2-scd: spata-v2-scd.html
   spata-v2-spata-data: spata-v2-spata-data.html
   spata-v2-spatial-segmentation: spata-v2-spatial-segmentation.html
   spata-v2-spatial-trajectories: spata-v2-spatial-trajectories.html
   spata-v2-spatial-trajectory-screening: spata-v2-spatial-trajectory-screening.html
   spata-v2-subsetting: spata-v2-subsetting.html
-last_built: 2023-05-07T21:31Z
+last_built: 2023-05-12T18:32Z
 

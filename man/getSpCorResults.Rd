@@ -18,3 +18,4 @@ The list containing all information about the clustering results.
 \description{
 Obtain spatial correlation results
 }
+\keyword{internal}

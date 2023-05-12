@@ -32,7 +32,7 @@ plotImageAnnotations(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
 of the image annotations of interest. If numeric, the image annotations are picked by number.
@@ -73,6 +73,13 @@ are displayed. Use \code{validUnitsOfLengthSI()} to obtain all valid input optio
 
 \item{round}{Numeric value or \code{FALSE}. If numeric and \code{unit} is not \emph{px}, rounds
 axes text.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
 \item{sb_dist}{Distance measure or \code{FALSE}. If distance measure,
 defines the distance in SI units that a scale bar illustrates.
@@ -221,7 +228,7 @@ the function uses all image annoations.
 library(SPATA2)
 library(SPATAData)
 
-object <- downloadSpataObjet(sample_name = "275_T")
+object <- downloadSpataObject(sample_name = "275_T", verbose = FALSE)
 
 data("image_annotations")
 

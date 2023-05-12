@@ -32,3 +32,4 @@ model.}
 \description{
 Check smooth input
 }
+\keyword{internal}

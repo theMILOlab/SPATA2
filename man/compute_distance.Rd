@@ -16,3 +16,4 @@ A numeric value.
 \description{
 Compute the distance between to points
 }
+\keyword{internal}

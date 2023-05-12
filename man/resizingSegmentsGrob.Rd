@@ -9,3 +9,4 @@ resizingSegmentsGrob(...)
 \description{
 Used for GeomSegmentFixed
 }
+\keyword{internal}

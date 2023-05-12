@@ -4,7 +4,7 @@
 \name{SpatialSegment-class}
 \alias{SpatialSegment-class}
 \alias{SpatialSegment}
-\title{The \code{SpatialSegment} - class}
+\title{The \code{SpatialSegment} - Class}
 \description{
 Abstracts the concept of an annotated segment within a spatial
 segmentation.
@@ -32,3 +32,4 @@ the outer ring of the segment. Further polygons (should be named \emph{inner} su
 with a number) define holes within the segment.}
 }}
 
+\keyword{internal}

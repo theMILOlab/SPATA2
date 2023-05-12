@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -55,38 +55,54 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-<li class="dropdown-header">Around the Spata-Object</li>
+<li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -108,7 +124,7 @@
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -146,7 +162,12 @@
     
     
 <div class="section level2">
-<h2 id="introduction">1. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+<h2 id="prerequisites">1. Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"></a>
+</h2>
+<p>None.</p>
+</div>
+<div class="section level2">
+<h2 id="introduction">2. Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>Surface plotting allows to visualize the barcode-spot’s information
 with a spatial dimension. Behind the scenes they are scatterplots
@@ -182,16 +203,18 @@ variables on the surface of the tissue sample.</p>
     object <span class="op">=</span> <span class="va">object_t313</span>, 
     feature_df <span class="op">=</span> <span class="va">spatial_segmentations</span><span class="op">[[</span><span class="st">"313_T"</span><span class="op">]</span><span class="op">]</span>, 
     overwrite <span class="op">=</span> <span class="cn">TRUE</span>
-  <span class="op">)</span></code></pre></div>
+  <span class="op">)</span>
+
+<span class="fu"><a href="../reference/plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object_t313</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="basic-surface-plots-one-by-one">2. Basic surface plots one by one<a class="anchor" aria-label="anchor" href="#basic-surface-plots-one-by-one"></a>
+<h2 id="basic-surface-plots-one-by-one">3. Basic surface plots one by one<a class="anchor" aria-label="anchor" href="#basic-surface-plots-one-by-one"></a>
 </h2>
 <p>The most important function to visualize gene expression on top of
 the slide is <code><a href="../reference/plotSurface.html">plotSurface()</a></code>. It comes with a variety of
 options for the plotting of both, continuous and categorical data.</p>
 <div class="section level3">
-<h3 id="categorical-data">2.1 Categorical data<a class="anchor" aria-label="anchor" href="#categorical-data"></a>
+<h3 id="categorical-data">3.1 Categorical data<a class="anchor" aria-label="anchor" href="#categorical-data"></a>
 </h3>
 <p>Categorical data includes usually grouping of spots via <a href="spata-v2-clustering.html">clustering</a> or <a href="spata-v2-spatial-segementation.html">spatial manual
 annotation</a>.</p>
@@ -269,7 +292,7 @@ grouping variables.</p>
 <p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-5-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-5-2.png" width="50%"></p>
 </div>
 <div class="section level3">
-<h3 id="continuous-data-on-the-surface">2.2 Continuous data on the surface<a class="anchor" aria-label="anchor" href="#continuous-data-on-the-surface"></a>
+<h3 id="continuous-data-on-the-surface">3.2 Continuous data on the surface<a class="anchor" aria-label="anchor" href="#continuous-data-on-the-surface"></a>
 </h3>
 <p>Continuous data, such as gene expression, gene set expression,
 RNA-count etc. Albeit <em>viridis</em> spectra are a commonly used you
@@ -292,7 +315,7 @@ and inspected via <code><a href="../reference/showColors.html">showColorSpectra(
 <span class="op">)</span> </code></pre></div>
 <p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-6-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-6-2.png" width="50%"></p>
 <div class="section level4">
-<h4 id="variable-transformation">2.2.1 Variable transformation<a class="anchor" aria-label="anchor" href="#variable-transformation"></a>
+<h4 id="variable-transformation">3.2.1 Variable transformation<a class="anchor" aria-label="anchor" href="#variable-transformation"></a>
 </h4>
 <p>The plot below does not look insightful due to the distribution of
 the plotted variable. The argument <code>transform_with</code> allows to
@@ -329,7 +352,7 @@ information.</p>
 <p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-8-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-8-2.png" width="50%"></p>
 </div>
 <div class="section level4">
-<h4 id="tissue-outline">2.2.2 Tissue outline<a class="anchor" aria-label="anchor" href="#tissue-outline"></a>
+<h4 id="tissue-outline">3.2.2 Tissue outline<a class="anchor" aria-label="anchor" href="#tissue-outline"></a>
 </h4>
 <p>Color spectra that plot against white require to outline the tissue.
 Use <code><a href="../reference/ggpLayerTissueOutline.html">ggpLayerTissueOutline()</a></code> for that matter.</p>
@@ -352,7 +375,7 @@ Use <code><a href="../reference/ggpLayerTissueOutline.html">ggpLayerTissueOutlin
 <p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-9-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-9-2.png" width="50%"></p>
 </div>
 <div class="section level4">
-<h4 id="spatial-smoothing">2.2.3 Spatial smoothing<a class="anchor" aria-label="anchor" href="#spatial-smoothing"></a>
+<h4 id="spatial-smoothing">3.2.3 Spatial smoothing<a class="anchor" aria-label="anchor" href="#spatial-smoothing"></a>
 </h4>
 <p>Smoothing of continuous variables is possible, too. Use
 <code>smooth</code> and <code>smooth_span</code> for that matter.</p>
@@ -378,14 +401,14 @@ Use <code><a href="../reference/ggpLayerTissueOutline.html">ggpLayerTissueOutlin
 </div>
 </div>
 <div class="section level2">
-<h2 id="surface-plots-interactive">3. Surface plots interactive<a class="anchor" aria-label="anchor" href="#surface-plots-interactive"></a>
+<h2 id="surface-plots-interactive">4. Surface plots interactive<a class="anchor" aria-label="anchor" href="#surface-plots-interactive"></a>
 </h2>
 <p>Another more convenient way is to use
 <code><a href="../reference/plotSurface.html">plotSurfaceInteractive()</a></code> which let’s you plot your figures
 interactively and way quicker. It returns a named list of all plots
 saved during your plotting session.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SPATAData/man/downloadSpataObject.html" class="external-link">downloadSpataObject</a></span><span class="op">(</span><span class="st">"275_T"</span>, file <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">object_t275</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/downloadSpataObject.html">downloadSpataObject</a></span><span class="op">(</span><span class="st">"275_T"</span>, file <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 
 <span class="co"># open application to obtain a list of plots</span>
 <span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotSurface.html">plotSurfaceInteractive</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t275</span><span class="op">)</span></code></pre></div>
@@ -403,7 +426,7 @@ saved during your plotting session.</p>
 <p><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-14-1.png" width="50%"><img src="spata-v2-plotting-surface_files/figure-html/unnamed-chunk-14-2.png" width="50%"></p>
 </div>
 <div class="section level2">
-<h2 id="surface-plots-in-comparison">4. Surface plots in comparison<a class="anchor" aria-label="anchor" href="#surface-plots-in-comparison"></a>
+<h2 id="surface-plots-in-comparison">5. Surface plots in comparison<a class="anchor" aria-label="anchor" href="#surface-plots-in-comparison"></a>
 </h2>
 <p>In order to quickly compare the spatial distribution of a set of
 variables of the same kind use <code><a href="../reference/plotSurfaceComparison.html">plotSurfaceComparison()</a></code>.</p>
@@ -433,7 +456,7 @@ variables of the same kind use <code><a href="../reference/plotSurfaceComparison
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+<p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

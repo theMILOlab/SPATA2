@@ -7,7 +7,7 @@
 getImageOrigin(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \value{
 Either a directory or \emph{Global.Env.} if it was read in from

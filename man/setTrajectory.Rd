@@ -10,11 +10,11 @@ setTrajectory(object, trajectory, align = TRUE, overwrite = FALSE)
 setTrajectories(object, trajectories, align = TRUE, overwrite = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{trajectory}{An object of class \code{Trajectory.}}
 
-\item{align}{Logical value. If \code{TRUE}, trajecectories of class \code{SpatialTrajectory}
+\item{align}{Logical value. If \code{TRUE}, trajectories of class \code{SpatialTrajectory}
 are aligned with image justification changes of the image of the
 \code{SPATA2} object.}
 
@@ -23,7 +23,7 @@ are aligned with image justification changes of the image of the
 \item{trajectories}{List of objects of class \code{Trajectory}.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

@@ -18,7 +18,7 @@ of the area of  an image annotation to a surface plot."><!-- mathjax --><script 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -38,38 +38,54 @@ of the area of  an image annotation to a surface plot."><!-- mathjax --><script 
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -89,7 +105,7 @@ of the area of  an image annotation to a surface plot."><!-- mathjax --><script 
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -130,7 +146,7 @@ of the area of  an image annotation to a surface plot.</p>
   alpha_core <span class="op">=</span> <span class="fl">0</span>,
   fill_core <span class="op">=</span> <span class="cn">NA</span>,
   line_color <span class="op">=</span> <span class="st">"black"</span>,
-  line_size <span class="op">=</span> <span class="fl">1</span>,
+  line_size <span class="op">=</span> <span class="op">(</span><span class="va">line_size_core</span> <span class="op">*</span> <span class="fl">0.75</span><span class="op">)</span>,
   line_size_core <span class="op">=</span> <span class="fl">1</span>,
   xrange <span class="op">=</span> <span class="cn">NULL</span>,
   yrange <span class="op">=</span> <span class="cn">NULL</span>,
@@ -144,7 +160,7 @@ of the area of  an image annotation to a surface plot.</p>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
-<dd><p>An object of class <code>SPATA2</code>.</p></dd>
+<dd><p>An object of class <code>spata2</code>.</p></dd>
 
 
 <dt>id</dt>
@@ -169,6 +185,14 @@ denoted in <code>binwidth</code>.
 the barcode-spots are assigned. We recommend to set it equal to the center-center
 distance: <code>binwidth = getCCD(object)</code>. (See details for more.) - See details of <code><a href="is_dist.html">?is_dist</a></code> for more
 information about distance values.</p></dd>
+
+
+<dt>line_color</dt>
+<dd><p>Character. Affects color of the main lines of the plot.</p></dd>
+
+
+<dt>line_size</dt>
+<dd><p>Numeric. Affects size of the main lines of the plot.</p></dd>
 
 
 <dt>xrange, yrange</dt>
@@ -207,19 +231,16 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="downloadPubExample.html">downloadPubExample</a></span><span class="op">(</span><span class="st">"313_T"</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 23:32:58 Downloading example '313_T'.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 23:34:11 Done.</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="fu"><a href="plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu">ggpLayerEncirclingIAS</span><span class="op">(</span></span>
-<span class="r-in">   object <span class="op">=</span> <span class="va">object</span>,</span>
-<span class="r-in">   id <span class="op">=</span> <span class="st">"necrotic_area"</span>,</span>
-<span class="r-in">   distance <span class="op">=</span> <span class="st">"1mm"</span></span>
-<span class="r-in"> <span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in theme_void():</span> could not find function "theme_void"</span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code>
+<span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="downloadPubExample.html">downloadPubExample</a></span><span class="op">(</span><span class="st">"313_T"</span><span class="op">)</span>
+
+<span class="fu"><a href="plotImageGgplot.html">plotImageGgplot</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">+</span>
+ <span class="fu">ggpLayerEncirclingIAS</span><span class="op">(</span>
+   object <span class="op">=</span> <span class="va">object</span>,
+   id <span class="op">=</span> <span class="st">"necrotic_area"</span>,
+   distance <span class="op">=</span> <span class="st">"1mm"</span>
+ <span class="op">)</span>
+
 </code></pre></div>
     </div>
   </div>
@@ -230,7 +251,7 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

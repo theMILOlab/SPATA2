@@ -4,7 +4,7 @@
 \name{SpatialSegmentation-class}
 \alias{SpatialSegmentation-class}
 \alias{SpatialSegmentation}
-\title{The \code{SpatialSegmentation} - class}
+\title{The \code{SpatialSegmentation} - Class}
 \description{
 Abstracts the concept of manual segmentation/annotation
 of the sample surface.
@@ -29,3 +29,4 @@ the segment. Every following data.frame is named \emph{interior}-suffix where th
 and corresponds to interior holes of the segment.}
 }}
 
+\keyword{internal}

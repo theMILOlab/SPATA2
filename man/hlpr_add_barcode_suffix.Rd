@@ -14,3 +14,4 @@ hlpr_add_barcode_suffix(input, sample_name)
 \description{
 Make sure that barcodes are spata-like
 }
+\keyword{internal}

@@ -16,3 +16,4 @@ check_availability(test, ref_x, ref_fns)
 \description{
 Gives feedback if object was not found
 }
+\keyword{internal}

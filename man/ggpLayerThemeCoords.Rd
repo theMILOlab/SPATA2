@@ -4,7 +4,7 @@
 \alias{ggpLayerThemeCoords}
 \title{Add coordinates theme}
 \usage{
-ggpLayerThemeCoords()
+ggpLayerThemeCoords(unit = NULL)
 }
 \value{
 List.

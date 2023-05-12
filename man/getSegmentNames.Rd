@@ -20,3 +20,4 @@ specific sample.
 \description{
 Obtain segment names
 }
+\keyword{internal}

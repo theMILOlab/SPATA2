@@ -12,6 +12,6 @@ the content of slot @results of the \code{ImageAnnotationScreening}-class.
 }
 \details{
 Model fitting and evaluation happens within every angle-bin.
-To get a single evaulation for every gene the results of every
+To get a single evaluation for every gene the results of every
 angle-bin must be summarized.
 }

@@ -35,3 +35,4 @@ Data.frame.
 Extracts (and filters) the summarized IAS results in form
 of a data.frame
 }
+\keyword{internal}

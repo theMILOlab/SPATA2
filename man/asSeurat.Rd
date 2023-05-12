@@ -14,7 +14,7 @@ asSeurat(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{process}{Logical value. If \code{TRUE}, count matrix is processed.
 See details for more.

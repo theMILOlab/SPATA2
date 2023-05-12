@@ -22,7 +22,7 @@ rotateImageAnnotations(object, angle, clockwise = TRUE, verbose = NULL)
 rotateSpatialTrajectories(object, angle, clockwise = TRUE, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{angle}{Numeric value. The angle by which the coordinates
 are rotated. Should range from 1-359.}

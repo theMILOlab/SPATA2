@@ -16,7 +16,7 @@ ggpLayerColorGroupScale(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{clrp, clrp_adjust}{The colorpalette and adjustment used to visualize the grouping.}
 

@@ -10,3 +10,4 @@ getTrajectoryNames(object, ...)
 This function is deprecated in favor of
 getTrajectoryIds().
 }
+\keyword{internal}

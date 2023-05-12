@@ -18,7 +18,7 @@ spectra from left to right."><!-- mathjax --><script src="https://cdnjs.cloudfla
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -38,38 +38,54 @@ spectra from left to right."><!-- mathjax --><script src="https://cdnjs.cloudfla
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li class="dropdown-header">Integrating Different Platforms</li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation.html">Spatial Segmentation (Manual Annotation)</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-dea.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li class="dropdown-header">Gradient Screening</li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
     <li>
       <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
     </li>
     <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
+    <li>
+      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
       <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
@@ -89,7 +105,7 @@ spectra from left to right."><!-- mathjax --><script src="https://cdnjs.cloudfla
       <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/cc-spatial-segmentation-vs-image-annotation.html">Spatial Segmentation vs. Image Annotations</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
       <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
@@ -125,20 +141,7 @@ spectra from left to right.</p>
 
 <span class="fu">showColorPalettes</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="validActivationFunctions.html">validColorPalettes</a></span><span class="op">(</span>flatten <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>
 
-<span class="fu">showColorSpectra</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="validActivationFunctions.html">validColorSpectra</a></span><span class="op">(</span>flatten <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">20</span><span class="op">)</span>
-
-<span class="fu">showModels</span><span class="op">(</span>
-  input <span class="op">=</span> <span class="fl">100</span>,
-  linecolor <span class="op">=</span> <span class="st">"black"</span>,
-  linesize <span class="op">=</span> <span class="fl">0.5</span>,
-  model_subset <span class="op">=</span> <span class="cn">NULL</span>,
-  model_remove <span class="op">=</span> <span class="cn">NULL</span>,
-  model_add <span class="op">=</span> <span class="cn">NULL</span>,
-  pretty_names <span class="op">=</span> <span class="cn">FALSE</span>,
-  x_axis_arrow <span class="op">=</span> <span class="cn">TRUE</span>,
-  verbose <span class="op">=</span> <span class="cn">NULL</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+<span class="fu">showColorSpectra</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="validActivationFunctions.html">validColorSpectra</a></span><span class="op">(</span>flatten <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -165,13 +168,11 @@ spectra from left to right.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"> <span class="fu">showColors</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inferno"</span>, <span class="st">"Reds"</span>, <span class="st">"npg"</span>, <span class="st">"uc"</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span class="r-plt img"><img src="showColors-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"> <span class="fu">showColors</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="validActivationFunctions.html">validColorPalettes</a></span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in e1 + e2 + plot_layout(ncol = 1):</span> non-numeric argument to binary operator</span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code>
+ <span class="fu">showColors</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"inferno"</span>, <span class="st">"Reds"</span>, <span class="st">"npg"</span>, <span class="st">"uc"</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
+
+ <span class="fu">showColors</span><span class="op">(</span>input <span class="op">=</span> <span class="fu"><a href="validActivationFunctions.html">validColorPalettes</a></span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+
 </code></pre></div>
     </div>
   </div>
@@ -182,7 +183,7 @@ spectra from left to right.</p>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">

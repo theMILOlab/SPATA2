@@ -7,7 +7,7 @@
 \alias{legendNone}
 \alias{legendRight}
 \alias{legendTop}
-\title{Ggplot add on wrapper}
+\title{ggplot2 legend manipulation}
 \usage{
 legendBottom(...)
 
@@ -22,5 +22,5 @@ legendRight(...)
 legendTop(...)
 }
 \description{
-Ggplot add on wrapper
+ggplot2 legend manipulation
 }

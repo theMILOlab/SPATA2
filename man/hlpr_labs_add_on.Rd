@@ -21,3 +21,4 @@ A customized \code{ggplot2::labs()}-function.
 \description{
 Helper function
 }
+\keyword{internal}

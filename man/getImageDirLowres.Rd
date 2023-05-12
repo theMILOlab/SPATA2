@@ -19,7 +19,7 @@ getImageDirHighres(object, fdb_fn = "warning", check = FALSE, ...)
 getImageDirLowres(object, fdb_fn = "warning", check = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{name}{Character value. The name of the image of interest. Should be one
 of Get}

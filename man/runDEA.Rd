@@ -34,7 +34,7 @@ to obtain all valid input options.}
 \item{fc_name, base}{Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

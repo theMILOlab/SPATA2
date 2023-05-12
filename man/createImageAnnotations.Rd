@@ -3,14 +3,14 @@
 \name{addImageAnnotation}
 \alias{addImageAnnotation}
 \alias{createImageAnnotations}
-\title{Interactive image annotations}
+\title{Add image annotations}
 \usage{
 addImageAnnotation(object, tags, area, id = NULL)
 
 createImageAnnotations(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of image annotation with tags} for more information.}
@@ -25,7 +25,7 @@ slot @mode should be \emph{'Complex'}.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

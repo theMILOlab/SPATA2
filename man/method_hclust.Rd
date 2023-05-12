@@ -13,3 +13,4 @@ clustering results you want to extract.}
 \description{
 method_hclust
 }
+\keyword{internal}

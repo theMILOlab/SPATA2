@@ -39,7 +39,7 @@ runBayesSpaceClustering(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{name}{Character value. The name the cluster variable has in
 the feature data of the \code{SPATA2} object. Defaults to \emph{bayes_space}.}

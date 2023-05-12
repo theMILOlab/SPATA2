@@ -7,7 +7,7 @@
 addImageDir(object, dir, name, check = TRUE, overwrite = FALSE, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{dir}{Character value. Directory to specific image. Should end
 with either \emph{.png}, \emph{.jpeg} or \emph{.tiff}. (Capital endings work, too.)}
@@ -22,7 +22,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

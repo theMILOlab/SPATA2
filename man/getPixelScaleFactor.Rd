@@ -15,7 +15,7 @@ getPixelScaleFactor(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{unit}{The desired unit. Defaults to the unit
 in which the original size of the image of the spatial method is

@@ -17,7 +17,7 @@ getGenes(
 getGenesInteractive(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{of_gene_sets}{A character vector specifying the gene sets from which to
 return the gene names.}

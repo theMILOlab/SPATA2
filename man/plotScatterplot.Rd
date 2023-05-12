@@ -21,7 +21,7 @@ plotScatterplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 

@@ -7,9 +7,10 @@
 update_dummy()
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
 update
 }
+\keyword{internal}

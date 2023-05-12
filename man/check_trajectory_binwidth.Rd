@@ -14,3 +14,4 @@ chosen trajectory's direction.#'}
 \description{
 Check trajectory binwdith input
 }
+\keyword{internal}

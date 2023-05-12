@@ -12,7 +12,7 @@ computeCnvByChrArm(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 

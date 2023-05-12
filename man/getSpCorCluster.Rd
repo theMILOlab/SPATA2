@@ -24,3 +24,4 @@ The list containing all information about the clustering results.
 \description{
 Obtain cluster results based on spatial correlation analysis
 }
+\keyword{internal}

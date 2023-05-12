@@ -17,3 +17,4 @@ a single character value.}
 \description{
 Check assign input
 }
+\keyword{internal}

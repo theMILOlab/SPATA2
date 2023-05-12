@@ -29,7 +29,8 @@ addGeneSetsInteractive(object)
 \code{gs_name} combination.}
 }
 \value{
-An updated spata-object.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
 Stores a new gene set in the spata-object.

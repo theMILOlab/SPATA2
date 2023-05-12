@@ -15,3 +15,4 @@ the default instructions within the spata object. Every 'default'-argument
 of the calling function that is NULL is replaced by what is defined as
 the default.
 }
+\keyword{internal}

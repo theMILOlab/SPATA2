@@ -7,7 +7,7 @@
 subsetByGenes(object, genes, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{genes}{Character vector of gene names that are kept.}
 
@@ -17,7 +17,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input \code{SPATA2} object containing the added or computed
+The input \code{spata2} object containing the added or computed
 results.
 }
 \description{

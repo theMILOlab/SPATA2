@@ -6,7 +6,7 @@
 \alias{getPcaMtr}
 \alias{getTsneDf}
 \alias{getUmapDf}
-\title{Get dim red df}
+\title{Obtain dim red data.frame}
 \usage{
 getDimRedDf(object, method_dr = c("pca", "tsne", "umap"), of_sample = NA)
 
@@ -19,5 +19,5 @@ getTsneDf(object, of_sample = NA)
 getUmapDf(object, of_sample = NA)
 }
 \description{
-Get dim red df
+Obtain dim red data.frame
 }

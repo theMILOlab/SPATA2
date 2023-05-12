@@ -4,7 +4,7 @@
 \alias{asSPATA2}
 \alias{asSPATA2,giotto-method}
 \alias{asSPATA2,Seurat-method}
-\title{Transform to \code{SPATA2} object}
+\title{Transform to \code{spata2} object object}
 \usage{
 asSPATA2(object, ...)
 
@@ -23,7 +23,7 @@ asSPATA2(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{...}{Additional arguments given to \code{initiateSpataObject_CountMtr()}.}
 
@@ -42,8 +42,8 @@ are transferred. If character, named variables are transferred. If FALSE,
 none are transferred.}
 }
 \value{
-An object of class \code{SPATA2}.
+An object of class \code{spata2} object.
 }
 \description{
-Transforms input object to object of class \code{SPATA2}.
+Transforms input object to object of class \code{spata2} object.
 }

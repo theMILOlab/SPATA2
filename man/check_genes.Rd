@@ -27,3 +27,4 @@ vector of gene names and checks which of the genes exist.
 
 Returns an adjusted genes-vector or raises an error.
 }
+\keyword{internal}

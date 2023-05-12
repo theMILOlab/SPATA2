@@ -14,7 +14,7 @@ inferSingleCellGradient(
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  remove_circle_bins = FALSE,
+  remove_circle_bins = "Outside",
   normalize = TRUE,
   area_unit = NULL,
   format = "wide",
@@ -22,14 +22,14 @@ inferSingleCellGradient(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:
 \itemize{
 \item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
-\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
 \item{id}{Character value. The ID of the image annotation of interest.}

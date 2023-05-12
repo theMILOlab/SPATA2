@@ -12,3 +12,4 @@ allColorspectra()
 \description{
 Valid colorpanels & -spectra
 }
+\keyword{internal}

@@ -62,6 +62,10 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
+Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
+Default by object initiation is 1.}
+
 \item{dir}{Character value. The chosen directory. See details for possible
 requirements.}
 
@@ -83,6 +87,8 @@ annotation centers around the image annotation. If \code{expand = 0}, the defaul
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
 and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
 \emph{Expansion of cropped image sections} for more information.}
+
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
@@ -132,13 +138,18 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{line_alpha, line_color, line_size, line_type}{Parameters given to
-\code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
-that control the appearance of the main line(s) of the plot.}
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{order}{Logical value. If \code{TRUE}, data points are ordered according
 to their values before beeing plotted.}
@@ -175,7 +186,7 @@ Must have at least three columns:
 \itemize{
 \item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
-\item{\emph{cell_type} :}{ character. Cell type of the cell.}
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
@@ -264,3 +275,4 @@ for more information.}
 \description{
 Argument dummy
 }
+\keyword{internal}

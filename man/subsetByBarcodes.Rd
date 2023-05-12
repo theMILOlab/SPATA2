@@ -7,7 +7,7 @@
 subsetByBarcodes(object, barcodes, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{barcodes}{Character vector. The barcodes of the barcode spots that are
 supposed to be \bold{kept}.}

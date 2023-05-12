@@ -20,3 +20,4 @@ Updated S4 object.
 Transfers slot content from one S4 object (donor) to a newer
 version (recepient).
 }
+\keyword{internal}

@@ -3,7 +3,7 @@
 \name{addSpatialTrajectory}
 \alias{addSpatialTrajectory}
 \alias{createSpatialTrajectories}
-\title{Create spatial trajectories}
+\title{Add spatial trajectories}
 \usage{
 addSpatialTrajectory(
   object,
@@ -20,7 +20,7 @@ addSpatialTrajectory(
 createSpatialTrajectories(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The id of the spatial trajectory.}
 
@@ -39,10 +39,11 @@ sets additional vertices along the trajectory.}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-An updated \code{SPATA2} object.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
-Functions to add spatial trajectories to the \code{SPATA2}
+Functions to add spatial trajectories to the \code{spata2}
 object. For interactive drawing use \code{createSpatialTrajectories()}.
 To set them precisely with code use \code{addSpatialTrajectory()}.
 }
@@ -57,10 +58,11 @@ object_t269 <-
    addSpatialTrajectory(
      object = object_t269,
      id = "cross_sample",
-     width = "1mm",
-     segment_df = data.frame(x = 100, y = 200, xend = 510, yend = 200),
+     width = "1.5mm",
+     start = c(x = "1.35mm", y = "4mm"),
+     end = c(x = "6.25mm", y = "4mm"),
      overwrite = TRUE
-     )
+   )
 
  plotSpatialTrajectories(object_t269, ids = "cross_sample")
 

@@ -20,3 +20,4 @@ vector of sample names and checks which of these exist.
 
 Returns an adjusted sample-vector or raises an error.
 }
+\keyword{internal}

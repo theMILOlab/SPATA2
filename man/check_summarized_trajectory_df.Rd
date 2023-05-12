@@ -12,3 +12,4 @@ check_summarized_trajectory_df(stdf)
 \description{
 Check stdf-input
 }
+\keyword{internal}

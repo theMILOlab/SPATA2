@@ -14,3 +14,4 @@ or \emph{'spata_object'}.}
 \description{
 Gives feedback about input validity
 }
+\keyword{internal}
