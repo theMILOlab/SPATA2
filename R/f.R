@@ -3,44 +3,49 @@
 
 # fe ----------------------------------------------------------------------
 
+#' @keywords internal
 feedback_area_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "area", ref_info = "`?is_area`")
 
 }
 
+#' @keywords internal
 feedback_area_pixel_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "'area in pixel'", ref_info = "`?is_area`")
 
 }
 
+#' @keywords internal
 feedback_area_si_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "'area in SI units'", ref_info = "`is_area`")
 
 }
 
+#' @keywords internal
 feedback_distance_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "distance", ref_info = "`?is_dist`")
 
 }
 
+#' @keywords internal
 feedback_expand_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "expand", ref_info = "`?process_ranges`")
 
 }
 
-
+#' @keywords internal
 feedback_percentage_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "percentage", ref_info = "`?is_percentage?`")
 
 }
 
-
+#' @keywords internal
 feedback_pos <- function(x, error, ref_input, ref_info){
 
   pos <- base::which(x == FALSE)
@@ -71,7 +76,7 @@ feedback_pos <- function(x, error, ref_input, ref_info){
 
 }
 
-
+#' @keywords internal
 feedback_range_input <- function(xrange = NULL, yrange = NULL, error = TRUE){
 
   if(!base::is.null(xrange)){
@@ -94,6 +99,7 @@ feedback_range_input <- function(xrange = NULL, yrange = NULL, error = TRUE){
 
 }
 
+#' @keywords internal
 feedback_spatial_measure <- function(x, error = TRUE){
 
   feedback_pos(
@@ -109,7 +115,7 @@ feedback_spatial_measure <- function(x, error = TRUE){
 
 # fi ----------------------------------------------------------------------
 
-
+#' @keywords internal
 filter_by_best <- function(df,
                            eval,
                            best_only,
@@ -137,7 +143,7 @@ filter_by_best <- function(df,
 
 }
 
-
+#' @keywords internal
 filter_by_model <- function(df,
                             model_subset,
                             model_remove){
@@ -172,7 +178,7 @@ filter_by_model <- function(df,
 
 }
 
-
+#' @keywords internal
 filter_by_thresholds <- function(df,
                                  eval,
                                  pval,
@@ -383,7 +389,6 @@ filterDeaDf <- function(dea_df,
 #' @return A tidy spata-data.frame containing the cluster variables.
 #' @export
 #'
-
 findMonocleClusters <- function(object,
                                 preprocess_method = c("PCA", "LSI"),
                                 reduction_method = c("UMAP", "tSNE", "PCA", "LSI"),
@@ -570,7 +575,6 @@ findMonocleClusters <- function(object,
 #' @return A tidy spata-data.frame containing the cluster variables.
 #' @export
 #'
-
 findNearestNeighbourClusters <- function(object,
                                          n_pcs = 30,
                                          k = 50,
@@ -689,7 +693,6 @@ findNearestNeighbourClusters <- function(object,
 #'
 #' @return A tidy spata-data.frame containing the cluster variables.
 #' @export
-
 findSeuratClusters <- function(object,
                                mtr_name = getActiveMatrixName(object, of_sample = of_sample),
                                FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
@@ -770,8 +773,8 @@ findSeuratClusters <- function(object,
 #' @inherit argument_dummy params
 #'
 #' @return Adjusted data.frame.
-#'
 #' @export
+#' @keywords internal
 flip_coords_df <- function(df,
                            axis,
                            ranges,

@@ -780,6 +780,14 @@ updateSpataObject <- function(object,
 
   }
 
+  if(object@version$major == 1 & object@version$minor == 15){
+
+    object@version <- list(major = 2, minor = 0, patch = 0)
+
+    object <- setTissueOutline(object)
+
+  }
+
   # default adjustment ------------------------------------------------------
 
   old_default <- object@information$instructions$default
@@ -799,10 +807,15 @@ updateSpataObject <- function(object,
 
   object <- setDefaultInstructions(object)
 
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
+  version <- version_string(object@version)
+
+  confuns::give_feedback(
+    msg = glue::glue("Object updated. New version: {version}"),
+    verbose = verbose
+    )
 
   base::rm(x.updating.spata.object.x, envir = .GlobalEnv)
 
-  base::return(object)
+  return(object)
 
 }

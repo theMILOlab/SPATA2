@@ -1,10 +1,11 @@
 Package: SPATA2
 Type: Package
 Title: A Toolbox for Spatial Gene Expression Analysis
-Version: 0.1.0
+Version: 2.0.0
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]", 
-    "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]"
+    "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]", 
+    "Simon Frerich <simon.frerich@med.uni-muenchen.de> [aut]"
   ))
 Description: This package provides a framework of functions and shiny-applications to make it as easy  and intuitive as possible to work with spatial gene expression data. 
 Encoding: UTF-8

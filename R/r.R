@@ -13,7 +13,7 @@
 #'
 #' @return Vector of the same class as `x`. Content depends on parameter adjustments.
 #'
-#' @export
+#' @keywords internal
 reduce_vec <- function(x, nth, start.with = 1){
 
   if(base::is.integer(nth)){
@@ -395,13 +395,8 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 #' removing the annotation effectively renames the annotation back to \emph{'unnamed'}.
 #'
 #' @return An updated spata object.
-#' @export
 #'
-#' @examples
-#'
-#'   object <- createAnnotation(object)
-#'
-#'   object <- removeAnnotation(object, ann_var = "cns_layer", groups = c("layer_1", "layer2")
+#' @keywords internal
 
 removeAnnotation <- function(object, ann_var, groups){
 
@@ -825,7 +820,7 @@ resetImageJustification <- function(object){
 
 
 #' @title Used for GeomSegmentFixed
-#' @export
+#' @keywords internal
 resizingSegmentsGrob <- function(...){
 
   grid::grobTree(tg = grid::segmentsGrob(...), cl = "resizingSegmentsGrob")
@@ -834,7 +829,7 @@ resizingSegmentsGrob <- function(...){
 
 
 #' @title Used for GeomTextScaled
-#' @export
+#' @keywords internal
 resizingTextGrob <- function(...){
 
   grid::grobTree(tg = grid::textGrob(...), cl = "resizingTextGrob")
@@ -843,7 +838,7 @@ resizingTextGrob <- function(...){
 
 
 
-
+#' @keywords internal
 rm_na <- function(x){ x[!base::is.na(x)] }
 
 
@@ -960,7 +955,7 @@ rotate_coord <- function(x,
 #'
 #' @return Adjusted data.frame.
 #' @export
-#'
+#' @keywords internal
 rotate_coords_df <- function(df,
                              angle,
                              clockwise = TRUE,

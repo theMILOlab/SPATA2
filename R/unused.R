@@ -6,7 +6,7 @@
 #' the function \code{clusterSpCorResults()} returns.
 #'
 #' @inherit set_dummy return details
-
+#' @keywords internal
 addSpCorCluster <- function(object,
                             cluster_list,
                             of_sample = ""){
@@ -40,9 +40,9 @@ addSpCorCluster <- function(object,
 
 
 #' @title Cluster genes according to their expression profile
-#' @export
+#' @keywords internal
 #'
-
+#' @keywords internal
 clusterSpCorResults <- function(object,
                                 of_sample = "",
                                 method_hclust = "complete",
@@ -104,7 +104,7 @@ clusterSpCorResults <- function(object,
 #'  method returns}
 #'  \item{\code{getPrSuggestion()}: List containing the actual pattern suggestions.}
 #'  \item{\code{getPatternNames()}: Character vector of pattern names.}}
-
+#' @keywords internal
 getPrResults <- function(object, method_pr = "hspa", of_sample = NA){
 
   check_object(object)
@@ -124,7 +124,7 @@ getPrResults <- function(object, method_pr = "hspa", of_sample = NA){
 
 }
 
-
+#' @keywords internal
 #' @rdname getPrResults
 getPatternNames <- function(object, method_pr = "hotspot", of_sample = NA){
 
@@ -144,8 +144,7 @@ getPatternNames <- function(object, method_pr = "hotspot", of_sample = NA){
 #' @inherit check_sample params
 #'
 #' @return A data.frame or a distance matrix.
-#' @export
-
+#' @keywords internal
 getGeneDistMtr <- function(object, of_sample = NA){
 
   check_object(object)
@@ -158,6 +157,7 @@ getGeneDistMtr <- function(object, of_sample = NA){
 
 }
 
+#' @keywords internal
 getGeneDistDf <- function(object, of_sample = NA){
 
   getGeneDistMtr(object = object, of_sample = of_sample) %>%
@@ -173,8 +173,7 @@ getGeneDistDf <- function(object, of_sample = NA){
 #' @inherit method_hclust params
 #'
 #' @return The list containing all information about the clustering results.
-#' @export
-
+#' @keywords internal
 getSpCorCluster <- function(object, method_hclust = "complete", of_sample = NA){
 
   check_object(object)
@@ -198,7 +197,8 @@ getSpCorCluster <- function(object, method_hclust = "complete", of_sample = NA){
 }
 
 #' @rdname getSpCorCluster
-#' @export
+#' @keywords internal
+#' @keywords internal
 getSpCorClusterNames <- function(object, of_sample = NA){
 
   check_object(object)
@@ -226,7 +226,7 @@ getSpCorClusterNames <- function(object, of_sample = NA){
 #' @inherit method_hclust params
 #'
 #' @return The list containing all information about the clustering results.
-
+#' @keywords internal
 getSpCorResults <- function(object, of_sample = NA){
 
   check_object(object)
@@ -246,7 +246,7 @@ getSpCorResults <- function(object, of_sample = NA){
 
 }
 
-
+#' @keywords internal
 ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = FALSE, ...){
 
   genes <-
@@ -283,7 +283,7 @@ ggpLayerGenePattern <- function(object, gene_pattern, type = "hull", verbose = F
 #' @param ... Additional arguments given to \code{ggdendro::ggdendrogram()}
 #'
 #' @return ggplot_family return
-#' @export
+#' @keywords internal
 
 plotGeneDendrogram <- function(object,
                                method_hclust = "complete",
@@ -350,7 +350,7 @@ plotGeneDendrogram <- function(object,
 #' that feature a similar expression profile/pattern as a gene of interest.
 #'
 #' @return An updated spata-object.
-#' @export
+#' @keywords internal
 
 runSpatialCorrelationAnalysis <- function(object,
                                           of_sample = "",
@@ -476,15 +476,15 @@ runSpatialCorrelationAnalysis <- function(object,
 
 
 #' @title dummy
-#' @export
+#' @keywords internal
 export <-function(){}
 
 #' @title dummy
-#' @export
+#' @keywords internal
 plotDendrogram <- function(){}
 
 #' @title dummy
-#' @export
+#' @keywords internal
 transform_pixel_to_si <- function(){}
 
 #' @title Set results of pattern recognition methods
@@ -495,7 +495,7 @@ transform_pixel_to_si <- function(){}
 #' \code{method_pr} returns
 #'
 #' @inherit set_dummy return details
-
+#' @keywords internal
 setPrResults <- function(object, of_sample = "",  method_pr = "hpa", pr_results){
 
   check_object(object)
@@ -516,7 +516,7 @@ setPrResults <- function(object, of_sample = "",  method_pr = "hpa", pr_results)
 #' function \code{runSpatialCorrelationAnalysis()} returns.
 #'
 #' @inherit set_dummy return details
-
+#' @keywords internal
 setSpCorResults <- function(object,
                             sp_cor_list,
                             of_sample = ""){

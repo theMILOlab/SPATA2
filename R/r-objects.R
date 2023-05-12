@@ -79,6 +79,7 @@ default_instructions_object <-
                clrsp = "inferno",
                colors = default_colors,
                complete = TRUE,
+               concavity = 1,
                display_facets = TRUE,
                display_image = TRUE,
                display_labels = TRUE,
@@ -87,6 +88,7 @@ default_instructions_object <-
                display_residuals = TRUE,
                display_title = FALSE,
                display_trajectory_parts = FALSE,
+               expand_outline = 0.015,
                max_adj_pval = 0.05,
                method_aggl = "ward.D",
                method_dist = "euclidean",
@@ -475,7 +477,7 @@ create_spatial_trajectories_descr <- list(
 
 
 
-current_spata_version <- list(major = 1, minor = 15, patch = 0)
+current_spata_version <- list(major = 2, minor = 0, patch = 0)
 
 
 # d -----------------------------------------------------------------------
@@ -484,6 +486,7 @@ depr_info <-
   list(
     fns = list(
       # deprecated            ~   replaced by
+      "add_outline_variable" = "add_tissue_section_variable",
       "adjustdDefaultInstructions" = "setDefault",
       "assessTrajectoryTrends" = "spatialTrajectoryScreening",
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
@@ -520,10 +523,11 @@ depr_info <-
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
       "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",
       "plotTrajectoryFit" = "plotTrajectoryLineplotFitted",
-      "plotTrajectoryFitCustomized" = "plotTrajectoryFitted",
+      "plotTrajectoryFitCustomized" = "plotTrajectoryLineplotFitted",
       "plotTrajectoryGenes" = "plotTrajectoryLineplot",
       "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
       "runDeAnalysis" = "runDEA",
+      "setActiveExpressionMatrix" = "setActiveMatrix",
       "setDefaultTrajectory" = "setDefaultTrajectoryId",
       "subsetByBarcodes_CountMtr" = "subsetByBarcodes",
       "subsetByBarcodes_ExprMtr" = "subsetByBarcodes",
@@ -550,6 +554,7 @@ depr_info <-
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
       "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
+      "include_tissue_outline" = list("outline_var" = NA_character_),
       "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
       "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
@@ -668,7 +673,7 @@ projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "t
 pub_dropbox_links <- list(
   "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",
   "313_T" = "https://www.dropbox.com/s/zxeilq38tqwfx70/313_T.RDS?dl=1",
-  "MCD_LMU" = "https://www.dropbox.com/s/b5zxcqmnx0814fq/mouse_cortex_damaged.RDS?dl=1"
+  "MCI_LMU" = "https://www.dropbox.com/s/b5zxcqmnx0814fq/mouse_cortex_injured.RDS?dl=1"
 )
 
 

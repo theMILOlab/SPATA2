@@ -1050,7 +1050,7 @@ getDefaultTrajectory <- function(object, ...){
 getDefaultTrajectoryId <- getDefaultTrajectory
 
 
-#' @title Get dim red df
+#' @title Obtain dim red data.frame
 getDimRedDf <- function(object,
                         method_dr = c("pca", "tsne", "umap"),
                         of_sample = NA){
@@ -1398,9 +1398,7 @@ getFeatureVariables <- function(object,
 #' @param error_handling Either \emph{'warning} or \emph{'stop'}.
 #' @param error_value What is supposed to be returned if extraction fails.
 #' @param error_ref The reference for the feedback message.
-#'
-
-
+#' @keywords internal
 getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 
   result <-

@@ -1722,9 +1722,6 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 #' @description A wrapper around the Seurat clustering pipeline suggested by
 #' *Hao and Hao et al., 2021*.
 #'
-#' @param object
-#' @param name
-#' @param mtr_name
 #' @param FindVariableFeatures,RunPCA,FindNeighbors,FindClusters Each argument
 #' takes a list of arguments that is given to the equivalent function.
 #'

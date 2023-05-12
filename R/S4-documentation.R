@@ -269,7 +269,73 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 # S -----------------------------------------------------------------------
 
 
-#' @title The \code{SpatialMethod} - class
+#' @title The `spata2`- Class
+#'
+#' @slot autoencoder A list in which the results of neural network denoising is stored.
+#'
+#' @slot coordinates A data.frame containing information about every barcode-spot. Must contain the variables:
+#'
+#'  \describe{
+#'   \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
+#'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
+#'   \item{\emph{x}}{Numeric. The x-coordinates of every barcode.}
+#'   \item{\emph{y}}{Numeric. The y-coordinates of every barcode.}
+#'  }
+#'
+#' @slot data See documentation for S4-object 'data'
+#' @slot dea A list in which every slot is named according to a discrete feature for which differential gene expression
+#' analysis has been conducted (via \code{findDeGenes()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).
+#' @slot dim_red See documentation for S4-object 'dim_red'
+#' @slot fdata A data.frame containing the additionally computed features. Must contain the variables:
+#'  \describe{
+#'   \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
+#'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
+#'  }
+#'
+#' @slot image A list of images named according to the samples the object contains.
+#' @slot samples Character value. Contains the sample names.
+#' @slot scvelo Currently not in use.
+#' @slot trajectories A list named according to the samples the object contains. Each slot in
+#' that list contains another list of all 'spatial_trajectory'-objects created for that sample.
+#'
+#' @slot used_genesets A data.frame containing the defined gene-sets. Must contain the variables:
+#'
+#' \describe{
+#'  \item{\emph{ont}}{Character. The gene-set name.}
+#'  \item{\emph{gene}}{Character. The belonging genes.}
+#'  }
+#'
+#' @slot version A list of four slots denoting the version of SPATA under which the object has been
+#' created.
+#'
+#' @slot compatibility A list of miscellaneous information that mainly ensures compatibility between different
+#' platforms.
+#'
+#' @return S4 object
+#' @export
+
+spata2 <- setClass("spata2",
+                   slots = c(autoencoder = "list",
+                             cnv = "list",
+                             compatibility = "list",
+                             coordinates ="list", #coordinates: bc, x, y, sample
+                             data = "list",
+                             dea = "list",
+                             dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
+                             fdata = "list", #fdata : bc, ...
+                             gdata = "list",
+                             images = "list",
+                             information = "list",
+                             samples = "character",
+                             spatial = "list",
+                             scvelo = "list",
+                             trajectories = "list",
+                             used_genesets = "data.frame",
+                             version = "list")
+)
+
+
+#' @title The \code{SpatialMethod} - Class
 #'
 #' @description Abstracts the concept of spatial biology experiments
 #' such as \emph{Visium1} or \emph{SlideSeq}.
@@ -294,7 +360,7 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
                           ))
 
 
-#' @title The `SpatialSegmentation` - class
+#' @title The `SpatialSegmentation` - Class
 #'
 #' @description Abstracts the concept of manual segmentation/annotation
 #' of the sample surface.
@@ -315,7 +381,7 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' the segment. Every following data.frame is named *interior*-suffix where the suffix is a number
 #' and corresponds to interior holes of the segment.
 #'
-#' @export
+#' @keywords internal
 #'
 SpatialSegmentation <- setClass(Class = "SpatialSegmentation",
                                 slots = list(
@@ -324,7 +390,7 @@ SpatialSegmentation <- setClass(Class = "SpatialSegmentation",
                                   segments = "list"
                                 ))
 
-#' @title The `SpatialSegment` - class
+#' @title The `SpatialSegment` - Class
 #'
 #' @description Abstracts the concept of an annotated segment within a spatial
 #' segmentation.
@@ -346,7 +412,7 @@ SpatialSegmentation <- setClass(Class = "SpatialSegmentation",
 #' the outer ring of the segment. Further polygons (should be named *inner* suffixed
 #' with a number) define holes within the segment.
 #'
-#' @export
+#' @keywords internal
 SpatialSegment <- setClass(Class = "SpatialSegment",
                            slots = list(
                              info = "list",
@@ -356,7 +422,7 @@ SpatialSegment <- setClass(Class = "SpatialSegment",
 
 
 
-#' @title The \code{SpatialTrajectory} - class
+#' @title The \code{SpatialTrajectory} - Class
 #'
 #' @description Extension of the \code{Trajectory} for trajectories
 #' that have been drawn on a surface plot.
@@ -458,8 +524,7 @@ SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
 #'
 #' @return S4 object
 #' @export
-#'
-
+#' @keywords internal
 
 data_counts <- setClass("data_counts",
                                  slots = c(counts = "Matrix",
@@ -473,8 +538,7 @@ data_counts <- setClass("data_counts",
 #'
 #' @return S4 object
 #' @export
-#'
-
+#' @keywords internal
 dim_red <- setClass("dim_red",
                              slots = c(UMAP =  "data.frame",
                                        TSNE ="data.frame"))
@@ -498,7 +562,7 @@ dim_red <- setClass("dim_red",
 #' @slot info list. A flexible list that is supposed to store miscellaneous
 #' information around the image.
 #' @slot misc list. A flexible list for miscellaneous input.
-#'
+#' @keywords internal
 #' @export
 HistologyImage <- setClass(Class = "HistologyImage",
                            slots = list(
@@ -538,7 +602,7 @@ HistologyImage <- setClass(Class = "HistologyImage",
 #'
 #' @return S4 object
 #' @export
-#'
+#' @keywords internal
 
 spatial_trajectory <- setClass("spatial_trajectory",
                                         slots = c(
@@ -549,76 +613,9 @@ spatial_trajectory <- setClass("spatial_trajectory",
                                           sample = "character"))
 
 
-#' @title The spata-object
-#'
-#' @slot autoencoder A list in which the results of neural network denoising is stored.
-#'
-#' @slot coordinates A data.frame containing information about every barcode-spot. Must contain the variables:
-#'
-#'  \describe{
-#'   \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-#'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
-#'   \item{\emph{x}}{Numeric. The x-coordinates of every barcode.}
-#'   \item{\emph{y}}{Numeric. The y-coordinates of every barcode.}
-#'  }
-#'
-#' @slot data See documentation for S4-object 'data'
-#' @slot dea A list in which every slot is named according to a discrete feature for which differential gene expression
-#' analysis has been conducted (via \code{findDeGenes()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).
-#' @slot dim_red See documentation for S4-object 'dim_red'
-#' @slot fdata A data.frame containing the additionally computed features. Must contain the variables:
-#'  \describe{
-#'   \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-#'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
-#'  }
-#'
-#' @slot image A list of images named according to the samples the object contains.
-#' @slot samples Character value. Contains the sample names.
-#' @slot scvelo Currently not in use.
-#' @slot trajectories A list named according to the samples the object contains. Each slot in
-#' that list contains another list of all 'spatial_trajectory'-objects created for that sample.
-#'
-#' @slot used_genesets A data.frame containing the defined gene-sets. Must contain the variables:
-#'
-#' \describe{
-#'  \item{\emph{ont}}{Character. The gene-set name.}
-#'  \item{\emph{gene}}{Character. The belonging genes.}
-#'  }
-#'
-#' @slot version A list of four slots denoting the version of SPATA under which the object has been
-#' created.
-#'
-#' @slot compatibility A list of miscellaneous information that mainly ensures compatibility between different
-#' platforms.
-#'
-#' @return S4 object
-#' @export
-
-spata2 <- setClass("spata2",
-                   slots = c(autoencoder = "list",
-                             cnv = "list",
-                             compatibility = "list",
-                             coordinates ="list", #coordinates: bc, x, y, sample
-                             data = "list",
-                             dea = "list",
-                             dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
-                             fdata = "list", #fdata : bc, ...
-                             gdata = "list",
-                             images = "list",
-                             information = "list",
-                             samples = "character",
-                             spatial = "list",
-                             scvelo = "list",
-                             trajectories = "list",
-                             used_genesets = "data.frame",
-                             version = "list")
-)
-
-
-
-
 #' default instructions
 #' @export
+#' @keywords internal
 default_instructions <- setClass(Class = "default_instructions",
                                           slots = c(
                                             average_genes = "logical",
@@ -627,6 +624,7 @@ default_instructions <- setClass(Class = "default_instructions",
                                             clrsp = "character",
                                             colors = "character",
                                             complete = "logical",
+                                            concavity = "numeric",
                                             display_facets = "logical",
                                             display_image = "logical",
                                             display_labels = "logical",
@@ -635,6 +633,7 @@ default_instructions <- setClass(Class = "default_instructions",
                                             display_residuals = "logical",
                                             display_trajectory_parts = "logical",
                                             display_title = "logical",
+                                            expand_outline = "numeric",
                                             max_adj_pval = "numeric",
                                             method_aggl = "character",
                                             method_dist = "character",

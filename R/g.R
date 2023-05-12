@@ -456,18 +456,34 @@ ggpLayerColorGroupScale <- function(object,
 #'
 #' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
 #' \emph{'umap'}.
-#' @param grouping_variable Character value. The grouping variable of choice.
 #' @param groups_subset Character value or NULL. If character,
 #' specifies the exact groups that are encircled. If NULL, all groups
 #' are encircled.
+#' @param outlier_rm,minPts Logical. If `TRUE`, spatial outlier of the group to outline
+#' are removed from the outline via `dbscan::dbscan(..., minPts = minPts`). Ignored
+#' if `plot_type` is not *'surface'*.
 #' @param ... Additional arguments given to `ggforce::geom_mark_hull()`. Affects
 #' the encircling.
 #'
+#' @inherit ggpLayerTissueOutline params
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
+#'
+#' @examples
+#'
+#'  object <- downloadPubExample("269_T")
+#'
+#'  plotImageGgplot(object) +
+#'   ggpLayerGroupOutline(
+#'     object = object,
+#'     plot_type = "surface",
+#'     grouping = "histology",
+#'     groups_subset = "tumor",
+#'     line_color = color_vector("npg")[1]
+#'     )
 #'
 ggpLayerGroupOutline <- function(object,
                                  grouping,
@@ -475,17 +491,24 @@ ggpLayerGroupOutline <- function(object,
                                  plot_type = "surface",
                                  line_color = "black",
                                  line_size = 1,
+                                 alpha = 0,
                                  outlier_rm = TRUE,
-                                 minPts = 1,
-                                 expand = getCCD(object, unit = "px"),
+                                 eps = (getCCD(object, "px")*1.25),
+                                 minPts = 3,
+                                 concavity = NULL,
+                                 expand_outline = getCCD(object, "px")*1.1,
                                  ...){
+
+  hlpr_assign_arguments(object)
 
   confuns::check_one_of(
     input = plot_type,
     against = c("surface", "coords", "tsne", "umap")
   )
 
-  expand <- base::as.numeric(as_pixel(input = expand[1], object = object))
+  expand_outline <-
+    as_pixel(expand_outline, object = object) %>%
+    base::as.numeric()
 
   if(plot_type %in% c("coords", "surface")){
 
@@ -528,86 +551,64 @@ ggpLayerGroupOutline <- function(object,
         .x = base::levels(layer_df[[grouping]]),
         .f = function(group){
 
-          add_outline_variable(
-            coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
-            ccd = getCCD(object, unit = "px"),
-            minPts = minPts
-          )
+            add_dbscan_variable(
+              coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
+              eps = eps,
+              minPts = minPts,
+              name = "group_outline"
+            ) %>%
+              dplyr::filter(group_outline != "0")
 
         }
-      )
-
-    layer_df <- dplyr::filter(layer_df, outline != "0")
-
-    layer_df <-
-      dplyr::mutate(
-        .data = layer_df,
-        outline_groups = stringr::str_c(!!rlang::sym(grouping), outline, sep = "_")
       )
 
   } else {
 
-    layer_df[["outline_groups"]] <- base::as.character(layer_df[[grouping]])
+    layer_df[["group_outline"]] <- "1"
 
   }
 
-  plot_df <-
+  layer_df <-
     purrr::map_df(
-      .x = base::unique(layer_df[["outline_groups"]]),
-      .f = function(og){
+      .x = base::levels(layer_df[[grouping]]),
+      .f = function(group){
 
-        og_df <- dplyr::filter(layer_df, outline_groups == {{og}})
+        group_df <- dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}})
 
-        if(base::nrow(og_df) <= minPts){
+        out <-
+          purrr::map(
+            .x = base::unique(group_df[["group_outline"]]),
+            .f = function(go){
 
-          out <- NULL
+              dplyr::filter(group_df, group_outline == {{go}}) %>%
+                add_outline_variable() %>%
+                arrange_by_outline_variable() %>%
+                buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
+                dplyr::mutate(
+                  !!rlang::sym(grouping) := {{group}},
+                  group_outline = {{go}}
+                )
 
-        } else {
-
-          center <- c(x = base::mean(og_df[["x"]]), y = base::mean(og_df[["y"]]))
-
-          #hull_points <- grDevices::chull(x = base::as.matrix(og_df[,c("x", "y")]))
-
-          og_df <-
-            dplyr::group_by(og_df, barcodes) %>%
-            dplyr::mutate(
-              angle = compute_angle_between_two_points(p1 = c(x = x, y = y), p2 = {{center}}),
-              dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = {{center}})
-            )
-
-          prolonged_df <-
-            confuns::make_trig_vec(
-              start = center,
-              angle = base::unname(og_df[["angle"]]),
-              dist = base::unname(og_df[["dist"]]),
-              prolong = base::as.numeric(expand),
-              prolong.opt = "a"
-            )
-
-          prolonged_df[["barcodes"]] <- og_df[["barcodes"]]
-
-          out <-
-            dplyr::left_join(
-              x = og_df,
-              y = prolonged_df[,c("xend_p1", "yend_p1", "barcodes")],
-              by = "barcodes"
-            )
-
-        }
+            }
+          )
 
         return(out)
 
       }
+    ) %>%
+    dplyr::mutate(
+      final_group = stringr::str_c(!!rlang::sym(grouping), group_outline, sep = " ")
     )
 
   out <-
     ggforce::geom_mark_hull(
-      data = plot_df,
-      mapping = ggplot2::aes(x = xend_p1, y = yend_p1, group = outline_groups),
-      alpha = 0,
+      data = layer_df,
+      mapping = ggplot2::aes(x = x, y = y, group = final_group),
+      alpha = alpha,
       color = line_color,
       size = line_size,
       expand = 0,
+      concavity = concavity,
       ...
     )
 
@@ -646,7 +647,7 @@ ggpLayerEncirclingIAS <- function(object,
                                   alpha_core = 0,
                                   fill_core = NA,
                                   line_color = "black",
-                                  line_size = 1,
+                                  line_size = (line_size_core * 0.75),
                                   line_size_core = 1,
                                   xrange = NULL,
                                   yrange = NULL,
@@ -667,7 +668,7 @@ ggpLayerEncirclingIAS <- function(object,
 
           idx <- id[i]
 
-          if(i > 1){ verbose <- FALSE}
+          if(i > 1){ verbose <- FALSE }
 
           expansions <-
             getIasExpansion(
@@ -1707,7 +1708,7 @@ ggpLayerRect <- function(object = "object",
 #'
 #' @examples
 #'
-#' object <- downloadPubExample("313_T")
+#' object <- downloadPubExample("313_T", verbose = FALSE)
 #'
 #' plotImageGgplot(object) +
 #'  ggpLayerEncirclingIAS(
@@ -1954,7 +1955,6 @@ ggpLayerScaleBarSI <- function(object,
   add_on_list <-
     list(
       ggplot2::theme_bw(), # override theme_void -> clashes with geom_segment (???)
-      ggplot2::labs(x = NULL, y = NULL),
       theme_add_on,
       sgmt_add_on,
       text_add_on
@@ -1976,12 +1976,11 @@ ggpLayerScaleBarSI <- function(object,
 #'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
-#'
-#' @param expand Given to `ggforce::geom_mark_hull()`.
 #' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
 #'
-#' @param inc_outline Employs the function `add_outline_variable()` which uses
-#' `dbscan::dbscan()` to identify incoherent tissue sections.
+#' @param inc_outline Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @export
 #'
@@ -1999,88 +1998,63 @@ ggpLayerScaleBarSI <- function(object,
 ggpLayerTissueOutline <- function(object,
                                   line_color = "grey",
                                   line_size = 0.5,
-                                  expand = getCCD(object, unit = "px"),
+                                  expand_outline = getCCD(object, "px"),
+                                  concavity = NULL,
                                   inc_outline = TRUE,
-                                  minPts = 1,
                                   ...){
+
+  hlpr_assign_arguments(object)
 
   coords_df <- getCoordsDf(object)
 
-  expand <- base::as.numeric(as_pixel(input = expand[1], object = object))
+  if(!containsTissueOutline(object)){
 
-  if(base::isTRUE(inc_outline)){
-
-    coords_df <-
-      add_outline_variable(coords_df, minPts = 1, ccd = getCCD(object, unit = "px", as_numeric = TRUE)) %>%
-      dplyr::filter(outline != "0")
-
-  } else {
-
-    coords_df[["outline"]] <- "1"
+    coords_df[["section"]] <- "1"
+    coords_df[["outline"]] <- TRUE
 
   }
 
-  coords_df <-
+  expand_outline <-
+    as_pixel(expand_outline, object = object) %>%
+    base::as.numeric()
+
+  coords_df <- dplyr::filter(coords_df, section != "0")
+
+  sections <- base::unique(coords_df[["section"]])
+
+  outline_df <- getTissueOutlineDf(object)
+
+  outline_df <-
     purrr::map_df(
-      .x = base::unique(coords_df[["outline"]]),
-      .f = function(group){
+      .x = base::unique(sections),
+      .f = function(s){
 
-        og_df <- dplyr::filter(coords_df, outline == {{group}})
+        df_sub <- dplyr::filter(outline_df, section == {{s}})
 
-        if(base::nrow(og_df) <= minPts){
+        df_out <-
+          arrange_by_outline_variable(df_sub) %>%
+          dplyr::select(x,y) %>%
+          buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
+          dplyr::mutate(section = {{s}})
 
-          out <- NULL
-
-        } else {
-
-          center <- c(x = base::mean(og_df[["x"]]), y = base::mean(og_df[["y"]]))
-
-          #hull_points <- grDevices::chull(x = base::as.matrix(og_df[,c("x", "y")]))
-
-          og_df <-
-            dplyr::group_by(og_df, barcodes) %>%
-            dplyr::mutate(
-              angle = compute_angle_between_two_points(p1 = c(x = x, y = y), p2 = {{center}}),
-              dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = {{center}})
-            )
-
-          prolonged_df <-
-            confuns::make_trig_vec(
-              start = center,
-              angle = base::unname(og_df[["angle"]]),
-              dist = base::unname(og_df[["dist"]]),
-              prolong = base::as.numeric(expand),
-              prolong.opt = "a"
-            )
-
-          prolonged_df[["barcodes"]] <- og_df[["barcodes"]]
-
-          out <-
-            dplyr::left_join(
-              x = og_df,
-              y = prolonged_df[,c("xend_p1", "yend_p1", "barcodes")],
-              by = "barcodes"
-            )
-
-        }
-
-        return(out)
+        return(df_out)
 
       }
     )
 
   out <-
     ggforce::geom_mark_hull(
-      data = coords_df,
-      mapping = ggplot2::aes(x = xend_p1, y = yend_p1, group = outline),
+      data = outline_df,
+      mapping = ggplot2::aes(x = x, y = y, group = section),
       alpha = 1,
       color = line_color,
       size = line_size,
       expand = 0,
+      concavity = concavity,
       ...
     )
 
-  return(list(out))
+  return(out)
 
 }
 
@@ -2093,12 +2067,22 @@ ggpLayerTissueOutline <- function(object,
 #' @return List.
 #' @export
 #'
-ggpLayerThemeCoords <- function(){
+ggpLayerThemeCoords <- function(unit = NULL){
+
+  if(base::is.character(unit) && unit[1] %in% validUnitsOfLength()){
+
+    unit <- stringr::str_c("[", unit[1], "]")
+
+  }
 
   list(
     ggplot2::theme_bw(),
     ggplot2::theme(
       panel.grid = ggplot2::element_blank()
+    ),
+    ggplot2::labs(
+      x = glue::glue("x-coordinates {unit}"),
+      y = glue::glue("y-coordinates {unit}")
     )
   )
 
@@ -2297,6 +2281,28 @@ gradientToModelIAS <- function(object,
     verbose = FALSE
   ) %>%
     dplyr::filter(bins_circle != "Outside") %>%
+    dplyr::select(dplyr::all_of(variables)) %>%
+    base::as.list()
+
+}
+
+#' @rdname gradientToModelIAS
+#' @export
+gradientToModelSTS <- function(object,
+                               id,
+                               variables,
+                               binwidth = getCCD(object, "px"),
+                               n_bins = NA_integer_,
+                               verbose = TRUE){
+
+  getStsDf(
+    object = object,
+    id = id,
+    n_bins = n_bins,
+    binwidth = binwidth,
+    variables = variables,
+    verbose = FALSE
+  ) %>%
     dplyr::select(dplyr::all_of(variables)) %>%
     base::as.list()
 

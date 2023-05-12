@@ -10,7 +10,7 @@
 #'
 #' @description "Closes" the area described by the vertices of \code{df} by
 #' adding the starting point (first row) to the end of the data.frame.
-#'
+#' @keywords internal
 #' @export
 close_area_df <- function(df){
 
@@ -38,7 +38,7 @@ close_area_df <- function(df){
 #' with the y-axis.
 #'
 #' @param p1,p2 Numeric vectors of length two, named \emph{x} and \emph{y}.
-#'
+#' @keywords internal
 #' @export
 compute_angle_between_two_points <- function(p1, p2){
 
@@ -81,7 +81,7 @@ compute_angle_between_two_points <- function(p1, p2){
 #'
 #' @param starting_pos,final_pos Numeric vector of length two. Denotes the two positions
 #' between which the distance is calculated
-#'
+#' @keywords internal
 #' @return A numeric value.
 #'
 
@@ -258,6 +258,7 @@ computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
 }
 
+#' @keywords internal
 computeGeneNormality <- function(object, mtr_name = "scaled", verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -313,7 +314,7 @@ computeGeneNormality <- function(object, mtr_name = "scaled", verbose = NULL){
 
 # concatenate -------------------------------------------------------------
 
-
+#' @keywords internal
 concatenate_polypaths <- function(lst, axis){
 
   path <- lst[["outer"]][[axis]]
@@ -339,6 +340,7 @@ concatenate_polypaths <- function(lst, axis){
 
 # contain ----------------------------------------------------------------
 
+#' @keywords internal
 container <- function(...){
 
   shiny::fluidRow(
@@ -349,6 +351,15 @@ container <- function(...){
 
 }
 
+
+#' @title Check availability of miscellaneous content
+#'
+#' @description Logical tests that check if content exists in the `spata2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
 containsCNV <- function(object){
 
@@ -369,8 +380,8 @@ containsCNV <- function(object){
 
 }
 
-
-# required for updating
+#' @rdname containsCNV
+#' @export
 containsHistologyImage <- function(object){
 
   img <- object@images[[1]]
@@ -425,6 +436,7 @@ containsImage <- function(object){
 
 }
 
+#' @rdname containsHistologyImaging
 #' @export
 containsImageObject <- function(object){
 
@@ -475,6 +487,14 @@ containsPixelScaleFactor <- function(object){
   }
 
   return(out)
+
+}
+
+#' @rdname containsCNV
+#' @export
+containsTissueOutline <- function(object){
+
+  base::isTRUE(object@information$tissue_outline_set)
 
 }
 
@@ -547,7 +567,7 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 }
 
 
-#' @title Subset object by x- and y-range
+#' @title Subset by x- and y-range
 #'
 #' @description Creates a subset of the original `SPATA2` object
 #' based on x- and y-range. Barcode-spots that fall into the

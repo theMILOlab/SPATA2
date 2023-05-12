@@ -6,7 +6,7 @@ NULL
 # check_a -----------------------------------------------------------------
 
 #' @title Check barcodes of all matrices and data.frames
-#'
+#' @keywords internal
 #' @inherit check_object params
 
 check_all_barcodes <- function(object){
@@ -43,6 +43,7 @@ check_all_barcodes <- function(object){
 #' customize the output plot of this function.
 #' @param assign_name The name the assigned list is supposed to have specified as
 #' a single character value.
+#' @keywords internal
 #'
 
 check_assign <- function(assign = FALSE,
@@ -91,8 +92,7 @@ check_assign <- function(assign = FALSE,
 #' @param test Logical test that checks if something was found.
 #' @param ref_x Object reference.
 #' @param ref_fns Function(s) that needs
-
-
+#' @keywords internal
 
 check_availability <- function(test, ref_x, ref_fns){
 
@@ -112,6 +112,7 @@ check_availability <- function(test, ref_x, ref_fns){
 
 # check_b -----------------------------------------------------------------
 
+#' @keywords internal
 check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL, object = NULL){
 
   ce <- rlang::caller_env()
@@ -159,6 +160,7 @@ check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL, object = NULL)
 #' @param all_genes The valid genes specified as a character vector.
 #' @param all_gene_sets The valid gene sets specified as a character vector.
 #'
+#' @keywords internal
 
 check_color_to <- function(color_to,
                            color_by,
@@ -223,7 +225,7 @@ check_color_to <- function(color_to,
 #' as the variables needed to map onto the x- and y axis of the plot.
 #' @param x The name of the numeric variable to be plotted on the x axis.
 #' @param y The name of the numeric variable to be plotted on the y axis.
-#'
+#' @keywords internal
 
 check_coordinate_variables <- function(data, x = "x", y = "y"){
 
@@ -254,7 +256,7 @@ check_coordinate_variables <- function(data, x = "x", y = "y"){
 #'   \item{\emph{x} Numeric. The x-coordinates of every barcode.}
 #'   \item{\emph{y} Numeric. The y-coordinates of every barcode.}
 #'  }
-#'
+#' @keywords internal
 
 check_coords_df <- function(coords_df){
 
@@ -285,7 +287,7 @@ check_coords_df <- function(coords_df){
 #'  }
 #'
 #'Hint: Use the resulting data.frame of \code{SPATA::findDE()} or it's descendants as input.
-#'
+#' @keywords internal
 
 check_dea_df <- function(dea_df){
 
@@ -309,7 +311,7 @@ check_dea_df <- function(dea_df){
 #' is displayed underneath the plot.
 #'
 #' @param display_title Logical. If set to TRUE an informative title is displayed.
-#'
+#' @keywords internal
 
 check_display <- function(display_title = FALSE,
                           display_image = FALSE){
@@ -332,6 +334,7 @@ check_display <- function(display_title = FALSE,
 
 # check_e -----------------------------------------------------------------
 
+#' @keywords internal
 check_expand <- function(expand, error = FALSE){
 
   res <- is_dist(expand) | is_percentage(expand) | is_exclam(expand)
@@ -342,6 +345,7 @@ check_expand <- function(expand, error = FALSE){
 
 }
 
+#' @keywords internal
 check_expand_shiny <- function(expand, ...){
 
   expand <- expand[1]
@@ -383,7 +387,7 @@ check_expand_shiny <- function(expand, ...){
 #'  to the object.
 #' @param feature_df A data.frame that contains the feature and the key-variables.
 #'
-
+#' @keywords internal
 check_feature_df <- function(feature_name,
                              feature_df){
 
@@ -435,7 +439,7 @@ check_feature_df <- function(feature_name,
 #' @param valid_classes The feature-classes that are allowed.
 #' @param max_length The maximum number of features allowed.
 #'
-
+#' @keywords internal
 check_features <- function(object,
                            features,
                            valid_classes = NULL,
@@ -550,7 +554,7 @@ check_features <- function(object,
 #' look in. If set to NULL the whole rna_assay of the specified object will be used
 #' with \code{getExpressionMatrix()}.
 #'
-
+#' @keywords internal
 check_genes <- function(object,
                         genes,
                         valid_genes = NULL,
@@ -661,7 +665,7 @@ check_genes <- function(object,
 #' @inherit check_sample params
 #' @param gene_sets The gene sets of interest specified as a character vector.
 #'
-
+#' @keywords internal
 check_gene_sets <- function(object,
                             gene_sets,
                             max_length = NULL){
@@ -735,6 +739,7 @@ check_gene_sets <- function(object,
 # check_i -----------------------------------------------------------------
 
 #' @export
+#' @keywords internal
 check_ias_input <- function(distance = NA_integer_,
                             binwidth = NA_integer_,
                             n_bins_circle = NA_integer_,
@@ -858,6 +863,7 @@ check_ias_input <- function(distance = NA_integer_,
 }
 
 #' @export
+#' @keywords internal
 check_image_annotation_ids <- function(object, ids = NULL, ...){
 
   if(base::is.character(ids)){
@@ -877,6 +883,7 @@ check_image_annotation_ids <- function(object, ids = NULL, ...){
 }
 
 #' @export
+#' @keywords internal
 check_image_annotation_tags <- function(object, tags = NULL, ...){
 
   if(base::is.character(tags)){
@@ -925,6 +932,7 @@ check_image_annotation_tags <- function(object, tags = NULL, ...){
 #' be calculated. Given to \code{stats::p.adjust()}. Run \code{stats::p.adjust.methods} to obtain
 #' all valid input options.
 #' @export
+#' @keywords internal
 
 check_method <- function(method_aggl = NULL,
                          method_csr = NULL,
@@ -1113,7 +1121,7 @@ check_method <- function(method_aggl = NULL,
 #' the function will iterate over all inputs via a for-loop to compute all
 #' valid combinations.
 #'
-
+#' @keywords internal
 check_monocle_input <- function(preprocess_method,
                                 reduction_method,
                                 cluster_method,
@@ -1157,7 +1165,7 @@ check_monocle_input <- function(preprocess_method,
 
 
 #' Makes sure that both packages are installed
-#'
+#' @keywords internal
 check_monocle_packages <- function(){
 
   pkgs <-
@@ -1188,7 +1196,7 @@ check_monocle_packages <- function(){
 #' @param object A valid spata-object.
 #'
 #' @export
-
+#' @keywords internal
 check_object <- function(object){
 
   validation(object)
@@ -1211,8 +1219,7 @@ check_object <- function(object){
 #'
 #' @inherit check_sample params
 #' @param gene_sets The gene sets of interest specified as a character vector.
-#'
-
+#' @keywords internal
 check_pattern <- function(object, patterns = "", method_pr = "hotspot", of_sample = NA){
 
   of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
@@ -1252,7 +1259,7 @@ check_pattern <- function(object, patterns = "", method_pr = "hotspot", of_sampl
 #' @param pt_clrsp The color spectrum to be used if the specified variable displayed by
 #' color is continuous. Run \code{validColorSpectra()} to see valid input.
 #'
-#' @export
+#' @keywords internal
 
 check_pt <- function(pt_size = NULL,
                      pt_alpha = NULL,
@@ -1310,8 +1317,7 @@ check_pt <- function(pt_size = NULL,
 #' spata-objects can store more than one sample.
 #' @param desired_length The length the input must have.
 #'
-#' @export
-
+#' @keywords internal
 check_sample <- function(object,
                          of_sample = "",
                          desired_length = NULL,
@@ -1414,8 +1420,7 @@ check_sample <- function(object,
 #' @param file_name Character value. The name-suffix for the file name under which the
 #' spata-object is stored if \code{output_path} is a valid directory. Is prefixed with
 #'  \emph{'spata-obj-'} and suffixed with \emph{'.RDS'}.
-#'
-
+#' @keywords internal
 check_saving <- function(output_path, file_name){
 
   if(!base::is.null(output_path)){
@@ -1453,9 +1458,7 @@ check_saving <- function(output_path, file_name){
 #'
 #' @param object A valid spata-object.
 #' @param segment_name The segment of interest specified as a single character
-#' value.
-#'
-#' @export
+#' @keywords internal
 
 check_segment <- function(object,
                           segment_name,
@@ -1498,7 +1501,7 @@ check_segment <- function(object,
 #' single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).
 #' @param smooth_se Logical. If set to TRUE the confidence interval will be
 #' @param smooth_span The amount of smoothing specified as a single numeric value.
-#'
+#' @keywords internal
 check_smooth <- function(df = NULL,
                          smooth = NULL,
                          smooth_span = NULL,
@@ -1562,7 +1565,7 @@ check_smooth <- function(df = NULL,
 #'  \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
 #'  }
 #'
-
+#' @keywords internal
 check_spata_df <- function(spata_df){
 
   confuns::check_data_frame(
@@ -1588,8 +1591,7 @@ check_spata_df <- function(spata_df){
 #'   \item{\emph{variables}}{Character. The genes, gene-sets and features that have been summarized along the trajectory.}
 #'   \item{\emph{values}}{Numeric. The binned values of every gene, gene-set and feature that has been summarized along the trajectory.}
 #'   }
-#'
-
+#' @keywords internal
 check_stdf <- function(stdf, shift = NULL){
 
   if(!base::is.null(shift)){ confuns::check_one_of(input = shift, against = c("wider", "longer"))}
@@ -1636,7 +1638,7 @@ check_stdf <- function(stdf, shift = NULL){
 #' @title Check stdf-input
 #'
 #' @param stdf A summarized trajectory data.frame
-#'
+#' @keywords internal
 
 check_summarized_trajectory_df <- function(stdf){
 
@@ -1662,7 +1664,7 @@ check_summarized_trajectory_df <- function(stdf){
 #' or \emph{'spata_object'}.
 #'
 #' @export
-
+#' @keywords internal
 check_to <- function(object, to){
 
   confuns::check_one_of(
@@ -1703,7 +1705,7 @@ check_to <- function(object, to){
 #' as a single character value.
 #'
 #'
-
+#' @keywords internal
 check_trajectory <- function(object,
                              trajectory_name,
                              of_sample = NA){
@@ -1726,7 +1728,7 @@ check_trajectory <- function(object,
 #' relevant barcode spots into groups that are then aligned with respect to the
 #' chosen trajectory's direction.#'
 #'
-
+#' @keywords internal
 check_trajectory_binwidth <- function(binwidth){
 
   confuns::is_value(x = binwidth, mode = "numeric")
@@ -1751,9 +1753,8 @@ check_trajectory_binwidth <- function(binwidth){
 #' @param max_length Max number of variable input.
 #' @param max_slots Max number of different aspects.
 #' @param simplify If set to TRUE the \code{check_variables()}-output is a vector.
-#'
+#' @keywords internal
 #' @export
-
 check_variables <- function(variables,
                             all_features = character(),
                             all_gene_sets = character(),
@@ -1886,7 +1887,8 @@ check_variables <- function(variables,
 #' @param uniform_genes Character value. If set to \emph{'discard'} genes that are
 #' uniformly expressed across all barcode-spots of the specified coordinates
 #' data.frame are discarded. If set to \emph{'keep'} they are kept.
-#'
+#' @keywords internal
+
 check_uniform_genes <- function(uniform_genes){
 
   confuns::is_value(uniform_genes, "character", "uniform_genes")
@@ -1921,7 +1923,7 @@ check_uniform_genes <- function(uniform_genes){
 #' @param duration The duration the message is displayed.
 #' @param stop_process,stop_app Logical. What is supposed to happen if one element of \code{evaluate}
 #' turns out to be FALSE.
-#'
+#' @keywords internal
 #' @return A shiny notification.
 #'
 checkpoint <- function(evaluate = TRUE,
@@ -2006,6 +2008,7 @@ checkpoint <- function(evaluate = TRUE,
 
 # checkS ------------------------------------------------------------------
 
+#' @keywords internal
 checkShortcut <- function(shortcut, valid, cursor_pos = NA){
 
   shortcut <- shortcut[1]

@@ -3,7 +3,7 @@
 
 # tab_ --------------------------------------------------------------------
 
-#' @title Segmentation plot tab - return
+#' @keywords internal
 tab_create_segmentation_return <- function(){shinydashboard::tabItem(tabName = "create_segmentation",
 
                                                                      shiny::fluidRow(
@@ -65,7 +65,7 @@ tab_create_segmentation_return <- function(){shinydashboard::tabItem(tabName = "
 #' @title Surface plot tab - return
 #' @details To use within shinydashboard::tab_items()
 #' @note Tab for the output returning application
-
+#' @keywords internal
 tab_surface_plots_return <- function(){shinydashboard::tabItem(tabName = "surface_plots",
 
                                                                shiny::fluidRow(
@@ -110,7 +110,7 @@ tab_surface_plots_return <- function(){shinydashboard::tabItem(tabName = "surfac
 #' @title Surface plot tab - classic
 #' @details To use within shinydashboard::tab_items()
 #' @note Tab for the big application
-
+#' @keywords internal
 tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_plots",
 
                                                             shiny::fluidRow(
@@ -145,7 +145,7 @@ tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_p
 
 
 # te ----------------------------------------------------------------------
-
+#' @keywords internal
 textInputWrapper <- function(inputId,
                              label = NULL,
                              width = "80%",
@@ -190,6 +190,10 @@ textInputWrapper <- function(inputId,
 
 # theme -------------------------------------------------------------------
 
+#' @title ggplot2 themes
+#' @description Miscellaneous `ggplot2` themes used throughout the package.
+#' @return gg theme
+#' @export
 theme_lineplot_gradient <- function(){
 
   list(
@@ -205,6 +209,8 @@ theme_lineplot_gradient <- function(){
 
 }
 
+
+#' @rdname theme_lineplot_gradient
 #' @export
 theme_ridgeplot_gradient <- function(overlap = 0.5){
 
@@ -228,6 +234,7 @@ theme_ridgeplot_gradient <- function(overlap = 0.5){
 
 }
 
+#' @rdname theme_lineplot_gradient
 #' @export
 theme_trajectory_fit <- function(){
 
@@ -259,7 +266,7 @@ theme_trajectory_fit <- function(){
 #' @param skip Slot names whose content is not transferred.
 #'
 #' @return Updated S4 object.
-#'
+#' @keywords internal
 transfer_slot_content <- function(recipient,
                                   donor,
                                   skip = character(0),
@@ -661,8 +668,7 @@ transform_pixels_to_area_si <- function(input,
 #'
 #' @return A spata object.
 #' @export
-#'
-
+#' @keywords internal
 transformSeuratToSpata <- function(seurat_object,
                                    sample_name,
                                    method = "spatial",
@@ -1326,6 +1332,7 @@ transform_area_si_to_pixels <- function(input,
 #' The spata-objects feature data (@@fdata) is passed to the cell_data_set for it's slot \code{cell_meta_data}.
 #'
 #' @return A monocle3::cell_data_set object.
+#' @keywords internal
 #' @export
 
 transformSpataToCDS <- function(object,
@@ -1534,6 +1541,7 @@ transformSpataToCDS <- function(object,
 #' will result in an error. (\code{base::tryCatch()} will prevent the function from crashing.)
 #'
 #' @return A seurat-object.
+#' @keywords internal
 #' @export
 
 transformSpataToSeurat <- function(object,
@@ -1643,6 +1651,7 @@ transformSpataToSeurat <- function(object,
 
 
 #' inspired from https://github.com/tidyverse/ggplot2/blob/main/R/geom-point.r
+#' @keywords internal
 translate_shape_string <- function(shape_string) {
   # strings of length 0 or 1 are interpreted as symbols by grid
   if (base::nchar(shape_string[1]) <= 1) {

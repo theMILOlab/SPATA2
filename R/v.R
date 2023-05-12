@@ -37,6 +37,7 @@ validAlluvialTypes <- function(){
 
 
 #' @title Validate object input
+#' @keywords internal
 
 validation <- function(x){
 
@@ -328,6 +329,7 @@ validEuropeanUnitsOfLength <- function(name = T){
 
 # ve ----------------------------------------------------------------------
 
+#' @keywords internal
 version_string <- function(v){
 
   stringr::str_c(v$major, v$minor, v$patch, sep = ".")
@@ -352,6 +354,5 @@ version_string <- function(v){
 #' @seealso \code{starts_with()}, \code{ends_with()}, \code{contains()}, \code{matches()}
 #'
 #' @export
-#'
-
+#' @keywords internal
 vselect <- confuns::vselect

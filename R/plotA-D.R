@@ -2221,7 +2221,7 @@ plotDeaSummary <- function(object,
 
 }
 
-#' @title Visualize gene expression testing
+#' @title Plot gene expression testing results
 #'
 #' @description Plots a common volcano plot with p-value on the y- and logfold
 #' change on the x-axis.

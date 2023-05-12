@@ -21,13 +21,9 @@
 #'
 #' @return An updated spata object.
 #'
-#' @examples
+#' @keywords internal
 #'
-#'  # Not run
-#'
-#'  object <- adjustDefaultInstructions(object, pt_size = 4, smooth = FALSE)
 
-#' @export
 adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_wd = FALSE){
 
   check_object(object)
@@ -91,8 +87,7 @@ adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_
 #' is removed since the percentage of genes of which the given expression matrix
 #' contains information about is only 50.
 #'
-#' @export
-
+#' @keywords internal
 adjustGeneSetDf <- function(object, limit = 50){
 
   # 1. Control --------------------------------------------------------------
@@ -147,7 +142,7 @@ adjustGeneSetDf <- function(object, limit = 50){
 }
 
 
-#' @export
+#' @keywords internal
 adjustGseaDf <- function(df,
                          signif_var,
                          signif_threshold,
@@ -590,6 +585,49 @@ alignSpatialTrajectory <- function(spat_traj, image_object){
 
 }
 
+#' @title Obtain a all barcode-spots distances
+#'
+#' @param scale_fct If character, *'lowres'* or *'hires'*. If numeric,
+#' value of length one. Determines the factor with which *imagecol* and
+#' *imagerow* of the original visium coordinates are scaled to x- and
+#' y-coordinates.
+#'
+#' @return A data.frame with all possible barcode-spot pairs
+#' and their distance to each other.
+#'
+#' @export
+#'
+all_bcsp_distances <- function(scale_fct = "lowres"){
+
+  if(base::is.character(scale_fct)){
+
+    scale_fct <- scale_factors[[scale_fct]]
+
+  } else if(base::is.numeric(scale_fct)){
+
+    scale_fct <- scale_fct[1]
+
+  }
+
+  coords_df <-
+    dplyr::mutate(
+      .data = visium_coords,
+      x = imagecol * scale_fct,
+      y = imagerow * scale_fct
+    )
+
+  bc_origin <- coords_df$barcodes
+  bc_destination <- coords_df$barcodes
+
+  distance_df <-
+    tidyr::expand_grid(bc_origin, bc_destination) %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y), by = "bc_origin") %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y), by = "bc_destination") %>%
+    dplyr::mutate(distance = base::sqrt((xd - xo)^2 + (yd - yo)^2))
+
+  return(distance_df)
+
+}
 
 
 # append ------------------------------------------------------------------
@@ -602,6 +640,7 @@ alignSpatialTrajectory <- function(spat_traj, image_object){
 #'
 #' @param lst Polygon list the new polygon is appended to.
 #' @param plg New polygon data.frame.
+#' @keywords internal
 append_polygon_df <- function(lst,
                               plg,
                               allow_intersect = TRUE,
@@ -686,6 +725,88 @@ append_polygon_df <- function(lst,
 
 }
 
+#' @title Arrange observations as polygon
+#'
+#' @description Arranges spatial observations by angle to the center
+#' in order to deal with them as a polygon. Works under the assumptions
+#' that observations are vertices of a polygon.
+#'
+#' @param input_df Data.frame with at least two numeric variables named *x*
+#' and *y*.
+#'
+#'
+#' @examples
+#'
+#'  library(tidyverse)
+#'
+#'  object <- downloadPubExample("313_T")
+#'
+#'  pt_size <- getDefault(object, "pt_size")
+#'
+#'  outline_df <- getTissueOutlineDf(object, remove = FALSE)
+#'
+#'  print(outline_df)
+#'
+#'  plotSurface(outline_df, color_by = "outline")
+#'
+#'  outline_only <- filter(outline_df, outline)
+#'
+#'  print(outline_only)
+#'
+#'  plotSurface(object) +
+#'   geom_point_fixed(data = outline_only, mapping = aes(x = x, y = y), color = "red", size = pt_size)
+#'
+#'  # fails due to inadequate sorting of observations
+#'  plotSurface(object) +
+#'   geom_polygon(data = outline_only, mapping = aes(x = x, y = y), color = "red", alpha = 0.4)
+#'
+#'  # calculate (and arrange by) angle to center
+#'  outline_only_arr <- arrange_as_polygon(input_df = outline_only)
+#'
+#'  plotSurface(object) +
+#'   geom_point_fixed(
+#'    data = outline_only_arr,
+#'    mapping = aes(x = x, y = y, color = atc),
+#'    size = pt_size
+#'    )
+#'
+#'  # works
+#'  plotSurface(object) +
+#'   geom_polygon(data = outline_only_arr, mapping = aes(x = x, y = y), color = "red", alpha = 0.4)
+#'
+#' @export
+
+arrange_as_polygon <- function(input_df){
+
+  center <- c(x = base::mean(input_df$x), y = base::mean(input_df$y))
+
+  cx <- center["x"]
+  cy <- center["y"]
+
+  input_df$atc <- 0
+
+  for(i in 1:base::nrow(input_df)){
+
+    input_df[i, "atc"] <-
+      compute_angle_between_two_points(
+        p1 = c(x = input_df[["x"]][i], y = input_df[["y"]][i]),
+        p2 = center
+      )
+
+  }
+
+  df_out <- dplyr::arrange(input_df, atc)
+
+  return(df_out)
+
+}
+
+#' @keywords internal
+arrange_by_outline_variable <- function(...){
+
+  arrange_as_polygon(...)
+
+}
 
 
 # as_ ---------------------------------------------------------------------
@@ -739,7 +860,6 @@ as_micrometer2 <- function(input, ...){
 
 }
 
-
 #' @rdname as_unit
 #' @export
 as_millimeter <- function(input, ...){
@@ -787,7 +907,6 @@ as_nanometer2 <- function(input, ...){
   )
 
 }
-
 
 #' @rdname as_unit
 #' @export
@@ -1121,7 +1240,6 @@ as_decimeter2 <- function(input, ...){
 }
 
 
-
 #' @rdname runAutoencoderAssessment
 #' @export
 assessAutoencoderOptions <- function(expr_mtr,
@@ -1244,9 +1362,9 @@ assessAutoencoderOptions <- function(expr_mtr,
 
 
 
-#' @title Transform \code{SPATA2} to \code{Giotto}
+#' @title Transform `spata2` object to \code{Giotto}
 #'
-#' @description Transforms an \code{SPATA2} object to an object of class
+#' @description Transforms an `spata2` object object to an object of class
 #'  \code{Giotto}. See details for more information.
 #'
 #' @inherit asSPATA2 params
@@ -1801,11 +1919,26 @@ asSummarizedExperiment <- function(object, ...){
 
 
 
-
-
-#' @title Transform to \code{SPATA2} object
+#' @title Transform to `SpatialTrajectory`
 #'
-#' @description Transforms input object to object of class \code{SPATA2}.
+#' @description Transforms old spatial trajectory class to new one.
+#'
+#' @export
+asSpatialTrajectory <- function(object, ...){
+
+  SpatialTrajectory(
+    comment = object@comment,
+    id = object@name,
+    projection = object@compiled_trajectory_df,
+    sample = object@sample,
+    segment = object@segment_trajectory_df
+  )
+
+}
+
+#' @title Transform to `spata2` object object
+#'
+#' @description Transforms input object to object of class `spata2` object.
 #'
 #' @param transfer_features,transfer_meta_data Logical or character. Specifies
 #' if meta/feature, e.g clustering, data from the input object is transferred
@@ -1818,37 +1951,13 @@ asSummarizedExperiment <- function(object, ...){
 #' @inherit object_dummy params
 #' @param ... Additional arguments given to \code{initiateSpataObject_CountMtr()}.
 #'
-#' @return An object of class \code{SPATA2}.
+#' @return An object of class `spata2` object.
 #'
 #' @export
 
 setGeneric(name = "asSPATA2", def = function(object, ...){
 
   standardGeneric(f = "asSPATA2")
-
-})
-
-
-#' @title Title
-#' @export
-setGeneric(name = "asSpatialTrajectory", def = function(object, ...){
-
-  standardGeneric(f = "asSpatialTrajectory")
-
-})
-
-#' @rdname asSpatialTrajectory
-#' @export
-
-setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definition = function(object, ...){
-
-  SpatialTrajectory(
-    comment = object@comment,
-    id = object@name,
-    projection = object@compiled_trajectory_df,
-    sample = object@sample,
-    segment = object@segment_trajectory_df
-  )
 
 })
 
@@ -2206,32 +2315,6 @@ setMethod(
 
 
 
-#' @title Title
-#' @export
-setGeneric(name = "asSpatialTrajectory", def = function(object, ...){
-
-  standardGeneric(f = "asSpatialTrajectory")
-
-})
-
-#' @rdname asSpatialTrajectory
-#' @export
-
-setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definition = function(object, ...){
-
-  SpatialTrajectory(
-    comment = object@comment,
-    id = object@name,
-    projection = object@compiled_trajectory_df,
-    sample = object@sample,
-    segment = object@segment_trajectory_df
-  )
-
-})
-
-
-
-
 # asV ---------------------------------------------------------------------
 
 
@@ -2303,7 +2386,7 @@ asVisiumV1 <- function(object, name = "slice1"){
 #'
 #' attachUnit(mm_num)
 #'
-#'
+#' @keywords internal
 #' @export
 #'
 attachUnit <- function(input){
@@ -2344,6 +2427,7 @@ attachUnit <- function(input){
 
 
 #' @rdname attachUnit
+#' @keywords internal
 #' @export
 attach_uni <- attachUnit
 

@@ -276,7 +276,7 @@ saveSpataObject <- function(object,
 #' @inherit rotate_coords_df params details return
 #'
 #' @export
-#'
+#' @keywords internal
 scale_coords_df <- function(df,
                             scale_fct = 1,
                             coord_vars = list(pair1 = c("x", "y"),
@@ -346,7 +346,7 @@ scale_coords_df <- function(df,
 
 }
 
-
+#' @keywords internal
 scale_nuclei_df <- function(object,
                             nuclei_df,
                             x = "Location_Center_X",
@@ -637,7 +637,7 @@ setSpataDir <- function(object, dir, add_wd = FALSE, ...){
 # shift -------------------------------------------------------------------
 
 
-#' @export
+#' @keywords internal
 shift_for_evaluation <- function(input_df, var_order){
 
   keep <- c("variables", "values", var_order)
@@ -655,7 +655,7 @@ shift_for_evaluation <- function(input_df, var_order){
 
 }
 
-#' @export
+#' @keywords internal
 shift_for_plotting <- function(input_df, var_order){
 
   model_names <-
@@ -712,6 +712,7 @@ shift_for_plotting <- function(input_df, var_order){
 
 }
 
+#' @keywords internal
 shift_frame <- function(current_frame, new_center){
 
   current_center <-
@@ -738,7 +739,7 @@ shift_frame <- function(current_frame, new_center){
 
 }
 
-#' @export
+#' @keywords internal
 shift_screening_df_to_long <- function(df, var_order = "bins_order", suffix = "_sd"){
 
   sd_df <-
@@ -778,7 +779,7 @@ shift_screening_df_to_long <- function(df, var_order = "bins_order", suffix = "_
 
 }
 
-#' @export
+#' @keywords internal
 shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory_order", ...){
 
   tidyr::pivot_longer(
@@ -984,7 +985,14 @@ showColorSpectra <- function(input = validColorSpectra(flatten = TRUE), n = 20){
 
 }
 
-#' @rdname showColors
+#' @title Show spatial gradient screening models
+#'
+#' @description Display the models used for spatial gradient screening.
+#'
+#' @inherit argument_dummy params
+#'
+#' @inherit ggplot_dummy return
+#'
 #' @export
 showModels <- function(input = 100,
                        linecolor = "black",
@@ -1062,7 +1070,7 @@ showModels <- function(input = 100,
 #'
 #' @return The input data.frame containing the smoothed variables.
 #' @export
-
+#' @keywords internal
 smoothSpatially <- function(coords_df,
                             variables,
                             smooth_span = 0.025,
@@ -1138,7 +1146,7 @@ smoothSpatially <- function(coords_df,
 #' @return An object of class \code{SpatialTrajectoryScreening}. See documentation
 #' with \code{?ImageAnnotationScreening} for more information.
 #'
-#' @seealso createSpatialTrajectories()
+#' @seealso [`createSpatialTrajectories()`]
 #'
 #' @details
 #'
@@ -1315,6 +1323,7 @@ spatialTrajectoryScreening <- function(object,
 
 # split -------------------------------------------------------------------
 
+#' @keywords internal
 splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidths = NULL){
 
   input <- list(...)
@@ -1340,14 +1349,18 @@ splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidt
 
 }
 
-# strong ------------------------------------------------------------------
 
+
+
+# str ---------------------------------------------------------------------
+
+#' @keywords internal
 strongH3 <- function(text){
 
   shiny::tags$h3(shiny::strong(text))
 
 }
-
+#' @keywords internal
 strongH5 <- function(text){
 
   shiny::tags$h5(shiny::strong(text))
@@ -1603,7 +1616,7 @@ summarize_and_shift_variable_df <- function(grouped_df, variables){
 }
 
 
-#' @export
+#' @keywords internal
 summarize_corr_string <- function(x, y){
 
   res <- stats::cor.test(x = x, y = y)
@@ -1614,7 +1627,7 @@ summarize_corr_string <- function(x, y){
 
 }
 
-#' @export
+#' @keywords internal
 summarize_rauc <- function(x, y, n){
 
   out <-
@@ -1625,7 +1638,7 @@ summarize_rauc <- function(x, y, n){
 
 }
 
-#' @export
+#' @keywords internal
 summarize_projection_df <- function(projection_df,
                                     n_bins = NA_integer_,
                                     binwidth = NA,
@@ -1670,7 +1683,7 @@ summarize_projection_df <- function(projection_df,
 #' the content of slot @@results of the \code{ImageAnnotationScreening}-class.
 #'
 #' @details Model fitting and evaluation happens within every angle-bin.
-#' To get a single evaulation for every gene the results of every
+#' To get a single evaluation for every gene the results of every
 #' angle-bin must be summarized.
 #'
 #' @export

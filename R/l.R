@@ -30,7 +30,7 @@ lastImageAnnotation <- function(object){
 }
 # legend ------------------------------------------------------------------
 
-#' @title Ggplot add on wrapper
+#' @title ggplot2 legend manipulation
 #' @export
 legendBottom <- purrr::partial(.f = ggplot2::theme, legend.position = "bottom")
 
@@ -64,8 +64,7 @@ legendTop <- purrr::partial(.f = ggplot2::theme, legend.position = "top")
 
 # load --------------------------------------------------------------------
 
-#' @rdname loadSpataObject
-#' @export
+#' @keywords internal
 loadCorrespondingCDS <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -88,8 +87,7 @@ loadCorrespondingCDS <- function(object, verbose = NULL){
 
 }
 
-#' @rdname loadSpataObject
-#' @export
+#' @keywords internal
 loadCorrespondingSeuratObject <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -118,7 +116,7 @@ loadCorrespondingSeuratObject <- function(object, verbose = NULL){
 #' loading functions.
 #' @inherit argument_dummy params
 #' @inherit gene_set_path params
-
+#' @keywords internal
 loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 
   if(!base::is.null(gene_set_path)){
@@ -160,7 +158,7 @@ loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 #' @return A data.frame.
 #'
 #' @export
-
+#' @keywords internal
 loadGeneSetDf <- loadGSDF
 
 
@@ -297,7 +295,7 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
 
 # lump --------------------------------------------------------------------
 
-
+#' @keywords internal
 lump_groups <- function(df,
                         grouping.variable,
                         grouping.variable.new = NULL,

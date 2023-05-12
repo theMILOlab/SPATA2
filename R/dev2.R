@@ -1,4 +1,5 @@
 
+#' @keywords internal
 enhanceSpataObject <- function(object,
                                genes,
                                spatialPreprocess = list(),

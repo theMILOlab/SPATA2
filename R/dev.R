@@ -1,7 +1,7 @@
 
 
 
-
+#' @keywords internal
 plotSurfaceOutline <- function(object){
 
   coords_df <-

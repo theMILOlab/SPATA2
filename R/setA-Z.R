@@ -4,6 +4,8 @@
 
 # setA --------------------------------------------------------------------
 
+#' @rdname setActiveExpressionMatrix
+#' @export
 setActiveMatrix <- function(object, mtr_name, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -32,36 +34,14 @@ setActiveMatrix <- function(object, mtr_name, verbose = NULL){
 #' @param name Character value. The name of the matrix that is to be set as
 #' the active expression matrix.
 #'
-#' @return An updated spta-object.
+#' @inherit update_dummy return
 #' @export
 
 setActiveExpressionMatrix <- function(object, mtr_name, verbose = NULL, ...){
 
-  deprecated(...)
+  deprecated(fn = TRUE, ...)
 
-  hlpr_assign_arguments(object)
-
-  check_object(object)
-
-  confuns::is_value(x = mtr_name, mode = "character")
-
-  # check if 'name' is slot in @data
-  mtr_names <- getExpressionMatrixNames(object = object, of_sample = of_sample)
-
-  confuns::check_one_of(
-    input = mtr_name,
-    against = mtr_names[mtr_names != "counts"],
-    ref.input = "input for argument 'mtr_name'"
-  )
-
-  msg <- glue::glue("Active expression matrix set to '{mtr_name}'.")
-
-  confuns::give_feedback(msg = msg, verbose = verbose)
-
-  # set name
-  object@information$active_expr_mtr <- mtr_name
-
-  return(object)
+  setActiveMatrix()
 
 }
 
@@ -543,7 +523,7 @@ setImageAnnotation <- function(object, img_ann, align = TRUE, overwrite = FALSE)
   }
 
   confuns::check_none_of(
-    input = getImageAnnotationIds(object),
+    input = getImgAnnIds(object),
     against = img_ann@id,
     ref.input = "input image annotation",
     ref.against = "image annotation IDs",
@@ -584,7 +564,7 @@ setImageAnnotations <- function(object, img_anns, align = TRUE, overwrite = FALS
 
     confuns::check_none_of(
       input = ids,
-      against = getImageAnnotationIds(object),
+      against = getImgAnnIds(object),
       ref.input = "input image annotations",
       ref.against = "image annotation IDs present"
     )
@@ -968,13 +948,78 @@ setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
 # setT --------------------------------------------------------------------
 
 
+#' @title Set tissue outline
+#'
+#' @description Sets tissue outline.
+#'
+#' @inherit argument_dummy params
+#' @inherit getTissueOutlineDf examples
+#'
+#' @return `spata2` object with additional variables in coordinates data.frame.
+#'
+#' \itemize{
+#'  \item{*section* :}{ character. The identified tissue section. 0 means probable artefact spot.}
+#'  \item{*nn* :}{numeric. The number of neighbros of a spot.}
+#'  \item{*outline* :}{logical. `TRUE` if identified as a spot that lies on the edge of the tissue.}
+#' }
+#'
+#' @export
+#'
+setTissueOutline <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  sm <- getSpatialMethod(object)
+
+  if(sm@name == "Visium"){
+
+    confuns::give_feedback(
+      msg = "Computing tissue outline.",
+      verbose = TRUE
+    )
+
+    to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
+
+    coords_df <-
+      getCoordsDf(object) %>%
+      dplyr::select(-dplyr::any_of(c("section", "outline")))
+
+    coords_df <-
+      dplyr::left_join(
+        x = coords_df,
+        y = to_df[,c("barcodes", "section", "outline")],
+        by = "barcodes"
+      )
+
+    object <- setCoordsDf(object, coords_df)
+
+    object@information$tissue_outline_set <- TRUE
+
+    confuns::give_feedback(
+      msg = "Tissue outline set.",
+      verbose = TRUE
+    )
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "No tissue outline set. Spatial method is not Visium.",
+      verbose = verbose
+    )
+
+  }
+
+  return(object)
+
+}
+
 #' @title Set trajectories
 #'
 #' @description Sets trajectories in the correct slot.
 #'
 #' @param trajectory An object of class `Trajectory.`
 #' @param trajectories List of objects of class `Trajectory`.
-#' @param align Logical value. If `TRUE`, trajecectories of class `SpatialTrajectory`
+#' @param align Logical value. If `TRUE`, trajectories of class `SpatialTrajectory`
 #' are aligned with image justification changes of the image of the
 #' `SPATA2` object.
 #'

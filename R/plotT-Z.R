@@ -1026,8 +1026,8 @@ plotTrajectoryLineplotFitted <- function(object,
       clrp = "milo",
       clrp.adjust = linecolors
     ) +
-    ggplot2::scale_size_manual(values = linesizes) +
-    ggplot2::scale_linetype_manual(values = linetypes) +
+    ggplot2::scale_size_manual(values = linesizes, guide = "none") +
+    ggplot2::scale_linetype_manual(values = linetypes, guide = "none") +
     ggplot2::theme_classic() +
     ggplot2::labs(
       x = glue::glue("Trajectory Bins ({binwidth})"),

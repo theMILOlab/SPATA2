@@ -1,6 +1,6 @@
 # create_ ------------------------------------------------------------------
 
-
+#' @keywords internal
 create_encircling_add_on <- function(df, color, pt_size, linesize){
 
   if(base::nrow(df) == 0){
@@ -43,8 +43,7 @@ create_encircling_add_on <- function(df, color, pt_size, linesize){
 
 }
 
-
-
+#' @keywords internal
 create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL){
 
   if(base::is.null(breaks_add)){
@@ -430,6 +429,17 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 
 }
 
+#' @title Create model data.frame
+#'
+#' @description Creates the data.frame that contains the models
+#' for spatial gradient screening algorithms.
+#'
+#' @param var_order Character. The name of the variable that is supposed to
+#' indicate the direction.
+#' @inherit imageAnnotationScreening params
+#'
+#' @return Data.frame.
+#'
 #' @export
 create_model_df <- function(input,
                             var_order = NULL,
@@ -571,7 +581,7 @@ create_model_df <- function(input,
 
 # createI -----------------------------------------------------------------
 
-#' @title Interactive image annotations
+#' @title Add image annotations
 #'
 #' @description Functions to add image annotations the `SPATA2` object. For
 #' interactive drawing use `createImageAnnotaions()`. To set them with code
@@ -847,7 +857,7 @@ createImageAnnotations <- function(object, ...){
             shinyWidgets::checkboxGroupButtons(
               inputId = "tags_select",
               label = NULL,
-              choices = getImageAnnotationTags(spata_object()),
+              choices = getImgAnnTags(spata_object()),
               selected = NULL,
               checkIcon = list(
                 yes = shiny::icon("ok", lib = "glyphicon"),
@@ -863,7 +873,7 @@ createImageAnnotations <- function(object, ...){
             shiny::selectizeInput(
               inputId = "tags",
               label = NULL,
-              choices = getImageAnnotationTags(spata_object()),
+              choices = getImgAnnTags(spata_object()),
               multiple = TRUE,
               options = list(create = TRUE),
               width = "100%"
@@ -1750,8 +1760,6 @@ createHistologyImaging <- function(image,
 #' \code{exchangeImage()} to read in images of higher resolution for a better
 #' histological classification.
 #'
-#'
-#' @seealso exchangeImage()
 #'
 #' @export
 #'
@@ -3112,9 +3120,9 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 }
 
 
-#' @title Create spatial trajectories
+#' @title Add spatial trajectories
 #'
-#' @description Functions to add spatial trajectories to the `SPATA2`
+#' @description Functions to add spatial trajectories to the `spata2`
 #' object. For interactive drawing use `createSpatialTrajectories()`.
 #' To set them precisely with code use `addSpatialTrajectory()`.
 #'
@@ -3128,10 +3136,9 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 #' @param vertices List of numeric vectors of length two or `NULL`. If list,
 #' sets additional vertices along the trajectory.
 #' @inherit argument_dummy params
-#'
-#' @return An updated \code{SPATA2} object.
-
+#' @inherit update_dummy return
 #' @export
+
 createSpatialTrajectories <- function(object){
 
   validation(x = object)

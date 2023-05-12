@@ -5,7 +5,7 @@
 
 # order -------------------------------------------------------------------
 
-#' @export
+#' @keywords internal
 order_df <- function(df,
                      order_by = NULL,
                      order_desc = FALSE,

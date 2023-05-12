@@ -517,7 +517,7 @@ discardImageAnnotations <- function(object, ids){
 
   confuns::check_one_of(
     input = ids,
-    against = getImageAnnotationIds(object)
+    against = getImgAnnIds(object)
   )
 
   io <- getImageObject(object)
@@ -583,7 +583,8 @@ discardSpatialTrajectory <- function(object, id){
 
 #' @title Download data from the publication
 #'
-#' @description Downloads processed data from *Kueckelhaus et al., 2023*.
+#' @description Downloads processed data from uses cases of *Kueckelhaus et al., 2023*
+#' in form of `spata2` objects.
 #'
 #' @param name Name of the data set. Must be in `validPubExamples()`.
 #' @inherit argument_dummy params
@@ -609,6 +610,8 @@ downloadPubExample <- function(name, verbose = TRUE){
     base::url(download_dir) %>%
     base::readRDS()
 
+  downloaded_object <- updateSpataObject(downloaded_object, verbose = verbose)
+
   confuns::give_feedback(
     msg = glue::glue("Done."),
     verbose = TRUE
@@ -617,3 +620,23 @@ downloadPubExample <- function(name, verbose = TRUE){
   return(downloaded_object)
 
 }
+
+#' @title Download raw Visium output
+#' @inherit SPATAData::downloadRawData title description params return examples
+#' @note Imported from the package `SPATAData`.
+#' @importFrom SPATAData downloadRawData
+#' @export
+downloadRawData <- SPATAData::downloadRawData
+
+#' @title Download `spata2` objects
+#' @inherit SPATAData::downloadSpataObject title description params return examples
+#' @note Imported from the package `SPATAData`.
+#' @importFrom SPATAData downloadSpataObject
+#' @export
+downloadSpataObject <- SPATAData::downloadSpataObject
+
+#' @rdname downloadSpataObject
+#' @inherit SPATAData::downloadSpataObjects params
+#' @importFrom SPATAData downloadSpataObjects
+#' @export
+downloadSpataObjects <- SPATAData::downloadSpataObjects

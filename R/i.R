@@ -4,7 +4,7 @@
 
 # im ----------------------------------------------------------------------
 
-
+#' @keywords internal
 img_ann_highlight_group_button <- function(){
 
   shiny::splitLayout(
@@ -451,9 +451,10 @@ imageAnnotationToSegmentation <- function(object,
 #' @title Include spatial extent of tissue sections in analysis
 #'
 #' @description Ensures section specific processing of observations
-#' in relation to image annotations by identifying the outline of the
-#' tissue section (or -sections in case of multiple tissue sections per sample)
-#' and by relating the observations to it.
+#' in relation by identifying the outline of the tissue section
+#' (or -sections in case of multiple tissue sections per sample). Additionally,
+#' allows to relate observations to the spatial position and extent of image
+#' annotations.
 #'
 #' @inherit imageAnnotationScreening params
 #' @param input_df A data.frame that contains at least numeric *x* and *y*
@@ -463,46 +464,74 @@ imageAnnotationToSegmentation <- function(object,
 #' to contain polygon coordinates of the expanded image annotation encircling
 #' and sorts them after filtering for those that lie inside the tissue section
 #' in order to plot them via `ggplot2::geom_path()`.
-#'
+#' @param opt Either *'concaveman'*' or *'chull'*. Defines with which function
+#' the tissue outline is computed.
 #' @return Filtered input data.frame.
 #' @export
 #'
 include_tissue_outline <- function(coords_df,
                                    input_df,
-                                   outline_var = NULL,
                                    img_ann_center = NULL,
                                    ias_circles = FALSE,
                                    ccd = NULL,
-                                   remove = TRUE){
+                                   remove = TRUE,
+                                   inside_if = c(1,2),
+                                   opt = "concaveman",
+                                   buffer = 0,
+                                   ...){
 
   is_dist_pixel(input = ccd, error = TRUE)
 
-  if(base::is.character(outline_var)){
+  outline_var <- "section"
 
-    sections <- base::levels(coords_df[[outline_var]])
+  if(outline_var %in% base::colnames(coords_df)){
 
-  } else {
-
-    outline_var <- "outline"
-
-    coords_df <- add_outline_variable(coords_df, ccd = ccd)
+    coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
 
     coords_df <- dplyr::filter(coords_df, outline != "0")
 
-    sections <- base::unique(coords_df[[outline_var]])
-
   }
+
+  sections <- base::unique(coords_df[[outline_var]])
+
+  buffer <- base::as.numeric(buffer)
 
   proc_df <-
     purrr::map_df(
       .x = sections,
       .f = function(section){
 
-        spots_in_part <-
-          dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+        if(opt == "concaveman"){
 
-        hull_points <- grDevices::chull(x = spots_in_part[["x"]], y = spots_in_part[["y"]])
-        hull_df <- spots_in_part[hull_points, ]
+          df_sub <-
+            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+
+          if(!"outline" %in% base::colnames(df_sub)){
+
+            df_sub <- add_outline_variable(df_sub)
+
+          }
+
+          hull_df <-
+            dplyr::filter(df_sub, outline) %>%
+            arrange_as_polygon()
+
+        } else if(opt == "chull") {
+
+          spots_in_part <-
+            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+
+          hull_points <- grDevices::chull(x = spots_in_part[["x"]], y = spots_in_part[["y"]])
+          hull_df <- spots_in_part[hull_points, ]
+
+        }
+
+        if(buffer != 0){
+
+          hull_df <- buffer_area(df = hull_df, buffer = buffer, close_plg = TRUE)
+
+        }
+
 
         input_df$obs_in_section <-
           sp::point.in.polygon(
@@ -516,7 +545,7 @@ include_tissue_outline <- function(coords_df,
         out_df <-
           dplyr::mutate(
             .data = input_df,
-            pos_rel = dplyr::if_else(obs_in_section == "1", true = "inside", false = "outside"),
+            pos_rel = dplyr::if_else(obs_in_section %in% {{inside_if}}, true = "inside", false = "outside"),
             tissue_section = {{section}}
           )
 
@@ -585,7 +614,9 @@ include_tissue_outline <- function(coords_df,
 
   # if multiple sections on visium slide
   # identify to which image section the img ann belongs
-  if(base::length(sections) > 1 & base::is.numeric(img_ann_center)){
+  if(base::length(sections) > 1 &
+     base::is.numeric(img_ann_center) &
+     base::nrow(proc_df) != 0){
 
     section_of_img_ann <-
       dplyr::group_by(.data = coords_df, barcodes) %>%
@@ -598,8 +629,15 @@ include_tissue_outline <- function(coords_df,
 
     proc_df <- dplyr::filter(proc_df, tissue_section == {{section_of_img_ann}})
 
-  }
+  } else {
 
+    if(base::nrow(proc_df) == 0){
+
+      proc_df <- NULL
+
+    }
+
+  }
 
   return(proc_df)
 
@@ -629,7 +667,7 @@ inferSingleCellGradient <- function(object,
                                     binwidth = getCCD(object),
                                     angle_span = c(0, 360),
                                     n_bins_angle = 1,
-                                    remove_circle_bins = FALSE,
+                                    remove_circle_bins = "Outside",
                                     normalize = TRUE,
                                     area_unit = NULL,
                                     format = "wide",
@@ -688,7 +726,9 @@ inferSingleCellGradient <- function(object,
 
   if(base::is.null(area_unit)){
 
-    area_unit <- stringr::str_c(extract_unit(binwidth), "2")
+    area_unit <- getSpatialMethod(object)@unit
+
+    area_unit <- stringr::str_c(area_unit, "2")
 
   }
 
@@ -725,15 +765,16 @@ inferSingleCellGradient <- function(object,
           )
 
         sc_input_proc <-
-          incorporate_tissue_outline(
+          include_tissue_outline(
             coords_df = coords_df,
             input_df = sc_input,
             outline_var = outline_var,
-            img_ann_center = getImgAnnCenter(object, id = idx)
+            img_ann_center = getImgAnnCenter(object, id = idx),
+            ccd = getCCD(object, unit = "px")
           ) %>%
           bin_by_expansion(
             coords_df = .,
-            area_df = getImgAnnBorderDf(object, ids = idx),
+            area_df = getImgAnnOutlineDf(object, ids = idx),
             binwidth = ias_input$binwidth,
             n_bins_circle = ias_input$n_bins_circle,
             remove = remove_circle_bins
@@ -772,21 +813,6 @@ inferSingleCellGradient <- function(object,
           ) %>%
           dplyr::select(-dplyr::any_of("NA"))
 
-        if(base::isTRUE(normalize)){
-
-          out <-
-            dplyr::mutate(
-              .data = out,
-              dplyr::across(
-                .cols = dplyr::all_of(all_cell_types),
-                .fns = ~
-                  tidyr::replace_na(data = .x, replace = 0) %>%
-                  confuns::normalize()
-              )
-            )
-
-        }
-
         return(out)
 
       }
@@ -797,7 +823,22 @@ inferSingleCellGradient <- function(object,
         .cols = dplyr::all_of(all_cell_types),
         .fns = ~ base::mean(.x, na.rm = T)
       )
-    )
+    ) %>% dplyr::ungroup()
+
+  if(base::isTRUE(normalize) | base::isTRUE(as_models)){
+
+    out_df <-
+      dplyr::mutate(
+        .data = out_df,
+        dplyr::across(
+          .cols = dplyr::all_of(all_cell_types),
+          .fns = ~
+            tidyr::replace_na(data = .x, replace = 0) %>%
+            confuns::normalize()
+        )
+      )
+
+  }
 
   if(base::isTRUE(as_models)){
 
@@ -834,7 +875,7 @@ inferSingleCellGradient <- function(object,
 #'
 #' @return Logical vector of the same length as the number of rows in `a`.
 #' @export
-#'
+
 intersect_polygons <- function(a, b, strictly = FALSE){
 
   a <- as.data.frame(a)
@@ -1269,7 +1310,7 @@ is_dist_pixel <- function(input, error = FALSE){
 
 }
 
-
+#' @keywords internal
 is_exclam <- function(input, error = FALSE){
 
   res <-
@@ -1280,7 +1321,7 @@ is_exclam <- function(input, error = FALSE){
 
 }
 
-
+#' @keywords internal
 is_image_dir <- function(input, error = FALSE){
 
   res <-
@@ -1299,13 +1340,14 @@ is_image_dir <- function(input, error = FALSE){
 
 }
 
-
+#' @keywords internal
 is_number <- function(x){
 
   !(base::is.na(x) | base::is.na(x) | base::is.infinite(x))
 
 }
 
+#' @keywords internal
 is_numeric_input <- function(input){
 
   (base::is.numeric(input)) &
@@ -1313,7 +1355,7 @@ is_numeric_input <- function(input){
 
 }
 
-
+#' @keywords internal
 is_percentage <- function(input, error = FALSE){
 
   res <- stringr::str_detect(string = input, pattern = regex_percentage)
@@ -1324,7 +1366,7 @@ is_percentage <- function(input, error = FALSE){
 
 }
 
-
+#' @keywords internal
 is_spatial_measure <- function(input, error = FALSE){
 
   res <- is_dist(input, error = FALSE) | is_area(input, error = FALSE)
@@ -1490,7 +1532,7 @@ isSpatialTrajectory <- function(object){
 
 # isT ---------------------------------------------------------------------
 
-#' @export
+#' @keywords internal
 isTrajectory <- function(object){
 
   class_test <-

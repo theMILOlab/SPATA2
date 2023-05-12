@@ -1,7 +1,7 @@
 # plotF -------------------------------------------------------------------
 
 
-#' @title Gene set state plot
+#' @title Plot state plot
 #'
 #' @description Takes four gene sets and visualizes the relative
 #' expression of these four gene sets for every barcode by computing it's respective

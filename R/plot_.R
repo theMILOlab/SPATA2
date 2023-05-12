@@ -3,7 +3,7 @@
 #' @param force_grid Logical value. If `TRUE`, `facet_grid()` is used regardless
 #' of `variables` being of length 1.
 
-# helper function for plotIas- and plotStsEvaluation
+#' @keywords internal
 plot_screening_evaluation <- function(df,
                                       variables,
                                       var_order,
@@ -117,7 +117,7 @@ plot_screening_evaluation <- function(df,
 
 
 
-
+#' @keywords internal
 plot_overview <- function(object,
                           eval = "ias_score",
                           pval = "p_value_mean_adjusted",

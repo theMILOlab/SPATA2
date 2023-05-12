@@ -404,6 +404,7 @@ extract_value <- function(input){
 
 # expand ------------------------------------------------------------------
 
+#' @keywords internal
 expand_image_range <- function(range,
                                expand_with,
                                object,
@@ -497,7 +498,7 @@ expand_image_range <- function(range,
 
 }
 
-
+#' @keywords internal
 expand_image_side <- function(expand_with,
                               range,
                               side = c(1,2),

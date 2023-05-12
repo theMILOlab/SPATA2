@@ -2339,7 +2339,17 @@ plotIasRidgeplotSC <- function(object,
         )
       )
 
-    xlab <-  glue::glue("Dist. to {id} [{unit}]")
+    if(base::length(id) > 1){
+
+      ref_id <- "Image Annotations"
+
+    } else {
+
+      ref_id <- id
+
+    }
+
+    xlab <- glue::glue("Dist. to {ref_id} [{unit}]")
 
   } else {
 
@@ -2574,7 +2584,7 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' @return A list of ggplots. Each slot contains a plot
 #' that visualizes an image annotation.
 #'
-#' @seealso [getImageAnnotations()]
+#' @seealso [`getImageAnnotations()`]
 #'
 #' @export
 #'
@@ -2583,7 +2593,7 @@ plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
 #' library(SPATA2)
 #' library(SPATAData)
 #'
-#' object <- downloadSpataObjet(sample_name = "275_T")
+#' object <- downloadSpataObject(sample_name = "275_T", verbose = FALSE)
 #'
 #' data("image_annotations")
 #'
@@ -2927,7 +2937,7 @@ plotImageGgplot <- function(object,
   frame_add_on <-
     list(
       frame_add_on,
-      ggpLayerThemeCoords()
+      ggpLayerThemeCoords(unit = unit)
     )
 
   ggpInit(object) +

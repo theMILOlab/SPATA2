@@ -1,5 +1,7 @@
 # add_ --------------------------------------------------------------------
 
+
+#' @keywords internal
 add_helper <- function(shiny_tag,
                        content,
                        title = "What do I have to do here?",
@@ -36,6 +38,8 @@ add_helper <- function(shiny_tag,
 #' containing a function that takes a numeric vector as input and returns a numeric
 #' vector with the same length as its input vector. Or a numeric vector with the
 #' same length as the input vector. Test models with \code{showModels()}.
+#'
+#' @keywords internal
 #'
 #' @export
 #'
@@ -82,23 +86,152 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
 }
 
 
+#' @title Add outline variable
+#'
+#' @description Adds a variable called *outline* to the input data.frame
+#' that tells if the observation belongs to the points that lie on the
+#' edge of the covered area.
+#'
+#' @param input_df A data.frame with two numeric variables called *x* and *y*
+#' and a variable as denoted in `id_var`.
+#' @param id_var Character. Variable that identifies each observation.
+#'
+#' @return Input data.frame with additional logical variable *outline*.
+#' @export
+#'
+#' @examples
+#'
+#'  library(ggplot2)
+#'
+#'  object <- downloadPubExample("313_T")
+#'
+#'  pt_size <- getDefault(objet, "pt_size")
+#'
+#'  coords_df <- getCoordsDf(object)[, c("barcodes", "x", "y")]
+#'
+#'  head(coords_df)
+#'
+#'  ggplot(data = coords_df) +
+#'   geom_point_fixed(mapping = aes(x = x, y = y), size = pt_size) +
+#'   theme_void()
+#'
+#'  coords_df2 <- add_outline_variable(coords_df, id_var = "barcodes")
+#'
+#'  ggplot(data = coords_df2) +
+#'   geom_point_fixed(mapping = aes(x = x, y = y, color = outline), size = pt_size) +
+#'   theme_void()
+#'
+add_outline_variable <- function(input_df, id_var = "barcodes"){
+
+  coords_mtr <-
+    tibble::column_to_rownames(input_df, id_var) %>%
+    dplyr::select(x, y) %>%
+    base::as.matrix()
+
+  out <-
+    concaveman::concaveman(points = coords_mtr) %>%
+    base::as.data.frame() %>%
+    tibble::as_tibble() %>%
+    magrittr::set_colnames(c("xp", "yp")) %>%
+    dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
+
+  map_to_bcsp <-
+    tidyr::expand_grid(
+      id = out$id,
+      barcodes = input_df$barcodes
+    ) %>%
+    dplyr::left_join(y = input_df[,c(id_var, "x", "y")], by = id_var) %>%
+    dplyr::left_join(y = out, by = "id") %>%
+    dplyr::group_by(id, barcodes) %>%
+    dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(id) %>%
+    dplyr::filter(dist == base::min(dist)) %>%
+    dplyr::ungroup()
+
+  input_df[["outline"]] <- input_df[[id_var]] %in% map_to_bcsp[[id_var]]
+
+  return(input_df)
+
+}
 
 
-add_outline_variable <- function(coords_df,
-                                 ccd,
-                                 minPts = 3,
-                                 name = "outline"){
+#' @title Add tissue section variable
+#'
+#' @description Leverages `dbscan::dbscan()` to identify tissue sections
+#' on the slide and to group barcode spots accordingly. Required to approximate
+#' the outline of the tissue section(s).
+#'
+#' @param coords_df Data.frame with *x* and *y* variable.
+#' @param ccd Center to center distance in pixel units.
+#' @param name Name of the added variable.
+#' @param ... To silently drop deprecated arguments.
+#'
+#' @inherit dbscan::dbscan params
+#'
+#' @return Data.frame with additional variable containing numbers. 0 means
+#' that the spot is not connected to any other spot (probably artefact). 1-n
+#' corresponds to the tissue sections.
+#'
+#' @note `add_dbscan_variable()` is the working horse. `add_tissue_section_variable()`
+#' has specific defaults.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' # --- identify tissue sections
+#' object <- downloadPubExample("MCI_LMU", verbose = FALSE)
+#'
+#' coords_df <- getCoordsDf(object)
+#'
+#' coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+#'
+#' plotSurface(coords_df, color_by = "section")
+#'
+#' # --- identify artefact spots
+#' object <- SPATAData::downloadSpataObject("269_T", verbose = FALSE)
+#'
+#' coords_df <- getCoordsDf(object)
+#'
+#' coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+#'
+#' plotSurface(coords_df, color_by = "section")
+#'
+
+add_dbscan_variable <- function(coords_df,
+                                eps,
+                                minPts = 3,
+                                name = "dbscan",
+                                ...){
 
   outline_res <-
     dbscan::dbscan(
       x = base::as.matrix(coords_df[, c("x", "y")]),
-      eps = ccd*1.5,
+      eps = eps ,
       minPts = minPts
     )
 
   coords_df[[name]] <- base::as.character(outline_res[["cluster"]])
 
   return(coords_df)
+
+}
+
+
+#' @rdname add_dbscan_variable
+#' @export
+add_tissue_section_variable <- function(coords_df,
+                                        ccd,
+                                        minPts = 3,
+                                        ...){
+
+  add_dbscan_variable(
+    coords_df = coords_df,
+    eps = ccd*1.25,
+    minPts = minPts,
+    name = "section"
+  )
 
 }
 
@@ -146,7 +279,7 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 #' @param mtr_name A character value that denotes the name of the exprssion matrix with
 #' which one can refer to it in subsequent functions.
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #' @export
 
 addExpressionMatrix <- function(object, expr_mtr, mtr_name, of_sample = ""){
@@ -202,7 +335,7 @@ addExpressionMatrix <- function(object, expr_mtr, mtr_name, of_sample = ""){
 #' key-variables \emph{barcodes} or \emph{x} and \emph{y}. Additional steps secure
 #' the joining process.
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #' @export
 #' @examples #Not run:
 #'
@@ -426,7 +559,7 @@ addFeatures <- function(object,
 #' key-variables \emph{genes}. Additional steps secure
 #' the joining process.
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #' @export
 #'
 addGeneFeatures <- function(object,
@@ -591,7 +724,7 @@ addGeneMetaData <- function(object, of_sample = "", meta_data_list){
 #'
 #' @inherit check_genes params
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #'
 #' @details Combines \code{class_name} and \code{gs_name} to the final gene set name.
 #' Gene set classes and gene set names are separated by '_' and handled like this
@@ -729,7 +862,7 @@ addImageAnnotation <- function(object, tags, area,  id = NULL){
 
     confuns::check_none_of(
       input = id,
-      against = getImageAnnotationIds(object),
+      against = getImgAnnIds(object),
       ref.against = "image annotation IDs"
     )
 
@@ -939,7 +1072,7 @@ addPointsBase <- function(object,
 # addS --------------------------------------------------------------------
 
 #' @rdname getSegmentationNames
-#' @export
+#' @keywords internal
 addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   hlpr_assign_arguments(object)

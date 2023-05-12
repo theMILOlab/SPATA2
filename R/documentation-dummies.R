@@ -18,9 +18,10 @@
 #' determines the order in which the groups of interest are displayed. Groups that
 #' are not included are dropped which affects the colors with which they are displayed.
 #'
-
+#' @keywords internal
 across <- function(across, across_subset, relevel){}
 
+#' @keywords internal
 #' @rdname across
 across_dummy <- function(across, across_subset, relevel){}
 
@@ -56,6 +57,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param clrsp Character value. Specifies the color spectrum to be used to represent
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
+#' @param concavity Given to `concavity` of `ggforce::geom_mark_hull()`.
+#' Can be optimized for every sample via `object <- setDefault(object, concavity = ...)`.
+#' Default by object initiation is 1.
 #'
 #' @param dir Character value. The chosen directory. See details for possible
 #' requirements.
@@ -82,6 +86,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #' and nothing more. Using `expand`, the cropped image section can be adjusted. See section
 #' *Expansion of cropped image sections* for more information.
 #'
+#' @param expand_outline Distance measure by which the outline of the area is expanded.
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
 #'
@@ -131,13 +136,15 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param nrow,ncol Numeric values or NULL. Used to arrange multiple plots.
 #'
-#' @param line_alpha,line_color,line_size,line_type Parameters given to
-#' \code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
-#' that control the appearance of the main line(s) of the plot.
+#' @param line_alpha Numeric. Affects alpha of main lines of the plot.
+#' @param line_color Character. Affects color of the main lines of the plot.
+#' @param line_size Numeric. Affects size of the main lines of the plot.
+#' @param line_type Character. The line type. One of *'blank'*, *'solid'*,
+#' *'dashed'*, *'dotted'*, *'dotdash'*, *'longdash'* and *'twodash'*.
 #'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
-#' @param object An object of class \code{SPATA2}.
+#' @param object An object of class `spata2`.
 #'
 #' @param order Logical value. If `TRUE`, data points are ordered according
 #' to their values before beeing plotted.
@@ -168,7 +175,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #' \itemize{
 #'  \item{*x* : }{ numeric. Position of cell on the x axis in pixel.},
 #'  \item{*y* :}{ numeric. Position of cell on the y axis in pixel.},
-#'  \item{*cell_type* :}{ character. Cell type of the cell.}
+#'  \item{*cell_type* :}{ factor Cell type of the cell.}
 #' }
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
@@ -260,7 +267,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param ... Used to absorb deprecated arguments or functions.
 #'
-
+#' @keywords internal
 argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}
 
 
@@ -271,29 +278,31 @@ argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, 
 #' of all specified genes are averaged instead of considered separately.
 #' If the output of the function is a data.frame the variable in which the results
 #' are stored is named \emph{mean_genes}.
-
+#' @keywords internal
 average_genes <- function(average_genes){}
 
 
 #' @title binwidth
 #'
 #' @param binwidth Numeric value. Denotes the binwidth to use for the histogram.
+#' @keywords internal
 binwidth_dummy <- function(binwidth){}
 
 
 #' Title
 #'
 #' @param cds A valid cell-data-set. (from the monocle3 platform)
-#'
+#' @keywords internal
 cds_dummy <- function(cds){}
 
 
 #' @title clrp
 #' @param clpr Character value. The color panel to be used. Run \code{all_colorpanels()} to see
 #' all valid input options.
-
+#' @keywords internal
 clrp <- function(clrp){}
 
+#' @keywords internal
 #' @rdname clrp
 clrp_dummy <- function(clrp){}
 
@@ -301,7 +310,7 @@ clrp_dummy <- function(clrp){}
 #' @title dropped_df
 #'
 #' @param dropped_df A data.frame with no NAs. (Result of \code{tidyr::drop_na()}).
-
+#' @keywords internal
 dropped_df_dummy <- function(dropped_df){}
 
 
@@ -315,6 +324,7 @@ dropped_df_dummy <- function(dropped_df){}
 #'
 #' Use \code{validFlexiblyCalls()} to see all functions you can manipulate this
 #' way.
+#' @keywords internal
 flexible_call_dummy <- function(...){}
 
 #' @title gene_set_path
@@ -330,7 +340,7 @@ flexible_call_dummy <- function(...){}
 #'
 #' If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.
 #'
-
+#' @keywords internal
 gene_set_path <- function(gene_set_path){}
 
 
@@ -340,25 +350,25 @@ gene_set_path <- function(gene_set_path){}
 #' that can be added to ggplots via the \code{+} operator. In most of the cases
 #' they are supposed to be added to plots created with the \code{plotSurface*()}
 #' family.
-#'
+#' @keywords internal
 ggpLayer_dummy <- function(){}
 
 #' @title ggplot_family
 #' @return Returns a ggplot-object that can be additionally customized according
 #' to the rules of the ggplot2-framework.
-#'
-
+#' @keywords internal
 ggplot_family <- function(){}
 
 #' @title ggplot
 #' @return A ggplot.
+#' @keywords internal
 ggplot_dummy <- function(){}
 
 
 #' @title image_dummy
 #' @param image An image of class \emph{Image} to be displayed in the background.
 #' Easily accessible via \code{SPATA::image()}.
-
+#' @keywords internal
 image_dummy <- function(image){}
 
 
@@ -367,24 +377,24 @@ image_dummy <- function(image){}
 #' @param method_hclust Character value. Denotes the method that was used to generate the
 #' clustering results you want to extract.
 #'
-
+#' @keywords internal
 method_hclust <- function(method_hclust){}
 
 
 #' @title Normalize variable
-
+#' @keywords internal
 normalize <- confuns::normalize
 
 #' @title object
 #'
 #' @param object Any object for which a method has been defined.
-#'
+#' @keywords internal
 object_dummy <- function(){}
 
 #' @title pb
 #'
 #' @param pb A progress_bar-object.
-
+#' @keywords internal
 pb_dummy <- function(pb){}
 
 
@@ -393,7 +403,7 @@ pb_dummy <- function(pb){}
 #' @param plot_type Character value. Specifies the type of plot to use to
 #' visualize the results. If valid input options are not mentioned in the
 #' description use \code{validPlotTypess()} to obtain all valid input options.
-
+#' @keywords internal
 plot_type_dummy <- function(plot_type){}
 
 
@@ -401,20 +411,20 @@ plot_type_dummy <- function(plot_type){}
 #' @param dea_df A data.frame containing information about differentially expressed genes.
 #' This includes the numeric variables \emph{p_val, avg_logFC, p_val_adj} and the character
 #' variables \emph{cluster, gene}.
-
+#' @keywords internal
 pheatmap <- function(de_df){}
 
 
 #' @title print
 #'
 #' @return A human readable report of the issue of interest.
-
+#' @keywords internal
 print_family <- function(){}
 
 #' @title sample_name
 #' @param sample_name Character value. Denotes the name of the sample you are
 #' analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.
-
+#' @keywords internal
 sample_name <- function(sample_name){}
 
 
@@ -558,10 +568,7 @@ sample_name <- function(sample_name){}
 #' and then select among them via tags and test. If `ids` is `NULL`, you select
 #' among all image annotations via tags and test. And if `tags` is also `NULL`,
 #' the function uses all image annoations.
-#'
-#'
-#' @export
-#'
+#' @keywords internal
 section_dummy  <- function(){}
 
 
@@ -581,7 +588,7 @@ section_dummy  <- function(){}
 #' use with caution.
 #'
 #' @return A spata object containing the set input.
-#'
+#' @keywords internal
 set_dummy <- function(){}
 
 
@@ -590,13 +597,14 @@ set_dummy <- function(){}
 #' Title
 #'
 #' @param seurat_object A valid seurat-object. (from the Seurat platform)
-#'
+#' @keywords internal
 seurat_object_dummy <- function(seurat_object){}
 
 
 #' @title update
-#' @return The input `SPATA2` object containing the added or computed
+#' @return The input `spata2` object containing the added or computed
 #' results.
+#' @keywords internal
 update_dummy <- function(){}
 
 #' @title variable
@@ -609,9 +617,7 @@ update_dummy <- function(){}
 #'   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
 #'   \item{ \strong{Feature} as a single character value. Must be in \code{getFeatureNames()}}
 #'   }
-#'
-#'
-
+#' @keywords internal
 variable <- function(variable){}
 
 
@@ -624,7 +630,7 @@ variable <- function(variable){}
 #'   \item{ \strong{Genes} Must be in \code{getGenes()}}
 #'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
 #'   }
-
+#' @keywords internal
 variable_num <- function(variable){}
 
 #' @title variables_num
@@ -636,7 +642,7 @@ variable_num <- function(variable){}
 #'   \item{ \strong{Genes} Must be in \code{getGenes()}}
 #'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
 #'   }
-
+#' @keywords internal
 variables_num <- function(variables){}
 
 

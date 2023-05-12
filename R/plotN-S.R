@@ -317,6 +317,8 @@ plotPcaVariation <- function(object,
 #'  \item{\emph{\code{color_to}}: Monocle3-Umap colored by input of \code{color_to}. (if specified)}
 #' }
 #'
+#' @keywords internal
+#'
 
 plotPseudotime <- function(object,
                            use_cds_file = FALSE,

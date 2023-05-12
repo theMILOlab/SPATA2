@@ -8,7 +8,7 @@ NULL
 
 # make --------------------------------------------------------------------
 
-
+#' @keywords internal
 make_angle_bins <- function(n){
 
   n <- base::as.integer(n)
@@ -25,8 +25,8 @@ make_angle_bins <- function(n){
 
 #' @title Make content for segments grob
 #' @description Used in conjunction with GeomSegmentFixed
-#' @export
 #' @method makeContent resizingSegmentsGrob
+#' @keywords internal
 makeContent.resizingSegmentsGrob <- function(x) {
 
   width <- grid::convertWidth(grid::unit(1, "snpc"), "pt", valueOnly = TRUE)
@@ -46,8 +46,8 @@ makeContent.resizingSegmentsGrob <- function(x) {
 
 #' @title Make content for text grob
 #' @description Used in conjunction with GeomTextFixed
-#' @export
 #' @method makeContent resizingTextGrob
+#' @keywords internal
 makeContent.resizingTextGrob <- function(x) {
 
   width <- grid::convertWidth(grid::unit(1, "snpc"), "pt", valueOnly = TRUE)
@@ -63,7 +63,7 @@ makeContent.resizingTextGrob <- function(x) {
 }
 
 
-#' @export
+#' @keywords internal
 make_scattermore_add_on <- function(mapping,
                                     alpha,
                                     color,
@@ -300,7 +300,7 @@ mergeGroups <- function(object,
 #'
 #' @param id The namespace id.
 #'
-
+#' @keywords internal
 moduleAddGeneSetsUI <- function(id){
 
   ns <- shiny::NS(id)
@@ -354,7 +354,7 @@ moduleAddGeneSetsUI <- function(id){
 #'
 #' @return An updated spata-object.
 #'
-
+#' @keywords internal
 moduleAddGeneSetsServer <- function(id, object){
 
   shiny::moduleServer(
@@ -481,7 +481,7 @@ moduleAddGeneSetsServer <- function(id, object){
 #'
 #' @param id The namespace id.
 #'
-
+#' @keywords internal
 moduleSurfacePlotUI <- function(id){
 
   ns <- shiny::NS(id)
@@ -577,7 +577,7 @@ moduleSurfacePlotUI <- function(id){
 #' adjust the output of \code{$assembled_plot()} outside of the module. If no further adjustment is needed determine \code{final_plot} as:
 #' \code{shiny::reactive(*module_return_variable*()$assembled_plot())}
 #'
-
+#' @keywords internal
 moduleSurfacePlotServer <- function(id,
                                     object,
                                     final_plot,
@@ -1452,7 +1452,7 @@ moduleSurfacePlotServer <- function(id,
 
 
 # mS ----------------------------------------------------------------------
-
+#' @keywords internal
 mSwitch <- function(inputId, label = NULL, status = "success", width = "80%", app = "annotateImage", helper = TRUE, hslot = inputId, ...){
 
   if(base::is.null(label)){

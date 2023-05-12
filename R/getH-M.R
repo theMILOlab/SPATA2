@@ -84,11 +84,12 @@ getIasBinAreas <- function(object,
     }
 
     pxl_df <-
-      incorporate_tissue_outline(
+      include_tissue_outline(
         coords_df = coords_df,
         input_df = pxl_df,
         outline_var = outline_var,
-        img_ann_center = getImgAnnCenter(object, id)
+        img_ann_center = getImgAnnCenter(object, id),
+        ccd = getCCD(object, "px")
       )
 
   }
@@ -356,6 +357,8 @@ getIasExpansion <- function(object,
 
     if(base::isTRUE(inc_outline)){
 
+      ccd <- getCCD(object, unit = "px")
+
       expansions <-
         purrr::map(
           .x = expansions,
@@ -365,9 +368,11 @@ getIasExpansion <- function(object,
             img_ann_center = getImgAnnCenter(object, id = id),
             remove = FALSE,
             ias_circles = TRUE,
-            ccd = getCCD(object, unit = "px")
+            ccd = ccd,
+            buffer = ccd*0.5
           )
-        )
+        ) %>%
+        purrr::discard(.p = base::is.null)
 
     }
 
@@ -1787,7 +1792,7 @@ getImgAnnOutlineDf <- function(object,
 #'
 #' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
 #' summary step.
-#'
+#' @keywords internal
 get_img_ann_helper <- function(object,
                         id,
                         distance = NA_integer_,
@@ -2387,7 +2392,7 @@ getSpatialMethod <- function(object){
 #'
 #' @return Data.frame.
 #'
-#' @export
+#' @keywords internal
 
 setGeneric(name = "getModelEvaluationDf", def = function(object, ...){
 

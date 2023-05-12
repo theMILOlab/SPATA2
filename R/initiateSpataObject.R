@@ -991,9 +991,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name)
 
-
   # -----
-
 
   # 6. Save objects and return spata object ---------------------------------
 
@@ -1121,14 +1119,13 @@ initiateSpataObject_10X <- function(directory_10X,
 
   }
 
+  spata_object <- setTissueOutline(spata_object)
+
   # return output
   confuns::give_feedback(
     msg = "Initiation finished.",
     verbose = verbose
   )
-
-
-
 
   # -----
 

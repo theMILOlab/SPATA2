@@ -116,7 +116,6 @@
 "image_annotations"
 
 
-
 #' List of data.frames of single cell deconvolution. Names of
 #' the list correspond to the sample name. Obtain data.frame
 #' using `sc_deconvolution[[*<sample.name>*]]`
@@ -126,6 +125,13 @@
 #'
 "sc_deconvolution"
 
+
+#' List of scale factors for Visium input.
+#'
+#' @docType data
+#' @usage data(scale_factors)
+#'
+"scale_factors"
 
 #' A list of lists of spatial segmentations for specific `SPATA2`
 #' objects - available via the `SPATAData` package. Names of the list slots
@@ -142,7 +148,7 @@
 "spatial_segmentations"
 
 
-#' A list of lists of spatial trajectories for specific `SPATA2`
+#' A list of lists of spatial spatial_trajectories for specific `SPATA2`
 #' objects - available via the `SPATAData` package. Names of the list slots
 #' correspond to the sample names in variable  *sample* of `SPATAData::source_df`.
 #'
@@ -150,19 +156,18 @@
 #' Use \code{setSpatialTrajectory()} to add them to the corresponding object.
 #'
 #'  @docType data
-#'  @usage data(trajectories)
+#'  @usage data(spatial_trajectories)
 #'
-"trajectories"
-
+"spatial_trajectories"
 
 
 #' A data.frame that contains all barcode spots of the Visium method including
 #' their spatial positioning. Variable names: *barcodes*, *col*, *row*, *imagecol*,
-#' *imagerow*.
+#' *imagerow*, *xlr*, *ylr*, *xhr*, *yhr*. lr = low resolution, hr = high resolution
 #'
 #'  @docType data
-#'  @usage data(visium_coords_lowres)
-"visium_coords_lowres"
+#'  @usage data(visium_coords)
+"visium_coords"
 
 
 

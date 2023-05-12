@@ -380,7 +380,6 @@ bin_by_expansion <- function(coords_df,
 
   }
 
-
   # if inner circles exist
   if("inner1" %in% area_df[["border"]]){
 
@@ -520,7 +519,7 @@ bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
 
 }
 
-
+#' @keywords internal
 br_add <- function(height, break_add = NULL){
 
   if(base::is.null(break_add)){
@@ -539,6 +538,7 @@ br_add <- function(height, break_add = NULL){
 
 }
 
+#' @keywords internal
 breaks <- function(n){
 
   base::rep("<br>", n) %>%
@@ -554,13 +554,15 @@ breaks <- function(n){
 #'
 #' @param df Data.frame with variables \emph{x} and \emph{y} describing the
 #' vertices of the polygon that encircles the area based on which the barcode-spots
-#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects.
-#'
+#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects. Note that the order of
+#' observations in the data.frame must correspond to the order of vertices
+#' of the polygon.
 #' @param buffer The distance by which to consecutively expand the
 #' area that covers the image annotation screening. Given to argument
 #' \code{dist} of function \code{sf::st_buffer()}.
 #'
 #' @export
+#'
 buffer_area <- function(df, buffer, close_plg = TRUE){
 
   frow <- df[1, c("x", "y")] %>% base::as.numeric()

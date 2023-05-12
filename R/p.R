@@ -5,7 +5,7 @@
 
 
 # pick --------------------------------------------------------------------
-
+#' @keywords internal
 pick_vars <- function(df, input, order_by, neg_log){
 
   if(base::is.list(input)){
@@ -264,7 +264,7 @@ printGeneSetOverview <- function(object){
 
 # process -----------------------------------------------------------------
 
-#' @export
+#' @keywords internal
 process_angle_justification <- function(angle, angle_just, clockwise){
 
   if(base::isTRUE(clockwise)){
@@ -293,7 +293,7 @@ process_angle_justification <- function(angle, angle_just, clockwise){
 
 }
 
-
+#' @keywords internal
 process_axis <- function(axis){
 
   confuns::check_one_of(
@@ -323,7 +323,7 @@ process_axis <- function(axis){
 #' @section Expand: this is a new section.
 #'
 #' @export
-#'
+#' @keywords internal
 process_expand_input <- function(expand){
 
 
@@ -464,7 +464,7 @@ process_expand_input <- function(expand){
 #' @return List of 4 slots. Named *xmin*, *xmax*, *ymin* and *ymax*. Adjusted range
 #' in pixel.
 #' @export
-#'
+#' @keywords internal
 process_ranges <- function(xrange = getImageRange(object)$x,
                            yrange = getImageRange(objet)$y,
                            expand = 0,
@@ -546,7 +546,7 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
 }
 
-
+#' @keywords internal
 process_sce_bayes_space <- function(sce,
                                     spatialPreprocess = list(),
                                     qTune = list(qs = 3:7),
@@ -641,7 +641,7 @@ process_sce_bayes_space <- function(sce,
 #'
 #' @return A processed seurat-object.
 #'
-
+#' @keywords internal
 process_seurat_object <- function(seurat_object,
                                   assay_name = NULL,
                                   calculate_rb_and_mt = TRUE,
@@ -842,7 +842,7 @@ process_seurat_object <- function(seurat_object,
 #'   }
 #'
 #' @export
-
+#' @keywords internal
 project_on_trajectory <- function(coords_df,
                                   segment_df,
                                   width){
@@ -944,7 +944,7 @@ project_on_trajectory <- function(coords_df,
 #' @return The projected length.
 #'
 #' @export
-
+#' @keywords internal
 project_on_vector <- function(lcs, x, y){
 
   # vector from point of interest to origin of local coord system: 'vto'
@@ -972,7 +972,7 @@ project_on_vector <- function(lcs, x, y){
 # pull --------------------------------------------------------------------
 
 
-
+#' @keywords internal
 pull_slot <- function(lst, slot, out_null = NULL){
 
   if(base::is.null(slot)){

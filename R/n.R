@@ -112,7 +112,7 @@ nTrajectories <- function(object){
 
 
 
-#' @export
+#' @keywords internal
 normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
 
   if(base::isTRUE(normalize)){
@@ -136,7 +136,7 @@ normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
 
 }
 
-
+#' @keywords internal
 numericSlider <- function(inputId, label = NULL, width = "80%",  app = "createImageAnnotations", helper = TRUE, hslot = inputId, ...){
 
   if(base::is.null(label)){

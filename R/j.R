@@ -32,7 +32,6 @@
 #'
 #' @export
 
-
 joinWith <- function(object,
                      spata_df = getCoordsDf(object),
                      features = NULL,
