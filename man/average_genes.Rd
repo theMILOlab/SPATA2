@@ -15,3 +15,4 @@ are stored is named \emph{mean_genes}.}
 \description{
 average_genes
 }
+\keyword{internal}

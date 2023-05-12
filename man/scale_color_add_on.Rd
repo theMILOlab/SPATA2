@@ -6,7 +6,7 @@
 \usage{
 scale_color_add_on(
   aes = "color",
-  variable = "numeric",
+  variable = NULL,
   clrsp = NULL,
   clrp = NULL,
   clrp.adjust = NULL,
@@ -42,21 +42,21 @@ function.}
 
 \item{...}{Additional arguments given to the respective function.
 
- \itemize{
-  \item{\code{ggplot2::scale_<aes>_viridis_c(...)}: If \code{variable} is numeric and
-  \code{clrsp} is one of \emph{'cividis', 'viridis', 'inferno', 'magma', 'plasma'}.}
-  \item{\code{colorspace::scale_<aes>_continuous_sequential(...)}: If \code{variable} is numeric
-  and \code{clrsp} is sequential.}
-  \item{\code{colorspace::scale_<aes>_continuous_diverging(...)}: If \code{variable} is numeric
-  and \code{clrsp} is diverging.}
-  \item{\code{ggplot2::scale_<aes>_viridis_d(...)}: If \code{variable} is numeric
-  and \code{clrp} is one of \emph{'cividis', 'viridis', 'inferno', 'magma', 'plasma'}.}
-  \item{\code{ggplot2::scale_<aes>_greyscale(...)}: If \code{variable} is discrete
-  and \code{clrp} is set to \emph{'greyscale'}.}
-  \item{\code{ggplot2:.scale_<aes>_discrete()}: If \code{variable} is discrete
-  and \code{clrp} is set to \emph{'default'}.}
-  \item{\code{ggplot2::scale_<aes>_manual(...)}: If \code{variable} is discrete.}
-  }}
+\itemize{
+\item{\code{ggplot2::scale_<aes>_viridis_c(...)}: If \code{variable} is numeric and
+\code{clrsp} is one of \emph{'cividis', 'viridis', 'inferno', 'magma', 'plasma'}.}
+\item{\code{colorspace::scale_<aes>_continuous_sequential(...)}: If \code{variable} is numeric
+and \code{clrsp} is sequential.}
+\item{\code{colorspace::scale_<aes>_continuous_diverging(...)}: If \code{variable} is numeric
+and \code{clrsp} is diverging.}
+\item{\code{ggplot2::scale_<aes>_viridis_d(...)}: If \code{variable} is numeric
+and \code{clrp} is one of \emph{'cividis', 'viridis', 'inferno', 'magma', 'plasma'}.}
+\item{\code{ggplot2::scale_<aes>_greyscale(...)}: If \code{variable} is discrete
+and \code{clrp} is set to \emph{'greyscale'}.}
+\item{\code{ggplot2:.scale_<aes>_discrete()}: If \code{variable} is discrete
+and \code{clrp} is set to \emph{'default'}.}
+\item{\code{ggplot2::scale_<aes>_manual(...)}: If \code{variable} is discrete.}
+}}
 }
 \value{
 An unnamed list containing the ggproto object.
@@ -77,3 +77,4 @@ ggplot(mtcars, aes(x = qsec, y = wt)) +
 geom_point(aes(color = mpg)) +
 scale_color_add_on(aes = "color", clrsp = "Reds 3")
 }
+\keyword{internal}

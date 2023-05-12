@@ -10,11 +10,12 @@ variable_num(variable)
 \item{variable}{Character value. The numeric variable of interest. Must be inside:
 
 \itemize{
-  \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-  \item{ \strong{Genes} Must be in \code{getGenes()}}
-  \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-  }}
+\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} Must be in \code{getGenes()}}
+\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+}}
 }
 \description{
 variable_num
 }
+\keyword{internal}

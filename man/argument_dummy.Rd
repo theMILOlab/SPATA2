@@ -33,34 +33,169 @@ to display the results.}
 \item{scales, ncol, nrow}{Affects the way the subplots
 are displayed.}
 
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{across}{Character value or NULL. Specifies the grouping variable of interest.
+
+Use \code{getGroupingOptions()} to obtain all variable names that group the
+barcode spots of your object in a certain manner.}
+
+\item{across_subset}{Character vector or NULL. Specifies the particular groups
+of interest the grouping variable specified in argument \code{across} contains.
+
+If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
+with a \emph{'-'}. (Saves writing if there are more groups you are interested in
+than groups you are not interested in.)
+
+Use \code{getGroupNames()} to obtain all valid input options.}
+
+\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
+are removed before plotting.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
+Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
+Default by object initiation is 1.}
+
+\item{dir}{Character value. The chosen directory. See details for possible
+requirements.}
+
 \item{discrete_feature}{Character value. Specifies the name of the grouping variable
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 
+\item{display_ribbon}{Logical value. If TRUE, a ribbon is displayed around
+the main line of the plot visualizing uncertainty using standard deviation.}
+
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
+
+\item{error}{Logical. If \code{TRUE} and the input is invalid the
+function throws an error.}
+
+\item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
+
+\item{expand}{Specifies image expansion. An image that is cropped based on an image
+annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
+that is width/x-axis and height/y-axis, are set to include only the image annotation area
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
+
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
+
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{grouping_variable}{Character value. The grouping variable of interest. Use
+\code{getGroupingOptions()} to obtain all valid input options.}
 
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
 
+\item{hline_alpha, hline_color, hline_size, hline_type}{Parameters given to
+\code{ggplot2::geom_hline()} that control the appearance of vertical lines
+of the plot.}
+
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
+
+\item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
+
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
+
+\item{method_de}{Character value. Denotes the method to according to which the de-analysis is performed.
+Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
+to obtain all valid input options.}
+
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
+\item{method_padj}{Character value. The method with which adjusted p-values are
+calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
 
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}
 
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
+
 \item{n_gsets}{Numeric value. Maximal number of gene sets whose results are included.
 The first \code{n_gsets} are included starting with the one with the lowest significance value.}
 
-\item{object}{A valid spata-object.}
+\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
+
+Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
+
+\item{linesize}{Numeric value. The size of the line(s) plotted.}
+
+\item{object}{An object of class \code{spata2}.}
+
+\item{order}{Logical value. If \code{TRUE}, data points are ordered according
+to their values before beeing plotted.}
+
+\item{order_by}{Character value or \code{NULL}. If character, the specified
+variable is used to order the data points.}
+
+\item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
+via \code{order_by} and/or \code{order}.}
+
+\item{outer}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the outer border of the image annotation
+is not included in the output.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
+\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
+
+\item{pt_clr}{Character value. Specifies the color of all points.}
+
+\item{pt_clrp}{The color palette to be used if the specified variable displayed by
+color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
+
+\item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
+color is continuous. Run \code{validColorSpectra()} to see valid input.}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
+determines the order in which the groups of interest are displayed. Groups that
+are not included are dropped which affects the colors with which they are displayed.}
+
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
+}}
+
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
+
+\item{sgmt_alpha, sgmt_color, sgmt_size, sgmt_type}{Parameters given to
+\code{ggplot2::geom_segment()} that control the appearance of segments
+of the plot.}
 
 \item{signif_var}{Character value. Determines what to be considered while checking
 for significance. Either \emph{'pval'} (p-Value) or \emph{'fdr'} (False Discovery Rate).}
@@ -71,6 +206,33 @@ are not included.}
 \item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
 to FALSE a list is returned.}
 
+\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
+
+\item{smooth_span}{Numeric value. Controls the degree of smoothing.
+Given to argument \code{span} of \code{stats::loess()}.}
+
+\item{square}{Logical value. Most image annotations come in variable shapes and
+have different horizontal and vertical diameters. Therefore, height and width of the image
+section are usually not equal. If \code{square = TRUE}, the cropped section of the image that
+contains the annotated structure is forced into a square: the bigger diameter of both is taken
+as default. E.g. if the horizontal diameter of the image annotation is 1mm and the
+vertical diameter is 1.5mm, the output image will have height and width of 1.5mm. That is,
+in terms of coordinates, an x-range and a y-range of 1.5mm.
+
+Processing of the image output depending on argument \code{expand} happens afterwards.}
+
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
+selection. See section \emph{Selection of image annotation with tags} for more information.}
+
+\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
+\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+See section \emph{Selection of image annotation with tags} for more information.}
+
+\item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
+given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}
+
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
 Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
@@ -80,9 +242,37 @@ Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
+
+\item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
+\code{ggplot2::geom_vline()} that control the appearance of vertical lines
+of the plot.}
+
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
+
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 Argument dummy
 }
+\keyword{internal}

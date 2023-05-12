@@ -20,3 +20,4 @@ data_counts object
 Column names must be the barcodes.}
 }}
 
+\keyword{internal}

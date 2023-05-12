@@ -13,3 +13,4 @@ Easily accessible via \code{SPATA::image()}.}
 \description{
 image_dummy
 }
+\keyword{internal}

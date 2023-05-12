@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -26,64 +26,94 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
-</li>
-<li>
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
+  <a href="../articles/spata-v2-spata-data.html">SPATAData</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
   </a>
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
+  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
+      <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
+      <a href="../articles/spata-v2-autoencoder.html">Autoencoder</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
+      <a href="../articles/spata-v2-genes-gene-sets-and-features.html">Genes, Gene Sets and Features</a>
     </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
+    <li class="dropdown-header">Image Analysis</li>
     <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
+      <a href="../articles/spata-v2-image-handling.html">Image Handling</a>
     </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotations.html">Image Annotations</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
+    </li>
+    <li class="dropdown-header">Analysis of Gene Expression</li>
     <li>
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
+      <a href="../articles/spata-v2-clustering.html">Clustering</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
+      <a href="../articles/spata-v2-dea.html">Differential Expression</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
+      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment</a>
+    </li>
+    <li class="dropdown-header">Expression Gradients &amp; Gradient Screening</li>
+    <li>
+      <a href="../articles/spata-v2-spatial-trajectories.html">Spatial Trajectories</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
+      <a href="../articles/spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
+      <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
+    </li>
+  </ul></li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Code &amp; Concept
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/cc-spatial-measures.html">Spatial Measures</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
+      <a href="../articles/cc-spatial-segmentation-vs-image-annotations.html">Spatial Segmentation vs. Image Annotations</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
+      <a href="../articles/cc-spatial-trajectory-screening.html">Spatial Trajectory Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-image-annotation-screening.html">Image Annotation Screening</a>
+    </li>
+    <li>
+      <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -102,41 +132,55 @@
       <h3>All vignettes</h3>
       <p class="section-desc"></p>
 
-      <dl><dt><a href="spata-v2-autoencoder.html">Autoencoder Denoising</a></dt>
+      <dl><dt><a href="cc-image-annotation-screening.html">Image Annotation Screening - Code &amp; Concept</a></dt>
+        <dd>
+        </dd><dt><a href="cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting in Spatial Transcriptomics - Code &amp; Concept</a></dt>
+        <dd>
+        </dd><dt><a href="cc-spatial-measures.html">Spatial measures - Code &amp; Concept</a></dt>
+        <dd>
+        </dd><dt><a href="cc-spatial-segmentation-vs-image-annotations.html">Spatial segmentation vs. Image annotations</a></dt>
+        <dd>
+        </dd><dt><a href="cc-spatial-trajectory-screening.html">Spatial Trajectory Screening - Code &amp; Concept</a></dt>
+        <dd>
+        </dd><dt><a href="spata-v2-autoencoder.html">Autoencoder Denoising</a></dt>
+        <dd>
+        </dd><dt><a href="spata-v2-clustering.html">Clustering</a></dt>
         <dd>
         </dd><dt><a href="spata-v2-cnv-analysis.html">Copy Number Variations (CNV)</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-de-analysis.html">Differential Expression Analysis</a></dt>
-        <dd>
-        </dd><dt><a href="spata-v2-extract-add-and-join-data.html">Extract, Join &amp; Add data</a></dt>
+        </dd><dt><a href="spata-v2-dea.html">Differential Expression Analysis (DEA)</a></dt>
         <dd>
         </dd><dt><a href="spata-v2-genes-gene-sets-and-features.html">Genes-, Gene-sets &amp; Features</a></dt>
         <dd>
         </dd><dt><a href="spata-v2-gsea.html">Gene Set Enrichment Analysis</a></dt>
         <dd>
+        </dd><dt><a href="spata-v2-image-annotation-screening.html">Image Annotation Screening</a></dt>
+        <dd>
+        </dd><dt><a href="spata-v2-image-annotations.html">Image Annotations</a></dt>
+        <dd>
+        </dd><dt><a href="spata-v2-image-handling.html">Image Handling</a></dt>
+        <dd>
         </dd><dt><a href="spata-v2-installation.html">Installation</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-introduction-and-philosophy.html">Spatial Transcriptomic Analysis</a></dt>
+        </dd><dt><a href="spata-v2-object-initiation-and-manipulation.html">`spata2` object Set up &amp; Manipulation</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-object-initiation-and-manipulation.html">SPATA-Object Set up &amp; Manipulation</a></dt>
+        </dd><dt><a href="spata-v2-platform-compatibility.html">Platform Compatibility</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-platform-compatibility.html">SPATA &amp; Other Platforms</a></dt>
-        <dd>
-        </dd><dt><a href="spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a></dt>
-        <dd>
-        </dd><dt><a href="spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a></dt>
-        <dd>
-        </dd><dt><a href="spata-v2-plotting-miscellaneous.html">Miscellaneous Plots</a></dt>
+        </dd><dt><a href="spata-v2-plotting-misc.html">Miscellaneous plots</a></dt>
         <dd>
         </dd><dt><a href="spata-v2-plotting-surface.html">Surface Plotting</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-segmentation-and-clustering.html">Segmentation &amp; Clustering</a></dt>
+        </dd><dt><a href="spata-v2-scd.html">Single Cell Deconvolution</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-terminology.html">SPATA Terminology</a></dt>
+        </dd><dt><a href="spata-v2-spata-data.html">SPATAData - A database for spatial transcriptomic datasets</a></dt>
         <dd>
-        </dd><dt><a href="spata-v2-trajectory-analysis.html">Spatial Trajectory Analysis</a></dt>
+        </dd><dt><a href="spata-v2-spatial-segmentation.html">Spatial Segmentation</a></dt>
         <dd>
-        </dd><dt><a href="trajectory-analysis-concept.html">Spatial Trajectory Analysis - Concept</a></dt>
+        </dd><dt><a href="spata-v2-spatial-trajectories.html">Spatial Trajectories</a></dt>
+        <dd>
+        </dd><dt><a href="spata-v2-spatial-trajectory-screening.html">Spatial Trajectory Screening</a></dt>
+        <dd>
+        </dd><dt><a href="spata-v2-subsetting.html">Subsetting</a></dt>
         <dd>
       </dd></dl></div>
   </div>
@@ -144,11 +188,11 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
+  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
