@@ -482,6 +482,7 @@ current_spata_version <- list(major = 2, minor = 0, patch = 0)
 
 # d -----------------------------------------------------------------------
 
+#' @export
 depr_info <-
   list(
     fns = list(

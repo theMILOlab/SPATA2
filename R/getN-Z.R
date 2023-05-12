@@ -29,6 +29,8 @@ getOutlineVarName <- function(object){
 #' spots or not and a character variable called *section* that indicates to
 #' which tissue section the spots belong.
 #'
+#' @export
+#'
 #' @examples
 #'
 #'  library(ggplot2)
