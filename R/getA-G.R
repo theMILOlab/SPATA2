@@ -1,6 +1,6 @@
 # getA --------------------------------------------------------------------
 
-#' @title Obtain name of currently active expression matrix
+#' @title Obtain name of currently active data matrix
 #'
 #' @inherit check_sample params
 #'
@@ -34,28 +34,11 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
 #' @rdname getActiveMatrixName
 #' @export
-getActiveExpressionMatrixName <- function(object, verbose = NULL, ...){
+getActiveExpressionMatrixName <- function(...){
 
-  deprecated(...)
+  deprecated(fn = TRUE)
 
-  check_object(object)
-
-  hlpr_assign_arguments(object)
-
-  expr_mtr_name <- object@information$active_expr_mtr
-
-  if(base::is.null(expr_mtr_name)){
-
-    stop("Please set an active expression matrix with `setActiveExpressionMatrix()`")
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Active expression matrix: {expr_mtr_name}"),
-    verbose = verbose
-  )
-
-  return(expr_mtr_name)
+  getActiveMatrixName(...)
 
 }
 

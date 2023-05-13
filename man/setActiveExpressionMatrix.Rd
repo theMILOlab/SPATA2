@@ -7,7 +7,7 @@
 \usage{
 setActiveMatrix(object, mtr_name, verbose = NULL)
 
-setActiveExpressionMatrix(object, mtr_name, verbose = NULL, ...)
+setActiveExpressionMatrix(...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

@@ -37,11 +37,13 @@ setActiveMatrix <- function(object, mtr_name, verbose = NULL){
 #' @inherit update_dummy return
 #' @export
 
-setActiveExpressionMatrix <- function(object, mtr_name, verbose = NULL, ...){
+setActiveExpressionMatrix <- function(...){
 
-  deprecated(fn = TRUE, ...)
+  deprecated(fn = TRUE)
 
-  setActiveMatrix()
+  object <- setActiveMatrix(...)
+
+  return(object)
 
 }
 

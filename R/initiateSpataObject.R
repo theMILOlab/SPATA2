@@ -608,7 +608,6 @@ initiateSpataObject_ExprMtr <- function(coords_df,
     )
 
   spata_object <- setActiveMatrix(object = spata_object, mtr_name = mtr_name)
-  spata_object <- setActiveExpressionMatrix(object = spata_object, mtr_name = mtr_name)
 
   # transfer data.frames and image
   feature_df <-
