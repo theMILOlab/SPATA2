@@ -2037,3 +2037,40 @@ checkShortcut <- function(shortcut, valid, cursor_pos = NA){
 
 
 }
+
+check_spatial_data <- function(uns, library_id = NULL) {
+
+  # helper for asSPATA2() for AnnData objects
+  # extract library_id and spatial data frame from anndata object slot adata.uns['spatial']
+  # equivalent to scanpy._check_spatial_data()
+
+  spatial_mapping <- uns[["spatial"]]
+
+  if (is.null(library_id)) {
+
+    if (length(spatial_mapping) > 1) {
+
+      stop("Found multiple possible libraries in `.uns[['spatial']]'. Please specify via argument ``image_name``. ",
+           "Options are: ", paste(names(spatial_mapping), collapse=", "))
+
+    } else if (length(spatial_mapping) == 1) {
+
+      library_id <- names(spatial_mapping)
+
+    } else {
+
+      library_id <- NULL
+    }
+  }
+
+  if (!is.null(library_id)) {
+
+    spatial_data <- spatial_mapping[[library_id]]
+
+  } else {
+
+    spatial_data <- NULL
+
+  }
+
+  return(list(library_id, spatial_data))

@@ -64,6 +64,93 @@ legendTop <- purrr::partial(.f = ggplot2::theme, legend.position = "top")
 
 # load --------------------------------------------------------------------
 
+load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name, 
+                              scaled_mtr_name, verbose){
+
+    # helper for asSPATA2() for AnnData objects
+    # load count/normalized/scaled matrices 
+    # (1) based on given input names
+    # (2) if these not available, based on defaults "counts"/"normalized"/"scaled" names
+    # (3) if "normalized" not available, adata$X will be set to "normalized"
+
+    if(verbose){ message("The AnnData object contains the following layers: ", paste(names(adata$layers), 
+                collapse=", ")) }
+
+    # count matrix
+    if(!is.null(adata$layers[{{count_mtr_name}}])){
+
+      count_mtr <- load_adata_matrix_converter(adata = adata, mname = count_mtr_name, matrix = "count", verbose = verbose)
+
+    } else if (!is.null(adata$layers["counts"])){
+
+      count_mtr <- load_adata_matrix_converter(adata = adata, mname = "counts", matrix = "count", verbose = verbose)
+
+    } else {
+
+      warning("No count matrix found to import. You can specify the count matrix AnnData layer via `count_mtr_name`")
+      count_mtr <- NULL
+
+    }
+
+    # normalized matrix
+    if(!is.null(adata$layers[{{normalized_mtr_name}}])){
+
+      normalized_mtr <- load_adata_matrix_converter(adata = adata, mname = normalized_mtr_name, matrix = "normalized", verbose = verbose)
+
+    } else if(!is.null(adata$layers["normalized"])){
+
+      normalized_mtr <- load_adata_matrix_converter(adata = adata, mname = "normalized", matrix = "normalized", verbose = verbose)
+
+    } else if(!is.null(adata$X)){
+
+      warning("No normalized matrix found. Using adata$X as normalized matrix. If you want to use a different matrix, 
+              specify a name for the normalized matrix via `normalized_mtr_name`")
+      normalized_mtr <- Matrix::t(adata$X)
+
+    } else if(is.null(adata$X)){
+
+      warning("No normalized matrix found to import. You can specify the normalized matrix AnnData layer via 
+              `normalized_mtr_name`")
+      normalized_mtr <- NULL
+
+    }
+
+    # scaled matrix
+    if(!is.null(adata$layers[{{scaled_mtr_name}}])){
+
+      scaled_mtr <- load_adata_matrix_converter(adata = adata, mname = scaled_mtr_name, matrix = "scaled", verbose = verbose)
+
+    } else if(!is.null(adata$layers["scaled"])){
+
+      scaled_mtr <- load_adata_matrix_converter(adata = adata, mname = "scaled", matrix = "scaled", verbose = verbose)
+
+    } else {
+
+      warning("No scaled matrix found to import. You can specify the scaled matrix AnnData layer via
+              `scaled_mtr_name` (e.g. scaled_mtr_name='scaled_data')")
+      scaled_mtr <- NULL
+
+    }
+
+    if((is.null(scaled_mtr)) & (is.null(count_mtr)) & (is.null(normalized_mtr))){
+
+      stop("No matrix found to import.")
+
+    }
+
+    return(list(count_mtr = count_mtr, normalized_mtr = normalized_mtr, scaled_mtr = scaled_mtr))
+
+}
+
+load_adata_matrix_converter <- function(adata, mname, matrix, verbose){
+
+  if(verbose){message(paste0("Using adata$layers['", mname, "'] as ", matrix, " matrix"))}
+  assign(paste0(matrix,"_mtr"), Matrix::t(adata$layers[{{mname}}]))
+  return(get(paste0(matrix,"_mtr")))
+
+}
+
+
 #' @keywords internal
 loadCorrespondingCDS <- function(object, verbose = NULL){
 

@@ -160,9 +160,9 @@ setCoordsDf <- function(object, coords_df, ...){
 
 #' @title Set data matrices
 #'
-#' @description \code{SPATA} in general distinguishes between two types of data matrices.
-#' There are \emph{count-matrices} containing the raw counts and
-#' \emph{expression-matrices} containing scaled, denoised or in any other
+#' @description \code{SPATA} in general distinguishes between three types of data matrices.
+#' There are \emph{count-matrices} containing the raw counts, \emph{normalized-matrices} 
+#' containing (log-)normalized counts, and \emph{scaled-matrices} containing scaled, denoised or in any other
 #' way processed and normalized count data.
 #'
 #' The majority of \code{SPATA}-functions leans on data carried in expression matrices.
@@ -176,7 +176,7 @@ setCoordsDf <- function(object, coords_df, ...){
 #' To add additional matrices use \code{addExpressionMatrix()}.
 #'
 #' @inherit check_sample params
-#' @param count_mtr,scaled_mtr,denoised_mtr Matrices whose column names refer
+#' @param count_mtr,normalized_mtr,scaled_mtr,denoised_mtr Matrices whose column names refer
 #' to the barcodes and whose rownames refer to the gene names.
 #'
 #' @inherit set_dummy details return
@@ -790,10 +790,25 @@ setInitiationInfo <- function(object, additional_input = list()){
 
 
 
+# setN --------------------------------------------------------------------
+
+#' @rdname setCountMatrix
+#' @export
+setNormalizedMatrix <- function(object, normalized_mtr, of_sample = NA){
+
+  check_object(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  object@data[[of_sample]][["normalized"]] <- normalized_mtr
+
+  return(object)
+
+}
+
+
 
 # setO --------------------------------------------------------------------
-
-
 
 #' @title Set outline variable name
 #'
