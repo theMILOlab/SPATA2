@@ -9,7 +9,7 @@ getActiveMatrixName(object, verbose = NULL, ...)
 
 getActiveMatrixName(object, verbose = NULL, ...)
 
-getActiveExpressionMatrixName(object, verbose = NULL, ...)
+getActiveExpressionMatrixName(...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -22,5 +22,5 @@ Character value.
 \description{
 Obtain name of currently active expression matrix
 
-Obtain name of currently active expression matrix
+Obtain name of currently active data matrix
 }

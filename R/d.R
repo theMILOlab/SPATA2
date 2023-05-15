@@ -38,14 +38,14 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022. Please use `{replaced_by}()` instead.{ref_caller}"
+          "Function `{fn_name}()` is deprecated and will be deleted in the near future. Please use `{replaced_by}()` instead.{ref_caller}"
         )
 
     } else {
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022.{ref_caller}"
+          "Function `{fn_name}()` is deprecated and will be in the near future.{ref_caller}"
         )
 
     }

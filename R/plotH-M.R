@@ -1222,7 +1222,7 @@ plotIasLineplot <- function(object,
       clrp = clrp,
       clrp.adjust = clrp_adjust
     ) +
-    ggplot2::scale_x_continuous(breaks = breaks, labels = labels) +
+    ggplot2::scale_x_continuous(breaks = breaks, labels = labels, expand = c(0, 0)) +
     scale_y_add_on +
     ggplot2::theme_classic() +
     ggplot2::theme(
