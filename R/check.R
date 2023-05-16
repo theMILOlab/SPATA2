@@ -2074,3 +2074,5 @@ check_spatial_data <- function(uns, library_id = NULL) {
   }
 
   return(list(library_id, spatial_data))
+ 
+ }
