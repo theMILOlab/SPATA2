@@ -502,6 +502,7 @@ hlpr_image_to_df <- function(img){
 
 #' @title Join with single value
 #'
+#' @export
 #' @keywords internal
 #' @export
 hlpr_join_with_color_by <- function(object, df, color_by = NULL, variables = NULL, ...){
@@ -538,6 +539,7 @@ hlpr_join_with_color_by <- function(object, df, color_by = NULL, variables = NUL
 
 }
 
+#' @export
 #' @keywords internal
 #' @export
 hlpr_join_with_aes <- hlpr_join_with_color_by
