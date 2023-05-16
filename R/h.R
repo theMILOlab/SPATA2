@@ -632,6 +632,7 @@ hlpr_join_with_color_by <- function(object, df, color_by = NULL, variables = NUL
 
 }
 
+#' @export
 #' @keywords internal
 hlpr_join_with_aes <- hlpr_join_with_color_by
 
