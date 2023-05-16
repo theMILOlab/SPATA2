@@ -33,7 +33,7 @@ bin_by_angle <- function(coords_df,
                          remove = FALSE,
                          drop = TRUE,
                          var_to_bin = "barcodes",
-                         verbose = TRUE){
+                         verbose = verbose){
 
   confuns::is_vec(x = angle_span, mode = "numeric", of.length = 2)
 
