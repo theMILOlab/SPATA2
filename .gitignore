@@ -19,11 +19,9 @@ manuscripts
 notes
 index_keep.html
 atdfgs.RDS
-<<<<<<< HEAD
 graphics
 data-scripts
 jobs
-=======
 source.all.samples.csv
 data-scripts
 jobs
@@ -33,5 +31,5 @@ ref.yml
 vignettes-old
 spatav2-release
 docs-development/
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 spata2-releases
+.DS_Store

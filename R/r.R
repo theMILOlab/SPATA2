@@ -189,8 +189,7 @@ relateToImageAnnotation <- function(object,
         coords_df = out_df,
         area_df = img_ann_border,
         binwidth = ias_input$binwidth,
-        n_bins_circle = ias_input$n_bins_circle,
-        verbose = FALSE
+        n_bins_circle = ias_input$n_bins_circle
       )
 
   } else {

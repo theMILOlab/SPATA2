@@ -1617,7 +1617,51 @@ setMethod(
   }
 )
 
+#' @rdname asHistologyImaging
+#' @export
+setMethod(
+  f = "asHistologyImaging",
+  signature = "AnnDataR6",
+  definition = function(object, 
+                        id, 
+                        library_id, 
+                        spatial_key = "spatial", 
+                        scale_with = "lowres", 
+                        verbose = verbose){
 
+    scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
+
+    coords <- as.data.frame(object$obsm[[spatial_key]])
+    rownames(coords) <- object$obs_names
+    colnames(coords) <- c("imagerow", "imagecol")
+    coordinates <-
+      tibble::rownames_to_column(coords, var = "barcodes") %>%
+      dplyr::mutate(
+        x = imagecol * scale_fct,
+        y = imagerow * scale_fct
+      ) %>%
+      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
+      tibble::as_tibble()
+
+    image <-
+      EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255, 
+        colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
+      EBImage::transpose()
+
+    img_dim <- dim(image)
+
+    new_object <-
+      createHistologyImaging(
+        image = image,
+        id = id,
+        coordinates = coordinates,
+        verbose = verbose,
+      )
+
+    return(new_object)
+
+  }
+)
 
 # asM-asS -----------------------------------------------------------------
 
@@ -1940,11 +1984,18 @@ asSpatialTrajectory <- function(object, ...){
 #'
 #' @description Transforms input object to object of class `spata2` object.
 #'
-#' @param transfer_features,transfer_meta_data Logical or character. Specifies
-#' if meta/feature, e.g clustering, data from the input object is transferred
-#' to the output object. If TRUE, all variables of the feature/meta data.frame
+#' @param object An object of either one of the following classes: \code{Seurat}, \code{SingleCellExperiment}, \code{AnnDataR6}
+#' @param sample_name A character string specifying the name of the sample
+#' @param count_mtr_name A character string specifying the name of the count matrix
+#' @param normalized_mtr_name A character string specifying the name of the normalized matrix (anndata only currently)
+#' @param scaled_mtr_name A character string specifying the name of the scaled matrix
+#' @param transfer_meta_data Logical or character. Specifies
+#' if meta data, e.g clustering, from the input object is transferred
+#' to the output object. If TRUE, all variables of the meta data.frame
 #' are transferred. If character, named variables are transferred. If FALSE,
 #' none are transferred.
+#' @param transfer_dim_red A logical specifying whether to transfer dimensional reduction data (PCA, UMAP, 
+#' tSNE) from the input object to the output object.
 #'
 #' @inherit argument_dummy params
 #' @inherit initiateSpataObject_CountMtr params
@@ -2313,7 +2364,306 @@ setMethod(
   }
 )
 
+#' @importFrom anndata AnnDataR6
+#' @rdname asSPATA2
+#' @export
+setMethod(
+  f = "asSPATA2",
+  signature = "AnnDataR6",
+  definition = function(object,
+                        sample_name,
+                        count_mtr_name = "counts",
+                        normalized_mtr_name = "normalized",
+                        scaled_mtr_name = "scaled",
+                        transfer_meta_data = TRUE,
+                        transfer_dim_red = TRUE,
+                        image_name = NULL,
+                        verbose = TRUE){
 
+  if (!requireNamespace("anndata", quietly = TRUE)) {
+    stop("Package 'anndata' is required but not installed.")
+  }
+
+  # check anndata object
+
+    if(nrow(object) == 0 | ncol(object) == 0){
+      stop("AnnData object is empty.")
+    }
+
+    if(length(unique(object$obs$library_id)) > 1){
+      stop("The AnnData object contains >1 element: ", 
+              paste(unique(object$obs$library_id), collapse=", "), 
+              ". Currently not compatible with SPATA2; please subset the object and load again.") 
+    }
+
+    # create empty spata object
+
+    spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
+
+    confuns::give_feedback(
+      msg = "Transferring data.",
+      verbose = verbose
+    )
+
+    # extract library_id and spatial dataframe 
+
+    library_id <- check_spatial_data(object$uns, library_id = image_name)[[1]]
+    spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]] 
+
+
+    # check and transfer image
+
+    if(is.character(library_id)){ # library_id == image_name
+
+        image_names <- base::names(object$uns[["spatial"]])
+
+        if(base::length(image_names) >= 1){
+
+          confuns::check_one_of(
+            input = library_id,
+            against = image_names,
+            ref.opt.2 = "images in AnnData object",
+            fdb.opt = 2
+          )
+
+          image_obj <-
+            asHistologyImaging(
+              object = object,
+              id = sample_name,
+              library_id = library_id,
+              verbose = verbose
+            )
+
+          spata_object <- setImageObject(spata_object, image_object = image_obj)
+
+          spata_object <- setCoordsDf(spata_object, 
+                                      coords_df = image_obj@coordinates)
+
+          spata_object <- rotateCoordinates(spata_object, angle=90)
+
+        } else {
+
+            confuns::give_feedback(
+              msg = "AnnData object contains no images.",
+              verbose = verbose
+            )
+
+            image_obj <- NULL
+
+        }
+    }
+
+    # transfer barcode metadata
+
+    obs_df <- tibble::rownames_to_column(as.data.frame(object$obs), var = "barcodes") %>%
+          tibble::as_tibble()
+
+    if(base::isFALSE(transfer_meta_data)){
+
+        obs_df <- dplyr::select(obs_df, barcodes)
+
+    }
+
+    spata_object <- setFeatureDf(spata_object, feature_df = obs_df)
+
+
+    # transfer feature (gene) metadata
+
+    var_df <- suppressWarnings(as.data.frame(object$var, row.names=NULL))
+    var_df$feature <- object$var_names 
+    var_df <- dplyr::select(var_df, feature, everything()) %>%  tibble::as_tibble()
+
+    of_sample <- check_sample(object = spata_object, of_sample = "", desired_length = 1)
+    spata_object@gdata[[of_sample]] <- var_df
+
+
+    # transfer matrices
+    mtrs <- load_adata_matrix(adata=object, count_mtr_name=count_mtr_name, 
+      normalized_mtr_name=normalized_mtr_name, scaled_mtr_name=scaled_mtr_name, verbose=verbose)
+
+    spata_object <-
+      setCountMatrix(
+        object = spata_object,
+        count_mtr = mtrs$count_mtr[rowSums(as.matrix(mtrs$count_mtr)) != 0, ] # --------------- why excluding empty genes?
+                                                                              # also code is not efficient because as.matrix() converts sparse into dense matirx 
+                                                                              # plus currently not compatible in case of empty matrix
+        )
+
+    spata_object <-
+          setNormalizedMatrix(
+            object = spata_object,
+            normalized_mtr = mtrs$normalized_mtr
+            )
+
+    spata_object <-
+          setScaledMatrix(
+            object = spata_object,
+            scaled_mtr = mtrs$scaled_mtr
+            )
+
+
+    # transfer dim red data
+
+    if(base::isTRUE(transfer_dim_red)){
+
+      # pca
+      pca_df <- base::tryCatch({
+
+            pca_df <- as.data.frame(object$obsm$X_pca)
+            colnames(pca_df) <- paste0("PC", 1:length(pca_df))
+            rownames(pca_df) <- object$obs_names
+            pca_df <- pca_df %>%
+               tibble::rownames_to_column(var = "barcodes") %>%
+               dplyr::select(barcodes, dplyr::everything())
+            colnames(pca_df) <- stringr::str_remove_all(colnames(pca_df), pattern = "_")
+            pca_df
+
+      },
+      error = function(error){
+
+        warning("Could not find or transfer PCA data. Did you process the AnnData object correctly?")
+        return(data.frame())
+
+      }
+      )
+
+      if(!base::nrow(pca_df) == 0){
+
+        spata_object <- setPcaDf(spata_object, pca_df = pca_df)
+
+      }
+
+      # tsne
+      tsne_df <- base::tryCatch({
+
+        base::data.frame(
+
+          barcodes = adata$obs_names,
+          umap1 = adata$obsm$X_tsne[,1],
+          umap2 = adata$obsm$X_tsne[,2],
+          stringsAsFactors = FALSE
+        ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer TSNE data. Did you process the AnnData object correctly?")
+        return(data.frame())
+
+      }
+      )
+
+      if(!base::nrow(tsne_df) == 0){
+
+        spata_object <- setTsneDf(object = spata_object, tsne_df = tsne_df)
+
+      }
+
+      # umap
+      umap_df <- base::tryCatch({
+
+        data.frame(
+
+        barcodes = adata$obs_names,
+        umap1 = adata$obsm$X_umap[,1],
+        umap2 = adata$obsm$X_umap[,2],
+        stringsAsFactors = FALSE
+
+         ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer UMAP data. Did you process the AnnData object correctly?")
+
+        return(data.frame())
+
+      }
+      )
+      if(!base::nrow(umap_df) == 0){
+
+        spata_object <- setUmapDf(object = spata_object, umap_df = umap_df)
+
+      }
+
+    } else {
+
+      confuns::give_feedback(
+
+        msg = "`transfer_dim_red = FALSE`: Skip transferring dimensional reduction data.",
+        verbose = verbose
+
+      )
+    }
+
+
+    # transfer adata.uns
+
+    if (!is.null(object$uns)){
+
+        if (is.list(object$uns)){
+
+            spata_object@compatibility$anndata$uns <- object$uns
+
+        } else if (!is.list(object$uns)){
+
+            warning("Could not transfer data from adata.uns: Unknown format")
+
+        }
+
+    }
+
+    # transfer adata.obsp
+
+    if (!is.null(object$obsp)){
+
+        if (is.list(object$obsp)){
+
+            spata_object@compatibility$anndata$obsp <- object$obsp
+
+        } else if (!is.list(object@obsp)){
+
+            warning("Could not transfer data from adata.obsp: Unknown format")
+
+        }
+
+    }
+
+    # transfer adata.varm
+
+    if (!is.null(object$varm)){
+
+        if (is.list(object$varm)){
+
+            spata_object@compatibility$anndata$varm <- object$varm
+
+        } else if (!is.list(object$varm)){
+
+            warning("Could not transfer data from adata.varm: Unknown format")
+
+        }
+
+    }
+
+    # conclude
+
+    spata_object <- setBarcodes(spata_object, barcodes = object$obs_names)
+
+    spata_object <- setInitiationInfo(spata_object)
+
+    spata_object <- 
+      setActiveMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
+
+    spata_object <- 
+      setActiveExpressionMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
+
+    confuns::give_feedback(
+      msg = "Done.",
+      verbose = verbose
+    )
+
+    return(spata_object)
+
+    }
+)
 
 # asV ---------------------------------------------------------------------
 
