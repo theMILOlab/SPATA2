@@ -835,7 +835,7 @@ plotIasLineplot <- function(object,
                             border_linecolor = "black",
                             border_linesize = 1,
                             border_linetype = "dashed",
-                            x_nth = 3,
+                            x_nth = 7L,
                             xi = NULL,
                             yi = NULL,
                             model_aid = NULL,
@@ -2901,51 +2901,46 @@ plotImageGgplot <- function(object,
 
     }
 
-    frame_add_on <-
+    axes_add_on <-
       ggpLayerAxesSI(
         object = object,
         unit = unit,
-        frame_by = frame_by,
         ...
       )
 
   } else {
 
-    if(!base::is.null(xrange) | !base::is.null(yrange)){
+    axes_add_on <- NULL
 
-      frame_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
+  }
 
+  if(!base::is.null(xrange) | !base::is.null(yrange)){
+
+    frame_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
+
+  } else {
+
+    if(frame_by == "image"){
+
+      frame_add_on <- ggpLayerFrameByImage(object)
 
     } else {
 
-      if(frame_by == "image"){
-
-        frame_add_on <- ggpLayerFrameByImage(object)
-
-      } else {
-
-        frame_add_on <- ggpLayerFrameByCoords(object)
-
-      }
+      frame_add_on <- ggpLayerFrameByCoords(object)
 
     }
 
   }
 
 
-
-  frame_add_on <-
-    list(
-      frame_add_on,
-      ggpLayerThemeCoords(unit = unit)
-    )
-
   ggpInit(object) +
     ggpLayerImage(object) +
+    ggpLayerThemeCoords(unit = unit) +
     ggplot2::labs(
       x = glue::glue("x-coordinates [{unit}]"),
       y = glue::glue("y-coordinates [{unit}]")
     ) +
+    axes_add_on +
     frame_add_on
 
 

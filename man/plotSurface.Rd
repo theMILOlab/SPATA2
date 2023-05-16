@@ -138,8 +138,8 @@ Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
-\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
-are removed before plotting.}
+\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
+are removed before analysis or plotting.}
 
 \item{order_by}{Character value or \code{NULL}. If character, the specified
 variable is used to order the data points.}

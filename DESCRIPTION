@@ -107,6 +107,7 @@ Collate:
     'u.R'
     'unused.R'
     'v.R'
+    'w.R'
 Depends: 
     R (>= 2.10)
 URL: https://themilolab.com/

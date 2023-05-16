@@ -42,8 +42,8 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' Use \code{getGroupNames()} to obtain all valid input options.
 #'
-#' @param bcsp_rm Character vector or NULL. If character, specifies barcode-spots that
-#' are removed before plotting.
+#' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
+#' are removed before analysis or plotting.
 #'
 #' @param clrp Character value. Specifies the color palette to be used to represent
 #' groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

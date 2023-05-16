@@ -29,7 +29,6 @@ plotTrajectoryLineplot(
   x_nth = 7L,
   xi = (getTrajectoryLength(object, id)/2),
   yi = 0.5,
-  expand_x = c(0, 0),
   summarize_with = "mean",
   ncol = NULL,
   nrow = NULL,

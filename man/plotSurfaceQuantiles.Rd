@@ -57,8 +57,8 @@ Given to argument \code{span} of \code{stats::loess()}.}
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
-\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
-are removed before plotting.}
+\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
+are removed before analysis or plotting.}
 
 \item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
 \code{scattermore::geom_scattermore()} which allows quick plotting of several

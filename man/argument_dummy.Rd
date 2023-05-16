@@ -54,8 +54,8 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
-\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
-are removed before plotting.}
+\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
+are removed before analysis or plotting.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer

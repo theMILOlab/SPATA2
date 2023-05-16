@@ -8,11 +8,11 @@ ggpLayerAxesSI(
   object,
   unit = getSpatialMethod(object)@unit,
   which = c("x", "y"),
-  frame_by = "input",
-  breaks_x = NULL,
-  breaks_y = NULL,
-  add_labs = TRUE,
-  round = 2
+  breaks = NULL,
+  expand = NULL,
+  add_labs = FALSE,
+  round = 2,
+  ...
 )
 }
 \arguments{
@@ -25,21 +25,35 @@ provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.}
 \item{which}{One or two of \emph{'x'} and \emph{'y'}. Specifies
 for which axes the transformation is performed. Defaults to both.}
 
-\item{frame_by}{Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
-If specified, sets the plot frame accordingly. Else a list of two vectors of
-length two in SPATA2 distance values can be provided to set the frame range
-precisely. Slots of the list must be named \emph{x} and \emph{y}.}
+\item{breaks}{Specifies where the breaks are set. Labels are plotted in the unit
+specified in \code{unit}. Valid input:
 
-\item{breaks_x, breaks_y}{Vector of distance inputs. Can be pixel or SI
-units of lengths. If SI unit of lengths, input is transformed to pixels as
-the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
-automatically to five breaks equally distributed along the axis.}
+\itemize{
+\item{\code{NULL}:}{ No specification. Five breaks are set equally distributed. Does not work with STS/IAS related plots as
+the range is taken from the whole image.}
+\item{\code{vector}:}{ Vector of distance measures. Breaks are set for axes denoted in \code{which}. (Defaults to both, x and y.)}
+\item{\code{list}:}{ List with slots \emph{x} and \emph{y}. Vector of distance measures to set each axis specifically.}
+}}
 
-\item{add_labs}{Logical. If \code{TRUE}, adds informative x- and y-labs to
-the plot.}
+\item{expand}{Specifies how the axis are expanded. Using \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
+Valid input:
+
+\itemize{
+\item{\code{NULL}:}{ No specification. Default is used.}
+\item{\code{vector}:}{ Numeric vector of length two. Input is set for axes denoted in \code{which}. (Defaults to both, x and y.)}
+\item{\code{list}:}{ List with slots \emph{x} and \emph{y}. Numeric vector of length two, used for each axis specifically.}
+}}
+
+\item{add_labs}{Logical. If \code{TRUE}, adds x- and y-labs to the plot.}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{breaks_x, breaks_y}{Deprecated in favor of \code{breaks}.}
+
+\item{frame_by}{Deprecated. Use \verb{ggplayerFrame*()} - functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -49,7 +63,7 @@ family.
 }
 \description{
 Performs necessary transformations to display axes of
-surface plots with SI units of length.
+surface plots and STS/IAS line- or ridgeplots with SI units of length.
 }
 \details{
 Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
@@ -84,4 +98,49 @@ is converted into vectors of class \code{units}. Therefore, input can be directl
 provided this way: \code{arg_input <- units::set_unit(x = c(2,4), value = 'mm')}
 Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
 to specify the input in pixel you have to use input option 1. In pixel.
+}
+\examples{
+
+ library(tidyverse)
+
+ object <- downloadPubExample("313_T")
+
+ object <- setDefault(object, pt_clrsp = "BuGn", display_image = FALSE)
+
+ # ------ for surface plots
+
+ # no axes specification
+ plotSurface(object, color_by = "FN1") +
+  ggpLayerThemeCoords()
+
+ # in millimeters
+ plotSurface(object, color_by = "FN1") +
+  ggpLayerThemeCoords() +
+  ggpLayerAxesSI(object, unit = "mm")
+
+
+ # in millimeters set specifically
+ my_breaks <- str_c(1:7, "mm")
+
+ print(my_breaks)
+
+ plotSurface(object, color_by = "FN1") +
+  ggpLayerThemeCoords() +
+  ggpLayerAxesSI(object, unit = "mm", breaks = my_breaks, add_labs = TRUE)
+
+ plotSurface(object, color_by = "FN1") +
+  ggpLayerThemeCoords() +
+  ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
+
+
+ # ----- for gradient plots
+
+ # no axis specification
+ plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
+
+ # with axis specification, make sure to set which = "x" as y is used for expression!
+ plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1") +
+  ggpLayerAxesSI(object, unit = "mm", breaks = str_c(c(0.5, 1, 1.5, 2), "mm"), which = "x")
+
+
 }

@@ -35,7 +35,7 @@ plotIasLineplot(
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
-  x_nth = 3,
+  x_nth = 7L,
   xi = NULL,
   yi = NULL,
   model_aid = NULL,

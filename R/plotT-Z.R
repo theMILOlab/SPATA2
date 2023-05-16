@@ -656,7 +656,6 @@ plotTrajectoryLineplot <- function(object,
                                    x_nth = 7L,
                                    xi = (getTrajectoryLength(object, id)/2),
                                    yi = 0.5,
-                                   expand_x = c(0,0),
                                    summarize_with = "mean",
                                    ncol = NULL,
                                    nrow = NULL,
@@ -805,11 +804,7 @@ plotTrajectoryLineplot <- function(object,
       mapping = ggplot2::aes(color = variables)
       ) +
     color_add_on +
-    ggplot2::scale_x_continuous(
-      breaks = breaks,
-      labels = labels,
-      expand = expand_x
-    ) +
+    ggplot2::scale_x_continuous(breaks = breaks, labels = labels, expand = c(0, 0)) +
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
     ggplot2::coord_cartesian(ylim = c(0,1)) +
     theme_lineplot_gradient() +

@@ -1326,6 +1326,7 @@ ggpLayerSampleMask <- function(...){
 # h -----------------------------------------------------------------------
 
 #' @keywords internal
+#' @export
 hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 
   deprecated(fn = TRUE)
@@ -1354,6 +1355,7 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 }
 
 #' @keywords internal
+#' @export
 hlpr_add_models <- function(df, custom_fit = NULL){
 
   dplyr::transmute(.data = df,
@@ -1384,6 +1386,7 @@ hlpr_add_models <- function(df, custom_fit = NULL){
 
 
 #' @keywords internal
+#' @export
 hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
 
   if(!base::is.null(pb)){
@@ -1419,6 +1422,7 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, 
 }
 
 #' @keywords internal
+#' @export
 hlpr_add_residuals2 <- function(df,
                                 pb = NULL,
                                 column_order = "bins_order",
@@ -1456,6 +1460,7 @@ hlpr_add_residuals2 <- function(df,
 }
 
 #' @keywords internal
+#' @export
 hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
 
   if(!base::is.null(pb)){
@@ -1481,7 +1486,8 @@ hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = N
 
 }
 
-
+#' @keywords internal
+#' @export
 hlpr_add_models <- function(df, pb = NULL, pattern_fns = SPATA2::pattern_formulas, column = "trajectory_order"){
 
   if(!base::is.null(pb)){ pb$tick() }
@@ -1499,6 +1505,7 @@ hlpr_add_models <- function(df, pb = NULL, pattern_fns = SPATA2::pattern_formula
 
 
 #' @keywords internal
+#' @export
 hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
 
   if(!base::is.null(pb)){
@@ -1515,8 +1522,8 @@ hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
 
 }
 
-
 #' @keywords internal
+#' @export
 hlpr_summarize_residuals <- function(df,
                                      pb = NULL,
                                      column = "trajectory_order",
@@ -1561,6 +1568,7 @@ hlpr_summarize_residuals <- function(df,
 }
 
 #' @keywords internal
+#' @export
 hlpr_name_models <- function(names){
 
   stringr::str_replace_all(
@@ -1592,6 +1600,7 @@ hlpr_name_models <- function(names){
 }
 
 #' @keywords internal
+#' @export
 hlpr_filter_trend <- function(atdf, limit, poi){
 
   check_atdf(atdf)

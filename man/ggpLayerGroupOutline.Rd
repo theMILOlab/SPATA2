@@ -12,6 +12,7 @@ ggpLayerGroupOutline(
   line_color = "black",
   line_size = 1,
   alpha = 0,
+  bcsp_rm = character(0),
   outlier_rm = TRUE,
   eps = (getCCD(object, "px") * 1.25),
   minPts = 3,
@@ -33,6 +34,9 @@ are encircled.}
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
+are removed before analysis or plotting.}
 
 \item{outlier_rm, minPts}{Logical. If \code{TRUE}, spatial outlier of the group to outline
 are removed from the outline via \verb{dbscan::dbscan(..., minPts = minPts}). Ignored

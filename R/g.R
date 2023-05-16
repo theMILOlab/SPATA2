@@ -165,7 +165,7 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' @title Display axes with SI units of length
 #'
 #' @description Performs necessary transformations to display axes of
-#' surface plots with SI units of length.
+#' surface plots and STS/IAS line- or ridgeplots with SI units of length.
 #'
 #' @inherit argument_dummy params
 #' @inherit transform_dist_si_to_pixels params
@@ -175,29 +175,87 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.
 #' @param which One or two of \emph{'x'} and \emph{'y'}. Specifies
 #' for which axes the transformation is performed. Defaults to both.
-#' @param frame_by Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
-#' If specified, sets the plot frame accordingly. Else a list of two vectors of
-#' length two in SPATA2 distance values can be provided to set the frame range
-#' precisely. Slots of the list must be named *x* and *y*.
-#' @param breaks_x,breaks_y Vector of distance inputs. Can be pixel or SI
-#' units of lengths. If SI unit of lengths, input is transformed to pixels as
-#' the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
-#' automatically to five breaks equally distributed along the axis.
-#' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
-#' the plot.
+#' @param breaks Specifies where the breaks are set. Labels are plotted in the unit
+#' specified in `unit`. Valid input:
+#'
+#' \itemize{
+#'  \item{`NULL`:}{ No specification. Five breaks are set equally distributed. Does not work with STS/IAS related plots as
+#'  the range is taken from the whole image.}
+#'  \item{`vector`:}{ Vector of distance measures. Breaks are set for axes denoted in `which`. (Defaults to both, x and y.)}
+#'  \item{`list`:}{ List with slots *x* and *y*. Vector of distance measures to set each axis specifically.}
+#' }
+#'
+#' @param expand Specifies how the axis are expanded. Using `expand` of `ggplot2::scale_x/y_continuous()`.
+#'  Valid input:
+#'
+#' \itemize{
+#'  \item{`NULL`:}{ No specification. Default is used.}
+#'  \item{`vector`:}{ Numeric vector of length two. Input is set for axes denoted in `which`. (Defaults to both, x and y.)}
+#'  \item{`list`:}{ List with slots *x* and *y*. Numeric vector of length two, used for each axis specifically.}
+#' }
+#'
+#' @param breaks_x,breaks_y Deprecated in favor of `breaks`.
+#' @param frame_by Deprecated. Use `ggplayerFrame*()` - functions.
+#' @param add_labs Logical. If \code{TRUE}, adds x- and y-labs to the plot.
 #'
 #' @inherit is_dist details
 #'
 #' @export
 #'
+#' @examples
+#'
+#'  library(tidyverse)
+#'
+#'  object <- downloadPubExample("313_T")
+#'
+#'  object <- setDefault(object, pt_clrsp = "BuGn", display_image = FALSE)
+#'
+#'  # ------ for surface plots
+#'
+#'  # no axes specification
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords()
+#'
+#'  # in millimeters
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords() +
+#'   ggpLayerAxesSI(object, unit = "mm")
+#'
+#'
+#'  # in millimeters set specifically
+#'  my_breaks <- str_c(1:7, "mm")
+#'
+#'  print(my_breaks)
+#'
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords() +
+#'   ggpLayerAxesSI(object, unit = "mm", breaks = my_breaks, add_labs = TRUE)
+#'
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords() +
+#'   ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
+#'
+#'
+#'  # ----- for gradient plots
+#'
+#'  # no axis specification
+#'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
+#'
+#'  # with axis specification, make sure to set which = "x" as y is used for expression!
+#'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1") +
+#'   ggpLayerAxesSI(object, unit = "mm", breaks = str_c(c(0.5, 1, 1.5, 2), "mm"), which = "x")
+#'
+#'
 ggpLayerAxesSI <- function(object,
                            unit = getSpatialMethod(object)@unit,
                            which = c("x", "y"),
-                           frame_by = "input",
-                           breaks_x = NULL,
-                           breaks_y = NULL,
-                           add_labs = TRUE,
-                           round = 2){
+                           breaks = NULL,
+                           expand = NULL,
+                           add_labs = FALSE,
+                           round = 2,
+                           ...){
+
+  deprecated(...)
 
   confuns::check_one_of(
     input = unit,
@@ -205,45 +263,75 @@ ggpLayerAxesSI <- function(object,
     suggest = TRUE
   )
 
-  # output limits
-  if(confuns::is_list(frame_by)){
+  # allow for a while
+  breaks_x <- list(...)[["breaks_x"]]
+  breaks_y <- list(...)[["breaks_y"]]
 
-    xlim <- frame_by[["x"]][c(1, 2)] %>% as_pixel(object = object)
+  if(!base::is.null(breaks_x) | !base::is.null(breaks_y)){
 
-    ylim <- frame_by[["y"]][c(1, 2)] %>% as_pixel(object = object)
+    breaks <- list()
 
-  } else if(base::is.character(frame_by)){
+    breaks[["x"]] <- breaks_x
+    breaks[["y"]] <- breaks_y
 
-    confuns::check_one_of(
-      input = frame_by,
-      against = c("coords", "image", "input", "none")
-    )
+    warning("Arguments `breaks_x` and `breaks_y` are deprecated in favor of `breaks`.")
 
-    if(frame_by == "coords"){
+  }
 
-      xlim <- getCoordsRange(object)$x
-      ylim <- getCoordsRange(object)$y
+  # manage breaks input
+  if(!base::is.null(breaks)){
 
-    } else if(frame_by == "image"){
+    if(confuns::is_list(breaks)){
 
-      xlim <- getImageRange(object)$x
-      ylim <- getImageRange(object)$y
+      breaks_x <- as_pixel(breaks[["x"]], object = object)
+      breaks_y <- as_pixel(breaks[["y"]], object = object)
 
-    } else  if(frame_by == "input"){
+    } else if(base::is.vector(breaks)){
 
-      xlim <- base::range(as_pixel(input = breaks_x, object = object))
-      ylim <- base::range(as_pixel(input = breaks_y, object = object))
+      breaks <- as_pixel(breaks, object = object)
 
-    } else if(frame_by == "none"){
+      breaks_x <- breaks
+      breaks_y <- breaks
 
-      xlim <- NULL
-      ylim <- NULL
+    } else {
+
+      stop("Invalid input for `breaks`. Must be NULL, list or vector.")
 
     }
 
   } else {
 
-    stop("Invalid input for `frame_by`. Must be character or list.")
+    # dont set specifically
+    breaks_x <- NULL
+    breaks_y <- NULL
+
+  }
+
+  # manage expand input
+  if(!base::is.null(expand)){
+
+    if(confuns::is_list(expand)){
+
+      expand_x <- waive_if_null(expand[["x"]])
+      expand_y <- waive_if_null(expand[["y"]])
+
+    } else if(base::is.vector(expand)){
+
+      confuns::is_vec(expand, mode = "numeric", of.length = 2)
+
+      expand_x <- expand
+      expand_y <- expand
+
+    } else {
+
+      stop("Invalid input for `expand`. Must be NULL, list or vector.")
+
+    }
+
+  } else {
+
+    expand_x <- ggplot2::waiver()
+    expand_y <- ggplot2::waiver()
 
   }
 
@@ -281,10 +369,16 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
+    pxl_df <- getPixelDf(object)
+
+    if(base::is.numeric(xlim)){
+
+      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = x, left = xlim[1], right = xlim[2]))
+
+    }
+
     breaks_x <-
-      getPixelDf(object) %>%
-      dplyr::filter(dplyr::between(x = x, left = xlim[1], right = xlim[2])) %>%
-      dplyr::pull(x) %>%
+      dplyr::pull(pxl_df, x) %>%
       stats::quantile()
 
   }
@@ -322,10 +416,16 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
+    pxl_df <- getPixelDf(object)
+
+    if(base::is.numeric(ylim)){
+
+      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = y, left = ylim[1], right = ylim[2]))
+
+    }
+
     breaks_y <-
-      getPixelDf(object) %>%
-      dplyr::filter(dplyr::between(x = y, left = ylim[1], right = ylim[2])) %>%
-      dplyr::pull(y) %>%
+      dplyr::pull(pxl_df, y) %>%
       stats::quantile()
 
   }
@@ -342,7 +442,6 @@ ggpLayerAxesSI <- function(object,
           as_numeric = TRUE,
           round = round
         ),
-        limits = xlim,
         breaks = breaks_x
       ),
       ggplot2::scale_y_continuous(
@@ -353,7 +452,6 @@ ggpLayerAxesSI <- function(object,
           as_numeric = TRUE,
           round = round
         ),
-        limits = ylim,
         breaks = breaks_y
       )
     ) %>%
@@ -390,11 +488,11 @@ ggpLayerAxesSI <- function(object,
       )
     )
 
+
   c(
     axes[which],
     labs_add_on[which],
-    theme_add_on[which],
-    ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
+    theme_add_on[which]
   )
 
 }
@@ -492,6 +590,7 @@ ggpLayerGroupOutline <- function(object,
                                  line_color = "black",
                                  line_size = 1,
                                  alpha = 0,
+                                 bcsp_rm = character(0),
                                  outlier_rm = TRUE,
                                  eps = (getCCD(object, "px")*1.25),
                                  minPts = 3,
@@ -530,7 +629,9 @@ ggpLayerGroupOutline <- function(object,
 
   }
 
-  layer_df <- magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y"))
+  layer_df <-
+    magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y")) %>%
+    dplyr::filter(!barcodes %in% {{bcsp_rm}})
 
   layer_df <-
     joinWithVariables(

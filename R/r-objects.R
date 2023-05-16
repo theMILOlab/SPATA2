@@ -554,6 +554,7 @@ depr_info <-
     args_spec = list(
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
+      "ggpLayerAxesSI" = list("frame_by" = NA_character_),
       "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
       "include_tissue_outline" = list("outline_var" = NA_character_),
       "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
