@@ -1746,8 +1746,8 @@ runSeuratClustering <- function(object,
 
   confuns::check_none_of(
     input = name,
-    against = getVariableNames(object),
-    ref.against = "known variables"
+    against = getFeatureNames(object),
+    ref.against = "feature names",
   )
 
   cluster_df <-
