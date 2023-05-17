@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject_Empty}
 \alias{initiateSpataObject_Empty}
-\title{Initiate an empty spata-object}
+\title{Initiate an empty \code{spata2} object}
 \usage{
 initiateSpataObject_Empty(sample_name, spatial_method = "Visium")
 }
@@ -14,5 +14,5 @@ analyzing with the spata-object. The future input for SPATA's \code{of_sample}-a
 An empty object of class \code{SPATA2}.
 }
 \description{
-Initiate an empty spata-object
+Initiate an empty \code{spata2} object
 }

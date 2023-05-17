@@ -17,11 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-<<<<<<< HEAD
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
-=======
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -30,18 +26,6 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-<<<<<<< HEAD
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-installation.html">Installation</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-=======
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
@@ -49,34 +33,15 @@
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     Articles
      
     <span class="caret"></span>
   </a>
-<<<<<<< HEAD
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
-=======
   <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
-    </li>
-    <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
-    </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
-    <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
-    </li>
-=======
       <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
@@ -96,23 +61,10 @@
       <a href="../articles/spata-v2-spatial-segmentation.html">Spatial Segmentation</a>
     </li>
     <li class="dropdown-header">Analysis of Gene Expression</li>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     <li>
       <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-=======
       <a href="../articles/spata-v2-clustering.html">Clustering</a>
     </li>
     <li>
@@ -133,22 +85,12 @@
     </li>
     <li>
       <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
-=======
       <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
     </li>
   </ul></li>
@@ -172,7 +114,6 @@
     </li>
     <li>
       <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -210,35 +151,6 @@
     <h2>Arguments</h2>
     <dl><dt>dea_df</dt>
 <dd><p>A data.frame containing information about differentially expressed genes. Must contain the variables:</p>
-<<<<<<< HEAD
-<p></p><dl><dt><em>gene</em></dt>
-<dd><p>Character. The differentially expressed genes.</p></dd>
-
-  <dt><em>cluster</em></dt>
-<dd><p>Character. The clusters (or experimental groups) across which the analysis was performed.</p></dd>
-
-  <dt><em>avg_logFC</em></dt>
-<dd><p>Numeric. The average log-fold change to which the belonging gene was differentially expressed..</p></dd>
-
-  <dt><em>p_val</em></dt>
-<dd><p>Numeric. The p-values.</p></dd>
-
-  <dt><em>p_val_adj</em></dt>
-<dd><p>Numeric. The adjusted p-values.</p></dd>
-
- 
-</dl><p>Hint: Use the resulting data.frame of <code><a href="https://rdrr.io/pkg/SPATA/man/findDE.html" class="external-link">SPATA::findDE()</a></code> or it's descendants as input.</p></dd>
-<dt>max_adj_pval</dt>
-<dd><p>Numeric value. Sets the threshold for adjusted p-values. All genes
-with adjusted p-values above that threshold are ignored.</p></dd>
-<dt>min_lfc</dt>
-<dd><p>Numeric value. Sets the threshold for average log fold change. All genes
-with an average log fold change below that threshold are ignored.</p></dd>
-<dt>n_highest_lfc</dt>
-<dd><p>Numeric value. Affects the total number of genes that are kept. See details.</p></dd>
-<dt>n_lowest_pval</dt>
-<dd><p>Numeric value. Affects the total number of genes that are kept. See details.</p></dd>
-=======
 <dl><dt><em>gene</em></dt>
 <dd><p>Character. The differentially expressed genes.</p></dd>
 
@@ -276,7 +188,6 @@ with an average log fold change below that threshold are ignored.</p></dd>
 <dd><p>Numeric value. Affects the total number of genes that are kept. See details.</p></dd>
 
 
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 <dt>across_subset</dt>
 <dd><p>Character vector or NULL. Specifies the particular groups
 of interest the grouping variable specified in argument <code>across</code> contains.</p>
@@ -284,27 +195,12 @@ of interest the grouping variable specified in argument <code>across</code> cont
 with a <em>'-'</em>. (Saves writing if there are more groups you are interested in
 than groups you are not interested in.)</p>
 <p>Use <code><a href="getGroupNames.html">getGroupNames()</a></code> to obtain all valid input options.</p></dd>
-<<<<<<< HEAD
-=======
 
 
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 <dt>relevel</dt>
 <dd><p>Logical value. If set to TRUE the input order of <code>across_subset</code>
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.</p></dd>
-<<<<<<< HEAD
-<dt>return</dt>
-<dd><p>Character value. Denotes the output type. One of <em>'data.frame', 'vector'</em> or <em>'list</em></p></dd>
-</dl></div>
-    <div id="value">
-    <h2>Value</h2>
-    <p>Depends on input of argument <code>return</code>:</p><ul><li><p><code>return</code> = <em>'data.frame'</em>: The filtered data.frame of <code>dea_df</code> with all it's variables.</p></li>
-<li><p><code>return</code> = <em>'vector'</em>: A named vector of all genes that remain. Named by the experimental
-   group in which they were differently expressed.</p></li>
-<li><p><code>return</code> = <em>'list</em>: A list named according to the experimental groups. Every slot of that list is
-   a character vector containing the differently expressed genes of the respective experimental group.</p></li>
-=======
 
 
 <dt>return</dt>
@@ -323,7 +219,6 @@ are not included are dropped which affects the colors with which they are displa
 group in which they were differently expressed.</p></li>
 <li><p><code>return</code> = <em>'list</em>: A list named according to the experimental groups. Every slot of that list is
 a character vector containing the differently expressed genes of the respective experimental group.</p></li>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 </ul></div>
     <div id="details">
     <h2>Details</h2>
@@ -346,19 +241,11 @@ group.</p>
 
 
       <footer><div class="copyright">
-<<<<<<< HEAD
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
-</div>
-
-<div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
-=======
   <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">
   <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 </div>
 
       </footer></div>

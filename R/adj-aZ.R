@@ -725,82 +725,6 @@ append_polygon_df <- function(lst,
 
 }
 
-#' @title Arrange observations as polygon
-#'
-#' @description Arranges spatial observations by angle to the center
-#' in order to deal with them as a polygon. Works under the assumptions
-#' that observations are vertices of a polygon.
-#'
-#' @param input_df Data.frame with at least two numeric variables named *x*
-#' and *y*.
-#'
-#'
-#' @examples
-#'
-#'  library(tidyverse)
-#'
-#'  object <- downloadPubExample("313_T")
-#'
-#'  pt_size <- getDefault(object, "pt_size")
-#'
-#'  outline_df <- getTissueOutlineDf(object, remove = FALSE)
-#'
-#'  print(outline_df)
-#'
-#'  plotSurface(outline_df, color_by = "outline")
-#'
-#'  outline_only <- filter(outline_df, outline)
-#'
-#'  print(outline_only)
-#'
-#'  plotSurface(object) +
-#'   geom_point_fixed(data = outline_only, mapping = aes(x = x, y = y), color = "red", size = pt_size)
-#'
-#'  # fails due to inadequate sorting of observations
-#'  plotSurface(object) +
-#'   geom_polygon(data = outline_only, mapping = aes(x = x, y = y), color = "red", alpha = 0.4)
-#'
-#'  # calculate (and arrange by) angle to center
-#'  outline_only_arr <- arrange_as_polygon(input_df = outline_only)
-#'
-#'  plotSurface(object) +
-#'   geom_point_fixed(
-#'    data = outline_only_arr,
-#'    mapping = aes(x = x, y = y, color = atc),
-#'    size = pt_size
-#'    )
-#'
-#'  # works
-#'  plotSurface(object) +
-#'   geom_polygon(data = outline_only_arr, mapping = aes(x = x, y = y), color = "red", alpha = 0.4)
-#'
-#' @export
-
-arrange_as_polygon <- function(input_df){
-
-  center <- c(x = base::mean(input_df$x), y = base::mean(input_df$y))
-
-  cx <- center["x"]
-  cy <- center["y"]
-
-  input_df$atc <- 0
-
-  for(i in 1:base::nrow(input_df)){
-
-    input_df[i, "atc"] <-
-      compute_angle_between_two_points(
-        p1 = c(x = input_df[["x"]][i], y = input_df[["y"]][i]),
-        p2 = center
-      )
-
-  }
-
-  df_out <- dplyr::arrange(input_df, atc)
-
-  return(df_out)
-
-}
-
 #' @keywords internal
 arrange_by_outline_variable <- function(...){
 
@@ -1622,11 +1546,11 @@ setMethod(
 setMethod(
   f = "asHistologyImaging",
   signature = "AnnDataR6",
-  definition = function(object, 
-                        id, 
-                        library_id, 
-                        spatial_key = "spatial", 
-                        scale_with = "lowres", 
+  definition = function(object,
+                        id,
+                        library_id,
+                        spatial_key = "spatial",
+                        scale_with = "lowres",
                         verbose = verbose){
 
     scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
@@ -1644,7 +1568,7 @@ setMethod(
       tibble::as_tibble()
 
     image <-
-      EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255, 
+      EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
         colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
       EBImage::transpose()
 
@@ -1994,7 +1918,7 @@ asSpatialTrajectory <- function(object, ...){
 #' to the output object. If TRUE, all variables of the meta data.frame
 #' are transferred. If character, named variables are transferred. If FALSE,
 #' none are transferred.
-#' @param transfer_dim_red A logical specifying whether to transfer dimensional reduction data (PCA, UMAP, 
+#' @param transfer_dim_red A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
 #' tSNE) from the input object to the output object.
 #'
 #' @inherit argument_dummy params
@@ -2391,9 +2315,9 @@ setMethod(
     }
 
     if(length(unique(object$obs$library_id)) > 1){
-      stop("The AnnData object contains >1 element: ", 
-              paste(unique(object$obs$library_id), collapse=", "), 
-              ". Currently not compatible with SPATA2; please subset the object and load again.") 
+      stop("The AnnData object contains >1 element: ",
+              paste(unique(object$obs$library_id), collapse=", "),
+              ". Currently not compatible with SPATA2; please subset the object and load again.")
     }
 
     # create empty spata object
@@ -2405,10 +2329,10 @@ setMethod(
       verbose = verbose
     )
 
-    # extract library_id and spatial dataframe 
+    # extract library_id and spatial dataframe
 
     library_id <- check_spatial_data(object$uns, library_id = image_name)[[1]]
-    spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]] 
+    spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]]
 
 
     # check and transfer image
@@ -2436,7 +2360,7 @@ setMethod(
 
           spata_object <- setImageObject(spata_object, image_object = image_obj)
 
-          spata_object <- setCoordsDf(spata_object, 
+          spata_object <- setCoordsDf(spata_object,
                                       coords_df = image_obj@coordinates)
 
           spata_object <- rotateCoordinates(spata_object, angle=90)
@@ -2470,7 +2394,7 @@ setMethod(
     # transfer feature (gene) metadata
 
     var_df <- suppressWarnings(as.data.frame(object$var, row.names=NULL))
-    var_df$feature <- object$var_names 
+    var_df$feature <- object$var_names
     var_df <- dplyr::select(var_df, feature, everything()) %>%  tibble::as_tibble()
 
     of_sample <- check_sample(object = spata_object, of_sample = "", desired_length = 1)
@@ -2478,14 +2402,14 @@ setMethod(
 
 
     # transfer matrices
-    mtrs <- load_adata_matrix(adata=object, count_mtr_name=count_mtr_name, 
+    mtrs <- load_adata_matrix(adata=object, count_mtr_name=count_mtr_name,
       normalized_mtr_name=normalized_mtr_name, scaled_mtr_name=scaled_mtr_name, verbose=verbose)
 
     spata_object <-
       setCountMatrix(
         object = spata_object,
         count_mtr = mtrs$count_mtr[rowSums(as.matrix(mtrs$count_mtr)) != 0, ] # --------------- why excluding empty genes?
-                                                                              # also code is not efficient because as.matrix() converts sparse into dense matirx 
+                                                                              # also code is not efficient because as.matrix() converts sparse into dense matirx
                                                                               # plus currently not compatible in case of empty matrix
         )
 
@@ -2649,10 +2573,10 @@ setMethod(
 
     spata_object <- setInitiationInfo(spata_object)
 
-    spata_object <- 
+    spata_object <-
       setActiveMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
 
-    spata_object <- 
+    spata_object <-
       setActiveExpressionMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
 
     confuns::give_feedback(

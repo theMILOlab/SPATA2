@@ -4,18 +4,18 @@
 \alias{getTissueOutlineDf}
 \title{Obtain outer barcode spots}
 \usage{
-getTissueOutlineDf(object, outline_nn = c(2, 3), force = FALSE, remove = TRUE)
+getTissueOutlineDf(object, force = FALSE, remove = TRUE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
-
-\item{outline_nn}{Numeric vector. Number of neighbors a barcode spot
-might have to be considered an outline spot.}
 
 \item{force}{Logical. If \code{TRUE}, forces computation.}
 
 \item{remove}{Logical. If \code{TRUE}, none-outline spots are removed from
 the output.}
+
+\item{outline_nn}{Numeric vector. Number of neighbors a barcode spot
+might have to be considered an outline spot.}
 }
 \value{
 Output of \code{getCoordsDf()} including a logical variable

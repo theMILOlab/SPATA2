@@ -18,7 +18,7 @@ of the tissue and returns a subset of the coordinates data.frame."><!-- mathjax 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -137,18 +137,13 @@ of the tissue and returns a subset of the coordinates data.frame.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getTissueOutlineDf</span><span class="op">(</span><span class="va">object</span>, outline_nn <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, force <span class="op">=</span> <span class="cn">FALSE</span>, remove <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getTissueOutlineDf</span><span class="op">(</span><span class="va">object</span>, force <span class="op">=</span> <span class="cn">FALSE</span>, remove <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
 <dd><p>An object of class <code>spata2</code>.</p></dd>
-
-
-<dt>outline_nn</dt>
-<dd><p>Numeric vector. Number of neighbors a barcode spot
-might have to be considered an outline spot.</p></dd>
 
 
 <dt>force</dt>
@@ -158,6 +153,11 @@ might have to be considered an outline spot.</p></dd>
 <dt>remove</dt>
 <dd><p>Logical. If <code>TRUE</code>, none-outline spots are removed from
 the output.</p></dd>
+
+
+<dt>outline_nn</dt>
+<dd><p>Numeric vector. Number of neighbors a barcode spot
+might have to be considered an outline spot.</p></dd>
 
 </dl></div>
     <div id="value">

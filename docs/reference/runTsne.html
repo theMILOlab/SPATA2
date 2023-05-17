@@ -18,11 +18,7 @@ in argument n_pcs and performs tSNE with it."><!-- mathjax --><script src="https
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-<<<<<<< HEAD
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
-=======
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -31,18 +27,6 @@ in argument n_pcs and performs tSNE with it."><!-- mathjax --><script src="https
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-<<<<<<< HEAD
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-installation.html">Installation</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-=======
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
@@ -50,48 +34,15 @@ in argument n_pcs and performs tSNE with it."><!-- mathjax --><script src="https
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     Articles
      
     <span class="caret"></span>
   </a>
-<<<<<<< HEAD
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
-=======
   <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
-    </li>
-    <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
-    </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
-    <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-=======
       <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
@@ -135,22 +86,12 @@ in argument n_pcs and performs tSNE with it."><!-- mathjax --><script src="https
     </li>
     <li>
       <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
-=======
       <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
     </li>
   </ul></li>
@@ -174,7 +115,6 @@ in argument n_pcs and performs tSNE with it."><!-- mathjax --><script src="https
     </li>
     <li>
       <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -206,23 +146,6 @@ in argument <code>n_pcs</code> and performs tSNE with it.</p>
     <h2>Arguments</h2>
     <dl><dt>object</dt>
 <dd><p>A valid spata-object.</p></dd>
-<<<<<<< HEAD
-<dt>n_pcs</dt>
-<dd><p>Numeric value. Denotes the number of principal components used. Must be
-smaller or equal to the number of principal components the pca data.frame contains.</p></dd>
-<dt>tsne_perplexity</dt>
-<dd><p>Numeric value. Given to argument <code>perplexity</code> of
-<code><a href="https://rdrr.io/pkg/Rtsne/man/Rtsne.html" class="external-link">Rtsne::Rtsne()</a></code>.</p></dd>
-<dt>of_sample</dt>
-<dd><p>This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.</p></dd>
-<dt>...</dt>
-<dd><p>Additional arguments given to <code><a href="https://rdrr.io/pkg/Rtsne/man/Rtsne.html" class="external-link">Rtsne::Rtsne()</a></code>.</p></dd>
-</dl></div>
-    <div id="value">
-    <h2>Value</h2>
-    <ul><li><p><code>runTsne()</code>: An updated spata-object containing the reduction variables in the tsne data.frame.</p></li>
-=======
 
 
 <dt>n_pcs</dt>
@@ -249,7 +172,6 @@ spata-objects can store more than one sample.</p></dd>
     
 
 <ul><li><p><code>runTsne()</code>: An updated spata-object containing the reduction variables in the tsne data.frame.</p></li>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 <li><p><code>runTsne2()</code>: The direct output-object of <code><a href="https://rdrr.io/pkg/Rtsne/man/Rtsne.html" class="external-link">Rtsne::Rtsne()</a></code></p></li>
 </ul></div>
 
@@ -261,19 +183,11 @@ spata-objects can store more than one sample.</p></dd>
 
 
       <footer><div class="copyright">
-<<<<<<< HEAD
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
-</div>
-
-<div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
-=======
   <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">
   <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 </div>
 
       </footer></div>

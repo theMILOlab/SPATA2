@@ -15,8 +15,6 @@ ggpLayerEncirclingIAS(
   line_color = "black",
   line_size = (line_size_core * 0.75),
   line_size_core = 1,
-  xrange = NULL,
-  yrange = NULL,
   inc_outline = TRUE,
   direction = "outwards",
   verbose = NULL,
@@ -44,18 +42,13 @@ information about distance values.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
-\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+\item{line_size}{Numeric. The size with which to display encircling lines
+of the area expansion.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
+\item{line_size_core}{Numeric. The size with which to display the core outline
+of the image annotation.}
 
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -82,7 +75,7 @@ plotImageGgplot(object) +
  ggpLayerEncirclingIAS(
    object = object,
    id = "necrotic_area",
-   distance = "1mm"
+   distance = "2.25mmm",
+   binwidth = "112.5um"
  )
-
 }

@@ -4,6 +4,7 @@
 \alias{asSPATA2}
 \alias{asSPATA2,giotto-method}
 \alias{asSPATA2,Seurat-method}
+\alias{asSPATA2,AnnDataR6-method}
 \title{Transform to \code{spata2} object object}
 \usage{
 asSPATA2(object, ...)
@@ -21,25 +22,45 @@ asSPATA2(object, ...)
   scaled_mtr_name = "scale.data",
   verbose = TRUE
 )
+
+\S4method{asSPATA2}{AnnDataR6}(
+  object,
+  sample_name,
+  count_mtr_name = "counts",
+  normalized_mtr_name = "normalized",
+  scaled_mtr_name = "scaled",
+  transfer_meta_data = TRUE,
+  transfer_dim_red = TRUE,
+  image_name = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of either one of the following classes: \code{Seurat}, \code{SingleCellExperiment}, \code{AnnDataR6}}
 
 \item{...}{Additional arguments given to \code{initiateSpataObject_CountMtr()}.}
 
-\item{sample_name}{Character value. Denotes the name of the sample you are
-analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.}
+\item{sample_name}{A character string specifying the name of the sample}
+
+\item{transfer_meta_data}{Logical or character. Specifies
+if meta data, e.g clustering, from the input object is transferred
+to the output object. If TRUE, all variables of the meta data.frame
+are transferred. If character, named variables are transferred. If FALSE,
+none are transferred.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{transfer_features, transfer_meta_data}{Logical or character. Specifies
-if meta/feature, e.g clustering, data from the input object is transferred
-to the output object. If TRUE, all variables of the feature/meta data.frame
-are transferred. If character, named variables are transferred. If FALSE,
-none are transferred.}
+\item{transfer_dim_red}{A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
+tSNE) from the input object to the output object.}
+
+\item{count_mtr_name}{A character string specifying the name of the count matrix}
+
+\item{scaled_mtr_name}{A character string specifying the name of the scaled matrix}
+
+\item{normalized_mtr_name}{A character string specifying the name of the normalized matrix (anndata only currently)}
 }
 \value{
 An object of class \code{spata2} object.

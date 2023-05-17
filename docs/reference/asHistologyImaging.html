@@ -18,7 +18,7 @@ of class HistologyImaging."><!-- mathjax --><script src="https://cdnjs.cloudflar
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -140,7 +140,17 @@ of class <code>HistologyImaging</code>.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">asHistologyImaging</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span>
 
 <span class="co"># S4 method for VisiumV1</span>
-<span class="fu">asHistologyImaging</span><span class="op">(</span><span class="va">object</span>, <span class="va">id</span>, scale_with <span class="op">=</span> <span class="st">"lowres"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<span class="fu">asHistologyImaging</span><span class="op">(</span><span class="va">object</span>, <span class="va">id</span>, scale_with <span class="op">=</span> <span class="st">"lowres"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+
+<span class="co"># S4 method for AnnDataR6</span>
+<span class="fu">asHistologyImaging</span><span class="op">(</span>
+  <span class="va">object</span>,
+  <span class="va">id</span>,
+  <span class="va">library_id</span>,
+  spatial_key <span class="op">=</span> <span class="st">"spatial"</span>,
+  scale_with <span class="op">=</span> <span class="st">"lowres"</span>,
+  verbose <span class="op">=</span> <span class="va">verbose</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">

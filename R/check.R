@@ -1189,6 +1189,40 @@ check_monocle_packages <- function(){
 }
 
 
+#' @keywords internal
+check_new_variable_name <- function(object, new_name, overwrite = NULL){
+
+  confuns::check_none_of(
+    input = new_name,
+    against = getGenes(object),
+    ref.against = "gene names. Overwriting genes is not allowed. Use `discardGenes()` in that case",
+    overwrite = NULL # removes option to overwrite -> does not appear in feedback
+  )
+
+  confuns::check_none_of(
+    input = new_name,
+    against = protected_variable_names,
+    ref.against = "protected variables in SPATA2. Overwriting them is not allowed",
+    overwrite = NULL
+  )
+
+  confuns::check_none_of(
+    input = new_name,
+    against = getGeneSets(object),
+    ref.against = "gene set names. Overwriting gene sets is not allowed. Use `discardGeneSets()` in that case",
+    overwrite = NULL
+  )
+
+  confuns::check_none_of(
+    input = new_name,
+    against = getFeatureNames(object),
+    ref.input = "input for new variable",
+    ref.against = "known features to the `spata2` object",
+    overwrite = overwrite
+  )
+
+}
+
 # check_o -----------------------------------------------------------------
 
 #' Check spata object input
@@ -2074,5 +2108,5 @@ check_spatial_data <- function(uns, library_id = NULL) {
   }
 
   return(list(library_id, spatial_data))
- 
+
  }

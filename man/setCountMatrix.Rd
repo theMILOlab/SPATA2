@@ -3,6 +3,7 @@
 \name{setCountMatrix}
 \alias{setCountMatrix}
 \alias{setDenoisedMatrix}
+\alias{setNormalizedMatrix}
 \alias{setScaledMatrix}
 \title{Set data matrices}
 \usage{
@@ -10,12 +11,14 @@ setCountMatrix(object, count_mtr, of_sample = NA)
 
 setDenoisedMatrix(object, denoised_mtr, of_sample = NA)
 
+setNormalizedMatrix(object, normalized_mtr, of_sample = NA)
+
 setScaledMatrix(object, scaled_mtr, of_sample = NA)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{count_mtr, scaled_mtr, denoised_mtr}{Matrices whose column names refer
+\item{count_mtr, normalized_mtr, scaled_mtr, denoised_mtr}{Matrices whose column names refer
 to the barcodes and whose rownames refer to the gene names.}
 
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
@@ -25,9 +28,9 @@ spata-objects can store more than one sample.}
 A spata object containing the set input.
 }
 \description{
-\code{SPATA} in general distinguishes between two types of data matrices.
-There are \emph{count-matrices} containing the raw counts and
-\emph{expression-matrices} containing scaled, denoised or in any other
+\code{SPATA} in general distinguishes between three types of data matrices.
+There are \emph{count-matrices} containing the raw counts, \emph{normalized-matrices}
+containing (log-)normalized counts, and \emph{scaled-matrices} containing scaled, denoised or in any other
 way processed and normalized count data.
 
 The majority of \code{SPATA}-functions leans on data carried in expression matrices.

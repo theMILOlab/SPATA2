@@ -18,7 +18,7 @@ of the area of  an image annotation to a surface plot."><!-- mathjax --><script 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -148,8 +148,6 @@ of the area of  an image annotation to a surface plot.</p>
   line_color <span class="op">=</span> <span class="st">"black"</span>,
   line_size <span class="op">=</span> <span class="op">(</span><span class="va">line_size_core</span> <span class="op">*</span> <span class="fl">0.75</span><span class="op">)</span>,
   line_size_core <span class="op">=</span> <span class="fl">1</span>,
-  xrange <span class="op">=</span> <span class="cn">NULL</span>,
-  yrange <span class="op">=</span> <span class="cn">NULL</span>,
   inc_outline <span class="op">=</span> <span class="cn">TRUE</span>,
   direction <span class="op">=</span> <span class="st">"outwards"</span>,
   verbose <span class="op">=</span> <span class="cn">NULL</span>,
@@ -192,19 +190,17 @@ information about distance values.</p></dd>
 
 
 <dt>line_size</dt>
-<dd><p>Numeric. Affects size of the main lines of the plot.</p></dd>
+<dd><p>Numeric. The size with which to display encircling lines
+of the area expansion.</p></dd>
 
 
-<dt>xrange, yrange</dt>
-<dd><p>Vector of length two or <code>NULL</code>. If not <code>NULL</code>,
-specifies the x- and y-range to which the output image is cropped. E.g.
-<code>xrange = c(200, 500)</code> results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If <code>NULL</code>, the original image
-ranges are taken.</p>
-<p>This argument works within the <code>SPATA2</code> distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section <em>Distance measures</em>
-for more information.</p></dd>
+<dt>line_size_core</dt>
+<dd><p>Numeric. The size with which to display the core outline
+of the image annotation.</p></dd>
+
+
+<dt>inc_outline</dt>
+<dd><p>Logical. If <code>TRUE</code>, makes use of <code>SPATA2</code> automatic tissue outline algorithm.</p></dd>
 
 
 <dt>verbose</dt>
@@ -238,9 +234,9 @@ they are supposed to be added to plots created with the <code>plotSurface*()</co
  <span class="fu">ggpLayerEncirclingIAS</span><span class="op">(</span>
    object <span class="op">=</span> <span class="va">object</span>,
    id <span class="op">=</span> <span class="st">"necrotic_area"</span>,
-   distance <span class="op">=</span> <span class="st">"1mm"</span>
+   distance <span class="op">=</span> <span class="st">"2.25mmm"</span>,
+   binwidth <span class="op">=</span> <span class="st">"112.5um"</span>
  <span class="op">)</span>
-
 </code></pre></div>
     </div>
   </div>

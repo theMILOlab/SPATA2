@@ -3,11 +3,21 @@
 \name{asHistologyImaging}
 \alias{asHistologyImaging}
 \alias{asHistologyImaging,VisiumV1-method}
+\alias{asHistologyImaging,AnnDataR6-method}
 \title{Convert to class \code{HistologyImaging}}
 \usage{
 asHistologyImaging(object, ...)
 
 \S4method{asHistologyImaging}{VisiumV1}(object, id, scale_with = "lowres", verbose = TRUE)
+
+\S4method{asHistologyImaging}{AnnDataR6}(
+  object,
+  id,
+  library_id,
+  spatial_key = "spatial",
+  scale_with = "lowres",
+  verbose = verbose
+)
 }
 \arguments{
 \item{object}{Any object for which a method has been defined.}

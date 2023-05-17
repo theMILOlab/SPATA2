@@ -12,110 +12,7 @@ getOutlineVarName <- function(object){
 }
 
 
-#' @title Obtain outer barcode spots
-#'
-#' @description Identifies the barcode spots that lie on the edge
-#' of the tissue and returns a subset of the coordinates data.frame.
-#'
-#' @inherit argument_dummy params
-#' @param remove Logical. If `TRUE`, none-outline spots are removed from
-#' the output.
-#' @param outline_nn Numeric vector. Number of neighbors a barcode spot
-#' might have to be considered an outline spot.
-#' @param force Logical. If `TRUE`, forces computation.
-#'
-#' @return Output of `getCoordsDf()` including a logical variable
-#' called *outline* which indicates whether the spot belongs to the outlining
-#' spots or not and a character variable called *section* that indicates to
-#' which tissue section the spots belong.
-#'
-#' @export
-#'
-#' @examples
-#'
-#'  library(ggplot2)
-#'  library(ggExtra)
-#'
-#'  object <- downloadPubExample("MCI_LMU")
-#'
-#'  to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
-#'
-#'  to_df[["outline"]] <- as.character(to_df[["outline"]])
-#'
-#'  ggplot(to_df, mapping = aes(x = x, y = y)) +
-#'    geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
-#'    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
-#'
-#'
-getTissueOutlineDf <- function(object, outline_nn = c(2,3), force = FALSE, remove = TRUE){
 
-  if(!containsTissueOutline(object) | base::isTRUE(force)){
-
-    coords_df <-
-      getCoordsDf(object) %>%
-      add_tissue_section_variable(
-        coords_df = .,
-        ccd = getCCD(object, unit = "px"),
-        name = "section",
-        minPts = 3
-      )
-
-    coords_df <-
-      purrr::map_df(
-        .x = base::unique(coords_df[coords_df$section != "0",][["section"]]),
-        .f = function(section){
-
-          coords_df_sub <-
-            dplyr::filter(coords_df, section == {{section}})
-
-          coords_mtr <-
-            tibble::column_to_rownames(coords_df_sub, "barcodes") %>%
-            dplyr::select(x, y) %>%
-            base::as.matrix()
-
-          out <-
-            concaveman::concaveman(points = coords_mtr) %>%
-            base::as.data.frame() %>%
-            tibble::as_tibble() %>%
-            magrittr::set_colnames(c("xp", "yp")) %>%
-            dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
-
-          map_to_bcsp <-
-            tidyr::expand_grid(
-              id = out$id,
-              barcodes = coords_df_sub$barcodes
-            ) %>%
-            dplyr::left_join(y = coords_df_sub[,c("barcodes", "x", "y")], by = "barcodes") %>%
-            dplyr::left_join(y = out, by = "id") %>%
-            dplyr::group_by(id, barcodes) %>%
-            dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
-            dplyr::ungroup() %>%
-            dplyr::group_by(id) %>%
-            dplyr::filter(dist == base::min(dist)) %>%
-            dplyr::ungroup()
-
-          coords_df_sub[["outline"]] <- coords_df_sub[["barcodes"]] %in% map_to_bcsp[["barcodes"]]
-
-          return(coords_df_sub)
-
-        }
-      )
-
-  } else {
-
-    coords_df <- getCoordsDf(object)
-
-  }
-
-  if(base::isTRUE(remove)){
-
-    coords_df <- dplyr::filter(coords_df, outline)
-
-  }
-
-  return(coords_df)
-
-}
 
 # getP --------------------------------------------------------------------
 
@@ -1077,6 +974,111 @@ getStsDf <- function(object,
 
 # getT --------------------------------------------------------------------
 
+#' @title Obtain outer barcode spots
+#'
+#' @description Identifies the barcode spots that lie on the edge
+#' of the tissue and returns a subset of the coordinates data.frame.
+#'
+#' @inherit argument_dummy params
+#' @param remove Logical. If `TRUE`, none-outline spots are removed from
+#' the output.
+#' @param outline_nn Numeric vector. Number of neighbors a barcode spot
+#' might have to be considered an outline spot.
+#' @param force Logical. If `TRUE`, forces computation.
+#'
+#' @return Output of `getCoordsDf()` including a logical variable
+#' called *outline* which indicates whether the spot belongs to the outlining
+#' spots or not and a character variable called *section* that indicates to
+#' which tissue section the spots belong.
+#'
+#' @export
+#'
+#' @examples
+#'
+#'  library(ggplot2)
+#'  library(ggExtra)
+#'
+#'  object <- downloadPubExample("MCI_LMU")
+#'
+#'  to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
+#'
+#'  to_df[["outline"]] <- as.character(to_df[["outline"]])
+#'
+#'  ggplot(to_df, mapping = aes(x = x, y = y)) +
+#'    geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
+#'    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
+#'
+#'
+getTissueOutlineDf <- function(object, force = FALSE, remove = TRUE){
+
+  if(!containsTissueOutline(object) | base::isTRUE(force)){
+
+    coords_df <-
+      getCoordsDf(object) %>%
+      add_tissue_section_variable(
+        coords_df = .,
+        ccd = getCCD(object, unit = "px"),
+        name = "section",
+        minPts = 3
+      )
+
+    coords_df <-
+      purrr::map_df(
+        .x = base::unique(coords_df[coords_df$section != "0",][["section"]]),
+        .f = function(section){
+
+          coords_df_sub <-
+            dplyr::filter(coords_df, section == {{section}})
+
+          coords_mtr <-
+            tibble::column_to_rownames(coords_df_sub, "barcodes") %>%
+            dplyr::select(x, y) %>%
+            base::as.matrix()
+
+          out <-
+            concaveman::concaveman(points = coords_mtr) %>%
+            base::as.data.frame() %>%
+            tibble::as_tibble() %>%
+            magrittr::set_colnames(c("xp", "yp")) %>%
+            dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
+
+          map_to_bcsp <-
+            tidyr::expand_grid(
+              id = out$id,
+              barcodes = coords_df_sub$barcodes
+            ) %>%
+            dplyr::left_join(y = coords_df_sub[,c("barcodes", "x", "y")], by = "barcodes") %>%
+            dplyr::left_join(y = out, by = "id") %>%
+            dplyr::group_by(id, barcodes) %>%
+            dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
+            dplyr::ungroup() %>%
+            dplyr::group_by(id) %>%
+            dplyr::filter(dist == base::min(dist)) %>%
+            dplyr::ungroup()
+
+          coords_df_sub[["outline"]] <- coords_df_sub[["barcodes"]] %in% map_to_bcsp[["barcodes"]]
+
+          return(coords_df_sub)
+
+        }
+      )
+
+  } else {
+
+    coords_df <- getCoordsDf(object)
+
+  }
+
+  if(base::isTRUE(remove)){
+
+    coords_df <- dplyr::filter(coords_df, outline)
+
+  }
+
+  return(coords_df)
+
+}
+
 
 #' @export
 getTrajectory <- function(object, id){
@@ -1331,3 +1333,44 @@ getUmapDf <- function(object, of_sample = NA){
               method_dr = "umap")
 
 }
+
+
+
+
+# getV --------------------------------------------------------------------
+
+
+
+#' @title Obtain variable names
+#'
+#' @description Extracts a character vector of variable names that are currently
+#' known to the `spata2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#' @export
+getVariableNames <- function(object){
+
+  cnames <- getCoordsDf(object) %>% base::colnames()
+
+  gnames <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = base::rownames
+    ) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+  fnames <- getFeatureDf(object) %>% base::colnames()
+
+  gsnames <- getGeneSets(object)
+
+  out <- base::unique(c(cnames, gnames, gsnames, fnames), protected_variable_names)
+
+  return(out)
+
+}
+
+
+

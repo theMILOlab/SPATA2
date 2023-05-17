@@ -2340,7 +2340,8 @@ getInitiationInput <- function(object, verbose = NULL){
 #' @inherit check_sample params
 #' @param mtr_name Character value. The name of the matrix of interest.
 #'
-#' @return The matrix of the specified object and sample(s).
+#' @return The matrix of the specified object. A list of all matrices
+#' in case of `getMatrices()`.
 #' @export
 
 getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
@@ -2356,6 +2357,14 @@ getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
   }
 
   object@data[[1]][[mtr_name]]
+
+}
+
+#' @rdname getMatrix
+#' @export
+getMatrices <- function(object){
+
+  object@data[[1]]
 
 }
 

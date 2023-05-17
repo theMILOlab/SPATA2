@@ -238,6 +238,9 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'
 #'  # ----- for gradient plots
 #'
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerHorizonIAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
+#'
 #'  # no axis specification
 #'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
 #'
@@ -546,186 +549,21 @@ ggpLayerColorGroupScale <- function(object,
 
 
 
-#' @title Add group outline
-#'
-#' @description Highlights groups of barcode-spots by encircling them.
-#' Depending on the \code{plot_type} this can be added to a surface plot
-#' or a dimensional reduction plot.
-#'
-#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
-#' \emph{'umap'}.
-#' @param groups_subset Character value or NULL. If character,
-#' specifies the exact groups that are encircled. If NULL, all groups
-#' are encircled.
-#' @param outlier_rm,minPts Logical. If `TRUE`, spatial outlier of the group to outline
-#' are removed from the outline via `dbscan::dbscan(..., minPts = minPts`). Ignored
-#' if `plot_type` is not *'surface'*.
-#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`. Affects
-#' the encircling.
-#'
-#' @inherit ggpLayerTissueOutline params
-#' @inherit imageAnnotationScreening params
-#' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return
-#'
-#' @export
-#'
-#' @examples
-#'
-#'  object <- downloadPubExample("269_T")
-#'
-#'  plotImageGgplot(object) +
-#'   ggpLayerGroupOutline(
-#'     object = object,
-#'     plot_type = "surface",
-#'     grouping = "histology",
-#'     groups_subset = "tumor",
-#'     line_color = color_vector("npg")[1]
-#'     )
-#'
-ggpLayerGroupOutline <- function(object,
-                                 grouping,
-                                 groups_subset = NULL,
-                                 plot_type = "surface",
-                                 line_color = "black",
-                                 line_size = 1,
-                                 alpha = 0,
-                                 bcsp_rm = character(0),
-                                 outlier_rm = TRUE,
-                                 eps = (getCCD(object, "px")*1.25),
-                                 minPts = 3,
-                                 concavity = NULL,
-                                 expand_outline = getCCD(object, "px")*1.1,
-                                 ...){
-
-  hlpr_assign_arguments(object)
-
-  confuns::check_one_of(
-    input = plot_type,
-    against = c("surface", "coords", "tsne", "umap")
-  )
-
-  expand_outline <-
-    as_pixel(expand_outline, object = object) %>%
-    base::as.numeric()
-
-  if(plot_type %in% c("coords", "surface")){
-
-    layer_df <-
-      getCoordsDf(object) %>%
-      dplyr::select(barcodes, x, y)
-
-  } else if(plot_type == "tsne"){
-
-    layer_df <-
-      getTsneDf(object) %>%
-      dplyr::select(barcodes, tsne1, tsne2)
-
-  } else if(plot_type == "umap"){
-
-    layer_df <-
-      getUmapDf(object) %>%
-      dplyr::select(barcodes, umap1, umap2)
-
-  }
-
-  layer_df <-
-    magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y")) %>%
-    dplyr::filter(!barcodes %in% {{bcsp_rm}})
-
-  layer_df <-
-    joinWithVariables(
-      object = object,
-      spata_df = layer_df,
-      variables = grouping,
-      verbose = FALSE
-    ) %>%
-    confuns::check_across_subset(
-      across = grouping,
-      across.subset = groups_subset
-    )
-
-  if(base::isTRUE(outlier_rm)){
-
-    layer_df <-
-      purrr::map_df(
-        .x = base::levels(layer_df[[grouping]]),
-        .f = function(group){
-
-            add_dbscan_variable(
-              coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
-              eps = eps,
-              minPts = minPts,
-              name = "group_outline"
-            ) %>%
-              dplyr::filter(group_outline != "0")
-
-        }
-      )
-
-  } else {
-
-    layer_df[["group_outline"]] <- "1"
-
-  }
-
-  layer_df <-
-    purrr::map_df(
-      .x = base::levels(layer_df[[grouping]]),
-      .f = function(group){
-
-        group_df <- dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}})
-
-        out <-
-          purrr::map(
-            .x = base::unique(group_df[["group_outline"]]),
-            .f = function(go){
-
-              dplyr::filter(group_df, group_outline == {{go}}) %>%
-                add_outline_variable() %>%
-                arrange_by_outline_variable() %>%
-                buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
-                dplyr::mutate(
-                  !!rlang::sym(grouping) := {{group}},
-                  group_outline = {{go}}
-                )
-
-            }
-          )
-
-        return(out)
-
-      }
-    ) %>%
-    dplyr::mutate(
-      final_group = stringr::str_c(!!rlang::sym(grouping), group_outline, sep = " ")
-    )
-
-  out <-
-    ggforce::geom_mark_hull(
-      data = layer_df,
-      mapping = ggplot2::aes(x = x, y = y, group = final_group),
-      alpha = alpha,
-      color = line_color,
-      size = line_size,
-      expand = 0,
-      concavity = concavity,
-      ...
-    )
-
-  return(out)
-
-}
-
-
 #' @title Add IAS area expansion
 #'
 #' @description Adds the circular expansion used by the IAS-algorithm
 #' of the area of  an image annotation to a surface plot.
 #'
+#' @param line_size Numeric. The size with which to display encircling lines
+#' of the area expansion.
+#' @param line_size_core Numeric. The size with which to display the core outline
+#' of the image annotation.
+#'
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
+#'
+#' @param inc_outline Logical. If `TRUE`, makes use of `SPATA2` automatic tissue outline algorithm.
 #'
 #' @export
 #'
@@ -737,9 +575,10 @@ ggpLayerGroupOutline <- function(object,
 #'  ggpLayerEncirclingIAS(
 #'    object = object,
 #'    id = "necrotic_area",
-#'    distance = "1mm"
+#'    distance = "2.25mmm",
+#'    binwidth = "112.5um"
 #'  )
-#'
+
 ggpLayerEncirclingIAS <- function(object,
                                   id,
                                   distance = NA_integer_,
@@ -750,8 +589,6 @@ ggpLayerEncirclingIAS <- function(object,
                                   line_color = "black",
                                   line_size = (line_size_core * 0.75),
                                   line_size_core = 1,
-                                  xrange = NULL,
-                                  yrange = NULL,
                                   inc_outline = TRUE,
                                   direction = "outwards",
                                   verbose = NULL,
@@ -1009,7 +846,176 @@ ggpLayerFrameByImage <- function(object = "object", opt = "coords"){
 
 }
 
+#' @title Add group outline
+#'
+#' @description Highlights groups of barcode-spots by encircling them.
+#' Depending on the \code{plot_type} this can be added to a surface plot
+#' or a dimensional reduction plot.
+#'
+#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
+#' \emph{'umap'}.
+#' @param groups_subset Character value or NULL. If character,
+#' specifies the exact groups that are encircled. If NULL, all groups
+#' are encircled.
+#' @param outlier_rm,minPts Logical. If `TRUE`, spatial outlier of the group to outline
+#' are removed from the outline via `dbscan::dbscan(..., minPts = minPts`). Ignored
+#' if `plot_type` is not *'surface'*.
+#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`. Affects
+#' the encircling.
+#'
+#' @inherit ggpLayerTissueOutline params
+#' @inherit imageAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return
+#'
+#' @export
+#'
+#' @examples
+#'
+#'  object <- downloadPubExample("269_T")
+#'
+#'  plotImageGgplot(object) +
+#'   ggpLayerGroupOutline(
+#'     object = object,
+#'     plot_type = "surface",
+#'     grouping = "histology",
+#'     groups_subset = "tumor",
+#'     line_color = color_vector("npg")[1]
+#'     )
+#'
+ggpLayerGroupOutline <- function(object,
+                                 grouping,
+                                 groups_subset = NULL,
+                                 plot_type = "surface",
+                                 line_color = "black",
+                                 line_size = 1,
+                                 alpha = 0,
+                                 bcsp_rm = character(0),
+                                 outlier_rm = TRUE,
+                                 eps = (getCCD(object, "px")*1.25),
+                                 minPts = 3,
+                                 concavity = NULL,
+                                 expand_outline = getCCD(object, "px")*1.1,
+                                 ...){
 
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = c("surface", "coords", "tsne", "umap")
+  )
+
+  expand_outline <-
+    as_pixel(expand_outline, object = object) %>%
+    base::as.numeric()
+
+  if(plot_type %in% c("coords", "surface")){
+
+    layer_df <-
+      getCoordsDf(object) %>%
+      dplyr::select(barcodes, x, y)
+
+  } else if(plot_type == "tsne"){
+
+    layer_df <-
+      getTsneDf(object) %>%
+      dplyr::select(barcodes, tsne1, tsne2)
+
+  } else if(plot_type == "umap"){
+
+    layer_df <-
+      getUmapDf(object) %>%
+      dplyr::select(barcodes, umap1, umap2)
+
+  }
+
+  layer_df <-
+    magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y")) %>%
+    dplyr::filter(!barcodes %in% {{bcsp_rm}})
+
+  layer_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = layer_df,
+      variables = grouping,
+      verbose = FALSE
+    ) %>%
+    confuns::check_across_subset(
+      across = grouping,
+      across.subset = groups_subset
+    )
+
+  if(base::isTRUE(outlier_rm)){
+
+    layer_df <-
+      purrr::map_df(
+        .x = base::levels(layer_df[[grouping]]),
+        .f = function(group){
+
+          add_dbscan_variable(
+            coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
+            eps = eps,
+            minPts = minPts,
+            name = "group_outline"
+          ) %>%
+            dplyr::filter(group_outline != "0")
+
+        }
+      )
+
+  } else {
+
+    layer_df[["group_outline"]] <- "1"
+
+  }
+
+  layer_df <-
+    purrr::map_df(
+      .x = base::levels(layer_df[[grouping]]),
+      .f = function(group){
+
+        group_df <- dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}})
+
+        out <-
+          purrr::map(
+            .x = base::unique(group_df[["group_outline"]]),
+            .f = function(go){
+
+              dplyr::filter(group_df, group_outline == {{go}}) %>%
+                add_outline_variable() %>%
+                arrange_by_outline_variable() %>%
+                buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
+                dplyr::mutate(
+                  !!rlang::sym(grouping) := {{group}},
+                  group_outline = {{go}}
+                )
+
+            }
+          )
+
+        return(out)
+
+      }
+    ) %>%
+    dplyr::mutate(
+      final_group = stringr::str_c(!!rlang::sym(grouping), group_outline, sep = " ")
+    )
+
+  out <-
+    ggforce::geom_mark_hull(
+      data = layer_df,
+      mapping = ggplot2::aes(x = x, y = y, group = final_group),
+      alpha = alpha,
+      color = line_color,
+      size = line_size,
+      expand = 0,
+      concavity = concavity,
+      ...
+    )
+
+  return(out)
+
+}
 
 
 
@@ -1018,22 +1024,50 @@ ggpLayerFrameByImage <- function(object = "object", opt = "coords"){
 #' @description Adds the last circular expansion used by the IAS-algorithm
 #' of the area of  an image annotation to a surface plot in order to
 #' visualize the border between screened tissue and everything beyond that
-#' is not included in the IAS.
+#' is not included in the screening.
 #'
 #' @inherit imageAnnotationScreening params
+#' @inherit ggpLayerEncirclingIAS params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
+#'
+#' @examples
+#'
+#'  object <- downloadSpataObject("313_T")
+#'
+#'  object <-
+#'   setImageAnnotation(
+#'    object = object,
+#'    img_ann = image_annotations$`313_T`$necrotic_center
+#'    )
+#'
+#'  plotSurface(object) +
+#'   ggpLayerHorizonIAS(
+#'    object = object,
+#'    id = "necrotic_center",
+#'    distance = "2.25mm",
+#'    binwidth = "112.5um"
+#'    )
+#'
 #'
 ggpLayerHorizonIAS <- function(object,
                                id,
                                distance = NA_integer_,
                                binwidth = getCCD(object),
                                n_bins_circle = NA_integer_,
+                               alpha_core = 0,
+                               fill_core = NA,
                                line_color = "black",
-                               line_size = 1,
-                               crop_frame = FALSE){
+                               line_size = (line_size_core*0.75),
+                               line_size_core = 1,
+                               inc_outline = TRUE,
+                               direction = "outwards",
+                               verbose = NULL,
+                               ...){
+
+  hlpr_assign_arguments(object)
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
 
@@ -1051,72 +1085,16 @@ ggpLayerHorizonIAS <- function(object,
   binwidth <- input$binwidth
   n_bins_circle <- input$n_bins_circle
 
-  circle_names <- stringr::str_c("Circle", n_bins_circle, sep = " ")
-
-  circles <-
-    purrr::set_names(
-      x = c((n_bins_circle)*binwidth),
-      nm = circle_names
-    ) %>%
-    utils::tail(1)
-
-  binwidth_vec <- c("Core" = 0, circles)
-
-  areas <-
-    purrr::imap(
-      .x = binwidth_vec,
-      .f = ~
-        buffer_area(df = border_df, buffer = .x) %>%
-        dplyr::mutate(., circle = .y)
-      )
-
-  out_list <-
-    purrr::map(
-      .x = areas,
-      .f =
-        ~ ggplot2::geom_polygon(
-          data = .x,
-          mapping = ggplot2::aes(x = x, y = y),
-          alpha = 0,
-          color = line_color,
-          size = line_size
-        )
+  out <-
+    ggpLayerEncirclingIAS(
+      object = object,
+      id = id,
+      distance = input$distance,
+      binwidth = input$distance,
+      line_color = line_color,
+      line_size = line_size,
+      line_size_core = line_size_core
     )
-
-  if(base::isTRUE(crop_frame)){
-
-    frame_list <-
-      list(
-        ggplot2::coord_fixed(
-          xlim = getCoordsRange(object)$x,
-          ylim = getCoordsRange(object)$y
-        )
-      )
-
-
-  } else {
-
-    xrange <-
-      purrr::map(areas, .f = ~ .x$x) %>%
-      purrr::flatten_dbl() %>%
-      base::range()
-
-    yrange <-
-      purrr::map(areas, .f = ~ .x$y) %>%
-      purrr::flatten_dbl() %>%
-      base::range()
-
-    frame_list <- list(
-      ggplot2::scale_x_continuous(limits = xrange),
-      ggplot2::scale_y_continuous(limits = yrange)
-    )
-
-
-  }
-
-  out_list <- list(out_list, frame_list)
-
-  return(out_list)
 
 }
 

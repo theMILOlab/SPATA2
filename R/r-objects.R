@@ -672,6 +672,18 @@ plot_positions <- c("top_right", "top_left", "bottom_right", "bottom_left")
 
 projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")
 
+#' @export
+protected_variable_names <- c(
+  "barcodes",
+  "imagecol", "imagerow",
+  "outline",
+  "projection_length",
+  "section",
+  "trajectory_part",
+  "x",
+  "y"
+)
+
 pub_dropbox_links <- list(
   "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",
   "313_T" = "https://www.dropbox.com/s/zxeilq38tqwfx70/313_T.RDS?dl=1",

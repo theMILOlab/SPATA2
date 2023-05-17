@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject_Examples}
 \alias{initiateSpataObject_Examples}
-\title{Initiate a spata-object from example data sets}
+\title{Initiate a \code{spata2} object from example data sets}
 \usage{
 initiateSpataObject_Examples(
   data_set = "stxBrain",
@@ -22,7 +22,7 @@ initiateSpataObject_Examples(
 )
 }
 \arguments{
-\item{data_set}{Character value. The data-set from which to create the spata-object.
+\item{data_set}{Character value. The data-set from which to create the \code{spata2} object.
 Currently only \emph{'stxBrain'} is available. Additional datat sets will be added
 shortly.}
 
@@ -72,7 +72,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-A spata-object.
+A \code{spata2} object.
 }
 \description{
 Creates and returns an object of class spata
@@ -80,9 +80,9 @@ from the example data sets provided by the package \emph{SeuratData}.
 See details for more.
 }
 \details{
-The loading and preprocessing of the spata-object  currently relies on the Seurat-package. Before any pre processing function is applied
+The loading and preprocessing of the \code{spata2} object  currently relies on the Seurat-package. Before any pre processing function is applied
 mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-manipulate the way the spata-object is processed. For all of these arguments apply the following instructions:
+manipulate the way the \code{spata2} object is processed. For all of these arguments apply the following instructions:
 
 \itemize{
 \item{If set to FALSE the processing function is skipped.}
@@ -94,6 +94,6 @@ passed to every function as the first argument!!!.)}
 
 Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-is going to be empty.) Skipping functions might result in an incomplete spata-object. Use \code{validateSpataObject()} after
+is going to be empty.) Skipping functions might result in an incomplete \code{spata2} object. Use \code{validateSpataObject()} after
 initiating it in order to see which slots are valid and which are not.
 }

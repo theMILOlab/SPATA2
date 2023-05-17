@@ -2,7 +2,7 @@
 
 
 
-#' @title Initiate an empty spata-object
+#' @title Initiate an empty `spata2` object
 #'
 #' @inherit initiateSpataObject_ExprMtr params
 #'
@@ -13,7 +13,7 @@
 initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
   confuns::give_feedback(
-    msg = "Setting up new spata-object.",
+    msg = "Setting up new `spata2` object.",
     verbose = TRUE
     )
 
@@ -57,9 +57,9 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
 
 
-#' @title Initiate a spata-object from a raw count matrix
+#' @title Initiate a `spata2` object from a raw count matrix
 #'
-#' @description Default function for any spatial related experiment whoose spata-objects are initiated with
+#' @description Default function for any spatial related experiment whoose `spata2` objects are initiated with
 #' a raw count matrix. See details for more information.
 #'
 #' @param count_mtr A numeric matrix to be used as the count matrix. Rownames must
@@ -67,9 +67,9 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 #' @inherit initiateSpataObject_ExprMtr params return
 #' @inherit transformSpataToSeurat params
 #'
-#' @details The loading and preprocessing of the spata-object  currently relies on the Seurat-package. Before any pre processing function is applied
+#' @details The loading and preprocessing of the `spata2` object  currently relies on the Seurat-package. Before any pre processing function is applied
 #' mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-#' manipulate the way the spata-object is processed. For all of these arguments apply the following instructions:
+#' manipulate the way the `spata2` object is processed. For all of these arguments apply the following instructions:
 #'
 #' \itemize{
 #'   \item{If set to FALSE the processing function is skipped.}
@@ -81,7 +81,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 #'
 #' Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 #' will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-#' is going to be empty.) Skipping functions might result in an incomplete spata-object.
+#' is going to be empty.) Skipping functions might result in an incomplete `spata2` object.
 #'
 #' @export
 
@@ -250,7 +250,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
 
         }, error = function(error){
 
-          base::warning(glue::glue("Attempt to save spata-object under '{directory_spata}' failed with the following error message: {error}"))
+          base::warning(glue::glue("Attempt to save `spata2` object under '{directory_spata}' failed with the following error message: {error}"))
 
           spata_object
 
@@ -285,13 +285,13 @@ initiateSpataObject_CountMtr <- function(coords_df,
 
 }
 
-#' @title Initiate a spata-object from example data sets
+#' @title Initiate a `spata2` object from example data sets
 #'
 #' @description Creates and returns an object of class spata
 #' from the example data sets provided by the package \emph{SeuratData}.
 #' See details for more.
 #'
-#' @param data_set Character value. The data-set from which to create the spata-object.
+#' @param data_set Character value. The data-set from which to create the `spata2` object.
 #' Currently only \emph{'stxBrain'} is available. Additional datat sets will be added
 #' shortly.
 #' @param type Given to argument \code{type} of funciton \code{SeuratData::LoadData()}.
@@ -425,9 +425,9 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 
   # -----
 
-  # 4. Create SPATA-object --------------------------------------------------
+  # 4. Create `spata2` object --------------------------------------------------
 
-  confuns::give_feedback(msg = "Initiating spata-object.", verbose = verbose)
+  confuns::give_feedback(msg = "Initiating `spata2` object.", verbose = verbose)
 
   spata_object <-
     transformSeuratToSpata(
@@ -482,15 +482,15 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 #' @param k,nn Numeric value. Given to argument \code{k} of function \code{RANN::nn2()}: Determines to maximum number
 #' of nearest neighbours to compute. (\code{nn} is deprecated.)
 #'
-#' @details After initiating the spata-object PCA is performed via \code{irlba::prcomp_irlba()} and clustering
+#' @details After initiating the `spata2` object PCA is performed via \code{irlba::prcomp_irlba()} and clustering
 #' is done via \code{RANN::nn2()}. (Use \code{addFeatures()} to add any clustering results of your own analysis.)
 #' Additional dimensional reduction is performed via \code{Rtsne::Rtsne()} and \code{umap::umap()}.
 #'
-#' Note that this function initiates a spata-object that does not contain a count-matrix! You can
+#' Note that this function initiates a `spata2` object that does not contain a count-matrix! You can
 #' add a count-matrix manually using \code{setCountmatrix()}. As long as there is none functions that
 #' need a count-matrix will throw an error telling you that no count matrix could be found.
 #'
-#' @return A spata-object.
+#' @return A `spata2` object.
 #'
 #' @export
 
@@ -584,7 +584,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
   # 2. Setting up spata object ----------------------------------------------
 
-  confuns::give_feedback(msg = "Setting up spata-object.", verbose = verbose)
+  confuns::give_feedback(msg = "Setting up `spata2` object.", verbose = verbose)
 
   spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
 
@@ -731,7 +731,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
       }, error = function(error){
 
-        base::warning(glue::glue("Attempt to save spata-object under '{directory_spata}' failed with the following error message: {error}"))
+        base::warning(glue::glue("Attempt to save `spata2` object under '{directory_spata}' failed with the following error message: {error}"))
 
         spata_object
 
@@ -767,7 +767,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
 }
 
-#' @title Initiate a spata-object from 10X Visium
+#' @title Initiate a `spata2` object from 10X Visium
 #'
 #' @description Creates, saves and returns an object of class spata
 #' from 10X Visium results. See details for more information.
@@ -793,9 +793,9 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #' @inherit gene_set_path params
 #' @inherit process_seurat_object params
 #'
-#' @details The loading and preprocessing of the spata-object  currently relies on the Seurat-package. Before any pre processing function is applied
+#' @details The loading and preprocessing of the `spata2` object  currently relies on the Seurat-package. Before any pre processing function is applied
 #' mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-#' manipulate the way the spata-object is processed. For all of these arguments apply the following instructions:
+#' manipulate the way the `spata2` object is processed. For all of these arguments apply the following instructions:
 #'
 #' \itemize{
 #'   \item{If set to FALSE the processing function is skipped.}
@@ -807,10 +807,10 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #'
 #' Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 #' will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-#' is going to be empty.) Skipping functions might result in an incomplete spata-object. Use \code{validateSpataObject()} after
+#' is going to be empty.) Skipping functions might result in an incomplete `spata2` object. Use \code{validateSpataObject()} after
 #' initiating it in order to see which slots are valid and which are not.
 #'
-#' @return A spata-object.
+#' @return A `spata2` object.
 #'
 #' @importFrom Seurat ScaleData
 #'
@@ -984,9 +984,9 @@ initiateSpataObject_10X <- function(directory_10X,
   # -----
 
 
-  # 5. Create SPATA-object --------------------------------------------------
+  # 5. Create `spata2` object --------------------------------------------------
 
-  confuns::give_feedback(msg = "Initiating spata-object.", verbose = verbose)
+  confuns::give_feedback(msg = "Initiating `spata2` object.", verbose = verbose)
 
   spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name)
 
@@ -1103,7 +1103,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
       }, error = function(error){
 
-        base::warning(glue::glue("Attempt to save spata-object under '{directory_spata}' failed with the following error message: {error}"))
+        base::warning(glue::glue("Attempt to save `spata2` object under '{directory_spata}' failed with the following error message: {error}"))
 
         spata_object
 
@@ -1112,7 +1112,7 @@ initiateSpataObject_10X <- function(directory_10X,
   } else {
 
     confuns::give_feedback(
-      msg = "No directory specified. Skip saving spata-object.",
+      msg = "No directory specified. Skip saving `spata2` object.",
       verbose = verbose
     )
 

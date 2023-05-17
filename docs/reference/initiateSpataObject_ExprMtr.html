@@ -18,11 +18,7 @@ an already processed expression/intensity matrix. See details for more informati
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-<<<<<<< HEAD
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
-=======
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -31,18 +27,6 @@ an already processed expression/intensity matrix. See details for more informati
   <a href="../reference/index.html">Reference</a>
 </li>
 <li>
-<<<<<<< HEAD
-  <a href="../articles/spata-v2-introduction-and-philosophy.html">About</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-installation.html">Installation</a>
-</li>
-<li>
-  <a href="../articles/spata-v2-terminology.html">Terminology</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-=======
   <a href="../articles/spata-v2-installation.html">Installation</a>
 </li>
 <li>
@@ -50,48 +34,15 @@ an already processed expression/intensity matrix. See details for more informati
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     Articles
      
     <span class="caret"></span>
   </a>
-<<<<<<< HEAD
-  <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the Spata-Object</li>
-=======
   <ul class="dropdown-menu" role="menu"><li class="dropdown-header">Around the spata2 object</li>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     <li>
       <a href="../articles/spata-v2-object-initiation-and-manipulation.html">Object Set Up and Manipulation</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-extract-add-and-join-data.html">Extracting, Adding and Joining Data</a>
-    </li>
-    <li>
-      <a href="../articles/">Genes, Gene Sets and Features</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-platform-compatibility.html">Integrating Different Platforms</a>
-    </li>
-    <li class="dropdown-header">Analysis &amp; Computation</li>
-    <li>
-      <a href="../articles/spata-v2-autoencoder.html">Autoencoder Denoising</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-cnv-analysis.html">Copy Number Variations</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-segmentation-and-clustering.html">Spatial Segmentation &amp; Clustering</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-de-analysis.html">Differential Expression Analysis</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-gsea.html">Gene Set Enrichment Analysis</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-trajectory-analysis.html">Spatial Trajectories</a>
-=======
       <a href="../articles/spata-v2-platform-compatibility.html">Platform Compatibility</a>
     </li>
     <li>
@@ -135,22 +86,12 @@ an already processed expression/intensity matrix. See details for more informati
     </li>
     <li>
       <a href="../articles/spata-v2-scd.html">Integrate Single Cell Deconvolution</a>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     </li>
     <li class="dropdown-header">Visualization</li>
     <li>
       <a href="../articles/spata-v2-plotting-surface.html">Surface Plotting</a>
     </li>
     <li>
-<<<<<<< HEAD
-      <a href="../articles/spata-v2-plotting-dimensional-reduction.html">Dimensional Reduction</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-plotting-descriptive-statistics.html">Descriptive Statistics</a>
-    </li>
-    <li>
-      <a href="../articles/spata-v2-plotting-miscellaneous.html">Miscellaneous</a>
-=======
       <a href="../articles/spata-v2-plotting-misc.html">Miscellaneous</a>
     </li>
   </ul></li>
@@ -174,7 +115,6 @@ an already processed expression/intensity matrix. See details for more informati
     </li>
     <li>
       <a href="../articles/cc-model-fitting-in-spatial-transcriptomic-studies.html">Model Fitting</a>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -204,11 +144,8 @@ an already processed expression/intensity matrix. See details for more informati
   count_mtr <span class="op">=</span> <span class="cn">NULL</span>,
   mtr_name <span class="op">=</span> <span class="st">"scaled"</span>,
   image <span class="op">=</span> <span class="cn">NULL</span>,
-<<<<<<< HEAD
-=======
   image_class <span class="op">=</span> <span class="st">"HistologyImage"</span>,
   image_object <span class="op">=</span> <span class="cn">NULL</span>,
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
   directory_spata <span class="op">=</span> <span class="cn">NULL</span>,
   combine_with_wd <span class="op">=</span> <span class="cn">FALSE</span>,
   gene_set_path <span class="op">=</span> <span class="cn">NULL</span>,
@@ -228,15 +165,6 @@ an already processed expression/intensity matrix. See details for more informati
 barcode-spots in form of a numeric <em>x</em>- and <em>y</em>-variable. The key-variable
 <em>barcodes</em> needs to be of type character and must be identical to the column names
 of the input matrix (<code>expr_mtr</code>).</p></dd>
-<<<<<<< HEAD
-<dt>expr_mtr</dt>
-<dd><p>A numeric matrix. The expression matrix to be used.</p></dd>
-<dt>sample_name</dt>
-<dd><p>Character value. Denotes the name of the sample you are
-analyzing with the spata-object. The future input for SPATA's <code>of_sample</code>-argument.</p></dd>
-<dt>image</dt>
-<dd><p>An Image of the sample that can be displayed as the surface plot's background.</p></dd>
-=======
 
 
 <dt>expr_mtr</dt>
@@ -252,23 +180,10 @@ analyzing with the spata-object. The future input for SPATA's <code>of_sample</c
 <dd><p>An Image of the sample that can be displayed as the surface plot's background.</p></dd>
 
 
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 <dt>gene_set_path</dt>
 <dd><p>Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.</p>
 <p>Must have the character-variables</p>
-<<<<<<< HEAD
-<p></p><ul><li><p><em>'ont'</em>: The gene set names.</p></li>
-<li><p><em>'gene'</em>: The belonging gene names.</p></li>
-</ul><p>If set to NULL the default gene-set data.frame will used. Run <code><a href="gsdf.html">?gsdf</a></code> to get more information.</p></dd>
-<dt>k, nn</dt>
-<dd><p>Numeric value. Given to argument <code>k</code> of function <code><a href="https://rdrr.io/pkg/RANN/man/nn2.html" class="external-link">RANN::nn2()</a></code>: Determines to maximum number
-of nearest neighbours to compute. (<code>nn</code> is deprecated.)</p></dd>
-</dl></div>
-    <div id="value">
-    <h2>Value</h2>
-    <p>A spata-object.</p>
-=======
 <ul><li><p><em>'ont'</em>: The gene set names.</p></li>
 <li><p><em>'gene'</em>: The belonging gene names.</p></li>
 </ul><p>If set to NULL the default gene-set data.frame will used. Run <code><a href="gsdf.html">?gsdf</a></code> to get more information.</p></dd>
@@ -283,15 +198,14 @@ of nearest neighbours to compute. (<code>nn</code> is deprecated.)</p></dd>
     <h2>Value</h2>
     
 
-<p>A spata-object.</p>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
+<p>A <code>spata2</code> object.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>After initiating the spata-object PCA is performed via <code><a href="https://rdrr.io/pkg/irlba/man/prcomp_irlba.html" class="external-link">irlba::prcomp_irlba()</a></code> and clustering
+    <p>After initiating the <code>spata2</code> object PCA is performed via <code><a href="https://rdrr.io/pkg/irlba/man/prcomp_irlba.html" class="external-link">irlba::prcomp_irlba()</a></code> and clustering
 is done via <code><a href="https://rdrr.io/pkg/RANN/man/nn2.html" class="external-link">RANN::nn2()</a></code>. (Use <code><a href="addFeatures.html">addFeatures()</a></code> to add any clustering results of your own analysis.)
 Additional dimensional reduction is performed via <code><a href="https://rdrr.io/pkg/Rtsne/man/Rtsne.html" class="external-link">Rtsne::Rtsne()</a></code> and <code><a href="https://rdrr.io/pkg/umap/man/umap.html" class="external-link">umap::umap()</a></code>.</p>
-<p>Note that this function initiates a spata-object that does not contain a count-matrix! You can
+<p>Note that this function initiates a <code>spata2</code> object that does not contain a count-matrix! You can
 add a count-matrix manually using <code>setCountmatrix()</code>. As long as there is none functions that
 need a count-matrix will throw an error telling you that no count matrix could be found.</p>
     </div>
@@ -304,19 +218,11 @@ need a count-matrix will throw an error telling you that no count matrix could b
 
 
       <footer><div class="copyright">
-<<<<<<< HEAD
-  <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland.</p>
-</div>
-
-<div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
-=======
   <p></p><p>Developed by Jan Kueckelhaus, Dieter-Henrik Heiland, Simon Frerich.</p>
 </div>
 
 <div class="pkgdown">
   <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
->>>>>>> f7196fe9dc51c1738b724567a2e437b9d4780e28
 </div>
 
       </footer></div>

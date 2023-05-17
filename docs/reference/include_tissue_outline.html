@@ -21,7 +21,7 @@ annotations."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/lib
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
       </span>
     </div>
 
@@ -151,6 +151,8 @@ annotations.</p>
   ccd <span class="op">=</span> <span class="cn">NULL</span>,
   remove <span class="op">=</span> <span class="cn">TRUE</span>,
   inside_if <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,
+  opt <span class="op">=</span> <span class="st">"concaveman"</span>,
+  buffer <span class="op">=</span> <span class="fl">0</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -167,6 +169,11 @@ variables.</p></dd>
 to contain polygon coordinates of the expanded image annotation encircling
 and sorts them after filtering for those that lie inside the tissue section
 in order to plot them via <code><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">ggplot2::geom_path()</a></code>.</p></dd>
+
+
+<dt>opt</dt>
+<dd><p>Either <em>'concaveman'</em>' or <em>'chull'</em>. Defines with which function
+the tissue outline is computed.</p></dd>
 
 
 <dt>...</dt>

@@ -4,6 +4,7 @@
 \alias{getMatrix}
 \alias{getExpressionMatrix}
 \alias{getCountMatrix}
+\alias{getMatrices}
 \title{Obtain count and expression matrix}
 \usage{
 getMatrix(object, mtr_name = NULL, verbose = NULL, ...)
@@ -17,6 +18,8 @@ getCountMatrix(object, ...)
 getExpressionMatrix(object, mtr_name = NULL, verbose = FALSE, ...)
 
 getMatrix(object, mtr_name = NULL, verbose = NULL, ...)
+
+getMatrices(object)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -26,7 +29,8 @@ getMatrix(object, mtr_name = NULL, verbose = NULL, ...)
 \value{
 The active expression or count matrix of the specified object and sample(s).
 
-The matrix of the specified object and sample(s).
+The matrix of the specified object. A list of all matrices
+in case of \code{getMatrices()}.
 }
 \description{
 Obtain count and expression matrix

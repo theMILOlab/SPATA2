@@ -1941,9 +1941,13 @@ getGenes <- function(object,
 
   if(base::all(base::is.null(of_gene_sets), base::is.null(similar_to))){
 
-    expr_mtr <- getExpressionMatrix(object = object, of_sample = of_sample)
+    out <-
+      getMatrices(object) %>%
+      purrr::map(.f = base::rownames) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
 
-    return(base::rownames(expr_mtr))
+    return(out)
 
   }
 
