@@ -212,6 +212,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param summarize_with Character value. Name of the function with which to summarize.
 #'
+#' @param spatial_method Character value. The name of the spatial method that underlies
+#' the experiment. Must be one of `validSpatialMethods()`. Defaults to *'Unknown'*.
+#'
 #' @param tags Character vector or `NULL`. If character, the tags for the image annotation
 #' selection. See section *Selection of image annotation with tags* for more information.
 #'

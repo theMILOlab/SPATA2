@@ -407,8 +407,13 @@ hlpr_image_add_on <- function(object, display_image, ...){
 
   deprecated(...)
 
-  # set up background
-  if(base::isTRUE(display_image)){
+  if(!containsImage(object) & base::isTRUE(display_image)){
+
+    image_add_on <- NULL
+
+    warning("`display_image` = TRUE but `spata2` object does not contain an image.")
+
+  } else if(base::isTRUE(display_image)){
 
     sample_image <- getImage(object)
 

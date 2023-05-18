@@ -1936,6 +1936,8 @@ setGeneric(name = "asSPATA2", def = function(object, ...){
 
 })
 
+# prel solution
+setClass(Class = "giotto")
 
 #' @rdname asSPATA2
 #' @export
@@ -2057,6 +2059,7 @@ setMethod(
   signature = "Seurat",
   definition = function(object,
                         sample_name,
+                        spatial_method,
                         assay_name = "Spatial",
                         image_name = "slice1",
                         transfer_meta_data = TRUE,
@@ -2066,7 +2069,11 @@ setMethod(
                         verbose = TRUE){
 
     # create empty spata object
-    spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
+    spata_object <-
+      initiateSpataObject_Empty(
+        sample_name = sample_name,
+        spatial_method = spatial_method
+        )
 
     confuns::give_feedback(
       msg = "Transferring data.",
@@ -2272,11 +2279,7 @@ setMethod(
 
     spata_object <- setInitiationInfo(spata_object)
 
-    spata_object <-
-      setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
-
-    spata_object <-
-      setActiveExpressionMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+    spata_object <- setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
 
     confuns::give_feedback(
       msg = "Done.",

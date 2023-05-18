@@ -102,6 +102,35 @@ setBarcodes <- function(object, barcodes){
 
 # setC --------------------------------------------------------------------
 
+
+
+#' @title Set center to center distance
+#'
+#' @description Sets center to center distance in slot `$ccd` of the `SpatialMethod`
+#' of the object.
+#'
+#' @param ccd Distance measure of length one in SI units.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#' @inheritSection section_dummy Distance measures
+#'
+#' @export
+#'
+setCCD <- function(object, ccd){
+
+  is_dist_si(input = ccd, error = TRUE)
+
+  method <- getSpatialMethod(object)
+
+  method@info[["ccd"]] <- ccd[1]
+
+  object <- setSpatialMethod(object, method = method)
+
+  return(object)
+
+}
+
+
 #' @title Set cnv-results
 #'
 #' @inherit check_sample params
@@ -163,7 +192,7 @@ setCoordsDf <- function(object, coords_df, ...){
 #' @title Set data matrices
 #'
 #' @description \code{SPATA} in general distinguishes between three types of data matrices.
-#' There are \emph{count-matrices} containing the raw counts, \emph{normalized-matrices} 
+#' There are \emph{count-matrices} containing the raw counts, \emph{normalized-matrices}
 #' containing (log-)normalized counts, and \emph{scaled-matrices} containing scaled, denoised or in any other
 #' way processed and normalized count data.
 #'
@@ -203,8 +232,6 @@ setCountMatrix <- function(object, count_mtr, of_sample = NA){
   return(object)
 
 }
-
-
 
 # setD --------------------------------------------------------------------
 
@@ -961,6 +988,88 @@ setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
   return(object)
 
 }
+
+
+#' @title Set the `SpatialMethod` object
+#'
+#' @description Sets the object of class `SpatialMethod`.
+#'
+#' @param method An object of class `SpatialMethod`.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setSpatialMethod <- function(object, method){
+
+  object@information$method <- method
+
+  return(object)
+
+}
+
+
+#' @title Set slot content of `SpatialMethod` object
+#'
+#' @description Sets content of slot in the `SpatialMethod` object. Use with
+#' caution.
+#'
+#' @param slot Name of the slot.
+#' @param content Content to be set.
+#' @inherit setSpatialMethod params return
+#'
+#' @export
+#'
+setSpatialMethodSlot <- function(object, slot, content){
+
+  confuns::is_value(slot, mode = "character")
+
+  method <- getSpatialMethod(object)
+
+  methods::slot(method, name = slot) <- content
+
+  object <- setSpatialMethod(object, method)
+
+  return(object)
+
+}
+
+#' @title Set information of `SpatialMethod` object
+#'
+#' @description Sets information in slot `@info` of the
+#' `SpatialMethod`-object.
+#'
+#' @inherit setSpatialMethod params return
+#' @param slot Character value. The list-slot of slot `@info`
+#' of the `SpatialMethod` object as in `@info[[slot]]`.
+#' @param content The content to set.
+#'
+#' @export
+#'
+setSpatialMethodInfo <- function(object, slot, content){
+
+  confuns::is_value(slot, mode = "character")
+
+  if(slot %in% protected_spatial_method_info_slots){
+
+    stop(
+      glue::glue(
+        "Slot '{slot}' is protected and can must be set with its appropriate function."
+        )
+      )
+
+  }
+
+  method <- getSpatialMethod(object)
+
+  method$info[[slot]] <- content
+
+  object <- setSpatialMethod(object, method)
+
+  return(object)
+
+}
+
 
 # setT --------------------------------------------------------------------
 

@@ -9,8 +9,6 @@ plotPcaVariation(object, n_pcs = NULL, of_sample = NA)
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{n_pcs}{Numeric value. Denotes the number of principal components to be included.}
-
 \item{of_sample}{This argument is currently inactive. It might be reactivated when
 spata-objects can store more than one sample.}
 }

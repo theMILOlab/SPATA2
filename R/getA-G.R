@@ -1116,20 +1116,17 @@ getExpressionMatrix <- function(object,
 
   deprecated(...)
 
-  # lazy control
   check_object(object)
-
-  # adjusting control
 
   if(base::is.null(mtr_name)){
 
-    active_mtr <- getActiveExpressionMatrixName(object)
+    active_mtr <- getActiveMatrixName(object)
 
     if(base::is.null(active_mtr) || !active_mtr %in% getExpressionMatrixNames(object)){
 
       active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
 
-      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
+      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please specify `mtr_name`."))
 
     }
 

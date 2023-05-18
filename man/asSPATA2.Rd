@@ -14,6 +14,7 @@ asSPATA2(object, ...)
 \S4method{asSPATA2}{Seurat}(
   object,
   sample_name,
+  spatial_method,
   assay_name = "Spatial",
   image_name = "slice1",
   transfer_meta_data = TRUE,
@@ -52,6 +53,9 @@ none are transferred.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{spatial_method}{Character value. The name of the spatial method that underlies
+the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'Unknown'}.}
 
 \item{transfer_dim_red}{A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
 tSNE) from the input object to the output object.}

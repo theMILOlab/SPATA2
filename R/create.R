@@ -1595,7 +1595,7 @@ createImageAnnotations <- function(object, ...){
 }
 
 
-#' @title Create S4 Image object for SPATA2
+#' @title Create object of class `HistologyImaging`
 #'
 #' @description Creates an object of class `HistologyImaging` that is used to
 #' store the image, image meta data and image annotations.

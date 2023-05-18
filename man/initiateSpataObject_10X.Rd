@@ -98,7 +98,7 @@ manipulate the way the \code{spata2} object is processed. For all of these argum
 \item{If set to FALSE the processing function is skipped.}
 \item{If set to TRUE the respective function is called with it's default argument settings. Note: \code{RunUMAP()} needs
 additional input!}
-\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
+\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the \code{Seurat} object to be constructed must not be named and will be
 passed to every function as the first argument!!!.)}
 }
 

@@ -26,6 +26,8 @@ findSeuratClusters(
 \item{FindNeighbors}{A named list of arguments given to \code{Seurat::FindNeighbors()}, TRUE or FALSE.}
 
 \item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
+
+\item{...}{Additional parameters given to \code{Seurat::CreateSeuratObject()}.}
 }
 \value{
 A tidy spata-data.frame containing the cluster variables.

@@ -477,7 +477,7 @@ create_spatial_trajectories_descr <- list(
 
 
 
-current_spata_version <- list(major = 2, minor = 0, patch = 0)
+current_spata_version <- list(major = 2, minor = 0, patch = 2)
 
 
 # d -----------------------------------------------------------------------
@@ -672,6 +672,10 @@ plot_positions <- c("top_right", "top_left", "bottom_right", "bottom_left")
 
 projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")
 
+
+#' @export
+protected_spatial_method_info_slots <- c("ccd")
+
 #' @export
 protected_variable_names <- c(
   "barcodes",
@@ -683,6 +687,8 @@ protected_variable_names <- c(
   "x",
   "y"
 )
+
+
 
 pub_dropbox_links <- list(
   "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",
@@ -802,6 +808,9 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 #' @export
 spatial_methods <-
   list(
+    Unknown = SpatialMethod(
+      name = "Unknown"
+    ),
     Visium =
       SpatialMethod(
         fiducial_frame = list(x = "8mm", y = "8mm"),

@@ -11,7 +11,7 @@ initiateSpataObject_Empty(sample_name, spatial_method = "Visium")
 analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.}
 }
 \value{
-An empty object of class \code{SPATA2}.
+An empty object of class \code{spata2}.
 }
 \description{
 Initiate an empty \code{spata2} object

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{createHistologyImaging}
 \alias{createHistologyImaging}
-\title{Create S4 Image object for SPATA2}
+\title{Create object of class \code{HistologyImaging}}
 \usage{
 createHistologyImaging(
   image,

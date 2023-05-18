@@ -22,8 +22,6 @@ joinWithUmap(object, spata_df, verbose = NULL, force = FALSE, of_sample = NA)
 \arguments{
 \item{object}{An object of class \code{spata2}.}
 
-\item{n_pcs}{Numeric value. Denotes the number of principal components to be included.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

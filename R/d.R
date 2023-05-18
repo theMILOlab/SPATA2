@@ -45,7 +45,7 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be in the near future.{ref_caller}"
+          "Function `{fn_name}()` is deprecated and will be deleted in the near future.{ref_caller}"
         )
 
     }

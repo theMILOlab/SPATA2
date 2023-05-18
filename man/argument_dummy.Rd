@@ -223,6 +223,9 @@ Processing of the image output depending on argument \code{expand} happens after
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 
+\item{spatial_method}{Character value. The name of the spatial method that underlies
+the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'Unknown'}.}
+
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of image annotation with tags} for more information.}
 

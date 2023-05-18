@@ -8,6 +8,7 @@ initiateSpataObject_ExprMtr(
   coords_df,
   expr_mtr,
   sample_name,
+  spatial_method = "Unknown",
   count_mtr = NULL,
   mtr_name = "scaled",
   image = NULL,
@@ -28,7 +29,7 @@ initiateSpataObject_ExprMtr(
 \item{coords_df}{Data.frame containing information about the positions of all
 barcode-spots in form of a numeric \emph{x}- and \emph{y}-variable. The key-variable
 \emph{barcodes} needs to be of type character and must be identical to the column names
-of the input matrix (\code{expr_mtr}).}
+of the input matrix.}
 
 \item{expr_mtr}{A numeric matrix. The expression matrix to be used.}
 
