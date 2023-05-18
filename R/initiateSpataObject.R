@@ -994,8 +994,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
   confuns::give_feedback(msg = "Initiating `spata2` object.", verbose = verbose)
 
-  spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name)
-  spata_object@information$method <- spatial_methods[["Visium"]]
+  spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name, spatial_method = "Visium")
 
   # -----
 
