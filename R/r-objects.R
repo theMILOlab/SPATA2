@@ -476,8 +476,8 @@ create_spatial_trajectories_descr <- list(
 )
 
 
-
-current_spata_version <- list(major = 2, minor = 0, patch = 2)
+#' @export
+current_spata_version <- list(major = 2, minor = 0, patch = 3)
 
 
 # d -----------------------------------------------------------------------

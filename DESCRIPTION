@@ -1,7 +1,7 @@
 Package: SPATA2
 Type: Package
 Title: A Toolbox for Spatial Gene Expression Analysis
-Version: 2.0.2
+Version: 2.0.3
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]", 
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]", 
