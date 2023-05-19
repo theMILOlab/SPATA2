@@ -1044,12 +1044,18 @@ runCnvAnalysis <- function(object,
     msg <- glue::glue("Saving infercnv-object under '{save_dir}'.")
 
     confuns::give_feedback(msg = msg, verbose = verbose)
+    
+    if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
 
     base::saveRDS(infercnv_obj, file = save_dir)
 
   }
 
   confuns::give_feedback(msg = "Plotting results.", verbose = verbose)
+  
+  
+  if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
+
 
   plot_results <-
     confuns::call_flexibly(
