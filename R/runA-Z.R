@@ -1062,7 +1062,7 @@ runCnvAnalysis <- function(object,
       fn = "plot_cnv",
       fn.ns = "infercnv",
       fn.ns.sep = ":::",
-      default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder),
+      default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder, "write_expr_matrix"=True),
       v.fail = NULL
     )
 
@@ -1078,7 +1078,7 @@ runCnvAnalysis <- function(object,
     plot_results <-
       base::tryCatch({
 
-        infercnv::plot_cnv(infercnv_obj = infercnv_obj, out_dir = directory_cnv_folder)
+        infercnv::plot_cnv(infercnv_obj = infercnv_obj, out_dir = directory_cnv_folder, write_expr_matrix=T)
 
       }, error = function(error){
 
