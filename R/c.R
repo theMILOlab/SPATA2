@@ -609,3 +609,19 @@ cropSpataObject <- function(object, xrange, yrange, verbose = NULL){
   return(object_cropped)
 
 }
+
+
+
+# cu ----------------------------------------------------------------------
+
+#' @title The current version of `SPATA2`
+#' @description Outputs the current version of the package.
+#'
+#' @return List of three numeric slots: *major*, *minor*, *patch*
+#'
+#' @export
+currentSpata2Version <- function(){
+
+  current_spata2_version
+
+}

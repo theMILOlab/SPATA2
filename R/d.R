@@ -157,6 +157,27 @@ deprecatedArguments <- function(opt = "generally", fn_name = NULL){
 
 }
 
+#' @title Information about deprecated aspects
+#'
+#' @description Outputs a list of recently deprecated content as well
+#' as what it was replaced by.
+#'
+#' @return List of three slots:
+#'  \itemize{
+#'   \item{fns:}{ A list of generally deprecated functions. Slot names are the functions that have been deprecated. Slot content is the name of the function it has been replaced by.}
+#'   \item{args:}{ A list of systematic argument renaming. Slot names are the argument names that have been deprecated. Slot content is the name of the argument the old one has been replaced by.}
+#'   \item{args_spec:}{ A list of function specific argument changes. Slot names are the function names. Slot content is a list organized as slot *args*.}
+#'   }
+#'
+#'  If content is `NA` there is no replacement und the function/argument has been deleted and is no longer in use.
+#'
+#' @export
+deprecatedInfo <- function(){
+
+  depr_info
+
+}
+
 
 
 
