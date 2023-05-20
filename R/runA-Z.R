@@ -1062,7 +1062,7 @@ runCnvAnalysis <- function(object,
       fn = "plot_cnv",
       fn.ns = "infercnv",
       fn.ns.sep = ":::",
-      default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder, "write_expr_matrix"=True),
+      default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder, "write_expr_matrix"=T),
       v.fail = NULL
     )
 
