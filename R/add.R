@@ -481,9 +481,11 @@ addFeatures <- function(object,
     }
 
     new_feature_df <-
-      dplyr::left_join(x = fdata,
-                       y = feature_df[,c("x", "y", feature_names)],
-                       by = c("x", "y")) %>%
+      dplyr::left_join(
+        x = fdata,
+        y = feature_df[,c("x", "y", feature_names)],
+        by = c("x", "y")
+      ) %>%
       dplyr::select(-x, -y)
 
     object <- setFeatureDf(object = object, feature_df = new_feature_df, of_sample = of_sample)
@@ -506,6 +508,12 @@ addFeatures <- function(object,
       if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
       base::warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
+
+    }
+
+    if(dplyr::n_distinct(feature_df[["barcodes"]]) != base::nrow(feature_df)){
+
+      stop("Variable 'barcodes' does not uniquely identfiy each observation. Number of unique barcodes must be equal to number of rows.")
 
     }
 
