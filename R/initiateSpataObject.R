@@ -179,9 +179,6 @@ initiateSpataObject_CountMtr <- function(coords_df,
         verbose = FALSE
       )
 
-    spata_object <-
-      setCoordsDf(object = spata_object, coords_df = coords_df)
-
     if(!base::is.null(image_object)){
 
       spata_object <- setImageObject(object = spata_object, image_object = image_object)
@@ -205,6 +202,9 @@ initiateSpataObject_CountMtr <- function(coords_df,
       )
 
     }
+
+    spata_object <-
+      setCoordsDf(object = spata_object, coords_df = coords_df)
 
     spata_object <- setInitiationInfo(spata_object)
 

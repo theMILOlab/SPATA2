@@ -64,16 +64,16 @@ legendTop <- purrr::partial(.f = ggplot2::theme, legend.position = "top")
 
 # load --------------------------------------------------------------------
 
-load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name, 
+load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name,
                               scaled_mtr_name, verbose){
 
     # helper for asSPATA2() for AnnData objects
-    # load count/normalized/scaled matrices 
+    # load count/normalized/scaled matrices
     # (1) based on given input names
     # (2) if these not available, based on defaults "counts"/"normalized"/"scaled" names
     # (3) if "normalized" not available, adata$X will be set to "normalized"
 
-    if(verbose){ message("The AnnData object contains the following layers: ", paste(names(adata$layers), 
+    if(verbose){ message("The AnnData object contains the following layers: ", paste(names(adata$layers),
                 collapse=", ")) }
 
     # count matrix
@@ -103,13 +103,13 @@ load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name,
 
     } else if(!is.null(adata$X)){
 
-      warning("No normalized matrix found. Using adata$X as normalized matrix. If you want to use a different matrix, 
+      warning("No normalized matrix found. Using adata$X as normalized matrix. If you want to use a different matrix,
               specify a name for the normalized matrix via `normalized_mtr_name`")
       normalized_mtr <- Matrix::t(adata$X)
 
     } else if(is.null(adata$X)){
 
-      warning("No normalized matrix found to import. You can specify the normalized matrix AnnData layer via 
+      warning("No normalized matrix found to import. You can specify the normalized matrix AnnData layer via
               `normalized_mtr_name`")
       normalized_mtr <- NULL
 
@@ -343,7 +343,7 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
     type = "files")
 
   confuns::give_feedback(
-    msg = "Loading spata-object.",
+    msg = "Loading `spata2` object.",
     verbose = verbose
   )
 
