@@ -1984,7 +1984,7 @@ setMethod(
       dplyr::mutate(sample = {{sample_name}}) %>%
       dplyr::select(barcodes = cell_ID, sample, x = sdimx, y = sdimy)
 
-    count_mtr <- gobject@raw_exprs
+    count_mtr <- object@raw_exprs
 
     # initiate object
     spata_obj <-
@@ -2311,7 +2311,7 @@ setMethod(
     stop("Package 'anndata' is required but not installed.")
   }
 
-  # check anndata object
+    # check anndata object
 
     if(nrow(object) == 0 | ncol(object) == 0){
       stop("AnnData object is empty.")
@@ -2334,9 +2334,17 @@ setMethod(
 
     # extract library_id and spatial dataframe
 
-    library_id <- check_spatial_data(object$uns, library_id = image_name)[[1]]
-    spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]]
+    # run only if object$uns[["spatial"]] is not NULL
+    if(!is.null(object$uns[["spatial"]])){
 
+      library_id <- check_spatial_data(object$uns, library_id = image_name)[[1]]
+      spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]]
+
+    } else {
+
+      stop("AnnData object contains no spatial data in the default slot object$uns[['spatial']].")
+
+    }
 
     # check and transfer image
 
@@ -2405,13 +2413,15 @@ setMethod(
 
 
     # transfer matrices
+
     mtrs <- load_adata_matrix(adata=object, count_mtr_name=count_mtr_name,
       normalized_mtr_name=normalized_mtr_name, scaled_mtr_name=scaled_mtr_name, verbose=verbose)
 
     spata_object <-
       setCountMatrix(
         object = spata_object,
-        count_mtr = mtrs$count_mtr[rowSums(as.matrix(mtrs$count_mtr)) != 0, ] # --------------- why excluding empty genes?
+        count_mtr = mtrs$count_mtr
+        #count_mtr = mtrs$count_mtr[rowSums(as.matrix(mtrs$count_mtr)) != 0, ] # --------------- why excluding empty genes?
                                                                               # also code is not efficient because as.matrix() converts sparse into dense matirx
                                                                               # plus currently not compatible in case of empty matrix
         )
@@ -2465,9 +2475,9 @@ setMethod(
 
         base::data.frame(
 
-          barcodes = adata$obs_names,
-          umap1 = adata$obsm$X_tsne[,1],
-          umap2 = adata$obsm$X_tsne[,2],
+          barcodes = object$obs_names,
+          umap1 = object$obsm$X_tsne[,1],
+          umap2 = object$obsm$X_tsne[,2],
           stringsAsFactors = FALSE
         ) %>% tibble::remove_rownames()
 
@@ -2490,9 +2500,9 @@ setMethod(
 
         data.frame(
 
-        barcodes = adata$obs_names,
-        umap1 = adata$obsm$X_umap[,1],
-        umap2 = adata$obsm$X_umap[,2],
+        barcodes = object$obs_names,
+        umap1 = object$obsm$X_umap[,1],
+        umap2 = object$obsm$X_umap[,2],
         stringsAsFactors = FALSE
 
          ) %>% tibble::remove_rownames()
@@ -2578,9 +2588,6 @@ setMethod(
 
     spata_object <-
       setActiveMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
-
-    spata_object <-
-      setActiveExpressionMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
 
     confuns::give_feedback(
       msg = "Done.",
