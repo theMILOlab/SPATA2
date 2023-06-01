@@ -1089,7 +1089,7 @@ setSpatialMethodInfo <- function(object, slot, content){
 #'  \item{*outline* :}{logical. `TRUE` if identified as a spot that lies on the edge of the tissue.}
 #' }
 #'
-#' @export
+#' @keywords internal
 #'
 setTissueOutline <- function(object, verbose = NULL){
 

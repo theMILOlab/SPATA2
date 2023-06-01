@@ -46,3 +46,4 @@ and \code{identifyTissueOutline()}.
 
 
 }
+\keyword{internal}
