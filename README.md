@@ -1,5 +1,5 @@
 # SPATA2
-A Toolbox for Spatial Gene Expression Analysis
+A framework for **SPA**tial **T**ranscriptomic **A**nalysis.
 
 For detailed tutorials and examples click on the link below:
 
@@ -7,7 +7,7 @@ https://themilolab.github.io/SPATA2/
 
 If you have used SPATA2 for your analysis please consider citing: 
 
-Ravi VM, Will P, Kueckelhaus J, Sun N, Joseph K, Salié H, Vollmer L, Kuliesiute U, von Ehr J, Benotmane JK, Neidert N, Follo M, Scherer F, Goeldner JM, Behringer SP, Franco P, Khiat M, Zhang J, Hofmann UG, Fung C, Ricklefs FL, Lamszus K, Boerries M, Ku M, Beck J, Sankowski R, Schwabenland M, Prinz M, Schüller U, Killmer S, Bengsch B, Walch AK, Delev D, Schnell O, Heiland DH. Spatially resolved multi-omics deciphers bidirectional tumor-host interdependence in glioblastoma. Cancer Cell. 2022 Jun 13;40(6):639-655.e13. doi: 10.1016/j.ccell.2022.05.009. PMID: 35700707.
+Ravi VM, Will P, Kueckelhaus J, Sun N, Joseph K, Salié H, Vollmer L, Kuliesiute U, von Ehr J, Benotmane JK, Neidert N, Follo M, Scherer F, Goeldner JM, Behringer SP, Franco P, Khiat M, Zhang J, Hofmann UG, Fung C, Ricklefs FL, Lamszus K, Boerries M, Ku M, Beck J, Sankowski R, Schwabenland M, Prinz M, Schüller U, Killmer S, Bengsch B, Walch AK, Delev D, Schnell O, Heiland DH. Spatially resolved multi-omics deciphers bidirectional tumor-host interdependence in glioblastoma. Cancer Cell. 2022 Jun 13;40(6):639-655.e13. doi: https://doi.org/10.1016/j.ccell.2022.05.009. PMID: 35700707.
 
 Inferring spatially transient gene expression pattern from spatial transcriptomic studies,
 Jan Kueckelhaus, Jasmin von Ehr, Vidhya M. Ravi, Paulina Will, Kevin Joseph, Juergen Beck, Ulrich G. Hofmann, Daniel Delev, Oliver Schnell, Dieter Henrik Heiland
