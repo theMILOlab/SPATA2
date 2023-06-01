@@ -2,30 +2,25 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTissueOutlineDf}
 \alias{getTissueOutlineDf}
-\title{Obtain outer barcode spots}
+\title{Obtain outline barcode spots}
 \usage{
-getTissueOutlineDf(object, force = FALSE, remove = TRUE)
+getTissueOutlineDf(object, remove = TRUE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
 
-\item{force}{Logical. If \code{TRUE}, forces computation.}
-
 \item{remove}{Logical. If \code{TRUE}, none-outline spots are removed from
 the output.}
 
-\item{outline_nn}{Numeric vector. Number of neighbors a barcode spot
-might have to be considered an outline spot.}
+\item{force}{Logical. If \code{TRUE}, forces computation.}
 }
 \value{
-Output of \code{getCoordsDf()} including a logical variable
-called \emph{outline} which indicates whether the spot belongs to the outlining
-spots or not and a character variable called \emph{section} that indicates to
-which tissue section the spots belong.
+Output of \code{getCoordsDf()} filtered based on the \emph{outline} variable.
 }
 \description{
 Identifies the barcode spots that lie on the edge
-of the tissue and returns a subset of the coordinates data.frame.
+of the tissue and returns a subset of the coordinates data.frame. Requires
+the results of \code{identifyTissueOutline()}.
 }
 \examples{
 
@@ -34,13 +29,16 @@ of the tissue and returns a subset of the coordinates data.frame.
 
  object <- downloadPubExample("MCI_LMU")
 
- to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
+ print(getTissueOutlineDf(object))
+
+ to_df <- getTissueOutlineDf(object, remove = FALSE)
 
  to_df[["outline"]] <- as.character(to_df[["outline"]])
 
  ggplot(to_df, mapping = aes(x = x, y = y)) +
    geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
+
 
 
 }

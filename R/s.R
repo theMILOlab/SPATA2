@@ -199,7 +199,6 @@ saveGeneSetDf <- function(object, directory){
 #' @export
 saveSpataObject <- function(object,
                             directory_spata = NULL,
-                            add_wd = FALSE,
                             verbose = NULL,
                             ...){
 
@@ -207,9 +206,11 @@ saveSpataObject <- function(object,
 
   confuns::is_value(directory_spata, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
+  directory_spata <- base::normalizePath(directory_spata, mustWork = FALSE)
+
   if(base::is.character(directory_spata)){
 
-    object <- setSpataDir(object, dir = directory_spata, add_wd = add_wd)
+    object <- setSpataDir(object, dir = directory_spata)
 
   }
 
@@ -1453,9 +1454,11 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   } else {
 
-    object@information[["subsetted"]]<- 1
+    object@information[["subsetted"]] <- 1
 
   }
+
+  object <- setTissueOutline(object, verbose = verbose)
 
   n_bcsp <- nBarcodes(object)
 

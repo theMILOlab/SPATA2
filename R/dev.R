@@ -152,7 +152,7 @@ arrange_as_polygon <- function(input_df){
       outline_order = base::which({{barcodes_ordered}} == barcodes)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::arrange(outline_order)
+    dplyr::arrange(atc)
 
   return(out_df)
 

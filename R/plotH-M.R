@@ -2868,8 +2868,6 @@ plotImageAnnotations <- function(object,
 }
 
 
-
-
 #' @title Plot histology image (ggplot2)
 #'
 #' @description Plots the histology image with `ggplot2`.

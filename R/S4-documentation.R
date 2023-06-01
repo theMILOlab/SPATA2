@@ -119,7 +119,8 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
                                image_info = "list",
                                justification = "list",
                                meta = "list",
-                               misc = "list")
+                               misc = "list"
+                               )
                              )
 
 

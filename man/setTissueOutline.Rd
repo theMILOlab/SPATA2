@@ -19,12 +19,12 @@ the computational progress will be printed.
 
 \itemize{
 \item{\emph{section} :}{ character. The identified tissue section. 0 means probable artefact spot.}
-\item{\emph{nn} :}{numeric. The number of neighbros of a spot.}
 \item{\emph{outline} :}{logical. \code{TRUE} if identified as a spot that lies on the edge of the tissue.}
 }
 }
 \description{
-Sets tissue outline.
+Sets tissue outline by calling \code{identifyTissueSections()}
+and \code{identifyTissueOutline()}.
 }
 \examples{
 
@@ -33,13 +33,16 @@ Sets tissue outline.
 
  object <- downloadPubExample("MCI_LMU")
 
- to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
+ print(getTissueOutlineDf(object))
+
+ to_df <- getTissueOutlineDf(object, remove = FALSE)
 
  to_df[["outline"]] <- as.character(to_df[["outline"]])
 
  ggplot(to_df, mapping = aes(x = x, y = y)) +
    geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
+
 
 
 }

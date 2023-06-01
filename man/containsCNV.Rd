@@ -3,14 +3,11 @@
 \name{containsCNV}
 \alias{containsCNV}
 \alias{containsHistologyImage}
-\alias{containsTissueOutline}
 \title{Check availability of miscellaneous content}
 \usage{
 containsCNV(object)
 
 containsHistologyImage(object)
-
-containsTissueOutline(object)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}

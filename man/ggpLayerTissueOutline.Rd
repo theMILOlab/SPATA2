@@ -8,7 +8,7 @@ ggpLayerTissueOutline(
   object,
   line_color = "grey",
   line_size = 0.5,
-  expand_outline = getCCD(object, "px"),
+  expand_outline = getCCD(object, "px") * 1.25,
   concavity = NULL,
   inc_outline = TRUE,
   ...

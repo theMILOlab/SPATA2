@@ -1076,7 +1076,8 @@ setSpatialMethodInfo <- function(object, slot, content){
 
 #' @title Set tissue outline
 #'
-#' @description Sets tissue outline.
+#' @description Sets tissue outline by calling `identifyTissueSections()`
+#' and `identifyTissueOutline()`.
 #'
 #' @inherit argument_dummy params
 #' @inherit getTissueOutlineDf examples
@@ -1085,7 +1086,6 @@ setSpatialMethodInfo <- function(object, slot, content){
 #'
 #' \itemize{
 #'  \item{*section* :}{ character. The identified tissue section. 0 means probable artefact spot.}
-#'  \item{*nn* :}{numeric. The number of neighbros of a spot.}
 #'  \item{*outline* :}{logical. `TRUE` if identified as a spot that lies on the edge of the tissue.}
 #' }
 #'
@@ -1104,20 +1104,8 @@ setTissueOutline <- function(object, verbose = NULL){
       verbose = TRUE
     )
 
-    to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
-
-    coords_df <-
-      getCoordsDf(object) %>%
-      dplyr::select(-dplyr::any_of(c("section", "outline")))
-
-    coords_df <-
-      dplyr::left_join(
-        x = coords_df,
-        y = to_df[,c("barcodes", "section", "outline")],
-        by = "barcodes"
-      )
-
-    object <- setCoordsDf(object, coords_df)
+    object <- identifyTissueSections(object)
+    object <- identifyTissueOutline(object)
 
     object@information$tissue_outline_set <- TRUE
 

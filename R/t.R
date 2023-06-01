@@ -254,6 +254,43 @@ theme_trajectory_fit <- function(){
 
 }
 
+
+# ti ----------------------------------------------------------------------
+
+
+#' @title Check availability of tissue information
+#'
+#' @description Checks if `identifyTissueSections()` and `identifyTissueOutline()`
+#' has been run successfully.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+#'
+tissueOutlineIdentified <- function(object){
+
+  coords_df <- getCoordsDf(object)
+
+  out <- "outline" %in% base::colnames(coords_df)
+
+  return(out)
+
+}
+
+#' @rdname tissueOutlineIdentified
+#' @export
+tissueSectionsIdentfied <- function(object){
+
+  coords_df <- getCoordsDf(object)
+
+  out <- "section" %in% base::colnames(coords_df)
+
+  return(out)
+
+}
+
+
 # tr ----------------------------------------------------------------------
 
 #' @title Transfer S4 slot content

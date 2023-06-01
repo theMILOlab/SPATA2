@@ -1430,6 +1430,12 @@ setMethod(
     coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
       dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(x = c("row", "col", "imagerow", "imagecol")),
+          .fns = base::as.numeric
+        )
+      ) %>%
+      dplyr::mutate(
         x = imagecol * scale_fct,
         y = imagerow * scale_fct
       ) %>%
@@ -1491,6 +1497,12 @@ setMethod(
 
     coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(x = c("row", "col", "imagerow", "imagecol")),
+          .fns = base::as.numeric
+        )
+      ) %>%
       dplyr::mutate(
         x = imagecol * scale_fct,
         y = imagerow * scale_fct,

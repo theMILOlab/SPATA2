@@ -57,6 +57,7 @@ plotSurface(object, ...)
   sctm_interpolate = FALSE,
   order_by = NULL,
   order_desc = FALSE,
+  na_rm = TRUE,
   ...
 )
 

@@ -151,7 +151,7 @@ getPixelScaleFactor <- function(object,
       getBarcodeSpotDistances(object, verbose = verbose) %>%
       dplyr::filter(bc_origin != bc_destination) %>%
       dplyr::group_by(bc_origin) %>%
-      dplyr::mutate(dist_round = round(distance, digits = 0)) %>%
+      dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
       dplyr::filter(dist_round == base::min(dist_round)) %>%
       dplyr::ungroup()
 
@@ -974,22 +974,18 @@ getStsDf <- function(object,
 
 # getT --------------------------------------------------------------------
 
-#' @title Obtain outer barcode spots
+#' @title Obtain outline barcode spots
 #'
 #' @description Identifies the barcode spots that lie on the edge
-#' of the tissue and returns a subset of the coordinates data.frame.
+#' of the tissue and returns a subset of the coordinates data.frame. Requires
+#' the results of `identifyTissueOutline()`.
 #'
 #' @inherit argument_dummy params
 #' @param remove Logical. If `TRUE`, none-outline spots are removed from
 #' the output.
-#' @param outline_nn Numeric vector. Number of neighbors a barcode spot
-#' might have to be considered an outline spot.
 #' @param force Logical. If `TRUE`, forces computation.
 #'
-#' @return Output of `getCoordsDf()` including a logical variable
-#' called *outline* which indicates whether the spot belongs to the outlining
-#' spots or not and a character variable called *section* that indicates to
-#' which tissue section the spots belong.
+#' @return Output of `getCoordsDf()` filtered based on the *outline* variable.
 #'
 #' @export
 #'
@@ -1000,7 +996,9 @@ getStsDf <- function(object,
 #'
 #'  object <- downloadPubExample("MCI_LMU")
 #'
-#'  to_df <- getTissueOutlineDf(object, force = TRUE, remove = FALSE)
+#'  print(getTissueOutlineDf(object))
+#'
+#'  to_df <- getTissueOutlineDf(object, remove = FALSE)
 #'
 #'  to_df[["outline"]] <- as.character(to_df[["outline"]])
 #'
@@ -1009,65 +1007,12 @@ getStsDf <- function(object,
 #'    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
 #'
 #'
-getTissueOutlineDf <- function(object, force = FALSE, remove = TRUE){
+#'
+getTissueOutlineDf <- function(object, remove = TRUE){
 
-  if(!containsTissueOutline(object) | base::isTRUE(force)){
+  base::stopifnot(tissueOutlineIdentified(object))
 
-    coords_df <-
-      getCoordsDf(object) %>%
-      add_tissue_section_variable(
-        coords_df = .,
-        ccd = getCCD(object, unit = "px"),
-        name = "section",
-        minPts = 3
-      )
-
-    coords_df <-
-      purrr::map_df(
-        .x = base::unique(coords_df[coords_df$section != "0",][["section"]]),
-        .f = function(section){
-
-          coords_df_sub <-
-            dplyr::filter(coords_df, section == {{section}})
-
-          coords_mtr <-
-            tibble::column_to_rownames(coords_df_sub, "barcodes") %>%
-            dplyr::select(x, y) %>%
-            base::as.matrix()
-
-          out <-
-            concaveman::concaveman(points = coords_mtr) %>%
-            base::as.data.frame() %>%
-            tibble::as_tibble() %>%
-            magrittr::set_colnames(c("xp", "yp")) %>%
-            dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
-
-          map_to_bcsp <-
-            tidyr::expand_grid(
-              id = out$id,
-              barcodes = coords_df_sub$barcodes
-            ) %>%
-            dplyr::left_join(y = coords_df_sub[,c("barcodes", "x", "y")], by = "barcodes") %>%
-            dplyr::left_join(y = out, by = "id") %>%
-            dplyr::group_by(id, barcodes) %>%
-            dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
-            dplyr::ungroup() %>%
-            dplyr::group_by(id) %>%
-            dplyr::filter(dist == base::min(dist)) %>%
-            dplyr::ungroup()
-
-          coords_df_sub[["outline"]] <- coords_df_sub[["barcodes"]] %in% map_to_bcsp[["barcodes"]]
-
-          return(coords_df_sub)
-
-        }
-      )
-
-  } else {
-
-    coords_df <- getCoordsDf(object)
-
-  }
+  coords_df <- getCoordsDf(object)
 
   if(base::isTRUE(remove)){
 

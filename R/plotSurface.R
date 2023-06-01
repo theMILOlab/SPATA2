@@ -168,7 +168,7 @@ setMethod(
       mapping <- ggplot2::aes(x = x, y = y)
 
     }
-    if(n_points >= 10000 | base::isTRUE(use_scattermore)){
+    if(n_points >= 10000 & base::isTRUE(use_scattermore)){
 
       point_add_on <-
         confuns::make_scattermore_add_on(
@@ -286,6 +286,7 @@ setMethod(
                         sctm_interpolate = FALSE,
                         order_by = NULL,
                         order_desc = FALSE,
+                        na_rm = TRUE,
                         ...){
 
 
@@ -312,11 +313,11 @@ setMethod(
 
     n_points <- base::nrow(coords_df)
 
-    if(n_points >= 10000 | base::isTRUE(use_scattermore)){
+    if(n_points >= 10000 & base::isTRUE(use_scattermore)){
 
       point_add_on <-
         confuns::make_scattermore_add_on(
-          mapping = mapping,
+          mapping = ggplot2::aes_string(x = "x", y = "y", color = color_by, alpha = alpha_by),
           pt.alpha = pt_alpha,
           pt.color = pt_color,
           pt.size = pt_size,

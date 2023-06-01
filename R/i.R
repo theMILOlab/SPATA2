@@ -2,6 +2,115 @@
 
 
 
+
+# id ----------------------------------------------------------------------
+
+#' @title Identify tissue sections
+#'
+#' @description Identifies how many non-contiguous tissue sections
+#' the data set contains and maps the barcode-spots to them.
+#'
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#'
+#' @return An updated `spata2` object. The coordinates data.frame
+#' as obtained by `getCoordsDf()` contains an additional, character
+#' variable named *section* indicating the tissue section a barcode
+#' spot was mapped to.
+#'
+#' @export
+identifyTissueSections <- function(object, eps = getCCD(object, "px")*1.25, minPts = 3){
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    add_tissue_section_variable(
+      coords_df = .,
+      ccd = eps,
+      name = "section",
+      minPts = minPts
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
+
+
+#' @title Identify tissue outline
+#'
+#' @description Identifies the barcode-spots that lie on the edge
+#' of each tissue section and, thus, outline it. Requires `identifyTissueSections()`
+#' results.
+#'
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#'
+#' @return An updated `spata2` object. The coordinates data.frame
+#' as obtained by `getCoordsDf()` contains an additional, logical
+#' variable named *outline* indicating whether the spot belongs
+#' to the outline spots of the respective tissue section indicated by
+#' variable *section*.
+#'
+#' @export
+identifyTissueOutline <- function(object){
+
+  base::stopifnot(tissueSectionsIdentfied(object))
+
+  coords_df <- getCoordsDf(object)
+
+  coords_df <-
+    purrr::map_df(
+      .x = base::unique(coords_df[["section"]]),
+      .f = function(section){
+
+        coords_df_sub <-
+          dplyr::filter(coords_df, section == {{section}})
+
+        coords_mtr <-
+          tibble::column_to_rownames(coords_df_sub, "barcodes") %>%
+          dplyr::select(x, y) %>%
+          base::as.matrix()
+
+        out <-
+          concaveman::concaveman(points = coords_mtr) %>%
+          base::as.data.frame() %>%
+          tibble::as_tibble() %>%
+          magrittr::set_colnames(c("xp", "yp")) %>%
+          dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
+
+        map_to_bcsp <-
+          tidyr::expand_grid(
+            id = out$id,
+            barcodes = coords_df_sub$barcodes
+          ) %>%
+          dplyr::left_join(y = coords_df_sub[,c("barcodes", "x", "y")], by = "barcodes") %>%
+          dplyr::left_join(y = out, by = "id") %>%
+          dplyr::group_by(id, barcodes) %>%
+          dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
+          dplyr::ungroup() %>%
+          dplyr::group_by(id) %>%
+          dplyr::filter(dist == base::min(dist)) %>%
+          dplyr::ungroup()
+
+        coords_df_sub[["outline"]] <- coords_df_sub[["barcodes"]] %in% map_to_bcsp[["barcodes"]]
+
+        return(coords_df_sub)
+
+      }
+    ) %>%
+    # outline of section == 0 is always FALSE
+    dplyr::mutate(
+      outline = dplyr::if_else(condition = section == "0", true = FALSE, false = outline)
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
+
+
 # im ----------------------------------------------------------------------
 
 #' @keywords internal
@@ -1222,7 +1331,15 @@ are_all_area_or_dist <- function(input, error = FALSE){
 #'
 is_dist <- function(input, error = FALSE){
 
-  res <- is_dist_si(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
+  if(base::is.null(input)){
+
+    res <- FALSE
+
+  } else {
+
+    res <- is_dist_si(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
+
+  }
 
   feedback_distance_input(x = res, error = error)
 
@@ -1234,7 +1351,13 @@ is_dist <- function(input, error = FALSE){
 #' @export
 is_dist_si <- function(input, error = FALSE){
 
-  if(base::is.character(input)){
+  if(base::is.null(input)){
+
+    res <- NULL
+
+    feedback_distance_input(res, error = error)
+
+  } else if(base::is.character(input)){
 
     res <- stringr::str_detect(input, pattern = regex_si_dist)
 
@@ -1286,7 +1409,13 @@ is_dist_si <- function(input, error = FALSE){
 #' @export
 is_dist_pixel <- function(input, error = FALSE){
 
-  if(base::is.character(input) | is_numeric_input(input)){
+  if(base::is.null(input)){
+
+    res <- FALSE
+
+    feedback_distance_input(res, error = error)
+
+  } else if(base::is.character(input) | is_numeric_input(input)){
 
     res <- stringr::str_detect(input, pattern = regex_pxl_dist)
 

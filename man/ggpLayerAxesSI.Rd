@@ -12,6 +12,8 @@ ggpLayerAxesSI(
   expand = NULL,
   add_labs = FALSE,
   round = 2,
+  xlim = NULL,
+  ylim = NULL,
   ...
 )
 }
@@ -48,6 +50,9 @@ Valid input:
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}
+
+\item{xlim, ylim}{Vectors of length two. Distance measures that set the limits
+on the respective axes.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

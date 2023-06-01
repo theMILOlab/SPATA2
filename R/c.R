@@ -496,11 +496,11 @@ containsPixelScaleFactor <- function(object){
 
 }
 
-#' @rdname containsCNV
-#' @export
 containsTissueOutline <- function(object){
 
-  base::isTRUE(object@information$tissue_outline_set)
+  deprecated(fn = TRUE)
+
+  tissueOutlineIdentified(object)
 
 }
 

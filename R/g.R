@@ -116,6 +116,8 @@ geom_text_fixed <- function(...,
 #'
 ggpInit <- function(object = "object", theme = "void", data = "coords"){
 
+  require(ggplot2)
+
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
   out <- list()
@@ -197,6 +199,8 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' @param breaks_x,breaks_y Deprecated in favor of `breaks`.
 #' @param frame_by Deprecated. Use `ggplayerFrame*()` - functions.
 #' @param add_labs Logical. If \code{TRUE}, adds x- and y-labs to the plot.
+#' @param xlim,ylim Vectors of length two. Distance measures that set the limits
+#' on the respective axes.
 #'
 #' @inherit is_dist details
 #'
@@ -256,6 +260,8 @@ ggpLayerAxesSI <- function(object,
                            expand = NULL,
                            add_labs = FALSE,
                            round = 2,
+                           xlim = NULL,
+                           ylim = NULL,
                            ...){
 
   deprecated(...)
@@ -374,7 +380,9 @@ ggpLayerAxesSI <- function(object,
 
     pxl_df <- getPixelDf(object)
 
-    if(base::is.numeric(xlim)){
+    if(is_dist(xlim)){
+
+      xlim <- as_pixel(xlim, object = object, add_attr = FALSE)
 
       pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = x, left = xlim[1], right = xlim[2]))
 
@@ -421,7 +429,9 @@ ggpLayerAxesSI <- function(object,
 
     pxl_df <- getPixelDf(object)
 
-    if(base::is.numeric(ylim)){
+    if(is_dist(ylim)){
+
+      ylim <- as_pixel(ylim, object = object, add_attr = add_attr)
 
       pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = y, left = ylim[1], right = ylim[2]))
 
@@ -432,7 +442,6 @@ ggpLayerAxesSI <- function(object,
       stats::quantile()
 
   }
-
 
   # make add on
   axes <-
@@ -2077,7 +2086,7 @@ ggpLayerScaleBarSI <- function(object,
 ggpLayerTissueOutline <- function(object,
                                   line_color = "grey",
                                   line_size = 0.5,
-                                  expand_outline = getCCD(object, "px"),
+                                  expand_outline = getCCD(object, "px")*1.25,
                                   concavity = NULL,
                                   inc_outline = TRUE,
                                   ...){
@@ -2086,7 +2095,7 @@ ggpLayerTissueOutline <- function(object,
 
   coords_df <- getCoordsDf(object)
 
-  if(!containsTissueOutline(object)){
+  if(!tissueSectionsIdentfied(object)){
 
     coords_df[["section"]] <- "1"
     coords_df[["outline"]] <- TRUE
@@ -2111,8 +2120,11 @@ ggpLayerTissueOutline <- function(object,
         df_sub <- dplyr::filter(outline_df, section == {{s}})
 
         df_out <-
-          arrange_by_outline_variable(df_sub) %>%
-          dplyr::select(x,y) %>%
+          concaveman::concaveman(
+            points = base::as.matrix(df_sub[,c("x", "y")]),
+            concavity = concavity
+            ) %>%
+          magrittr::set_colnames(value = c("x", "y")) %>%
           buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
           dplyr::mutate(section = {{s}})
 
@@ -2122,15 +2134,12 @@ ggpLayerTissueOutline <- function(object,
     )
 
   out <-
-    ggforce::geom_mark_hull(
+    ggplot2::geom_polygon(
       data = outline_df,
       mapping = ggplot2::aes(x = x, y = y, group = section),
-      alpha = 1,
+      alpha = 0,
       color = line_color,
-      size = line_size,
-      expand = 0,
-      concavity = concavity,
-      ...
+      size = line_size
     )
 
   return(out)

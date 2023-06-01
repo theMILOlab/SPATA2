@@ -22,13 +22,7 @@ saveCorrespondingSeuratObject(
   verbose = NULL
 )
 
-saveSpataObject(
-  object,
-  directory_spata = NULL,
-  add_wd = FALSE,
-  verbose = NULL,
-  ...
-)
+saveSpataObject(object, directory_spata = NULL, verbose = NULL, ...)
 }
 \arguments{
 \item{cds}{A valid cell-data-set. (from the monocle3 platform)}

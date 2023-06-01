@@ -1013,7 +1013,6 @@ initiateSpataObject_10X <- function(directory_10X,
             seurat_object = processed_seurat_object,
             object = spata_object,
             directory_seurat = directory_seurat,
-            combine_with_wd = combine_with_wd,
             verbose = verbose
           )
 
@@ -1091,6 +1090,9 @@ initiateSpataObject_10X <- function(directory_10X,
 
   spata_object <- setInitiationInfo(spata_object)
 
+  spata_object <- identifyTissueSections(spata_object)
+  spata_object <- identifyTissueOutline(spata_object)
+
   # save spata object
   if(base::is.character(directory_spata)){
 
@@ -1101,7 +1103,6 @@ initiateSpataObject_10X <- function(directory_10X,
           saveSpataObject(
             object = spata_object,
             directory_spata = directory_spata,
-            add_wd = add_wd,
             verbose = verbose
           )
 
@@ -1123,8 +1124,6 @@ initiateSpataObject_10X <- function(directory_10X,
     )
 
   }
-
-  spata_object <- setTissueOutline(spata_object)
 
   # return output
   confuns::give_feedback(

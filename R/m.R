@@ -290,6 +290,72 @@ mergeGroups <- function(object,
 }
 
 
+#' @title Merge tissue sections
+#'
+#' @description Merges tissue sections that have been mistakenly identified
+#' as two non-contiguous sections.
+#'
+#' @inherit argument_dummy params
+#' @param ... Collection of vectors that carry the names of the sections
+#' to be merged.
+#'
+#' @inherit update_dummy return
+#'
+#' @seealso [`identifyTissueSections()`]
+#'
+#' @export
+#'
+#' @examples
+#'
+#' # in this fictional example the algorithm identified 6 tissue sections
+#' # this call merges sections 1,2,3 to section 1_2_3 and sections 4,5,6 to
+#' # 4_5_6
+#' \dontrun{ object <- mergeTissueSections(object, c(1,2,3), c(4,5,6)) }
+#'
+#'
+mergeTissueSections <- function(object, ...){
+
+  base::stopifnot(tissueSectionsIdentfied(object))
+
+  merge_input <- purrr::keep(.x = list(...), .p = base::is.numeric)
+
+  coords_df <- getCoordsDf(object)
+
+  # check input
+  sections_to_merge <-
+    purrr::map(.x = merge_input, .f = base::as.character) %>%
+    purrr::flatten_chr()
+
+  confuns::check_one_of(
+    input = sections_to_merge,
+    against = base::unique(coords_df[["section"]]),
+    ref.input = "sections to merge"
+  )
+
+  if(dplyr::n_distinct(sections_to_merge) != base::length(sections_to_merge)){
+
+    stop("Section names to be merged can only appear one time in the input.")
+
+  }
+
+  for(sections in merge_input){
+
+    sections <- base::sort(sections)
+
+    coords_df[["section"]] <-
+      stringr::str_replace_all(
+        string = coords_df[["section"]],
+        pattern = stringr::str_c(sections, collapse = "|"),
+        replacement = stringr::str_c(sections, collapse = "_")
+      )
+
+  }
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
 
 
 

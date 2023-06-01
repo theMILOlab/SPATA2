@@ -1,5 +1,230 @@
 
 
+
+#' @title Create image annotations from a list of barcodes
+#'
+#' @description Creates image annotations from a list of barcodes by identifying
+#' the spots that outline the area covered by them. See details for more information.
+#'
+#' @param object A valid `spata2` object.
+#' @param barcodes Character vector. A vector of barcode-spots that cover histological
+#' areas that are supposed to annotated as image annotations.
+#' @param id Name of the created image annotation. If multiple areas are identified (see details)
+#' this name is suffixed with a number.
+#' @param tags Character vector or NULL. If character, the tags for the image annotation selection.
+#' See section Selection of image annotation with tags for more information.
+#' @param force1 Logical value. If `TRUE`, the function assumes that the barcodes
+#' cover one contiguous area and creates only one image annotation.
+#' @param concavity Given to `concaveman::concaveman()`.
+#' @param eps Distance measure. Converted to pixel unit and given to `eps` of
+#' `dbscan::dbscan()`. Defaults to the center-to-center distance multiplied with 1.25.
+#' @param minPts Given to `minPts` of `dbscan::dbscan()`. Defaults to 3.
+#' @param sep Character value. The separator between image annotation id and suffix.
+#' @param expand_outline Distance measure. Defines how much the identified outline of each
+#' area is buffered. If 0, no buffering is performed and the outer barcode-spots of
+#' each area are representative of the outline.
+#' @param overwrite Logical. Set to `TRUE` in order to overwrite existing image
+#' annotations.
+#' @param verbose Logical. If set to `TRUE` informative messages regarding the computational
+#'  progress will be printed.
+#'
+#' @return An updated `spata2` object
+#'
+#' @details The functions filters the coordinates data.frame obtained via `getCoordsDf()`
+#' based on the input of argument `barcodes`. If `force1` is not `TRUE`, the
+#' Density-based Spatial Clustering of Applications with Noise (DBSCAN) is applied
+#' to identify multiple areas covered by the barcodes denoted in `barcodes`.
+#' `concaveman::concaveman()` creates a polygon for each area identified by
+#' `dbscan` that is required to outline the area. Each polygon is used to create
+#' an image annotation combining input for `id` with a numeric suffix.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' data(spatial_segmentations)
+#'
+#' object <- downloadSpataObject("313_T")
+#'
+#' # add 'histology' variable
+#' object <-
+#'  addFeatures(
+#'   object = object,
+#'   feature_df = spatial_segmentations[["313_T"]]
+#'    )
+#'
+#' plotImageGgplot(object) + plotSurface(object, color_by = "histology", pt_alpha = 0.5)
+#'
+#' # obtain list of barcodes that cover necrotic areas
+#' necrotic_barcodes <-
+#'  getFeatureDf(object) %>%
+#'  dplyr::filter(histology == "necrosis") %>%
+#'  dplyr::pull("barcodes")
+#'
+#' print(necrotic_barcodes)
+#'
+#' # convert list of barcodes to image annotations with default setting
+#' object_ex1 <-
+#'  barcodesToImageAnnotation(
+#'   object = object,
+#'   barcodes = necrotic_barcodes,
+#'   id = "necrosis",
+#'   )
+#'
+#' plotImageAnnotations(object_ex1, expand = "1mm")
+#'
+#' # skip algorithm to detect multiple areas
+#' object_ex2 <-
+#'  barcodesToImageAnnotation(
+#'   object = object,
+#'   barcodes = necrotic_barcodes,
+#'   id = "necrosis",
+#'   force1 = TRUE
+#'   )
+#'
+#' plotImageAnnotations(object_ex2, expand = "1mm")
+#'
+#' # manipulate the outline via `expand_outline`
+#' object_ex3 <-
+#'  barcodesToImageAnnotation(
+#'   object = object,
+#'   barcodes = necrotic_barcodes,
+#'   id = "necrosis",
+#'   expand_outline = getCCD(object)*4.5 # *4.5 is too high, defaults to *1.25
+#'   )
+#'
+#' plotImageAnnotations(object_ex3, expand = "1mm")
+#'
+barcodesToImageAnnotation <- function(object,
+                                      barcodes,
+                                      id,
+                                      tags = NULL,
+                                      force1 = FALSE,
+                                      concavity = 2,
+                                      eps = getCCD(object, unit = "px")*1.25,
+                                      minPts = 3,
+                                      sep = "_",
+                                      expand_outline = getCCD(object, unit = "px")/2,
+                                      overwrite = FALSE,
+                                      verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # check input validity
+  base::stopifnot(is_dist(expand_outline))
+  expand_outline <- as_pixel(expand_outline, object = object, add_attr = FALSE)
+
+  base::stopifnot(is_dist(eps))
+  eps <- as_pixel(eps, object = object, add_attr = FALSE)
+
+  confuns::is_value(x = id, mode = "character")
+
+  # check that no unknown barcodes are among input
+  confuns::is_vec(barcodes, mode = "character", min.length = 3) # need three spots to build polygon
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::select(x, y)
+
+  if(base::isTRUE(force1)){
+
+    confuns::check_none_of(
+      input = id,
+      against = getImgAnnIds(object),
+      ref.against = "image annotation IDs"
+    )
+
+    outline_plg <-
+      concaveman::concaveman(
+        points = base::as.matrix(coords_df),
+        concavity = concavity
+      ) %>%
+      base::as.data.frame() %>%
+      tibble::as_tibble() %>%
+      magrittr::set_colnames(value = c("x", "y")) %>%
+      buffer_area(buffer = expand_outline)
+
+    object <-
+      addImageAnnotation(
+        object = object,
+        tags = tags,
+        id = id,
+        area = list(outer = outline_plg)
+      )
+
+  } else {
+
+    eps <- base::as.numeric(eps)
+    minPts <- base::as.numeric(minPts)
+
+    coords_df_flt <-
+      add_dbscan_variable(coords_df, eps = eps, minPts = minPts, name = "dbscan_img_ann") %>%
+      dplyr::group_by(dbscan_img_ann) %>%
+      dplyr::mutate(count = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      # remove areas of two or fewer spots
+      dplyr::filter(dbscan_img_ann != "0" & count >= 3)
+
+    n_outlier <- base::nrow(coords_df) - base::nrow(coords_df_flt)
+
+    if(n_outlier > 0){
+
+      ref <- base::ifelse(n_outlier > 1, yes = "spots", no = "spot")
+      ref2 <- base::ifelse(n_outlier > 1, yes = "were", no = "was")
+
+      confuns::give_feedback(
+        msg = glue::glue("{n_outlier} {ref} {ref2} identified as spatial outliers and removed."),
+        verbose = verbose
+      )
+
+    }
+
+    # create future image annotation IDs and prevent unwanted overwriting
+    areas <- base::unique(coords_df_flt$dbscan_img_ann)
+
+    img_ann_ids <- stringr::str_c(id, 1:base::length(areas), sep = sep)
+
+    confuns::check_none_of(
+      input = img_ann_ids,
+      against = getImgAnnIds(object),
+      ref.against = "image annotation IDs",
+      overwrite = overwrite
+    )
+
+    for(i in base::seq_along(img_ann_ids)){
+
+      area <- areas[i]
+
+      coords_mtr <-
+        dplyr::filter(coords_df_flt, dbscan_img_ann == {{area}}) %>%
+        dplyr::select(x, y) %>%
+        base::as.matrix()
+
+      outline_plg <-
+        concaveman::concaveman(points = coords_mtr, concavity = concavity) %>%
+        base::as.data.frame() %>%
+        tibble::as_tibble() %>%
+        magrittr::set_colnames(value = c("x", "y")) %>%
+        buffer_area(buffer = expand_outline)
+
+      object <-
+        addImageAnnotation(
+          object = object,
+          id = img_ann_ids[i],
+          tags = tags,
+          area = list(outer = outline_plg)
+        )
+
+    }
+
+  }
+
+  return(object)
+
+}
+
 #' @title Bin barcode-spots by angle
 #'
 #' @description Bins barcode-spots according to their angle towards the position

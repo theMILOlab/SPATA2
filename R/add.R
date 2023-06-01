@@ -1172,13 +1172,29 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  start <-
-    as_pixel(input = start[1:2], object = object, add_attr = FALSE) %>%
-    base::as.numeric()
+  if(!base::is.null(start)){
 
-  end <-
-    as_pixel(input = end[1:2], object = object, add_attr = FALSE) %>%
-    base::as.numeric()
+    start <-
+      as_pixel(input = start[1:2], object = object, add_attr = FALSE) %>%
+      base::as.numeric()
+
+  }
+
+  if(!base::is.null(end)){
+
+    end <-
+      as_pixel(input = end[1:2], object = object, add_attr = FALSE) %>%
+      base::as.numeric()
+
+  }
+
+  if(!base::is.null(vertices)){
+
+    vertices <-
+      as_pixel(input = vertices, object = object, add_attr = FALSE) %>%
+      base::as.numeric()
+
+  }
 
   if(!base::is.data.frame(segment_df)){
 

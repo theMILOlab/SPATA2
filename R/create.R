@@ -975,6 +975,11 @@ createImageAnnotations <- function(object, ...){
 
           current_zooming <- shiny::reactive({
 
+            checkpoint(
+              evaluate = !base::is.null(input$brushed_area),
+              case_false = "no_zoom_rect"
+            )
+
             prel_out <- input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
 
             xdist <- prel_out[["xmax"]] - prel_out[["xmin"]]
@@ -1308,6 +1313,8 @@ createImageAnnotations <- function(object, ...){
 
           # zooming in and out
           oe <- shiny::observeEvent(input$zoom_in,{
+
+            print("clicked on zoom_in")
 
             interactive$zooming[[(n_zooms() + 1)]] <- current_zooming()
 
@@ -2344,6 +2351,11 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
           })
 
           current_zooming <- shiny::reactive({
+
+            checkpoint(
+              evaluate = !base::is.null(input$brushed_area),
+              case_false = "no_zoom_rect"
+            )
 
             prel_out <- input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
 
