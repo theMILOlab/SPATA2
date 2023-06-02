@@ -1936,9 +1936,6 @@ setGeneric(name = "asSPATA2", def = function(object, ...){
 
 })
 
-# prel solution
-setClass(Class = "giotto")
-
 #' @rdname asSPATA2
 #' @export
 setMethod(
@@ -1946,6 +1943,9 @@ setMethod(
   signature = "giotto",
   definition = function(object,
                         sample_name,
+                        coordinates,
+                        image_ebi,
+                        spatial_method,
                         transfer_meta_data = TRUE,
                         verbose = TRUE,
                         ...){
@@ -1988,16 +1988,21 @@ setMethod(
 
     # initiate object
     spata_obj <-
-      initiateSpataObject_CountMtr(
-        count_mtr = count_mtr,
-        coords_df = coords_df,
+      initiateSpataObject_Empty(
         sample_name = sample_name,
-        ...
+        spatial_method = spatial_method
       )
 
-    # transfer image
-    image <- object@images[[1]]$mg_object
+    spata_obj <-
+      setCountMatrix(
+        object = spata_obj,
+        count_mtr = object@raw_exprs
+        )
 
+    spata_obj <- setCoordsDf(spata_obj, coords_df = coords_df)  
+
+    # transfer image
+    
     if(!base::is.null(image)){
 
       confuns::give_feedback(
@@ -2005,13 +2010,11 @@ setMethod(
         verbose = verbose
       )
 
-      image_ebi <- magick::as_EBImage(image)
-
       image_object <-
         createImageObject(
           image = image_ebi,
           image_class = "HistologyImage",
-          coordinates = coords_df
+          coordinates = coordinates
         )
 
       spata_obj <-
@@ -2031,7 +2034,7 @@ setMethod(
     }
 
     # transfer meta_data
-    if(!base::isFALSE(transfer_meta_data)){
+    if((transfer_meta_data)){
 
       confuns::give_feedback(
         msg = "Transferring meta data",
@@ -2039,13 +2042,15 @@ setMethod(
       )
 
       spata_obj <-
-        addFeatures(
+        setFeatureDf(
           object = spata_obj,
           feature_df = cell_meta_data,
-          overwrite = TRUE
-        )
+          of_sample = sample_name
+      )
 
     }
+
+    spata_obj <- setActiveMatrix(spata_obj, mtr_name = "counts")
 
     return(spata_obj)
 
