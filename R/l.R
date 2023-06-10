@@ -87,7 +87,7 @@ load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name,
 
     } else {
 
-      warning("No count matrix found to import. You can specify the count matrix AnnData layer via `count_mtr_name`")
+      warning("No AnnData layer 'counts' found. You can specify the layer name of the count matrix via `count_mtr_name`")
       count_mtr <- NULL
 
     }
@@ -103,13 +103,13 @@ load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name,
 
     } else if(!is.null(adata$X)){
 
-      warning("No normalized matrix found. Using adata$X as normalized matrix. If you want to use a different matrix,
-              specify a name for the normalized matrix via `normalized_mtr_name`")
+      warning("No AnnData layer 'normalized' found, therefore using adata$X as normalized matrix. If you want to use a different layer,
+              specify a name via `normalized_mtr_name`")
       normalized_mtr <- Matrix::t(adata$X)
 
     } else if(is.null(adata$X)){
 
-      warning("No normalized matrix found to import. You can specify the normalized matrix AnnData layer via
+      warning("No AnnData layer 'normalized' found. You can specify the layer name of the normalized matrix via
               `normalized_mtr_name`")
       normalized_mtr <- NULL
 
@@ -126,7 +126,7 @@ load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name,
 
     } else {
 
-      warning("No scaled matrix found to import. You can specify the scaled matrix AnnData layer via
+      warning("No AnnData layer 'scaled' found. You can specify the layer name of the scaled matrix via
               `scaled_mtr_name` (e.g. scaled_mtr_name='scaled_data')")
       scaled_mtr <- NULL
 
