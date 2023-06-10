@@ -61,9 +61,7 @@ pr_list_slots <-
 pr_methods <- c("hotspot")
 
 
-
 # Images ------------------------------------------------------------------
-
 
 image_classes <- c("HistologyImage", "SlideSeq", "Visium")
 
@@ -81,6 +79,7 @@ default_instructions_object <-
                clrsp = "inferno",
                colors = default_colors,
                complete = TRUE,
+               concavity = 1,
                display_facets = TRUE,
                display_image = TRUE,
                display_labels = TRUE,
@@ -89,6 +88,7 @@ default_instructions_object <-
                display_residuals = TRUE,
                display_title = FALSE,
                display_trajectory_parts = FALSE,
+               expand_outline = 0.015,
                max_adj_pval = 0.05,
                method_aggl = "ward.D",
                method_dist = "euclidean",
@@ -200,7 +200,7 @@ helper_content <- list(
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
-      "Encircling: By doubleckling on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
+      "Encircling: By double clicking on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
       the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
       starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
       "",
@@ -215,7 +215,7 @@ helper_content <- list(
       "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
        back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
       "",
-      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
       the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
       or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
       "",
@@ -286,13 +286,12 @@ create_image_annotations_descr <- list(
 
   caption = c("Display the image annotation tags as a caption. (If display mode: One by one.)"),
   encircle = c("Display the polygon with which the structure has been encircled. (If display mode: One by one.)"),
-  expand = c(""),
   color_by = c("Use SPATA variables to color the surface of the image."),
   display_mode =
     c(
-      "If 'Surface', the image annotations are projected on the whole histology image.",
+      "If 'One by one', each image annotations is displayed in a separate window.",
       "",
-      "If 'One by one', each image annotations is displayed in a separate window."
+      "If 'Surface', the image annotations are projected on the whole histology image."
     ),
   drawing_mode =
     c(
@@ -303,11 +302,12 @@ create_image_annotations_descr <- list(
     Additionally, you can provide a specific image annotation ID.",
       "",
       "Multiple: Mode that allows to quickly encircle several similar structures, thus adding multiple image
-    annotations at the same time. Exiting the drawing mode immediately highlights the structure and
+    annotations at the same time. Exiting the drawing mode immediately closes the polygon and
     entering it again starts the encircling of a new structure. Image annotation IDs are created as
     a combination of 'img_ann' and the position the annotations have in the list of image annotations
     named according to this pattern."
     ),
+  expand = c("Distance, percentage or exlam input to expand the image section of the plot."),
   img_ann_id = c("The ID that uniquely identifes the image annotation."),
   img_ann_ids_select = c("The image annotations that you want to include in the plot above."),
   img_ann_tags =
@@ -335,20 +335,24 @@ create_image_annotations_descr <- list(
   nrow = c("Number of rows in which the windows are displyed. Ignored if 0."),
   pick_action_single =
     c(
-      "Highlight: Closes the drawn circle and highlights the area that it includes marking
-    the exact structure that you have annotated. Before you cann add an image annotation
-    it must be higlighted. Alternatively you can use the keyboard-shortcut 'h'.",
+      "Connect (c): Closes the drawn polygon. If it is the first polygon you have drawn it
+      marks the outer border of the annotation. If the structure contains holes you can
+      draw consecutive polygons marking these holes.",
       "",
-      "Reset: Removes any drawing that is currently displayed on the interactive plot.
-    Alternatively you can use the keyboard-shortcut 'r'."
+      "Reset all: Removes every current drawing from the image.",
+      "",
+      "Reset last: Removes the lastly drawn polygon/line.",
+      "",
+      "Highlight (h): Highlights the area that covers the annotated structure. Requires one connected polygon."
     ),
   pick_action_multiple =
     c(
-      "Reset all: Removes any drawing that is currently displayed on the interactive plot
-    including already highlighted structures. Alternatively you can use the keyboard-shortcut 'a'.",
+      "Reset all: Removes every current drawing from the image.",
       "",
-      "Reset last: Removes the most recently highlighted annotation. Alternatively you can
-    use the keyboard-shortcut 'l'."
+      "Reset last: Removes the last drawn polygon/line.",
+      "",
+      "Highlight: Highlights the area that covers the annotated structure. Alternatively,
+      you can use keyboard-shortcut 'h'."
     ),
   pointsize = c("The size with which points are displayed if color the surface by a SPATA2 variable."),
   square = c("Force the image annoatation to be displayed in a square. (If display mode: One by one.)"),
@@ -366,9 +370,13 @@ create_image_annotations_descr <- list(
       zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
       you are using drawing mode 'Single'.",
       "",
-      "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
-      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
-      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      the cursor. By double clicking again or pressing 'e' you exit/stop the drawing. If drawing mode is set to 'Multiple' the drawn polygon
+      is immediately connected/closed and you can encircle a new structure. Drawing mode 'Single' allows to encircle with more details.
+      First, exiting the drawing does not result in immediate closing. This means that you can exit the drawing, adjust the zooming,
+      and start drawing again. This can be repeated until you click on connect. This closes the lines and sets the outer border
+      of the image annotation. You can now draw inside the outer border which determines holes within the image annotation. Use
+      the Highlight button to see the area that is currently considered your image annotation.",
       "",
       "Tagging: Provide additional information about the annotated structure in form of bullet points that can be used later on
       to group and/or separate them.",
@@ -383,8 +391,8 @@ create_image_annotations_descr <- list(
   zooming_options = c(
     "Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
     back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
-    you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
-    zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+    you are drawing. If you want to stop drawing to zoom in on the image you have to exit the drawing mode via shortcut 'e'
+    zoom in. Then start drawing again via doubleclicking or pressing 'd'. This is only possible if
     you are using drawing mode 'Single'."
   )
 )
@@ -396,31 +404,46 @@ create_segmentation_descr <- list(
 
   color_by = c("Use SPATA variables to color the surface of the image."),
   linesize = create_image_annotations_descr$linesize,
-  pick_action_interaction =     c(
-    "Highlight: Closes the drawn circle and highlights the area that it includes marking
-    the exact structure that you have annotated. Before you cann add an image annotation
-    it must be higlighted.",
-    "",
-    "Reset: Removes any drawing that is currently displayed on the interactive plot."
-  ),
-
+  pick_action_interaction =
+    c(
+      "Connect (c): Closes the drawn polygon. If it is the first polygon you have drawn it
+      marks the outer border of the annotation. If the structure contains holes you can
+      draw consecutive polygons marking these holes.",
+      "",
+      "Reset all: Removes every current drawing from the image.",
+      "",
+      "Reset last: Removes the lastly drawn polygon/line.",
+      "",
+      "Highlight (h): Highlights the area that covers the annotated structure. Requires one connected polygon."
+    ),
   pick_action_overview = c(
     "The segment chosen on the left under 'Choose a group/segment'. Can either be renamed
    or discarded. Clicking on either of the two buttons opens a model in which to specify
    the action."),
-  plot_interaction = c(
-    "This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
-    "",
-    "Encircling: By doubleckling or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
-      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
-      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
-    "",
-    "Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate.
-     You are then prompted to choose the name you want to annotate the barcode spots with that fall into this area.
-     This can either be a new name or one that has already been assigned within the variable. Then click on 'Name'.
-     The 'Overview'-plot on the left should now display the named region in addition to all the other regions that
-     you have annotated already. Naming barcode spots that have already been named results in overwriting the previous name."
-  ),
+  plot_interaction =
+    c(
+      "This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+      "",
+      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
+      you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
+      zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+      you are using drawing mode 'Single'.",
+      "",
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to name by simply moving
+      the cursor. By double clicking again or pressing 'e' you exit/stop the drawing. The drawn line remains on the plot until you
+      click 'Connect' or use shortcut 'c', which will connect start an end of the drawn line to a polygon that encircles the
+      area of interest. This means that you can exit the drawing, adjust the zooming, and start drawing again. This can be repeated
+      until you click on connect. This closes the lines and sets the outer border of the named area. You can now draw inside the
+      outer border which determines holes within the area. If you want to draw holes to omit some areas within the drawn area
+      you can draw them inside the connected polygon. Click again on 'Connect' to connect the hole polygons. Use the 'Highlight' button to see the area that is currently considered
+      your area of interest and to see the barcode-spots that would currently be named.",
+      "",
+      "Naming: This provides the name of the group you assign the encircled barcode-spots within the segmentation variable.
+      After setting the outer border of the area by clicking on 'Connect' you can provide a name you want to assign to
+      the barcode-spots that fall into the polygon you have drawn. After clicking on 'Name' the barcode-spots are named/labeled
+      and the plot on the left should be updated."
+    ),
   plot_orientation = create_image_annotations_descr$tab_panel_orientation,
   plot_overview = c(
     "Choose the segmentation variable that you want to alter. If you want to create a new one
@@ -434,8 +457,8 @@ create_segmentation_descr <- list(
   zooming_options = c(
     "Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
     back click on 'Zoom back'. To zoom out completely click on 'Zoom out'. Note that you can not zoom if
-    you are drawing. If you want to stop drawing to zoom in on the image exit the drawing mode via shortcut 'e'
-    zoom in and then start drawing again via doubleclicking or pressing 'd'. This is only possible if
+    you are drawing. If you want to stop drawing to zoom in on the image you have to exit the drawing mode via shortcut 'e'
+    zoom in. Then start drawing again via doubleclicking or pressing 'd'. This is only possible if
     you are using drawing mode 'Single'."
   )
 
@@ -453,21 +476,33 @@ create_spatial_trajectories_descr <- list(
 )
 
 
-
-current_spata_version <- list(major = 1, minor = 13, patch = 0)
-
+#' @export
+current_spata_version <- list(major = 2, minor = 0, patch = 3)
+current_spata2_version <- list(major = 2, minor = 0, patch = 3)
 
 # d -----------------------------------------------------------------------
 
+#' @export
 depr_info <-
   list(
     fns = list(
       # deprecated            ~   replaced by
+      "add_outline_variable" = "add_tissue_section_variable",
+      "adjustdDefaultInstructions" = "setDefault",
       "assessTrajectoryTrends" = "spatialTrajectoryScreening",
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
+      "bin_by_area" = "bin_by_expansion",
+      "createImageObject" = "createHistologyImage",
+      "createHistologyImage" = "createHistologyImaging",
+      "createSegmentation" = "createSpatialSegmentation",
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "flipCoords" = "flipCoordinates",
+      "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
+      "getImageAnnotationCenter" = "getImgAnnCenter",
+      "getImageAnnotationIds" = "getImgAnnIds",
+      "getImageAnnotationScreeningDf" = "getIasDf",
+      "getImageAnnotationTags" = "getImgAnnTags",
       "getMethod" = "getSpatialMethod",
       "getMethodUnit" = "getSpatialMethod()@unit",
       "getMethodName" = "getSpatialMethod()@name",
@@ -476,33 +511,38 @@ depr_info <-
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
+      "getTrajectoryScreeningDf" = "getStsDf",
+      "ggpLayerImageAnnotation" = "ggpLayerImgAnnBorder",
+      "ggpLayerImgAnnBorder" = "ggpLayerImgAnnOutline",
+      "ggpLayerSampleMask" = "ggpLayerTissueOutline",
+      "incorporate_tissue_outline" = "include_tissue_outline",
       "is_euol_dist" = "is_dist_euol",
+      "is_dist_euol" = "is_dist_si",
       "is_pixel_dist" = "is_dist_pixel",
-
-      "is_dist_euol" = "is_dist_si", # start
-      "transform_euol_to_pixel" = "transform_dist_si_to_pixel",
-      "transform_euol_to_pixels" = "transform_dist_si_to_pixels",
-      "transform_pixel_to_euol" = "transform_pixel_to_dist_si",
-      "transform_pixels_to_euol" = "transform_pixels_to_dist_si",
-      "transform_si_to_pixel" = "transform_area_si_to_pixel",
-      "transform_si_to_pixels" = "transform_area_si_to_pixels", # end?
-
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
       "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",
       "plotTrajectoryFit" = "plotTrajectoryLineplotFitted",
-      "plotTrajectoryFitCustomized" = "plotTrajectoryFitted",
+      "plotTrajectoryFitCustomized" = "plotTrajectoryLineplotFitted",
       "plotTrajectoryGenes" = "plotTrajectoryLineplot",
       "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
       "runDeAnalysis" = "runDEA",
+      "setActiveExpressionMatrix" = "setActiveMatrix",
       "setDefaultTrajectory" = "setDefaultTrajectoryId",
       "subsetByBarcodes_CountMtr" = "subsetByBarcodes",
       "subsetByBarcodes_ExprMtr" = "subsetByBarcodes",
       "subsetBySegment_CountMtr" = "subsetByBarcodes",
-      "subsetBySegment_ExprMtr" = "subsetByBarcodes"
+      "subsetBySegment_ExprMtr" = "subsetByBarcodes",
+      "transform_euol_to_pixel" = "transform_dist_si_to_pixel",
+      "transform_euol_to_pixels" = "transform_dist_si_to_pixels",
+      "transform_pixel_to_euol" = "transform_pixel_to_dist_si",
+      "transform_pixels_to_euol" = "transform_pixels_to_dist_si",
+      "transform_si_to_pixel" = "transform_area_si_to_pixel",
+      "transform_si_to_pixels" = "transform_area_si_to_pixels"
     ),
     args = list(
+      "combine_with_wd" = "add_wd",
       "euol" = "unit",
       "discrete_feature" = "grouping_variable",
       "linealpha" = "line_alpha",
@@ -512,8 +552,16 @@ depr_info <-
       "trajectory_name" = "id"
     ),
     args_spec = list(
-      "exchangeImage" = list("image_dir" = "image"),
-      "runBayesSpaceClustering" = list("dirname" = "directory_10X")
+      "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
+      "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
+      "ggpLayerAxesSI" = list("frame_by" = NA_character_),
+      "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
+      "include_tissue_outline" = list("outline_var" = NA_character_),
+      "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
+      "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
+      "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
+      "setImageDirHighres" = list("dir_highres" = "dir"),
+      "setImageDirLowres" = list("dir_lowres" = "dir")
     )
   )
 
@@ -539,6 +587,8 @@ si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6
 
 # i -----------------------------------------------------------------------
 
+# include_tissue_section names
+its_names <- c("obs_in_section", "pos_rel", "tissue_section")
 
 invalid_area_input <-
   "Input can not be interpreted as an area. Please see details at `?is_area` for more information."
@@ -621,6 +671,31 @@ pattern_formulas <-
 plot_positions <- c("top_right", "top_left", "bottom_right", "bottom_left")
 
 projection_df_names <- c("barcodes", "sample", "x", "y", "projection_length", "trajectory_part")
+
+
+#' @export
+protected_spatial_method_info_slots <- c("ccd")
+
+#' @export
+protected_variable_names <- c(
+  "barcodes",
+  "imagecol", "imagerow",
+  "outline",
+  "projection_length",
+  "section",
+  "trajectory_part",
+  "x",
+  "y"
+)
+
+
+
+pub_dropbox_links <- list(
+  "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",
+  "313_T" = "https://www.dropbox.com/s/zxeilq38tqwfx70/313_T.RDS?dl=1",
+  "MCI_LMU" = "https://www.dropbox.com/s/b5zxcqmnx0814fq/mouse_cortex_injured.RDS?dl=1"
+)
+
 
 
 
@@ -720,6 +795,10 @@ regex_exclam <- stringr::str_c(regex_exclam1, "|", regex_exclam2)
 
 regex_unit <- stringr::str_c(regex_dist_units_si, regex_pxl, regex_area_units, sep = "|")
 
+# relateToImageAnnotation names
+rtia_names <-
+  c("angle", "bins_angle", "bins_circle", "dist_to_ia", its_names) %>%
+  base::sort()
 
 # s -----------------------------------------------------------------------
 
@@ -729,6 +808,9 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 #' @export
 spatial_methods <-
   list(
+    Unknown = SpatialMethod(
+      name = "Unknown"
+    ),
     Visium =
       SpatialMethod(
         fiducial_frame = list(x = "8mm", y = "8mm"),

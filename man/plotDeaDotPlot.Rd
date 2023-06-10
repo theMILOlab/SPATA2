@@ -16,6 +16,7 @@ plotDeaDotPlot(
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
   genes = NULL,
+  color_by = "avg_log2FC",
   alpha_by = NULL,
   alpha_trans = "identity",
   color_trans = "identity",
@@ -24,6 +25,7 @@ plotDeaDotPlot(
   pt_alpha = 0.9,
   pt_size = 2,
   pt_color = "blue4",
+  pt_clrp = NULL,
   pt_clrsp = "plasma",
   scales = "free",
   nrow = NULL,
@@ -36,7 +38,7 @@ plotDeaDotPlot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -71,6 +73,9 @@ to the threshold input for average log fold change and adjusted p-value.}
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
+
+\item{pt_clrp}{The color palette to be used if the specified variable displayed by
+color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
 
 \item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
 color is continuous. Run \code{validColorSpectra()} to see valid input.}

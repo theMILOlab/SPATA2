@@ -9,3 +9,4 @@ hlpr_breaks(mtr, length_out)
 \description{
 Calculates breaks for heatmap according to input matrix
 }
+\keyword{internal}

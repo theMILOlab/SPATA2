@@ -1,6 +1,6 @@
 # getA --------------------------------------------------------------------
 
-#' @title Obtain name of currently active expression matrix
+#' @title Obtain name of currently active data matrix
 #'
 #' @inherit check_sample params
 #'
@@ -34,28 +34,11 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
 #' @rdname getActiveMatrixName
 #' @export
-getActiveExpressionMatrixName <- function(object, verbose = NULL, ...){
+getActiveExpressionMatrixName <- function(...){
 
-  deprecated(...)
+  deprecated(fn = TRUE)
 
-  check_object(object)
-
-  hlpr_assign_arguments(object)
-
-  expr_mtr_name <- object@information$active_expr_mtr
-
-  if(base::is.null(expr_mtr_name)){
-
-    stop("Please set an active expression matrix with `setActiveExpressionMatrix()`")
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Active expression matrix: {expr_mtr_name}"),
-    verbose = verbose
-  )
-
-  return(expr_mtr_name)
+  getActiveMatrixName(...)
 
 }
 
@@ -218,6 +201,14 @@ getBarcodes <- function(object,
 #'
 #' @param polygon_df A data.frame that contains the vertices of the polygon
 #' in form of two variables: *x* and *y*.
+#'
+#' @param polygon_list  A named list of data.frames with the numeric variables x and y.
+#' Observations correspond to the vertices of the polygons that confine spatial areas.
+#' Must contain a slot named *outer* which sets the outer border of
+#' the spatial area. Can contain multiple slots named *inner* (suffixed with numbers)
+#' that correspond to inner polygons - holes within the annotation. Like *inner1*,
+#' *inner2*.
+#'
 #' @param strictly Logical value. If `TRUE`, only barcode spots that are strictly
 #' interior to the polygon are returned. If `FALSE`, barcodes that are
 #' on the relative interior the polygon border or that are vertices themselves
@@ -241,20 +232,56 @@ getBarcodesInPolygon <- function(object, polygon_df, strictly = TRUE){
     sp::point.in.polygon(
       point.x = coords_df[["x"]],
       point.y = coords_df[["y"]],
-      pol.x = coords_df[["x"]],
-      poly = coords_df[["y"]]
+      pol.x = polygon_df[["x"]],
+      pol.y = polygon_df[["y"]]
     )
 
+  valid_res <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
 
-  valid_res <- base::ifelse(strictly, yes = 1, no = c(1,2,3))
-
-  coords_df_sub <- coords_df[res %in% valis_res, ]
+  coords_df_sub <- coords_df[res %in% valid_res, ]
 
   out <- coords_df_sub[["barcodes"]]
 
   return(out)
 
 }
+
+#' @rdname getBarcodesInPolygon
+#' @export
+getBarcodesInPolygonList <- function(object, polygon_list, strictly = TRUE){
+
+  polygon_list <- confuns::lselect(polygon_list, outer, dplyr::matches("inner\\d*$"))
+
+  barcodes <-
+    getBarcodesInPolygon(
+      object = object,
+      polygon_df = polygon_list[["outer"]],
+      strictly = strictly
+    )
+
+  n_holes <- base::length(polygon_list)
+
+  if(n_holes > 1){
+
+    for(i in 2:n_holes){
+
+      barcodes_inner <-
+        getBarcodesInPolygon(
+          object = object,
+          polygon_df = polygon_list[[i]],
+          strictly = strictly
+        )
+
+      barcodes <- barcodes[!barcodes %in% barcodes_inner]
+
+    }
+
+  }
+
+  return(barcodes)
+
+}
+
 
 #' @title Obtain barcode spot distances
 #'
@@ -539,6 +566,21 @@ getCnvResults <- function(object, ...){
 }
 
 
+#' @title Obtain coordinate center
+#'
+#' @description Calculates and extracts center of the coordinate frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+getCoordsCenter <- function(object){
+
+  getCoordsRange(object) %>%
+    purrr::map_dbl(.f = base::mean)
+
+}
+
 #' @title Obtain spatial coordinates
 #'
 #' @inherit check_sample params
@@ -547,7 +589,7 @@ getCnvResults <- function(object, ...){
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
+getCoordsDf <- function(object, type = "both", ...){
 
   deprecated(...)
 
@@ -591,6 +633,15 @@ getCoordsDf <- function(object, of_sample = NA, type = "both", ...){
   }
 
   coords_df$sample <- object@samples
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      dplyr::across(
+        .cols = dplyr::any_of(c("col", "row")),
+        .fns = base::as.integer
+      )
+    )
 
   joinWith <- confuns::keep_named(list(...))
 
@@ -641,19 +692,19 @@ getCoordsRange <- function(object){
 
 #' @rdname getMatrix
 #' @export
-getCountMatrix <- function(object, of_sample = NA){
+getCountMatrix <- function(object, ...){
+
+  deprecated(...)
 
   # lazy control
   check_object(object)
 
   # adjusting control
-  of_sample <- check_sample(object = object, of_sample = of_sample)
-
-  count_mtr <- object@data[[of_sample]][["counts"]]
+  count_mtr <- object@data[[1]][["counts"]]
 
   if(base::is.null(count_mtr)){
 
-    stop(glue::glue("Did not find count matrix of sample '{of_sample}' in provided spata-object."))
+    stop(glue::glue("Did not find count matrix in provided spata-object."))
 
   }
 
@@ -732,6 +783,7 @@ getDeaGenes <- function(object,
 #'
 #' @return Character value.
 #'
+#' @export
 
 getDeaLfcName <- function(object,
                           across = getDefaultGrouping(object) ,
@@ -981,7 +1033,7 @@ getDefaultTrajectory <- function(object, ...){
 getDefaultTrajectoryId <- getDefaultTrajectory
 
 
-#' @title Get dim red df
+#' @title Obtain dim red data.frame
 getDimRedDf <- function(object,
                         method_dr = c("pca", "tsne", "umap"),
                         of_sample = NA){
@@ -1064,20 +1116,17 @@ getExpressionMatrix <- function(object,
 
   deprecated(...)
 
-  # lazy control
   check_object(object)
-
-  # adjusting control
 
   if(base::is.null(mtr_name)){
 
-    active_mtr <- getActiveExpressionMatrixName(object)
+    active_mtr <- getActiveMatrixName(object)
 
     if(base::is.null(active_mtr) || !active_mtr %in% getExpressionMatrixNames(object)){
 
       active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
 
-      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please set a valid active expression matrix with 'setActiveExpressionMatrix()'."))
+      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please specify `mtr_name`."))
 
     }
 
@@ -1331,9 +1380,7 @@ getFeatureVariables <- function(object,
 #' @param error_handling Either \emph{'warning} or \emph{'stop'}.
 #' @param error_value What is supposed to be returned if extraction fails.
 #' @param error_ref The reference for the feedback message.
-#'
-
-
+#' @keywords internal
 getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 
   result <-
@@ -1441,22 +1488,23 @@ getGeneFeatureNames <- function(object, mtr_name = NULL, of_sample = NA){
 #' @return A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.
 #' @export
 
-getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, of_sample = NA){
+getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, ...){
+
+  deprecated(...)
 
   check_object(object)
-  of_sample <- check_sample(object = object, of_sample = of_sample)
 
   if(base::is.null(mtr_name)){
 
-    mtr_name <- getActiveMatrixName(object, of_sample = of_sample)
+    mtr_name <- getActiveMatrixName(object )
 
   }
 
-  gdata <- object@gdata[[of_sample]][[mtr_name]]
+  gdata <- object@gdata[[1]][[mtr_name]]
 
   check_availability(
     test = (base::is.list(gdata) & !base::identical(gdata, list())),
-    ref_x = glue::glue("gene meta data for expression matrix '{mtr_name}' of sample '{of_sample}'"),
+    ref_x = glue::glue("gene meta data for expression matrix '{mtr_name}'.'"),
     ref_fns = "computeGeneMetaData() or addGeneMetaData()"
   )
 
@@ -1474,10 +1522,10 @@ getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, of_sample 
 
 #' @rdname getGeneMetaData
 #' @export
-getGeneMetaDf <- function(object, mtr_name = NULL, of_sample = NA){
+getGeneMetaDf <- function(object, mtr_name = NULL){
 
-  getGeneMetaData(object = object, of_sample = of_sample, mtr_name = mtr_name, only_df = TRUE) %>%
-    tidyr::as_tibble()
+  getGeneMetaData(object = object, mtr_name = mtr_name, only_df = TRUE) %>%
+    tibble::as_tibble()
 
 }
 

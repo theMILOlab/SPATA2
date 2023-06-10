@@ -43,3 +43,4 @@ the input of \code{all_features}, \code{all_genes} or \code{all_gene_sets}.
 Returns a list with one slot named \emph{features}, \emph{genes} or \emph{gene_sets}
 containing the respective found/valid input of \code{color_to}.
 }
+\keyword{internal}

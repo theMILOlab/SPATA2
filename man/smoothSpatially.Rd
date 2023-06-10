@@ -43,3 +43,4 @@ The input data.frame containing the smoothed variables.
 Uses a loess-fit model to smooth numeric variables spatially.
 The variable names denoted in argument \code{variables} are overwritten.
 }
+\keyword{internal}

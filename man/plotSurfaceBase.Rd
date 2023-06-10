@@ -25,12 +25,13 @@ plotSurfaceBase(
   yrange = NULL,
   adjust_pt_size = TRUE,
   expand = 0,
+  pty = "s",
   verbose = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{color_by}{The variable to be displayed by color:
 
@@ -72,15 +73,14 @@ ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{expand}{Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
-and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
-for more information.}
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

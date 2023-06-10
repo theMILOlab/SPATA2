@@ -8,7 +8,7 @@ objects - available via the \code{SPATAData} package. Names of the list slots
 correspond to the sample names in variable  \emph{sample} of \code{SPATAData::source_df}.
 Names of the cluster variables in the data.frames corresponds to the algorithm used.}
 \format{
-An object of class \code{list} of length 1.
+An object of class \code{list} of length 3.
 }
 \usage{
 clustering

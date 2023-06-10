@@ -13,3 +13,4 @@ analyzing with the spata-object. The future input for SPATA's \code{of_sample}-a
 \description{
 sample_name
 }
+\keyword{internal}

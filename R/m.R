@@ -8,7 +8,7 @@ NULL
 
 # make --------------------------------------------------------------------
 
-
+#' @keywords internal
 make_angle_bins <- function(n){
 
   n <- base::as.integer(n)
@@ -25,8 +25,8 @@ make_angle_bins <- function(n){
 
 #' @title Make content for segments grob
 #' @description Used in conjunction with GeomSegmentFixed
-#' @export
 #' @method makeContent resizingSegmentsGrob
+#' @keywords internal
 makeContent.resizingSegmentsGrob <- function(x) {
 
   width <- grid::convertWidth(grid::unit(1, "snpc"), "pt", valueOnly = TRUE)
@@ -46,8 +46,8 @@ makeContent.resizingSegmentsGrob <- function(x) {
 
 #' @title Make content for text grob
 #' @description Used in conjunction with GeomTextFixed
-#' @export
 #' @method makeContent resizingTextGrob
+#' @keywords internal
 makeContent.resizingTextGrob <- function(x) {
 
   width <- grid::convertWidth(grid::unit(1, "snpc"), "pt", valueOnly = TRUE)
@@ -63,7 +63,7 @@ makeContent.resizingTextGrob <- function(x) {
 }
 
 
-#' @export
+#' @keywords internal
 make_scattermore_add_on <- function(mapping,
                                     alpha,
                                     color,
@@ -290,6 +290,72 @@ mergeGroups <- function(object,
 }
 
 
+#' @title Merge tissue sections
+#'
+#' @description Merges tissue sections that have been mistakenly identified
+#' as two non-contiguous sections.
+#'
+#' @inherit argument_dummy params
+#' @param ... Collection of vectors that carry the names of the sections
+#' to be merged.
+#'
+#' @inherit update_dummy return
+#'
+#' @seealso [`identifyTissueSections()`]
+#'
+#' @export
+#'
+#' @examples
+#'
+#' # in this fictional example the algorithm identified 6 tissue sections
+#' # this call merges sections 1,2,3 to section 1_2_3 and sections 4,5,6 to
+#' # 4_5_6
+#' \dontrun{ object <- mergeTissueSections(object, c(1,2,3), c(4,5,6)) }
+#'
+#'
+mergeTissueSections <- function(object, ...){
+
+  base::stopifnot(tissueSectionsIdentfied(object))
+
+  merge_input <- purrr::keep(.x = list(...), .p = base::is.numeric)
+
+  coords_df <- getCoordsDf(object)
+
+  # check input
+  sections_to_merge <-
+    purrr::map(.x = merge_input, .f = base::as.character) %>%
+    purrr::flatten_chr()
+
+  confuns::check_one_of(
+    input = sections_to_merge,
+    against = base::unique(coords_df[["section"]]),
+    ref.input = "sections to merge"
+  )
+
+  if(dplyr::n_distinct(sections_to_merge) != base::length(sections_to_merge)){
+
+    stop("Section names to be merged can only appear one time in the input.")
+
+  }
+
+  for(sections in merge_input){
+
+    sections <- base::sort(sections)
+
+    coords_df[["section"]] <-
+      stringr::str_replace_all(
+        string = coords_df[["section"]],
+        pattern = stringr::str_c(sections, collapse = "|"),
+        replacement = stringr::str_c(sections, collapse = "_")
+      )
+
+  }
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
 
 
 
@@ -300,7 +366,7 @@ mergeGroups <- function(object,
 #'
 #' @param id The namespace id.
 #'
-
+#' @keywords internal
 moduleAddGeneSetsUI <- function(id){
 
   ns <- shiny::NS(id)
@@ -354,7 +420,7 @@ moduleAddGeneSetsUI <- function(id){
 #'
 #' @return An updated spata-object.
 #'
-
+#' @keywords internal
 moduleAddGeneSetsServer <- function(id, object){
 
   shiny::moduleServer(
@@ -481,7 +547,7 @@ moduleAddGeneSetsServer <- function(id, object){
 #'
 #' @param id The namespace id.
 #'
-
+#' @keywords internal
 moduleSurfacePlotUI <- function(id){
 
   ns <- shiny::NS(id)
@@ -539,7 +605,7 @@ moduleSurfacePlotUI <- function(id){
                                         shiny::column(width = 8,
                                                       shinyWidgets::checkboxGroupButtons(inputId = ns("display_add_ons"),
                                                                                          label = NULL,
-                                                                                         selected = "legend",
+                                                                                         selected = c("legend", "image"),
                                                                                          choices = c("Legend" = "legend",
                                                                                                      "Image" = "image",
                                                                                                      "Title" = "title",
@@ -577,7 +643,7 @@ moduleSurfacePlotUI <- function(id){
 #' adjust the output of \code{$assembled_plot()} outside of the module. If no further adjustment is needed determine \code{final_plot} as:
 #' \code{shiny::reactive(*module_return_variable*()$assembled_plot())}
 #'
-
+#' @keywords internal
 moduleSurfacePlotServer <- function(id,
                                     object,
                                     final_plot,
@@ -906,20 +972,22 @@ moduleSurfacePlotServer <- function(id,
 
           ## extract image info
           img_info <-
-            getImage(object, of_sample = current$sample) %>%
+            getImage(object) %>%
             grDevices::as.raster() %>%
             magick::image_read() %>%
             magick::image_info()
 
           st_image <-
-            grDevices::as.raster(getImage(object, of_sample = current$sample)) %>%
+            grDevices::as.raster(getImage(object)) %>%
             magick::image_read()
 
           image_add_on <-
-            ggplot2::annotation_raster(raster = st_image,
-                                       xmin = 0, ymin = 0,
-                                       xmax = img_info$width,
-                                       ymax = img_info$height)
+            ggplot2::annotation_raster(
+              raster = st_image,
+              xmin = 0, ymin = 0,
+              xmax = img_info$width,
+              ymax = img_info$height
+            )
 
 
         } else {
@@ -1027,7 +1095,7 @@ moduleSurfacePlotServer <- function(id,
       fdata <- shiny::reactive({
 
         fdata <-
-          getFeatureDf(object = object, of_sample = current$sample)[, c("barcodes", current$feature)]
+          getFeatureDf(object = object)[, c("barcodes", current$feature)]
 
         return(fdata)
 
@@ -1112,17 +1180,21 @@ moduleSurfacePlotServer <- function(id,
         if(base::as.numeric(input$pt_smooth) != 0){
 
           smoothed_df <-
-            hlpr_smooth_shiny(coords_df = joined_df(),
-                              variable = variable(),
-                              smooth_span = base::as.numeric(input$pt_smooth))
+            hlpr_smooth_shiny(
+              coords_df = joined_df(),
+              variable = variable(),
+              smooth_span = base::as.numeric(input$pt_smooth)
+            )
 
           if(current$color_code %in% c("genes", "gene_sets")){
 
             smoothed_df <-
-              purrr::imap_dfr(.x = smoothed_df,
-                              .f = hlpr_normalize_imap,
-                              aspect = "",
-                              subset = variable())
+              purrr::imap_dfr(
+                .x = smoothed_df,
+                .f = hlpr_normalize_imap,
+                aspect = "",
+                subset = variable()
+              )
 
           }
 
@@ -1133,10 +1205,12 @@ moduleSurfacePlotServer <- function(id,
           if(current$color_code %in% c("genes", "gene_sets")){
 
             smoothed_df <-
-              purrr::imap_dfr(.x = joined_df(),
-                              .f = hlpr_normalize_imap,
-                              aspect = "",
-                              subset = variable())
+              purrr::imap_dfr(
+                .x = joined_df(),
+                .f = hlpr_normalize_imap,
+                aspect = "",
+                subset = variable()
+              )
 
             return(smoothed_df)
 
@@ -1184,19 +1258,22 @@ moduleSurfacePlotServer <- function(id,
           if(current$pt_clrsp %in% validColorSpectra()[["Diverging"]]){
 
             add_on <-
-              confuns::scale_color_add_on(clrsp = current$pt_clrsp,
-                                          limits = c(color_min,
-                                                     color_max),
-                                          mid = color_mid,
-                                          oob = scales::squish)
+              confuns::scale_color_add_on(
+                clrsp = current$pt_clrsp,
+                limits = c(color_min,
+                           color_max),
+                mid = color_mid,
+                oob = scales::squish
+              )
 
           } else {
 
             add_on <-
-              confuns::scale_color_add_on(clrsp = current$pt_clrsp,
-                                          limits = c(color_min,
-                                                     color_max),
-                                          oob = scales::squish)
+              confuns::scale_color_add_on(
+                clrsp = current$pt_clrsp,
+                limits = c(color_min, color_max),
+                oob = scales::squish
+              )
 
           }
 
@@ -1441,7 +1518,7 @@ moduleSurfacePlotServer <- function(id,
 
 
 # mS ----------------------------------------------------------------------
-
+#' @keywords internal
 mSwitch <- function(inputId, label = NULL, status = "success", width = "80%", app = "annotateImage", helper = TRUE, hslot = inputId, ...){
 
   if(base::is.null(label)){

@@ -13,7 +13,8 @@ bin_by_angle(
   rename = FALSE,
   remove = FALSE,
   drop = TRUE,
-  verbose = TRUE
+  var_to_bin = "barcodes",
+  verbose = verbose
 )
 }
 \arguments{

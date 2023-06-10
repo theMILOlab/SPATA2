@@ -12,3 +12,4 @@ check_all_barcodes(object)
 \description{
 Check barcodes of all matrices and data.frames
 }
+\keyword{internal}

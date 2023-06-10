@@ -7,7 +7,7 @@
 getSpatialMethod(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \value{
 Character value.

@@ -3,11 +3,11 @@
 \name{getActiveMatrixName}
 \alias{getActiveMatrixName}
 \alias{getActiveExpressionMatrixName}
-\title{Obtain name of currently active expression matrix}
+\title{Obtain name of currently active data matrix}
 \usage{
 getActiveMatrixName(object, verbose = NULL, ...)
 
-getActiveExpressionMatrixName(object, verbose = NULL, ...)
+getActiveExpressionMatrixName(...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -16,5 +16,5 @@ getActiveExpressionMatrixName(object, verbose = NULL, ...)
 Character value.
 }
 \description{
-Obtain name of currently active expression matrix
+Obtain name of currently active data matrix
 }

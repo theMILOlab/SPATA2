@@ -19,3 +19,4 @@ expression of those genes will be calculated and displayed. Must be in \code{get
 \description{
 variable
 }
+\keyword{internal}

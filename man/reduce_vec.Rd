@@ -4,8 +4,22 @@
 \alias{reduce_vec}
 \title{Reduces vector length}
 \usage{
-reduce_vec(x, n, start.with = 1)
+reduce_vec(x, nth, start.with = 1)
+}
+\arguments{
+\item{x}{Input vector of any type.}
+
+\item{nth}{Numeric value. Every nth element is kept. If 1, every element
+is kept. If 2, every second element is kept, etc.}
+
+\item{start.with}{Element at which the counting starts. Defaults to 1.
+E.g. if \code{nth = 2} and length of \code{x} is 6, the first, third and fifth element
+is returned.}
+}
+\value{
+Vector of the same class as \code{x}. Content depends on parameter adjustments.
 }
 \description{
-Reduces vector length
+Reduces length of vectors by keeping every \code{nth} element.
 }
+\keyword{internal}

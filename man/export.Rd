@@ -18,3 +18,4 @@ export()
 \description{
 dummy
 }
+\keyword{internal}

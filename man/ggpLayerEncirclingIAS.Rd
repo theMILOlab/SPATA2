@@ -10,12 +10,19 @@ ggpLayerEncirclingIAS(
   distance = NA_integer_,
   n_bins_circle = NA_integer_,
   binwidth = getCCD(object),
-  linecolor = "black",
-  linesize = 1
+  alpha_core = 0,
+  fill_core = NA,
+  line_color = "black",
+  line_size = (line_size_core * 0.75),
+  line_size_core = 1,
+  inc_outline = TRUE,
+  direction = "outwards",
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -33,7 +40,22 @@ the barcode-spots are assigned. We recommend to set it equal to the center-cente
 distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values.}
 
-\item{linesize}{Numeric value. The size of the line(s) plotted.}
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. The size with which to display encircling lines
+of the area expansion.}
+
+\item{line_size_core}{Numeric. The size with which to display the core outline
+of the image annotation.}
+
+\item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -44,4 +66,16 @@ family.
 \description{
 Adds the circular expansion used by the IAS-algorithm
 of the area of  an image annotation to a surface plot.
+}
+\examples{
+
+object <- downloadPubExample("313_T")
+
+plotImageGgplot(object) +
+ ggpLayerEncirclingIAS(
+   object = object,
+   id = "necrotic_area",
+   distance = "2.25mmm",
+   binwidth = "112.5um"
+ )
 }

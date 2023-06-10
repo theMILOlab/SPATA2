@@ -36,7 +36,8 @@ current spata-object this argument must be set to TRUE in order to overwrite the
 spata-objects can store more than one sample.}
 }
 \value{
-An updated spata-object.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
 Adds new externally generated variables to the spata-object's feature data

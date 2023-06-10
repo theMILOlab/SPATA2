@@ -17,3 +17,4 @@ hlpr_add_old_coords(object, plot_df, complete)
 Adds old coordinates of subsetted object to
 plot_df in \code{plotSurface()}.
 }
+\keyword{internal}

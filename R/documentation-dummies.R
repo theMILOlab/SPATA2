@@ -18,233 +18,12 @@
 #' determines the order in which the groups of interest are displayed. Groups that
 #' are not included are dropped which affects the colors with which they are displayed.
 #'
-
+#' @keywords internal
 across <- function(across, across_subset, relevel){}
 
+#' @keywords internal
 #' @rdname across
 across_dummy <- function(across, across_subset, relevel){}
-
-
-#' @title average_genes
-#' @param average_genes Logical value. If set to TRUE the expression values
-#' of all specified genes are averaged instead of considered separately.
-#' If the output of the function is a data.frame the variable in which the results
-#' are stored is named \emph{mean_genes}.
-
-average_genes <- function(average_genes){}
-
-
-#' @title binwidth
-#'
-#' @param binwidth Numeric value. Denotes the binwidth to use for the histogram.
-binwidth_dummy <- function(binwidth){}
-
-
-#' Title
-#'
-#' @param cds A valid cell-data-set. (from the monocle3 platform)
-#'
-cds_dummy <- function(cds){}
-
-
-#' @title clrp
-#' @param clpr Character value. The color panel to be used. Run \code{all_colorpanels()} to see
-#' all valid input options.
-
-clrp <- function(clrp){}
-
-#' @rdname clrp
-clrp_dummy <- function(clrp){}
-
-
-#' @title dropped_df
-#'
-#' @param dropped_df A data.frame with no NAs. (Result of \code{tidyr::drop_na()}).
-
-dropped_df_dummy <- function(dropped_df){}
-
-
-
-#' @title flexible_call_dummy
-#'
-#' @param ... Allows to manipulate functions that are called 'flexibly'. Denote
-#' the function name with the argument name and the way you want to manipulate
-#' the way it is called with a named list of arguments. E.g. \code{facet_wrap =
-#' list(drop = TRUE)}.
-#'
-#' Use \code{validFlexiblyCalls()} to see all functions you can manipulate this
-#' way.
-flexible_call_dummy <- function(...){}
-
-#' @title gene_set_path
-#' @param gene_set_path Character value (or NULL). Specifies the path to a
-#' .RDS-file containing a data.frame that is to be used as input for slot @@used_genesets.
-#'
-#'  Must have the character-variables
-#'
-#'    \itemize{
-#'     \item{\emph{'ont'}: The gene set names.}
-#'     \item{\emph{'gene'}: The belonging gene names.}
-#'     }
-#'
-#' If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.
-#'
-
-gene_set_path <- function(gene_set_path){}
-
-
-#' @title ggpLayer
-#'
-#' @return \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
-#' that can be added to ggplots via the \code{+} operator. In most of the cases
-#' they are supposed to be added to plots created with the \code{plotSurface*()}
-#' family.
-#'
-ggpLayer_dummy <- function(){}
-
-#' @title ggplot_family
-#' @return Returns a ggplot-object that can be additionally customized according
-#' to the rules of the ggplot2-framework.
-#'
-
-ggplot_family <- function(){}
-
-#' @title ggplot
-#' @return A ggplot.
-ggplot_dummy <- function(){}
-
-
-#' @title image_dummy
-#' @param image An image of class \emph{Image} to be displayed in the background.
-#' Easily accessible via \code{SPATA::image()}.
-
-image_dummy <- function(image){}
-
-
-#' @title method_hclust
-#'
-#' @param method_hclust Character value. Denotes the method that was used to generate the
-#' clustering results you want to extract.
-#'
-
-method_hclust <- function(method_hclust){}
-
-
-#' @title Normalize variable
-
-normalize <- confuns::normalize
-
-#' @title object
-#'
-#' @param object Any object for which a method has been defined.
-#'
-object_dummy <- function(){}
-
-#' @title pb
-#'
-#' @param pb A progress_bar-object.
-
-pb_dummy <- function(pb){}
-
-
-#' @title plot_type
-#'
-#' @param plot_type Character value. Specifies the type of plot to use to
-#' visualize the results. If valid input options are not mentioned in the
-#' description use \code{validPlotTypess()} to obtain all valid input options.
-
-plot_type_dummy <- function(plot_type){}
-
-
-#' @title de_df
-#' @param dea_df A data.frame containing information about differentially expressed genes.
-#' This includes the numeric variables \emph{p_val, avg_logFC, p_val_adj} and the character
-#' variables \emph{cluster, gene}.
-
-pheatmap <- function(de_df){}
-
-
-#' @title print
-#'
-#' @return A human readable report of the issue of interest.
-
-print_family <- function(){}
-
-#' @title sample_name
-#' @param sample_name Character value. Denotes the name of the sample you are
-#' analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.
-
-sample_name <- function(sample_name){}
-
-
-#' @title set
-#'
-#' @details All \code{set*()}-functions offer a save way to set certain
-#' slots of your spata-object. They do check the input for validity but
-#' effectively overwrite everything that is occupying the slot to be set -
-#' use with caution.
-#'
-#' @return A spata object containing the set input.
-
-set_dummy <- function(){}
-
-
-
-
-#' Title
-#'
-#' @param seurat_object A valid seurat-object. (from the Seurat platform)
-#'
-seurat_object_dummy <- function(seurat_object){}
-
-
-#' @title update
-#' @return The input `SPATA2` object containing the added or computed
-#' results.
-update_dummy <- function(){}
-
-#' @title variable
-#'
-#' @param variable The variable of interest.
-#'
-#'  \itemize{
-#'   \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-#'   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-#'   \item{ \strong{Feature} as a single character value. Must be in \code{getFeatureNames()}}
-#'   }
-#'
-#'
-
-variable <- function(variable){}
-
-
-#' @title variable_num
-#'
-#' @param variable Character value. The numeric variable of interest. Must be inside:
-#'
-#' \itemize{
-#'   \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} Must be in \code{getGenes()}}
-#'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-#'   }
-
-variable_num <- function(variable){}
-
-#' @title variables_num
-#'
-#' @param variables Character vector. The numeric variables of interest. Must be inside:
-#'
-#' \itemize{
-#'   \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} Must be in \code{getGenes()}}
-#'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-#'   }
-
-variables_num <- function(variables){}
-
-
-
 
 
 #' @title Argument dummy
@@ -263,8 +42,8 @@ variables_num <- function(variables){}
 #'
 #' Use \code{getGroupNames()} to obtain all valid input options.
 #'
-#' @param bcsp_rm Character vector or NULL. If character, specifies barcode-spots that
-#' are removed before plotting.
+#' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
+#' are removed before analysis or plotting.
 #'
 #' @param clrp Character value. Specifies the color palette to be used to represent
 #' groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
@@ -278,6 +57,9 @@ variables_num <- function(variables){}
 #' @param clrsp Character value. Specifies the color spectrum to be used to represent
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
+#' @param concavity Given to `concavity` of `ggforce::geom_mark_hull()`.
+#' Can be optimized for every sample via `object <- setDefault(object, concavity = ...)`.
+#' Default by object initiation is 1.
 #'
 #' @param dir Character value. The chosen directory. See details for possible
 #' requirements.
@@ -301,11 +83,15 @@ variables_num <- function(variables){}
 #' @param expand Specifies image expansion. An image that is cropped based on an image
 #' annotation centers around the image annotation. If `expand = 0`, the default, the dimensions of the image,
 #' that is width/x-axis and height/y-axis, are set to include only the image annotation area
-#' and nothing more. Using `expand`, the cropped image section can be adjusted. See details
-#' for more information.
+#' and nothing more. Using `expand`, the cropped image section can be adjusted. See section
+#' *Expansion of cropped image sections* for more information.
 #'
+#' @param expand_outline Distance measure by which the outline of the area is expanded.
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
+#'
+#' @param grouping_variable Character value. The grouping variable of interest. Use
+#' `getGroupingOptions()` to obtain all valid input options.
 #'
 #' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
 #' the dendrogom is cut.
@@ -318,6 +104,9 @@ variables_num <- function(variables){}
 #' of the image annotations of interest. If numeric, the image annotations are picked by number.
 #' If `NULL`, all image annotations are included - subsequent selection with `tags` and
 #' `test` is possible.
+#'
+#' @param inner Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If `FALSE`, the inner borders of the image annotation
+#' are not included in the output.
 #'
 #' @param k Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 #' in which the hierarchical tree is supposed to be split.
@@ -347,13 +136,15 @@ variables_num <- function(variables){}
 #'
 #' @param nrow,ncol Numeric values or NULL. Used to arrange multiple plots.
 #'
-#' @param line_alpha,line_color,line_size,line_type Parameters given to
-#' \code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
-#' that control the appearance of the main line(s) of the plot.
+#' @param line_alpha Numeric. Affects alpha of main lines of the plot.
+#' @param line_color Character. Affects color of the main lines of the plot.
+#' @param line_size Numeric. Affects size of the main lines of the plot.
+#' @param line_type Character. The line type. One of *'blank'*, *'solid'*,
+#' *'dashed'*, *'dotted'*, *'dotdash'*, *'longdash'* and *'twodash'*.
 #'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
-#' @param object An object of class \code{SPATA2}.
+#' @param object An object of class `spata2`.
 #'
 #' @param order Logical value. If `TRUE`, data points are ordered according
 #' to their values before beeing plotted.
@@ -361,6 +152,11 @@ variables_num <- function(variables){}
 #' variable is used to order the data points.
 #' @param order_desc Logical value. If `TRUE`, reverses the arrangement specified
 #' via `order_by` and/or `order`.
+#'
+#' @param outer Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If `FALSE`, the outer border of the image annotation
+#' is not included in the output.
+#'
+#' @param overwrite Logical value. Must be `TRUE` to allow overwriting.
 #'
 #' @param pt_alpha Numeric value. Specifies the degree of transparency of all points.
 #' @param pt_clr Character value. Specifies the color of all points.
@@ -373,6 +169,14 @@ variables_num <- function(variables){}
 #' @param relevel Logical value. If set to TRUE the input order of \code{across_subset}
 #' determines the order in which the groups of interest are displayed. Groups that
 #' are not included are dropped which affects the colors with which they are displayed.
+#'
+#' @param sc_input Data.frame that contains the results from single cell deconvolution.
+#' Must have at least three columns:
+#' \itemize{
+#'  \item{*x* : }{ numeric. Position of cell on the x axis in pixel.},
+#'  \item{*y* :}{ numeric. Position of cell on the y axis in pixel.},
+#'  \item{*cell_type* :}{ factor Cell type of the cell.}
+#' }
 #'
 #' @param scales,ncol,nrow Affects the way the subplots
 #' are displayed.
@@ -408,27 +212,15 @@ variables_num <- function(variables){}
 #'
 #' @param summarize_with Character value. Name of the function with which to summarize.
 #'
-#' @param tags,test Input for argument \code{tags} specifies the tags of interest.
-#' Argument \code{test} decides about how the specified tags are used to select
-#' the image annotations of interest. There are multiple options:
+#' @param spatial_method Character value. The name of the spatial method that underlies
+#' the experiment. Must be one of `validSpatialMethods()`. Defaults to *'Unknown'*.
 #'
-#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-#' must be tagged with at least one of the input tags.
+#' @param tags Character vector or `NULL`. If character, the tags for the image annotation
+#' selection. See section *Selection of image annotation with tags* for more information.
 #'
-#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can contain tags that are not specified.
-#'
-#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can not be tagged with anything else.
-#'
-#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
-#' annotation must **not** be tagged with the combination of input tags.
-#'
-#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
-#' must **not** contain any of the input tags.
-#'
-#' Note that the filtering process happens in addition to / after the filtering by input for argument
-#' \code{ids}.
+#' @param test Character value. One of *any*. *all*, *identical*, *not_identical* and
+#' *none*. Specifies how input for `tags` is used to select image annotations.
+#' See section *Selection of image annotation with tags* for more information.
 #'
 #' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters
 #' given to `ggplot2::geom_text()` that control the appearance of text of the plot.
@@ -459,6 +251,11 @@ variables_num <- function(variables){}
 #' @param whole_sample Logical. If TRUE, normalization of the values used
 #' takes place in the light of the complete sample.
 #'
+#' @param x_nth Numeric value. If the number of breaks/labels on the
+#' x-axis becomes too high `x_nth` can be used to reduce it. If `x_nth` is 1,
+#' every label is kept. If 2, every second label is kept. If 3, every
+#' third label is kept. And so on.
+#'
 #' @param xrange,yrange Vector of length two or \code{NULL}. If not \code{NULL},
 #' specifies the x- and y-range to which the output image is cropped. E.g.
 #' \code{xrange = c(200, 500)} results in the image being cropped from
@@ -467,14 +264,394 @@ variables_num <- function(variables){}
 #'
 #' This argument works within the \code{SPATA2} distance framework.
 #' If values are specified in European units of length the input is
-#' immediately converted to pixel units.
-#'
-#' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
+#' immediately converted to pixel units. See info section *Distance measures*
+#' for more information.
 #'
 #'
 #' @param ... Used to absorb deprecated arguments or functions.
 #'
-
+#' @keywords internal
 argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}
+
+
+
+
+#' @title average_genes
+#' @param average_genes Logical value. If set to TRUE the expression values
+#' of all specified genes are averaged instead of considered separately.
+#' If the output of the function is a data.frame the variable in which the results
+#' are stored is named \emph{mean_genes}.
+#' @keywords internal
+average_genes <- function(average_genes){}
+
+
+#' @title binwidth
+#'
+#' @param binwidth Numeric value. Denotes the binwidth to use for the histogram.
+#' @keywords internal
+binwidth_dummy <- function(binwidth){}
+
+
+#' Title
+#'
+#' @param cds A valid cell-data-set. (from the monocle3 platform)
+#' @keywords internal
+cds_dummy <- function(cds){}
+
+
+#' @title clrp
+#' @param clpr Character value. The color panel to be used. Run \code{all_colorpanels()} to see
+#' all valid input options.
+#' @keywords internal
+clrp <- function(clrp){}
+
+#' @keywords internal
+#' @rdname clrp
+clrp_dummy <- function(clrp){}
+
+
+#' @title dropped_df
+#'
+#' @param dropped_df A data.frame with no NAs. (Result of \code{tidyr::drop_na()}).
+#' @keywords internal
+dropped_df_dummy <- function(dropped_df){}
+
+
+
+#' @title flexible_call_dummy
+#'
+#' @param ... Allows to manipulate functions that are called 'flexibly'. Denote
+#' the function name with the argument name and the way you want to manipulate
+#' the way it is called with a named list of arguments. E.g. \code{facet_wrap =
+#' list(drop = TRUE)}.
+#'
+#' Use \code{validFlexiblyCalls()} to see all functions you can manipulate this
+#' way.
+#' @keywords internal
+flexible_call_dummy <- function(...){}
+
+#' @title gene_set_path
+#' @param gene_set_path Character value (or NULL). Specifies the path to a
+#' .RDS-file containing a data.frame that is to be used as input for slot @@used_genesets.
+#'
+#'  Must have the character-variables
+#'
+#'    \itemize{
+#'     \item{\emph{'ont'}: The gene set names.}
+#'     \item{\emph{'gene'}: The belonging gene names.}
+#'     }
+#'
+#' If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.
+#'
+#' @keywords internal
+gene_set_path <- function(gene_set_path){}
+
+
+#' @title ggpLayer
+#'
+#' @return \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
+#' that can be added to ggplots via the \code{+} operator. In most of the cases
+#' they are supposed to be added to plots created with the \code{plotSurface*()}
+#' family.
+#' @keywords internal
+ggpLayer_dummy <- function(){}
+
+#' @title ggplot_family
+#' @return Returns a ggplot-object that can be additionally customized according
+#' to the rules of the ggplot2-framework.
+#' @keywords internal
+ggplot_family <- function(){}
+
+#' @title ggplot
+#' @return A ggplot.
+#' @keywords internal
+ggplot_dummy <- function(){}
+
+
+#' @title image_dummy
+#' @param image An image of class \emph{Image} to be displayed in the background.
+#' Easily accessible via \code{SPATA::image()}.
+#' @keywords internal
+image_dummy <- function(image){}
+
+
+#' @title method_hclust
+#'
+#' @param method_hclust Character value. Denotes the method that was used to generate the
+#' clustering results you want to extract.
+#'
+#' @keywords internal
+method_hclust <- function(method_hclust){}
+
+
+#' @title Normalize variable
+#' @keywords internal
+normalize <- confuns::normalize
+
+#' @title object
+#'
+#' @param object Any object for which a method has been defined.
+#' @keywords internal
+object_dummy <- function(){}
+
+#' @title pb
+#'
+#' @param pb A progress_bar-object.
+#' @keywords internal
+pb_dummy <- function(pb){}
+
+
+#' @title plot_type
+#'
+#' @param plot_type Character value. Specifies the type of plot to use to
+#' visualize the results. If valid input options are not mentioned in the
+#' description use \code{validPlotTypess()} to obtain all valid input options.
+#' @keywords internal
+plot_type_dummy <- function(plot_type){}
+
+
+#' @title de_df
+#' @param dea_df A data.frame containing information about differentially expressed genes.
+#' This includes the numeric variables \emph{p_val, avg_logFC, p_val_adj} and the character
+#' variables \emph{cluster, gene}.
+#' @keywords internal
+pheatmap <- function(de_df){}
+
+
+#' @title print
+#'
+#' @return A human readable report of the issue of interest.
+#' @keywords internal
+print_family <- function(){}
+
+#' @title sample_name
+#' @param sample_name Character value. Denotes the name of the sample you are
+#' analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.
+#' @keywords internal
+sample_name <- function(sample_name){}
+
+
+
+
+
+
+
+#' Section dummy
+#'
+#' @section Area measures:
+#'
+#' Several functions in `SPATA2` have arguments that take *area input*.
+#' To specifically refer to an area the unit must be specified. There are
+#' three ways to create valid input for these arguments.
+#'
+#' **1. In pixel:**
+#'
+#' There are two valid input options to specify an area in pixel:
+#'
+#' \itemize{
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
+#'  is specified the input will be interpreted as pixels.}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
+#'  }
+#'
+#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
+#'  number of pixels is meant.
+#'
+#' **2. According to the Systeme international d`unites (SI):**
+#'
+#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
+#'  requires the input to be a character as the unit must be provided as suffix.
+#'  Between the numeric value and the unit must be no empty space! Valid suffixes
+#'  can be obtained using the function `validUnitsOfAreaSI()`.
+#'
+#'  **3. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units` package. Input
+#' is converted into vectors of class `units`. Therefore, input can be directly
+#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
+#' Note that *pixel* is not a valid unit in the `units` package. If you want
+#' to specify the input in pixel you have to use input option 1. In pixel.
+#'
+#'
+#' @section Distance measures:
+#'
+#' Several functions in `SPATA2` have arguments that take *distance input*.
+#' To specifically refer to a distance the unit must be specified. There are
+#' three ways to create valid input for these arguments.
+#'
+#' **1. In pixel:**
+#'
+#' There are two valid input options to specify the distance in pixel:
+#'
+#' \itemize{
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
+#'  is specified the input will be interpreted as pixels.}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
+#'  }
+#'
+#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
+#'  number of pixels is meant.
+#'
+#' **2. According to the Systeme international d`unites (SI):**
+#'
+#'  Specifying distances in SI units e.g. `arg_input = c('2mm', '4mm')` etc.
+#'  requires the input to be a character as the unit must be provided as suffix.
+#'  Between the numeric value and the unit must be no empty space! Valid suffixes
+#'  can be obtained using the function `validUnitsOfLengthSI()`.
+#'
+#'  **3. As vectors of class `unit`:**
+#'
+#' Behind the scenes `SPATA2` works with the `units` package. Input
+#' is converted into vectors of class `units`. Therefore, input can be directly
+#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm')`
+#' Note that *pixel* is not a valid unit in the `units` package. If you want
+#' to specify the input in pixel you have to use input option 1. In pixel.
+#'
+#' @section Expansion of cropped image sections:
+#'
+#' The argument `expand` is a versatile way, to specify how a cropped
+#' image section is extracted. If you want the cropped image as is, specify
+#' `expand = 0`. Else, there are multiple options. In general, `expand` takes
+#'  three kinds of values, namely percentages, distances and distance exclamations.
+#'
+#' \itemize{
+#'  \item{Percentage:}{ A string suffixed with *%*. E.g. `expand = '50%'`
+#'  adds 50% of the distance from the center to the border of the image annotation
+#'   to the image frame.}
+#'  \item{Distance measures:}{ In pixel or European units of length. E.g. `expand =  list(x = '1mm')`
+#'  expands the x-axis on both sides with 1mm. `expand = list(x = c('0.5mm', 1.5mm')`
+#'  expands the x-axis on the left side with 0.5mm and on the right side with 1.5mm.}
+#'  \item{Exclam distance measures:}{ Distance measure with an exclamation mark
+#'  suffix. E.g. `expand = '1mm!'` centers the image and forces an axis length of
+#'  1 millimeter. (Example 5) }
+#'  }
+#'
+#' Depending on how the values are specified different parts of the image can be
+#' expanded.
+#'
+#' Single values, like `expand = 50`, are recycled: Every end of each image axis
+#' is expanded by 50 pixel. (Example 2)
+#'
+#' Vectors of length two, like `expand = c('1mm', '2mm')`, are recycled: The beginning
+#' of each axis is expanded by 1 millimeter. The end of each axis is expanded by
+#' 2mm. (Example 3)
+#'
+#' Named lists can be more precise. `expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm'))`.
+#' Applies the vectors to expand the corresponding axis. (Example 4)
+#'
+#' Using exclam input the side of the axis must not be specified as the
+#' axis is fixed as a whole. E.g `expand = list(x = '1mm!', y = '2mm!')` results
+#' in the same output as `expand = list(x = c('1mm!', '1mm!'), y = c('2mm!', '2mm!')`.
+#'
+#' @section Selection of image annotations with tags:
+#'
+#' Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the image annotations of interest. There are multiple options:
+#'
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can contain tags that are not specified.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can not be tagged with anything else.
+#'
+#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
+#' annotation must **not** be tagged with the combination of input tags.
+#'
+#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
+#' must **not** contain any of the input tags.
+#'
+#' Note that the filtering process happens after the filtering by input for argument
+#' \code{ids}. You can first select a group of image annotations by naming their IDs
+#' and then select among them via tags and test. If `ids` is `NULL`, you select
+#' among all image annotations via tags and test. And if `tags` is also `NULL`,
+#' the function uses all image annoations.
+#' @keywords internal
+section_dummy  <- function(){}
+
+
+
+
+
+
+
+
+
+
+#' @title set
+#'
+#' @details All \code{set*()}-functions offer a save way to set certain
+#' slots of your spata-object. They do check the input for validity but
+#' effectively overwrite everything that is occupying the slot to be set -
+#' use with caution.
+#'
+#' @return A spata object containing the set input.
+#' @keywords internal
+set_dummy <- function(){}
+
+
+
+
+#' Title
+#'
+#' @param seurat_object A valid seurat-object. (from the Seurat platform)
+#' @keywords internal
+seurat_object_dummy <- function(seurat_object){}
+
+
+#' @title update
+#' @return The input `spata2` object containing the added or computed
+#' results.
+#' @keywords internal
+update_dummy <- function(){}
+
+#' @title variable
+#'
+#' @param variable The variable of interest.
+#'
+#'  \itemize{
+#'   \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
+#'   \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
+#'   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
+#'   \item{ \strong{Feature} as a single character value. Must be in \code{getFeatureNames()}}
+#'   }
+#' @keywords internal
+variable <- function(variable){}
+
+
+#' @title variable_num
+#'
+#' @param variable Character value. The numeric variable of interest. Must be inside:
+#'
+#' \itemize{
+#'   \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+#'   \item{ \strong{Genes} Must be in \code{getGenes()}}
+#'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+#'   }
+#' @keywords internal
+variable_num <- function(variable){}
+
+#' @title variables_num
+#'
+#' @param variables Character vector. The numeric variables of interest. Must be inside:
+#'
+#' \itemize{
+#'   \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+#'   \item{ \strong{Genes} Must be in \code{getGenes()}}
+#'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
+#'   }
+#' @keywords internal
+variables_num <- function(variables){}
+
+
+
+
+
+
 
 

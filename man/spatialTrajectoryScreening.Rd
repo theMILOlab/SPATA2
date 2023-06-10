@@ -9,7 +9,7 @@ spatialTrajectoryScreening(
   id,
   variables,
   n_bins = NA_integer_,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
@@ -19,7 +19,7 @@ spatialTrajectoryScreening(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}
@@ -32,9 +32,8 @@ the screening process.}
 created. (See details for more.)}
 
 \item{binwidth}{Distance value. The width of the bins to which
-the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
-of \code{?is_dist} for more information about distance values.}
+the barcode-spots are assigned. Defaults to the center-center
+distance: \code{binwidth = getCCD(object)}.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
@@ -96,5 +95,5 @@ How good a model fits is evaluated by pearson correlation and the area under
 the curve of the gene-model-residuals.
 }
 \seealso{
-createSpatialTrajectories()
+\code{\link[=createSpatialTrajectories]{createSpatialTrajectories()}}
 }

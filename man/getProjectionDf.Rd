@@ -7,7 +7,7 @@
 getProjectionDf(object, id, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{...}{Given to \code{joinWith()}}
 }

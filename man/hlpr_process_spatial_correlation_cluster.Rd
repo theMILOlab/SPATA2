@@ -26,3 +26,4 @@ unique gene names of the cluster it corresponds to.}
 \item{\emph{h}: h-value}
 }
 }
+\keyword{internal}

@@ -2,12 +2,9 @@
 % Please edit documentation in R/runA-Z.R
 \name{runGSEA}
 \alias{runGSEA}
-\alias{runGSEA,spata2-method}
 \title{Compute gene set enrichment}
 \usage{
-runGSEA(object, ...)
-
-\S4method{runGSEA}{spata2}(
+runGSEA(
   object,
   across,
   methods_de = "wilcox",
@@ -32,8 +29,6 @@ runGSEA(object, ...)
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
-
 \item{across}{Character vector. All grouping variables of interest.}
 
 \item{methods_de}{Character vector. All differential expression methods
@@ -56,7 +51,9 @@ gene set names. The slot contains the genes of the gene sets.Holds priority over
 \item{gene_set_names}{Character vector of gene set names that are taken
 from the object's gene set data.frame.}
 
-\item{test}{Choose an enrichment type e.g. c("hypergeometric", "kstest")}
+\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
+\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+See section \emph{Selection of image annotation with tags} for more information.}
 
 \item{background}{Size or character vector of background population genes}
 

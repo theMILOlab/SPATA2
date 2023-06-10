@@ -17,3 +17,4 @@ Process expand input
  this is a new section.
 }
 
+\keyword{internal}

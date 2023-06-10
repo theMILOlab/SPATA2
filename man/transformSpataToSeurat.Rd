@@ -75,3 +75,4 @@ passed to every function as the first argument!!!.)}
 Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 will result in an error. (\code{base::tryCatch()} will prevent the function from crashing.)
 }
+\keyword{internal}

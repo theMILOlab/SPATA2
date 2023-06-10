@@ -9,3 +9,4 @@
 \description{
 Used in conjunction with GeomSegmentFixed
 }
+\keyword{internal}

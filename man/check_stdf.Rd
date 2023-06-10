@@ -20,3 +20,4 @@ check_stdf(stdf, shift = NULL)
 \description{
 Check summarized trajectory data.frame
 }
+\keyword{internal}

@@ -22,3 +22,4 @@ Hint: Use the resulting data.frame of \code{SPATA::findDE()} or it's descendants
 \description{
 Check de data.frame
 }
+\keyword{internal}

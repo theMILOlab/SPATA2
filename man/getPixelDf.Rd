@@ -7,7 +7,7 @@
 getPixelDf(object, xrange = NULL, yrange = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -17,9 +17,8 @@ ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 }
 \value{
 Data.frame with \code{nrow()} equal to the number of pixels.

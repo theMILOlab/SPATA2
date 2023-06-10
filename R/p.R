@@ -5,7 +5,7 @@
 
 
 # pick --------------------------------------------------------------------
-
+#' @keywords internal
 pick_vars <- function(df, input, order_by, neg_log){
 
   if(base::is.list(input)){
@@ -264,6 +264,57 @@ printGeneSetOverview <- function(object){
 
 # process -----------------------------------------------------------------
 
+#' @keywords internal
+process_angle_justification <- function(angle, angle_just, clockwise){
+
+  if(base::isTRUE(clockwise)){
+
+    angle_out <- angle + angle_just
+
+    if(angle_out >= 360){
+
+      angle_out <- 360 - angle_out
+
+    }
+
+  } else {
+
+    angle_out <- angle - angle_just
+
+    if(angle_out < 0){
+
+      angle_out <- 360 + angle_out
+
+    }
+
+  }
+
+  return(angle_out)
+
+}
+
+#' @keywords internal
+process_axis <- function(axis){
+
+  confuns::check_one_of(
+    input = axis,
+    against = c("h", "horizontal", "v", "vertical")
+  )
+
+  if(axis %in% c("h", "horizontal")){
+
+    out <- "horizontal"
+
+  } else {
+
+    out <- "vertical"
+
+  }
+
+  return(out)
+
+}
+
 
 #' @title Process expand input
 #' @return Returns always a list of length two. Two slots named h (height)
@@ -272,7 +323,7 @@ printGeneSetOverview <- function(object){
 #' @section Expand: this is a new section.
 #'
 #' @export
-#'
+#' @keywords internal
 process_expand_input <- function(expand){
 
 
@@ -413,12 +464,20 @@ process_expand_input <- function(expand){
 #' @return List of 4 slots. Named *xmin*, *xmax*, *ymin* and *ymax*. Adjusted range
 #' in pixel.
 #' @export
-#'
+#' @keywords internal
 process_ranges <- function(xrange = getImageRange(object)$x,
                            yrange = getImageRange(objet)$y,
                            expand = 0,
                            persp = "image",
-                           object = NULL){
+                           object = NULL,
+                           ranges = NULL){
+
+  if(base::is.list(ranges)){
+
+    xrange <- ranges$x
+    yrange <- ranges$y
+
+  }
 
   # process input
   expand_input <- process_expand_input(expand)
@@ -487,8 +546,90 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 
 }
 
+#' @keywords internal
+process_sce_bayes_space <- function(sce,
+                                    spatialPreprocess = list(),
+                                    qTune = list(qs = 3:7),
+                                    spatialCluster = list(),
+                                    verbose = TRUE
+                                    ){
 
+  confuns::give_feedback(
+    msg = "Running BayesSpace::spatialPreprocess().",
+    verbose = verbose
+  )
 
+  sce <-
+    confuns::call_flexibly(
+      fn = "spatialPreprocess",
+      fn.ns = "BayesSpace",
+      default = list(
+        sce = sce,
+        log.normalize = TRUE,
+        skip.PCA = FALSE,
+        assay.type = "logcounts",
+        BSPARAM = BiocSingular::ExactParam()
+        )
+    )
+
+  if(base::is.numeric(spatialCluster$q)){
+
+    optimal_cluster <- spatialCluster$q[1]
+
+    spatialCluster$q <- NULL
+
+  } else if(base::length(qTune$qs) >= 2){
+
+    confuns::give_feedback(
+      msg = "Running BayesSpace::qTune().",
+      verbose = verbose
+    )
+
+    sce <-
+      confuns::call_flexibly(
+        fn = "qTune",
+        fn.ns = "BayesSpace",
+        default = list(sce = sce)
+      )
+
+    logliks <- base::attr(sce, "q.logliks")
+
+    optimal_cluster <-
+      akmedoids::elbow_point(
+        x = logliks$q,
+        y = logliks$loglik)$x %>%
+      base::round()
+
+    confuns::give_feedback(
+      msg = glue::glue("Calculated optimal input for `q`: {optimal_cluster}."),
+      verbose = verbose
+    )
+
+  } else if(base::length(qTune$qs) == 1){
+
+    optimal_cluster <- qTune$qs
+
+  } else {
+
+    stop("Need either `q` or `qs` as input.")
+
+  }
+
+  confuns::give_feedback(
+    msg = "Running BayesSpace::spatialCluster().",
+    verbose = verbose
+  )
+
+  sce <-
+    confuns::call_flexibly(
+      fn = "spatialCluster",
+      fn.ns = "BayesSpace",
+      default = list(sce = sce, q = optimal_cluster, use.dimred = "PCA")
+    )
+
+  return(sce)
+
+}
 
 
 #' @title Wrapper around Seurat processing functions
@@ -500,7 +641,7 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 #'
 #' @return A processed seurat-object.
 #'
-
+#' @keywords internal
 process_seurat_object <- function(seurat_object,
                                   assay_name = NULL,
                                   calculate_rb_and_mt = TRUE,
@@ -701,7 +842,7 @@ process_seurat_object <- function(seurat_object,
 #'   }
 #'
 #' @export
-
+#' @keywords internal
 project_on_trajectory <- function(coords_df,
                                   segment_df,
                                   width){
@@ -803,7 +944,7 @@ project_on_trajectory <- function(coords_df,
 #' @return The projected length.
 #'
 #' @export
-
+#' @keywords internal
 project_on_vector <- function(lcs, x, y){
 
   # vector from point of interest to origin of local coord system: 'vto'
@@ -831,7 +972,7 @@ project_on_vector <- function(lcs, x, y){
 # pull --------------------------------------------------------------------
 
 
-
+#' @keywords internal
 pull_slot <- function(lst, slot, out_null = NULL){
 
   if(base::is.null(slot)){

@@ -2,14 +2,15 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject_10X}
 \alias{initiateSpataObject_10X}
-\title{Initiate a spata-object from 10X Visium}
+\title{Initiate a \code{spata2} object from 10X Visium}
 \usage{
 initiateSpataObject_10X(
   directory_10X,
   sample_name,
+  image_name = "tissue_lowres_image.png",
   directory_spata = NULL,
   directory_seurat = NULL,
-  combine_with_wd = "/",
+  add_wd = "/",
   gene_set_path = NULL,
   SCTransform = FALSE,
   NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
@@ -37,6 +38,9 @@ which to load the information. This folder must contain the following sub direct
 
 \item{sample_name}{Character value. The sample name with which to refer to the
 respective sample. Should start with a letter.}
+
+\item{image_name}{Character value. The filename of the image that is read in
+as the default image. Should be in subdirectory \emph{directory_10X/spatial/}.}
 
 \item{gene_set_path}{Character value (or NULL). Specifies the path to a
 .RDS-file containing a data.frame that is to be used as input for slot @used_genesets.
@@ -79,27 +83,27 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-A spata-object.
+A \code{spata2} object.
 }
 \description{
 Creates, saves and returns an object of class spata
 from 10X Visium results. See details for more information.
 }
 \details{
-The loading and preprocessing of the spata-object  currently relies on the Seurat-package. Before any pre processing function is applied
+The loading and preprocessing of the \code{spata2} object  currently relies on the Seurat-package. Before any pre processing function is applied
 mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-manipulate the way the spata-object is processed. For all of these arguments apply the following instructions:
+manipulate the way the \code{spata2} object is processed. For all of these arguments apply the following instructions:
 
 \itemize{
 \item{If set to FALSE the processing function is skipped.}
 \item{If set to TRUE the respective function is called with it's default argument settings. Note: \code{RunUMAP()} needs
 additional input!}
-\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
+\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the \code{Seurat} object to be constructed must not be named and will be
 passed to every function as the first argument!!!.)}
 }
 
 Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-is going to be empty.) Skipping functions might result in an incomplete spata-object. Use \code{validateSpataObject()} after
+is going to be empty.) Skipping functions might result in an incomplete \code{spata2} object. Use \code{validateSpataObject()} after
 initiating it in order to see which slots are valid and which are not.
 }

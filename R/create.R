@@ -1,6 +1,6 @@
 # create_ ------------------------------------------------------------------
 
-
+#' @keywords internal
 create_encircling_add_on <- function(df, color, pt_size, linesize){
 
   if(base::nrow(df) == 0){
@@ -43,8 +43,7 @@ create_encircling_add_on <- function(df, color, pt_size, linesize){
 
 }
 
-
-
+#' @keywords internal
 create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL){
 
   if(base::is.null(breaks_add)){
@@ -77,7 +76,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 
       keys::useKeys(),
 
-      keys::keysInput(inputId = "keys", keys = c("a", "b", "e", "d", "h", "l", "o", "r")),
+      keys::keysInput(inputId = "keys", keys = c("a", "b", "c", "e", "d", "h", "l", "o", "r")),
 
       shinydashboard::tabItems(
 
@@ -121,6 +120,22 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                             )
                           ),
                           shiny::plotOutput(
+                            outputId = "plot_highlight",
+                            height = plot_height,
+                            brush = shiny::brushOpts(
+                              id = "brushed_area",
+                              resetOnNew = TRUE
+                            ),
+                            dblclick = "dbl_click",
+                            hover = hoverOpts(
+                              id = "hover",
+                              delay = 100,
+                              delayType = "throttle",
+                              clip = TRUE,
+                              nullOutside = TRUE
+                            )
+                          ),
+                          shiny::plotOutput(
                             outputId = "plot_sm",
                             height = plot_height,
                             brush = shiny::brushOpts(
@@ -144,9 +159,13 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                         #plot_bg {
                             position: absolute;
                         }
+                        #plot_highlight {
+                            position: absolute;
+                        }
                         #plot_sm {
                             position: absolute;
                         }
+
                       "
                           )
                         )
@@ -186,7 +205,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                       shiny::fluidRow(
                         splitHorizontally(
                           shinyWidgets::radioGroupButtons(
-                            inputId = "drawing_option",
+                            inputId = "drawing_mode",
                             label = "Drawing mode:",
                             choices = c("Single", "Multiple"),
                             selected = "Single"
@@ -331,7 +350,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                                 shinyWidgets::radioGroupButtons(
                                   inputId = "display_mode",
                                   label = "Display mode:",
-                                  choices = c("Surface", "One by one"),
+                                  choices = c("One by one", "Surface"),
                                   width = "100%"
                                 ) %>% add_helper(content = text$createImageAnnotations$display_mode)
                               ),
@@ -387,7 +406,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                               shiny::column(
                                 width = 12,
                                 splitHorizontally(
-                                  numericSlider(inputId = "expand", min = 0, max = 1, step = 0.01, value = 0.05),
+                                  textInputWrapper(inputId = "expand"),
                                   numericSlider(inputId = "linesize2", hslot = "linesize", label = "Linesize:", min = 0.1, max = 5, step = 0.01, value = 1),
                                   numericSlider(inputId = "transparency", min = 0, max = 1, step = 0.01, value = 0.75),
                                   split_widths = 3
@@ -410,6 +429,17 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 
 }
 
+#' @title Create model data.frame
+#'
+#' @description Creates the data.frame that contains the models
+#' for spatial gradient screening algorithms.
+#'
+#' @param var_order Character. The name of the variable that is supposed to
+#' indicate the direction.
+#' @inherit imageAnnotationScreening params
+#'
+#' @return Data.frame.
+#'
 #' @export
 create_model_df <- function(input,
                             var_order = NULL,
@@ -437,17 +467,6 @@ create_model_df <- function(input,
 
   fns_input <- model_formulas
 
-  # select models of interest
-  if(base::is.character(model_subset)){
-
-    fns_input <-
-      confuns::lselect(
-        lst = fns_input,
-        dplyr::contains(model_subset)
-      )
-
-  }
-
   # remove unwanted models
   if(base::is.character(model_remove)){
 
@@ -455,7 +474,7 @@ create_model_df <- function(input,
       confuns::lselect(
         lst = fns_input,
         -dplyr::contains(model_remove),
-        out.fail =
+        out.fail = list()
       )
 
   }
@@ -504,6 +523,28 @@ create_model_df <- function(input,
 
   }
 
+  # select models of interest
+  if(base::is.character(model_subset)){
+
+    fns_input <-
+      confuns::lselect(
+        lst = fns_input,
+        dplyr::matches(model_subset)
+      )
+
+  }
+
+  if(base::is.character(model_subset) & base::length(fns_numeric) >= 1){
+
+    fns_numeric <-
+      confuns::lselect(
+        lst = fns_numeric,
+        dplyr::matches(model_subset)
+      )
+
+  }
+
+  # create model df
   n_models <- base::length(fns_input) + base::length(fns_numeric)
 
   confuns::give_feedback(
@@ -540,15 +581,16 @@ create_model_df <- function(input,
 
 # createI -----------------------------------------------------------------
 
-#' @title Interactive image annotations
+#' @title Add image annotations
 #'
-#' @description This function gives access to an interactive interface in
-#' which \code{ImageAnnotations} are created by encircling regions or
-#' structures of interest in the histology image.
+#' @description Functions to add image annotations the `SPATA2` object. For
+#' interactive drawing use `createImageAnnotaions()`. To set them with code
+#' use `addImageAnnotation()`.
 #'
 #' Not to confuse with \code{createSegmentation()}.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @note The interface allows to zoom in on the sample. This is useful if your
 #' spata object contains an HE-image as background and you want to classify
@@ -560,7 +602,6 @@ create_model_df <- function(input,
 #'
 #' @seealso exchangeImage(), plotImageAnnotations(), getImageAnnotations()
 #'
-#' @return An updated spata object.
 #' @export
 #'
 createImageAnnotations <- function(object, ...){
@@ -587,6 +628,11 @@ createImageAnnotations <- function(object, ...){
 
           drawing <- shiny::reactiveVal(value = FALSE)
 
+          # each slot in the "polygons-list" is a list of data.frames
+          # the first data.frame is called outer and sets the outer border
+          # the following data.frames set inner holes of the polygon
+          img_anns <- shiny::reactiveVal(value = list())
+
           interactive <- shiny::reactiveValues(
 
             highlighted = FALSE,
@@ -603,12 +649,8 @@ createImageAnnotations <- function(object, ...){
 
           )
 
-          polygon_list <- shiny::reactiveValues(
 
-            dfs = list()
-
-          )
-
+          # list of x and y coordinates of the polygon that is currently drawn
           polygon_vals <- shiny::reactiveValues(
 
             x = NULL,
@@ -627,6 +669,7 @@ createImageAnnotations <- function(object, ...){
 
             a = 0,
             b = 0,
+            c = 0,
             e = 0,
             d = 0,
             h = 0,
@@ -660,7 +703,7 @@ createImageAnnotations <- function(object, ...){
               inputId = "img_ann_ids",
               label = NULL,
               choices = img_ann_ids(),
-              selected = NULL,
+              selected = img_ann_ids(),
               checkIcon = list(
                 yes = shiny::icon("ok", lib = "glyphicon"),
                 no = shiny::icon("remove", lib = "glyphicon")
@@ -671,39 +714,49 @@ createImageAnnotations <- function(object, ...){
 
           output$img_ann_labeling <- shiny::renderUI({
 
-            if(input$drawing_option == "Single"){
+            if(input$drawing_mode == "Single"){
 
               val <- stringr::str_c("img_ann", (lastImageAnnotation(spata_object()) + 1), sep = "_")
 
               out <-
                 shiny::tagList(
-                  shiny::fluidRow(strongH5("Pick action:") %>% add_helper(content = text$createImageAnnotation$pick_action_single)),
+                  shiny::fluidRow(strongH5("Pick action:") %>%
+                                    add_helper(content = text$createImageAnnotations$pick_action_single)),
                   shiny::fluidRow(
                     shiny::splitLayout(
                       shiny::actionButton(
-                        inputId = "highlight",
-                        label = "Highlight",
+                        inputId = "connect",
+                        label = "Connect",
                         width = "100%"
                       ),
                       shiny::actionButton(
-                        inputId = "reset",
-                        label = "Reset",
+                        inputId = "reset_all",
+                        label = "Reset all",
                         width = "100%"
                       ),
-                      cellWidths = c("50%", "50%")
+                      shiny::actionButton(
+                        inputId = "reset_last",
+                        label = "Reset last",
+                        width = "100%"
+                      ),
+                      cellWidths = c("33%", "33%", "33%")
                     )
                   ),
+                  shiny::fluidRow(
+                    img_ann_highlight_group_button()
+                  ),
                   breaks(1),
-                  shiny::fluidRow(strongH5("Tag image annotation:") %>% add_helper(content = text$createImageAnnotation$img_ann_tags)),
+                  shiny::fluidRow(strongH5("Tag image annotation:") %>%
+                                    add_helper(content = text$createImageAnnotations$img_ann_tags)),
                   shiny::fluidRow(
                     shiny::uiOutput(outputId = "tags")
                   ),
-                  shiny::fluidRow(strongH5("ID of image annotation:") %>% add_helper(content = text$createImageAnnotation$img_ann_id)),
+                  shiny::fluidRow(strongH5("ID of image annotation:") %>% add_helper(content = text$createImageAnnotations$img_ann_id)),
                   shiny::fluidRow(
                     shiny::textInput(inputId = "img_ann_id", label = NULL, value = val, width = "100%")
                   ),
                   shiny::fluidRow(
-                    strongH5("Add to SPATA object:")
+                    strongH5("Add to SPATA2 object:")
                   ),
                   shiny::fluidRow(
                     shiny::actionButton(
@@ -715,11 +768,12 @@ createImageAnnotations <- function(object, ...){
                 )
 
 
-            } else if(input$drawing_option == "Multiple"){
+            } else if(input$drawing_mode == "Multiple"){
 
               out <-
                 shiny::tagList(
-                  shiny::fluidRow(strongH5("Pick action:") %>% add_helper(content = text$createImageAnnotation$pick_action_multiple)),
+                  shiny::fluidRow(strongH5("Pick action:") %>%
+                                    add_helper(content = text$createImageAnnotations$pick_action_multiple)),
                   shiny::fluidRow(
                     shiny::splitLayout(
                       shiny::actionButton(
@@ -735,13 +789,17 @@ createImageAnnotations <- function(object, ...){
                       cellWidths = c("50%", "50%")
                     )
                   ),
+                  shiny::fluidRow(
+                    img_ann_highlight_group_button()
+                  ),
                   breaks(1),
-                  shiny::fluidRow(strongH5("Tag image annotations:") %>% add_helper(content = text$createImageAnnotation$img_ann_tags)),
+                  shiny::fluidRow(strongH5("Tag image annotations:") %>%
+                                    add_helper(content = text$createImageAnnotations$img_ann_tags)),
                   shiny::fluidRow(
                     shiny::uiOutput(outputId = "tags")
                   ),
                   shiny::fluidRow(
-                    strongH5("Add to SPATA object:")
+                    strongH5("Add to SPATA2 object:")
                   ),
                   shiny::fluidRow(
                     shiny::actionButton(
@@ -751,6 +809,7 @@ createImageAnnotations <- function(object, ...){
                     )
                   )
                 )
+
             }
 
             return(out)
@@ -769,7 +828,7 @@ createImageAnnotations <- function(object, ...){
                 max = 1000,
                 step = 1,
                 width = "100%"
-              ) %>% add_helper(content = text$createImageAnnotation$ncol)
+              ) %>% add_helper(content = text$createImageAnnotations$ncol)
 
             }
 
@@ -787,7 +846,7 @@ createImageAnnotations <- function(object, ...){
                 max = 1000,
                 step = 1,
                 width = "100%"
-              ) %>% add_helper(content = text$createImageAnnotation$nrow)
+              ) %>% add_helper(content = text$createImageAnnotations$nrow)
 
             }
 
@@ -798,7 +857,7 @@ createImageAnnotations <- function(object, ...){
             shinyWidgets::checkboxGroupButtons(
               inputId = "tags_select",
               label = NULL,
-              choices = getImageAnnotationTags(spata_object()),
+              choices = getImgAnnTags(spata_object()),
               selected = NULL,
               checkIcon = list(
                 yes = shiny::icon("ok", lib = "glyphicon"),
@@ -814,7 +873,7 @@ createImageAnnotations <- function(object, ...){
             shiny::selectizeInput(
               inputId = "tags",
               label = NULL,
-              choices = getImageAnnotationTags(spata_object()),
+              choices = getImgAnnTags(spata_object()),
               multiple = TRUE,
               options = list(create = TRUE),
               width = "100%"
@@ -833,35 +892,34 @@ createImageAnnotations <- function(object, ...){
               )
             )
 
-            shiny::validate(
-              shiny::need(
-                expr = input$img_ann_ids,
-                message = "No image annotations selected."
-              )
+            checkpoint(
+              evaluate = base::length(input$img_ann_ids) >= 1,
+              case_false = "no_img_anns_selected"
             )
 
             if(input$display_mode == "Surface"){
 
               plotImageGgplot(object = spata_object()) +
-                ggpLayerImageAnnotation(
+                ggpLayerImgAnnBorder(
                   object = spata_object(),
                   ids = input$img_ann_ids,
-                  display_color = TRUE,
-                  linesize = input$linesize2,
-                  alpha = (1 - input$transparency),
-                  clrp = "default"
+                  display_color = FALSE,
+                  line_size = input$linesize2,
+                  alpha = (1 - input$transparency)
                 )
 
-
             } else { # = One by one
+
+              expand <- check_expand_shiny(input$expand)
+
 
               plotImageAnnotations(
                 object = spata_object(),
                 ids = input$img_ann_ids,
-                expand = input$expand,
+                expand = expand,
                 square = input$square,
                 encircle = input$encircle,
-                linesize = input$linesize2,
+                line_size = input$linesize2,
                 alpha = (1 - input$transparency),
                 display_title = FALSE,
                 display_subtitle = input$subtitle,
@@ -917,6 +975,11 @@ createImageAnnotations <- function(object, ...){
 
           current_zooming <- shiny::reactive({
 
+            checkpoint(
+              evaluate = !base::is.null(input$brushed_area),
+              case_false = "no_zoom_rect"
+            )
+
             prel_out <- input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
 
             xdist <- prel_out[["xmax"]] - prel_out[["xmin"]]
@@ -968,6 +1031,12 @@ createImageAnnotations <- function(object, ...){
 
           })
 
+          highlight <- shiny::reactive({
+
+            !base::is.null(input$highlight)
+
+          })
+
           img_ann_ids <- shiny::reactive({
 
             if(input$test == "ignore"){
@@ -1002,6 +1071,10 @@ createImageAnnotations <- function(object, ...){
 
           })
 
+          # number of image annotations that are currently displayed
+          # if drawing mode is not Multiple its 1
+          n_img_anns <- shiny::reactive({  base::length(img_anns()) })
+
           n_row <- shiny::reactive({
 
             shiny::req(input$nrow)
@@ -1017,8 +1090,6 @@ createImageAnnotations <- function(object, ...){
             }
 
           })
-
-          n_polygons <- shiny::reactive({  base::length(polygon_list$dfs) })
 
           n_zooms <- shiny::reactive({ base::length(interactive$zooming) })
 
@@ -1044,6 +1115,7 @@ createImageAnnotations <- function(object, ...){
 
           })
 
+          # data.frame of the polygon that is currently drawn
           polygon_df <- shiny::reactive({
 
             base::data.frame(
@@ -1109,12 +1181,17 @@ createImageAnnotations <- function(object, ...){
           oe <- shiny::observeEvent(input$dbl_click, {
 
             # switch between drawing() == TRUE and drawing() == FALSE
-            if(base::isFALSE(drawing()) & # if dbl click is used to start drawing again
-               input$drawing_option == "Single" &
-               n_polygons() != 0){ # if there is already a drawn polygon
+            if(FALSE & # temp disable condition
+               base::isFALSE(drawing()) & # if dbl click is used to start drawing again
+               input$drawing_mode == "Single" &
+               n_img_anns() != 0 # if there is already a drawn polygon
+               ){
 
               confuns::give_feedback(
-                msg = "Drawing option is set to 'Single.' If you want to create several annotations simultaneously switch to 'Multiple'.",
+                msg = glue::glue(
+                  "Drawing option is set to 'Single.'",
+                  "If you want to create several annotations simultaneously switch to 'Multiple'."
+                  ),
                 fdb.fn = "stop",
                 in.shiny = TRUE,
                 with.time = FALSE,
@@ -1126,22 +1203,26 @@ createImageAnnotations <- function(object, ...){
             current_val <- drawing()
             drawing(!current_val)
 
-            if(input$drawing_option == "Single"){
+            if(input$drawing_mode == "Single"){
 
-              # nothing
+              # nothing, drawing can be continued by double clicking again
 
-            } else if(input$drawing_option == "Multiple"){ # close polygon
+            } else if(input$drawing_mode == "Multiple"){ # close polygon
 
+              # simply store polygon as outer polygon. there are no inner polygons if mode is Multiple
               if(!drawing()){
 
-                polygon_list$dfs[[(n_polygons() + 1)]] <-
-                  base::data.frame(
-                    x = polygon_vals$x,
-                    y = polygon_vals$y
-                  )
+                img_ann_list <- img_anns()
+
+                name <- stringr::str_c("ia", (n_img_anns() + 1))
+
+                img_ann_list[[name]] <- list(outer = polygon_df())
+
+                img_anns(img_ann_list)
 
               }
 
+              # resets polygon_df()
               polygon_vals$x <- NULL
               polygon_vals$y <- NULL
 
@@ -1171,7 +1252,7 @@ createImageAnnotations <- function(object, ...){
 
           })
 
-          oe <- shiny::observeEvent(c(input$highlight, shortcuts$h), {
+          oe <- shiny::observeEvent(c(input$connect, shortcuts$c), {
 
             checkpoint(
               evaluate = !drawing(),
@@ -1182,14 +1263,37 @@ createImageAnnotations <- function(object, ...){
                base::length(polygon_vals$x) > 2 &
                base::length(polygon_vals$y) > 2){
 
-              polygon_list$dfs[[(n_polygons() + 1)]] <-
-                base::data.frame(
-                  x = polygon_vals$x,
-                  y = polygon_vals$y
+              img_ann_list <- img_anns()
+
+              if(n_img_anns() == 0){
+
+                img_ann_list[["ia1"]] <- list()
+
+              }
+
+              img_ann_list[["ia1"]] <-
+                append_polygon_df(
+                  lst = img_ann_list[["ia1"]],
+                  plg = polygon_df(),
+                  allow_intersect = FALSE,
+                  with.time = FALSE,
+                  in.shiny = TRUE
                 )
+
+              img_anns(img_ann_list)
+
+            } else if(base::nrow(polygon_df()) == 1){
+
+              confuns::give_feedback(
+                msg = "Polygon must have more than two vertices to be connected.",
+                fdb.fn = "stop",
+                in.shiny = TRUE,
+                with.time = FALSE
+              )
 
             }
 
+            # resets polygon_df()
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
@@ -1209,6 +1313,8 @@ createImageAnnotations <- function(object, ...){
 
           # zooming in and out
           oe <- shiny::observeEvent(input$zoom_in,{
+
+            print("clicked on zoom_in")
 
             interactive$zooming[[(n_zooms() + 1)]] <- current_zooming()
 
@@ -1264,26 +1370,47 @@ createImageAnnotations <- function(object, ...){
           })
 
           # reset polygons
-          oe <- shiny::observeEvent(c(input$reset, shortcuts$r), {
+          oe <- shiny::observeEvent(c(input$reset_all, shortcuts$a), {
 
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
-            polygon_list$dfs <- list()
-
-          })
-
-          oe <- shiny::observeEvent(c(input$reset_all, shortcuts$a), {
-
-            polygon_list$dfs <- list()
+            img_anns(list())
 
           })
 
           oe <- shiny::observeEvent(c(input$reset_last, shortcuts$l), {
 
-            if(n_polygons() == 0){ shiny::req(FALSE)}
+            # first reset current drawing
+            if(base::nrow(polygon_df()) != 0){
 
-            polygon_list$dfs[[n_polygons()]] <- NULL
+              polygon_vals$x <- NULL
+              polygon_vals$y <- NULL
+
+            } else { # if nothing is drawn, reset polygons
+
+              if(n_img_anns() == 0){ shiny::req(FALSE)}
+
+              img_ann_list <- img_anns()
+
+              if(input$drawing_mode == "Single"){
+
+                n_plgs <- base::length(img_ann_list[[1]])
+
+                if(n_plgs == 0){ shiny::req(FALSE)}
+
+                # length is pos of last polygon -> set to NULL to reset
+                img_ann_list[[1]][[n_plgs]] <- NULL
+
+              } else if(input$drawing_mode == "Multiple"){
+
+                img_ann_list[[n_img_anns()]] <- NULL
+
+              }
+
+              img_anns(img_ann_list)
+
+            }
 
           })
 
@@ -1291,16 +1418,16 @@ createImageAnnotations <- function(object, ...){
           oe <- shiny::observeEvent(input$add_annotation, {
 
             checkpoint(
-              evaluate = n_polygons() >= 1,
+              evaluate = n_img_anns() >= 1,
               case_false = "no_polygons"
             )
 
-            if(input$drawing_option == "Single"){
+            if(input$drawing_mode == "Single"){
 
               id <- input$img_ann_id
 
               checkpoint(
-                evaluate = !n_polygons() > 1,
+                evaluate = !n_img_anns() > 1,
                 case_false = "too_many_polygons"
               )
 
@@ -1319,7 +1446,7 @@ createImageAnnotations <- function(object, ...){
                 case_false = "name_in_use"
               )
 
-            } else if(input$drawing_option == "Multiple") {
+            } else if(input$drawing_mode == "Multiple") {
 
               id <- NULL
 
@@ -1327,39 +1454,32 @@ createImageAnnotations <- function(object, ...){
 
             object <- spata_object()
 
-            for(i in 1:n_polygons()){
+            img_ann_list <- img_anns()
+
+            for(i in 1:n_img_anns()){
+
+             assign(x = "img_ann_list", value = img_ann_list[[i]], envir = .GlobalEnv)
 
               object <-
                 addImageAnnotation(
                   object = object,
                   tags = input$tags,
-                  area_df = polygon_list$dfs[[i]],
+                  area = img_ann_list[[i]],
                   id = id
                 )
 
             }
 
-            ref1 <- n_polygons()
+            ref1 <- n_img_anns()
             ref2 <- base::ifelse(ref1 == 1, "annotation", "annotations")
 
             give_feedback(msg = glue::glue("Added {ref1} {ref2}."), in.shiny = TRUE)
 
-            polygon_list$dfs <- list()
+            img_anns(list())
 
             spata_object(object)
 
           })
-
-          #
-
-          oe <- shiny::observeEvent(input$close_app, {
-
-            object <- spata_object()
-
-            shiny::stopApp(returnValue = object)
-
-          })
-
 
           # plot outputs
 
@@ -1386,27 +1506,48 @@ createImageAnnotations <- function(object, ...){
               verbose = FALSE
             )
 
-            if(n_polygons() >= 1){
+            if(n_img_anns() >= 1){
 
-              for(i in 1:n_polygons()){
+              if(highlight()){
 
-                graphics::polygon(
-                  x = polygon_list$dfs[[i]][["x"]],
-                  y = polygon_list$dfs[[i]][["y"]],
-                  lwd = input$linesize,
-                  lty = "solid",
-                  col = ggplot2::alpha("orange", alpha = 0.25)
-                )
+                col <- ggplot2::alpha("orange", 0.5)
+
+              } else {
+
+                col <- NA
+
+              }
+
+              img_ann_list <- img_anns()
+
+              # for every image annotation in case of drawing mode = Multiple
+              for(ia in base::seq_along(img_ann_list)){
+
+                # all polygons of the image annotation
+                polygons <- img_ann_list[[ia]]
+
+                if(!purrr::is_empty(polygons)){
+
+                  graphics::polypath(
+                    x = concatenate_polypaths(polygons, axis = "x"),
+                    y = concatenate_polypaths(polygons, axis = "y"),
+                    col = col,
+                    lwd = input$linesize,
+                    lty = "solid"
+                  )
+
+                }
 
               }
 
             }
 
+
           })
 
           output$plot_sm <- shiny::renderPlot({
 
-            if(input$drawing_option == "Single" | drawing()){
+            if(input$drawing_mode == "Single" | drawing()){
 
               graphics::par(pty = "s", mai = mai_vec)
               graphics::plot(
@@ -1446,6 +1587,14 @@ createImageAnnotations <- function(object, ...){
 
           })
 
+          oe <- shiny::observeEvent(input$close_app, {
+
+            object <- spata_object()
+
+            shiny::stopApp(returnValue = object)
+
+          })
+
         }
       )
     )
@@ -1453,83 +1602,175 @@ createImageAnnotations <- function(object, ...){
 }
 
 
-#' @title Create S4 Image object for SPATA2
+#' @title Create object of class `HistologyImaging`
 #'
-#' @description Creates the basic S4 image object that is put
-#' in slot @@images in the \code{SPATA2} object.
+#' @description Creates an object of class `HistologyImaging` that is used to
+#' store the image, image meta data and image annotations.
 #'
-#' @param image Image of class \code{EBImage}.
-#' @param image_class Name of the S4 object. One of \code{validImageClasses()}.
-#' @param ...
+#' Located in slot @@images in the \code{SPATA2} object.
 #'
-#' @return An object of class \code{image_class}.
+#' @param id Character value. Name of the `HistologyImaging` object.
+#' @param image Image input or character value. If character, input is interpreted as a directory
+#' to a file or to an URL and is read with `EBImage::readImage()`. The read image
+#' should be of type *.png*, *.jpeg* or *.tiff*. Capital letters work, too.
+#'
+#' If not character, the function ensures that the input is - or is convertible - to
+#' class `Image` via `EBImage::as.Image()`. If that fails, an error is thrown.
+#'
+#' @param img_scale_fct Numeric value between 0 and 1. If lower than 1, is used
+#' to downscale the image before setting it.
+#' @param coordinates  A data.frame of observational units that underlie the image
+#'  in case of spatially resolved multi-omic studies. Should contain at least the
+#'  two variables: *x*, *y* and a variable that identifies the observational units (e.g. *barcodes*).
+#'
+#' @return An object of class `HistologyImaging`.
+#'
+#' @seealso `?HistologyImaging` for the documentation of all slots.
+#'
 #' @export
-#'
-createImageObject <- function(image, image_class = "HistologyImage", ...){
 
-  if(!base::is.null(image) && base::isFALSE(stop_if_null)){
+createHistologyImaging <- function(image,
+                                   id = 'imageid',
+                                   img_scale_fct = 1,
+                                   meta = list(),
+                                   pxl_scale_fct = NULL,
+                                   coordinates = NULL,
+                                   verbose = TRUE,
+                                   ...){
 
-    confuns::check_one_of(
-      input = image_class,
-      against = validImageClasses()
+  # empty image object
+  hist_im <- HistologyImaging()
+
+  hist_im@id <- id[1]
+
+  # set image
+  if(base::is.character(image)){
+
+    # ensure character value
+    image <- image[1]
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading image from '{image}'."),
+      verbose = verbose
     )
 
-    image_obj <-
-      methods::new(
-        Class = image_class,
-        image = image,
-        ...
-      )
+    hist_im@image <- EBImage::readImage(files = image[1])
 
+    hist_im@dir_default <- image
+
+    origin <- image
 
   } else {
 
-    image_obj <- NULL
+    hist_im@image <- EBImage::as.Image(x = image)
+
+    origin <- base::substitute(expr = image)
 
   }
 
-  return(image_obj)
+  dim_input <- base::dim(hist_im@image)
+  dim_stored <- base::dim(hist_im@image)
+
+  # rescale default image if needed
+  if(img_scale_fct > 1){
+
+    stop("`img_scale_fct` must not be > 1.")
+
+  } else if(img_scale_fct < 1){
+
+    dim_stored <- dim_input
+
+    dim_stored[1:2] <- dim_input[1:2] * img_scale_fct
+
+    hist_im@image <-
+      EBImage::resize(
+        x = hist_im@image,
+        w = dim_stored[1],
+        h = dim_stored[2]
+      )
+
+  }
+
+  # set info slot
+  hist_im@image_info <-
+    list(
+      dim_input = dim_input,
+      dim_stored = dim_stored,
+      img_scale_fct = img_scale_fct,
+      origin = origin
+    )
+
+  # set justification
+  hist_im@justification <-
+    list(
+      angle = 0,
+      flipped = list(horizontal = FALSE, vertical = FALSE)
+      # track = TRUE/FALSE as an instruction?
+    )
+
+  # set coordinates
+  if(base::is.null(coordinates)){
+
+    hist_im@coordinates <-
+      tidyr::expand_grid(
+        x = reduce_vec(x = 1:hist_im@image_info$dim_input[1], n = 10), # take every 10th element
+        y = reduce_vec(x = 1:hist_im@image_info$dim_input[2], n = 10)
+      )
+
+  } else if(base::is.data.frame(coordinates)){
+
+    confuns::check_data_frame(
+      df = coordinates,
+      var.class = list(x = "numeric", y = "numeric")
+    )
+
+    hist_im@coordinates <- coordinates
+
+  }
+
+
+  # set misc
+  hist_im@misc <- list(...)
+
+  return(hist_im)
 
 }
+
 
 # createS -----------------------------------------------------------------
 
 
 #' @title Interactive sample segmentation
 #'
-#' @description This function gives access to an interactive user interface
-#' barcode spots can be interactively annotated.
-#'
-#' Not to confuse with \code{annotateImage()}.
+#' @description Gives access to an interactive user interface where barcode-spots
+#' can be interactively annotated.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy params
 #'
 #' @details Segmentation variables are grouping variables that are stored in
-#' the feature data.frame of the spata object (such as clustering variables).
-#' They differ from clustering variables in so far as that
-#' they are not the result of unsupervised cluster algorithms but results from
-#' group assignment the researcher conducted him/herself.
-#' (E.g. histologial classification.)
+#' the feature data.frame of the `SPATA2` object (such as clustering variables).
+#' They differ from clustering variables in so far as that they are not the result
+#' of unsupervised cluster algorithms but from group assignment the researcher
+#' conducts him/herself (e.g. histological classification).
 #'
 #' Therefore, all segmentation variables can be extracted via \code{getFeatureNames()}
 #' as they are part of those. To specifically extract variables that were created
-#' with \code{createSegmentation()} use \code{getSegmentationVariableNames()}. To remove
+#' with \code{createSpatialSegmentation()} use \code{getSegmentationVariableNames()}. To remove
 #' annotations you no longer need use \code{discardSegmentationVariable()}.
 #'
 #' @note The interface allows to zoom in on the sample. This is useful if your
-#' spata object contains an HE-image as background and you want to classify
+#' `SPATA2` object contains an HE-image as background and you want to classify
 #' barcode spots based on the histology. As these images are displayed by pixels
 #' the resolution decreases the more you zoom in. Many experiments (such as
 #' the Visium output) contain high resolution images. You can use the function
 #' \code{exchangeImage()} to read in images of higher resolution for a better
 #' histological classification.
 #'
-#' @seealso exchangeImage()
 #'
-#' @return An updated spata object.
 #' @export
 #'
-createSegmentation <- function(object, height = 500, break_add = NULL, box_widths = c(4,4,4)){
+createSpatialSegmentation <- function(object, height = 500, break_add = NULL, box_widths = c(4,4,4)){
 
   new_object <-
     shiny::runApp(
@@ -1592,13 +1833,18 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
                               container(
                                 width = 12,
                                 shiny::column(
-                                  width = 6,
+                                  width = 3,
                                   strongH5("Choose variable:"),
                                   shiny::uiOutput(outputId = "segm_var_name")
                                 ),
                                 shiny::column(
+                                  width = 3,
+                                  strongH5("Show variables:"),
+                                  shiny::actionButton(inputId = "show_segm_variables", label = "Display", width = "100%")
+                                ),
+                                shiny::column(
                                   width = 6,
-                                  strongH5("If no variable exists:"),
+                                  strongH5("Create variable:"),
                                   shiny::actionButton(inputId = "new_segm_var", label = "Create new segmentation variable", width = "100%")
                                 )
                               ),
@@ -1749,17 +1995,23 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
                                   width = 12,
                                   shiny::splitLayout(
                                     shiny::actionButton(
-                                      inputId = "highlight_region",
-                                      label = "Highlight",
+                                      inputId = "connect",
+                                      label = "Connect",
+                                      width = "100%",
+                                    ),
+                                    shiny::actionButton(
+                                      inputId = "reset_all",
+                                      label = "Reset all",
                                       width = "100%"
                                     ),
                                     shiny::actionButton(
-                                      inputId = "reset_region",
-                                      label = "Reset ",
+                                      inputId = "reset_last",
+                                      label = "Reset last",
                                       width = "100%"
                                     ),
-                                    cellWidths = "50%"
-                                  )
+                                    cellWidths = "33%"
+                                  ),
+                                  img_ann_highlight_group_button()
                                 )
                               )
                             ),
@@ -1908,6 +2160,8 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           )
 
+          segment <- shiny::reactiveVal(value = list())
+
           selected <- shiny::reactiveValues(
 
             segm_var = NULL,
@@ -1975,7 +2229,6 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           output$new_region_name <- shiny::renderUI({
 
-
             shiny::validate(
               shiny::need(
                 expr = shiny::isTruthy(input$segm_var_name),
@@ -1986,7 +2239,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
             shiny::validate(
               shiny::need(
                 expr = base::length(encircled_barcodes()) >= 1,
-                message = "Encircle and highlight a region."
+                message = "Encircle a region. By drawing the border and clicking on 'Connect'."
               )
             )
 
@@ -2099,6 +2352,11 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           current_zooming <- shiny::reactive({
 
+            checkpoint(
+              evaluate = !base::is.null(input$brushed_area),
+              case_false = "no_zoom_rect"
+            )
+
             prel_out <- input$brushed_area[c("xmin", "xmax", "ymin", "ymax")]
 
             xdist <- prel_out[["xmax"]] - prel_out[["xmin"]]
@@ -2143,10 +2401,37 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           })
 
+          encircled_barcodes <- shiny::reactive({
+
+            if(base::length(segment()) >= 1){
+
+              out <-
+                getBarcodesInPolygonList(
+                  object = object,
+                  polygon_list = segment(),
+                  strictly = TRUE
+                )
+
+            } else {
+
+              out <- NULL
+
+            }
+
+            return(out)
+
+          })
+
           final_orientation_plot <- shiny::reactive({
 
             orientation_plot() +
               plot_add_ons$orientation_rect
+
+          })
+
+          highlight <- shiny::reactive({
+
+            "highlight" %in% input$highlight
 
           })
 
@@ -2181,6 +2466,8 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
             return(out)
 
           })
+
+          n_polygons <- shiny::reactive({ base::length(segment()) })
 
           n_zooms <- shiny::reactive({ base::length(interactive$zooming) })
 
@@ -2357,9 +2644,6 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           })
 
-
-
-
           # observe events
 
           # keys d/e
@@ -2378,21 +2662,6 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
             }
 
           })
-
-          # segments
-          oe <- shiny::observeEvent(input$segm_var_name, {
-
-            selected$segm_var <- input$segm_var_name
-
-          })
-
-          oe <- shiny::observeEvent(input$segm_group, {
-
-            selected$segm_group <- input$segm_group
-
-          })
-
-          # drawing
 
           oe <- shiny::observeEvent(input$dbl_click, {
 
@@ -2436,6 +2705,38 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
                 )
               )
             )
+
+          })
+
+          oe <- shiny::observeEvent(input$segm_group, {
+
+            selected$segm_group <- input$segm_group
+
+          })
+
+          oe <- shiny::observeEvent(input$segm_var_name, {
+
+            selected$segm_var <- input$segm_var_name
+
+          })
+
+          oe <- shiny::observeEvent(input$show_segm_variables, {
+
+            shiny::showModal(
+              ui = shiny::modalDialog(
+                title = "Segmentation variables:",
+                DT::dataTableOutput(outputId = "segm_var_table"),
+                footer = shiny::fluidRow(
+                  shiny::actionButton(inputId = "close_segm_var_table", label = "Close")
+                )
+              )
+            )
+
+          })
+
+          oe <- shiny::observeEvent(input$close_segm_var_table, {
+
+            shiny::removeModal()
 
           })
 
@@ -2553,16 +2854,35 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           })
 
-          oe <- shiny::observeEvent(input$reset_region, {
+          oe <- shiny::observeEvent(input$reset_all, {
 
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
-            encircled_barcodes(base::character(0))
-
-            highlighted(FALSE)
+            segment(list())
 
           })
+
+          oe <- shiny::observeEvent(input$reset_last, {
+
+            if(base::nrow(polygon_df()) != 0){
+
+              polygon_vals$x <- NULL
+              polygon_vals$y <- NULL
+
+            } else if(n_polygons() >= 1){
+
+              segm <- segment()
+
+              segm[n_polygons()] <- NULL
+
+              segment(segm)
+
+            }
+
+          })
+
+
 
           oe <- shiny::observeEvent(input$save_region, {
 
@@ -2631,45 +2951,21 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
           })
 
           # new3
+          oe <- shiny::observeEvent(input$connect, {
 
-          oe <- shiny::observeEvent(c(input$highlight_region), {
+              append_polygon_df(
+                lst = segment(),
+                plg = polygon_df(),
+                allow_intersect = FALSE,
+                with.time = FALSE,
+                in.shiny = TRUE
+              ) %>%
+              segment()
 
-            checkpoint(
-              evaluate = shiny::isTruthy(current_segm_var()),
-              case_false = "no_segm_var_chosen"
-            )
+            polygon_vals$x <- NULL
+            polygon_vals$y <- NULL
 
-            positions <-
-              sp::point.in.polygon(
-                point.x = coords_df()$x, # x coordinates of all spatial positions
-                point.y = coords_df()$y, # y coordinates of all spatial positions
-                pol.x = polygon_df()$x, # x coordinates of the segments vertices
-                pol.y = polygon_df()$y
-              )
-
-            out <-
-              getCoordsDf(object = spata_object()) %>%
-              dplyr::mutate(positions = {{positions}}) %>%
-              dplyr::filter(positions %in% c(1,2,3)) %>%
-              dplyr::pull(barcodes)
-
-            if(base::length(out) == 0){
-
-              give_feedback(
-                fdb.fn = "stop",
-                in.shiny = TRUE,
-                msg = "The polygon you have drawn does not include any barcode spots."
-              )
-
-            } else {
-
-              encircled_barcodes(out)
-
-              highlighted(TRUE)
-
-            }
-
-          }, ignoreInit = TRUE)
+          })
 
           # new4
           oe <- shiny::observeEvent(input$name_region, {
@@ -2721,9 +3017,7 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
             polygon_vals$x <- NULL
             polygon_vals$y <- NULL
 
-            encircled_barcodes(base::character(0))
-
-            highlighted(FALSE)
+            segment(list())
 
           })
 
@@ -2749,6 +3043,13 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
           }, options = list(scrollX = TRUE))
 
+          output$segm_var_table <- DT::renderDataTable({
+
+            getFeatureDf(object = spata_object()) %>%
+              dplyr::select(barcodes, dplyr::all_of(x = getSegmentationNames(object)))
+
+          }, options = list(scrollX = TRUE))
+
           output$orientation_plot <- shiny::renderPlot({
 
             final_orientation_plot()
@@ -2756,6 +3057,16 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
           })
 
           output$plot_bg <- shiny::renderPlot({
+
+            if(highlight()){
+
+              col <- ggplot2::alpha("orange", 0.5)
+
+            } else {
+
+              col <- NA
+
+            }
 
             plotSurfaceBase(
               object = object,
@@ -2767,52 +3078,44 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
               display_image = TRUE,
               display_axes = FALSE,
               highlight_barcodes = encircled_barcodes(),
-              highlight_color = "orange",
+              highlight_color = col,
               xrange = xrange(),
               yrange = yrange(),
               mai = mai_vec,
               verbose = FALSE
             )
 
+            # reactive
+            if(!purrr::is_empty(segment())){
+
+              graphics::polypath(
+                x = concatenate_polypaths(segment(), axis = "x"),
+                y = concatenate_polypaths(segment(), axis = "y"),
+                col = col,
+                lwd = input$linesize,
+                lty = "solid"
+              )
+
+            }
+
           })
 
           output$plot_sm <- shiny::renderPlot({
 
-            if(!highlighted()){
-
-              graphics::par(pty = "s", mai = mai_vec)
-              graphics::plot(
-                x = polygon_vals$x,
-                y = polygon_vals$y,
-                type = "l",
-                xlim = xrange(),
-                ylim = yrange(),
-                xlab = NA_character_,
-                ylab = NA_character_,
-                lwd = input$linesize,
-                axes = FALSE,
-                main = main()
-              )
-
-            } else if(highlighted()){
-
-              graphics::par(pty = "s", mai = mai_vec)
-              graphics::plot(
-                x = NULL,
-                y = NULL,
-                xlim = xrange(),
-                ylim = yrange(),
-                xlab = NA_character_,
-                ylab = NA_character_,
-                axes = FALSE
-              )
-              graphics::polygon(
-                x = polygon_vals$x,
-                y = polygon_vals$y,
-                lwd = input$linesize
-              )
-
-            }
+            graphics::par(pty = "s", mai = mai_vec)
+            graphics::plot(
+              x = polygon_vals$x,
+              y = polygon_vals$y,
+              type = "l",
+              lwd = input$linesize,
+              xlim = xrange(),
+              ylim = yrange(),
+              xlab = NA_character_,
+              ylab = NA_character_,
+              #lwd = input$linesize,
+              axes = FALSE,
+              main = base::ifelse(test = drawing(), yes = "You are drawing", no = "")
+            )
 
           }, bg = "transparent")
 
@@ -2828,21 +3131,26 @@ createSegmentation <- function(object, height = 500, break_add = NULL, box_width
 
 }
 
-#' @rdname createSegmentation
-#' @export
-createSpatialSegmentation <- createSegmentation
 
-
-#' @title Spatial Trajectories
+#' @title Add spatial trajectories
 #'
-#' @description Provides access to an interactive shiny application
-#' where trajectories can be drawn..
+#' @description Functions to add spatial trajectories to the `spata2`
+#' object. For interactive drawing use `createSpatialTrajectories()`.
+#' To set them precisely with code use `addSpatialTrajectory()`.
 #'
+#' @param id Character value. The id of the spatial trajectory.
+#' @param width Distance measure. The width of the spatial trajectory.
+#' @param segment_df Data.frame with four numeric variables that describe the
+#' course of the trajectory, namely *x*, *y*, *xend* and *yend*.
+#' @param start,end Numeric vectors of length two. Can be provided instead of
+#' `segment_df`. If so, `start` corresponds to *x* and *y* and `end` corresponds to
+#' *xend* and *yend* of the segment.
+#' @param vertices List of numeric vectors of length two or `NULL`. If list,
+#' sets additional vertices along the trajectory.
 #' @inherit argument_dummy params
-#'
-#' @return An updated \code{SPATA2} object.
-
+#' @inherit update_dummy return
 #' @export
+
 createSpatialTrajectories <- function(object){
 
   validation(x = object)
@@ -2892,18 +3200,27 @@ createSpatialTrajectories <- function(object){
                       shiny::HTML("<br>"),
                       shiny::helpText("3. Enter a value for the trajectory width and highlight or reset the trajectory by clicking the respective button below."),
                       shiny::HTML("<br>"),
-                      shiny::splitLayout(
-                        shiny::numericInput(
-                          inputId = "width_trajectory",
-                          label = NULL,
-                          value = 20,
-                          min = 0.1,
-                          max = Inf,
-                          step = 0.1
+                      shiny::fluidRow(
+                        shiny::column(
+                          width = 6,
+                          shiny::numericInput(
+                            inputId = "width_trajectory",
+                            label = NULL,
+                            value = 20,
+                            min = 0.1,
+                            max = Inf,
+                            step = 0.1
+                          )
                         ),
-                        shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
-                        shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
-                        cellWidths = c("33%", "33%", "33%")
+                        shiny::column(
+                          width = 6,
+                          shiny::uiOutput(outputId = "unit")
+                        )
+                      ),
+                      shiny::splitLayout(
+                          shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
+                          shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
+                          cellWidths = c("50%", "50%")
                       ),
                       shiny::HTML("<br>"),
                       shiny::helpText("4. Enter the ID you want to give the trajectory as well as a 'guiding comment' and click the 'Save'-button."),
@@ -3064,6 +3381,29 @@ createSpatialTrajectories <- function(object){
           })
 
 
+          output$unit <- shiny::renderUI({
+
+            if(containsPixelScaleFactor(object)){
+
+              choices <- validUnitsOfLength()
+
+            } else {
+
+              choices <- "px"
+
+            }
+
+            shiny::selectInput(
+              inputId = "unit",
+              label = NULL,
+              choices = choices,
+              selected = "px"
+            )
+
+
+          })
+
+
           # Modularized plot surface part -------------------------------------------
 
 
@@ -3107,6 +3447,28 @@ createSpatialTrajectories <- function(object){
             }
 
           })
+
+
+          width <- shiny::reactive({
+
+            stringr::str_c(
+              input$width_trajectory,
+              input$unit,
+              sep = ""
+            )
+
+          })
+
+          width_pixel <- shiny::reactive({
+
+            as_pixel(
+              input = width(),
+              object = spata_obj(),
+              add_attr = FALSE
+            )
+
+          })
+
 
           # update current()
           oe <- shiny::observeEvent(module_return()$current_setting(), {
@@ -3283,7 +3645,7 @@ createSpatialTrajectories <- function(object){
             projection_df <-
               project_on_trajectory(
                 segment_df = segment_df(),
-                width = input$width_trajectory,
+                width = width_pixel(),
                 coords_df = getCoordsDf(object = spata_obj())
               )
 
@@ -3335,7 +3697,7 @@ createSpatialTrajectories <- function(object){
                 id = input$id_trajectory,
                 segment_df = segment_df(),
                 comment = input$comment_trajectory,
-                width = input$width_trajectory
+                width = width()
               )
 
             spata_obj(spata_obj)
@@ -3374,8 +3736,6 @@ createSpatialTrajectories <- function(object){
             trajectory_plot()
 
           })
-
-
 
 
         }))

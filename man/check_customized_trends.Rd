@@ -17,3 +17,4 @@ with which you want to refer to the trend later on.}
 \description{
 Check customized trend list
 }
+\keyword{internal}

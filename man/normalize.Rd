@@ -9,3 +9,4 @@ normalize(x)
 \description{
 Normalize variable
 }
+\keyword{internal}

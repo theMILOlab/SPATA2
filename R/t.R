@@ -3,7 +3,7 @@
 
 # tab_ --------------------------------------------------------------------
 
-#' @title Segmentation plot tab - return
+#' @keywords internal
 tab_create_segmentation_return <- function(){shinydashboard::tabItem(tabName = "create_segmentation",
 
                                                                      shiny::fluidRow(
@@ -65,7 +65,7 @@ tab_create_segmentation_return <- function(){shinydashboard::tabItem(tabName = "
 #' @title Surface plot tab - return
 #' @details To use within shinydashboard::tab_items()
 #' @note Tab for the output returning application
-
+#' @keywords internal
 tab_surface_plots_return <- function(){shinydashboard::tabItem(tabName = "surface_plots",
 
                                                                shiny::fluidRow(
@@ -110,7 +110,7 @@ tab_surface_plots_return <- function(){shinydashboard::tabItem(tabName = "surfac
 #' @title Surface plot tab - classic
 #' @details To use within shinydashboard::tab_items()
 #' @note Tab for the big application
-
+#' @keywords internal
 tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_plots",
 
                                                             shiny::fluidRow(
@@ -144,8 +144,97 @@ tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_p
 
 
 
+# te ----------------------------------------------------------------------
+#' @keywords internal
+textInputWrapper <- function(inputId,
+                             label = NULL,
+                             width = "80%",
+                             app = "createImageAnnotations",
+                             helper = TRUE,
+                             hslot = inputId,
+                             ...){
+
+  if(base::is.null(label)){
+
+    label <-
+      confuns::make_pretty_name(inputId)  %>%
+      stringr::str_c(., ":", sep = "")
+
+  }
+
+  shiny::textInput(
+    inputId = inputId,
+    label = label,
+    width = width,
+    ...
+  ) %>%
+    {
+      if(base::isTRUE(helper)){
+
+        add_helper(
+          shiny_tag = .,
+          content = text[[app]][[hslot]]
+        )
+
+      } else {
+
+        .
+
+      }
+
+    }
+
+}
+
+
+
 # theme -------------------------------------------------------------------
 
+#' @title ggplot2 themes
+#' @description Miscellaneous `ggplot2` themes used throughout the package.
+#' @return gg theme
+#' @export
+theme_lineplot_gradient <- function(){
+
+  list(
+    ggplot2::theme_classic(),
+    ggplot2::theme(
+      axis.line.x = ggplot2::element_line(
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
+      ),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_text(color = "black", size = 10)
+    )
+  )
+
+}
+
+
+#' @rdname theme_lineplot_gradient
+#' @export
+theme_ridgeplot_gradient <- function(overlap = 0.5){
+
+  list(
+    ggplot2::theme_classic(),
+    ggplot2::theme(
+      axis.line.x = ggplot2::element_line(
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
+      ),
+      axis.line.y = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      strip.background = ggplot2::element_blank(),
+      panel.background = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.spacing.y = ggplot2::unit(-overlap, "lines"),
+      legend.key = ggplot2::element_rect(colour = "black")
+    )
+  )
+
+}
+
+#' @rdname theme_lineplot_gradient
 #' @export
 theme_trajectory_fit <- function(){
 
@@ -165,9 +254,60 @@ theme_trajectory_fit <- function(){
 
 }
 
+
+# ti ----------------------------------------------------------------------
+
+
+#' @title Check availability of tissue information
+#'
+#' @description Checks if `identifyTissueSections()` and `identifyTissueOutline()`
+#' has been run successfully.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+#'
+tissueOutlineIdentified <- function(object){
+
+  coords_df <- getCoordsDf(object)
+
+  out <- "outline" %in% base::colnames(coords_df)
+
+  return(out)
+
+}
+
+#' @rdname tissueOutlineIdentified
+#' @export
+tissueSectionsIdentfied <- function(object){
+
+  coords_df <- getCoordsDf(object)
+
+  out <- "section" %in% base::colnames(coords_df)
+
+  return(out)
+
+}
+
+
 # tr ----------------------------------------------------------------------
 
-transfer_slot_content <- function(recipient, donor, skip = character(0), verbose = TRUE){
+#' @title Transfer S4 slot content
+#'
+#' @description Transfers slot content from one S4 object (donor) to a newer
+#' version (recepient).
+#'
+#' @param recipient Empty and new S4 object.
+#' @param donor Old S4 object.
+#' @param skip Slot names whose content is not transferred.
+#'
+#' @return Updated S4 object.
+#' @keywords internal
+transfer_slot_content <- function(recipient,
+                                  donor,
+                                  skip = character(0),
+                                  verbose = TRUE){
 
   snames_rec <- methods::slotNames(recipient)
   snames_don <- methods::slotNames(donor)
@@ -565,8 +705,7 @@ transform_pixels_to_area_si <- function(input,
 #'
 #' @return A spata object.
 #' @export
-#'
-
+#' @keywords internal
 transformSeuratToSpata <- function(seurat_object,
                                    sample_name,
                                    method = "spatial",
@@ -1064,9 +1203,6 @@ transformSeuratToSpata <- function(seurat_object,
 
     spata_object <- setImageObject(spata_object, image_object = image_object)
 
-    spata_object <- flipImageAndCoords(spata_object, axis = "x")
-
-
   } else {
 
     spata_object <- setCoordsDf(object = spata_object, coords_df = coords_df)
@@ -1226,6 +1362,7 @@ transform_area_si_to_pixels <- function(input,
 #' The spata-objects feature data (@@fdata) is passed to the cell_data_set for it's slot \code{cell_meta_data}.
 #'
 #' @return A monocle3::cell_data_set object.
+#' @keywords internal
 #' @export
 
 transformSpataToCDS <- function(object,
@@ -1434,6 +1571,7 @@ transformSpataToCDS <- function(object,
 #' will result in an error. (\code{base::tryCatch()} will prevent the function from crashing.)
 #'
 #' @return A seurat-object.
+#' @keywords internal
 #' @export
 
 transformSpataToSeurat <- function(object,
@@ -1543,6 +1681,7 @@ transformSpataToSeurat <- function(object,
 
 
 #' inspired from https://github.com/tidyverse/ggplot2/blob/main/R/geom-point.r
+#' @keywords internal
 translate_shape_string <- function(shape_string) {
   # strings of length 0 or 1 are interpreted as symbols by grid
   if (base::nchar(shape_string[1]) <= 1) {

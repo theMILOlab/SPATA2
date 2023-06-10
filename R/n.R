@@ -71,7 +71,15 @@ nGenes <- function(object, mtr_name = NULL){
 #' @export
 nImageAnnotations <- function(object){
 
-  getImageAnnotations(object, add_image = FALSE) %>%
+  getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
+    base::length()
+
+}
+
+#' @export
+nImageDims <- function(object){
+
+  getImageDims(object) %>%
     base::length()
 
 }
@@ -92,10 +100,19 @@ nSpatialTrajectories <- function(object){
 
 }
 
-
-
-
+#' @rdname nSpatialTrajectories
 #' @export
+nTrajectories <- function(object){
+
+  getTrajectoryIds(object) %>%
+    base::length()
+
+}
+
+
+
+
+#' @keywords internal
 normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
 
   if(base::isTRUE(normalize)){
@@ -119,8 +136,8 @@ normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){
 
 }
 
-
-numericSlider <- function(inputId, label = NULL, width = "80%",  app = "annotateImage", helper = TRUE, hslot = inputId, ...){
+#' @keywords internal
+numericSlider <- function(inputId, label = NULL, width = "80%",  app = "createImageAnnotations", helper = TRUE, hslot = inputId, ...){
 
   if(base::is.null(label)){
 

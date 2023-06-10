@@ -3,7 +3,7 @@
 \name{plotFourStates}
 \alias{plotFourStates}
 \alias{plotFourStates2}
-\title{Gene set state plot}
+\title{Plot state plot}
 \usage{
 plotFourStates(
   object,
@@ -32,7 +32,7 @@ plotFourStates2(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{states}{The gene sets defining the four states specified as a character vector
 of length 4.}

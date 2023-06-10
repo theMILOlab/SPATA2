@@ -13,3 +13,4 @@ check_compiled_trajectory_df(ctdf)
 \description{
 Check compiled trajectory data.frame
 }
+\keyword{internal}

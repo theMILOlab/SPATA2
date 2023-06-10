@@ -35,3 +35,4 @@ Smoothed variable (data.frame within \code{purrr::imap()})
 \description{
 Helper function to be used within \code{purrr::imap()}
 }
+\keyword{internal}

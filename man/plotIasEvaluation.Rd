@@ -28,11 +28,13 @@ plotIasEvaluation(
   corr_pos_y = NULL,
   corr_text_sep = "\\n",
   corr_text_size = 1,
+  force_grid = FALSE,
+  bcsp_exclude = NULL,
   verbose = NULL
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -74,6 +76,12 @@ same length as the input vector. Test models with \code{showModels()}.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
 \item{display_corr}{Logical. If TRUE, correlation values are added to the plots.}
 
 \item{corr_p_min}{Numeric value. Everything below is displayed as \emph{<corr_p_min}.}
@@ -86,6 +94,11 @@ corresponding p-value.}
 
 \item{corr_text_size}{Numeric value. Size of text.}
 
+\item{force_grid}{Logical value. If \code{TRUE}, \code{facet_grid()} is used regardless
+of \code{variables} being of length 1.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -95,3 +108,40 @@ the computational progress will be printed.
 Plots inferred gene expression along the distance to an image
 annotation against model values.
 }
+\section{Distance measures}{
+
+
+Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
+To specifically refer to a distance the unit must be specified. There are
+three ways to create valid input for these arguments.
+
+\strong{1. In pixel:}
+
+There are two valid input options to specify the distance in pixel:
+
+\itemize{
+\item{numeric:}{ Single numeric values, e.g. \code{arg_input = c(2, 3.554, 69, 100.67)}. If no unit
+is specified the input will be interpreted as pixels.}
+\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
+}
+
+Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+refers to a distance the pixel side length is meant. If pixel refers to an area the
+number of pixels is meant.
+
+\strong{2. According to the Systeme international d`unites (SI):}
+
+Specifying distances in SI units e.g. \code{arg_input = c('2mm', '4mm')} etc.
+requires the input to be a character as the unit must be provided as suffix.
+Between the numeric value and the unit must be no empty space! Valid suffixes
+can be obtained using the function \code{validUnitsOfLengthSI()}.
+
+\strong{3. As vectors of class \code{unit}:}
+
+Behind the scenes \code{SPATA2} works with the \code{units} package. Input
+is converted into vectors of class \code{units}. Therefore, input can be directly
+provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
+Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
+to specify the input in pixel you have to use input option 1. In pixel.
+}
+

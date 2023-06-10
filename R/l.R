@@ -9,7 +9,7 @@ NULL
 lastImageAnnotation <- function(object){
 
   ios <-
-    getImageAnnotations(object, add_image = FALSE) %>%
+    getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
     purrr::keep(.p = ~ stringr::str_detect(string = .x@id, pattern = "^img_ann_\\d*$"))
 
   if(base::length(ios) == 0){
@@ -30,7 +30,7 @@ lastImageAnnotation <- function(object){
 }
 # legend ------------------------------------------------------------------
 
-#' @title Ggplot add on wrapper
+#' @title ggplot2 legend manipulation
 #' @export
 legendBottom <- purrr::partial(.f = ggplot2::theme, legend.position = "bottom")
 
@@ -64,8 +64,94 @@ legendTop <- purrr::partial(.f = ggplot2::theme, legend.position = "top")
 
 # load --------------------------------------------------------------------
 
-#' @rdname loadSpataObject
-#' @export
+load_adata_matrix <- function(adata, count_mtr_name, normalized_mtr_name,
+                              scaled_mtr_name, verbose){
+
+    # helper for asSPATA2() for AnnData objects
+    # load count/normalized/scaled matrices
+    # (1) based on given input names
+    # (2) if these not available, based on defaults "counts"/"normalized"/"scaled" names
+    # (3) if "normalized" not available, adata$X will be set to "normalized"
+
+    if(verbose){ message("The AnnData object contains the following layers: ", paste(names(adata$layers),
+                collapse=", ")) }
+
+    # count matrix
+    if(!is.null(adata$layers[{{count_mtr_name}}])){
+
+      count_mtr <- load_adata_matrix_converter(adata = adata, mname = count_mtr_name, matrix = "count", verbose = verbose)
+
+    } else if (!is.null(adata$layers["counts"])){
+
+      count_mtr <- load_adata_matrix_converter(adata = adata, mname = "counts", matrix = "count", verbose = verbose)
+
+    } else {
+
+      warning("No AnnData layer 'counts' found. You can specify the layer name of the count matrix via `count_mtr_name`")
+      count_mtr <- NULL
+
+    }
+
+    # normalized matrix
+    if(!is.null(adata$layers[{{normalized_mtr_name}}])){
+
+      normalized_mtr <- load_adata_matrix_converter(adata = adata, mname = normalized_mtr_name, matrix = "normalized", verbose = verbose)
+
+    } else if(!is.null(adata$layers["normalized"])){
+
+      normalized_mtr <- load_adata_matrix_converter(adata = adata, mname = "normalized", matrix = "normalized", verbose = verbose)
+
+    } else if(!is.null(adata$X)){
+
+      warning("No AnnData layer 'normalized' found, therefore using adata$X as normalized matrix. If you want to use a different layer,
+              specify a name via `normalized_mtr_name`")
+      normalized_mtr <- Matrix::t(adata$X)
+
+    } else if(is.null(adata$X)){
+
+      warning("No AnnData layer 'normalized' found. You can specify the layer name of the normalized matrix via
+              `normalized_mtr_name`")
+      normalized_mtr <- NULL
+
+    }
+
+    # scaled matrix
+    if(!is.null(adata$layers[{{scaled_mtr_name}}])){
+
+      scaled_mtr <- load_adata_matrix_converter(adata = adata, mname = scaled_mtr_name, matrix = "scaled", verbose = verbose)
+
+    } else if(!is.null(adata$layers["scaled"])){
+
+      scaled_mtr <- load_adata_matrix_converter(adata = adata, mname = "scaled", matrix = "scaled", verbose = verbose)
+
+    } else {
+
+      warning("No AnnData layer 'scaled' found. You can specify the layer name of the scaled matrix via
+              `scaled_mtr_name` (e.g. scaled_mtr_name='scaled_data')")
+      scaled_mtr <- NULL
+
+    }
+
+    if((is.null(scaled_mtr)) & (is.null(count_mtr)) & (is.null(normalized_mtr))){
+
+      stop("No matrix found to import.")
+
+    }
+
+    return(list(count_mtr = count_mtr, normalized_mtr = normalized_mtr, scaled_mtr = scaled_mtr))
+
+}
+
+load_adata_matrix_converter <- function(adata, mname, matrix, verbose){
+
+  if(verbose){message(paste0("Using adata$layers['", mname, "'] as ", matrix, " matrix"))}
+  assign(paste0(matrix,"_mtr"), Matrix::t(adata$layers[{{mname}}]))
+  return(get(paste0(matrix,"_mtr")))
+
+}
+
+
+#' @keywords internal
 loadCorrespondingCDS <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -88,8 +174,7 @@ loadCorrespondingCDS <- function(object, verbose = NULL){
 
 }
 
-#' @rdname loadSpataObject
-#' @export
+#' @keywords internal
 loadCorrespondingSeuratObject <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -118,7 +203,7 @@ loadCorrespondingSeuratObject <- function(object, verbose = NULL){
 #' loading functions.
 #' @inherit argument_dummy params
 #' @inherit gene_set_path params
-
+#' @keywords internal
 loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 
   if(!base::is.null(gene_set_path)){
@@ -160,45 +245,70 @@ loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 #' @return A data.frame.
 #'
 #' @export
-
+#' @keywords internal
 loadGeneSetDf <- loadGSDF
-
-
 
 
 #' @rdname loadImageLowres
 #' @export
-loadImageHighres <- function(object, verbose = NULL){
+loadImage <- function(object, name, ...){
 
-  hlpr_assign_arguments(object)
+  dir <- getImageDir(object, name = name)
 
-  dir <- getImageDirHighres(object)
-
-  object <- exchangeImage(object, image = dir)
+  object <- exchangeImage(object, image = dir, ...)
 
   return(object)
 
 }
 
-#' @title Exchange images
+
+#' @rdname loadImageLowres
+#' @export
+loadImageDefault <- function(object, ...){
+
+  dir <- getImageDirDefault(object, fdb_fn = TRUE, check = TRUE)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
+
+#' @rdname loadImageLowres
+#' @export
+loadImageHighres <- function(object, ...){
+
+  dir <- getImageDirHighres(object)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
+#' @title Load known images
 #'
-#' @description Exchanges the image of the spata object by using
-#' the directories that have been set with \code{setImageDirLowres()} or
-#' \code{setImageDirHighres()} and scales the barcodes spots coordinates
-#' accordingly.
+#' @description Wrapper around the required `getImageDir*()` function and
+#' `exchangeImage()`. Exchanges the image of the `SPATA2` object by using
+#' the directories that have been set with \code{setImageDir*()} family
+#' or with `addImageDir()`.
 #'
+#' @param ... Additional arguments given to `exchangeImage()`.
+#' @param name Character value. Name of the image directory.
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @return An updated spata object.
+#' @seealso [`setImageDirLowres()`], [`setImageDirHighres()`],
+#' [`setImageDirDefault()`], [`addImageDir()`],  [`exchangeImage()`], [getImagaDirectories()]
+#'
 #' @export
 #'
-loadImageLowres <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
+loadImageLowres <- function(object, ...){
 
   dir <- getImageDirLowres(object)
 
-  object <- exchangeImage(object, image = dir)
+  object <- exchangeImage(object, image = dir, ...)
 
   return(object)
 
@@ -233,7 +343,7 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
     type = "files")
 
   confuns::give_feedback(
-    msg = "Loading spata-object.",
+    msg = "Loading `spata2` object.",
     verbose = verbose
   )
 
@@ -272,7 +382,7 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
 
 # lump --------------------------------------------------------------------
 
-
+#' @keywords internal
 lump_groups <- function(df,
                         grouping.variable,
                         grouping.variable.new = NULL,

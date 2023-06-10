@@ -28,3 +28,4 @@ the computational progress will be printed.
 Not exported due to naming issues. Kept as it is used in several
 loading functions.
 }
+\keyword{internal}

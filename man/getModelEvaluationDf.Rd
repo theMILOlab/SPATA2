@@ -22,3 +22,4 @@ Data.frame.
 Extracts the data.frame that contains the variable-model-fit
 evaluation containing.
 }
+\keyword{internal}

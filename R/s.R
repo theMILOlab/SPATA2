@@ -199,22 +199,18 @@ saveGeneSetDf <- function(object, directory){
 #' @export
 saveSpataObject <- function(object,
                             directory_spata = NULL,
-                            combine_with_wd = FALSE,
-                            verbose = NULL){
+                            verbose = NULL,
+                            ...){
 
   hlpr_assign_arguments(object)
 
   confuns::is_value(directory_spata, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
+  directory_spata <- base::normalizePath(directory_spata, mustWork = FALSE)
+
   if(base::is.character(directory_spata)){
 
-    object <-
-      adjustDirectoryInstructions(
-        object = object,
-        to = "spata_object",
-        directory_new = directory_spata,
-        combine_with_wd = combine_with_wd
-      )
+    object <- setSpataDir(object, dir = directory_spata)
 
   }
 
@@ -267,6 +263,91 @@ saveSpataObject <- function(object,
 
 # scale -------------------------------------------------------------------
 
+
+
+#' @title Scale coordinate variable pairs
+#'
+#' @description Scales coordinate variable pairs in a data.frame by multiplying
+#' them with a scale factor.
+#'
+#' @param scale_fct Numeric value bigger than 0. If used within `flipImage()`
+#' must range between 0 and 1. If only applied to spatial aspects that
+#' base on coordinates, can be bigger than 1.
+#'
+#' @inherit rotate_coords_df params details return
+#'
+#' @export
+#' @keywords internal
+scale_coords_df <- function(df,
+                            scale_fct = 1,
+                            coord_vars = list(pair1 = c("x", "y"),
+                                              pair2 = c("xend", "yend"),
+                                              pair3 = c("col", "row"),
+                                              pair4 = c("imagecol", "imagerow")
+                            ),
+                            verbose = FALSE,
+                            error = FALSE,
+                            ...){
+
+  confuns::is_vec(scale_fct, mode = "numeric", min.length = 1)
+
+  if(base::length(scale_fct) == 1){
+
+    scale_fct <- base::rep(scale_fct, 2)
+
+  }
+
+  if(base::is.vector(coord_vars, mode = "character")){
+
+    coords_vars <- list(coord_vars[1:2])
+
+  } else {
+
+    base::stopifnot(confuns::is_list(input = coord_vars))
+
+    coord_vars <-
+      purrr::keep(.x = coord_vars, .p = base::is.character) %>%
+      purrr::map(.x = ., .f = ~.x[1:2])
+
+  }
+
+  for(pair in coord_vars){
+
+    if(base::all(pair %in% base::colnames(df))){
+
+      df[[pair[1]]] <- df[[pair[1]]] * scale_fct[1]
+      df[[pair[2]]] <- df[[pair[2]]] * scale_fct[2]
+
+    } else {
+
+      ref <- confuns::scollapse(string = pair)
+
+      msg <- glue::glue("Coords-var pair {ref} does not exist in input data.frame. Skipping.")
+
+      if(base::isTRUE(error)){
+
+        stop(msg)
+
+      } else {
+
+        confuns::give_feedback(
+          msg = msg,
+          verbose = verbose,
+          ...
+        )
+
+      }
+
+
+    }
+
+  }
+
+  return(df)
+
+}
+
+#' @keywords internal
 scale_nuclei_df <- function(object,
                             nuclei_df,
                             x = "Location_Center_X",
@@ -295,19 +376,77 @@ scale_nuclei_df <- function(object,
 }
 
 
-
-
-#' @title Scale coordinates
+#' @title Scale image and coordinates
 #'
-#' @description Scales coordinates of spatial aspects in the `SPATA2` object.
+#' @description The `scale*()` family scales the current image
+#' or coordinates of spatial aspects or everything. See details
+#' for more information.
 #'
-#' @param scale_fct Numeric vector of length two. Scale factors with which the coordinates
-#' are multiplied. First value is used for x-, second value is used for y-coordinates.
+#' **NOTE:** `scaleImage()` only rescales the image and lets everything else as
+#' is. Only use it if the image is to big in resolution and thus not aligned with
+#' the spatial coordinates. If you want to minimize the resolution of the image
+#' while maintaining alignment with the spatial aspects in the `spata2` object
+#' use `scaleAll()`!
+#'
+#' @inherit flipAll params
+#' @inherit scale_coords_df params
 #' @inherit argument_dummy params
-#' @inherit update_dummy return
+#' @inherit update_dummy params
+#'
+#' @details The `scale*()` functions can be used to scale the complete `SPATA2`
+#' object content or to scale single aspects.
+#'
+#' \itemize{
+#'  \item{`scaleAll()`:}{ Scales image as well as every single spatial aspect.
+#'  **Always tracks the justification.**}
+#'  \item{`scaleImage()`:}{ Scales the image.}
+#'  \item{`scaleCoordinates()`:}{ Scales the coordinates data.frame, image annotations
+#'  and spatial trajectories.}
+#'  \item{`scaleCoordsDf()`:}{ Scales the coordinates data.frame.}
+#'  \item{`scaleImageAnnotations()`:}{ Scales image annotations.}
+#'  \item{`scaleSpatialTrajectories()`:}{ Scales spatial trajectories.}
+#'  }
+#'
+#' @seealso [`flipAll()`], [`rotateAll()`]
 #'
 #' @export
-#'
+
+scaleAll <- function(object, scale_fct){
+
+  object <- scaleImage(object, scale_fct = scale_fct)
+
+  object <- scaleCoordinates(object, scale_fct = scale_fct, verbose = FALSE)
+
+  return(object)
+
+}
+
+
+#' @rdname scaleAll
+#' @export
+scaleImage <- function(object, scale_fct){
+
+  io <- getImageObject(object)
+
+  width <- io@image_info$dim_stored[1] * scale_fct
+  height <- io@image_info$dim_stored[2] * scale_fct
+
+  io@image <- EBImage::resize(x = io@image, w = width, h = height)
+
+  io@image_info$dim_stored <- base::dim(io@image)
+  io@image_info$img_scale_fct * io@image_info$img_scale_fct * scale_fct
+
+  object <- setImageObject(object, image_object = io)
+
+  object@information$pxl_scale_fct <-
+    object@information$pxl_scale_fct / scale_fct
+
+  return(object)
+
+}
+
+#' @rdname scaleAll
+#' @export
 scaleCoordinates <- function(object, scale_fct, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -337,7 +476,7 @@ scaleCoordinates <- function(object, scale_fct, verbose = NULL){
 
 }
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
 
@@ -351,10 +490,10 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
   coords_df <- getCoordsDf(object)
 
   coords_df_new <-
-    dplyr::mutate(
-      .data = coords_df,
-      x = x * scale_fct[1],
-      y = y * scale_fct[2]
+    scale_coords_df(
+      df = coords_df,
+      scale_fct = scale_fct,
+      verbose = FALSE
     )
 
   object <- setCoordsDf(object, coords_df = coords_df_new)
@@ -363,8 +502,7 @@ scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
 
 }
 
-
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 
@@ -379,29 +517,34 @@ scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
 
   }
 
-  image_obj <- getImageObject(object)
+  io <- getImageObject(object)
 
-  image_obj@annotations <-
+  io@annotations <-
     purrr::map(
-      .x = image_obj@annotations,
+      .x = io@annotations,
       .f = function(img_ann){
 
-        img_ann@area$x <- img_ann@area$x * scale_fct[1]
-        img_ann@area$y <- img_ann@area$y * scale_fct[2]
+        img_ann@area <-
+          purrr::map(
+            .x = img_ann@area,
+            .f = ~ scale_coords_df(df = .x, scale_fct = scale_fct)
+          )
+
+        img_ann@info$current_dim <- img_ann@info$current_dim * scale_fct
 
         return(img_ann)
 
       }
     )
 
-  object <- setImageObject(object, image_object = image_obj)
+  object <- setImageObject(object, image_object = io)
 
   return(object)
 
 }
 
 
-#' @rdname scaleCoordinates
+#' @rdname scaleAll
 #' @export
 scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 
@@ -422,15 +565,23 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
       .f = function(traj){
 
         traj@projection <-
-          traj@projection %>%
-          dplyr::mutate(x = x * scale_fct[1], y = y * scale_fct[2])
+          scale_coords_df(df = traj@projection, scale_fct = scale_fct)
 
         traj@segment <-
-          traj@segment %>%
-          dplyr::mutate(
-            x = x * scale_fct[1], xend = xend * scale_fct[1],
-            y = y * scale_fct[2], yend = yend * scale_fct[2]
-          )
+          scale_coords_df(df = traj@segment, scale_fct = scale_fct)
+
+        scale_fct <- base::unique(scale_fct)
+
+        if(base::length(scale_fct) != 1){
+
+          warning(glue::glue("Can not scale projection length with scale factor of length 2."))
+
+        } else {
+
+          traj@projection[["projection_length"]] <-
+            traj@projection[["projection_length"]] * scale_fct
+
+        }
 
         return(traj)
 
@@ -452,14 +603,29 @@ scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
 #' @description Sets a directory under which the `SPATA2` object is
 #' always stored using the function `saveSpataObject()`.
 #'
+#' @param dir Character value. The directory under which to store the
+#' `SPATA2` object.
+#' @param add_wd Logical value. If `TRUE`, the working directory is added to
+#' the directory separated by *'/'*.
+#'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
 #'
-setSpataDir <- function(object, dir){
+setSpataDir <- function(object, dir, add_wd = FALSE, ...){
+
+  deprecated(...)
 
   confuns::is_value(x = dir, mode = "character")
+
+  if(base::isTRUE(add_wd)){
+
+    wd_string <- base::getwd()
+
+    dir <- stringr::str_c(wd_string, "/", dir)
+
+  }
 
   object@information$instructions$directories$spata_object <- dir
 
@@ -472,7 +638,7 @@ setSpataDir <- function(object, dir){
 # shift -------------------------------------------------------------------
 
 
-#' @export
+#' @keywords internal
 shift_for_evaluation <- function(input_df, var_order){
 
   keep <- c("variables", "values", var_order)
@@ -490,7 +656,7 @@ shift_for_evaluation <- function(input_df, var_order){
 
 }
 
-#' @export
+#' @keywords internal
 shift_for_plotting <- function(input_df, var_order){
 
   model_names <-
@@ -547,6 +713,7 @@ shift_for_plotting <- function(input_df, var_order){
 
 }
 
+#' @keywords internal
 shift_frame <- function(current_frame, new_center){
 
   current_center <-
@@ -573,7 +740,47 @@ shift_frame <- function(current_frame, new_center){
 
 }
 
-#' @export
+#' @keywords internal
+shift_screening_df_to_long <- function(df, var_order = "bins_order", suffix = "_sd"){
+
+  sd_df <-
+    dplyr::select(
+      .data = df,
+      bins_circle,
+      dplyr::all_of(var_order),
+      dplyr::ends_with(suffix)
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::ends_with(suffix),
+      names_to = "variables",
+      values_to = "sd"
+    ) %>%
+    dplyr::mutate(variables = stringr::str_remove(variables, pattern = stringr::str_c(suffix, "$"))) %>%
+    dplyr::select(dplyr::all_of(c(var_order, "variables", "sd")))
+
+  variables <- base::unique(sd_df[["variables"]])
+
+  val_df <-
+    dplyr::select(
+      .data = df,
+      dplyr::all_of(var_order),
+      dplyr::any_of(c("bins_circle", "bins_angle")),
+      dplyr::everything(),
+      -dplyr::ends_with(suffix)
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(variables),
+      names_to = "variables",
+      values_to = "values"
+    )
+
+  out <- dplyr::left_join(x = val_df, y = sd_df, by = c("variables", var_order))
+
+  return(out)
+
+}
+
+#' @keywords internal
 shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory_order", ...){
 
   tidyr::pivot_longer(
@@ -615,7 +822,7 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
     setNames(slotNames(object))
 
 
-  n_bcsp <- base::length(object@barcodes)
+  n_bcsp <- base::length(object@misc[["barcodes"]])
 
   n_vert <- base::nrow(object@area)
 
@@ -656,51 +863,137 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
 #'
 showColors <- function(input, n = 20, title_size = 10){
 
-  plot_list <-
-    purrr::map(
-      .x = input,
-      .f = function(x){
+  if(confuns::is_list(input)){
 
-        if(x %in% confuns::diverging){
+    input <-
+      purrr::flatten_chr(input) %>%
+      base::unname()
 
-          vec <- base::seq(-1, 1, len = n)
+  }
 
-        } else {
+  input <- input[input != "default"]
 
-          vec <- 1:n
+  input_spectra <- input[input %in% validColorSpectra(flatten = TRUE)]
+
+  if(base::length(input_spectra) != 0){
+
+    plot_list1 <-
+      purrr::map(
+        .x = input_spectra,
+        .f = function(x){
+
+          if(x %in% confuns::diverging){
+
+            vec <- base::seq(-1, 1, len = n)
+
+          } else {
+
+            vec <- 1:n
+
+          }
+
+          df <- base::data.frame(x = vec, y = 1)
+
+          out <-
+            ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+            confuns::scale_color_add_on(aes = "fill", clrsp = x, variable = vec) +
+            ggplot2::scale_y_continuous() +
+            ggplot2::theme_void() +
+            ggplot2::theme(
+              legend.position = "none",
+              plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+            ) +
+            ggplot2::labs(title = x)
+
+          return(out)
 
         }
+      ) %>%
+      patchwork::wrap_plots()
 
-        if(x %in% c(confuns::colorpalettes)){
+  } else {
 
-          vec <- base::as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+    plot_list1 <- NULL
+
+  }
+
+
+  input_palettes <- input[input %in% validColorPalettes(flatten = TRUE)]
+
+  if(base::length(input_palettes) != 0){
+
+    plot_list2 <-
+      purrr::map(
+        .x = input_palettes,
+        .f = function(x){
+
+          vec <- base::as.character(1:n)
+
+          if(x %in% validColorPalettes()[["Viridis Options"]]){
+
+            vec <- base::as.character(vec[1:9])
+
+          } else {
+
+            vec <- as.character(vec)[1:base::length(confuns::color_vector(clrp = x))]
+
+          }
+
+          df <- base::data.frame(x = vec, y = 1)
+
+          out <-
+            ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
+            ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
+            confuns::scale_color_add_on(aes = "fill", clrp = x, variable = vec) +
+            ggplot2::scale_y_continuous() +
+            ggplot2::theme_void() +
+            ggplot2::theme(
+              legend.position = "none",
+              plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
+            ) +
+            ggplot2::labs(title = x)
+
+          return(out)
 
         }
+      ) %>%
+      patchwork::wrap_plots()
 
-        df <- base::data.frame(x = vec, y = 1)
+  } else {
 
-        out <-
-          ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = x, y = y)) +
-          ggplot2::geom_tile(mapping = ggplot2::aes(fill = x)) +
-          confuns::scale_color_add_on(aes = "fill", clrsp = x, clrp = x, variable = vec) +
-          ggplot2::scale_y_continuous() +
-          ggplot2::theme_void() +
-          ggplot2::theme(
-            legend.position = "none",
-            plot.title = ggplot2::element_text(hjust = 0.5, size = title_size)
-          ) +
-          ggplot2::labs(title = x)
+    plot_list2 <- NULL
 
-        return(out)
+  }
 
-      }
-    )
-
-  gridExtra::grid.arrange(grobs = plot_list)
+  plot_list1 / plot_list2
 
 }
 
 #' @rdname showColors
+#' @export
+showColorPalettes <- function(input = validColorPalettes(flatten = TRUE), n = 15){
+
+  showColors(input = input, n = n)
+
+}
+
+#' @rdname showColors
+#' @export
+showColorSpectra <- function(input = validColorSpectra(flatten = TRUE), n = 20){
+
+  showColors(input = input, n = n)
+
+}
+
+#' @title Show spatial gradient screening models
+#'
+#' @description Display the models used for spatial gradient screening.
+#'
+#' @inherit argument_dummy params
+#'
+#' @inherit ggplot_dummy return
+#'
 #' @export
 showModels <- function(input = 100,
                        linecolor = "black",
@@ -710,6 +1003,7 @@ showModels <- function(input = 100,
                        model_add = NULL,
                        pretty_names = FALSE,
                        x_axis_arrow = TRUE,
+                       verbose = NULL,
                        ...){
 
   mdf <-
@@ -717,7 +1011,8 @@ showModels <- function(input = 100,
       input = input,
       model_subset = model_subset,
       model_remove = model_remove,
-      model_add = model_add
+      model_add = model_add,
+      verbose = verbose
     ) %>%
     dplyr::rename_with(.fn = ~ stringr::str_remove(.x, "^p_")) %>%
     dplyr::mutate(x = 1:input) %>%
@@ -776,7 +1071,7 @@ showModels <- function(input = 100,
 #'
 #' @return The input data.frame containing the smoothed variables.
 #' @export
-
+#' @keywords internal
 smoothSpatially <- function(coords_df,
                             variables,
                             smooth_span = 0.025,
@@ -836,7 +1131,7 @@ smoothSpatially <- function(coords_df,
 #' @description Screens the sample for numeric variables that follow specific expression
 #' changes along the course of the spatial trajectory.
 #'
-#' @inherit getTrajectoryScreeningDf params
+#' @inherit getTrajectoryDf params
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
@@ -852,7 +1147,7 @@ smoothSpatially <- function(coords_df,
 #' @return An object of class \code{SpatialTrajectoryScreening}. See documentation
 #' with \code{?ImageAnnotationScreening} for more information.
 #'
-#' @seealso createSpatialTrajectories()
+#' @seealso [`createSpatialTrajectories()`]
 #'
 #' @details
 #'
@@ -888,7 +1183,7 @@ spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
                                        n_bins = NA_integer_,
-                                       binwidth = ccDist(object),
+                                       binwidth = getCCD(object),
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        model_add = NULL,
@@ -931,7 +1226,6 @@ spatialTrajectoryScreening <- function(object,
       smooth = FALSE,
       normalize = TRUE
     )
-
 
   # bin along trajectory and summarize by bin
   confuns::give_feedback(
@@ -1030,6 +1324,7 @@ spatialTrajectoryScreening <- function(object,
 
 # split -------------------------------------------------------------------
 
+#' @keywords internal
 splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidths = NULL){
 
   input <- list(...)
@@ -1055,14 +1350,18 @@ splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidt
 
 }
 
-# strong ------------------------------------------------------------------
 
+
+
+# str ---------------------------------------------------------------------
+
+#' @keywords internal
 strongH3 <- function(text){
 
   shiny::tags$h3(shiny::strong(text))
 
 }
-
+#' @keywords internal
 strongH5 <- function(text){
 
   shiny::tags$h5(shiny::strong(text))
@@ -1072,7 +1371,7 @@ strongH5 <- function(text){
 # subset ------------------------------------------------------------------
 
 
-#' @title Simple subsetting by barcodes
+#' @title Subsetting by barcodes
 #'
 #' @description Removes unwanted barcode spots from the object without any significant
 #' post processing.
@@ -1093,9 +1392,11 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
+  bcs_keep <- barcodes
+
   object <-
     getFeatureDf(object) %>%
-    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     dplyr::mutate(
       dplyr::across(
         .cols = where(base::is.factor),
@@ -1106,28 +1407,22 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   object <-
     getCoordsDf(object) %>%
-    dplyr::filter(barcodes %in% {{barcodes}}) %>%
+    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     setCoordsDf(object, coords_df = .)
 
-  object@data[[1]] <-
-    purrr::map(
-      .x = object@data[[1]],
-      .f = function(mtr){
-
-        out <- mtr[,barcodes]
-
-        return(out)
-
-      }
-    )
+  object@data[[1]] <- purrr::map(.x = object@data[[1]], .f = ~ .x[, bcs_keep])
 
   object@images[[1]]@annotations <-
     purrr::map(
       .x = object@images[[1]]@annotations,
       .f = function(img_ann){
 
-        img_ann@barcodes <-
-          img_ann@barcodes[img_ann@barcodes %in% barcodes]
+        if(base::is.character(img_ann@misc[["barcodes"]])){
+
+          img_ann@misc[["barcodes"]] <-
+            img_ann@misc[["barcodes"]][img_ann@misc[["barcodes"]] %in% bcs_keep]
+
+        }
 
         return(img_ann)
 
@@ -1140,7 +1435,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
       .f = function(traj){
 
         traj@projection <-
-          dplyr::filter(traj@projection, barcodes %in% {{barcodes}})
+          dplyr::filter(traj@projection, barcodes %in% {{bcs_keep}})
 
         return(traj)
 
@@ -1148,17 +1443,22 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
     )
 
   object@information$barcodes <-
-    object@information$barcodes[object@information$barcodes %in% barcodes]
+    object@information$barcodes[object@information$barcodes %in% bcs_keep]
 
-  if(base::is.numeric(object@information$subsetted)){
+  object@information[["subset"]][["barcodes"]] <-
+    c(barcodes, object@information[["subset"]][["barcodes"]])
 
-    object@information$subsetted <- object@information$subsetted + 1
+  if(base::is.numeric(object@information[["subsetted"]])){
+
+    object@information[["subsetted"]] <- object@information[["subsetted"]]+ 1
 
   } else {
 
-    object@information$subsetted <- 1
+    object@information[["subsetted"]] <- 1
 
   }
+
+  object <- setTissueOutline(object, verbose = verbose)
 
   n_bcsp <- nBarcodes(object)
 
@@ -1170,6 +1470,51 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
   return(object)
 
 }
+
+
+#' @title Subset by genes
+#'
+#' @description Removes genes from the data set. This affects count- and expression matrices
+#' and can drastically decrease object size.
+#'
+#' @param genes Character vector of gene names that are kept.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @note Gene dependent analysis results such as DEA or SPARKX
+#' are **not** subsetted. Stored results are kept as they are. To update them run
+#' the algorithms again.
+#'
+#' @export
+subsetByGenes <- function(object, genes, verbose = NULL){
+
+  confuns::check_one_of(
+    input = genes,
+    against = getGenes(object)
+  )
+
+  object@data[[1]] <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = function(mtr){
+
+
+
+        mtr[genes, ]
+
+
+        }
+    )
+
+  object@information$subset$genes <-
+    c(genes, object@information$subset$genes) %>%
+    base::unique()
+
+  return(object)
+
+}
+
 
 #' @rdname export
 subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NULL, verbose = TRUE){
@@ -1274,7 +1619,7 @@ summarize_and_shift_variable_df <- function(grouped_df, variables){
 }
 
 
-#' @export
+#' @keywords internal
 summarize_corr_string <- function(x, y){
 
   res <- stats::cor.test(x = x, y = y)
@@ -1285,7 +1630,7 @@ summarize_corr_string <- function(x, y){
 
 }
 
-#' @export
+#' @keywords internal
 summarize_rauc <- function(x, y, n){
 
   out <-
@@ -1296,7 +1641,7 @@ summarize_rauc <- function(x, y, n){
 
 }
 
-#' @export
+#' @keywords internal
 summarize_projection_df <- function(projection_df,
                                     n_bins = NA_integer_,
                                     binwidth = NA,
@@ -1341,7 +1686,7 @@ summarize_projection_df <- function(projection_df,
 #' the content of slot @@results of the \code{ImageAnnotationScreening}-class.
 #'
 #' @details Model fitting and evaluation happens within every angle-bin.
-#' To get a single evaulation for every gene the results of every
+#' To get a single evaluation for every gene the results of every
 #' angle-bin must be summarized.
 #'
 #' @export

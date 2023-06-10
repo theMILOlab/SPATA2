@@ -9,3 +9,4 @@ hlpr_join_with_color_by(object, df, color_by = NULL, variables = NULL, ...)
 \description{
 Join with single value
 }
+\keyword{internal}

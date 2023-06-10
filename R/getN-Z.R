@@ -1,5 +1,19 @@
 
 
+
+# getO --------------------------------------------------------------------
+
+#' @rdname setOutlineVarName
+#' @keywords internal
+getOutlineVarName <- function(object){
+
+  object@information$outline_var
+
+}
+
+
+
+
 # getP --------------------------------------------------------------------
 
 #' @rdname getDimRedDf
@@ -58,7 +72,9 @@ getPixelDf <- function(object, xrange = NULL, yrange = NULL){
 
   img_dims <- base::dim(img)
 
-  tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2])
+  tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2]) %>%
+    dplyr::mutate(pixel = stringr::str_c("px", 1:base::nrow(.))) %>%
+    dplyr::select(pixel, x, y)
 
 }
 
@@ -135,7 +151,7 @@ getPixelScaleFactor <- function(object,
       getBarcodeSpotDistances(object, verbose = verbose) %>%
       dplyr::filter(bc_origin != bc_destination) %>%
       dplyr::group_by(bc_origin) %>%
-      dplyr::mutate(dist_round = round(distance, digits = 0)) %>%
+      dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
       dplyr::filter(dist_round == base::min(dist_round)) %>%
       dplyr::ungroup()
 
@@ -223,7 +239,7 @@ getProjectionDf <- function(object,
                             id,
                             ...){
 
-  traj_obj <- getTrajectoryObject(object = object, id = id)
+  traj_obj <- getTrajectory(object = object, id = id)
 
   if(base::is.character(list(...)[["variables"]])){
 
@@ -699,6 +715,35 @@ getSpataDf <- function(object, of_sample = NA){
 
 }
 
+
+#' @title Obtain SPATA2 object directory
+#'
+#' @description Extracts the file directory under which the `SPATA2` object
+#' is saved by default with `saveSpataObject()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value or an error if no directory is set.
+#'
+#' @seealso [`setSpataDir()`]
+#'
+#' @export
+#'
+getSpataDir <- function(object){
+
+  out <- object@information$instructions$directories$spata_object
+
+  if(base::is.null(out)){
+
+    stop("No spata directory set.")
+
+  }
+
+  return(out)
+
+}
+
+
 getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
   if(base::exists(x = "name.spata.object", where = envir) && base::exists(name.spata.object)){
@@ -732,13 +777,18 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
 
 
-#' @title Obtain object of class \code{SpatialTrajectory}.
+#' @title Obtain objects of class \code{SpatialTrajectory}.
 #'
 #' @inherit argument_dummy params
 #' @param id Character value. Denotes the spatial trajectory
 #' of interest.
+#' @param ids Character vector. Denotes the spatial trajectories
+#' of interest.
 #'
-#' @return An object of class \code{SpatialTrajectory.}
+#' @return An object of class `SpatialTrajectory` in case of `getSpatialTrajectory()`
+#' or a named list of `SpatialTrajectory` objects in case of `getSpatialTrajectories()`.
+#' An empty list if `nSpatialTrajectories() == 0`.
+#'
 #' @export
 #'
 
@@ -763,6 +813,37 @@ getSpatialTrajectory <- function(object, id){
 
 }
 
+#' @rdname getSpatialTrajectory
+#' @export
+getSpatialTrajectories <- function(object, ids = NULL){
+
+  if(nSpatialTrajectories(object) != 0){
+
+    if(base::is.character(ids)){
+
+      confuns::check_one_of(
+        input = ids,
+        against = getSpatialTrajectoryIds(object)
+      )
+
+      out <- object@trajectories[[1]][ids]
+
+    } else {
+
+      out <- object@trajectories[[1]]
+
+    }
+
+  } else {
+
+    out <- list()
+
+  }
+
+  return(out)
+
+}
+
 
 #' @title Obtain spatial trajectory IDs
 #'
@@ -776,11 +857,20 @@ getSpatialTrajectory <- function(object, id){
 #' @export
 getSpatialTrajectoryIds <- function(object){
 
-  purrr::keep(
-    .x = object@trajectories[[1]],
-    .p = ~ base::class(.x) == "SpatialTrajectory"
-  ) %>%
+  out <-
+    purrr::keep(
+      .x = object@trajectories[[1]],
+      .p = ~ base::class(.x) == "SpatialTrajectory"
+    ) %>%
     base::names()
+
+  if(base::is.null(out)){
+
+    out <- base::character(0)
+
+  }
+
+  return(out)
 
 }
 
@@ -801,7 +891,7 @@ getSpatialTrajectoryIds <- function(object){
 #'
 #' @return Data.frame.
 #' @export
-#'
+#' @keywords internal
 
 getSmrdResultsDf <-  function(ias,
                               eval = "ias_score",
@@ -838,8 +928,101 @@ getSmrdResultsDf <-  function(ias,
 
 
 
+#' @title Obtain spatial trajectory screening data.frame
+#'
+#' @description Extracts a data.frame of inferred gradients related to the
+#' course of a trajectory.
+#'
+#' @inherit argument_dummy params
+#' @inherit getTrajectoryDf params
+#'
+#' @return Data.frame.
+#'
+#' @export
+#'
+getStsDf <- function(object,
+                     id,
+                     variables,
+                     binwidth = getCCD(object),
+                     n_bins = NA_integer_,
+                     methods_gs = NULL,
+                     smooth_span = 0,
+                     format = "wide",
+                     verbose = NULL,
+                     ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  getTrajectoryDf(
+    object = object,
+    id = id,
+    variables = variables,
+    binwidth = binwidth,
+    n_bins = n_bins,
+    methods_gs = methods_gs,
+    smooth_span = smooth_span,
+    normalize = TRUE,
+    summarize_with = "mean",
+    format = format,
+    verbose = verbose
+  )
+
+}
+
 
 # getT --------------------------------------------------------------------
+
+#' @title Obtain outline barcode spots
+#'
+#' @description Identifies the barcode spots that lie on the edge
+#' of the tissue and returns a subset of the coordinates data.frame. Requires
+#' the results of `identifyTissueOutline()`.
+#'
+#' @inherit argument_dummy params
+#' @param remove Logical. If `TRUE`, none-outline spots are removed from
+#' the output.
+#' @param force Logical. If `TRUE`, forces computation.
+#'
+#' @return Output of `getCoordsDf()` filtered based on the *outline* variable.
+#'
+#' @export
+#'
+#' @examples
+#'
+#'  library(ggplot2)
+#'  library(ggExtra)
+#'
+#'  object <- downloadPubExample("MCI_LMU")
+#'
+#'  print(getTissueOutlineDf(object))
+#'
+#'  to_df <- getTissueOutlineDf(object, remove = FALSE)
+#'
+#'  to_df[["outline"]] <- as.character(to_df[["outline"]])
+#'
+#'  ggplot(to_df, mapping = aes(x = x, y = y)) +
+#'    geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
+#'    scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
+#'
+#'
+#'
+getTissueOutlineDf <- function(object, remove = TRUE){
+
+  base::stopifnot(tissueOutlineIdentified(object))
+
+  coords_df <- getCoordsDf(object)
+
+  if(base::isTRUE(remove)){
+
+    coords_df <- dplyr::filter(coords_df, outline)
+
+  }
+
+  return(coords_df)
+
+}
 
 
 #' @export
@@ -858,16 +1041,6 @@ getTrajectory <- function(object, id){
 }
 
 
-#' @rdname getTrajectoryScreeningDf
-#' @export
-getTrajectoryDf <- function(object, ...){
-
-  deprecated(fn = TRUE, ...)
-
-  getTrajectoryScreeningDf(object = object, ...)
-
-
-}
 
 #' @title Obtain trajectory ids
 #'
@@ -888,9 +1061,7 @@ getTrajectoryIds <- function(object){
 }
 
 
-
-
-#' @title Obtain a summarized trajectory data.frame
+#' @title Obtain a trajectory data.frame
 #'
 #' @description Extracts a data.frame that contains information about barcode-spots
 #' needed for analysis related to \code{spatialTrajectoryScreening()}.
@@ -899,55 +1070,26 @@ getTrajectoryIds <- function(object){
 #' @inherit variables_num params
 #' @inherit getSpatialTrajectory params
 #' @param binwidth Distance value. The width of the bins to which
-#' the barcode-spots are assigned. We recommend to set it equal to the center-center
-#' distance: \code{binwidth = ccDist(object)}. (See details for more.) - See details
-#' of \code{?is_dist} for more information about distance values.
+#' the barcode-spots are assigned. Defaults to the center-center
+#' distance: \code{binwidth = getCCD(object)}.
 #'
 #' @return Data.frame. (See details for more.)
-#'
-#' @note \code{getTrajectoryScreeningDf()} summarizes by bins by default.
-#' To obtain the coordinates joined with the projection length set \code{summarize_with}
-#' to \code{FALSE} or use \code{getProjectionDf()}. The same applies if you want to join grouping
-#' variables to the data.frame (can not be summarized).
-#'
-#' @details Initially the projection data.frame of the specified trajectory
-#' is joined with the respective input of variables via \code{joinWithVariables()}.
-#'
-#' The argument \code{binwidth} refers to the amount of which the barcode-spots of the
-#' given trajectory will be summarized with regards to the trajectory's direction:
-#' The amount of \code{binwidth} and the previously specified 'trajectory width' in \code{createTrajectories()}
-#' determine the length and width of the sub-rectangles in which the rectangle the
-#' trajectory embraces is split and in which all barcode-spots are binned.
-#' Via \code{dplyr::summarize()} the variable-means of every sub-rectangle are calculated.
-#' These mean-values are then arranged along to the trajectory's direction.
-#'
-#' Eventually the data.frame is shifted via \code{tidyr::pivot_longer()} to a data.frame in which
-#' every observation refers to the mean-value of one of the specified variable-elements (e.g. a specified
-#' gene set) of the particular sub-rectangle. The returned data.frame contains the following variables:
-#'
-#' \itemize{
-#'  \item{\emph{trajectory_part}: Character. Specifies the trajectory's sub-part of the observation. (Negligible if there is
-#'  only one trajectory part.)}
-#'  \item{\emph{trajectory_part_order}: Numeric. Indicates the order within the trajectory-part. (Negligible if there is
-#'  only one trajectory part.)}
-#'  \item{\emph{trajectory_order}: Numeric. Indicates the order within the whole trajectory.}
-#'  \item{\emph{variables}: Character. The respective gene sets, gene or feature the value refers to.}
-#'  \item{\emph{values}: Numeric. The summarized values.}}
 #'
 #' @export
 #'
 
-getTrajectoryScreeningDf <- function(object,
-                                     id,
-                                     variables,
-                                     binwidth = ccDist(object),
-                                     n_bins = NA_integer_,
-                                     method_gs = "mean",
-                                     normalize = TRUE,
-                                     summarize_with = "mean",
-                                     format = "wide",
-                                     verbose = NULL,
-                                     ...){
+getTrajectoryDf <- function(object,
+                            id,
+                            variables,
+                            binwidth = getCCD(object),
+                            n_bins = NA_integer_,
+                            method_gs = NULL,
+                            normalize = TRUE,
+                            summarize_with = FALSE,
+                            smooth_span = 0,
+                            format = "wide",
+                            verbose = NULL,
+                            ...){
 
   hlpr_assign_arguments(object)
 
@@ -957,10 +1099,14 @@ getTrajectoryScreeningDf <- function(object,
 
   confuns::are_values(c("normalize"), mode = "logical")
 
-  check_one_of(
-    input= summarize_with,
-    against = c("mean", "median")
-  )
+  if(base::is.character(summarize_with)){
+
+    check_one_of(
+      input = summarize_with,
+      against = c("mean", "median")
+    )
+
+  }
 
   check_one_of(
     input = format,
@@ -1000,6 +1146,32 @@ getTrajectoryScreeningDf <- function(object,
       normalize_smrd_projection_df(normalize = normalize[2]) %>%
       tibble::as_tibble()
 
+    if(smooth_span > 0){
+
+      traj_order <- out[["trajectory_order"]]
+
+      confuns::give_feedback(
+        msg = glue::glue("Smoothing with `span` = {smooth_span}."),
+        verbose = verbose
+      )
+
+      out <-
+        dplyr::mutate(
+          .data = out,
+          dplyr::across(
+            .cols = dplyr::all_of(variables),
+            .fns = function(var){
+
+                stats::loess(formula = var ~ traj_order, span = smooth_span) %>%
+                stats::predict() %>%
+                confuns::normalize()
+
+            }
+          )
+        )
+
+    }
+
     if(format == "long"){
 
       out <- shift_smrd_projection_df(out)
@@ -1021,7 +1193,7 @@ getTrajectoryScreeningDf <- function(object,
 #' @description Computes and returns the length of a trajectory.
 #'
 #' @inherit argument_dummy params
-#' @inherit getTrajectoryScreeningDf params
+#' @inherit getTrajectoryDf params
 #' @inherit as_unit params return
 #' @inherit is_dist details
 #' @export
@@ -1107,3 +1279,44 @@ getUmapDf <- function(object, of_sample = NA){
               method_dr = "umap")
 
 }
+
+
+
+
+# getV --------------------------------------------------------------------
+
+
+
+#' @title Obtain variable names
+#'
+#' @description Extracts a character vector of variable names that are currently
+#' known to the `spata2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#' @export
+getVariableNames <- function(object){
+
+  cnames <- getCoordsDf(object) %>% base::colnames()
+
+  gnames <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = base::rownames
+    ) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+  fnames <- getFeatureDf(object) %>% base::colnames()
+
+  gsnames <- getGeneSets(object)
+
+  out <- base::unique(c(cnames, gnames, gsnames, fnames), protected_variable_names)
+
+  return(out)
+
+}
+
+
+

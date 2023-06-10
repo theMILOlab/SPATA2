@@ -17,6 +17,7 @@
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
 \alias{validPlotTypes}
+\alias{validPubExamples}
 \alias{validSpatialMethods}
 \alias{validTrajectoryTrends}
 \alias{validUnits}
@@ -33,9 +34,9 @@ validAgglomerationMethods()
 
 validAlluvialTypes()
 
-validColorPalettes()
+validColorPalettes(flatten = FALSE)
 
-validColorSpectra()
+validColorSpectra(flatten = FALSE)
 
 validDeAnalysisMethods()
 
@@ -58,6 +59,8 @@ validPatternRecognitionMethods()
 validPadjMethods()
 
 validPlotTypes(fn_name)
+
+validPubExamples()
 
 validSpatialMethods()
 

@@ -14,3 +14,4 @@ description use \code{validPlotTypess()} to obtain all valid input options.}
 \description{
 plot_type
 }
+\keyword{internal}

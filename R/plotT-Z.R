@@ -3,7 +3,6 @@
 
 # plotT -------------------------------------------------------------------
 
-
 #' @title Plot categorical trajectory dynamics
 #'
 #' @description Displays discrete variables along a trajectory.
@@ -15,22 +14,28 @@
 #' @param display_trajectory_parts Logical. If set to TRUE the returned plot
 #' visualizes the parts in which the trajectory has been partitioned while beeing
 #' drawn.
-#' @inherit argument_dummy params
 #' @param ... Additional arguments given to \code{ggplot2::facet_wrap()}.
 #'
-#' @inherit ggplot_family return
+#' @inherit argument_dummy params
+#' @inherit plotIasLineplot params
+#' @inherit ggplot_dummy return
+#'
 #' @export
 plotTrajectoryBarplot <- function(object,
                                   id,
                                   grouping_variable,
                                   binwidth = getCCD(object),
+                                  unit = getSpatialMethod(object)@unit,
+                                  round = 2,
                                   clrp = NULL,
                                   clrp_adjust = NULL,
                                   display_trajectory_parts = NULL,
                                   position = "fill",
                                   scales = "free_x",
+                                  x_nth = 7L,
+                                  expand_x = c(0.025, 0),
+                                  expand_y = c(0.0125, 0),
                                   verbose = NULL,
-                                  of_sample = NA,
                                   ...){
 
   deprecated(...)
@@ -38,11 +43,13 @@ plotTrajectoryBarplot <- function(object,
   # 1. Control --------------------------------------------------------------
 
   hlpr_assign_arguments(object)
-  check_trajectory_binwidth(binwidth)
 
-  of_sample <- check_sample(object, of_sample = of_sample, 1)
+  confuns::check_one_of(
+    input = grouping_variable,
+    against = getFeatureNames(object)
+  )
 
-  grouping_variable <- check_features(object, grouping_variable, valid_classes = c("character", "factor"), 1)
+  binwidth <- as_pixel(input = binwidth, object = object)[1]
 
   # -----
 
@@ -51,7 +58,14 @@ plotTrajectoryBarplot <- function(object,
 
   tobj <- getTrajectory(object, id = id)
 
-  joined_df <- joinWith(object, spata_df = tobj@projection,  features = grouping_variable)
+  joined_df <-
+    joinWith(
+      object = object,
+      spata_df = tobj@projection,
+      features = grouping_variable
+    )
+
+  binwidth <- as_pixel(input = binwidth, objet = object)
 
   plot_df <-
     dplyr::mutate(
@@ -60,9 +74,21 @@ plotTrajectoryBarplot <- function(object,
       trajectory_order = stringr::str_c(trajectory_part, proj_length_binned, sep = "_")
     )
 
-  plot_df$trajectory_order <-
-    plot_df$trajectory_order %>%
-    base::factor(levels = base::unique(plot_df$trajectory_order))
+  plot_df[["breaks"]] <-
+    base::factor(
+      x = plot_df[["trajectory_order"]],
+      levels = base::unique(plot_df[["trajectory_order"]])
+    )
+
+  breaks <-
+    base::unique(plot_df[["breaks"]]) %>%
+    reduce_vec(x = ., nth = x_nth)
+
+  labels <-
+    base::unique(plot_df[["proj_length_binned"]] + (binwidth/2)) %>%
+    as_unit(input = ., unit = unit, object = object) %>%
+    base::round(x = ., digits = round) %>%
+    reduce_vec(x = ., nth = x_nth)
 
   if(base::isTRUE(display_trajectory_parts)){
 
@@ -79,19 +105,35 @@ plotTrajectoryBarplot <- function(object,
 
   ggplot2::ggplot(data = plot_df) +
     ggplot2::geom_bar(
-      mapping = ggplot2::aes(x = trajectory_order, fill = .data[[grouping_variable]]),
+      mapping = ggplot2::aes(x = breaks, fill = .data[[grouping_variable]]),
       position = position,
-      width = 0.9) +
-    confuns::scale_color_add_on(aes = "fill", variable = plot_df[[grouping_variable]], clrp = clrp, clrp.adjust = clrp_adjust) +
+      width = 0.9
+    ) +
     facet_add_on +
+    ggplot2::scale_x_discrete(
+      breaks = breaks,
+      labels = labels,
+      expand = expand_x
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = c(0, 0.25, 0.5, 0.75, 1),
+      labels = stringr::str_c(c(0, 25, 50, 75, 100), "%"),
+      expand = expand_y
+    ) +
+    confuns::scale_color_add_on(
+      aes = "fill",
+      variable = plot_df[[grouping_variable]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
-      axis.text = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.1, "inches"))),
+      axis.ticks = ggplot2::element_line(),
+      axis.line.x = trajectory.line.x,
+      axis.line.y = ggplot2::element_line(),
       panel.grid = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = "Trajectory Direction", y = NULL)
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL)
 
 }
 
@@ -104,6 +146,7 @@ plotTrajectoryBarplot <- function(object,
 #' @inherit imageAnnotationScreening params
 #' @inherit plotScatterplot params
 #' @inherit argument_dummy params
+#' @inherit plot_screening_evaluation
 #' @param display_corr Logical. If TRUE, correlation values are added to the plots.
 #' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
 #' @param corr_pos_x,corr_pos_y Numeric vector of length two. The position of
@@ -135,12 +178,15 @@ plotTrajectoryEvaluation <- function(object,
                                      corr_pos_y = NULL,
                                      corr_text_sep = "\n",
                                      corr_text_size = 1,
+                                     force_grid = FALSE,
+                                     ncol = NULL,
+                                     nrow = NULL,
                                      verbose = NULL){
 
   hlpr_assign_arguments(object)
 
   sts_df <-
-    getTrajectoryScreeningDf(
+    getStsDf(
       object = object,
       id = id,
       variables = variables,
@@ -167,6 +213,9 @@ plotTrajectoryEvaluation <- function(object,
     corr_pos_y = corr_pos_y,
     corr_text_sep = corr_text_sep,
     corr_text_size = corr_text_size,
+    ncol = ncol,
+    nrow = nrow,
+    force_grid = force_grid,
     verbose = verbose
   )
 
@@ -290,7 +339,7 @@ plotTrajectoryHeatmap <- function(object,
       variables = variables,
       method_gs = method_gs
     ) %>%
-    summarize_projection_df(binwidth = binwidth, n_bins = n_bins, summarize_with = summarize_with) %>%
+    summarize_projection_df(binwidth = as_pixel(binwidth, object = object), n_bins = n_bins, summarize_with = summarize_with) %>%
     normalize_smrd_projection_df() %>%
     shift_smrd_projection_df(trajectory_part, trajectory_order)
 
@@ -550,10 +599,10 @@ plotTrajectoryHeatmap <- function(object,
 
 
 
-#' @title Plot continuous trajectory dynamics in lineplots
+#' @title Plot continuous trajectory dynamics
 #'
 #' @description Displays values along a trajectory direction with
-#' a smoothed lineplot.
+#' a smoothed lineplot or ridgeplot.
 #'
 #' @inherit argument_dummy params
 #' @inherit average_genes params
@@ -572,12 +621,14 @@ plotTrajectoryHeatmap <- function(object,
 #' or feature are displayed via \code{ggplot2::facet_wrap()}
 #' @param ... Additional arguments given to \code{ggplot2::facet_wrap()} if argument
 #' \code{display_facets} is set to TRUE.
-#' @param linesize Numeric value. Specifies the thicknes of the lines with which
+#' @param line_size Numeric value. Specifies the thicknes of the lines with which
 #' the trajectory dynamics are displayed.
 #' @param vlinesize,vlinecolor Adjusts size and color of vertical lines that
 #' display the trajectory parts.
 #' @param vlinetype Adjusts the type of the vertical lines that display the trajectory
 #' parts.
+#'
+#' @inherit ggpLayerLineplotAid params
 #'
 #' @inherit ggplot_family return
 #'
@@ -587,19 +638,28 @@ plotTrajectoryLineplot <- function(object,
                                    variables,
                                    binwidth = getCCD(object),
                                    n_bins = NA_integer_,
+                                   unit = getSpatialMethod(object)@unit,
+                                   round = 2,
                                    method_gs = NULL,
-                                   smooth_method = NULL,
-                                   smooth_span = NULL,
-                                   smooth_se = NULL,
+                                   smooth_method = "loess",
+                                   smooth_span = 0.2,
+                                   smooth_se = TRUE,
                                    clrp = NULL,
                                    clrp_adjust = NULL,
                                    display_trajectory_parts = NULL,
                                    display_facets = NULL,
-                                   linesize = 1.5,
+                                   line_color = NULL,
+                                   line_size = 1.5,
                                    vlinecolor = "grey",
                                    vlinesize = 1,
                                    vlinetype = "dashed",
+                                   x_nth = 7L,
+                                   xi = (getTrajectoryLength(object, id)/2),
+                                   yi = 0.5,
                                    summarize_with = "mean",
+                                   ncol = NULL,
+                                   nrow = NULL,
+                                   display_model = NULL,
                                    verbose = NULL,
                                    ...){
 
@@ -617,16 +677,34 @@ plotTrajectoryLineplot <- function(object,
 
   # 2. Data wrangling -------------------------------------------------------
 
+  if(base::is.numeric(n_bins) & !base::is.na(n_bins)){
+
+    binwidth <- getTrajectoryLength(object, id = id, unit = "px")/n_bins
+
+  } else {
+
+    binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+
+  }
+
+  vars <- base::unique(variables)
+
   result_df <-
-    getTrajectoryScreeningDf(
+    getStsDf(
       object = object,
       id = id,
-      variables = variables,
+      variables = vars,
       method_gs = method_gs,
       n_bins = n_bins,
       binwidth = binwidth,
       summarize_with = summarize_with,
-      format = "long"
+      format = "long",
+      verbose = verbose
+    ) %>%
+    dplyr::mutate(
+      breaks = (trajectory_order - 1) * binwidth,
+      breaks_dist = as_unit(input = breaks, unit = unit, object = object),
+      variables = base::factor(variables, levels = vars)
     )
 
   if(base::isTRUE(display_trajectory_parts)){
@@ -657,7 +735,7 @@ plotTrajectoryLineplot <- function(object,
 
     facet_add_on <-
       list(
-        ggplot2::facet_wrap(facets = . ~ variables, ...),
+        ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow),
         ggplot2::theme(strip.background = ggplot2::element_blank(), legend.position = "none")
       )
 
@@ -669,27 +747,69 @@ plotTrajectoryLineplot <- function(object,
 
   # -----
 
+  breaks <- reduce_vec(x = base::unique(result_df[["breaks"]]), nth = x_nth)
+
+  labels <-
+    reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth) %>%
+    base::round(digits = round)
+
+  if(base::is.character(line_color)){
+
+    clrp_adjust <-
+      base::rep(line_color[1], base::length(vars)) %>%
+      purrr::set_names(nm = vars)
+
+    color_add_on <-
+      confuns::scale_color_add_on(
+        variable = result_df$variables,
+        clrp = clrp,
+        clrp.adjust = clrp_adjust,
+        guide = "none"
+        )
+
+  } else {
+
+    color_add_on <-
+      confuns::scale_color_add_on(
+        variable = result_df$variables,
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
+        )
+
+  }
+
+  if(base::is.character(display_model)){
+
+    mdf <-
+      create_model_df(
+        input = dplyr::n_distinct(result_df[["breaks"]]),
+        model_sub
+      )
+
+  }
+
+
   ggplot2::ggplot(
     data = result_df,
-    mapping = ggplot2::aes(x = trajectory_order, y = values, color = variables)
+    mapping = ggplot2::aes(x = breaks, y = values)
   ) +
+    ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi, ...) +
     trajectory_part_add_on +
-    ggplot2::geom_smooth(size = linesize, span = smooth_span, method = smooth_method, formula = y ~ x,
-                         se = smooth_se) +
-    confuns::scale_color_add_on(variable = result_df$variables, clrp = clrp, clrp.adjust = clrp_adjust) +
+    ggplot2::geom_smooth(
+      size = line_size,
+      span = smooth_span,
+      method = smooth_method,
+      se = smooth_se,
+      formula = y ~ x,
+      mapping = ggplot2::aes(color = variables)
+      ) +
+    color_add_on +
+    ggplot2::scale_x_continuous(breaks = breaks, labels = labels, expand = c(0, 0)) +
     ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.text.x = ggplot2::element_blank(),
-      axis.ticks.x = ggplot2::element_blank(),
-      axis.line.x = trajectory.line.x,
-      axis.line.y = ggplot2::element_line()
-    ) +
-    ggplot2::labs(x = "Trajectory Direction", y = NULL, color = "Variable") +
+    ggplot2::coord_cartesian(ylim = c(0,1)) +
+    theme_lineplot_gradient() +
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = "Inferred Expression", color = "Variable") +
     facet_add_on
-
-
-
 
 }
 
@@ -719,85 +839,101 @@ plotTrajectoryLineplot <- function(object,
 #'
 plotTrajectoryLineplotFitted <- function(object,
                                          id,
-                                         variable,
+                                         variables,
                                          binwidth = getCCD(object),
                                          n_bins = NA_integer_,
                                          model_subset = NULL,
                                          model_remove = NULL,
                                          model_add = NULL,
                                          method_gs = NULL,
-                                         smooth = FALSE,
-                                         smooth_span = 0.2,
+                                         smooth_span = 0,
                                          lineorder = c(1,2,3),
-                                         linesize = 1,
+                                         linesizes = c(1,1,1),
                                          linecolors = c("forestgreen", "blue4", "red3"),
                                          linetypes = c("solid", "solid", "dotted"),
-                                         display_residuals = NULL,
+                                         display_residuals = TRUE,
                                          area_alpha = 0.25,
+                                         display_points = TRUE,
+                                         pt_alpha = 0.9,
+                                         pt_size = 1.5,
                                          nrow = NULL,
                                          ncol = NULL,
-                                         verbose = NULL){
+                                         force_grid = FALSE,
+                                         verbose = NULL,
+                                         ...){
 
-  stdf <-
-    getTrajectoryScreeningDf(
-      object = object,
-      id = id,
-      variables = variable,
-      method_gs = method_gs,
-      n_bins = n_bins,
-      binwidth = binwidth,
-      normalize = TRUE ,
-      verbose = FALSE,
-      format = "long"
-    ) %>%
-    dplyr::select(-dplyr::any_of("trajectory_part"))
+  hlpr_assign_arguments(object)
 
+  lv <- base::length(variables)
 
-  plot_df <-
-    add_models(
-      input_df = stdf,
-      var_order = "trajectory_order",
-      model_subset = model_subset,
-      model_remove = model_remove,
-      model_add = model_add
-    ) %>%
-    shift_for_plotting(var_order = "trajectory_order") %>%
-    dplyr::mutate(
-      origin = base::factor(origin, levels = c("Models", "Residuals", variable)[lineorder]),
-      models = base::factor(models)
-    )
+  if(lv > 1){
 
+    variable <- "Variables"
 
-  if(base::isTRUE(smooth)){
+  } else if(lv == 1) {
 
-    model_df <- dplyr::filter(plot_df, origin == "Models")
-
-    value_df <- dplyr::filter(plot_df, origin != "Models")
-
-    value_df <-
-      dplyr::group_by(value_df, models, origin) %>%
-      dplyr::mutate(
-        values = {
-          stats::loess(formula = values ~ trajectory_order, span = smooth_span) %>%
-            stats::predict(object = .) %>%
-            confuns::normalize()
-        }
-      )
-
-    plot_df <- base::rbind(model_df, value_df)
-
+    variable <- variables
 
   }
 
+
+  plot_df <-
+    purrr::map_df(
+      .x = variables,
+      .f = function(v){
+
+        stdf <-
+          getStsDf(
+            object = object,
+            id = id,
+            variables = v,
+            method_gs = method_gs,
+            n_bins = n_bins,
+            binwidth = binwidth,
+            normalize = TRUE ,
+            verbose = FALSE,
+            format = "long",
+            smooth_span = smooth_span
+          ) %>%
+          dplyr::select(-dplyr::any_of("trajectory_part"))
+
+        out_df <-
+          add_models(
+            input_df = stdf,
+            var_order = "trajectory_order",
+            model_subset = model_subset,
+            model_remove = model_remove,
+            model_add = model_add,
+            verbose = FALSE
+          ) %>%
+          shift_for_plotting(var_order = "trajectory_order") %>%
+          dplyr::mutate(
+            origin = stringr::str_replace_all(string = origin, pattern = v, replacement = "Variables"),
+            origin = base::factor(origin, levels = c("Models", "Residuals", "Variables")[lineorder]),
+            models = base::factor(models),
+            variables = {{v}}
+          )
+
+        return(out_df)
+
+      }
+    )
+
   if(!confuns::is_named(linecolors)){
 
-    linecolors <- purrr::set_names(x = linecolors, nm = c(variable, "Models", "Residuals"))
+    linecolors <- purrr::set_names(x = linecolors[1:3], nm = c("Variables", "Models", "Residuals"))
+
+  }
+
+  if(!confuns::is_named(linesizes)){
+
+    linesizes <- purrr::set_names(x = linesizes[1:3], nm = c("Variables", "Models", "Residuals"))
 
   }
 
   if(!confuns::is_named(linetypes)){
 
-    linetypes <- purrr::set_names(x = linetypes, nm = c(variable, "Models", "Residuals"))
+    linetypes <- purrr::set_names(x = linetypes[1:3], nm = c("Variables", "Models", "Residuals"))
 
   }
 
@@ -821,31 +957,292 @@ plotTrajectoryLineplotFitted <- function(object,
 
   }
 
+  if(base::length(variables) > 1 | base::isTRUE(force_grid)){
+
+    facet_add_on <-
+      ggplot2::facet_grid(
+        rows = ggplot2::vars(variables),
+        cols = ggplot2::vars(models),
+        ...
+      )
+
+  } else {
+
+    facet_add_on <-
+      ggplot2::facet_wrap(
+        facets = . ~ models,
+        nrow = nrow,
+        ncol = ncol,
+        ...
+      )
+
+  }
+
+  if(base::is.na(n_bins)){
+
+    binwidth <- stringr::str_c(extract_value(binwidth), extract_unit(binwidth))
+
+  } else {
+
+    binwidth <-
+      (getTrajectoryLength(object, id = id, unit = "px") / n_bins) %>%
+      as_unit(input = ., unit = extract_unit(getCCD(object)), object = object)
+
+  }
+
+  if(base::isTRUE(display_points)){
+
+    point_add_on <-
+      ggplot2::geom_point(
+        mapping = ggplot2::aes(color = origin),
+        size = pt_size,
+        alpha = pt_alpha
+      )
+
+  } else {
+
+    point_add_on <- NULL
+
+  }
+
+
   ggplot2::ggplot(
     data = plot_df,
     mapping = ggplot2::aes(x = trajectory_order, y = values)
   ) +
     area_add_on +
     ggplot2::geom_line(
-      mapping = ggplot2::aes(linetype = origin, color = origin),
-      size = linesize
+      mapping = ggplot2::aes(linetype = origin, color = origin, size = origin)
     ) +
-    ggplot2::facet_wrap(facets = . ~ models, nrow = nrow, ncol = ncol) +
+    point_add_on +
+    facet_add_on +
     scale_color_add_on(
       variable = plot_df[["origin"]],
       clrp = "milo",
       clrp.adjust = linecolors
     ) +
-    ggplot2::scale_linetype_manual(values = linetypes) +
+    ggplot2::scale_size_manual(values = linesizes, guide = "none") +
+    ggplot2::scale_linetype_manual(values = linetypes, guide = "none") +
     ggplot2::theme_classic() +
-    ggplot2::labs(x = "Trajectory Direction", y = NULL) +
-    theme_trajectory_fit()
-
-
+    ggplot2::labs(
+      x = glue::glue("Trajectory Bins ({binwidth})"),
+      y = "Inferred Expression"
+    ) +
+    ggplot2::theme_bw()
 
 }
 
 
+
+#' @rdname plotTrajectoryLineplot
+#' @export
+plotTrajectoryRidgeplot <- function(object,
+                                    id,
+                                    variables,
+                                    binwidth = getCCD(object),
+                                    n_bins = NA_integer_,
+                                    unit = getSpatialMethod(object)@unit,
+                                    round = 2,
+                                    method_gs = NULL,
+                                    smooth_method = "loess",
+                                    smooth_span = 0.2,
+                                    smooth_se = TRUE,
+                                    clrp = NULL,
+                                    clrp_adjust = NULL,
+                                    display_trajectory_parts = NULL,
+                                    alpha = 0.9,
+                                    fill = NULL,
+                                    line_color = "black",
+                                    line_size = 1.5,
+                                    vlinecolor = "grey",
+                                    vlinesize = 1,
+                                    vlinetype = "dashed",
+                                    x_nth = 7L,
+                                    xi = NULL,
+                                    yi = NULL,
+                                    expand_x = c(0,0),
+                                    summarize_with = "mean",
+                                    ncol = 1,
+                                    nrow = NULL,
+                                    overlap = 0.5,
+                                    strip_pos = "right",
+                                    display_model = NULL,
+                                    verbose = NULL,
+                                    ...){
+
+  deprecated(...)
+
+  # 1. Control --------------------------------------------------------------
+
+  hlpr_assign_arguments(object)
+  check_smooth(smooth_span = smooth_span, smooth_method = smooth_method, smooth_se = smooth_se)
+  check_method(method_gs = method_gs)
+
+  confuns::is_value(clrp, "character", "clrp")
+
+  # -----
+
+  # 2. Data wrangling -------------------------------------------------------
+
+  if(base::is.numeric(n_bins) & !base::is.na(n_bins)){
+
+    binwidth <- getTrajectoryLength(object, id = id, unit = "px")/n_bins
+
+  } else {
+
+    binwidth <- as_pixel(input = binwidth, object = object, add_attr = FALSE)
+
+  }
+
+
+  vars <- base::unique(variables)
+
+  result_df <-
+    getStsDf(
+      object = object,
+      id = id,
+      variables = variables,
+      method_gs = method_gs,
+      n_bins = n_bins,
+      binwidth = binwidth,
+      summarize_with = summarize_with,
+      format = "long",
+      verbose = verbose
+    ) %>%
+    dplyr::mutate(
+      breaks = (trajectory_order - 1) * binwidth,
+      breaks_dist = as_unit(input = breaks, unit = unit, object = object),
+      variables = base::factor(variables, levels = vars)
+    )
+
+  if(base::isTRUE(display_trajectory_parts)){
+
+    vline_df <-
+      result_df %>%
+      dplyr::group_by(trajectory_part) %>%
+      dplyr::filter(
+        trajectory_order %in% c(base::min(trajectory_order), base::max(trajectory_order)) &
+          trajectory_part_order == 1 &
+          trajectory_order != 1
+      )
+
+    trajectory_part_add_on <- list(
+      ggplot2::geom_vline(
+        data = vline_df,
+        mapping = ggplot2::aes(xintercept = trajectory_order),
+        size = vlinesize, color = vlinecolor, linetype = vlinetype
+      )
+    )
+
+  } else {
+
+    trajectory_part_add_on <- NULL
+  }
+
+  facet_add_on <-
+    ggplot2::facet_wrap(
+      facets = . ~ variables,
+      ncol = ncol,
+      nrow = nrow,
+      strip.position = strip_pos
+    )
+
+  # -----
+
+  breaks <- reduce_vec(x = base::unique(result_df[["breaks"]]), nth = x_nth)
+
+  labels <-
+    reduce_vec(x = base::unique(result_df[["breaks_dist"]]), nth = x_nth) %>%
+    base::round(digits = round)
+
+  if(base::is.character(fill)){
+
+    cpa_new <-
+      base::rep(fill, base::length(variables)) %>%
+      purrr::set_names(nm = variables)
+
+    cpa_new <- cpa_new[!base::names(cpa_new) %in% base::names(clrp_adjust)]
+
+    clrp_adjust <- c(clrp_adjust, cpa_new)
+
+  } else {
+
+    clrp_adjust <-
+      confuns::color_vector(
+        clrp = clrp,
+        names = variables,
+        clrp.adjust = clrp_adjust
+      )
+
+  }
+
+  if(base::is.character(display_model)){
+
+    mdf <-
+      create_model_df(
+        input = dplyr::n_distinct(result_df[["breaks"]]),
+        model_sub
+      )
+
+  }
+
+  # create line
+  if(smooth_span == 0){
+
+    stop("`smooth_span` must not be zero in plotIasRidgeplot().")
+
+  } else {
+
+    line_add_on <-
+      ggplot2::geom_smooth(
+        data = result_df,
+        mapping = ggplot2::aes(x = breaks, y = values),
+        color = line_color,
+        size = line_size,
+        span = smooth_span,
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE
+      )
+
+    linefill_add_on <-
+      ggplot2::stat_smooth(
+        data = result_df,
+        mapping = ggplot2::aes(x = breaks, y = values, fill = variables),
+        geom = "area",
+        alpha = alpha,
+        size = 0,
+        span = smooth_span,
+        method = "loess",
+        formula = y ~ x,
+        se = FALSE
+      )
+
+  }
+
+  ggplot2::ggplot(
+    data = result_df,
+    mapping = ggplot2::aes(x = breaks, y = values)
+  ) +
+    ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi) +
+    trajectory_part_add_on +
+    line_add_on +
+    linefill_add_on +
+    ggplot2::scale_x_continuous(
+      breaks = breaks,
+      labels = labels,
+      expand = expand_x
+    ) +
+    ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2), labels = base::seq(0 , 1, 0.2)) +
+    ggplot2::coord_cartesian(ylim = c(0,1)) +
+    ggplot2::theme_classic() +
+    theme_ridgeplot_gradient() +
+    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = "Inferred Expression", color = "Variable") +
+    facet_add_on +
+    ggplot2::scale_fill_manual(values = clrp_adjust, name = "Variables")
+
+
+}
 
 #' @rdname plotUmap
 #' @export
@@ -908,7 +1305,7 @@ plotTsne <- function(object,
 #' @export
 plotTsneComparison <- function(object,
                                color_by,
-                               add_ons = list(),
+                               ggpLayers = list(),
                                display_title = FALSE,
                                nrow = NULL,
                                ncol = NULL,
@@ -923,7 +1320,7 @@ plotTsneComparison <- function(object,
 
       out <-
         plotTsne(object, color_by = cb, ...) +
-        add_ons
+        ggpLayers
 
       if(base::isTRUE(display_title)){
 
@@ -940,7 +1337,7 @@ plotTsneComparison <- function(object,
 
     }
   ) %>%
-    gridExtra::grid.arrange(grobs = ., nrow = nrow, ncol = ncol)
+    patchwork::wrap_plots()
 
 }
 
@@ -954,7 +1351,7 @@ plotTsneComparison <- function(object,
 #' @description Displays the dimensional reduction and maps gene, gene-set
 #' or feature information onto the color-aesthetic.
 #'
-#' @param add_ons A list of ggplot add ons to add to each plot.
+#' @param ggpLayers A list of ggplot add ons to add to each plot.
 #' @inherit argument_dummy
 #' @inherit check_color_to params
 #' @inherit check_method params
@@ -1035,7 +1432,7 @@ plotUmap <- function(object,
 #' @export
 plotUmapComparison <- function(object,
                                color_by,
-                               add_ons = list(),
+                               ggpLayers = list(),
                                display_title = FALSE,
                                nrow = NULL,
                                ncol = NULL,
@@ -1043,34 +1440,31 @@ plotUmapComparison <- function(object,
 
   hlpr_assign_arguments(object)
 
-  grid_of_plots <-
-    purrr::map(
-      .x = color_by,
-      ...,
-      .f = function(cb, ...){
+  purrr::map(
+    .x = color_by,
+    ...,
+    .f = function(cb, ...){
+
+      out <-
+        plotUmap(object, color_by = cb, ..., verbose = FALSE) +
+        ggpLayers
+
+      if(base::isTRUE(display_title)){
 
         out <-
-          plotUmap(object, color_by = cb, ...) +
-          add_ons
-
-        if(base::isTRUE(display_title)){
-
-          out <-
-            out +
-            list(
-              ggplot2::labs(title = cb),
-              ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-            )
-
-        }
-
-        return(out)
+          out +
+          list(
+            ggplot2::labs(title = cb),
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+          )
 
       }
-    ) %>%
-    gridExtra::grid.arrange(grobs = ., nrow = nrow, ncol = ncol)
 
-  plot(grid_of_plots)
+      return(out)
+
+    }
+  ) %>%
+    patchwork::wrap_plots()
 
 }
 
@@ -1415,7 +1809,6 @@ setMethod(
           alpha = label_alpha,
           color = label_color,
           size = label_size,
-
           ...
         )
 

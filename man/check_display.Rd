@@ -15,3 +15,4 @@ is displayed underneath the plot.}
 \description{
 Check display input
 }
+\keyword{internal}

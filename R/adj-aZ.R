@@ -20,49 +20,10 @@
 #' @param ... Named arguments whoose default input you want to override.
 #'
 #' @return An updated spata object.
-#' @export
 #'
-#' @examples
+#' @keywords internal
 #'
-#'  # Not run
-#'
-#'  object <- adjustDefaultInstructions(object, pt_size = 4, smooth = FALSE)
 
-adjustDefaultInstructions <- function(object, ...){
-
-  named_list <-
-    confuns::keep_named(input = list(...))
-
-  names_args <- base::names(named_list)
-
-  valid_arg_names <-
-    confuns::check_vector(
-      input = names_args,
-      against = validDefaultInstructionSlots(),
-      fdb.fn = "warning",
-      ref.input = "the named input",
-      ref.against = "valid instruction slots. run validDefaultInstructionSlots() to obtain all valid input options"
-    )
-
-  valid_list <- named_list[valid_arg_names]
-
-  dflt_instr <- getDefaultInstructions(object)
-
-  for(nm in valid_arg_names){
-
-    methods::slot(dflt_instr, name = nm) <- valid_list[[nm]]
-
-  }
-
-  object@information$instructions$default <- dflt_instr
-
-  return(object)
-
-}
-
-
-#' @rdname adjustDefaultInstructions
-#' @export
 adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_wd = FALSE){
 
   check_object(object)
@@ -126,8 +87,7 @@ adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_
 #' is removed since the percentage of genes of which the given expression matrix
 #' contains information about is only 50.
 #'
-#' @export
-
+#' @keywords internal
 adjustGeneSetDf <- function(object, limit = 50){
 
   # 1. Control --------------------------------------------------------------
@@ -182,7 +142,7 @@ adjustGeneSetDf <- function(object, limit = 50){
 }
 
 
-#' @export
+#' @keywords internal
 adjustGseaDf <- function(df,
                          signif_var,
                          signif_threshold,
@@ -334,6 +294,443 @@ adjustGseaDf <- function(df,
 
 
 
+# align -------------------------------------------------------------------
+
+#' @title Align image annotation
+#'
+#' @description Aligns an image annotation with the current image justification.
+#'
+#' @param img_ann An object of class `ImageAnnotation`.
+#' @param image_object An object of class `HistologyImaging` to which the image
+#' annotation is aligned.
+#'
+#' @details Information of the current justification of the image annotation
+#' is stored in slot @@info. This function aligns justification regarding
+#' horizontal and vertical flipping, scaling and rotation.
+#'
+#' @seealso Read documentation on `?ImageAnnotation` and `?HistologyImaging`
+#' for more information.
+#'
+#' @return Aligned input for `img_ann`.
+#' @export
+#'
+alignImageAnnotation <- function(img_ann, image_object){
+
+  io <- image_object
+
+  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
+
+  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
+
+  # scale
+  dim_spat_traj <- img_ann@info$current_dim[1:2]
+
+  scale_fct <- base::mean(dim_stored/dim_spat_traj)
+
+  if(base::length(scale_fct) != 1){
+
+    stop("Parent image of image annotation and current image of `SPATA2` object do not have the same axes ratio.")
+
+  }
+
+  if(scale_fct != 1){
+
+    img_ann@area <-
+      purrr::map(
+        .x = img_ann@area,
+        .f = ~ scale_coords_df(df = .x, scale_fct = scale_fct, verbose = FALSE)
+      )
+
+  }
+
+  img_ann@info$current_dim <- dim_stored
+
+
+  # flip horizontal
+  img_ann_flipped_h <- img_ann@info$current_just$flipped$horizontal
+  image_flipped_h <- io@justification$flipped$horizontal
+
+  if(img_ann_flipped_h != image_flipped_h){
+
+    img_ann@area <-
+      purrr::map(
+        .x = img_ann@area,
+        .f = ~ flip_coords_df(df = .x, axis = "horizontal", ranges = ranges, verbose = FALSE)
+      )
+
+    img_ann@info$current_just$flipped$horizontal <- image_flipped_h
+
+  }
+
+  # flip vertical
+  img_ann_flipped_v <- img_ann@info$current_just$flipped$vertical
+  image_flipped_v <- io@justification$flipped$vertical
+
+  if(img_ann_flipped_v != image_flipped_v){
+
+    img_ann@area <-
+      purrr::map(
+        .x = img_ann@area,
+        .f = ~ flip_coords_df(df = .x, axis = "vertical", ranges = ranges, verbose = FALSE)
+      )
+
+    img_ann@info$current_just$flipped$vertical <- image_flipped_v
+
+  }
+
+  # rotate
+  img_ann_angle <- img_ann@info$current_just$angle
+  image_angle <- io@justification$angle
+
+  angle_just <- image_angle - img_ann_angle
+
+  if(angle_just != 0){
+
+    if(image_angle < img_ann_angle){
+
+      img_ann@area <-
+        purrr::map(
+          .x = img_ann@area,
+          .f = ~
+            rotate_coords_df(
+              df = .x,
+              angle = angle_just,
+              ranges = ranges,
+              clockwise = FALSE,  # rotate dif. backwards
+              verbose = FALSE
+            )
+        )
+
+
+    } else if(image_angle > img_ann_angle) {
+
+      img_ann@area <-
+        purrr::map(
+          .x = img_ann@area,
+          .f = ~
+            rotate_coords_df(
+              df = .x,
+              angle = angle_just,
+              ranges = ranges,
+              clockwise = TRUE, # roate diff. forwards
+              verbose = FALSE
+            )
+        )
+
+    }
+
+    img_ann@info$current_just$angle <- image_angle
+
+  }
+
+  return(img_ann)
+
+}
+
+
+#' @rdname alignImageAnnotation
+#' @export
+
+alignSpatialTrajectory <- function(spat_traj, image_object){
+
+  io <- image_object
+
+  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
+
+  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
+
+  # scale
+  dim_spat_traj <- spat_traj@info$current_dim[1:2]
+
+  scale_fct <- base::mean(dim_stored/dim_spat_traj)
+
+  if(base::length(scale_fct) != 1){
+
+    stop("Parent image of spatial trajectory and current image of `SPATA2` object do not have the same axes ratio.")
+
+  }
+
+  if(scale_fct != 1){
+
+    spat_traj@projection <-
+      scale_coords_df(
+        df = spat_traj@projection,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+    spat_traj@projection[["projection_length"]] <-
+      spat_traj@projection[["projection_length"]] * scale_fct[1]
+
+    spat_traj@segment <-
+      scale_coords_df(
+        df = spat_traj@segment,
+        scale_fct = scale_fct,
+        verbose = FALSE
+      )
+
+    spat_traj@width <- spat_traj@width * scale_fct[1]
+
+  }
+
+  spat_traj@info$current_dim <- dim_stored
+
+  # flip horizontal
+  spat_traj_flipped_h <- spat_traj@info$current_just$flipped$horizontal
+  image_flipped_h <- io@justification$flipped$horizontal
+
+  if(spat_traj_flipped_h != image_flipped_h){
+
+    spat_traj@projection <-
+      flip_coords_df(
+        df = spat_traj@projection,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      flip_coords_df(
+        df = spat_traj@segment,
+        axis = "horizontal",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@info$current_just$flipped$horizontal <- image_flipped_h
+
+  }
+
+  # flip vertical
+  spat_traj_flipped_v <- spat_traj@info$current_just$flipped$vertical
+  image_flipped_v <- io@justification$flipped$vertical
+
+  if(spat_traj_flipped_v != image_flipped_v){
+
+    spat_traj@projection <-
+      flip_coords_df(
+        df = spat_traj@projection,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@segment <-
+      flip_coords_df(
+        df = spat_traj@segment,
+        axis = "vertical",
+        ranges = ranges,
+        verbose = FALSE
+      )
+
+    spat_traj@info$current_just$flipped$vertical <- image_flipped_v
+
+  }
+
+  # rotate
+  spat_traj_angle <- spat_traj@info$current_just$angle
+  image_angle <- io@justification$angle
+
+  angle_just <- image_angle - spat_traj_angle
+
+  if(angle_just != 0){
+
+    if(image_angle < spat_traj_angle){
+
+      spat_traj@projection <-
+        rotate_coords_df(
+          df = spat_traj@projection,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+      spat_traj@segment <-
+        rotate_coords_df(
+          df = spat_traj@segment,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = FALSE,  # rotate dif. backwards
+          verbose = FALSE
+        )
+
+    } else if(image_angle > spat_traj_angle) {
+
+      spat_traj@projection <-
+        rotate_coords_df(
+          df = spat_traj@projection,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+      spat_traj@segment <-
+        rotate_coords_df(
+          df = spat_traj@segment,
+          angle = angle_just,
+          ranges = ranges,
+          clockwise = TRUE, # roate diff. forwards
+          verbose = FALSE
+        )
+
+    }
+
+    spat_traj@info$current_just$angle <- image_angle
+
+  }
+
+  return(spat_traj)
+
+}
+
+#' @title Obtain a all barcode-spots distances
+#'
+#' @param scale_fct If character, *'lowres'* or *'hires'*. If numeric,
+#' value of length one. Determines the factor with which *imagecol* and
+#' *imagerow* of the original visium coordinates are scaled to x- and
+#' y-coordinates.
+#'
+#' @return A data.frame with all possible barcode-spot pairs
+#' and their distance to each other.
+#'
+#' @export
+#'
+all_bcsp_distances <- function(scale_fct = "lowres"){
+
+  if(base::is.character(scale_fct)){
+
+    scale_fct <- scale_factors[[scale_fct]]
+
+  } else if(base::is.numeric(scale_fct)){
+
+    scale_fct <- scale_fct[1]
+
+  }
+
+  coords_df <-
+    dplyr::mutate(
+      .data = visium_coords,
+      x = imagecol * scale_fct,
+      y = imagerow * scale_fct
+    )
+
+  bc_origin <- coords_df$barcodes
+  bc_destination <- coords_df$barcodes
+
+  distance_df <-
+    tidyr::expand_grid(bc_origin, bc_destination) %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y), by = "bc_origin") %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y), by = "bc_destination") %>%
+    dplyr::mutate(distance = base::sqrt((xd - xo)^2 + (yd - yo)^2))
+
+  return(distance_df)
+
+}
+
+
+# append ------------------------------------------------------------------
+
+
+#' @title Append polygon df
+#'
+#' @description Appends df to list of polygon data.frames and names it
+#' accordingly in case of complex polygons.
+#'
+#' @param lst Polygon list the new polygon is appended to.
+#' @param plg New polygon data.frame.
+#' @keywords internal
+append_polygon_df <- function(lst,
+                              plg,
+                              allow_intersect = TRUE,
+                              in_outer = TRUE,
+                              ...){
+
+  ll <- base::length(lst)
+
+  if(ll == 0){
+
+    lst[["outer"]] <- plg
+
+  } else {
+
+    if(base::isTRUE(in_outer)){
+
+      is_in_outer <- base::all(intersect_polygons(a = plg, b = lst[["outer"]]))
+
+      if(!is_in_outer){
+
+        confuns::give_feedback(
+          msg = "Can not add polygon. Must be located inside the outer border.",
+          fdb.fn = "stop",
+          ...
+        )
+
+      }
+
+    }
+
+
+    if(base::isFALSE(allow_intersect)){
+
+      plg_intersect <-
+        purrr::map_lgl(
+          .x = lst,
+          .f = ~ base::any(intersect_polygons(a = .x, b = plg, strictly = FALSE))
+        )
+
+      if(base::any(plg_intersect)){
+
+        confuns::give_feedback(
+          msg = "Can not add polygon. Additional polygons must not intersect.",
+          fdb.fn = "stop",
+          ...
+        )
+
+      }
+
+    }
+
+    if(base::length(lst) >= 2){
+
+      lies_inside_hole <-
+        purrr::map_lgl(
+          .x = lst[2:base::length(lst)],
+          # do all points of plg are located inside inner polygons/holes?
+          .f = ~ base::all(intersect_polygons(a = plg, b = .x, strictly = FALSE))
+        ) %>%
+        base::any()
+
+      if(base::isTRUE(lies_inside_hole)){
+
+        confuns::give_feedback(
+          msg = glue::glue("Can not add polygon. Must not be located in a hole."),
+          fdb.fn = "stop",
+          ...
+        )
+
+      }
+
+    }
+
+
+
+
+    lst[[stringr::str_c("inner", ll)]] <- plg
+
+  }
+
+  return(lst)
+
+}
+
+#' @keywords internal
+arrange_by_outline_variable <- function(...){
+
+  arrange_as_polygon(...)
+
+}
 
 
 # as_ ---------------------------------------------------------------------
@@ -387,7 +784,6 @@ as_micrometer2 <- function(input, ...){
 
 }
 
-
 #' @rdname as_unit
 #' @export
 as_millimeter <- function(input, ...){
@@ -435,7 +831,6 @@ as_nanometer2 <- function(input, ...){
   )
 
 }
-
 
 #' @rdname as_unit
 #' @export
@@ -769,7 +1164,6 @@ as_decimeter2 <- function(input, ...){
 }
 
 
-
 #' @rdname runAutoencoderAssessment
 #' @export
 assessAutoencoderOptions <- function(expr_mtr,
@@ -892,9 +1286,9 @@ assessAutoencoderOptions <- function(expr_mtr,
 
 
 
-#' @title Transform \code{SPATA2} to \code{Giotto}
+#' @title Transform `spata2` object to \code{Giotto}
 #'
-#' @description Transforms an \code{SPATA2} object to an object of class
+#' @description Transforms an `spata2` object object to an object of class
 #'  \code{Giotto}. See details for more information.
 #'
 #' @inherit asSPATA2 params
@@ -1007,14 +1401,14 @@ asGiotto <- function(object,
 
 }
 
-#' @title Convert to class \code{Visium}
+#' @title Convert to class \code{HistologyImage}
 #'
 #' @description Coverts objects of specific classes to objects
-#' of class \code{Visium}.
+#' of class \code{HistologyImage}.
 #'
 #' @param object Any object for which a method has been defined.
 #'
-#' @return An object of class \code{Visium}.
+#' @return An object of class \code{HistologyImage}.
 #' @export
 #'
 setGeneric(name = "asHistologyImage", def = function(object, ...){
@@ -1031,12 +1425,16 @@ setMethod(
   signature = "VisiumV1",
   definition = function(object, scale_with = "lowres"){
 
-    new_object <- HistologyImage()
-
     scale_fct <- object@scale.factors[[scale_with]]
 
-    new_object@coordinates <-
+    coordinates <-
       tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(x = c("row", "col", "imagerow", "imagecol")),
+          .fns = base::as.numeric
+        )
+      ) %>%
       dplyr::mutate(
         x = imagecol * scale_fct,
         y = imagerow * scale_fct
@@ -1044,20 +1442,26 @@ setMethod(
       dplyr::select(barcodes, x, y, dplyr::everything()) %>%
       tibble::as_tibble()
 
-    new_object@id <- object@key
-
-    new_object@image <-
+    image <-
       EBImage::Image(object@image, colormode = "Color") %>%
       EBImage::transpose() %>%
       EBImage::flip()
 
-    new_object@info$flipped <- FALSE
+    # transfer VisiumV1 meta data
+    misc <- list()
 
-    new_object@misc$origin <- "VisiumV1"
+    misc$origin <- "VisiumV1"
+    misc$scale.factors <- object@scale.factors
+    misc$assay <- object@assay
+    misc$spot.radius <- object@spot.radius
+    misc$key <- object@key
 
-    new_object@misc$scale.factors <- object@scale.factors
-    new_object@misc$assay <- object@assay
-    new_object@misc$spot.radius <- object@spot.radius
+    new_object <-
+      createHistologyImage(
+        image = image,
+        misc = misc,
+        coordinates = coordinates
+      )
 
     return(new_object)
 
@@ -1065,8 +1469,135 @@ setMethod(
 )
 
 
+#' @title Convert to class \code{HistologyImaging}
+#'
+#' @description Coverts objects of specific classes to objects
+#' of class \code{HistologyImaging}.
+#'
+#' @param object Any object for which a method has been defined.
+#'
+#' @return An object of class \code{HistologyImaging}.
+#' @export
+#'
+setGeneric(name = "asHistologyImaging", def = function(object, ...){
+
+  standardGeneric(f = "asHistologyImaging")
+
+})
 
 
+#' @rdname asHistologyImaging
+#' @export
+setMethod(
+  f = "asHistologyImaging",
+  signature = "VisiumV1",
+  definition = function(object, id, scale_with = "lowres", verbose = TRUE){
+
+    scale_fct <- object@scale.factors[[scale_with]]
+
+    coordinates <-
+      tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(x = c("row", "col", "imagerow", "imagecol")),
+          .fns = base::as.numeric
+        )
+      ) %>%
+      dplyr::mutate(
+        x = imagecol * scale_fct,
+        y = imagerow * scale_fct,
+        col = base::as.integer(col),
+        row = base::as.integer(row)
+      ) %>%
+      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
+      tibble::as_tibble()
+
+    image <-
+      EBImage::Image(object@image, colormode = "Color") %>%
+      EBImage::transpose()
+
+    img_dim <- base::dim(image)
+
+    coordinates <-
+      flip_coords_df(
+        df = coordinates,
+        axis = "h",
+        ranges = list(y = c(ymin = 0, ymax = img_dim[2])),
+        verbose = FALSE
+      )
+
+    # transfer VisiumV1 meta data
+    VisiumV1 <-
+      list(
+        origin = "VisiumV1",
+        scale.factors = object@scale.factors,
+        assay = object@assay,
+        spot.radius = object@spot.radius,
+        key = object@key
+      )
+
+    new_object <-
+      createHistologyImaging(
+        image = image,
+        id = id,
+        coordinates = coordinates,
+        verbose = verbose,
+        VisiumV1 = VisiumV1 # given to @misc$VisiumV1
+      )
+
+    new_object@image_info$origin <-
+      magrittr::set_attr("VisiumV1", which = "unit", value = "Seurat")
+
+    return(new_object)
+
+  }
+)
+
+#' @rdname asHistologyImaging
+#' @export
+setMethod(
+  f = "asHistologyImaging",
+  signature = "AnnDataR6",
+  definition = function(object,
+                        id,
+                        library_id,
+                        spatial_key = "spatial",
+                        scale_with = "lowres",
+                        verbose = verbose){
+
+    scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
+
+    coords <- as.data.frame(object$obsm[[spatial_key]])
+    rownames(coords) <- object$obs_names
+    colnames(coords) <- c("imagerow", "imagecol")
+    coordinates <-
+      tibble::rownames_to_column(coords, var = "barcodes") %>%
+      dplyr::mutate(
+        x = imagecol * scale_fct,
+        y = imagerow * scale_fct
+      ) %>%
+      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
+      tibble::as_tibble()
+
+    image <-
+      EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
+        colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
+      EBImage::transpose()
+
+    img_dim <- dim(image)
+
+    new_object <-
+      createHistologyImaging(
+        image = image,
+        id = id,
+        coordinates = coordinates,
+        verbose = verbose,
+      )
+
+    return(new_object)
+
+  }
+)
 
 # asM-asS -----------------------------------------------------------------
 
@@ -1239,7 +1770,7 @@ asSeurat <- function(object,
 #' @return An object of class `SingleCellExperiment`.
 #' @export
 
-asSingleCellExperiment <- function(object, ...){
+asSingleCellExperiment <- function(object, type = "none", ...){
 
     colData <-
       joinWith(
@@ -1253,6 +1784,16 @@ asSingleCellExperiment <- function(object, ...){
     base::rownames(colData) <- colData[["barcodes"]]
 
     dot_list <- list(...)
+
+    if(type == "BayesSpace"){
+
+      if(!"spot" %in% base::names(dot_list)){
+
+        dot_list[["spot"]] <- "barcodes"
+
+      }
+
+    }
 
     renaming <-
       confuns::keep_named(dot_list) %>%
@@ -1281,6 +1822,17 @@ asSingleCellExperiment <- function(object, ...){
 
     sce@metadata[["sample"]] <- getSampleName(object)
     sce@metadata[["origin_class"]] <- base::class(object)
+
+    if(type == "BayesSpace"){
+
+      sce@metadata[["BayesSpace.data"]] <-
+        list(
+          platform = getSpatialMethod(object)@name,
+          is.enhanced = FALSE
+        )
+
+    }
+
 
     if(containsImageObject(object)){
 
@@ -1347,24 +1899,46 @@ asSummarizedExperiment <- function(object, ...){
 
 
 
-
-
-#' @title Transform to \code{SPATA2} object
+#' @title Transform to `SpatialTrajectory`
 #'
-#' @description Transforms input object to object of class \code{SPATA2}.
+#' @description Transforms old spatial trajectory class to new one.
 #'
-#' @param transfer_features,transfer_meta_data Logical or character. Specifies
-#' if meta/feature, e.g clustering, data from the input object is transferred
-#' to the output object. If TRUE, all variables of the feature/meta data.frame
+#' @export
+asSpatialTrajectory <- function(object, ...){
+
+  SpatialTrajectory(
+    comment = object@comment,
+    id = object@name,
+    projection = object@compiled_trajectory_df,
+    sample = object@sample,
+    segment = object@segment_trajectory_df
+  )
+
+}
+
+#' @title Transform to `spata2` object object
+#'
+#' @description Transforms input object to object of class `spata2` object.
+#'
+#' @param object An object of either one of the following classes: \code{Seurat}, \code{SingleCellExperiment}, \code{AnnDataR6}
+#' @param sample_name A character string specifying the name of the sample
+#' @param count_mtr_name A character string specifying the name of the count matrix
+#' @param normalized_mtr_name A character string specifying the name of the normalized matrix (anndata only currently)
+#' @param scaled_mtr_name A character string specifying the name of the scaled matrix
+#' @param transfer_meta_data Logical or character. Specifies
+#' if meta data, e.g clustering, from the input object is transferred
+#' to the output object. If TRUE, all variables of the meta data.frame
 #' are transferred. If character, named variables are transferred. If FALSE,
 #' none are transferred.
+#' @param transfer_dim_red A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
+#' tSNE) from the input object to the output object.
 #'
 #' @inherit argument_dummy params
 #' @inherit initiateSpataObject_CountMtr params
 #' @inherit object_dummy params
 #' @param ... Additional arguments given to \code{initiateSpataObject_CountMtr()}.
 #'
-#' @return An object of class \code{SPATA2}.
+#' @return An object of class `spata2` object.
 #'
 #' @export
 
@@ -1374,7 +1948,6 @@ setGeneric(name = "asSPATA2", def = function(object, ...){
 
 })
 
-
 #' @rdname asSPATA2
 #' @export
 setMethod(
@@ -1382,6 +1955,9 @@ setMethod(
   signature = "giotto",
   definition = function(object,
                         sample_name,
+                        coordinates,
+                        image_ebi,
+                        spatial_method,
                         transfer_meta_data = TRUE,
                         verbose = TRUE,
                         ...){
@@ -1420,20 +1996,25 @@ setMethod(
       dplyr::mutate(sample = {{sample_name}}) %>%
       dplyr::select(barcodes = cell_ID, sample, x = sdimx, y = sdimy)
 
-    count_mtr <- gobject@raw_exprs
+    count_mtr <- object@raw_exprs
 
     # initiate object
     spata_obj <-
-      initiateSpataObject_CountMtr(
-        count_mtr = count_mtr,
-        coords_df = coords_df,
+      initiateSpataObject_Empty(
         sample_name = sample_name,
-        ...
+        spatial_method = spatial_method
       )
 
-    # transfer image
-    image <- object@images[[1]]$mg_object
+    spata_obj <-
+      setCountMatrix(
+        object = spata_obj,
+        count_mtr = object@raw_exprs
+        )
 
+    spata_obj <- setCoordsDf(spata_obj, coords_df = coords_df)  
+
+    # transfer image
+    
     if(!base::is.null(image)){
 
       confuns::give_feedback(
@@ -1441,13 +2022,11 @@ setMethod(
         verbose = verbose
       )
 
-      image_ebi <- magick::as_EBImage(image)
-
       image_object <-
         createImageObject(
           image = image_ebi,
           image_class = "HistologyImage",
-          coordinates = coords_df
+          coordinates = coordinates
         )
 
       spata_obj <-
@@ -1467,7 +2046,7 @@ setMethod(
     }
 
     # transfer meta_data
-    if(!base::isFALSE(transfer_meta_data)){
+    if((transfer_meta_data)){
 
       confuns::give_feedback(
         msg = "Transferring meta data",
@@ -1475,13 +2054,15 @@ setMethod(
       )
 
       spata_obj <-
-        addFeatures(
+        setFeatureDf(
           object = spata_obj,
           feature_df = cell_meta_data,
-          overwrite = TRUE
-        )
+          of_sample = sample_name
+      )
 
     }
+
+    spata_obj <- setActiveMatrix(spata_obj, mtr_name = "counts")
 
     return(spata_obj)
 
@@ -1495,19 +2076,21 @@ setMethod(
   signature = "Seurat",
   definition = function(object,
                         sample_name,
+                        spatial_method,
                         assay_name = "Spatial",
                         image_name = "slice1",
                         transfer_meta_data = TRUE,
                         transfer_dim_red = TRUE,
+                        count_mtr_name = "counts",
+                        scaled_mtr_name = "scale.data",
                         verbose = TRUE){
 
     # create empty spata object
     spata_object <-
       initiateSpataObject_Empty(
         sample_name = sample_name,
-        verbose = verbose
+        spatial_method = spatial_method
         )
-
 
     confuns::give_feedback(
       msg = "Transferring data.",
@@ -1546,7 +2129,11 @@ setMethod(
           fdb.opt = 2
         )
 
-        image_obj <- asHistologyImage(object = object@images[[image_name]])
+        image_obj <-
+          asHistologyImaging(
+            object = object@images[[image_name]],
+            id = sample_name
+            )
 
         spata_object <- setImageObject(spata_object, image_object = image_obj)
 
@@ -1584,7 +2171,7 @@ setMethod(
 
     count_mtr <-
       getFromSeurat(
-        return_value = methods::slot(assay, name = "counts"),
+        return_value = methods::slot(assay, name = count_mtr_name),
         error_handling = "stop",
         error_ref = "count matrix"
       )
@@ -1597,7 +2184,7 @@ setMethod(
 
     scaled_mtr <-
       getFromSeurat(
-        return_value = methods::slot(assay, name = "scale.data"),
+        return_value = methods::slot(assay, name = scaled_mtr_name),
         error_handling = "stop",
         error_ref = "scaled matrix",
         error_value = NULL
@@ -1709,11 +2296,7 @@ setMethod(
 
     spata_object <- setInitiationInfo(spata_object)
 
-    spata_object <-
-      setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
-
-    spata_object <-
-      setActiveExpressionMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+    spata_object <- setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
 
     confuns::give_feedback(
       msg = "Done.",
@@ -1725,33 +2308,313 @@ setMethod(
   }
 )
 
-
-
-#' @title Title
+#' @importFrom anndata AnnDataR6
+#' @rdname asSPATA2
 #' @export
-setGeneric(name = "asSpatialTrajectory", def = function(object, ...){
+setMethod(
+  f = "asSPATA2",
+  signature = "AnnDataR6",
+  definition = function(object,
+                        sample_name,
+                        count_mtr_name = "counts",
+                        normalized_mtr_name = "normalized",
+                        scaled_mtr_name = "scaled",
+                        transfer_meta_data = TRUE,
+                        transfer_dim_red = TRUE,
+                        image_name = NULL,
+                        verbose = TRUE){
 
-  standardGeneric(f = "asSpatialTrajectory")
+  if (!requireNamespace("anndata", quietly = TRUE)) {
+    stop("Package 'anndata' is required but not installed.")
+  }
 
-})
+    # check anndata object
 
-#' @rdname asSpatialTrajectory
-#' @export
+    if(nrow(object) == 0 | ncol(object) == 0){
+      stop("AnnData object is empty.")
+    }
 
-setMethod(f = "asSpatialTrajectory", signature = "spatial_trajectory", definition = function(object, ...){
+    if(length(unique(object$obs$library_id)) > 1){
+      stop("The AnnData object contains >1 element: ",
+              paste(unique(object$obs$library_id), collapse=", "),
+              ". Currently not compatible with SPATA2; please subset the object and load again.")
+    }
 
-  SpatialTrajectory(
-    comment = object@comment,
-    id = object@name,
-    projection = object@compiled_trajectory_df,
-    sample = object@sample,
-    segment = object@segment_trajectory_df
-  )
+    # create empty spata object
 
-})
+    spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
+
+    confuns::give_feedback(
+      msg = "Transferring data.",
+      verbose = verbose
+    )
+
+    # extract library_id and spatial dataframe
+
+    # run only if object$uns[["spatial"]] is not NULL
+    if(!is.null(object$uns[["spatial"]])){
+
+      library_id <- check_spatial_data(object$uns, library_id = image_name)[[1]]
+      spatial_data <- check_spatial_data(object$uns, library_id = image_name)[[2]]
+
+    } else {
+
+      stop("AnnData object contains no spatial data in the default slot object$uns[['spatial']].")
+
+    }
+
+    # check and transfer image
+
+    if(is.character(library_id)){ # library_id == image_name
+
+        image_names <- base::names(object$uns[["spatial"]])
+
+        if(base::length(image_names) >= 1){
+
+          confuns::check_one_of(
+            input = library_id,
+            against = image_names,
+            ref.opt.2 = "images in AnnData object",
+            fdb.opt = 2
+          )
+
+          image_obj <-
+            asHistologyImaging(
+              object = object,
+              id = sample_name,
+              library_id = library_id,
+              verbose = verbose
+            )
+
+          spata_object <- setImageObject(spata_object, image_object = image_obj)
+
+          spata_object <- setCoordsDf(spata_object,
+                                      coords_df = image_obj@coordinates)
+
+          spata_object <- rotateCoordinates(spata_object, angle=90)
+
+        } else {
+
+            confuns::give_feedback(
+              msg = "AnnData object contains no images.",
+              verbose = verbose
+            )
+
+            image_obj <- NULL
+
+        }
+    }
+
+    # transfer barcode metadata
+
+    obs_df <- tibble::rownames_to_column(as.data.frame(object$obs), var = "barcodes") %>%
+          tibble::as_tibble()
+
+    if(base::isFALSE(transfer_meta_data)){
+
+        obs_df <- dplyr::select(obs_df, barcodes)
+
+    }
+
+    spata_object <- setFeatureDf(spata_object, feature_df = obs_df)
 
 
+    # transfer feature (gene) metadata
 
+    var_df <- suppressWarnings(as.data.frame(object$var, row.names=NULL))
+    var_df$feature <- object$var_names
+    var_df <- dplyr::select(var_df, feature, everything()) %>%  tibble::as_tibble()
+
+    of_sample <- check_sample(object = spata_object, of_sample = "", desired_length = 1)
+    spata_object@gdata[[of_sample]] <- var_df
+
+
+    # transfer matrices
+
+    mtrs <- load_adata_matrix(adata=object, count_mtr_name=count_mtr_name,
+      normalized_mtr_name=normalized_mtr_name, scaled_mtr_name=scaled_mtr_name, verbose=verbose)
+
+    spata_object <-
+      setCountMatrix(
+        object = spata_object,
+        count_mtr = mtrs$count_mtr
+        #count_mtr = mtrs$count_mtr[rowSums(as.matrix(mtrs$count_mtr)) != 0, ] # --------------- why excluding empty genes?
+                                                                              # also code is not efficient because as.matrix() converts sparse into dense matirx
+                                                                              # plus currently not compatible in case of empty matrix
+        )
+
+    spata_object <-
+          setNormalizedMatrix(
+            object = spata_object,
+            normalized_mtr = mtrs$normalized_mtr
+            )
+
+    spata_object <-
+          setScaledMatrix(
+            object = spata_object,
+            scaled_mtr = mtrs$scaled_mtr
+            )
+
+
+    # transfer dim red data
+
+    if(base::isTRUE(transfer_dim_red)){
+
+      # pca
+      pca_df <- base::tryCatch({
+
+            pca_df <- as.data.frame(object$obsm$X_pca)
+            colnames(pca_df) <- paste0("PC", 1:length(pca_df))
+            rownames(pca_df) <- object$obs_names
+            pca_df <- pca_df %>%
+               tibble::rownames_to_column(var = "barcodes") %>%
+               dplyr::select(barcodes, dplyr::everything())
+            colnames(pca_df) <- stringr::str_remove_all(colnames(pca_df), pattern = "_")
+            pca_df
+
+      },
+      error = function(error){
+
+        warning("Could not find or transfer PCA data. Did you process the AnnData object correctly?")
+        return(data.frame())
+
+      }
+      )
+
+      if(!base::nrow(pca_df) == 0){
+
+        spata_object <- setPcaDf(spata_object, pca_df = pca_df)
+
+      }
+
+      # tsne
+      tsne_df <- base::tryCatch({
+
+        base::data.frame(
+
+          barcodes = object$obs_names,
+          umap1 = object$obsm$X_tsne[,1],
+          umap2 = object$obsm$X_tsne[,2],
+          stringsAsFactors = FALSE
+        ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer TSNE data. Did you process the AnnData object correctly?")
+        return(data.frame())
+
+      }
+      )
+
+      if(!base::nrow(tsne_df) == 0){
+
+        spata_object <- setTsneDf(object = spata_object, tsne_df = tsne_df)
+
+      }
+
+      # umap
+      umap_df <- base::tryCatch({
+
+        data.frame(
+
+        barcodes = object$obs_names,
+        umap1 = object$obsm$X_umap[,1],
+        umap2 = object$obsm$X_umap[,2],
+        stringsAsFactors = FALSE
+
+         ) %>% tibble::remove_rownames()
+
+      }, error = function(error){
+
+        warning("Could not find or transfer UMAP data. Did you process the AnnData object correctly?")
+
+        return(data.frame())
+
+      }
+      )
+      if(!base::nrow(umap_df) == 0){
+
+        spata_object <- setUmapDf(object = spata_object, umap_df = umap_df)
+
+      }
+
+    } else {
+
+      confuns::give_feedback(
+
+        msg = "`transfer_dim_red = FALSE`: Skip transferring dimensional reduction data.",
+        verbose = verbose
+
+      )
+    }
+
+
+    # transfer adata.uns
+
+    if (!is.null(object$uns)){
+
+        if (is.list(object$uns)){
+
+            spata_object@compatibility$anndata$uns <- object$uns
+
+        } else if (!is.list(object$uns)){
+
+            warning("Could not transfer data from adata.uns: Unknown format")
+
+        }
+
+    }
+
+    # transfer adata.obsp
+
+    if (!is.null(object$obsp)){
+
+        if (is.list(object$obsp)){
+
+            spata_object@compatibility$anndata$obsp <- object$obsp
+
+        } else if (!is.list(object@obsp)){
+
+            warning("Could not transfer data from adata.obsp: Unknown format")
+
+        }
+
+    }
+
+    # transfer adata.varm
+
+    if (!is.null(object$varm)){
+
+        if (is.list(object$varm)){
+
+            spata_object@compatibility$anndata$varm <- object$varm
+
+        } else if (!is.list(object$varm)){
+
+            warning("Could not transfer data from adata.varm: Unknown format")
+
+        }
+
+    }
+
+    # conclude
+
+    spata_object <- setBarcodes(spata_object, barcodes = object$obs_names)
+
+    spata_object <- setInitiationInfo(spata_object)
+
+    spata_object <-
+      setActiveMatrix(spata_object, mtr_name = "normalized", verbose = FALSE)
+
+    confuns::give_feedback(
+      msg = "Done.",
+      verbose = verbose
+    )
+
+    return(spata_object)
+
+    }
+)
 
 # asV ---------------------------------------------------------------------
 
@@ -1824,7 +2687,7 @@ asVisiumV1 <- function(object, name = "slice1"){
 #'
 #' attachUnit(mm_num)
 #'
-#'
+#' @keywords internal
 #' @export
 #'
 attachUnit <- function(input){
@@ -1865,6 +2728,7 @@ attachUnit <- function(input){
 
 
 #' @rdname attachUnit
+#' @keywords internal
 #' @export
 attach_uni <- attachUnit
 

@@ -12,3 +12,4 @@ check_object(object)
 \description{
 Check spata object input
 }
+\keyword{internal}

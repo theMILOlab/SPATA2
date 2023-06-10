@@ -19,3 +19,4 @@ getFromSeurat(return_value, error_handling, error_value, error_ref)
 A wrapper around \code{base::tryCatch()} with predefined error handling
 messages if extraction from seurat-object failed.
 }
+\keyword{internal}

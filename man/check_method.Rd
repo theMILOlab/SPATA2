@@ -50,3 +50,4 @@ all valid input options.}
 \description{
 Check method input
 }
+\keyword{internal}

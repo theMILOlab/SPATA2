@@ -28,3 +28,4 @@ if these features match the class requirements of \code{valid_classes}.
 
 Returns an adjusted features-vector or raises an error.
 }
+\keyword{internal}

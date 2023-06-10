@@ -3,6 +3,7 @@
 #' @format NULL
 #' @usage NULL
 #' @export
+#' @keywords internal
 GeomPointFixed <- ggplot2::ggproto(
   `_class` = "GeomPointFixed",
   `_inherit` = ggplot2::Geom,
@@ -46,6 +47,7 @@ GeomPointFixed <- ggplot2::ggproto(
 #' @format NULL
 #' @usage NULL
 #' @export
+#' @keywords internal
 GeomSegmentFixed <- ggplot2::ggproto(
   `_class` = "GeomSegmentFixed",
   `_inherit` = ggplot2::Geom,
@@ -114,6 +116,7 @@ GeomSegmentFixed <- ggplot2::ggproto(
 #' @format NULL
 #' @usage NULL
 #' @export
+#' @keywords internal
 GeomTextFixed <- ggplot2::ggproto(
   `_class` = "GeomTextScaled",
   `_inherit` = ggplot2::Geom,

@@ -54,13 +54,17 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
-\item{bcsp_rm}{Character vector or NULL. If character, specifies barcode-spots that
-are removed before plotting.}
+\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
+are removed before analysis or plotting.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
+Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
+Default by object initiation is 1.}
 
 \item{dir}{Character value. The chosen directory. See details for possible
 requirements.}
@@ -81,11 +85,16 @@ function throws an error.}
 \item{expand}{Specifies image expansion. An image that is cropped based on an image
 annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
 that is width/x-axis and height/y-axis, are set to include only the image annotation area
-and nothing more. Using \code{expand}, the cropped image section can be adjusted. See details
-for more information.}
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
+
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{grouping_variable}{Character value. The grouping variable of interest. Use
+\code{getGroupingOptions()} to obtain all valid input options.}
 
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
@@ -98,6 +107,9 @@ of the plot.}
 of the image annotations of interest. If numeric, the image annotations are picked by number.
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
+
+\item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
 
 \item{k}{Numeric value or vector or NULL (see details for more). Denotes the number of clusters
 in which the hierarchical tree is supposed to be split.}
@@ -126,13 +138,18 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
-\item{line_alpha, line_color, line_size, line_type}{Parameters given to
-\code{ggplot2::geom_line()}, \code{ggplot2::geom_path()} or \code{ggplot2::geom_smooth()}
-that control the appearance of the main line(s) of the plot.}
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{order}{Logical value. If \code{TRUE}, data points are ordered according
 to their values before beeing plotted.}
@@ -142,6 +159,11 @@ variable is used to order the data points.}
 
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
+
+\item{outer}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the outer border of the image annotation
+is not included in the output.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
@@ -158,6 +180,14 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
+
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
+}}
 
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
@@ -193,24 +223,15 @@ Processing of the image output depending on argument \code{expand} happens after
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
 
-\item{tags, test}{Input for argument \code{tags} specifies the tags of interest.
-Argument \code{test} decides about how the specified tags are used to select
-the image annotations of interest. There are multiple options:
-\enumerate{
-\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-must be tagged with at least one of the input tags.
-\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags. Can contain tags that are not specified.
-\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags. Can not be tagged with anything else.
-\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
-annotation must \strong{not} be tagged with the combination of input tags.
-\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
-must \strong{not} contain any of the input tags.
-}
+\item{spatial_method}{Character value. The name of the spatial method that underlies
+the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'Unknown'}.}
 
-Note that the filtering process happens in addition to / after the filtering by input for argument
-\code{ids}.}
+\item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
+selection. See section \emph{Selection of image annotation with tags} for more information.}
+
+\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
+\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+See section \emph{Selection of image annotation with tags} for more information.}
 
 \item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
 given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}
@@ -236,6 +257,11 @@ of the plot.}
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}
 
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
+
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
 \code{xrange = c(200, 500)} results in the image being cropped from
@@ -244,12 +270,12 @@ ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 Argument dummy
 }
+\keyword{internal}

@@ -56,3 +56,4 @@ A processed seurat-object.
 \description{
 Wrapper around Seurat processing functions
 }
+\keyword{internal}

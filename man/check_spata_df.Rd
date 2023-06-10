@@ -17,3 +17,4 @@ check_spata_df(spata_df)
 \description{
 Check coordinate data.frame
 }
+\keyword{internal}

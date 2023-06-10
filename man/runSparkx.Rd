@@ -16,7 +16,11 @@ getSparkxResults(object, test = TRUE)
 runSparkx(object, numCores = 1, option = "mixture", verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
+
+\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
+\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+See section \emph{Selection of image annotation with tags} for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

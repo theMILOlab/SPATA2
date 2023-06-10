@@ -4,7 +4,7 @@
 \alias{plotSurfaceIAS}
 \alias{plotSurfaceIAS,spata2-method}
 \alias{plotSurfaceIAS,ImageAnnotationScreening-method}
-\title{Visualize screening areaof IAS-algorithm}
+\title{Plot screening area of IAS-algorithm}
 \usage{
 plotSurfaceIAS(object, ...)
 
@@ -16,6 +16,8 @@ plotSurfaceIAS(object, ...)
   n_bins_circle = NA_integer_,
   angle_span = c(0, 360),
   n_bins_angle = 1,
+  outer = TRUE,
+  inner = TRUE,
   pt_alpha = NA_integer_,
   pt_clrp = c("inferno", "default"),
   pt_clrsp = "inferno",
@@ -28,6 +30,7 @@ plotSurfaceIAS(object, ...)
   display_bins_circle = TRUE,
   ggpLayers = list(),
   remove_circle_bins = FALSE,
+  bcsp_exclude = NULL,
   verbose = NULL,
   ...
 )
@@ -49,7 +52,7 @@ plotSurfaceIAS(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
@@ -76,6 +79,12 @@ an angle span relative to the center of the image annotation.
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
 
+\item{outer}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the outer border of the image annotation
+is not included in the output.}
+
+\item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
+are not included in the output.}
+
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_clrp}{The color palette to be used if the specified variable displayed by
@@ -99,6 +108,8 @@ If TRUE, the plot is included. If FALSE, plotting is skipped.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

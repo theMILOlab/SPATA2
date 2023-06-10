@@ -10,9 +10,6 @@ getGeneFeatureNames(object, mtr_name = NULL, of_sample = NA)
 \item{object}{A valid spata-object.}
 
 \item{mtr_name}{Character value. The name of the matrix of interest.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \description{
 Convenient way to obtain the column names of the output data.frame

@@ -282,9 +282,6 @@ runAutoencoderDenoising <- function(object,
 #' @description A wrapper around the BayesSpace clustering pipeline introduced
 #' by \emph{Zhao et al. 2021}.
 #'
-#' @inherit BayesSpace::readVisium params
-#' @inherit BayesSpace::qTune params
-
 #' @param q_force Numeric value or `FALSE`. If numeric, it forces the number
 #' of output clusters with input value. If `FALSE`, the optimal number
 #' of clusters is chosen for `q` determined by the elbow point of `BayesSpace::qTune()`.
@@ -298,6 +295,14 @@ runAutoencoderDenoising <- function(object,
 #' is assigned to the global environment. This makes the whole output
 #' of the bayes space pipeline available instead of only adding the clustering
 #' output as a grouping variable to the `SPATA2` object.
+#' @param qs The values of q to evaluate. If `qs` is only one value exactly
+#' that is given to `q` of `BayesSpace::spatialCluster()`. Else the optimal
+#' `q` from all provided values is identified using `BayesSpace::qTune()`.
+#'
+#' @inherit BayesSpace::readVisium params
+#' @inherit BayesSpace::qTune params
+#' @inherit BayesSpace::spatialPreprocess params
+#' @inherit BayesSpace::spatialCluster params
 #'
 #' @param ... Additional arguments given to `BayesSpace::spatialCluster()`. Exception:
 #' `sce`, `q` are specified within the function.
@@ -306,7 +311,7 @@ runAutoencoderDenoising <- function(object,
 #'
 #' @details This function is a wrapper around \code{readVisium()},
 #' \code{spatialPreprocess()}, \code{qTune()} and \code{spatialCluster()}
-#' of the BayesSpace package. The results are stored in form of a grouping
+#' of the `BayesSpace` package. The results are stored in form of a grouping
 #' variable in the feature data.frame of the returned \code{SPATA2} object.
 #'
 #' @author Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
@@ -320,7 +325,6 @@ runAutoencoderDenoising <- function(object,
 #' @export
 #'
 runBayesSpaceClustering <- function(object,
-                                    directory_10X = NULL,
                                     name = "bayes_space",
                                     # given to spatialPreprocess()
                                     n.Pcs = 15,
@@ -330,11 +334,10 @@ runBayesSpaceClustering <- function(object,
                                     assay.type = "logcounts",
                                     BSPARAM = BiocSingular::ExactParam(),
                                     # given to qTune()
-                                    qs = seq(3,7),
+                                    qs = 3:10,
                                     burn.in = c(100, 1000),
-                                    nrep = c(1000, 5000),
+                                    nrep = c(1000, 50000),
                                     # given to spatialCluster()
-                                    q = NULL,
                                     use.dimred = "PCA",
                                     d = 15,
                                     init.method = "mclust",
@@ -352,6 +355,7 @@ runBayesSpaceClustering <- function(object,
                                     empty_remove = FALSE,
                                     overwrite = FALSE,
                                     assign_sce = NULL,
+                                    assign_envir = .GlobalEnv,
                                     seed = NULL,
                                     verbose = NULL,
                                     ...){
@@ -372,15 +376,31 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  # use asSingleCellExperiment
+  directory_10X <- object@information$initiation$input$directory_10X
 
-  if(base::is.null(directory_10X)){
+  if(base::is.character(directory_10X) & base::dir.exists(directory_10X)){
 
-    sce <- asSingleCellExperiment(object, "spot" = "barcodes")
+    confuns::give_feedback(
+      msg = glue::glue("Reading from {directory_10X}."),
+      verbose = verbose
+    )
+
+    sce <- BayesSpace::readVisium(dirname = directory_10X)
+
+    barcodes <- getBarcodes(object)
+
+    if(!base::is.character(barcodes)){
+
+      barcodes <- barcodes[[1]]
+
+    }
+
+    sce <- sce[,barcodes]
 
   } else {
 
-    sce <- BayesSpace::readVisium(dirname = directory_10X)
+    # use asSingleCellExperiment
+    sce <- asSingleCellExperiment(object, type = "BayesSpace")
 
   }
 
@@ -446,7 +466,7 @@ runBayesSpaceClustering <- function(object,
     verbose = verbose
   )
 
-  if(!base::is.numeric(q)){
+  if(base::length(qs) >= 2){
 
     bayes_space_out <-
       BayesSpace::qTune(
@@ -471,7 +491,7 @@ runBayesSpaceClustering <- function(object,
 
   } else {
 
-    optimal_cluster <- base::as.integer(q[1])
+    optimal_cluster <- base::as.integer(qs[1])
 
     confuns::give_feedback(
       msg = glue::glue("Using input for `q`: {optimal_cluster}."),
@@ -510,8 +530,8 @@ runBayesSpaceClustering <- function(object,
     base::as.data.frame() %>%
     tibble::as_tibble() %>%
     dplyr::select(spot, spatial.cluster) %>%
-    dplyr::rename(barcodes = spot, {{name}} := spatial.cluster) %>%
-    dplyr::mutate({{name}} := base::as.factor(!!rlang::sym(name)))
+    dplyr::rename(barcodes = spot, !!rlang::sym(name) := spatial.cluster) %>%
+    dplyr::mutate(!!rlang::sym(name) := base::as.factor(!!rlang::sym(name)))
 
   cluster_levels <-
     base::levels(cluster_df[[name]]) %>%
@@ -520,13 +540,15 @@ runBayesSpaceClustering <- function(object,
   cluster_df <-
     dplyr::mutate(
       .data = cluster_df,
-      {{name}} := stringr::str_c(prefix, !!rlang::sym(name)),
-      {{name}} := base::factor(!!rlang::sym(name), levels = cluster_levels)
+      !!rlang::sym(name) := stringr::str_c(prefix, !!rlang::sym(name)),
+      !!rlang::sym(name) := base::factor(!!rlang::sym(name), levels = cluster_levels)
     )
 
   if(base::is.character(assign_sce)){
 
-    assign(x = assign_sce, value = bayes_space_out, envir = .GlobalEnv)
+    message(glue::glue("Assigning SingleCell Experiment object in global environment under {assign_sce}."))
+
+    base::assign(x = assign_sce, value = bayes_space_out, envir = assign_envir)
 
   }
 
@@ -1021,18 +1043,24 @@ runCnvAnalysis <- function(object,
 
     confuns::give_feedback(msg = msg, verbose = verbose)
 
+    if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
+
     base::saveRDS(infercnv_obj, file = save_dir)
 
   }
 
   confuns::give_feedback(msg = "Plotting results.", verbose = verbose)
 
+
+  if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
+
+
   plot_results <-
     confuns::call_flexibly(
       fn = "plot_cnv",
       fn.ns = "infercnv",
       fn.ns.sep = ":::",
-      default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder),
+      default = list("infercnv_obj" = infercnv_obj, "out_dir" = directory_cnv_folder, "write_expr_matrix"=T),
       v.fail = NULL
     )
 
@@ -1048,7 +1076,7 @@ runCnvAnalysis <- function(object,
     plot_results <-
       base::tryCatch({
 
-        infercnv::plot_cnv(infercnv_obj = infercnv_obj, out_dir = directory_cnv_folder)
+        infercnv::plot_cnv(infercnv_obj = infercnv_obj, out_dir = directory_cnv_folder, write_expr_matrix=T)
 
       }, error = function(error){
 
@@ -1249,7 +1277,7 @@ runCnvAnalysis <- function(object,
 #' @title Find differently expressed genes
 #'
 #' @description This function makes use of \code{Seurat::FindAllMarkers()} to compute
-#' the differently expressed genes based on the count matrix across the groups of
+#' the differently expressed genes across the groups of
 #' the grouping variable denoted in the argument \code{across}.
 #'
 #' See details for more.
@@ -1260,16 +1288,22 @@ runCnvAnalysis <- function(object,
 #' @param fc_name,base Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.
 #' @param ... Additional arguments given to \code{Seurat::FindAllMarkers()}
 #'
-#' @details If \code{across} and/or \code{method_de} are vectors instead of single
-#' values \code{runDeAnalysis()} iterates over all combinations in a for-loop and
+#' @details This function is a wrapper around the DEA pipeline from the `Seurat`
+#' package. It creates a temporary `Seurat` object via `Seurat::CreateSeuratObject()`,
+#' and `Seurat::SCTransform()`. Then, `Seurat::FindAllMarkers()` is run. The output data.frame
+#' is stored in the `SPATA2` object which is returned at the end.
+#'
+#' If \code{across} and/or \code{method_de} are vectors instead of single
+#' values \code{runDEA()} iterates over all combinations in a for-loop and
 #' stores the results in the respective slots. (e.g.: If \code{across} = \emph{'seurat_clusters'}
 #' and \code{method_de} = \emph{c('wilcox', 'bimod')} the function computes the differently expressed genes
 #' across all groups found in the feature variable \emph{seurat_clusters} according to method \emph{wilcox} and
 #' stores the results in the respective slot. Then it does the same according to method \emph{bimod}.)
 #'
-#' The results are obtainable via \code{getDeaResults()} and \code{getDeaGenes()}.
+#' The results are obtainable via \code{getDeaResults()}, `getDeaResultsDf()` and \code{getDeaGenes()}.
 #'
-#' @return A spata-object containing the results in slot @@dea.
+#' @inherit update_dummy return
+#'
 #' @export
 
 runDEA <- function(object,
@@ -1277,20 +1311,32 @@ runDEA <- function(object,
                    method_de = NULL,
                    verbose = NULL,
                    base = 2,
-                   fc_name = NULL,
+                   variable.features.n = 3000,
                    ...){
-
-  deprecated(...)
 
   hlpr_assign_arguments(object)
 
   purrr::walk(.x = method_de, .f = ~ check_method(method_de = .x))
 
-  valid_across <-
-    check_features(object = object, valid_classes = c("factor"), features = across)
+  valid_across <- check_features(object = object, valid_classes = c("factor"), features = across)
 
-  # adjusting
-  of_sample <- check_sample(object, desired_length = 1)
+  # prepare seurat object
+  seurat_object <-
+    Seurat::CreateSeuratObject(
+      counts = getCountMatrix(object)
+    )
+
+  seurat_object <-
+    Seurat::SCTransform(
+      object = seurat_object,
+      variable.features.n = variable.features.n
+    )
+
+  seurat_object@meta.data <-
+    getFeatureDf(object) %>%
+    tibble::column_to_rownames(var = "barcodes") %>%
+    base::as.data.frame()
+
 
   for(across in valid_across){
 
@@ -1301,37 +1347,22 @@ runDEA <- function(object,
       object <-
         base::tryCatch({
 
-          # De analysis ----------------------------------------------------------
-
-          # prepare seurat object
-          seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object))
-          
-          seurat_object@meta.data <-
-            getFeatureDf(object) %>%
-            tibble::column_to_rownames(var = "barcodes") %>%
-            base::as.data.frame()
-
-          seurat_object@assays$RNA@scale.data <- getExpressionMatrix(object, verbose = FALSE)
-          
-          # convert grouping variable 
-           groups <-
+          # set the grouping based on which DEA is conducted
+          groups <-
             purrr::set_names(
               x = seurat_object@meta.data[[across]],
               nm = base::rownames(seurat_object@meta.data) # set barcodes as names
             )
 
-          # make sure that across-input is passed as a factor
-          if(!base::is.factor(groups)){
+          seurat_object@meta.data$orig.ident <- base::unname(groups)
 
-            groups <- base::factor(x = groups, levels = base::unique(groups))
+          seurat_object@active.ident <- groups
 
-          }
-
-          n_groups <- base::levels(groups) %>% base::length()
+          n_groups <- dplyr::n_distinct(groups)
 
           if(n_groups >= 20){
 
-            base::warning(glue::glue("The number of different groups is to high for DE-analysis. Is currently {n_groups}. Should be lower than 20. "))
+            base::stop(glue::glue("The number of different groups is to high for DE-analysis. Is currently {n_groups}. Must be lower than 20. "))
 
           } else if(n_groups < 2){
 
@@ -1342,9 +1373,8 @@ runDEA <- function(object,
             base::message(glue::glue("Number of groups/clusters: {n_groups}"))
 
           }
-          
-          # set active identity
-          seurat_object@active.ident <- groups     
+
+          # De analysis ----------------------------------------------------------
 
           # perform analysis and remove seurat object afterwards
           dea_results <-
@@ -1355,20 +1385,19 @@ runDEA <- function(object,
               ...
             )
 
-          base::rm(seurat_object)
-
           # save results in spata object
           object <-
-            setDeaResults(
+            setDeaResultsDf(
               object = object,
+              grouping_variable = across,
               dea_results = dea_results,
               across = across,
               method_de = method_de,
+              variable.features.n = variable.features.n,
               ...
             )
 
           object
-
 
         },
 
@@ -1441,18 +1470,7 @@ runDeAnalysis <- function(...){
 #' @export
 #'
 
-setGeneric(name = "runGSEA", def = function(object, ...){
-
-  standardGeneric(f = "runGSEA")
-
-})
-
-#' @rdname runGSEA
-#' @export
-setMethod(
-  f = "runGSEA",
-  signature = "spata2",
-  definition = function(object,
+runGSEA <- function(object,
                         across,
                         methods_de = "wilcox",
                         max_adj_pval = 0.05,
@@ -1639,7 +1657,6 @@ setMethod(
     return(object)
 
   }
-)
 
 # runP --------------------------------------------------------------------
 
@@ -1662,22 +1679,22 @@ setMethod(
 #'
 #' @export
 
-runPca <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
+runPca <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  s <- object@samples
 
   pca_res <- runPca2(object = object,
                      n_pcs = n_pcs,
                      mtr_name = mtr_name,
                      ...)
 
-  expr_mtr <- getExpressionMatrix(object, of_sample = of_sample, mtr_name = mtr_name)
+  expr_mtr <- getExpressionMatrix(object, mtr_name = mtr_name)
 
   pca_df <-
     base::as.data.frame(x = pca_res[["x"]]) %>%
-    dplyr::mutate(barcodes = base::colnames(expr_mtr), sample = {{of_sample}}) %>%
+    dplyr::mutate(barcodes = base::colnames(expr_mtr), sample = {{s}}) %>%
     dplyr::select(barcodes, sample, dplyr::everything())
 
   object <- setPcaDf(object = object, pca_df = pca_df)
@@ -1688,13 +1705,11 @@ runPca <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
 
 #' @rdname runPca
 #' @export
-runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
+runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
-
-  expr_mtr <- getExpressionMatrix(object, of_sample = of_sample, mtr_name = mtr_name)
+  expr_mtr <- getExpressionMatrix(object, mtr_name = mtr_name)
 
   pca_res <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = n_pcs, ...)
 
@@ -1704,6 +1719,56 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...){
 
 
 # runS --------------------------------------------------------------------
+
+#' @title Clustering with Seurat
+#'
+#' @description A wrapper around the Seurat clustering pipeline suggested by
+#' *Hao and Hao et al., 2021*.
+#'
+#' @param FindVariableFeatures,RunPCA,FindNeighbors,FindClusters Each argument
+#' takes a list of arguments that is given to the equivalent function.
+#'
+#' @inherit update_dummy return
+#' @export
+#'
+#' @examples
+#'
+#'  object <- SPATAData::downloadSpataObject("275_T")
+#'
+#'  object <- runSeuratClustering(object, name = "seurat_clusters")
+#'
+#'  plotSurface(object, color_by = "seurat_clusters")
+#'
+runSeuratClustering <- function(object,
+                                name = "seurat_clusters",
+                                mtr_name = getActiveMatrixName(object),
+                                FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
+                                RunPCA = list(npcs = 60),
+                                FindNeighbors = list(dims = 1:30),
+                                FindClusters = list(resolution = 0.8)){
+
+  confuns::check_none_of(
+    input = name,
+    against = getFeatureNames(object),
+    ref.against = "feature names",
+  )
+
+  cluster_df <-
+    findSeuratClusters(
+      object = object,
+      mtr_name = mtr_name,
+      FindVariableFeatures = FindVariableFeatures,
+      RunPCA = RunPCA,
+      FindNeighbors = FindNeighbors,
+      FindClusters = FindClusters
+    ) %>%
+    dplyr::select(barcodes, !!rlang::sym(name) := seurat_clusters)
+
+  object <- addFeatures(object, feature_df = cluster_df)
+
+  return(object)
+
+}
 
 #' @title Identify genes of interest with SPARKX
 #'
@@ -1727,7 +1792,7 @@ runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
   coords_mtr <-
     getCoordsDf(object) %>%
     tibble::column_to_rownames(var = "barcodes") %>%
-    dplyr::select(-sample, x, y) %>%
+    dplyr::select(x, y, -sample) %>%
     base::as.matrix()
 
   count_mtr <- getCountMatrix(object)

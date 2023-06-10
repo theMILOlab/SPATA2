@@ -317,6 +317,8 @@ plotPcaVariation <- function(object,
 #'  \item{\emph{\code{color_to}}: Monocle3-Umap colored by input of \code{color_to}. (if specified)}
 #' }
 #'
+#' @keywords internal
+#'
 
 plotPseudotime <- function(object,
                            use_cds_file = FALSE,
@@ -385,25 +387,15 @@ plotRidgeplot <- function(object,
                           method_gs = NULL,
                           normalize = NULL,
                           verbose = NULL,
-                          of_sample = NA,
                           ...){
 
-  hlpr_assign_arguments(object)
+  deprecated(...)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
+  hlpr_assign_arguments(object)
 
   all_features <- getFeatureNames(object)
   all_genes <- getGenes(object = object)
   all_gene_sets <- getGeneSets(object)
-
-  variables <-
-    check_variables(
-      variables = c(variables, across),
-      all_features = all_features,
-      all_gene_sets = all_gene_sets,
-      all_genes = all_genes,
-      simplify = FALSE
-    )
 
   var_levels <- base::unique(variables)
 
@@ -639,6 +631,7 @@ plotScatterplot <- function(object,
 plotSpatialTrajectories <- function(object,
                                     ids = NULL,
                                     color_by = NULL,
+                                    alpha_by = NULL,
                                     method_gs = NULL,
                                     smooth = NULL,
                                     smooth_span = NULL,

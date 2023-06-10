@@ -19,3 +19,4 @@ A character value.
 Extracts the name/ID of the \code{SPATA2} object
 in form of a single character value.
 }
+\keyword{internal}

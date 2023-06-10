@@ -2,19 +2,27 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatialTrajectory}
 \alias{getSpatialTrajectory}
-\title{Obtain object of class \code{SpatialTrajectory}.}
+\alias{getSpatialTrajectories}
+\title{Obtain objects of class \code{SpatialTrajectory}.}
 \usage{
 getSpatialTrajectory(object, id)
+
+getSpatialTrajectories(object, ids = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}
+
+\item{ids}{Character vector. Denotes the spatial trajectories
+of interest.}
 }
 \value{
-An object of class \code{SpatialTrajectory.}
+An object of class \code{SpatialTrajectory} in case of \code{getSpatialTrajectory()}
+or a named list of \code{SpatialTrajectory} objects in case of \code{getSpatialTrajectories()}.
+An empty list if \code{nSpatialTrajectories() == 0}.
 }
 \description{
-Obtain object of class \code{SpatialTrajectory}.
+Obtain objects of class \code{SpatialTrajectory}.
 }

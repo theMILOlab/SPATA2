@@ -12,9 +12,11 @@ computeCnvByChrArm(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

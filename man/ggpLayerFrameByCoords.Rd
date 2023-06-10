@@ -5,12 +5,12 @@
 \alias{ggpLayerFrameByImage}
 \title{Set plot limits}
 \usage{
-ggpLayerFrameByCoords(object = "object", opt = "scale")
+ggpLayerFrameByCoords(object = "object", opt = "coords")
 
-ggpLayerFrameByImage(object = "object", opt = "scale")
+ggpLayerFrameByImage(object = "object", opt = "coords")
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{opt}{Specifies the function with which the limits are set. If
 \emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.

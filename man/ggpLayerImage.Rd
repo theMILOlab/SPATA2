@@ -7,7 +7,7 @@
 ggpLayerImage(object = "object")
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

@@ -7,7 +7,7 @@
 hlpr_save_spata_object(object, object_file, ref_step, verbose)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{object_file}{The directory under which to store the object.}
 
@@ -21,3 +21,4 @@ the computational progress will be printed.
 \description{
 Save spata object inside functions
 }
+\keyword{internal}

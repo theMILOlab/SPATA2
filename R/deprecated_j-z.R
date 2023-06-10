@@ -6,7 +6,7 @@
 
 # m -----------------------------------------------------------------------
 
-#' @export
+#' @keywords internal
 make_pretty_model_names <- function(model_names){
 
   stringr::str_replace_all(
@@ -30,27 +30,7 @@ make_pretty_model_names <- function(model_names){
 }
 
 
-#' @title Merge Spata Objects
-#'
-#' @description Takes an arbitrary number of spata-objects and merges them into one.
-#'
-#' @param objects A list of valid spata-objects. All sample names must be unique.
-#' @param gsdf_input Determines the final input for slot @@used_genesets:
-#'
-#' If set to \emph{'merge'} all gene-set data.frames of all objects are joined
-#' and unique gene-sets are kept. Gene-sets with the same name but different
-#' genes are merged!
-#'
-#' If a directory is specified the directory is given to \code{loadGSDF()}.
-#'
-#' If a data.frame is specified that data.frame is used.
-#'
-#' If set to NULL the standard \code{SPATA::gsdf} is used.
-#'
-#' @return A merged spata object.
-#' @export
-#'
-
+#' @keywords internal
 mergeSpataObjects <- function(objects, gsdf_input = NULL, verbose = TRUE){
 
   deprecated(fn = TRUE)
@@ -162,8 +142,7 @@ mergeSpataObjects <- function(objects, gsdf_input = NULL, verbose = TRUE){
 
 # p -----------------------------------------------------------------------
 
-#' @rdname plotDendrogram
-#' @export
+#' @keywords internal
 plotDendrogramCnv <- function(object,
                               method_dist = NULL,
                               method_aggl = NULL,
@@ -250,26 +229,7 @@ plotDendrogramCnv <- function(object,
 
 
 
-#' @title Distribution of continuous values (Deprecated)
-#'
-#' @description These functions are deprecated in favor of \code{plotDensityplot(),
-#' plotHistogram(), plotRidgplot(), plotBoxplot(), plotViolinplot()} and \code{plotBarchart()}.
-#'
-#' @inherit across_dummy params
-#' @inherit argument_dummy params
-#' @inherit variables_num params
-#' @param plot_type Character value. One of \emph{'histogram', 'density', 'violin', 'boxplot' and 'ridgeplot'}.
-#' @param binwidth The binwidth to use if \code{plot_type} is specified as \emph{'histogram'}.
-#' @param ... additional arguments to \code{ggplot2::facet_wrap()}
-#'
-#' @inherit check_sample params
-#' @inherit check_method params
-#' @inherit normalize params
-#' @inherit check_assign params
-#' @inherit clrp params
-#'
-#' @export
-
+#' @keywords internal
 plotDistribution <- function(object,
                              variables,
                              plot_type = "histogram",
@@ -463,8 +423,7 @@ plotDistribution <- function(object,
 
 }
 
-#' @rdname plotDistribution
-#' @export
+#' @keywords internal
 plotDistribution2 <- function(df,
                               variables = "all",
                               plot_type = "histogram",
@@ -627,8 +586,7 @@ plotDistribution2 <- function(df,
 
 }
 
-#' @rdname plotDistribution
-#' @export
+#' @keywords internal
 plotDistributionAcross <- function(object,
                                    variables,
                                    across,
@@ -823,8 +781,7 @@ plotDistributionAcross <- function(object,
 }
 
 
-#' @rdname plotDistribution
-#' @export
+#' @keywords internal
 plotDistributionAcross2 <- function(df,
                                     variables = "all",
                                     across,
@@ -993,8 +950,7 @@ plotDistributionAcross2 <- function(df,
 
 }
 
-#' @rdname plotDistribution
-#' @export
+#' @keywords internal
 plotDistributionDiscrete <- function(object,
                                      features,
                                      feature_compare = NULL,
@@ -1106,23 +1062,7 @@ plotDistributionDiscrete <- function(object,
 
 }
 
-#' @title Plot segmentation
-#'
-#' @description Displays the segmentation of a specified sample that was drawn with
-#' \code{SPATA::createSegmentation()}.
-#'
-#' @inherit check_sample params
-#' @inherit check_pt params
-#' @param encircle Logical. If set to TRUE the segments are enclosed in a polygon.
-#' @param params_encircle Named list of arguments given to \code{ggforce::geom_mark_hull()}.
-#' @param segment_subset Character vector or NULL. If character vector, denotes
-#' the segments that are supposed to be highlighted.
-#' @param ... Additional arguments given to \code{confuns::scale_color_add_on()}.
-#'
-#' @inherit ggplot_family return
-#'
-#' @export
-
+#' @keywords internal
 plotSegmentation <- function(object,
                              encircle = TRUE,
                              params_encircle = list(),
@@ -1248,37 +1188,21 @@ plotSegmentation <- function(object,
 }
 
 
+#' @keywords internal
+plotSurface2 <- function(...){
+
+  deprecated(fn = TRUE)
+
+  object <- list(...)[["coords_df"]]
+
+  plotSurface(object = object, ...)
+
+}
 
 
 # s -----------------------------------------------------------------------
 
-#' @title Subset a spata-object
-#'
-#' @description These functions filter your spata-object and initiate a new one
-#' with just the barcode-spots of interest.
-#'
-#' @inherit check_sample params
-#' @inherit initiateSpataObject_CountMtr
-#' @inherit initiateSpataObject_ExprMtr
-#' @param segment_name Character value. The segment according to which the spata-object is
-#' to be subsetted.
-#' @param barcodes Character vector. The barcodes that you want to keep.
-#'
-#' @details \code{subsetBy*()}-functions suffixed with \code{_CountMtr} assume your
-#' spata-object to contain a count matrix. They initiate the new spata-object
-#' via \code{initiateSpataObject_CountMtr()}. Check it's documentation for more details.
-#'
-#' \code{subsetBy*()}-functions suffixed with \code{_ExprMtr} assume your
-#' spata-object to contain an expression matrix. They initiate the new spata-object
-#' via \code{initiateSpataObject_ExprMtr()}. Check it's documentation for more details.
-#'
-#' The gene-set data.frame from the input spata-object is transferred to the new object.
-#'
-#' To obtain information about how you initiated the input spata-object use \code{getInitiationInfo()}.
-#'
-#' @return An updated spata-object.
-#' @export
-#'
+#' @keywords internal
 subsetBySegment_CountMtr <- function(object,
                                      segment_name,
                                      of_sample = NA,
@@ -1363,8 +1287,7 @@ subsetBySegment_CountMtr <- function(object,
 
 }
 
-#' @rdname subsetBySegment_CountMtr
-#' @export
+#' @keywords internal
 subsetByBarcodes_CountMtr <- function(object,
                                       barcodes,
                                       of_sample = NA,
@@ -1455,8 +1378,7 @@ subsetByBarcodes_CountMtr <- function(object,
 
 }
 
-#' @rdname subsetBySegment_CountMtr
-#' @export
+#' @keywords internal
 subsetBySegment_ExprMtr <- function(object,
                                     segment_name,
                                     of_sample = NA,
@@ -1539,8 +1461,7 @@ subsetBySegment_ExprMtr <- function(object,
 }
 
 
-#' @rdname subsetBySegment_CountMtr
-#' @export
+#' @keywords internal
 subsetByBarcodes_ExprMtr <- function(object,
                                      barcodes,
                                      of_sample = NA,
@@ -1633,7 +1554,7 @@ subsetByBarcodes_ExprMtr <- function(object,
 
 # t -----------------------------------------------------------------------
 
-
+#' @keywords internal
 tab_create_trajectories_return <- function(){
 
   deprecated(fn = TRUE)
@@ -1642,17 +1563,7 @@ tab_create_trajectories_return <- function(){
 
 # v -----------------------------------------------------------------------
 
-#' @title Validate a spata object
-#'
-#' @description Takes a spata object and checks whether all slots contain suitable
-#' data. If not it attempts to provide a helpful report.
-#'
-#' @param object A spata-object.
-#'
-#' @return A character string that is printed by \code{base::writeLines()}
-#' @export
-#'
-
+#' @keywords internal
 validateSpataObject <- function(object){
 
   deprecated(fn = TRUE)
@@ -1732,11 +1643,7 @@ validateSpataObject <- function(object){
 # trajectory analysis -----------------------------------------------------
 
 
-#' @title Trajectory patterns
-#'
-#' @description Character vectors containing the names of valid trajectory patterns.
-#'
-#' @export
+#' @keywords internal
 trajectory_patterns <- c("Linear descending", "Linear ascending", "Gradient descending", "Logarithmic descending",
                          "Logarithmic ascending", "Gradient ascending","Sinus",  "Sinus (reversed)", "One peak",
                          "One peak (reversed)", "Two peaks (reversed)", "Two peaks", "Early peak", "Late peak",
@@ -1744,16 +1651,17 @@ trajectory_patterns <- c("Linear descending", "Linear ascending", "Gradient desc
                          "Immediate descending", "Immediate ascending",
                          "Sharp peak"
 ) %>% base::sort()
-#' @export
+
+#' @keywords internal
 linear_trends <- c("Linear descending", "Linear ascending")
 
-#' @export
+#' @keywords internal
 gradient_trends <- c("Gradient descending", "Gradient ascending")
 
-#' @export
+#' @keywords internal
 peak_trends <- c("One peak", "Late peak", "Early peak")
 
-#' @export
+#' @keywords internal
 logarithmic_trends <- c("Logarithmic descending", "Logarithmic ascending")
 
 
@@ -1769,7 +1677,7 @@ logarithmic_trends <- c("Logarithmic descending", "Logarithmic ascending")
 #' @return A nested data.frame with information about the dynamics of each gene
 #' or gene set.
 #'
-
+#' @keywords internal
 hlpr_rank_trajectory_trends <- function(stdf, verbose = TRUE){
 
   # 1. Control --------------------------------------------------------------
@@ -1849,8 +1757,7 @@ hlpr_rank_trajectory_trends <- function(stdf, verbose = TRUE){
 }
 
 
-#' @rdname hlpr_rank_trajectory_trends
-
+#' @keywords internal
 hlpr_rank_trajectory_trends_customized <- function(stdf, verbose = TRUE, customized_trends_df){
 
   # 1. Control --------------------------------------------------------------
@@ -1927,23 +1834,7 @@ hlpr_rank_trajectory_trends_customized <- function(stdf, verbose = TRUE, customi
 }
 
 
-#' @title Assess trajectory ranking.
-#'
-#' @description Takes a ranked trajectory data.frame and returns a data.frame
-#' that informs about how well the ranked gene- or gene set expression-trends
-#' fitted certain patterns.
-#'
-#' @param rtdf A ranked trajectory data.frame.
-#' @param pattern The pattern(s) you are interested in specified as a character
-#' vector. If set to NULL all patterns are included.
-#' @param max_auc Numeric value. The maximum area-under-the-curve-value allowed.
-#' @param names_only Logical. If set to TRUE only the names of the assessed ranking
-#' are returned as a character vector. (Convenient to use as input for functions
-#' taking gene set- or gene vectors as input.)
-#'
-#' @return A data.frame arranged by the residuals area-under-the-curve-values describing
-#' how well a model fitted the expression trend of a gene or gene set.
-
+#' @keywords internal
 hlpr_assess_trajectory_trends <- function(rtdf, trajectory_length, summarize_with = "mean", verbose = TRUE){
 
   # 1. Control --------------------------------------------------------------
@@ -1999,7 +1890,7 @@ hlpr_assess_trajectory_trends <- function(rtdf, trajectory_length, summarize_wit
 }
 
 
-#' @rdname hlpr_assess_trajectory_trends
+#' @keywords internal
 hlpr_assess_trajectory_trends_customized <- function(rtdf, trajectory_length,  summarize_with = "mean",  verbose = TRUE){
 
   # 1. Control --------------------------------------------------------------
@@ -2052,22 +1943,7 @@ hlpr_assess_trajectory_trends_customized <- function(rtdf, trajectory_length,  s
 }
 
 
-#' @title Filter variables of a certain trend
-#'
-#' @description Extracts the genes or gene sets that follow a desired trend.
-#'
-#' @param atdf An assessed trajectory data.frame (easily accessed via
-#' \code{assessTrajectoryTrends()}).
-#' @param limit Numeric value. The maximum area-under-the-curve value the
-#' trajectory-trend-assessment might have.
-#' @param trend Character vector. The patterns of interest.
-#' @param variables_only Logical. If set to TRUE a character of variable-names is returned.
-#' If set to FALSE the filtered data.frame is returned.
-#'
-#' @return A character vector of gene or gene-set names that follow the specified
-#' patterns to the specified degree.
-#' @export
-
+#' @keywords internal
 filterTrends <- function(atdf, limit = 5, trends = "all", variables_only = TRUE){
 
   deprecated(fn = TRUE)
@@ -2118,8 +1994,7 @@ filterTrends <- function(atdf, limit = 5, trends = "all", variables_only = TRUE)
 }
 
 
-#' @rdname filterTrends
-#' @export
+#' @keywords internal
 filterTrajectoryTrends <- function(atdf, limit = 5, trends = "all", variables_only = TRUE){
 
   check_atdf(atdf)
@@ -2170,17 +2045,7 @@ filterTrajectoryTrends <- function(atdf, limit = 5, trends = "all", variables_on
 }
 
 
-#' @title Shift trajectory data.frame
-#'
-#' @description Shift a trajectory data.frame from long to wider format or the
-#' other way around.
-#'
-#' @inherit check_stdf params
-#'
-#' @return A shifted trajectory data.frame.
-#' @export
-#'
-
+#' @keywords internal
 shiftTrajectoryDf <- function(stdf, shift = "wider"){
 
   deprecated(fn = TRUE)
@@ -2215,42 +2080,7 @@ shiftTrajectoryDf <- function(stdf, shift = "wider"){
 
 
 
-#' @title Trajectory trend analysis
-#'
-#' @description Analyzes the trend of gene and gene-set-expressions along
-#' trajectories by fitting a variety of mathematical models to them and
-#' by assessing the quality of each fit.
-#'
-#' \itemize{
-#'  \item{\code{assessTrajectoryTrends()}: Takes a valid spata-object and assembles
-#'  the needed summarized trajectory data.frame from scratch.}
-#'  \item{\code{assessTrajectoryTrends2()}: Takes a summarized trajectory data.frame
-#'  returned by \code{getTrajectoryDf()}.}
-#'  \item{\code{assessTrajectoryTrendsCustomized()}: Takes a valid spata-object as well as
-#'  a data.frame or list of customized models against which to fit the variables. It assembles
-#'  the needed summarized trajectory data.frame from scratch.}
-#'  \item{\code{assessTrajectoryTrendsCustomized2()}: Takes a summarized trajectory data.frame
-#'  returned by \code{getTrajectoryDf()} as well as a data.frame or list of customized
-#'  models against which to fit the variables.}
-#'  }
-#'
-#' @param binwidth Numeric value. Specifies the accuracy with which the transcriptomic spots
-#' are binned based on their projection length on the trajectory. Given to argument
-#' \code{accuracy} of \code{base::floor()}.
-#' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}. Specifies the
-#' function with which the numeric values of each variable are summarized by bin.
-#' @inherit argument_dummy params
-#' @inherit check_customized_trends params
-#' @inherit check_sample params
-#' @inherit check_trajectory params
-#' @inherit check_variables params
-#' @inherit hlpr_rank_trajectory_trends params
-#'
-#' @return A data.frame arranged by the residuals area-under-the-curve-values describing
-#' how well a model fitted the expression trend of a gene or gene set.
-#'
-#' @export
-
+#' @keywords internal
 assessTrajectoryTrends <- function(object,
                                    trajectory_name,
                                    variables,
@@ -2302,8 +2132,7 @@ assessTrajectoryTrends <- function(object,
 
 }
 
-#' @rdname assessTrajectoryTrends
-#' @export
+#' @keywords internal
 assessTrajectoryTrends2 <- function(stdf, verbose = TRUE){
 
   deprecated(fn = TRUE)
@@ -2325,8 +2154,7 @@ assessTrajectoryTrends2 <- function(stdf, verbose = TRUE){
 }
 
 
-#' @rdname assessTrajectoryTrends
-#' @export
+#' @keywords internal
 assessTrajectoryTrendsCustomized <- function(object,
                                              trajectory_name,
                                              customized_trends,
@@ -2395,8 +2223,7 @@ assessTrajectoryTrendsCustomized <- function(object,
 }
 
 
-#' @rdname assessTrajectoryTrends
-#' @export
+#' @keywords internal
 assessTrajectoryTrendsCustomized2 <- function(stdf, customized_trends, verbose = TRUE){
 
   deprecated(fn = TRUE)
@@ -2433,18 +2260,7 @@ assessTrajectoryTrendsCustomized2 <- function(stdf, customized_trends, verbose =
 
 
 
-#' @title Plot customized trajectory trends
-#'
-#' @description Visualizes the trajectory trends you set up yourself.
-#'
-#' @inherit argument_dummy params
-#' @inherit check_customized_trends params
-#' @inherit check_smooth params
-#' @param ... Additional arguments given to \code{ggplot2::facet_wrap()}.
-#'
-#' @inherit ggplot_family return
-#' @export
-
+#' @keywords internal
 plotCustomizedTrajectoryTrends <- function(customized_trends,
                                            smooth = TRUE,
                                            smooth_span = 0.2,
@@ -2509,250 +2325,19 @@ plotCustomizedTrajectoryTrends <- function(customized_trends,
 }
 
 
-#' @title Plot trajectory
-#'
-#' @description Displays the spatial course of spatial trajectory that was
-#' drawn with \code{SPATA::createTrajectories()}. Increase the transparency
-#' via argument \code{pt_alpha} to highlight the trajectory's course.
-#'
-#' @param pt_alpha2 Numeric value. Specifies the transparency of the spots
-#' that fall into the trajectory's reach.
-#' @inherit argument_dummy params
-#' @inherit check_color_to params
-#' @inherit check_display params
-#' @inherit check_method params
-#' @inherit check_pt params
-#' @inherit check_sample params
-#' @inherit check_smooth params
-#' @inherit check_trajectory params
-#' @inherit check_uniform_genes params
-#'
-#' @param sgmt_size The size of the segment arrrow specified as a numeric value.
-#'
-#' @inherit ggplot_family return
-#'
+#' @rdname plotSpatialTrajectories
 #' @export
-#'
-
-plotTrajectory <- function(object,
-                           trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
-                           color_by = NULL,
-                           method_gs = NULL,
-                           smooth = NULL,
-                           smooth_span = NULL,
-                           pt_size = NULL,
-                           pt_alpha = 0.5,
-                           pt_alpha2 = 0.9,
-                           pt_clr = NULL,
-                           pt_clrp = NULL,
-                           pt_clrsp = NULL,
-                           sgmt_clr = NULL,
-                           sgmt_size = NULL,
-                           display_image = NULL,
-                           display_title = NULL,
-                           uniform_genes = NULL,
-                           arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
-                           verbose = NULL,
-                           of_sample = NA){
+#' @keywords internal
+plotTrajectory <- function(...){
 
   deprecated(fn = TRUE)
 
-  # 1. Control --------------------------------------------------------------
-
-  # lazy check
-  hlpr_assign_arguments(object)
-  check_method(method_gs = method_gs)
-  check_pt(pt_size, pt_alpha, pt_clrsp, pt_clr = pt_clr)
-  check_display(display_title, display_image)
-  check_smooth(smooth = smooth, smooth_span = smooth_span)
-
-  # adjusting check
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
-
-  check_trajectory(object, trajectory_name, of_sample)
-
-  if(!base::is.null(color_by)){
-
-    color_by <-
-      check_color_to(
-        color_to = color_by,
-        all_gene_sets = getGeneSets(object),
-        all_genes = getGenes(object),
-        all_features = getFeatureNames(object)
-      )
-
-  }
-
-  # -----
-
-  # 2. Extract data ---------------------------------------------------------
-
-  trajectory_object <-
-    getSpatialTrajectory(
-      object = object,
-      trajectory_name = trajectory_name,
-      of_sample = of_sample
-    )
-
-  projection_df <- trajectory_object@compiled_trajectory_df
-
-  trajectory_bc <- dplyr::pull(.data = projection_df, var = "barcodes")
-  trajectory_sgmt_df <- trajectory_object@segment
-
-  bc_traj <- dplyr::pull(.data = projection_df, var = "barcodes")
-
-  background_df <-
-    getCoordsDf(object, of_sample = of_sample) %>%
-    dplyr::mutate(trajectory = dplyr::if_else(barcodes %in% bc_traj, "yes", "no"))
-
-
-  # 3. Determine additional layers ------------------------------------------
-
-  # if of length one and feature
-  if("features" %in% base::names(color_by)){
-
-    labs_add_on <-
-      hlpr_labs_add_on(
-        input = color_by,
-        input_str = "Feature:",
-        color_str = color_by,
-        display_title = display_title
-      )
-
-    color_by_value <- base::unlist(color_by, use.names = FALSE)
-
-    # if of length one and gene set
-  } else if("gene_sets" %in% base::names(color_by)){
-
-    # labs-add-on
-    labs_add_on <-
-      hlpr_labs_add_on(
-        input = color_by$gene_sets,
-        input_str = "Gene set:",
-        color_str = hlpr_gene_set_name(color_by$gene_sets),
-        display_title = display_title
-      )
-
-    color_by_value <- base::unlist(color_by, use.names = FALSE)
-
-  } else if("genes" %in% base::names(color_by)){
-
-    color_str <- base::ifelse(test = base::length(color_by$genes) == 1,
-                              yes = color_by$genes,
-                              no = "Mean expr.\nscore")
-
-    color_by_value <- "mean_genes"
-
-    # labs-add-on
-    labs_add_on <-
-      hlpr_labs_add_on(
-        input = color_by,
-        input_str = "Genes:",
-        color_str = color_str,
-        display_title = display_title
-      )
-
-  } else if(base::is.null(color_by)){
-
-    coords_df <- dplyr::filter(background_df, barcodes %in% bc_traj)
-
-    # labs-add-on
-    if(base::isTRUE(display_title)){
-
-      labs_add_on <- ggplot2::labs(title = glue::glue("Trajectory: {trajectory_name}."))
-
-    } else {
-
-      labs_add_on <- NULL
-
-    }
-
-    ggplot_add_on <- list(
-      ggplot2::geom_point(
-        data = background_df, size = pt_size, color = pt_clr,
-        mapping = ggplot2::aes(x = x,  y = y, alpha = trajectory)
-      ),
-      ggplot2::scale_alpha_manual(values = c("yes" = 1, "no" = pt_alpha), guide = FALSE))
-
-  }
-
-  if(!base::is.null(color_by)){
-
-    background_df <-
-      joinWithVariables(
-        object = object,
-        spata_df = background_df,
-        variables = color_by,
-        method_gs = method_gs,
-        average_genes = TRUE,
-        uniform_genes = uniform_genes,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        verbose = verbose
-      )
-
-    ggplot_add_on <- list(
-      geom_point_fixed(
-        data = background_df,
-        size = pt_size,
-        mapping = ggplot2::aes(x = x,  y = y, alpha = trajectory, color = .data[[color_by_value]])
-      ),
-      ggplot2::scale_alpha_manual(values = c("yes" = pt_alpha2, "no" = pt_alpha), guide = FALSE),
-      confuns::scale_color_add_on(
-        aes = "color",
-        clrsp = pt_clrsp,
-        clrp = pt_clrp,
-        variable = background_df[[color_by_value]]
-      ),
-      hlpr_adjust_legend_size(variable = background_df[[color_by_value]], aes = "color", pt_size = pt_size)
-    )
-
-  }
-
-  # -----
-
-  ggplot2::ggplot() +
-    hlpr_image_add_on(object, display_image, of_sample) +
-    ggplot_add_on +
-    ggplot2::geom_segment(data = trajectory_sgmt_df,
-                          mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
-                          color = sgmt_clr, size = sgmt_size,
-                          arrow = arrow) +
-    ggplot2::theme_void() +
-    ggplot2::coord_equal() +
-    labs_add_on
+  plotSpatialTrajectories(...)
 
 }
 
 
-#' @title Plot continuous trajectory dynamics in lineplots
-#'
-#' @description Displays values along a trajectory direction with
-#' a smoothed lineplot.
-#'
-#' @inherit argument_dummy params
-#' @inherit average_genes params
-#' @inherit check_features params
-#' @inherit check_gene_sets params
-#' @inherit check_genes params
-#' @inherit check_method params
-#' @inherit check_sample params
-#' @inherit check_smooth params
-#' @inherit check_trajectory_binwidth params
-#'
-#' @param discrete_feature Character value. The discrete feature of interest.
-#' @param display_trajectory_parts Logical. If set to TRUE the returned plot
-#' visualizes the parts in which the trajectory has been partitioned while beeing
-#' drawn.
-#' @param display_facets Logical. If set to TRUE sub plots for every specified gene, gene-set
-#' or feature are displayed via \code{ggplot2::facet_wrap()}
-#' @param ... Additional arguments given to \code{ggplot2::facet_wrap()} if argument
-#' \code{display_facets} is set to TRUE.
-#'
-#' @inherit ggplot_family return
-#'
-#' @export
-
+#' @keywords internal
 plotTrajectoryFeatures <- function(object,
                                    trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                    features = NULL,
@@ -2862,8 +2447,7 @@ plotTrajectoryFeatures <- function(object,
 
 }
 
-#' @rdname plotTrajectoryFeatures
-#' @export
+#' @keywords internal
 plotTrajectoryGenes <- function(object,
                                 trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                 genes,
@@ -3041,8 +2625,7 @@ plotTrajectoryGenes <- function(object,
 }
 
 
-#' @rdname plotTrajectoryFeatures
-#' @export
+#' @keywords internal
 plotTrajectoryGeneSets <- function(object,
                                    trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                    gene_sets,
@@ -3160,23 +2743,7 @@ plotTrajectoryGeneSets <- function(object,
 }
 
 
-#' @title Plot discrete trajectory dynamics
-#'
-#' @description Displays discrete variables along a trajectory.
-#'
-#' @inherit argument_dummy params
-#' @inherit check_sample params
-#' @param discrete_feature Character value. The discrete feature of interest.
-#' @inherit check_trajectory_binwidth params
-#' @param display_trajectory_parts Logical. If set to TRUE the returned plot
-#' visualizes the parts in which the trajectory has been partitioned while beeing
-#' drawn.
-#' @inherit argument_dummy params
-#' @param ... Additional arguments given to \code{ggplot2::facet_wrap()}.
-#'
-#' @inherit ggplot_family return
-#' @export
-
+#' @keywords internal
 plotTrajectoryFeaturesDiscrete <- function(object,
                                            trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                            discrete_feature,
@@ -3258,17 +2825,7 @@ plotTrajectoryFeaturesDiscrete <- function(object,
 }
 
 
-
-
-
-
-
-#' @title Deprecated
-#'
-#' @description Deprecated
-#'
-#' @export
-
+#' @keywords internal
 plotTrajectoryFit <- function(object,
                               trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                               variable,
@@ -3454,8 +3011,7 @@ plotTrajectoryFit <- function(object,
 }
 
 
-#' @rdname plotTrajectoryFit
-#' @export
+#' @keywords internal
 plotTrajectoryFitCustomized <- function(object,
                                         trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                         variable,
@@ -3668,14 +3224,7 @@ plotTrajectoryFitCustomized <- function(object,
 
 
 
-#' @title Obtain trajectory object
-#'
-#' @inherit check_sample params
-#' @inherit check_trajectory params
-#'
-#' @return An object of class \code{spatialTrajectory}.
-#' @export
-
+#' @keywords internal
 getTrajectoryObject <- function(object,
                                 trajectory_name = getDefaultTrajectory(object, verbose = TRUE, "trajectory_name"),
                                 of_sample = NA){
@@ -3697,18 +3246,7 @@ getTrajectoryObject <- function(object,
 
 
 
-#' @title Spatial Trajectories
-#'
-#' @description The function \code{createTrajectories()} provides access to an
-#' interactive mini-shiny application that allows to draw trajectories.
-#'
-#' @param object A valid spata-object.
-#'
-#' @return An updated version of the spata-object specified as \code{object}
-#' now containing the information about all drawn trajectories.
-#' @export
-#'
-
+#' @keywords internal
 createTrajectories <- function(object){
 
   deprecated(fn = TRUE, fdb_fn = "stop")
@@ -3995,176 +3533,18 @@ createTrajectories <- function(object){
 
 
 
-#' @title Create spatial trajectories manually
-#'
-#' @description Manual version of \code{createTrajectories()}. Instead of
-#' drawing them interactively you can provide the coordinates via the
-#' arguments \code{width}, \code{vertices}, \code{start} and \code{end}.
-#'
-#' @inherit argument_dummy params
-#'
-#' @param trajectory_name Character value. The name of the new trajectory.
-#'
-#' @param start,end Numeric vectors of length two. Defining start and endpoint
-#' of the trajectory. First value of each vector is used as the respective
-#' x-coordinate. Second value of each vector is used as the respective y-coordinate.
-#' @param width Numeric value. Denotes the trajectory width.
-#' @param vertices List. Optional if you want to specify additional vertices
-#' between start and endpoint to split the trajectory into parts.
-#'
-#' Every slot of the input list must be a numeric vector which
-#' is then handled in the same way that the input of arguments \code{start} and \code{end}
-#' is handled - first value is taken for x- and second value for y-coordinate.
-#'
-#' Ignored if not a list or a list of length 0.
-#'
-#' @param comment Character value. Optional if you want to provide a reasoning
-#' why you have drawn the trajectory.
-#' @param plot Logical value. If set to TRUE the created trajectory is plotted
-#' via \code{plotTrajectory()}.
-#'
-#' @return An updated spata-object.
 #' @export
-#'
-#' @examples
-#'
-#'
-#'  object <-
-#'   createTrajectoryManually(
-#'      object = object,
-#'      trajectory_name = "my_trajectory",
-#'      start = c(x = 136, y = 181),
-#'      end = c(x = 381, y = 398),
-#'      vertices = list(va = c(x = 251, y = 283), vb = c(x = 344, y = 356)),
-#'      width = 25,
-#'      comment = 'This serves as an example.'
-#'        )
-#'
-createTrajectoryManually <- function(object,
-                                     trajectory_name,
-                                     start,
-                                     end,
-                                     width,
-                                     vertices = list(),
-                                     comment = "",
-                                     plot = FALSE,
-                                     verbose = NULL,
-                                     of_sample = NA){
+createTrajectoryManually <- function(...){
 
   deprecated(fn = TRUE)
 
-  check_object(object)
-  hlpr_assign_arguments(object)
-
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
-
-  # extract coords
-  coords_df <- getCoordsDf(object)
-
-  x_range <- base::range(coords_df$x)
-  y_range <- base::range(coords_df$y)
-
-  coords_range <- base::max(c(x_range, y_range)) - base::min(c(x_range, y_range))
-
-  # input check
-  confuns::are_vectors(c("start", "end"), mode = "numeric", of.length = 2)
-
-  confuns::is_value(x = width, mode = "numeric")
-
-  confuns::is_value(x = comment, mode = "character")
-
-  confuns::check_none_of(
-    input = trajectory_name,
-    against = getTrajectoryNames(object, of_sample = of_sample),
-    ref.against = "trajectory names"
-  )
-
-  # compile trajectory
-  segment_trajectory_df <-
-    base::data.frame(
-      x = start[1],
-      y = start[2],
-      xend = end[1],
-      yend = end[2],
-      part = "part_1",
-      stringsAsFactors = FALSE
-    )
-
-  if(confuns::is_list(vertices) & base::length(vertices) >= 1){
-
-    for(nth in base::seq_along(vertices)){
-
-      if(!confuns::is_vec(x = vertices[[nth]], mode = "numeric", of.length = 2, verbose = FALSE)){
-
-        stop("Every slot of input list for argument 'vertices' must be a numeric vector of length 2.")
-
-      }
-
-      segment_trajectory_df$xend[nth] <- vertices[[nth]][1]
-      segment_trajectory_df$yend[nth] <- vertices[[nth]][2]
-
-      segment_trajectory_df <-
-        dplyr::add_row(
-          .data = segment_trajectory_df,
-          x = vertices[[nth]][1],
-          y = vertices[[nth]][2],
-          xend = end[1],
-          yend = end[2],
-          part = stringr::str_c("part", nth+1, sep = "_")
-        )
-
-    }
-
-  }
-
-  compiled_trajectory_df <-
-    hlpr_compile_trajectory(
-      segment_trajectory_df = segment_trajectory_df,
-      trajectory_width = width,
-      object = object,
-      sample = of_sample
-    )
-
-  trajectory_object <-
-    methods::new(
-      Class = "spatial_trajectory",
-      compiled_trajectory_df = compiled_trajectory_df,
-      segment_trajectory_df = segment_trajectory_df,
-      comment = comment,
-      name = trajectory_name,
-      sample = of_sample
-    )
-
-  object <-
-    addTrajectoryObject(
-      object = object,
-      trajectory_name = trajectory_name,
-      trajectory_object = trajectory_object,
-      of_sample = of_sample
-    )
-
-  if(base::isTRUE(plot)){
-
-    p <- plotTrajectory(object, trajectory_name = trajectory_name)
-
-    plot(p)
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Created trajectory '{trajectory_name}' for sample {of_sample}."),
-    verbose = verbose
-  )
-
-  return(object)
+  addSpatialTrajectory(...)
 
 }
 
 
 
-#' @title Deprecated
-#'
-#' @export
+#' @keywords internal
 plotCnvResults <- function(...){
 
   deprecated(fn = TRUE)

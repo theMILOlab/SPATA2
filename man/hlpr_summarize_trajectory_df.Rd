@@ -19,7 +19,7 @@ hlpr_summarize_trajectory_df(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ctdf}{A compiled trajectory data.frame containing the variables
 \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.}
@@ -83,3 +83,4 @@ only one trajectory part.)}
 \item{\emph{gene_sets, genes or features}: Character. The respective gene sets, gene or feature the value refers to.}
 \item{\emph{values}: Numeric. The actual summarized values.}}
 }
+\keyword{internal}

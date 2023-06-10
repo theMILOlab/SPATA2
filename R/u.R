@@ -32,7 +32,7 @@
 updateSpataObject <- function(object,
                               sample_name = NULL,
                               chr_to_fct = TRUE,
-                              n_pcs = 60,
+                              n_pcs = 30,
                               verbose = TRUE){
 
 
@@ -46,21 +46,11 @@ updateSpataObject <- function(object,
 
   if(package == "SPATA"){
 
-    confuns::is_value(x = sample_name, mode = "character")
+    sample_name <- object@samples
 
-    sample_names <- object@samples
+    if(base::length(sample_name) > 1){
 
-    if(sample_name %in% sample_names){
-
-      msg <- glue::glue("Updating sample '{sample_name}'.")
-
-      confuns::give_feedback(msg = msg, verbose = verbose)
-
-    } else {
-
-      msg <- glue::glue("Did not find sample '{sample_name}' in all samples of the provided spata-object to be updated.")
-
-      confuns::give_feedback(msg = msg, fdb.fn = "stop")
+      stop("SPATA object contains more than one sample. Please specify the sample of interest with `sample_name`.")
 
     }
 
@@ -73,7 +63,8 @@ updateSpataObject <- function(object,
     # coordinates
     coords_df <-
       dplyr::filter(object@coordinates, sample == {{sample_name}}) %>%
-      dplyr::mutate(barcodes = stringr::str_remove_all(barcodes, pattern = sample_pattern))
+      dplyr::mutate(barcodes = stringr::str_remove_all(barcodes, pattern = sample_pattern)) %>%
+      tibble::as_tibble()
 
     n_bcsp <- base::nrow(coords_df)
 
@@ -87,8 +78,13 @@ updateSpataObject <- function(object,
 
     count_mtr <- count_mtr[, stringr::str_detect(string = count_bcs, pattern = sample_pattern)]
 
-    base::colnames(count_mtr) <- stringr::str_remove_all(string = count_bcs, pattern = sample_pattern)
+    if(base::ncol(count_mtr) == 0){ # barcodes are not suffixed with sample pattern
 
+      count_mtr <- object@data@counts
+
+    }
+
+    base::colnames(count_mtr) <- stringr::str_remove_all(string = count_bcs, pattern = sample_pattern)
 
     # expression matrix
     expr_mtr <- object@data@norm_exp
@@ -96,6 +92,12 @@ updateSpataObject <- function(object,
     expr_bcs <- base::colnames(expr_mtr)
 
     expr_mtr <- expr_mtr[, stringr::str_detect(string = expr_bcs, pattern = sample_pattern)]
+
+    if(base::ncol(expr_mtr) == 0){ # barcodes are not suffixed with sample pattern
+
+      expr_mtr <- object@data@norm_exp
+
+    }
 
     base::colnames(expr_mtr) <- stringr::str_remove_all(string = expr_bcs, pattern = sample_pattern)
 
@@ -124,13 +126,11 @@ updateSpataObject <- function(object,
 
     }
 
-
     # image
     image <- object@image
 
     # trajectories
     trajectories <- object@trajectories
-
 
     # dimensional reduction
     # umap
@@ -142,7 +142,6 @@ updateSpataObject <- function(object,
     tsne_df <-
       dplyr::filter(object@dim_red@TSNE, sample == {{sample_name}}) %>%
       dplyr::mutate(barcodes = stringr::str_remove_all(string = barcodes, pattern = sample_pattern))
-
 
     # gsdf
     gene_set_df <- object@used_genesets
@@ -157,8 +156,7 @@ updateSpataObject <- function(object,
     object_new@samples <- sample_name
     object_new@used_genesets <- gene_set_df
 
-    object_new@information <-
-      list("barcodes" = magrittr::set_names(x = list(coords_df$barcodes), value = sample_name))
+    object_new <- setBarcodes(object_new, barcodes = coords_df$barcodes)
 
     # core data
     object_new <-
@@ -178,7 +176,6 @@ updateSpataObject <- function(object,
     object_new@autoencoder <- empty_list
     object_new@dea <- empty_list
     object_new@spatial <- empty_list
-
 
     # transfer dimensional reduction data
     # pca data.frame
@@ -232,18 +229,36 @@ updateSpataObject <- function(object,
     }
 
     # add content of new slots
+    if(base::length(object@image) >= 1){
+
+      if(EBImage::is.Image(object@image[[1]])){
+
+        io <-
+          createHistologyImaging(
+            image = object@image[[1]],
+            id = sample_name,
+            coordinates = coords_df
+          )
+
+        object_new <- setImageObject(object_new, image_object = io)
+
+        object_new <- flipImage(object_new, axis = "h")
+
+      }
+
+    }
+
+    object_new <- setActiveMatrix(object = object_new, mtr_name = "scaled", verbose = FALSE)
+    object_new <- setActiveExpressionMatrix(object = object_new, mtr_name = "scaled", verbose = FALSE)
 
     object_new <- setInitiationInfo(object = object_new)
 
-    object_new <- setDefaultInstructions(object = object_new)
-
     object_new <- setDirectoryInstructions(object = object_new)
-
-    object_new <- computeGeneMetaData(object = object_new, verbose = verbose)
 
     object <- object_new
 
     object@version <- current_spata_version
+
 
     base::rm(object_new)
 
@@ -387,7 +402,7 @@ updateSpataObject <- function(object,
 
     object@coordinates[[sample_name]] <- coords_df
 
-    object <- flipImage(object)
+    #object <- flipImage(object, axis = "h")
 
     msg <-
       c("We have aligned the surface plotting to the mechanism used by other packages.
@@ -576,7 +591,6 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 13, patch = 0)
 
-    # method
     object@information$method <- spatial_methods[["Visium"]]
 
     object <- setPixelScaleFactor(object, verbose = verbose)
@@ -589,9 +603,190 @@ updateSpataObject <- function(object,
     active_expr_mtr <- object@information$active_expr_mtr[[1]]
     object@information$active_expr_mtr <- active_expr_mtr
 
+    # add angle and flip data
+    if(containsImageObject(object)){
+
+      io <- getImageObject(object)
+
+      io@info$angle <- 0
+      io@info$flipped <- list(x = FALSE, y = FALSE)
+
+      object <- setImageObject(object, image_object = io)
+
+    }
 
   }
 
+  if(object@version$major == 1 & object@version$minor == 13){
+
+    object@version <- list(major = 1, minor = 14, patch = 0)
+
+    info <-
+      list(
+        current_just = list(
+          angle = 0,
+          flipped = list(horizontal = FALSE, vertical = FALSE)
+        )
+      )
+
+    if(containsImage(object)){
+
+      info$current_dim <- getImageDims(object)
+
+    }
+
+    # spatial trajectories
+    if(nSpatialTrajectories(object) >= 1){
+
+      info$parent_id <- NULL
+
+      for(id in getSpatialTrajectoryIds(object)){
+
+        spat_traj <- getSpatialTrajectory(object, id = id)
+
+        spat_traj <-
+          transfer_slot_content(
+            recipient = SpatialTrajectory(),
+            donor = spat_traj,
+            verbose = FALSE
+          )
+
+        spat_traj@width_unit <- "px"
+
+        spat_traj@info <- info
+
+        object <-
+          setTrajectory(
+            object = object,
+            trajectory = spat_traj,
+            align = FALSE,
+            overwrite = TRUE
+          )
+
+      }
+
+    }
+
+    if(containsHistologyImage(object)){
+
+      io <- getImageObject(object)
+
+      # transfer from HistologyImage -> HistologyImaging
+      io <-
+        transfer_slot_content(
+          recipient = HistologyImaging(),
+          donor = io,
+          verbose = FALSE
+        )
+
+      # add new required data
+      io@image_info$dim_input <- base::dim(io@image)
+      io@image_info$dim_stored <- base::dim(io@image)
+      io@image_info$img_scale_fct <- 1
+
+      io@justification <-
+        list(
+          angle = 0,
+          flipped = list(horizontal = FALSE, vertical = FALSE)
+        )
+
+      # overwrite `info`
+      info <-
+        list(
+          parent_origin = NA_character_,
+          parent_id = io@id,
+          current_dim = io@image_info$dim_stored,
+          current_just = list(
+            angle = 0,
+            flipped = list(horizontal = FALSE, vertical = FALSE)
+          )
+        )
+
+      object <- setImageObject(object, image_object = io)
+
+      # image annotations
+      if(nImageAnnotations(object) >= 1){
+
+        for(id in getImageAnnotationIds(object)){
+
+          img_ann <-
+            getImageAnnotation(
+              object = object,
+              id = id,
+              add_image = FALSE,
+              add_barcodes = FALSE
+            )
+
+          img_ann <-
+            transfer_slot_content(
+              recipient = ImageAnnotation(),
+              donor = img_ann,
+              verbose = FALSE
+            )
+
+          img_ann@info <- info
+
+          object <-
+            setImageAnnotation(
+              object = object,
+              img_ann = img_ann,
+              align = FALSE,
+              overwrite = TRUE
+            )
+
+        }
+
+      }
+
+    }
+
+  }
+
+  if(object@version$major == 1 & object@version$minor == 14){
+
+    object@version <- list(major = 1, minor = 15, patch = 0)
+
+    if(nImageAnnotations(object) >= 1){
+
+      io <- getImageObject(object)
+
+      io@annotations <-
+        purrr::map(
+          .x = io@annotations,
+          .f = function(img_ann){
+
+            outer_border <-
+              base::as.data.frame(img_ann@area) %>%
+              tibble::as_tibble()
+
+            img_ann_new <-
+              transfer_slot_content(
+                recipient = ImageAnnotation(),
+                donor = img_ann,
+                skip = "area",
+                verbose = FALSE
+              )
+
+            img_ann_new@area <- list(outer = outer_border)
+
+            return(img_ann_new)
+
+          }
+        )
+
+      object <- setImageObject(object, image_object = io)
+
+    }
+
+  }
+
+  if(object@version$major == 1 & object@version$minor == 15){
+
+    object@version <- list(major = 2, minor = 0, patch = 0)
+
+    object <- setTissueOutline(object)
+
+  }
 
   # default adjustment ------------------------------------------------------
 
@@ -612,10 +807,15 @@ updateSpataObject <- function(object,
 
   object <- setDefaultInstructions(object)
 
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
+  version <- version_string(object@version)
+
+  confuns::give_feedback(
+    msg = glue::glue("Object updated. New version: {version}"),
+    verbose = verbose
+  )
 
   base::rm(x.updating.spata.object.x, envir = .GlobalEnv)
 
-  base::return(object)
+  return(object)
 
 }

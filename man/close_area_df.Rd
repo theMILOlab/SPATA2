@@ -10,3 +10,4 @@ close_area_df(df)
 "Closes" the area described by the vertices of \code{df} by
 adding the starting point (first row) to the end of the data.frame.
 }
+\keyword{internal}

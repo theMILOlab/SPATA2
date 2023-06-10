@@ -4,17 +4,40 @@
 \alias{buffer_area}
 \title{Buffer area}
 \usage{
-buffer_area(df, buffer)
+buffer_area(df, buffer, close_plg = TRUE)
 }
 \arguments{
 \item{df}{Data.frame with variables \emph{x} and \emph{y} describing the
 vertices of the polygon that encircles the area based on which the barcode-spots
-are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
+are binned. E.g. slot @area of \code{ImageAnnotation}-objects. Note that the order of
+observations in the data.frame must correspond to the order of vertices
+of the polygon.}
 
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the image annotation screening. Given to argument
-\code{dist} of function \code{sf::st_buffer()}. (See details for more.)}
+\code{dist} of function \code{sf::st_buffer()}.}
 }
 \description{
 Buffers the area of a polygon.
+}
+\examples{
+
+ library(ggplot2)
+
+ object <- downloadSpataObject("313_T")
+
+ object <- setImageAnnotation(object, img_ann = image_annotations[["313_T"]][["necrotic_center"]])
+
+ outline1 <- getImgAnnOutlineDf(object, ids = "necrotic_center")
+
+ print(outline1)
+
+ outline2 <- buffer_area(outline1, buffer = 20)
+
+ print(outline2)
+
+ plotSurface(object) +
+  geom_polygon(data = outline1, mapping = aes(x = x, y = y), color = "black", fill = NA, size = 2) +
+  geom_polygon(data = outline2, mapping = aes(x = x, y = y), color = "red" , fill = NA, size = 2)
+
 }

@@ -4,6 +4,406 @@
 
 # getI --------------------------------------------------------------------
 
+#' @title Calculate IAS bin area
+#'
+#' @description Computes the area circular bins of the IAS algorithm
+#' cover.
+#'
+#' @param use_outline Logical value. If `TRUE`, uses the outline variable
+#' set with `setOutlineVarName()` or if none is set DBSCAN to identify the
+#' outline of the tissue section or sections in case of multiple tissue sections
+#' on one Visium slide to only compute the area of circle bins that covers the
+#' tissue section.
+#'
+#' @inherit getIasDf params
+#'
+#' @details Approximates the area each circular bin covers
+#' by assigning each pixel to the circular bin it falls into.
+#' Afterwards the number of pixels per bin is multiplied
+#' with the area scale factor as is obtained by `getPixelScaleFactor(object, unit = unit)`
+#' where unit is the squared unit of input for argument `binwidth`. E.g.
+#' if `binwidth` = *'0.1mm'* then `unit` = *mm2*.
+#'
+#' @return Data.frame in which each observation corresponds to a circular bin.
+#'
+#' @note If multiple tissue sections are located on the Visium slide use `createSpatialSegmentation()`
+#' to encircle each section and set the variable name in which you saved the
+#' encircling via `setOutlineVarName()`. Else the areas of the circle bins might
+#' include space that is not covered by tissue. This might distort computation
+#' results.
+#'
+#' @export
+#'
+getIasBinAreas <- function(object,
+                           id,
+                           distance = NA_integer_,
+                           n_bins_circle = NA_integer_,
+                           binwidth = getCCD(object),
+                           angle_span = c(0, 360),
+                           n_bins_angle = 1,
+                           area_unit = NULL,
+                           use_outline = TRUE,
+                           remove_circle_bins = "Outside",
+                           verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(base::is.null(area_unit)){
+
+    area_unit <- stringr::str_c(extract_unit(binwidth), "2")
+
+  }
+
+  ias_input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
+    )
+
+  area_scale_fct <-
+    getPixelScaleFactor(object, unit = area_unit) %>%
+    base::as.numeric()
+
+  pxl_df <- getPixelDf(object)
+
+  if(base::isTRUE(use_outline)){
+
+    outline_var <- getOutlineVarName(object)
+
+    if(base::is.character(outline_var)){
+
+      coords_df <- getCoordsDf(object, features = outline_var)
+
+    } else {
+
+      coords_df <- getCoordsDf(object)
+
+    }
+
+    pxl_df <-
+      include_tissue_outline(
+        coords_df = coords_df,
+        input_df = pxl_df,
+        outline_var = outline_var,
+        img_ann_center = getImgAnnCenter(object, id),
+        ccd = getCCD(object, "px")
+      )
+
+  }
+
+  out_df <-
+    bin_by_expansion(
+      coords_df = pxl_df,
+      area_df = getImgAnnOutlineDf(object, ids = id),
+      binwidth = ias_input$binwidth,
+      n_bins_circle = ias_input$n_bins_circle,
+      remove = remove_circle_bins
+    ) %>%
+      bin_by_angle(
+        coords_df = .,
+        center = getImgAnnCenter(object, id = id),
+        n_bins_angle = n_bins_angle,
+        angle_span = angle_span,
+        var_to_bin = "pixel",
+        verbose = FALSE
+      ) %>%
+      dplyr::group_by(bins_circle, bins_angle) %>%
+      dplyr::summarise(n_pixel = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        id = {{id}},
+        area_scale_fct = {{area_scale_fct}},
+        area = n_pixel * area_scale_fct,
+        unit = area_unit,
+        bins_order =
+          dplyr::case_when(
+            bins_circle == "Core" ~ 0,
+            bins_circle == "Outside" ~ (base::max(ias_input$n_bins_circle)+1),
+            TRUE ~  base::as.numeric(stringr::str_extract(bins_circle, pattern = "\\d*$"))
+          )
+      ) %>%
+      dplyr::select(id, bins_circle, bins_order, bins_angle, dplyr::everything())
+
+  return(out_df)
+
+}
+
+#' @title Obtain image annotation screening data.frame
+#'
+#' @description Extracts a data.frame of inferred gradients of numeric
+#' variables as a fucntion of distance to image annotations.
+#'
+#' @inherit bin_by_expansion params
+#' @inherit bin_by_angle params
+#'
+#' @inherit getImgAnnOutlineDf params
+#' @inherit imageAnnotationScreening params
+#' @inherit joinWith params
+#'
+#' @return Data.frame.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' data("image_annotations")
+#'
+#' necrotic_img_ann <- image_annotations[["313_T"]][["necrotic_center"]]
+#'
+#' object <- downloadSpataObject(sample_name = "313_T")
+#'
+#' object <- setImageAnnotation(object = object, img_ann = necrotic_img_ann)
+#'
+#' plotSurfaceIAS(
+#'  object = object,
+#'  id = "necrotic_center",
+#'  distance = 200
+#'  )
+#'
+#' plotSurfaceIAS(
+#'  object = object,
+#'  id = "necrotic_center",
+#'  distance = 200,
+#'  binwidth = getCCD(object)*4, # lower resolution by increasing binwidth for visualization
+#'  n_bins_angle = 12,
+#'  display_angle = TRUE
+#'  )
+#'
+#' getIasDf(
+#'   object = object,
+#'   id = "necrotic_center",
+#'   distance = 200,
+#'   variables = "VEGFA"
+#'   )
+#'
+#' getIasDf(
+#'   object = object,
+#'    id = "necrotic_center",
+#'    distance = 200,
+#'    variables = "VEGFA"
+#'    )
+#'
+#' getIasDf(
+#'   object = object,
+#'    id = "necrotic_center",
+#'    distance = 200,
+#'    variables = "VEGFA",
+#'    n_bins_angle = 12
+#'    )
+#'
+
+getIasDf <- function(object,
+                     id,
+                     distance = NA_integer_,
+                     n_bins_circle = NA_integer_,
+                     binwidth = getCCD(object),
+                     angle_span = c(0,360),
+                     n_bins_angle = 1,
+                     variables = NULL,
+                     method_gs = NULL,
+                     summarize_by = c("bins_angle", "bins_circle"),
+                     summarize_with = "mean",
+                     normalize_by = "sample",
+                     normalize = FALSE,
+                     remove_circle_bins = FALSE,
+                     remove_angle_bins = FALSE,
+                     rename_angle_bins = FALSE,
+                     bcsp_exclude = NULL,
+                     verbose = FALSE,
+                     ...){
+
+  if(base::length(id) > 1){
+
+    base::stopifnot(summarize_with %in% c("mean", "median"))
+
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        get_img_ann_helper(
+          object = object,
+          id = idx,
+          distance = distance,
+          n_bins_circle = n_bins_circle,
+          binwidth = binwidth,
+          angle_span = angle_span,
+          n_bins_angle = n_bins_angle,
+          variables = variables,
+          method_gs = method_gs,
+          summarize_by = summarize_by,
+          summarize_with = summarize_with,
+          normalize_by = normalize_by,
+          normalize = normalize,
+          remove_circle_bins = remove_circle_bins,
+          remove_angle_bins = remove_angle_bins,
+          bcsp_exclude = bcsp_exclude,
+          drop = TRUE,
+          verbose = verbose
+        ) %>%
+          dplyr::mutate(img_ann_id = {{idx}})
+
+      }
+    ) %>%
+      dplyr::group_by(
+        dplyr::pick(
+          dplyr::any_of(c("bins_circle", "bins_order", "bins_angle"))
+          )
+        ) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of(variables),
+          .fns = summarize_formulas[[summarize_with]]
+        )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(variables),
+          .fns = ~ confuns::normalize(.x)
+        )
+      ) %>%
+      dplyr::select(dplyr::everything())
+
+  } else {
+
+    get_img_ann_helper(
+      object = object,
+      id = id,
+      distance = distance,
+      n_bins_circle = n_bins_circle,
+      binwidth = binwidth,
+      angle_span = angle_span,
+      n_bins_angle = n_bins_angle,
+      variables = variables,
+      method_gs = method_gs,
+      summarize_by = summarize_by,
+      summarize_with = summarize_with,
+      normalize_by = normalize_by,
+      normalize = normalize,
+      remove_circle_bins = remove_circle_bins,
+      remove_angle_bins = remove_angle_bins,
+      bcsp_exclude = bcsp_exclude,
+      drop = TRUE,
+      verbose = verbose
+    )
+
+  }
+
+}
+
+
+#' @title Obtain expanded Image Annotation polygons
+#'
+#' @description Expands polygons of image annotations according
+#' to `distance`, `binwidth` and `n_bins_circle` input.
+#'
+#' @inherit imageAnnotationScreening params
+#'
+#' @return List of data.frames.
+#' @export
+#'
+getIasExpansion <- function(object,
+                            id,
+                            distance = NA_integer_,
+                            binwidth = getCCD(object),
+                            n_bins_circle = NA_integer_,
+                            direction = "outwards",
+                            inc_outline = TRUE,
+                            verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  ias_input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
+    )
+
+  area_df <- getImgAnnOutlineDf(object, ids = id)
+
+  binwidth <- ias_input$binwidth
+  n_bins_circle <- base::max(ias_input$n_bins_circle)
+
+  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
+
+  circles <-
+    purrr::set_names(
+      x = c((1:n_bins_circle)*binwidth),
+      nm = circle_names
+    )
+
+  binwidth_vec <- c("Core" = 0, circles)
+
+  if(direction == "outwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    expansions <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
+          dplyr::mutate(bins_circle = .y)
+      )
+
+    if(base::isTRUE(inc_outline)){
+
+      ccd <- getCCD(object, unit = "px")
+
+      expansions <-
+        purrr::map(
+          .x = expansions,
+          .f = ~ include_tissue_outline(
+            coords_df = getCoordsDf(object),
+            input_df = .x,
+            img_ann_center = getImgAnnCenter(object, id = id),
+            remove = FALSE,
+            ias_circles = TRUE,
+            ccd = ccd,
+            buffer = ccd*0.5
+          )
+        ) %>%
+        purrr::discard(.p = base::is.null)
+
+    }
+
+  } else if(direction == "inwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    expansions <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = -(.x)) %>%
+          dplyr::mutate(bins_circle = .y)
+      )
+
+  }
+
+  return(expansions)
+
+}
+
+#' @rdname getIasDf
+#' @export
+getImageAnnotationScreeningDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getIasDf(...)
+
+}
+
 #' @title Obtain histology image
 #'
 #' @description Extracts the image as an object of class \emph{EBImage}.
@@ -12,8 +412,6 @@
 #' @inherit check_sample params
 #'
 #' @export
-
-
 
 getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
@@ -44,8 +442,17 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
   ymin <- range_list$ymin
   ymax <- range_list$ymax
 
-  out <- out[xmin:xmax, , ]
-  out <- out[, ymin:ymax, ]
+  if(nImageDims(object) == 3){
+
+    out <- out[xmin:xmax, , ]
+    out <- out[, ymin:ymax, ]
+
+  } else if(nImageDims(object) == 2){
+
+    out <- out[xmin:xmax, ]
+    out <- out[, ymin:ymax]
+
+  }
 
   return(out)
 
@@ -59,7 +466,11 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 #' its id.
 #'
 #' @param id Character value. The ID of the image annotation of interest.
+#'
+#' @inherit getImageAnnotations params
 #' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Expansion of cropped image sections
 #'
 #' @return An object of class \code{ImageAnnotation}.
 #' @export
@@ -67,19 +478,22 @@ getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
 getImageAnnotation <- function(object,
                                id,
+                               add_barcodes = TRUE,
+                               strictly = FALSE,
                                add_image = TRUE,
                                expand = 0,
                                square = FALSE){
 
   confuns::check_one_of(
     input = id,
-    against = getImageAnnotationIds(object)
+    against = getImgAnnIds(object)
   )
 
   getImageAnnotations(
     object = object,
     ids = id,
     flatten = TRUE,
+    add_barcodes = add_barcodes,
     add_image = add_image,
     square = square,
     expand = expand
@@ -88,318 +502,210 @@ getImageAnnotation <- function(object,
 }
 
 
-#' @title Obtain area of image annotation
+#' @title Obtain image annotation summary
 #'
-#' @description Computes the area of an image annotation in units of area.
+#' @description Extracts information about image annotations in a
+#' data.frame.
 #'
+#' @param area Logical. If `TRUE`, the area of each image annotation
+#' is added in a variable named *area*.
+#' @param unit_area The unit of the *area* variable.
+#' @param center Logical. If `TRUE`, two variables named *center_x* and
+#' *center_y* area added providing the center coordinates of the image
+#' annotation.
+#' @param unit_center The unit of the center variables.
+#' @param genes Character value or `NULL`. If character, the gene expression
+#' of the named genes is summarized among all barcode spots that fall in the
+#' area of the image annotation and are added as a variable.
+#' @param summarize_with Character value. The summarizing function with
+#' which the gene expression values are summarized.
+#' @param tags_to_lgl Logical. If `TRUE`, tag information is displayed in logical
+#' variables where each variable is named like one of the unique tags and
+#' every value is either `TRUE` if the annotation cotnains the tag or `FALSE`
+#' if not.
+#' @param tags_keep Logical. If `TRUE`, variable *tags* is not removed if
+#' `tags_to_lgl` is `TRUE`.
+#'
+#' @inherit getImageAnnotations params
 #' @inherit argument_dummy params
-#' @inherit as_unit params
-#' @inherit getImageAnnotation params
 #'
-#' @return Numeric vector of the same length as `ids`. Named accordingly.
-#' Contains the area of the image annotations in the unit that is specified in `unit`.
-#' The unit is attached to the output as an attribute named *unit*. E.g. if
-#' `unit = *mm2*` the output value has the unit *mm^2*.
+#' @inheritSection section_dummy Selection of image annotations with tags
 #'
-#' @details First, the area of each pixel is calculated by using the center
-#' to center distance of the underlying method as ground truth to scale
-#' the current number of pixels in the image.
-#'
-#' Second, the number of pixels that fall in the area of the image annotation
-#' is computed with `sp::point.in.polygon()` using the area data.frame of
-#' the image annotation as the polygon.
-#'
-#' Third, the number of pixels that fall in the area is multiplied with
-#' the area per pixel.
-#'
-#' @seealso `getImageAnnotationAreaDf()`, `getCCD()`, `as_unit()`
+#' @return Data.frame in which each row corresponds to an image annotation identified
+#' by the variable *id*.
 #'
 #' @export
 #'
-getImageAnnotationAreaSize <- function(object,
-                                       unit,
-                                       ids = NULL,
-                                       tags = NULL,
-                                       test = "any",
-                                       as_numeric = TRUE,
-                                       verbose = NULL,
-                                       ...){
-
-  deprecated(...)
+getImgAnnSummaryDf <- function(object,
+                               ids = NULL,
+                               area = TRUE,
+                               unit_area = "mm2",
+                               center = TRUE,
+                               unit_center = "px",
+                               genes = NULL,
+                               summarize_with = "mean",
+                               tags_to_lgl = TRUE,
+                               tags_keep = FALSE,
+                               verbose = NULL){
 
   hlpr_assign_arguments(object)
-
-  confuns::check_one_of(
-    input = unit,
-    against = validUnitsOfArea()
-  )
 
   if(base::is.character(ids)){
 
     confuns::check_one_of(
       input = ids,
-      against = getImageAnnotationIds(object)
+      against = getImgAnnIds(object)
     )
 
   } else {
 
-    ids <-
-      getImageAnnotationIds(
+    ids <- getImgAnnIds(object)
+
+  }
+
+
+  confuns::check_one_of(
+    input = unit_area,
+    against = validUnitsOfArea()
+  )
+
+  confuns::check_one_of(
+    input = unit_center,
+    against = validUnitsOfLength()
+  )
+
+  if(base::is.character(genes)){
+
+    gene_df <-
+      joinWith(
         object = object,
-        ...
+        spata_df = getSpataDf(object),
+        genes = genes,
+        smooth = FALSE,
+        verbose = verbose
       )
 
   }
 
-  unit_length <- stringr::str_extract(string = unit, pattern = "[a-z]*")
 
-  # determine pixel area
-  scale_fct <- getPixelScaleFactor(object, unit = unit)
-
-  # determine how many pixels lay inside the image annotation
-
-  pixel_df <- getPixelDf(object = object)
-
-  n_ids <- base::length(ids)
-
-  ref_ia <- confuns::adapt_reference(ids, sg = "image annotation")
-
-  pb <- confuns::create_progress_bar(total = n_ids)
-
-  confuns::give_feedback(
-    msg = glue::glue("Computing area size for {nids} {ref_ia}."),
-    verbose = verbose
-  )
-  out <-
-    purrr::map_dbl(
+  prel_df <-
+    purrr::map_df(
       .x = ids,
       .f = function(id){
 
-        if(base::isTRUE(verbose)){
+        img_ann <-
+          getImageAnnotation(
+            object = object,
+            id = id,
+            add_barcodes = TRUE,
+            add_image = FALSE
+          )
 
-          pb$tick()
+        df <-
+          tibble::tibble(
+            id = img_ann@id,
+            parent_id = img_ann@info$parent_id,
+            parent_origin = img_ann@info$parent_origin
+          )
+
+        if(base::isTRUE(center)){
+
+          center_pos <-
+            getImgAnnCenter(object, id = id) %>%
+            as_unit(input = ., unit = unit_center, object = object)
+
+          df$center_x <- center_pos["x"]
+          df$center_y <- center_pos["y"]
 
         }
 
-        area_df <- getImageAnnotationAreaDf(object, ids = id)
+        df$tags <- stringr::str_c(img_ann@tags, collapse = "|")
 
-        pixel_loc <-
-          sp::point.in.polygon(
-            point.x = pixel_df[["x"]],
-            point.y = pixel_df[["y"]],
-            pol.x = area_df[["x"]],
-            pol.y = area_df[["y"]]
-          )
+        if(base::is.character(genes)){
 
-        pixel_inside <- pixel_loc[pixel_loc != 0]
+          smrd_df <-
+            dplyr::filter(gene_df, barcodes %in% img_ann@misc$barcodes) %>%
+            dplyr::summarise(
+              dplyr::across(
+                .cols = dplyr::all_of(genes),
+                .fns = summarize_formulas[[summarize_with]]
+              )
+            )
 
-        n_pixel_inside <- base::length(pixel_inside)
+          df <-
+            base::cbind(df, smrd_df) %>%
+            tibble::as_tibble()
 
-        # multiply number of pixels with area per pixel
-        area_img_ann <- n_pixel_inside * scale_fct
+        }
 
-        base::as.numeric(area_img_ann)
+        return(df)
 
       }
-    ) %>%
-    purrr::set_names(nm = ids) %>%
-    units::set_units(value = unit, mode = "standard")
+    )
 
+  # add area measure
+  if(base::isTRUE(area)){
+
+    area_df <-
+      getImgAnnArea(
+        object = object,
+        ids = ids,
+        unit = unit_area
+      ) %>%
+      base::as.data.frame() %>%
+      tibble::rownames_to_column(var = "id") %>%
+      magrittr::set_colnames(value = c("id", "area"))
+
+    prel_df <-
+      dplyr::left_join(
+        x = prel_df,
+        y = area_df,
+        by = "id"
+      ) %>%
+      dplyr::select(
+        id, parent_id, parent_origin, dplyr::any_of(c("center_x", "center_y")),
+        area,
+        dplyr::everything()
+      )
+
+  }
+
+  # shift tags
+  if(base::isTRUE(tags_to_lgl)){
+
+    all_tags <-
+      stringr::str_c(prel_df$tags, collapse = "|") %>%
+      stringr::str_split(pattern = "\\|") %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    for(tag in all_tags){
+
+      prel_df[[tag]] <- FALSE
+
+      prel_df <-
+        dplyr::mutate(
+          .data = prel_df,
+          {{tag}} := stringr::str_detect(string = tags, pattern = tag)
+        )
+
+    }
+
+  }
+
+  if(base::isTRUE(tags_keep)){
+
+    out <- prel_df
+
+  } else {
+
+    out <- dplyr::select(prel_df, -tags)
+
+  }
 
   return(out)
 
 }
-
-
-#' @title Obtain image annotation area data.frame
-#'
-#' @description Extracts the coordinates of the polygon that was drawn to
-#' annotate structures in the histology image in a data.frame.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return A data.frame that contains the grouping variables \emph{id} and \emph{tags}
-#' and the numeric variables \emph{x} and \emph{y}. The returned data.frame can contain
-#' the spatial extent of more than just
-#' one annotated structure, depending on the input of arguments \code{ids}, \code{tags}
-#' and \code{test}. The variable \emph{ids} of the returned data.frame is used to
-#' uniquely mark the belonging of each x- and y-coordinate.
-#'
-#' @inherit getImageAnnotations details
-#'
-#' @note The variables \emph{x} and \emph{y} correspond to the coordinates
-#' with which the annotated structure was denoted in \code{annotateImage()}. These
-#' coordinates are not to be confused with coordinates of barcode spots that might
-#' fall in to the area of the polygon! To obtain a data.frame of barcode spots that fall in to
-#' the spatial extent of the annotated structure along with their coordinates
-#' use \code{getImageAnnotationBarcodes()}.
-#'
-#' @export
-#'
-getImageAnnotationAreaDf <- function(object,
-                                     ids = NULL,
-                                     tags = NULL,
-                                     test = "any",
-                                     add_tags = FALSE,
-                                     sep = " & ",
-                                     last = " & "){
-
-
-  img_anns <-
-    getImageAnnotations(
-      object = object,
-      ids = ids,
-      tags = tags,
-      test = test,
-      add_image = FALSE
-      )
-
-  purrr::map_df(
-    .x = img_anns,
-    .f = function(img_ann){
-
-      tag <-
-        scollapse(string = img_ann@tags, sep = sep, last = last) %>%
-        base::as.character()
-
-      out <-
-        dplyr::mutate(
-          .data = img_ann@area,
-          ids = img_ann@id %>% base::factor()
-        ) %>%
-        dplyr::select(ids, dplyr::everything()) %>%
-        tibble::as_tibble()
-
-      if(base::isTRUE(add_tags)){
-
-        out$tags <- tag
-
-        out$tags <- base::as.factor(out$tags)
-
-      }
-
-      return(out)
-
-    }
-  )
-
-}
-
-#' @title Obtain barcodes by image annotation tag
-#'
-#' @description Extracts the barcodes that are covered by the extent of the
-#' annotated structures of interest.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Character vector.
-#'
-#' @export
-#'
-getImageAnnotationBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
-
-  getImageAnnotations(
-    object = object,
-    ids = NULL,
-    tags = tags,
-    test = test
-  ) %>%
-    purrr::map(.f = ~ .x@barcodes) %>%
-    purrr::flatten_chr() %>%
-    base::unique()
-
-}
-
-
-#' @title Obtain center information an image annotation
-#'
-#' @description \code{getImageAnnotationCenter()} computes the
-#' x- and y- coordinates of the most central points within the
-#' image annotation polygon. \code{getImageAnnotationBcsp()} returns
-#' a data.frame that contains one row, namely the barcode spot
-#' that lies closest to the most central point.
-#'
-#' @inherit getImageAnnotation params
-#' @inherit argument_dummy params
-#'
-#'
-#' @return Character vector.
-#'
-#' @export
-
-setGeneric(name = "getImageAnnotationCenter", def = function(object, ...){
-
-  standardGeneric(f = "getImageAnnotationCenter")
-
-})
-
-#' @rdname getImageAnnotationCenter
-#' @export
-setMethod(
-  f = "getImageAnnotationCenter",
-  signature = "spata2",
-  definition = function(object, id){
-
-    img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
-
-    area_df <- img_ann@area
-
-    x <- base::mean(area_df$x)
-    y <- base::mean(area_df$y)
-
-    out <- c(x = x, y = y)
-
-    return(out)
-
-  }
-)
-
-#' @rdname getImageAnnotationCenter
-#' @export
-
-setMethod(
-  f = "getImageAnnotationCenter",
-  signature = "ImageAnnotation",
-  definition = function(object){
-
-    area_df <- object@area
-
-    x <- base::mean(area_df$x)
-    y <- base::mean(area_df$y)
-
-    out <- c(x = x, y = y)
-
-    return(out)
-
-  }
-)
-
-
-#' @title Obtain center barcode-spot
-#'
-#' @description Extracts the barcode spot that lies closest
-#' to the center of the image annotation.
-#'
-#' @inherit getImageAnnotation params
-#'
-#' @return Data.frame as returned by \code{getCoordsDf()} with one row.
-#'
-#' @export
-
-getImageAnnotationCenterBcsp <- function(object, id){
-
-  coords_df <- getCoordsDf(object)
-
-  center <- getImageAnnotationCenter(object, id = id)
-
-  out_df <-
-    dplyr::mutate(.data = coords_df, dist = base::sqrt((x - center[["x"]])^2 + (y - center[["y"]])^2) ) %>%
-    dplyr::filter(dist == base::min(dist))
-
-  return(out_df)
-
-}
-
 
 
 
@@ -409,16 +715,25 @@ getImageAnnotationCenterBcsp <- function(object, id){
 #'
 #' @inherit argument_dummy
 #'
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
 #' @return Character vector.
 #' @export
 #'
-getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
+getImgAnnIds <- function(object, tags = NULL , test = "any", ...){
 
   if(nImageAnnotations(object) >= 1){
 
     out <-
       purrr::map_chr(
-        .x = getImageAnnotations(object, tags = tags, test = test, add_image = FALSE),
+        .x = getImageAnnotations(
+          object = object,
+          ids = list(...)[["ids"]],
+          tags = tags,
+          test = test,
+          add_image = FALSE,
+          add_barcodes = FALSE
+          ),
         .f = ~ .x@id
       ) %>%
       base::unname()
@@ -434,35 +749,25 @@ getImageAnnotationIds <- function(object, tags = NULL , test = "any"){
 }
 
 
-
-#' @title Obtain image annotations range
-#'
-#' @description Extracts the minimum and maximum x- and y-coordinates
-#' of the image annotation border.
-#'
-#' @inherit getImageAnnotation params
-#'
-#' @return List of length two. Named with *x* and *y*. Each slot
-#' contains a vector of length two with the minima and maxima in pixel.
-#' @export
-#'
-getImageAnnotationRange <- function(object, id){
-
-  getImageAnnotationAreaDf(object, ids = id) %>%
-    dplyr::select(x, y) %>%
-    purrr::map(.f = base::range)
-
-}
-
-
 #' @title Obtain list of \code{ImageAnnotation}-objects
 #'
 #' @description Extracts a list of objects of class \code{ImageAnnotaion}.
 #'
+#' @param add_barcodes Logical. If `TRUE`, barcodes of spots that fall into the
+#' area of an image annotation are identified and added to slot @@misc$barcodes
+#' of the output image annotations.
+#'
+#' @param strictly Logical. If `TRUE`, only barcodes of spots that are strictly interior
+#' to the area of an image annotation are added to the output. If `FALSE`,
+#' barcodes of spots that are on the relative interior of the area or are
+#' vertices of the border are added, too.
+#'
 #' @param add_image Logical. If TRUE, the area of the histology image that
 #' is occupied by the annotated structure is added to the \code{ImageAnnotation}
-#' object in slot @@image.
+#' object in slot @@image. Dimensions of the image can be adjusted with `square`
+#' and `expand`.
 #'
+#' @inherit getBarcodesInPolygon params
 #' @inherit argument_dummy params
 #' @inherit getImage details
 #'
@@ -470,7 +775,10 @@ getImageAnnotationRange <- function(object, id){
 #' on input for argument `square` and `expand` use
 #' `plotImageAnnotations(..., encircle = FALSE)`.
 #'
-#' @return An object of class \code{ImageAnnotation}.
+#' @inheritSection section_dummy Expansion of cropped image sections
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
+#' @return A list of objects of class \code{ImageAnnotation}.
 #'
 #' @export
 #'
@@ -479,6 +787,7 @@ getImageAnnotations <- function(object,
                                 tags = NULL,
                                 test = "any",
                                 add_barcodes = TRUE,
+                                strictly = FALSE,
                                 add_image = TRUE,
                                 expand = 0,
                                 square = FALSE,
@@ -567,8 +876,10 @@ getImageAnnotations <- function(object,
 
     if(base::isTRUE(add_image)){
 
-      xrange <- base::range(img_ann@area$x)
-      yrange <- base::range(img_ann@area$y)
+      img_ann_range <- getImgAnnRange(object, id = img_ann@id)
+
+      xrange <- img_ann_range$x
+      yrange <- img_ann_range$y
 
       xmean <- base::mean(xrange)
       ymean <- base::mean(yrange)
@@ -655,25 +966,16 @@ getImageAnnotations <- function(object,
 
     if(base::isTRUE(add_barcodes)){
 
-      polygon_df <- img_ann@area
-
-      barcodes_pos <-
-        sp::point.in.polygon(
-          point.x = coords_df$x, # x coordinates of all spatial positions
-          point.y = coords_df$y, # y coordinates of all spatial positions
-          pol.x = polygon_df$x, # x coordinates of the segments vertices
-          pol.y = polygon_df$y
-        )
-
-      barcodes_to_add <-
-        coords_df$barcodes[barcodes_pos != 0]
-
-      img_ann@barcodes <- barcodes_to_add
+      img_ann@misc$barcodes <-
+        getBarcodesInPolygonList(
+          object = object,
+          polygon_list = img_ann@area,
+          strictly = strictly
+          )
 
     }
 
     img_annotations[[nm]] <- img_ann
-
 
   }
 
@@ -688,318 +990,6 @@ getImageAnnotations <- function(object,
 }
 
 
-
-#' @title Obtain IAS screening data.frame
-#'
-#' @description Extracts a data.frame that contains information about barcode-spots
-#' needed for analysis related to \code{imageAnnotationScreening()}.
-#'
-#' @inherit bin_by_expansion params
-#' @inherit bin_by_angle params
-#'
-#' @param normalize_by Character value or FALSE. If character, there are two options:
-#' \itemize{
-#'  \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
-#'  \item{\code{normalize_by} = \emph{'bins_angle'}:}{
-#'  Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
-#'  is bigger than 1.
-#'  }
-#'  }
-#'
-#' @inherit imageAnnotationScreening params
-#' @inherit joinWith params
-#'
-#' @return The final output depends on the input for \code{variables} and
-#'  \code{summarize_by}.
-#'
-#'  By default (both arguments are NULL) the returned data.frame contains
-#'  barcode-spots as observations/rows and variables that describe their position
-#'  to the image annotation denoted with \code{id}. This includes the variables
-#'  \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
-#'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
-#'  and \code{n_bins_circle}.
-#'
-#' \bold{Coordinates data.frame vs. Inferred expression changes}:
-#'
-#' If argument \code{variables} is a character the denoted variables are
-#' joined to the data.frame via \code{joinWith()}. If the set of variables
-#' contains only numeric ones (genes, gene-sets and numeric features) the
-#' function argument \code{summarize_by} can be set up in three different ways:
-#'
-#' \itemize{
-#'  \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
-#'  is a coordinates data.frame with each observation/row corresponding to
-#'  a barcode spots with additional information of its relation to the image
-#'  annotation denoted in \code{id}.}
-#'  \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
-#'  area summarized by each circular expansion of the polygon. This results
-#'  in data.frame with a column named \emph{bins_circle} containing the names of the bin
-#'  (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
-#'  per variable that contain the summarized expression value by circle bin. Visualization
-#'  of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
-#'  }
-#'  \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
-#'  each area are summarized by each circular expansion as well as by angle-bin.
-#'  Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
-#'  from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
-#'  is only useful if \code{n_bins_circle} is bigger than 1. Visualization
-#'  of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
-#'  }}
-#'
-#' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
-#' summary step.
-#'
-#' @export
-#'
-#' @examples
-#'
-#' library(SPATA2)
-#' library(SPATAData)
-#'
-#' data("image_annotations")
-#'
-#' necrotic_img_ann <- image_annotations[["313_T"]][["necrotic_center"]]
-#'
-#' object <- downloadSpataObject(sample_name = "313_T")
-#'
-#' object <- setImageAnnotation(object = object, img_ann = necrotic_img_ann)
-#'
-#' plotSurfaceIAS(
-#'  object = object,
-#'  id = "necrotic_center",
-#'  distance = 200
-#'  )
-#'
-#' plotSurfaceIAS(
-#'  object = object,
-#'  id = "necrotic_center",
-#'  distance = 200,
-#'  binwidth = getCCD(object)*4 # lower resolution by increasing binwidth for visualization
-#'  n_bins_angle = 12,
-#'  display_angle = TRUE
-#'  )
-#'
-#' getImageAnnotationScreeningDf(
-#'   object = object,
-#'   id = "necrotic_center",
-#'   distance = 200,
-#'   variables = "VEGFA"
-#'   )
-#'
-#' getImageAnnotationScreeningDf(
-#'   object = object,
-#'    id = "necrotic_center",
-#'    distance = 200,
-#'    variables = "VEGFA",
-#'    summarize_by = "bins_circle"
-#'    )
-#'
-#' getImageAnnotationScreeningDf(
-#'   object = object,
-#'    id = "necrotic_center",
-#'    distance = 200,
-#'    variables = "VEGFA",
-#'    n_bins_angle = 12,
-#'    summarize_by = c("bins_circle", "bins_angle")
-#'    )
-#'
-#'
-
-getImageAnnotationScreeningDf <- function(object,
-                                          id,
-                                          distance = NA_integer_,
-                                          n_bins_circle = NA_integer_,
-                                          binwidth = getCCD(object),
-                                          angle_span = c(0,360),
-                                          n_bins_angle = 1,
-                                          variables = NULL,
-                                          method_gs = NULL,
-                                          summarize_by = FALSE,
-                                          summarize_with = "mean",
-                                          normalize_by = "sample",
-                                          normalize = TRUE,
-                                          remove_circle_bins = FALSE,
-                                          remove_angle_bins = FALSE,
-                                          rename_angle_bins = FALSE,
-                                          drop = TRUE,
-                                          verbose = NULL,
-                                          ...){
-
-  hlpr_assign_arguments(object)
-
-  input_list <-
-    check_ias_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      object = object,
-      verbose = verbose
-    )
-
-  distance <- input_list$distance
-  n_bins_circle <- input_list$n_bins_circle
-  binwidth  <- input_list$binwidth
-
-  max_circles <- base::max(n_bins_circle)
-  min_circles <- base::min(n_bins_circle)
-
-  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
-
-  img_ann_center <- getImageAnnotationCenter(object, id = id)
-
-  coords_df <-
-    getCoordsDf(object) %>%
-    dplyr::select(barcodes, x, y)
-
-  if(base::length(drop) == 1){ drop <- base::rep(drop, 2)}
-
-  ias_df <-
-    bin_by_area(
-      coords_df = coords_df,
-      area_df = img_ann@area,
-      binwidth = binwidth,
-      n_bins_circle = max_circles,
-      remove = remove_circle_bins,
-      drop = drop[1]
-    ) %>%
-    bin_by_angle(
-      center = img_ann_center,
-      angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
-      min_bins_circle = min_circles,
-      rename = rename_angle_bins,
-      remove = remove_angle_bins,
-      drop = drop[2],
-      verbose = verbose
-    )
-
-  # join with variables if desired
-  if(base::is.character(variables)){
-
-    var_df <-
-      joinWithVariables(
-        object = object,
-        spata_df = getSpataDf(object),
-        variables = variables,
-        smooth = FALSE,
-        normalize = FALSE,
-        method_gs = method_gs,
-        ...
-      )
-
-    ias_df <-
-      dplyr::left_join(
-        x = ias_df,
-        y = var_df,
-        by = "barcodes"
-      )
-
-    # summarize if desired
-    if(base::is.character(summarize_by)){
-
-      groups <- base::character()
-
-      if(base::any(stringr::str_detect(summarize_by, "circle"))){
-
-        groups <- c(groups, "bins_circle")
-
-      }
-
-      if(base::any(stringr::str_detect(summarize_by, "angle"))){
-
-        groups <- c(groups, "bins_angle")
-
-      }
-
-      ref <- confuns::scollapse(string = groups)
-
-      if(base::length(groups) == 0){
-
-        stop("Invalid input for argument `summarize_by`. Must contains 'circle' and/or 'angle'.")
-
-      }
-
-      confuns::give_feedback(
-        msg = glue::glue("Summarizing by '{ref}'."),
-        verbose = verbose
-      )
-
-      groups <- c(groups, "bins_order")
-
-      ias_df <-
-        dplyr::group_by(
-          .data = ias_df,
-          dplyr::across(.cols = dplyr::all_of(groups))
-        ) %>%
-        dplyr::summarise(
-          dplyr::across(
-            .cols = dplyr::any_of(variables),
-            .fns = summarize_formulas[[summarize_with]]
-          )
-        )
-
-    }
-
-    # normalize if desired
-    if(base::is.character(normalize_by)){
-
-      confuns::check_one_of(
-        input = normalize_by,
-        against = c("sample", "bins_angle"),
-        suggest = FALSE
-      )
-
-      if(normalize_by == "sample"){
-
-        # no grouping needed
-        groups <- base::character()
-
-        ref = ""
-
-      } else if(normalize_by == "bins_angle"){
-
-        groups <- "bins_angle"
-
-        ref <- " by 'bins_angle'"
-
-      }
-
-      confuns::give_feedback(
-        msg = glue::glue("Normalizing{ref}."),
-        verbose = verbose
-      )
-
-      ias_df <-
-        dplyr::group_by(
-          .data = ias_df,
-          dplyr::across(.cols = dplyr::all_of(groups))
-        ) %>%
-        dplyr::mutate(
-          dplyr::across(
-            .cols = dplyr::any_of(variables),
-            .fns = confuns::normalize
-          )
-        )
-
-    }
-
-  } else {
-
-    confuns::give_feedback(
-      msg = "No variables joined.",
-      verbose = verbose
-    )
-
-  }
-
-  out <- dplyr::ungroup(ias_df)
-
-  return(out)
-
-}
-
-
-
 #' @title Obtain image annotations tags
 #'
 #' @description Extracts all unique tags with which image annotations
@@ -1010,13 +1000,13 @@ getImageAnnotationScreeningDf <- function(object,
 #' @return Character vector.
 #' @export
 #'
-getImageAnnotationTags <- function(object){
+getImgAnnTags <- function(object){
 
   if(nImageAnnotations(object) >= 1){
 
     out <-
       purrr::map(
-        .x = getImageAnnotations(object, add_image = FALSE),
+        .x = getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE),
         .f = ~ .x@tags
       ) %>%
       purrr::flatten_chr() %>%
@@ -1027,6 +1017,68 @@ getImageAnnotationTags <- function(object){
     out <- base::character(0)
 
   }
+
+  return(out)
+
+}
+
+
+
+#' @title Obtain image center
+#'
+#' @description Computes and extracts center of the image frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+getImageCenter <- function(object){
+
+  getImageRange(object) %>%
+    purrr::map_dbl(.f = base::mean)
+
+}
+
+
+#' @title Obtain melted image
+#'
+#' @description Melts image array in a data.frame where each
+#' row corresponds to a pixel-color value.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame.
+#' @export
+#'
+getImageDf <- function(object, xrange = NULL, yrange = NULL){
+
+  img <- getImage(object)
+  img_dims <- getImageDims(object)
+
+  # red, green, blue
+  channels = c("red", "green", "blue")
+
+  out <-
+    purrr::map_df(
+      .x = 1:img_dims[3],
+      .f = function(cdim){ # iterate over color dimensions
+
+        reshape2::melt(img[,,cdim], value.name = "intensity") %>%
+          dplyr::select(-dplyr::any_of("Var3")) %>%
+          magrittr::set_names(value = c("x", "y", "intensity")) %>%
+          dplyr::mutate(channel = channels[cdim]) %>%
+          tibble::as_tibble()
+
+      }
+    ) %>%
+    tidyr::pivot_wider(
+      id_cols = c("x", "y"),
+      names_from = "channel",
+      values_from = "intensity"
+    ) %>%
+    dplyr::mutate(
+      color = grDevices::rgb(green = green, red = red, blue = blue)
+    )
 
   return(out)
 
@@ -1072,16 +1124,96 @@ getImageDims <- function(object, ...){
 
 }
 
+#' @rdname getImageDirLowres
+#' @export
+getImageDir <- function(object, name){
+
+  io <- getImageObject(object)
+
+  if(name %in% c("default", "highres", "lowres")){
+
+    out <- methods::slot(io, name = stringr::str_c("dir_", name))
+
+  } else {
+
+    if(base::length(io@dir_add) == 0){
+
+      stop("No additional image directories found.")
+
+    } else {
+
+      confuns::check_one_of(
+        input = name,
+        against = base::names(io@dir_add),
+        ref.opt.2 = "additional image directories",
+        fdb.opt = 2
+      )
+
+    }
+
+    out <- io@dir_add[[name]]
+
+  }
+
+  return(out)
+
+}
 
 #' @rdname getImageDirLowres
 #' @export
-getImageDirHighres <- function(object, check = TRUE){
+getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){
+
+  dir_default <- getImageObject(object)@dir_default
+
+  if(base::length(dir_default) == 0 || base::is.na(dir_default)){
+
+    msg <- "Could not find directory to default image. Set with `setImageDirDefault()`."
+
+    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_default, type = "files")
+
+  }
+
+  return(dir_default)
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirectories <- function(object){
+
+  io <- getImageObject(object)
+
+  c(
+    "default" = io@dir_default,
+    "lowres" = io@dir_lowres,
+    "highres" = io@dir_highres,
+    purrr::map_chr(
+      .x = io@dir_add,
+      .f = ~ .x
+    )
+  )
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 
   dir_highres <- getImageObject(object)@dir_highres
 
   if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
 
-    stop("Could not find directory to high resolution image. Set with `setImageHighresDir()`.")
+    msg <- "Could not find directory to high resolution image. Set with `setImageDirHighres()`."
+
+    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
 
   }
 
@@ -1098,22 +1230,37 @@ getImageDirHighres <- function(object, check = TRUE){
 
 #' @title Obtain image directories
 #'
-#' @description Extracts image directories.
+#' @description Extracts image directories known to the `SPATA2` object.
+#'
+#' @param check Logical value. If `TRUE`, it is checked if the file actually exists.
+#' @param name Character value. The name of the image of interest. Should be one
+#' of Get
 #'
 #' @inherit argument_dummy params
-#' @param check Logical value. If set to TRUE the input directory is checked
-#' for validity and it is checked if the file actually exists.
 #'
-#' @return Character value.
+#' @return Character vector.
+#'
+#' @details `getImageDirectories()` returns all image directories known to
+#' the `SPATA2` object. `getImageDirLowres()`, `getImageDirHighres()` and
+#' `getImageDirDefault()` return the directories of the respective slot of
+#' the `HistologyImaging` object. `getImageDir()` extracts specific directories
+#' that were set with `setImageDir()` by name.
+#'
+#' @seealso [`setImageDir()`] to set specific image directories. [`loadImage()`],
+#' [`loadImageHighres()`], [`loadImageLowres()`], [`loadImageDefault()`] to
+#' exchange images.
+#'
 #' @export
 #'
-getImageDirLowres <- function(object, check = TRUE){
+getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
 
   dir_lowres <- getImageObject(object)@dir_lowres
 
   if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
 
-    stop("Could not find directory to low resolution image. Set with `setImageLowresDir()`.")
+    msg <- "Could not find directory to low resolution image. Set with `setImageDirLowres()`."
+
+    confuns::give_feedback(msg = msg, fdb.fn = fdb_fn, with.time = FALSE)
 
   }
 
@@ -1126,6 +1273,30 @@ getImageDirLowres <- function(object, check = TRUE){
   return(dir_lowres)
 
 }
+
+
+#' @title Obatain image information
+#'
+#' @description Extracts a list of information about the currently set
+#' image.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return List that contains information of slots @@image_info and @@justification
+#' of the `HistologyImaging` object.
+#' @export
+#'
+getImageInfo <- function(object){
+
+  io <- getImageObject(object)
+
+  c(
+    io@image_info,
+    io@justification
+  )
+
+}
+
 
 
 #' @title Obtain object of class \code{HistologyImage}
@@ -1152,6 +1323,24 @@ getImageObject <- function(object){
   }
 
   return(out)
+
+}
+
+
+#' @title Obtain image origin
+#'
+#' @description Extrats the origin of the image that is currently set.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Either a directory or *Global.Env.* if it was read in from
+#' the global environment.
+#'
+getImageOrigin <- function(object){
+
+  io <- getImageObject(object)
+
+  io@image_info$origin
 
 }
 
@@ -1268,6 +1457,828 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 
 
+
+# getImgAnn ---------------------------------------------------------------
+
+#' @title Obtain area of image annotation
+#'
+#' @description Computes the area of an image annotation in SI units of area.
+#'
+#' @inherit argument_dummy params
+#' @inherit as_unit params
+#' @inherit getImageAnnotation params
+#'
+#' @return Numeric vector of the same length as `ids`. Named accordingly.
+#' Contains the area of the image annotations in the unit that is specified in `unit`.
+#' The unit is attached to the output as an attribute named *unit*. E.g. if
+#' `unit = *mm2*` the output value has the unit *mm^2*.
+#'
+#' @details First, the side length of each pixel is calculated and based on that the area.
+#'
+#' Second, the number of pixels that fall in the area given by the outer border
+#' of the image annotation is computed with `sp::point.in.polygon()`.
+#'
+#' Third, if the image annotation contains holes the pixel that fall in these
+#' holes are removed.
+#'
+#' Fourth, the number of remaining pixels s multiplied with
+#' the area per pixel.
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
+#' @seealso [`getImgAnnOutlineDf()`], [`getCCD()`], [`as_unit()`]
+#'
+#' @export
+#'
+getImgAnnArea <- function(object,
+                          ids = NULL,
+                          unit = "mm2",
+                          tags = NULL,
+                          test = "any",
+                          as_numeric = TRUE,
+                          verbose = NULL,
+                          ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfArea()
+  )
+
+  if(base::is.character(ids)){
+
+    confuns::check_one_of(
+      input = ids,
+      against = getImgAnnIds(object)
+    )
+
+  } else {
+
+    ids <-
+      getImgAnnIds(
+        object = object,
+        ...
+      )
+
+  }
+
+  unit_length <- stringr::str_extract(string = unit, pattern = "[a-z]*")
+
+  # determine pixel area
+  scale_fct <- getPixelScaleFactor(object, unit = unit)
+
+  # determine how many pixels lay inside the image annotation
+
+  pixel_df <- getPixelDf(object = object)
+
+  n_ids <- base::length(ids)
+
+  ref_ia <- confuns::adapt_reference(ids, sg = "image annotation")
+
+  pb <- confuns::create_progress_bar(total = n_ids)
+
+  confuns::give_feedback(
+    msg = glue::glue("Computing area for {n_ids} {ref_ia}."),
+    verbose = verbose
+  )
+
+  out <-
+    purrr::map_dbl(
+      .x = ids,
+      .f = function(id){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
+
+        border_df <- getImgAnnOutlineDf(object, ids = id)
+
+        pixel_loc <-
+          sp::point.in.polygon(
+            point.x = pixel_df[["x"]],
+            point.y = pixel_df[["y"]],
+            pol.x = border_df[["x"]],
+            pol.y = border_df[["y"]]
+          )
+
+        pixel_inside <- pixel_df[pixel_loc != 0, ]
+
+        # remove pixel that fall into inner holes
+        inner_holes <- dplyr::filter(border_df, border != "outer")
+
+        if(base::nrow(inner_holes) != 0){
+
+          # consecutively reduce the number of rows in the pixel_inside data.frame
+          for(hole in base::unique(inner_holes$border)){
+
+            hole_df <- dplyr::filter(border_df, border == {{hole}})
+
+            pixel_loc <-
+              sp::point.in.polygon(
+                point.x = pixel_inside[["x"]],
+                point.y = pixel_inside[["y"]],
+                pol.x = hole_df[["x"]],
+                pol.y = hole_df[["y"]]
+              )
+
+            # keep those that are NOT inside the holes
+            pixel_inside <- pixel_inside[pixel_loc == 0, ]
+
+          }
+
+        }
+
+        n_pixel_inside <- base::nrow(pixel_inside)
+
+        # multiply number of pixels with area per pixel
+        area_img_ann <- n_pixel_inside * scale_fct
+
+        base::as.numeric(area_img_ann)
+
+      }
+    ) %>%
+    purrr::set_names(nm = ids) %>%
+    units::set_units(value = unit, mode = "standard")
+
+  return(out)
+
+}
+
+#' @title Obtain barcodes by image annotation tag
+#'
+#' @description Extracts the barcodes that are covered by the extent of the
+#' annotated structures of interest.
+#'
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
+#' @return Character vector.
+#'
+#' @export
+#'
+getImgAnnBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
+
+  getImageAnnotations(
+    object = object,
+    ids = ids,
+    tags = tags,
+    test = test
+  ) %>%
+    purrr::map(.f = ~ .x@misc[["barcodes"]]) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+}
+
+#' @title Obtain image annotation border data.frame
+#'
+#' @description Extracts the coordinates of the vertices polygons that represent
+#' the borders of the image annotation.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame that contains variables \emph{id}, *border*,
+#' and the numeric variables *x*, *y* and *tags*.
+#'
+#' @inherit getImageAnnotations details
+#'
+#' @details The variables \emph{x} and \emph{y} give the position of the vertices of the polygon
+#' that was drawn to encircle the structure `createImageAnnotations()`. These vertices correspond
+#' to the border of the annotation.
+#'
+#' @inheritSection section_dummy Selection of image annotations with tags
+#'
+#' @export
+#'
+getImgAnnOutlineDf <- function(object,
+                               ids = NULL,
+                               tags = NULL,
+                               test = "any",
+                               outer = TRUE,
+                               inner = TRUE,
+                               add_tags = FALSE,
+                               sep = " & ",
+                               last = " & "){
+
+  img_anns <-
+    getImageAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      add_barcodes = FALSE,
+      add_image = FALSE
+    )
+
+  out <-
+    purrr::map_df(
+      .x = img_anns,
+      .f = function(img_ann){
+
+        tag <-
+          scollapse(string = img_ann@tags, sep = sep, last = last) %>%
+          base::as.character()
+
+        out <-
+          purrr::imap_dfr(
+            .x = img_ann@area,
+            .f = function(area, name){
+
+              dplyr::mutate(
+                .data = area,
+                border = {{name}}
+              )
+
+            }
+          ) %>%
+          dplyr::mutate(
+            ids = img_ann@id %>% base::factor()
+          ) %>%
+          tibble::as_tibble()
+
+        if(base::isTRUE(add_tags)){
+
+          out$tags <- tag
+
+          out$tags <- base::as.factor(out$tags)
+
+        }
+
+        return(out)
+
+      }
+    ) %>%
+      dplyr::select(ids, border, x, y, dplyr::everything())
+
+  if(!base::isTRUE(outer)){
+
+    out <- dplyr::filter(out, border != "outer")
+
+  }
+
+  if(!base::isTRUE(inner)){
+
+    out <- dplyr::filter(out, !stringr::str_detect(border, pattern = "inner"))
+
+  }
+
+  return(out)
+
+}
+
+#' @title Obtain image annotation screening data.frame
+#'
+#' @description Extracts a data.frame that contains information about barcode-spots
+#' needed for analysis related to \code{imageAnnotationScreening()}.
+#'
+#' @inherit bin_by_expansion params
+#' @inherit bin_by_angle params
+#'
+#' @param normalize_by Character value or FALSE. If character, there are two options:
+#' \itemize{
+#'  \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
+#'  \item{\code{normalize_by} = \emph{'bins_angle'}:}{
+#'  Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
+#'  is bigger than 1.
+#'  }
+#'  }
+#'
+#' @inherit getImgAnnOutlineDf params
+#' @inherit imageAnnotationScreening params
+#' @inherit joinWith params
+#'
+#' @return The final output depends on the input for \code{variables} and
+#'  \code{summarize_by}.
+#'
+#'  By default (both arguments are NULL) the returned data.frame contains
+#'  barcode-spots as observations/rows and variables that describe their position
+#'  to the image annotation denoted with \code{id}. This includes the variables
+#'  \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
+#'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
+#'  and \code{n_bins_circle}.
+#'
+#' \bold{Coordinates data.frame vs. Inferred expression changes}:
+#'
+#' If argument \code{variables} is a character the denoted variables are
+#' joined to the data.frame via \code{joinWith()}. If the set of variables
+#' contains only numeric ones (genes, gene-sets and numeric features) the
+#' function argument \code{summarize_by} can be set up in three different ways:
+#'
+#' \itemize{
+#'  \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
+#'  is a coordinates data.frame with each observation/row corresponding to
+#'  a barcode spots with additional information of its relation to the image
+#'  annotation denoted in \code{id}.}
+#'  \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
+#'  area summarized by each circular expansion of the polygon. This results
+#'  in data.frame with a column named \emph{bins_circle} containing the names of the bin
+#'  (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
+#'  per variable that contain the summarized expression value by circle bin. Visualization
+#'  of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
+#'  }
+#'  \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
+#'  each area are summarized by each circular expansion as well as by angle-bin.
+#'  Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
+#'  from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
+#'  is only useful if \code{n_bins_circle} is bigger than 1. Visualization
+#'  of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
+#'  }}
+#'
+#' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
+#' summary step.
+#' @keywords internal
+get_img_ann_helper <- function(object,
+                        id,
+                        distance = NA_integer_,
+                        n_bins_circle = NA_integer_,
+                        binwidth = getCCD(object),
+                        angle_span = c(0,360),
+                        n_bins_angle = 1,
+                        variables = NULL,
+                        method_gs = NULL,
+                        summarize_by = FALSE,
+                        summarize_with = "mean",
+                        normalize_by = "sample",
+                        normalize = FALSE,
+                        remove_circle_bins = FALSE,
+                        remove_angle_bins = FALSE,
+                        rename_angle_bins = FALSE,
+                        bcsp_exclude = NULL,
+                        drop = TRUE,
+                        verbose = NULL,
+                        ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  add_sd <- FALSE
+
+  input_list <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object,
+      verbose = verbose
+    )
+
+  distance <- input_list$distance
+  n_bins_circle <- input_list$n_bins_circle
+  binwidth  <- input_list$binwidth
+
+  max_circles <- base::max(n_bins_circle)
+  min_circles <- base::min(n_bins_circle)
+
+  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+
+  border_df <- getImgAnnOutlineDf(object, ids = id, outer = TRUE, inner = TRUE)
+
+  img_ann_center <- getImgAnnCenter(object, id = id)
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    dplyr::select(barcodes, x, y)
+
+  if(base::length(drop) == 1){ drop <- base::rep(drop, 2)}
+
+  ias_df <-
+    bin_by_expansion(
+      coords_df = coords_df,
+      area_df = border_df,
+      binwidth = binwidth,
+      n_bins_circle = max_circles,
+      remove = remove_circle_bins,
+      bcsp_exclude = bcsp_exclude,
+      drop = drop[1]
+    ) %>%
+    bin_by_angle(
+      center = getImgAnnCenters(object, id = id, outer = TRUE, inner = TRUE),
+      angle_span = angle_span,
+      n_bins_angle = n_bins_angle,
+      min_bins_circle = min_circles,
+      rename = rename_angle_bins,
+      remove = remove_angle_bins,
+      drop = drop[2],
+      verbose = verbose
+    )
+
+  # join with variables if desired
+  if(base::is.character(variables)){
+
+    var_df <-
+      joinWithVariables(
+        object = object,
+        spata_df = getSpataDf(object),
+        variables = variables,
+        smooth = FALSE,
+        normalize = normalize,
+        method_gs = method_gs,
+        verbose = verbose
+      )
+
+    ias_df_joined <-
+      dplyr::left_join(
+        x = ias_df,
+        y = var_df,
+        by = "barcodes"
+      )
+
+    # summarize if desired
+    if(base::is.character(summarize_by)){
+
+      groups <- base::character()
+
+      if(base::any(stringr::str_detect(summarize_by, "circle"))){
+
+        groups <- c(groups, "bins_circle")
+
+      }
+
+      if(base::any(stringr::str_detect(summarize_by, "angle"))){
+
+        groups <- c(groups, "bins_angle")
+
+      }
+
+      ref <- confuns::scollapse(string = groups)
+
+      if(base::length(groups) == 0){
+
+        stop("Invalid input for argument `summarize_by`. Must contains 'circle' and/or 'angle'.")
+
+      }
+
+      # keep var bins_order
+      groups <- c(groups, "bins_order")
+
+      ias_df1 <-
+        dplyr::group_by(
+          .data = ias_df_joined,
+          dplyr::across(.cols = dplyr::all_of(groups))
+        ) %>%
+        dplyr::summarise(
+          dplyr::across(
+            .cols = dplyr::any_of(variables),
+            .fns = summarize_formulas[[summarize_with]]
+          )
+        )
+
+      if(base::isTRUE(add_sd)){
+
+        ias_df2 <-
+          dplyr::group_by(
+            .data = ias_df_joined,
+            dplyr::across(.cols = dplyr::all_of(groups))
+          ) %>%
+          dplyr::summarise(
+            dplyr::across(
+              .cols = dplyr::any_of(variables),
+              .fns = list(sd = ~ stats::sd(.x, na.rm = TRUE))
+            )
+          ) %>% select(-bins_order)
+
+
+        # store ranges for normalization if required
+        if(base::is.character(normalize_by)){
+
+          original_ranges <-
+            purrr::map(
+              .x = variables,
+              .f = ~ base::range(ias_df_joined[[.x]])
+            ) %>%
+            purrr::set_names(
+              nm = variables
+            )
+
+        }
+
+        ias_df_out <-
+          dplyr::left_join(
+            x = ias_df1,
+            y = ias_df2,
+            by = "bins_circle"
+          )
+
+      } else {
+
+        ias_df_out <- ias_df1
+
+        ias_df_out
+
+      }
+
+    } else {
+
+      ias_df_out <- ias_df_joined
+
+    }
+
+    # normalize if desired
+    if(base::is.character(normalize_by)){
+
+      confuns::check_one_of(
+        input = normalize_by,
+        against = c("sample", "bins_angle"),
+        suggest = FALSE
+      )
+
+      if(normalize_by == "sample"){
+
+        # no grouping needed
+        groups <- base::character()
+
+        ref = ""
+
+      } else if(normalize_by == "bins_angle"){
+
+        groups <- "bins_angle"
+
+        ref <- " by 'bins_angle'"
+
+      }
+
+      confuns::give_feedback(
+        msg = glue::glue("Normalizing{ref}."),
+        verbose = verbose
+      )
+
+      ias_df_norm <-
+        dplyr::group_by(
+          .data = ias_df_out,
+          dplyr::across(.cols = dplyr::all_of(groups))
+        ) %>%
+        dplyr::mutate(
+          dplyr::across(
+            .cols = dplyr::any_of(variables),
+            .fns = ~ scales::rescale(x = .x, to = c(0,1))
+          )
+        )
+
+      if(base::isTRUE(add_sd)){
+
+        for(v in variables){
+
+          vcol <- stringr::str_c(v, "_sd")
+
+          ias_df_norm[[vcol]] <-
+            scales::rescale(
+              x = ias_df_norm[[vcol]],
+              from = original_ranges[[v]],
+              to = c(0, 1)
+            )
+
+        }
+
+      }
+
+      ias_df_out <- ias_df_norm
+
+    }
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "No variables joined.",
+      verbose = verbose
+    )
+
+    ias_df_out <- ias_df
+
+  }
+
+  out <- dplyr::ungroup(ias_df_out)
+
+  return(out)
+
+}
+
+
+#' @title Obtain center of an image annotation
+#'
+#' @description \code{getImgAnnCenter()} computes the
+#' x- and y- coordinates of the center of the outer border, returns
+#' a numeric vector of length two. `getImgAnnCenters()` computes the center of the outer
+#' and every inner border and returns a list of numeric vectors of length two.
+#'
+#' @inherit getImageAnnotation params
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two or a list of these. Values are named *x* and *y*.
+#'
+#' @export
+
+setGeneric(name = "getImgAnnCenter", def = function(object, ...){
+
+  standardGeneric(f = "getImgAnnCenter")
+
+})
+
+#' @rdname getImgAnnCenter
+#' @export
+setMethod(
+  f = "getImgAnnCenter",
+  signature = "spata2",
+  definition = function(object, id){
+
+    border_df <- getImgAnnOutlineDf(object, ids = id, inner = FALSE)
+
+    x <- base::mean(base::range(border_df$x))
+    y <- base::mean(base::range(border_df$y))
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImgAnnCenter
+#' @export
+
+setMethod(
+  f = "getImgAnnCenter",
+  signature = "ImageAnnotation",
+  definition = function(object){
+
+    border_df <- object@area[["outer"]]
+
+    x <- base::mean(base::range(border_df$x))
+    y <- base::mean(base::range(border_df$y))
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImgAnnCenter
+#' @export
+setGeneric(name = "getImgAnnCenters", def = function(object, ...){
+
+  standardGeneric(f = "getImgAnnCenters")
+
+})
+
+#' @rdname getImgAnnCenter
+#' @export
+setMethod(
+  f = "getImgAnnCenters",
+  signature = "spata2",
+  definition = function(object, id, outer = TRUE, inner = TRUE){
+
+    img_ann <- getImageAnnotation(object, id = id, add_barcodes = FALSE, add_image = FALSE)
+
+    area <- img_ann@area
+
+    if(base::isFALSE(outer)){
+
+      area$outer <- NULL
+
+    }
+
+    if(base::isFALSE(inner)){
+
+      area <- area[c("outer")]
+
+    }
+
+    purrr::map(
+      .x = area,
+      .f = function(border_df){
+
+        x <- base::mean(base::range(border_df$x))
+        y <- base::mean(base::range(border_df$y))
+
+        out <- c(x = x, y = y)
+
+        return(out)
+
+      }
+    )
+
+  }
+)
+
+#' @rdname getImgAnnCenter
+#' @export
+setMethod(
+  f = "getImgAnnCenters",
+  signature = "ImageAnnotation",
+  definition = function(object, outer = TRUE, inner = TRUE){
+
+    area <- object@area
+
+    if(base::isFALSE(outer)){
+
+      area$outer <- NULL
+
+    }
+
+    if(base::isFALSE(inner)){
+
+      area <- area[c("outer")]
+
+    }
+
+    purrr::map(
+      .x = area,
+      .f = function(border_df){
+
+        x <- base::mean(base::range(border_df$x))
+        y <- base::mean(base::range(border_df$y))
+
+        out <- c(x = x, y = y)
+
+        return(out)
+
+      }
+    )
+
+  }
+)
+
+
+#' @title Obtain center barcode-spot
+#'
+#' @description Extracts the barcode spot that lies closest
+#' to the center of the image annotation.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return Data.frame as returned by \code{getCoordsDf()} with one row.
+#'
+#' @export
+
+getImgAnnCenterBcsp <- function(object, id){
+
+  coords_df <- getCoordsDf(object)
+
+  center <- getImgAnnCenter(object, id = id)
+
+  out_df <-
+    dplyr::mutate(.data = coords_df, dist = base::sqrt((x - center[["x"]])^2 + (y - center[["y"]])^2) ) %>%
+    dplyr::filter(dist == base::min(dist))
+
+  return(out_df)
+
+}
+
+#' @title Obtain image annotations range
+#'
+#' @description Extracts the minimum and maximum x- and y-coordinates
+#' of the image annotation border.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return List of length two. Named with *x* and *y*. Each slot
+#' contains a vector of length two with the minima and maxima in pixel.
+#' @export
+#'
+getImgAnnRange <- function(object, id){
+
+  getImgAnnOutlineDf(object, ids = id) %>%
+    dplyr::filter(border == "outer") %>%
+    dplyr::select(x, y) %>%
+    purrr::map(.f = base::range)
+
+}
+
+#' @title Obtain simple feature
+#'
+#' @description Exracts an object as created by `sf::st_polygon()` that
+#' corresponds to the image annotation.
+#'
+#' @inherit getImageAnnotation params
+#'
+#' @return An object of class `POLYGON` from the `sf` package.
+#' @export
+#'
+getImgAnnSf <- function(object, id){
+
+  img_ann <-
+    getImageAnnotation(
+      object = object,
+      id = id,
+      add_barcodes = FALSE,
+      add_image = FALSE
+    )
+
+  sf::st_polygon(
+    x = purrr::map(.x = img_ann@area, .f = ~ close_area_df(.x) %>% base::as.matrix())
+  )
+
+}
+
+
+
 #' @title Obtain information about object initiation
 #'
 #' @description Information about the object's initiation is stored in
@@ -1329,7 +2340,8 @@ getInitiationInput <- function(object, verbose = NULL){
 #' @inherit check_sample params
 #' @param mtr_name Character value. The name of the matrix of interest.
 #'
-#' @return The matrix of the specified object and sample(s).
+#' @return The matrix of the specified object. A list of all matrices
+#' in case of `getMatrices()`.
 #' @export
 
 getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
@@ -1345,6 +2357,14 @@ getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
   }
 
   object@data[[1]][[mtr_name]]
+
+}
+
+#' @rdname getMatrix
+#' @export
+getMatrices <- function(object){
+
+  object@data[[1]]
 
 }
 
@@ -1381,7 +2401,7 @@ getSpatialMethod <- function(object){
 #'
 #' @return Data.frame.
 #'
-#' @export
+#' @keywords internal
 
 setGeneric(name = "getModelEvaluationDf", def = function(object, ...){
 

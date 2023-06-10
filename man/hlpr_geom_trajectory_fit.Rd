@@ -18,3 +18,4 @@ hlpr_geom_trajectory_fit(
 \description{
 To be used in plotTrajectoryFit()/-Customized()
 }
+\keyword{internal}

@@ -2,8 +2,132 @@
 
 
 
+
+# id ----------------------------------------------------------------------
+
+#' @title Identify tissue sections
+#'
+#' @description Identifies how many non-contiguous tissue sections
+#' the data set contains and maps the barcode-spots to them.
+#'
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#'
+#' @return An updated `spata2` object. The coordinates data.frame
+#' as obtained by `getCoordsDf()` contains an additional, character
+#' variable named *section* indicating the tissue section a barcode
+#' spot was mapped to.
+#'
+#' @export
+identifyTissueSections <- function(object, eps = getCCD(object, "px")*1.25, minPts = 3){
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    add_tissue_section_variable(
+      coords_df = .,
+      ccd = eps,
+      name = "section",
+      minPts = minPts
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
+
+
+#' @title Identify tissue outline
+#'
+#' @description Identifies the barcode-spots that lie on the edge
+#' of each tissue section and, thus, outline it. Requires `identifyTissueSections()`
+#' results.
+#'
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#'
+#' @return An updated `spata2` object. The coordinates data.frame
+#' as obtained by `getCoordsDf()` contains an additional, logical
+#' variable named *outline* indicating whether the spot belongs
+#' to the outline spots of the respective tissue section indicated by
+#' variable *section*.
+#'
+#' @export
+identifyTissueOutline <- function(object){
+
+  base::stopifnot(tissueSectionsIdentfied(object))
+
+  coords_df <- getCoordsDf(object)
+
+  coords_df <-
+    purrr::map_df(
+      .x = base::unique(coords_df[["section"]]),
+      .f = function(section){
+
+        coords_df_sub <-
+          dplyr::filter(coords_df, section == {{section}})
+
+        coords_mtr <-
+          tibble::column_to_rownames(coords_df_sub, "barcodes") %>%
+          dplyr::select(x, y) %>%
+          base::as.matrix()
+
+        out <-
+          concaveman::concaveman(points = coords_mtr) %>%
+          base::as.data.frame() %>%
+          tibble::as_tibble() %>%
+          magrittr::set_colnames(c("xp", "yp")) %>%
+          dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
+
+        map_to_bcsp <-
+          tidyr::expand_grid(
+            id = out$id,
+            barcodes = coords_df_sub$barcodes
+          ) %>%
+          dplyr::left_join(y = coords_df_sub[,c("barcodes", "x", "y")], by = "barcodes") %>%
+          dplyr::left_join(y = out, by = "id") %>%
+          dplyr::group_by(id, barcodes) %>%
+          dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
+          dplyr::ungroup() %>%
+          dplyr::group_by(id) %>%
+          dplyr::filter(dist == base::min(dist)) %>%
+          dplyr::ungroup()
+
+        coords_df_sub[["outline"]] <- coords_df_sub[["barcodes"]] %in% map_to_bcsp[["barcodes"]]
+
+        return(coords_df_sub)
+
+      }
+    ) %>%
+    # outline of section == 0 is always FALSE
+    dplyr::mutate(
+      outline = dplyr::if_else(condition = section == "0", true = FALSE, false = outline)
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
+
+
 # im ----------------------------------------------------------------------
 
+#' @keywords internal
+img_ann_highlight_group_button <- function(){
+
+  shiny::splitLayout(
+    shinyWidgets::checkboxGroupButtons(
+      inputId = "highlight",
+      label = NULL,
+      choices = c("Highlight" = "highlight"),
+      status = "default",
+      justified = TRUE
+    ),
+    cellWidths = "100%"
+  )
+
+}
 
 #' @title Implementation of the IAS-algorithm
 #'
@@ -36,6 +160,7 @@
 #'
 #' @param summarize_with Character value. Either \emph{'mean'} or \emph{'median'}.
 #' Specifies the function with which the bins are summarized.
+#' @param bcsp_exclude Character value containing name(s) of barcode-spots to be excluded from the analysis.
 #'
 #' @inherit add_models params
 #' @inherit argument_dummy params
@@ -142,6 +267,7 @@ imageAnnotationScreening <- function(object,
                                      binwidth = getCCD(object),
                                      angle_span = c(0,360),
                                      n_bins_angle = 1,
+                                     include_area = FALSE,
                                      summarize_with = "mean",
                                      normalize_by = "sample",
                                      method_padj = "fdr",
@@ -149,8 +275,11 @@ imageAnnotationScreening <- function(object,
                                      model_remove = NULL,
                                      model_add = NULL,
                                      mtr_name = NULL,
+                                     bcsp_exclude = NA_character_,
                                      verbose = NULL,
                                      ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object)
 
@@ -184,7 +313,7 @@ imageAnnotationScreening <- function(object,
   }
 
   ias_df <-
-    getImageAnnotationScreeningDf(
+    getIasDf(
       object = object,
       id = id,
       variables = variables,
@@ -193,11 +322,13 @@ imageAnnotationScreening <- function(object,
       n_bins_circle = n_bins_circle,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
-      remove_circle_bins = TRUE,
+      remove_circle_bins = !include_area,
       remove_angle_bins = TRUE,
+      bcsp_exclude = bcsp_exclude,
       drop = FALSE,
       summarize_by = c("bins_circle", "bins_angle"),
-      normalize_by = normalize_by
+      normalize_by = normalize_by,
+      verbose = verbose
     )
 
   bins_angle <- base::levels(ias_df$bins_angle)
@@ -206,8 +337,13 @@ imageAnnotationScreening <- function(object,
 
   bins_angle_remaining <- base::levels(ias_df$bins_angle)
 
-  min_bins_circle <- base::min(n_bins_circle)
-  max_bins_circle <- base::max(n_bins_circle)
+  if(base::isTRUE(include_area)){
+
+    ias_df[["bins_order"]] <- ias_df[["bins_order"]] + 1
+
+  }
+
+  max_bins_circle <- base::max(ias_df$bins_order)
 
   # test model input
   model_df <-
@@ -243,7 +379,7 @@ imageAnnotationScreening <- function(object,
 
         confuns::give_feedback(
           msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
-          verbose = TRUE
+          verbose = verbose
         )
 
         bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
@@ -325,6 +461,8 @@ imageAnnotationScreening <- function(object,
   )
 
   info <- list(
+    id = id,
+    include_area = include_area,
     input_binwidth = input_binwidth,
     input_distance = input_distance,
     mtr_name = mtr_name,
@@ -337,13 +475,13 @@ imageAnnotationScreening <- function(object,
       binwidth = binwidth,
       coords = getCoordsDf(object),
       distance = distance,
-      img_annotation = getImageAnnotation(object, id = id),
       info = info,
       models = model_df,
       n_bins_angle = n_bins_angle,
       n_bins_circle = n_bins_circle,
       results_primary = results_primary,
-      sample = object@samples
+      sample = object@samples,
+      bcsp_exclude = bcsp_exclude
     ) %>%
     summarizeIAS(method_padj = method_padj)
 
@@ -374,8 +512,8 @@ imageAnnotationScreening <- function(object,
 #' the same name.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @return An updated spata object.
 #' @export
 #'
 imageAnnotationToSegmentation <- function(object,
@@ -394,7 +532,7 @@ imageAnnotationToSegmentation <- function(object,
     overwrite = overwrite
   )
 
-  bcsp_inside <- getImageAnnotationBarcodes(object, ids = ids)
+  bcsp_inside <- getImgAnnBarcodes(object, ids = ids)
 
   fdata <-
     getFeatureDf(object) %>%
@@ -415,7 +553,467 @@ imageAnnotationToSegmentation <- function(object,
 
 }
 
-# is ----------------------------------------------------------------------
+
+
+# in ----------------------------------------------------------------------
+
+#' @title Include spatial extent of tissue sections in analysis
+#'
+#' @description Ensures section specific processing of observations
+#' in relation by identifying the outline of the tissue section
+#' (or -sections in case of multiple tissue sections per sample). Additionally,
+#' allows to relate observations to the spatial position and extent of image
+#' annotations.
+#'
+#' @inherit imageAnnotationScreening params
+#' @param input_df A data.frame that contains at least numeric *x* and *y*
+#' variables.
+#' @inherit argument_dummy params
+#' @param ias_circles Logical value. If `TRUE`, input data.frame is assumed
+#' to contain polygon coordinates of the expanded image annotation encircling
+#' and sorts them after filtering for those that lie inside the tissue section
+#' in order to plot them via `ggplot2::geom_path()`.
+#' @param opt Either *'concaveman'*' or *'chull'*. Defines with which function
+#' the tissue outline is computed.
+#' @return Filtered input data.frame.
+#' @export
+#'
+include_tissue_outline <- function(coords_df,
+                                   input_df,
+                                   img_ann_center = NULL,
+                                   ias_circles = FALSE,
+                                   ccd = NULL,
+                                   remove = TRUE,
+                                   inside_if = c(1,2),
+                                   opt = "concaveman",
+                                   buffer = 0,
+                                   ...){
+
+  is_dist_pixel(input = ccd, error = TRUE)
+
+  outline_var <- "section"
+
+  if(outline_var %in% base::colnames(coords_df)){
+
+    coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
+
+    coords_df <- dplyr::filter(coords_df, outline != "0")
+
+  }
+
+  sections <- base::unique(coords_df[[outline_var]])
+
+  buffer <- base::as.numeric(buffer)
+
+  proc_df <-
+    purrr::map_df(
+      .x = sections,
+      .f = function(section){
+
+        if(opt == "concaveman"){
+
+          df_sub <-
+            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+
+          if(!"outline" %in% base::colnames(df_sub)){
+
+            df_sub <- add_outline_variable(df_sub)
+
+          }
+
+          hull_df <-
+            dplyr::filter(df_sub, outline) %>%
+            arrange_as_polygon()
+
+        } else if(opt == "chull") {
+
+          spots_in_part <-
+            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+
+          hull_points <- grDevices::chull(x = spots_in_part[["x"]], y = spots_in_part[["y"]])
+          hull_df <- spots_in_part[hull_points, ]
+
+        }
+
+        if(buffer != 0){
+
+          hull_df <- buffer_area(df = hull_df, buffer = buffer, close_plg = TRUE)
+
+        }
+
+
+        input_df$obs_in_section <-
+          sp::point.in.polygon(
+            point.x = input_df[["x"]],
+            point.y = input_df[["y"]],
+            pol.x = hull_df[["x"]],
+            pol.y = hull_df[["y"]]
+          ) %>%
+          base::as.character()
+
+        out_df <-
+          dplyr::mutate(
+            .data = input_df,
+            pos_rel = dplyr::if_else(obs_in_section %in% {{inside_if}}, true = "inside", false = "outside"),
+            tissue_section = {{section}}
+          )
+
+        if("inside" %in% out_df[["pos_rel"]]){
+
+          if(base::isTRUE(ias_circles)){
+
+            out_df[["part"]] <- 0
+            out_df[["number"]] <- 0
+
+            parts <- list(outside = 0, inside = 0)
+
+            # walk along the drawing direction and mark entering and exit of line
+            for(i in 1:base::nrow(out_df)){
+
+              current_pos <- base::as.character(out_df[i, "pos_rel"])
+
+              # switch
+              if((i == 1) || (current_pos != prev_pos)){
+
+                parts[[current_pos]] <- parts[[current_pos]]+1
+
+                number <- 1
+
+              } else {
+
+                number <- number + 1
+
+              }
+
+              out_df[i, "part"] <- parts[[current_pos]]
+              out_df[i, "number"] <- number
+
+              prev_pos <- current_pos
+
+            }
+
+            out_df <-
+              dplyr::mutate(
+                .data = out_df,
+                pos_rel_group = stringr::str_c(pos_rel, part),
+                intersect = number == 1
+              ) %>%
+              dplyr::group_by(pos_rel_group) %>%
+              dplyr::arrange(number, .by_group = TRUE) %>%
+              dplyr::ungroup()
+
+          }
+
+          if(base::isTRUE(remove)){
+
+            out_df <- dplyr::filter(out_df, pos_rel == "inside")
+
+          }
+
+        } else {
+
+          out_df <- NULL
+
+        }
+
+        return(out_df)
+
+      }
+    )
+
+  # if multiple sections on visium slide
+  # identify to which image section the img ann belongs
+  if(base::length(sections) > 1 &
+     base::is.numeric(img_ann_center) &
+     base::nrow(proc_df) != 0){
+
+    section_of_img_ann <-
+      dplyr::group_by(.data = coords_df, barcodes) %>%
+      dplyr::mutate(
+        dist = compute_distance(starting_pos = c(x,y), final_pos = img_ann_center )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(dist == base::min(dist)) %>%
+      dplyr::pull({{outline_var}})
+
+    proc_df <- dplyr::filter(proc_df, tissue_section == {{section_of_img_ann}})
+
+  } else {
+
+    if(base::nrow(proc_df) == 0){
+
+      proc_df <- NULL
+
+    }
+
+  }
+
+  return(proc_df)
+
+
+}
+
+#' @title Count cells depending on distance to image annotation
+#'
+#' @description Integration of single cell deconvolution and SPATA2s image annotations.
+#'
+#' @param as_models Adjusts the output to a list that is a valid input for
+#' `models_add`-argument of `imageAnnotationScreening()`.
+#'
+#' @inherit imageAnnotationScreening params
+#' @inherit getIasDf params
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame as is returned by `getIasDf()` with cell types as variables.
+#' @export
+#'
+inferSingleCellGradient <- function(object,
+                                    sc_input,
+                                    id,
+                                    calculate = "density",
+                                    distance = NA_integer_,
+                                    n_bins_circle = NA_integer_,
+                                    binwidth = getCCD(object),
+                                    angle_span = c(0, 360),
+                                    n_bins_angle = 1,
+                                    remove_circle_bins = "Outside",
+                                    normalize = TRUE,
+                                    area_unit = NULL,
+                                    format = "wide",
+                                    as_models = FALSE){
+
+  confuns::check_data_frame(
+    df = sc_input,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  if(!"cell_type" %in% base::colnames(sc_input)){
+
+    stop("Data.frame for argument `sc_input` must contain a variable named 'cell_type'.")
+
+  } else if(!base::class(sc_input[["cell_type"]]) %in% c("character", "factor")){
+
+    stop("Variable 'cell_type' must be of class character or factor.")
+
+  }
+
+  sc_input[["cell_id"]] <- stringr::str_c("cell_", 1:base::nrow(sc_input))
+
+  ias_input <-
+    check_ias_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_circle = n_bins_circle,
+      object = object
+    )
+
+  all_cell_types <- base::unique(sc_input[["cell_type"]])
+
+  bins <- stringr::str_c("Circle ", ias_input$n_bins_circle)
+
+  if(base::all(base::isTRUE(remove_circle_bins))){
+
+    remove_circle_bins <- c("Core", "Outside")
+
+  }
+
+  if(!"Core" %in% remove_circle_bins){
+
+    bins <- c("Core", bins)
+
+  }
+
+  if(!"Outside" %in% remove_circle_bins){
+
+    bins <- c(bins, "Outside")
+
+  }
+
+  all_bins_df <-
+    tibble::tibble(bins_circle = base::factor(bins, levels = bins)) %>%
+    dplyr::mutate()
+
+  if(base::is.null(area_unit)){
+
+    area_unit <- getSpatialMethod(object)@unit
+
+    area_unit <- stringr::str_c(area_unit, "2")
+
+  }
+
+  outline_var <- getOutlineVarName(object)
+
+  if(base::is.character(outline_var)){
+
+    coords_df <- getCoordsDf(object, features = outline_var)
+
+  } else {
+
+    coords_df <- getCoordsDf(object)
+
+  }
+
+  out_df <-
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        ref_area_df <-
+          getIasBinAreas(
+            object = object,
+            id = idx,
+            binwidth = binwidth,
+            n_bins_circle = n_bins_circle,
+            distance = distance,
+            remove_circle_bins = remove_circle_bins,
+            angle_span = angle_span,
+            n_bins_angle = n_bins_angle,
+            verbose = FALSE,
+            area_unit = area_unit,
+            use_outline = TRUE
+          )
+
+        sc_input_proc <-
+          include_tissue_outline(
+            coords_df = coords_df,
+            input_df = sc_input,
+            outline_var = outline_var,
+            img_ann_center = getImgAnnCenter(object, id = idx),
+            ccd = getCCD(object, unit = "px")
+          ) %>%
+          bin_by_expansion(
+            coords_df = .,
+            area_df = getImgAnnOutlineDf(object, ids = idx),
+            binwidth = ias_input$binwidth,
+            n_bins_circle = ias_input$n_bins_circle,
+            remove = remove_circle_bins
+          ) %>%
+          bin_by_angle(
+            coords_df = .,
+            center = getImgAnnCenter(object, id = idx),
+            n_bins_angle = n_bins_angle,
+            angle_span = angle_span,
+            var_to_bin = "cell_id",
+            verbose = FALSE
+          )
+
+        out <-
+          dplyr::group_by(sc_input_proc, bins_circle, bins_order, bins_angle, cell_type) %>%
+          dplyr::summarise(cell_type_count = dplyr::n()) %>%
+          dplyr::ungroup() %>%
+          dplyr::group_by(bins_circle, bins_order, bins_angle) %>%
+          dplyr::mutate(cell_count = base::sum(cell_type_count)) %>%
+          dplyr::left_join(x = ref_area_df, y = ., by = c("bins_circle", "bins_angle", "bins_order")) %>%
+          dplyr::ungroup() %>%
+          dplyr::mutate(
+            density = cell_type_count / area,
+            percentage = cell_type_count / area
+          ) %>%
+          tidyr::pivot_wider(
+            id_cols = c("bins_circle", "bins_order", "bins_angle"),
+            names_from = "cell_type",
+            values_from = {{calculate}}
+          ) %>%
+          dplyr::mutate(
+            dplyr::across(
+              .cols = dplyr::all_of(all_cell_types),
+              .fns = ~ tidyr::replace_na(data = .x, replace = 0)
+            )
+          ) %>%
+          dplyr::select(-dplyr::any_of("NA"))
+
+        return(out)
+
+      }
+    ) %>%
+    dplyr::group_by(bins_circle, bins_order, bins_angle) %>%
+    dplyr::summarize(
+      dplyr::across(
+        .cols = dplyr::all_of(all_cell_types),
+        .fns = ~ base::mean(.x, na.rm = T)
+      )
+    ) %>% dplyr::ungroup()
+
+  if(base::isTRUE(normalize) | base::isTRUE(as_models)){
+
+    out_df <-
+      dplyr::mutate(
+        .data = out_df,
+        dplyr::across(
+          .cols = dplyr::all_of(all_cell_types),
+          .fns = ~
+            tidyr::replace_na(data = .x, replace = 0) %>%
+            confuns::normalize()
+        )
+      )
+
+  }
+
+  if(base::isTRUE(as_models)){
+
+    out_df <-
+      dplyr::select(out_df, dplyr::all_of(all_cell_types)) %>%
+      base::as.list()
+
+  } else {
+
+    if(format == "long"){
+
+      out_df <-
+        tidyr::pivot_longer(
+          data = out_df,
+          cols = dplyr::all_of(all_cell_types),
+          values_to = {{calculate}},
+          names_to = "cell_type"
+        )
+
+    }
+
+  }
+
+  return(out_df)
+
+}
+
+#' @title Test polygon intersection
+#'
+#' @description Tests which vertices of polygon `a` lay inside polygon `b`.
+#'
+#' @param a,b Matrix or data.frame with columns *x* and *y*.
+#' @inherit getBarcodesInPolygon params
+#'
+#' @return Logical vector of the same length as the number of rows in `a`.
+#' @export
+
+intersect_polygons <- function(a, b, strictly = FALSE){
+
+  a <- as.data.frame(a)
+  b <- as.data.frame(b)
+
+  res <-
+    sp::point.in.polygon(
+      point.x = a[["x"]],
+      point.y = a[["y"]],
+      pol.x = b[["x"]],
+      pol.y = b[["y"]]
+    )
+
+  if(base::isTRUE(strictly)){
+
+    out <- res == 1
+
+  } else {
+
+    out <- res %in% c(1,2)
+
+  }
+
+  return(out)
+
+}
+
+
+# is_ ----------------------------------------------------------------------
 
 
 
@@ -446,9 +1044,9 @@ imageAnnotationToSegmentation <- function(object,
 #' There are two valid input options to specify an area in pixel:
 #'
 #' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. `arg_input <- c(2, 3.554, 69, 100.67)`. If no unit
+#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
 #'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input <- c('2px', '3.554px', '69px', '100.67px')`}
+#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
 #'  }
 #'
 #'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
@@ -457,7 +1055,7 @@ imageAnnotationToSegmentation <- function(object,
 #'
 #' **2. According to the Systeme international d`unites (SI):**
 #'
-#'  Specifying areas in SI units e.g. `arg_input <- c('2mm2', '4mm2')` etc.
+#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
 #'  requires the input to be a character as the unit must be provided as suffix.
 #'  Between the numeric value and the unit must be no empty space! Valid suffixes
 #'  can be obtained using the function `validUnitsOfAreaSI()`.
@@ -466,7 +1064,7 @@ imageAnnotationToSegmentation <- function(object,
 #'
 #' Behind the scenes `SPATA2` works with the `units` package. Input
 #' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input <- units::set_unit(x = c(2,4), value = 'mm2')`
+#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
 #' Note that *pixel* is not a valid unit in the `units` package. If you want
 #' to specify the input in pixel you have to use input option 1. In pixel.
 #'
@@ -733,7 +1331,15 @@ are_all_area_or_dist <- function(input, error = FALSE){
 #'
 is_dist <- function(input, error = FALSE){
 
-  res <- is_dist_si(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
+  if(base::is.null(input)){
+
+    res <- FALSE
+
+  } else {
+
+    res <- is_dist_si(input, error = FALSE) | is_dist_pixel(input, error = FALSE)
+
+  }
 
   feedback_distance_input(x = res, error = error)
 
@@ -745,7 +1351,13 @@ is_dist <- function(input, error = FALSE){
 #' @export
 is_dist_si <- function(input, error = FALSE){
 
-  if(base::is.character(input)){
+  if(base::is.null(input)){
+
+    res <- NULL
+
+    feedback_distance_input(res, error = error)
+
+  } else if(base::is.character(input)){
 
     res <- stringr::str_detect(input, pattern = regex_si_dist)
 
@@ -797,7 +1409,13 @@ is_dist_si <- function(input, error = FALSE){
 #' @export
 is_dist_pixel <- function(input, error = FALSE){
 
-  if(base::is.character(input) | is_numeric_input(input)){
+  if(base::is.null(input)){
+
+    res <- FALSE
+
+    feedback_distance_input(res, error = error)
+
+  } else if(base::is.character(input) | is_numeric_input(input)){
 
     res <- stringr::str_detect(input, pattern = regex_pxl_dist)
 
@@ -821,7 +1439,7 @@ is_dist_pixel <- function(input, error = FALSE){
 
 }
 
-
+#' @keywords internal
 is_exclam <- function(input, error = FALSE){
 
   res <-
@@ -832,12 +1450,33 @@ is_exclam <- function(input, error = FALSE){
 
 }
 
+#' @keywords internal
+is_image_dir <- function(input, error = FALSE){
+
+  res <-
+    stringr::str_detect(
+      string = input,
+      pattern = "\\.png$|\\.jpeg$\\.tiff$|\\.PNG$|\\.JPEG$\\.TIFF$"
+      )
+
+  if(base::any(!res)){
+
+    stop("Image directories must end with either '.png', '.jpeg', '.tiff'")
+
+  }
+
+  return(res)
+
+}
+
+#' @keywords internal
 is_number <- function(x){
 
   !(base::is.na(x) | base::is.na(x) | base::is.infinite(x))
 
 }
 
+#' @keywords internal
 is_numeric_input <- function(input){
 
   (base::is.numeric(input)) &
@@ -845,7 +1484,7 @@ is_numeric_input <- function(input){
 
 }
 
-
+#' @keywords internal
 is_percentage <- function(input, error = FALSE){
 
   res <- stringr::str_detect(string = input, pattern = regex_percentage)
@@ -856,7 +1495,7 @@ is_percentage <- function(input, error = FALSE){
 
 }
 
-
+#' @keywords internal
 is_spatial_measure <- function(input, error = FALSE){
 
   res <- is_dist(input, error = FALSE) | is_area(input, error = FALSE)
@@ -930,7 +1569,7 @@ is_unit_dist <- function(input, error = FALSE){
 
 
 
-
+# isG ---------------------------------------------------------------------
 
 
 #' @export
@@ -955,6 +1594,12 @@ isGeneSet <- function(object, gene_set){
 
 }
 
+
+
+# isF ---------------------------------------------------------------------
+
+
+
 #' @export
 isFeature <- function(object, feature){
 
@@ -967,14 +1612,19 @@ isFeature <- function(object, feature){
 }
 
 #' @export
-isFlipped <- function(object){
+isFlipped <- function(object, axis){
 
-  out <- getImageObject(object)@info$flipped
+  if(axis == "h"){ axis <- "horizontal"}
+  if(axis == "v"){ axis <- "vertical" }
+
+  out <- getImageInfo(object)$flipped[[axis]]
 
   base::isTRUE(out)
 
 }
 
+
+# isN ---------------------------------------------------------------------
 
 #' @export
 isNumericVariable <- function(object, variable){
@@ -992,4 +1642,34 @@ isNumericVariable <- function(object, variable){
 
 
 }
+
+
+
+# isS ---------------------------------------------------------------------
+
+#' @export
+isSpatialTrajectory <- function(object){
+
+  class_test <-
+    SpatialTrajectory() %>%
+    base::class()
+
+  methods::is(object = object, class = class_test)
+
+}
+
+
+# isT ---------------------------------------------------------------------
+
+#' @keywords internal
+isTrajectory <- function(object){
+
+  class_test <-
+    Trajectory() %>%
+    base::class()
+
+  methods::is(object = object, class = class_test)
+
+}
+
 

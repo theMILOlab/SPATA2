@@ -2,20 +2,20 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject_CountMtr}
 \alias{initiateSpataObject_CountMtr}
-\title{Initiate a spata-object from a raw count matrix}
+\title{Initiate a \code{spata2} object from a raw count matrix}
 \usage{
 initiateSpataObject_CountMtr(
   coords_df,
   count_mtr,
-  feature_df = NULL,
   sample_name,
+  spatial_method = "Unknown",
   image = NULL,
   image_class = "HistologyImage",
   image_object = NULL,
+  feature_df = NULL,
   directory_spata = NULL,
   directory_seurat = NULL,
   combine_with_wd = FALSE,
-  gene_set_path = NULL,
   SCTransform = FALSE,
   NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
   FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
@@ -25,14 +25,15 @@ initiateSpataObject_CountMtr(
   FindClusters = list(resolution = 0.8),
   RunTSNE = TRUE,
   RunUMAP = list(dims = 1:30),
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
 \item{coords_df}{Data.frame containing information about the positions of all
 barcode-spots in form of a numeric \emph{x}- and \emph{y}-variable. The key-variable
 \emph{barcodes} needs to be of type character and must be identical to the column names
-of the input matrix (\code{expr_mtr}).}
+of the input matrix.}
 
 \item{count_mtr}{A numeric matrix to be used as the count matrix. Rownames must
 correspond to the genes and column names must correspond to the barcodes.}
@@ -41,18 +42,6 @@ correspond to the genes and column names must correspond to the barcodes.}
 analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.}
 
 \item{image}{An Image of the sample that can be displayed as the surface plot's background.}
-
-\item{gene_set_path}{Character value (or NULL). Specifies the path to a
-.RDS-file containing a data.frame that is to be used as input for slot @used_genesets.
-
-Must have the character-variables
-
-\itemize{
-\item{\emph{'ont'}: The gene set names.}
-\item{\emph{'gene'}: The belonging gene names.}
-}
-
-If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.}
 
 \item{SCTransform}{A named list of arguments given to \code{Seurat::SCTransform()}, TRUE or FALSE.}
 
@@ -74,28 +63,30 @@ for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 \item{RunTSNE}{A named list of arguments given to \code{Seurat::RunTSNE()}, TRUE or FALSE.}
 
 \item{RunUMAP}{A named list of arguments given to \code{Seurat::RunUMAP()}, TRUE or FALSE.}
+
+\item{...}{Additional parameters given to \code{Seurat::CreateSeuratObject()}.}
 }
 \value{
-A spata-object.
+A \code{spata2} object.
 }
 \description{
-Default function for any spatial related experiment whoose spata-objects are initiated with
+Default function for any spatial related experiment whoose \code{spata2} objects are initiated with
 a raw count matrix. See details for more information.
 }
 \details{
-The loading and preprocessing of the spata-object  currently relies on the Seurat-package. Before any pre processing function is applied
+The loading and preprocessing of the \code{spata2} object  currently relies on the Seurat-package. Before any pre processing function is applied
 mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-manipulate the way the spata-object is processed. For all of these arguments apply the following instructions:
+manipulate the way the \code{spata2} object is processed. For all of these arguments apply the following instructions:
 
 \itemize{
 \item{If set to FALSE the processing function is skipped.}
 \item{If set to TRUE the respective function is called with it's default argument settings. Note: \code{RunUMAP()} needs
 additional input!}
-\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
+\item{If a named list is provided the respective function is called whereby the named list will provide the argument-input (the \code{Seurat} object to be constructed must not be named and will be
 passed to every function as the first argument!!!.)}
 }
 
 Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-is going to be empty.) Skipping functions might result in an incomplete spata-object.
+is going to be empty.) Skipping functions might result in an incomplete \code{spata2} object.
 }

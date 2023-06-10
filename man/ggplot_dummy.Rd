@@ -12,3 +12,4 @@ A ggplot.
 \description{
 ggplot
 }
+\keyword{internal}

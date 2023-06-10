@@ -18,3 +18,4 @@ A data.frame or a distance matrix.
 \description{
 Obtain distance measurements of spatially correlated genes
 }
+\keyword{internal}

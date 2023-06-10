@@ -19,3 +19,4 @@ Data.frame with the smoothed variable specified in \code{variable}.
 \description{
 Helper function to use independently (or in a pipe)
 }
+\keyword{internal}

@@ -14,3 +14,4 @@ data.frame are discarded. If set to \emph{'keep'} they are kept.}
 \description{
 Check uniform genes input
 }
+\keyword{internal}

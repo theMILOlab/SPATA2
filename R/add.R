@@ -1,5 +1,7 @@
 # add_ --------------------------------------------------------------------
 
+
+#' @keywords internal
 add_helper <- function(shiny_tag,
                        content,
                        title = "What do I have to do here?",
@@ -36,6 +38,8 @@ add_helper <- function(shiny_tag,
 #' containing a function that takes a numeric vector as input and returns a numeric
 #' vector with the same length as its input vector. Or a numeric vector with the
 #' same length as the input vector. Test models with \code{showModels()}.
+#'
+#' @keywords internal
 #'
 #' @export
 #'
@@ -77,6 +81,156 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
     model_remove = model_remove,
     model_add = model_add,
     verbose = verbose
+  )
+
+}
+
+
+#' @title Add outline variable
+#'
+#' @description Adds a variable called *outline* to the input data.frame
+#' that tells if the observation belongs to the points that lie on the
+#' edge of the covered area.
+#'
+#' @param input_df A data.frame with two numeric variables called *x* and *y*
+#' and a variable as denoted in `id_var`.
+#' @param id_var Character. Variable that identifies each observation.
+#'
+#' @return Input data.frame with additional logical variable *outline*.
+#' @export
+#'
+#' @examples
+#'
+#'  library(ggplot2)
+#'
+#'  object <- downloadPubExample("313_T")
+#'
+#'  pt_size <- getDefault(objet, "pt_size")
+#'
+#'  coords_df <- getCoordsDf(object)[, c("barcodes", "x", "y")]
+#'
+#'  head(coords_df)
+#'
+#'  ggplot(data = coords_df) +
+#'   geom_point_fixed(mapping = aes(x = x, y = y), size = pt_size) +
+#'   theme_void()
+#'
+#'  coords_df2 <- add_outline_variable(coords_df, id_var = "barcodes")
+#'
+#'  ggplot(data = coords_df2) +
+#'   geom_point_fixed(mapping = aes(x = x, y = y, color = outline), size = pt_size) +
+#'   theme_void()
+#'
+add_outline_variable <- function(input_df, id_var = "barcodes"){
+
+  coords_mtr <-
+    tibble::column_to_rownames(input_df, id_var) %>%
+    dplyr::select(x, y) %>%
+    base::as.matrix()
+
+  out <-
+    concaveman::concaveman(points = coords_mtr) %>%
+    base::as.data.frame() %>%
+    tibble::as_tibble() %>%
+    magrittr::set_colnames(c("xp", "yp")) %>%
+    dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
+
+  map_to_bcsp <-
+    tidyr::expand_grid(
+      id = out$id,
+      barcodes = input_df$barcodes
+    ) %>%
+    dplyr::left_join(y = input_df[,c(id_var, "x", "y")], by = id_var) %>%
+    dplyr::left_join(y = out, by = "id") %>%
+    dplyr::group_by(id, barcodes) %>%
+    dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(id) %>%
+    dplyr::filter(dist == base::min(dist)) %>%
+    dplyr::ungroup()
+
+  input_df[["outline"]] <- input_df[[id_var]] %in% map_to_bcsp[[id_var]]
+
+  return(input_df)
+
+}
+
+
+#' @title Add tissue section variable
+#'
+#' @description Leverages `dbscan::dbscan()` to identify tissue sections
+#' on the slide and to group barcode spots accordingly. Required to approximate
+#' the outline of the tissue section(s).
+#'
+#' @param coords_df Data.frame with *x* and *y* variable.
+#' @param ccd Center to center distance in pixel units.
+#' @param name Name of the added variable.
+#' @param ... To silently drop deprecated arguments.
+#'
+#' @inherit dbscan::dbscan params
+#'
+#' @return Data.frame with additional variable containing numbers. 0 means
+#' that the spot is not connected to any other spot (probably artefact). 1-n
+#' corresponds to the tissue sections.
+#'
+#' @note `add_dbscan_variable()` is the working horse. `add_tissue_section_variable()`
+#' has specific defaults.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' # --- identify tissue sections
+#' object <- downloadPubExample("MCI_LMU", verbose = FALSE)
+#'
+#' coords_df <- getCoordsDf(object)
+#'
+#' coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+#'
+#' plotSurface(coords_df, color_by = "section")
+#'
+#' # --- identify artefact spots
+#' object <- SPATAData::downloadSpataObject("269_T", verbose = FALSE)
+#'
+#' coords_df <- getCoordsDf(object)
+#'
+#' coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+#'
+#' plotSurface(coords_df, color_by = "section")
+#'
+
+add_dbscan_variable <- function(coords_df,
+                                eps,
+                                minPts = 3,
+                                name = "dbscan",
+                                ...){
+
+  outline_res <-
+    dbscan::dbscan(
+      x = base::as.matrix(coords_df[, c("x", "y")]),
+      eps = eps ,
+      minPts = minPts
+    )
+
+  coords_df[[name]] <- base::as.character(outline_res[["cluster"]])
+
+  return(coords_df)
+
+}
+
+
+#' @rdname add_dbscan_variable
+#' @export
+add_tissue_section_variable <- function(coords_df,
+                                        ccd,
+                                        minPts = 3,
+                                        ...){
+
+  add_dbscan_variable(
+    coords_df = coords_df,
+    eps = ccd*1.25,
+    minPts = minPts,
+    name = "section"
   )
 
 }
@@ -125,7 +279,7 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 #' @param mtr_name A character value that denotes the name of the exprssion matrix with
 #' which one can refer to it in subsequent functions.
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #' @export
 
 addExpressionMatrix <- function(object, expr_mtr, mtr_name, of_sample = ""){
@@ -181,7 +335,7 @@ addExpressionMatrix <- function(object, expr_mtr, mtr_name, of_sample = ""){
 #' key-variables \emph{barcodes} or \emph{x} and \emph{y}. Additional steps secure
 #' the joining process.
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #' @export
 #' @examples #Not run:
 #'
@@ -332,9 +486,11 @@ addFeatures <- function(object,
     }
 
     new_feature_df <-
-      dplyr::left_join(x = fdata,
-                       y = feature_df[,c("x", "y", feature_names)],
-                       by = c("x", "y")) %>%
+      dplyr::left_join(
+        x = fdata,
+        y = feature_df[,c("x", "y", feature_names)],
+        by = c("x", "y")
+      ) %>%
       dplyr::select(-x, -y)
 
     object <- setFeatureDf(object = object, feature_df = new_feature_df)
@@ -357,6 +513,12 @@ addFeatures <- function(object,
       if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
       base::warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
+
+    }
+
+    if(dplyr::n_distinct(feature_df[["barcodes"]]) != base::nrow(feature_df)){
+
+      stop("Variable 'barcodes' does not uniquely identfiy each observation. Number of unique barcodes must be equal to number of rows.")
 
     }
 
@@ -404,7 +566,7 @@ addFeatures <- function(object,
 #' key-variables \emph{genes}. Additional steps secure
 #' the joining process.
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #' @export
 #'
 addGeneFeatures <- function(object,
@@ -569,7 +731,7 @@ addGeneMetaData <- function(object, of_sample = "", meta_data_list){
 #'
 #' @inherit check_genes params
 #'
-#' @return An updated spata-object.
+#' @inherit update_dummy return
 #'
 #' @details Combines \code{class_name} and \code{gs_name} to the final gene set name.
 #' Gene set classes and gene set names are separated by '_' and handled like this
@@ -691,28 +853,23 @@ addGeneSetsInteractive <- function(object){
 
 # addI --------------------------------------------------------------------
 
-#' @title Add image annotation
+#' @rdname createImageAnnotations
+#' @param area A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
+#' Observations correspond to the vertices of the polygons that are needed to represent the
+#' image annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' with numbers that correspond to inner polygons - holes within the annotation. If so,
+#' slot @@mode should be *'Complex'*.
 #'
-#' @description Creates and adds an object of class \code{ImageAnnotation}.
-#'
-#' @param area_df A data.frame that contains at least two numeric variables named
-#' \emph{x} and \emph{y}.
-#'
-#' @return An updated spata object.
 #' @export
 #'
-addImageAnnotation <- function(object, tags, area_df, id = NULL){
-
-  confuns::check_data_frame(
-    df = area_df,
-    var.class = list(x = "numeric", y = "numeric")
-  )
+addImageAnnotation <- function(object, tags, area,  id = NULL){
 
   if(base::is.character(id)){
 
     confuns::check_none_of(
       input = id,
-      against = getImageAnnotationIds(object),
+      against = getImgAnnIds(object),
       ref.against = "image annotation IDs"
     )
 
@@ -730,21 +887,93 @@ addImageAnnotation <- function(object, tags, area_df, id = NULL){
 
   }
 
-  area_df <- tibble::as_tibble(area_df)
+  area <- purrr::map(.x = area, .f = tibble::as_tibble)
 
-  img_ann <- ImageAnnotation(id = id, tags = tags, area = area_df)
+  img_ann <-
+    ImageAnnotation(
+      area = area,
+      id = id,
+      tags = tags
+      )
 
-  image_obj <- getImageObject(object)
+  io <- getImageObject(object)
 
-  image_obj@annotations[[id]] <- img_ann
+  img_ann@info[["parent_id"]] <- io@id
+  img_ann@info[["parent_origin"]] <- io@image_info[["origin"]]
+  img_ann@info[["current_dim"]] <- io@image_info[["dim_stored"]][1:2]
+  img_ann@info[["current_just"]] <- io@justification
 
-  object <- setImageObject(object, image_obj)
+  io@annotations[[id]] <- img_ann
+
+  object <- setImageObject(object, io)
 
   return(object)
 
 }
 
 
+#' @title Add individual image directories
+#'
+#' @description Adds specific image directories beyond *lowres*
+#' *highres* and *default* with a simple name.
+#'
+#' @param dir Character value. Directory to specific image. Should end
+#' with either *.png*, *.jpeg* or *.tiff*. (Capital endings work, too.)
+#' @param name Character value. Name with which to refer to this image.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`getImageDirectories()`]
+#'
+#' @export
+addImageDir <- function(object,
+                        dir,
+                        name,
+                        check = TRUE,
+                        overwrite = FALSE,
+                        verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  io <- getImageObject(object)
+
+  confuns::check_none_of(
+    input = name,
+    against = base::names(io@dir_add),
+    ref.against = "additional image directory names",
+    overwrite = overwrite
+  )
+
+  confuns::check_none_of(
+    input = dir,
+    against = purrr::map_chr(io@dir_add, .f = ~ .x),
+    ref.against = "additional image directory names",
+    overwrite = overwrite
+  )
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(dir, type = "files")
+
+  }
+
+  new_dir <- purrr::set_names(x = dir, nm = name)
+
+  io@dir_add <- c(io@dir_add, new_dir)
+
+  object <- setImageObject(object, image_object = io)
+
+  msg <- glue::glue("Added new directory named '{name}': {dir}")
+
+  confuns::give_feedback(
+    msg = msg,
+    verbose = verbose
+  )
+
+  return(object)
+
+}
 
 # addP --------------------------------------------------------------------
 
@@ -850,7 +1079,7 @@ addPointsBase <- function(object,
 # addS --------------------------------------------------------------------
 
 #' @rdname getSegmentationNames
-#' @export
+#' @keywords internal
 addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   hlpr_assign_arguments(object)
@@ -901,7 +1130,28 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 }
 
 
+#' @rdname createSpatialTrajectories
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object_t269 <- loadSpataObject(sample_name = "269_T")
+#'
+#' object_t269 <-
+#'    addSpatialTrajectory(
+#'      object = object_t269,
+#'      id = "cross_sample",
+#'      width = "1.5mm",
+#'      start = c(x = "1.35mm", y = "4mm"),
+#'      end = c(x = "6.25mm", y = "4mm"),
+#'      overwrite = TRUE
+#'    )
+#'
+#'  plotSpatialTrajectories(object_t269, ids = "cross_sample")
+#'
 addSpatialTrajectory <- function(object,
                                  id,
                                  width,
@@ -909,15 +1159,49 @@ addSpatialTrajectory <- function(object,
                                  start = NULL,
                                  end = NULL,
                                  vertices = NULL,
-                                 comment = base::character(1)
-){
+                                 comment = base::character(1),
+                                 overwrite = FALSE){
 
-  confuns::is_value(x = width, mode = "numeric")
+
+  is_dist(input = width, error = TRUE)
+
+  width_unit <- extract_unit(width)
+
+  if(width_unit != "px"){
+
+    width <- as_pixel(input = width, object = object, add_attr = FALSE)
+
+  } else {
+
+    width <- extract_value(input = width)
+
+  }
+
+  if(!base::is.null(start)){
+
+    start <-
+      as_pixel(input = start[1:2], object = object, add_attr = FALSE) %>%
+      base::as.numeric()
+
+  }
+
+  if(!base::is.null(end)){
+
+    end <-
+      as_pixel(input = end[1:2], object = object, add_attr = FALSE) %>%
+      base::as.numeric()
+
+  }
+
+  if(!base::is.null(vertices)){
+
+    vertices <-
+      as_pixel(input = vertices, object = object, add_attr = FALSE) %>%
+      base::as.numeric()
+
+  }
 
   if(!base::is.data.frame(segment_df)){
-
-    # check input
-    confuns::are_vectors(c("start", "end"), mode = "numeric", of.length = 2)
 
     confuns::is_value(x = comment, mode = "character")
 
@@ -968,19 +1252,48 @@ addSpatialTrajectory <- function(object,
       coords_df = coords_df,
       segment_df = segment_df,
       width = width
-    )
+    ) %>%
+    dplyr::select(barcodes, sample, x, y, projection_length, trajectory_part)
+
+
+  if(containsImage(object)){
+
+    io <- getImageObject(object)
+
+    info <-
+      list(
+        current_dim = io@image_info$dim_stored,
+        current_just = list(
+          angle = io@justification$angle,
+          flipped = io@justification$flipped
+        )
+      )
+
+  } else {
+
+    info <- list()
+
+  }
 
   spat_traj <-
     SpatialTrajectory(
       comment = comment,
       id = id,
+      info = info,
       projection = projection_df,
       segment = segment_df,
       sample = object@samples,
-      width = width
+      width = width,
+      width_unit = width_unit
     )
 
-  object@trajectories[[1]][[id]] <- spat_traj
+  object <-
+    setTrajectory(
+      object = object,
+      trajectory = spat_traj,
+      align = FALSE,
+      overwrite = overwrite
+      )
 
   return(object)
 

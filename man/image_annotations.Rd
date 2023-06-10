@@ -7,7 +7,7 @@
 objects - available via the \code{SPATAData} package. Names of the list slots
 correspond to the sample names in variable  \emph{sample} of \code{SPATAData::source_df}.}
 \format{
-An object of class \code{list} of length 3.
+An object of class \code{list} of length 5.
 }
 \usage{
 image_annotations

@@ -24,3 +24,4 @@ Helper function for trajectory-analysis to use within
 and a local coordinates system to arrange the barcodes that fall into a
 trajectory square according to the trajectory direction.
 }
+\keyword{internal}

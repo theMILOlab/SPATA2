@@ -4,10 +4,10 @@
 \alias{asSingleCellExperiment}
 \title{Transform to \code{SingleCellExperiment}}
 \usage{
-asSingleCellExperiment(object, ...)
+asSingleCellExperiment(object, type = "none", ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{...}{The features to be renamed specified according to
 the following syntax: 'new_feature_name' = 'old_feature_name'. This applies

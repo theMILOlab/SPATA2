@@ -18,3 +18,4 @@ spata-objects can store more than one sample.}
 \description{
 Check trajectory name input
 }
+\keyword{internal}

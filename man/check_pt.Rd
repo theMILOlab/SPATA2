@@ -28,3 +28,4 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \description{
 Check pt input
 }
+\keyword{internal}

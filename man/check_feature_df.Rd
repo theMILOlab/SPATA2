@@ -15,3 +15,4 @@ to the object.}
 \description{
 Check feature data.frame
 }
+\keyword{internal}

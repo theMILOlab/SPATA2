@@ -8,7 +8,7 @@ plotTrajectoryEvaluation(
   object,
   id,
   variables,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins_circle = NA_integer_,
   model_subset = NULL,
   model_remove = NULL,
@@ -26,11 +26,14 @@ plotTrajectoryEvaluation(
   corr_pos_y = NULL,
   corr_text_sep = "\\n",
   corr_text_size = 1,
+  force_grid = FALSE,
+  ncol = NULL,
+  nrow = NULL,
   verbose = NULL
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -63,6 +66,12 @@ same length as the input vector. Test models with \code{showModels()}.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
 
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
 \item{display_corr}{Logical. If TRUE, correlation values are added to the plots.}
 
 \item{corr_p_min}{Numeric value. Everything below is displayed as \emph{<corr_p_min}.}
@@ -74,6 +83,11 @@ the correlation text with x- and y-coordinates.}
 corresponding p-value.}
 
 \item{corr_text_size}{Numeric value. Size of text.}
+
+\item{force_grid}{Logical value. If \code{TRUE}, \code{facet_grid()} is used regardless
+of \code{variables} being of length 1.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

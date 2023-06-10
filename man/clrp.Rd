@@ -16,3 +16,4 @@ all valid input options.}
 \description{
 clrp
 }
+\keyword{internal}

@@ -13,6 +13,7 @@ imageAnnotationScreening(
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
+  include_area = FALSE,
   summarize_with = "mean",
   normalize_by = "sample",
   method_padj = "fdr",
@@ -20,12 +21,13 @@ imageAnnotationScreening(
   model_remove = NULL,
   model_add = NULL,
   mtr_name = NULL,
+  bcsp_exclude = NA_character_,
   verbose = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -71,6 +73,8 @@ are not supposed to be included.}
 containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
 same length as the input vector. Test models with \code{showModels()}.}
+
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

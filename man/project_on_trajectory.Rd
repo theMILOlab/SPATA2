@@ -30,3 +30,4 @@ Projects every barcode spot that falls in to the rectangle
 defined by the trajectory and the width parameter on the trajectory
 and saves the projection length in a vector.
 }
+\keyword{internal}

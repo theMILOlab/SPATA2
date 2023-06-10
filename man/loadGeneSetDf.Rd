@@ -22,3 +22,4 @@ A data.frame.
 \description{
 Load gene set data.frame
 }
+\keyword{internal}

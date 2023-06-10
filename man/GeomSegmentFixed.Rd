@@ -7,4 +7,4 @@
 \description{
 GeomSegmentFixed
 }
-\keyword{datasets}
+\keyword{internal}

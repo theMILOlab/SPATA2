@@ -9,7 +9,8 @@ process_ranges(
   yrange = getImageRange(objet)$y,
   expand = 0,
   persp = "image",
-  object = NULL
+  object = NULL,
+  ranges = NULL
 )
 }
 \arguments{
@@ -21,9 +22,8 @@ ranges are taken.
 
 This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
-immediately converted to pixel units.
-
-See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{expand}{Parameter to adjust how the image is expanded. See section
 Image expansion for more information.}
@@ -31,7 +31,7 @@ Image expansion for more information.}
 \item{persp}{If \emph{image}, adjusts the logic of the function to the fact
 that the height of images starts on top and not on the bottom.}
 
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 }
 \value{
 List of 4 slots. Named \emph{xmin}, \emph{xmax}, \emph{ymin} and \emph{ymax}. Adjusted range
@@ -40,3 +40,4 @@ in pixel.
 \description{
 Processes x- and y-ranges.
 }
+\keyword{internal}

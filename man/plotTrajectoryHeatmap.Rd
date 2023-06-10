@@ -8,7 +8,7 @@ plotTrajectoryHeatmap(
   object,
   id,
   variables,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins = NA_integer_,
   arrange_rows = "none",
   colors = NULL,
@@ -34,7 +34,7 @@ plotTrajectoryHeatmap(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{variables}{The variables of interest specified as a character vector:
 
@@ -87,6 +87,13 @@ or by adding vertical lines.}
 \item{display_parts_with}{Character value. Either \emph{'facets'} or \emph{'lines'}.}
 
 \item{line_alpha}{Numeric value. Specifies the transparency of the lines.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
 \item{clrsp}{Character value. Specifies the color spectrum to be used to represent
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain

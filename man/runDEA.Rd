@@ -11,8 +11,7 @@ runDEA(
   method_de = NULL,
   verbose = NULL,
   base = 2,
-  fc_name = NULL,
-  of_sample = NA,
+  variable.features.n = 3000,
   ...
 )
 
@@ -30,30 +29,33 @@ barcode spots of your object in a certain manner.}
 Given to argument \code{test.use} of the \code{Seurat::FindAllMarkers()}-function. Run \code{SPATA::dea_methods}
 to obtain all valid input options.}
 
-\item{fc_name, base}{Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
-
 \item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
+
+\item{fc_name, base}{Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.}
 }
 \value{
-A spata-object containing the results in slot @dea.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
 This function makes use of \code{Seurat::FindAllMarkers()} to compute
-the differently expressed genes based on the count matrix across the groups of
+the differently expressed genes across the groups of
 the grouping variable denoted in the argument \code{across}.
 
 See details for more.
 }
 \details{
+This function is a wrapper around the DEA pipeline from the \code{Seurat}
+package. It creates a temporary \code{Seurat} object via \code{Seurat::CreateSeuratObject()},
+and \code{Seurat::SCTransform()}. Then, \code{Seurat::FindAllMarkers()} is run. The output data.frame
+is stored in the \code{SPATA2} object which is returned at the end.
+
 If \code{across} and/or \code{method_de} are vectors instead of single
-values \code{runDeAnalysis()} iterates over all combinations in a for-loop and
+values \code{runDEA()} iterates over all combinations in a for-loop and
 stores the results in the respective slots. (e.g.: If \code{across} = \emph{'seurat_clusters'}
 and \code{method_de} = \emph{c('wilcox', 'bimod')} the function computes the differently expressed genes
 across all groups found in the feature variable \emph{seurat_clusters} according to method \emph{wilcox} and
 stores the results in the respective slot. Then it does the same according to method \emph{bimod}.)
 
-The results are obtainable via \code{getDeaResults()} and \code{getDeaGenes()}.
+The results are obtainable via \code{getDeaResults()}, \code{getDeaResultsDf()} and \code{getDeaGenes()}.
 }

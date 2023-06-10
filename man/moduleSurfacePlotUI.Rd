@@ -12,3 +12,4 @@ moduleSurfacePlotUI(id)
 \description{
 UI of the surface plot module
 }
+\keyword{internal}

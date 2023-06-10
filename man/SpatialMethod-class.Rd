@@ -4,7 +4,7 @@
 \name{SpatialMethod-class}
 \alias{SpatialMethod-class}
 \alias{SpatialMethod}
-\title{The \code{SpatialMethod} - class}
+\title{The \code{SpatialMethod} - Class}
 \description{
 Abstracts the concept of spatial biology experiments
 such as \emph{Visium1} or \emph{SlideSeq}.

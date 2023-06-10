@@ -2,13 +2,10 @@
 % Please edit documentation in R/adj-aZ.R
 \name{asSpatialTrajectory}
 \alias{asSpatialTrajectory}
-\alias{asSpatialTrajectory,spatial_trajectory-method}
-\title{Title}
+\title{Transform to \code{SpatialTrajectory}}
 \usage{
 asSpatialTrajectory(object, ...)
-
-\S4method{asSpatialTrajectory}{spatial_trajectory}(object, ...)
 }
 \description{
-Title
+Transforms old spatial trajectory class to new one.
 }

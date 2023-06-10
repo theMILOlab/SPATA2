@@ -13,3 +13,4 @@ compute_angle_between_two_points(p1, p2)
 Computes the angle between two points. 0° is aligned
 with the y-axis.
 }
+\keyword{internal}

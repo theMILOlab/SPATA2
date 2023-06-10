@@ -36,3 +36,4 @@ The argument \code{final_plot} takes a ggplot object as input which is going to 
 adjust the output of \code{$assembled_plot()} outside of the module. If no further adjustment is needed determine \code{final_plot} as:
 \code{shiny::reactive(*module_return_variable*()$assembled_plot())}
 }
+\keyword{internal}

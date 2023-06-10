@@ -7,7 +7,7 @@
 getCnvGenesDf(object, add_meta = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{add_meta}{Logical value. If TRUE, meta information obtained by
 \code{getGenePosDf()} every gene is added to the data.frame}

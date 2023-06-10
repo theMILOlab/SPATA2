@@ -4,19 +4,18 @@
 
 
 
-
 # cl ----------------------------------------------------------------------
 
 #' @title Close area encircling
 #'
 #' @description "Closes" the area described by the vertices of \code{df} by
 #' adding the starting point (first row) to the end of the data.frame.
-#'
+#' @keywords internal
 #' @export
 close_area_df <- function(df){
 
-  fr <- base::as.numeric(df[1,])
-  lr <- base::as.numeric(df[base::nrow(df), ])
+  fr <- df[1,]
+  lr <- df[base::nrow(df), ]
 
   if(!base::identical(x = fr, y = lr)){
 
@@ -39,7 +38,7 @@ close_area_df <- function(df){
 #' with the y-axis.
 #'
 #' @param p1,p2 Numeric vectors of length two, named \emph{x} and \emph{y}.
-#'
+#' @keywords internal
 #' @export
 compute_angle_between_two_points <- function(p1, p2){
 
@@ -82,7 +81,7 @@ compute_angle_between_two_points <- function(p1, p2){
 #'
 #' @param starting_pos,final_pos Numeric vector of length two. Denotes the two positions
 #' between which the distance is calculated
-#'
+#' @keywords internal
 #' @return A numeric value.
 #'
 
@@ -207,39 +206,40 @@ computeCnvByChrArm <- function(object,
 #'
 #' @export
 
-computeGeneMetaData <- function(object, mtr_name = NULL, verbose = TRUE, of_sample = NA, ...){
+computeGeneMetaData <- function(object, mtr_name = NULL, verbose = TRUE, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object, of_sample, of.length = 1)
+  deprecated(...)
 
-  expr_mtr <- getExpressionMatrix(object,
-                                  of_sample = of_sample,
-                                  mtr_name = mtr_name,
-                                  verbose = verbose)
+  expr_mtr <- getExpressionMatrix(object = object, verbose = verbose)
 
   if(base::is.null(mtr_name)){
 
-    mtr_name <- getActiveMatrixName(object, of_sample = of_sample)
+    mtr_name <- getActiveMatrixName(object)
 
   }
 
-  meta_data <- computeGeneMetaData2(expr_mtr = expr_mtr,
-                                    verbose = verbose,
-                                    ...)
+  meta_data <-
+    computeGeneMetaData2(
+      expr_mtr = expr_mtr,
+      verbose = verbose,
+      ...
+      )
 
-  object <- addGeneMetaData(object = object,
-                            of_sample = of_sample,
-                            meta_data_list = c(meta_data, "mtr_name" = mtr_name))
+  object <-
+    addGeneMetaData(
+      object = object,
+      meta_data_list = c(meta_data, "mtr_name" = mtr_name)
+      )
 
-  base::return(object)
+  return(object)
 
 }
 
 #' @rdname computeGeneMetaData
 #' @export
 computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
-
 
   confuns::give_feedback(
     msg = glue::glue("Calculating summary statistics for {base::nrow(expr_mtr)} genes."),
@@ -254,20 +254,93 @@ computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
 
   res_list <- list("df" = res_df, "describe_args" = list(...))
 
-  base::return(res_list)
+  return(res_list)
+
+}
+
+#' @keywords internal
+computeGeneNormality <- function(object, mtr_name = "scaled", verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(nBarcodes(object) >= 5000){
+
+    stop("Number of barcode-spots must be below 5000.")
+
+  }
+
+  gene_meta_df <- getGeneMetaDf(object, mtr_name = mtr_name)
+
+  mtr <- getMatrix(object, mtr_name = mtr_name, verbose = FALSE)
+
+  pb <- confuns::create_progress_bar(total = nGenes(object))
+
+  gene_normality <-
+    purrr::map(
+      .x = base::rownames(mtr),
+      .f = purrr::safely(.f = function(gene){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
+
+        out <- stats::shapiro.test(x = base::as.numeric(mtr[gene,]))
+
+        data.frame(
+          genes = gene,
+          sw = out$statistic
+        )
+
+      }, otherwise = NA)
+    ) %>%
+    purrr::set_names(nm = base::rownames(mtr))
+
+  gns <-
+    purrr::keep(.x = gene_normality, .p = ~ base::is.data.frame(.x$result)) %>%
+    purrr::map_df(.f = ~ .x$result) %>%
+    tibble::as_tibble()
+
+  gene_meta_df <- dplyr::left_join(x = gene_meta_df, y = gns, by = "genes")
+
+  object@gdata[[1]][[mtr_name]][["df"]] <- gene_meta_df
+
+  return(object)
+
+}
+
+
+
+# concatenate -------------------------------------------------------------
+
+#' @keywords internal
+concatenate_polypaths <- function(lst, axis){
+
+  path <- lst[["outer"]][[axis]]
+
+  ll <- base::length(lst)
+
+  if(ll > 1){
+
+    inner <-
+      purrr::map( .x = lst[2:ll], .f = ~ c(NA, .x[[axis]])) %>%
+      purrr::flatten_dbl()
+
+    path <- c(path, inner)
+
+  }
+
+  return(path)
 
 }
 
 
 
 
-
-
-
-
-
 # contain ----------------------------------------------------------------
 
+#' @keywords internal
 container <- function(...){
 
   shiny::fluidRow(
@@ -278,6 +351,15 @@ container <- function(...){
 
 }
 
+
+#' @title Check availability of miscellaneous content
+#'
+#' @description Logical tests that check if content exists in the `spata2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
 containsCNV <- function(object){
 
@@ -298,70 +380,152 @@ containsCNV <- function(object){
 
 }
 
+#' @rdname containsCNV
 #' @export
 containsHistologyImage <- function(object){
 
   if(base::length(object@images) == 0){
-  
+
     out <- FALSE
-  
+
   } else {
-        
+
     img <- object@images[[1]]
 
     out <- methods::is(object = img, class2 = "HistologyImage")
-  
+
   }
 
   return(out)
 
 }
 
+#' @title Check availability of `HistologyImaging` object
+#'
+#' @description Checks if slot @@images contains an object
+#' of class `HistologyImaging` or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
 #' @export
-containsImage <- function(object){
+containsHistologyImaging <- function(object){
 
   if(containsImageObject(object)){
-  
+
     img <- object@images[[1]]
     dims <- base::dim(img@image)
     out <- !base::any(dims == 0)
-  
+
   } else {
-    
+
     out <- FALSE
-    
+
   }
-  
+
+  img <- object@images[[1]]
+
+  out <- methods::is(object = img, class2 = "HistologyImaging")
+
   return(out)
 
 }
 
+
+
+#' @title Check availability of an image
+#'
+#' @description Checks if slot @@image of the `HistologyImage` object
+#' in the `SPATA2` object contains an image or if it is empty.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+containsImage <- function(object){
+
+  out <- containsHistologyImaging(object)
+
+  if(base::isTRUE(out)){
+
+    img <- object@images[[1]]
+
+    dims <- base::dim(img@image)
+
+    out <- !base::any(dims == 0)
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname containsHistologyImaging
 #' @export
 containsImageObject <- function(object){
 
   if(base::length(object@images) == 0){
-  
+
     out <- FALSE
-  
+
   } else {
-  
+
    if(!is.null(object@images[[1]])){
-     
-     out <- 
+
+     out <-
       base::any(purrr::map_lgl(.x = validImageClasses(), .f = ~methods::is(object@images[[1]], class2 = .x)))
-     
+
    } else {
-     
+
      out <- FALSE
-     
-   }  
-  
+
+   }
+
   }
 
   return(out)
 
 }
 
+
+
+#' @title Check availability of pixel scale factor
+#'
+#' @description Checks if a pixel scale factor is present in the `SPATA2`
+#' object
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+containsPixelScaleFactor <- function(object){
+
+  pxl_scale_fct <- object@information$pxl_scale_fct
+
+  if(base::is.null(pxl_scale_fct)){
+
+    out <- FALSE
+
+  } else {
+
+    out <- TRUE
+
+  }
+
+  return(out)
+
+}
+
+containsTissueOutline <- function(object){
+
+  deprecated(fn = TRUE)
+
+  tissueOutlineIdentified(object)
+
+}
 
 
 
@@ -431,3 +595,56 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
 }
 
+
+#' @title Subset by x- and y-range
+#'
+#' @description Creates a subset of the original `SPATA2` object
+#' based on x- and y-range. Barcode-spots that fall into the
+#' rectangle given by `xrange` and `yrange` are kept.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`ggpLayerRect()`] to visualize the rectangle based on which
+#' the subsetting is done.
+#'
+#' @export
+#'
+cropSpataObject <- function(object, xrange, yrange, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  xrange <- as_pixel(input = xrange, object = object, add_attr = FALSE)
+  yrange <- as_pixel(input = yrange, object = object, add_attr = FALSE)
+
+  barcodes <-
+    dplyr::filter(
+      .data = getCoordsDf(object),
+      dplyr::between(x = x, left = base::min({{xrange}}), right = base::max({{xrange}})),
+      dplyr::between(x = y, left = base::min({{yrange}}), right = base::max({{yrange}}))
+    ) %>%
+    dplyr::pull(barcodes)
+
+  object_cropped <- subsetByBarcodes(object, barcodes = barcodes, verbose = verbose)
+
+  object_cropped@information$cropped <- list(xrange = xrange, yrange = yrange)
+
+  return(object_cropped)
+
+}
+
+
+
+# cu ----------------------------------------------------------------------
+
+#' @title The current version of `SPATA2`
+#' @description Outputs the current version of the package.
+#'
+#' @return List of three numeric slots: *major*, *minor*, *patch*
+#'
+#' @export
+currentSpata2Version <- function(){
+
+  current_spata2_version
+
+}

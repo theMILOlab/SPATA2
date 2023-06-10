@@ -21,3 +21,4 @@ and assembles the final output directory including the specified filename.
 Returns the final directory if it is valid or raises an error if not or NULL if \code{output_path}
 is set to NULL.
 }
+\keyword{internal}

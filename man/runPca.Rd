@@ -5,9 +5,9 @@
 \alias{runPca2}
 \title{Run Principal Component Analysis}
 \usage{
-runPca(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...)
+runPca(object, n_pcs = 30, mtr_name = NULL, ...)
 
-runPca2(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...)
+runPca2(object, n_pcs = 30, mtr_name = NULL, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -15,9 +15,6 @@ runPca2(object, n_pcs = 30, mtr_name = NULL, of_sample = NA, ...)
 \item{n_pcs}{Numeric value. Denotes the number of principal components to be computed.}
 
 \item{mtr_name}{Character value. The name of the matrix of interest.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{irlba::prcomp_irlba()}.}
 }

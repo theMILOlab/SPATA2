@@ -3,10 +3,6 @@
 
 # valid -------------------------------------------------------------------
 
-
-
-
-
 #' @title Obtain valid argument inputs
 #'
 #' @description These function simply return valid input options
@@ -41,6 +37,7 @@ validAlluvialTypes <- function(){
 
 
 #' @title Validate object input
+#' @keywords internal
 
 validation <- function(x){
 
@@ -116,17 +113,33 @@ validate_only_one_arg_specified <- function(input){
 
 #' @rdname validActivationFunctions
 #' @export
-validColorPalettes <- function(){
+validColorPalettes <- function(flatten = FALSE){
 
-  confuns::all_color_palettes()
+  x <- confuns::all_color_palettes()
+
+  if(base::isTRUE(flatten)){
+
+    x <- purrr::flatten_chr(x)
+
+  }
+
+  return(x)
 
 }
 
 #' @rdname validActivationFunctions
 #' @export
-validColorSpectra <- function(){
+validColorSpectra <- function(flatten = FALSE){
 
-  confuns::all_color_spectra()
+  x <- confuns::all_color_spectra()
+
+  if(base::isTRUE(flatten)){
+
+    x <- purrr::flatten_chr(x)
+
+  }
+
+  return(x)
 
 }
 
@@ -183,7 +196,7 @@ validHierarchicalClusterMethods <- function(){
 #' @export
 validImageClasses <- function(){
 
-  return(image_classes)
+  "HistologyImaging"
 
 }
 
@@ -225,6 +238,14 @@ validPlotTypes <- function(fn_name){
   )
 
   plot_types_in_functions[[fn_name]]
+
+}
+
+#' @rdname validActivationFunctions
+#' @export
+validPubExamples <- function(){
+
+  base::names(pub_dropbox_links)
 
 }
 
@@ -308,6 +329,7 @@ validEuropeanUnitsOfLength <- function(name = T){
 
 # ve ----------------------------------------------------------------------
 
+#' @keywords internal
 version_string <- function(v){
 
   stringr::str_c(v$major, v$minor, v$patch, sep = ".")
@@ -332,6 +354,5 @@ version_string <- function(v){
 #' @seealso \code{starts_with()}, \code{ends_with()}, \code{contains()}, \code{matches()}
 #'
 #' @export
-#'
-
+#' @keywords internal
 vselect <- confuns::vselect

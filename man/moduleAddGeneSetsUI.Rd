@@ -12,3 +12,4 @@ moduleAddGeneSetsUI(id)
 \description{
 UI of the add gene sets module
 }
+\keyword{internal}

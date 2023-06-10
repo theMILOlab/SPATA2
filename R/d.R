@@ -38,14 +38,14 @@ deprecated <- function(fn = FALSE, fdb_fn = "warning", ...){
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022. Please use `{replaced_by}()` instead.{ref_caller}"
+          "Function `{fn_name}()` is deprecated and will be deleted in the near future. Please use `{replaced_by}()` instead.{ref_caller}"
         )
 
     } else {
 
       msg <-
         glue::glue(
-          "Function `{fn_name}()` is deprecated and will be deleted by the end of 2022.{ref_caller}"
+          "Function `{fn_name}()` is deprecated and will be deleted in the near future.{ref_caller}"
         )
 
     }
@@ -154,6 +154,27 @@ deprecatedArguments <- function(opt = "generally", fn_name = NULL){
   }
 
   return(out)
+
+}
+
+#' @title Information about deprecated aspects
+#'
+#' @description Outputs a list of recently deprecated content as well
+#' as what it was replaced by.
+#'
+#' @return List of three slots:
+#'  \itemize{
+#'   \item{fns:}{ A list of generally deprecated functions. Slot names are the functions that have been deprecated. Slot content is the name of the function it has been replaced by.}
+#'   \item{args:}{ A list of systematic argument renaming. Slot names are the argument names that have been deprecated. Slot content is the name of the argument the old one has been replaced by.}
+#'   \item{args_spec:}{ A list of function specific argument changes. Slot names are the function names. Slot content is a list organized as slot *args*.}
+#'   }
+#'
+#'  If content is `NA` there is no replacement und the function/argument has been deleted and is no longer in use.
+#'
+#' @export
+deprecatedInfo <- function(){
+
+  depr_info
 
 }
 
@@ -517,7 +538,7 @@ discardImageAnnotations <- function(object, ids){
 
   confuns::check_one_of(
     input = ids,
-    against = getImageAnnotationIds(object)
+    against = getImgAnnIds(object)
   )
 
   io <- getImageObject(object)
@@ -579,3 +600,64 @@ discardSpatialTrajectory <- function(object, id){
 
 
 
+
+
+#' @title Download data from the publication
+#'
+#' @description Downloads processed data from uses cases of *Kueckelhaus et al., 2023*
+#' in form of `spata2` objects.
+#'
+#' @param name Name of the data set. Must be in `validPubExamples()`.
+#' @inherit argument_dummy params
+#'
+#' @return The respective data set.
+#' @export
+#'
+downloadPubExample <- function(name, verbose = TRUE){
+
+  confuns::check_one_of(
+    input = name,
+    against = base::names(pub_dropbox_links)
+  )
+
+  confuns::give_feedback(
+    msg = glue::glue("Downloading example '{name}'."),
+    verbose = verbose
+  )
+
+  download_dir <- pub_dropbox_links[[name]]
+
+  downloaded_object <-
+    base::url(download_dir) %>%
+    base::readRDS()
+
+  downloaded_object <- updateSpataObject(downloaded_object, verbose = verbose)
+
+  confuns::give_feedback(
+    msg = glue::glue("Done."),
+    verbose = TRUE
+  )
+
+  return(downloaded_object)
+
+}
+
+#' @title Download raw Visium output
+#' @inherit SPATAData::downloadRawData title description params return examples
+#' @note Imported from the package `SPATAData`.
+#' @importFrom SPATAData downloadRawData
+#' @export
+downloadRawData <- SPATAData::downloadRawData
+
+#' @title Download `spata2` objects
+#' @inherit SPATAData::downloadSpataObject title description params return examples
+#' @note Imported from the package `SPATAData`.
+#' @importFrom SPATAData downloadSpataObject
+#' @export
+downloadSpataObject <- SPATAData::downloadSpataObject
+
+#' @rdname downloadSpataObject
+#' @inherit SPATAData::downloadSpataObjects params
+#' @importFrom SPATAData downloadSpataObjects
+#' @export
+downloadSpataObjects <- SPATAData::downloadSpataObjects

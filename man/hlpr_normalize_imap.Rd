@@ -23,3 +23,4 @@ A normalized variable (data.frame within \code{purrr::imap()})
 \description{
 Helper function to use within \code{purrr::imap()}
 }
+\keyword{internal}

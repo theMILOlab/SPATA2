@@ -14,7 +14,7 @@ imageAnnotationToSegmentation(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ids}{Character vector. Specifies the image annotation(s) of interest.
 Barcode-spots that fall into the area of these annotations are labeled
@@ -32,7 +32,8 @@ are located outside the area of the image annotation(s).}
 the same name.}
 }
 \value{
-An updated spata object.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
 Converts one or more image annotations to a binary

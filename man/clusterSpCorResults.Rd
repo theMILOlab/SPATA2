@@ -15,3 +15,4 @@ clusterSpCorResults(
 \description{
 Cluster genes according to their expression profile
 }
+\keyword{internal}

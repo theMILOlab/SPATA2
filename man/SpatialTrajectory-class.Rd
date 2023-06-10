@@ -4,14 +4,47 @@
 \name{SpatialTrajectory-class}
 \alias{SpatialTrajectory-class}
 \alias{SpatialTrajectory}
-\title{The \code{SpatialTrajectory} - class}
+\title{The \code{SpatialTrajectory} - Class}
 \description{
 Extension of the \code{Trajectory} for trajectories
-that have been drawn in real space.
+that have been drawn on a surface plot.
 }
 \section{Slots}{
 
 \describe{
+\item{\code{comment}}{character. A comment about why the trajectory was drawn.}
+
 \item{\code{coords}}{data.frame. The coordinates data.frame of the sample.}
+
+\item{\code{id}}{character. ID that uniquely identfies the trajectory in a sample.}
+
+\item{\code{info}}{list. Stores meta data and miscellaneous information regarding the
+image annotation. Slots that should always exist:
+\itemize{
+\item{current_dim:}{ Numeric vector of length two. Width and height of the image
+the @area data.frame is currently scaled to. Used to scale the @area data.frame
+if the image annotation is extracted and added to a \code{SPATA2} object with different image resolution.}
+\item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
+@area data.frame if the image annotation is extracted and added to a \code{SPATA2} object with
+different justifications.
+\itemize{
+\item{\emph{angle}:}{ Numeric value that ranges from 0-359.}
+\item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}.}
+}}
+}}
+
+\item{\code{projection}}{data.frame. Data.frame that contains the length of the
+projection of each barcode spot onto the trajectory.}
+
+\item{\code{sample}}{character. The sample name.}
+
+\item{\code{segment}}{data.frame. Contains the course of the trajetory in
+form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}}
+
+\item{\code{width}}{numeric. The width of the rectangle that was spanned along
+the trajectory. (Length of the rectangle corresponds to the length of
+the segment.)}
+
+\item{\code{with_unit}}{character. The unit in which the width was specified.}
 }}
 

@@ -16,3 +16,4 @@ hlpr_adjust_legend_size(variable, aes, pt_size)
 \description{
 Adjusts the size of discrete legend points
 }
+\keyword{internal}

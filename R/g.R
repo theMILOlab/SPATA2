@@ -116,6 +116,8 @@ geom_text_fixed <- function(...,
 #'
 ggpInit <- function(object = "object", theme = "void", data = "coords"){
 
+  require(ggplot2)
+
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
   out <- list()
@@ -154,17 +156,18 @@ ggpLayerAxesClean <- function(..., object = NULL){
   ggplot2::theme(
     axis.text = ggplot2::element_blank(),
     axis.ticks = ggplot2::element_blank(),
-    axis.title = ggplot2::element_blank()
+    axis.title = ggplot2::element_blank(),
+    ...
   )
 
 }
 
 
 
-#' @title Display axes with European units of length
+#' @title Display axes with SI units of length
 #'
 #' @description Performs necessary transformations to display axes of
-#' surface plots with European units of length.
+#' surface plots and STS/IAS line- or ridgeplots with SI units of length.
 #'
 #' @inherit argument_dummy params
 #' @inherit transform_dist_si_to_pixels params
@@ -174,27 +177,94 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #' provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.
 #' @param which One or two of \emph{'x'} and \emph{'y'}. Specifies
 #' for which axes the transformation is performed. Defaults to both.
-#' @param frame_by Either \emph{'coords'} or \emph{'image'} or \code{NULL}.
-#' If specified, sets the plot frame accordingly.
-#' @param breaks_x,breaks_y Vector of distance inputs. Can be pixel or European
-#' units of lengths. If European unit of lengths, input is transformed to pixels as
-#' the plot is plotted with pixel-based coordinates. If \code{NULL}, is set
-#' automatically to five breaks equally distributed along the axis.
-#' @param add_labs Logical. If \code{TRUE}, adds informative x- and y-labs to
-#' the plot.
+#' @param breaks Specifies where the breaks are set. Labels are plotted in the unit
+#' specified in `unit`. Valid input:
+#'
+#' \itemize{
+#'  \item{`NULL`:}{ No specification. Five breaks are set equally distributed. Does not work with STS/IAS related plots as
+#'  the range is taken from the whole image.}
+#'  \item{`vector`:}{ Vector of distance measures. Breaks are set for axes denoted in `which`. (Defaults to both, x and y.)}
+#'  \item{`list`:}{ List with slots *x* and *y*. Vector of distance measures to set each axis specifically.}
+#' }
+#'
+#' @param expand Specifies how the axis are expanded. Using `expand` of `ggplot2::scale_x/y_continuous()`.
+#'  Valid input:
+#'
+#' \itemize{
+#'  \item{`NULL`:}{ No specification. Default is used.}
+#'  \item{`vector`:}{ Numeric vector of length two. Input is set for axes denoted in `which`. (Defaults to both, x and y.)}
+#'  \item{`list`:}{ List with slots *x* and *y*. Numeric vector of length two, used for each axis specifically.}
+#' }
+#'
+#' @param breaks_x,breaks_y Deprecated in favor of `breaks`.
+#' @param frame_by Deprecated. Use `ggplayerFrame*()` - functions.
+#' @param add_labs Logical. If \code{TRUE}, adds x- and y-labs to the plot.
+#' @param xlim,ylim Vectors of length two. Distance measures that set the limits
+#' on the respective axes.
 #'
 #' @inherit is_dist details
 #'
 #' @export
 #'
+#' @examples
+#'
+#'  library(tidyverse)
+#'
+#'  object <- downloadPubExample("313_T")
+#'
+#'  object <- setDefault(object, pt_clrsp = "BuGn", display_image = FALSE)
+#'
+#'  # ------ for surface plots
+#'
+#'  # no axes specification
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords()
+#'
+#'  # in millimeters
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords() +
+#'   ggpLayerAxesSI(object, unit = "mm")
+#'
+#'
+#'  # in millimeters set specifically
+#'  my_breaks <- str_c(1:7, "mm")
+#'
+#'  print(my_breaks)
+#'
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords() +
+#'   ggpLayerAxesSI(object, unit = "mm", breaks = my_breaks, add_labs = TRUE)
+#'
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerThemeCoords() +
+#'   ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
+#'
+#'
+#'  # ----- for gradient plots
+#'
+#'  plotSurface(object, color_by = "FN1") +
+#'   ggpLayerHorizonIAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
+#'
+#'  # no axis specification
+#'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
+#'
+#'  # with axis specification, make sure to set which = "x" as y is used for expression!
+#'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1") +
+#'   ggpLayerAxesSI(object, unit = "mm", breaks = str_c(c(0.5, 1, 1.5, 2), "mm"), which = "x")
+#'
+#'
 ggpLayerAxesSI <- function(object,
                            unit = getSpatialMethod(object)@unit,
                            which = c("x", "y"),
-                           frame_by = "coords",
-                           breaks_x = NULL,
-                           breaks_y = NULL,
-                           add_labs = TRUE,
-                           round = 2){
+                           breaks = NULL,
+                           expand = NULL,
+                           add_labs = FALSE,
+                           round = 2,
+                           xlim = NULL,
+                           ylim = NULL,
+                           ...){
+
+  deprecated(...)
 
   confuns::check_one_of(
     input = unit,
@@ -202,38 +272,77 @@ ggpLayerAxesSI <- function(object,
     suggest = TRUE
   )
 
-  # output limits
-  if(confuns::is_list(frame_by)){
+  # allow for a while
+  breaks_x <- list(...)[["breaks_x"]]
+  breaks_y <- list(...)[["breaks_y"]]
 
-    xlim <- frame_by[["x"]][c(1, 2)] %>% as_pixel(object = object)
+  if(!base::is.null(breaks_x) | !base::is.null(breaks_y)){
 
-    ylim <- frame_by[["y"]][c(1, 2)] %>% as_pixel(object = object)
+    breaks <- list()
 
-  } else if(base::is.character(frame_by)){
+    breaks[["x"]] <- breaks_x
+    breaks[["y"]] <- breaks_y
 
-    confuns::check_one_of(
-      input = frame_by,
-      against = c("coords", "image")
-    )
+    warning("Arguments `breaks_x` and `breaks_y` are deprecated in favor of `breaks`.")
 
-    if(frame_by == "coords"){
+  }
 
-      xlim <- getCoordsRange(object)$x
-      ylim <- getCoordsRange(object)$y
+  # manage breaks input
+  if(!base::is.null(breaks)){
 
-    } else if(frame_by == "image"){
+    if(confuns::is_list(breaks)){
 
-      xlim <- getImageRange(object)$x
-      ylim <- getImageRange(object)$y
+      breaks_x <- as_pixel(breaks[["x"]], object = object)
+      breaks_y <- as_pixel(breaks[["y"]], object = object)
+
+    } else if(base::is.vector(breaks)){
+
+      breaks <- as_pixel(breaks, object = object)
+
+      breaks_x <- breaks
+      breaks_y <- breaks
+
+    } else {
+
+      stop("Invalid input for `breaks`. Must be NULL, list or vector.")
 
     }
 
   } else {
 
-    stop("Invalid input for `frame_by`. Must be character or list.")
+    # dont set specifically
+    breaks_x <- NULL
+    breaks_y <- NULL
 
   }
 
+  # manage expand input
+  if(!base::is.null(expand)){
+
+    if(confuns::is_list(expand)){
+
+      expand_x <- waive_if_null(expand[["x"]])
+      expand_y <- waive_if_null(expand[["y"]])
+
+    } else if(base::is.vector(expand)){
+
+      confuns::is_vec(expand, mode = "numeric", of.length = 2)
+
+      expand_x <- expand
+      expand_y <- expand
+
+    } else {
+
+      stop("Invalid input for `expand`. Must be NULL, list or vector.")
+
+    }
+
+  } else {
+
+    expand_x <- ggplot2::waiver()
+    expand_y <- ggplot2::waiver()
+
+  }
 
   # output breaks
   if(!base::is.null(breaks_x)){
@@ -269,10 +378,18 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
+    pxl_df <- getPixelDf(object)
+
+    if(is_dist(xlim)){
+
+      xlim <- as_pixel(xlim, object = object, add_attr = FALSE)
+
+      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = x, left = xlim[1], right = xlim[2]))
+
+    }
+
     breaks_x <-
-      getPixelDf(object) %>%
-      dplyr::filter(dplyr::between(x = x, left = xlim[1], right = xlim[2])) %>%
-      dplyr::pull(x) %>%
+      dplyr::pull(pxl_df, x) %>%
       stats::quantile()
 
   }
@@ -310,14 +427,21 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
+    pxl_df <- getPixelDf(object)
+
+    if(is_dist(ylim)){
+
+      ylim <- as_pixel(ylim, object = object, add_attr = add_attr)
+
+      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = y, left = ylim[1], right = ylim[2]))
+
+    }
+
     breaks_y <-
-      getPixelDf(object) %>%
-      dplyr::filter(dplyr::between(x = y, left = ylim[1], right = ylim[2])) %>%
-      dplyr::pull(y) %>%
+      dplyr::pull(pxl_df, y) %>%
       stats::quantile()
 
   }
-
 
   # make add on
   axes <-
@@ -330,7 +454,6 @@ ggpLayerAxesSI <- function(object,
           as_numeric = TRUE,
           round = round
         ),
-        limits = xlim,
         breaks = breaks_x
       ),
       ggplot2::scale_y_continuous(
@@ -341,7 +464,6 @@ ggpLayerAxesSI <- function(object,
           as_numeric = TRUE,
           round = round
         ),
-        limits = ylim,
         breaks = breaks_y
       )
     ) %>%
@@ -378,8 +500,8 @@ ggpLayerAxesSI <- function(object,
       )
     )
 
+
   c(
-    ggpLayerThemeCoords(),
     axes[which],
     labs_add_on[which],
     theme_add_on[which]
@@ -388,73 +510,52 @@ ggpLayerAxesSI <- function(object,
 }
 
 
-
-
-
-
-#' @title Add group encircling
+#' @title Add group specific color spectrum
 #'
-#' @description Highlights groups of barcode-spots by encircling them.
-#' Depending on the \code{plot_type} this can be added to a surface plot
-#' or a dimensional reduction plot.
+#' @description Creates a color spectrum from the color used to
+#' represent a group to transparent white (can be changed) to maintain
+#' a consistent color scheme.
 #'
-#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
-#' \emph{'umap'}.
-#' @param grouping_variable Character value. The grouping variable of choice.
-#' @param groups_subset Character value or NULL. If character,
-#' specifies the exact groups that are encircled. If NULL, all groups
-#' are encircled.
-#' @inherit imageAnnotationScreening params
+#' @param clrp,clrp_adjust The colorpalette and adjustment used to visualize the grouping.
+#' @param low The color against which to plot.
+#' @param aes Either *'color'* or *'fill'*.
+#' @param ... Additional arguments given to `ggplot2::scale_color_gradient()`
+#'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
 #'
-ggpLayerEncirclingGroups <- function(object,
-                                     plot_type = "coords",
-                                     grouping_variable,
-                                     groups_subset = NULL,
-                                     ...){
+ggpLayerColorGroupScale <- function(object,
+                                    grouping,
+                                    group,
+                                    clrp,
+                                    clrp_adjust = NULL,
+                                    low = ggplot2::alpha("white", 0),
+                                    aes = "color",
+                                    ...){
 
-  confuns::check_one_of(
-    input = plot_type,
-    against = c("coords", "tsne", "umap")
-  )
+  color_vec <-
+    confuns::color_vector(
+      clrp = clrp,
+      names = getGroupNames(object, grouping_variable = grouping),
+      clrp.adjust = clrp_adjust
+    )
 
-  if(plot_type == "coords"){
+  if(aes == "color"){
 
-    layer_df <- getCoordsDf(object)
+    out <- ggplot2::scale_color_gradient(low = low, high = color_vec[group], ...)
 
-  } else if(plot_type == "tsne"){
+  } else if(aes == "fill"){
 
-    layer_df <- getTsneDf(object)
-
-  } else if(plot_type == "umap"){
-
-    layer_df <- getUmapDf(object)
+    out <- ggplot2::scale_fill_gradient(low = low, high = color_vec[group], ...)
 
   }
 
-  layer_df <-
-    dplyr::select(layer_df, -sample) %>%
-    magrittr::set_colnames(value = c("barcodes", "x", "y"))
-
-  layer_df <-
-    joinWithVariables(
-      object = object,
-      spata_df = layer_df,
-      variables = grouping_variable
-    ) %>%
-    confuns::check_across_subset(
-      across = grouping_variable,
-      across.subset = groups_subset
-    )
-
-  mapping <- ggplot2::aes(x = x, y = y, group = .data[[grouping_variable]])
-
-  ggforce::geom_mark_hull(data = layer_df, mapping = mapping, ...)
+  return(list(out))
 
 }
+
 
 
 #' @title Add IAS area expansion
@@ -462,81 +563,171 @@ ggpLayerEncirclingGroups <- function(object,
 #' @description Adds the circular expansion used by the IAS-algorithm
 #' of the area of  an image annotation to a surface plot.
 #'
+#' @param line_size Numeric. The size with which to display encircling lines
+#' of the area expansion.
+#' @param line_size_core Numeric. The size with which to display the core outline
+#' of the image annotation.
+#'
 #' @inherit imageAnnotationScreening params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
+#' @param inc_outline Logical. If `TRUE`, makes use of `SPATA2` automatic tissue outline algorithm.
+#'
 #' @export
 #'
+#' @examples
+#'
+#' object <- downloadPubExample("313_T")
+#'
+#' plotImageGgplot(object) +
+#'  ggpLayerEncirclingIAS(
+#'    object = object,
+#'    id = "necrotic_area",
+#'    distance = "2.25mmm",
+#'    binwidth = "112.5um"
+#'  )
+
 ggpLayerEncirclingIAS <- function(object,
                                   id,
                                   distance = NA_integer_,
                                   n_bins_circle = NA_integer_,
                                   binwidth = getCCD(object),
-                                  linecolor = "black",
-                                  linesize = 1){
+                                  alpha_core = 0,
+                                  fill_core = NA,
+                                  line_color = "black",
+                                  line_size = (line_size_core * 0.75),
+                                  line_size_core = 1,
+                                  inc_outline = TRUE,
+                                  direction = "outwards",
+                                  verbose = NULL,
+                                  ...){
 
-  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+  deprecated(...)
+  hlpr_assign_arguments(object)
 
-  input <-
-    check_ias_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      object = object
-    )
+  if(base::isFALSE(inc_outline)){
 
-  distance <- input$distance
-  binwidth <- input$binwidth
-  n_bins_circle <- input$n_bins_circle
+    out_list <-
+      purrr::map(
+        .x = base::seq_along(id),
+        .f = function(i){
 
-  circle_names <- stringr::str_c("Circle", n_bins_circle, sep = " ")
+          idx <- id[i]
 
-  circles <-
-    purrr::set_names(
-      x = c((n_bins_circle)*binwidth),
-      nm = circle_names
-    )
+          if(i > 1){ verbose <- FALSE }
 
-  binwidth_vec <- c("Core" = 0, circles)
+          expansions <-
+            getIasExpansion(
+              object = object,
+              id = idx,
+              distance = distance,
+              binwidth = binwidth,
+              n_bins_circle = n_bins_circle,
+              direction = direction,
+              inc_outline = FALSE,
+              verbose = verbose
+            )
 
-  areas <-
-    purrr::imap(
-      .x = binwidth_vec,
-      .f =
-        ~ buffer_area(df = img_ann@area, buffer = .x) %>%
-        dplyr::mutate(., circle = .y)
-    )
+          out_listx <-
+            purrr::map(
+              .x = base::seq_along(expansions),
+              .f = function(i){
 
-  out_list <-
-    purrr::map(
-      .x = areas,
-      .f =
-        ~ ggplot2::geom_polygon(
-          data = .x,
-          mapping = ggplot2::aes(x = x, y = y),
-          alpha = 0,
-          color = linecolor,
-          size = linesize
-        )
-    )
+                area <- expansions[[i]]
 
-  xrange <-
-    purrr::map(areas, .f = ~ .x$x) %>%
-    purrr::flatten_dbl() %>%
-    base::range()
+                if(i == 1){
 
-  yrange <-
-    purrr::map(areas, .f = ~ .x$y) %>%
-    purrr::flatten_dbl() %>%
-    base::range()
+                  ls <- line_size_core
+                  alpha <- alpha_core
+                  fill <- fill_core
 
-  out_list <-
-    list(
-      out_list,
-      ggplot2::scale_x_continuous(limits = xrange),
-      ggplot2::scale_y_continuous(limits = yrange)
-    )
+
+                } else {
+
+                  ls <- line_size
+                  alpha <- 0
+                  fill <- NA
+
+                }
+
+                ggplot2::geom_polygon(
+                  data = area,
+                  mapping = ggplot2::aes(x = x, y = y),
+                  alpha = alpha,
+                  fill = fill,
+                  color = line_color,
+                  size = ls
+                )
+
+              }
+            )
+
+          return(out_listx)
+
+        }
+      ) %>%
+      purrr::flatten()
+
+
+  } else {
+
+    out_list <-
+      purrr::map(
+        .x = seq_along(id),
+        .f = function(i){
+
+          idx <- id[i]
+
+          if(i > 1){ verbose <- FALSE}
+
+          expansions <-
+            getIasExpansion(
+              object = object,
+              id = idx,
+              distance = distance,
+              binwidth = binwidth,
+              n_bins_circle = n_bins_circle,
+              direction = direction,
+              inc_outline = TRUE,
+              verbose = verbose
+            )
+
+          exp_df <-
+            map_df(
+              .x = expansions[base::names(expansions) != "Core"],
+              .f = function(df){
+
+                dplyr::mutate(
+                  .data = df,
+                  plot_group = stringr::str_c(bins_circle, pos_rel_group, sep = "_")
+                ) %>%
+                  dplyr::filter(pos_rel == "inside")
+
+              }
+            )
+
+          list(
+            ggplot2::geom_polygon(
+              data = expansions[["Core"]],
+              mapping = ggplot2::aes(x = x, y = y),
+              alpha = alpha_core,
+              color = line_color,
+              fill = fill_core,
+              size = line_size_core
+            ),
+            ggplot2::geom_path(
+              data = exp_df,
+              mapping = ggplot2::aes(x = x, y = y, group = plot_group),
+              size = line_size,
+              color = line_color
+            )
+          )
+
+        }
+      )
+
+  }
 
   return(out_list)
 
@@ -546,11 +737,28 @@ ggpLayerEncirclingIAS <- function(object,
 #' @title Fix ggplot frame
 #'
 #' @description Fixes the frame of an surface plot based
-#' on the coordinates range of the \code{SPATA2} object.
+#' on the coordinates range of the \code{SPATA2} object in
+#' case of `ggpLayerFixFrame()` or based on specific distance
+#' inputs in case of `ggpLayerFrame()`.
 #'
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
+ggpLayerFrame <- function(object, xrange, yrange, expand = FALSE){
+
+  is_dist(input = xrange, error = TRUE)
+  is_dist(input = yrange, error = TRUE)
+
+  xrange <- as_pixel(xrange[1:2], object = object, add_attr = FALSE)
+  yrange <- as_pixel(yrange[1:2], object = object, add_attr = FALSE)
+
+  list(ggplot2::coord_fixed(xlim = xrange, ylim = yrange, expand = expand))
+
+}
+
+#' @rdname ggpLayerFrame
+#' @export
+#'
 ggpLayerFixFrame <- function(object){
 
   list(
@@ -561,6 +769,7 @@ ggpLayerFixFrame <- function(object){
   )
 
 }
+
 
 
 #' @title Set plot limits
@@ -583,7 +792,7 @@ ggpLayerFixFrame <- function(object){
 #'
 #' @export
 #'
-ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
+ggpLayerFrameByCoords <- function(object = "object", opt = "coords"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
@@ -606,7 +815,7 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
 
   } else {
 
-    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+    out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
   }
 
@@ -617,7 +826,7 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "scale"){
 
 #' @rdname ggpLayerFrameByCoords
 #' @export
-ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
+ggpLayerFrameByImage <- function(object = "object", opt = "coords"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
@@ -640,13 +849,182 @@ ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
 
   } else {
 
-    out <- ggplot2::coord_cartesian(xlim = xlim, ylim = ylim)
+    out <- ggplot2::coord_fixed(xlim = xlim, ylim = ylim)
 
   }
 
 }
 
+#' @title Add group outline
+#'
+#' @description Highlights groups of barcode-spots by encircling them.
+#' Depending on the \code{plot_type} this can be added to a surface plot
+#' or a dimensional reduction plot.
+#'
+#' @param plot_type Character value. Either \emph{'surface', 'tsne'} or
+#' \emph{'umap'}.
+#' @param groups_subset Character value or NULL. If character,
+#' specifies the exact groups that are encircled. If NULL, all groups
+#' are encircled.
+#' @param outlier_rm,minPts Logical. If `TRUE`, spatial outlier of the group to outline
+#' are removed from the outline via `dbscan::dbscan(..., minPts = minPts`). Ignored
+#' if `plot_type` is not *'surface'*.
+#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`. Affects
+#' the encircling.
+#'
+#' @inherit ggpLayerTissueOutline params
+#' @inherit imageAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return
+#'
+#' @export
+#'
+#' @examples
+#'
+#'  object <- downloadPubExample("269_T")
+#'
+#'  plotImageGgplot(object) +
+#'   ggpLayerGroupOutline(
+#'     object = object,
+#'     plot_type = "surface",
+#'     grouping = "histology",
+#'     groups_subset = "tumor",
+#'     line_color = color_vector("npg")[1]
+#'     )
+#'
+ggpLayerGroupOutline <- function(object,
+                                 grouping,
+                                 groups_subset = NULL,
+                                 plot_type = "surface",
+                                 line_color = "black",
+                                 line_size = 1,
+                                 alpha = 0,
+                                 bcsp_rm = character(0),
+                                 outlier_rm = TRUE,
+                                 eps = (getCCD(object, "px")*1.25),
+                                 minPts = 3,
+                                 concavity = NULL,
+                                 expand_outline = getCCD(object, "px")*1.1,
+                                 ...){
 
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = plot_type,
+    against = c("surface", "coords", "tsne", "umap")
+  )
+
+  expand_outline <-
+    as_pixel(expand_outline, object = object) %>%
+    base::as.numeric()
+
+  if(plot_type %in% c("coords", "surface")){
+
+    layer_df <-
+      getCoordsDf(object) %>%
+      dplyr::select(barcodes, x, y)
+
+  } else if(plot_type == "tsne"){
+
+    layer_df <-
+      getTsneDf(object) %>%
+      dplyr::select(barcodes, tsne1, tsne2)
+
+  } else if(plot_type == "umap"){
+
+    layer_df <-
+      getUmapDf(object) %>%
+      dplyr::select(barcodes, umap1, umap2)
+
+  }
+
+  layer_df <-
+    magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y")) %>%
+    dplyr::filter(!barcodes %in% {{bcsp_rm}})
+
+  layer_df <-
+    joinWithVariables(
+      object = object,
+      spata_df = layer_df,
+      variables = grouping,
+      verbose = FALSE
+    ) %>%
+    confuns::check_across_subset(
+      across = grouping,
+      across.subset = groups_subset
+    )
+
+  if(base::isTRUE(outlier_rm)){
+
+    layer_df <-
+      purrr::map_df(
+        .x = base::levels(layer_df[[grouping]]),
+        .f = function(group){
+
+          add_dbscan_variable(
+            coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
+            eps = eps,
+            minPts = minPts,
+            name = "group_outline"
+          ) %>%
+            dplyr::filter(group_outline != "0")
+
+        }
+      )
+
+  } else {
+
+    layer_df[["group_outline"]] <- "1"
+
+  }
+
+  layer_df <-
+    purrr::map_df(
+      .x = base::levels(layer_df[[grouping]]),
+      .f = function(group){
+
+        group_df <- dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}})
+
+        out <-
+          purrr::map(
+            .x = base::unique(group_df[["group_outline"]]),
+            .f = function(go){
+
+              dplyr::filter(group_df, group_outline == {{go}}) %>%
+                add_outline_variable() %>%
+                arrange_by_outline_variable() %>%
+                buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
+                dplyr::mutate(
+                  !!rlang::sym(grouping) := {{group}},
+                  group_outline = {{go}}
+                )
+
+            }
+          )
+
+        return(out)
+
+      }
+    ) %>%
+    dplyr::mutate(
+      final_group = stringr::str_c(!!rlang::sym(grouping), group_outline, sep = " ")
+    )
+
+  out <-
+    ggforce::geom_mark_hull(
+      data = layer_df,
+      mapping = ggplot2::aes(x = x, y = y, group = final_group),
+      alpha = alpha,
+      color = line_color,
+      size = line_size,
+      expand = 0,
+      concavity = concavity,
+      ...
+    )
+
+  return(out)
+
+}
 
 
 
@@ -655,24 +1033,54 @@ ggpLayerFrameByImage <- function(object = "object", opt = "scale"){
 #' @description Adds the last circular expansion used by the IAS-algorithm
 #' of the area of  an image annotation to a surface plot in order to
 #' visualize the border between screened tissue and everything beyond that
-#' is not included in the IAS.
+#' is not included in the screening.
 #'
 #' @inherit imageAnnotationScreening params
+#' @inherit ggpLayerEncirclingIAS params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
 #' @export
 #'
+#' @examples
+#'
+#'  object <- downloadSpataObject("313_T")
+#'
+#'  object <-
+#'   setImageAnnotation(
+#'    object = object,
+#'    img_ann = image_annotations$`313_T`$necrotic_center
+#'    )
+#'
+#'  plotSurface(object) +
+#'   ggpLayerHorizonIAS(
+#'    object = object,
+#'    id = "necrotic_center",
+#'    distance = "2.25mm",
+#'    binwidth = "112.5um"
+#'    )
+#'
+#'
 ggpLayerHorizonIAS <- function(object,
                                id,
                                distance = NA_integer_,
-                               binwidth = NA_integer_,
+                               binwidth = getCCD(object),
                                n_bins_circle = NA_integer_,
+                               alpha_core = 0,
+                               fill_core = NA,
                                line_color = "black",
-                               line_size = 1,
-                               crop_frame = FALSE){
+                               line_size = (line_size_core*0.75),
+                               line_size_core = 1,
+                               inc_outline = TRUE,
+                               direction = "outwards",
+                               verbose = NULL,
+                               ...){
+
+  hlpr_assign_arguments(object)
 
   img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+
+  border_df <- getImgAnnOutlineDf(object, id, inner = FALSE)
 
   input <-
     check_ias_input(
@@ -686,72 +1094,16 @@ ggpLayerHorizonIAS <- function(object,
   binwidth <- input$binwidth
   n_bins_circle <- input$n_bins_circle
 
-  circle_names <- stringr::str_c("Circle", n_bins_circle, sep = " ")
-
-  circles <-
-    purrr::set_names(
-      x = c((n_bins_circle)*binwidth),
-      nm = circle_names
-    ) %>%
-    utils::tail(1)
-
-  binwidth_vec <- c("Core" = 0, circles)
-
-  areas <-
-    purrr::imap(
-      .x = binwidth_vec,
-      .f =
-        ~ buffer_area(df = img_ann@area, buffer = .x) %>%
-        dplyr::mutate(., circle = .y)
+  out <-
+    ggpLayerEncirclingIAS(
+      object = object,
+      id = id,
+      distance = input$distance,
+      binwidth = input$distance,
+      line_color = line_color,
+      line_size = line_size,
+      line_size_core = line_size_core
     )
-
-  out_list <-
-    purrr::map(
-      .x = areas,
-      .f =
-        ~ ggplot2::geom_polygon(
-          data = .x,
-          mapping = ggplot2::aes(x = x, y = y),
-          alpha = 0,
-          color = line_color,
-          size = line_size
-        )
-    )
-
-  if(base::isTRUE(crop_frame)){
-
-    frame_list <-
-      list(
-        ggplot2::coord_fixed(
-          xlim = getCoordsRange(object)$x,
-          ylim = getCoordsRange(object)$y
-        )
-      )
-
-
-  } else {
-
-    xrange <-
-      purrr::map(areas, .f = ~ .x$x) %>%
-      purrr::flatten_dbl() %>%
-      base::range()
-
-    yrange <-
-      purrr::map(areas, .f = ~ .x$y) %>%
-      purrr::flatten_dbl() %>%
-      base::range()
-
-    frame_list <- list(
-      ggplot2::scale_x_continuous(limits = xrange),
-      ggplot2::scale_y_continuous(limits = yrange)
-    )
-
-
-  }
-
-  out_list <- list(out_list, frame_list)
-
-  return(out_list)
 
 }
 
@@ -816,31 +1168,29 @@ ggpLayerImage <- function(object = "object"){
 #' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
 #' with \code{createImageAnnotations()}.
 #'
-#' @param alpha,size Numeric values. Given to \code{ggplot2::geom_polygon()}.
-#' @param ... Additional arguments given to \code{scale_color_add_on()}. Used to
-#' set the color adjustments of the polygon (fill and color).
+#' @param alpha,fill,size, Numeric values. Given to \code{ggplot2::geom_polygon()}.
+#' @param inner Logical value. If `FALSE`, only outer borders of the image annotation
+#' are displayed.
 #'
+#' @inherit getImageAnnotations params details
 #' @inherit ggpLayer_dummy return
-#' @inherit getImageAnnotations details
 #'
 #' @note Adds two additional layers to set the scales for the color- and
 #' fill aesthetic of the plot.
 #'
 #' @export
 #'
-ggpLayerImageAnnotation <- function(object = "object",
-                                    ids = NULL,
-                                    tags = NULL,
-                                    test = "any",
-                                    alpha = 0.5,
-                                    fill = NA,
-                                    line_color = "black",
-                                    line_size = 1.5,
-                                    line_type = "solid",
-                                    display_color = FALSE,
-                                    clrp = NULL,
-                                    clrp_adjust = NULL,
-                                    ...){
+ggpLayerImgAnnOutline <- function(object = "object",
+                                  ids = NULL,
+                                  tags = NULL,
+                                  test = "any",
+                                  alpha = 0.5,
+                                  fill = NA,
+                                  line_color = "black",
+                                  line_size = 1.5,
+                                  line_type = "solid",
+                                  inner = TRUE,
+                                  ...){
 
         deprecated(...)
 
@@ -848,69 +1198,465 @@ ggpLayerImageAnnotation <- function(object = "object",
 
         hlpr_assign_arguments(object)
 
-        img_ann_df <-
-          getImageAnnotationAreaDf(
-            object = object,
-            ids = ids,
-            tags = tags,
-            test = test
-          )
+        ids <- getImgAnnIds(object, tags = tags, test = test, ids = ids)
 
-        out <- list()
+        purrr::map(
+          .x = ids,
+          .f = function(id){
 
-        if(base::isTRUE(display_color)){
+            img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
 
-          out$image_annotation <-
-            ggplot2::layer(
-              stat = "identity",
-              position = "identity",
-              geom = ggplot2::GeomPolygon,
-              mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
-              data = img_ann_df,
-              params = list(alpha = alpha, size = line_size, linetype = line_type)
-            )
+            if(!"inner1" %in% base::names(img_ann@area)){
 
-          out$scale_color_add_on <-
-            scale_color_add_on(
-              aes = "fill",
-              variable = img_ann_df[["ids"]],
-              clrp = clrp,
-              clrp.adjust = clrp_adjust,
-              ...
-            )
+              inner <- FALSE
 
-          out$scale_fill_add_on <-
-            scale_color_add_on(
-              aes = "color",
-              variable = img_ann_df[["ids"]],
-              clrp = clrp,
-              clrp.adjust = clrp_adjust,
-              ...
-            )
+            }
 
-        } else {
+            if(base::isFALSE(inner)){
 
-          out$image_annotation <-
-            ggplot2::layer(
-              stat = "identity",
-              position = "identity",
-              geom = ggplot2::GeomPolygon,
-              mapping = ggplot2::aes(x = x, y = y, group = ids),
-              data = img_ann_df,
-              params = list(
-                alpha = alpha,
-                size = line_size,
-                linetype = line_type,
-                fill = fill,
-                color = line_color
+              df <-
+                getImgAnnOutlineDf(object, ids = id) %>%
+                dplyr::filter(border == "outer")
+
+              out <-
+                ggplot2::geom_polygon(
+                  data = df,
+                  size = line_size,
+                  color = line_color,
+                  linetype = line_type,
+                  alpha = alpha,
+                  fill = fill,
+                  mapping = ggplot2::aes(x = x, y = y),
+                  ...
                 )
-            )
-        }
 
-        return(out)
+            } else {
+
+              df <- getImgAnnSf(object, id)
+
+              ggplot2::geom_sf(
+                data = df,
+                size = line_size,
+                color = line_color,
+                linetype = line_type,
+                alpha = alpha,
+                fill = fill,
+                ...
+              )
+
+            }
+
+          }
+        )
 
       }
 
+#' @title Add pointer towards image annotations
+#'
+#' @description Adds segments and, if desired, labels to the surface plot that
+#' point towards and highlight the position of image annotations.
+#'
+#' @param color_by Character value or `NULL`. If character, one of *'id'* or *'label'*
+#' which colors the the pointers accordingly.
+#' @param ptr_angles,ptr_lengths Numeric value of length 1 or of length equal to the number
+#' of image annotations. Specifies the angle from which the segments points
+#' towards the image annotation as well as their length. `ptr_lengths` works
+#' within the SPATA2 distance framework. See section *Distance measures* for more
+#' information.
+#' @param ptr_labels Specifies if and how the pointers are labeled. If `NULL`,
+#' the default, the image annotations are labeled by their ID. If character,
+#' specifies the exact label of each image annotation and should be of length 1
+#' or of length equal to the number of image annotations. If `FALSE`, no text
+#' is displayed.
+#' @param ptr_alpha Numeric value. Specifies the transparency of the pointers.
+#' @param ptr_arrow `NULL` or `arrow` as displayed by `grid::arrow()`.
+#' @param ptr_color Character value. Specifies the color of the pointers if
+#' `color_by` is not a character.
+#' @param ptr_size Numeric value. Specifies the size (thickness) of the pointers.
+#' @param text_dist Distance measure. Specifies the distance from the text to
+#' the pointer.
+#' @param point_at Character value. If *'center'*, the pointer is directed at
+#' the center of the image annotation. If *'border'*, the pointer points
+#' at a random point of the image annotation border - recommended if the
+#' image annotation is big.
+#' @param seed Numeric value or `NULL`. If numeric, sets seed before picking
+#' a random point of the image annotation border if `point_at = 'border'`.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @export
+ggpLayerImgAnnPointer <- function(object,
+                                  ids = NULL,
+                                  tags = NULL,
+                                  test = "any",
+                                  color_by = NULL,
+                                  ptr_angles = 45,
+                                  ptr_labels = NULL,
+                                  ptr_lengths = "250um",
+                                  ptr_alpha = 0.9,
+                                  ptr_arrow = NULL,
+                                  ptr_color = "black",
+                                  ptr_size = 1,
+                                  text_alpha = 0.9,
+                                  text_color = "black",
+                                  text_dist = 0,
+                                  text_nudge_x = 0,
+                                  text_nudge_y = 0,
+                                  text_size = 4,
+                                  point_at = "center",
+                                  seed = NULL,
+                                  clrp = NULL,
+                                  clrp_adjust = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # check and get image annotations
+  img_anns <-
+    getImageAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      add_barcodes = FALSE,
+      add_image = FALSE,
+      check = TRUE
+    )
+
+
+  # check ptr_angles
+  if(base::is.numeric(ptr_angles)){
+
+    if(base::length(ptr_angles) == 1){
+
+      ptr_angles <- base::rep(ptr_angles, base::length(ptr_angles))
+
+    } else if(base::length(ptr_angles) != base::length(ptr_angles)){
+
+      stop("If numeric, length of input for argument `ptr_angles` must be 1 or equal to number of image annotations.")
+
+    }
+
+  } else {
+
+    stop("Invalid input for argument `ptr_angles`. Must be numeric.")
+
+  }
+
+  # check ptr_labels
+  if(base::is.character(ptr_labels)){
+
+    if(base::length(ptr_labels) == 1){
+
+      ptr_labels <- base::rep(ptr_labels, base::length(img_anns))
+
+    } else if(base::length(ptr_labels) != base::length(img_anns)){
+
+      stop("If character, length of input for argument `ptr_labels` must be 1 or equal to number of image annotations.")
+
+    }
+
+  } else {
+
+    ptr_labels <-
+      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
+      base::unname()
+
+  }
+
+  # check ptr_lengths
+  is_dist(input = ptr_lengths, error = TRUE)
+
+  ptr_lengths <- as_pixel(input = ptr_lengths, object = object, add_attr = FALSE)
+
+  if(base::length(ptr_lengths) == 1){
+
+    ptr_lengths <- base::rep(ptr_lengths, base::length(img_anns))
+
+  }
+
+  if(base::length(text_dist) == 1){
+
+    text_dist <- base::rep(text_dist, base::length(img_anns))
+
+  }
+
+  plot_df <-
+    purrr::pmap_dfr(
+      .l = list(img_anns, ptr_angles, ptr_labels, ptr_lengths, text_dist),
+      .f = function(img_ann, angle, label, len, prolong){
+
+        area <- img_ann@area[["outer"]]
+
+        if(point_at == "center"){
+
+          center <- getImgAnnCenter(img_ann)
+
+        } else if(point_at == "border"){
+
+          if(base::is.numeric(seed)){
+
+            set.seed(seed)
+
+          }
+
+          center <-
+            area[base::sample(x = 1:base::nrow(area), size = 1),] %>%
+            base::as.numeric() %>%
+            purrr::set_names(nm = c("x", "y"))
+
+        }
+
+        dist <- as_pixel(input = len, object = object, add_attr = FALSE)
+
+        confuns::make_trig_vec(
+          start = center,
+          angle = angle,
+          dist = dist,
+          prolong = as_pixel(prolong, object = object, add_attr = FALSE),
+          prolong.opt = "a"
+        ) %>%
+          dplyr::mutate(label = label, id = img_ann@id) %>%
+          dplyr::select(label, dplyr::everything())
+
+      }
+    )
+
+  if(base::is.character(color_by)){
+
+    confuns::check_one_of(
+      input = color_by,
+      against = c("label", "id")
+    )
+
+  }
+
+
+  # segment
+  if(base::is.character(color_by)){
+
+    segm_add_on <-
+      ggplot2::geom_segment(
+        data = plot_df,
+        mapping = ggplot2::aes(
+          x = xend,
+          y = yend,
+          xend = x,
+          yend = y,
+          color = .data[[color_by]],
+        ),
+        alpha = ptr_alpha,
+        arrow = ptr_arrow,
+        size = ptr_size
+      )
+
+  } else {
+
+    segm_add_on <-
+      ggplot2::geom_segment(
+        data = plot_df,
+        mapping = ggplot2::aes(
+          x = xend,
+          y = yend,
+          xend = x,
+          yend = y,
+        ),
+        alpha = ptr_alpha,
+        arrow = ptr_arrow,
+        color = ptr_color,
+        size = ptr_size
+      )
+
+  }
+
+  # text
+  if(!base::any(base::isFALSE(ptr_labels))){
+
+    if(base::is.character(color_by)){
+
+      text_add_on <-
+        ggplot2::geom_text(
+          data = plot_df,
+          mapping = ggplot2::aes(
+            x = xend_p1,
+            y = yend_p1,
+            label = label,
+            color = .data[[color_by]]
+          ),
+          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
+          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
+          alpha = text_alpha,
+          size = text_size
+        )
+
+    } else {
+
+      text_add_on <-
+        ggplot2::geom_text(
+          data = plot_df,
+          mapping = ggplot2::aes(
+            x = xend_p1,
+            y = yend_p1,
+            label = label
+          ),
+          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
+          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
+          alpha = text_alpha,
+          color = text_color,
+          size = text_size
+        )
+
+    }
+
+  }
+
+  if(base::is.character(color_by)){
+
+    color_add_on <-
+      scale_color_add_on(
+        variable = plot_df[[color_by]],
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
+      )
+
+  } else {
+
+    color_add_on <- NULL
+
+  }
+
+  # return
+  list(
+    segm_add_on,
+    text_add_on,
+    color_add_on
+  )
+
+}
+
+
+#' @title Add a rectangular around an image annotation
+#'
+#' @description Adds a rectangular to the surface plot that visualizes
+#' the spatial extent of the cropped image section as plotted by
+#' `plotImageAnnotations()`.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @export
+#'
+ggpLayerImgAnnRect <- function(object, ids, expand = "25%", ...){
+
+  purrr::map(
+    .x = ids,
+    .f = function(id){
+
+      img_ann <- getImageAnnotation(object, id = id, expand = expand)
+
+      ggpLayerRect(
+        object = object,
+        xrange = c(img_ann@image_info$xmin, img_ann@image_info$xmax),
+        yrange = c(img_ann@image_info$ymin_coords, img_ann@image_info$ymax_coords),
+        ...
+      )
+
+    }
+
+  )
+
+}
+
+#' @title Add horizontal and vertical lines
+#'
+#' @param xi Distance measures of where to add vertical lines. Intercepts on x-axis.
+#' @param yi Expression values of where to add horizontal lines. Intercepts on y-axis.
+#' @param ... Additional arguments given to `ggplot2::geom_h/vline()`
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+ggpLayerLineplotAid <- function(object, xi, yi = 0.5, l = NULL, id = NULL, ...){
+
+  if(base::is.null(l)){
+
+    l <- getTrajectoryLength(object, id = id, unit = "px")
+
+  }
+
+  color <- list(...)[["color"]]
+
+  if(base::is.null(color)){ color <- "grey"}
+
+  linetype <- list(...)[["linetype"]]
+
+  if(base::is.null(linetype)){ linetype <- "dashed"}
+
+  mapping <- ggplot2::aes(x = x, y = y, xend = xend, yend = yend)
+
+  if(!base::is.null(yi)){
+
+    nyi <- base::length(yi)
+
+    df <-
+      base::data.frame(
+        x = base::rep(0, nyi),
+        xend = base::rep(l, nyi),
+        y = yi,
+        yend = yi
+      )
+
+    hlines <-
+      ggplot2::geom_segment(
+        data = df,
+        mapping = mapping,
+        color = color,
+        linetype = linetype,
+        ...
+        )
+
+  } else {
+
+    hlines <- NULL
+
+  }
+
+  if(!base::is.null(xi)){
+
+    xi <- as_pixel(input = xi, object = object)
+
+    nxi <- base::length(xi)
+
+    df <-
+      base::data.frame(
+        x = xi,
+        xend = xi,
+        y = base::rep(0, nxi),
+        yend = base::rep(1, nxi)
+      )
+
+    vlines <-
+      ggplot2::geom_segment(
+        data = df,
+        mapping = mapping,
+        color = color,
+        linetype = linetype,
+        ...
+        )
+
+  } else {
+
+    vlines <- NULL
+
+  }
+
+  out <- c(hlines, vlines)
+
+  return(out)
+
+}
 
 #' @title Add a rectangular to the plot
 #'
@@ -922,7 +1668,7 @@ ggpLayerImageAnnotation <- function(object = "object",
 #' that ranges from 200px to 500px on the x-axis.
 #'
 #' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in European units of length the input is
+#' If values are specified in SI units of length the input is
 #' immediately converted to pixel units.
 #'
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
@@ -1024,6 +1770,8 @@ ggpLayerRect <- function(object = "object",
 #' @inherit is_dist details
 #' @inherit ggpLayer_dummy return
 #'
+#' @inheritSection section_dummy Distance measures
+#'
 #' @details  The scale bar consists of two graphical objects. The segment of the
 #' scale bar is plotted with `geom_segment_fixed()`. The text of the scale bar is
 #' plotted with `geom_text_fixed()`.
@@ -1034,17 +1782,34 @@ ggpLayerRect <- function(object = "object",
 #' the scale bar away from the center into the corner specified in `sb_pos`. Thus,
 #' if `offset = c(0,0)`, the scale bar is positioned in the center of the plot
 #' regardless of the specification of `sb_pos`. Offset values specify the percentage
-#' of the distanec between the center of the plot and its limits. For instance,
-#' if `sb_pos = c(0.5, 0.75)` and `sb_pos = 'top_right'` to the right (50% of the distance
-#' between the center the limits of the x-axis) and to the top (75% of the distance between the center
-#' and the limits of the y-axis).
+#' of the distance between the center of the plot and its limits. For instance,
+#' if `sb_pos = c(0.5, 0.75)` and `sb_pos = 'top_right'` the scale bar is moved
+#' to the right (50% of the distance between the center the limits of the x-axis)
+#' and to the top (75% of the distance between the center and the limits of the y-axis).
 #'
-#' If numeric, `sb_pos` actually sets positioning of the segment (not the text).
+#' If numeric, `sb_pos` explicitly sets positioning of the segment (not the text).
 #' The text is automatically lifted such that it hovers over the segment. If this
 #' does not work or you want to manipulate the text positioning you can use arguments
 #' `text_nudge_x` and `text_nudge_y` or set the position precisely with `text_pos`.
 #'
 #' @export
+#'
+#' @examples
+#'
+#' object <- downloadPubExample("313_T", verbose = FALSE)
+#'
+#' plotImageGgplot(object) +
+#'  ggpLayerEncirclingIAS(
+#'    object = object,
+#'    id = "necrotic_area",
+#'    distance = "2.25mm"
+#'  ) +
+#'  ggpLayerScaleBarSI(
+#'   object = object,
+#'   sb_dist = "2.25mm",
+#'   sb_pos = "top_right"
+#'   )
+#'
 ggpLayerScaleBarSI <- function(object,
                                sb_dist = "1mm",
                                sb_pos = "bottom_right",
@@ -1055,7 +1820,7 @@ ggpLayerScaleBarSI <- function(object,
                                text_nudge_x = 0,
                                text_nudge_y = 0,
                                text_pos = NULL,
-                               text_size = 5.5,
+                               text_size = 5,
                                xrange = NULL,
                                yrange = NULL,
                                offset = c(0.8, 0.8),
@@ -1278,7 +2043,6 @@ ggpLayerScaleBarSI <- function(object,
   add_on_list <-
     list(
       ggplot2::theme_bw(), # override theme_void -> clashes with geom_segment (???)
-      ggplot2::labs(x = NULL, y = NULL),
       theme_add_on,
       sgmt_add_on,
       text_add_on
@@ -1293,37 +2057,92 @@ ggpLayerScaleBarSI <- function(object,
 
 
 
-#' @title Add a hull that enricles the sample
+#' @title Add a hull that outlines the tissue
 #'
-#' @description Adds a hull that encircles the sample. Usefull, if you want
+#' @description Adds a hull that encircles the sample. Useful, if you want
 #' to plot numeric variables by color against white.
-#'
-#' @param expand Given to `ggforce::geom_mark_hull()`.
-#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
 #'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
+#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
+#'
+#' @param inc_outline Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
+#'
+#' @inheritSection section_dummy Distance measures
+#'
 #' @export
 #'
-ggpLayerSampleMask <- function(object,
-                               line_color = "black",
-                               line_size = 0.5,
-                               expand = ggplot2::unit(2.25, "cm"),
-                               ...){
+#' @examples
+#'
+#' object <- donwloadPubExample("MCD_LMU")
+#'
+#' plotImageGgplot(object, unit = "mm") +
+#'  ggpLayerTissueOutline(object, inc_outline = TRUE)
+#'
+#' plotImageGgplot(object, unit = "mm") +
+#'  ggpLayerTissueOutline(object, inc_outline = FALSE)
+#'
+#'
+ggpLayerTissueOutline <- function(object,
+                                  line_color = "grey",
+                                  line_size = 0.5,
+                                  expand_outline = getCCD(object, "px")*1.25,
+                                  concavity = NULL,
+                                  inc_outline = TRUE,
+                                  ...){
 
+  hlpr_assign_arguments(object)
 
-  out <-
-    getCoordsDf(object) %>%
-    ggforce::geom_mark_hull(
-      mapping = ggplot2::aes(x = x, y = y, group = sample),
-      alpha = 1,
-      color = line_color,
-      size = line_size,
-      ...
+  coords_df <- getCoordsDf(object)
 
+  if(!tissueSectionsIdentfied(object)){
+
+    coords_df[["section"]] <- "1"
+    coords_df[["outline"]] <- TRUE
+
+  }
+
+  expand_outline <-
+    as_pixel(expand_outline, object = object) %>%
+    base::as.numeric()
+
+  coords_df <- dplyr::filter(coords_df, section != "0")
+
+  sections <- base::unique(coords_df[["section"]])
+
+  outline_df <- getTissueOutlineDf(object)
+
+  outline_df <-
+    purrr::map_df(
+      .x = base::unique(sections),
+      .f = function(s){
+
+        df_sub <- dplyr::filter(outline_df, section == {{s}})
+
+        df_out <-
+          concaveman::concaveman(
+            points = base::as.matrix(df_sub[,c("x", "y")]),
+            concavity = concavity
+            ) %>%
+          magrittr::set_colnames(value = c("x", "y")) %>%
+          buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
+          dplyr::mutate(section = {{s}})
+
+        return(df_out)
+
+      }
     )
 
-  return(list(out))
+  out <-
+    ggplot2::geom_polygon(
+      data = outline_df,
+      mapping = ggplot2::aes(x = x, y = y, group = section),
+      alpha = 0,
+      color = line_color,
+      size = line_size
+    )
+
+  return(out)
 
 }
 
@@ -1336,13 +2155,22 @@ ggpLayerSampleMask <- function(object,
 #' @return List.
 #' @export
 #'
-ggpLayerThemeCoords <- function(){
+ggpLayerThemeCoords <- function(unit = NULL){
+
+  if(base::is.character(unit) && unit[1] %in% validUnitsOfLength()){
+
+    unit <- stringr::str_c("[", unit[1], "]")
+
+  }
 
   list(
     ggplot2::theme_bw(),
     ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.title = ggplot2::element_blank()
+      panel.grid = ggplot2::element_blank()
+    ),
+    ggplot2::labs(
+      x = glue::glue("x-coordinates {unit}"),
+      y = glue::glue("y-coordinates {unit}")
     )
   )
 
@@ -1410,7 +2238,7 @@ ggpLayerTrajectories <- function(object = "object",
 #' being cropped from x-coordinate 200px up to x-coordinate 500px.
 #'
 #' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in European units of length the input is
+#' If values are specified in SI units of length the input is
 #' immediately converted to pixel units.
 #' @param expand_x,expand_y Given to `expand` of `ggplot2::scale_x/y_continuous()`.
 #'
@@ -1421,12 +2249,28 @@ ggpLayerZoom <- function(object = NULL,
                          xrange = NULL,
                          yrange = NULL,
                          expand_x = c(0,0),
-                         expand_y = c(0,0)
+                         expand_y = c(0,0),
+                         round = 2,
+                         n_breaks = 5
                          ){
+
+  if(base::any(is_dist_si(xrange), is_dist_si(yrange))){
+
+    check_object(object)
+
+  }
+
+  if(base::length(n_breaks) == 1){
+
+    n_breaks <- base::rep(n_breaks, 2)
+
+  }
 
   layers <- list()
 
   if(!base::is.null(xrange)){
+
+    xunit <- extract_unit(input = xrange)[1]
 
     xrange <-
       as_pixel(input = xrange, object = object, as_numeric = TRUE) %>%
@@ -1437,12 +2281,21 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_x_continuous(limits = xrange, expand = expand_x)
+        list(
+          ggplot2::scale_x_continuous(
+            breaks = base::seq(xrange[1], xrange[2], length.out = n_breaks[1]),
+            expand = expand_x,
+            labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
+          ),
+          ggplot2::labs(x = glue::glue("x-coordinates [{xunit}]"))
+        )
       )
 
   }
 
   if(!base::is.null(yrange)){
+
+    yunit <- extract_unit(input = yrange)[1]
 
     yrange <-
       as_pixel(input = yrange, object = object, as_numeric = TRUE) %>%
@@ -1453,10 +2306,19 @@ ggpLayerZoom <- function(object = NULL,
     layers <-
       c(
         layers,
-        ggplot2::scale_y_continuous(limits = yrange, expand = expand_y)
+        list(
+          ggplot2::scale_y_continuous(
+            breaks = base::seq(yrange[1], yrange[2], length.out = n_breaks[2]),
+            expand = expand_y,
+            labels = ~ as_unit(input = .x, unit = yunit, object = object, round = round)
+          ),
+          ggplot2::labs(y = glue::glue("y-coordinates [{yunit}]"))
+        )
       )
 
   }
+
+  layers <- c(layers, ggplot2::coord_fixed(xlim = xrange, ylim = yrange, expand = FALSE))
 
   return(layers)
 
@@ -1466,3 +2328,70 @@ ggpLayerZoom <- function(object = NULL,
 
 
 
+
+
+
+# gr ----------------------------------------------------------------------
+
+#' @title Create input for `model_add`
+#'
+#' @description Generates appropriate input for argument `model_add`
+#' of functions related to Spatial Trajectory Screening (STS) or
+#' Image Annotation Screening (IAS). To screen for gradient cooexpression.
+#'
+#' @param id Character value. ID of the spatial trajectory or the image annotation
+#' of interest.
+#' @param distance,binwidth,n_bins_circle,n_bins The input given to the desired
+#' screening- or visualization functions.
+#' @inherit imageAnnotationScreening params
+#' @inherit spatialTrajectoryScreening params
+#'
+#' @export
+#'
+gradientToModelIAS <- function(object,
+                               id,
+                               variables,
+                               distance = NA_integer_,
+                               binwidth = getCCD(object),
+                               n_bins_circle = NA_integer_,
+                               include_area = FALSE,
+                               verbose = TRUE){
+
+  getIasDf(
+    object = object,
+    id = id,
+    distance = distance,
+    n_bins_circle = n_bins_circle,
+    binwidth = binwidth,
+    remove_circle_bins = !include_area,
+    variables = variables,
+    summarize_by = "bins_circle",
+    verbose = FALSE
+  ) %>%
+    dplyr::filter(bins_circle != "Outside") %>%
+    dplyr::select(dplyr::all_of(variables)) %>%
+    base::as.list()
+
+}
+
+#' @rdname gradientToModelIAS
+#' @export
+gradientToModelSTS <- function(object,
+                               id,
+                               variables,
+                               binwidth = getCCD(object, "px"),
+                               n_bins = NA_integer_,
+                               verbose = TRUE){
+
+  getStsDf(
+    object = object,
+    id = id,
+    n_bins = n_bins,
+    binwidth = binwidth,
+    variables = variables,
+    verbose = FALSE
+  ) %>%
+    dplyr::select(dplyr::all_of(variables)) %>%
+    base::as.list()
+
+}

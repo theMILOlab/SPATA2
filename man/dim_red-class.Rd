@@ -19,3 +19,4 @@ dim_red object
 \item{\code{TSNE}}{A data.frame containing the variables \emph{'barcodes', 'smaple', 'tsne1', 'tsne2'}}
 }}
 
+\keyword{internal}

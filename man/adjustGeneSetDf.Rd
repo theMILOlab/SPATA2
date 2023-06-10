@@ -27,3 +27,4 @@ however contains only 15 of them. If argument \code{limit} is set to 75 gene-set
 is removed since the percentage of genes of which the given expression matrix
 contains information about is only 50.
 }
+\keyword{internal}

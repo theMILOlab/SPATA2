@@ -37,3 +37,4 @@ same length as the input vector. Test models with \code{showModels()}.}
 \description{
 Add models to a data.frame
 }
+\keyword{internal}

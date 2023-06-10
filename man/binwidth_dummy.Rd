@@ -12,3 +12,4 @@ binwidth_dummy(binwidth)
 \description{
 binwidth
 }
+\keyword{internal}

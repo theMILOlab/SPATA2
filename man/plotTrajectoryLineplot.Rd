@@ -2,33 +2,79 @@
 % Please edit documentation in R/plotT-Z.R
 \name{plotTrajectoryLineplot}
 \alias{plotTrajectoryLineplot}
-\title{Plot continuous trajectory dynamics in lineplots}
+\alias{plotTrajectoryRidgeplot}
+\title{Plot continuous trajectory dynamics}
 \usage{
 plotTrajectoryLineplot(
   object,
   id,
   variables,
-  binwidth = ccDist(object),
+  binwidth = getCCD(object),
   n_bins = NA_integer_,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
   method_gs = NULL,
-  smooth_method = NULL,
-  smooth_span = NULL,
-  smooth_se = NULL,
+  smooth_method = "loess",
+  smooth_span = 0.2,
+  smooth_se = TRUE,
   clrp = NULL,
   clrp_adjust = NULL,
   display_trajectory_parts = NULL,
   display_facets = NULL,
-  linesize = 1.5,
+  line_color = NULL,
+  line_size = 1.5,
   vlinecolor = "grey",
   vlinesize = 1,
   vlinetype = "dashed",
+  x_nth = 7L,
+  xi = (getTrajectoryLength(object, id)/2),
+  yi = 0.5,
   summarize_with = "mean",
+  ncol = NULL,
+  nrow = NULL,
+  display_model = NULL,
+  verbose = NULL,
+  ...
+)
+
+plotTrajectoryRidgeplot(
+  object,
+  id,
+  variables,
+  binwidth = getCCD(object),
+  n_bins = NA_integer_,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
+  method_gs = NULL,
+  smooth_method = "loess",
+  smooth_span = 0.2,
+  smooth_se = TRUE,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  display_trajectory_parts = NULL,
+  alpha = 0.9,
+  fill = NULL,
+  line_color = "black",
+  line_size = 1.5,
+  vlinecolor = "grey",
+  vlinesize = 1,
+  vlinetype = "dashed",
+  x_nth = 7L,
+  xi = NULL,
+  yi = NULL,
+  expand_x = c(0, 0),
+  summarize_with = "mean",
+  ncol = 1,
+  nrow = NULL,
+  overlap = 0.5,
+  strip_pos = "right",
+  display_model = NULL,
   verbose = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
@@ -65,7 +111,9 @@ drawn.}
 \item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
 or feature are displayed via \code{ggplot2::facet_wrap()}}
 
-\item{linesize}{Numeric value. Specifies the thicknes of the lines with which
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
 the trajectory dynamics are displayed.}
 
 \item{vlinesize, vlinecolor}{Adjusts size and color of vertical lines that
@@ -74,7 +122,18 @@ display the trajectory parts.}
 \item{vlinetype}{Adjusts the type of the vertical lines that display the trajectory
 parts.}
 
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
+
+\item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
+
+\item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
+
 \item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -90,5 +149,5 @@ to the rules of the ggplot2-framework.
 }
 \description{
 Displays values along a trajectory direction with
-a smoothed lineplot.
+a smoothed lineplot or ridgeplot.
 }

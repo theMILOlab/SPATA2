@@ -9,3 +9,4 @@ resizingTextGrob(...)
 \description{
 Used for GeomTextScaled
 }
+\keyword{internal}

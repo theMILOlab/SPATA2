@@ -2,6 +2,18 @@
 
 # a -----------------------------------------------------------------------
 
+
+
+#' @keywords internal
+adjustDefaultInstructions <- function(...){
+
+  deprecated(fn = TRUE)
+
+  setDefault(...)
+
+}
+
+#' @keywords internal
 asUnit <- function(...){
 
   deprecated(fn = TRUE)
@@ -9,7 +21,7 @@ asUnit <- function(...){
   as_unit(...)
 
 }
-
+#' @keywords internal
 asPixel <- function(input, ...){
 
   deprecated(fn = TRUE)
@@ -22,10 +34,22 @@ asPixel <- function(input, ...){
 }
 
 
+
+# b -----------------------------------------------------------------------
+
+#' @keywords internal
+bin_by_area <- function(...){
+
+  deprecated(fn = TRUE, ...)
+
+  bin_by_expansion(...)
+
+}
+
 # c -----------------------------------------------------------------------
 
 #' @title Check assessed trajectory data.frame
-
+#' @keywords internal
 check_atdf <- function(atdf){
 
   deprecated(fn = TRUE)
@@ -46,7 +70,7 @@ check_atdf <- function(atdf){
 #'
 #' @param ctdf A compiled trajectory data.frame containing the variables
 #' \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.
-
+#' @keywords internal
 check_compiled_trajectory_df <- function(ctdf){
 
   check_spata_df(spata_df = ctdf)
@@ -75,7 +99,7 @@ check_compiled_trajectory_df <- function(ctdf){
 #' @param customized_trends A data.frame or a named list. All numeric variables are considered to correspond to customized trends
 #' the trajectory of interest might adopt. The names of the respective variables will correspond to the name
 #' with which you want to refer to the trend later on.
-
+#' @keywords internal
 check_customized_trends <- function(length_trajectory,
                                     customized_trends){
 
@@ -171,8 +195,7 @@ check_rtdf <- function(rtdf, variable = NULL){
 #'
 #' @return A character string. (Call \code{base::writeLines()} with that
 #'  string as input in order to format it.)
-#' @export
-
+#' @keywords internal
 check_slot_coordinates <- function(object){
 
   coords <- object@coordinates
@@ -233,7 +256,7 @@ check_slot_coordinates <- function(object){
 
 #' @rdname check_slot_coordinates
 #'
-#' @export
+#' @keywords internal
 check_slot_data <- function(object){
 
   data <- object@data
@@ -275,8 +298,7 @@ check_slot_data <- function(object){
 
 
 #' @rdname check_slot_coordinates
-#' @export
-
+#' @keywords internal
 check_slot_dim_red <- function(object){
 
   messages <- base::character()
@@ -405,8 +427,7 @@ check_slot_dim_red <- function(object){
 }
 
 #' @rdname check_slot_coordinates
-#' @export
-
+#' @keywords internal
 check_slot_fdata <- function(object){
 
   fdata <- object@fdata
@@ -497,8 +518,7 @@ check_slot_fdata <- function(object){
 
 
 #' @rdname check_slot_coordinates
-#' @export
-
+#' @keywords internal
 check_slot_image <- function(object){
 
   image_list <- object@image
@@ -564,8 +584,7 @@ check_slot_image <- function(object){
 
 
 #' @rdname check_slot_coordinates
-#' @export
-
+#' @keywords internal
 check_slot_samples <- function(object){
 
   samples <- object@samples
@@ -584,8 +603,7 @@ check_slot_samples <- function(object){
 
 
 #' @rdname check_slot_coordinates
-#' @export
-
+#' @keywords internal
 check_slot_scvelo <- function(object){
 
   base::return("(Currently not in use!)")
@@ -594,8 +612,7 @@ check_slot_scvelo <- function(object){
 
 
 #' @rdname check_slot_coordinates
-#' @export
-
+#' @keywords internal
 check_slot_trajectories <- function(object){
 
   messages <- base::character()
@@ -692,7 +709,7 @@ check_slot_trajectories <- function(object){
 
 #' @rdname check_slot_coordinates
 #' @export
-
+#' @keywords internal
 check_trajectory_object <- function(t_object, t_object_name, t_object_sample){
 
   messages <- base::character()
@@ -810,7 +827,7 @@ check_trajectory_object <- function(t_object, t_object_name, t_object_sample){
 
 #' @rdname check_slot_coordinates
 #' @export
-
+#' @keywords internal
 check_slot_used_genesets <- function(object){
 
   gs_df <- object@used_genesets
@@ -888,277 +905,41 @@ check_slot_used_genesets <- function(object){
 
 #' @rdname check_slot_coordinates
 #' @export
-
+#' @keywords internal
 check_slot_version <- function(object){
 
   base::return("(Currently not in use!)")
 
 }
 
-#' @title Spatial Segmentation (old version)
-#'
-#' @description The function \code{createSegmentation2()} provides access to an
-#' interactive mini-shiny application that allows to separate a sample into
-#' several segments.
-#'
-#' @inherit check_object
-#'
-#' @return An updated version of the spata-object specified as \code{object}
-#' now containing the information about all drawn segments.
-#'
-#' @export
-
-createSegmentation2 <- function(object){
+#' @keywords internal
+createHistologyImage <- function(...){
 
   deprecated(fn = TRUE)
 
-  check_object(object)
+  createHistologyImaging(...)
 
-  ##----- launch application
-  new_object <-
-    shiny::runApp(
-      shiny::shinyApp(ui = function(){
+}
 
-        shinydashboard::dashboardPage(
 
-          shinydashboard::dashboardHeader(title = "Create Segmentation"),
+#' @export
+#' @keywords internal
+createImageObject <- function(...){
 
-          shinydashboard::dashboardSidebar(
-            collapsed = TRUE,
-            shinydashboard::sidebarMenu(
-              shinydashboard::menuItem(
-                text = "Segmentation",
-                tabName = "create_segmentation",
-                selected = TRUE
-              )
-            )
-          ),
+  deprecated(fn = TRUE)
 
-          shinydashboard::dashboardBody(
+  createHistologyImage(...)
 
-            #----- busy indicator
-            shinybusy::add_busy_spinner(spin = "cube-grid", margins = c(0,10), color = "red"),
+}
 
-            #----- tab items
-            shinydashboard::tabItems(
-              tab_create_segmentation_return()
-            )
-          )
+#' @title Deprecated in favor of `createSpatialSegmentation()`
+#' @keywords internal
+#' @export
+createSegmentation <- function(...){
 
-        )},
-        server = function(input, output, session){
+  deprecated(fn = TRUE)
 
-          # Reactive values -----------------------------------------------------------
-
-          # a reactive spata object
-          spata_obj <- shiny::reactiveVal(value = object)
-
-          # df and ggplot layer of the currently drawn segment
-          vertices_df <-
-            shiny::reactiveVal(value = data.frame(x = base::numeric(0),
-                                                  y = base::numeric(0)))
-
-          vertices_layer <- shiny::reactiveVal(value = list())
-
-          # a list about the parameters of the currently displayed surface plot
-          current <- reactiveVal(value = list())
-
-          #
-          segmentation_df <- reactive({
-
-            segm_df <-
-              getFeatureDf(object = spata_obj(), of_sample = current()$sample) %>%
-              dplyr::filter(!segmentation %in% c("", "none")) %>%
-              dplyr::select(barcodes, segmentation)
-
-            return(segm_df)
-
-          })
-
-
-          # Modularized plot surface part -------------------------------------------
-
-          module_return <- moduleSurfacePlotServer(id = "segmentation",
-                                                   object = object,
-                                                   final_plot = shiny::reactive(final_plot()),
-                                                   reactive_object = shiny::reactive(spata_obj()))
-
-          # update current()
-          oe <- shiny::observeEvent(module_return()$current_setting(), {
-
-            current(module_return()$current_setting())
-
-          })
-
-          # final plot
-          final_plot <- shiny::reactive({
-
-            module_return()$assembled_plot() +
-              vertices_layer()
-
-          })
-
-          # Observe events ----------------------------------------------------------
-
-          ##--- 1. grow vertices data and update vertices layer frame with every click
-          oe <- shiny::observeEvent(module_return()$dblclick(), {
-
-            ## 1. computation
-            vrtcs_list <- module_return()$dblclick()
-            new_df <- dplyr::add_row(.data = vertices_df(),
-                                     x = vrtcs_list$x,
-                                     y = vrtcs_list$y)
-
-            ## 2.1 update vertices df
-            vertices_df(new_df)
-
-            ## 2.2 update vertices geom layer
-            if(base::nrow(vertices_df()) != 0){
-
-              new_layer <- list(ggplot2::geom_point(data = vertices_df(), mapping = ggplot2::aes(x = x, y = y), size = 3.5, color = "black"),
-                                ggplot2::geom_path(data = vertices_df(), mapping = ggplot2::aes(x = x, y = y), size = 1.25, color = "black")
-              )
-
-              vertices_layer(new_layer)
-
-            } else {
-
-              new_layer <- NULL
-              vertices_layer(list())
-
-            }
-
-          })
-
-          ##--- 2.1 convert vertices layer to geom_polygon to highlight the segmentation
-          oe <- shiny::observeEvent(input$highlight_segment, {
-
-            checkpoint(evaluate = base::nrow(vertices_df()) > 2, case_false = "insufficient_n_vertices")
-
-            new_layer <- list(ggplot2::geom_polygon(data = vertices_df(),
-                                                    mapping = ggplot2::aes(x = x, y = y),
-                                                    alpha = 0.75, colour = "orange", fill = "orange",
-                                                    size = 1))
-            vertices_layer(new_layer)
-
-          })
-
-          ##--- 2.2 reset current() vertices
-          oe <- shiny::observeEvent(input$reset_segment, {
-
-            vertices_df(data.frame(x = numeric(0), y = numeric(0)))
-            vertices_layer(list())
-
-          })
-
-          ##--- 3. save the highlighted segmentation
-          oe <- shiny::observeEvent(input$save_segment, {
-
-            checkpoint(evaluate = input$name_segment != "", case_false = "invalid_segment_name")
-            checkpoint(evaluate = !input$name_segment %in% segmentation_df()$segmentation, case_false = "occupied_segment_name")
-            checkpoint(evaluate = base::nrow(vertices_df()) > 2, case_false = "insufficient_n_vertices")
-
-            sample_coords <- getCoordsDf(objec = spata_obj(), of_sample = current()$sample)
-
-            ## 1. determine positions of each point with respect to the defined segmentation
-            positions <-  sp::point.in.polygon(point.x = sample_coords$x, # x coordinates of all spatial positions
-                                               point.y = sample_coords$y, # y coordaintes of all spatial positions
-                                               pol.x = vertices_df()$x, # x coordinates of the segments vertices
-                                               pol.y = vertices_df()$y) # y coordinates of the segments vertices
-
-            ## 2. update spata obj
-
-            # 2.1 extract object
-            spata_obj <- spata_obj()
-
-            # 2.2 update fdata
-
-            # extract feature data
-
-            # update sample subset
-            fdata <-
-              getFeatureDf(spata_obj, of_sample = current()$sample) %>%
-              dplyr::mutate(
-                positions = positions,
-                segmentation = base::as.character(segmentation),
-                segmentation = dplyr::if_else(condition = positions %in% c(1,2,3), true = input$name_segment, false = segmentation),
-                segmentation = base::factor(segmentation),
-              ) %>%
-              dplyr::select(-positions)
-
-            # exchange sample subset
-            spata_obj <- setFeatureDf(object = spata_obj, feature_df = fdata, of_sample = current()$sample)
-
-            # 2.4 update and check
-            spata_obj(spata_obj)
-
-            if(input$name_segment %in% base::unique(getFeatureDf(spata_obj(), of_sample = current()$sample)$segmentation)){
-
-              shiny::showNotification(ui = stringr::str_c(input$name_segment, "has been saved.", sep = " "), type = "message")
-
-            }
-
-            ## 3. reset vertices values
-            vertices_df(data.frame(x = base::numeric(0), y = base::numeric(0)))
-            vertices_layer(list())
-
-          })
-
-          ##--- 4. remove segments
-          oe <- shiny::observeEvent(input$remove_segment, {
-
-            spata_obj <- spata_obj()
-            fdata <- getFeatureDf(spata_obj, of_sample = current()$sample)
-
-            checkpoint(evaluate = input$name_segment_rmv %in% base::unique(fdata$segmentation), case_false = "segment_name_not_found")
-
-            fdata_new <-
-              dplyr::mutate(
-                .data = fdata,
-                segmentation = base::as.character(segmentation),
-                segmentation = dplyr::if_else(segmentation == input$name_segment_rmv, true = "none", false = segmentation),
-                segmentation = base::factor(segmentation)
-              )
-
-            spata_obj <- setFeatureDf(spata_obj, feature_df = fdata_new, of_sample = current()$sample)
-
-            spata_obj(spata_obj)
-
-            if(!input$name_segment_rmv %in% getFeatureDf(spata_obj(), of_sample = current()$sample)$segmentation){
-
-              shiny::showNotification(ui = stringr::str_c("Segment '", input$name_segment_rmv, "' has been successfully removed.", sep = ""), type = "message")
-
-            }
-
-          })
-
-          ##--- 5. close application and return spata object
-          oe <- shiny::observeEvent(input$close_app, {
-
-            shiny::stopApp(returnValue = spata_obj())
-
-          })
-
-          # Outputs -----------------------------------------------------------------
-
-          output$current_segmentation <- shiny::renderPlot({
-
-            sample <- module_return()$current_setting()$sample
-            segmentation_done <- (base::length(getSegmentNames(object = spata_obj(),
-                                                               of_sample = sample,
-                                                               verbose = FALSE)) != 0)
-
-            shiny::validate(shiny::need(segmentation_done, message = glue::glue("Sample '{sample}' has not been segmented yet.")))
-
-            plotSegmentation(object = spata_obj(),
-                             pt_size = module_return()$pt_size_reactive())
-
-          })
-
-        })
-    )
-
-  return(new_object)
+  createSpatialSegmentation(...)
 
 }
 
@@ -1166,21 +947,7 @@ createSegmentation2 <- function(object){
 
 # e -----------------------------------------------------------------------
 
-#' @title Examine trajectory-moddeling results
-#'
-#' @description Visualizes the distribution of the assessment-scores
-#'  (residuals-area-under-the-curve) of a trajectory.
-#'
-#' @inherit check_atdf params
-#' @param limits The minimum and maximum auc-values to include. Given to
-#' \code{ggplot2::scale_x_continuous()}.
-#' @param plot_type One of \emph{'histogram', 'density', and 'ridgeplot'}.
-#' @param ... additional arguments given to \code{ggplot2::facet_wrap()}.
-#'
-#' @inherit ggplot_family return
-#' @export
-#'
-
+#' @keywords internal
 examineTrajectoryAssessment <- function(atdf,
                                         limits = c(0, 10),
                                         plot_type = "histogram",
@@ -1254,8 +1021,7 @@ examineTrajectoryAssessment <- function(atdf,
 #' @title Deprecated
 #'
 #' @description Use `flipCoordinates()`.
-#'
-#' @export
+#' @keywords internal
 flipCoords <- function(...){
 
   deprecated(fn = TRUE)
@@ -1265,6 +1031,40 @@ flipCoords <- function(...){
 }
 
 # g -----------------------------------------------------------------------
+
+#' @rdname getImgAnnOutlineDf
+#' @keywords internal
+#' @export
+getImgAnnBorderDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnOutlineDf(...)
+
+}
+
+#' @rdname getImgAnnOutlineDf
+#' @keywords internal
+#' @export
+getImageAnnotationAreaDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnBorderDf(...)
+
+}
+
+
+#' @rdname getImgAnnCenter
+#' @keywords internal
+#' @export
+getImageAnnotationCenter <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnCenter(...)
+
+}
 
 #' @title Obtain unit of method
 #'
@@ -1279,7 +1079,27 @@ flipCoords <- function(...){
 #'
 #'
 
+#' @rdname getImgAnnIds
+#' @keywords internal
+#' @export
+getImageAnnotationIds <- function(...){
 
+  deprecated(fn = TRUE)
+
+  getImgAnnIds(...)
+
+}
+
+#' @keywords internal
+#' @export
+getImageAnnotationTags <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getImgAnnTags(...)
+}
+
+#' @keywords internal
 getMethod <- function(object){
 
   deprecated(fn = TRUE)
@@ -1288,6 +1108,7 @@ getMethod <- function(object){
 
 }
 
+#' @keywords internal
 getMethodUnit <- function(object){
 
   deprecated(fn = TRUE)
@@ -1299,6 +1120,7 @@ getMethodUnit <- function(object){
 
 }
 
+#' @keywords internal
 getMethodName <- function(object){
 
   deprecated(fn = TRUE)
@@ -1307,8 +1129,10 @@ getMethodName <- function(object){
 
 }
 
+
 #' @rdname getSampleName
 #' @export
+#' @keywords internal
 getSampleNames <- function(object){
 
   #deprecated(fn = TRUE)
@@ -1319,8 +1143,10 @@ getSampleNames <- function(object){
 
 }
 
+
 #' @rdname getCoordsDf
 #' @export
+#' @keywords internal
 getSegmentDf <- function(object, segment_names, ...){
 
   deprecated(fn = TRUE, ...)
@@ -1356,7 +1182,7 @@ getSegmentDf <- function(object, segment_names, ...){
 #' specific sample.
 #'
 #' @export
-
+#' @keywords internal
 getSegmentNames <- function(object,
                             simplify = TRUE,
                             of_sample = NA,
@@ -1425,13 +1251,24 @@ getSegmentNames <- function(object,
 
 }
 
+#' @title Deprecated
+#' @export
+#' @keywords internal
+getTrajectoryScreeningDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getStsDf(...)
+
+}
+
 #' @title Deprecated.
 #'
 #' @description This function is deprecated in favor of
 #' getTrajectoryIds().
 #'
 #' @export
-#'
+#' @keywords internal
 getTrajectoryNames <- function(object, ...){
 
   deprecated(fn = TRUE)
@@ -1443,15 +1280,53 @@ getTrajectoryNames <- function(object, ...){
 }
 
 
+#' @export
+#' @keywords internal
+ggpLayerEncirclingGroups <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerGroupOutline(...)
+
+}
+
+#' @keywords internal
+#' @export
+ggpLayerImageAnnotation <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerImgAnnBorder(...)
+
+}
+
+#' @keywords internal
+#' @rdname ggpLayerImgAnnOutline
+#' @export
+ggpLayerImgAnnBorder <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerImgAnnOutline(...)
+
+}
+
+#' @keywords internal
+#' @export
+ggpLayerSampleMask <- function(...){
+
+  deprecated(fn = TRUE)
+
+  ggpLayerTissueOutline(...)
+
+}
+
+
+
 # h -----------------------------------------------------------------------
 
-#' run pca on the cnv-matrix
-#'
-#' @param object spata-object
-#' @param n_pcs number of pcs to be calculated
-#' @param of_sample sample of interest
-#' @param ... arguments given to the pca algorithm
-
+#' @keywords internal
+#' @export
 hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
 
   deprecated(fn = TRUE)
@@ -1479,27 +1354,8 @@ hlpr_run_cnva_pca <- function(object, n_pcs = 30, of_sample = NA, ...){
   return(object)
 }
 
-#' @title Helper functions for trajectory ranking
-#'
-#' @description Functions to use within \code{purrr::map()} again in \code{dplyr::mutate()} in order to
-#' create a nested ranked trajectory data.frame.
-#'
-#' \itemize{
-#'  \item{\code{hlpr_add_models()}: Returns a data.frame of variables corresponding to
-#'  mathematical curves.}
-#'  \item{\code{hlpr_add_residuals(): Calculates the residuals of the variable \emph{values} with respect
-#'  to each mathematical curve.}}
-#'  \item{\code{hlpr_summarise_residuals(): Calculates the area under the curve for every residual in order to
-#'  access the fit of the respective expression trend to the fitted curve.}}}
-#'
-#' @param df A data.frame.
-#' @param customized_trends_df A data.frame of only numeric variables that represent the trends a trajectory
-#' might adopt.
-#'
-#' @return If used within \code{purrr::map()} a list of data.frames.
+#' @keywords internal
 #' @export
-#'
-
 hlpr_add_models <- function(df, custom_fit = NULL){
 
   dplyr::transmute(.data = df,
@@ -1528,7 +1384,8 @@ hlpr_add_models <- function(df, custom_fit = NULL){
 
 }
 
-#' @rdname hlpr_add_models
+
+#' @keywords internal
 #' @export
 hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
 
@@ -1564,9 +1421,7 @@ hlpr_add_residuals <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, 
 
 }
 
-#' @title Title
-#' @param df data.frame that contains a column with the values against which the residuals for
-#' every pattern (remaining columns) are computed.
+#' @keywords internal
 #' @export
 hlpr_add_residuals2 <- function(df,
                                 pb = NULL,
@@ -1604,7 +1459,7 @@ hlpr_add_residuals2 <- function(df,
 
 }
 
-#' @rdname hlpr_add_models
+#' @keywords internal
 #' @export
 hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = NULL, column = "trajectory_order"){
 
@@ -1631,7 +1486,8 @@ hlpr_add_residuals_diet <- function(df, pb = NULL, curves = NULL, custom_fit = N
 
 }
 
-
+#' @keywords internal
+#' @export
 hlpr_add_models <- function(df, pb = NULL, pattern_fns = SPATA2::pattern_formulas, column = "trajectory_order"){
 
   if(!base::is.null(pb)){ pb$tick() }
@@ -1648,7 +1504,7 @@ hlpr_add_models <- function(df, pb = NULL, pattern_fns = SPATA2::pattern_formula
 }
 
 
-#' @rdname hlpr_add_models
+#' @keywords internal
 #' @export
 hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
 
@@ -1666,8 +1522,7 @@ hlpr_add_residuals_customized <- function(df, customized_trends_df, pb = NULL){
 
 }
 
-
-#' @rdname hlpr_add_models
+#' @keywords internal
 #' @export
 hlpr_summarize_residuals <- function(df,
                                      pb = NULL,
@@ -1712,7 +1567,7 @@ hlpr_summarize_residuals <- function(df,
 
 }
 
-#' @rdname hlpr_add_models
+#' @keywords internal
 #' @export
 hlpr_name_models <- function(names){
 
@@ -1744,7 +1599,7 @@ hlpr_name_models <- function(names){
 
 }
 
-#' @rdname hlpr_add_models
+#' @keywords internal
 #' @export
 hlpr_filter_trend <- function(atdf, limit, poi){
 
@@ -1773,12 +1628,16 @@ hlpr_filter_trend <- function(atdf, limit, poi){
 
 # i -----------------------------------------------------------------------
 
-#' @title Check if object has been subsetted by segment
-#'
-#' @inherit check_object params
-#'
-#' @return TRUE or FALSE
+#' @keywords internal
+incorporate_tissue_outline <- function(...){
 
+  deprecated(fn = TRUE)
+
+  include_tissue_outline(...)
+
+}
+
+#' @keywords internal
 is_subsetted_by_segment <- function(object){
 
   deprecated(fn = TRUE)
@@ -1805,7 +1664,7 @@ is_subsetted_by_segment <- function(object){
   base::return(res)
 
 }
-
+#' @keywords internal
 is_pixel_dist <- function(...){
 
   deprecated(fn = TRUE)
@@ -1814,8 +1673,7 @@ is_pixel_dist <- function(...){
 
 
 }
-
-
+#' @keywords internal
 is_eUOL_dist <- function(...){
 
   deprecated(fn = TRUE)

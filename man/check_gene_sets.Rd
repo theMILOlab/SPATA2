@@ -17,3 +17,4 @@ vector of gene set names and checks which of these exist.
 
 Returns an adjusted gene-set-vector or raises an error.
 }
+\keyword{internal}

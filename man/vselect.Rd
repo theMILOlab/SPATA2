@@ -24,3 +24,4 @@ not only on data.frames but on vectors as well.
 \seealso{
 \code{starts_with()}, \code{ends_with()}, \code{contains()}, \code{matches()}
 }
+\keyword{internal}

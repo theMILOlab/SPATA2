@@ -19,7 +19,8 @@ which one can refer to it in subsequent functions.}
 spata-objects can store more than one sample.}
 }
 \value{
-An updated spata-object.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
 Adds an expression matrix to the object's data slot and

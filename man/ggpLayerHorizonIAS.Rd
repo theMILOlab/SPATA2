@@ -8,15 +8,21 @@ ggpLayerHorizonIAS(
   object,
   id,
   distance = NA_integer_,
-  binwidth = NA_integer_,
+  binwidth = getCCD(object),
   n_bins_circle = NA_integer_,
+  alpha_core = 0,
+  fill_core = NA,
   line_color = "black",
-  line_size = 1,
-  crop_frame = FALSE
+  line_size = (line_size_core * 0.75),
+  line_size_core = 1,
+  inc_outline = TRUE,
+  direction = "outwards",
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -33,6 +39,23 @@ information about distance values.}
 \item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
 denoted in \code{binwidth}.
 (See details for more.)}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. The size with which to display encircling lines
+of the area expansion.}
+
+\item{line_size_core}{Numeric. The size with which to display the core outline
+of the image annotation.}
+
+\item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -44,5 +67,25 @@ family.
 Adds the last circular expansion used by the IAS-algorithm
 of the area of  an image annotation to a surface plot in order to
 visualize the border between screened tissue and everything beyond that
-is not included in the IAS.
+is not included in the screening.
+}
+\examples{
+
+ object <- downloadSpataObject("313_T")
+
+ object <-
+  setImageAnnotation(
+   object = object,
+   img_ann = image_annotations$`313_T`$necrotic_center
+   )
+
+ plotSurface(object) +
+  ggpLayerHorizonIAS(
+   object = object,
+   id = "necrotic_center",
+   distance = "2.25mm",
+   binwidth = "112.5um"
+   )
+
+
 }

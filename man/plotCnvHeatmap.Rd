@@ -8,6 +8,7 @@ plotCnvHeatmap(
   object,
   across = NULL,
   across_subset = NULL,
+  relevel = NULL,
   arm_subset = c("p", "q"),
   chrom_subset = 1:22,
   chrom_separate = 1:22,
@@ -37,6 +38,7 @@ plotCnvHeatmap(
   border_color = "black",
   border_size = 0.5,
   clrp = NULL,
+  clrp_adjust = NULL,
   clrsp = "Blue-Red 3",
   limits = NULL,
   annotation_size_top = 0.0125,
@@ -47,7 +49,7 @@ plotCnvHeatmap(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -62,6 +64,10 @@ with a \emph{'-'}. (Saves writing if there are more groups you are interested in
 than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
+
+\item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
+determines the order in which the groups of interest are displayed. Groups that
+are not included are dropped which affects the colors with which they are displayed.}
 
 \item{arm_subset}{Character vector. A combination of \emph{'p'} and/or \emph{'q'}.
 Denotes which chromosome arms are included. Defaults to both.}
@@ -128,6 +134,11 @@ is TRUE.}
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
 
 \item{clrsp}{Character vector. The colorspectrum with which the tiles of the heatmap
 are colored. Should be one of \code{validColorSpectra()[[\emph{'Diverging'}]]}.}

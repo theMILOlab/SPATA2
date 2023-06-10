@@ -16,12 +16,15 @@ mapImageAnnotationTags(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
 of the image annotations of interest. If numeric, the image annotations are picked by number.
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
+
+\item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
+selection. See section \emph{Selection of image annotation with tags} for more information.}
 
 \item{merge}{Logical value. If TRUE, the results are merged in a single variable.}
 

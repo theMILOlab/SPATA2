@@ -44,78 +44,177 @@ Trajectory <- setClass(Class = "Trajectory",
 image_class <- "Image"
 base::attr(x = image_class, which = "package") <- "EBImage"
 
-#' @title The \code{HistologyImage} - Class
+
+#' @title The \code{HistologyImaging} - Class
 #'
-#' @description S4 class that represents histology images.
+#' @description S4 class that represents a set of histological images from one
+#' and the same tissue slide.
 #'
 #' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot dir_default character. The default directory that is used to load
-#' the image if slot @@image is empty. Or a string linking to the default slot
-#' ('highres' or 'lowres').
-#' @slot dir_highres character. Directory to the high resolution version of the image.
-#' @slot dir_lowres character. Directory to the low resolution version of the image.
-#' @slot grid data.frame. A data.frame that contains at least a variable
-#' named \emph{x} and a variable named \emph{y} representing a grid.
-#' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
-#' @slot image Image.
-#' @slot info list. A flexible list that is supposed to store miscellaneous
-#' information around the image.
+#' @slot coordinates data.frame. A data.frame of observational units that underlie
+#' the image in case of spatially resolved multi-omic studies. Should contain at least
+#' the  two variables: *x*, *y* and a variable that identifies the observational
+#' units (e.g. *barcodes*).
+#' @slot dir_add list. Named list of directories that contain different versions
+#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
+#' `loadImage()`.
+#' @slot dir_default character. Directory that leads to the default image for save
+#' exchanging via `loadDefaultImage()`.
+#' @slot dir_highres character. Directory that leads to a high resolution version of the image
+#' for save exchanging via `loadHighresImage()`.
+#' @slot dir_lowres character. Directory that leads to a low resolution version of the image
+#' for save exchanging via `loadLowresImage()`.
+#' @slot grid list. That contains information about spatial grids.
+#' @slot id character. String to identify the imaged tissue.
+#' @slot image Image. Should be compatible with the `EBImage` package.
+#' @slot image_info list. Stores meta data and miscellaneous information regarding the
+#' image that is currently stored in slot @@image. Slots that should always exist:
+#' \itemize{
+#'  \item{*origin*:}{ Character string. Either the directory from where the current image was read
+#'  in or a substitute of the object name that was used from the global environment.}
+#'  \item{*dim_input*:}{ The dimensions with which the image was given to argument `image` of
+#'  `createHistologyImaging()` or `exchangeImage()`.}
+#'  \item{*dim_stored*:}{ The dimensions with which the image is currently stored.}
+#'  \item{*img_scale_fct*:}{ The scale factor input that was used to resize the current image within
+#'  `createHistologyImaging()` or `exchangeImage()` before setting it. If 1, *dim_stored* and *dim_input*
+#'  should be identical. See argument `scale_fct` of `exchangeImage()` for more details on its interpretation.}
+#'   \item{*pxl_scale_fct*:}{ Numeric value that gives the side length of one pixel an SI unit that is stated
+#'   in an attribute called *unit* as nSI-units/px.}
+#'  }
+#' @slot justification list. List of two slots that track justification changes. See corresponding
+#' section below the slot descriptions for more information.
+#' \itemize{
+#'  \item{*angle*:}{ Numeric value that ranges from 0-359.}
+#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'  }
+#' @slot meta list. List for meta data regarding the tissue.
 #' @slot misc list. A flexible list for miscellaneous input.
 #'
+#' @section Requirements:
+#' The `HistologyImaging` framework assumes that all read in images have the same
+#' axes-ratio.
+#'
+#' @section Tracking changes in image justification:
+#' The histology image that is used while creating the object is considered the
+#' default image. By default, the framework assumes that all related images (high resolution,
+#' low resolution, fluorescent images, RAMAN spectroscopy etc.) have the same justification
+#' in terms of angle rotation and axes-flipping. Flipping an image in the `SPATA2` object via
+#'  `flipImage()` or rotating images via `rotateImage()` changes their justification in space.
+#' These changes in justification are tracked (if `track` is not set to `FALSE`) and applied
+#' whenever an image is exchanged via `exchangeImage()` (if `adjust` is not set to `FALSE`).
+#' This ensures consistent image exchanges using the different directories.
+#'
 #' @export
-HistologyImage <- setClass(Class = "HistologyImage",
-                                    slots = list(
-                                      annotations = "list",
-                                      coordinates = "data.frame",
-                                      dir_default = "character",
-                                      dir_highres = "character",
-                                      dir_lowres = "character",
-                                      grid = "list",
-                                      id = "character",
-                                      info = "list",
-                                      image = image_class,
-                                      misc = "list"
-                                    ))
+HistologyImaging <- setClass(Class = "HistologyImaging",
+                             slots = list(
+                               annotations = "list",
+                               coordinates = "data.frame",
+                               dir_default = "character",
+                               dir_highres = "character",
+                               dir_lowres = "character",
+                               dir_add = "list",
+                               grid = "list",
+                               id = "character",
+                               image = image_class,
+                               image_info = "list",
+                               justification = "list",
+                               meta = "list",
+                               misc = "list"
+                               )
+                             )
 
 
 # I -----------------------------------------------------------------------
 
 #' @title The \code{ImageAnnotation} - Class
 #'
-#' @description S4 class that contains information used to identify and
-#' annotate structures in histology images.
+#' @description S4 class that represents manually annotated structures in
+#' histology images.
 #'
-#' @slot area data.frame. A data.frame that contains at least the numeric
-#' variables \emph{x} and \emph{y}. Data corresponds to the polygong that
-#' captures the spatial extent of the identified structure.
-#' @slot barcodes character. Character vector of barcodes that fall into the polygon
-#' that encircles the annotated structure.
+#' @slot area list. A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
+#' Observations correspond to the vertices of the polygons that are needed to represent the
+#' image annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' with numbers that correspond to inner polygons - holes within the annotation. If so,
+#' slot @@mode should be *'Complex'*.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
-#' @slot image image. Cropped version of the annotated image that only contains
-#' the area where the annotated structure is located (plus expand). This slot is
-#' empty as long as the \code{ImageAnnotation} object is located in an
-#' object of class \code{HistologyImage}. Extracting it with \code{getImageAnnotation()}
-#' or \code{getImageAnnotations()} adds the cropped image to the slot.
-#' @slot image_info list. List of infos around the image of slot @@image.
+#' @slot image image. Cropped version of the annotated parent image that only contains
+#' the area where the annotated structure is located (plus expand). This slot should
+#' be empty as long as the \code{ImageAnnotation} object is located in an
+#' object of class \code{HistologyImaging}. Extracting it with \code{getImageAnnotation()}
+#' or \code{getImageAnnotations()} can add a cropped image to the slot. The parameters
+#' with which the image was cropped should be in the list of slot @@image_info.
+#' @slot image_info list. List of information around the image that is currently
+#' stored in slot @@image after being cropped and set within \code{getImageAnnotation()}
+#' or \code{getImageAnnotations()}.
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' image annotation. Slots that should always exist:
+#' \itemize{
+#'  \item{parent_origin:}{ Character string. Content from slot @@info$origin of the `HistologyImaging`
+#'  object the annotation belongs to. Identifies the exact image on which the annotation was drawn in.}
+#'  \item{parent_id:}{ Character string. Content from slot @@id of the `HistologyImaging`
+#'  object the annotation belongs to. Identifies the `HistologyImaging` object (the tissue) the annotation
+#'  belongs to.}
+#'  \item{current_dim:}{ Numeric vector of length two. Width and height of the image
+#'  the @@area data.frame is currently scaled to. Used to scale the @@area data.frame
+#'  if the image annotation is extracted and added to a `SPATA2` object with different image resolution.}
+#'  \item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
+#'  @@area data.frame if the image annotation is extracted and added to a `SPATA2` object with
+#'  different justifications.
+#'    \itemize{
+#'     \item{*angle*:}{ Numeric value that ranges from 0-359.}
+#'     \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'   }}
+#'  }
 #' @slot misc list. A flexible list for miscellaneous input.
-#' @slot tags character. Tags that can be used to group iamge annotations in different manners.
-#' This can be a single or multiple strings.
+#' @slot tags character. Vector of arbitrary length. Contains tags that can be used
+#' to group and select image annotations in different manners.
+#'
+#' @section Image annotation tags:
+#' Slot @@tags contains a character vector of arbitrary length that allows
+#' to filter image annotations using a combination of arguments `tags` and
+#' `test` in functions that refer to one or more image annotations like
+#' `getImageAnnotations()` or `plotImageAnnotations()`.
+#'
+#' Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the image annotations of interest. There are multiple options:
+#'
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can contain tags that are not specified.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can not be tagged with anything else.
+#'
+#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
+#' annotation must **not** be tagged with the combination of input tags.
+#'
+#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
+#' must **not** contain any of the input tags.
+#'
+#' Note that the filtering process happens in addition to / after the filtering by input for argument
+#' \code{ids}.
 #'
 #' @export
 #'
 ImageAnnotation <- setClass(Class = "ImageAnnotation",
                                      slots = list(
-                                       area = "data.frame",
-                                       barcodes = "character",
+                                       area = "list",
                                        id = "character",
                                        image = image_class,
                                        image_info = "list",
+                                       info = "list",
                                        misc = "list",
                                        tags = "character"
                                      )
 )
+
+
+
 
 
 
@@ -161,7 +260,8 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
                                                  results_primary = "data.frame",
                                                  results = "data.frame",
                                                  sample = "character",
-                                                 summarize_with = "character"
+                                                 summarize_with = "character",
+                                                 bcsp_exclude = "character"
                                                ))
 
 
@@ -170,164 +270,7 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 # S -----------------------------------------------------------------------
 
 
-#' @title The \code{SpatialMethod} - class
-#'
-#' @description Abstracts the concept of spatial biology experiments
-#' such as \emph{Visium1} or \emph{SlideSeq}.
-#'
-#' @slot fiducial_frame list. List of length two or three. Provides
-#' standardized measures of the sample image in units of length.
-#' @slot info list. List of miscellaneous meta data for the method.
-#' @slot name character. The name of the spatial method. Should
-#' be one of \code{validSpatialMethods()}.
-#' @slot observational_unit character. Single word that describes
-#' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
-#' case of @@name == \emph{'Visium'}.
-#'
-SpatialMethod <- setClass(Class = "SpatialMethod",
-                          slots = list(
-                            fiducial_frame = "list",
-                            info = "list",
-                            name = "character",
-                            unit = "character",
-                            observational_unit = "character"
-                          ))
-
-
-
-#' @title The \code{SpatialTrajectory} - class
-#'
-#' @description Extension of the \code{Trajectory} for trajectories
-#' that have been drawn in real space.
-#'
-#' @slot coords data.frame. The coordinates data.frame of the sample.
-#'
-#' @export
-SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
-                              slots = list(
-                                coords = "data.frame"
-                              ),
-                              contains = "Trajectory")
-
-
-#' @title The \code{SpatialTrajectoryScreening} - class
-#'
-#' @description S4 class that contains input for and output of the
-#' function \code{spatialTrajectoryScreening()}.
-#'
-#' @slot binwidth numeric. The width of the bins in which the barcode-spots
-#' are put based on the projection length values.
-#' @slot coords data.frame. Coordinates data.frame of the sample.
-#' @slot id character. The ID of the screened trajectory.
-#' @slot method_padj character. The method with which p-values were adjusted.
-#' @slot models data.frame. The model data.frame that has been used for the
-#' screening.
-#' @slot n_bins numeric. The number of bins in which the barcode-spots
-#' are distributed based on their projection length.
-#' @slot results data.frame. A data.frame that contains the model evaluations
-#' @slot sample character. The sample name.
-#' @slot summarize_with character. The name of the function that has been
-#' used to summarize the variables by bin.
-#' @slot spatial_trajectory SpatialTrajectory. The spatial trajectory based on
-#' which the screening took place.
-#'
-#' @export
-#'
-SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
-                                                slots = list(
-                                                  binwidth = "numeric",
-                                                  coords = "data.frame",
-                                                  id = "character",
-                                                  method_padj = "character",
-                                                  models = "data.frame",
-                                                  n_bins = "numeric",
-                                                  results = "data.frame",
-                                                  sample = "character",
-                                                  summarize_with = "character",
-                                                  spatial_trajectory = "SpatialTrajectory"
-                                                ))
-
-
-
-# T -----------------------------------------------------------------------
-
-# Trajectory - other S4 classes inherit from it. Is listed on top under 0
-
-
-
-
-
-
-
-
-# Deprecated --------------------------------------------------------------
-
-
-#' data_counts object
-#'
-#' @slot counts A sparse matrix containing the original counts.
-#' @slot norm_exp A processed expression matrix. Rownames must be the gene-names.
-#' Column names must be the barcodes.
-#'
-#' @return S4 object
-#' @export
-#'
-
-
-data_counts <- setClass("data_counts",
-                                 slots = c(counts = "Matrix",
-                                           norm_exp  = "matrix"))
-
-
-#' dim_red object
-#'
-#' @slot UMAP A data.frame containing the variables \emph{'barcdoes', 'sample', 'umap1', 'umap2'}
-#' @slot TSNE A data.frame containing the variables \emph{'barcodes', 'smaple', 'tsne1', 'tsne2'}
-#'
-#' @return S4 object
-#' @export
-#'
-
-dim_red <- setClass("dim_red",
-                             slots = c(UMAP =  "data.frame",
-                                       TSNE ="data.frame"))
-
-
-#' spatial_trajectory object
-#'
-#' @slot compiled_trajectory_df A data.frame containing the variables:
-#'
-#' \describe{
-#'  \item{\emph{barcodes}}{Character. The barcode-spots' sequences.}
-#'  \item{\emph{sample}}{Character. The barcode-spots' sample belonging.}
-#'  \item{\emph{x,y}}{Numeric. The barcode-spots' spatial coordinates.}
-#'  \item{\emph{projection_length}}{Numeric. The distance between the barcode-spots'
-#'   projection onto the trajectory-vector and the start of the trajectory.}
-#'  \item{\emph{trajectory_part}}{Character. The part of the trajectory.}
-#'  }
-#'
-#'
-#' @slot segment_trajectory_df A data.frame containing the numeric variables
-#' \emph{x, y, xend, yend} that denote the start and the end of every trajectory
-#' part.
-#' @slot comment Character value. The comment written down before saving the trajectory.
-#' @slot name Character value. The trajectory's name.
-#' @slot sample Character value. The sample the trajectory belongs to.
-#'
-#' @return S4 object
-#' @export
-#'
-
-spatial_trajectory <- setClass("spatial_trajectory",
-                                        slots = c(
-                                          compiled_trajectory_df = "data.frame",
-                                          segment_trajectory_df = "data.frame",
-                                          comment = "character",
-                                          name = "character",
-                                          sample = "character"))
-
-
-#' @title The spata-object
+#' @title The `spata2`- Class
 #'
 #' @slot autoencoder A list in which the results of neural network denoising is stored.
 #'
@@ -393,10 +336,287 @@ spata2 <- setClass("spata2",
 )
 
 
+#' @title The \code{SpatialMethod} - Class
+#'
+#' @description Abstracts the concept of spatial biology experiments
+#' such as \emph{Visium1} or \emph{SlideSeq}.
+#'
+#' @slot fiducial_frame list. List of length two or three. Provides
+#' standardized measures of the sample image in units of length.
+#' @slot info list. List of miscellaneous meta data for the method.
+#' @slot name character. The name of the spatial method. Should
+#' be one of \code{validSpatialMethods()}.
+#' @slot observational_unit character. Single word that describes
+#' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
+#' case of @@name == \emph{'Visium'}.
+#'
+#' @export
+SpatialMethod <- setClass(Class = "SpatialMethod",
+                          slots = list(
+                            fiducial_frame = "list",
+                            info = "list",
+                            name = "character",
+                            unit = "character",
+                            observational_unit = "character"
+                          ))
+
+
+#' @title The `SpatialSegmentation` - Class
+#'
+#' @description Abstracts the concept of manual segmentation/annotation
+#' of the sample surface.
+#'
+#' @slot id character. String to identify the object in a list of multiple objects of
+#' the same class.
+#'
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' spatial segmentation. Slots that should always exist:
+#'  \itemize{
+#'   \item{sample:}{ Character string. The name of the sample (slot @@sample of the `SPATA2` object.)}
+#'   }
+#'
+#' @slot segments list. A named, nested list. Named according to the labels
+#' given to each segment. E.g. list of length two with slot *necrosis* and *vivid*.
+#' Each named slot is a unnamed list. In this list each slot is a list of data.frames with
+#' a *x* and a *y* variable. First data.frame, named *exterior* corresponds to the exterior border of
+#' the segment. Every following data.frame is named *interior*-suffix where the suffix is a number
+#' and corresponds to interior holes of the segment.
+#'
+#' @keywords internal
+#'
+SpatialSegmentation <- setClass(Class = "SpatialSegmentation",
+                                slots = list(
+                                  id = "character",
+                                  info = "list",
+                                  segments = "list"
+                                ))
+
+#' @title The `SpatialSegment` - Class
+#'
+#' @description Abstracts the concept of an annotated segment within a spatial
+#' segmentation.
+#'
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' spatial segment. Slots that should always exist:
+#'  \itemize{
+#'   \item{image_origin:}{ Character string. Content of slot @@info$origin of the `HistologyImaging` at the
+#'   time the segment was drawn.}
+#'   \item{parent_id:}{ Character string. The ID of the spatial segmentation this segment is part of.}
+#'   \item{pot:}{ POSIXct. The point of time when the segment was drawn. Used to handle overlapping
+#'   segments.}
+#'   \item{sample:}{ Character string. The name of the sample (slot @@sample of the `SPATA2` object.)}
+#'   }
+#' @slot label character. Character string. The label that was given to the segment.
+#' Corresponds to the group name of the barcode-spots that fall into the segment.
+#' @slot polygons list. List of data.frames with *x* and *y* variables that contain
+#' the vertices of the polygon. The first polygon (should be named *outer*) defines
+#' the outer ring of the segment. Further polygons (should be named *inner* suffixed
+#' with a number) define holes within the segment.
+#'
+#' @keywords internal
+SpatialSegment <- setClass(Class = "SpatialSegment",
+                           slots = list(
+                             info = "list",
+                             label = "character",
+                             polygons = "list"
+                           ))
+
+
+
+#' @title The \code{SpatialTrajectory} - Class
+#'
+#' @description Extension of the \code{Trajectory} for trajectories
+#' that have been drawn on a surface plot.
+#'
+#' @slot comment character. A comment about why the trajectory was drawn.
+#' @slot coords data.frame. The coordinates data.frame of the sample.
+#' @slot id character. ID that uniquely identfies the trajectory in a sample.
+#' @slot info list. Stores meta data and miscellaneous information regarding the
+#' image annotation. Slots that should always exist:
+#' \itemize{
+#'  \item{current_dim:}{ Numeric vector of length two. Width and height of the image
+#'  the @@area data.frame is currently scaled to. Used to scale the @@area data.frame
+#'  if the image annotation is extracted and added to a `SPATA2` object with different image resolution.}
+#'  \item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
+#'  @@area data.frame if the image annotation is extracted and added to a `SPATA2` object with
+#'  different justifications.
+#'    \itemize{
+#'     \item{*angle*:}{ Numeric value that ranges from 0-359.}
+#'     \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'   }}
+#'  }
+#' @slot projection data.frame. Data.frame that contains the length of the
+#' projection of each barcode spot onto the trajectory.
+#' @slot sample character. The sample name.
+#' @slot segment data.frame. Contains the course of the trajetory in
+#' form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}
+#' @slot width numeric. The width of the rectangle that was spanned along
+#' the trajectory. (Length of the rectangle corresponds to the length of
+#' the segment.)
+#' @slot with_unit character. The unit in which the width was specified.
+#' @export
+SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
+                              slots = list(
+                                coords = "data.frame",
+                                info = "list",
+                                width_unit = "character"
+                              ),
+                              contains = "Trajectory")
+
+
+#' @title The \code{SpatialTrajectoryScreening} - class
+#'
+#' @description S4 class that contains input for and output of the
+#' function \code{spatialTrajectoryScreening()}.
+#'
+#' @slot binwidth numeric. The width of the bins in which the barcode-spots
+#' are put based on the projection length values.
+#' @slot coords data.frame. Coordinates data.frame of the sample.
+#' @slot id character. The ID of the screened trajectory.
+#' @slot method_padj character. The method with which p-values were adjusted.
+#' @slot models data.frame. The model data.frame that has been used for the
+#' screening.
+#' @slot n_bins numeric. The number of bins in which the barcode-spots
+#' are distributed based on their projection length.
+#' @slot results data.frame. A data.frame that contains the model evaluations
+#' @slot sample character. The sample name.
+#' @slot summarize_with character. The name of the function that has been
+#' used to summarize the variables by bin.
+#' @slot spatial_trajectory SpatialTrajectory. The spatial trajectory based on
+#' which the screening took place.
+#'
+#' @export
+#'
+SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
+                                                slots = list(
+                                                  binwidth = "numeric",
+                                                  coords = "data.frame",
+                                                  id = "character",
+                                                  method_padj = "character",
+                                                  models = "data.frame",
+                                                  n_bins = "numeric",
+                                                  results = "data.frame",
+                                                  sample = "character",
+                                                  summarize_with = "character",
+                                                  spatial_trajectory = "SpatialTrajectory"
+                                                ))
+
+
+
+# T -----------------------------------------------------------------------
+
+# Trajectory - other S4 classes inherit from it. Is listed on top under 0
+
+
+
+
+
+
+
+
+# Deprecated --------------------------------------------------------------
+
+
+#' data_counts object
+#'
+#' @slot counts A sparse matrix containing the original counts.
+#' @slot norm_exp A processed expression matrix. Rownames must be the gene-names.
+#' Column names must be the barcodes.
+#'
+#' @return S4 object
+#' @export
+#' @keywords internal
+
+data_counts <- setClass("data_counts",
+                                 slots = c(counts = "Matrix",
+                                           norm_exp  = "matrix"))
+
+
+#' dim_red object
+#'
+#' @slot UMAP A data.frame containing the variables \emph{'barcdoes', 'sample', 'umap1', 'umap2'}
+#' @slot TSNE A data.frame containing the variables \emph{'barcodes', 'smaple', 'tsne1', 'tsne2'}
+#'
+#' @return S4 object
+#' @export
+#' @keywords internal
+dim_red <- setClass("dim_red",
+                             slots = c(UMAP =  "data.frame",
+                                       TSNE ="data.frame"))
+
+
+#' @title The \code{HistologyImage} - Class
+#'
+#' @description S4 class that represents histology images.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot dir_default character. The default directory that is used to load
+#' the image if slot @@image is empty. Or a string linking to the default slot
+#' ('highres' or 'lowres').
+#' @slot dir_highres character. Directory to the high resolution version of the image.
+#' @slot dir_lowres character. Directory to the low resolution version of the image.
+#' @slot grid data.frame. A data.frame that contains at least a variable
+#' named \emph{x} and a variable named \emph{y} representing a grid.
+#' @slot id character. String to identify the object in a list of multiple objects
+#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
+#' @slot image Image.
+#' @slot info list. A flexible list that is supposed to store miscellaneous
+#' information around the image.
+#' @slot misc list. A flexible list for miscellaneous input.
+#' @keywords internal
+#' @export
+HistologyImage <- setClass(Class = "HistologyImage",
+                           slots = list(
+                             annotations = "list",
+                             coordinates = "data.frame",
+                             dir_default = "character",
+                             dir_highres = "character",
+                             dir_lowres = "character",
+                             grid = "list",
+                             id = "character",
+                             info = "list",
+                             image = image_class,
+                             misc = "list"
+                           ))
+
+
+#' spatial_trajectory object
+#'
+#' @slot compiled_trajectory_df A data.frame containing the variables:
+#'
+#' \describe{
+#'  \item{\emph{barcodes}}{Character. The barcode-spots' sequences.}
+#'  \item{\emph{sample}}{Character. The barcode-spots' sample belonging.}
+#'  \item{\emph{x,y}}{Numeric. The barcode-spots' spatial coordinates.}
+#'  \item{\emph{projection_length}}{Numeric. The distance between the barcode-spots'
+#'   projection onto the trajectory-vector and the start of the trajectory.}
+#'  \item{\emph{trajectory_part}}{Character. The part of the trajectory.}
+#'  }
+#'
+#'
+#' @slot segment_trajectory_df A data.frame containing the numeric variables
+#' \emph{x, y, xend, yend} that denote the start and the end of every trajectory
+#' part.
+#' @slot comment Character value. The comment written down before saving the trajectory.
+#' @slot name Character value. The trajectory's name.
+#' @slot sample Character value. The sample the trajectory belongs to.
+#'
+#' @return S4 object
+#' @export
+#' @keywords internal
+
+spatial_trajectory <- setClass("spatial_trajectory",
+                                        slots = c(
+                                          compiled_trajectory_df = "data.frame",
+                                          segment_trajectory_df = "data.frame",
+                                          comment = "character",
+                                          name = "character",
+                                          sample = "character"))
 
 
 #' default instructions
 #' @export
+#' @keywords internal
 default_instructions <- setClass(Class = "default_instructions",
                                           slots = c(
                                             average_genes = "logical",
@@ -405,6 +625,7 @@ default_instructions <- setClass(Class = "default_instructions",
                                             clrsp = "character",
                                             colors = "character",
                                             complete = "logical",
+                                            concavity = "numeric",
                                             display_facets = "logical",
                                             display_image = "logical",
                                             display_labels = "logical",
@@ -413,6 +634,7 @@ default_instructions <- setClass(Class = "default_instructions",
                                             display_residuals = "logical",
                                             display_trajectory_parts = "logical",
                                             display_title = "logical",
+                                            expand_outline = "numeric",
                                             max_adj_pval = "numeric",
                                             method_aggl = "character",
                                             method_dist = "character",

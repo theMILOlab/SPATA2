@@ -22,3 +22,4 @@ If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to ge
 \description{
 gene_set_path
 }
+\keyword{internal}

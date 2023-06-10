@@ -8,7 +8,7 @@ updateSpataObject(
   object,
   sample_name = NULL,
   chr_to_fct = TRUE,
-  n_pcs = 60,
+  n_pcs = 30,
   verbose = TRUE
 )
 }

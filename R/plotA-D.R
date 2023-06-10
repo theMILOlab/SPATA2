@@ -428,34 +428,34 @@ setMethod(
                         ...){
 
     ias_results_df <-
-      dplyr::filter(object@results_primary, variables %in% {{variables}}) %>%
-      dplyr::mutate(bins_angle = base::factor(bins_angle, levels = make_angle_bins(object@n_bins_angle)))
+      dplyr::filter(object@results_primary, variables %in% {{variables}})
 
-    bins_angle <- base::levels(ias_results_df$bins_angle)
+    bins_angle <- base::unique(ias_results_df$bins_angle)
     models <- base::unique(ias_results_df$models)
 
     plot_df <-
       tidyr::expand_grid(
         variables = variables,
         models = models,
-        bins_angle = base::factor(bins_angle, levels = bins_angle)
+        bins_angle = bins_angle
       ) %>%
       dplyr::left_join(y = ias_results_df, by = c("variables", "models", "bins_angle")) %>%
       dplyr::mutate(
-        corr = tidyr::replace_na(corr, replace = 0),
+        bins_angle = base::factor(bins_angle, levels = bins_angle),
+        corr = tidyr::replace_na(corr, replace = 0)
       )
 
     if(base::is.character(model_subset)){
 
       plot_df <-
-        dplyr::filter(plot_df, stringr::str_detect(pattern, pattern = model_subset))
+        dplyr::filter(plot_df, stringr::str_detect(models, pattern = model_subset))
 
     }
 
     if(base::is.character(model_remove)){
 
       plot_df <-
-        dplyr::filter(plot_df, !stringr::str_detect(pattern, pattern = model_subset))
+        dplyr::filter(plot_df, !stringr::str_detect(models, pattern = model_subset))
     }
 
     if(base::length(variables) == 1){
@@ -487,7 +487,7 @@ setMethod(
 
     }
 
-    plot_df$models <- make_pretty_model_names(plot_df$models)
+    plot_df$models <- make_pretty_names(plot_df$models)
 
     background_df <-
       dplyr::mutate(
@@ -609,6 +609,7 @@ setMethod(
 plotCnvHeatmap <- function(object,
                            across = NULL,
                            across_subset = NULL,
+                           relevel = NULL,
                            arm_subset = c("p", "q"),
                            chrom_subset = 1:22,
                            chrom_separate = 1:22,
@@ -638,6 +639,7 @@ plotCnvHeatmap <- function(object,
                            border_color = "black",
                            border_size = 0.5,
                            clrp = NULL,
+                           clrp_adjust = NULL,
                            clrsp = "Blue-Red 3",
                            limits = NULL,
                            annotation_size_top = 0.0125,
@@ -647,7 +649,6 @@ plotCnvHeatmap <- function(object,
                            verbose = NULL){
 
   hlpr_assign_arguments(object)
-
 
   # extract and prepare data ------------------------------------------------
 
@@ -797,16 +798,29 @@ plotCnvHeatmap <- function(object,
         .f = ~ c(.x, unnamed_elements) # add unnamed elements to each slot
       )
 
+    # add elements in slot 'all' to each slot
+    if(confuns::is_list(ggpLayers[["all"]])){
+
+      ggpLayers_add_on <-
+        purrr::map(
+          .x = ggpLayers_add_on,
+          .f = ~ c(., list(ggpLayers[["all"]]))
+        )
+
+    }
+
     # distribute named elements
+    ggpLayers[["all"]] <- NULL
     named_elements <- confuns::keep_named(ggpLayers)
 
     if(base::length(named_elements) >= 1){
 
       ggpLayers_add_on <-
         purrr::imap(
-          .x = named_elements, # iterate over named elements
-          .f = ~ list(.x, ggpLayers_add_on[[.y]]) # combine content with respective slot
-        )
+          .x = ggpLayers_add_on, # iterate over named elements
+          .f = ~ list(.x, named_elements[[.y]]) # combine content with respective slot
+        ) %>%
+        purrr::map(.f = ~ purrr::discard(.x = .x, .p = base::is.null))
 
     }
 
@@ -866,7 +880,8 @@ plotCnvHeatmap <- function(object,
       scale_color_add_on(
         aes = "fill",
         variable = grouping_df[[across]],
-        clrp = clrp
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
       ) +
       ggplot2::scale_x_continuous(expand = c(0,0)) +
       ggplot2::scale_y_continuous(expand = c(0,0)) +
@@ -1488,6 +1503,7 @@ plotDeaDotPlot <- function(object,
                            n_highest_lfc = NULL,
                            n_lowest_pval = NULL,
                            genes = NULL,
+                           color_by = "avg_log2FC",
                            alpha_by = NULL,
                            alpha_trans = "identity",
                            color_trans = "identity",
@@ -1496,6 +1512,7 @@ plotDeaDotPlot <- function(object,
                            pt_alpha = 0.9,
                            pt_size = 2,
                            pt_color = "blue4",
+                           pt_clrp = NULL,
                            pt_clrsp = "plasma",
                            scales = "free",
                            nrow = NULL,
@@ -1536,7 +1553,7 @@ plotDeaDotPlot <- function(object,
     df <-
       dplyr::filter(df, gene %in% genes) %>%
       dplyr::mutate(
-        gene = base::factor(gene, levels = genes),
+        gene = base::factor(gene, levels = base::unique(genes)),
         {{lfc_name}} := base::round(!!rlang::sym(lfc_name), digits = 2)
       )
 
@@ -1562,7 +1579,6 @@ plotDeaDotPlot <- function(object,
   }
 
   x <- lfc_name
-  color_by <- lfc_name
 
   if(base::isTRUE(by_group)){
 
@@ -1599,6 +1615,7 @@ plotDeaDotPlot <- function(object,
         pt.alpha = pt_alpha,
         pt.color = pt_color,
         pt.clrsp = pt_clrsp,
+        pt.clrp = pt_clrp,
         pt.size = pt_size,
         scales = scales,
         nrow = nrow,
@@ -1624,6 +1641,7 @@ plotDeaDotPlot <- function(object,
         pt.alpha = pt_alpha,
         pt.color = pt_color,
         pt.clrsp = pt_clrsp,
+        pt.clrp = pt_clrp,
         pt.size = pt_size,
         transform.with = transform_with,
         arrange.y = arrange_genes,
@@ -2203,7 +2221,7 @@ plotDeaSummary <- function(object,
 
 }
 
-#' @title Visualize gene expression testing
+#' @title Plot gene expression testing results
 #'
 #' @description Plots a common volcano plot with p-value on the y- and logfold
 #' change on the x-axis.
@@ -2219,7 +2237,11 @@ plotDeaSummary <- function(object,
 #' @param label_genes Specify which genes are labeled in the plot. If numeric,
 #' specifies the number of genes that are labeled. E.g. if \code{label_genes} = 5,
 #' the default, the top 5 genes are labeled. If character, specifies the genes
-#' that are supposed to be labeled by name. If NULL, no genes are labeled.
+#' that are supposed to be labeled by name. If `NULL` or `FALSE`, no genes are labeled.
+#' @param label_side Character vector. Decides on which side to label genes. Valid input
+#' are *'up'* and/or *'down'*.
+#' @param label_insignificant Logical value. If `FALSE`, insignifcant genes are
+#' not labeled.
 #' @param use_pseudolog Logical value. If TRUE, avglogFC is transformed with log10. Requires
 #' package \code{ggallin} to be installed.
 #'
@@ -2241,6 +2263,8 @@ plotDeaVolcano <- function(object,
                            threshold_logFC = 1,
                            threshold_pval = 0.01,
                            label_genes = 5,
+                           label_insignificant = TRUE,
+                           label_side = c("up", "down"),
                            label_size = 1,
                            nrow = NULL,
                            ncol = NULL,
@@ -2249,11 +2273,6 @@ plotDeaVolcano <- function(object,
                            ...){
 
   hlpr_assign_arguments(object)
-
-  col_pval <- "p_val_adj"
-  col_logFC <- "avg_logFC"
-  col_genes <- "gene"
-  col_groups <- across
 
   # get data
   dea_df <-
@@ -2264,6 +2283,11 @@ plotDeaVolcano <- function(object,
       max_adj_pval = 1,
       min_lfc = NULL
     )
+
+  col_pval <- "p_val_adj"
+  col_logFC <- getDeaLfcName(object, across = across, method_de = method_de)
+  col_genes <- "gene"
+  col_groups <- across
 
   # create formula
   facet_formula <-
@@ -2306,12 +2330,27 @@ plotDeaVolcano <- function(object,
   dea_df[["pval_log10"]] <- -base::log10(dea_df[[col_pval]])
 
   # label genes if desired
-  if(!base::is.null(label_genes)){
+  if(!base::is.null(label_genes) & !base::isFALSE(label_genes)){
 
+    if(base::is.character(label_side)){
+
+      confuns::check_one_of(
+        input = label_side,
+        against = c("up", "down")
+      )
+
+    } else {
+
+      label_side <- NULL
+
+    }
+
+    # chose genes to be labeled by name
     if(base::is.character(label_genes)){
 
       label_df <- dplyr::filter(dea_df, !!rlang::sym(col_genes) %in% {{label_genes}})
 
+    # chose genes to be labeled by position in list
     } else if(base::is.numeric(label_genes)){
 
       if(base::is.character(col_groups)){
@@ -2361,6 +2400,29 @@ plotDeaVolcano <- function(object,
       label_df <- base::rbind(label_df1, label_df2)
 
     }
+
+    # decide if genes are labeled on upreg., downreg. or on both sides
+    if(base::length(label_side) != 2){
+
+      if("up" %in% label_side){
+
+        label_df <- dplyr::filter(label_df, !!rlang::sym(col_logFC) > 0)
+
+      } else if("down" %in% label_side){
+
+        label_df <- dplyr::filter(label_df, !!rlang::sym(col_logFC) < 0)
+
+      }
+
+    }
+
+    # decide if genes are labeled if insignificant
+    if(base::isFALSE(label_insignificant)){
+
+      label_df <- dplyr::filter(label_df, status != "Insignificant")
+
+    }
+
     label_add_on <-
       ggrepel::geom_text_repel(
         data = label_df,
@@ -2391,6 +2453,8 @@ plotDeaVolcano <- function(object,
 
   }
 
+  dea_df <- dplyr::arrange(dea_df, dplyr::desc(stats))
+
   # assemble final plot
   ggplot2::ggplot(
     data = dea_df,
@@ -2414,7 +2478,204 @@ plotDeaVolcano <- function(object,
 
 }
 
+#' @rdname plotDeaVolcano
+#' @export
+plotDeaVolcano1v1 <- function(object,
+                              across,
+                              method_de = NULL,
+                              clrp = NULL,
+                              clrp_adjust = NULL,
+                              color_insignif = "lightgrey",
+                              pt_alpha = 0.9,
+                              pt_size = 1,
+                              threshold_logFC = 1,
+                              threshold_pval = 0.01,
+                              col_pval = "p_val_adj",
+                              label_genes = 5,
+                              label_size = 1,
+                              use_pseudolog = FALSE,
+                              limits = NULL,
+                              display_title = TRUE,
+                              title_size = 2,
+                              digits = 2,
+                              ...){
 
+
+  hlpr_assign_arguments(object)
+
+  # get data
+  dea_df <-
+    getDeaResultsDf(
+      object = object,
+      across = across,
+      method_de = method_de,
+      min_lfc = 0,
+      max_adj_pval = 1
+    )
+
+  group_names <- base::levels(dea_df[[across]])
+
+  g1 <- group_names[1]
+
+  if(base::length(group_names) != 2){
+
+    stop("Number of groups in grouping variable must be exactly 2.")
+
+  }
+
+  col_logFC <- getDeaLfcName(object, across = across, method_de = method_de)
+  col_genes <- "gene"
+
+  # denote significance and up/downregulation genes
+
+  neg_threshold_lgFC <- -threshold_logFC
+
+  dea_df <-
+    dplyr::mutate(
+      .data = dea_df,
+      group_names = base::as.character(!!rlang::sym(across)),
+      status = dplyr::if_else(
+        condition =
+          !!rlang::sym(col_pval) < {{threshold_pval}} &
+          !!rlang::sym(col_logFC) > {{threshold_logFC}},
+        true = group_names,
+        false = "x.insignif.x"
+      ),
+      status = base::factor(status),
+      !!rlang::sym(col_logFC) := dplyr::if_else(
+        condition = !!rlang::sym(across) == {{g1}},
+        true = !!rlang::sym(col_logFC)*-1,
+        false = !!rlang::sym(col_logFC)
+      )
+    )
+
+  dea_df[["pval_log10"]] <- -base::log10(dea_df[[col_pval]])
+
+  # label genes if desired
+  if(!base::is.null(label_genes) & !base::isFALSE(label_genes)){
+
+    if(base::is.character(label_genes)){
+
+      label_df <- dplyr::filter(dea_df, gene %in% {{label_genes}})
+
+    } else if(base::is.numeric(label_genes)){
+
+      dea_df <- dplyr::group_by(dea_df, !!rlang::sym(across))
+
+      if(base::length(label_genes) == 1){
+
+        label_genes <- base::rep(label_genes, 2)
+
+      }
+
+      if(label_genes[1] != 0){
+
+        label_df1 <-
+          dplyr::slice_min(
+            .data = dea_df,
+            order_by = !!rlang::sym(col_pval),
+            n = label_genes[1],
+            with_ties = FALSE
+          )
+
+      } else {
+
+        label_df1 <- NULL
+
+      }
+
+      if(label_genes[2] != 0){
+
+        label_df2 <-
+          dplyr::slice_min(
+            .data = dea_df,
+            order_by = !!rlang::sym(col_pval),
+            n = label_genes[2],
+            with_ties = FALSE
+          )
+
+      } else {
+
+        label_df2 <- NULL
+
+      }
+
+      label_df <-
+        base::rbind(label_df1, label_df2) %>%
+        dplyr::distinct()
+
+    }
+
+    label_add_on <-
+      ggrepel::geom_text_repel(
+        data = label_df,
+        mapping = ggplot2::aes(label = .data[[col_genes]]),
+        size = label_size,
+        ...
+      )
+
+  } else {
+
+    label_add_on <- NULL
+
+  }
+
+  if(base::isTRUE(use_pseudolog)){
+
+    scale_x_add_on <-
+      ggplot2::scale_x_continuous(
+        trans = ggallin::pseudolog10_trans
+      )
+
+    xlab <- stringr::str_c(col_logFC, "(pseudolog10)")
+
+  } else {
+
+    scale_x_add_on <- NULL
+    xlab <- col_logFC
+
+  }
+
+  if(!base::is.numeric(limits) | !base::length(limits) == 2){
+
+    limits <-
+      base::max(dea_df[[col_logFC]]) %>%
+      base::ceiling() %>%
+      c((-.), .)
+
+  }
+
+  # assemble final plot
+  ggplot2::ggplot(
+    data = dea_df,
+    mapping = ggplot2::aes(x = .data[[col_logFC]], y = pval_log10)
+  ) +
+    ggplot2::geom_point(
+      mapping = ggplot2::aes(color = status),
+      alpha = pt_alpha, size = pt_size
+    ) +
+    scale_color_add_on(
+      variable = dea_df[["status"]],
+      clrp = clrp,
+      clrp.adjust = c(clrp_adjust, "x.insignif.x" = color_insignif)
+    ) +
+    ggplot2::scale_x_continuous(
+      limits = limits,
+      labels = function(x){
+
+        base::round(x, digits = digits) %>%
+          base::as.character() %>%
+          stringr::str_remove(string = ., pattern = "^-")
+
+      }
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(x = xlab, y = "Adjusted p-value (-log10)", color = NULL) +
+    label_add_on +
+    scale_x_add_on
+
+
+}
 
 
 
@@ -2441,19 +2702,31 @@ plotDimRed <- function(object,
                        use_scattermore = FALSE,
                        sctm_interpolate = FALSE,
                        sctm_pixels = c(1024, 1024),
-                       verbose = TRUE,
+                       verbose = NULL,
                        ...){
 
   deprecated(...)
 
+  hlpr_assign_arguments(object)
+
   # 1. Control --------------------------------------------------------------
 
-
-  # lazy check
   hlpr_assign_arguments(object)
   check_pt(pt_size = pt_size, pt_alpha = pt_alpha, pt_clrsp = pt_clrsp)
 
-  # adjusting check
+  color_by <- base::unname(color_by)
+
+  confuns::are_values("alpha_by", "order_by", mode = "character", skip.allow = TRUE, skip.val = NULL)
+
+  if(base::is.character(alpha_by)){
+
+    if(base::length(color_by) != 1){
+
+      stop("If `alpha_by` is a character value `color_by` must be of length 1.")
+
+    }
+
+  }
 
   # -----
 
@@ -2466,10 +2739,11 @@ plotDimRed <- function(object,
     hlpr_join_with_aes(
       object = object,
       df = df,
-      variables = c(color_by, alpha_by),
+      variables = c(color_by, alpha_by, order_by),
       normalize = normalize,
       method_gs = method_gs,
       smooth = FALSE,
+      verbose = FALSE
     ) %>%
     dplyr::rename_with(
       .cols = dplyr::contains(match = "-"),
@@ -2486,6 +2760,40 @@ plotDimRed <- function(object,
   if(base::is.character(alpha_by)){
 
     alpha_by <- stringr::str_replace_all(alpha_by, pattern = "-", replacement = "_")
+
+  }
+
+  if(base::is.character(color_by)){
+
+    color_by <- stringr::str_replace_all(color_by, pattern = "-", replacement = "_")
+
+  }
+
+  if(base::is.character(alpha_by)){
+
+    alpha_by <- stringr::str_replace_all(alpha_by, pattern = "-", replacement = "_")
+
+  }
+
+  if(base::length(color_by) > 1){
+
+    df <-
+      tidyr::pivot_longer(
+        data = df,
+        cols = dplyr::all_of(color_by),
+        names_to = "variables",
+        values_to = "values"
+      ) %>%
+      dplyr::mutate(variables = base::factor(variables, levels = color_by))
+
+    color_by <- "values"
+    facet_by <- "variables"
+    lab_color <- "Expr."
+
+  } else {
+
+    facet_by <- NULL
+    lab_color <- color_by
 
   }
 
@@ -2506,6 +2814,7 @@ plotDimRed <- function(object,
     df = df,
     x = x,
     y = y,
+    across = facet_by,
     pt.alpha = pt_alpha,
     pt.color = pt_clr,
     pt.clrp = pt_clrp,
@@ -2527,7 +2836,8 @@ plotDimRed <- function(object,
     sctm.interpolate = sctm_interpolate,
     sctm.pixels = sctm_pixels,
     ...
-  )
+  ) +
+    ggplot2::labs(color = lab_color, fill = lab_color)
 
   # -----
 

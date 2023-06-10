@@ -17,3 +17,4 @@ hlpr_one_distinct(x, rna_assay, pb = NULL, verbose = TRUE)
 Helper function to use within purrr::map_lgl. Returns
 TRUE if the gene row of the provided rna assay is uniformly expressed.
 }
+\keyword{internal}

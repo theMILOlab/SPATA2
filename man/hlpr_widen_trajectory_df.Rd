@@ -21,3 +21,4 @@ at a specific position.
 \description{
 Widen trajectory data.frame
 }
+\keyword{internal}

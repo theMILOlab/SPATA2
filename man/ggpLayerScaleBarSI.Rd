@@ -15,7 +15,7 @@ ggpLayerScaleBarSI(
   text_nudge_x = 0,
   text_nudge_y = 0,
   text_pos = NULL,
-  text_size = 5.5,
+  text_size = 5,
   xrange = NULL,
   yrange = NULL,
   offset = c(0.8, 0.8),
@@ -23,7 +23,7 @@ ggpLayerScaleBarSI(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{sb_dist}{The distance in SI units that the scale bar
 illustrates (e.g. \emph{'1mm'}, \emph{'200um'}). Must not be bigger than
@@ -80,13 +80,67 @@ with the input for argument \code{offset}. Argument \code{offset} is used to rep
 the scale bar away from the center into the corner specified in \code{sb_pos}. Thus,
 if \code{offset = c(0,0)}, the scale bar is positioned in the center of the plot
 regardless of the specification of \code{sb_pos}. Offset values specify the percentage
-of the distanec between the center of the plot and its limits. For instance,
-if \code{sb_pos = c(0.5, 0.75)} and \code{sb_pos = 'top_right'} to the right (50\% of the distance
-between the center the limits of the x-axis) and to the top (75\% of the distance between the center
-and the limits of the y-axis).
+of the distance between the center of the plot and its limits. For instance,
+if \code{sb_pos = c(0.5, 0.75)} and \code{sb_pos = 'top_right'} the scale bar is moved
+to the right (50\% of the distance between the center the limits of the x-axis)
+and to the top (75\% of the distance between the center and the limits of the y-axis).
 
-If numeric, \code{sb_pos} actually sets positioning of the segment (not the text).
+If numeric, \code{sb_pos} explicitly sets positioning of the segment (not the text).
 The text is automatically lifted such that it hovers over the segment. If this
 does not work or you want to manipulate the text positioning you can use arguments
 \code{text_nudge_x} and \code{text_nudge_y} or set the position precisely with \code{text_pos}.
+}
+\section{Distance measures}{
+
+
+Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
+To specifically refer to a distance the unit must be specified. There are
+three ways to create valid input for these arguments.
+
+\strong{1. In pixel:}
+
+There are two valid input options to specify the distance in pixel:
+
+\itemize{
+\item{numeric:}{ Single numeric values, e.g. \code{arg_input = c(2, 3.554, 69, 100.67)}. If no unit
+is specified the input will be interpreted as pixels.}
+\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
+}
+
+Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+refers to a distance the pixel side length is meant. If pixel refers to an area the
+number of pixels is meant.
+
+\strong{2. According to the Systeme international d`unites (SI):}
+
+Specifying distances in SI units e.g. \code{arg_input = c('2mm', '4mm')} etc.
+requires the input to be a character as the unit must be provided as suffix.
+Between the numeric value and the unit must be no empty space! Valid suffixes
+can be obtained using the function \code{validUnitsOfLengthSI()}.
+
+\strong{3. As vectors of class \code{unit}:}
+
+Behind the scenes \code{SPATA2} works with the \code{units} package. Input
+is converted into vectors of class \code{units}. Therefore, input can be directly
+provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
+Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
+to specify the input in pixel you have to use input option 1. In pixel.
+}
+
+\examples{
+
+object <- downloadPubExample("313_T", verbose = FALSE)
+
+plotImageGgplot(object) +
+ ggpLayerEncirclingIAS(
+   object = object,
+   id = "necrotic_area",
+   distance = "2.25mm"
+ ) +
+ ggpLayerScaleBarSI(
+  object = object,
+  sb_dist = "2.25mm",
+  sb_pos = "top_right"
+  )
+
 }

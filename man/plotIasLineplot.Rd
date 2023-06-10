@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotIasLineplot}
 \alias{plotIasLineplot}
+\alias{plotIasLineplotSC}
 \title{Plot IAS lineplot}
 \usage{
 plotIasLineplot(
@@ -14,7 +15,6 @@ plotIasLineplot(
   angle_span = c(0, 360),
   n_bins_angle = 1,
   method_gs = NULL,
-  smooth_method = "loess",
   smooth_span = 0.2,
   smooth_se = FALSE,
   unit = getSpatialMethod(object)@unit,
@@ -26,22 +26,64 @@ plotIasLineplot(
   facet_by = "variables",
   normalize_by = "sample",
   summarize_with = "mean",
+  bcsp_exclude = NULL,
   nrow = NULL,
   ncol = NULL,
-  display_axis_text = "x",
   include_area = FALSE,
   display_border = TRUE,
   border_linealpha = 0.75,
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
-  x_nth = 1,
+  x_nth = 7L,
+  xi = NULL,
+  yi = NULL,
+  model_aid = NULL,
+  sc_input = NULL,
+  verbose = NULL,
+  ...
+)
+
+plotIasLineplotSC(
+  object,
+  id,
+  sc_input,
+  distance = NA_integer_,
+  n_bins_circle = NA_integer_,
+  binwidth = getCCD(object),
+  angle_span = c(0, 360),
+  n_bins_angle = 1,
+  method_gs = NULL,
+  smooth_span = 0.2,
+  smooth_se = FALSE,
+  unit = getSpatialMethod(object)@unit,
+  round = 2,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  line_color = NULL,
+  line_size = 1.5,
+  facet_by = "variables",
+  normalize_by = "sample",
+  summarize_with = "mean",
+  bcsp_exclude = NULL,
+  nrow = NULL,
+  ncol = NULL,
+  include_area = FALSE,
+  display_border = TRUE,
+  border_linealpha = 0.75,
+  border_linecolor = "black",
+  border_linesize = 1,
+  border_linetype = "dashed",
+  x_nth = 3,
+  xi = NULL,
+  yi = NULL,
+  model_aid = NULL,
   verbose = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{spata2}.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 
@@ -74,9 +116,6 @@ an angle span relative to the center of the image annotation.
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{smooth_method}{The smoothing method that will be used specified as a
-single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
-
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
@@ -99,27 +138,44 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
+the trajectory dynamics are displayed.}
+
 \item{facet_by}{Either \emph{'variables'} or \emph{'bins_angle'}.
 If \emph{'bins_angle'} length of \code{variables} must be one.}
-
-\item{normalize_by}{Character value or FALSE. If character, there are two options:
-\itemize{
-\item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
-\item{\code{normalize_by} = \emph{'bins_angle'}:}{
-Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
-is bigger than 1.
-}
-}}
 
 \item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
 Specifies the function with which the bins are summarized.}
 
+\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
+
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
+\item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
+to highlight where the border of the image annotation runs.}
+
+\item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
+to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
+represents the border of the image annotation.}
 
 \item{x_nth}{Numeric value. If the number of breaks/labels on the
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
+
+\item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
+
+\item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
+
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
+}}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -224,3 +280,40 @@ on the number of bins!)
 Eventually, the mean of the RAOC and the Correlation for every gene-model-fit
 is calculated and stored as the IAS-Score.
 }
+\section{Distance measures}{
+
+
+Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
+To specifically refer to a distance the unit must be specified. There are
+three ways to create valid input for these arguments.
+
+\strong{1. In pixel:}
+
+There are two valid input options to specify the distance in pixel:
+
+\itemize{
+\item{numeric:}{ Single numeric values, e.g. \code{arg_input = c(2, 3.554, 69, 100.67)}. If no unit
+is specified the input will be interpreted as pixels.}
+\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
+}
+
+Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+refers to a distance the pixel side length is meant. If pixel refers to an area the
+number of pixels is meant.
+
+\strong{2. According to the Systeme international d`unites (SI):}
+
+Specifying distances in SI units e.g. \code{arg_input = c('2mm', '4mm')} etc.
+requires the input to be a character as the unit must be provided as suffix.
+Between the numeric value and the unit must be no empty space! Valid suffixes
+can be obtained using the function \code{validUnitsOfLengthSI()}.
+
+\strong{3. As vectors of class \code{unit}:}
+
+Behind the scenes \code{SPATA2} works with the \code{units} package. Input
+is converted into vectors of class \code{units}. Therefore, input can be directly
+provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
+Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
+to specify the input in pixel you have to use input option 1. In pixel.
+}
+
