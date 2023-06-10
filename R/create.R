@@ -1728,14 +1728,27 @@ createHistologyImaging <- function(image,
 
   }
 
-
-  # set misc
   hist_im@misc <- list(...)
 
   return(hist_im)
 
 }
 
+
+createHistologyImagingFromSpaceRanger <- function(directory, image_name){
+
+  base::stopifnot(isDirToSpaceRangerOutput(directory))
+
+  space_ranger_version <- whichSpaceRangerVersion(directory)
+
+  # read coordinates
+  if(space_ranger_version == "Version1"){
+
+    coordinates
+
+  }
+
+}
 
 # createS -----------------------------------------------------------------
 

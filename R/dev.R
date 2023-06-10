@@ -313,3 +313,134 @@ enhanceSpataObject <- function(object,
   return(object)
 
 }
+
+
+
+initiateSpataObject_Visium <- function(directory_visium,
+                                       sample_name,
+                                       mtr_filename = "filtered_feature_bc_matrix.h5",
+                                       image_filename = "tissue_lowres_image.png",
+                                       directory_spata = NULL,
+                                       directory_seurat = NULL,
+                                       gene_set_path = NULL,
+                                       SCTransform = FALSE,
+                                       NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
+                                       FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
+                                       ScaleData = TRUE,
+                                       RunPCA = list(npcs = 60),
+                                       FindNeighbors = list(dims = 1:30),
+                                       FindClusters = list(resolution = 0.8),
+                                       RunTSNE = TRUE,
+                                       RunUMAP = list(dims = 1:30),
+                                       verbose = TRUE){
+
+  # read, process and set the counts - currently Seurat dependent
+  seurat_object <-
+    Seurat::CreateSeuratObject(
+      counts = Seurat::Read10X_h5(filename = base::file.path(directory_visium, mtr_filename)),
+      assay = "Spatial"
+    )
+
+  seurat_object <-
+    process_seurat_object(
+      seurat_object = seurat_object,
+      calculate_rb_and_mt = TRUE,
+      remove_stress_and_mt = TRUE,
+      SCTransform = SCTransform,
+      NormalizeData = NormalizeData,
+      FindVariableFeatures = FindVariableFeatures,
+      ScaleData = ScaleData,
+      RunPCA = RunPCA,
+      FindNeighbors = FindNeighbors,
+      FindClusters = FindClusters,
+      verbose = verbose
+    )
+
+  object <-
+    asSPATA2(
+      object = seurat_object,
+      sample_name = sample_name,
+      verbose = FALSE
+      )
+
+
+  #
+
+
+}
+
+
+
+isDirToSpaceRangerOutput <- function(directory){
+
+  files <- base::list.files(directory, full.names = TRUE, recursive = TRUE)
+
+  out <- logical()
+
+  out[1] <-
+    stringr::str_detect(
+      string = files,
+      pattern = "tissue_hires_image|tissue_lowres_image"
+    ) %>%
+    base::any()
+
+  out[2] <-
+    stringr::str_detect(
+      string = files,
+      pattern = "tissue_positions.csv|tissue_postions_list.csv"
+    ) %>%
+    base::any()
+
+  out[3] <-
+    stringr::str_detect(
+      string = files,
+      pattern = "scalefactors_json.json"
+    ) %>%
+    base::any()
+
+  base::all(out)
+
+}
+
+whichSpaceRangerVersion <- function(directory){
+
+  stopifnot(isDirToSpaceRangerOutput(directory))
+
+  files <- base::list.files(directory, full.names = TRUE, recursive = TRUE)
+
+  v1 <-
+    stringr::str_detect(
+      string = files,
+      pattern = "tissue_positions.csv"
+    ) %>%
+      base::any()
+
+  v2 <-
+    stringr::str_detect(
+      string = files,
+      pattern = "tissue_positions_list.csv"
+    ) %>%
+    base::any()
+
+
+  if(v1){
+
+    out <- "Version1"
+
+  } else if(v2){
+
+    out <- "Version2"
+
+  } else {
+
+    out <- "none"
+
+  }
+
+  return(out)
+
+}
+
+
+
+

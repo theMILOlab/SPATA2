@@ -865,21 +865,27 @@ threshold_scattermore <- 100000
 
 # V -----------------------------------------------------------------------
 
-
-Visium <- function(){
-
-  deprecated(fn = TRUE)
-
-  SpatialMethod(
+#' @export
+VisiumSmall <-
+  Visium(
+    capture_area = list(x = "6.5mm", y = "6.5mm"),
+    ccd = "100um",
     fiducial_frame = list(x = "8mm", y = "8mm"),
-    info = list(ccd = "100um"),
-    name = "Visium",
-    unit = "mm",
-    observational_unit = "barcode-spot"
+    info = list(),
+    name = "Visium (small)",
+    observational_unit = "barcoded_spot"
   )
 
-}
-
+#' @export
+VisiumLarge <-
+  Visium(
+    capture_area = list(x = "11mm", y = "11mm"),
+    ccd = "100um",
+    fiducial_frame = list(x = "12.5mm", y = "12.5mm"),
+    info = list(),
+    name = "Visium (large)",
+    observational_unit = "barcoded_spot"
+  )
 
 
 

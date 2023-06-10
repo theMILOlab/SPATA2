@@ -206,8 +206,6 @@ saveSpataObject <- function(object,
 
   confuns::is_value(directory_spata, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
-  directory_spata <- base::normalizePath(directory_spata, mustWork = FALSE)
-
   if(base::is.character(directory_spata)){
 
     object <- setSpataDir(object, dir = directory_spata)
