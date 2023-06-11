@@ -613,25 +613,25 @@ include_tissue_outline <- function(coords_df,
         if(opt == "concaveman"){
 
           df_sub <-
-            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
-
-          if(!"outline" %in% base::colnames(df_sub)){
-
-            df_sub <- add_outline_variable(df_sub)
-
-          }
+            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}}) %>%
+            dplyr::select(x, y)
 
           hull_df <-
-            dplyr::filter(df_sub, outline) %>%
+            concaveman::concaveman(
+              points = base::as.matrix(df_sub),
+              concavity = 1
+              ) %>%
+            base::as.data.frame() %>%
+            magrittr::set_colnames(value = c("x", "y")) %>%
             arrange_as_polygon()
 
         } else if(opt == "chull") {
 
-          spots_in_part <-
+          df_sub <-
             dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
 
-          hull_points <- grDevices::chull(x = spots_in_part[["x"]], y = spots_in_part[["y"]])
-          hull_df <- spots_in_part[hull_points, ]
+          hull_points <- grDevices::chull(x = df_sub[["x"]], y = df_sub[["y"]])
+          hull_df <- df_sub[hull_points, ]
 
         }
 

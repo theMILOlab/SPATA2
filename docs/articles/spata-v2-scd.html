@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -391,17 +391,17 @@ results in a data.frame.</p>
 <pre><code><span class="co">## <span style="color: #949494;"># A tibble: 11 x 7</span></span>
 <span class="co">##    bins_circle bins_order bins_angle Neurons Astrocytes Microglia</span>
 <span class="co">##    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">## <span style="color: #BCBCBC;"> 1</span> Core                 0 (0,360]        0        107.      227. </span>
-<span class="co">## <span style="color: #BCBCBC;"> 2</span> Circle 1             1 (0,360]       40.4       84.6     198. </span>
-<span class="co">## <span style="color: #BCBCBC;"> 3</span> Circle 2             2 (0,360]       25.4       78.9      99.0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 4</span> Circle 3             3 (0,360]       45.1       95.4      59.6</span>
-<span class="co">## <span style="color: #BCBCBC;"> 5</span> Circle 4             4 (0,360]       48.2      103.       74.0</span>
-<span class="co">## <span style="color: #BCBCBC;"> 6</span> Circle 5             5 (0,360]       35.8       86.6      75.3</span>
-<span class="co">## <span style="color: #BCBCBC;"> 7</span> Circle 6             6 (0,360]       49.7      103.       50.2</span>
-<span class="co">## <span style="color: #BCBCBC;"> 8</span> Circle 7             7 (0,360]       56.8      120.       47.3</span>
-<span class="co">## <span style="color: #BCBCBC;"> 9</span> Circle 8             8 (0,360]       50.1      106.       60.7</span>
-<span class="co">## <span style="color: #BCBCBC;">10</span> Circle 9             9 (0,360]       54.5       89.4      44.6</span>
-<span class="co">## <span style="color: #BCBCBC;">11</span> Circle 10           10 (0,360]       40.6       63.6      49.8</span>
+<span class="co">## <span style="color: #BCBCBC;"> 1</span> Core                 0 (0,360]        0        114.      240. </span>
+<span class="co">## <span style="color: #BCBCBC;"> 2</span> Circle 1             1 (0,360]       42.1       87.9     202. </span>
+<span class="co">## <span style="color: #BCBCBC;"> 3</span> Circle 2             2 (0,360]       26.9       83.7     105. </span>
+<span class="co">## <span style="color: #BCBCBC;"> 4</span> Circle 3             3 (0,360]       47.2       97.4      57.4</span>
+<span class="co">## <span style="color: #BCBCBC;"> 5</span> Circle 4             4 (0,360]       48.1      108.       73.7</span>
+<span class="co">## <span style="color: #BCBCBC;"> 6</span> Circle 5             5 (0,360]       35.3       84.2      74.3</span>
+<span class="co">## <span style="color: #BCBCBC;"> 7</span> Circle 6             6 (0,360]       52.1      108.       47.3</span>
+<span class="co">## <span style="color: #BCBCBC;"> 8</span> Circle 7             7 (0,360]       58.2      119.       45.5</span>
+<span class="co">## <span style="color: #BCBCBC;"> 9</span> Circle 8             8 (0,360]       49.8       87.0      67.8</span>
+<span class="co">## <span style="color: #BCBCBC;">10</span> Circle 9             9 (0,360]       56.4       79.5      40.8</span>
+<span class="co">## <span style="color: #BCBCBC;">11</span> Circle 10           10 (0,360]       42.0       64.4      52.4</span>
 <span class="co">## <span style="color: #949494;"># i 1 more variable: `Monocytes/Macrophages` &lt;dbl&gt;</span></span></code></pre>
 <p>The columns named by the cell type contain the density values
 calculated for each distance/circular bin in the unit specified via
@@ -418,20 +418,20 @@ screening</a>.</p>
   as_models <span class="op">=</span> <span class="cn">TRUE</span>
 <span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## $Neurons</span>
-<span class="co">##  [1] 0.0000000 0.7123108 0.4469309 0.7951058 0.8485317 0.6298438 0.8744741</span>
-<span class="co">##  [8] 1.0000000 0.8818890 0.9598390 0.7154988</span>
+<span class="co">##  [1] 0.0000000 0.7229662 0.4624053 0.8106138 0.8261313 0.6065198 0.8960836</span>
+<span class="co">##  [8] 1.0000000 0.8564700 0.9695214 0.7225793</span>
 <span class="co">## </span>
 <span class="co">## $Astrocytes</span>
-<span class="co">##  [1] 0.7776769 0.3730817 0.2721905 0.5647793 0.6960162 0.4081003 0.7001601</span>
-<span class="co">##  [8] 1.0000000 0.7534770 0.4579129 0.0000000</span>
+<span class="co">##  [1] 0.9022810 0.4304072 0.3522829 0.6027643 0.7881667 0.3631900 0.7889645</span>
+<span class="co">##  [8] 1.0000000 0.4141949 0.2756438 0.0000000</span>
 <span class="co">## </span>
 <span class="co">## $Microglia</span>
-<span class="co">##  [1] 1.00000000 0.83974726 0.29828558 0.08244600 0.16106809 0.16851643</span>
-<span class="co">##  [7] 0.03118880 0.01515589 0.08858906 0.00000000 0.02877576</span>
+<span class="co">##  [1] 1.00000000 0.80944945 0.32133099 0.08314482 0.16503405 0.16838363</span>
+<span class="co">##  [7] 0.03270634 0.02345116 0.13558303 0.00000000 0.05814409</span>
 <span class="co">## </span>
 <span class="co">## $`Monocytes/Macrophages`</span>
-<span class="co">##  [1] 1.000000000 0.382161951 0.094032245 0.050481811 0.072741149 0.037884141</span>
-<span class="co">##  [7] 0.009810693 0.012387826 0.016269042 0.071741322 0.000000000</span></code></pre>
+<span class="co">##  [1] 1.00000000 0.45156204 0.11913118 0.09565253 0.11272233 0.08934293</span>
+<span class="co">##  [7] 0.05290540 0.03235082 0.00000000 0.07798454 0.03589546</span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="accounting-for-multiple-sections">5. Accounting for multiple sections<a class="anchor" aria-label="anchor" href="#accounting-for-multiple-sections"></a>

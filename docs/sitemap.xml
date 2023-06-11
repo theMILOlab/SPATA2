@@ -196,6 +196,9 @@
     <loc>/reference/average_genes.html</loc>
   </url>
   <url>
+    <loc>/reference/barcodesToImageAnnotation.html</loc>
+  </url>
+  <url>
     <loc>/reference/binwidth_dummy.html</loc>
   </url>
   <url>
@@ -385,6 +388,9 @@
     <loc>/reference/cropSpataObject.html</loc>
   </url>
   <url>
+    <loc>/reference/currentSpata2Version.html</loc>
+  </url>
+  <url>
     <loc>/reference/data_counts-class.html</loc>
   </url>
   <url>
@@ -392,6 +398,9 @@
   </url>
   <url>
     <loc>/reference/default_instructions-class.html</loc>
+  </url>
+  <url>
+    <loc>/reference/deprecatedInfo.html</loc>
   </url>
   <url>
     <loc>/reference/dim_red-class.html</loc>
@@ -772,6 +781,9 @@
     <loc>/reference/getTrajectorySegmentDf.html</loc>
   </url>
   <url>
+    <loc>/reference/getVariableNames.html</loc>
+  </url>
+  <url>
     <loc>/reference/get_img_ann_helper.html</loc>
   </url>
   <url>
@@ -874,9 +886,6 @@
     <loc>/reference/hlpr_compare_samples.html</loc>
   </url>
   <url>
-    <loc>/reference/hlpr_compile_trajectory.html</loc>
-  </url>
-  <url>
     <loc>/reference/hlpr_dist_mtr_to_df.html</loc>
   </url>
   <url>
@@ -932,6 +941,12 @@
   </url>
   <url>
     <loc>/reference/hlpr_widen_trajectory_df.html</loc>
+  </url>
+  <url>
+    <loc>/reference/identifyTissueOutline.html</loc>
+  </url>
+  <url>
+    <loc>/reference/identifyTissueSections.html</loc>
   </url>
   <url>
     <loc>/reference/ImageAnnotation-class.html</loc>
@@ -1022,6 +1037,9 @@
   </url>
   <url>
     <loc>/reference/mergeGroups.html</loc>
+  </url>
+  <url>
+    <loc>/reference/mergeTissueSections.html</loc>
   </url>
   <url>
     <loc>/reference/method_hclust.html</loc>
@@ -1357,6 +1375,9 @@
     <loc>/reference/setBarcodes.html</loc>
   </url>
   <url>
+    <loc>/reference/setCCD.html</loc>
+  </url>
+  <url>
     <loc>/reference/setCnvResults.html</loc>
   </url>
   <url>
@@ -1412,6 +1433,15 @@
   </url>
   <url>
     <loc>/reference/setSpataDir.html</loc>
+  </url>
+  <url>
+    <loc>/reference/setSpatialMethod.html</loc>
+  </url>
+  <url>
+    <loc>/reference/setSpatialMethodInfo.html</loc>
+  </url>
+  <url>
+    <loc>/reference/setSpatialMethodSlot.html</loc>
   </url>
   <url>
     <loc>/reference/setSpCorResults.html</loc>
@@ -1489,6 +1519,9 @@
     <loc>/reference/theme_lineplot_gradient.html</loc>
   </url>
   <url>
+    <loc>/reference/tissueOutlineIdentified.html</loc>
+  </url>
+  <url>
     <loc>/reference/Trajectory-class.html</loc>
   </url>
   <url>
@@ -1541,6 +1574,9 @@
   </url>
   <url>
     <loc>/reference/variable_num.html</loc>
+  </url>
+  <url>
+    <loc>/reference/Visium-class.html</loc>
   </url>
   <url>
     <loc>/reference/visium_coords.html</loc>

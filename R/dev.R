@@ -72,87 +72,92 @@ plotSurfaceOutline <- function(object){
 #'
 #' @keywords internal
 
-arrange_as_polygon <- function(input_df){
+arrange_as_polygon <- function(input_df, use = "angle"){
 
   center <- c(x = base::mean(input_df$x), y = base::mean(input_df$y))
 
   cx <- center["x"]
   cy <- center["y"]
 
-  input_df$atc <- 0
+  if(use == "angle"){
 
-  for(i in 1:base::nrow(input_df)){
+    input_df$atc <- 0
 
-    input_df[i, "atc"] <-
-      compute_angle_between_two_points(
-        p1 = c(x = input_df[["x"]][i], y = input_df[["y"]][i]),
-        p2 = center
-      )
+    for(i in 1:base::nrow(input_df)){
 
-  }
-
-  df_out <- dplyr::arrange(input_df, atc)
-
-  # first spot
-  current_barcode <-
-    dplyr::filter(input_df, atc == base::min(atc)) %>%
-    dplyr::pull(barcodes)
-
-  n_barcodes <- base::nrow(input_df)
-
-  barcodes_ordered <- base::vector(mode = "character", length = n_barcodes)
-
-  barcodes_ordered[1] <- current_barcode
-
-  # remove barcodes that are not part of the outline group
-  all_distances <-
-    all_bcsp_distances() %>%
-    dplyr::filter(
-      bc_origin != bc_destination &
-        bc_origin %in% input_df$barcodes &
-        bc_destination %in% input_df$barcodes
-    )
-
-  for(i in 2:n_barcodes){
-
-    # `barcodes_ordered <- current_barcode` accounts for (i-1) = 1
-    current_barcode <- barcodes_ordered[(i-1)]
-
-    if(i == 2){
-
-      prev_barcode <- ""
-
-    } else {
-
-      prev_barcode <- barcodes_ordered[(i-2)]
+      input_df[i, "atc"] <-
+        compute_angle_between_two_points(
+          p1 = c(x = input_df[["x"]][i], y = input_df[["y"]][i]),
+          p2 = center
+        )
 
     }
 
-    barcodes_ordered[i] <-
-      # keep distances from current_barcode to all other barcodes except the previous one
+    out_df <- dplyr::arrange(input_df, atc)
+
+  } else {
+
+    # first spot
+    current_barcode <-
+      dplyr::filter(input_df, atc == base::min(atc)) %>%
+      dplyr::pull(barcodes)
+
+    n_barcodes <- base::nrow(input_df)
+
+    barcodes_ordered <- base::vector(mode = "character", length = n_barcodes)
+
+    barcodes_ordered[1] <- current_barcode
+
+    # remove barcodes that are not part of the outline group
+    all_distances <-
+      all_bcsp_distances() %>%
       dplyr::filter(
-        .data = all_distances,
-        bc_origin == {{current_barcode}} &
-          !bc_destination %in% {{barcodes_ordered}}
+        bc_origin != bc_destination &
+          bc_origin %in% input_df$barcodes &
+          bc_destination %in% input_df$barcodes
+      )
+
+    for(i in 2:n_barcodes){
+
+      # `barcodes_ordered <- current_barcode` accounts for (i-1) = 1
+      current_barcode <- barcodes_ordered[(i-1)]
+
+      if(i == 2){
+
+        prev_barcode <- ""
+
+      } else {
+
+        prev_barcode <- barcodes_ordered[(i-2)]
+
+      }
+
+      barcodes_ordered[i] <-
+        # keep distances from current_barcode to all other barcodes except the previous one
+        dplyr::filter(
+          .data = all_distances,
+          bc_origin == {{current_barcode}} &
+            !bc_destination %in% {{barcodes_ordered}}
+        ) %>%
+        dplyr::arrange(distance) %>%
+        # select the barcode that lies closest to prev_barcode
+        dplyr::filter(distance == base::min(distance)) %>%
+        # extract the barcode id
+        dplyr::pull(bc_destination) %>%
+        base::as.character()
+
+    }
+
+    #!!! problem with irregular distances as for sample 313_T
+    out_df <-
+      dplyr::group_by(input_df, barcodes) %>%
+      dplyr::mutate(
+        outline_order = base::which({{barcodes_ordered}} == barcodes)
       ) %>%
-      dplyr::arrange(distance) %>%
-      # select the barcode that lies closest to prev_barcode
-      dplyr::filter(distance == base::min(distance)) %>%
-      # extract the barcode id
-      dplyr::pull(bc_destination) %>%
-      base::as.character()
+      dplyr::ungroup() %>%
+      dplyr::arrange(atc)
 
   }
-
-
-  #!!! problem with irregular distances as for sample 313_T
-  out_df <-
-    dplyr::group_by(input_df, barcodes) %>%
-    dplyr::mutate(
-      outline_order = base::which({{barcodes_ordered}} == barcodes)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::arrange(atc)
 
   return(out_df)
 

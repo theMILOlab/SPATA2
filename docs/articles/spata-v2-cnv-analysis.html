@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -204,12 +204,6 @@ warnings raised from <code><a href="../reference/runCnvAnalysis.html">runCnvAnal
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># histological grouping</span></span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plotSurface</span>(<span class="at">object =</span> object_t269, <span class="at">color_by =</span> <span class="st">"histology"</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># only histology</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, pt_alpha <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
-
-<span class="co"># histological grouping</span>
-<span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, color_by <span class="op">=</span> <span class="st">"histology"</span>, pt_clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-3-1.png" alt="Fig.1 The example sample raw and colored by histological classification." width="50%"><img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-3-2.png" alt="Fig.1 The example sample raw and colored by histological classification." width="50%"><p class="caption">
 Fig.1 The example sample raw and colored by histological classification.
@@ -230,7 +224,7 @@ needed for subsequent analysis steps are stored in the specified
 <code>spata2</code> object (slot: <span class="citation">@cnv</span>).
 The infercnv-object is stored in the folder specified in the argument
 <code>directory_cnv_folder</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">object_t269</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="../reference/runCnvAnalysis.html">runCnvAnalysis</a></span><span class="op">(</span>
     object <span class="op">=</span> <span class="va">object_t269</span>,
@@ -245,10 +239,10 @@ want it to be called.</p>
 a count matrix from healthy tissue, an annotation file as well as a
 data.frame that contains information about the chromosome positions. We
 provide reference data in the list <code><a href="../reference/cnv_ref.html">SPATA2::cnv_ref</a></code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cnv_ref</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] "annotation" "mtr"        "regions"</span></code></pre>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cnv_ref</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##            Length   Class      Mode   </span>
 <span class="co">## annotation        1 data.frame list   </span>
@@ -264,7 +258,7 @@ for the function to work.</p>
 </h2>
 <p>The results are stored in a list inside the <code>spata2</code>
 object. This list can be obtained via <code><a href="../reference/getCnvResults.html">getCnvResults()</a></code>.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">cnv_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCnvResults.html">getCnvResults</a></span><span class="op">(</span><span class="va">object_t269</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cnv_results</span><span class="op">)</span></code></pre></div>
@@ -278,7 +272,7 @@ object. This list can be obtained via <code><a href="../reference/getCnvResults.
 </h3>
 <p>The gains and losses of chromosomal segments can be displayed via
 <code><a href="../reference/plotCnvHeatmap.html">plotCnvHeatmap()</a></code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvHeatmap.html">plotCnvHeatmap</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-8-1.png" alt="Fig.2 Basic CNV-Heatmap." width="100%"><p class="caption">
@@ -287,7 +281,7 @@ Fig.2 Basic CNV-Heatmap.
 </div>
 <p>If you want to visualize the results across certain groups to
 identify subclones make use of the <code>across</code>-argument.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvHeatmap.html">plotCnvHeatmap</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span>, across <span class="op">=</span> <span class="st">"histology"</span>, clrp <span class="op">=</span> <span class="st">"npg"</span><span class="op">)</span></code></pre></div>
 <div class="figure">
 <img src="spata-v2-cnv-analysis_files/figure-html/unnamed-chunk-9-1.png" alt="Fig.3 CNV-Heatmap with meta data displayes chromosomal alterations across histological classification." width="100%"><p class="caption">
@@ -301,7 +295,7 @@ across histological classification.
 </h3>
 <p>An additional option to visualize the results provides
 <code><a href="../reference/plotCnvLineplot.html">plotCnvLineplot()</a></code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotCnvLineplot.html">plotCnvLineplot</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">object_t269</span>,
   across <span class="op">=</span> <span class="st">"histology"</span>, 
@@ -326,13 +320,13 @@ all functions that work with numeric variables. The character string
 specified in argument <code>cnv_prefix</code> combined with the
 chromosomes number determines the name by which you can refer to these
 feature variables.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># cnv feature names</span>
 <span class="fu"><a href="../reference/getCnvFeatureNames.html">getCnvFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##  [1] "Chr1"  "Chr2"  "Chr3"  "Chr4"  "Chr5"  "Chr6"  "Chr7"  "Chr8"  "Chr9" </span>
 <span class="co">## [10] "Chr10" "Chr11" "Chr12" "Chr13" "Chr14" "Chr15" "Chr16" "Chr17" "Chr18"</span>
 <span class="co">## [19] "Chr19" "Chr20" "Chr21" "Chr22"</span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># are part of all feature names</span>
 <span class="fu"><a href="../reference/getFeatureNames.html">getFeatureNames</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">object_t269</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##            numeric            integer             factor            numeric </span>
@@ -351,7 +345,7 @@ feature variables.</p>
 <span class="co">##             "Chr7"             "Chr8"             "Chr9"        "histology"</span></code></pre>
 <p>Use <code><a href="../reference/plotSurface.html">plotSurface()</a></code> to visualize chromosomal alterations
 directly on the histology.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotSurface.html">plotSurface</a></span><span class="op">(</span>
   object <span class="op">=</span> <span class="va">object_t269</span>, 
   color_by <span class="op">=</span> <span class="st">"Chr7"</span>, 
@@ -376,7 +370,7 @@ histology.
 <p>As showcased in our corresponding vignette about <a href="spata-v2-spatial-trajectories.html">spatial trajectories</a>
 gradients of numeric variables can be displayed. Chromosomal alterations
 are numeric variables.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">object_t269</span> <span class="op">&lt;-</span> 
     <span class="fu"><a href="../reference/setTrajectory.html">setTrajectory</a></span><span class="op">(</span>
       object <span class="op">=</span> <span class="va">object_t269</span>, 

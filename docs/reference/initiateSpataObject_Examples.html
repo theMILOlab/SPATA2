@@ -19,7 +19,7 @@ See details for more."><!-- mathjax --><script src="https://cdnjs.cloudflare.com
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -243,7 +243,7 @@ manipulate the way the <code>spata2</code> object is processed. For all of these
 <ul><li><p>If set to FALSE the processing function is skipped.</p></li>
 <li><p>If set to TRUE the respective function is called with it's default argument settings. Note: <code>RunUMAP()</code> needs
 additional input!</p></li>
-<li><p>If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
+<li><p>If a named list is provided the respective function is called whereby the named list will provide the argument-input (the <code>Seurat</code> object to be constructed must not be named and will be
 passed to every function as the first argument!!!.)</p></li>
 </ul><p>Note that certain listed functions require previous functions! E.g. if <code>RunPCA</code> is set to FALSE <code>RunTSNE()</code>
 will result in an error. (<code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">base::tryCatch()</a></code> will prevent the function from crashing but the respective slot

@@ -18,7 +18,7 @@ an already processed expression/intensity matrix. See details for more informati
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -141,6 +141,7 @@ an already processed expression/intensity matrix. See details for more informati
   <span class="va">coords_df</span>,
   <span class="va">expr_mtr</span>,
   <span class="va">sample_name</span>,
+  spatial_method <span class="op">=</span> <span class="st">"Unknown"</span>,
   count_mtr <span class="op">=</span> <span class="cn">NULL</span>,
   mtr_name <span class="op">=</span> <span class="st">"scaled"</span>,
   image <span class="op">=</span> <span class="cn">NULL</span>,
@@ -164,7 +165,7 @@ an already processed expression/intensity matrix. See details for more informati
 <dd><p>Data.frame containing information about the positions of all
 barcode-spots in form of a numeric <em>x</em>- and <em>y</em>-variable. The key-variable
 <em>barcodes</em> needs to be of type character and must be identical to the column names
-of the input matrix (<code>expr_mtr</code>).</p></dd>
+of the input matrix.</p></dd>
 
 
 <dt>expr_mtr</dt>

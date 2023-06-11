@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -184,9 +184,7 @@ with.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SPATAData</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span>
-
-<span class="fu">download_example</span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"dir_to_example_folder"</span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="basic-image-handling">3. Basic image handling<a class="anchor" aria-label="anchor" href="#basic-image-handling"></a>
@@ -198,8 +196,8 @@ to download the <em>outs</em> folder of the sample #UKF336, a primary
 glioblastoma, which will be used throughout this vignette.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># unzip the downloaded folder and store it under this directory</span>
-<span class="co"># (alternatively change the code and adjust it to the directory of your choice)</span>
-<span class="va">directory_to_10X</span> <span class="op">&lt;-</span> <span class="st">"data\\Visium10X\\#UKF313_T_P\\"</span>
+<span class="co"># (alternatively, change the code and adjust it to the directory of your choice)</span>
+<span class="va">directory_to_10X</span> <span class="op">&lt;-</span> <span class="st">"data\\10XVisium\\#UKF336_T_P"</span>
 
 <span class="va">object_t336</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X</a></span><span class="op">(</span>
@@ -246,7 +244,7 @@ information there exist several functions prefixed with
 
 <span class="co"># directory / object from where the currently set image was read in </span>
 <span class="fu"><a href="../reference/getImageOrigin.html">getImageOrigin</a></span><span class="op">(</span><span class="va">object_t336</span><span class="op">)</span>
-<span class="co">## [1] "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span></code></pre></div>
+<span class="co">## [1] "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span></code></pre></div>
 <p>Normally, image and coordinates are perfectly aligned after reading
 everything in.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -264,20 +262,20 @@ Spatial transformations</em> of this vignette to read more about how
 <div class="section level3">
 <h3 id="high-and-low-resolution">3.2 High and low resolution<a class="anchor" aria-label="anchor" href="#high-and-low-resolution"></a>
 </h3>
-<p>Every spatial folder contains at least two images usually named
-<em>tissue_lowres_image.png</em> and <em>tissue_highres_image.png</em>.
-A <code>spata2</code> object only carries one image at a time. It
-defaults to read in the low resolution image. To facilitate switching
-between high and low resolution image specific directories can be stored
-in the <code>spata2</code> object.
+<p>In case of 10X Visium data sets, every spatial folder contains at
+least two images usually named <em>tissue_lowres_image.png</em> and
+<em>tissue_highres_image.png</em>. A <code>spata2</code> object only
+carries one image at a time. It defaults to read in the low resolution
+image. To facilitate switching between high and low resolution image
+specific directories can be stored in the <code>spata2</code> object.
 <code><a href="../reference/initiateSpataObject_10X.html">initiateSpataObject_10X()</a></code> automatically sets the
 directories for low resolution and high resolution.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getImageDirLowres.html">getImageDirLowres</a></span><span class="op">(</span><span class="va">object_t336</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span></code></pre>
+<pre><code><span class="co">## [1] "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span></code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getImageDirLowres.html">getImageDirHighres</a></span><span class="op">(</span><span class="va">object_t336</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_hires_image.png"</span></code></pre>
+<pre><code><span class="co">## [1] "data\\10XVisium\\#UKF336_T_P/spatial/tissue_hires_image.png"</span></code></pre>
 <p>The source of the image that is currently read in can be obtained via
 <code><a href="../reference/getImageOrigin.html">getImageOrigin()</a></code>. To switch between image versions use the
 <code>loadImage*()</code> functions.</p>
@@ -323,21 +321,21 @@ use the <code><a href="../reference/addImageDir.html">addImageDir()</a></code> f
 <code class="sourceCode R"><span class="va">object_t336</span> <span class="op">&lt;-</span> 
   <span class="fu"><a href="../reference/addImageDir.html">addImageDir</a></span><span class="op">(</span>
     object <span class="op">=</span> <span class="va">object_t336</span>, 
-    dir <span class="op">=</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_c.html" class="external-link">str_c</a></span><span class="op">(</span><span class="va">directory_to_10X</span>, <span class="st">"\\spatial\\raman_tissue_hires_image.tif"</span><span class="op">)</span>, 
-    name <span class="op">=</span> <span class="st">"raman_spectr"</span>
+    dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">directory_to_10X</span>, <span class="st">"spatial"</span>, <span class="st">"raman_tissue_hires_image.tif"</span><span class="op">)</span>, 
+    name <span class="op">=</span> <span class="st">"raman_spectr"</span> <span class="co"># name of the image with which to refer to it in the future</span>
   <span class="op">)</span></code></pre></div>
 <p>In general, all directories known to the <code>spata2</code> object
 can be obtained via <code><a href="../reference/getImageDirLowres.html">getImageDirectories()</a></code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getImageDirLowres.html">getImageDirectories</a></span><span class="op">(</span><span class="va">object_t336</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">##                                                                     default </span>
-<span class="co">##        "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png" </span>
-<span class="co">##                                                                      lowres </span>
-<span class="co">##        "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png" </span>
-<span class="co">##                                                                     highres </span>
-<span class="co">##         "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_hires_image.png" </span>
-<span class="co">##                                                                raman_spectr </span>
-<span class="co">## "data\\Visium10X\\#UKF336_T_P\\outs\\spatial\\raman_tissue_hires_image.tif"</span></code></pre>
+<pre><code><span class="co">##                                                                                                                     default </span>
+<span class="co">##                                                              "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png" </span>
+<span class="co">##                                                                                                                      lowres </span>
+<span class="co">##                                                              "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png" </span>
+<span class="co">##                                                                                                                     highres </span>
+<span class="co">##                                                               "data\\10XVisium\\#UKF336_T_P/spatial/tissue_hires_image.png" </span>
+<span class="co">##                                                                                                                raman_spectr </span>
+<span class="co">## "C:\\Informatics\\R-Folder\\Packages\\SPATA2\\vignettes\\data\\10XVisium\\#UKF336_T_P/spatial/raman_tissue_hires_image.tif"</span></code></pre>
 <p>To use load them as the current background image use
 <code><a href="../reference/loadImageLowres.html">loadImage()</a></code> and refer to them by name.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -373,7 +371,7 @@ Fig.3 Different images of the same tissue.
 <code class="sourceCode R"><span class="va">object_t336</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/loadImageLowres.html">loadImageDefault</a></span><span class="op">(</span><span class="va">object_t336</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/getImageOrigin.html">getImageOrigin</a></span><span class="op">(</span><span class="va">object_t336</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span></code></pre>
+<pre><code><span class="co">## [1] "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span></code></pre>
 </div>
 </div>
 <div class="section level2">
@@ -473,7 +471,7 @@ look like this.</p>
 <span class="co">## [1] 1</span>
 <span class="co">## </span>
 <span class="co">## $origin</span>
-<span class="co">## [1] "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span>
+<span class="co">## [1] "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span>
 <span class="co">## </span>
 <span class="co">## $angle</span>
 <span class="co">## [1] 0</span>
@@ -502,7 +500,7 @@ current state of the object deviates from the starting default.</p>
 <span class="co">## [1] 1</span>
 <span class="co">## </span>
 <span class="co">## $origin</span>
-<span class="co">## [1] "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span>
+<span class="co">## [1] "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span>
 <span class="co">## </span>
 <span class="co">## $angle</span>
 <span class="co">## [1] 0</span>
@@ -645,24 +643,24 @@ image itself.)</p>
 
 <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">io</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## Formal class 'HistologyImaging' [package "SPATA2"] with 13 slots</span>
-<span class="co">##   ..@ annotations  : Named list()</span>
+<span class="co">##   ..@ annotations  : list()</span>
 <span class="co">##   ..@ coordinates  : tibble [2,280 x 11] (S3: tbl_df/tbl/data.frame)</span>
 <span class="co">##   .. ..$ barcodes: chr [1:2280] "AAACACCAATAACTGC-1" "AAACAGAGCGACTCCT-1" "AAACAGGGTCTATATT-1" "AAACCGGGTAGGTACC-1" ...</span>
 <span class="co">##   .. ..$ x       : num [1:2280] 1510 576 1584 1397 1223 ...</span>
 <span class="co">##   .. ..$ y       : num [1:2280] 554 1526 814 922 705 ...</span>
 <span class="co">##   .. ..$ tissue  : int [1:2280] 1 1 1 1 1 1 1 1 1 1 ...</span>
-<span class="co">##   .. ..$ row     : num [1:2280] 1790 1940 1830 1850 1817 ...</span>
-<span class="co">##   .. ..$ col     : num [1:2280] 46.7 296.9 26.7 76.7 123.4 ...</span>
+<span class="co">##   .. ..$ row     : num [1:2280] 1800 1950 1840 1857 1823 ...</span>
+<span class="co">##   .. ..$ col     : num [1:2280] 60 310.2 40 90.1 136.8 ...</span>
 <span class="co">##   .. ..$ imagerow: num [1:2280] -36453 -10610 -29553 -26683 -32437 ...</span>
 <span class="co">##   .. ..$ imagecol: num [1:2280] 40148 15327 42126 37163 32539 ...</span>
 <span class="co">##   .. ..$ sample  : chr [1:2280] "UKF336T" "UKF336T" "UKF336T" "UKF336T" ...</span>
 <span class="co">##   .. ..$ section : chr [1:2280] "1" "1" "1" "1" ...</span>
 <span class="co">##   .. ..$ outline : logi [1:2280] TRUE FALSE TRUE FALSE FALSE FALSE ...</span>
-<span class="co">##   ..@ dir_default  : chr "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span>
-<span class="co">##   ..@ dir_highres  : chr "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_hires_image.png"</span>
-<span class="co">##   ..@ dir_lowres   : chr "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_lowres_image.png"</span>
+<span class="co">##   ..@ dir_default  : chr "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span>
+<span class="co">##   ..@ dir_highres  : chr "data\\10XVisium\\#UKF336_T_P/spatial/tissue_hires_image.png"</span>
+<span class="co">##   ..@ dir_lowres   : chr "data\\10XVisium\\#UKF336_T_P/spatial/tissue_lowres_image.png"</span>
 <span class="co">##   ..@ dir_add      :List of 1</span>
-<span class="co">##   .. ..$ raman_spectr: chr "data\\Visium10X\\#UKF336_T_P\\outs\\spatial\\raman_tissue_hires_image.tif"</span>
+<span class="co">##   .. ..$ raman_spectr: chr "C:\\Informatics\\R-Folder\\Packages\\SPATA2\\vignettes\\data\\10XVisium\\#UKF336_T_P/spatial/raman_tissue_hires_image.tif"</span>
 <span class="co">##   ..@ grid         : list()</span>
 <span class="co">##   ..@ id           : chr "UKF336T"</span>
 <span class="co">##   ..@ image        :Formal class 'Image' [package "EBImage"] with 2 slots</span>
@@ -673,7 +671,7 @@ image itself.)</p>
 <span class="co">##   .. ..$ dim_input    : int [1:3] 1908 2000 3</span>
 <span class="co">##   .. ..$ dim_stored   : int [1:3] 1908 2000 3</span>
 <span class="co">##   .. ..$ img_scale_fct: num 1</span>
-<span class="co">##   .. ..$ origin       : chr "data\\Visium10X\\#UKF336_T_P\\outs/spatial/tissue_hires_image.png"</span>
+<span class="co">##   .. ..$ origin       : chr "data\\10XVisium\\#UKF336_T_P/spatial/tissue_hires_image.png"</span>
 <span class="co">##   ..@ justification:List of 2</span>
 <span class="co">##   .. ..$ angle  : num 0</span>
 <span class="co">##   .. ..$ flipped:List of 2</span>
@@ -691,7 +689,8 @@ image itself.)</p>
 <span class="co">##   .. .. .. ..- attr(*, "class")= chr "scalefactors"</span>
 <span class="co">##   .. .. ..$ assay        : chr "Spatial"</span>
 <span class="co">##   .. .. ..$ spot.radius  : num 0.013</span>
-<span class="co">##   .. .. ..$ key          : chr "slice1_"</span></code></pre>
+<span class="co">##   .. .. ..$ key          : chr "slice1_"</span>
+<span class="co">##   ..$ scale_factors: list()</span></code></pre>
 </div>
   </div>
 

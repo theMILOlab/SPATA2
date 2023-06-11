@@ -642,7 +642,6 @@ ggpLayerEncirclingIAS <- function(object,
                   alpha <- alpha_core
                   fill <- fill_core
 
-
                 } else {
 
                   ls <- line_size

@@ -1,4 +1,4 @@
-pandoc: 2.17.1.1
+pandoc: 2.19.2
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
@@ -27,5 +27,5 @@ articles:
   spata-v2-spatial-trajectories: spata-v2-spatial-trajectories.html
   spata-v2-spatial-trajectory-screening: spata-v2-spatial-trajectory-screening.html
   spata-v2-subsetting: spata-v2-subsetting.html
-last_built: 2023-05-12T18:32Z
+last_built: 2023-06-10T13:27Z
 

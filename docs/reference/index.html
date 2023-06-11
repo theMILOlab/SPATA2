@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -287,7 +287,7 @@
       </tr></tbody><tbody><tr><td>
           <p><code><a href="createHistologyImaging.html">createHistologyImaging()</a></code> </p>
         </td>
-        <td><p>Create S4 Image object for SPATA2</p></td>
+        <td><p>Create object of class <code>HistologyImaging</code></p></td>
       </tr><tr><td>
           <p><code><a href="createImageAnnotations.html">addImageAnnotation()</a></code> <code><a href="createImageAnnotations.html">createImageAnnotations()</a></code> </p>
         </td>
@@ -361,6 +361,10 @@
         </td>
         <td><p>Set barcodes</p></td>
       </tr><tr><td>
+          <p><code><a href="setCCD.html">setCCD()</a></code> </p>
+        </td>
+        <td><p>Set center to center distance</p></td>
+      </tr><tr><td>
           <p><code><a href="setCnvResults.html">setCnvResults()</a></code> </p>
         </td>
         <td><p>Set cnv-results</p></td>
@@ -429,9 +433,17 @@
         </td>
         <td><p>Set SPATA2 directory</p></td>
       </tr><tr><td>
-          <p><code><a href="setTissueOutline.html">setTissueOutline()</a></code> </p>
+          <p><code><a href="setSpatialMethod.html">setSpatialMethod()</a></code> </p>
         </td>
-        <td><p>Set tissue outline</p></td>
+        <td><p>Set the <code>SpatialMethod</code> object</p></td>
+      </tr><tr><td>
+          <p><code><a href="setSpatialMethodInfo.html">setSpatialMethodInfo()</a></code> </p>
+        </td>
+        <td><p>Set information of <code>SpatialMethod</code> object</p></td>
+      </tr><tr><td>
+          <p><code><a href="setSpatialMethodSlot.html">setSpatialMethodSlot()</a></code> </p>
+        </td>
+        <td><p>Set slot content of <code>SpatialMethod</code> object</p></td>
       </tr><tr><td>
           <p><code><a href="setTrajectory.html">setTrajectory()</a></code> <code><a href="setTrajectory.html">setTrajectories()</a></code> </p>
         </td>
@@ -441,7 +453,7 @@
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="containsCNV.html">containsCNV()</a></code> <code><a href="containsCNV.html">containsHistologyImage()</a></code> <code><a href="containsCNV.html">containsTissueOutline()</a></code> </p>
+          <p><code><a href="containsCNV.html">containsCNV()</a></code> <code><a href="containsCNV.html">containsHistologyImage()</a></code> </p>
         </td>
         <td><p>Check availability of miscellaneous content</p></td>
       </tr><tr><td>
@@ -613,15 +625,15 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="getActiveMatrixName.html">getActiveMatrixName()</a></code> <code><a href="getActiveMatrixName.html">getActiveMatrixName()</a></code> <code><a href="getActiveMatrixName.html">getActiveExpressionMatrixName()</a></code> </p>
+          <p><code><a href="getActiveMatrixName.html">getActiveMatrixName()</a></code> <code><a href="getActiveMatrixName.html">getActiveExpressionMatrixName()</a></code> </p>
         </td>
-        <td><p>Obtain name of currently active expression matrix</p></td>
+        <td><p>Obtain name of currently active data matrix</p></td>
       </tr><tr><td>
-          <p><code><a href="getExpressionMatrixNames.html">getExpressionMatrixNames()</a></code> <code><a href="getExpressionMatrixNames.html">getExpressionMatrixNames()</a></code> </p>
+          <p><code><a href="getExpressionMatrixNames.html">getExpressionMatrixNames()</a></code> </p>
         </td>
         <td><p>Obtain names of stored expression matrices</p></td>
       </tr><tr><td>
-          <p><code><a href="getMatrix.html">getMatrix()</a></code> <code><a href="getMatrix.html">getExpressionMatrix()</a></code> <code><a href="getMatrix.html">getCountMatrix()</a></code> <code><a href="getMatrix.html">getCountMatrix()</a></code> <code><a href="getMatrix.html">getExpressionMatrix()</a></code> <code><a href="getMatrix.html">getMatrix()</a></code> <code><a href="getMatrix.html">getMatrices()</a></code> </p>
+          <p><code><a href="getMatrix.html">getCountMatrix()</a></code> <code><a href="getMatrix.html">getExpressionMatrix()</a></code> <code><a href="getMatrix.html">getMatrix()</a></code> <code><a href="getMatrix.html">getMatrices()</a></code> </p>
         </td>
         <td><p>Obtain count and expression matrix</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -649,19 +661,19 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain coordinate range</p></td>
       </tr><tr><td>
-          <p><code><a href="getDimRedDf.html">getDimRedDf()</a></code> <code><a href="getDimRedDf.html">getPcaDf()</a></code> <code><a href="getDimRedDf.html">getPcaMtr()</a></code> <code><a href="getDimRedDf.html">getUmapDf()</a></code> <code><a href="getDimRedDf.html">getTsneDf()</a></code> <code><a href="getDimRedDf.html">getDimRedDf()</a></code> <code><a href="getDimRedDf.html">getPcaDf()</a></code> <code><a href="getDimRedDf.html">getPcaMtr()</a></code> <code><a href="getDimRedDf.html">getTsneDf()</a></code> <code><a href="getDimRedDf.html">getUmapDf()</a></code> </p>
+          <p><code><a href="getDimRedDf.html">getDimRedDf()</a></code> <code><a href="getDimRedDf.html">getPcaDf()</a></code> <code><a href="getDimRedDf.html">getPcaMtr()</a></code> <code><a href="getDimRedDf.html">getTsneDf()</a></code> <code><a href="getDimRedDf.html">getUmapDf()</a></code> </p>
         </td>
-        <td><p>Obtain dimensional reduction data</p></td>
+        <td><p>Obtain dim red data.frame</p></td>
       </tr><tr><td>
           <p><code><a href="getTissueOutlineDf.html">getTissueOutlineDf()</a></code> </p>
         </td>
-        <td><p>Obtain outer barcode spots</p></td>
+        <td><p>Obtain outline barcode spots</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h3 id="features-grouping">Features &amp; Grouping <a href="#features-grouping" class="anchor" aria-hidden="true"></a></h3>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="getFeatureNames.html">getFeatureNames()</a></code> <code><a href="getFeatureNames.html">getFeatureNames()</a></code> </p>
+          <p><code><a href="getFeatureNames.html">getFeatureNames()</a></code> </p>
         </td>
         <td><p>Obtain feature names</p></td>
       </tr><tr><td>
@@ -669,23 +681,23 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain features names under which cnv-analysis results are stored.</p></td>
       </tr><tr><td>
-          <p><code><a href="getFeatureDf.html">getFeatureDf()</a></code> <code><a href="getFeatureDf.html">getFeatureDf()</a></code> </p>
+          <p><code><a href="getFeatureDf.html">getFeatureDf()</a></code> </p>
         </td>
         <td><p>Obtain feature data</p></td>
       </tr><tr><td>
-          <p><code><a href="getFeatureValues.html">getFeatureValues()</a></code> <code><a href="getFeatureValues.html">getFeatureValues()</a></code> </p>
+          <p><code><a href="getFeatureValues.html">getFeatureValues()</a></code> </p>
         </td>
         <td><p>Obtain unique categorical feature values</p></td>
       </tr><tr><td>
-          <p><code><a href="getFeatureVariables.html">getFeatureVariables()</a></code> <code><a href="getFeatureVariables.html">getFeatureVariables()</a></code> </p>
+          <p><code><a href="getFeatureVariables.html">getFeatureVariables()</a></code> </p>
         </td>
         <td><p>Obtain a feature variable</p></td>
       </tr><tr><td>
-          <p><code><a href="getGroupingOptions.html">getGroupingOptions()</a></code> <code><a href="getGroupingOptions.html">getGroupingOptions()</a></code> </p>
+          <p><code><a href="getGroupingOptions.html">getGroupingOptions()</a></code> </p>
         </td>
         <td><p>Obtain variable names that group the barcode spots</p></td>
       </tr><tr><td>
-          <p><code><a href="getGroupNames.html">getGroupNames()</a></code> <code><a href="getGroupNames.html">getGroupNames()</a></code> </p>
+          <p><code><a href="getGroupNames.html">getGroupNames()</a></code> </p>
         </td>
         <td><p>Obtain group names a grouping variable contains</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -697,11 +709,11 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain LFC name</p></td>
       </tr><tr><td>
-          <p><code><a href="getDeaOverview.html">getDeaOverview()</a></code> <code><a href="getDeaOverview.html">getDeaOverview()</a></code> </p>
+          <p><code><a href="getDeaOverview.html">getDeaOverview()</a></code> </p>
         </td>
         <td><p>Obtain info on de-analysis storage</p></td>
       </tr><tr><td>
-          <p><code><a href="getDeaResultsDf.html">getDeaResultsDf()</a></code> <code><a href="getDeaResultsDf.html">getDeaGenes()</a></code> <code><a href="getDeaResultsDf.html">getDeaGenes()</a></code> <code><a href="getDeaResultsDf.html">getDeaResultsDf()</a></code> </p>
+          <p><code><a href="getDeaResultsDf.html">getDeaGenes()</a></code> <code><a href="getDeaResultsDf.html">getDeaResultsDf()</a></code> </p>
         </td>
         <td><p>Obtain de-analysis results</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -725,15 +737,15 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="getGeneCounts.html">getGeneCounts()</a></code> <code><a href="getGeneCounts.html">getGeneCounts()</a></code> </p>
+          <p><code><a href="getGeneCounts.html">getGeneCounts()</a></code> </p>
         </td>
         <td><p>Obtain total number of gene counts</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneFeatureNames.html">getGeneFeatureNames()</a></code> <code><a href="getGeneFeatureNames.html">getGeneFeatureNames()</a></code> </p>
+          <p><code><a href="getGeneFeatureNames.html">getGeneFeatureNames()</a></code> </p>
         </td>
         <td><p>Obtain feature names of the gene meta data</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneMetaData.html">getGeneMetaData()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaDf()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaData()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaDf()</a></code> </p>
+          <p><code><a href="getGeneMetaData.html">getGeneMetaData()</a></code> <code><a href="getGeneMetaData.html">getGeneMetaDf()</a></code> </p>
         </td>
         <td><p>Obtain gene meta data</p></td>
       </tr><tr><td>
@@ -741,19 +753,19 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain gene information</p></td>
       </tr><tr><td>
-          <p><code><a href="getGenes.html">getGenes()</a></code> <code><a href="getGenes.html">getGenesInteractive()</a></code> <code><a href="getGenes.html">getGenes()</a></code> <code><a href="getGenes.html">getGenesInteractive()</a></code> </p>
+          <p><code><a href="getGenes.html">getGenes()</a></code> <code><a href="getGenes.html">getGenesInteractive()</a></code> </p>
         </td>
         <td><p>Obtain gene names</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneSetDf.html">getGeneSetDf()</a></code> <code><a href="getGeneSetDf.html">getGeneSetDf()</a></code> <code><a href="getGeneSetDf.html">getGeneSetList()</a></code> </p>
+          <p><code><a href="getGeneSetDf.html">getGeneSetDf()</a></code> <code><a href="getGeneSetDf.html">getGeneSetList()</a></code> </p>
         </td>
         <td><p>Obtain gene set data.frame</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneSetOverview.html">getGeneSetOverview()</a></code> <code><a href="getGeneSetOverview.html">getGeneSetOverview()</a></code> </p>
+          <p><code><a href="getGeneSetOverview.html">getGeneSetOverview()</a></code> </p>
         </td>
         <td><p>Overview about the current gene sets</p></td>
       </tr><tr><td>
-          <p><code><a href="getGeneSets.html">getGeneSets()</a></code> <code><a href="getGeneSets.html">getGeneSetsInteractive()</a></code> <code><a href="getGeneSets.html">getGeneSets()</a></code> <code><a href="getGeneSets.html">getGeneSetsInteractive()</a></code> </p>
+          <p><code><a href="getGeneSets.html">getGeneSets()</a></code> <code><a href="getGeneSets.html">getGeneSetsInteractive()</a></code> </p>
         </td>
         <td><p>Obtain gene set names</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -777,7 +789,7 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain image annotation screening data.frame</p></td>
       </tr><tr><td>
-          <p><code><a href="getImage.html">getImage()</a></code> <code><a href="getImage.html">getImage()</a></code> </p>
+          <p><code><a href="getImage.html">getImage()</a></code> </p>
         </td>
         <td><p>Obtain histology image</p></td>
       </tr><tr><td>
@@ -881,7 +893,7 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
           <p class="section-desc"></p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="getBarcodes.html">getBarcodes()</a></code> <code><a href="getBarcodes.html">getBarcodes()</a></code> </p>
+          <p><code><a href="getBarcodes.html">getBarcodes()</a></code> </p>
         </td>
         <td><p>Obtain specific barcodes</p></td>
       </tr><tr><td>
@@ -889,11 +901,11 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain copy-number-variations results</p></td>
       </tr><tr><td>
-          <p><code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> </p>
+          <p><code><a href="getDefaultInstructions.html">getDefault()</a></code> <code><a href="getDefaultInstructions.html">getDefaultInstructions()</a></code> <code><a href="getDefaultInstructions.html">getDirectoryInstructions()</a></code> </p>
         </td>
         <td><p>Obtain default argument inputs</p></td>
       </tr><tr><td>
-          <p><code><a href="getInitiationInfo.html">getInitiationInfo()</a></code> <code><a href="getInitiationInfo.html">getInitiationInput()</a></code> <code><a href="getInitiationInfo.html">getInitiationInfo()</a></code> <code><a href="getInitiationInfo.html">getInitiationInput()</a></code> </p>
+          <p><code><a href="getInitiationInfo.html">getInitiationInfo()</a></code> <code><a href="getInitiationInfo.html">getInitiationInput()</a></code> </p>
         </td>
         <td><p>Obtain information about object initiation</p></td>
       </tr><tr><td>
@@ -905,7 +917,7 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain name of <code>SPATA2</code> object</p></td>
       </tr><tr><td>
-          <p><code><a href="getSpataDf.html">getSpataDf()</a></code> <code><a href="getSpataDf.html">getSpataDf()</a></code> </p>
+          <p><code><a href="getSpataDf.html">getSpataDf()</a></code> </p>
         </td>
         <td><p>Obtain a spata-data.frame</p></td>
       </tr><tr><td>
@@ -949,23 +961,19 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Obtain spatial trajectory IDs</p></td>
       </tr><tr><td>
-          <p><code><a href="getTrajectoryDf.html">getTrajectoryDf()</a></code> <code><a href="getTrajectoryDf.html">getTrajectoryDf()</a></code> </p>
+          <p><code><a href="getTrajectoryDf.html">getTrajectoryDf()</a></code> </p>
         </td>
-        <td><p>Obtain a summarized trajectory data.frame</p></td>
+        <td><p>Obtain a trajectory data.frame</p></td>
       </tr><tr><td>
           <p><code><a href="getTrajectoryIds.html">getTrajectoryIds()</a></code> </p>
         </td>
         <td><p>Obtain trajectory ids</p></td>
       </tr><tr><td>
-          <p><code><a href="getTrajectoryLength.html">getTrajectoryLength()</a></code> <code><a href="getTrajectoryLength.html">getTrajectoryLength()</a></code> </p>
+          <p><code><a href="getTrajectoryLength.html">getTrajectoryLength()</a></code> </p>
         </td>
-        <td><p>Obtain the length of a trajectory</p></td>
+        <td><p>Obtain length of trajectory</p></td>
       </tr><tr><td>
-          <p><code><a href="getTrajectoryObject.html">getTrajectoryObject()</a></code> </p>
-        </td>
-        <td><p>Obtain trajectory object</p></td>
-      </tr><tr><td>
-          <p><code><a href="getTrajectorySegmentDf.html">getTrajectorySegmentDf()</a></code> <code><a href="getTrajectorySegmentDf.html">getTrajectorySegmentDf()</a></code> </p>
+          <p><code><a href="getTrajectorySegmentDf.html">getTrajectorySegmentDf()</a></code> </p>
         </td>
         <td><p>Obtain trjectory course</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
@@ -1177,6 +1185,10 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Arrange observations as polygon</p></td>
       </tr><tr><td>
+          <p><code><a href="barcodesToImageAnnotation.html">barcodesToImageAnnotation()</a></code> </p>
+        </td>
+        <td><p>Create image annotations from a list of barcodes</p></td>
+      </tr><tr><td>
           <p><code><a href="buffer_area.html">buffer_area()</a></code> </p>
         </td>
         <td><p>Buffer area</p></td>
@@ -1185,6 +1197,26 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
         </td>
         <td><p>Create model data.frame</p></td>
       </tr><tr><td>
+          <p><code><a href="currentSpata2Version.html">currentSpata2Version()</a></code> </p>
+        </td>
+        <td><p>The current version of <code>SPATA2</code></p></td>
+      </tr><tr><td>
+          <p><code><a href="deprecatedInfo.html">deprecatedInfo()</a></code> </p>
+        </td>
+        <td><p>Information about deprecated aspects</p></td>
+      </tr><tr><td>
+          <p><code><a href="mergeTissueSections.html">mergeTissueSections()</a></code> </p>
+        </td>
+        <td><p>Merge tissue sections</p></td>
+      </tr><tr><td>
+          <p><code><a href="identifyTissueOutline.html">identifyTissueOutline()</a></code> </p>
+        </td>
+        <td><p>Identify tissue outline</p></td>
+      </tr><tr><td>
+          <p><code><a href="identifyTissueSections.html">identifyTissueSections()</a></code> </p>
+        </td>
+        <td><p>Identify tissue sections</p></td>
+      </tr><tr><td>
           <p><code><a href="include_tissue_outline.html">include_tissue_outline()</a></code> </p>
         </td>
         <td><p>Include spatial extent of tissue sections in analysis</p></td>
@@ -1192,6 +1224,10 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
           <p><code><a href="intersect_polygons.html">intersect_polygons()</a></code> </p>
         </td>
         <td><p>Test polygon intersection</p></td>
+      </tr><tr><td>
+          <p><code><a href="tissueOutlineIdentified.html">tissueOutlineIdentified()</a></code> <code><a href="tissueOutlineIdentified.html">tissueSectionsIdentfied()</a></code> </p>
+        </td>
+        <td><p>Check availability of tissue information</p></td>
       </tr><tr><td>
           <p><code><a href="validActivationFunctions.html">validActivationFunctions()</a></code> <code><a href="validActivationFunctions.html">validAgglomerationMethods()</a></code> <code><a href="validActivationFunctions.html">validAlluvialTypes()</a></code> <code><a href="validActivationFunctions.html">validColorPalettes()</a></code> <code><a href="validActivationFunctions.html">validColorSpectra()</a></code> <code><a href="validActivationFunctions.html">validDeAnalysisMethods()</a></code> <code><a href="validActivationFunctions.html">validDefaultInstructionSlots()</a></code> <code><a href="validActivationFunctions.html">validDimRedMethods()</a></code> <code><a href="validActivationFunctions.html">validDirectoryInstructionSlots()</a></code> <code><a href="validActivationFunctions.html">validDistanceMethods()</a></code> <code><a href="validActivationFunctions.html">validHierarchicalClusterMethods()</a></code> <code><a href="validActivationFunctions.html">validImageClasses()</a></code> <code><a href="validActivationFunctions.html">validModelNames()</a></code> <code><a href="validActivationFunctions.html">validPatternRecognitionMethods()</a></code> <code><a href="validActivationFunctions.html">validPadjMethods()</a></code> <code><a href="validActivationFunctions.html">validPlotTypes()</a></code> <code><a href="validActivationFunctions.html">validPubExamples()</a></code> <code><a href="validActivationFunctions.html">validSpatialMethods()</a></code> <code><a href="validActivationFunctions.html">validTrajectoryTrends()</a></code> <code><a href="validActivationFunctions.html">validUnits()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfArea()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfAreaSI()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfLength()</a></code> <code><a href="validActivationFunctions.html">validUnitsOfLengthSI()</a></code> <code><a href="validActivationFunctions.html">validEuropeanUnitsOfLength()</a></code> </p>
         </td>
@@ -1328,6 +1364,10 @@ their spatial positioning. Variable names: <em>barcodes</em>, <em>col</em>, <em>
           <p><code><a href="Trajectory-class.html">Trajectory-class</a></code> <code><a href="Trajectory-class.html">Trajectory</a></code> </p>
         </td>
         <td><p>The <code>Trajectory</code> - Class</p></td>
+      </tr><tr><td>
+          <p><code><a href="Visium-class.html">Visium-class</a></code> <code><a href="Visium-class.html">Visium</a></code> </p>
+        </td>
+        <td><p>The <code>Visium</code> - Class</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="visualization">Visualization <a href="#visualization" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>

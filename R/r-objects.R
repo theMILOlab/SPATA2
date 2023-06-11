@@ -75,7 +75,7 @@ default_colors <- viridis::viridis(15)
 default_instructions_object <-
   methods::new(Class = "default_instructions",
                average_genes = FALSE,
-               clrp = "milo",
+               clrp = "sifre",
                clrsp = "inferno",
                colors = default_colors,
                complete = TRUE,
@@ -106,7 +106,7 @@ default_instructions_object <-
                position = "fill",
                pt_alpha = 0.9,
                pt_clr = "lightgrey",
-               pt_clrp = "milo",
+               pt_clrp = "sifre",
                pt_clrsp = "inferno",
                pt_fill = "black",
                pt_shape = 21,
@@ -477,8 +477,8 @@ create_spatial_trajectories_descr <- list(
 
 
 #' @export
-current_spata_version <- list(major = 2, minor = 0, patch = 3)
-current_spata2_version <- list(major = 2, minor = 0, patch = 3)
+current_spata_version <- list(major = 2, minor = 0, patch = 4)
+current_spata2_version <- list(major = 2, minor = 0, patch = 4)
 
 # d -----------------------------------------------------------------------
 

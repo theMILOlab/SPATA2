@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -144,6 +144,7 @@
 <span class="fu">asSPATA2</span><span class="op">(</span>
   <span class="va">object</span>,
   <span class="va">sample_name</span>,
+  <span class="va">spatial_method</span>,
   assay_name <span class="op">=</span> <span class="st">"Spatial"</span>,
   image_name <span class="op">=</span> <span class="st">"slice1"</span>,
   transfer_meta_data <span class="op">=</span> <span class="cn">TRUE</span>,
@@ -193,6 +194,11 @@ none are transferred.</p></dd>
 <dd><p>Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
+
+
+<dt>spatial_method</dt>
+<dd><p>Character value. The name of the spatial method that underlies
+the experiment. Must be one of <code><a href="validActivationFunctions.html">validSpatialMethods()</a></code>. Defaults to <em>'Unknown'</em>.</p></dd>
 
 
 <dt>transfer_dim_red</dt>

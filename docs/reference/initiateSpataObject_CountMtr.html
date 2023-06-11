@@ -18,7 +18,7 @@ a raw count matrix. See details for more information."><!-- mathjax --><script s
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -140,15 +140,15 @@ a raw count matrix. See details for more information.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">initiateSpataObject_CountMtr</span><span class="op">(</span>
   <span class="va">coords_df</span>,
   <span class="va">count_mtr</span>,
-  feature_df <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">sample_name</span>,
+  spatial_method <span class="op">=</span> <span class="st">"Unknown"</span>,
   image <span class="op">=</span> <span class="cn">NULL</span>,
   image_class <span class="op">=</span> <span class="st">"HistologyImage"</span>,
   image_object <span class="op">=</span> <span class="cn">NULL</span>,
+  feature_df <span class="op">=</span> <span class="cn">NULL</span>,
   directory_spata <span class="op">=</span> <span class="cn">NULL</span>,
   directory_seurat <span class="op">=</span> <span class="cn">NULL</span>,
   combine_with_wd <span class="op">=</span> <span class="cn">FALSE</span>,
-  gene_set_path <span class="op">=</span> <span class="cn">NULL</span>,
   SCTransform <span class="op">=</span> <span class="cn">FALSE</span>,
   NormalizeData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>normalization.method <span class="op">=</span> <span class="st">"LogNormalize"</span>, scale.factor <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span>,
   FindVariableFeatures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>selection.method <span class="op">=</span> <span class="st">"vst"</span>, nfeatures <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span>,
@@ -158,7 +158,8 @@ a raw count matrix. See details for more information.</p>
   FindClusters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>resolution <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span>,
   RunTSNE <span class="op">=</span> <span class="cn">TRUE</span>,
   RunUMAP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>dims <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">30</span><span class="op">)</span>,
-  verbose <span class="op">=</span> <span class="cn">TRUE</span>
+  verbose <span class="op">=</span> <span class="cn">TRUE</span>,
+  <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
@@ -168,7 +169,7 @@ a raw count matrix. See details for more information.</p>
 <dd><p>Data.frame containing information about the positions of all
 barcode-spots in form of a numeric <em>x</em>- and <em>y</em>-variable. The key-variable
 <em>barcodes</em> needs to be of type character and must be identical to the column names
-of the input matrix (<code>expr_mtr</code>).</p></dd>
+of the input matrix.</p></dd>
 
 
 <dt>count_mtr</dt>
@@ -183,15 +184,6 @@ analyzing with the spata-object. The future input for SPATA's <code>of_sample</c
 
 <dt>image</dt>
 <dd><p>An Image of the sample that can be displayed as the surface plot's background.</p></dd>
-
-
-<dt>gene_set_path</dt>
-<dd><p>Character value (or NULL). Specifies the path to a
-.RDS-file containing a data.frame that is to be used as input for slot @used_genesets.</p>
-<p>Must have the character-variables</p>
-<ul><li><p><em>'ont'</em>: The gene set names.</p></li>
-<li><p><em>'gene'</em>: The belonging gene names.</p></li>
-</ul><p>If set to NULL the default gene-set data.frame will used. Run <code><a href="gsdf.html">?gsdf</a></code> to get more information.</p></dd>
 
 
 <dt>SCTransform</dt>
@@ -231,6 +223,10 @@ for argument <code>features</code> is set to <code>base::rownames(seurat_object)
 <dt>RunUMAP</dt>
 <dd><p>A named list of arguments given to <code><a href="https://satijalab.org/seurat/reference/RunUMAP.html" class="external-link">Seurat::RunUMAP()</a></code>, TRUE or FALSE.</p></dd>
 
+
+<dt>...</dt>
+<dd><p>Additional parameters given to <code><a href="https://mojaveazure.github.io/seurat-object/reference/CreateSeuratObject.html" class="external-link">Seurat::CreateSeuratObject()</a></code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -246,7 +242,7 @@ manipulate the way the <code>spata2</code> object is processed. For all of these
 <ul><li><p>If set to FALSE the processing function is skipped.</p></li>
 <li><p>If set to TRUE the respective function is called with it's default argument settings. Note: <code>RunUMAP()</code> needs
 additional input!</p></li>
-<li><p>If a named list is provided the respective function is called whereby the named list will provide the argument-input (the seurat-object to be constructed must not be named and will be
+<li><p>If a named list is provided the respective function is called whereby the named list will provide the argument-input (the <code>Seurat</code> object to be constructed must not be named and will be
 passed to every function as the first argument!!!.)</p></li>
 </ul><p>Note that certain listed functions require previous functions! E.g. if <code>RunPCA</code> is set to FALSE <code>RunTSNE()</code>
 will result in an error. (<code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">base::tryCatch()</a></code> will prevent the function from crashing but the respective slot

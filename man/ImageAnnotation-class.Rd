@@ -16,8 +16,7 @@ histology images.
 Observations correspond to the vertices of the polygons that are needed to represent the
 image annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
 of the image annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
-with numbers that correspond to inner polygons - holes within the annotation. If so,
-slot @mode should be \emph{'Complex'}.}
+with numbers that correspond to inner polygons - holes within the annotation.}
 
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}

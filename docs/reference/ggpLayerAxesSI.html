@@ -18,7 +18,7 @@ surface plots and STS/IAS line- or ridgeplots with SI units of length."><!-- mat
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">SPATA2</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.4</span>
       </span>
     </div>
 
@@ -145,6 +145,8 @@ surface plots and STS/IAS line- or ridgeplots with SI units of length.</p>
   expand <span class="op">=</span> <span class="cn">NULL</span>,
   add_labs <span class="op">=</span> <span class="cn">FALSE</span>,
   round <span class="op">=</span> <span class="fl">2</span>,
+  xlim <span class="op">=</span> <span class="cn">NULL</span>,
+  ylim <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
 <span class="op">)</span></code></pre></div>
     </div>
@@ -192,6 +194,11 @@ Valid input:</p>
 <dt>round</dt>
 <dd><p>Numeric value or <code>FALSE</code>. If numeric, given to <code>digits</code>
 of <code><a href="https://rdrr.io/r/base/Round.html" class="external-link">base::round()</a></code>. Rounds transformed values before they are returned.</p></dd>
+
+
+<dt>xlim, ylim</dt>
+<dd><p>Vectors of length two. Distance measures that set the limits
+on the respective axes.</p></dd>
 
 
 <dt>...</dt>
