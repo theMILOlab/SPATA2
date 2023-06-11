@@ -4,7 +4,7 @@
 \alias{arrange_as_polygon}
 \title{Arrange observations as polygon}
 \usage{
-arrange_as_polygon(input_df)
+arrange_as_polygon(input_df, use = "angle")
 }
 \arguments{
 \item{input_df}{Data.frame with at least two numeric variables named \emph{x}

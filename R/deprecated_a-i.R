@@ -1129,6 +1129,15 @@ getMethodName <- function(object){
 
 }
 
+#' @rdname downloadPubExample
+#' @export
+getPubExample <- function(...){
+
+  deprecated(fn = TRUE, ...)
+
+  downloadPubExample(...)
+
+}
 
 #' @rdname getSampleName
 #' @export

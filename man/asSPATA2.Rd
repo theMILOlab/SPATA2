@@ -9,7 +9,16 @@
 \usage{
 asSPATA2(object, ...)
 
-\S4method{asSPATA2}{giotto}(object, sample_name, transfer_meta_data = TRUE, verbose = TRUE, ...)
+\S4method{asSPATA2}{giotto}(
+  object,
+  sample_name,
+  coordinates,
+  image_ebi,
+  spatial_method,
+  transfer_meta_data = TRUE,
+  verbose = TRUE,
+  ...
+)
 
 \S4method{asSPATA2}{Seurat}(
   object,
@@ -43,6 +52,9 @@ asSPATA2(object, ...)
 
 \item{sample_name}{A character string specifying the name of the sample}
 
+\item{spatial_method}{Character value. The name of the spatial method that underlies
+the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'Unknown'}.}
+
 \item{transfer_meta_data}{Logical or character. Specifies
 if meta data, e.g clustering, from the input object is transferred
 to the output object. If TRUE, all variables of the meta data.frame
@@ -53,9 +65,6 @@ none are transferred.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{spatial_method}{Character value. The name of the spatial method that underlies
-the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'Unknown'}.}
 
 \item{transfer_dim_red}{A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
 tSNE) from the input object to the output object.}
