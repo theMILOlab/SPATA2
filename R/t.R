@@ -190,6 +190,19 @@ textInputWrapper <- function(inputId,
 
 # theme -------------------------------------------------------------------
 
+
+theme_image <- function(){
+
+  list(
+    ggplot2::theme_bw(),
+    ggplot2::theme(
+      panel.grid.major = ggplot2::element_blank(),
+      panel.grid.minor = ggplot2::element_blank()
+    )
+  )
+
+}
+
 #' @title ggplot2 themes
 #' @description Miscellaneous `ggplot2` themes used throughout the package.
 #' @return gg theme
@@ -250,6 +263,21 @@ theme_trajectory_fit <- function(){
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_text(color = "black", size = 10)
     )
+  )
+
+}
+
+#' @rdname theme_lineplot_gradient
+#' @export
+theme_transparent <- function(){
+
+  ggplot2::theme(
+    panel.background = ggplot2::element_rect(fill = 'transparent'),
+    plot.background = ggplot2::element_rect(fill = 'transparent', color=NA),
+    panel.grid.major = ggplot2::element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    legend.background = ggplot2::element_rect(fill = 'transparent'),
+    legend.box.background = ggplot2::element_rect(fill = 'transparent')
   )
 
 }
@@ -443,6 +471,7 @@ transform_dist_si_to_pixels <- function(input,
   return(out)
 
 }
+
 
 
 #' @title Convert from pixels to European units of length

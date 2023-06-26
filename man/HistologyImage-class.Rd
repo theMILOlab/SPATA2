@@ -6,33 +6,70 @@
 \alias{HistologyImage}
 \title{The \code{HistologyImage} - Class}
 \description{
-S4 class that represents histology images.
+S4 class that represents an histology image. Appear in slot @image_active
+and @images_registered of S4 class \code{\link{HistologyImaging}}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{annotations}}{list. List of objects of class \code{ImageAnnotation}.}
+\item{\code{aligned}}{logical. If \code{TRUE}, indicates that the image was aligned to
+the reference image.}
 
-\item{\code{dir_default}}{character. The default directory that is used to load
-the image if slot @image is empty. Or a string linking to the default slot
-('highres' or 'lowres').}
+\item{\code{centered}}{logical. If \code{TRUE}, indicates that the tissue outline has been
+centered.}
 
-\item{\code{dir_highres}}{character. Directory to the high resolution version of the image.}
+\item{\code{coords_scale_fct}}{numeric. A numeric value of length one. It represents
+the scaling factor applied to the original x- and y-coordinates
+(stored in the 'x_orig' and 'y_orig' variables) of the entities underlying the image.
+These entities are contained within the data.frame stored in the '@coordinates' slot
+of S4 class \code{\link{HistologyImaging}}.
 
-\item{\code{dir_lowres}}{character. Directory to the low resolution version of the image.}
+By multiplying the original coordinates with the 'coords_scale_fct', the scaled coordinates
+are obtained, allowing for adjustments in the spatial representation of the entities on the image.
+and preserving the spatial relationship and proportionality between the entities and the image.}
 
-\item{\code{grid}}{data.frame. A data.frame that contains at least a variable
-named \emph{x} and a variable named \emph{y} representing a grid.}
+\item{\code{dir}}{character. The directory from where to load the image if slot @image is empty.}
 
-\item{\code{id}}{character. String to identify the object in a list of multiple objects
-of the same class. Usually refers to the sample name of the \code{SPATA2} object.}
+\item{\code{image}}{Image. The image stored as class \code{Image} from the package \code{EBImage}.}
 
-\item{\code{image}}{Image.}
-
-\item{\code{info}}{list. A flexible list that is supposed to store miscellaneous
-information around the image.}
-
-\item{\code{misc}}{list. A flexible list for miscellaneous input.}
+\item{\code{image_info}}{list. A list of miscellaneous slots that carrie information
+regarding the image. Protected slots are:
+\itemize{
+\item{dims}{Numeric vector of length three. Output of \code{base::dim()} on the padded image.}
 }}
 
-\keyword{internal}
+\item{\code{name}}{character. The name of the image.}
+
+\item{\code{outline}}{list. List of two data.frames in which each row corresponds to
+a vertice of the polygon required to outline the whole tissue identified on
+the image or single contiguous tissue sections.
+\itemize{
+\item{\emph{tissue_whole}:}{ Data.frame of two variables \emph{x} and \emph{y}.}
+\item{\emph{tissue_sections}:} Data.frame of two variables \emph{x}, \emph{y} and \emph{section} to
+identify the tissue section outlined.
+}}
+
+\item{\code{overlap}}{numeric. Numeric vector of length two. Quantifies the overlap
+of the tissue outline of this image with the tissue outline of the reference image
+with a value between 0-1 before and after alignment via \code{alignImage()}.}
+
+\item{\code{reference}}{logical. \code{TRUE} if it is the histology image used as the reference
+with which other histology images are aligned.}
+
+\item{\code{sample}}{character. The name of the tissue portion to which this image belongs.}
+
+\item{\code{transformations}}{list. List of transformations to apply while extracting
+the image to ensure alignment with additional images. In case of default values
+no transformation is applied.
+\itemize{
+\item{\emph{angle}:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
+by which the image needs to be rotated in \strong{clockwise} direction. Defaults to 0.}
+\item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}. Both default to \code{FALSE}}
+\item{\emph{scale}:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
+\item{\emph{translate}:}{ Vector of two numeric values named \emph{horizontal} and \emph{vertical}. Indicate
+the number of pixels the image needs to be translated. Positive values shift the image
+\strong{downwards} or to the right, respectively. Negative values shift the image \strong{upwards}
+or to the left, respectively. Both default to 0.}
+}}
+}}
+

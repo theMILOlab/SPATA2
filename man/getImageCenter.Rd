@@ -2,12 +2,23 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageCenter}
 \alias{getImageCenter}
+\alias{getImageCenter,spata2-method}
+\alias{getImageCenter,HistologyImaging-method}
+\alias{getImageCenter,HistologyImage-method}
 \title{Obtain image center}
 \usage{
-getImageCenter(object)
+getImageCenter(object, ...)
+
+\S4method{getImageCenter}{spata2}(object)
+
+\S4method{getImageCenter}{HistologyImaging}(object, name = NULL)
+
+\S4method{getImageCenter}{HistologyImage}(object)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Numeric vector of length two.

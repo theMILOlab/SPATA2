@@ -20,7 +20,7 @@ time the segment was drawn.}
 \item{parent_id:}{ Character string. The ID of the spatial segmentation this segment is part of.}
 \item{pot:}{ POSIXct. The point of time when the segment was drawn. Used to handle overlapping
 segments.}
-\item{sample:}{ Character string. The name of the sample (slot @sample of the \code{SPATA2} object.)}
+\item{sample:}{ Character string. The name of the sample (slot @sample of the \code{spata2} object.)}
 }}
 
 \item{\code{label}}{character. Character string. The label that was given to the segment.

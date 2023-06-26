@@ -912,15 +912,6 @@ check_slot_version <- function(object){
 
 }
 
-#' @keywords internal
-createHistologyImage <- function(...){
-
-  deprecated(fn = TRUE)
-
-  createHistologyImaging(...)
-
-}
-
 
 #' @export
 #' @keywords internal

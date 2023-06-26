@@ -2,15 +2,23 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageRaster}
 \alias{getImageRaster}
+\alias{getImageRaster,spata2-method}
+\alias{getImageRaster,HistologyImage-method}
 \alias{getImageRasterInfo}
 \title{Obtain image raster-(information)}
 \usage{
-getImageRaster(object, xrange = NULL, yrange = NULL, expand = 0)
+getImageRaster(object, ...)
+
+\S4method{getImageRaster}{spata2}(object, xrange = NULL, yrange = NULL, expand = 0)
+
+\S4method{getImageRaster}{HistologyImage}(object, xrange = NULL, yrange = NULL, expand = 0)
 
 getImageRasterInfo(object, xrange = NULL, yrange = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.

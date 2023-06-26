@@ -422,8 +422,15 @@ expand_image_range <- function(range,
 
     abs_axes_length <-
       stringr::str_remove(string = expand_with, pattern = "!$") %>%
-      base::unique() %>%
-      as_pixel(input = ., object = object, add_attr = FALSE)
+      base::unique()
+
+    if(!base::all(is_dist_pixel(abs_axes_length))){
+
+      abs_axes_length <- as_pixel(input = abs_axes_length, object = object, add_attr = FALSE)
+
+    }
+
+    abs_axes_length <- base::as.numeric(abs_axes_length)
 
     center <- base::mean(range)
 
@@ -488,8 +495,6 @@ expand_image_range <- function(range,
 
 
   }
-
-
 
   out <- c(out1, out2)
 

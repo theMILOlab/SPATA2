@@ -24,7 +24,6 @@ data-scripts
 jobs
 source.all.samples.csv
 data-scripts
-jobs
 markdown
 todo
 ref.yml
@@ -37,3 +36,4 @@ graphics/
 specific_requests
 .gitignore
 docs
+gifs

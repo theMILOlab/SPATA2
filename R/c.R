@@ -414,34 +414,6 @@ containsHistologyImaging <- function(object){
 
 
 
-#' @title Check availability of an image
-#'
-#' @description Checks if slot @@image of the `HistologyImage` object
-#' in the `SPATA2` object contains an image or if it is empty.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Logical value.
-#'
-#' @export
-containsImage <- function(object){
-
-  out <- containsHistologyImaging(object)
-
-  if(base::isTRUE(out)){
-
-    img <- object@images[[1]]
-
-    dims <- base::dim(img@image)
-
-    out <- !base::any(dims == 0)
-
-  }
-
-  return(out)
-
-}
-
 #' @rdname containsHistologyImaging
 #' @export
 containsImageObject <- function(object){
@@ -573,6 +545,21 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 }
 
 
+
+#' @title Crop image
+#'
+#' @description Crops an image.
+#'
+#' @param image Object of class `Image` from the `ÈBIMage` package.
+#'
+#' @return Cropped input object.
+#' @export
+crop_image <- function(image, ...){
+
+  return(image)
+
+}
+
 #' @title Subset by x- and y-range
 #'
 #' @description Creates a subset of the original `SPATA2` object
@@ -609,6 +596,8 @@ cropSpataObject <- function(object, xrange, yrange, verbose = NULL){
   return(object_cropped)
 
 }
+
+
 
 
 

@@ -938,8 +938,7 @@ flipCoordsDf <- function(object, axis, verbose = NULL){
       flip_coords_df(
         df = coords_df,
         axis = axis,
-        ranges = getImageRange(object),
-
+        ranges = getImageRange(object)
       )
 
     object <- setCoordsDf(object, coords_df)

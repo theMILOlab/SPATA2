@@ -42,9 +42,9 @@ object the annotation belongs to. Identifies the \code{HistologyImaging} object 
 belongs to.}
 \item{current_dim:}{ Numeric vector of length two. Width and height of the image
 the @area data.frame is currently scaled to. Used to scale the @area data.frame
-if the image annotation is extracted and added to a \code{SPATA2} object with different image resolution.}
+if the image annotation is extracted and added to a \code{spata2} object with different image resolution.}
 \item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
-@area data.frame if the image annotation is extracted and added to a \code{SPATA2} object with
+@area data.frame if the image annotation is extracted and added to a \code{spata2} object with
 different justifications.
 \itemize{
 \item{\emph{angle}:}{ Numeric value that ranges from 0-359.}

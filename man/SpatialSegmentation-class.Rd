@@ -18,7 +18,7 @@ the same class.}
 \item{\code{info}}{list. Stores meta data and miscellaneous information regarding the
 spatial segmentation. Slots that should always exist:
 \itemize{
-\item{sample:}{ Character string. The name of the sample (slot @sample of the \code{SPATA2} object.)}
+\item{sample:}{ Character string. The name of the sample (slot @sample of the \code{spata2} object.)}
 }}
 
 \item{\code{segments}}{list. A named, nested list. Named according to the labels

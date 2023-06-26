@@ -974,7 +974,7 @@ rotate_coords_df <- function(df,
 
   if(base::is.vector(coord_vars, mode = "character")){
 
-    coords_vars <- list(coord_vars[1:2])
+    coord_vars <- list(coord_vars[1:2])
 
   } else {
 

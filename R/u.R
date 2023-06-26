@@ -380,9 +380,9 @@ updateSpataObject <- function(object,
 
     new_image <- HistologyImage()
 
-    new_image@coordinates <-
-      object@coordinates[[sample_name]] %>%
-      tibble::as_tibble()
+    #new_image@coordinates <-
+      #object@coordinates[[sample_name]] %>%
+      #tibble::as_tibble()
 
     if(base::class(object@images[[1]]) == "Image"){
 
@@ -390,7 +390,7 @@ updateSpataObject <- function(object,
 
     }
 
-    new_image@info$flipped <- FALSE
+    #new_image@info$flipped <- FALSE
 
     object@images[[sample_name]] <- new_image
 
@@ -400,9 +400,9 @@ updateSpataObject <- function(object,
 
     coords_df$y <- yrange[2] - coords_df$y + yrange[1]
 
-    object@coordinates[[sample_name]] <- coords_df
+    #object@coordinates[[sample_name]] <- coords_df
 
-    #object <- flipImage(object, axis = "h")
+    object <- flipImage(object, axis = "h")
 
     msg <-
       c("We have aligned the surface plotting to the mechanism used by other packages.
@@ -438,20 +438,20 @@ updateSpataObject <- function(object,
           skip = "misc"
         )
 
-      grid <- image_obj@grid
+      #grid <- image_obj@grid
 
-      if(base::is.data.frame(grid) && base::nrow(grid) != 0){
+      #if(base::is.data.frame(grid) && base::nrow(grid) != 0){
 
-        image_obj_new@coordinates <-
-          dplyr::left_join(
-            x = getCoordsDf(object),
-            y = grid[, c("barcodes", "row", "col")],
-            by = "barcodes"
-          )
+        #image_obj_new@coordinates <-
+          #dplyr::left_join(
+            #x = getCoordsDf(object),
+            #y = grid[, c("barcodes", "row", "col")],
+            #by = "barcodes"
+          #)
 
-      }
+      #}
 
-      image_obj_new@grid <- list()
+      #image_obj_new@grid <- list()
 
       object <- setImageObject(object, image_object = image_obj_new)
 
@@ -573,7 +573,7 @@ updateSpataObject <- function(object,
     # update differences between active matrix / expression matrix
     active_mtr <- object@information$active_mtr[[1]]
 
-    if(base::is.null(active_mtr)){ active_mtr <- "scaled" }
+    if(base::is.null(active_mtr)){ active_mtr <- "scaled"}
 
     object@information$active_mtr[[1]] <- active_mtr
     object@information$active_expr_mtr[[1]] <- active_mtr
@@ -592,8 +592,6 @@ updateSpataObject <- function(object,
     object@version <- list(major = 1, minor = 13, patch = 0)
 
     object@information$method <- spatial_methods[["Visium"]]
-
-    object <- setPixelScaleFactor(object, verbose = verbose)
 
     # change positioning of active expr mtr
 
@@ -743,6 +741,8 @@ updateSpataObject <- function(object,
   }
 
   if(object@version$major == 1 & object@version$minor == 14){
+
+    object <- setPixelScaleFactor(object, verbose = verbose)
 
     object@version <- list(major = 1, minor = 15, patch = 0)
 

@@ -54,32 +54,7 @@ getPcaMtr <- function(object,
 }
 
 
-
-
-#' @title Obtain pixel data.frame
-#'
-#' @description Extracts a data.frame in which each row corresponds
-#' to a pixel in the current image with x- and y-coordinates.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Data.frame with `nrow()` equal to the number of pixels.
-#' @export
-#'
-getPixelDf <- function(object, xrange = NULL, yrange = NULL){
-
-  img <- getImage(object, xrange = xrange, yrange = yrange)
-
-  img_dims <- base::dim(img)
-
-  tidyr::expand_grid(x = 1:img_dims[1], y = 1:img_dims[2]) %>%
-    dplyr::mutate(pixel = stringr::str_c("px", 1:base::nrow(.))) %>%
-    dplyr::select(pixel, x, y)
-
-}
-
-
-#' @title Obtain scale factor for pixel to Euol conversion
+#' @title Obtain scale factor for pixel to SI conversion
 #'
 #' @description Extracts or computes the side length of pixel sides depending
 #' on the current resolution of the image.
@@ -265,7 +240,6 @@ getProjectionDf <- function(object,
 
 
 # getR --------------------------------------------------------------------
-
 
 
 #' @title Obtain results stored in data.frames
@@ -974,6 +948,54 @@ getStsDf <- function(object,
 
 # getT --------------------------------------------------------------------
 
+
+
+#' @title Obtain tissue outline centroid
+#'
+#' @description Extracts the centroid of the polygon used to outline
+#' the whole tissue.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+setGeneric(name = "getTissueOutlineCentroid", def = function(object, ...){
+
+  standardGeneric(f = "getTissueOutlineCentroid")
+
+})
+
+#' @rdname getTissueOutlineCentroid
+#' @export
+setMethod(
+  f = "getTissueOutlineCentroid",
+  signature = "HistologyImagingNew",
+  definition = function(object, name = NULL, transform = TRUE, persp = "ccs", ...){
+
+    getTissueOutlineDf(
+      object = object,
+      name = name,
+      transform = transform,
+      by_section = FALSE
+    ) %>% base::colMeans()
+
+  })
+
+#' @rdname getTissueOutlineCentroid
+#' @export
+setMethod(
+  f = "getTissueOutlineCentroid",
+  signature = "HistologyImage",
+  definition = function(object, transform = TRUE, persp = "ccs", ...){
+
+    getTissueOutlineDf(
+      object = object,
+      transform = transform,
+      by_section = FALSE
+    ) %>% base::colMeans()
+
+  })
+
 #' @title Obtain outline barcode spots
 #'
 #' @description Identifies the barcode spots that lie on the edge
@@ -1008,21 +1030,117 @@ getStsDf <- function(object,
 #'
 #'
 #'
-getTissueOutlineDf <- function(object, remove = TRUE){
+setGeneric(name = "getTissueOutlineDf", def = function(object, ...){
 
-  base::stopifnot(tissueOutlineIdentified(object))
+  standardGeneric(f = "getTissueOutlineDf")
 
-  coords_df <- getCoordsDf(object)
+})
 
-  if(base::isTRUE(remove)){
+#' @rdname getTissueOutlineDf
+#' @export
+setMethod(
+  f = "getTissueOutlineDf",
+  signature = "spata2",
+  definition = function(object, remove = TRUE){
 
-    coords_df <- dplyr::filter(coords_df, outline)
+    base::stopifnot(tissueOutlineIdentified(object))
+
+    coords_df <- getCoordsDf(object)
+
+    if(base::isTRUE(remove)){
+
+      coords_df <- dplyr::filter(coords_df, outline)
+
+    }
+
+    return(coords_df)
 
   }
+)
 
-  return(coords_df)
+#' @rdname getTissueOutlineDf
+#' @export
+setMethod(
+  f = "getTissueOutlineDf",
+  signature = "HistologyImage",
+  definition = function(object, by_section = TRUE, transform = TRUE){
 
-}
+    if(purrr::is_empty(object@outline)){
+
+      stop(
+        glue::glue(
+          "No tissue outline found for image '{object@name}'."
+        )
+      )
+
+    }
+
+    if(base::isTRUE(by_section)){
+
+      df <- object@outline[["tissue_sections"]]
+
+    } else {
+
+      df <- object@outline[["tissue_whole"]]
+
+    }
+
+    if(base::isTRUE(transform)){
+
+      df <-
+        transform_outline(
+          outline_df = df,
+          transformations = object@transformations,
+          ranges = getImageRange(object),
+          center = getImageCenter(object)
+        )
+
+    }
+
+    return(df)
+
+  }
+)
+
+#' @rdname getTissueOutlineDf
+#' @export
+setMethod(
+  f = "getTissueOutlineDf",
+  signature = "HistologyImagingNew",
+  definition = function(object,
+                        name = NULL,
+                        by_section = TRUE,
+                        transform = TRUE){
+
+    if(base::is.null(name)){
+
+      out_df <-
+        getTissueOutlineDf(
+          object = object@image_reference,
+          by_section = by_section,
+          transform = transform
+        )
+
+    } else {
+
+      confuns::check_one_of(
+        input = name,
+        against = base::names(object@images_registered)
+      )
+
+      out_df <-
+        getTissueOutlineDf(
+          object = object@images_registered[[name]],
+          by_section = by_section,
+          transform = transform
+        )
+
+    }
+
+    return(out_df)
+
+  }
+)
 
 
 #' @export

@@ -2,12 +2,23 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTissueOutlineDf}
 \alias{getTissueOutlineDf}
+\alias{getTissueOutlineDf,spata2-method}
+\alias{getTissueOutlineDf,HistologyImage-method}
+\alias{getTissueOutlineDf,HistologyImagingNew-method}
 \title{Obtain outline barcode spots}
 \usage{
-getTissueOutlineDf(object, remove = TRUE)
+getTissueOutlineDf(object, ...)
+
+\S4method{getTissueOutlineDf}{spata2}(object, remove = TRUE)
+
+\S4method{getTissueOutlineDf}{HistologyImage}(object, by_section = TRUE, transform = TRUE)
+
+\S4method{getTissueOutlineDf}{HistologyImagingNew}(object, name = NULL, by_section = TRUE, transform = TRUE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{remove}{Logical. If \code{TRUE}, none-outline spots are removed from
 the output.}

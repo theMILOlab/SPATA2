@@ -491,13 +491,25 @@ process_ranges <- function(xrange = getImageRange(object)$x,
   # convert ranges to pixel
   if(!base::is.null(xrange)){
 
-    xrange <- as_pixel(input = xrange, object = object, as_numeric = TRUE)
+    if(!base::all(is_dist_pixel(xrange))){
+
+      xrange <- as_pixel(input = xrange, object = object, as_numeric = TRUE)
+
+    }
+
+    if(xrange[1] < 0){ xrange[1] <- 0}
 
   }
 
   if(!base::is.null(yrange)){
 
-    yrange <- as_pixel(input = yrange, object = object, as_numeric = TRUE)
+    if(!base::all(is_dist_pixel(yrange))){
+
+      yrange <- as_pixel(input = yrange, object = object, as_numeric = TRUE)
+
+    }
+
+    if(yrange[1] < 0){ yrange[1] <- 0}
 
     # input for x- and yrange often come from the perspective of the
     # coordinates. however, the yaxis is flipped in the image and starts

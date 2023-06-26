@@ -2484,61 +2484,179 @@ plotIasRidgeplotSC <- function(object,
 #' @return A plot that is immediately plotted.
 #' @export
 #'
-plotImage <- function(object, xrange = NULL, yrange = NULL, ...){
+setGeneric(name = "plotImage", def = function(object, ...){
 
-  img <- getImageRaster(object, xrange = xrange, yrange = yrange)
+  standardGeneric(f = "plotImage")
 
-  img_info <- getImageRasterInfo(object, xrange = xrange, yrange = yrange)
+})
 
-  coords_df <- getCoordsDf(object)
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "spata2",
+  definition = function(object, xrange = NULL, yrange = NULL, ...){
 
-  if(base::is.numeric(xrange)){
+    img <- getImageRaster(object, xrange = xrange, yrange = yrange)
 
-    coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
+    img_info <- getImageRasterInfo(object, xrange = xrange, yrange = yrange)
+
+    coords_df <- getCoordsDf(object)
+
+    if(base::is.numeric(xrange)){
+
+      coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
+
+    }
+
+    if(base::is.numeric(yrange)){
+
+      coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
+
+    }
+
+    if(!base::is.numeric(xrange)){
+
+      xrange <- getImageRange(object)$x
+
+    }
+
+    if(!base::is.numeric(yrange)){
+
+      yrange <- getImageRange(object)$y
+
+    }
+
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = coords_df$x,
+      y = coords_df$y,
+      col = ggplot2::alpha("white", 0),
+      axes = FALSE,
+      xlab = NA_character_,
+      ylab = NA_character_,
+      xlim = xrange,
+      ylim = yrange
+    )
+
+    graphics::rasterImage(
+      image = img,
+      xleft = xrange[1],
+      xright = xrange[2],
+      ybottom = yrange[1],
+      ytop = yrange[2]
+    )
 
   }
+)
 
-  if(base::is.numeric(yrange)){
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "HistologyImagingNew",
+  definition = function(object,
+                        name = NULL,
+                        xrange = NULL,
+                        yrange = NULL,
+                        scale_fct = 1,
+                        ...){
 
-    coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
+    img <- getImage(object, name = name, xrange = xrange, yrange = yrange)
+
+    plotImage(
+      object = img,
+      scale_fct = scale_fct
+    )
+
 
   }
+)
 
-  if(!base::is.numeric(xrange)){
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "HistologyImage",
+  definition = function(object,
+                        xrange = NULL,
+                        yrange = NULL,
+                        scale_fct = 1,
+                        ...){
 
-    xrange <- getImageRange(object)$x
+    img_raster <-
+      getImage(object, xrange = xrange, yrange = yrange)
+
+    img_range <-
+      getImageRange(object, xrange = xrange, yrange = yrange)
+
+    xrange <- img_range$x
+    yrange <- img_range$y
+
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = xrange,
+      y = xrange,
+      col = ggplot2::alpha("white", alpha = 0),
+      xlab = NA_character_,
+      ylab = NA_character_,
+      xlim = xrange,
+      ylim = yrange
+    )
+
+    graphics::rasterImage(
+      image = img_raster,
+      xleft = xrange[1],
+      xright = xrange[2],
+      ybottom = yrange[1],
+      ytop = yrange[2]
+    )
 
   }
+)
 
-  if(!base::is.numeric(yrange)){
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "Image",
+  definition = function(object,
+                        scale_fct = 1,
+                        ...){
 
-    yrange <- getImageRange(object)$y
+    img_raster <- object
+
+    ranges <- base::dim(img_raster)[1:2]*scale_fct
+
+    img_raster <- EBImage::resize(x = img_raster, w = ranges[1], h = ranges[2])
+
+    xrange <- c(1, ranges[1])
+    yrange <- c(1, ranges[2])
+
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = xrange,
+      y = xrange,
+      col = ggplot2::alpha("white", alpha = 0),
+      xlab = NA_character_,
+      ylab = NA_character_,
+      xlim = xrange,
+      ylim = yrange
+    )
+
+    graphics::rasterImage(
+      image = img_raster,
+      xleft = xrange[1],
+      xright = xrange[2],
+      ybottom = yrange[1],
+      ytop = yrange[2]
+    )
 
   }
-
-  graphics::plot.new()
-  graphics::par(pty = "s", ...)
-  graphics::plot(
-    x = coords_df$x,
-    y = coords_df$y,
-    col = ggplot2::alpha("white", 0),
-    axes = FALSE,
-    xlab = NA_character_,
-    ylab = NA_character_,
-    xlim = xrange,
-    ylim = yrange
-  )
-
-  graphics::rasterImage(
-    image = img,
-    xleft = xrange[1],
-    xright = xrange[2],
-    ybottom = yrange[1],
-    ytop = yrange[2]
-  )
-
-}
-
+)
 
 
 #' @title Plot image annotations
@@ -2866,152 +2984,6 @@ plotImageAnnotations <- function(object,
 
 
 }
-
-
-#' @title Plot histology image (ggplot2)
-#'
-#' @description Plots the histology image with `ggplot2`.
-#'
-#' @param unit Character value. Units of x- and y-axes. Defaults
-#' to *'px'*.
-#' @param ... Additional arguments given to `ggpLayerAxesSI()` if
-#' `unit` is not *'px'*.
-#'
-#' @inherit argument_dummy params
-#' @inherit ggplot_dummy return
-#'
-#' @inheritSection section_dummy Distance measures
-#'
-#' @export
-#'
-plotImageGgplot <- function(object,
-                            unit = getSpatialMethod(object)@unit,
-                            frame_by = "image",
-                            xrange = NULL,
-                            yrange = NULL,
-                            ...){
-
-  if(unit %in% validUnitsOfLengthSI()){
-
-    if(!base::is.null(xrange) | !base::is.null(yrange)){
-
-      frame_by <- list(x = xrange, y = yrange)
-
-    }
-
-    axes_add_on <-
-      ggpLayerAxesSI(
-        object = object,
-        unit = unit,
-        ...
-      )
-
-  } else {
-
-    axes_add_on <- NULL
-
-  }
-
-  if(!base::is.null(xrange) | !base::is.null(yrange)){
-
-    frame_add_on <- ggpLayerZoom(object = object, xrange = xrange, yrange = yrange)
-
-  } else {
-
-    if(frame_by == "image"){
-
-      frame_add_on <- ggpLayerFrameByImage(object)
-
-    } else {
-
-      frame_add_on <- ggpLayerFrameByCoords(object)
-
-    }
-
-  }
-
-
-  ggpInit(object) +
-    ggpLayerImage(object) +
-    ggpLayerThemeCoords(unit = unit) +
-    ggplot2::labs(
-      x = glue::glue("x-coordinates [{unit}]"),
-      y = glue::glue("y-coordinates [{unit}]")
-    ) +
-    axes_add_on +
-    frame_add_on
-
-
-}
-
-
-#' @title Plot histology images (ggplot2)
-#'
-#' @description Reads in and plots all images known to the `SPATA2` object.
-#'
-#' @param names Character vector or `NULL`. If character, specifies the images
-#' by name. If `NULL`, all images are plotted.
-#' @param ... Additionel arguments given to `plotImageGgplot()`.
-#'
-#' @return A ggplot assembled with via `patchwork::wrap_plots()`.
-#'
-#' @inherit argument_dummy params
-#'
-#' @inheritSection section_dummy Distance measures
-#'
-#' @seealso [`getImageDirectories()`]
-#'
-#' @export
-#'
-plotImagesGgplot <- function(object,
-                             names = NULL,
-                             verbose = NULL,
-                             nrow = NULL,
-                             ncol = NULL,
-                             ...){
-
-  hlpr_assign_arguments(object)
-
-  image_names <-
-    getImageDirectories(object) %>%
-    base::names()
-
-  if(base::is.character(names)){
-
-    confuns::check_one_of(
-      input = names,
-      against = image_names
-    )
-
-    image_names <- names
-
-  }
-
-  image_list <-
-    purrr::map(
-      .x = image_names,
-      verbose = verbose,
-      ...,
-      .f = function(name, ...){
-
-        confuns::give_feedback(
-          msg = glue::glue("Reading image {name}."),
-          verbose = verbose
-        )
-
-        object <- loadImage(object, name = name, verbose = FALSE)
-
-        plotImageGgplot(object, ...) +
-          ggplot2::labs(subtitle = name)
-
-      }
-    ) %>%
-    purrr::set_names(nm = image_names)
-
-  patchwork::wrap_plots(image_list, nrow = nrow, ncol = ncol)
-
-}
-
 
 
 # plotM -------------------------------------------------------------------

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getPixelScaleFactor}
 \alias{getPixelScaleFactor}
-\title{Obtain scale factor for pixel to Euol conversion}
+\title{Obtain scale factor for pixel to SI conversion}
 \usage{
 getPixelScaleFactor(
   object,

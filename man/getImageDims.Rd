@@ -2,12 +2,30 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageDims}
 \alias{getImageDims}
+\alias{getImageDims,spata2-method}
+\alias{getImageDims,HistologyImagingNew-method}
+\alias{getImageDims,HistologyImage-method}
 \alias{getImageRange}
+\alias{getImageRange,spata2-method}
+\alias{getImageRange,HistologyImagingNew-method}
+\alias{getImageRange,HistologyImage-method}
 \title{Obtain image dimensions/ranges}
 \usage{
 getImageDims(object, ...)
 
+\S4method{getImageDims}{spata2}(object, ...)
+
+\S4method{getImageDims}{HistologyImagingNew}(object, name = NULL, ...)
+
+\S4method{getImageDims}{HistologyImage}(object, ...)
+
 getImageRange(object, ...)
+
+\S4method{getImageRange}{spata2}(object, ...)
+
+\S4method{getImageRange}{HistologyImagingNew}(object, name = NULL)
+
+\S4method{getImageRange}{HistologyImage}(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
@@ -20,8 +38,7 @@ Similar output, different data structure:
 \itemize{
 \item{\code{getImageDims()}:}{ Vector of length three: image width, image height, image depth}
 \item{\code{getImageRange()}:}{ Named list, names are \emph{x} and \emph{y}. Each slot contains a
-vector of length two that describes the range of the x- and y-axis. Used for intersection
-between histology image and scatterplots.}
+vector of length two that describes the range of the x- and y-axis.}
 }
 }
 \description{

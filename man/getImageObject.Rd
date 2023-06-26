@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageObject}
 \alias{getImageObject}
-\title{Obtain object of class \code{HistologyImage}}
+\title{Obtain object of class \code{HistologyImaging}}
 \usage{
 getImageObject(object)
 }
@@ -10,7 +10,7 @@ getImageObject(object)
 \item{object}{An object of class \code{spata2}.}
 }
 \value{
-Object of class \code{HistologyImage}
+Object of class \code{HistologyImaging}
 }
 \description{
 Extracts the S4-object. Do not confuse with \code{getImage()}

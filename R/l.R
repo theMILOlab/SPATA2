@@ -249,17 +249,7 @@ loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 loadGeneSetDf <- loadGSDF
 
 
-#' @rdname loadImageLowres
-#' @export
-loadImage <- function(object, name, ...){
 
-  dir <- getImageDir(object, name = name)
-
-  object <- exchangeImage(object, image = dir, ...)
-
-  return(object)
-
-}
 
 
 #' @rdname loadImageLowres

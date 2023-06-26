@@ -4,6 +4,7 @@
 \alias{theme_lineplot_gradient}
 \alias{theme_ridgeplot_gradient}
 \alias{theme_trajectory_fit}
+\alias{theme_transparent}
 \title{ggplot2 themes}
 \usage{
 theme_lineplot_gradient()
@@ -11,6 +12,8 @@ theme_lineplot_gradient()
 theme_ridgeplot_gradient(overlap = 0.5)
 
 theme_trajectory_fit()
+
+theme_transparent()
 }
 \value{
 gg theme

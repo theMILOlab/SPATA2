@@ -1,6 +1,98 @@
 
 
 
+# getH --------------------------------------------------------------------
+
+
+#' @title Obtain object of class `HistologyImage`
+#'
+#' @description Extracts the S4-containers of registered images. Note that
+#' slot @@image might be empty. Use `loadImage()` in that case.
+#'
+#' \itemize{
+#'  \item{`getHistologyImage()`:}{ Extracts object by name. If `name = NULL` the active histology image is returned.}
+#'  \item{`getHistologyImageActive()`:}{ Extracts the active histology image.}
+#'  \item{`getHistologyImageRef()`:}{ Extracts the reference histology image.}
+#'  }
+#'
+#' @inherit argument_dummy params
+#' @param ...
+#'
+#' @export
+
+setGeneric(name = "getHistologyImage", def = function(object, ...){
+
+  standardGeneric(f = "getHistologyImage")
+
+})
+
+#' @rdname getHistologyImage
+#' @export
+setMethod(
+  f = "getHistologyImage",
+  signature = "HistologyImagingNew",
+  definition = function(object, name = NULL, ...){
+
+    if(base::is.null(name)){
+
+      out <- getHistologyImageActive(object)
+
+    } else {
+
+      confuns::check_one_of(
+        input = name,
+        against = base::names(object@images_registered),
+        ref.input = "registered histology images"
+      )
+
+      out <- object@images_registered[[name]]
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getHistologyImage
+#' @export
+setGeneric(name = "getHistologyImageActive", def = function(object, ...){
+
+  standardGeneric(f = "getHistologyImageActive")
+
+})
+
+#' @rdname getHistologyImage
+#' @export
+setMethod(
+  f = "getHistologyImageActive",
+  signature = "HistologyImagingNew",
+  definition = function(object){
+
+    object@image_active
+
+  })
+
+
+#' @rdname getHistologyImage
+#' @export
+setGeneric(name = "getHistologyImageRef", def = function(object, ...){
+
+  standardGeneric(f = "getHistologyImageRef")
+
+})
+
+#' @rdname getHistologyImage
+#' @export
+setMethod(
+  f = "getHistologyImageRef",
+  signature = "HistologyImagingNew",
+  definition = function(object, ...){
+
+    object@image_reference
+
+  }
+)
 
 # getI --------------------------------------------------------------------
 
@@ -404,59 +496,10 @@ getImageAnnotationScreeningDf <- function(...){
 
 }
 
-#' @title Obtain histology image
-#'
-#' @description Extracts the image as an object of class \emph{EBImage}.
-#'
-#' @inherit argument_dummy params
-#' @inherit check_sample params
-#'
-#' @export
 
-getImage <- function(object, xrange = NULL, yrange = NULL, expand = 0, ...){
 
-  deprecated(...)
+# getImage ----------------------------------------------------------------
 
-  check_object(object)
-
-  feedback_range_input(xrange = xrange, yrange = yrange)
-
-  out <- object@images[[1]]@image
-
-  if(base::is.null(out)){ stop("No image found.") }
-
-  if(base::is.null(xrange)){ xrange <- getImageRange(object)$x }
-
-  if(base::is.null(yrange)){ yrange <- getImageRange(object)$y }
-
-  range_list <-
-    process_ranges(
-      xrange = xrange,
-      yrange = yrange,
-      expand = expand,
-      object = object
-    )
-
-  xmin <- range_list$xmin
-  xmax <- range_list$xmax
-  ymin <- range_list$ymin
-  ymax <- range_list$ymax
-
-  if(nImageDims(object) == 3){
-
-    out <- out[xmin:xmax, , ]
-    out <- out[, ymin:ymax, ]
-
-  } else if(nImageDims(object) == 2){
-
-    out <- out[xmin:xmax, ]
-    out <- out[, ymin:ymax]
-
-  }
-
-  return(out)
-
-}
 
 
 
@@ -1032,12 +1075,52 @@ getImgAnnTags <- function(object){
 #'
 #' @return Numeric vector of length two.
 #' @export
-getImageCenter <- function(object){
+setGeneric(name = "getImageCenter", def = function(object, ...){
 
-  getImageRange(object) %>%
-    purrr::map_dbl(.f = base::mean)
+  standardGeneric(f = "getImageCenter")
 
-}
+})
+
+#' @rdname getImageCenter
+#' @export
+setMethod(
+  f = "getImageCenter",
+  signature = "spata2",
+  definition = function(object){
+
+    getImageRange(object) %>%
+      purrr::map_dbl(.f = base::mean)
+
+  }
+)
+
+#' @rdname getImageCenter
+#' @export
+setMethod(
+  f = "getImageCenter",
+  signature = "HistologyImaging",
+  definition = function(object, name = NULL){
+
+    hi <- getHistologyImage(object, name = name)
+
+    getImageRange(hi) %>%
+      purrr::map_dbl(.f =)
+
+  }
+)
+
+#' @rdname getImageCenter
+#' @export
+setMethod(
+  f = "getImageCenter",
+  signature = "HistologyImage",
+  definition = function(object){
+
+    getImageRange(object) %>%
+      purrr::map_dbl(.f = base::mean)
+
+  }
+)
 
 
 #' @title Obtain melted image
@@ -1101,8 +1184,7 @@ getImageDf <- function(object, xrange = NULL, yrange = NULL){
 #' \itemize{
 #'  \item{`getImageDims()`:}{ Vector of length three: image width, image height, image depth}
 #'  \item{`getImageRange()`:}{ Named list, names are *x* and *y*. Each slot contains a
-#'  vector of length two that describes the range of the x- and y-axis. Used for intersection
-#'  between histology image and scatterplots.}
+#'  vector of length two that describes the range of the x- and y-axis.}
 #' }
 #'
 #' @details In case of confusion due to overlapping naming conventions: X-axis,
@@ -1112,17 +1194,56 @@ getImageDf <- function(object, xrange = NULL, yrange = NULL){
 #' naming convention.
 #'
 #' @export
-getImageDims <- function(object, ...){
+setGeneric(name = "getImageDims", def = function(object, ...){
 
-  deprecated(...)
+  standardGeneric(f = "getImageDims")
 
-  img <- object@images[[1]]@image
+})
 
-  out <- base::dim(img@.Data)
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageDims",
+  signature = "spata2",
+  definition = function(object, ...){
 
-  return(out)
+    deprecated(...)
 
-}
+    img <- object@images[[1]]@image
+
+    out <- base::dim(img@.Data)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageDims",
+  signature = "HistologyImagingNew",
+  definition = function(object, name = NULL, ...){
+
+    getHistologyImage(object, name = name) %>%
+      getImageDims()
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageDims",
+  signature = "HistologyImage",
+  definition = function(object, ...){
+
+    object@image_info$dims_padded
+
+  }
+)
+
+
 
 #' @rdname getImageDirLowres
 #' @export
@@ -1299,13 +1420,13 @@ getImageInfo <- function(object){
 
 
 
-#' @title Obtain object of class \code{HistologyImage}
+#' @title Obtain object of class \code{HistologyImaging}
 #'
 #' @description Extracts the S4-object. Do not confuse with \code{getImage()}
 #'
 #' @inherit argument_dummy params
 #'
-#' @return Object of class \code{HistologyImage}
+#' @return Object of class \code{HistologyImaging}
 #' @export
 #'
 getImageObject <- function(object){
@@ -1314,7 +1435,7 @@ getImageObject <- function(object){
 
   if(!base::is.null(out)){
 
-    out@id <- getSampleName(object)
+    #out@id <- getSampleName(object)
 
   } else {
 
@@ -1347,20 +1468,69 @@ getImageOrigin <- function(object){
 
 #' @rdname getImageDims
 #' @export
-getImageRange <- function(object, ...){
+setGeneric(name = "getImageRange", def = function(object, ...){
 
-  deprecated(...)
+  standardGeneric(f = "getImageRange")
 
-  out <- list()
+})
 
-  img_dims <- getImageDims(object, ...)
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageRange",
+  signature = "spata2",
+  definition = function(object, ...){
 
-  out$x <- c(0,img_dims[[1]])
-  out$y <- c(0,img_dims[[2]])
+    deprecated(...)
 
-  return(out)
+    out <- list()
 
-}
+    img_dims <- getImageDims(object, ...)
+
+    out$x <- c(0,img_dims[[1]])
+    out$y <- c(0,img_dims[[2]])
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageRange",
+  signature = "HistologyImagingNew",
+  definition = function(object, name = NULL){
+
+    getHistologyImage(object, name = name) %>%
+      getImageRange()
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageRange",
+  signature = "HistologyImage",
+  definition = function(object, ...){
+
+    deprecated(...)
+
+    out <- list()
+
+    img_dims <- getImageDims(object, ...)
+
+    out$x <- c(0,img_dims[[1]])
+    out$y <- c(0,img_dims[[2]])
+
+    return(out)
+
+  }
+)
+
+
+
 
 
 #' @title Obtain image raster-(information)
@@ -1368,16 +1538,43 @@ getImageRange <- function(object, ...){
 #' @inherit argument_dummy params
 #'
 #' @export
-getImageRaster <- function(object, xrange = NULL, yrange = NULL, expand = 0){
 
-  img <-
+setGeneric(name = "getImageRaster", def = function(object, ...){
+
+  standardGeneric(f = "getImageRaster")
+
+})
+
+#' @rdname getImageRaster
+#' @export
+setMethod(
+  f = "getImageRaster",
+  signature = "spata2",
+  definition = function(object, xrange = NULL, yrange = NULL, expand = 0){
+
+    img <-
+      getImage(object, xrange = xrange, yrange = yrange, expand = expand) %>%
+      grDevices::as.raster() %>%
+      magick::image_read()
+
+    return(img)
+
+  }
+)
+
+#' @rdname getImageRaster
+#' @export
+setMethod(
+  f = "getImageRaster",
+  signature = "HistologyImage",
+  definition = function(object, xrange = NULL, yrange = NULL, expand = 0){
+
     getImage(object, xrange = xrange, yrange = yrange, expand = expand) %>%
-    grDevices::as.raster() %>%
-    magick::image_read()
+      grDevices::as.raster()
 
-  return(img)
+  }
+)
 
-}
 
 #' @rdname getImageRaster
 #' @export

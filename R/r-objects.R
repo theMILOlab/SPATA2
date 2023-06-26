@@ -184,52 +184,6 @@ seurat_process_fns <- c("SCTransform","NormalizeData", "FindVariableFeatures", "
 
 
 # shiny -------------------------------------------------------------------
-
-helper_content <- list(
-
-  overview =
-  c( "Choose the annotation variable that you want to alter. If you want to create a new one
-     click on 'Create new annotation variable' and you are prompted to enter the name of the new annotation variable.
-     It can then be selected. The surface plot below shows the annotation variable you are currently working on
-     and colors it according to the regions you have named.",
-    "",
-    "('unnamed' is the default group name that is assigned to every transcriptomic spot by creating a new annotation variable.)"),
-  interaction_annotate_barcodes =
-    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions that contain the barcode spots you want to annotate.",
-      "",
-      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
-       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
-      "",
-      "Encircling: By double clicking on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
-      the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
-      starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
-      "",
-      " Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate.
-       You are then prompted to choose the name you want to annotate the barcode spots with that fall into this area.
-       This can either be a new name or one that has already been assigned within the variable. Then click on 'Annotate'.
-       The 'Overview'-plot on the left should now display the annoated region in addition to all the other regions that
-       you have annotated already."),
-  interaction_annotate_image =
-    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
-      "",
-      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
-       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
-      "",
-      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
-      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
-      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
-      "",
-      "Tagging: Provide additional information about the annotated structure in form of bullet points that can be used later on
-      to group and/or separate them.",
-      "",
-      "Naming: This creates the image annotation ID to uniquely identify each annotation. If you chose the drawing mode 'Single' you can name the annotated structure individually. If you are using 'Multiple' the
-      names are automatically generated as a combination of 'img_ann' and a number."
-      ),
-  orientation =
-    c(" This plot mainly stays as is. Once you start zooming in on the interactive plot a rectangle is drawn to visualize where you currently are.")
-
-)
-
 # Trajectory analysis -----------------------------------------------------
 
 empty_ctdf <- data.frame(barcodes = character(0),
@@ -483,6 +437,18 @@ current_spata2_version <- list(major = 2, minor = 0, patch = 4)
 # d -----------------------------------------------------------------------
 
 #' @export
+default_image_transformations <-
+  list(
+    angle = 0,
+    flip = list(horizontal = FALSE, vertical = FALSE),
+    scale = 1,
+    translate = list(
+      centroid_alignment = list(horizontal = 0, vertical = 0),
+      outline_alignment = list(horizontal = 0, vertical = 0)
+    )
+  )
+
+#' @export
 depr_info <-
   list(
     fns = list(
@@ -581,9 +547,78 @@ dist_units <- c(base::names(dist_unit_abbr))
 
 # e -----------------------------------------------------------------------
 
+empty_image <- EBImage::as.Image(x = base::matrix(0))
+
 uol_si_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
 
-si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
+
+
+# h -----------------------------------------------------------------------
+
+helper_content <- list(
+
+  angle_transf =
+    c("Choose the angle (in °) with which to rotate the image clockwise by shifting the slider."),
+  angle_transf_value =
+    c("Choose the angle (in °) with which to rotate the image clockwise by manually typing it."),
+  flip_around_axis =
+    c("Click on the axis around which to flip the image. Clicking again will revert the flipping."),
+  image_to_align =
+    c("Pick the image to align. After picking one, the image is displayed behind the black outline of the tissue outline from
+      the reference image."),
+  interaction_annotate_barcodes =
+    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions that contain the barcode spots you want to annotate.",
+      "",
+      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
+      "",
+      "Encircling: By double clicking on the plot you enter the 'drawing mode'. Encircle the area you want to annotate by simply moving
+      the cursor along the borders of the region. By double clicking again you exit the 'drawing mode' which will automatically connect the
+      starting point of the line and the endpoint. Click on 'Highlight' to highlight the barcode spots that fall into the area.",
+      "",
+      " Naming: After clicking on 'Highlight' you can check if the highlighted area covers the region you want to annotate.
+       You are then prompted to choose the name you want to annotate the barcode spots with that fall into this area.
+       This can either be a new name or one that has already been assigned within the variable. Then click on 'Annotate'.
+       The 'Overview'-plot on the left should now display the annoated region in addition to all the other regions that
+       you have annotated already."),
+  interaction_annotate_image =
+    c("This plot allows to interactively zoom in and out on your sample as well as to encircle the regions you want to name.",
+      "",
+      "Zooming: Brush the area on the plot you want to zoom in on. Then click on 'Zoom in'. You can zoom stepwise. To zoom one step
+       back click on 'Zoom back'. To zoom out completely click on 'Zoom out'.",
+      "",
+      "Encircling: By double clicking or pressing 'd' you start drawing. Encircle the area/structure you want to annotate by simply moving
+      the cursor. By double clicking again or pressing 'e' you stop drawing. Depending on the drawing mode you have chosen (Single
+      or Multiple) the encircled area is highlighted immediately (Multiple) or you need to click on 'Highlight' or press 'h' (Single).",
+      "",
+      "Tagging: Provide additional information about the annotated structure in form of bullet points that can be used later on
+      to group and/or separate them.",
+      "",
+      "Naming: This creates the image annotation ID to uniquely identify each annotation. If you chose the drawing mode 'Single' you can name the annotated structure individually. If you are using 'Multiple' the
+      names are automatically generated as a combination of 'img_ann' and a number."
+    ),
+  orientation =
+    c("This plot mainly stays as is. Once you start zooming in on the interactive plot a rectangle is drawn to visualize where you currently are."),
+  overview =
+    c("Choose the annotation variable that you want to alter. If you want to create a new one
+     click on 'Create new annotation variable' and you are prompted to enter the name of the new annotation variable.
+     It can then be selected. The surface plot below shows the annotation variable you are currently working on
+     and colors it according to the regions you have named.",
+      "",
+      "('unnamed' is the default group name that is assigned to every transcriptomic spot by creating a new annotation variable.)"),
+  ref_image_options =
+    c("Display the outline of the reference tissue in which to fit the tissue of the image to be aligned as well
+      as the coordinates of identified or known entities on the imaged tissue."),
+  resolution =
+    c("Manipulate the resolution in which the image to be aligned is displayed by setting the window size (in pixel).
+      Higher resolution allows for more accurate alignment at the cost of longer image rendering."),
+  shift_image =
+    c("Shift the image vertically or horizontally by clicking on the respective arrows. The numeric
+      input in the middle allows to define the stepwise shift (in pixel). Reduce it to increase accuracy.")
+
+
+
+)
 
 
 # i -----------------------------------------------------------------------
@@ -805,6 +840,7 @@ rtia_names <-
 
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
 
+si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
 
 #' @export
 spatial_methods <-

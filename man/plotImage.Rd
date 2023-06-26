@@ -2,12 +2,33 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotImage}
 \alias{plotImage}
+\alias{plotImage,spata2-method}
+\alias{plotImage,HistologyImagingNew-method}
+\alias{plotImage,HistologyImage-method}
+\alias{plotImage,Image-method}
 \title{Plot histology image}
 \usage{
-plotImage(object, xrange = NULL, yrange = NULL, ...)
+plotImage(object, ...)
+
+\S4method{plotImage}{spata2}(object, xrange = NULL, yrange = NULL, ...)
+
+\S4method{plotImage}{HistologyImagingNew}(
+  object,
+  name = NULL,
+  xrange = NULL,
+  yrange = NULL,
+  scale_fct = 1,
+  ...
+)
+
+\S4method{plotImage}{HistologyImage}(object, xrange = NULL, yrange = NULL, scale_fct = 1, ...)
+
+\S4method{plotImage}{Image}(object, scale_fct = 1, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -19,8 +40,6 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units. See info section \emph{Distance measures}
 for more information.}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A plot that is immediately plotted.
