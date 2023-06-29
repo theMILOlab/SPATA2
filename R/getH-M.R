@@ -4,95 +4,7 @@
 # getH --------------------------------------------------------------------
 
 
-#' @title Obtain object of class `HistologyImage`
-#'
-#' @description Extracts the S4-containers of registered images. Note that
-#' slot @@image might be empty. Use `loadImage()` in that case.
-#'
-#' \itemize{
-#'  \item{`getHistologyImage()`:}{ Extracts object by name. If `name = NULL` the active histology image is returned.}
-#'  \item{`getHistologyImageActive()`:}{ Extracts the active histology image.}
-#'  \item{`getHistologyImageRef()`:}{ Extracts the reference histology image.}
-#'  }
-#'
-#' @inherit argument_dummy params
-#' @param ...
-#'
-#' @export
 
-setGeneric(name = "getHistologyImage", def = function(object, ...){
-
-  standardGeneric(f = "getHistologyImage")
-
-})
-
-#' @rdname getHistologyImage
-#' @export
-setMethod(
-  f = "getHistologyImage",
-  signature = "HistologyImagingNew",
-  definition = function(object, name = NULL, ...){
-
-    if(base::is.null(name)){
-
-      out <- getHistologyImageActive(object)
-
-    } else {
-
-      confuns::check_one_of(
-        input = name,
-        against = base::names(object@images_registered),
-        ref.input = "registered histology images"
-      )
-
-      out <- object@images_registered[[name]]
-
-    }
-
-    return(out)
-
-  }
-)
-
-#' @rdname getHistologyImage
-#' @export
-setGeneric(name = "getHistologyImageActive", def = function(object, ...){
-
-  standardGeneric(f = "getHistologyImageActive")
-
-})
-
-#' @rdname getHistologyImage
-#' @export
-setMethod(
-  f = "getHistologyImageActive",
-  signature = "HistologyImagingNew",
-  definition = function(object){
-
-    object@image_active
-
-  })
-
-
-#' @rdname getHistologyImage
-#' @export
-setGeneric(name = "getHistologyImageRef", def = function(object, ...){
-
-  standardGeneric(f = "getHistologyImageRef")
-
-})
-
-#' @rdname getHistologyImage
-#' @export
-setMethod(
-  f = "getHistologyImageRef",
-  signature = "HistologyImagingNew",
-  definition = function(object, ...){
-
-    object@image_reference
-
-  }
-)
 
 # getI --------------------------------------------------------------------
 
@@ -1067,60 +979,7 @@ getImgAnnTags <- function(object){
 
 
 
-#' @title Obtain image center
-#'
-#' @description Computes and extracts center of the image frame.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Numeric vector of length two.
-#' @export
-setGeneric(name = "getImageCenter", def = function(object, ...){
 
-  standardGeneric(f = "getImageCenter")
-
-})
-
-#' @rdname getImageCenter
-#' @export
-setMethod(
-  f = "getImageCenter",
-  signature = "spata2",
-  definition = function(object){
-
-    getImageRange(object) %>%
-      purrr::map_dbl(.f = base::mean)
-
-  }
-)
-
-#' @rdname getImageCenter
-#' @export
-setMethod(
-  f = "getImageCenter",
-  signature = "HistologyImaging",
-  definition = function(object, name = NULL){
-
-    hi <- getHistologyImage(object, name = name)
-
-    getImageRange(hi) %>%
-      purrr::map_dbl(.f =)
-
-  }
-)
-
-#' @rdname getImageCenter
-#' @export
-setMethod(
-  f = "getImageCenter",
-  signature = "HistologyImage",
-  definition = function(object){
-
-    getImageRange(object) %>%
-      purrr::map_dbl(.f = base::mean)
-
-  }
-)
 
 
 #' @title Obtain melted image
@@ -1168,80 +1027,7 @@ getImageDf <- function(object, xrange = NULL, yrange = NULL){
 }
 
 
-#' @title Obtain image dimensions/ranges
-#'
-#' @description Extracts information regarding the image.
-#'
-#' \itemize{
-#'  \item{`getImageDims()`:}{ Extracts dimensions of the image, namely width, height and depth.}
-#'  \item{`getImageRange()`:} Extracts range of the image axis.
-#'  }
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Similar output, different data structure:
-#'
-#' \itemize{
-#'  \item{`getImageDims()`:}{ Vector of length three: image width, image height, image depth}
-#'  \item{`getImageRange()`:}{ Named list, names are *x* and *y*. Each slot contains a
-#'  vector of length two that describes the range of the x- and y-axis.}
-#' }
-#'
-#' @details In case of confusion due to overlapping naming conventions: X-axis,
-#' x and x-range in terms of coordinates, corresponds to image width in terms of
-#' image analysis. Y-axis, y  and y-range, in terms of coordinates, refers to
-#' image-height in terms of image analysis. `SPATA2` primarily uses coordinates
-#' naming convention.
-#'
-#' @export
-setGeneric(name = "getImageDims", def = function(object, ...){
 
-  standardGeneric(f = "getImageDims")
-
-})
-
-#' @rdname getImageDims
-#' @export
-setMethod(
-  f = "getImageDims",
-  signature = "spata2",
-  definition = function(object, ...){
-
-    deprecated(...)
-
-    img <- object@images[[1]]@image
-
-    out <- base::dim(img@.Data)
-
-    return(out)
-
-  }
-)
-
-#' @rdname getImageDims
-#' @export
-setMethod(
-  f = "getImageDims",
-  signature = "HistologyImagingNew",
-  definition = function(object, name = NULL, ...){
-
-    getHistologyImage(object, name = name) %>%
-      getImageDims()
-
-  }
-)
-
-#' @rdname getImageDims
-#' @export
-setMethod(
-  f = "getImageDims",
-  signature = "HistologyImage",
-  definition = function(object, ...){
-
-    object@image_info$dims_padded
-
-  }
-)
 
 
 
@@ -1448,142 +1234,13 @@ getImageObject <- function(object){
 }
 
 
-#' @title Obtain image origin
-#'
-#' @description Extrats the origin of the image that is currently set.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Either a directory or *Global.Env.* if it was read in from
-#' the global environment.
-#'
-getImageOrigin <- function(object){
-
-  io <- getImageObject(object)
-
-  io@image_info$origin
-
-}
-
-
-#' @rdname getImageDims
-#' @export
-setGeneric(name = "getImageRange", def = function(object, ...){
-
-  standardGeneric(f = "getImageRange")
-
-})
-
-#' @rdname getImageDims
-#' @export
-setMethod(
-  f = "getImageRange",
-  signature = "spata2",
-  definition = function(object, ...){
-
-    deprecated(...)
-
-    out <- list()
-
-    img_dims <- getImageDims(object, ...)
-
-    out$x <- c(0,img_dims[[1]])
-    out$y <- c(0,img_dims[[2]])
-
-    return(out)
-
-  }
-)
-
-#' @rdname getImageDims
-#' @export
-setMethod(
-  f = "getImageRange",
-  signature = "HistologyImagingNew",
-  definition = function(object, name = NULL){
-
-    getHistologyImage(object, name = name) %>%
-      getImageRange()
-
-  }
-)
-
-#' @rdname getImageDims
-#' @export
-setMethod(
-  f = "getImageRange",
-  signature = "HistologyImage",
-  definition = function(object, ...){
-
-    deprecated(...)
-
-    out <- list()
-
-    img_dims <- getImageDims(object, ...)
-
-    out$x <- c(0,img_dims[[1]])
-    out$y <- c(0,img_dims[[2]])
-
-    return(out)
-
-  }
-)
 
 
 
 
 
-#' @title Obtain image raster-(information)
-#'
-#' @inherit argument_dummy params
-#'
-#' @export
-
-setGeneric(name = "getImageRaster", def = function(object, ...){
-
-  standardGeneric(f = "getImageRaster")
-
-})
-
-#' @rdname getImageRaster
-#' @export
-setMethod(
-  f = "getImageRaster",
-  signature = "spata2",
-  definition = function(object, xrange = NULL, yrange = NULL, expand = 0){
-
-    img <-
-      getImage(object, xrange = xrange, yrange = yrange, expand = expand) %>%
-      grDevices::as.raster() %>%
-      magick::image_read()
-
-    return(img)
-
-  }
-)
-
-#' @rdname getImageRaster
-#' @export
-setMethod(
-  f = "getImageRaster",
-  signature = "HistologyImage",
-  definition = function(object, xrange = NULL, yrange = NULL, expand = 0){
-
-    getImage(object, xrange = xrange, yrange = yrange, expand = expand) %>%
-      grDevices::as.raster()
-
-  }
-)
 
 
-#' @rdname getImageRaster
-#' @export
-getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
-
-  getImageRaster(object, xrange = xrange, yrange = yrange) %>%
-    magick::image_info()
-
-}
 
 
 #' @title Obtain image sections by barcode spot
@@ -2564,29 +2221,6 @@ getMatrices <- function(object){
   object@data[[1]]
 
 }
-
-
-#' @title Obtain spatial method
-#'
-#' @description Extracts an S4 object of class `SpatialMethod` that contains
-#' meta data about the set up of the protocol that was followed to create
-#' the data used for the `SPATA2` object.
-#'
-#' @inherit argument_dummy
-#'
-#' @return Character value.
-#'
-#' @seealso `?SpatialMethod`
-#'
-#' @export
-
-
-getSpatialMethod <- function(object){
-
-  object@information$method
-
-}
-
 
 
 #' @title Obtain model evaluation

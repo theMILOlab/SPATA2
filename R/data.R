@@ -170,4 +170,14 @@
 "visium_coords"
 
 
+#' A list of a slot named *small*, which contains the data.frame of all
+#' barcoded spots of 6.5mm capture area and a slot named *large* which
+#' contains the barcoded spots of the 11mm capture area.
+#'
+#'  @docType data
+#'  @usage data(visium_spots)
+#'
+"visium_spots"
+
+
 

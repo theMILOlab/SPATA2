@@ -3,11 +3,17 @@
 \name{getSegmentDf}
 \alias{getSegmentDf}
 \alias{getCoordsDf}
+\alias{getCoordsDf,spata2-method}
+\alias{getCoordsDf,HistoImaging-method}
 \title{Obtain spatial coordinates}
 \usage{
 getSegmentDf(object, segment_names, ...)
 
-getCoordsDf(object, type = "both", ...)
+getCoordsDf(object, ...)
+
+\S4method{getCoordsDf}{spata2}(object, type = "both", ...)
+
+\S4method{getCoordsDf}{HistoImaging}(object, name = NULL, exclude = TRUE, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

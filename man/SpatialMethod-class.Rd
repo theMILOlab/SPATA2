@@ -7,21 +7,26 @@
 \title{The \code{SpatialMethod} - Class}
 \description{
 Abstracts the concept of spatial biology experiments
-such as \emph{Visium1} or \emph{SlideSeq}.
+such as \emph{Visium} or \emph{SlideSeq}.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{fiducial_frame}}{list. List of length two or three. Provides
-standardized measures of the sample image in units of length.}
+\item{\code{capture_area}}{list. List of length two. Provides the measures
+of the area in which identified entities are to be expected (in SI units).}
+
+\item{\code{fiducial_frame}}{list. List of length two, named \emph{x} and \emph{y}.
+Provides standardized measures of the sample image (in SI units).}
 
 \item{\code{info}}{list. List of miscellaneous meta data for the method.}
 
-\item{\code{name}}{character. The name of the spatial method. Should
-be one of \code{validSpatialMethods()}.}
+\item{\code{method_specific}}{list. List method specific data.}
 
-\item{\code{observational_unit}}{character. Single word that describes
-the observational unit of the experiment. E.g \emph{'barcode-spot'} in
-case of @name == \emph{'Visium'}.}
+\item{\code{name}}{character. The name of the spatial method. (E.g. \emph{'Visium'})}
+
+\item{\code{observational_unit}}{character. Name with which to refer to
+the entity the method focuses on. (E.g. \emph{'barcode_spot'})}
+
+\item{\code{unit}}{character. The SI to be used by default.}
 }}
 

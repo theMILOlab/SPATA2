@@ -191,14 +191,33 @@ textInputWrapper <- function(inputId,
 # theme -------------------------------------------------------------------
 
 
-theme_image <- function(){
+theme_image <- function(bg_transparent = FALSE){
+
+  if(base::isTRUE(bg_transparent)){
+
+    theme_add <-
+      ggplot2::theme(
+        panel.background = ggplot2::element_rect(fill = 'transparent'),
+        plot.background = ggplot2::element_rect(fill = 'transparent', color=NA),
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        legend.background = ggplot2::element_rect(fill = 'transparent'),
+        legend.box.background = ggplot2::element_rect(fill = 'transparent')
+      )
+
+  } else {
+
+    theme_add <-
+      ggplot2::theme(
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank()
+      )
+
+  }
 
   list(
     ggplot2::theme_bw(),
-    ggplot2::theme(
-      panel.grid.major = ggplot2::element_blank(),
-      panel.grid.minor = ggplot2::element_blank()
-    )
+    theme_add
   )
 
 }
@@ -529,8 +548,6 @@ transform_pixel_to_dist_si <- function(input,
   )
 
   desired_unit <- unit
-
-  check_object(object)
 
   scale_fct <-
     getPixelScaleFactor(

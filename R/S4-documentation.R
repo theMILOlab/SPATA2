@@ -11,6 +11,34 @@
 
 # 0 - classes on which other classes depend on ----------------------------
 
+#' @title The \code{SpatialMethod} - Class
+#'
+#' @description Abstracts the concept of spatial biology experiments
+#' such as \emph{Visium} or \emph{SlideSeq}.
+#'
+#' @slot capture_area list. List of length two. Provides the measures
+#' of the area in which identified entities are to be expected (in SI units).
+#' @slot fiducial_frame list. List of length two, named *x* and *y*.
+#' Provides standardized measures of the sample image (in SI units).
+#' @slot info list. List of miscellaneous meta data for the method.
+#' @slot method_specific list. List method specific data.
+#' @slot name character. The name of the spatial method. (E.g. *'Visium'*)
+#' @slot observational_unit character. Name with which to refer to
+#' the entity the method focuses on. (E.g. *'barcode_spot'*)
+#' @slot unit character. The SI to be used by default.
+#'
+#' @export
+SpatialMethod <- setClass(Class = "SpatialMethod",
+                          slots = list(
+                            capture_area = "list",
+                            fiducial_frame = "list",
+                            info = "list",
+                            method_specifics = "list",
+                            name = "character",
+                            unit = "character",
+                            observational_unit = "character"
+                          ))
+
 #' @title The \code{Trajectory} - Class
 #'
 #' @description S4 class that represents trajectories
@@ -50,83 +78,116 @@ image_class <- "Image"
 base::attr(x = image_class, which = "package") <- "EBImage"
 
 
-#' @title The \code{HistologyImaging} - Class
+#' @title The \code{HistoImage} - Class
 #'
-#' @description S4 class that represents a set of histological images from one
-#' and the same tissue slide.
+#' @description S4 class that contains an histology image and information and data
+#' about it. Usually live in slots @@image_reference and @@images_registered of `HistoImaging`
+#' objects.
 #'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot coordinates data.frame. A data.frame of observational units that underlie
-#' the image in case of spatially resolved multi-omic studies. Should contain at least
-#' the  two variables: *x*, *y* and a variable that identifies the observational
-#' units (e.g. *barcodes*).
-#' @slot dir_add list. Named list of directories that contain different versions
-#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
-#' `loadImage()`.
-#' @slot dir_default character. Directory that leads to the default image for save
-#' exchanging via `loadDefaultImage()`.
-#' @slot dir_highres character. Directory that leads to a high resolution version of the image
-#' for save exchanging via `loadHighresImage()`.
-#' @slot dir_lowres character. Directory that leads to a low resolution version of the image
-#' for save exchanging via `loadLowresImage()`.
-#' @slot grid list. That contains information about spatial grids.
-#' @slot id character. String to identify the imaged tissue.
-#' @slot image Image. Should be compatible with the `EBImage` package.
-#' @slot image_info list. Stores meta data and miscellaneous information regarding the
-#' image that is currently stored in slot @@image. Slots that should always exist:
+#' @slot active logical. If `TRUE`, it is the image used by default. Only one `HistoImage`
+#' in the `HistoImaging` object can be the active at a time.
+#' @slot aligned logical. If `TRUE`, indicates that the image was aligned to
+#' the reference image.
+#' @slot dir character. The directory from where to load the image if slot @@image is empty.
+#' @slot image Image. The image stored as class `Image` from the package `EBImage`.
+#' @slot image_info list. A list of miscellaneous slots that carrie information
+#' regarding the image. Protected slots are:
 #' \itemize{
-#'  \item{*origin*:}{ Character string. Either the directory from where the current image was read
-#'  in or a substitute of the object name that was used from the global environment.}
-#'  \item{*dim_input*:}{ The dimensions with which the image was given to argument `image` of
-#'  `createHistologyImaging()` or `exchangeImage()`.}
-#'  \item{*dim_stored*:}{ The dimensions with which the image is currently stored.}
-#'  \item{*img_scale_fct*:}{ The scale factor input that was used to resize the current image within
-#'  `createHistologyImaging()` or `exchangeImage()` before setting it. If 1, *dim_stored* and *dim_input*
-#'  should be identical. See argument `scale_fct` of `exchangeImage()` for more details on its interpretation.}
-#'   \item{*pxl_scale_fct*:}{ Numeric value that gives the side length of one pixel an SI unit that is stated
-#'   in an attribute called *unit* as nSI-units/px.}
+#'  \item{dims}{Numeric vector of length three. Output of `base::dim()` on the read image.}
 #'  }
-#' @slot justification list. List of two slots that track justification changes. See corresponding
-#' section below the slot descriptions for more information.
+#' @slot name character. The name of the image.
+#' @slot outline list. List of two data.frames in which each row corresponds to
+#' a vertice of the polygon required to outline the whole tissue identified on
+#' the image or single contiguous tissue sections.
 #' \itemize{
-#'  \item{*angle*:}{ Numeric value that ranges from 0-359.}
-#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'  \item{*tissue_whole*:}{ Data.frame of two variables *x* and *y*.}
+#'  \item{*tissue_sections*:} {Data.frame of two variables *x*, *y* and *section* to
+#'  outline the tissue section outlined.}
 #'  }
-#' @slot meta list. List for meta data regarding the tissue.
-#' @slot misc list. A flexible list for miscellaneous input.
+#' @slot overlap numeric. Numeric vector of length two. Quantifies the overlap
+#' of the tissue outline of this image with the tissue outline of the reference image
+#' with a value between 0-1 before and after alignment via `alignImage()`.
+#' @slot reference logical. `TRUE` if it is the `HistoImage` used as the reference
+#' with which other histology images are aligned.
+#' @slot sample character. The name of the tissue portion to which this image belongs.
+#' @slot scale_factors list. List of single numeric values serving as scale factors for
+#' multiple functionalities. Reserved slot names:
+#' \itemize{
+#'   \item{*coords*:} {Coordinate scale factor to be multiplied by the original x and y variables,
+#'   ensuring alignment with the image.}
+#'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It should have an
+#'   attribute called "unit" conforming to the format "SI-unit/px".}
+#'   \item{*spot*:} {Spot scale factor used to ensure that the size of spots is plotted in a way that
+#'   their borders align perfectly. This scale factor is specifically applicable when working
+#'   with experiments that involve a fixed grid of spots, such as "Visium" or "SlideSeq".}
+#' }
 #'
-#' @section Requirements:
-#' The `HistologyImaging` framework assumes that all read in images have the same
-#' axes-ratio.
-#'
-#' @section Tracking changes in image justification:
-#' The histology image that is used while creating the object is considered the
-#' default image. By default, the framework assumes that all related images (high resolution,
-#' low resolution, fluorescent images, RAMAN spectroscopy etc.) have the same justification
-#' in terms of angle rotation and axes-flipping. Flipping an image in the `SPATA2` object via
-#'  `flipImage()` or rotating images via `rotateImage()` changes their justification in space.
-#' These changes in justification are tracked (if `track` is not set to `FALSE`) and applied
-#' whenever an image is exchanged via `exchangeImage()` (if `adjust` is not set to `FALSE`).
-#' This ensures consistent image exchanges using the different directories.
+#' @slot transformations list. List of transformations to apply while extracting
+#' the image to ensure alignment with additional images. In case of default values
+#' no transformation is applied.
+#' \itemize{
+#'  \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
+#'  by which the image needs to be rotated in **clockwise** direction. Defaults to 0.}
+#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*. Both default to `FALSE`}
+#'  \item{*scale*:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
+#'  \item{*translate*:}{ Vector of two numeric values named *horizontal* and *vertical*. Indicate
+#'  the number of pixels the image needs to be translated. Positive values shift the image
+#'  **downwards** or to the right, respectively. Negative values shift the image **upwards**
+#'  or to the left, respectively. Both default to 0.}
+#'  }
 #'
 #' @export
-HistologyImaging <- setClass(Class = "HistologyImaging",
-                             slots = list(
-                               annotations = "list",
-                               coordinates = "data.frame",
-                               dir_default = "character",
-                               dir_highres = "character",
-                               dir_lowres = "character",
-                               dir_add = "list",
-                               grid = "list",
-                               id = "character",
-                               image = image_class,
-                               image_info = "list",
-                               justification = "list",
-                               meta = "list",
-                               misc = "list"
-                             )
+HistoImage <- setClass(Class = "HistoImage",
+                       slots = list(
+                         active = "logical",
+                         aligned = "logical",
+                         dir = "character",
+                         image = "Image",
+                         image_info = "list",
+                         name = "character",
+                         outline = "list",
+                         overlap = "numeric",
+                         reference = "logical",
+                         sample = "character",
+                         scale_factors = "list",
+                         transformations = "list"
+                       )
 )
+
+#' @title The \code{HistoImaging} - Class
+#'
+#' @description S4 class that represents a set of histological images from one
+#' tissue slide or several consecutive slides of one and the same tissue portion.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot coordinates data.frame. Data.frame that stores information about identified
+#' or known entities located on the imaged tissue, such as cells or capture spots.
+#' @slot coordinates_id character. The name of the variable of the data.frame
+#' in @@slot coordinates that uniquely identifies each observation.
+#' @slot images list. List of objects of class `HistoImage`. Leaving
+#' @slot method SpatialMethod. Object of class `SpatialMethod`.
+#' slot @@image empty can or should be done for more efficient utilization of memory.
+#' @slot meta list. List for meta data regarding the imaged tissue portion.
+#' @slot misc list. A flexible list for miscellaneous input.
+#' @slot name_img_ref character. The name of the image that is used as a reference for aligning
+#' every additional image in slot @@images_registered.
+#' @slot sample character. String to identify the imaged tissue.
+#'
+#' @export
+HistoImaging <- setClass(Class = "HistoImaging",
+                         slots = list(
+                           annotations = "list",
+                           coordinates = "data.frame",
+                           coordinates_id = "character",
+                           images = "list",
+                           method = "SpatialMethod",
+                           meta = "list",
+                           misc = "list",
+                           name_img_ref = "character",
+                           sample = "character"
+                         )
+)
+
 
 # I -----------------------------------------------------------------------
 
@@ -336,29 +397,7 @@ spata2 <- setClass("spata2",
 )
 
 
-#' @title The \code{SpatialMethod} - Class
-#'
-#' @description Abstracts the concept of spatial biology experiments
-#' such as \emph{Visium1} or \emph{SlideSeq}.
-#'
-#' @slot fiducial_frame list. List of length two or three. Provides
-#' standardized measures of the sample image in units of length.
-#' @slot info list. List of miscellaneous meta data for the method.
-#' @slot name character. The name of the spatial method. Should
-#' be one of \code{validSpatialMethods()}.
-#' @slot observational_unit character. Single word that describes
-#' the observational unit of the experiment. E.g \emph{'barcode-spot'} in
-#' case of @@name == \emph{'Visium'}.
-#'
-#' @export
-SpatialMethod <- setClass(Class = "SpatialMethod",
-                          slots = list(
-                            fiducial_frame = "list",
-                            info = "list",
-                            name = "character",
-                            unit = "character",
-                            observational_unit = "character"
-                          ))
+# SpatialMethod - other S4 classes inherit from it. Is listed on top under 0
 
 
 #' @title The `SpatialSegmentation` - Class
@@ -573,6 +612,119 @@ dim_red <- setClass("dim_red",
                              slots = c(UMAP =  "data.frame",
                                        TSNE ="data.frame"))
 
+
+#' @title The \code{HistologyImage} - Class
+#'
+#' @description S4 class that represents histology images.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot dir_default character. The default directory that is used to load
+#' the image if slot @@image is empty. Or a string linking to the default slot
+#' ('highres' or 'lowres').
+#' @slot dir_highres character. Directory to the high resolution version of the image.
+#' @slot dir_lowres character. Directory to the low resolution version of the image.
+#' @slot grid data.frame. A data.frame that contains at least a variable
+#' named \emph{x} and a variable named \emph{y} representing a grid.
+#' @slot id character. String to identify the object in a list of multiple objects
+#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
+#' @slot image Image.
+#' @slot info list. A flexible list that is supposed to store miscellaneous
+#' information around the image.
+#' @slot misc list. A flexible list for miscellaneous input.
+#' @keywords internal
+#' @export
+HistologyImage <- setClass(Class = "HistologyImage",
+                           slots = list(
+                             annotations = "list",
+                             coordinates = "data.frame",
+                             dir_default = "character",
+                             dir_highres = "character",
+                             dir_lowres = "character",
+                             grid = "list",
+                             id = "character",
+                             info = "list",
+                             image = image_class,
+                             misc = "list"
+                           ))
+
+#' @title The \code{HistologyImaging} - Class
+#'
+#' @description S4 class that represents a set of histological images from one
+#' and the same tissue slide.
+#'
+#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot coordinates data.frame. A data.frame of observational units that underlie
+#' the image in case of spatially resolved multi-omic studies. Should contain at least
+#' the  two variables: *x*, *y* and a variable that identifies the observational
+#' units (e.g. *barcodes*).
+#' @slot dir_add list. Named list of directories that contain different versions
+#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
+#' `loadImage()`.
+#' @slot dir_default character. Directory that leads to the default image for save
+#' exchanging via `loadDefaultImage()`.
+#' @slot dir_highres character. Directory that leads to a high resolution version of the image
+#' for save exchanging via `loadHighresImage()`.
+#' @slot dir_lowres character. Directory that leads to a low resolution version of the image
+#' for save exchanging via `loadLowresImage()`.
+#' @slot grid list. That contains information about spatial grids.
+#' @slot id character. String to identify the imaged tissue.
+#' @slot image Image. Should be compatible with the `EBImage` package.
+#' @slot image_info list. Stores meta data and miscellaneous information regarding the
+#' image that is currently stored in slot @@image. Slots that should always exist:
+#' \itemize{
+#'  \item{*origin*:}{ Character string. Either the directory from where the current image was read
+#'  in or a substitute of the object name that was used from the global environment.}
+#'  \item{*dim_input*:}{ The dimensions with which the image was given to argument `image` of
+#'  `createHistologyImaging()` or `exchangeImage()`.}
+#'  \item{*dim_stored*:}{ The dimensions with which the image is currently stored.}
+#'  \item{*img_scale_fct*:}{ The scale factor input that was used to resize the current image within
+#'  `createHistologyImaging()` or `exchangeImage()` before setting it. If 1, *dim_stored* and *dim_input*
+#'  should be identical. See argument `scale_fct` of `exchangeImage()` for more details on its interpretation.}
+#'   \item{*pxl_scale_fct*:}{ Numeric value that gives the side length of one pixel an SI unit that is stated
+#'   in an attribute called *unit* as nSI-units/px.}
+#'  }
+#' @slot justification list. List of two slots that track justification changes. See corresponding
+#' section below the slot descriptions for more information.
+#' \itemize{
+#'  \item{*angle*:}{ Numeric value that ranges from 0-359.}
+#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
+#'  }
+#' @slot meta list. List for meta data regarding the tissue.
+#' @slot misc list. A flexible list for miscellaneous input.
+#'
+#' @section Requirements:
+#' The `HistologyImaging` framework assumes that all read in images have the same
+#' axes-ratio.
+#'
+#' @section Tracking changes in image justification:
+#' The histology image that is used while creating the object is considered the
+#' default image. By default, the framework assumes that all related images (high resolution,
+#' low resolution, fluorescent images, RAMAN spectroscopy etc.) have the same justification
+#' in terms of angle rotation and axes-flipping. Flipping an image in the `SPATA2` object via
+#'  `flipImage()` or rotating images via `rotateImage()` changes their justification in space.
+#' These changes in justification are tracked (if `track` is not set to `FALSE`) and applied
+#' whenever an image is exchanged via `exchangeImage()` (if `adjust` is not set to `FALSE`).
+#' This ensures consistent image exchanges using the different directories.
+#'
+#' @export
+HistologyImaging <- setClass(Class = "HistologyImaging",
+                             slots = list(
+                               annotations = "list",
+                               coordinates = "data.frame",
+                               dir_default = "character",
+                               dir_highres = "character",
+                               dir_lowres = "character",
+                               dir_add = "list",
+                               grid = "list",
+                               id = "character",
+                               image = image_class,
+                               image_info = "list",
+                               justification = "list",
+                               meta = "list",
+                               misc = "list"
+                             )
+)
+
 #' spatial_trajectory object
 #'
 #' @slot compiled_trajectory_df A data.frame containing the variables:
@@ -674,119 +826,7 @@ default_instructions <- setClass(Class = "default_instructions",
 
 
 
-#' @title The \code{HistologyImage} - Class
-#'
-#' @description S4 class that represents an histology image. Appear in slot @@image_active
-#' and @@images_registered of S4 class [`HistologyImaging`].
-#'
-#' @slot aligned logical. If `TRUE`, indicates that the image was aligned to
-#' the reference image.
-#' @slot centered logical. If `TRUE`, indicates that the tissue outline has been
-#' centered.
-#' @slot coords_scale_fct numeric. A numeric value of length one. It represents
-#' the scaling factor applied to the original x- and y-coordinates
-#' (stored in the 'x_orig' and 'y_orig' variables) of the entities underlying the image.
-#' These entities are contained within the data.frame stored in the '@@coordinates' slot
-#' of S4 class [`HistologyImaging`].
-#'
-#' By multiplying the original coordinates with the 'coords_scale_fct', the scaled coordinates
-#' are obtained, allowing for adjustments in the spatial representation of the entities on the image.
-#' and preserving the spatial relationship and proportionality between the entities and the image.
-#' @slot dir character. The directory from where to load the image if slot @@image is empty.
-#' @slot image Image. The image stored as class `Image` from the package `EBImage`.
-#' @slot image_info list. A list of miscellaneous slots that carrie information
-#' regarding the image. Protected slots are:
-#' \itemize{
-#'  \item{dims}{Numeric vector of length three. Output of `base::dim()` on the padded image.}
-#'  }
-#' @slot name character. The name of the image.
-#' @slot outline list. List of two data.frames in which each row corresponds to
-#' a vertice of the polygon required to outline the whole tissue identified on
-#' the image or single contiguous tissue sections.
-#' \itemize{
-#'  \item{*tissue_whole*:}{ Data.frame of two variables *x* and *y*.}
-#'  \item{*tissue_sections*:} Data.frame of two variables *x*, *y* and *section* to
-#'  identify the tissue section outlined.
-#'  }
-#' @slot overlap numeric. Numeric vector of length two. Quantifies the overlap
-#' of the tissue outline of this image with the tissue outline of the reference image
-#' with a value between 0-1 before and after alignment via `alignImage()`.
-#' @slot reference logical. `TRUE` if it is the histology image used as the reference
-#' with which other histology images are aligned.
-#' @slot sample character. The name of the tissue portion to which this image belongs.
-#' @slot transformations list. List of transformations to apply while extracting
-#' the image to ensure alignment with additional images. In case of default values
-#' no transformation is applied.
-#' \itemize{
-#'  \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
-#'  by which the image needs to be rotated in **clockwise** direction. Defaults to 0.}
-#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*. Both default to `FALSE`}
-#'  \item{*scale*:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
-#'  \item{*translate*:}{ Vector of two numeric values named *horizontal* and *vertical*. Indicate
-#'  the number of pixels the image needs to be translated. Positive values shift the image
-#'  **downwards** or to the right, respectively. Negative values shift the image **upwards**
-#'  or to the left, respectively. Both default to 0.}
-#'  }
-#'
-#' @export
-HistologyImage <- setClass(Class = "HistologyImage",
-                           slots = list(
-                             aligned = "logical",
-                             centered = "logical",
-                             coords_scale_fct = "numeric",
-                             dir = "character",
-                             image = "Image",
-                             image_info = "list",
-                             name = "character",
-                             outline = "list",
-                             overlap = "numeric",
-                             reference = "logical",
-                             sample = "character",
-                             transformations = "list"
-                           )
-)
 
-#' @title The \code{HistologyImaging} - Class
-#'
-#' @description S4 class that represents a set of histological images from one
-#' tissue slide or several consecutive slides of one and the same tissue portion.
-#'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot coordinates data.frame. Data.frame that stores information about identified
-#' or known entities located on the imaged tissue, such as cells or capture spots.
-#' @slot coordinates_id character. The name of the variable of the data.frame
-#' in @@slot coordinates that uniquely identifies each observation.
-#' @slot image_active HistologyImage. The image that is used by default.
-#' @slot image_reference HistologyImage. The image that is used as a reference for aligning
-#' every additional image in slot @@images_registered.
-#' @slot images_registered list. List of objects of class `HistologyImage`. Leaving
-#' slot @@image empty can or should be done for more efficient utilization of memory.
-#' @slot justification list. List containing two sub-slots that track justification
-#' changes applied to the entire tissue. These justification changes are implemented
-#' uniformly across all images within the dataset, following their reading and specific
-#' transformations defined in the respective '@@transformation' slot.
-#' \itemize{
-#'  \item{*angle*:}{ Numeric value that ranges from 0-359. Defaults to 0.}
-#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*. Both default to `FALSE`.}
-#'  }
-#' @slot meta list. List for meta data regarding the imaged tissue portion.
-#' @slot misc list. A flexible list for miscellaneous input.
-#' @slot sample character. String to identify the imaged tissue.
-#'
-#' @export
-HistologyImagingNew <- setClass(Class = "HistologyImagingNew",
-                                slots = list(
-                                  annotations = "list",
-                                  coordinates = "data.frame",
-                                  coordinates_id = "character",
-                                  image_active = "HistologyImage",
-                                  image_reference = "HistologyImage",
-                                  images_registered = "list",
-                                  meta = "list",
-                                  misc = "list",
-                                  sample = "character"
-                                )
-)
 
 
 
@@ -797,7 +837,7 @@ SPATA2 <- setClass(Class = "SPATA2",
                      coordinates = "data.frame",
                      compatibility = "list",
                      fdata = "data.frame",
-                     images = "HistologyImagingNew",
+                     images = "HistoImaging",
                      information = "list",
                      method = "SpatialMethod",
                      sample = "character",

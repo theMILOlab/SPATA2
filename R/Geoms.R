@@ -14,7 +14,7 @@ GeomPointFixed <- ggplot2::ggproto(
     alpha = NA, stroke = 0.5
   ),
 
-  draw_panel = function(data, panel_params, coord, na.rm = FALSE) {
+  draw_panel = function(data, panel_params, coord, scale_fct = NULL, na.rm = FALSE) {
 
     if (is.character(data$shape)) {
       data$shape <- translate_shape_string(data$shape)
@@ -25,11 +25,15 @@ GeomPointFixed <- ggplot2::ggproto(
     stroke_size <- coords$stroke
     stroke_size[is.na(stroke_size)] <- 0
 
+    size <- ggplot2::unit(x = data$size/100, "npc")
+
+    print(unique(size))
+
     grid::pointsGrob(
       x = coords$x,
       y = coords$y,
       pch = coords$shape,
-      size = ggplot2::unit(x = coords$size/100, units = "npc"),
+      size = size,
       gp = grid::gpar(
         col = scales::alpha(coords$colour, coords$alpha),
         fill = scales::alpha(coords$fill, coords$alpha),

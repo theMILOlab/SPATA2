@@ -203,11 +203,13 @@ add_dbscan_variable <- function(coords_df,
                                 eps,
                                 minPts = 3,
                                 name = "dbscan",
+                                x = "x",
+                                y = "y",
                                 ...){
 
   outline_res <-
     dbscan::dbscan(
-      x = base::as.matrix(coords_df[, c("x", "y")]),
+      x = base::as.matrix(coords_df[, c(x, y)]),
       eps = eps ,
       minPts = minPts
     )
@@ -260,12 +262,12 @@ add_wh <- function(df){
 
 #' @rdname add_wh
 #' @export
-add_xy <- function(df){
+add_xy <- function(df, x = "x", y = "y"){
 
   dplyr::mutate(
     .data = df,
-    x = width,
-    y = base::range(height)[1] - height + base::range(height)[2]
+    {{x}} := width,
+    {{y}} := base::range(height)[1] - height + base::range(height)[2]
   ) %>%
     dplyr::select(width, height, x, y, dplyr::everything())
 
@@ -1107,116 +1109,7 @@ addPointsBase <- function(object,
 }
 
 
-#' @title Add tissue outline to base surface plot
-#'
-#' @description Adds tissue outline layer in form of polygons to the tissue
-#' plotted with R base plotting.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Output is directly plotted.
-#' @export
-#'
-setGeneric(name = "addTissueOutlineBase", def = function(object, ...){
 
-  standardGeneric(f = "addTissueOutlineBase")
-
-})
-
-#' @rdname addTissueOutlineBase
-#' @export
-setMethod(
-  f = "addTissueOutlineBase",
-  signature = "HistologyImage",
-  definition = function(object,
-                        by_section = FALSE,
-                        persp = "coords",
-                        linealpha = 0.9,
-                        linecolor = "black",
-                        linesize = 1,
-                        linetype = "solid",
-                        ...){
-
-    if(base::isTRUE(by_section)){
-
-      df <- object@outline$tissue_sections
-
-    } else {
-
-      df <- object@outline$tissue_whole
-      df[["section"]] <- "whole"
-
-    }
-
-    if(persp == "coords"){
-
-      xvar <- "x"
-      yvar <- "y"
-
-    } else if(persp == "image"){
-
-      xvar <- "width"
-      yvar <- "height"
-
-    }
-
-    purrr::walk(
-      .x = base::unique(df[["section"]]),
-      .f = function(s){
-
-        dfs <- dplyr::filter(df, section == {{s}})
-
-        graphics::polygon(
-          x = dfs[[xvar]],
-          y = dfs[[yvar]],
-          border = ggplot2::alpha(linecolor, linealpha),
-          lty = linetype,
-          lwd = linesize,
-          ...
-        )
-
-      }
-    )
-
-  }
-)
-
-#' @rdname addTissueOutlineBase
-#' @export
-setMethod(
-  f = "addTissueOutlineBase",
-  signature = "data.frame",
-  definition = function(object,
-                        persp = "coords",
-                        linealpha = 0.9,
-                        linecolor = "black",
-                        linesize = 1,
-                        linetype = "solid",
-                        ...){
-
-    if(persp == "coords"){
-
-      xvar <- "x"
-      yvar <- "y"
-
-    } else if(persp == "image"){
-
-      xvar <- "width"
-      yvar <- "height"
-
-    }
-
-    graphics::polygon(
-      x = object[[xvar]],
-      y = object[[yvar]],
-      border = ggplot2::alpha(linecolor, linealpha),
-      lty = linetype,
-      lwd = linesize,
-      ...
-    )
-
-  }
-)
 
 
 

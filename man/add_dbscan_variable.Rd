@@ -5,7 +5,15 @@
 \alias{add_tissue_section_variable}
 \title{Add tissue section variable}
 \usage{
-add_dbscan_variable(coords_df, eps, minPts = 3, name = "dbscan", ...)
+add_dbscan_variable(
+  coords_df,
+  eps,
+  minPts = 3,
+  name = "dbscan",
+  x = "x",
+  y = "y",
+  ...
+)
 
 add_tissue_section_variable(coords_df, ccd, minPts = 3, ...)
 }
@@ -19,6 +27,9 @@ add_tissue_section_variable(coords_df, ccd, minPts = 3, ...)
 core points (including the point itself).}
 
 \item{name}{Name of the added variable.}
+
+\item{x}{a data matrix, a data.frame, a \link{dist} object or a \link[dbscan]{frNN} object with
+fixed-radius nearest neighbors.}
 
 \item{...}{To silently drop deprecated arguments.}
 

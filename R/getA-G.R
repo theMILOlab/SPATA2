@@ -387,52 +387,7 @@ getBarcodeSpotDistances <- function(object,
 
 # getC --------------------------------------------------------------------
 
-#' @title Obtain center to center distance
-#'
-#' @description Extracts the center to center distance from
-#' barcode-spots depending on the method used.
-#'
-#' @inherit argument_dummy params
-#' @param unit Character value or \code{NULL}. If character, specifies
-#' the unit in which the distance is supposed to be returned.
-#' Use \code{validUnitsOfLength()} to obtain  all valid input options.
-#'
-#' @return Character value.
-#' @export
-#'
-getCCD <- function(object,
-                   unit = NULL,
-                   as_numeric = FALSE,
-                   round = FALSE){
 
-  check_object(object)
-
-  method <- getSpatialMethod(object)
-
-  ccd <- method@info[["ccd"]]
-
-  if(base::is.null(ccd)){
-
-    stop("No center to center distance found. Set manually with `setCCD()`.")
-
-  }
-
-  ccd_unit <- extract_unit(ccd)
-
-  if(base::is.null(unit)){ unit <- ccd_unit }
-
-  out <-
-    as_unit(
-      input = ccd,
-      unit = unit,
-      object = object,
-      as_numeric = as_numeric,
-      round = round
-    )
-
-  return(out)
-
-}
 
 #' @title Obtain chromosome information
 #'
@@ -589,87 +544,140 @@ getCoordsCenter <- function(object){
 #' (and \emph{segmentation} in case of \code{getSegmentDf()}).
 #' @export
 
-getCoordsDf <- function(object, type = "both", ...){
+setGeneric(name = "getCoordsDf", def = function(object, ...){
 
-  deprecated(...)
+  standardGeneric(f = "getCoordsDf")
 
-  # 1. Control --------------------------------------------------------------
+})
 
-  # lazy check
-  check_object(object)
+#' @rdname getCoordsDf
+#' @export
+setMethod(
+  f = "getCoordsDf",
+  signature = "spata2",
+  definition = function(object, type = "both", ...){
 
-  # -----
+    deprecated(...)
 
-  # 2. Data wrangling -------------------------------------------------------
+    # 1. Control --------------------------------------------------------------
 
-  if(containsHistologyImage(object)){
+    # lazy check
+    check_object(object)
 
-    image_obj <- getImageObject(object)
+    # -----
 
-    if(type == "exact"){
+    # 2. Data wrangling -------------------------------------------------------
 
-      coords_df <-
-        image_obj@coordinates %>%
-        dplyr::select(barcodes, sample, x, y)
+    if(containsHistologyImage(object)){
 
-    } else if(type == "aligned"){
+      image_obj <- getImageObject(object)
 
-      if(base::is.null(image_obj)){ stop("Can not extract aligned coordinates without proper image object of class `HistologyImage`.")}
+      if(type == "exact"){
 
-      coords_df <-
-        image_obj@coordinates %>%
-        dplyr::select(barcodes, sample, row, col)
+        coords_df <-
+          image_obj@coordinates %>%
+          dplyr::select(barcodes, sample, x, y)
 
-    } else if(type == "both") {
+      } else if(type == "aligned"){
 
-      coords_df <- image_obj@coordinates
+        if(base::is.null(image_obj)){ stop("Can not extract aligned coordinates without proper image object of class `HistologyImage`.")}
+
+        coords_df <-
+          image_obj@coordinates %>%
+          dplyr::select(barcodes, sample, row, col)
+
+      } else if(type == "both") {
+
+        coords_df <- image_obj@coordinates
+
+      }
+
+    } else {
+
+      coords_df <- object@coordinates[[1]] %>% tibble::as_tibble()
 
     }
 
-  } else {
-
-    coords_df <- object@coordinates[[1]] %>% tibble::as_tibble()
-
-  }
-
-  coords_df$sample <- object@samples
-
-  coords_df <-
-    dplyr::mutate(
-      .data = coords_df,
-      dplyr::across(
-        .cols = dplyr::any_of(c("col", "row")),
-        .fns = base::as.integer
-      )
-    )
-
-  joinWith <- confuns::keep_named(list(...))
-
-  joinWith[["object"]] <- NULL
-  joinWith[["spata_df"]] <- NULL
-
-  if(base::length(joinWith) >= 1){
+    coords_df$sample <- object@samples
 
     coords_df <-
-      confuns::call_flexibly(
-        fn = "joinWith",
-        fn.ns = "SPATA2",
-        default = list(object = object, spata_df = coords_df),
-        v.fail = coords_df,
-        verbose = FALSE
+      dplyr::mutate(
+        .data = coords_df,
+        dplyr::across(
+          .cols = dplyr::any_of(c("col", "row")),
+          .fns = base::as.integer
+        )
       )
 
+    joinWith <- confuns::keep_named(list(...))
+
+    joinWith[["object"]] <- NULL
+    joinWith[["spata_df"]] <- NULL
+
+    if(base::length(joinWith) >= 1){
+
+      coords_df <-
+        confuns::call_flexibly(
+          fn = "joinWith",
+          fn.ns = "SPATA2",
+          default = list(object = object, spata_df = coords_df),
+          v.fail = coords_df,
+          verbose = FALSE
+        )
+
+    }
+
+    # -----
+
+    coords_df <- tibble::as_tibble(coords_df)
+
+    return(coords_df)
+
   }
+)
 
-  # -----
+#' @rdname getCoordsDf
+#' @export
+setMethod(
+  f = "getCoordsDf",
+  signature = "HistoImaging",
+  definition = function(object, name = NULL, exclude = TRUE, ...){
 
-  coords_df <- tibble::as_tibble(coords_df)
+    hist_img <- getHistoImage(object, name = name)
+    id_name <- object@coordinates_id
 
-  return(coords_df)
+    coords_scale_fct <- hist_img@scale_factors$coords
 
-}
+    if(base::is.null(coords_scale_fct)){
 
+      coords_scale_fct <- 1
 
+    }
+
+    coords_df <- object@coordinates
+
+    if("exclude" %in% base::colnames(coords_df) & base::isTRUE(exclude)){
+
+      coords_df <-
+        dplyr::filter(coords_df, !exclude) %>%
+        dplyr::select(-exclude)
+
+    }
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        x = x_orig * coords_scale_fct,
+        y = y_orig * coords_scale_fct,
+        sample = object@sample
+      ) %>%
+      add_wh() %>%
+      dplyr::select({{id_name}}:= id, sample, x, y, height, width, dplyr::everything())
+
+    return(coords_df)
+
+  }
+)
 
 #' @title Obtain coordinate range
 #'

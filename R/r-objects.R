@@ -442,10 +442,7 @@ default_image_transformations <-
     angle = 0,
     flip = list(horizontal = FALSE, vertical = FALSE),
     scale = 1,
-    translate = list(
-      centroid_alignment = list(horizontal = 0, vertical = 0),
-      outline_alignment = list(horizontal = 0, vertical = 0)
-    )
+    translate = list(horizontal = 0, vertical = 0)
   )
 
 #' @export
@@ -558,9 +555,9 @@ uol_si_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
 helper_content <- list(
 
   angle_transf =
-    c("Choose the angle (in °) with which to rotate the image clockwise by shifting the slider."),
+    c("Choose the angle (in °) with which to rotate the image by shifting the slider."),
   angle_transf_value =
-    c("Choose the angle (in °) with which to rotate the image clockwise by manually typing it."),
+    c("Choose the angle (in °) with which to rotate the image by manually typing it."),
   flip_around_axis =
     c("Click on the axis around which to flip the image. Clicking again will revert the flipping."),
   image_to_align =
@@ -609,14 +606,17 @@ helper_content <- list(
   ref_image_options =
     c("Display the outline of the reference tissue in which to fit the tissue of the image to be aligned as well
       as the coordinates of identified or known entities on the imaged tissue."),
+  restore_initial_transf =
+    c("Restore the transformation to the original state of the image as it appeared when the app was initially opened."),
   resolution =
     c("Manipulate the resolution in which the image to be aligned is displayed by setting the window size (in pixel).
       Higher resolution allows for more accurate alignment at the cost of longer image rendering."),
   shift_image =
-    c("Shift the image vertically or horizontally by clicking on the respective arrows. The numeric
-      input in the middle allows to define the stepwise shift (in pixel). Reduce it to increase accuracy.")
-
-
+    c("Adjust the image's vertical or horizontal position by clicking the corresponding arrows.
+      The numeric input in the middle enables precise control over the incremental shift, measured in pixels. Decrease the value for enhanced accuracy."),
+  transp_img_chosen =
+    c("Adjusts the transparency of the image. To view the reference image in the background (if selected from 'Reference options'),
+      ensure that the value is not set to 0.")
 
 )
 
@@ -842,21 +842,7 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 
 si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
 
-#' @export
-spatial_methods <-
-  list(
-    Unknown = SpatialMethod(
-      name = "Unknown"
-    ),
-    Visium =
-      SpatialMethod(
-        fiducial_frame = list(x = "8mm", y = "8mm"),
-        info = list(ccd = "100um"),
-        name = "Visium",
-        unit = "mm",
-        observational_unit = "barcode-spot"
-      )
-  )
+
 
 
 smrd_projection_df_names <- c("trajectory_part", "proj_length_binned", "trajectory_order", "trajectory_part_order")
@@ -904,28 +890,38 @@ threshold_scattermore <- 100000
 
 #' @export
 VisiumSmall <-
-  Visium(
+  SpatialMethod(
     capture_area = list(x = "6.5mm", y = "6.5mm"),
-    ccd = "100um",
     fiducial_frame = list(x = "8mm", y = "8mm"),
     info = list(),
-    name = "Visium (small)",
-    observational_unit = "barcoded_spot"
+    method_specifics = list(ccd = "100um"),
+    name = "VisiumSmall",
+    observational_unit = "barcoded_spot",
+    unit = "mm"
   )
 
 #' @export
 VisiumLarge <-
-  Visium(
+  SpatialMethod(
     capture_area = list(x = "11mm", y = "11mm"),
-    ccd = "100um",
     fiducial_frame = list(x = "12.5mm", y = "12.5mm"),
     info = list(),
-    name = "Visium (large)",
-    observational_unit = "barcoded_spot"
+    method_specifics = list(ccd = "100um"),
+    name = "VisiumLarge",
+    observational_unit = "barcoded_spot",
+    unit = "mm"
   )
 
 
 
 
 
+# depending objects -------------------------------------------------------
 
+#' @export
+spatial_methods <-
+  list(
+    Undefined = SpatialMethod(name = "Undefined"),
+    VisiumSmall = VisiumSmall,
+    VisiumLarge = VisiumLarge
+  )

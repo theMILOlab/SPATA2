@@ -48,8 +48,6 @@ shinyModuleZoomingServer <- function(id = "m1",
 
         prel_out <- brushed_area()[c("xmin", "xmax", "ymin", "ymax")]
 
-        print(prel_out)
-
         xdist <- prel_out[["xmax"]] - prel_out[["xmin"]]
         ydist <- prel_out[["ymax"]] - prel_out[["ymin"]]
 

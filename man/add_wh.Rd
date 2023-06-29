@@ -7,7 +7,7 @@
 \usage{
 add_wh(df)
 
-add_xy(df)
+add_xy(df, x = "x", y = "y")
 }
 \arguments{
 \item{df}{A data.frame that contains at least the two numeric variables
