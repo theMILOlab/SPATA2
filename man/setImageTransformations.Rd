@@ -7,12 +7,16 @@
 \usage{
 setImageTransformations(object, ...)
 
-\S4method{setImageTransformations}{HistoImaging}(object, name, transformations, ...)
+\S4method{setImageTransformations}{HistoImaging}(object, img_name, transformations, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 The input \code{spata2} object containing the added or computed

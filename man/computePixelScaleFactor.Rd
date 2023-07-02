@@ -2,15 +2,19 @@
 % Please edit documentation in R/devImaging.R
 \name{computePixelScaleFactor}
 \alias{computePixelScaleFactor}
+\alias{computePixelScaleFactor,spata2-method}
 \alias{computePixelScaleFactor,HistoImaging-method}
 \title{Compute pixel scale factor}
 \usage{
 computePixelScaleFactor(object, ...)
 
+\S4method{computePixelScaleFactor}{spata2}(object, verbose = TRUE, ...)
+
 \S4method{computePixelScaleFactor}{HistoImaging}(object, verbose = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

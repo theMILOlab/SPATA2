@@ -2,42 +2,55 @@
 % Please edit documentation in R/devImaging.R
 \name{alignImage}
 \alias{alignImage}
+\alias{alignImage,spata2-method}
 \alias{alignImage,HistoImaging-method}
 \alias{alignImage,HistoImage-method}
 \alias{alignImageAuto}
 \alias{alignImageAuto,HistoImaging-method}
 \alias{alignImageInteractive}
+\alias{alignImageInteractive,spata2-method}
 \alias{alignImageInteractive,HistoImaging-method}
 \title{Align histology images}
 \usage{
 alignImage(object, ...)
 
+\S4method{alignImage}{spata2}(
+  object,
+  img_name,
+  opt = "set",
+  angle = NULL,
+  flip_h = NULL,
+  flip_v = NULL,
+  transl_h = NULL,
+  transl_v = NULL
+)
+
 \S4method{alignImage}{HistoImaging}(
   object,
-  name,
+  img_name,
   opt = "set",
-  angle = 0,
-  flip_h = logical(),
-  flip_v = logical(),
-  transl_h = 0,
-  transl_v = 0
+  angle = NULL,
+  flip_h = NULL,
+  flip_v = NULL,
+  transl_h = NULL,
+  transl_v = NULL
 )
 
 \S4method{alignImage}{HistoImage}(
   object,
   opt = "set",
-  angle = 0,
-  flip_h = logical(),
-  flip_v = logical(),
-  transl_h = 0,
-  transl_v = 0
+  angle = NULL,
+  flip_h = NULL,
+  flip_v = NULL,
+  transl_h = NULL,
+  transl_v = NULL
 )
 
 alignImageAuto(object, ...)
 
 \S4method{alignImageAuto}{HistoImaging}(
   object,
-  name,
+  img_name,
   step = 0.01,
   stop_at = 25,
   plot_progress = TRUE,
@@ -46,12 +59,18 @@ alignImageAuto(object, ...)
 
 alignImageInteractive(object, ...)
 
+\S4method{alignImageInteractive}{spata2}(object)
+
 \S4method{alignImageInteractive}{HistoImaging}(object, window_size = "800px")
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{step}{Numeric value specifying the accuracy of the alignment
 via vertical and horizontal translation. If \code{step >= 1}, it is interpreted

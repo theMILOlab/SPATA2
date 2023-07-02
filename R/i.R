@@ -5,37 +5,21 @@
 
 # id ----------------------------------------------------------------------
 
-#' @title Identify tissue sections
-#'
-#' @description Identifies how many non-contiguous tissue sections
-#' the data set contains and maps the barcode-spots to them.
-#'
-#' @inherit argument_dummy params
-#' @inherit dbscan::dbscan params
-#'
-#' @return An updated `spata2` object. The coordinates data.frame
-#' as obtained by `getCoordsDf()` contains an additional, character
-#' variable named *section* indicating the tissue section a barcode
-#' spot was mapped to.
-#'
-#' @export
-identifyTissueSections <- function(object, eps = getCCD(object, "px")*1.25, minPts = 3){
 
-  coords_df <-
-    getCoordsDf(object) %>%
-    add_tissue_section_variable(
-      coords_df = .,
-      ccd = eps,
-      name = "section",
-      minPts = minPts
-    )
 
-  object <- setCoordsDf(object, coords_df = coords_df)
+# if ----------------------------------------------------------------------
 
-  return(object)
+if_null <- function(x, out){
+
+  if(base::is.null(x)){
+
+    x <- out
+
+  }
+
+  return(x)
 
 }
-
 
 
 # im ----------------------------------------------------------------------
@@ -1128,51 +1112,6 @@ is_area_si <- function(input, error = FALSE){
 
 }
 
-
-#' @title Test area or distance input
-#'
-#' @description Tests if input can be safely converted to distance
-#' or to area values.
-#'
-#' @inherit is_area params return
-#'
-#' @note Only returns `TRUE` if all values are valid distance inputs
-#' or all values are valid area inputs.
-#'
-#' @export
-are_all_area_or_dist <- function(input, error = FALSE){
-
-  are_areas <- stringr::str_detect(string = input, pattern = regex_area)
-
-  if(!base::all(are_areas)){
-
-    are_distances <- stringr::str_detect(string = input, pattern = regex_dist)
-
-    if(!base::all(are_distances)){
-
-      out <- FALSE
-
-      if(base::isTRUE(error)){
-
-        stop(invalid_area_dist_input)
-
-      }
-
-    } else {
-
-      out <- TRUE
-
-    }
-
-  } else {
-
-    out <- TRUE
-
-  }
-
-  return(out)
-
-}
 
 
 #' @title Test distance input

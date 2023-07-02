@@ -320,26 +320,46 @@ enhanceSpataObject <- function(object,
 }
 
 
+directory_visium <- "C:/Informatics/R-Folder/Packages/SPATA2/vignettes/data/10XVisium/#UKF336_T_P"
+
+remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
+
+  confuns::give_feedback(
+    msg = "Removing stress genes and mitochondrial genes.",
+    verbose = verbose
+    )
+
+  exclude <- c(base::rownames(mtr)[base::grepl("^RPL", base::rownames(mtr))],
+               base::rownames(mtr)[base::grepl("^RPS", base::rownames(mtr))],
+               base::rownames(mtr)[base::grepl("^MT-", base::rownames(mtr))],
+               c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1'))
+
+  feat_keep <- base::rownames(mtr[!(base::rownames(mtr) %in% exclude), ])
+
+  mtr <- mtr[feat_keep,]
+
+  return(mtr)
+
+
+}
 
 initiateSpataObject_Visium <- function(directory_visium,
                                        sample_name,
-                                       mtr_filename = "filtered_feature_bc_matrix.h5",
-                                       image_filename = "tissue_lowres_image.png",
+                                       mtr = "filtered",
+                                       img_active = "lowres",
+                                       img_ref = "hires",
                                        directory_spata = NULL,
-                                       directory_seurat = NULL,
                                        gene_set_path = NULL,
-                                       SCTransform = FALSE,
-                                       NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
-                                       FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
-                                       ScaleData = TRUE,
-                                       RunPCA = list(npcs = 60),
-                                       FindNeighbors = list(dims = 1:30),
-                                       FindClusters = list(resolution = 0.8),
-                                       RunTSNE = TRUE,
-                                       RunUMAP = list(dims = 1:30),
                                        verbose = TRUE){
 
-  # check required mtr
+  isDirVisium(dir = directory_visium, error = TRUE)
+
+  # validate and process input directory
+  dir <- base::normalizePath(directory_visium)
+
+  files <- base::list.files(dir, recursive = TRUE, full.names = TRUE)
+
+  # check and load required mtr
   confuns::check_one_of(
     input = mtr,
     against = c("filtered", "raw")
@@ -348,7 +368,6 @@ initiateSpataObject_Visium <- function(directory_visium,
   if(mtr == "filtered"){
 
     mtr_path <- base::file.path(dir, "filtered_feature_bc_matrix.h5")
-
 
   } else if(mtr == "raw"){
 
@@ -362,11 +381,65 @@ initiateSpataObject_Visium <- function(directory_visium,
 
   }
 
+  confuns::give_feedback(
+    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
+    verbose = verbose
+  )
+
+  count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
+
+  # load images
+  imaging <-
+    createHistoImagingVisium(
+      dir = dir,
+      sample = sample_name,
+      img_ref = img_ref,
+      img_active = img_active,
+      verbose = verbose
+    )
+
+  # create spata2 object
+  object <-
+    initiateSpataObject_Empty(
+      sample_name = sample_name,
+      spatial_method = imaging@method@name
+    )
+
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+
+  object <- setImageObject(object, image_object = imaging)
+
+  object <-
+    setFeatureDf(
+      object = object,
+      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
+    )
+
+  return(object)
+
+}
+
+
+
+
+
+processWithSeurat <- function(object,
+                              NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
+                              FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
+                              ScaleData = TRUE,
+                              RunPCA = list(npcs = 60),
+                              FindNeighbors = list(dims = 1:30),
+                              FindClusters = list(resolution = 0.8),
+                              RunTSNE = TRUE,
+                              RunUMAP = list(dims = 1:30),
+                              overwrite = FALSE,
+                              verbose = TRUE){
+
   # read, process and set the counts - currently Seurat dependent
   seurat_object <-
     Seurat::CreateSeuratObject(
-      counts = Seurat::Read10X_h5(filename = base::file.path(directory_visium, mtr_filename)),
-      assay = "Spatial"
+      counts = getCountMatrix(object),
+      assay = "RNA"
     )
 
   seurat_object <-
@@ -374,7 +447,7 @@ initiateSpataObject_Visium <- function(directory_visium,
       seurat_object = seurat_object,
       calculate_rb_and_mt = TRUE,
       remove_stress_and_mt = TRUE,
-      SCTransform = SCTransform,
+      SCTransform = FALSE,
       NormalizeData = NormalizeData,
       FindVariableFeatures = FindVariableFeatures,
       ScaleData = ScaleData,
@@ -385,17 +458,33 @@ initiateSpataObject_Visium <- function(directory_visium,
     )
 
   object <-
-    asSPATA2(
-      object = seurat_object,
-      sample_name = sample_name,
-      verbose = FALSE
+    setScaledMatrix(
+      object = object,
+      scaled_mtr = seurat_object@assays[["RNA"]]@scale.data
       )
 
+  meta_df <-
+    tibble::rownames_to_column(.data = seurat_object@meta.data, "barcodes")
 
-  #
+  if(base::isFALSE(overwrite)){
 
+    meta_df <-
+      dplyr::select(
+        .data = meta_df,
+        barcodes,
+        -dplyr::any_of(x = getFeatureNames(object))
+      )
+
+  }
+
+  object <-
+    addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
+
+  return(object)
 
 }
+
+
 
 
 

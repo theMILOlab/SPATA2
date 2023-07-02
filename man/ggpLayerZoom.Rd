@@ -15,7 +15,8 @@ ggpLayerZoom(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{xrange, yrange}{Vector of length two. Specifies the x- and y-range
 of zooming. E.g. \code{xrange = c(200, 500)} results in the plot

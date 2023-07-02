@@ -13,7 +13,8 @@ setImageDirHighres(object, dir, check = TRUE, verbose = NULL, ...)
 setImageDirLowres(object, dir, check = TRUE, verbose = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{dir}{Character value. Directory to specific image. Should end
 with either \emph{.png}, \emph{.jpeg} or \emph{.tiff}. (Capital endings work, too.)}

@@ -6,15 +6,23 @@
 \alias{ggpLayerImage,HistoImaging-method}
 \alias{ggpLayerImage,HistoImage-method}
 \alias{ggpLayerImage,Image-method}
+\alias{ggpLayerImage,data.frame-method}
 \title{Add histology image}
 \usage{
 ggpLayerImage(object, ...)
 
-\S4method{ggpLayerImage}{spata2}(object, ...)
+\S4method{ggpLayerImage}{spata2}(
+  object,
+  img_name = NULL,
+  transform = TRUE,
+  img_alpha = 1,
+  scale_fct = 1,
+  ...
+)
 
 \S4method{ggpLayerImage}{HistoImaging}(
   object,
-  name = NULL,
+  img_name = NULL,
   transform = TRUE,
   scale_fct = 1,
   img_alpha = 1,
@@ -24,11 +32,17 @@ ggpLayerImage(object, ...)
 \S4method{ggpLayerImage}{HistoImage}(object, transform = TRUE, scale_fct = 1, img_alpha = 1, ...)
 
 \S4method{ggpLayerImage}{Image}(object, scale_fct = 1, img_alpha = 1, ...)
+
+\S4method{ggpLayerImage}{data.frame}(object, fill_by, img_alpha = 1)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -40,8 +54,28 @@ family.
 Creates ggplot2 layer with the histology image
 as a raster.
 }
-\note{
-The returned list contains an additional \code{ggplot2::geom_point()}
-layer with invisible barcode spots coordinates (\code{alpha} = 0) to enable the
-image plotting.
+\details{
+The image is plotted via \code{ggplot2::geom_raster()} by mapping the pixel position
+to the x-axis and the y-axis. See section Image visualization
+with \code{ggplot2} for more details.
 }
+\section{Image visualization with ggplot2}{
+
+
+When comparing the output of \code{ggplot() + ggpLayerImage()} with other image plotting functions,
+you may notice that the image appears horizontally flipped when plotted using \code{ggpLayerImage()}.
+This behavior is due to the use of a Cartesian coordinate system in \code{SPATA2}, where a pixel
+with coordinates c(width = 1, height = 1) is plotted on the left side at the bottom.
+In contrast, functions like \code{EBImage::display()} or \code{graphics::plot()} use an \emph{image space} coordinate system,
+where pixel heights start from the top. Consequently, in \emph{image space}, pixel c(width = 1, height = 1)
+is displayed on the top resulting in mirror inverted visualization of the image.
+
+We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
+framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
+in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
+
+If you prefer to view your image in the regular orientation, you can use the \code{flipAll()} function on your object,
+specifying \code{axis = "horizontal"}, to reverse this effect.
+}
+

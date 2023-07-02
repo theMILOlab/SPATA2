@@ -12,7 +12,8 @@ transform_pixel_to_area_si(input, unit, object, round = FALSE)
 \item{unit}{The SI area unit. Use \code{validUnitsOfAreaSI()} to obtain all
 valid input options.}
 
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}

@@ -31,7 +31,8 @@ Image expansion for more information.}
 \item{persp}{If \emph{image}, adjusts the logic of the function to the fact
 that the height of images starts on top and not on the bottom.}
 
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 }
 \value{
 List of 4 slots. Named \emph{xmin}, \emph{xmax}, \emph{ymin} and \emph{ymax}. Adjusted range

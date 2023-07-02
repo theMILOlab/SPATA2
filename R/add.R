@@ -249,12 +249,20 @@ add_tissue_section_variable <- function(coords_df,
 #' or *x* and *y*.
 #' @export
 #'
-add_wh <- function(df){
+add_wh <- function(df, hrange = NULL){
+
+  if(base::is.null(hrange)){
+
+    hrange <- base::range(df$y)
+
+  }
+
+  hrange <- base::sort(hrange)
 
   dplyr::mutate(
     .data = df,
     width = x,
-    height = base::range(y)[1] - y + base::range(y)[2]
+    height = hrange[1] - y + hrange[2]
   ) %>%
     dplyr::select(width, height, x, y, dplyr::everything())
 

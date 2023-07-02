@@ -22,7 +22,8 @@ scaleImageAnnotations(object, scale_fct, verbose = NULL)
 scaleSpatialTrajectories(object, scale_fct, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{scale_fct}{Numeric value bigger than 0. If used within \code{flipImage()}
 must range between 0 and 1. If only applied to spatial aspects that

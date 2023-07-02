@@ -13,11 +13,15 @@ getScaleFactor(object, ...)
 \S4method{getScaleFactor}{HistoImage}(object, fct_name)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{fct_name}{Character value. Name of the scale factor.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 Single value whose properties depend on \code{fct_name}.

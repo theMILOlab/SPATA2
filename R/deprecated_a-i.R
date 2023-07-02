@@ -913,6 +913,23 @@ check_slot_version <- function(object){
 }
 
 
+#' @title Check availability of `HistologyImaging` object
+#'
+#' @description Deprecated in favor of [`containsHistoImaging()`].
+#'
+#' @keywords internal
+containsHistologyImaging <- function(object){
+
+  deprecated(fn = TRUE)
+
+  img <- object@images[[1]]
+
+  out <- methods::is(object = img, class2 = "HistologyImaging")
+
+  return(out)
+
+}
+
 #' @export
 #' @keywords internal
 createImageObject <- function(...){
@@ -1144,7 +1161,6 @@ getSampleNames <- function(object){
 }
 
 
-#' @rdname getCoordsDf
 #' @export
 #' @keywords internal
 getSegmentDf <- function(object, segment_names, ...){

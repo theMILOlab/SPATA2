@@ -11,28 +11,33 @@ ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{spata2}(
   object,
+  img_name = NULL,
+  fragments = FALSE,
+  line_alpha = 1,
   line_color = "grey",
   line_size = 0.5,
+  line_type = "solid",
+  transform = TRUE,
+  smooth_with = "chaikin",
+  scale_fct = 1,
   expand_outline = getCCD(object, "px") * 1.25,
-  concavity = NULL,
-  inc_outline = TRUE,
   ...
 )
 
 \S4method{ggpLayerTissueOutline}{HistoImaging}(
   object,
-  name,
+  img_name = NULL,
   by_section = TRUE,
   fragments = FALSE,
   fill = NA,
-  linealpha = 0.9,
-  linecolor = "black",
-  linesize = 1,
-  linetype = "solid",
-  persp = "coords",
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 1,
+  line_type = "solid",
   transform = TRUE,
+  smooth_with = "chaikin",
   scale_fct = 1,
-  type = NULL,
+  expand_outline = 0.5,
   ...
 )
 
@@ -41,35 +46,41 @@ ggpLayerTissueOutline(object, ...)
   by_section = TRUE,
   fragments = FALSE,
   fill = NA,
-  linealpha = 0.9,
-  linecolor = "black",
-  linesize = 1,
-  linetype = "solid",
-  persp = "coords",
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 1,
+  line_type = "solid",
   transform = TRUE,
+  smooth_with = "chaikin",
   scale_fct = 1,
-  type = NULL,
+  expand_outline = 0.5,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}}
+\item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
-\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
-\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
-Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
-Default by object initiation is 1.}
+\item{smooth_with}{Character vaule. Sets the method with which to smooth
+the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.
+If \emph{'none'}, no smoothing is conducted.}
 
-\item{inc_outline}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
-
-\item{linesize}{Numeric value. The size of the line(s) plotted.}
+\item{expand_outline}{Distance measure. Determines the amount of
+buffering applied to the outline.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -78,54 +89,16 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Adds a hull that encircles the sample. Useful, if you want
-to plot numeric variables by color against white.
+Adds a hull that outlines the tissue.
 }
-\section{Distance measures}{
-
-
-Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
-To specifically refer to a distance the unit must be specified. There are
-three ways to create valid input for these arguments.
-
-\strong{1. In pixel:}
-
-There are two valid input options to specify the distance in pixel:
-
-\itemize{
-\item{numeric:}{ Single numeric values, e.g. \code{arg_input = c(2, 3.554, 69, 100.67)}. If no unit
-is specified the input will be interpreted as pixels.}
-\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
-}
-
-Note: The unit pixel (px) is used for distances as well as for areas. If pixel
-refers to a distance the pixel side length is meant. If pixel refers to an area the
-number of pixels is meant.
-
-\strong{2. According to the Systeme international d`unites (SI):}
-
-Specifying distances in SI units e.g. \code{arg_input = c('2mm', '4mm')} etc.
-requires the input to be a character as the unit must be provided as suffix.
-Between the numeric value and the unit must be no empty space! Valid suffixes
-can be obtained using the function \code{validUnitsOfLengthSI()}.
-
-\strong{3. As vectors of class \code{unit}:}
-
-Behind the scenes \code{SPATA2} works with the \code{units} package. Input
-is converted into vectors of class \code{units}. Therefore, input can be directly
-provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
-Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
-to specify the input in pixel you have to use input option 1. In pixel.
-}
-
 \examples{
 
-object <- donwloadPubExample("MCD_LMU")
+object <- download("MCD_LMU")
 
-plotImageGgplot(object, unit = "mm") +
+plotImage(object, unit = "mm") +
  ggpLayerTissueOutline(object, inc_outline = TRUE)
 
-plotImageGgplot(object, unit = "mm") +
+plotImage(object, unit = "mm") +
  ggpLayerTissueOutline(object, inc_outline = FALSE)
 
 }

@@ -749,7 +749,7 @@ getImageAnnotations <- function(object,
                                 flatten = FALSE,
                                 check = FALSE){
 
-  img_annotations <- getImageObject(object)@annotations
+  img_annotations <- getHistoImaging(object)@annotations
 
   if(base::isTRUE(check)){
 
@@ -979,63 +979,11 @@ getImgAnnTags <- function(object){
 
 
 
-
-
-
-#' @title Obtain melted image
-#'
-#' @description Melts image array in a data.frame where each
-#' row corresponds to a pixel-color value.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Data.frame.
-#' @export
-#'
-getImageDf <- function(object, xrange = NULL, yrange = NULL){
-
-  img <- getImage(object)
-  img_dims <- getImageDims(object)
-
-  # red, green, blue
-  channels = c("red", "green", "blue")
-
-  out <-
-    purrr::map_df(
-      .x = 1:img_dims[3],
-      .f = function(cdim){ # iterate over color dimensions
-
-        reshape2::melt(img[,,cdim], value.name = "intensity") %>%
-          dplyr::select(-dplyr::any_of("Var3")) %>%
-          magrittr::set_names(value = c("x", "y", "intensity")) %>%
-          dplyr::mutate(channel = channels[cdim]) %>%
-          tibble::as_tibble()
-
-      }
-    ) %>%
-    tidyr::pivot_wider(
-      id_cols = c("x", "y"),
-      names_from = "channel",
-      values_from = "intensity"
-    ) %>%
-    dplyr::mutate(
-      color = grDevices::rgb(green = green, red = red, blue = blue)
-    )
-
-  return(out)
-
-}
-
-
-
-
-
-
 #' @rdname getImageDirLowres
 #' @export
 getImageDir <- function(object, name){
 
-  io <- getImageObject(object)
+  io <- getHistoImaging(object)
 
   if(name %in% c("default", "highres", "lowres")){
 
@@ -1070,7 +1018,7 @@ getImageDir <- function(object, name){
 #' @export
 getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){
 
-  dir_default <- getImageObject(object)@dir_default
+  dir_default <- getHistoImaging(object)@dir_default
 
   if(base::length(dir_default) == 0 || base::is.na(dir_default)){
 
@@ -1095,7 +1043,7 @@ getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){
 #' @export
 getImageDirectories <- function(object){
 
-  io <- getImageObject(object)
+  io <- getHistoImaging(object)
 
   c(
     "default" = io@dir_default,
@@ -1114,7 +1062,7 @@ getImageDirectories <- function(object){
 #' @export
 getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 
-  dir_highres <- getImageObject(object)@dir_highres
+  dir_highres <- getHistoImaging(object)@dir_highres
 
   if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
 
@@ -1150,7 +1098,7 @@ getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 #' @details `getImageDirectories()` returns all image directories known to
 #' the `SPATA2` object. `getImageDirLowres()`, `getImageDirHighres()` and
 #' `getImageDirDefault()` return the directories of the respective slot of
-#' the `HistologyImaging` object. `getImageDir()` extracts specific directories
+#' the `HistoImaging` object. `getImageDir()` extracts specific directories
 #' that were set with `setImageDir()` by name.
 #'
 #' @seealso [`setImageDir()`] to set specific image directories. [`loadImage()`],
@@ -1161,7 +1109,7 @@ getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
 #'
 getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
 
-  dir_lowres <- getImageObject(object)@dir_lowres
+  dir_lowres <- getHistoImaging(object)@dir_lowres
 
   if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
 
@@ -1190,12 +1138,12 @@ getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
 #' @inherit argument_dummy params
 #'
 #' @return List that contains information of slots @@image_info and @@justification
-#' of the `HistologyImaging` object.
+#' of the `HistoImaging` object.
 #' @export
 #'
 getImageInfo <- function(object){
 
-  io <- getImageObject(object)
+  io <- getHistoImaging(object)
 
   c(
     io@image_info,
@@ -1206,32 +1154,7 @@ getImageInfo <- function(object){
 
 
 
-#' @title Obtain object of class \code{HistologyImaging}
-#'
-#' @description Extracts the S4-object. Do not confuse with \code{getImage()}
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Object of class \code{HistologyImaging}
-#' @export
-#'
-getImageObject <- function(object){
 
-  out <- object@images[[1]]
-
-  if(!base::is.null(out)){
-
-    #out@id <- getSampleName(object)
-
-  } else {
-
-    warning("No image object found. Returning `NULL`.")
-
-  }
-
-  return(out)
-
-}
 
 
 

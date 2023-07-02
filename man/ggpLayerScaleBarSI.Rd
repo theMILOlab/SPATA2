@@ -23,7 +23,8 @@ ggpLayerScaleBarSI(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{sb_dist}{The distance in SI units that the scale bar
 illustrates (e.g. \emph{'1mm'}, \emph{'200um'}). Must not be bigger than

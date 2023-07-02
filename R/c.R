@@ -392,25 +392,36 @@ containsHistologyImage <- function(object){
 
 }
 
-#' @title Check availability of `HistologyImaging` object
+
+#' @title Checks availability of `HistoImaging` object
 #'
-#' @description Checks if slot @@images contains an object
-#' of class `HistologyImaging` or if it is empty.
+#' @description Tests if the input object contains an object
+#' of class `HistoImaging`.
 #'
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
-#'
 #' @export
-containsHistologyImaging <- function(object){
+#'
+containsHistoImaging <- function(object, error = FALSE){
 
-  img <- object@images[[1]]
+  out <-
+    methods::is(
+      object = object@images[[1]],
+      class2 = "HistoImaging"
+      )
 
-  out <- methods::is(object = img, class2 = "HistologyImaging")
+  if(base::isFALSE(out) & base::isTRUE(error)){
+
+    stop("Input object does not contain HistoImaging object.")
+
+  }
 
   return(out)
 
 }
+
+
 
 
 
@@ -465,14 +476,6 @@ containsPixelScaleFactor <- function(object){
   }
 
   return(out)
-
-}
-
-containsTissueOutline <- function(object){
-
-  deprecated(fn = TRUE)
-
-  tissueOutlineIdentified(object)
 
 }
 
@@ -554,7 +557,11 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 #'
 #' @return Cropped input object.
 #' @export
-crop_image <- function(image, ...){
+crop_image <- function(image,
+                       xrange = NULL,
+                       yrange = NULL,
+                       expand = 0,
+                       ...){
 
   return(image)
 

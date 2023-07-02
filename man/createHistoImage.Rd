@@ -6,13 +6,11 @@
 \usage{
 createHistoImage(
   dir,
-  name,
+  img_name,
   sample,
+  active = FALSE,
   scale_factors = list(coords = 1),
   reference = FALSE,
-  tissue_outline = TRUE,
-  use_greyscale = FALSE,
-  frgmt_threshold = c(5e-04, 0.01),
   verbose = TRUE,
   ...
 )
@@ -20,7 +18,8 @@ createHistoImage(
 \arguments{
 \item{dir}{Character value. The directory from where to retrieve the image.}
 
-\item{name}{Character value. The name of the image.}
+\item{img_name}{Character value. The name of the \code{HistoImage} with which
+to refer to it via arguments \code{img_name} and \code{img_names}.}
 
 \item{sample}{Character value. The sample name to which the image belongs.
 Should be equal to slot @sample of the \code{HistoImaging} object in which

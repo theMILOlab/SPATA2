@@ -19,7 +19,8 @@ getImageDirHighres(object, fdb_fn = "warning", check = FALSE, ...)
 getImageDirLowres(object, fdb_fn = "warning", check = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{name}{Character value. The name of the image of interest. Should be one
 of Get}
@@ -38,7 +39,7 @@ Extracts image directories known to the \code{SPATA2} object.
 \code{getImageDirectories()} returns all image directories known to
 the \code{SPATA2} object. \code{getImageDirLowres()}, \code{getImageDirHighres()} and
 \code{getImageDirDefault()} return the directories of the respective slot of
-the \code{HistologyImaging} object. \code{getImageDir()} extracts specific directories
+the \code{HistoImaging} object. \code{getImageDir()} extracts specific directories
 that were set with \code{setImageDir()} by name.
 }
 \seealso{

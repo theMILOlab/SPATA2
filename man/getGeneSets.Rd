@@ -10,7 +10,8 @@ getGeneSets(object, of_class = "all", index = NULL, simplify = TRUE)
 getGeneSetsInteractive(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{of_class}{A character vector indicating the classes from which to obtain
 the gene set names. (Which classes exist in the current gene set data.frame can

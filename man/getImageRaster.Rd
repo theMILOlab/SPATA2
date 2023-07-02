@@ -9,14 +9,21 @@
 \usage{
 getImageRaster(object, ...)
 
-\S4method{getImageRaster}{spata2}(object, xrange = NULL, yrange = NULL, expand = 0)
+\S4method{getImageRaster}{spata2}(
+  object,
+  transform = TRUE,
+  xrange = NULL,
+  yrange = NULL,
+  expand = 0
+)
 
 \S4method{getImageRaster}{HistoImage}(object, xrange = NULL, yrange = NULL, expand = 0)
 
 getImageRasterInfo(object, xrange = NULL, yrange = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

@@ -10,7 +10,7 @@ createHistoImaging(
   hist_img_ref,
   hist_imgs = list(),
   active = NULL,
-  empty_image_slots = FALSE,
+  unload = TRUE,
   coordinates = tibble::tibble(),
   coordinates_id = NULL,
   meta = list(),
@@ -26,7 +26,7 @@ createHistoImagingVisium(
   img_ref = "hires",
   img_active = "lowres",
   meta = list(),
-  misc = misc(),
+  misc = list(),
   verbose = TRUE
 )
 }
@@ -40,9 +40,6 @@ Should be created with \code{createHistoImage()}.}
 
 \item{active}{Character value. Name of the \code{HistoImage} that is set
 to the active image. Defaults to the reference image.}
-
-\item{empty_image_slots}{Logical value. If \code{TRUE}, content of slot @image
-of all \code{HistoImage} objects is emptied except for the active one.}
 
 \item{coordinates}{Data.frame of at least three variables:
 
@@ -75,6 +72,9 @@ the computational progress will be printed.
 Setting both \code{img_ref} and \code{img_active} to the same value indicates that only one image is used,
 and the other image will not be read automatically. In such cases, manual registration of the
 unselected image is required using the \code{registerHistoImage()} function.}
+
+\item{empty_image_slots}{Logical value. If \code{TRUE}, content of slot @image
+of all \code{HistoImage} objects is emptied except for the active one.}
 }
 \value{
 An object of class \code{HistoImaging}

@@ -38,7 +38,8 @@ analysis has been conducted (via \code{findDeGenes()}). Every slot contains a da
 \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
 }}
 
-\item{\code{image}}{A list of images named according to the samples the object contains.}
+\item{\code{images}}{A list that contains an object of class \code{HistoImaging} which contains
+information and data regarding images.}
 
 \item{\code{samples}}{Character value. Contains the sample names.}
 

@@ -121,6 +121,26 @@ axis is fixed as a whole. E.g \code{expand = list(x = '1mm!', y = '2mm!')} resul
 in the same output as \verb{expand = list(x = c('1mm!', '1mm!'), y = c('2mm!', '2mm!')}.
 }
 
+\section{Image visualization with ggplot2}{
+
+
+When comparing the output of \code{ggplot() + ggpLayerImage()} with other image plotting functions,
+you may notice that the image appears horizontally flipped when plotted using \code{ggpLayerImage()}.
+This behavior is due to the use of a Cartesian coordinate system in \code{SPATA2}, where a pixel
+with coordinates c(width = 1, height = 1) is plotted on the left side at the bottom.
+In contrast, functions like \code{EBImage::display()} or \code{graphics::plot()} use an \emph{image space} coordinate system,
+where pixel heights start from the top. Consequently, in \emph{image space}, pixel c(width = 1, height = 1)
+is displayed on the top resulting in mirror inverted visualization of the image.
+
+We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
+framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
+in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
+
+If you prefer to view your image in the regular orientation, you can use the \code{flipAll()} function on your object,
+specifying \code{axis = "horizontal"}, to reverse this effect.
+}
+
 \section{Selection of image annotations with tags}{
 
 

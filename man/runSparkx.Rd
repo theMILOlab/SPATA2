@@ -16,7 +16,8 @@ getSparkxResults(object, test = TRUE)
 runSparkx(object, numCores = 1, option = "mixture", verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.

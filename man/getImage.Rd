@@ -5,15 +5,24 @@
 \alias{getImage,spata2-method}
 \alias{getImage,HistoImaging-method}
 \alias{getImage,HistoImage-method}
-\title{Obtain \code{HistoImage} object}
+\title{Obtain \code{Image} object}
 \usage{
 getImage(object, ...)
 
-\S4method{getImage}{spata2}(object, xrange = NULL, yrange = NULL, expand = 0, ...)
+\S4method{getImage}{spata2}(
+  object,
+  img_name = NULL,
+  xrange = NULL,
+  yrange = NULL,
+  expand = 0,
+  transform = TRUE,
+  scale_fct = 1,
+  ...
+)
 
 \S4method{getImage}{HistoImaging}(
   object,
-  name = NULL,
+  img_name = NULL,
   xrange = NULL,
   yrange = NULL,
   expand = 0,
@@ -33,9 +42,13 @@ getImage(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -54,6 +67,10 @@ that is width/x-axis and height/y-axis, are set to include only the image annota
 and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
 \emph{Expansion of cropped image sections} for more information.}
 }
+\value{
+Object of class \code{Image}.
+}
 \description{
-Extracts the image as an object of class \emph{EBImage}.
+Extracts the image as an object of class \code{Image}
+as specified in the package \code{EBImage}.
 }

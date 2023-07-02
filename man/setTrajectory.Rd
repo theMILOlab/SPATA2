@@ -10,7 +10,8 @@ setTrajectory(object, trajectory, align = TRUE, overwrite = FALSE)
 setTrajectories(object, trajectories, align = TRUE, overwrite = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{trajectory}{An object of class \code{Trajectory.}}
 

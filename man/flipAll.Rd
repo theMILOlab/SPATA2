@@ -22,7 +22,8 @@ flipImageAnnotations(object, axis, verbose = NULL)
 flipSpatialTrajectories(object, axis, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{axis}{Character value. The axis around which the content is flipped.
 Either \emph{'horizontal'}, \emph{'h'}, \emph{'vertical'} or \emph{'v'}.}

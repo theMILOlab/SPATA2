@@ -3,8 +3,7 @@
 \name{addTissueOutlineBase}
 \alias{addTissueOutlineBase}
 \alias{addTissueOutlineBase,HistoImage-method}
-\alias{addTissueOutlineBase,data.frame-method}
-\title{Add tissue outline to base surface plot}
+\title{Add polygons to a base plot}
 \usage{
 addTissueOutlineBase(object, ...)
 
@@ -12,34 +11,35 @@ addTissueOutlineBase(object, ...)
   object,
   by_section = FALSE,
   persp = "coords",
-  linealpha = 0.9,
-  linecolor = "black",
-  linesize = 1,
-  linetype = "solid",
-  ...
-)
-
-\S4method{addTissueOutlineBase}{data.frame}(
-  object,
-  persp = "coords",
-  linealpha = 0.9,
-  linecolor = "black",
-  linesize = 1,
-  linetype = "solid",
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 1,
+  line_type = "solid",
+  scale_fct = 1,
+  init = list(),
+  rect = FALSE,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{scale_fct}{A factor with which the vertice positions are scaled.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{x, y}{Numeric vectors representing x- and y-coordinates of the
+vertices of the polygon.}
 
-\item{linesize}{Numeric value. The size of the line(s) plotted.}
+\item{poly}{Data.frame of at least two variables named \emph{x} and \emph{y}
+representing the coordinates of the vertices of the polygon. If
+variable \emph{section} exists multiple polygons are plotted based
+on the number of different groups in this variable. Overwrites \code{x}
+and \code{y}.}
+
+\item{color}{Color of the lines.}
+
+\item{size}{Width of the lines.}
 }
 \value{
-Output is directly plotted.
+Output of \code{graphics::polygon()} is directly plotted.
 }
 \description{
-Adds tissue outline layer in form of polygons to the tissue
-plotted with R base plotting.
+Adds polygons to a base plot.
 }

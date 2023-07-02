@@ -4,6 +4,7 @@
 \alias{getPixelScaleFactor}
 \alias{getPixelScaleFactor,spata2-method}
 \alias{getPixelScaleFactor,HistoImaging-method}
+\alias{getPixelScaleFactor,HistoImage-method}
 \title{Obtain scale factor for pixel to SI conversion}
 \usage{
 getPixelScaleFactor(object, ...)
@@ -11,8 +12,8 @@ getPixelScaleFactor(object, ...)
 \S4method{getPixelScaleFactor}{spata2}(
   object,
   unit,
+  img_name = NULL,
   switch = FALSE,
-  force = FALSE,
   add_attr = TRUE,
   verbose = NULL,
   ...
@@ -20,29 +21,37 @@ getPixelScaleFactor(object, ...)
 
 \S4method{getPixelScaleFactor}{HistoImaging}(
   object,
-  unit = NULL,
+  unit,
   img_name = NULL,
   switch = FALSE,
-  force = FALSE,
   add_attr = TRUE,
   verbose = NULL,
   ...
 )
+
+\S4method{getPixelScaleFactor}{HistoImage}(
+  object,
+  unit,
+  switch = FALSE,
+  add_attr = TRUE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{unit}{The desired unit. Defaults to the unit
-in which the original size of the image of the spatial method is
-provided. Obtain valid input options with \code{validUnitsOfLengthSI()}.}
+\item{unit}{Character value. The SI-unit of interest.
+Determines the reference unit for the pixel size.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{switch}{Logical value. If \code{TRUE}, the unit of the output is switched.
 See details for more.}
-
-\item{force}{Logical value. If \code{TRUE}, the scale factor is computed
-regardless of what the function finds in the respective slot.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -53,13 +62,13 @@ the computational progress will be printed.
 A single numeric value with the unit defined in attribute \emph{unit}.
 }
 \description{
-Extracts or computes the side length of pixel sides depending
-on the current resolution of the image.
+Extracts side length of pixel sides depending
+on the resolution of the chosen image.
 }
 \details{
 If \code{switch} is \code{FALSE}, the default, the output is to be interpreted as
-unit/pixel. E.g. an output of \emph{15 'um/px'} means that under the current resolution
-of the image height and width of one pixel corresponds to \emph{15 um} in height and
+unit/pixel. E.g. with \code{unit = 'um'} an output of \emph{15 'um/px'} means that under the current resolution
+of the image height and width one pixel corresponds to \emph{15 um} in height and
 width in the original tissue.
 
 If \code{switch} is \code{TRUE}, the output is to be interpreted as pixel/unit.  E.g.

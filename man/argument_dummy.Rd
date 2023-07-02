@@ -108,6 +108,11 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{img_names}{Character vector. The names of the \code{HistoImage}s of interest.}
+
 \item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
 are not included in the output.}
 
@@ -149,7 +154,8 @@ Hint: Variables that are uniformly expressed can not be scaled and are discarded
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{order}{Logical value. If \code{TRUE}, data points are ordered according
 to their values before beeing plotted.}

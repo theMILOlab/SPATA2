@@ -7,7 +7,8 @@
 getTrajectoryLength(object, id, unit = "px", round = FALSE, as_numeric = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}

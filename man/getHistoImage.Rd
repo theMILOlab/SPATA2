@@ -11,7 +11,7 @@
 \usage{
 getHistoImage(object, ...)
 
-\S4method{getHistoImage}{HistoImaging}(object, name = NULL, ...)
+\S4method{getHistoImage}{HistoImaging}(object, img_name = NULL, ...)
 
 getHistoImageActive(object, ...)
 
@@ -22,16 +22,20 @@ getHistoImageRef(object, ...)
 \S4method{getHistoImageRef}{HistoImaging}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \description{
 Extracts the S4-containers of registered images. Note that
 slot @image might be empty. Use \code{loadImage()} in that case.
 
 \itemize{
-\item{\code{getHistoImage()}:}{ Extracts object by name. If \code{name = NULL} the active histology image is returned.}
+\item{\code{getHistoImage()}:}{ Extracts object by name. If \code{img_name = NULL} the active histology image is returned.}
 \item{\code{getHistoImageActive()}:}{ Extracts the active \code{HistoImage} object.}
 \item{\code{getHistoImageRef()}:}{ Extracts the reference \code{HistoImage} object.}
 }

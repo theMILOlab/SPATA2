@@ -8,14 +8,20 @@
 \usage{
 getImageTransformations(object, ...)
 
-\S4method{getImageTransformations}{HistoImaging}(object, name = NULL, ...)
+\S4method{getImageTransformations}{HistoImaging}(object, img_name = NULL, ...)
+
+\S4method{getImageTransformations}{HistoImaging}(object, img_name = NULL, ...)
 
 \S4method{getImageTransformations}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 A list with the following structure:

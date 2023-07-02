@@ -17,7 +17,8 @@ getGenes(
 getGenesInteractive(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{of_gene_sets}{A character vector specifying the gene sets from which to
 return the gene names.}

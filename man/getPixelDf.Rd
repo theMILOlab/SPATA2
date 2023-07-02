@@ -13,19 +13,20 @@ getPixelDf(object, ...)
 \S4method{getPixelDf}{spata2}(
   object,
   colors = FALSE,
-  tissue = FALSE,
+  hex_code = FALSE,
+  content = FALSE,
+  transform = TRUE,
   xrange = NULL,
-  yrange = NULL
+  yrange = NULL,
+  scale_fct = 1
 )
 
 \S4method{getPixelDf}{HistoImaging}(
   object,
-  name = NULL,
+  img_name = NULL,
   colors = FALSE,
   hex_code = FALSE,
-  tissue = FALSE,
-  use_greyscale = FALSE,
-  frgmt_threshold = c(5e-04, 0.01),
+  content = FALSE,
   xrange = NULL,
   yrange = NULL,
   transform = TRUE,
@@ -37,9 +38,7 @@ getPixelDf(object, ...)
   object,
   colors = FALSE,
   hex_code = FALSE,
-  tissue = FALSE,
-  use_greyscale = FALSE,
-  frgmt_threshold = c(5e-04, 0.01),
+  content = FALSE,
   xrange = NULL,
   yrange = NULL,
   transform = TRUE,
@@ -51,25 +50,21 @@ getPixelDf(object, ...)
   object,
   colors = FALSE,
   hex_code = FALSE,
-  tissue = FALSE,
-  frgmt_threshold = c(5e-04, 0.01),
   use_greyscale = FALSE,
+  frgmt_threshold = c(5e-04, 0.01),
   dbscan_eps = 1,
   dbscan_minPts = 3,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{colors}{Logical value. If \code{TRUE}, adds all colors from the image
 as variables named \emph{col1}-\emph{col.n} where n is the number of colors.}
-
-\item{tissue}{Logical value. If \code{TRUE}, adds a variable called \emph{pxl_group}
-that indicates whether the pixel is placed on a contiguous tissue section, on
-artefact tissue fragments or on background.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -82,12 +77,15 @@ If values are specified in European units of length the input is
 immediately converted to pixel units. See info section \emph{Distance measures}
 for more information.}
 
-\item{wh}{Logical value. If \code{TRUE}, a \emph{width} and a \emph{height} column are
-added containing information about the position of each pixel in image
-dimensions, where \emph{width} = \emph{x} and  \emph{height} = \code{range(y)[2]} - \emph{y} + \code{range(y)[1]}.}
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{tissue}{Logical value. If \code{TRUE}, adds a variable called \emph{pxl_group}
+that indicates whether the pixel is placed on a contiguous tissue section, on
+artefact tissue fragments or on background.}
 }
 \value{
-Data.frame with \code{nrow()} equal to the number of pixels.
+Data.frame.
 }
 \description{
 Extracts a data.frame in which each row corresponds

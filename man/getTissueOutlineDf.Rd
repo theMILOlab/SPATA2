@@ -3,22 +3,37 @@
 \name{getTissueOutlineDf}
 \alias{getTissueOutlineDf}
 \alias{getTissueOutlineDf,spata2-method}
-\alias{getTissueOutlineDf,HistoImage-method}
 \alias{getTissueOutlineDf,HistoImaging-method}
+\alias{getTissueOutlineDf,HistoImage-method}
 \title{Obtain outline barcode spots}
 \usage{
 getTissueOutlineDf(object, ...)
 
-\S4method{getTissueOutlineDf}{spata2}(object, remove = TRUE)
+\S4method{getTissueOutlineDf}{spata2}(
+  object,
+  img_name = NULL,
+  by_section = TRUE,
+  transform = TRUE,
+  ...
+)
+
+\S4method{getTissueOutlineDf}{HistoImaging}(
+  object,
+  img_name = NULL,
+  by_section = TRUE,
+  transform = TRUE
+)
 
 \S4method{getTissueOutlineDf}{HistoImage}(object, by_section = TRUE, transform = TRUE)
-
-\S4method{getTissueOutlineDf}{HistoImaging}(object, name = NULL, by_section = TRUE, transform = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{remove}{Logical. If \code{TRUE}, none-outline spots are removed from
 the output.}
@@ -29,27 +44,5 @@ the output.}
 Output of \code{getCoordsDf()} filtered based on the \emph{outline} variable.
 }
 \description{
-Identifies the barcode spots that lie on the edge
-of the tissue and returns a subset of the coordinates data.frame. Requires
-the results of \code{identifyTissueOutline()}.
-}
-\examples{
-
- library(ggplot2)
- library(ggExtra)
-
- object <- downloadPubExample("MCI_LMU")
-
- print(getTissueOutlineDf(object))
-
- to_df <- getTissueOutlineDf(object, remove = FALSE)
-
- to_df[["outline"]] <- as.character(to_df[["outline"]])
-
- ggplot(to_df, mapping = aes(x = x, y = y)) +
-   geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
-   scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
-
-
-
+Extracts the polygons necessary to outline the tissue.
 }

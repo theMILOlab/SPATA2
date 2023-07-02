@@ -107,6 +107,10 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' @slot overlap numeric. Numeric vector of length two. Quantifies the overlap
 #' of the tissue outline of this image with the tissue outline of the reference image
 #' with a value between 0-1 before and after alignment via `alignImage()`.
+#' @slot pixel_content factor. Named factor where names correspond to the
+#' pixels following the naming convention 'px_w1_h1' encoding the width and height value
+#' of the pixel from the original **not transformed** image. Values correspond to
+#' the content the pixel displays. See [identifyPixelContent()] for more information.
 #' @slot reference logical. `TRUE` if it is the `HistoImage` used as the reference
 #' with which other histology images are aligned.
 #' @slot sample character. The name of the tissue portion to which this image belongs.
@@ -147,6 +151,7 @@ HistoImage <- setClass(Class = "HistoImage",
                          name = "character",
                          outline = "list",
                          overlap = "numeric",
+                         pixel_content = "factor",
                          reference = "logical",
                          sample = "character",
                          scale_factors = "list",
@@ -353,7 +358,8 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 #'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
 #'  }
 #'
-#' @slot image A list of images named according to the samples the object contains.
+#' @slot images A list that contains an object of class `HistoImaging` which contains
+#' information and data regarding images.
 #' @slot samples Character value. Contains the sample names.
 #' @slot scvelo Currently not in use.
 #' @slot trajectories A list named according to the samples the object contains. Each slot in
@@ -839,7 +845,9 @@ SPATA2 <- setClass(Class = "SPATA2",
                      fdata = "data.frame",
                      images = "HistoImaging",
                      information = "list",
+                     meta = "list",
                      method = "SpatialMethod",
+                     process = "data.frame",
                      sample = "character",
                      spatial = "list",
                      gene_sets = "list",
@@ -854,6 +862,7 @@ Assay <- setClass(Class = "Assay",
                     name = "character",
                     stats = "data.frame"
                   ))
+
 
 
 

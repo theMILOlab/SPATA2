@@ -191,7 +191,8 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'  Valid input:
 #'
 #' \itemize{
-#'  \item{`NULL`:}{ No specification. Default is used.}
+#'  \item{`NULL` or `TRUE`:}{ No specification. Default is used.}
+#'  \item{`FALSE`:}{ No expansion.}
 #'  \item{`vector`:}{ Numeric vector of length two. Input is set for axes denoted in `which`. (Defaults to both, x and y.)}
 #'  \item{`list`:}{ List with slots *x* and *y*. Numeric vector of length two, used for each axis specifically.}
 #' }
@@ -257,11 +258,10 @@ ggpLayerAxesSI <- function(object,
                            unit = getSpatialMethod(object)@unit,
                            which = c("x", "y"),
                            breaks = NULL,
-                           expand = NULL,
                            add_labs = FALSE,
                            round = 2,
-                           xlim = NULL,
-                           ylim = NULL,
+                           xrange = NULL,
+                           yrange = NULL,
                            ...){
 
   deprecated(...)
@@ -292,8 +292,25 @@ ggpLayerAxesSI <- function(object,
 
     if(confuns::is_list(breaks)){
 
-      breaks_x <- as_pixel(breaks[["x"]], object = object)
-      breaks_y <- as_pixel(breaks[["y"]], object = object)
+      if(base::is.null(breaks[["x"]])){
+
+        breaks_x <- NULL
+
+      } else {
+
+        breaks_x <- as_pixel(breaks[["x"]], object = object)
+
+      }
+
+      if(base::is.null(breaks[["y"]])){
+
+        breaks_y <- NULL
+
+      } else {
+
+        breaks_y <- as_pixel(breaks[["y"]], object = object)
+
+      }
 
     } else if(base::is.vector(breaks)){
 
@@ -313,34 +330,6 @@ ggpLayerAxesSI <- function(object,
     # dont set specifically
     breaks_x <- NULL
     breaks_y <- NULL
-
-  }
-
-  # manage expand input
-  if(!base::is.null(expand)){
-
-    if(confuns::is_list(expand)){
-
-      expand_x <- waive_if_null(expand[["x"]])
-      expand_y <- waive_if_null(expand[["y"]])
-
-    } else if(base::is.vector(expand)){
-
-      confuns::is_vec(expand, mode = "numeric", of.length = 2)
-
-      expand_x <- expand
-      expand_y <- expand
-
-    } else {
-
-      stop("Invalid input for `expand`. Must be NULL, list or vector.")
-
-    }
-
-  } else {
-
-    expand_x <- ggplot2::waiver()
-    expand_y <- ggplot2::waiver()
 
   }
 
@@ -380,16 +369,16 @@ ggpLayerAxesSI <- function(object,
 
     pxl_df <- getPixelDf(object)
 
-    if(is_dist(xlim)){
+    if(are_all_dist(xrange)){
 
-      xlim <- as_pixel(xlim, object = object, add_attr = FALSE)
+      xrange <- as_pixel(xrange, object = object, add_attr = FALSE)
 
-      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = x, left = xlim[1], right = xlim[2]))
+      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = width, left = xrange[1], right = xrange[2]))
 
     }
 
     breaks_x <-
-      dplyr::pull(pxl_df, x) %>%
+      dplyr::pull(pxl_df, width) %>%
       stats::quantile()
 
   }
@@ -429,16 +418,16 @@ ggpLayerAxesSI <- function(object,
 
     pxl_df <- getPixelDf(object)
 
-    if(is_dist(ylim)){
+    if(are_all_dist(yrange)){
 
-      ylim <- as_pixel(ylim, object = object, add_attr = add_attr)
+      yrange <- as_pixel(yrange, object = object, add_attr = FALSE)
 
-      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = y, left = ylim[1], right = ylim[2]))
+      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = height, left = yrange[1], right = yrange[2]))
 
     }
 
     breaks_y <-
-      dplyr::pull(pxl_df, y) %>%
+      dplyr::pull(pxl_df, height) %>%
       stats::quantile()
 
   }
@@ -499,7 +488,6 @@ ggpLayerAxesSI <- function(object,
         axis.title.y = ggplot2::element_text(angle = 90)
       )
     )
-
 
   c(
     axes[which],
@@ -693,7 +681,7 @@ ggpLayerEncirclingIAS <- function(object,
             )
 
           exp_df <-
-            map_df(
+            purrr::map_df(
               .x = expansions[base::names(expansions) != "Core"],
               .f = function(df){
 
@@ -2104,12 +2092,6 @@ ggpLayerZoom <- function(object = NULL,
                          round = 2,
                          n_breaks = 5
                          ){
-
-  if(base::any(is_dist_si(xrange), is_dist_si(yrange))){
-
-    check_object(object)
-
-  }
 
   if(base::length(n_breaks) == 1){
 

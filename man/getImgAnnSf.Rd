@@ -7,7 +7,8 @@
 getImgAnnSf(object, id)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
 }

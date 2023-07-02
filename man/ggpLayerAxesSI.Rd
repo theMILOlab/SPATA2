@@ -9,16 +9,16 @@ ggpLayerAxesSI(
   unit = getSpatialMethod(object)@unit,
   which = c("x", "y"),
   breaks = NULL,
-  expand = NULL,
   add_labs = FALSE,
   round = 2,
-  xlim = NULL,
-  ylim = NULL,
+  xrange = NULL,
+  yrange = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{unit}{The desired unit. Defaults to the unit
 in which the original size of the image of the spatial method is
@@ -37,28 +37,40 @@ the range is taken from the whole image.}
 \item{\code{list}:}{ List with slots \emph{x} and \emph{y}. Vector of distance measures to set each axis specifically.}
 }}
 
-\item{expand}{Specifies how the axis are expanded. Using \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
-Valid input:
-
-\itemize{
-\item{\code{NULL}:}{ No specification. Default is used.}
-\item{\code{vector}:}{ Numeric vector of length two. Input is set for axes denoted in \code{which}. (Defaults to both, x and y.)}
-\item{\code{list}:}{ List with slots \emph{x} and \emph{y}. Numeric vector of length two, used for each axis specifically.}
-}}
-
 \item{add_labs}{Logical. If \code{TRUE}, adds x- and y-labs to the plot.}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}
 
-\item{xlim, ylim}{Vectors of length two. Distance measures that set the limits
-on the respective axes.}
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{expand}{Specifies how the axis are expanded. Using \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
+Valid input:
+
+\itemize{
+\item{\code{NULL} or \code{TRUE}:}{ No specification. Default is used.}
+\item{\code{FALSE}:}{ No expansion.}
+\item{\code{vector}:}{ Numeric vector of length two. Input is set for axes denoted in \code{which}. (Defaults to both, x and y.)}
+\item{\code{list}:}{ List with slots \emph{x} and \emph{y}. Numeric vector of length two, used for each axis specifically.}
+}}
 
 \item{breaks_x, breaks_y}{Deprecated in favor of \code{breaks}.}
 
 \item{frame_by}{Deprecated. Use \verb{ggplayerFrame*()} - functions.}
+
+\item{xlim, ylim}{Vectors of length two. Distance measures that set the limits
+on the respective axes.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

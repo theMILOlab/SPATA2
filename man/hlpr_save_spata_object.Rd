@@ -7,7 +7,8 @@
 hlpr_save_spata_object(object, object_file, ref_step, verbose)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{object_file}{The directory under which to store the object.}
 

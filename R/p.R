@@ -715,22 +715,7 @@ process_seurat_object <- function(seurat_object,
   }
 
   # remove stress and mitochondrial genes
-  if(base::isTRUE(remove_stress_and_mt)){
 
-    msg <- "Removing stress genes and mitochondrial genes."
-
-    confuns::give_feedback(msg = msg, verbose = verbose)
-
-    exclude <- c(base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^RPL", base::rownames(seurat_object@assays[[assay_name]]))],
-                 base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^RPS", base::rownames(seurat_object@assays[[assay_name]]))],
-                 base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^MT-", base::rownames(seurat_object@assays[[assay_name]]))],
-                 c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1'))
-
-    feat_keep <- base::rownames(seurat_object@assays[[assay_name]][!(base::rownames(seurat_object@assays[[assay_name]]) %in% exclude), ])
-
-    seurat_object <- base::subset(x = seurat_object, features = feat_keep)
-
-  }
 
 
 

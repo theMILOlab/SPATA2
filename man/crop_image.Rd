@@ -4,7 +4,7 @@
 \alias{crop_image}
 \title{Crop image}
 \usage{
-crop_image(image, ...)
+crop_image(image, xrange = NULL, yrange = NULL, expand = 0, ...)
 }
 \arguments{
 \item{image}{Object of class \code{Image} from the \code{ÈBIMage} package.}

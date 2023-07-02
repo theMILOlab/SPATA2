@@ -6,36 +6,64 @@
 \alias{plotImage,HistoImaging-method}
 \alias{plotImage,HistoImage-method}
 \alias{plotImage,Image-method}
-\title{Plot histology image}
+\title{Plot histology image (ggplot2)}
 \usage{
 plotImage(object, ...)
 
-\S4method{plotImage}{spata2}(object, xrange = NULL, yrange = NULL, ...)
+\S4method{plotImage}{spata2}(
+  object,
+  unit = getSpatialMethod(object)@unit,
+  frame_by = "image",
+  img_alpha = 1,
+  xrange = NULL,
+  yrange = NULL,
+  ...
+)
 
 \S4method{plotImage}{HistoImaging}(
   object,
-  name = NULL,
-  xrange = NULL,
-  yrange = NULL,
+  img_name = NULL,
+  outline = FALSE,
+  by_section = TRUE,
+  fragments = FALSE,
+  fill = NA,
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 0.5,
+  line_type = "solid",
+  transform = TRUE,
+  img_alpha = 1,
   scale_fct = 1,
   ...
 )
 
 \S4method{plotImage}{HistoImage}(
   object,
-  name = NULL,
-  xrange = NULL,
-  yrange = NULL,
+  outline = FALSE,
+  by_section = TRUE,
+  fragments = FALSE,
+  fill = NA,
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 1,
+  line_type = "solid",
+  transform = TRUE,
+  img_alpha = 1,
   scale_fct = 1,
   ...
 )
 
-\S4method{plotImage}{Image}(object, scale_fct = 1, ...)
+\S4method{plotImage}{Image}(object, scale_fct = 1, img_alpha = 1, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{ggpLayerAxesSI()} if
+\code{unit} is not \emph{'px'}.}
+
+\item{unit}{Character value. Units of x- and y-axes. Defaults
+to \emph{'px'}.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -47,10 +75,79 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units. See info section \emph{Distance measures}
 for more information.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 }
 \value{
-A plot that is immediately plotted.
+A ggplot.
 }
 \description{
-Plots the histology image as a raster.
+Plots the histology image with \code{ggplot2}.
 }
+\section{Distance measures}{
+
+
+Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
+To specifically refer to a distance the unit must be specified. There are
+three ways to create valid input for these arguments.
+
+\strong{1. In pixel:}
+
+There are two valid input options to specify the distance in pixel:
+
+\itemize{
+\item{numeric:}{ Single numeric values, e.g. \code{arg_input = c(2, 3.554, 69, 100.67)}. If no unit
+is specified the input will be interpreted as pixels.}
+\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
+}
+
+Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+refers to a distance the pixel side length is meant. If pixel refers to an area the
+number of pixels is meant.
+
+\strong{2. According to the Systeme international d`unites (SI):}
+
+Specifying distances in SI units e.g. \code{arg_input = c('2mm', '4mm')} etc.
+requires the input to be a character as the unit must be provided as suffix.
+Between the numeric value and the unit must be no empty space! Valid suffixes
+can be obtained using the function \code{validUnitsOfLengthSI()}.
+
+\strong{3. As vectors of class \code{unit}:}
+
+Behind the scenes \code{SPATA2} works with the \code{units} package. Input
+is converted into vectors of class \code{units}. Therefore, input can be directly
+provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
+Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
+to specify the input in pixel you have to use input option 1. In pixel.
+}
+
+\section{Image visualization with ggplot2}{
+
+
+When comparing the output of \code{ggplot() + ggpLayerImage()} with other image plotting functions,
+you may notice that the image appears horizontally flipped when plotted using \code{ggpLayerImage()}.
+This behavior is due to the use of a Cartesian coordinate system in \code{SPATA2}, where a pixel
+with coordinates c(width = 1, height = 1) is plotted on the left side at the bottom.
+In contrast, functions like \code{EBImage::display()} or \code{graphics::plot()} use an \emph{image space} coordinate system,
+where pixel heights start from the top. Consequently, in \emph{image space}, pixel c(width = 1, height = 1)
+is displayed on the top resulting in mirror inverted visualization of the image.
+
+We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
+framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
+in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
+
+If you prefer to view your image in the regular orientation, you can use the \code{flipAll()} function on your object,
+specifying \code{axis = "horizontal"}, to reverse this effect.
+}
+

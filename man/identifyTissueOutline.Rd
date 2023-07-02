@@ -11,23 +11,13 @@ identifyTissueOutline(object, ...)
 
 \S4method{identifyTissueOutline}{spata2}(object, verbose = NULL)
 
-\S4method{identifyTissueOutline}{HistoImaging}(
-  object,
-  name,
-  use_greyscale = FALSE,
-  frgmt_threshold = c(5e-04, 0.01),
-  verbose = TRUE
-)
+\S4method{identifyTissueOutline}{HistoImaging}(object, img_name, verbose = TRUE)
 
-\S4method{identifyTissueOutline}{HistoImage}(
-  object,
-  frgmt_threshold = c(5e-04, 0.01),
-  use_greyscale = FALSE,
-  verbose = TRUE
-)
+\S4method{identifyTissueOutline}{HistoImage}(object, verbose = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
@@ -35,16 +25,22 @@ identifyTissueOutline(object, ...)
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
-An updated \code{spata2} object. The coordinates data.frame
-as obtained by \code{getCoordsDf()} contains an additional, logical
-variable named \emph{outline} indicating whether the spot belongs
-to the outline spots of the respective tissue section indicated by
-variable \emph{section}.
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
-Identifies the barcode-spots that lie on the edge
-of each tissue section and, thus, outline it. Requires \code{identifyTissueSections()}
-results.
+Identifies the outline of each tissue section on the \code{HistoImage}
+as well as the outline of the whole tissue.
+}
+\note{
+Requires results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}
+}
+\seealso{
+\code{\link[=excludeArtefacts]{excludeArtefacts()}}, \code{\link[=excludeTissueFragments]{excludeTissueFragments()}},
+\code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
 }

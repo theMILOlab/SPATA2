@@ -12,17 +12,25 @@
 #' @param brushed_area Reactive expression which, if called with `<reactiveExpression>()`
 #' returns a list of four slots named *xmin*, *xmax*, *ymin* and *ymax* each being
 #' a numeric value.
+#' @param dims Image dimensions of the original, complete image during zooming.
 #' @param object An object for which a method for `getImageRange()` is defined.
 #' @inherit argument_dummy params
 #'
 #' @return A reactive expression which, if called with `<reactiveExpression>()`
-#' returns a list of two numeric vectors of length two named *x* and *y*.
+#' returns a list of three slots:
+#' \itemize{
+#'  \item{*x*:}{ Numeric vector of length two corresponding to the xrange of the zoom.}
+#'  \item{*y*:}{ Numeric vector of length two corresponging to the yrange of the zoom.}
+#'  \item{*dims*:}{ Numeric vector of length two. The dimensions of the image that was zoomed in on.}
+#'  }
+#'
 #' @export
 #'
 shinyModuleZoomingServer <- function(id = "m1",
                                      default = list(),
                                      brushed_area = NULL,
                                      object = NULL,
+                                     dims = NULL,
                                      persp = "ccs"){
 
   shiny::moduleServer(
@@ -117,10 +125,11 @@ shinyModuleZoomingServer <- function(id = "m1",
         } else {
 
           out_list <- interactive$zooming[[n_zooms()]]
+          #out_list$dims <- dims()
 
         }
 
-        # list(x = c(,), y = c(,))
+        # list(x = c(,), y = c(,), dims = c(, , ))
         return(out_list)
 
       })

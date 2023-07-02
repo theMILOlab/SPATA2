@@ -22,7 +22,8 @@ ggpLayerGroupOutline(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{groups_subset}{Character value or NULL. If character,
 specifies the exact groups that are encircled. If NULL, all groups
@@ -46,7 +47,8 @@ if \code{plot_type} is not \emph{'surface'}.}
 Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
 Default by object initiation is 1.}
 
-\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
+\item{expand_outline}{Distance measure. Determines the amount of
+buffering applied to the outline.}
 
 \item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}. Affects
 the encircling.}

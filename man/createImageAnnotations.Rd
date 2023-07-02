@@ -10,7 +10,8 @@ addImageAnnotation(object, tags, area, id = NULL)
 createImageAnnotations(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of image annotation with tags} for more information.}

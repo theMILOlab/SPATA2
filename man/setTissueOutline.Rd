@@ -7,7 +7,8 @@
 setTissueOutline(object, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -25,25 +26,5 @@ the computational progress will be printed.
 \description{
 Sets tissue outline by calling \code{identifyTissueSections()}
 and \code{identifyTissueOutline()}.
-}
-\examples{
-
- library(ggplot2)
- library(ggExtra)
-
- object <- downloadPubExample("MCI_LMU")
-
- print(getTissueOutlineDf(object))
-
- to_df <- getTissueOutlineDf(object, remove = FALSE)
-
- to_df[["outline"]] <- as.character(to_df[["outline"]])
-
- ggplot(to_df, mapping = aes(x = x, y = y)) +
-   geom_point_fixed(mapping = aes(color = section, alpha = outline), size = getDefault(object, "pt_size")) +
-   scale_alpha_manual(values = c("TRUE" = 1, "FALSE" = 0.4))
-
-
-
 }
 \keyword{internal}

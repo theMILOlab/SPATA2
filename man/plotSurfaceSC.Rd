@@ -23,7 +23,8 @@ plotSurfaceSC(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:

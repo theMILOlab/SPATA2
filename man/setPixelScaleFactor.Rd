@@ -7,7 +7,8 @@
 setPixelScaleFactor(object, pxl_scale_fct = NULL, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{pxl_scale_fct}{Numeric value with an attribute named
 \emph{unit} with the unit dist_si/px.}

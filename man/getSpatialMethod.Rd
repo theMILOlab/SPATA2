@@ -13,7 +13,8 @@ getSpatialMethod(object, ...)
 \S4method{getSpatialMethod}{HistoImaging}(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
@@ -23,7 +24,7 @@ An object of class \code{SpatialMethod}.
 \description{
 Extracts an S4 object of class \code{SpatialMethod} that contains
 meta data about the set up of the protocol that was followed to create
-the data used for the \code{SPATA2} object.
+the data used for the object.
 }
 \seealso{
 \code{\linkS4class{SpatialMethod}}

@@ -105,6 +105,11 @@ across_dummy <- function(across, across_subset, relevel){}
 #' If `NULL`, all image annotations are included - subsequent selection with `tags` and
 #' `test` is possible.
 #'
+#' @param img_name Character value. The name of the `HistoImage` of interest.
+#' If `NULL`, the active histo image is chosen by default.
+#'
+#' @param img_names Character vector. The names of the `HistoImage`s of interest.
+#'
 #' @param inner Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If `FALSE`, the inner borders of the image annotation
 #' are not included in the output.
 #'
@@ -144,7 +149,8 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
-#' @param object An object of class `spata2`.
+#' @param object An object of class `spata2` or, in case of S4 generics,
+#' objects of classes for which a method has been defined.
 #'
 #' @param order Logical value. If `TRUE`, data points are ordered according
 #' to their values before beeing plotted.
@@ -544,6 +550,24 @@ sample_name <- function(sample_name){}
 #' Using exclam input the side of the axis must not be specified as the
 #' axis is fixed as a whole. E.g `expand = list(x = '1mm!', y = '2mm!')` results
 #' in the same output as `expand = list(x = c('1mm!', '1mm!'), y = c('2mm!', '2mm!')`.
+#'
+#' @section Image visualization with ggplot2:
+#'
+#' When comparing the output of `ggplot() + ggpLayerImage()` with other image plotting functions,
+#' you may notice that the image appears horizontally flipped when plotted using `ggpLayerImage()`.
+#' This behavior is due to the use of a Cartesian coordinate system in `SPATA2`, where a pixel
+#' with coordinates c(width = 1, height = 1) is plotted on the left side at the bottom.
+#' In contrast, functions like `EBImage::display()` or `graphics::plot()` use an *image space* coordinate system,
+#' where pixel heights start from the top. Consequently, in *image space*, pixel c(width = 1, height = 1)
+#' is displayed on the top resulting in mirror inverted visualization of the image.
+#'
+#' We chose to use a Cartesian coordinate system in `SPATA2` because we believe it provides a more intuitive
+#' framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+#' barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
+#' in form of *x*- and *y*-variables. See [`getCoordsDf()`], [`getImgAnnOutlineDf()`], [`getTissueOutlineDf()`] etc.
+#'
+#' If you prefer to view your image in the regular orientation, you can use the `flipAll()` function on your object,
+#' specifying `axis = "horizontal"`, to reverse this effect.
 #'
 #' @section Selection of image annotations with tags:
 #'

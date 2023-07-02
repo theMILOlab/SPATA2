@@ -13,7 +13,8 @@ read_coords_visium(dir_coords)
 Data.frame of four columns:
 \itemize{
 \item{\emph{id}:}{ Character. Unique identifier of each observation.}
-\item{\emph{exclude}:}{ Logical. Indicates whether to the observation by default.}
+\item{\emph{exclude}:}{ Logical. Indicates whether to exclude the observation by default.}
+\item{\emph{exclude_reason}:}{ Character. The reason for why to exclude the observation.}
 \item{\emph{x_orig}:}{ Numeric. x-coordinates of the original input.}
 \item{\emph{y_orig}:}{ Numeric. y-coordinates of the original input.}
 }

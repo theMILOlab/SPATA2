@@ -5,7 +5,7 @@
 \alias{add_xy}
 \title{Add width and height or x and y}
 \usage{
-add_wh(df)
+add_wh(df, hrange = NULL)
 
 add_xy(df, x = "x", y = "y")
 }

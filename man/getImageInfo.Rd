@@ -7,11 +7,12 @@
 getImageInfo(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 }
 \value{
 List that contains information of slots @image_info and @justification
-of the \code{HistologyImaging} object.
+of the \code{HistoImaging} object.
 }
 \description{
 Extracts a list of information about the currently set

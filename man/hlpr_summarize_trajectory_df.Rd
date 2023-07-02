@@ -19,7 +19,8 @@ hlpr_summarize_trajectory_df(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{ctdf}{A compiled trajectory data.frame containing the variables
 \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.}

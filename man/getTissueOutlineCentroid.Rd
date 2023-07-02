@@ -10,7 +10,7 @@ getTissueOutlineCentroid(object, ...)
 
 \S4method{getTissueOutlineCentroid}{HistoImaging}(
   object,
-  name = NULL,
+  img_name = NULL,
   transform = TRUE,
   persp = "ccs",
   ...
@@ -19,9 +19,13 @@ getTissueOutlineCentroid(object, ...)
 \S4method{getTissueOutlineCentroid}{HistoImage}(object, transform = TRUE, persp = "ccs", ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 Numeric vector of length two.

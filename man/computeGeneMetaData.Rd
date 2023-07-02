@@ -10,7 +10,8 @@ computeGeneMetaData(object, mtr_name = NULL, verbose = TRUE, ...)
 computeGeneMetaData2(expr_mtr, verbose = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{mtr_name}{A character value that denotes the name of the exprssion matrix with
 which one can refer to it in subsequent functions.}

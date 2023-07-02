@@ -10,7 +10,8 @@ getBarcodesInPolygon(object, polygon_df, strictly = TRUE)
 getBarcodesInPolygonList(object, polygon_list, strictly = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{polygon_df}{A data.frame that contains the vertices of the polygon
 in form of two variables: \emph{x} and \emph{y}.}

@@ -724,15 +724,31 @@ setImageDirLowres <- function(object, dir, check = TRUE, verbose = NULL, ...){
 }
 
 
-#' @title Set image object
+#' @title Set `HistoImaging`
+#'
+#' @description Sets the image container class `HistoImaging`
+#' in the corresponding slot of the `spata2` object.
+#'
+#' @param imaging An object of class `HistoImaging`.
+#' @inherit argument_dummy
 #'
 #' @export
-#'
+
+setHistoImaging <- function(object, imaging){
+
+  object@images[[1]] <- imaging
+
+  return(object)
+
+}
+
+#' @rdname setHistoImaging
+#' @export
 setImageObject <- function(object, image_object){
 
-  sample_name<- getSampleNames(object)
+  deprecated(fn = TRUE, ...)
 
-  object@images[[sample_name]] <- image_object
+  object <- setHistoImaging(object = object, imaging = image_object)
 
   return(object)
 

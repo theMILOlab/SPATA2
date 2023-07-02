@@ -13,24 +13,28 @@
 \usage{
 getImageDims(object, ...)
 
-\S4method{getImageDims}{spata2}(object, ...)
+\S4method{getImageDims}{spata2}(object, img_name = NULL, ...)
 
-\S4method{getImageDims}{HistoImaging}(object, name = NULL, ...)
+\S4method{getImageDims}{HistoImaging}(object, img_name = NULL, ...)
 
 \S4method{getImageDims}{HistoImage}(object, ...)
 
 getImageRange(object, ...)
 
-\S4method{getImageRange}{spata2}(object, ...)
+\S4method{getImageRange}{spata2}(object, img_name = NULL, ...)
 
-\S4method{getImageRange}{HistoImaging}(object, name = NULL)
+\S4method{getImageRange}{HistoImaging}(object, img_name = NULL)
 
 \S4method{getImageRange}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2}.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 Similar output, different data structure:

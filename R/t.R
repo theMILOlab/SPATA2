@@ -191,7 +191,7 @@ textInputWrapper <- function(inputId,
 # theme -------------------------------------------------------------------
 
 
-theme_image <- function(bg_transparent = FALSE){
+theme_image <- function(bg_transparent = FALSE, ...){
 
   if(base::isTRUE(bg_transparent)){
 
@@ -202,7 +202,8 @@ theme_image <- function(bg_transparent = FALSE){
         panel.grid.major = ggplot2::element_blank(),
         panel.grid.minor = ggplot2::element_blank(),
         legend.background = ggplot2::element_rect(fill = 'transparent'),
-        legend.box.background = ggplot2::element_rect(fill = 'transparent')
+        legend.box.background = ggplot2::element_rect(fill = 'transparent'),
+        ...
       )
 
   } else {
@@ -210,7 +211,8 @@ theme_image <- function(bg_transparent = FALSE){
     theme_add <-
       ggplot2::theme(
         panel.grid.major = ggplot2::element_blank(),
-        panel.grid.minor = ggplot2::element_blank()
+        panel.grid.minor = ggplot2::element_blank(),
+        ...
       )
 
   }
@@ -305,37 +307,7 @@ theme_transparent <- function(){
 # ti ----------------------------------------------------------------------
 
 
-#' @title Check availability of tissue information
-#'
-#' @description Checks if `identifyTissueSections()` and `identifyTissueOutline()`
-#' has been run successfully.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Logical value.
-#' @export
-#'
-tissueOutlineIdentified <- function(object){
 
-  coords_df <- getCoordsDf(object)
-
-  out <- "outline" %in% base::colnames(coords_df)
-
-  return(out)
-
-}
-
-#' @rdname tissueOutlineIdentified
-#' @export
-tissueSectionsIdentfied <- function(object){
-
-  coords_df <- getCoordsDf(object)
-
-  out <- "section" %in% base::colnames(coords_df)
-
-  return(out)
-
-}
 
 
 # tr ----------------------------------------------------------------------
@@ -424,8 +396,6 @@ transform_dist_si_to_pixel <- function(input,
   # e.g. 1000um
   input_val <- extract_value(input)  # e.g. 1000
   input_unit <- extract_unit(input) # e.g 'um'
-
-  method <- getSpatialMethod(object)
 
   scale_fct <-
     getPixelScaleFactor(
@@ -1819,5 +1789,16 @@ translate_shape_string <- function(shape_string) {
 }
 
 
+#' @keywords internal
+true_if_null <- function(x){
 
+  if(base::all(base::is.null(x))){
+
+    x <- TRUE
+
+  }
+
+  return(x)
+
+}
 

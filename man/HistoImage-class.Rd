@@ -44,6 +44,11 @@ outline the tissue section outlined.}
 of the tissue outline of this image with the tissue outline of the reference image
 with a value between 0-1 before and after alignment via \code{alignImage()}.}
 
+\item{\code{pixel_content}}{factor. Named factor where names correspond to the
+pixels following the naming convention 'px_w1_h1' encoding the width and height value
+of the pixel from the original \strong{not transformed} image. Values correspond to
+the content the pixel displays. See \code{\link[=identifyPixelContent]{identifyPixelContent()}} for more information.}
+
 \item{\code{reference}}{logical. \code{TRUE} if it is the \code{HistoImage} used as the reference
 with which other histology images are aligned.}
 
