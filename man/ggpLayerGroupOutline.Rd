@@ -47,8 +47,8 @@ if \code{plot_type} is not \emph{'surface'}.}
 Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
 Default by object initiation is 1.}
 
-\item{expand_outline}{Distance measure. Determines the amount of
-buffering applied to the outline.}
+\item{expand_outline}{Distance measure with which to expand the outline. Must be
+provided in pixel units!}
 
 \item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}. Affects
 the encircling.}

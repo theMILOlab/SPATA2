@@ -11,33 +11,32 @@ ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{spata2}(
   object,
-  img_name = NULL,
-  fragments = FALSE,
-  line_alpha = 1,
-  line_color = "grey",
-  line_size = 0.5,
-  line_type = "solid",
-  transform = TRUE,
-  smooth_with = "chaikin",
-  scale_fct = 1,
-  expand_outline = getCCD(object, "px") * 1.25,
-  ...
-)
-
-\S4method{ggpLayerTissueOutline}{HistoImaging}(
-  object,
-  img_name = NULL,
+  opt = "coords",
   by_section = TRUE,
   fragments = FALSE,
-  fill = NA,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 1,
   line_type = "solid",
   transform = TRUE,
-  smooth_with = "chaikin",
   scale_fct = 1,
-  expand_outline = 0.5,
+  expand_outline = getCCD(object, "px") * 0.75,
+  ...
+)
+
+\S4method{ggpLayerTissueOutline}{HistoImaging}(
+  object,
+  opt = "image",
+  img_name = NULL,
+  by_section = TRUE,
+  fragments = FALSE,
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 1,
+  line_type = "solid",
+  transform = TRUE,
+  scale_fct = 1,
+  expand_outline = 0,
   ...
 )
 
@@ -45,7 +44,6 @@ ggpLayerTissueOutline(object, ...)
   object,
   by_section = TRUE,
   fragments = FALSE,
-  fill = NA,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 1,
@@ -53,7 +51,7 @@ ggpLayerTissueOutline(object, ...)
   transform = TRUE,
   smooth_with = "chaikin",
   scale_fct = 1,
-  expand_outline = 0.5,
+  expand_outline = 1,
   ...
 )
 }
@@ -61,10 +59,12 @@ ggpLayerTissueOutline(object, ...)
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{opt}{Character value. One of \code{c("coords", "image")}. If \emph{'coords'},
+the outline is computed based on the coordinate position of the plotted entities
+(cells, spots etc.). If \emph{'image'}, the outline is plotted solely based on
+the image analysis results.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
@@ -75,12 +75,17 @@ If \code{NULL}, the active histo image is chosen by default.}
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
+\item{expand_outline}{Distance measure with which to expand the outline. Must be
+provided in pixel units!}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
 \item{smooth_with}{Character vaule. Sets the method with which to smooth
 the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.
 If \emph{'none'}, no smoothing is conducted.}
 
-\item{expand_outline}{Distance measure. Determines the amount of
-buffering applied to the outline.}
+\item{inc_outline}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -101,4 +106,7 @@ plotImage(object, unit = "mm") +
 plotImage(object, unit = "mm") +
  ggpLayerTissueOutline(object, inc_outline = FALSE)
 
+}
+\seealso{
+\code{\link[=identifyPixelContent]{identifyPixelContent()}},\code{\link[=identifyTissueOutline]{identifyTissueOutline()}},\code{\link[=identifyTissueSections]{identifyTissueSections()}}
 }

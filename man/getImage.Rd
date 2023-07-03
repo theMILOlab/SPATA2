@@ -74,3 +74,6 @@ Object of class \code{Image}.
 Extracts the image as an object of class \code{Image}
 as specified in the package \code{EBImage}.
 }
+\seealso{
+\code{\link[=getHistoImage]{getHistoImage()}},\code{\link[=getHistoImaging]{getHistoImaging()}}
+}

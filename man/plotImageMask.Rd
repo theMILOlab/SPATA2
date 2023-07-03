@@ -2,16 +2,34 @@
 % Please edit documentation in R/devImaging.R
 \name{plotImageMask}
 \alias{plotImageMask}
+\alias{plotImageMask,spata2-method}
+\alias{plotImageMask,HistoImaging-method}
 \alias{plotImageMask,HistoImage-method}
 \alias{plotPixelContent}
+\alias{plotPixelContent,HistoImaging-method}
 \alias{plotPixelContent,HistoImage-method}
-\title{Plot tissue mask}
+\title{Plot pixel content}
 \usage{
 plotImageMask(object, ...)
+
+\S4method{plotImageMask}{spata2}(object, img_name = NULL, clr_fg = "black", clr_bg = "white")
+
+\S4method{plotImageMask}{HistoImaging}(object, img_name = NULL, clr_fg = "black", clr_bg = "white")
 
 \S4method{plotImageMask}{HistoImage}(object, clr_fg = "black", clr_bg = "white")
 
 plotPixelContent(object, ...)
+
+\S4method{plotPixelContent}{HistoImaging}(
+  object,
+  clrp = "sifre",
+  clr_bg = "white",
+  clr_fragments = "red",
+  clr_tissue = "forestgreen",
+  clr_artefact = "blue",
+  type = FALSE,
+  clrp_adjust = NULL
+)
 
 \S4method{plotPixelContent}{HistoImage}(
   object,
@@ -29,6 +47,9 @@ plotPixelContent(object, ...)
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{clr_fg, clr_bg}{Character values. Color with which to display
 foreground and background of the mask.}
@@ -50,4 +71,8 @@ A ggplot.
 }
 \description{
 Visualizes the results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}.
+\itemize{
+\item{\code{plotImageMask()}:}{ Distinguishes pixel in back- and foreground. Foreground being the tissue.}
+\item{\verb{plotPixelContent():}}{ Visualizes the classification of each pixel in detail.}
+}
 }

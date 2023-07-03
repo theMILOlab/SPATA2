@@ -2,12 +2,24 @@
 % Please edit documentation in R/devImaging.R
 \name{registerImage}
 \alias{registerImage}
+\alias{registerImage,spata2-method}
 \alias{registerImage,HistoImaging-method}
-\title{Register images as \code{HistoImage}}
+\alias{removeImage}
+\alias{removeImage,spata2-method}
+\alias{removeImage,HistoImaging-method}
+\title{Register or remove images}
 \usage{
 registerImage(object, ...)
 
+\S4method{registerImage}{spata2}(object, dir, img_name, unload = TRUE, verbose = TRUE)
+
 \S4method{registerImage}{HistoImaging}(object, dir, img_name, unload = FALSE, verbose = TRUE)
+
+removeImage(object, ...)
+
+\S4method{removeImage}{spata2}(object, img_name)
+
+\S4method{removeImage}{HistoImaging}(object, img_name)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -17,8 +29,8 @@ objects of classes for which a method has been defined.}
 
 \item{dir}{Character value. The directory from where to retrieve the image.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} with which
-to refer to it via arguments \code{img_name} and \code{img_names}.}
+\item{img_name}{Character value. The image to remove. Must neither be
+the active nor the reference image.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -30,6 +42,11 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Creates and registers new images by putting them in relation
-to the reference image of the object.
+Use \code{registerImage()} to add a new image in form of a \code{HistoImage}
+to the object.
+
+Use \code{removeImage()} to savely discard images and their \code{HistoImage} container
+that are no longer needed.
+
+Do not confuse with \code{\link[=loadImage]{loadImage()}} and \code{\link[=unloadImage]{unloadImage()}}.
 }

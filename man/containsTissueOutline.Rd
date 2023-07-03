@@ -9,7 +9,7 @@
 \usage{
 containsTissueOutline(object, ...)
 
-\S4method{containsTissueOutline}{spata2}(object)
+\S4method{containsTissueOutline}{spata2}(object, img_name = NULL, error = FALSE)
 
 \S4method{containsTissueOutline}{HistoImaging}(object, img_name = NULL, error = FALSE)
 

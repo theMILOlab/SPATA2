@@ -8,9 +8,23 @@
 \usage{
 activateImage(object, ...)
 
-\S4method{activateImage}{spata2}(object, img_name, unload = TRUE, verbose = TRUE, ...)
+\S4method{activateImage}{spata2}(
+  object,
+  img_name,
+  load = TRUE,
+  unload = TRUE,
+  verbose = TRUE,
+  ...
+)
 
-\S4method{activateImage}{HistoImaging}(object, img_name, unload = TRUE, verbose = TRUE, ...)
+\S4method{activateImage}{HistoImaging}(
+  object,
+  img_name,
+  load = TRUE,
+  unload = TRUE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

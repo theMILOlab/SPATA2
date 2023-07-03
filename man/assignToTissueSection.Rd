@@ -8,9 +8,9 @@
 \usage{
 assignToTissueSection(object, ...)
 
-\S4method{assignToTissueSection}{spata2}(object)
+\S4method{assignToTissueSection}{spata2}(object, buffer = 0)
 
-\S4method{assignToTissueSection}{HistoImaging}(object, img_name = object@name_img_ref)
+\S4method{assignToTissueSection}{HistoImaging}(object, img_name = NULL, buffer = 0)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

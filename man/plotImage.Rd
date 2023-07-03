@@ -12,9 +12,17 @@ plotImage(object, ...)
 
 \S4method{plotImage}{spata2}(
   object,
-  unit = getSpatialMethod(object)@unit,
-  frame_by = "image",
+  img_name = NULL,
+  outline = FALSE,
+  by_section = TRUE,
+  fragments = FALSE,
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 0.5,
+  line_type = "solid",
+  transform = TRUE,
   img_alpha = 1,
+  scale_fct = 1,
   xrange = NULL,
   yrange = NULL,
   ...
@@ -26,7 +34,6 @@ plotImage(object, ...)
   outline = FALSE,
   by_section = TRUE,
   fragments = FALSE,
-  fill = NA,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 0.5,
@@ -34,6 +41,8 @@ plotImage(object, ...)
   transform = TRUE,
   img_alpha = 1,
   scale_fct = 1,
+  xrange = NULL,
+  yrange = NULL,
   ...
 )
 
@@ -42,7 +51,6 @@ plotImage(object, ...)
   outline = FALSE,
   by_section = TRUE,
   fragments = FALSE,
-  fill = NA,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 1,
@@ -50,6 +58,8 @@ plotImage(object, ...)
   transform = TRUE,
   img_alpha = 1,
   scale_fct = 1,
+  xrange = NULL,
+  yrange = NULL,
   ...
 )
 
@@ -59,22 +69,7 @@ plotImage(object, ...)
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Additional arguments given to \code{ggpLayerAxesSI()} if
-\code{unit} is not \emph{'px'}.}
-
-\item{unit}{Character value. Units of x- and y-axes. Defaults
-to \emph{'px'}.}
-
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{...}{Additional arguments given to \code{ggpLayerZoom()}.}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
@@ -87,6 +82,20 @@ If \code{NULL}, the active histo image is chosen by default.}
 
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
+
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
+
+\item{unit}{Character value. Units of x- and y-axes. Defaults
+to \emph{'px'}.}
 }
 \value{
 A ggplot.

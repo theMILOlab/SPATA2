@@ -27,8 +27,6 @@ GeomPointFixed <- ggplot2::ggproto(
 
     size <- ggplot2::unit(x = data$size/100, "npc")
 
-    print(unique(size))
-
     grid::pointsGrob(
       x = coords$x,
       y = coords$y,

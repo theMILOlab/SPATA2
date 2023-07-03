@@ -9,7 +9,7 @@
 \usage{
 identifyTissueOutline(object, ...)
 
-\S4method{identifyTissueOutline}{spata2}(object, verbose = NULL)
+\S4method{identifyTissueOutline}{spata2}(object, img_name, verbose = NULL)
 
 \S4method{identifyTissueOutline}{HistoImaging}(object, img_name, verbose = TRUE)
 
@@ -21,20 +21,20 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Identifies the outline of each tissue section on the \code{HistoImage}
+Identifies the outline of each tissue section on the image
 as well as the outline of the whole tissue.
 }
 \note{

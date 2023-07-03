@@ -2,6 +2,7 @@
 % Please edit documentation in R/devImaging.R
 \name{getHistoImage}
 \alias{getHistoImage}
+\alias{getHistoImage,spata2-method}
 \alias{getHistoImage,HistoImaging-method}
 \alias{getHistoImageActive}
 \alias{getHistoImageActive,HistoImaging-method}
@@ -10,6 +11,8 @@
 \title{Obtain object of class \code{HistoImage}}
 \usage{
 getHistoImage(object, ...)
+
+\S4method{getHistoImage}{spata2}(object, img_name = NULL, ...)
 
 \S4method{getHistoImage}{HistoImaging}(object, img_name = NULL, ...)
 
@@ -35,7 +38,7 @@ Extracts the S4-containers of registered images. Note that
 slot @image might be empty. Use \code{loadImage()} in that case.
 
 \itemize{
-\item{\code{getHistoImage()}:}{ Extracts object by name. If \code{img_name = NULL} the active histology image is returned.}
+\item{\code{getHistoImage()}:}{ Extracts object by name. If \code{img_name = NULL} the active \code{HistoImage} image is returned.}
 \item{\code{getHistoImageActive()}:}{ Extracts the active \code{HistoImage} object.}
 \item{\code{getHistoImageRef()}:}{ Extracts the reference \code{HistoImage} object.}
 }

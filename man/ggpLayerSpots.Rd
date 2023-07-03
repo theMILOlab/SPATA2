@@ -11,7 +11,6 @@ ggpLayerSpots(object, ...)
 
 \S4method{ggpLayerSpots}{spata2}(
   object,
-  img_name = NULL,
   alpha_by = NULL,
   color_by = NULL,
   spot_alpha = 0.9,
@@ -26,7 +25,7 @@ ggpLayerSpots(object, ...)
   yrange = NULL,
   unit = NULL,
   breaks = NULL,
-  expand = FALSE,
+  expand = TRUE,
   scale_fct = 1,
   add_labs = TRUE
 )
@@ -44,7 +43,7 @@ ggpLayerSpots(object, ...)
   yrange = NULL,
   unit = NULL,
   breaks = NULL,
-  expand = FALSE,
+  expand = TRUE,
   scale_fct = 1,
   add_labs = TRUE
 )
@@ -64,9 +63,6 @@ ggpLayerSpots(object, ...)
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
-
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
 
 \item{spot_alpha, spot_size, spot_clr}{Parameters to set the aesthetics
 alpha, size, and color of the spots. Arguments \code{alpha_by} and \code{color_by}
@@ -121,6 +117,9 @@ Valid input:
 }}
 
 \item{add_labs}{Logical. If \code{TRUE}, adds x- and y-labs to the plot.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

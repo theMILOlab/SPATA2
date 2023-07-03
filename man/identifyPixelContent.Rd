@@ -2,6 +2,7 @@
 % Please edit documentation in R/devImaging.R
 \name{identifyPixelContent}
 \alias{identifyPixelContent}
+\alias{identifyPixelContent,spata2-method}
 \alias{identifyPixelContent,HistoImaging-method}
 \alias{identifyPixelContent,HistoImage-method}
 \alias{identifyPixelContent,Image-method}
@@ -9,14 +10,28 @@
 \usage{
 identifyPixelContent(object, ...)
 
-\S4method{identifyPixelContent}{HistoImaging}(
+\S4method{identifyPixelContent}{spata2}(
   object,
+  img_name,
   percentile = 99,
   compactness_factor = 10,
   superpixel = 1000,
   dbscan_eps = 0.005,
-  dbscan_minPts = 3,
-  frgmt_threshold = c(0.005, 0.02),
+  dbscan_minPts = 0.005,
+  frgmt_threshold = c(0.001, 0.05),
+  plot_progress = plot_progress,
+  verbose = TRUE
+)
+
+\S4method{identifyPixelContent}{HistoImaging}(
+  object,
+  img_name,
+  percentile = 99,
+  compactness_factor = 10,
+  superpixel = 1000,
+  dbscan_eps = 0.005,
+  dbscan_minPts = 0.005,
+  frgmt_threshold = c(0.001, 0.05),
   plot_progress = plot_progress,
   verbose = TRUE
 )
@@ -27,8 +42,8 @@ identifyPixelContent(object, ...)
   compactness_factor = 10,
   superpixel = 1000,
   dbscan_eps = 0.005,
-  dbscan_minPts = 3,
-  frgmt_threshold = c(0.05, 0.02),
+  dbscan_minPts = 0.005,
+  frgmt_threshold = c(0.001, 0.05),
   plot_progress = FALSE,
   verbose = TRUE
 )
@@ -38,9 +53,9 @@ identifyPixelContent(object, ...)
   percentile = 99,
   compactness_factor = 10,
   superpixel = 1000,
-  frgmt_threshold = c(5e-04, 0.01),
+  frgmt_threshold = c(0.001, 0.05),
   dbscan_eps = 0.005,
-  dbscan_minPts = 3,
+  dbscan_minPts = 0.005,
   plot_progress = FALSE,
   verbose = TRUE,
   ...
@@ -51,6 +66,37 @@ identifyPixelContent(object, ...)
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{percentile}{Numeric value between 0 and 100.
+Specifies the percentile of colors to set to plain white, assuming that
+this percentile of colors is responsible for the background.
+If set to 0, the function is not called.}
+
+\item{compactness_factor}{Numeric value controlling the compactness of superpixels.
+Given as an argument to \verb{$spixel_segmentation()} function.}
+
+\item{superpixel}{Numeric value specifying the number of superpixels to compute.
+Given as an argument to \verb{$spixel_segmentation()} function.}
+
+\item{dbscan_eps}{Numeric value specifying the value of \code{eps} parameter used in \code{dbscan::dbscan()}
+when applied on the tissue pixels. If the value is less than 1, it is calculated
+as a percentage of the width or height of the image, depending on which is larger.
+If the value is greater than or equal to 1, it is taken as an absolute value.}
+
+\item{dbscan_minPts}{Numeric value specifying the value of \code{minPts} parameter used in \code{dbscan::dbscan()}
+when applied on the tissue pixels identified as potential tissue. If the value is less than 1,
+it is calculated as a percentage of the width or height of the image, depending on which is larger.
+If the value is greater than or equal to 1, it is taken as an absolute value.}
+
+\item{frgmt_threshold}{Numeric vector of length 2 specifying the range of the number of pixels
+an identified object must have to be considered a tissue fragment. Objects with a lower number
+of pixels than the minimum threshold are considered artifacts, and objects with a higher number
+of pixels than the maximum threshold are considered tissue sections. If a threshold value is less than 1,
+it is calculated as a percentage of the total number of pixels in the image.
+If a threshold value is greater than or equal to 1, it is taken as an absolute value.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -81,5 +127,6 @@ Determines the type of content displayed by each pixel in the image,
 categorizing it as tissue from tissue segments or fragments, artifacts, or background.
 }
 \seealso{
-\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}
+For subsequent image processing: \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. For visualization
+of results: \code{\link[=plotImageMask]{plotImageMask()}}, \code{\link[=plotPixelContent]{plotPixelContent()}}
 }

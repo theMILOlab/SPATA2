@@ -2,10 +2,13 @@
 % Please edit documentation in R/devImaging.R
 \name{containsCCD}
 \alias{containsCCD}
+\alias{containsCCD,spata2-method}
 \alias{containsCCD,HistoImaging-method}
 \title{Check availability of center to center distance}
 \usage{
 containsCCD(object, ...)
+
+\S4method{containsCCD}{spata2}(object, error = FALSE)
 
 \S4method{containsCCD}{HistoImaging}(object, error = FALSE)
 }

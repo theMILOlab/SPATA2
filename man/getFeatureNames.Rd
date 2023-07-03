@@ -4,7 +4,7 @@
 \alias{getFeatureNames}
 \title{Obtain feature names}
 \usage{
-getFeatureNames(object, of_class = NULL, of_sample = NA)
+getFeatureNames(object, of_class = NULL, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

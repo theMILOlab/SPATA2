@@ -10,7 +10,7 @@ getCCD(object, ...)
 
 \S4method{getCCD}{spata2}(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 
-\S4method{getCCD}{HistoImaging}(object)
+\S4method{getCCD}{HistoImaging}(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

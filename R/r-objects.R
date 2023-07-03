@@ -525,6 +525,7 @@ depr_info <-
       "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
       "include_tissue_outline" = list("outline_var" = NA_character_),
       "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
+      "plotImage" = list("frame_by" = NA_character_, "unit" = NA_character_),
       "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "setImageDirHighres" = list("dir_highres" = "dir"),

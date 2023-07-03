@@ -11,10 +11,23 @@ plotImages(object, ...)
 \S4method{plotImages}{spata2}(
   object,
   img_names = NULL,
-  verbose = NULL,
-  nrow = NULL,
+  by_section = TRUE,
+  outline = TRUE,
+  outline_ref = FALSE,
+  fragments = FALSE,
+  line_alpha = line_alpha_ref * 0.75,
+  line_alpha_ref = 1,
+  line_color = "black",
+  line_color_ref = "red",
+  line_size = 0.5,
+  line_size_ref = line_size * 1.5,
+  transform = TRUE,
+  img_alpha = 1,
+  against_ref = FALSE,
+  alignment_eval = FALSE,
   ncol = NULL,
-  ...
+  nrow = NULL,
+  verbose = TRUE
 )
 
 \S4method{plotImages}{HistoImaging}(
@@ -49,18 +62,18 @@ objects of classes for which a method has been defined.}
 \item{img_names}{Character vector or \code{NULL}. If character, specifies the images
 by name. If \code{NULL}, all images are plotted.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
-
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 A ggplot assembled with via \code{patchwork::wrap_plots()}.

@@ -6,7 +6,6 @@
 \usage{
 ggpLayerCaptureArea(
   object,
-  img_name = NULL,
   opt = c("rect"),
   rect_alpha = 0.9,
   rect_clr = "black",

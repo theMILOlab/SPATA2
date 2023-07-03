@@ -343,6 +343,23 @@ remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
 
 }
 
+#' @title Initiate `spata2` object from platform
+#'
+#' @description A colleciton of functions that initiate `spata2` objects
+#' from standardized output folders.
+#'
+#' @param directory_visium Character value. Directory to a visium folder. Should contain
+#' the subdirectory *'.../spatial'*.
+#' @param sample_name Character value. Name of the sample.
+#' @param mtr The matrix to load. One of `c("filtered", "raw")`.
+#'
+#' @inherit createHistoImagingVisium params
+#'
+#' @seealso [`createHistoImagingVisium`]
+#'
+#' @return An object of class `spata2`.
+#' @export
+#'
 initiateSpataObject_Visium <- function(directory_visium,
                                        sample_name,
                                        mtr = "filtered",
@@ -405,15 +422,19 @@ initiateSpataObject_Visium <- function(directory_visium,
       spatial_method = imaging@method@name
     )
 
+  # set required content
   object <- setCountMatrix(object, count_mtr = count_mtr)
-
-  object <- setImageObject(object, image_object = imaging)
 
   object <-
     setFeatureDf(
       object = object,
       feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
     )
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  # set active content
+  object <- setActiveMatrix(object, mtr_name = "counts")
 
   return(object)
 
@@ -472,13 +493,18 @@ processWithSeurat <- function(object,
       dplyr::select(
         .data = meta_df,
         barcodes,
+        dplyr::everything(),
         -dplyr::any_of(x = getFeatureNames(object))
       )
 
   }
 
-  object <-
-    addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
+  if(base::ncol(meta_df) > 1){
+
+    object <-
+      addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
+
+  }
 
   return(object)
 

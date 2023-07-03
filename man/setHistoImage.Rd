@@ -22,8 +22,7 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Sets object of class \code{HistoImage}. Requires the \code{HistoImage}
-to be registerd! (known to the \code{HistoImagingObject}). Else use \code{registerHistoImage()}.
+Sets object of class \code{HistoImage}.
 }
 \seealso{
 \code{\link[=registerHistoImage]{registerHistoImage()}}

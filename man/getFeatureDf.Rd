@@ -4,13 +4,10 @@
 \alias{getFeatureDf}
 \title{Obtain feature data}
 \usage{
-getFeatureDf(object, of_sample = NA)
+getFeatureDf(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 The feature data data.frame of the specified object and sample(s).

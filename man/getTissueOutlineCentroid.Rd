@@ -8,15 +8,9 @@
 \usage{
 getTissueOutlineCentroid(object, ...)
 
-\S4method{getTissueOutlineCentroid}{HistoImaging}(
-  object,
-  img_name = NULL,
-  transform = TRUE,
-  persp = "ccs",
-  ...
-)
+\S4method{getTissueOutlineCentroid}{HistoImaging}(object, img_name = NULL, transform = TRUE, ...)
 
-\S4method{getTissueOutlineCentroid}{HistoImage}(object, transform = TRUE, persp = "ccs", ...)
+\S4method{getTissueOutlineCentroid}{HistoImage}(object, transform = TRUE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

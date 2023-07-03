@@ -10,7 +10,7 @@ addFeatures(
   feature_names = NULL,
   key_variable = "barcodes",
   overwrite = FALSE,
-  of_sample = NA
+  ...
 )
 }
 \arguments{
@@ -31,9 +31,6 @@ x- and y-coordinates work as key-variables if they are used combined.}
 
 \item{overwrite}{Logical. If the specified feature names already exist in the
 current spata-object this argument must be set to TRUE in order to overwrite them.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 The input \code{spata2} object containing the added or computed
