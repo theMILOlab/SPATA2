@@ -2,10 +2,13 @@
 % Please edit documentation in R/devImaging.R
 \name{containsPixelContent}
 \alias{containsPixelContent}
+\alias{containsPixelContent,HistoImaging-method}
 \alias{containsPixelContent,HistoImage-method}
 \title{Check availability pixel content}
 \usage{
 containsPixelContent(object, ...)
+
+\S4method{containsPixelContent}{HistoImaging}(object, img_name, error = FALSE)
 
 \S4method{containsPixelContent}{HistoImage}(object, error = FALSE)
 }
@@ -14,6 +17,9 @@ containsPixelContent(object, ...)
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}

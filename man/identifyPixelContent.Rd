@@ -19,7 +19,6 @@ identifyPixelContent(object, ...)
   dbscan_eps = 0.005,
   dbscan_minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
-  plot_progress = plot_progress,
   verbose = TRUE
 )
 
@@ -32,7 +31,6 @@ identifyPixelContent(object, ...)
   dbscan_eps = 0.005,
   dbscan_minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
-  plot_progress = plot_progress,
   verbose = TRUE
 )
 
@@ -44,7 +42,6 @@ identifyPixelContent(object, ...)
   dbscan_eps = 0.005,
   dbscan_minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
-  plot_progress = FALSE,
   verbose = TRUE
 )
 
@@ -56,7 +53,6 @@ identifyPixelContent(object, ...)
   frgmt_threshold = c(0.001, 0.05),
   dbscan_eps = 0.005,
   dbscan_minPts = 0.005,
-  plot_progress = FALSE,
   verbose = TRUE,
   ...
 )
@@ -125,6 +121,10 @@ the results stored in the corresponding slots.
 \description{
 Determines the type of content displayed by each pixel in the image,
 categorizing it as tissue from tissue segments or fragments, artifacts, or background.
+}
+\details{
+If \code{img_name} specifies multiple images, the function
+iterates over all of them.
 }
 \seealso{
 For subsequent image processing: \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. For visualization

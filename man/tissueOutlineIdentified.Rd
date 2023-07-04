@@ -14,7 +14,7 @@ tissueOutlineIdentified(object, ...)
 
 tissueSectionsIdentified(object, ...)
 
-\S4method{tissueSectionsIdentified}{spata2}(object)
+\S4method{tissueSectionsIdentified}{spata2}(object, error = FALSE)
 
 \S4method{tissueSectionsIdentified}{HistoImaging}(object, error = FALSE)
 }

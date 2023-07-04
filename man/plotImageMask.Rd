@@ -6,6 +6,7 @@
 \alias{plotImageMask,HistoImaging-method}
 \alias{plotImageMask,HistoImage-method}
 \alias{plotPixelContent}
+\alias{plotPixelContent,spata2-method}
 \alias{plotPixelContent,HistoImaging-method}
 \alias{plotPixelContent,HistoImage-method}
 \title{Plot pixel content}
@@ -20,8 +21,21 @@ plotImageMask(object, ...)
 
 plotPixelContent(object, ...)
 
+\S4method{plotPixelContent}{spata2}(
+  object,
+  img_name = NULL,
+  clrp = "sifre",
+  clr_bg = "white",
+  clr_fragments = "red",
+  clr_tissue = "forestgreen",
+  clr_artefact = "blue",
+  type = FALSE,
+  clrp_adjust = NULL
+)
+
 \S4method{plotPixelContent}{HistoImaging}(
   object,
+  img_name = NULL,
   clrp = "sifre",
   clr_bg = "white",
   clr_fragments = "red",

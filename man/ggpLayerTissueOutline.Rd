@@ -11,7 +11,8 @@ ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{spata2}(
   object,
-  opt = "coords",
+  img_name = NULL,
+  opt = "image",
   by_section = TRUE,
   fragments = FALSE,
   line_alpha = 0.9,
@@ -20,7 +21,7 @@ ggpLayerTissueOutline(object, ...)
   line_type = "solid",
   transform = TRUE,
   scale_fct = 1,
-  expand_outline = getCCD(object, "px") * 0.75,
+  expand_outline = 0,
   ...
 )
 
@@ -51,7 +52,7 @@ ggpLayerTissueOutline(object, ...)
   transform = TRUE,
   smooth_with = "chaikin",
   scale_fct = 1,
-  expand_outline = 1,
+  expand_outline = 0,
   ...
 )
 }
@@ -60,6 +61,9 @@ ggpLayerTissueOutline(object, ...)
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{opt}{Character value. One of \code{c("coords", "image")}. If \emph{'coords'},
 the outline is computed based on the coordinate position of the plotted entities
@@ -77,9 +81,6 @@ the image analysis results.}
 
 \item{expand_outline}{Distance measure with which to expand the outline. Must be
 provided in pixel units!}
-
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
 
 \item{smooth_with}{Character vaule. Sets the method with which to smooth
 the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.

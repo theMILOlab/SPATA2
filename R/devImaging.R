@@ -54,10 +54,11 @@ setMethod(
                         unload = TRUE,
                         verbose = TRUE,
                         ...){
+    imaging <- getHistoImaging(object)
+
     imaging <-
-      getHistoImaging(object) %>%
-        activateImage(
-        object = .,
+      activateImage(
+        object = imaging,
         img_name = img_name,
         load = load,
         unload = unload,
@@ -521,9 +522,12 @@ setMethod(
                         transl_h = NULL,
                         transl_v = NULL){
 
-    hist_img <-
+    imaging <- getHistoImaging(object)
+
+    imaging <-
       alignImage(
-        object = getHistoImage(object, img_name = img_name),
+        object = imaging,
+        img_name = img_name,
         opt = opt,
         angle = angle,
         flip_h = flip_h,
@@ -532,7 +536,7 @@ setMethod(
         transl_v = transl_v
       )
 
-    object <- setHistoImage(object = object, hist_img = hist_img)
+    object <- setHistoImaging(object, imaging = imaging)
 
     return(object)
 
@@ -1538,7 +1542,6 @@ setMethod(
 
             }
 
-
             img <-
               EBImage::rotate(
                 x = img,
@@ -1547,7 +1550,7 @@ setMethod(
                 bg.col = ggplot2::alpha("white")
               )
 
-            angle(angle_adj)
+            angle(input$angle_transf)
 
             return(img)
 
@@ -2472,7 +2475,7 @@ compute_img_scale_fct <- function(hist_img1, hist_img2){
   # first dimension of dims suffices as images are always padded to have equal
   # width and height
   base::max(hist_img2@image_info[["dims"]])/
-    base::max(hist_img1@image_info[["dims"]][1])
+    base::max(hist_img1@image_info[["dims"]])
 
 }
 
@@ -2776,6 +2779,20 @@ setGeneric(name = "containsPixelContent", def = function(object, ...){
   standardGeneric(f = "containsPixelContent")
 
 })
+
+#' @rdname containsPixelContent
+#' @export
+setMethod(
+  f = "containsPixelContent",
+  signature = "HistoImaging",
+  definition = function(object, img_name, error = FALSE){
+
+    getHistoImage(object, img_name = img_name) %>%
+      containsPixelContent(object = ., error = error)
+
+  }
+)
+
 
 #' @rdname containsPixelContent
 #' @export
@@ -3204,9 +3221,7 @@ createHistoImagingVisium <- function(dir,
           ),
         reference = img_ref == "hires",
         verbose = verbose
-      ) %>%
-      identifyPixelContent(object = .) %>%
-      identifyTissueOutline(object = .)
+      )
 
   }
 
@@ -3223,10 +3238,7 @@ createHistoImagingVisium <- function(dir,
           ),
         reference = img_ref == "lowres",
         verbose = verbose
-      ) %>%
-      identifyPixelContent(object = .) %>%
-      identifyTissueOutline(object = .)
-
+      )
   }
 
   # compute spot size
@@ -4497,6 +4509,19 @@ setGeneric(name = "getImageTransformations", def = function(object, ...){
   standardGeneric(f = "getImageTransformations")
 
 })
+
+#' @rdname getImageTransformations
+#' @export
+setMethod(
+  f = "getImageTransformations",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, ...){
+
+    getHistoImaging(object) %>%
+      getImageTransformations(object = ., img_name = img_name)
+
+  }
+)
 
 #' @rdname getImageTransformations
 #' @export
@@ -5905,7 +5930,8 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "spata2",
   definition = function(object,
-                        opt = "coords",
+                        img_name = NULL,
+                        opt = "image",
                         by_section = TRUE,
                         fragments = FALSE,
                         line_alpha = 0.9,
@@ -5914,7 +5940,7 @@ setMethod(
                         line_type = "solid",
                         transform = TRUE,
                         scale_fct = 1,
-                        expand_outline = getCCD(object, "px")*0.75,
+                        expand_outline = 0,
                         ...){
 
     hlpr_assign_arguments(object)
@@ -5924,7 +5950,7 @@ setMethod(
       ggpLayerTissueOutline(
         object = .,
         opt = opt,
-        img_name = NULL, # always uses default image
+        img_name = img_name, # always uses default image
         by_section = by_section,
         fragments = fragments,
         line_alpha = line_alpha,
@@ -5963,6 +5989,8 @@ setMethod(
 
 
     if(opt == "coords"){
+
+      tissueSectionsIdentified(object, error = TRUE)
 
       coords_df <-
         getCoordsDf(object, img_name = img_name) %>%
@@ -6048,7 +6076,7 @@ setMethod(
                         transform = TRUE,
                         smooth_with = "chaikin",
                         scale_fct = 1,
-                        expand_outline = 1,
+                        expand_outline = 0,
                         ...){
 
     confuns::check_one_of(
@@ -6291,6 +6319,9 @@ identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
 #'
 #' @inherit argument_dummy params
 #'
+#' @details If `img_name` specifies multiple images, the function
+#' iterates over all of them.
+#'
 #' @seealso For subsequent image processing: [`identifyTissueOutline()`]. For visualization
 #' of results: [`plotImageMask()`], [`plotPixelContent()`]
 #'
@@ -6370,21 +6401,30 @@ setMethod(
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
 
-    hist_img <- getHistoImage(object, img_name = img_name)
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
 
-    hist_img <-
-      identifyPixelContent(
-        object = hist_img,
-        percentile = percentile,
-        compactness_factor = compactness_factor,
-        superpixel = superpixel,
-        dbscan_eps = dbscan_eps,
-        dbscan_minPts = dbscan_minPts,
-        frgmt_threshold = frgmt_threshold,
-        verbose = verbose
+    for(i in base::seq_along(img_name)){
+
+      hist_img <- getHistoImage(object, img_name = img_name[i])
+
+      hist_img <-
+        identifyPixelContent(
+          object = hist_img,
+          percentile = percentile,
+          compactness_factor = compactness_factor,
+          superpixel = superpixel,
+          dbscan_eps = dbscan_eps,
+          dbscan_minPts = dbscan_minPts,
+          frgmt_threshold = frgmt_threshold,
+          verbose = verbose
         )
 
-    object <- setHistoImage(object, hist_img = hist_img)
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
 
     return(object)
 
@@ -6404,6 +6444,12 @@ setMethod(
                         dbscan_minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
+
+    if(!containsImage(object)){
+
+      object <- loadImage(object)
+
+      }
 
     pxl_df_out <-
       identifyPixelContent(
@@ -6720,6 +6766,9 @@ setMethod(
 #' @inherit dbscan::dbscan params
 #' @inherit update_dummy return
 #'
+#' @details If `img_name` specifies multiple images, the function
+#' iterates over all of them.
+#'
 #' @note Requires results of [`identifyPixelContent()`]
 #'
 #' @seealso [excludeArtefacts()], [`excludeTissueFragments()`],
@@ -6746,17 +6795,10 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    # 1. run identifyTissueOutline on image
-
     imaging <- getHistoImaging(object)
 
-    if(!containsTissueOutline(imaging, img_name = img_name)){
+    imaging <- identifyTissueOutline(imaging, img_name = img_name)
 
-      imaging <- identifyTissueOutline(imaging, img_name = img_name)
-
-    }
-
-    # return spata object
     object <- setHistoImaging(object, imaging = imaging)
 
     return(object)
@@ -6771,14 +6813,25 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object, img_name, verbose = TRUE){
 
-    hi <-
-      getHistoImage(object, img_name = img_name) %>%
-      identifyTissueOutline(
-        object = .,
-        verbose = verbose
-      )
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
 
-    object <- setHistoImage(object, hist_img = hi)
+    purrr::walk(
+      .x = img_name,
+      .f = ~containsPixelContent(object, img_name = .x, error = TRUE)
+    )
+
+    for(i in base::seq_along(img_name)){
+
+      hist_img <- getHistoImage(object, img_name = img_name[i])
+
+      hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
 
     return(object)
 
@@ -7537,7 +7590,7 @@ setMethod(
                         yrange = NULL,
                         ...){
 
-    layer_coord_equal <- ggplot2::coord_equal(expand = FALSE)
+    layer_coord_equal <- ggplot2::coord_equal(expand = TRUE)
     layer_coord_equal$default <- TRUE
 
     out <-
@@ -7834,17 +7887,17 @@ setMethod(
 
             }
 
-            obj_plot <- getHistoImageActive(object)
+            hist_img <- getHistoImageActive(object)
 
           } else if(name == ref_name) {
 
             title_add <- "(Reference Image)"
 
-            obj_plot <- getHistoImageRef(object)
+            hist_img <- getHistoImageRef(object)
 
           } else {
 
-            obj_plot <- getHistoImage(object, img_name = name)
+            hist_img <- getHistoImage(object, img_name = name)
 
             title_add <- ""
 
@@ -7852,9 +7905,9 @@ setMethod(
 
           if(base::isTRUE(alignment_eval)){
 
-            if(base::isTRUE(obj_plot@aligned) & base::isTRUE(transform)){
+            if(base::isTRUE(hist_img@aligned) & base::isTRUE(transform)){
 
-              ares <- base::round(obj_plot@overlap[[2]], digits = 2)*100
+              ares <- base::round(hist_img@overlap[[2]], digits = 2)*100
 
               title_add <- stringr::str_c(title_add, " - Aligned (", ares, "%)")
 
@@ -7870,12 +7923,12 @@ setMethod(
 
           }
 
-          title <- stringr::str_c(obj_plot@name, " ", title_add)
+          title <- stringr::str_c(hist_img@name, " ", title_add)
 
           p <-
             ggplot2::ggplot() +
             theme_image() +
-            ggplot2::coord_equal() +
+            ggplot2::coord_equal(expand = FALSE) +
             ggplot2::labs(subtitle = title, x = NULL, y = NULL)
 
           transform_checked <- transform | name == ref_name
@@ -7887,7 +7940,7 @@ setMethod(
             p <-
               p +
               ggpLayerImage(
-                object = obj_plot,
+                object = hist_img,
                 transform = transform_checked,
                 img_alpha = img_alpha
                 )
@@ -7897,18 +7950,18 @@ setMethod(
           # second add reference outline in specified color
           if(base::isTRUE(outline_ref)){
 
-            obj_ref <- getHistoImageRef(object)
+            hist_img_ref <- getHistoImageRef(object)
 
             scale_fct <-
               compute_img_scale_fct(
-                hist_img1 = obj_ref,
-                hist_img2 = obj_plot
+                hist_img1 = hist_img_ref,
+                hist_img2 = hist_img
               )
 
             p <-
               p +
               ggpLayerTissueOutline(
-                object = obj_ref,
+                object = hist_img_ref,
                 by_section = by_section,
                 fragments = fragments,
                 line_alpha = line_alpha_ref,
@@ -7927,7 +7980,7 @@ setMethod(
             p <-
               p +
               ggpLayerTissueOutline(
-                object = obj_plot,
+                object = hist_img,
                 by_section = by_section,
                 fragments = fragments,
                 line_alpha = line_alpha,
@@ -7981,6 +8034,35 @@ setGeneric(name = "plotPixelContent", def = function(object, ...){
 
 })
 
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotPixelContent",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        clrp = "sifre",
+                        clr_bg = "white",
+                        clr_fragments = "red",
+                        clr_tissue = "forestgreen",
+                        clr_artefact = "blue",
+                        type = FALSE,
+                        clrp_adjust = NULL){
+
+    getHistoImaging(object) %>%
+      plotPixelContent(
+        object = .,
+        img_name = img_name,
+        clrp = clrp,
+        clr_bg = clr_bg,
+        clr_fragments = clr_fragments,
+        clr_artefact = clr_artefact,
+        type = type,
+        clrp_adjust = clrp_adjust
+      )
+
+  }
+)
 
 #' @rdname plotImageMask
 #' @export
@@ -7988,6 +8070,7 @@ setMethod(
   f = "plotPixelContent",
   signature = "HistoImaging",
   definition = function(object,
+                        img_name = NULL,
                         clrp = "sifre",
                         clr_bg = "white",
                         clr_fragments = "red",
@@ -8300,7 +8383,7 @@ setMethod(
       against = getImageNames(object)
     )
 
-    if(img_name == imaging@name_img_ref){
+    if(img_name == object@name_img_ref){
 
       stop("Removing the reference image is not allowed.")
 
@@ -8490,6 +8573,21 @@ setMethod(
 
 # -> convert to containsTissueOutline
 
+tissue_sections_identified <- function(object, error = FALSE){
+
+  coords_df <- getCoordsDf(object)
+
+  out <- "section" %in% base::colnames(coords_df)
+
+  feedback_missing(
+    x = out,
+    use_fn = "identifyTissueSections",
+    error = error
+  )
+
+  return(out)
+
+}
 
 #' @rdname tissueOutlineIdentified
 #' @export
@@ -8504,15 +8602,7 @@ setGeneric(name = "tissueSectionsIdentified", def = function(object, ...){
 setMethod(
   f = "tissueSectionsIdentified",
   signature = "spata2",
-  definition = function(object){
-
-    coords_df <- getCoordsDf(object)
-
-    out <- "section" %in% base::colnames(coords_df)
-
-    return(out)
-
-  }
+  definition = tissue_sections_identified
 )
 
 #' @rdname tissueOutlineIdentified
@@ -8520,21 +8610,7 @@ setMethod(
 setMethod(
   f = "tissueSectionsIdentified",
   signature = "HistoImaging",
-  definition = function(object, error = FALSE){
-
-    coords_df <- getCoordsDf(object)
-
-    out <- "section" %in% base::colnames(coords_df)
-
-    if(base::isFALSE(out) & base::isTRUE(error)){
-
-      stop("Tissue sections have not been identified yet.")
-
-    }
-
-    return(out)
-
-  }
+  definition = tissue_sections_identified
 )
 
 #' @title Transform image
@@ -8554,10 +8630,13 @@ transform_image <- function(image, transformations){
 
   if(transformations$angle != 0){
 
+    # apply flipped due to visualization of image in x-/y-space (not image space)
+    angle <- 360 - transformations$angle
+
     image <-
       EBImage::rotate(
         x = image,
-        angle = transformations$angle,
+        angle = angle,
         output.dim = base::dim(image)[c(1,2)],
         bg.col = bg_col
       )

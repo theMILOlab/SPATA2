@@ -37,6 +37,10 @@ results.
 Identifies the outline of each tissue section on the image
 as well as the outline of the whole tissue.
 }
+\details{
+If \code{img_name} specifies multiple images, the function
+iterates over all of them.
+}
 \note{
 Requires results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}
 }

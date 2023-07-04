@@ -32,6 +32,21 @@ feedback_distance_input <- function(x, error = TRUE){
 }
 
 #' @keywords internal
+feedback_missing <- function(x, use_fn, error){
+
+  if(base::isFALSE(x) & base::isTRUE(error)){
+
+    stop(
+      glue::glue(
+        "Required content is missing. Please run `{use_fn}()` on your object."
+      )
+    )
+
+  }
+
+}
+
+#' @keywords internal
 feedback_expand_input <- function(x, error = TRUE){
 
   feedback_pos(x = x, error = error, ref_input = "expand", ref_info = "`?process_ranges`")

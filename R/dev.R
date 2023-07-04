@@ -478,6 +478,7 @@ processWithSeurat <- function(object,
       verbose = verbose
     )
 
+  # set content
   object <-
     setScaledMatrix(
       object = object,

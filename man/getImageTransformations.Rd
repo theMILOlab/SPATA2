@@ -2,11 +2,14 @@
 % Please edit documentation in R/devImaging.R
 \name{getImageTransformations}
 \alias{getImageTransformations}
+\alias{getImageTransformations,spata2-method}
 \alias{getImageTransformations,HistoImaging-method}
 \alias{getImageTransformations,HistoImage-method}
 \title{Obtain image transformation instructions}
 \usage{
 getImageTransformations(object, ...)
+
+\S4method{getImageTransformations}{spata2}(object, img_name = NULL, ...)
 
 \S4method{getImageTransformations}{HistoImaging}(object, img_name = NULL, ...)
 
