@@ -2,9 +2,15 @@
 % Please edit documentation in R/devImaging.R
 \name{activeImage}
 \alias{activeImage}
+\alias{activeImage,spata2-method}
+\alias{activeImage,HistoImaging-method}
 \title{Obtain name of active content}
 \usage{
-activeImage(object)
+activeImage(object, ...)
+
+\S4method{activeImage}{spata2}(object)
+
+\S4method{activeImage}{HistoImaging}(object)
 }
 \arguments{
 \item{object}{An object that contains activated aspects such as

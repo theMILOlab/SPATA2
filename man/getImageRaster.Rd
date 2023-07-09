@@ -11,6 +11,7 @@ getImageRaster(object, ...)
 
 \S4method{getImageRaster}{spata2}(
   object,
+  img_name = NULL,
   transform = TRUE,
   xrange = NULL,
   yrange = NULL,
@@ -26,6 +27,9 @@ getImageRasterInfo(object, xrange = NULL, yrange = NULL)
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.

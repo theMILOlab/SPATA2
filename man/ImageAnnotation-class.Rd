@@ -35,21 +35,8 @@ or \code{getImageAnnotations()}.}
 \item{\code{info}}{list. Stores meta data and miscellaneous information regarding the
 image annotation. Slots that should always exist:
 \itemize{
-\item{parent_origin:}{ Character string. Content from slot @info$origin of the \code{HistologyImaging}
-object the annotation belongs to. Identifies the exact image on which the annotation was drawn in.}
-\item{parent_id:}{ Character string. Content from slot @id of the \code{HistologyImaging}
-object the annotation belongs to. Identifies the \code{HistologyImaging} object (the tissue) the annotation
-belongs to.}
-\item{current_dim:}{ Numeric vector of length two. Width and height of the image
-the @area data.frame is currently scaled to. Used to scale the @area data.frame
-if the image annotation is extracted and added to a \code{spata2} object with different image resolution.}
-\item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
-@area data.frame if the image annotation is extracted and added to a \code{spata2} object with
-different justifications.
-\itemize{
-\item{\emph{angle}:}{ Numeric value that ranges from 0-359.}
-\item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}.}
-}}
+\item{parent_name:}{ Character string. Content from slot @name of the \code{HistoImage}
+object that contains the image the annotation was drawn on.}
 }}
 
 \item{\code{misc}}{list. A flexible list for miscellaneous input.}
@@ -58,12 +45,8 @@ different justifications.
 to group and select image annotations in different manners.}
 }}
 
-\section{Image annotation tags}{
+\section{Selection of image annotations with tags}{
 
-Slot @tags contains a character vector of arbitrary length that allows
-to filter image annotations using a combination of arguments \code{tags} and
-\code{test} in functions that refer to one or more image annotations like
-\code{getImageAnnotations()} or \code{plotImageAnnotations()}.
 
 Input for argument \code{tags} specifies the tags of interest.
 Argument \code{test} decides about how the specified tags are used to select
@@ -81,7 +64,10 @@ annotation must \strong{not} be tagged with the combination of input tags.
 must \strong{not} contain any of the input tags.
 }
 
-Note that the filtering process happens in addition to / after the filtering by input for argument
-\code{ids}.
+Note that the filtering process happens after the filtering by input for argument
+\code{ids}. You can first select a group of image annotations by naming their IDs
+and then select among them via tags and test. If \code{ids} is \code{NULL}, you select
+among all image annotations via tags and test. And if \code{tags} is also \code{NULL},
+the function uses all image annoations.
 }
 

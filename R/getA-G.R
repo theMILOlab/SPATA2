@@ -200,7 +200,8 @@ getBarcodes <- function(object,
 #' polygon. Works closely with `sp::point.in.polygon()`.
 #'
 #' @param polygon_df A data.frame that contains the vertices of the polygon
-#' in form of two variables: *x* and *y*.
+#' in form of two variables: *x* and *y*. Must be scaled to the dimensions
+#' of the currently active image.
 #'
 #' @param polygon_list  A named list of data.frames with the numeric variables x and y.
 #' Observations correspond to the vertices of the polygons that confine spatial areas.

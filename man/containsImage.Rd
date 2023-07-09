@@ -3,20 +3,29 @@
 \name{containsImage}
 \alias{containsImage}
 \alias{containsImage,spata2-method}
+\alias{containsImage,ImageAnnotation-method}
 \alias{containsImage,HistoImage-method}
 \title{Check availability of an image}
 \usage{
 containsImage(object, ...)
 
-\S4method{containsImage}{spata2}(object)
+\S4method{containsImage}{spata2}(object, img_name = NULL, error = FALSE)
 
-\S4method{containsImage}{HistoImage}(object)
+\S4method{containsImage}{ImageAnnotation}(object, error = FALSE)
+
+\S4method{containsImage}{HistoImage}(object, error = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{error}{Logical. If \code{TRUE} and the input is invalid the
+function throws an error.}
 }
 \value{
 Logical value.

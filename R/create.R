@@ -882,7 +882,6 @@ createImageAnnotations <- function(object, ...){
           })
 
           # reactive expressions
-
           annotation_plot <- shiny::eventReactive(c(input$update_plot, input$display_mode, input$ncol, input$nrow), {
 
             shiny::validate(
@@ -899,8 +898,8 @@ createImageAnnotations <- function(object, ...){
 
             if(input$display_mode == "Surface"){
 
-              plotImageGgplot(object = spata_object()) +
-                ggpLayerImgAnnBorder(
+              plotImage(object = spata_object()) +
+                ggpLayerImgAnnOutline(
                   object = spata_object(),
                   ids = input$img_ann_ids,
                   display_color = FALSE,
@@ -911,7 +910,6 @@ createImageAnnotations <- function(object, ...){
             } else { # = One by one
 
               expand <- check_expand_shiny(input$expand)
-
 
               plotImageAnnotations(
                 object = spata_object(),
@@ -1041,17 +1039,23 @@ createImageAnnotations <- function(object, ...){
 
             if(input$test == "ignore"){
 
-              getImageAnnotationIds(object = spata_object())
+              getImgAnnIds(object = spata_object())
 
             } else {
 
-              getImageAnnotationIds(
+              getImgAnnIds(
                 object = spata_object(),
                 tags = input$tags_select,
                 test = input$test
               )
 
             }
+
+          })
+
+          img_name <- shiny::reactive({
+
+            activeImage(spata_object())
 
           })
 
@@ -1110,8 +1114,10 @@ createImageAnnotations <- function(object, ...){
               ggplot2::theme(
                 plot.margin = ggplot2::unit(x = mai_vec, units = "inches")
               ) +
-              ggplot2::scale_x_continuous(limits = default_ranges()$x) +
-              ggplot2::scale_y_continuous(limits = default_ranges()$y)
+              ggplot2::coord_equal(
+                xlim = default_ranges()$x,
+                ylim = default_ranges()$y
+              )
 
           })
 
@@ -1442,7 +1448,7 @@ createImageAnnotations <- function(object, ...){
               )
 
               checkpoint(
-                evaluate = !id %in% getImageAnnotationIds(spata_object()),
+                evaluate = !id %in% getImgAnnIds(spata_object()),
                 case_false = "name_in_use"
               )
 
@@ -1458,14 +1464,13 @@ createImageAnnotations <- function(object, ...){
 
             for(i in 1:n_img_anns()){
 
-             assign(x = "img_ann_list", value = img_ann_list[[i]], envir = .GlobalEnv)
-
               object <-
                 addImageAnnotation(
                   object = object,
                   tags = input$tags,
                   area = img_ann_list[[i]],
-                  id = id
+                  id = id,
+                  parent_name = img_name()
                 )
 
             }
@@ -1473,7 +1478,10 @@ createImageAnnotations <- function(object, ...){
             ref1 <- n_img_anns()
             ref2 <- base::ifelse(ref1 == 1, "annotation", "annotations")
 
-            give_feedback(msg = glue::glue("Added {ref1} {ref2}."), in.shiny = TRUE)
+            give_feedback(
+              msg = glue::glue("Added {ref1} {ref2}."),
+              verbose = TRUE
+              )
 
             img_anns(list())
 
@@ -2970,8 +2978,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
                 lst = segment(),
                 plg = polygon_df(),
                 allow_intersect = FALSE,
-                with.time = FALSE,
-                in.shiny = TRUE
+                with.time = FALSE
               ) %>%
               segment()
 

@@ -21,11 +21,28 @@
 #' @slot fiducial_frame list. List of length two, named *x* and *y*.
 #' Provides standardized measures of the sample image (in SI units).
 #' @slot info list. List of miscellaneous meta data for the method.
-#' @slot method_specific list. List method specific data.
+#' @slot method_specific list. List method specific data. Depending on the
+#' method the following slot names are reserved. See section *Method specifics:*
+#' for more information.
 #' @slot name character. The name of the spatial method. (E.g. *'Visium'*)
 #' @slot observational_unit character. Name with which to refer to
 #' the entity the method focuses on. (E.g. *'barcode_spot'*)
 #' @slot unit character. The SI to be used by default.
+#'
+#' @section Method specifics:
+#' Slot @@method_specific contains a versatile list of information around
+#' specific methods. Depending on the type several slots are reserved/should
+#' be set:
+#'
+#' For methods of type Visium (currently known *VisiumSmall* and *VisiumLarge*):
+#'
+#'  \itemize{
+#'   \item{*ccd*:}{ Center to center distance as a spatial distance measure in SI units.}
+#'   \item{*spot_size*:} {Spot size used to ensure that the size of spots is plotted in a way that
+#'   their borders align perfectly when visualizing them via `ggplot2::geom_point()`.}
+#'  }
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @export
 SpatialMethod <- setClass(Class = "SpatialMethod",
@@ -88,6 +105,7 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' in the `HistoImaging` object can be the active at a time.
 #' @slot aligned logical. If `TRUE`, indicates that the image was aligned to
 #' the reference image.
+#' @slot bg_color character. The color of the background.
 #' @slot dir character. The directory from where to load the image if slot @@image is empty.
 #' @slot image Image. The image stored as class `Image` from the package `EBImage`.
 #' @slot image_info list. A list of miscellaneous slots that carrie information
@@ -121,9 +139,6 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #'   ensuring alignment with the image.}
 #'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It should have an
 #'   attribute called "unit" conforming to the format "SI-unit/px".}
-#'   \item{*spot*:} {Spot scale factor used to ensure that the size of spots is plotted in a way that
-#'   their borders align perfectly. This scale factor is specifically applicable when working
-#'   with experiments that involve a fixed grid of spots, such as "Visium" or "SlideSeq".}
 #' }
 #'
 #' @slot transformations list. List of transformations to apply while extracting
@@ -132,9 +147,11 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' \itemize{
 #'  \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
 #'  by which the image needs to be rotated in **clockwise** direction. Defaults to 0.}
-#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*. Both default to `FALSE`}
-#'  \item{*scale*:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
-#'  \item{*translate*:}{ Vector of two numeric values named *horizontal* and *vertical*. Indicate
+#'  \item{*flip*:}{ List of two logical values named *horizontal* and *vertical*. Indicate
+#'  if the image is supposed to be flipped around either axis. Both default to `FALSE`}
+#'  \item{*stretch*:}{ List of two numerical values named *horizontal* and *vertical* serving as scale factors
+#'   with which to stretch the respective axis. Both default to 1.}
+#'  \item{*translate*:}{ List of two numeric values named *horizontal* and *vertical*. Indicate
 #'  the number of pixels the image needs to be translated. Positive values shift the image
 #'  **downwards** or to the right, respectively. Negative values shift the image **upwards**
 #'  or to the left, respectively. Both default to 0.}
@@ -145,6 +162,7 @@ HistoImage <- setClass(Class = "HistoImage",
                        slots = list(
                          active = "logical",
                          aligned = "logical",
+                         bg_color = "character",
                          dir = "character",
                          image = "Image",
                          image_info = "list",
@@ -220,53 +238,14 @@ HistoImaging <- setClass(Class = "HistoImaging",
 #' @slot info list. Stores meta data and miscellaneous information regarding the
 #' image annotation. Slots that should always exist:
 #' \itemize{
-#'  \item{parent_origin:}{ Character string. Content from slot @@info$origin of the `HistologyImaging`
-#'  object the annotation belongs to. Identifies the exact image on which the annotation was drawn in.}
-#'  \item{parent_id:}{ Character string. Content from slot @@id of the `HistologyImaging`
-#'  object the annotation belongs to. Identifies the `HistologyImaging` object (the tissue) the annotation
-#'  belongs to.}
-#'  \item{current_dim:}{ Numeric vector of length two. Width and height of the image
-#'  the @@area data.frame is currently scaled to. Used to scale the @@area data.frame
-#'  if the image annotation is extracted and added to a `spata2` object with different image resolution.}
-#'  \item{current_just:}{ List of two slots that track justification changes. Is used to readjust the
-#'  @@area data.frame if the image annotation is extracted and added to a `spata2` object with
-#'  different justifications.
-#'    \itemize{
-#'     \item{*angle*:}{ Numeric value that ranges from 0-359.}
-#'     \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
-#'   }}
-#'  }
+#'  \item{parent_name:}{ Character string. Content from slot @@name of the `HistoImage`
+#'  object that contains the image the annotation was drawn on.}
+#' }
 #' @slot misc list. A flexible list for miscellaneous input.
 #' @slot tags character. Vector of arbitrary length. Contains tags that can be used
 #' to group and select image annotations in different manners.
 #'
-#' @section Image annotation tags:
-#' Slot @@tags contains a character vector of arbitrary length that allows
-#' to filter image annotations using a combination of arguments `tags` and
-#' `test` in functions that refer to one or more image annotations like
-#' `getImageAnnotations()` or `plotImageAnnotations()`.
-#'
-#' Input for argument \code{tags} specifies the tags of interest.
-#' Argument \code{test} decides about how the specified tags are used to select
-#' the image annotations of interest. There are multiple options:
-#'
-#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-#' must be tagged with at least one of the input tags.
-#'
-#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can contain tags that are not specified.
-#'
-#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can not be tagged with anything else.
-#'
-#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
-#' annotation must **not** be tagged with the combination of input tags.
-#'
-#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
-#' must **not** contain any of the input tags.
-#'
-#' Note that the filtering process happens in addition to / after the filtering by input for argument
-#' \code{ids}.
+#' @inheritSection section_dummy Selection of image annotations with tags
 #'
 #' @export
 #'
@@ -839,15 +818,14 @@ default_instructions <- setClass(Class = "default_instructions",
 SPATA2 <- setClass(Class = "SPATA2",
                    slots = list(
                      assays = "list",
-                     cnv = "list",
-                     coordinates = "data.frame",
+                     commands = "data.frame",
                      compatibility = "list",
+                     coordinates = "data.frame",
                      fdata = "data.frame",
                      images = "HistoImaging",
                      information = "list",
                      meta = "list",
                      method = "SpatialMethod",
-                     process = "data.frame",
                      sample = "character",
                      spatial = "list",
                      gene_sets = "list",
@@ -863,6 +841,19 @@ Assay <- setClass(Class = "Assay",
                     stats = "data.frame"
                   ))
 
+
+AssayRNA <- setClass(Class = "AssayRNA",
+                     contains = "Assay",
+                     slots = list(
+                       "cnv" = "list",
+                       "dea" = "list",
+                       "gsea" = "list"
+                     ))
+
+AssayProteom <- setClass(Class = "AssayProteom",
+                         contains = "Assay",
+                         slots = list()
+                         )
 
 
 

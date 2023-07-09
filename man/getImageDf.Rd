@@ -5,6 +5,7 @@
 \alias{getImageDf,spata2-method}
 \alias{getImageDf,HistoImaging-method}
 \alias{getImageDf,HistoImage-method}
+\alias{getImageDf,ImageAnnotation-method}
 \alias{getImageDf,Image-method}
 \title{Obtain image as a data.frame}
 \usage{
@@ -16,6 +17,8 @@ getImageDf(object, ...)
 
 \S4method{getImageDf}{HistoImage}(object, transform = TRUE, scale_fct = 1)
 
+\S4method{getImageDf}{ImageAnnotation}(object, rescale_axes = TRUE, scale_fct = 1)
+
 \S4method{getImageDf}{Image}(object, scale_fct = 1)
 }
 \arguments{
@@ -26,6 +29,12 @@ objects of classes for which a method has been defined.}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{rescale_axes}{Logical value. If \code{TRUE}, rescales the pixel positions
+(height/width) to the position in the original image.
+
+The image annotation contains a crop of the original image that only shows
+the area of the image annotation (plus \code{expand}, see \code{\link[=getImageAnnotation]{getImageAnnotation()}}).}
 }
 \value{
 Data.frame with three variables.

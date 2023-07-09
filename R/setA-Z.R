@@ -744,7 +744,7 @@ setHistoImaging <- function(object, imaging){
 
 #' @rdname setHistoImaging
 #' @export
-setImageObject <- function(object, image_object){
+setImageObject <- function(object, image_object, ...){
 
   deprecated(fn = TRUE, ...)
 

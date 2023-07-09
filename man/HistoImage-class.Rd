@@ -19,6 +19,8 @@ in the \code{HistoImaging} object can be the active at a time.}
 \item{\code{aligned}}{logical. If \code{TRUE}, indicates that the image was aligned to
 the reference image.}
 
+\item{\code{bg_color}}{character. The color of the background.}
+
 \item{\code{dir}}{character. The directory from where to load the image if slot @image is empty.}
 
 \item{\code{image}}{Image. The image stored as class \code{Image} from the package \code{EBImage}.}
@@ -61,9 +63,6 @@ multiple functionalities. Reserved slot names:
 ensuring alignment with the image.}
 \item{\emph{pixel}:} {Pixel scale factor used to convert pixel values into SI units. It should have an
 attribute called "unit" conforming to the format "SI-unit/px".}
-\item{\emph{spot}:} {Spot scale factor used to ensure that the size of spots is plotted in a way that
-their borders align perfectly. This scale factor is specifically applicable when working
-with experiments that involve a fixed grid of spots, such as "Visium" or "SlideSeq".}
 }}
 
 \item{\code{transformations}}{list. List of transformations to apply while extracting
@@ -72,9 +71,11 @@ no transformation is applied.
 \itemize{
 \item{\emph{angle}:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
 by which the image needs to be rotated in \strong{clockwise} direction. Defaults to 0.}
-\item{\emph{flipped}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}. Both default to \code{FALSE}}
-\item{\emph{scale}:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
-\item{\emph{translate}:}{ Vector of two numeric values named \emph{horizontal} and \emph{vertical}. Indicate
+\item{\emph{flip}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}. Indicate
+if the image is supposed to be flipped around either axis. Both default to \code{FALSE}}
+\item{\emph{stretch}:}{ List of two numerical values named \emph{horizontal} and \emph{vertical} serving as scale factors
+with which to stretch the respective axis. Both default to 1.}
+\item{\emph{translate}:}{ List of two numeric values named \emph{horizontal} and \emph{vertical}. Indicate
 the number of pixels the image needs to be translated. Positive values shift the image
 \strong{downwards} or to the right, respectively. Negative values shift the image \strong{upwards}
 or to the left, respectively. Both default to 0.}

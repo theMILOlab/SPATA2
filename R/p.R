@@ -453,12 +453,14 @@ process_expand_input <- function(expand){
 
 #' @title Process input ranges
 #'
-#' @description Processes x- and y-ranges.
+#' @description Processes x- and y-ranges. The function assumes that x- and
+#' yrange are given from the perspective of a cartesian coordinate system.
 #'
 #' @param expand Parameter to adjust how the image is expanded. See section
 #' Image expansion for more information.
-#' @param persp If *image*, adjusts the logic of the function to the fact
-#' that the height of images starts on top and not on the bottom.
+#' @param persp Determines the perspective of the output. Thus, if *image*, it will flip
+#' the values of `yrange`. If *'ccs'*, the values of `yrange` are not flipped.
+#'
 #' @inherit argument_dummy params
 #'
 #' @return List of 4 slots. Named *xmin*, *xmax*, *ymin* and *ymax*. Adjusted range
@@ -466,9 +468,9 @@ process_expand_input <- function(expand){
 #' @export
 #' @keywords internal
 process_ranges <- function(xrange = getImageRange(object)$x,
-                           yrange = getImageRange(objet)$y,
+                           yrange = getImageRange(object)$y,
                            expand = 0,
-                           persp = "image",
+                           persp = "ccs",
                            object = NULL,
                            ranges = NULL){
 

@@ -69,12 +69,35 @@ nGenes <- function(object, mtr_name = NULL){
 #' @return Numeric value.
 #'
 #' @export
-nImageAnnotations <- function(object){
+setGeneric(name = "nImageAnnotations", def = function(object, ...){
 
-  getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
-    base::length()
+  standardGeneric(f = "nImageAnnotations")
 
-}
+})
+
+#' @rdname nImageAnnotations
+#' @export
+setMethod(
+  f = "nImageAnnotations",
+  signature = "spata2",
+  definition = function(object){
+
+    getHistoImaging(object) %>% nImageAnnotations()
+
+  }
+)
+
+#' @rdname nImageAnnotations
+#' @export
+setMethod(
+  f = "nImageAnnotations",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    base::length(object@annotations)
+
+  }
+)
 
 #' @export
 nImageDims <- function(object){

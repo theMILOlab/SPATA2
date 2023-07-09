@@ -6,9 +6,9 @@
 \usage{
 process_ranges(
   xrange = getImageRange(object)$x,
-  yrange = getImageRange(objet)$y,
+  yrange = getImageRange(object)$y,
   expand = 0,
-  persp = "image",
+  persp = "ccs",
   object = NULL,
   ranges = NULL
 )
@@ -28,8 +28,8 @@ for more information.}
 \item{expand}{Parameter to adjust how the image is expanded. See section
 Image expansion for more information.}
 
-\item{persp}{If \emph{image}, adjusts the logic of the function to the fact
-that the height of images starts on top and not on the bottom.}
+\item{persp}{Determines the perspective of the output. Thus, if \emph{image}, it will flip
+the values of \code{yrange}. If \emph{'ccs'}, the values of \code{yrange} are not flipped.}
 
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
@@ -39,6 +39,7 @@ List of 4 slots. Named \emph{xmin}, \emph{xmax}, \emph{ymin} and \emph{ymax}. Ad
 in pixel.
 }
 \description{
-Processes x- and y-ranges.
+Processes x- and y-ranges. The function assumes that x- and
+yrange are given from the perspective of a cartesian coordinate system.
 }
 \keyword{internal}

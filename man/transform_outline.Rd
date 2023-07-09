@@ -2,19 +2,19 @@
 % Please edit documentation in R/devImaging.R
 \name{transform_outline}
 \alias{transform_outline}
-\title{Transform image}
+\title{Transform outline}
 \usage{
 transform_outline(outline_df, transformations, center, ranges)
 }
 \arguments{
+\item{outline_df}{Data.frame with x- and y-coordinates.}
+
 \item{transformations}{List of transformation instructions. See
 slot @transformations of class \code{HistoImage}.}
-
-\item{image}{Image comptabible with the \code{EBImage}-package.}
 }
 \value{
 Transformed input.
 }
 \description{
-Transforms the image or the tissue outline.
+Transforms tissue outline.
 }

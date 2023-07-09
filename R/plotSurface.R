@@ -245,8 +245,21 @@ setMethod(
 
     }
 
+    if(base::isTRUE(display_image)){
+
+      image_add_on <- ggpLayerImage(object)
+
+    } else {
+
+      image_add_on <- NULL
+
+    }
+
+    coords_add_on <- ggplot2::coord_equal()
+    coords_add_on$default <- TRUE
+
     ggplot2::ggplot(data = coords_df) +
-      hlpr_image_add_on(object, display_image = display_image) +
+      image_add_on +
       point_add_on +
       scale_color_add_on(
         aes = "color",
@@ -256,8 +269,8 @@ setMethod(
         clrp.adjust = clrp_adjust,
         ...
       ) +
-      ggplot2::coord_equal() +
       ggplot2::theme_void() +
+      coords_add_on +
       size_add_on
 
 
@@ -338,6 +351,9 @@ setMethod(
 
     }
 
+    coords_add_on <- ggplot2::coord_equal()
+    coords_add_on$default <- TRUE
+
     ggplot2::ggplot(data = coords_df) +
       hlpr_image_add_on2(image) +
       point_add_on +
@@ -353,7 +369,7 @@ setMethod(
         panel.grid = ggplot2::element_blank()
       ) +
       ggplot2::labs(x = NULL, y = NULL) +
-      ggplot2::coord_equal()
+      coords_add_on
 
     # -----
 
@@ -466,8 +482,18 @@ plotSurfaceAverage <- function(object,
 
   }
 
+  if(base::isTRUE(display_image)){
+
+    image_add_on <- ggpLayerImage(object = object)
+
+  } else {
+
+    image_add_on <- NULL
+
+  }
+
   ggplot2::ggplot(plot_df, mapping = mapping) +
-    hlpr_image_add_on(object, display_image = display_image) +
+    image_add_on +
     point_add_on +
     ggplot2::theme_void() +
     ggplot2::facet_wrap(. ~ name) +

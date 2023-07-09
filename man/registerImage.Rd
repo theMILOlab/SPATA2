@@ -11,9 +11,23 @@
 \usage{
 registerImage(object, ...)
 
-\S4method{registerImage}{spata2}(object, dir, img_name, unload = TRUE, verbose = TRUE)
+\S4method{registerImage}{spata2}(
+  object,
+  dir,
+  img_name,
+  unload = TRUE,
+  process = FALSE,
+  verbose = TRUE
+)
 
-\S4method{registerImage}{HistoImaging}(object, dir, img_name, unload = FALSE, verbose = TRUE)
+\S4method{registerImage}{HistoImaging}(
+  object,
+  dir,
+  img_name,
+  unload = FALSE,
+  process = FALSE,
+  verbose = TRUE
+)
 
 removeImage(object, ...)
 

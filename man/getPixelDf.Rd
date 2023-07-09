@@ -12,6 +12,7 @@ getPixelDf(object, ...)
 
 \S4method{getPixelDf}{spata2}(
   object,
+  img_name = NULL,
   colors = FALSE,
   hex_code = FALSE,
   content = FALSE,
@@ -63,6 +64,9 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
 \item{colors}{Logical value. If \code{TRUE}, adds all colors from the image
 as variables named \emph{col1}-\emph{col.n} where n is the number of colors.}
 
@@ -76,9 +80,6 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units. See info section \emph{Distance measures}
 for more information.}
-
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
 
 \item{tissue}{Logical value. If \code{TRUE}, adds a variable called \emph{pxl_group}
 that indicates whether the pixel is placed on a contiguous tissue section, on

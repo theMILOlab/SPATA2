@@ -14,7 +14,8 @@ getBarcodesInPolygonList(object, polygon_list, strictly = TRUE)
 objects of classes for which a method has been defined.}
 
 \item{polygon_df}{A data.frame that contains the vertices of the polygon
-in form of two variables: \emph{x} and \emph{y}.}
+in form of two variables: \emph{x} and \emph{y}. Must be scaled to the dimensions
+of the currently active image.}
 
 \item{strictly}{Logical value. If \code{TRUE}, only barcode spots that are strictly
 interior to the polygon are returned. If \code{FALSE}, barcodes that are

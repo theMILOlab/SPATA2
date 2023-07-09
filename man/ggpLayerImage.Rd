@@ -5,6 +5,7 @@
 \alias{ggpLayerImage,spata2-method}
 \alias{ggpLayerImage,HistoImaging-method}
 \alias{ggpLayerImage,HistoImage-method}
+\alias{ggpLayerImage,ImageAnnotation-method}
 \alias{ggpLayerImage,Image-method}
 \alias{ggpLayerImage,data.frame-method}
 \title{Add histology image}
@@ -30,6 +31,8 @@ ggpLayerImage(object, ...)
 )
 
 \S4method{ggpLayerImage}{HistoImage}(object, transform = TRUE, scale_fct = 1, img_alpha = 1, ...)
+
+\S4method{ggpLayerImage}{ImageAnnotation}(object, img_alpha = 1, rescale_axes = TRUE, scale_fct = 1, ...)
 
 \S4method{ggpLayerImage}{Image}(object, scale_fct = 1, img_alpha = 1, ...)
 

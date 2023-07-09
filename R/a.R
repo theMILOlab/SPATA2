@@ -1,3 +1,33 @@
+
+
+
+affineSliderInput <- function(inputId, value){
+
+  shiny::sliderInput(
+    inputId = inputId,
+    label = base::toupper(inputId),
+    value = value,
+    min = 0.5,
+    max = 1.5,
+    step = 0.001
+  )
+
+}
+
+affineNumInput <- function(inputId, value){
+
+  shiny::numericInput(
+    inputId = inputId,
+    label = base::toupper(inputId),
+    value = value,
+    min = -10,
+    max = 10,
+    step = 0.001
+  )
+
+}
+
+
 #' @title Test area or distance input
 #'
 #' @description Tests if input can be safely converted to distance

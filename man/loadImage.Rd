@@ -6,6 +6,7 @@
 \alias{loadImage,HistoImaging-method}
 \alias{loadImage,HistoImage-method}
 \alias{loadImages}
+\alias{loadImages,spata2-method}
 \alias{loadImages,HistoImaging-method}
 \title{Load image}
 \usage{
@@ -18,6 +19,8 @@ loadImage(object, ...)
 \S4method{loadImage}{HistoImage}(object, verbose = TRUE)
 
 loadImages(object, ...)
+
+\S4method{loadImages}{spata2}(object, verbose = TRUE, force = FALSE)
 
 \S4method{loadImages}{HistoImaging}(object, verbose = TRUE, force = FALSE)
 }

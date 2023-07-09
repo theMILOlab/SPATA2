@@ -894,64 +894,111 @@ addGeneSetsInteractive <- function(object){
 
 # addI --------------------------------------------------------------------
 
-#' @rdname createImageAnnotations
+#' @title Add an image annotation manually
+#'
+#' @description Adds image annotations manually by assembling the object
+#' based on the function input.
+#'
 #' @param area A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
 #' Observations correspond to the vertices of the polygons that are needed to represent the
 #' image annotation. **Must** contain a slot named *outer* which sets the outer border
 #' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
-#' with numbers that correspond to inner polygons - holes within the annotation. If so,
-#' slot @@mode should be *'Complex'*.
+#' with numbers that correspond to inner polygons - holes within the annotation.
+#' @param id Character value. The ID of the image annotation.
+#' @param parent_name Character value. The name of the image on
+#' which the annotation was drawn.
+#' @param tags A character vector of tags for the image annotation.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @export
 #'
-addImageAnnotation <- function(object, tags, area,  id = NULL){
+setGeneric(name = "addImageAnnotation", def = function(object, ...){
 
-  if(base::is.character(id)){
+  standardGeneric(f = "addImageAnnotation")
 
-    confuns::check_none_of(
-      input = id,
-      against = getImgAnnIds(object),
-      ref.against = "image annotation IDs"
-    )
+})
 
-  } else {
+#' @rdname createImageAnnotations
+#' @export
+setMethod(
+  f = "addImageAnnotation",
+  signature = "spata2",
+  definition = function(object,
+                        tags,
+                        area,
+                        parent_name,
+                        id = NULL){
 
-    number <- lastImageAnnotation(object) + 1
+    imaging <- getHistoImaging(object)
 
-    id <- stringr::str_c("img_ann_", number)
-
-  }
-
-  if(!shiny::isTruthy(tags)){
-
-    tags <- "no_tags"
-
-  }
-
-  area <- purrr::map(.x = area, .f = tibble::as_tibble)
-
-  img_ann <-
-    ImageAnnotation(
-      area = area,
-      id = id,
-      tags = tags
+    imaging <-
+      addImageAnnotation(
+        object = imaging,
+        tags = tags,
+        area = area,
+        parent_name = parent_name,
+        id = id
       )
 
-  io <- getImageObject(object)
+    object <- setHistoImaging(object, imaging = imaging)
 
-  img_ann@info[["parent_id"]] <- io@id
-  img_ann@info[["parent_origin"]] <- io@image_info[["origin"]]
-  img_ann@info[["current_dim"]] <- io@image_info[["dim_stored"]][1:2]
-  img_ann@info[["current_just"]] <- io@justification
+    return(object)
 
-  io@annotations[[id]] <- img_ann
+  }
+)
 
-  object <- setImageObject(object, io)
+#' @rdname addImageAnnotation
+#' @export
+setMethod(
+  f = "addImageAnnotation",
+  signature = "HistoImaging",
+  definition = function(object,
+                        tags,
+                        area,
+                        parent_name,
+                        id = NULL){
 
-  return(object)
+    if(base::is.character(id)){
 
-}
+      confuns::check_none_of(
+        input = id,
+        against = getImgAnnIds(object),
+        ref.against = "image annotation IDs"
+      )
 
+    } else {
+
+      number <- lastImageAnnotation(object) + 1
+
+      id <- stringr::str_c("img_ann_", number)
+
+    }
+
+    if(!shiny::isTruthy(tags)){
+
+      tags <- "no_tags"
+
+    }
+
+    area <- purrr::map(.x = area, .f = tibble::as_tibble)
+
+    img_ann <-
+      ImageAnnotation(
+        area = area,
+        id = id,
+        tags = tags
+      )
+
+    img_ann@info[["parent_name"]] <- parent_name
+
+    object@annotations[[id]] <- img_ann
+
+    return(object)
+
+  }
+)
 
 #' @title Add individual image directories
 #'
@@ -977,7 +1024,7 @@ addImageDir <- function(object,
 
   hlpr_assign_arguments(object)
 
-  io <- getImageObject(object)
+  io <- getHistoImaging(object)
 
   confuns::check_none_of(
     input = name,
@@ -1303,7 +1350,7 @@ addSpatialTrajectory <- function(object,
 
   if(containsImage(object)){
 
-    io <- getImageObject(object)
+    io <- getHistoImaging(object)
 
     info <-
       list(

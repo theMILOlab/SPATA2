@@ -2,13 +2,21 @@
 % Please edit documentation in R/n.R
 \name{nImageAnnotations}
 \alias{nImageAnnotations}
+\alias{nImageAnnotations,spata2-method}
+\alias{nImageAnnotations,HistoImaging-method}
 \title{Number of image annotations}
 \usage{
-nImageAnnotations(object)
+nImageAnnotations(object, ...)
+
+\S4method{nImageAnnotations}{spata2}(object)
+
+\S4method{nImageAnnotations}{HistoImaging}(object)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Numeric value.

@@ -659,6 +659,8 @@ ggpLayerEncirclingIAS <- function(object,
 
   } else {
 
+    tissueSectionsIdentified(object, error = TRUE)
+
     out_list <-
       purrr::map(
         .x = seq_along(id),

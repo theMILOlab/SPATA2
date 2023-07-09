@@ -21,6 +21,8 @@ alignImage(object, ...)
   angle = NULL,
   flip_h = NULL,
   flip_v = NULL,
+  stretch_h = NULL,
+  stretch_v = NULL,
   transl_h = NULL,
   transl_v = NULL
 )
@@ -32,6 +34,8 @@ alignImage(object, ...)
   angle = NULL,
   flip_h = NULL,
   flip_v = NULL,
+  stretch_h = NULL,
+  stretch_v = NULL,
   transl_h = NULL,
   transl_v = NULL
 )
@@ -42,6 +46,8 @@ alignImage(object, ...)
   angle = NULL,
   flip_h = NULL,
   flip_v = NULL,
+  stretch_h = NULL,
+  stretch_v = NULL,
   transl_h = NULL,
   transl_v = NULL
 )
@@ -71,6 +77,19 @@ objects of classes for which a method has been defined.}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{angle}{Numeric value ranging between 0-359. Determines if the image
+is supposed to be rotated in \strong{clockwise} direction.}
+
+\item{flip_h, flip_v}{Logical values. Determine if the image is supposed
+to be flipped around the \strong{h}orizontal or \strong{v}ertical axis.}
+
+\item{stretch_h, stretch_v}{Numeric values. Determine if and how the image
+is supposed to be stretched along the \strong{h}orizontal or \strong{v}ertical axis.}
+
+\item{transl_h, transl_v}{Numeric values. Determine if and how the
+image is supposed to be translated along the \strong{h}horizontal or \strong{v}ertical
+axis.}
 
 \item{step}{Numeric value specifying the accuracy of the alignment
 via vertical and horizontal translation. If \code{step >= 1}, it is interpreted

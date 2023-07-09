@@ -479,6 +479,8 @@ imageAnnotationToSegmentation <- function(object,
 #' @inherit imageAnnotationScreening params
 #' @param input_df A data.frame that contains at least numeric *x* and *y*
 #' variables.
+#' @param outline_df A data.frame that contains the ouline/hull of all tissue sections.
+#' Must contain variables *x*, *y* and *section*.
 #' @inherit argument_dummy params
 #' @param ias_circles Logical value. If `TRUE`, input data.frame is assumed
 #' to contain polygon coordinates of the expanded image annotation encircling
@@ -490,6 +492,7 @@ imageAnnotationToSegmentation <- function(object,
 #' @export
 #'
 include_tissue_outline <- function(coords_df,
+                                   outline_df = NULL, # hull_df should be used by calling function!
                                    input_df,
                                    img_ann_center = NULL,
                                    ias_circles = FALSE,
@@ -504,7 +507,7 @@ include_tissue_outline <- function(coords_df,
 
   outline_var <- "section"
 
-  if(outline_var %in% base::colnames(coords_df)){
+  if(!outline_var %in% base::colnames(coords_df)){
 
     coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
 
@@ -521,36 +524,45 @@ include_tissue_outline <- function(coords_df,
       .x = sections,
       .f = function(section){
 
-        if(opt == "concaveman"){
+        if(base::is.null(outline_df)){
 
-          df_sub <-
-            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}}) %>%
-            dplyr::select(x, y)
+          if(opt == "concaveman"){
 
-          hull_df <-
-            concaveman::concaveman(
-              points = base::as.matrix(df_sub),
-              concavity = 1
+            df_sub <-
+              dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}}) %>%
+              dplyr::select(x, y)
+
+            hull_df <-
+              concaveman::concaveman(
+                points = base::as.matrix(df_sub),
+                concavity = 1
               ) %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = c("x", "y")) %>%
-            arrange_as_polygon()
+              base::as.data.frame() %>%
+              magrittr::set_colnames(value = c("x", "y")) %>%
+              arrange_as_polygon()
 
-        } else if(opt == "chull") {
+          } else if(opt == "chull") {
 
-          df_sub <-
-            dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
+            df_sub <-
+              dplyr::filter(coords_df, !!rlang::sym(outline_var) == {{section}})
 
-          hull_points <- grDevices::chull(x = df_sub[["x"]], y = df_sub[["y"]])
-          hull_df <- df_sub[hull_points, ]
+            hull_points <- grDevices::chull(x = df_sub[["x"]], y = df_sub[["y"]])
+            hull_df <- df_sub[hull_points, ]
+
+          }
+
+          if(buffer != 0){
+
+            hull_df <- buffer_area(df = hull_df, buffer = buffer, close_plg = TRUE)
+
+          }
+
+        } else {
+
+          hull_df <- dplyr::filter(outline_df, section == {{section}})
 
         }
 
-        if(buffer != 0){
-
-          hull_df <- buffer_area(df = hull_df, buffer = buffer, close_plg = TRUE)
-
-        }
 
 
         input_df$obs_in_section <-

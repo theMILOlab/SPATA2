@@ -4,13 +4,18 @@
 \alias{getImgAnnSf}
 \title{Obtain simple feature}
 \usage{
-getImgAnnSf(object, id)
+getImgAnnSf(object, id, img_name = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{id}{Character value. The ID of the image annotation of interest.}
+
+\item{img_name}{Character value or \code{NULL}. The image to which the outline
+of the image annotation is scaled. Furthermore, if \code{add_image = TRUE}, the
+image from which a section cropped to the outline is stored in slot @image
+of the returned image annotation. If \code{NULL}, the active image is chosen.}
 }
 \value{
 An object of class \code{POLYGON} from the \code{sf} package.

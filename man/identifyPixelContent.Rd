@@ -115,7 +115,7 @@ of background pixels.}
 \item{\emph{content}:}{ character. The identified content of each pixel.}
 }
 
-Methods for S4-classes serving as containers the input object is returned with
+Methods for S4-classes serving as containers return the input object with the
 the results stored in the corresponding slots.
 }
 \description{
@@ -127,6 +127,7 @@ If \code{img_name} specifies multiple images, the function
 iterates over all of them.
 }
 \seealso{
-For subsequent image processing: \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}. For visualization
-of results: \code{\link[=plotImageMask]{plotImageMask()}}, \code{\link[=plotPixelContent]{plotPixelContent()}}
+For subsequent image processing: \code{\link[=identifyTissueOutline]{identifyTissueOutline()}},\code{\link[=identifyBackgroundColor]{identifyBackgroundColor()}}.
+For visualization of results: \code{\link[=plotImageMask]{plotImageMask()}}, \code{\link[=plotPixelContent]{plotPixelContent()}}.
+For extraction of results: \code{\link[=getPixelDf]{getPixelDf()}}.
 }

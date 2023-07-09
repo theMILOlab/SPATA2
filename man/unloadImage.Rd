@@ -5,6 +5,7 @@
 \alias{unloadImage,HistoImage-method}
 \alias{unloadImage,HistoImaging-method}
 \alias{unloadImages}
+\alias{unloadImages,spata2-method}
 \alias{unloadImages,HistoImaging-method}
 \title{Empty image slot}
 \usage{
@@ -15,6 +16,8 @@ unloadImage(object, ...)
 \S4method{unloadImage}{HistoImaging}(object, img_name, verbose = TRUE, ...)
 
 unloadImages(object, ...)
+
+\S4method{unloadImages}{spata2}(object, active = FALSE, verbose = TRUE)
 
 \S4method{unloadImages}{HistoImaging}(object, active = FALSE, verbose = TRUE)
 }

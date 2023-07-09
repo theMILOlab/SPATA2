@@ -441,7 +441,7 @@ default_image_transformations <-
   list(
     angle = 0,
     flip = list(horizontal = FALSE, vertical = FALSE),
-    scale = 1,
+    stretch = list(horizontal = 1, vertical = 1),
     translate = list(horizontal = 0, vertical = 0)
   )
 
@@ -615,9 +615,17 @@ helper_content <- list(
   resolution =
     c("Manipulate the resolution in which the image to be aligned is displayed by setting the window size (in pixel).
       Higher resolution allows for more accurate alignment at the cost of longer image rendering."),
+  rotate_dir =
+    c("Set the direction in which to apply the rotation. Either clockwise (ON) or anti-clockwise (OFF)."),
   shift_image =
     c("Adjust the image's vertical or horizontal position by clicking the corresponding arrows.
       The numeric input in the middle enables precise control over the incremental shift, measured in pixels. Decrease the value for enhanced accuracy."),
+
+  stretch =
+    c("Modify the stretching factor to adjust the scaling of the original images along their axes.
+      A factor of 1 implies no stretching, maintaining the original proportions.
+      Using factors between 0 and 1 compresses or 'squishes' the image.
+      Conversely, factors greater than 1 elongate or 'stretch' the image along the respective axes."),
   transp_img_chosen =
     c("Adjusts the transparency of the image. To view the reference image in the background (if selected from 'Reference options'),
       ensure that the value is not set to 0.")

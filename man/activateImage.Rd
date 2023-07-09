@@ -4,6 +4,9 @@
 \alias{activateImage}
 \alias{activateImage,spata2-method}
 \alias{activateImage,HistoImaging-method}
+\alias{activateImageInt}
+\alias{activateImageInt,spata2-method}
+\alias{activateImageInt,HistoImaging-method}
 \title{Activate \code{HistoImage}}
 \usage{
 activateImage(object, ...)
@@ -25,6 +28,12 @@ activateImage(object, ...)
   verbose = TRUE,
   ...
 )
+
+activateImageInt(object, ...)
+
+\S4method{activateImageInt}{spata2}(object, img_name, load = FALSE)
+
+\S4method{activateImageInt}{HistoImaging}(object, img_name, load = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -51,4 +60,9 @@ results.
 \description{
 Sets the active image of the input object which is
 then used by default in image dependent functions if argument \code{img_name = NULL}.
+}
+\note{
+\code{activateImageInt()} exists mainly for internal use. It works
+the same way \code{activateImage()} works but never unloads and is always
+silent.
 }

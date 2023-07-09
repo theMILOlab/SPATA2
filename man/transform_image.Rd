@@ -4,7 +4,7 @@
 \alias{transform_image}
 \title{Transform image}
 \usage{
-transform_image(image, transformations)
+transform_image(image, transformations, bg_col = "white")
 }
 \arguments{
 \item{image}{Image comptabible with the \code{EBImage}-package.}

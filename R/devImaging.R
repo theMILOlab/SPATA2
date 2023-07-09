@@ -17,11 +17,36 @@
 #' @return Character value.
 #' @export
 #'
-activeImage <- function(object){
+setGeneric(name = "activeImage", def = function(object, ...){
 
-  getActive(object, what = "image")
+  standardGeneric(f = "activeImage")
 
-}
+})
+
+
+#' @rdname activeImage
+#' @export
+setMethod(
+  f = "activeImage",
+  signature = "spata2",
+  definition = function(object){
+
+    getActive(object, what = "image")
+
+  }
+)
+
+#' @rdname activeImage
+#' @export
+setMethod(
+  f = "activeImage",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    getHistoImageActive(object)@name
+
+  }
+)
 
 #' @title Activate `HistoImage`
 #'
@@ -34,6 +59,10 @@ activeImage <- function(object){
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @note `activateImageInt()` exists mainly for internal use. It works
+#' the same way `activateImage()` works but never unloads and is always
+#' silent.
 #'
 #' @export
 #'
@@ -54,6 +83,7 @@ setMethod(
                         unload = TRUE,
                         verbose = TRUE,
                         ...){
+
     imaging <- getHistoImaging(object)
 
     imaging <-
@@ -132,6 +162,49 @@ setMethod(
   }
 )
 
+#' @rdname activateImage
+#' @export
+setGeneric(name = "activateImageInt", def = function(object, ...){
+
+  standardGeneric(f = "activateImageInt")
+
+})
+
+#' @rdname activateImage
+#' @export
+setMethod(
+  f = "activateImageInt",
+  signature = "spata2",
+  definition = function(object, img_name, load = FALSE){
+
+    activateImage(
+      object = object,
+      img_name = img_name,
+      load = load,
+      unload = FALSE,
+      verbose = FALSE
+    )
+
+  }
+)
+
+#' @rdname activateImage
+#' @export
+setMethod(
+  f = "activateImageInt",
+  signature = "HistoImaging",
+  definition = function(object, img_name, load = FALSE){
+
+    activateImage(
+      object = object,
+      img_name = img_name,
+      load = load,
+      unload = FALSE,
+      verbose = FALSE
+    )
+
+  }
+)
 
 #' @title Add object of class `HistoImage`
 #'
@@ -461,6 +534,15 @@ setMethod(
 #' 90° the saved transformation would be to rotate the image with 180°. If `FALSE`, input
 #' values are simply set. E.g. if `angle = 90` the resulting saved transformation would
 #' be to rotate the image with 90° regardless of the previous setting.
+#' @param angle Numeric value ranging between 0-359. Determines if the image
+#' is supposed to be rotated in **clockwise** direction.
+#' @param flip_h,flip_v Logical values. Determine if the image is supposed
+#' to be flipped around the **h**orizontal or **v**ertical axis.
+#' @param stretch_h,stretch_v Numeric values. Determine if and how the image
+#' is supposed to be stretched along the **h**orizontal or **v**ertical axis.
+#' @param transl_h,transl_v Numeric values. Determine if and how the
+#' image is supposed to be translated along the **h**horizontal or **v**ertical
+#' axis.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
@@ -519,6 +601,8 @@ setMethod(
                         angle = NULL,
                         flip_h = NULL,
                         flip_v = NULL,
+                        stretch_h = NULL,
+                        stretch_v = NULL,
                         transl_h = NULL,
                         transl_v = NULL){
 
@@ -532,6 +616,8 @@ setMethod(
         angle = angle,
         flip_h = flip_h,
         flip_v = flip_v,
+        stretch_h = stretch_h,
+        stretch_v = stretch_v,
         transl_h = transl_h,
         transl_v = transl_v
       )
@@ -554,6 +640,8 @@ setMethod(
                         angle = NULL,
                         flip_h = NULL,
                         flip_v = NULL,
+                        stretch_h = NULL,
+                        stretch_v = NULL,
                         transl_h = NULL,
                         transl_v = NULL){
 
@@ -564,6 +652,8 @@ setMethod(
         angle = angle,
         flip_h = flip_h,
         flip_v = flip_v,
+        stretch_h = stretch_h,
+        stretch_v = stretch_v,
         transl_h = transl_h,
         transl_v = transl_v
       )
@@ -585,6 +675,8 @@ setMethod(
                         angle = NULL,
                         flip_h = NULL,
                         flip_v = NULL,
+                        stretch_h = NULL,
+                        stretch_v = NULL,
                         transl_h = NULL,
                         transl_v = NULL){
 
@@ -623,9 +715,9 @@ setMethod(
 
     }
 
+    # flipping
     if(base::isTRUE(flip_h) | base::isFALSE(flip_h)){
 
-      # flipping
       if(opt == "add"){
 
         if(base::isTRUE(flip_h)){
@@ -687,6 +779,37 @@ setMethod(
       } else {
 
         transformations$translate$vertical <- transl_v[1]
+
+      }
+
+    }
+
+    # stretching
+    if(base::is.numeric(stretch_h)){
+
+      if(opt == "add"){
+
+        transformations$stretch$horizontal <-
+          transformations$stretch$horizontal + stretch_h[1]
+
+      } else {
+
+        transformations$stretch$horizontal <- stretch_h[1]
+
+      }
+
+    }
+
+    if(base::is.numeric(stretch_v)){
+
+      if(opt == "add"){
+
+        transformations$stretch$vertical <-
+          transformations$stretch$vertical + stretch_v[1]
+
+      } else {
+
+        transformations$stretch$vertical <- stretch_v[1]
 
       }
 
@@ -759,6 +882,8 @@ setMethod(
       ) %>%
       dplyr::select(x, y)
 
+    img_ranges <- getImageRange(hist_img1)
+
     # scale to dimensions of reference image
     scale_fct <-
       compute_img_scale_fct(
@@ -823,7 +948,10 @@ setMethod(
     # plot progress if TRUE
     if(base::isTRUE(plot_progress)){
 
-      plot.new()
+      dev.new()
+
+      graphics::par(mfrow = c(2,2))
+
       plot_polygon_overlap(
         poly1 = outline_ref,
         poly2 = centered_outline_img,
@@ -860,7 +988,7 @@ setMethod(
             axis = "horizontal",
             xvars = "x",
             yvars = "y",
-            ranges = list(x = c(1, window_size), y = c(1, window_size))
+            ranges = img_ranges
           )
 
       } else {
@@ -879,7 +1007,7 @@ setMethod(
               axis = "vertical",
               xvars = "x",
               yvars = "y",
-              ranges = list(x = c(1,window_size), y = c(1,window_size))
+              ranges = img_ranges
             )
 
         } else {
@@ -898,21 +1026,6 @@ setMethod(
         for(angle in 0:359){
 
           pb$tick()
-
-          if(FALSE){
-
-            outline_img_rot <- make_sf_polygon(outline_img_fv)
-
-            if(angle != 0){
-
-              rad <- confuns::degr2rad(degr = angle)
-
-              outline_img_rot <-
-                (make_sf_polygon(outline_img_fv) - center) * rotate_sf(x = rad) + center
-
-            }
-
-          }
 
           if(angle != 0){
 
@@ -973,7 +1086,7 @@ setMethod(
           axis = "horizontal",
           xvars = "x",
           yvars = "y",
-          ranges = list(x = c(1,window_size), y = c(1,window_size))
+          ranges = img_ranges
         )
 
     }
@@ -986,7 +1099,7 @@ setMethod(
           axis = "vertical",
           xvars = "x",
           yvars = "y",
-          ranges = list(x = c(1,window_size), y = c(1,window_size))
+          ranges = img_ranges
         )
 
     }
@@ -1009,7 +1122,6 @@ setMethod(
     # plot progress if TRUE
     if(base::isTRUE(plot_progress)){
 
-      plot.new()
       plot_polygon_overlap(
         poly1 = outline_ref,
         poly2 = oi_ft,
@@ -1022,6 +1134,12 @@ setMethod(
 
     # second run includes translation
     translation_values <- 0:((window_size/4))
+
+    if(step < 1){
+
+      step <- window_size*step
+
+    }
 
     translation_values <- reduce_vec(x = translation_values, nth = step)
 
@@ -1220,23 +1338,20 @@ setMethod(
     object@images[[name]]@transformations <-
       list(
         angle = best_eval1$rot,
+        center = list(
+          horizontal = centroid_alignment[1],
+          vertical = centroid_alignment[2]
+        ),
         flip = list(
           horizontal = best_eval1$flip_h,
           vertical = best_eval1$flip_v
         ),
         scale = 1,
-        translate = list(
-          centroid_alignment =
-            list(
-              horizontal = centroid_alignment[1],
-              vertical = -centroid_alignment[2] # images use reverse y/height axis
-            ),
-          outline_alignment =
-            list(
-              horizontal = best_eval2$transl_h/scale_fct,
-              vertical = -best_eval2$transl_v/scale_fct # images use reverse y/height axis
-            )
-        )
+        translate =
+          list(
+            horizontal = best_eval2$transl_h/scale_fct,
+            vertical = best_eval2$transl_v/scale_fct # images use reverse y/height axis
+          )
       )
 
     object@images[[name]]@aligned <- TRUE
@@ -1325,6 +1440,10 @@ setMethod(
 
           restored <- shiny::reactiveVal(value = 0)
 
+          stretch_h <- shiny::reactiveVal(value = NULL)
+
+          stretch_v <- shiny::reactiveVal(value = NULL)
+
           transl_h <- shiny::reactiveVal(value = NULL)
 
           transl_v <- shiny::reactiveVal(value = NULL)
@@ -1351,13 +1470,12 @@ setMethod(
 
             shiny::sliderInput(
               inputId = "angle_transf",
-              label = "Rotation slider:",
+              label = NULL,
               value = value,
               min = 0,
               max = 360,
               step = 0.01
-            ) %>%
-              htmlAddHelper(content = helper_content$angle_transf)
+            )
 
           })
 
@@ -1398,7 +1516,7 @@ setMethod(
             shiny::numericInput(
               inputId = "transl_step",
               label = NULL,
-              value = base::ceiling(getWindowSize(hist_img_ref)*0.005),
+              value = base::ceiling(getWindowSize(hist_img_ref)*0.05),
               min = 1,
               max = getWindowSize(hist_img_ref)*0.5,
               step = 1,
@@ -1426,6 +1544,16 @@ setMethod(
 
           # reactive expressions ----------------------------------------------------
 
+          affine_matrix <- shiny::reactive({
+
+            base::matrix(
+              data = c(input$lt, input$lb, input$lf, input$rt, input$rb, input$rf),
+              nrow = 3
+            )
+
+          })
+
+
           basic_plot <- shiny::reactive({
 
             shiny::req(zooming())
@@ -1438,6 +1566,15 @@ setMethod(
               ) +
               theme_image(bg_transparent = TRUE)
 
+
+          })
+
+          bg_col <- shiny::reactive({
+
+            getBackgroundColor(
+              object = hist_img_chosen(),
+              default = "white"
+            )
 
           })
 
@@ -1480,12 +1617,51 @@ setMethod(
 
 
           # transformation and naming:
-          # img_chosen -> img_chosen_flipped -> img_chosen_rot -> img_chosen_transl
+          # img_chosen ->
+          # img_chosen_rot ->
+          # img_chosen_flipped ->
+          # img_chosen_transl ->
+          # img_chosen_str
           img_chosen <- shiny::reactive({
 
             shiny::req(hist_img_chosen())
 
             getImage(object = hist_img_chosen(), transform = FALSE)
+
+          })
+
+          img_chosen_str <- shiny::reactive({
+
+            img <- img_chosen_transl()
+
+            if(input$stretch_h != 1){
+
+              img <-
+                stretch_image(
+                  image = img,
+                  axis = "horizontal",
+                  fct = input$stretch_h,
+                  bg_col = bg_col()
+                )
+
+            }
+
+            if(input$stretch_v != 1){
+
+              img <-
+                stretch_image(
+                  image = img,
+                  axis = "vertical",
+                  fct = input$stretch_v,
+                  bg_col = bg_col()
+                )
+
+            }
+
+            stretch_h(input$stretch_h)
+            stretch_v(input$stretch_v)
+
+            return(img)
 
           })
 
@@ -1497,7 +1673,7 @@ setMethod(
 
           img_chosen_flipped <- shiny::reactive({
 
-            img <- img_chosen()
+            img <- img_chosen_rot()
 
             if("Horizontal" %in% input$flip_transf){
 
@@ -1529,7 +1705,7 @@ setMethod(
 
           img_chosen_rot <- shiny::reactive({
 
-            img <- img_chosen_flipped()
+            img <- img_chosen()
 
             # effect must be reversed due to mirror inverted plotting via ggpLayerImage
             if(!input$clockwise){
@@ -1547,10 +1723,10 @@ setMethod(
                 x = img,
                 angle = angle_adj,
                 output.dim = img_chosen_dim(),
-                bg.col = ggplot2::alpha("white")
+                bg.col = bg_col()
               )
 
-            angle(input$angle_transf)
+            angle(angle_adj)
 
             return(img)
 
@@ -1560,7 +1736,11 @@ setMethod(
 
             shiny::req(translate_vec())
 
-            EBImage::translate(x = img_chosen_rot(), v = translate_vec())
+            EBImage::translate(
+              x = img_chosen_flipped(),
+              v = translate_vec(),
+              bg.col = bg_col()
+            )
 
           })
 
@@ -1697,8 +1877,8 @@ setMethod(
             shiny::req(input$chosen_image)
 
             # 1. set changes in transformation of previously chosen image
-
-            # if NULL, its the first time the oe is run
+            # if chosen_image() == NULL, its the first time the oe is run
+            # and no alignment values must be saved
             if(!base::is.null(chosen_image())){
 
               io <-
@@ -1709,6 +1889,8 @@ setMethod(
                   angle = angle(),
                   flip_h = flip_h(),
                   flip_v = flip_v(),
+                  stretch_h = stretch_h(),
+                  stretch_v = stretch_v(),
                   transl_h = transl_h(),
                   transl_v = transl_v()
                 )
@@ -1730,6 +1912,10 @@ setMethod(
 
             flip_v(transf$flip$vertical)
 
+            stretch_h(transf$stretch$horizontal)
+
+            stretch_v(transf$stretch$vertical)
+
             transl_h(transf$translate$horizontal)
 
             transl_v(transf$translate$vertical)
@@ -1739,7 +1925,6 @@ setMethod(
             # update angle_transf_value
             shiny::updateNumericInput(
               inputId = "angle_transf_value",
-              label = "Rotation:",
               value = angle(),
               min = 0,
               max = 360,
@@ -1749,11 +1934,23 @@ setMethod(
             # update flip_transf
             shinyWidgets::updateCheckboxGroupButtons(
               inputId = "flip_transf",
-              label = "Flip image around axis:",
               choices = c("Horizontal", "Vertical"),
               selected = c("Horizontal", "Vertical")[c(flip_h(), flip_v())]
             )
 
+            # update stretch
+            shiny::updateSliderInput(
+              inputId = "stretch_h",
+              value = stretch_h()
+            )
+
+            shiny::updateSliderInput(
+              inputId = "stretch_v",
+              value = stretch_v()
+            )
+
+            # update image -> triggers change in img_chosen() which is
+            # then processed by the reactive transformation values set above
             chosen_image(input$chosen_image)
 
           })
@@ -1767,6 +1964,8 @@ setMethod(
                 angle = angle(),
                 flip_h = flip_h(),
                 flip_v = flip_v(),
+                stretch_h = stretch_h(),
+                stretch_v = stretch_v(),
                 transl_h = transl_h(),
                 transl_v = transl_v(),
                 opt = "set" # does not add but replaces values
@@ -1804,6 +2003,7 @@ setMethod(
 
           })
 
+          # restore initial trans
           oe <- shiny::observeEvent(input$restore_initial_transf, {
 
             transf <- initial_transf[[chosen_image()]]
@@ -1814,6 +2014,10 @@ setMethod(
 
             flip_v(transf$flip$vertical)
 
+            stretch_h(transf$stretch$horizontal)
+
+            stretch_v(transf$stretch$vertical)
+
             transl_h(transf$translate$horizontal)
 
             transl_v(transf$translate$vertical)
@@ -1822,19 +2026,25 @@ setMethod(
             # update angle_transf_value
             shiny::updateNumericInput(
               inputId = "angle_transf_value",
-              label = "Rotation:",
-              value = angle(),
-              min = 0,
-              max = 360,
-              step = 0.01
+              value = angle()
             )
 
             # update flip_transf
             shinyWidgets::updateCheckboxGroupButtons(
               inputId = "flip_transf",
-              label = "Flip image around axis:",
               choices = c("Horizontal", "Vertical"),
               selected = c("Horizontal", "Vertical")[c(flip_h(), flip_v())]
+            )
+
+            # update stretch
+            shiny::updateSliderInput(
+              inputId = "stretch_h",
+              value = stretch_h()
+            )
+
+            shiny::updateSliderInput(
+              inputId = "stretch_v",
+              value = stretch_v()
             )
 
             # trigger
@@ -1853,7 +2063,7 @@ setMethod(
           output$plot_image_chosen <- shiny::renderPlot({
 
             shiny::req(basic_plot())
-            shiny::req(img_chosen_transl())
+            shiny::req(img_chosen_str())
 
             #plotImage(
             #object = img_chosen_scaled(),
@@ -1862,7 +2072,7 @@ setMethod(
 
             basic_plot() +
               ggpLayerImage(
-                object = img_chosen_transl(),
+                object = img_chosen_str(),
                 scale_fct = scale_fct_img_chosen()#,
                 #img_alpha = (1-input$transp_img_chosen)
               ) +
@@ -1955,7 +2165,6 @@ setMethod(
 
 alignImageInteractiveUI <- function(window_size = "800px"){
 
-
   # awkward workaround as setting window size style(str_c()) does not work
   # albeit being identical as confirmed by identical()
 
@@ -1985,9 +2194,9 @@ alignImageInteractiveUI <- function(window_size = "800px"){
     header = shinydashboard::dashboardHeader(title = "Align Image"),
 
     sidebar = shinydashboard::dashboardSidebar(
+      collapsed = TRUE,
       shinydashboard::sidebarMenu(
-        shinydashboard::menuItem(text = "Manually", tabName = "tab_manually"),
-        shinydashboard::menuItem(text = "Referenced", tabName = "tab_referenced")
+        shinydashboard::menuItem(text = "Manually", tabName = "tab_manually")
       )
     ),
 
@@ -1999,7 +2208,7 @@ alignImageInteractiveUI <- function(window_size = "800px"){
         tabName = "tab_manually",
         shiny::fluidRow(
           shiny::column(
-            width = 8,
+            width = 7,
             shinydashboard::box(
               title = "Alignment",
               width = 12,
@@ -2092,7 +2301,7 @@ alignImageInteractiveUI <- function(window_size = "800px"){
             )
           ),
           shiny::column(
-            width = 4,
+            width = 5,
             shinydashboard::box(
               title = "Controls",
               width = 12,
@@ -2101,111 +2310,125 @@ alignImageInteractiveUI <- function(window_size = "800px"){
                 shiny::column(
                   width = 6,
                   shiny::uiOutput(outputId = "chosen_image")
-                )#,
-                #shiny::column(
-                #width = 5,
-                #shiny::sliderInput(
-                #inputId = "transp_img_chosen",
-                #label = "Image transparency:",
-                #value = 0.25,
-                #min = 0,
-                #max = 1,
-                #step = 0.01
-                #)
-                #) %>% htmlAddHelper(content = helper_content$transp_img_chosen)
-              ),
-              shiny::fluidRow(
+                ),
                 shiny::column(
                   width = 6,
-                  shiny::uiOutput(outputId = "angle_transf")
-                ),
-                shiny::column(
-                  width = 3,
-                  shiny::numericInput(
-                    inputId = "angle_transf_value",
-                    label = "Fix slider at:",
-                    value = 0,
-                    min = 0,
-                    max = 360,
-                    step = 0.01
-                  ) %>% htmlAddHelper(content = helper_content$angle_transf_value),
-                  shinyWidgets::materialSwitch(
-                    inputId = "clockwise",
-                    label = "Clockwise:",
-                    value = TRUE,
-                    status = "primary"
-                  )
-                )
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 4,
-                  htmlH5("Flip image around axis:") %>%
-                    htmlAddHelper(content = helper_content$flip_around_axis)
-                ),
-                shiny::column(width = 2),
-                shiny::column(
-                  width = 3,
-                  htmlH5("Shift image:") %>%
-                    htmlAddHelper(content = helper_content$shift_image)
-                )
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 4,
-                  shinyWidgets::checkboxGroupButtons(
-                    inputId = "flip_transf",
-                    label = NULL,
-                    choices = c("Horizontal", "Vertical"),
-                    width = "100%"
-                  )
-                ),
-                shiny::column(width = 2),
-                shiny::column(
-                  width = 6,
-                  align = "center",
-                  htmlArrowButton("up"),
-                  htmlBreak(1)
-                )
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 4,
                   htmlH5("Restore initial state:") %>%
-                    htmlAddHelper(content = helper_content$restore_initial_transf)
-                ),
-                shiny::column(width = 2),
-                shiny::column(
-                  width = 2,
-                  align = "right",
-                  htmlArrowButton("left")
-                ),
-                shiny::column(
-                  width = 2,
-                  align = "center",
-                  shiny::uiOutput(outputId = "transl_step")
-                ),
-                shiny::column(
-                  width = 2,
-                  align = "left",
-                  htmlArrowButton("right")
-                )
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 4,
+                    htmlAddHelper(content = helper_content$restore_initial_transf),
                   shiny::actionButton(
                     inputId = "restore_initial_transf",
                     label = NULL,
                     icon = shiny::icon(name = "rotate-left"),
                     width = "100%"
                   )
-                ),
-                shiny::column(width = 2),
+                )
+              ),
+              shiny::fluidRow(
                 shiny::column(
                   width = 6,
-                  align = "center",
-                  htmlArrowButton("down")
+                  htmlH5("Rotation [°]:") %>%
+                    htmlAddHelper(content = helper_content$angle_transf_value),
+                  shiny::uiOutput(outputId = "angle_transf")
+                ),
+                shiny::column(
+                  width = 3,
+                  htmlH5("Fix Slider:") %>%
+                    htmlAddHelper(content = helper_content$angle_transf_value),
+                  shiny::numericInput(
+                    inputId = "angle_transf_value",
+                    label = NULL,
+                    value = 0,
+                    min = 0,
+                    max = 360,
+                    step = 0.01
+                  ),
+                ),
+                shiny::column(
+                  width = 3,
+                  htmlH5("Direction:") %>%
+                    htmlAddHelper(content = helper_content$rotate_dir),
+                  shinyWidgets::switchInput(
+                    inputId = "clockwise",
+                    label = "Clockwise",
+                    value = TRUE,
+                    size = "normal",
+                    inline = TRUE,
+                    width = "100%"
+                  )
+                )
+              ),
+              shiny::fluidRow(
+                shiny::column(
+                  width = 6,
+                  align = "left",
+                  htmlH5("Flip image around axis:") %>%
+                    htmlAddHelper(content = helper_content$flip_around_axis),
+                  shinyWidgets::checkboxGroupButtons(
+                    inputId = "flip_transf",
+                    label = NULL,
+                    choices = c("Horizontal", "Vertical"),
+                    justified = TRUE
+                  ),
+                  shiny::sliderInput(
+                    inputId = "stretch_h",
+                    label = "Stretch horizontally:",
+                    value = 1,
+                    min = 0.75,
+                    max = 1.25,
+                    step = 0.001
+                  ) %>%
+                    htmlAddHelper(content = helper_content$stretch),
+                  shiny::sliderInput(
+                    inputId = "stretch_v",
+                    label = "Stretch vertically:",
+                    value = 1,
+                    min = 0.75,
+                    max = 1.25,
+                    step = 0.001
+                  ) %>%
+                    htmlAddHelper(content = helper_content$stretch)
+                ),
+                shiny::column(
+                  width = 6,
+                  shiny::fluidRow(
+                    shiny::column(
+                      width = 12,
+                      htmlH5("Shift image:") %>%
+                        htmlAddHelper(content = helper_content$shift_image)
+                    )
+                  ),
+                  shiny::fluidRow(
+                    shiny::column(
+                      width = 12,
+                      align = "center",
+                      htmlArrowButton("up"),
+                      htmlBreak(2)
+                    )
+                  ),
+                  shiny::fluidRow(
+                    shiny::column(
+                      width = 4,
+                      align = "right",
+                      htmlArrowButton("left")
+                    ),
+                    shiny::column(
+                      width = 4,
+                      align = "center",
+                      shiny::uiOutput(outputId = "transl_step")
+                    ),
+                    shiny::column(
+                      width = 4,
+                      align = "left",
+                      htmlArrowButton("right")
+                    )
+                  ),
+                  shiny::fluidRow(
+                    shiny::column(
+                      width = 12,
+                      align = "center",
+                      htmlArrowButton("down")
+                    )
+                  )
                 )
               ),
               shiny::fluidRow(
@@ -2538,28 +2761,27 @@ setMethod(
           fct_name = "coords"
         )
 
-      coords_df <- visium_spots[[object@method@name]]
+      coords_df <-
+        getCoordsDf(object, img_name = object@name_img_ref)
 
       xname <- base::names(coords_df)[4]
       yname <- base::names(coords_df)[3]
 
-      base::names(coords_df)[c(5,6)] <- c("x", "y")
-
-      coords_df <-
-        dplyr::filter(
-          .data = coords_df,
-          .data[[xname]] %in% c(1:100) &
-            .data[[yname]] %in% c(1:100)
-        )
-
-      bc_origin <- coords_df$barcode
-      bc_destination <- coords_df$barcode
+      bc_origin <- coords_df$barcodes
+      bc_destination <- coords_df$barcodes
 
       spots_compare <-
         tidyr::expand_grid(bc_origin, bc_destination) %>%
-        dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcode, xo = x, yo = y), by = "bc_origin") %>%
-        dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcode, xd = x, yd = y), by = "bc_destination") %>%
-        dplyr::mutate(dplyr::across(.cols = dplyr::where(base::is.numeric), .fns = ~ .x * coords_scale_fct)) %>%
+        dplyr::left_join(
+          x = .,
+          y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
+          by = "bc_origin"
+          ) %>%
+        dplyr::left_join(
+          x = .,
+          y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
+          by = "bc_destination"
+          ) %>%
         dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
 
       bcsp_dist_pixel <-
@@ -2686,17 +2908,26 @@ setGeneric(name = "containsImage", def = function(object, ...){
 setMethod(
   f = "containsImage",
   signature = "spata2",
-  definition = function(object){
+  definition = function(object, img_name = NULL, error = FALSE){
 
-    out <- containsHistologyImaging(object)
+    getHistoImage(object, img_name = img_name) %>%
+      containsImage(object = ., error = error)
 
-    if(base::isTRUE(out)){
+  }
+)
 
-      img <- object@images[[1]]
+#' @rdname containsImage
+#' @export
+setMethod(
+  f = "containsImage",
+  signature = "ImageAnnotation",
+  definition = function(object, error = FALSE){
 
-      dims <- base::dim(img@image)
+    out <- !base::identical(x = object@image, y = empty_image)
 
-      out <- !base::any(dims == 0)
+    if(base::isFALSE(out) & base::isTRUE(error)){
+
+      stop("Input object contains no image.")
 
     }
 
@@ -2710,9 +2941,17 @@ setMethod(
 setMethod(
   f = "containsImage",
   signature = "HistoImage",
-  definition = function(object){
+  definition = function(object, error = FALSE){
 
-    !base::identical(x = object@image, y = empty_image)
+    out <- !base::identical(x = object@image, y = empty_image)
+
+    if(base::isFALSE(out) & base::isTRUE(error)){
+
+      stop("Input object contains no image.")
+
+    }
+
+    return(out)
 
   }
 )
@@ -3088,7 +3327,7 @@ createHistoImaging <- function(sample,
       object = object,
       img_name = active,
       verbose = FALSE
-      )
+    )
 
   # empty image slots
   if(base::isTRUE(unload)){
@@ -3380,7 +3619,7 @@ setMethod(
        base::length(fragments) == 1 &&
        fragments == "all"){
 
-       exclude_ids <- frgmt_df[["id"]]
+      exclude_ids <- frgmt_df[["id"]]
 
     } else if(base::is.character(fragments) |
               base::is.numeric(fragments)) {
@@ -3461,6 +3700,75 @@ setMethod(
     return(out)
 
   })
+
+
+#' @title Obtain background color
+#'
+#' @description Extracts results of [`identifyBackgroundColor()`].
+#'
+#' @param default Color to default to if no background color is set.
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+setGeneric(name = "getBackgroundColor", def = function(object, ...){
+
+  standardGeneric(f = "getBackgroundColor")
+
+})
+
+#' @rdname getBackgroundColor
+#' @export
+setMethod(
+  f = "getBackgroundColor",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, default = "white", ...){
+
+
+    getHistoImaging(object) %>%
+      getBackgroundColor(object = ., img_name = img_name, default = default)
+
+  }
+)
+
+#' @rdname getBackgroundColor
+#' @export
+setMethod(
+  f = "getBackgroundColor",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, default = "white", ...){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getBackgroundColor(object = ., default = default)
+
+  }
+)
+
+#' @rdname getBackgroundColor
+#' @export
+setMethod(
+  f = "getBackgroundColor",
+  signature = "HistoImage",
+  definition = function(object, default = "white"){
+
+    bg_col <- object@bg_color
+
+    if(base::length(bg_col) == 0){
+
+      if(base::is.character(default)){
+
+        bg_col <- default
+
+      }
+
+    }
+
+    return(bg_col)
+
+  }
+)
+
 
 #' @title Obtain center to center distance
 #'
@@ -3621,23 +3929,28 @@ setMethod(
 
     ###
 
-    joinWith <- confuns::keep_named(list(...))
+    if(FALSE){
 
-    joinWith[["object"]] <- NULL
-    joinWith[["spata_df"]] <- NULL
+      joinWith <- confuns::keep_named(list(...))
 
-    if(base::length(joinWith) >= 1){
+      joinWith[["object"]] <- NULL
+      joinWith[["spata_df"]] <- NULL
 
-      coords_df <-
-        confuns::call_flexibly(
-          fn = "joinWith",
-          fn.ns = "SPATA2",
-          default = list(object = object, spata_df = coords_df),
-          v.fail = coords_df,
-          verbose = FALSE
-        )
+      if(base::length(joinWith) >= 1){
+
+        coords_df <-
+          confuns::call_flexibly(
+            fn = "joinWith",
+            fn.ns = "SPATA2",
+            default = list(object = object, spata_df = coords_df),
+            v.fail = coords_df,
+            verbose = FALSE
+          )
+
+      }
 
     }
+
 
     # -----
 
@@ -3661,63 +3974,63 @@ setMethod(
                         as_is = FALSE,
                         ...){
 
-      hist_img <- getHistoImage(object, img_name = img_name)
+    hist_img <- getHistoImage(object, img_name = img_name)
 
-      coords_df <- object@coordinates
+    coords_df <- object@coordinates
 
-      if(base::isTRUE(as_is)){
+    if(base::isTRUE(as_is)){
 
-        out <- coords_df
+      out <- coords_df
 
-      } else {
+    } else {
 
-        id_name <- object@coordinates_id
+      id_name <- object@coordinates_id
 
 
-        if("exclude" %in% base::colnames(coords_df) & base::isTRUE(exclude)){
+      if("exclude" %in% base::colnames(coords_df) & base::isTRUE(exclude)){
 
-          coords_df <-
-            dplyr::filter(coords_df, !exclude) %>%
-            dplyr::select(-dplyr::any_of(c("exclude", "exclude_reason")))
-
-        }
-
-        if(base::isTRUE(scale)){
-
-          coords_scale_fct <- getScaleFactor(hist_img, fct_name = "coords")
-
-          if(base::is.null(coords_scale_fct)){
-
-            coords_scale_fct <- 1
-
-          }
-
-          coords_df <-
-            dplyr::mutate(
-              .data = coords_df,
-              x = x_orig * coords_scale_fct,
-              y = y_orig * coords_scale_fct,
-              sample = object@sample
-            )
-
-        }
-
-        if(base::isTRUE(wh)){
-
-          coords_df <- add_wh(coords_df, height = getImageRange(hist_img)$y)
-
-        }
-
-        out <-
-          dplyr::select(
-            .data = coords_df,
-            {{id_name}}:= id,
-            sample,
-            dplyr::any_of(c( "x", "y", "height", "width")),
-            dplyr::everything()
-            )
+        coords_df <-
+          dplyr::filter(coords_df, !exclude) %>%
+          dplyr::select(-dplyr::any_of(c("exclude", "exclude_reason")))
 
       }
+
+      if(base::isTRUE(scale)){
+
+        coords_scale_fct <- getScaleFactor(hist_img, fct_name = "coords")
+
+        if(base::is.null(coords_scale_fct)){
+
+          coords_scale_fct <- 1
+
+        }
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            x = x_orig * coords_scale_fct,
+            y = y_orig * coords_scale_fct,
+            sample = object@sample
+          )
+
+      }
+
+      if(base::isTRUE(wh)){
+
+        coords_df <- add_wh(coords_df, height = getImageRange(hist_img)$y)
+
+      }
+
+      out <-
+        dplyr::select(
+          .data = coords_df,
+          {{id_name}}:= id,
+          sample,
+          dplyr::any_of(c( "x", "y", "height", "width")),
+          dplyr::everything()
+        )
+
+    }
 
     return(out)
 
@@ -3829,7 +4142,7 @@ setMethod(
           return(out)
 
         }
-        )
+      )
 
     if(base::length(out) > 1){
 
@@ -4011,7 +4324,7 @@ setMethod(
         yrange = yrange,
         expand = expand,
         scale_fct = scale_fct
-        )
+      )
 
     return(out)
 
@@ -4061,16 +4374,12 @@ setMethod(
 
       object <- loadImage(object, verbose = TRUE)
 
-      #if(object@active){
-
-        rlang::warn(
-          message = glue::glue("To avoid loading frequently required images every function call anew,
+      rlang::warn(
+        message = glue::glue("To avoid loading frequently required images every function call anew,
           you can utilize the `loadImage(..., img_name = '{object@name}')` function."),
-          .frequency = "once",
-          .frequency_id = "hint_loadImage"
-        )
-
-      #}
+        .frequency = "once",
+        .frequency_id = "hint_loadImage"
+      )
 
     }
 
@@ -4081,7 +4390,8 @@ setMethod(
       image <-
         transform_image(
           image = image,
-          transformations = object@transformations
+          transformations = object@transformations,
+          bg_col = getBackgroundColor(object, default = "white")
         )
 
     }
@@ -4142,6 +4452,12 @@ setMethod(
 #' to a pixel in the image. (Faster than `getPixelDf()`, though without
 #' any further options.)
 #'
+#' @param rescale_axes Logical value. If `TRUE`, rescales the pixel positions
+#' (height/width) to the position in the original image.
+#'
+#' The image annotation contains a crop of the original image that only shows
+#' the area of the image annotation (plus `expand`, see [`getImageAnnotation()`]).
+#'
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame with three variables.
@@ -4174,7 +4490,7 @@ setMethod(
       img_name = img_name,
       transform = transform,
       scale_fct = scale_fct
-      )
+    )
 
   }
 )
@@ -4201,6 +4517,37 @@ setMethod(
 
     getImage(object, transform = transform) %>%
       getImageDf(object = ., scale_fct = scale_fct)
+
+  }
+)
+
+#' @rdname getImageDf
+#' @export
+setMethod(
+  f = "getImageDf",
+  signature = "ImageAnnotation",
+  definition = function(object, rescale_axes = TRUE, scale_fct = 1){
+
+    containsImage(object, error = TRUE)
+
+    out <-
+      getImageDf(object = object@image, scale_fct = scale_fct)
+
+    if(base::isTRUE(rescale_axes)){
+
+      info_list <- object@image_info
+
+      toX <- c(info_list$xmin, info_list$xmax)
+      toY <- c(info_list$ymin, info_list$ymax)
+
+      range(out$width)
+
+      out$width <- scales::rescale(out$width, to = toX)
+      out$height <- scales::rescale(out$height, to = toY)
+
+    }
+
+    return(out)
 
   }
 )
@@ -4449,12 +4796,25 @@ setGeneric(name = "getImageRaster", def = function(object, ...){
 setMethod(
   f = "getImageRaster",
   signature = "spata2",
-  definition = function(object, transform = TRUE, xrange = NULL, yrange = NULL, expand = 0){
+  definition = function(object,
+                        img_name = NULL,
+                        transform = TRUE,
+                        xrange = NULL,
+                        yrange = NULL,
+                        expand = 0){
 
     img <-
-      getImage(object, transform = transform, xrange = xrange, yrange = yrange, expand = expand) %>%
-      grDevices::as.raster() %>%
-      magick::image_read()
+      getImage(
+        object = object,
+        img_name = img_name,
+        transform = transform,
+        xrange = xrange,
+        yrange = yrange,
+        expand = expand
+      ) %>%
+      # flip to visualize in x and y space
+      EBImage::flip() %>%
+      grDevices::as.raster()
 
     return(img)
 
@@ -4468,7 +4828,14 @@ setMethod(
   signature = "HistoImage",
   definition = function(object, xrange = NULL, yrange = NULL, expand = 0){
 
-    getImage(object, xrange = xrange, yrange = yrange, expand = expand) %>%
+    getImage(
+      object = object,
+      xrange = xrange,
+      yrange = yrange,
+      expand = expand
+      ) %>%
+      # flip to visualize in x and y space
+      EBImage::flip() %>%
       grDevices::as.raster()
 
   }
@@ -4591,6 +4958,7 @@ setMethod(
   f = "getPixelDf",
   signature = "spata2",
   definition = function(object,
+                        img_name = NULL,
                         colors = FALSE,
                         hex_code = FALSE,
                         content = FALSE,
@@ -4600,16 +4968,16 @@ setMethod(
                         scale_fct = 1){
 
     getHistoImaging(object = object) %>%
-    getPixelDf(
-      object = .,
-      img_name = img_name,
-      colors = colors,
-      hex_code = hex_code,
-      content = content,
-      transform = transform,
-      xrange = xrange,
-      yrange = yrange,
-      scale_fct = scale_fct
+      getPixelDf(
+        object = .,
+        img_name = img_name,
+        colors = colors,
+        hex_code = hex_code,
+        content = content,
+        transform = transform,
+        xrange = xrange,
+        yrange = yrange,
+        scale_fct = scale_fct
       )
 
   }
@@ -5174,7 +5542,9 @@ setMethod(
       img_name = img_name,
       transform = transform,
       by_section = FALSE
-    ) %>% base::colMeans()
+    ) %>%
+      dplyr::select(x,y) %>%
+      base::colMeans()
 
   })
 
@@ -5189,7 +5559,7 @@ setMethod(
       object = object,
       transform = transform,
       by_section = FALSE
-    ) %>% base::colMeans()
+    ) %>% dplyr::select(x,y) %>% base::colMeans()
 
   })
 
@@ -5357,7 +5727,7 @@ ggpLayerCaptureArea <- function(object,
                                 rect_clr = "black",
                                 rect_line_type = "solid",
                                 rect_size = 1,
-                                expand_rect = 1.01,
+                                expand_rect = 1.025,
                                 expand_x = ggplot2::waiver(),
                                 expand_y = ggplot2::waiver()){
 
@@ -5370,7 +5740,8 @@ ggpLayerCaptureArea <- function(object,
 
   center <-
     getCoordsDf(object, exclude = FALSE)[c("x", "y")] %>%
-    base::colMeans()
+    purrr::map(.f = base::range) %>%
+    purrr::map_dbl(.f = base::mean)
 
   xrange <-
     c(xmin = center["x"] - dfc["x"], xmax = center["x"] + dfc["x"]) %>%
@@ -5453,13 +5824,11 @@ setMethod(
                         ...){
 
     # use method for Image
-    getImage(
-      object = object,
-      img_name = img_name,
-      transform = transform
-      ) %>%
+    getHistoImaging(object) %>%
       ggpLayerImage(
         object = .,
+        img_name = img_name,
+        transform = transform,
         scale_fct = scale_fct,
         img_alpha = img_alpha
       )
@@ -5479,10 +5848,14 @@ setMethod(
                         img_alpha = 1,
                         ...){
 
-    iamge <- getImage(object, img_name = img_name, transform = transform)
+    image <- getImage(object, img_name = img_name, transform = transform)
 
     # use method for Image
-    ggpLayerImage(image, scale_fct = scale_fct, img_alpha = img_alpha)
+    ggpLayerImage(
+      object = image,
+      scale_fct = scale_fct,
+      img_alpha = img_alpha
+      )
 
   }
 )
@@ -5520,6 +5893,35 @@ setMethod(
 
     # use method for Image
     ggpLayerImage(image, scale_fct = scale_fct, img_alpha = img_alpha)
+
+  }
+)
+
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "ImageAnnotation",
+  definition = function(object,
+                        img_alpha = 1,
+                        rescale_axes = TRUE,
+                        scale_fct = 1,
+                        ...){
+
+    image_df <-
+      getImageDf(
+        object = object,
+        rescale_axes = rescale_axes,
+        scale_fct = scale_fct
+        )
+
+    # flip to display in x- and y-space
+    ggplot2::geom_raster(
+      data = image_df,
+      mapping = ggplot2::aes(x = width, y = height),
+      fill = image_df[["color"]],
+      alpha = img_alpha
+    )
 
   }
 )
@@ -5610,7 +6012,7 @@ setMethod(
                         expand = TRUE,
                         scale_fct = 1,
                         add_labs = TRUE
-                        ){
+  ){
 
     hlpr_assign_arguments(object)
 
@@ -6163,7 +6565,7 @@ setMethod(
         dplyr::filter(
           .data = df,
           !stringr::str_detect(section, pattern = "tissue_fragment")
-          )
+        )
 
       line_color_frgmt <- NULL
 
@@ -6289,6 +6691,98 @@ identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
 }
 
 
+#' @title Identifies the background color
+#'
+#' @description Identifies the background color based on the results
+#' of [`identifyPixelContent()`] by averaging the color values of
+#' all pixels identified as background.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy params
+#'
+#' @export
+#'
+setGeneric(name = "identifyBackgroundColor", def = function(object, ...){
+
+  standardGeneric(f = "identifyBackgroundColor")
+
+})
+
+#' @rdname identifyBackgroundColor
+#' @export
+setMethod(
+  f = "identifyBackgroundColor",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- identifyBackgroundColor(imaging, img_name = img_name)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyBackgroundColor
+#' @export
+setMethod(
+  f = "identifyBackgroundColor",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, ...){
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    for(i in base::seq_along(img_name)){
+
+      hist_img <- getHistoImage(object, img_name = img_name[i])
+
+      hist_img <- identifyBackgroundColor(hist_img)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyBackgroundColor
+#' @export
+setMethod(
+  f = "identifyBackgroundColor",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    col_df <-
+      getPixelDf(object, colors = TRUE, content = TRUE) %>%
+      dplyr::filter(content == "background") %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::starts_with("col"),
+          .fns = ~ base::mean(.x, na.rm = TRUE)
+        )
+      ) %>%
+      magrittr::set_colnames(value = c("red", "green", "blue"))
+
+    object@bg_color <-
+      grDevices::rgb(
+        red = col_df$red,
+        green = col_df$green,
+        blue = col_df$blue
+      )
+
+    return(object)
+
+  })
+
+
 #' @title Identify pixel content
 #'
 #' @description Determines the type of content displayed by each pixel in the image,
@@ -6322,8 +6816,10 @@ identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
 #' @details If `img_name` specifies multiple images, the function
 #' iterates over all of them.
 #'
-#' @seealso For subsequent image processing: [`identifyTissueOutline()`]. For visualization
-#' of results: [`plotImageMask()`], [`plotPixelContent()`]
+#' @seealso
+#' For subsequent image processing: [`identifyTissueOutline()`],[`identifyBackgroundColor()`].
+#' For visualization of results: [`plotImageMask()`], [`plotPixelContent()`].
+#' For extraction of results: [`getPixelDf()`].
 #'
 #' @return The method for class `Image` returns a data.frame of the following
 #' variables.
@@ -6340,7 +6836,7 @@ identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
 #'  \item{*content*:}{ character. The identified content of each pixel.}
 #' }
 #'
-#' Methods for S4-classes serving as containers the input object is returned with
+#' Methods for S4-classes serving as containers return the input object with the
 #' the results stored in the corresponding slots.
 
 setGeneric(name = "identifyPixelContent", def = function(object, ...){
@@ -6449,7 +6945,7 @@ setMethod(
 
       object <- loadImage(object)
 
-      }
+    }
 
     pxl_df_out <-
       identifyPixelContent(
@@ -6558,7 +7054,7 @@ setMethod(
         AP_data = TRUE,
         kmeans_method = "kmeans",
         adjust_centroids_and_return_masks = TRUE
-    )
+      )
 
     # potentially problematic:
     # assumes that all background pixel are identified as one cluster (what if heterogeneous background?)
@@ -6689,7 +7185,7 @@ setMethod(
         x = pxl_df_base,
         y = pxl_df_tissue[c("pixel", "background", "clusterDBSCAN", "clusterDBSCAN_size")],
         by = "pixel"
-        ) %>%
+      ) %>%
       dplyr::mutate(
         content = dplyr::case_when(
           clusterDBSCAN == "0" ~ "artefact",
@@ -6791,7 +7287,7 @@ setMethod(
   definition = function(object,
                         img_name,
                         verbose = NULL
-                        ){
+  ){
 
     hlpr_assign_arguments(object)
 
@@ -7063,6 +7559,24 @@ setGeneric(name = "loadImages", def = function(object, ...){
   standardGeneric(f = "loadImages")
 
 })
+
+#' @rdname loadImage
+#' @export
+setMethod(
+  f = "loadImages",
+  signature = "spata2",
+  definition = function(object, verbose = TRUE, force = FALSE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- loadImages(imaging, verbose = verbose, force = force)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
 
 #' @rdname loadImage
 #' @export
@@ -7394,7 +7908,7 @@ setMethod(
         yrange = yrange,
         scale_fct = scale_fct,
         axes = axes
-        )
+      )
 
   }
 )
@@ -7600,7 +8114,7 @@ setMethod(
         transform = transform,
         scale_fct = scale_fct,
         img_alpha = img_alpha
-        ) +
+      ) +
       theme_image() +
       layer_coord_equal +
       ggplot2::labs(subtitle = object@name, x = "Width [pixel]", y = "Height [pixel]")
@@ -7619,7 +8133,7 @@ setMethod(
           line_size = line_size,
           line_type = line_type,
           scale_fct = scale_fct
-          )
+        )
 
     }
 
@@ -7943,7 +8457,7 @@ setMethod(
                 object = hist_img,
                 transform = transform_checked,
                 img_alpha = img_alpha
-                )
+              )
 
           }
 
@@ -8211,7 +8725,7 @@ read_coords_visium <- function(dir_coords){
       dplyr::mutate(
         exclude = (tissue != 1),
         exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
-        ) %>%
+      ) %>%
       dplyr::rename(x_orig = imagecol, y_orig = imagerow) %>%
       dplyr::select(id, x_orig, y_orig, exclude, exclude_reason)
 
@@ -8224,7 +8738,7 @@ read_coords_visium <- function(dir_coords){
       dplyr::mutate(
         exclude = (in_tissue != 1),
         exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
-        ) %>%
+      ) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres) %>%
       dplyr::select(id = barcode, x_orig, y_orig, exclude, exclude_reason)
 
@@ -8268,6 +8782,7 @@ setMethod(
                         dir,
                         img_name,
                         unload = TRUE,
+                        process = FALSE,
                         verbose = TRUE){
 
     imaging <- getHistoImaging(object)
@@ -8278,6 +8793,7 @@ setMethod(
         dir = dir,
         img_name = img_name,
         unload = unload,
+        process = process,
         verbose = verbose
       )
 
@@ -8297,6 +8813,7 @@ setMethod(
                         dir,
                         img_name,
                         unload = FALSE,
+                        process = FALSE,
                         verbose = TRUE){
 
     confuns::check_none_of(
@@ -8315,6 +8832,14 @@ setMethod(
         scale_factors = list(),
         verbose = verbose
       )
+
+    if(base::isTRUE(process)){
+
+      hist_img <- identifyPixelContent(object = hist_img, verbose = verbose)
+
+      hist_img <- identifyTissueOutline(object, hist_img, verbose = verbose)
+
+    }
 
     if(base::isTRUE(unload)){
 
@@ -8400,6 +8925,83 @@ setMethod(
   }
 )
 
+#' @title Reset image transformations
+#'
+#' @description Resets the transformation values of an image defined
+#' by usage of [`alignImage()`], [`alignImageAuto()`] or [`alignImageInteractive()`].
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`getImageTransformations()`]
+#'
+#' @export
+#'
+setGeneric(name = "resetImageTransformations", def = function(object, ...){
+
+  standardGeneric(f = "resetImageTransformations")
+
+})
+
+#' @rdname resetImageTransformations
+#' @export
+setMethod(
+  f = "resetImageTransformations",
+  signature = "spata2",
+  definition = function(object, img_name, ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- resetImageTransformations(imaging, img_name = img_name)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+
+#' @rdname resetImageTransformations
+#' @export
+setMethod(
+  f = "resetImageTransformations",
+  signature = "HistoImaging",
+  definition = function(object, img_name, ...){
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- resetImageTransformations(hist_img)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+
+#' @rdname resetImageTransformations
+#' @export
+setMethod(
+  f = "resetImageTransformations",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    object <-
+      alignImage(
+        object = object,
+        angle = 0,
+        flip_h = FALSE,
+        flip_v = FALSE,
+        transl_h = 0,
+        transl_v = 0
+      )
+
+    return(object)
+
+  }
+)
 
 rotate_sf = function(x) matrix(c(cos(x), sin(x), -sin(x), cos(x)), 2, 2)
 
@@ -8533,7 +9135,37 @@ setMethod(
   }
 )
 
+stretch_image <- function(image,
+                          axis,
+                          fct,
+                          bg_col = "white"){
 
+  img_dims_orig <- base::dim(image)
+  img_dims_str <- img_dims_orig
+
+  if(axis == "horizontal"){
+
+    img_dims_str[1] <- img_dims_str[1] * fct
+    mat <- base::matrix(c(fct, 0, 1, 0, 1, 1), nrow = 3)
+
+  } else if(axis == "vertical"){
+
+    img_dims_str[2] <- img_dims_str[2] * fct
+    mat <- base::matrix(c(1, 0, 1, 0, fct, 1), nrow = 3)
+
+  }
+
+  image_out <-
+    EBImage::affine(
+      x = image,
+      m = mat,
+      output.dim = img_dims_str[1:2],
+      bg.col = bg_col
+    )
+
+  return(image_out)
+
+}
 
 # t -----------------------------------------------------------------------
 
@@ -8624,10 +9256,38 @@ setMethod(
 #' @return Transformed input.
 #' @export
 #'
-transform_image <- function(image, transformations){
+transform_image <- function(image, transformations, bg_col = "white"){
 
-  bg_col <- "white"
+  # only required after usage of alignImageAuto()
+  if(!base::is.null(transformations$center)){
 
+    if(!base::all(transformations$center == 0)){
+
+      image <-
+        EBImage::translate(
+          x = image,
+          v = base::as.numeric(transformations$center),
+          bg.col = bg_col
+        )
+
+    }
+
+  }
+
+  # flip first
+  if(base::isTRUE(transformations$flip$horizontal)){
+
+    image <- EBImage::flip(x = image)
+
+  }
+
+  if(base::isTRUE(transformations$flip$vertical)){
+
+    image <- EBImage::flop(x = image)
+
+  }
+
+  # rotate second
   if(transformations$angle != 0){
 
     # apply flipped due to visualization of image in x-/y-space (not image space)
@@ -8643,18 +9303,7 @@ transform_image <- function(image, transformations){
 
   }
 
-  if(base::isTRUE(transformations$flip$horizontal)){
-
-    image <- EBImage::flip(x = image)
-
-  }
-
-  if(base::isTRUE(transformations$flip$vertical)){
-
-    image <- EBImage::flop(x = image)
-
-  }
-
+  # translate third
   if(!base::all(transformations$translate == 0)){
 
     image <-
@@ -8666,15 +9315,42 @@ transform_image <- function(image, transformations){
 
   }
 
+  # stretch fourth
+  if(!base::all(transformations$stretch == 1)){
+
+    if(transformations$stretch$horizontal != 1){
+
+      image <-
+        stretch_image(
+          image = image,
+          axis = "horizontal",
+          fct = transformations$stretch$horizontal
+        )
+
+    }
+
+    if(transformations$stretch$vertical != 1){
+
+      image <-
+        stretch_image(
+          image = image,
+          axis = "vertical",
+          fct = transformations$stretch$vertical
+        )
+
+    }
+
+  }
+
   return(image)
 
 }
 
-#' @title Transform image
+#' @title Transform outline
 #'
-#' @description Transforms the image or the tissue outline.
+#' @description Transforms tissue outline.
 #'
-#' @param image Image comptabible with the `EBImage`-package.
+#' @param outline_df Data.frame with x- and y-coordinates.
 #' @param transformations List of transformation instructions. See
 #' slot @@transformations of class `HistoImage`.
 #'
@@ -8683,18 +9359,30 @@ transform_image <- function(image, transformations){
 #'
 transform_outline <- function(outline_df, transformations, center, ranges){
 
-  if(transformations$angle != 0){
+  # only required after usage of alignImageAuto()
+  if(!base::is.null(transformations$center)){
 
-    outline_df <-
-      rotate_coords_df(
-        df = outline_df,
-        coord_vars = list(pair1 = c("x", "y"), pair2 = c("width", "height")),
-        angle = transformations$angle,
-        center = center
-      )
+    if(!base::all(transformations$center == 0)){
+
+      outline_df <-
+        dplyr::mutate(
+          .data = outline_df,
+          dplyr::across(
+            .cols = dplyr::any_of(c("x", "width")),
+            .fns = ~ .x + transformations$center$horizontal
+          ),
+          dplyr::across(
+            .cols = dplyr::any_of(c("y", "height")),
+            # reverse vertical translation to align with image translation
+            .fns = ~ .x + (transformations$center$vertical) #
+          )
+        )
+
+    }
 
   }
 
+  # first flip
   if(base::isTRUE(transformations$flip$horizontal)){
 
     outline_df <-
@@ -8721,6 +9409,20 @@ transform_outline <- function(outline_df, transformations, center, ranges){
 
   }
 
+  # second rotate
+  if(transformations$angle != 0){
+
+    outline_df <-
+      rotate_coords_df(
+        df = outline_df,
+        coord_vars = list(pair1 = c("x", "y"), pair2 = c("width", "height")),
+        angle = transformations$angle,
+        center = center
+      )
+
+  }
+
+  # third translate
   if(!base::all(transformations$translate == 0)){
 
     outline_df <-
@@ -8733,7 +9435,27 @@ transform_outline <- function(outline_df, transformations, center, ranges){
         dplyr::across(
           .cols = dplyr::any_of(c("y", "height")),
           # reverse vertical translation to align with image translation
-          .fns = ~ .x + (-transformations$translate$vertical) #
+          .fns = ~ .x + transformations$translate$vertical #
+        )
+      )
+
+  }
+
+
+  # fourth stretching
+  if(!base::all(transformations$stretch == 1)){
+
+    outline_df <-
+      dplyr::mutate(
+        .data = outline_df,
+        dplyr::across(
+          .cols = dplyr::any_of(c("x", "width")),
+          .fns = ~ .x * transformations$stretch$horizontal
+        ),
+        dplyr::across(
+          .cols = dplyr::any_of(c("y", "height")),
+          # reverse vertical translation to align with image translation
+          .fns = ~ .x * transformations$stretch$vertical #
         )
       )
 
@@ -8742,10 +9464,6 @@ transform_outline <- function(outline_df, transformations, center, ranges){
   return(outline_df)
 
 }
-
-
-
-
 
 
 
@@ -8780,12 +9498,16 @@ setMethod(
   signature = "HistoImage",
   definition = function(object, verbose = TRUE, ...){
 
-    confuns::give_feedback(
-      msg = glue::glue("Unloading image of {object@name}."),
-      verbose = verbose
-    )
+    if(containsImage(object)){
 
-    object@image <- empty_image
+      confuns::give_feedback(
+        msg = glue::glue("Unloading image of {object@name}."),
+        verbose = verbose
+      )
+
+      object@image <- empty_image
+
+    }
 
     return(object)
 
@@ -8826,6 +9548,24 @@ setGeneric(name = "unloadImages", def = function(object, ...){
 #' @export
 setMethod(
   f = "unloadImages",
+  signature = "spata2",
+  definition = function(object, active = FALSE, verbose = TRUE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- unloadImages(imaging, active = active, verbose = verbose)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImages",
   signature = "HistoImaging",
   definition = function(object, active = FALSE, verbose = TRUE){
 
@@ -8837,22 +9577,35 @@ setMethod(
 
       if(!hist_img@active){
 
-        hist_img@image <- empty_image
+        if(containsImage(hist_img)){
+
+          hist_img@image <- empty_image
+
+          confuns::give_feedback(
+            msg = glue::glue("Unloaded image '{hin}'."),
+            verbose = verbose
+          )
+
+        }
 
       } else {
 
         if(base::isTRUE(active)){
 
-          hist_img@image <- empty_image
+          if(containsImage(hist_img)){
+
+            hist_img@image <- empty_image
+
+            confuns::give_feedback(
+              msg = glue::glue("Unloaded image '{hin}'."),
+              verbose = verbose
+            )
+
+          }
 
         }
 
       }
-
-      confuns::give_feedback(
-        msg = glue::glue("Unloaded image '{hin}'."),
-        verbose = verbose
-      )
 
       object <- setHistoImage(object, hist_img = hist_img)
 

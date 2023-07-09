@@ -714,9 +714,6 @@ append_polygon_df <- function(lst,
 
     }
 
-
-
-
     lst[[stringr::str_c("inner", ll)]] <- plg
 
   }
@@ -967,12 +964,6 @@ as_unit <- function(input,
   input_units_ref <-
     base::unique(input_units) %>%
     confuns::scollapse(string = ., sep = ", ", last = " and ")
-
-  confuns::give_feedback(
-    msg = glue::glue("Transforming {input_units_ref} to {unit}."),
-    verbose = verbose,
-    with.time = FALSE
-  )
 
   # if one argument refers to pixel SPATA2 functions are needed
   if(base::any(c(input_units, unit) == "px")){

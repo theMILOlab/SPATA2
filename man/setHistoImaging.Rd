@@ -7,13 +7,15 @@
 \usage{
 setHistoImaging(object, imaging)
 
-setImageObject(object, image_object)
+setImageObject(object, image_object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{imaging}{An object of class \code{HistoImaging}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 Sets the image container class \code{HistoImaging}
