@@ -9,11 +9,11 @@
 \usage{
 identifyBackgroundColor(object, ...)
 
-\S4method{identifyBackgroundColor}{spata2}(object, img_name = NULL, ...)
+\S4method{identifyBackgroundColor}{spata2}(object, img_name = NULL, verbose = NULL, ...)
 
-\S4method{identifyBackgroundColor}{HistoImaging}(object, img_name = NULL, ...)
+\S4method{identifyBackgroundColor}{HistoImaging}(object, img_name = NULL, verbose = TRUE, ...)
 
-\S4method{identifyBackgroundColor}{HistoImage}(object, ...)
+\S4method{identifyBackgroundColor}{HistoImage}(object, verbose = TRUE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -23,6 +23,11 @@ objects of classes for which a method has been defined.}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \description{
 Identifies the background color based on the results

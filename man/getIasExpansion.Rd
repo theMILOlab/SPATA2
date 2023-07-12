@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getIasExpansion}
 \alias{getIasExpansion}
-\title{Obtain expanded Image Annotation polygons}
+\title{Obtain expanded image annotation polygons}
 \usage{
 getIasExpansion(
   object,

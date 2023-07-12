@@ -13,9 +13,9 @@ identifyPixelContent(object, ...)
 \S4method{identifyPixelContent}{spata2}(
   object,
   img_name,
-  percentile = 99,
+  percentile = 0,
   compactness_factor = 10,
-  superpixel = 1000,
+  superpixel = 600,
   dbscan_eps = 0.005,
   dbscan_minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),

@@ -7,7 +7,7 @@
 \usage{
 addVarToCoords(object, ...)
 
-\S4method{addVarToCoords}{HistoImaging}(object, var_df, vars)
+\S4method{addVarToCoords}{HistoImaging}(object, var_df, vars, overwrite = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -16,6 +16,10 @@ objects of classes for which a method has been defined.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{var_df}{Data.frame with the variables to merge.}
+
+\item{vars}{Character vector. Subset of variables to add.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
 The input \code{spata2} object containing the added or computed

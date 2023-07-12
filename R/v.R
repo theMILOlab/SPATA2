@@ -47,7 +47,7 @@ validation <- function(x){
 
   object <- x
 
-  if(!base::identical(object@version, current_spata_version)){
+  if(!base::identical(object@version, current_spata2_version)){
 
     if(base::exists(x = "x.updating.spata.object.x", envir = .GlobalEnv) &&
        base::isTRUE(base::get("x.updating.spata.object.x"))

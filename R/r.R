@@ -873,7 +873,6 @@ rotate_coord <- function(x,
     if(!is.null(translate)){translate<- translate*stretch}
   }
 
-
   x <- x-center["x"]
   y <- y-center["y"]
 

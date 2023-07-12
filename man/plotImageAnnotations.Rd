@@ -61,7 +61,6 @@ plotImageAnnotations(object, ...)
   nrow = NULL,
   ncol = NULL,
   plot = TRUE,
-  verbose = NULL,
   ...
 )
 }
@@ -145,11 +144,6 @@ Skim \code{ggpLayer*()}-functions for more options.}
 \item{plot}{Logical value. If TRUE, the plots are plotted immediately
 via \code{gridExtra.grid.arrange()} and the list of plots is returned
 invisibly. Else the list of plots is simply returned.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 A list of ggplots. Each slot contains a plot

@@ -2,9 +2,6 @@
 
 
 # update ------------------------------------------------------------------
-
-
-
 #' @title Update spata-object from SPATA to SPATA2
 #'
 #' @description A convenient function that takes the spata-object you
@@ -380,9 +377,9 @@ updateSpataObject <- function(object,
 
     new_image <- HistologyImage()
 
-    #new_image@coordinates <-
-      #object@coordinates[[sample_name]] %>%
-      #tibble::as_tibble()
+    new_image@coordinates <-
+      object@coordinates[[sample_name]] %>%
+      tibble::as_tibble()
 
     if(base::class(object@images[[1]]) == "Image"){
 
@@ -438,20 +435,20 @@ updateSpataObject <- function(object,
           skip = "misc"
         )
 
-      #grid <- image_obj@grid
+      grid <- image_obj@grid
 
-      #if(base::is.data.frame(grid) && base::nrow(grid) != 0){
+      if(base::is.data.frame(grid) && base::nrow(grid) != 0){
 
-        #image_obj_new@coordinates <-
-          #dplyr::left_join(
-            #x = getCoordsDf(object),
-            #y = grid[, c("barcodes", "row", "col")],
-            #by = "barcodes"
-          #)
+        image_obj_new@coordinates <-
+          dplyr::left_join(
+            x = getCoordsDf(object),
+            y = grid[, c("barcodes", "row", "col")],
+            by = "barcodes"
+          )
 
-      #}
+      }
 
-      #image_obj_new@grid <- list()
+      image_obj_new@grid <- list()
 
       object <- setImageObject(object, image_object = image_obj_new)
 
@@ -591,7 +588,21 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 1, minor = 13, patch = 0)
 
-    object@information$method <- spatial_methods[["Visium"]]
+
+    # retroperspective changes required due to v3.0.0
+    coords_df <- getCoordsDf(object)
+
+    if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$barcode)){
+
+      method_name <- "VisiumSmall"
+
+    } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$barcode)) {
+
+      method_name <- "VisiumLarge"
+
+    }
+
+    object@information$method <- spatial_methods[[method_name]]
 
     # change positioning of active expr mtr
 
@@ -705,34 +716,34 @@ updateSpataObject <- function(object,
       # image annotations
       if(nImageAnnotations(object) >= 1){
 
-          for(id in getImageAnnotationIds(object)){
+        for(id in getImageAnnotationIds(object)){
 
-            img_ann <-
-              getImageAnnotation(
-                object = object,
-                id = id,
-                add_image = FALSE,
-                add_barcodes = FALSE
-              )
+          img_ann <-
+            getImageAnnotation(
+              object = object,
+              id = id,
+              add_image = FALSE,
+              add_barcodes = FALSE
+            )
 
-            img_ann <-
-              transfer_slot_content(
-                recipient = ImageAnnotation(),
-                donor = img_ann,
-                verbose = FALSE
-              )
+          img_ann <-
+            transfer_slot_content(
+              recipient = ImageAnnotation(),
+              donor = img_ann,
+              verbose = FALSE
+            )
 
-            img_ann@info <- info
+          img_ann@info <- info
 
-            object <-
-              setImageAnnotation(
-                object = object,
-                img_ann = img_ann,
-                align = FALSE,
-                overwrite = TRUE
-                )
+          object <-
+            setImageAnnotation(
+              object = object,
+              img_ann = img_ann,
+              align = FALSE,
+              overwrite = TRUE
+            )
 
-          }
+        }
 
       }
 
@@ -784,7 +795,138 @@ updateSpataObject <- function(object,
 
     object@version <- list(major = 2, minor = 0, patch = 0)
 
-    object <- setTissueOutline(object)
+  }
+
+
+  if(object@version$major == 2){
+
+    # spatial method
+    coords_df <- getCoordsDf(object)
+
+    if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$barcode)){
+
+      method_name <- "VisiumSmall"
+
+    } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$barcode)) {
+
+      method_name <- "VisiumLarge"
+
+    } else {
+
+      method_name <- "Undefined"
+
+    }
+
+    object@information$method <- spatial_methods[[method_name]]
+
+    # create histo imaging
+    if(base::length(object@images) >= 1 &&
+       methods::is(object@images[[1]], class2 = "HistologyImaging")){
+
+      dir_visium <- getInitiationInput(object, verbose = FALSE)$directory_10X
+
+      if(base::is.character(dir_visium)){
+
+        if(!dir.exists(dir_visium)){
+
+          warning(glue::glue("Can not find '{dir_visium}'. Please use `createHistoImagingVisium()` and `setHistoImaging()` manually."))
+
+        } else {
+
+          confuns::give_feedback(
+            msg = "Updating to HistoImaging.",
+            verbose = TRUE
+          )
+
+          imaging <-
+            createHistoImagingVisium(
+              dir = dir_visium,
+              sample = getSampleName(object),
+              img_ref = "hires",
+              img_active = "lowres",
+              verbose = TRUE
+            )
+
+          image_dims <-
+            purrr::map(
+              .x = imaging@images,
+              .f = ~ .x@image_info$dims
+            )
+
+          # update image annotations
+          imaging@annotations <-
+            purrr::map(
+              .x = object@images[[1]]@annotations,
+              .f = function(img_ann){
+
+                # update the object
+                img_ann <- updateS4(img_ann)
+
+                # try to identify the parent image
+                parent_name <- img_ann@info$parent_name
+
+                if(base::is.null(parent_name)){
+
+                  dims <- img_ann@info$current_dim
+
+                  if(base::is.null(dims)){
+
+                    parent_name <- "lowres"
+
+                  } else {
+
+                    for(i in base::seq_along(image_dims)){
+
+                      if(dims[1] == image_dims[[i]][1] & dims[2] == image_dims[[i]][2]){
+
+                        parent_name <- base::names(image_dims)[i]
+
+                        break()
+
+                      }
+
+                    }
+
+                  }
+
+                  if(base::is.null(parent_name)){
+
+                    parent_name <- "lowres"
+
+                  }
+
+                  img_ann@info$parent_name <- parent_name
+
+                }
+
+                return(img_ann)
+
+              }
+            )
+
+          # allow downgrading
+          imaging@misc$HistologyImaging <- object@images[[1]]
+          imaging@misc$HistologyImaging@image <- empty_image
+          imaging@misc$old_version <- object@version
+
+          object <- setHistoImaging(object, imaging = imaging)
+
+        }
+
+      } else {
+
+        warning(
+          glue::glue(
+            "Can not find a visium directory in spata2 object.",
+            "Picking currently set image as active and as reference image.",
+            "Please use `createHistoImaging()/createHistoImagingVisium()` and `setHistoImaging()` manually.")
+        )
+
+      }
+
+    }
+
+    object@version <- current_spata2_version
 
   }
 
@@ -803,7 +945,7 @@ updateSpataObject <- function(object,
 
   # Return updated object ---------------------------------------------------
 
-  object@version <- current_spata_version
+  object@version <- current_spata2_version
 
   object <- setDefaultInstructions(object)
 
@@ -812,10 +954,103 @@ updateSpataObject <- function(object,
   confuns::give_feedback(
     msg = glue::glue("Object updated. New version: {version}"),
     verbose = verbose
-    )
+  )
 
-  base::rm(x.updating.spata.object.x, envir = .GlobalEnv)
+  base::rm("x.updating.spata.object.x", envir = .GlobalEnv)
 
   return(object)
 
 }
+
+
+# updateS4 ----------------------------------------------------------------
+
+#' @title Update S4 objects
+#'
+#' @description Methods for all S4 classes within `SPATA2` that keep S4 objects
+#' up to date.
+#'
+#' @param object The S4 object.
+#' @param method_name Character value. Name of the used spatial method.
+#' @param ...
+#'
+#' @return An updated S4 object.
+#' @export
+#'
+setGeneric(name = "updateS4", def = function(object, ...){
+
+  standardGeneric(f = "updateS4")
+
+})
+
+#' @rdname updateS4
+#' @export
+setMethod(
+  f = "updateS4",
+  signature = "ImageAnnotation",
+  definition = function(object){
+
+    img_ann <- object
+
+    # version < 3.0.0
+    if(!containsVersion(img_ann)){
+
+      # overwrite info list
+      new_info <-
+        list(
+          sample = img_ann@info$parent_id
+        )
+
+      img_ann <-
+        transfer_slot_content(
+          recipient = ImageAnnotation(),
+          donor = img_ann,
+          verbose = FALSE
+        )
+
+      img_ann@version <- list(major = 3, minor = 0, patch = 0)
+
+      img_ann@info <-
+        c(
+          img_ann@info,
+          new_info
+        )
+
+    }
+
+    return(img_ann)
+
+  }
+)
+
+#' @rdname updateS4
+#' @export
+setMethod(
+  f = "updateS4",
+  signature = "SpatialMethod",
+  definition = function(object, method_name){
+
+    # if no version exists -> version < 3.0.0
+    if(!containsVersion(object)){
+
+      # simply replace the object
+      object <- spatial_methods[[method_name]]
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname updateS4
+#' @export
+setMethod(
+  f = "updateS4",
+  signature = "spata2",
+  definition = updateSpataObject
+)
+
+
+
+

@@ -3,20 +3,20 @@
 \name{tissueOutlineIdentified}
 \alias{tissueOutlineIdentified}
 \alias{tissueOutlineIdentified,spata2-method}
-\alias{tissueSectionsIdentified}
-\alias{tissueSectionsIdentified,spata2-method}
-\alias{tissueSectionsIdentified,HistoImaging-method}
+\alias{containsSpatialOutliers}
+\alias{containsSpatialOutliers,spata2-method}
+\alias{containsSpatialOutliers,HistoImaging-method}
 \title{Check availability of tissue information}
 \usage{
 tissueOutlineIdentified(object, ...)
 
 \S4method{tissueOutlineIdentified}{spata2}(object)
 
-tissueSectionsIdentified(object, ...)
+containsSpatialOutliers(object, ...)
 
-\S4method{tissueSectionsIdentified}{spata2}(object, error = FALSE)
+\S4method{containsSpatialOutliers}{spata2}(object, error = FALSE)
 
-\S4method{tissueSectionsIdentified}{HistoImaging}(object, error = FALSE)
+\S4method{containsSpatialOutliers}{HistoImaging}(object, error = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -31,6 +31,6 @@ function throws an error.}
 Logical value.
 }
 \description{
-Checks if \code{identifyTissueSections()} and \code{identifyTissueOutline()}
+Checks if \code{identifySpatialOutliers()} and \code{identifyTissueOutline()}
 has been run successfully.
 }

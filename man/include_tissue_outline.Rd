@@ -6,6 +6,7 @@
 \usage{
 include_tissue_outline(
   coords_df,
+  outline_df = NULL,
   input_df,
   img_ann_center = NULL,
   ias_circles = FALSE,
@@ -18,6 +19,9 @@ include_tissue_outline(
 )
 }
 \arguments{
+\item{outline_df}{A data.frame that contains the ouline/hull of all tissue sections.
+Must contain variables \emph{x}, \emph{y} and \emph{section}.}
+
 \item{input_df}{A data.frame that contains at least numeric \emph{x} and \emph{y}
 variables.}
 

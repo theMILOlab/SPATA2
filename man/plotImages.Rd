@@ -12,9 +12,9 @@ plotImages(object, ...)
   object,
   img_names = NULL,
   by_section = TRUE,
-  outline = TRUE,
+  outline = FALSE,
   outline_ref = FALSE,
-  fragments = FALSE,
+  fragments = TRUE,
   line_alpha = line_alpha_ref * 0.75,
   line_alpha_ref = 1,
   line_color = "black",
@@ -36,10 +36,10 @@ plotImages(object, ...)
   ncol = NULL,
   nrow = NULL,
   image = TRUE,
-  outline = TRUE,
+  outline = FALSE,
   outline_ref = FALSE,
   by_section = TRUE,
-  fragments = FALSE,
+  fragments = TRUE,
   line_alpha = line_alpha_ref * 0.75,
   line_alpha_ref = 1,
   line_color = "black",
@@ -116,6 +116,26 @@ is converted into vectors of class \code{units}. Therefore, input can be directl
 provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
 Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
 to specify the input in pixel you have to use input option 1. In pixel.
+}
+
+\section{Image visualization with ggplot2}{
+
+
+When comparing the output of \code{ggplot() + ggpLayerImage()} with other image plotting functions,
+you may notice that the image appears horizontally flipped when plotted using \code{ggpLayerImage()}.
+This behavior is due to the use of a Cartesian coordinate system in \code{SPATA2}, where a pixel
+with coordinates c(width = 1, height = 1) is plotted on the left side at the bottom.
+In contrast, functions like \code{EBImage::display()} or \code{graphics::plot()} use an \emph{image space} coordinate system,
+where pixel heights start from the top. Consequently, in \emph{image space}, pixel c(width = 1, height = 1)
+is displayed on the top resulting in mirror inverted visualization of the image.
+
+We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
+framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
+in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
+
+If you prefer to view your image in the regular orientation, you can use the \code{flipAll()} function on your object,
+specifying \code{axis = "horizontal"}, to reverse this effect.
 }
 
 \seealso{

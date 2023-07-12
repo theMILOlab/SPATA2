@@ -15,7 +15,7 @@ plotImage(object, ...)
   img_name = NULL,
   outline = FALSE,
   by_section = TRUE,
-  fragments = FALSE,
+  fragments = TRUE,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 0.5,
@@ -33,7 +33,7 @@ plotImage(object, ...)
   img_name = NULL,
   outline = FALSE,
   by_section = TRUE,
-  fragments = FALSE,
+  fragments = TRUE,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 0.5,
@@ -50,7 +50,7 @@ plotImage(object, ...)
   object,
   outline = FALSE,
   by_section = TRUE,
-  fragments = FALSE,
+  fragments = TRUE,
   line_alpha = 0.9,
   line_color = "black",
   line_size = 1,
@@ -60,6 +60,7 @@ plotImage(object, ...)
   scale_fct = 1,
   xrange = NULL,
   yrange = NULL,
+  display_subtitle = FALSE,
   ...
 )
 

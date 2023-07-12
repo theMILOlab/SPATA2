@@ -1387,6 +1387,14 @@ getMatrices <- function(object){
 }
 
 
+#' @rdname getExpressionMatrixNames
+#' @export
+getMatrixNames <- function(object){
+
+  base::names(object@data[[1]])
+
+}
+
 #' @title Obtain model evaluation
 #'
 #' @description Extracts the data.frame that contains the variable-model-fit

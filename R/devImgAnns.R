@@ -285,6 +285,49 @@ setMethod(
 
       parent_name <- img_ann@info$parent_name
 
+      # alternative options to map image annoation to parent image
+      if(base::is.null(parent_name)){
+
+        warning(glue::glue("Parent of image annotation {nm} is not set!"))
+
+        dims <- img_ann@info$current_dim
+
+        if(base::is.null(dims)){
+
+          warning("No dimensions found to map the image annotation to parent image. Using default image.")
+
+        } else {
+
+          image_dims <-
+            purrr::map(
+              .x = object@images,
+              .f = ~ .x@image_info$dims
+            )
+
+          for(i in base::seq_along(image_dims)){
+
+            if(dims[1] == image_dims[[i]][1] & dims[2] == image_dims[[i]][2]){
+
+              parent_name <- base::names(image_dims)[i]
+
+              break()
+
+            }
+
+          }
+
+        }
+
+        if(base::is.null(parent_name)){
+
+          warning("Could not map image annotation to parent image. Using default image.")
+
+
+        }
+
+      }
+
+
       # scale_fct = 1, if parent_name and img_name are equal
       scale_fct <-
         compute_img_scale_fct(
@@ -1306,6 +1349,12 @@ setMethod(
       against = validUnitsOfLength()
     )
 
+    if(base::is.character(img_name)){
+
+      object <- activateImageInt(object, img_name = img_name, load = TRUE)
+
+    }
+
     img_annotations <-
       getImageAnnotations(
         object = object,
@@ -1319,8 +1368,6 @@ setMethod(
         add_barcodes = FALSE,
         check = TRUE
       )
-
-    object <- activateImageInt(object, img_name = img_name, load = TRUE)
 
     plist <-
       purrr::map(

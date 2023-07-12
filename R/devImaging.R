@@ -177,13 +177,24 @@ setMethod(
   signature = "spata2",
   definition = function(object, img_name, load = FALSE){
 
-    activateImage(
-      object = object,
-      img_name = img_name,
-      load = load,
-      unload = FALSE,
-      verbose = FALSE
-    )
+    if(!base::is.null(img_name)){
+
+      if(img_name != activeImage(object)){
+
+        object <-
+          activateImage(
+            object = object,
+            img_name = img_name,
+            load = load,
+            unload = FALSE,
+            verbose = FALSE
+          )
+
+      }
+
+    }
+
+    return(object)
 
   }
 )
@@ -195,13 +206,24 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object, img_name, load = FALSE){
 
-    activateImage(
-      object = object,
-      img_name = img_name,
-      load = load,
-      unload = FALSE,
-      verbose = FALSE
-    )
+    if(!base::is.null(img_name)){
+
+      if(img_name != activeImage(object)){
+
+        object <-
+          activateImage(
+            object = object,
+            img_name = img_name,
+            load = load,
+            unload = FALSE,
+            verbose = FALSE
+          )
+
+      }
+
+    }
+
+    return(object)
 
   }
 )
@@ -267,6 +289,7 @@ setMethod(
 #'
 #' @inherit argument_dummy params
 #' @param var_df Data.frame with the variables to merge.
+#' @param vars Character vector. Subset of variables to add.
 #'
 #' @inherit update_dummy return
 #'
@@ -283,10 +306,22 @@ setGeneric(name = "addVarToCoords", def = function(object, ...){
 setMethod(
   f = "addVarToCoords",
   signature = "HistoImaging",
-  definition = function(object, var_df, vars){
+  definition = function(object, var_df, vars, overwrite = FALSE){
 
-    base::stopifnot(!base::any(vars %in% base::colnames(object@coordinates)))
+    # prevent/allow overwriting
+    confuns::check_none_of(
+      input = vars,
+      against = base::colnames(object@coordinates),
+      overwrite = overwrite
+    )
 
+    for(v in vars){
+
+      object@coordinates[[v]] <- NULL
+
+    }
+
+    # merge
     var_df <-
       dplyr::select(
         .data = var_df,
@@ -2460,112 +2495,6 @@ alignImageInteractiveUI <- function(window_size = "800px"){
 
 }
 
-#' @title Assign observations to tissue sections
-#'
-#' @description Based on the results of `identifyTissueOutline()` observations
-#' like cells or spots are assigned to the tissue sections or fragments
-#' they exist on or are labelled as artefacts.
-#'
-#' @inherit argument_dummy params
-#' @inherit dbscan::dbscan params
-#' @inherit update_dummy return
-#'
-#' @details The results are stored in an additional variable in the coordinates
-#' data.frame as obtained by `getCoordsDf()` named *section*.
-#'
-#' @export
-setGeneric(name = "assignToTissueSection", def = function(object, ...){
-
-  standardGeneric(f = "assignToTissueSection")
-
-})
-
-#' @rdname assignToTissueSection
-#' @export
-setMethod(
-  f = "assignToTissueSection",
-  signature = "spata2",
-  definition = function(object, buffer = 0){
-
-    imaging <-
-      getHistoImaging(object) %>%
-      assignToTissueSection(., img_name = NULL, buffer = buffer)
-
-    object <- setHistoImaging(object, imaging = imaging)
-
-    return(object)
-
-  }
-)
-
-#' @rdname assignToTissueSection
-#' @export
-setMethod(
-  f = "assignToTissueSection",
-  signature = "HistoImaging",
-  definition = function(object, img_name = NULL, buffer = 0){
-
-    containsTissueOutline(object, img_name = img_name, error = TRUE)
-
-    id_var <- object@coordinates_id
-
-    coords_df <-
-      getCoordsDf(
-        object = object,
-        img_name = img_name,
-        exclude = FALSE
-      )
-
-    outline_df <-
-      getTissueOutlineDf(
-        object = object,
-        img_name = img_name,
-        by_section = TRUE
-      )
-
-    # buffer outline
-    buffer <- as_pixel(buffer, object = object)
-
-    if(buffer != 0){
-
-      outline_df <- buffer_area(outline_df, buffer = buffer)
-
-    }
-
-    # set all to artefact
-    coords_df <-
-      dplyr::mutate(
-        .data = coords_df,
-        section = dplyr::if_else(exclude, true = "excluded", false = "artefact")
-      )
-
-    # then set actual section name
-    for(section in base::unique(outline_df$section)){
-
-      section_df <-
-        dplyr::filter(outline_df, section == {{section}}) %>%
-        buffer_area(buffer = getCCD(object, unit = "px"))
-
-      spot_in_section <-
-        identify_obs_in_polygon(
-          coords_df = coords_df,
-          polygon_df = section_df,
-          strictly = FALSE # may lie on edge of outline
-        ) %>%
-        dplyr::pull({{id_var}})
-
-      coords_df[coords_df[[id_var]] %in% spot_in_section, "section"] <- section
-
-    }
-
-    object <- addVarToCoords(object = object, var_df = coords_df, vars = "section")
-
-    return(object)
-
-  }
-)
-
-
 # b -----------------------------------------------------------------------
 
 background_white <- function(image, percentile = 99){
@@ -3163,6 +3092,42 @@ setMethod(
 )
 
 
+#' @title Checks availability of slot @@version
+#'
+#' @description Tests if slot @@version exists.
+#'
+#' @param check_not_empty Logical value. If `TRUE`, tests additionally if
+#' the slot content is not empty.
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+#'
+containsVersion <- function(object, check_not_empty = FALSE){
+
+  contains_version <-
+    base::tryCatch({
+
+      out <- base::is.list(object@version)
+
+      if(base::isTRUE(out) & base::isTRUE(check_not_empty)){
+
+        out <- !purrr::is_empty(object@version)
+
+      }
+
+      out
+
+    }, error = function(error){
+
+      FALSE
+
+    })
+
+  return(contains_version)
+
+}
+
 #' @title Create an object of class `HistoImage`
 #'
 #' @description Official constructor function of the S4 class `HistoImage`.
@@ -3287,6 +3252,7 @@ createHistoImaging <- function(sample,
   object@meta <- meta
   object@method <- method
   object@misc <- misc
+  object@version <- current_spata2_version
 
   # set registered images
   object@images <-
@@ -3528,7 +3494,7 @@ createHistoImagingVisium <- function(dir,
 #'
 #' @inherit update_dummy return
 #'
-#' @note `excludeArtefacts()` and `excludeTissueFragments()` require the output
+#' @note `excludeSpatialOutliers()` and `excludeTissueFragments()` require the output
 #' of `identifyTissueOutline()`.
 #'
 #' @export
@@ -3568,26 +3534,44 @@ setMethod(
 
 #' @rdname exclude
 #' @export
-setGeneric(name = "excludeArtefacts", def = function(object, ...){
+setGeneric(name = "excludeSpatialOutliers", def = function(object, ...){
 
-  standardGeneric(f = "excludeArtefacts")
+  standardGeneric(f = "excludeSpatialOutliers")
 
 })
 
 #' @rdname exclude
 #' @export
 setMethod(
-  f = "excludeArtefacts",
+  f = "excludeSpatialOutliers",
+  signature = "spata2",
+  definition = function(object){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- excludeSpatialOutliers(imaging)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname exclude
+#' @export
+setMethod(
+  f = "excludeSpatialOutliers",
   signature = "HistoImaging",
   definition = function(object){
 
-    tissueSectionsIdentified(object, error = TRUE)
+    containsSpatialOutliers(object, error = TRUE)
 
     exclude_ids <-
-      dplyr::filter(object@coordinates, section == "artefact") %>%
+      dplyr::filter(object@coordinates, section == "outlier") %>%
       dplyr::pull(id)
 
-    object <- exclude(object, ids = exclude_ids, reason = "is_artefact")
+    object <- exclude(object, ids = exclude_ids, reason = "spatial_outlier")
 
     return(object)
 
@@ -3609,7 +3593,7 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object, fragments = "all"){
 
-    tissueSectionsIdentified(object, error = TRUE)
+    containsSpatialOutliers(object, error = TRUE)
 
     frgmt_df <-
       object@coordinates %>%
@@ -5042,6 +5026,15 @@ setMethod(
 
     }
 
+
+    if(base::isTRUE(content) & base::isTRUE(transform)){
+
+      transform <- FALSE
+
+      warning("`transform` set to FALSE to merge pixel content.")
+
+    }
+
     img <-
       getImage(
         object = object,
@@ -5056,7 +5049,6 @@ setMethod(
       getPixelDf(
         object = img,
         hex_code = hex_code,
-        content = content,
         colors = colors
       )
 
@@ -5066,30 +5058,14 @@ setMethod(
       content_df <-
         base::as.data.frame(object@pixel_content) %>%
         magrittr::set_colnames(value = "content") %>%
-        tibble::rownames_to_column("id") %>%
+        tibble::rownames_to_column("pixel") %>%
         tibble::as_tibble() %>%
-        tidyr::separate(col = id, into = c("pixel", "width_chr", "height_chr"), sep = "_") %>%
-        dplyr::mutate(
-          width = stringr::str_remove(width_chr, pattern = "^w") %>% base::as.numeric(),
-          height = stringr::str_remove(height_chr, pattern = "^h") %>% base::as.numeric()
-        ) %>%
-        dplyr::select(width, height, content) %>%
+        dplyr::mutate(pixel = stringr::str_extract(string = pixel, pattern = "px\\d*")) %>%
+        dplyr::select(pixel, content) %>%
         dplyr::mutate(content_type = stringr::str_remove(content, pattern = "_\\d*$"))
 
-      if(base::isTRUE(transform)){
-
-        content_df <-
-          transform_outline(
-            outline_df = content_df,
-            transformations = object@transformations,
-            center = base::colMeans(content_df[c("width", "height")], na.rm = TRUE),
-            ranges = list(x = base::range(content_df$width), y = base::range(content_df$height))
-          )
-
-      }
-
       # merge via width and height due to possible transformations
-      pxl_df <- dplyr::left_join(x = pxl_df, y = content_df, by = c("width", "height"))
+      pxl_df <- dplyr::left_join(x = pxl_df, y = content_df, by = "pixel")
 
     }
 
@@ -5497,7 +5473,16 @@ setMethod(
   signature = "spata2",
   definition = function(object){
 
-    object@information$method
+    x <- object@information$method
+
+    out <-
+      transfer_slot_content(
+        recipient = SpatialMethod(),
+        donor = x,
+        verbose = FALSE
+      )
+
+    return(out)
 
   }
 )
@@ -5665,7 +5650,7 @@ setMethod(
     if(base::isTRUE(transform)){
 
       df <-
-        transform_outline(
+        transform_coords(
           outline_df = df,
           transformations = object@transformations,
           ranges = getImageRange(object),
@@ -6001,6 +5986,9 @@ setMethod(
                         spot_clr = "lightgrey",
                         spot_size = getSpotSize(object),
                         scale_spot_size = TRUE,
+                        clrp = NULL,
+                        clrp_adjust = NULL,
+                        clrsp = NULL,
                         smooth = FALSE,
                         smooth_span = 0.2,
                         normalize = NULL,
@@ -6012,6 +6000,7 @@ setMethod(
                         expand = TRUE,
                         scale_fct = 1,
                         add_labs = TRUE
+
   ){
 
     hlpr_assign_arguments(object)
@@ -6050,6 +6039,9 @@ setMethod(
       spot_alpha = spot_alpha,
       spot_clr = spot_clr,
       spot_size = spot_size,
+      clrp = clrp,
+      clrp_adjust = clrp_adjust,
+      clrsp = clrsp,
       xrange = xrange,
       yrange = yrange,
       unit = unit,
@@ -6075,6 +6067,9 @@ setMethod(
                         spot_alpha = 0.9,
                         spot_clr = "lightgrey",
                         spot_size = getSpotSize(object),
+                        clrp = "sifre",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
                         scale_spot_size = TRUE,
                         xrange = NULL,
                         yrange = NULL,
@@ -6213,6 +6208,19 @@ setMethod(
 
     }
 
+    if(base::is.character(color_by)){
+
+      out[["color_scale"]] <-
+        scale_color_add_on(
+          aes = "color",
+          variable = coords_df[[color_by]],
+          clrp = clrp,
+          clrp.adjust = clrp_adjust,
+          clrsp = clrsp
+        )
+
+    }
+
     out[["legend_size"]] <-
       SPATA2::legendColor(size = 5)
 
@@ -6305,7 +6313,7 @@ setMethod(
 #'
 #' @param inc_outline Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
 #'
-#' @seealso [`identifyPixelContent()`],[`identifyTissueOutline()`],[`identifyTissueSections()`]
+#' @seealso [`identifyPixelContent()`],[`identifyTissueOutline()`],[`identifySpatialOutliers()`]
 #'
 #' @export
 #'
@@ -6392,7 +6400,7 @@ setMethod(
 
     if(opt == "coords"){
 
-      tissueSectionsIdentified(object, error = TRUE)
+      containsSpatialOutliers(object, error = TRUE)
 
       coords_df <-
         getCoordsDf(object, img_name = img_name) %>%
@@ -6713,11 +6721,13 @@ setGeneric(name = "identifyBackgroundColor", def = function(object, ...){
 setMethod(
   f = "identifyBackgroundColor",
   signature = "spata2",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object, img_name = NULL, verbose = NULL, ...){
+
+    hlpr_assign_arguments(object)
 
     imaging <- getHistoImaging(object)
 
-    imaging <- identifyBackgroundColor(imaging, img_name = img_name)
+    imaging <- identifyBackgroundColor(imaging, img_name = img_name, verbose = verbose)
 
     object <- setHistoImaging(object, imaging = imaging)
 
@@ -6731,7 +6741,8 @@ setMethod(
 setMethod(
   f = "identifyBackgroundColor",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object, img_name = NULL, verbose = TRUE, ...){
+
 
     confuns::check_one_of(
       input = img_name,
@@ -6758,7 +6769,12 @@ setMethod(
 setMethod(
   f = "identifyBackgroundColor",
   signature = "HistoImage",
-  definition = function(object, ...){
+  definition = function(object, verbose = TRUE, ...){
+
+    confuns::give_feedback(
+      msg = glue::glue("Identifying background color for image '{object@name}'."),
+      verbose = verbose
+    )
 
     col_df <-
       getPixelDf(object, colors = TRUE, content = TRUE) %>%
@@ -6852,9 +6868,9 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         img_name,
-                        percentile = 99,
+                        percentile = 0,
                         compactness_factor = 10,
-                        superpixel = 1000,
+                        superpixel = 600,
                         dbscan_eps = 0.005,
                         dbscan_minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
@@ -6941,6 +6957,11 @@ setMethod(
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
 
+    confuns::give_feedback(
+      msg = "Identifying pixel content of image '{object@name}'.",
+      verbose = verbose
+    )
+
     if(!containsImage(object)){
 
       object <- loadImage(object)
@@ -6985,11 +7006,6 @@ setMethod(
                         dbscan_minPts = 0.005,
                         verbose = TRUE,
                         ...){
-
-    confuns::give_feedback(
-      msg = "Identifying pixel content.",
-      verbose = verbose
-    )
 
     image_orig <- object
 
@@ -7252,6 +7268,295 @@ setMethod(
 )
 
 
+#' @title Identify spatial outliers
+#'
+#' @description Assigns observations like cells or spots to the tissue sections or
+#' fragments they are located on or labels them as artefacts/spatial outliers.
+#'
+#' @param method Character vector. The method(s) to use. A combination of *'outline'*
+#' and/or *'dbscan'*. See details for more.
+#' @param img_name Character value. The name of the image whose tissue outline
+#' is used if `method` contains *'outline'*.
+#' @param buffer Numeric value. Expands the tissue outline to include observations
+#' that lie on the edge of the outline and are mistakenly removed.
+#' @param dbscan_eps,dbscan_minPts Given to the corresponding arguments of
+#' [`dbscan::dbscan()`] if `method` contains *'dbscan'*.
+#' @param test Character value. Only required if `method = c('dbscan', 'outline')`. If
+#' *'any'*, spots are labeled as outliers if at least one method identifies them
+#' as outliers. If *'all'*, spots are labeled as outliers if both methods identify
+#' them as outliers.
+#'
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#' @inherit update_dummy return
+#'
+#' @details
+#' This function identifies spatial outliers using a combination of two methods: *outline* and *dbscan*.
+#'
+#' Method *outline*:
+#' The *outline* method involves identifying the tissue outline using the `identifyTissueOutline()` function,
+#' which results in a polygon with multiple vertices. For each observation, the function checks which polygon it falls within
+#' and assigns it to the corresponding group. If an observation does not fall within any of the tissue polygons,
+#' it is considered a spatial outlier.
+#'
+#' Method *dbscan*:
+#' The *dbscan* method applies the DBSCAN algorithm to the observations. Please refer to the documentation
+#' of `dbscan::dbscan()` for a more detailed explanation. The `dbscan_eps` and `dbscan_minPts` arguments are passed
+#' directly to the corresponding arguments of the DBSCAN function. Note that if the input object does not contain
+#' a center-to-center distance, `dbscan_eps` must not be set to `NULL`. Observations that are not assigned to any cluster,
+#' indicated by being assigned to cluster 0, are considered spatial outliers.
+#'
+#' If `method = c('outlier', 'dbscan')`, both algorithms are applied. Whether an observation is considered a spatial outlier
+#' depends on the `test` argument:
+#'
+#' \itemize{
+#'  \item{`test = 'any'`:} The observation is considered a spatial outlier if either of the two tests classifies it as an outlier.
+#'  \item{`test = 'all'`:} The observation is considered a spatial outlier only if both tests classify it as an outlier.
+#' }
+
+#'
+#' @seealso [`identifyTissueOutline()`]
+#'
+#' @export
+setGeneric(name = "identifySpatialOutliers", def = function(object, ...){
+
+  standardGeneric(f = "identifySpatialOutliers")
+
+})
+
+#' @rdname identifySpatialOutliers
+#' @export
+setMethod(
+  f = "identifySpatialOutliers",
+  signature = "spata2",
+  definition = function(object,
+                        method = c("outline", "dbscan"),
+                        img_name = refImage(object),
+                        buffer = NULL,
+                        dbscan_eps = NULL,
+                        dbscan_minPts = 3,
+                        test = "any",
+                        verbose = NULL){
+
+    hlpr_assign_arguments(object)
+
+    imaging <-
+      getHistoImaging(object) %>%
+      identifySpatialOutliers(
+        object = .,
+        method = method,
+        img_name = img_name,
+        dbscan_eps = dbscan_eps,
+        dbscan_minPts = dbscan_minPts,
+        test = test,
+        verbose = verbose
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifySpatialOutliers
+#' @export
+setMethod(
+  f = "identifySpatialOutliers",
+  signature = "HistoImaging",
+  definition = function(object,
+                        method = c("outline", "dbscan"),
+                        img_name = refImage(object),
+                        buffer = NULL,
+                        dbscan_eps = NULL,
+                        dbscan_minPts = 3,
+                        test = "any",
+                        verbose = TRUE
+  ){
+
+    confuns::give_feedback(
+      msg = "Identifying spatial outliers.",
+      verbose = verbose
+    )
+
+    confuns::check_one_of(
+      input = method,
+      against = c("outline", "dbscan")
+    )
+
+    confuns::check_one_of(
+      input = test,
+      against = c("all", "any")
+    )
+
+    # overwrite active image temporarily
+    active_image <- activeImage(object)
+    object <- activateImageInt(object, img_name = img_name)
+
+    id_var <- object@coordinates_id
+
+    coords_df <-
+      getCoordsDf(object = object, img_name = img_name)
+
+    if("dbscan" %in% method){
+
+      containsMethod(object, method = c("Visium"), error = TRUE)
+
+      if(!is_dist(dbscan_eps)){
+
+        dbscan_eps <- getCCD(object, unit = "px")*2
+
+      } else {
+
+        dbscan_eps <- as_pixel(input = dbscan_eps, object = object)
+
+      }
+
+      coords_df <-
+        add_dbscan_variable(
+          coords_df = coords_df,
+          eps = dbscan_eps,
+          minPts = dbscan_minPts,
+          name = "section_dbscan"
+        )
+
+    }
+
+    if("outline" %in% method){
+
+      containsTissueOutline(object, img_name = img_name, error = TRUE)
+
+      outline_df <-
+        getTissueOutlineDf(
+          object = object,
+          img_name = img_name,
+          by_section = TRUE
+        )
+
+      # declare all obs as artefacts
+      coords_df[["section_outline"]] <- "artefact"
+
+      if(!base::is.numeric(buffer)){
+
+        buffer <- getCCD(object, unit = "px")
+
+      }
+
+      # then set actual section name
+      for(section in base::unique(outline_df$section)){
+
+        section_df <-
+          dplyr::filter(outline_df, section == {{section}})
+
+        if(buffer != 0){
+
+          section_df <-
+            dplyr::select(section_df, x,y) %>%
+            buffer_area(buffer = buffer)
+
+        }
+
+
+        spot_in_section <-
+          identify_obs_in_polygon(
+            coords_df = coords_df,
+            polygon_df = section_df,
+            strictly = FALSE # may lie on edge of outline -> allow
+          ) %>%
+          dplyr::pull({{id_var}})
+
+        coords_df[coords_df[[id_var]] %in% spot_in_section, "section_outline"] <- section
+
+      }
+
+    }
+
+    if(base::all(c("dbscan", "outline") %in% method)){
+
+      if(test == "any"){
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            section = dplyr::case_when(
+              section_dbscan == "0" | section_outline == "artefact" ~ "outlier",
+              TRUE ~ section_outline
+            )
+          )
+
+      } else if(test == "all") {
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            section = dplyr::case_when(
+              section_dbscan == "0" & section_outline == "artefact" ~ "outlier",
+              TRUE ~ section_outline
+            )
+          )
+
+      }
+
+    } else if(method == "dbscan"){
+
+      coords_df <-
+        dplyr::mutate(
+          .data = coords_df,
+          section = dplyr::case_when(
+            section_dbscan == "0" ~ "outlier",
+            TRUE ~ stringr::str_c("tissue_section_", section_dbscan)
+          )
+        )
+
+    } else if(method == "outline"){
+
+      coords_df <-
+        dplyr::mutate(
+          .data = coords_df,
+          section =
+            dplyr::if_else(
+              condition = section_outline == "artefact",
+              true = "outlier",
+              false = section_outline
+            )
+        )
+
+    }
+
+    vars <- c("section", "section_outline", "section_dbscan")
+    vars <- vars[vars %in% base::colnames(coords_df)]
+
+    # order group names
+    sections <-
+      stringr::str_subset(coords_df$section, pattern = "^tissue_section") %>%
+      base::unique() %>%
+      base::sort()
+
+    fragments <-
+      stringr::str_subset(coords_df$section, pattern = "^tissue_fragment") %>%
+      base::unique() %>%
+      base::sort()
+
+    section_levels <- c(sections, fragments, "outlier")
+
+    coords_df$section <- base::factor(coords_df$section, levels = section_levels)
+
+    object <-
+      addVarToCoords(
+        object = object,
+        var_df = coords_df,
+        vars = vars,
+        overwrite = TRUE
+      )
+
+    # restore original active image
+    object <- activateImageInt(object, img_name = active_image)
+
+    return(object)
+
+  }
+)
+
 #' @title Identify tissue outline
 #'
 #' @description Identifies the outline of each tissue section on the image
@@ -7267,7 +7572,7 @@ setMethod(
 #'
 #' @note Requires results of [`identifyPixelContent()`]
 #'
-#' @seealso [excludeArtefacts()], [`excludeTissueFragments()`],
+#' @seealso [excludeSpatialOutliers()], [`excludeTissueFragments()`],
 #' [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
 #'
 #' @export
@@ -7345,7 +7650,7 @@ setMethod(
     containsPixelContent(object, error = TRUE)
 
     confuns::give_feedback(
-      msg = glue::glue("Identifying tissue outline of image {object@name}."),
+      msg = glue::glue("Identifying tissue outline of image '{object@name}'."),
       verbose = verbose
     )
 
@@ -7407,12 +7712,29 @@ setMethod(
   }
 )
 
-identifyTissueSections <- function(object, ...){
+identifyTissueSections <- function(object, eps = getCCD(object, "px")*1.25, minPts = 3){
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    add_tissue_section_variable(
+      coords_df = .,
+      ccd = eps,
+      name = "section",
+      minPts = minPts
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
+
+identifyTissueSections2 <- function(object, ...){
 
   imaging <- getHistoImaging(object)
 
   # add variable 'section'
-  imaging <- assignToTissueSection(object = imaging)
+  imaging <- identifySpatialOutliers(object = imaging)
 
   coords_df <- getCoordsDf(imaging)
 
@@ -8007,7 +8329,7 @@ setMethod(
                         img_name = NULL,
                         outline = FALSE,
                         by_section = TRUE,
-                        fragments = FALSE,
+                        fragments = TRUE,
                         line_alpha = 0.9,
                         line_color = "black",
                         line_size = 0.5,
@@ -8051,7 +8373,7 @@ setMethod(
                         img_name = NULL,
                         outline = FALSE,
                         by_section = TRUE,
-                        fragments = FALSE,
+                        fragments = TRUE,
                         line_alpha = 0.9,
                         line_color = "black",
                         line_size = 0.5,
@@ -8092,7 +8414,7 @@ setMethod(
   definition = function(object,
                         outline = FALSE,
                         by_section = TRUE,
-                        fragments = FALSE,
+                        fragments = TRUE,
                         line_alpha = 0.9,
                         line_color = "black",
                         line_size = 1,
@@ -8102,10 +8424,21 @@ setMethod(
                         scale_fct = 1,
                         xrange = NULL,
                         yrange = NULL,
+                        display_subtitle = FALSE,
                         ...){
 
-    layer_coord_equal <- ggplot2::coord_equal(expand = TRUE)
+    layer_coord_equal <- ggplot2::coord_equal(expand = FALSE)
     layer_coord_equal$default <- TRUE
+
+    if(base::isTRUE(display_subtitle)){
+
+      subtitle <- object@name
+
+    } else {
+
+      subtitle <- NULL
+
+    }
 
     out <-
       ggplot2::ggplot() +
@@ -8117,7 +8450,11 @@ setMethod(
       ) +
       theme_image() +
       layer_coord_equal +
-      ggplot2::labs(subtitle = object@name, x = "Width [pixel]", y = "Height [pixel]")
+      ggplot2::labs(
+        subtitle = subtitle,
+        x = "Width [pixel]",
+        y = "Height [pixel]"
+        )
 
     if(base::isTRUE(outline)){
 
@@ -8186,6 +8523,9 @@ setMethod(
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
 #'
+#' @note Always plots the original justification of the image without
+#' transformations.
+#'
 #' @export
 #'
 setGeneric(name = "plotImageMask", def = function(object, ...){
@@ -8236,7 +8576,7 @@ setMethod(
                         clr_bg = "white"){
 
     pxl_df <-
-      getPixelDf(object, content = TRUE) %>%
+      getPixelDf(object, content = TRUE, transform = FALSE) %>%
       dplyr::mutate(
         Mask = content != "background",
         MasK = base::as.character(Mask)
@@ -8271,6 +8611,7 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @inheritSection section_dummy Distance measures
+#' @inheritSection section_dummy Image visualization with ggplot2
 #'
 #' @seealso [`getImageDirectories()`]
 #'
@@ -8290,9 +8631,9 @@ setMethod(
   definition = function(object,
                         img_names = NULL,
                         by_section = TRUE,
-                        outline = TRUE,
+                        outline = FALSE,
                         outline_ref = FALSE,
-                        fragments = FALSE,
+                        fragments = TRUE,
                         line_alpha = line_alpha_ref*0.75,
                         line_alpha_ref = 1,
                         line_color = "black",
@@ -8346,10 +8687,10 @@ setMethod(
                         ncol = NULL,
                         nrow = NULL,
                         image = TRUE,
-                        outline = TRUE,
+                        outline = FALSE,
                         outline_ref = FALSE,
                         by_section = TRUE,
-                        fragments = FALSE,
+                        fragments = TRUE,
                         line_alpha = line_alpha_ref*0.75,
                         line_alpha_ref = 1,
                         line_color = "black",
@@ -8590,7 +8931,7 @@ setMethod(
                         clr_fragments = "red",
                         clr_tissue = "forestgreen",
                         clr_artefact = "blue",
-                        type = FALSE,
+                        type = TRUE,
                         clrp_adjust = NULL){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -8618,10 +8959,10 @@ setMethod(
                         clr_fragments = "red",
                         clr_tissue = "forestgreen",
                         clr_artefact = "blue",
-                        type = FALSE,
+                        type = TRUE,
                         clrp_adjust = NULL){
 
-    pxl_df <- getPixelDf(object, content = TRUE)
+    pxl_df <- getPixelDf(object, content = TRUE, transform = FALSE)
 
     color_by <- base::ifelse(test = type, yes = "content_type", no = "content")
 
@@ -8747,6 +9088,48 @@ read_coords_visium <- function(dir_coords){
   return(coords_df)
 
 }
+
+
+#' @title Obtain name of reference content
+#'
+#' @description Handy functions to quickly access the name of reference content.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+setGeneric(name = "refImage", def = function(object, ...){
+
+  standardGeneric(f = "refImage")
+
+})
+
+#' @rdname refImage
+#' @export
+setMethod(
+  f = "refImage",
+  signature = "spata2",
+  definition = function(object){
+
+    getHistoImaging(object) %>%
+      refImage()
+
+  }
+)
+
+#' @rdname refImage
+#' @export
+setMethod(
+  f = "refImage",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    object@name_img_ref
+
+  }
+)
+
 
 #' @title Register or remove images
 #'
@@ -9172,7 +9555,7 @@ stretch_image <- function(image,
 
 #' @title Check availability of tissue information
 #'
-#' @description Checks if `identifyTissueSections()` and `identifyTissueOutline()`
+#' @description Checks if `identifySpatialOutliers()` and `identifyTissueOutline()`
 #' has been run successfully.
 #'
 #' @inherit argument_dummy params
@@ -9205,7 +9588,7 @@ setMethod(
 
 # -> convert to containsTissueOutline
 
-tissue_sections_identified <- function(object, error = FALSE){
+spatial_outliers_identified <- function(object, error = FALSE){
 
   coords_df <- getCoordsDf(object)
 
@@ -9213,7 +9596,7 @@ tissue_sections_identified <- function(object, error = FALSE){
 
   feedback_missing(
     x = out,
-    use_fn = "identifyTissueSections",
+    use_fn = "identifySpatialOutliers",
     error = error
   )
 
@@ -9223,26 +9606,26 @@ tissue_sections_identified <- function(object, error = FALSE){
 
 #' @rdname tissueOutlineIdentified
 #' @export
-setGeneric(name = "tissueSectionsIdentified", def = function(object, ...){
+setGeneric(name = "containsSpatialOutliers", def = function(object, ...){
 
-  standardGeneric(f = "tissueSectionsIdentified")
+  standardGeneric(f = "containsSpatialOutliers")
 
 })
 
 #' @rdname tissueOutlineIdentified
 #' @export
 setMethod(
-  f = "tissueSectionsIdentified",
+  f = "containsSpatialOutliers",
   signature = "spata2",
-  definition = tissue_sections_identified
+  definition = spatial_outliers_identified
 )
 
 #' @rdname tissueOutlineIdentified
 #' @export
 setMethod(
-  f = "tissueSectionsIdentified",
+  f = "containsSpatialOutliers",
   signature = "HistoImaging",
-  definition = tissue_sections_identified
+  definition = spatial_outliers_identified
 )
 
 #' @title Transform image
@@ -9274,7 +9657,22 @@ transform_image <- function(image, transformations, bg_col = "white"){
 
   }
 
-  # flip first
+  # rotate first
+  if(transformations$angle != 0){
+
+    angle <- transformations$angle
+
+    image <-
+      EBImage::rotate(
+        x = image,
+        angle = angle,
+        output.dim = base::dim(image)[c(1,2)],
+        bg.col = bg_col
+      )
+
+  }
+
+  # flip second
   if(base::isTRUE(transformations$flip$horizontal)){
 
     image <- EBImage::flip(x = image)
@@ -9284,22 +9682,6 @@ transform_image <- function(image, transformations, bg_col = "white"){
   if(base::isTRUE(transformations$flip$vertical)){
 
     image <- EBImage::flop(x = image)
-
-  }
-
-  # rotate second
-  if(transformations$angle != 0){
-
-    # apply flipped due to visualization of image in x-/y-space (not image space)
-    angle <- 360 - transformations$angle
-
-    image <-
-      EBImage::rotate(
-        x = image,
-        angle = angle,
-        output.dim = base::dim(image)[c(1,2)],
-        bg.col = bg_col
-      )
 
   }
 
@@ -9346,9 +9728,10 @@ transform_image <- function(image, transformations, bg_col = "white"){
 
 }
 
-#' @title Transform outline
+#' @title Transform coordinates
 #'
-#' @description Transforms tissue outline.
+#' @description Applies spatial linear transformations on a set of points
+#' in a Cartesian coordinate system.
 #'
 #' @param outline_df Data.frame with x- and y-coordinates.
 #' @param transformations List of transformation instructions. See
@@ -9357,16 +9740,19 @@ transform_image <- function(image, transformations, bg_col = "white"){
 #' @return Transformed input.
 #' @export
 #'
-transform_outline <- function(outline_df, transformations, center, ranges){
+
+transform_coords <- function(coords_df, transformations, center, ranges, ...){
+
+  deprecated(...)
 
   # only required after usage of alignImageAuto()
   if(!base::is.null(transformations$center)){
 
     if(!base::all(transformations$center == 0)){
 
-      outline_df <-
+      coords_df <-
         dplyr::mutate(
-          .data = outline_df,
+          .data = coords_df,
           dplyr::across(
             .cols = dplyr::any_of(c("x", "width")),
             .fns = ~ .x + transformations$center$horizontal
@@ -9382,12 +9768,26 @@ transform_outline <- function(outline_df, transformations, center, ranges){
 
   }
 
-  # first flip
+  # first rotate
+  if(transformations$angle != 0){
+
+    coords_df <-
+      rotate_coords_df(
+        df = coords_df,
+        coord_vars = list(pair1 = c("x", "y"), pair2 = c("width", "height")),
+        # apply reverted as image is displayed in x-/y-space but rotated in image space
+        angle = 360-transformations$angle,
+        center = center
+      )
+
+  }
+
+  # second flip
   if(base::isTRUE(transformations$flip$horizontal)){
 
-    outline_df <-
+    coords_df <-
       flip_coords_df(
-        df = outline_df,
+        df = coords_df,
         ranges = ranges,
         axis = "horizontal",
         xvars = c("x", "width"),
@@ -9398,9 +9798,9 @@ transform_outline <- function(outline_df, transformations, center, ranges){
 
   if(base::isTRUE(transformations$flip$vertical)){
 
-    outline_df <-
+    coords_df <-
       flip_coords_df(
-        df = outline_df,
+        df = coords_df,
         ranges = ranges,
         axis = "vertical",
         xvars = c("x", "width"),
@@ -9409,25 +9809,12 @@ transform_outline <- function(outline_df, transformations, center, ranges){
 
   }
 
-  # second rotate
-  if(transformations$angle != 0){
-
-    outline_df <-
-      rotate_coords_df(
-        df = outline_df,
-        coord_vars = list(pair1 = c("x", "y"), pair2 = c("width", "height")),
-        angle = transformations$angle,
-        center = center
-      )
-
-  }
-
   # third translate
   if(!base::all(transformations$translate == 0)){
 
-    outline_df <-
+    coords_df <-
       dplyr::mutate(
-        .data = outline_df,
+        .data = coords_df,
         dplyr::across(
           .cols = dplyr::any_of(c("x", "width")),
           .fns = ~ .x + transformations$translate$horizontal
@@ -9445,9 +9832,9 @@ transform_outline <- function(outline_df, transformations, center, ranges){
   # fourth stretching
   if(!base::all(transformations$stretch == 1)){
 
-    outline_df <-
+    coords_df <-
       dplyr::mutate(
-        .data = outline_df,
+        .data = coords_df,
         dplyr::across(
           .cols = dplyr::any_of(c("x", "width")),
           .fns = ~ .x * transformations$stretch$horizontal
@@ -9461,11 +9848,18 @@ transform_outline <- function(outline_df, transformations, center, ranges){
 
   }
 
-  return(outline_df)
+  return(coords_df)
 
 }
 
+transform_outline <- function(...){
 
+  deprecated(fn = TRUE)
+
+  transform_coords(...)
+
+
+}
 
 # u -----------------------------------------------------------------------
 
@@ -9582,7 +9976,7 @@ setMethod(
           hist_img@image <- empty_image
 
           confuns::give_feedback(
-            msg = glue::glue("Unloaded image '{hin}'."),
+            msg = glue::glue("Unloading image '{hin}'."),
             verbose = verbose
           )
 
@@ -9597,7 +9991,7 @@ setMethod(
             hist_img@image <- empty_image
 
             confuns::give_feedback(
-              msg = glue::glue("Unloaded image '{hin}'."),
+              msg = glue::glue("Unloading image '{hin}'."),
               verbose = verbose
             )
 
@@ -9615,3 +10009,18 @@ setMethod(
 
   }
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

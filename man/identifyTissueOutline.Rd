@@ -45,6 +45,6 @@ iterates over all of them.
 Requires results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}
 }
 \seealso{
-\code{\link[=excludeArtefacts]{excludeArtefacts()}}, \code{\link[=excludeTissueFragments]{excludeTissueFragments()}},
+\code{\link[=excludeSpatialOutliers]{excludeSpatialOutliers()}}, \code{\link[=excludeTissueFragments]{excludeTissueFragments()}},
 \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
 }

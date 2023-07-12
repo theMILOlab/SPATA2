@@ -992,6 +992,9 @@ setMethod(
       )
 
     img_ann@info[["parent_name"]] <- parent_name
+    img_ann@info[["sample"]] <- object@sample
+
+    img_ann@version <- current_spata2_version
 
     object@annotations[[id]] <- img_ann
 

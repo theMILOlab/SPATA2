@@ -444,6 +444,18 @@ initiateSpataObject_Visium <- function(directory_visium,
 
 
 
+#' @title Process `spata2` object using `Seurat`
+#'
+#' @description A wrapper around the most essential processing functions
+#' of the `Seurat` package.
+#'
+#' @inherit process_seurat_object params
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+#'
 processWithSeurat <- function(object,
                               NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
                               FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
@@ -456,7 +468,6 @@ processWithSeurat <- function(object,
                               overwrite = FALSE,
                               verbose = TRUE){
 
-  # read, process and set the counts - currently Seurat dependent
   seurat_object <-
     Seurat::CreateSeuratObject(
       counts = getCountMatrix(object),

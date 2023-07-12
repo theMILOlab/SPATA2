@@ -17,6 +17,9 @@ ggpLayerSpots(object, ...)
   spot_clr = "lightgrey",
   spot_size = getSpotSize(object),
   scale_spot_size = TRUE,
+  clrp = NULL,
+  clrp_adjust = NULL,
+  clrsp = NULL,
   smooth = FALSE,
   smooth_span = 0.2,
   normalize = NULL,
@@ -38,6 +41,9 @@ ggpLayerSpots(object, ...)
   spot_alpha = 0.9,
   spot_clr = "lightgrey",
   spot_size = getSpotSize(object),
+  clrp = "sifre",
+  clrp_adjust = NULL,
+  clrsp = "inferno",
   scale_spot_size = TRUE,
   xrange = NULL,
   yrange = NULL,
@@ -67,6 +73,19 @@ objects of classes for which a method has been defined.}
 \item{spot_alpha, spot_size, spot_clr}{Parameters to set the aesthetics
 alpha, size, and color of the spots. Arguments \code{alpha_by} and \code{color_by}
 are prioritized.}
+
+\item{clrp}{Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
+input options.}
+
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
+
+\item{clrsp}{Character value. Specifies the color spectrum to be used to represent
+continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
+valid input options.}
 
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 

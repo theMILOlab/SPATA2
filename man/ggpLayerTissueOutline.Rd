@@ -109,5 +109,5 @@ plotImage(object, unit = "mm") +
 
 }
 \seealso{
-\code{\link[=identifyPixelContent]{identifyPixelContent()}},\code{\link[=identifyTissueOutline]{identifyTissueOutline()}},\code{\link[=identifyTissueSections]{identifyTissueSections()}}
+\code{\link[=identifyPixelContent]{identifyPixelContent()}},\code{\link[=identifyTissueOutline]{identifyTissueOutline()}},\code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}
 }

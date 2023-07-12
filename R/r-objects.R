@@ -432,7 +432,7 @@ create_spatial_trajectories_descr <- list(
 
 #' @export
 current_spata_version <- list(major = 2, minor = 0, patch = 4)
-current_spata2_version <- list(major = 2, minor = 0, patch = 4)
+current_spata2_version <- list(major = 3, minor = 0, patch = 0)
 
 # d -----------------------------------------------------------------------
 
@@ -500,6 +500,7 @@ depr_info <-
       "subsetByBarcodes_ExprMtr" = "subsetByBarcodes",
       "subsetBySegment_CountMtr" = "subsetByBarcodes",
       "subsetBySegment_ExprMtr" = "subsetByBarcodes",
+      "transform_outline" = "transform_coords",
       "transform_euol_to_pixel" = "transform_dist_si_to_pixel",
       "transform_euol_to_pixels" = "transform_dist_si_to_pixels",
       "transform_pixel_to_euol" = "transform_pixel_to_dist_si",
@@ -529,7 +530,8 @@ depr_info <-
       "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
-      "setImageDirLowres" = list("dir_lowres" = "dir")
+      "setImageDirLowres" = list("dir_lowres" = "dir"),
+      "transform_coords" = list("outline_df" = "coords_df")
     )
   )
 
@@ -909,7 +911,8 @@ VisiumSmall <-
     method_specifics = list(ccd = "100um"),
     name = "VisiumSmall",
     observational_unit = "barcoded_spot",
-    unit = "mm"
+    unit = "mm",
+    version = current_spata2_version
   )
 
 #' @export
@@ -921,7 +924,8 @@ VisiumLarge <-
     method_specifics = list(ccd = "100um"),
     name = "VisiumLarge",
     observational_unit = "barcoded_spot",
-    unit = "mm"
+    unit = "mm",
+    version = current_spata2_version
   )
 
 
@@ -933,7 +937,7 @@ VisiumLarge <-
 #' @export
 spatial_methods <-
   list(
-    Undefined = SpatialMethod(name = "Undefined"),
+    Undefined = SpatialMethod(name = "Undefined", version = current_spata2_version),
     VisiumSmall = VisiumSmall,
     VisiumLarge = VisiumLarge
   )

@@ -172,7 +172,13 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
                       )
                     )
                   ),
-                  breaks(22 + breaks_add),
+                  breaks(18 + breaks_add),
+                  shiny::fluidRow(
+                    shiny::column(
+                      width = 3,
+                      shiny::uiOutput(outputId = "img_name")
+                    )
+                  ),
                   shiny::fluidRow(
                     shiny::column(
                       width = 6,
@@ -614,6 +620,8 @@ createImageAnnotations <- function(object, ...){
 
           shinyhelper::observe_helpers()
 
+          active_image <- activeImage(object)
+
           fnames <-
             getFeatureNames(object) %>%
             base::unname()
@@ -624,7 +632,8 @@ createImageAnnotations <- function(object, ...){
 
           mai_vec <- base::rep(0.5, 4)
 
-          # reactive values
+
+# reactive values ---------------------------------------------------------
 
           drawing <- shiny::reactiveVal(value = FALSE)
 
@@ -681,7 +690,8 @@ createImageAnnotations <- function(object, ...){
 
           spata_object <- shiny::reactiveVal(value = object)
 
-          # render UIs
+
+# render UIs --------------------------------------------------------------
 
           output$color_by_var <- shiny::renderUI({
 
@@ -816,6 +826,18 @@ createImageAnnotations <- function(object, ...){
 
           })
 
+          output$img_name <- shiny::renderUI({
+
+            shiny::selectInput(
+              inputId = "img_name",
+              label = "Image:",
+              choices = getImageNames(object),
+              selected = activeImage(object),
+              multiple = FALSE
+            )
+
+          })
+
           output$ncol <- shiny::renderUI({
 
             if(input$display_mode != "Surface"){
@@ -881,7 +903,8 @@ createImageAnnotations <- function(object, ...){
 
           })
 
-          # reactive expressions
+# reactive expressions ----------------------------------------------------
+
           annotation_plot <- shiny::eventReactive(c(input$update_plot, input$display_mode, input$ncol, input$nrow), {
 
             shiny::validate(
@@ -1055,7 +1078,7 @@ createImageAnnotations <- function(object, ...){
 
           img_name <- shiny::reactive({
 
-            activeImage(spata_object())
+            input$img_name
 
           })
 
@@ -1183,7 +1206,78 @@ createImageAnnotations <- function(object, ...){
 
           })
 
-          # drawing
+
+# observe events ----------------------------------------------------------
+
+          # add annotation
+          oe <- shiny::observeEvent(input$add_annotation, {
+
+            checkpoint(
+              evaluate = n_img_anns() >= 1,
+              case_false = "no_polygons"
+            )
+
+            if(input$drawing_mode == "Single"){
+
+              id <- input$img_ann_id
+
+              checkpoint(
+                evaluate = !n_img_anns() > 1,
+                case_false = "too_many_polygons"
+              )
+
+              checkpoint(
+                evaluate = id != "",
+                case_false = "no_name"
+              )
+
+              checkpoint(
+                evaluate = stringr::str_detect(id, pattern = "^[A-Za-z]"),
+                case_false = "invalid_id"
+              )
+
+              checkpoint(
+                evaluate = !id %in% getImgAnnIds(spata_object()),
+                case_false = "name_in_use"
+              )
+
+            } else if(input$drawing_mode == "Multiple") {
+
+              id <- NULL
+
+            }
+
+            object <- spata_object()
+
+            img_ann_list <- img_anns()
+
+            for(i in 1:n_img_anns()){
+
+              object <-
+                addImageAnnotation(
+                  object = object,
+                  tags = input$tags,
+                  area = img_ann_list[[i]],
+                  id = id,
+                  parent_name = img_name()
+                )
+
+            }
+
+            ref1 <- n_img_anns()
+            ref2 <- base::ifelse(ref1 == 1, "annotation", "annotations")
+
+            give_feedback(
+              msg = glue::glue("Added {ref1} {ref2}."),
+              verbose = TRUE
+            )
+
+            img_anns(list())
+
+            spata_object(object)
+
+          })
+
           oe <- shiny::observeEvent(input$dbl_click, {
 
             # switch between drawing() == TRUE and drawing() == FALSE
@@ -1231,6 +1325,17 @@ createImageAnnotations <- function(object, ...){
               # resets polygon_df()
               polygon_vals$x <- NULL
               polygon_vals$y <- NULL
+
+            }
+
+          })
+
+          oe <- shiny::observeEvent(input$hover, {
+
+            if(drawing()){
+
+              polygon_vals$x <- c(polygon_vals$x, input$hover$x)
+              polygon_vals$y <- c(polygon_vals$y, input$hover$y)
 
             }
 
@@ -1305,15 +1410,21 @@ createImageAnnotations <- function(object, ...){
 
           }, ignoreInit = TRUE)
 
+          oe <- shiny::observeEvent(input$img_name, {
 
-          oe <- shiny::observeEvent(input$hover, {
+            shiny::req(input$img_name != activeImage(spata_object()))
 
-            if(drawing()){
+            object <- spata_object()
 
-              polygon_vals$x <- c(polygon_vals$x, input$hover$x)
-              polygon_vals$y <- c(polygon_vals$y, input$hover$y)
+            object <-
+              activateImage(
+                object = object,
+                img_name = input$img_name,
+                unload = FALSE,
+                verbose = TRUE
+                )
 
-            }
+            spata_object(object)
 
           })
 
@@ -1325,30 +1436,6 @@ createImageAnnotations <- function(object, ...){
             interactive$zooming[[(n_zooms() + 1)]] <- current_zooming()
 
           })
-
-          oe <- shiny::observeEvent(c(input$zoom_back, shortcuts$b), {
-
-            checkpoint(
-              evaluate = n_zooms() != 0,
-              case_false = "not_zoomed_in"
-            )
-
-            interactive$zooming <-
-              utils::head(interactive$zooming, n = (n_zooms() - 1))
-
-          }, ignoreInit = TRUE)
-
-          oe <- shiny::observeEvent(c(input$zoom_out, shortcuts$o), {
-
-            checkpoint(
-              evaluate = n_zooms() != 0,
-              case_false = "not_zoomed_in"
-            )
-
-            interactive$zooming <- list()
-
-          }, ignoreInit = TRUE)
-
 
           # zooming add ons
           oe <- shiny::observeEvent(interactive$zooming,{
@@ -1420,74 +1507,31 @@ createImageAnnotations <- function(object, ...){
 
           })
 
-          # add annotation
-          oe <- shiny::observeEvent(input$add_annotation, {
+          oe <- shiny::observeEvent(c(input$zoom_back, shortcuts$b), {
 
             checkpoint(
-              evaluate = n_img_anns() >= 1,
-              case_false = "no_polygons"
+              evaluate = n_zooms() != 0,
+              case_false = "not_zoomed_in"
             )
 
-            if(input$drawing_mode == "Single"){
+            interactive$zooming <-
+              utils::head(interactive$zooming, n = (n_zooms() - 1))
 
-              id <- input$img_ann_id
+          }, ignoreInit = TRUE)
 
-              checkpoint(
-                evaluate = !n_img_anns() > 1,
-                case_false = "too_many_polygons"
-              )
+          oe <- shiny::observeEvent(c(input$zoom_out, shortcuts$o), {
 
-              checkpoint(
-                evaluate = id != "",
-                case_false = "no_name"
-              )
+            checkpoint(
+              evaluate = n_zooms() != 0,
+              case_false = "not_zoomed_in"
+            )
 
-              checkpoint(
-                evaluate = stringr::str_detect(id, pattern = "^[A-Za-z]"),
-                case_false = "invalid_id"
-              )
+            interactive$zooming <- list()
 
-              checkpoint(
-                evaluate = !id %in% getImgAnnIds(spata_object()),
-                case_false = "name_in_use"
-              )
+          }, ignoreInit = TRUE)
 
-            } else if(input$drawing_mode == "Multiple") {
 
-              id <- NULL
-
-            }
-
-            object <- spata_object()
-
-            img_ann_list <- img_anns()
-
-            for(i in 1:n_img_anns()){
-
-              object <-
-                addImageAnnotation(
-                  object = object,
-                  tags = input$tags,
-                  area = img_ann_list[[i]],
-                  id = id,
-                  parent_name = img_name()
-                )
-
-            }
-
-            ref1 <- n_img_anns()
-            ref2 <- base::ifelse(ref1 == 1, "annotation", "annotations")
-
-            give_feedback(
-              msg = glue::glue("Added {ref1} {ref2}."),
-              verbose = TRUE
-              )
-
-            img_anns(list())
-
-            spata_object(object)
-
-          })
+# outputs -----------------------------------------------------------------
 
           # plot outputs
 
@@ -1500,7 +1544,7 @@ createImageAnnotations <- function(object, ...){
           output$plot_bg <- shiny::renderPlot({
 
             plotSurfaceBase(
-              object = object,
+              object = spata_object(),
               color_by = color_by_var(),
               pt_alpha = pt_alpha(),
               pt_clrp = getDefault(object, "pt_clrp"),
@@ -1598,6 +1642,13 @@ createImageAnnotations <- function(object, ...){
           oe <- shiny::observeEvent(input$close_app, {
 
             object <- spata_object()
+
+            # reset to previous active image if necessary
+            if(input$img_name != active_image){
+
+              object <- activateImage(object, img_name = active_image)
+
+            }
 
             shiny::stopApp(returnValue = object)
 

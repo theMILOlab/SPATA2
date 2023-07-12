@@ -5,6 +5,14 @@ NULL
 
 # last --------------------------------------------------------------------
 
+#' @rdname legendBottom
+#' @export
+labsNone <- function(){
+
+  ggplot2::labs(x = NULL, y = NULL)
+
+}
+
 #' @export
 lastImageAnnotation <- function(object){
 
@@ -30,7 +38,7 @@ lastImageAnnotation <- function(object){
 }
 # legend ------------------------------------------------------------------
 
-#' @title ggplot2 legend manipulation
+#' @title ggplot2 basic manipulation
 #' @export
 legendBottom <- purrr::partial(.f = ggplot2::theme, legend.position = "bottom")
 

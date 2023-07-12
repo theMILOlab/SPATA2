@@ -53,7 +53,8 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
                             method_specifics = "list",
                             name = "character",
                             unit = "character",
-                            observational_unit = "character"
+                            observational_unit = "character",
+                            version = "list"
                           ))
 
 #' @title The \code{Trajectory} - Class
@@ -207,7 +208,8 @@ HistoImaging <- setClass(Class = "HistoImaging",
                            meta = "list",
                            misc = "list",
                            name_img_ref = "character",
-                           sample = "character"
+                           sample = "character",
+                           version = "list"
                          )
 )
 
@@ -240,6 +242,7 @@ HistoImaging <- setClass(Class = "HistoImaging",
 #' \itemize{
 #'  \item{parent_name:}{ Character string. Content from slot @@name of the `HistoImage`
 #'  object that contains the image the annotation was drawn on.}
+#'  \item{sample:}{ Character string. The sample to which the annotation belongs.}
 #' }
 #' @slot misc list. A flexible list for miscellaneous input.
 #' @slot tags character. Vector of arbitrary length. Contains tags that can be used
@@ -257,7 +260,8 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
                                        image_info = "list",
                                        info = "list",
                                        misc = "list",
-                                       tags = "character"
+                                       tags = "character",
+                                       version = "list"
                                      )
 )
 

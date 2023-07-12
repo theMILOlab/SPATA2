@@ -3,8 +3,9 @@
 \name{exclude}
 \alias{exclude}
 \alias{exclude,HistoImaging-method}
-\alias{excludeArtefacts}
-\alias{excludeArtefacts,HistoImaging-method}
+\alias{excludeSpatialOutliers}
+\alias{excludeSpatialOutliers,spata2-method}
+\alias{excludeSpatialOutliers,HistoImaging-method}
 \alias{excludeTissueFragments}
 \alias{excludeTissueFragments,HistoImaging-method}
 \title{Exclude observations}
@@ -13,9 +14,11 @@ exclude(object, ...)
 
 \S4method{exclude}{HistoImaging}(object, ids, reason)
 
-excludeArtefacts(object, ...)
+excludeSpatialOutliers(object, ...)
 
-\S4method{excludeArtefacts}{HistoImaging}(object)
+\S4method{excludeSpatialOutliers}{spata2}(object)
+
+\S4method{excludeSpatialOutliers}{HistoImaging}(object)
 
 excludeTissueFragments(object, ...)
 
@@ -42,6 +45,6 @@ suffix of the function exclusion happens based on results
 of previous algorithms.
 }
 \note{
-\code{excludeArtefacts()} and \code{excludeTissueFragments()} require the output
+\code{excludeSpatialOutliers()} and \code{excludeTissueFragments()} require the output
 of \code{identifyTissueOutline()}.
 }

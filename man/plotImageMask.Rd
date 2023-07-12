@@ -41,7 +41,7 @@ plotPixelContent(object, ...)
   clr_fragments = "red",
   clr_tissue = "forestgreen",
   clr_artefact = "blue",
-  type = FALSE,
+  type = TRUE,
   clrp_adjust = NULL
 )
 
@@ -52,7 +52,7 @@ plotPixelContent(object, ...)
   clr_fragments = "red",
   clr_tissue = "forestgreen",
   clr_artefact = "blue",
-  type = FALSE,
+  type = TRUE,
   clrp_adjust = NULL
 )
 }
@@ -89,4 +89,8 @@ Visualizes the results of \code{\link[=identifyPixelContent]{identifyPixelConten
 \item{\code{plotImageMask()}:}{ Distinguishes pixel in back- and foreground. Foreground being the tissue.}
 \item{\verb{plotPixelContent():}}{ Visualizes the classification of each pixel in detail.}
 }
+}
+\note{
+Always plots the original justification of the image without
+transformations.
 }

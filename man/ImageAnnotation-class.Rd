@@ -37,6 +37,7 @@ image annotation. Slots that should always exist:
 \itemize{
 \item{parent_name:}{ Character string. Content from slot @name of the \code{HistoImage}
 object that contains the image the annotation was drawn on.}
+\item{sample:}{ Character string. The sample to which the annotation belongs.}
 }}
 
 \item{\code{misc}}{list. A flexible list for miscellaneous input.}

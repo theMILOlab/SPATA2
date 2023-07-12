@@ -11,7 +11,7 @@ ggpLayerCaptureArea(
   rect_clr = "black",
   rect_line_type = "solid",
   rect_size = 1,
-  expand_rect = 1.01,
+  expand_rect = 1.025,
   expand_x = ggplot2::waiver(),
   expand_y = ggplot2::waiver()
 )
