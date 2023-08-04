@@ -1561,6 +1561,599 @@ tab_create_trajectories_return <- function(){
 
 }
 
+
+
+#' @title Transform seurat-object to spata-object
+#'
+#' @description This function provides a convenient way to transform your seurat-object
+#' into a spata-object while maintaining as much analysis progress as possible. See details
+#' for more information.
+#'
+#' @inherit argument_dummy params
+#' @inherit loadGSDF params
+#'
+#' @param seurat_object A valid seurat object.
+#' @param sample_name Character value. Future input for SPATA's \code{of_sample}-argument.
+#' @param method Character value. Determines the data slots from which to compile the spata-object.
+#'
+#'  \describe{
+#'   \item{\emph{'spatial'}}{Denotes that the data to be used derived from spatial experiments.}
+#'   \item{\emph{'single_cell'}}{Denotes that the data to be used derived from single cell experiments.}
+#'  }
+#'
+#' @param assay_name Character value. Denotes the assay from which to transfer
+#' the data. If the seurat-object contains only one assay \code{assay_name} = NULL
+#' makes \code{transformSeuratToSpata()} choose the only one found.
+#'
+#' @param assay_slot Character value. Denotes the slot of the seurat-object's
+#' assay object from which to transfer the expression matrix (the count matrix
+#' is always taken from slot \code{@@counts}). Either \emph{'data'}
+#' or \emph{'scale.data'}. If set to NULL the functions checks both options
+#' for validity. If both slots contain valid expression matrix candidates it
+#' defaults to \emph{'scale.data'}.
+#'
+#' @param coords_from Character value. Either \emph{'pca', 'tsne'} or \emph{'umap'}.
+#'
+#'  Only relevant if \code{method} was set to \emph{'single_cell'}. Denotes the slot from which to
+#'  take the surrogate coordinates. If the specified data ist not found the slot @@coordinates will contain an
+#'  empty data.frame and has to be set manually with \code{setCoordsDf()}.
+#'
+#' @details This function assembles a spata-object from the data it finds in the provided
+#' seurat-object. This always includes gene count- and expression-matrices as well as
+#' dimensional reduction data like PCA, UMAP and TSNE. Whenever \code{transformSpataToSeurat()}
+#' does not find anything it well tell you via a warning message or an error message if the missing
+#' data is essential to the spata-object. You might have to run certain functions afterwards with the
+#' obtained SPATA-object. (e.g. did not find UMAP data in seurat-object -> \code{runUmap()}).
+#'
+#' If your seurat-object contains more than one assay-object or more than one
+#' SpatialImage-object you need to specify the respective objects by name using the arguments
+#' \code{assay_name} and \code{image_name}. If the assay you denoted with \code{assay_name}
+#' contains more than one valid expression matrix you need to specify the one you
+#' want to use as the spata-object's \emph{scaled_mtr} using the argument \code{assay_slot}.
+#'
+#' Seurat-objects containing data derived from spatial experiments (\code{method} = \emph{'spatial'}):
+#'
+#' If you specify argument \code{method} as \emph{'spatial'} \code{transformSeuratToSpata()}
+#' assumes that the provided seurat-object contains a SpatialImage-object in slot @@images
+#' from which it will extract the coordinates and the histology image.
+#'
+#' Seurat-objects containing data derived from spatial experiments (\code{method} = \emph{'single_cell'}):
+#'
+#' If you specify argument \code{method} as \emph{'single_cell'} \code{transformSeuratToSpata()}
+#' uses either tsne or umap embedding as surrogate coordinates.
+#'
+#' @return A spata object.
+#' @export
+#' @keywords internal
+transformSeuratToSpata <- function(seurat_object,
+                                   sample_name,
+                                   method = "spatial",
+                                   coords_from = "pca",
+                                   assay_name = NULL,
+                                   assay_slot = NULL,
+                                   image_name = NULL,
+                                   gene_set_path = NULL,
+                                   verbose = TRUE){
+
+  deprecated(fn = TRUE)
+
+  # 0. Set up empty spata-object --------------------------------------------
+
+  spata_object <- initiateSpataObject_Empty(sample_name = sample_name)
+
+  if(base::is.null(gene_set_path) | base::is.character(gene_set_path)){
+
+    spata_object@used_genesets <-
+      loadGSDF(gene_set_path = gene_set_path, verbose = verbose)
+
+  }
+
+  # 1. Control --------------------------------------------------------------
+
+  confuns::give_feedback(msg = "Checking input for validity.", verbose = verbose)
+
+  confuns::check_one_of(input = method, against = seurat_methods, ref.input = "input for argument 'method'")
+
+  confuns::are_values(c("assay_name", "assay_slot", "image_name"), mode = "character", skip.allow = TRUE, skip.val = NULL)
+
+  # spatial image check
+  if(method == "spatial"){
+
+    image_names <-
+      purrr::keep(seurat_object@images, .p = ~ methods::is(.x, class2 = "SpatialImage")) %>%
+      base::names()
+
+    # choose image automatically
+    if(base::is.null(image_name)){
+
+      if(base::is.null(image_names)){
+
+        msg <-
+          glue::glue(
+            "Did not find any spatial information in slot @image of provided seurat-object.",
+            "There should be an object of class 'SpatialImage' if you set argument 'method' = 'spatial'",
+          )
+
+        confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+      } else if(base::length(image_names) == 1){
+
+        image_name <- image_names
+
+        confuns::give_feedback(
+          msg = glue::glue("Extracting spatial data from SpatialImage-object: '{image_names}'")
+        )
+
+      } else if(base::length(image_names) > 2) {
+
+        msg <-
+          glue::glue(
+            "Found more than one SpatialImage-object in slot @image of provided seurat-object.",
+            "Please specfify one of the options '{ref_images}' using argument 'image_name'.",
+            ref_images = glue::glue_collapse(x = image_names, sep = "', '", last = "' or '")
+          )
+
+        confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+      }
+
+    } else {
+
+      confuns::check_one_of(
+        input = image_name,
+        against = image_names
+      )
+
+      confuns::give_feedback(
+        msg = glue::glue("Extracting spatial data from SpatialImage-object: '{image_name}'")
+      )
+
+    }
+
+  }
+
+  # assay check: figure out the assay from which to transfer the data
+  assay_names <-
+    purrr::keep(.x = seurat_object@assays, .p = ~ methods::is(.x, class2 = "Assay")) %>%
+    base::names()
+
+  if(base::is.null(assay_names)){
+
+    msg <- "Did not find any assays in provided seurat-object."
+
+    confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+  }
+
+  # if no assay is pecified:
+  if(base::is.null(assay_name)){
+
+    if(base::length(assay_names) == 1){
+
+      assay_name <- assay_names
+
+      confuns::give_feedback(
+        msg = glue::glue("Extracting data matrices from assay: '{assay_name}'"),
+        verbose = verbose
+      )
+
+    } else if(length(assay_names) > 1) {
+
+      msg <-
+        glue::glue(
+          "Found more than one assay in provided seurat-object.",
+          "Please specify one of the options '{ref_assays}' using argument 'assay_name'.",
+          ref_assays = glue::glue_collapse(x = assay_names, sep = "', '", last = "' or '")
+        )
+
+      confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+    }
+
+  } else {
+
+    confuns::check_one_of(
+      input = assay_name,
+      against = assay_names
+    )
+
+    confuns::give_feedback(
+      msg = glue::glue("Extracting data matrices from assay: '{assay_name}'"),
+      verbose = verbose
+    )
+
+  }
+
+  # assay check: figure out which slot to choose
+
+  prel_assay <- seurat_object@assays[[assay_name]]
+
+  assay_slot_dims <-
+    purrr::map(
+      .x = seurat_assay_data_slots,
+      .f = ~ methods::slot(prel_assay, name = .x) %>% base::dim()
+    ) %>%
+    purrr::set_names(nm = seurat_assay_data_slots) %>%
+    purrr::keep(.p = ~ !base::any(.x == 0))
+
+  assay_slots <- base::names(assay_slot_dims)
+
+  # first make sure that there are valid scaled expression matrix candidates
+  if(base::length(assay_slots) == 0){
+
+    msg <- glue::glue("No slot of assay '{assay_name}' contains a valid scaled expression matrix.")
+
+    confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+  }
+
+  # if no slot is specified:
+  if(base::is.null(assay_slot)){
+
+    # if only one candidate
+    if(base::length(assay_slots) == 1){
+
+      assay_slot <- assay_slots
+
+      confuns::give_feedback(
+        msg = glue::glue("Extracting scaled expression matrix from slot: '{assay_slot}'."),
+        verbose = verbose
+      )
+
+      # if scale.data exists among candidates use as default
+    } else if("scale.data" %in% assay_slots){
+
+      assay_slot <- "scale.data"
+
+      confuns::give_feedback(
+        msg = glue::glue("Extracting scaled expression matrix from slot: '{assay_slot}'."),
+        verbose = verbose
+      )
+
+    }
+
+  } else {
+
+    confuns::check_one_of(
+      input = assay_slot,
+      against = assay_slots
+    )
+
+    confuns::give_feedback(
+      msg = glue::glue("Extracting scaled expression matrix from slot: '{assay_slot}'."),
+      verbose = verbose
+    )
+
+  }
+
+
+  # 2. Extract data ---------------------------------------------------------
+
+  if(method == "spatial"){
+
+    if(FALSE){
+
+    }
+
+    slice <-
+      getFromSeurat(
+        return_value = seurat_object@images[[image_name]],
+        error_handling = "stop",
+        error_ref = glue::glue("SpatialImage-object '{image_name}'"),
+        error_value = NULL
+      )
+
+    # get scaled matrix
+    assay <- seurat_object@assays[[assay_name]]
+
+    scaled_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = assay_slot),
+        error_handling = "stop",
+        error_ref = "scaled matrix",
+        error_value = NULL
+      )
+
+    # get count matrix
+    count_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = "counts"),
+        error_handling = "warning",
+        error_value = base::matrix(),
+        error_ref = "count matrix"
+      )
+
+
+    # get image
+    image_object <-
+      getFromSeurat(
+        return_value = seurat_object@images[[image_name]],
+        error_handling = "warning",
+        error_value = NULL,
+        error_ref = "image"
+      )
+
+    if(!base::is.null(image_object)){
+
+      image_object <- asHistologyImage(object = image_object)
+
+      coords_df <- image_object@coordinates
+
+    } else {
+
+      # get coordinates
+      coords_df <-
+        getFromSeurat(
+          return_value = Seurat::GetTissueCoordinates(seurat_object),
+          error_handling = "stop",
+          error_ref = "coordinates",
+          error_value = NULL
+        ) %>%
+        confuns::keep_named() %>%
+        tibble::rownames_to_column(var = "barcodes")
+
+      c_cnames <- base::colnames(coords_df)
+
+      if("imagecol" %in% c_cnames){
+
+        coords_df <- dplyr::mutate(coords_df, x = imagecol)
+
+      }
+
+      if("imagerow" %in% c_cnames){
+
+        coords_df <- dplyr::mutate(coords_df, y = imagerow)
+
+      }
+
+      if(!base::all(c("x", "y") %in% base::colnames(coords_df))){
+
+        msg <-
+          glue::glue(
+            "Dont know which columns refer to x and y coordinates.",
+            "Please check the coordinate data.frame in the seurat-object's image slot",
+            "and make sure that it has columns either named 'imagerow' and 'imagecol' or 'x' and 'y'."
+          )
+
+        confuns::give_feedback(msg = msg, fdb.fn = "stop")
+
+      }
+
+      coords_df <-
+        dplyr::mutate(coords_df, sample = {{sample_name}}) %>%
+        dplyr::select(barcodes, sample, x, y)
+
+    }
+
+  } else if(method == "single_cell") {
+
+    confuns::is_value(x = coords_from, mode = "character", ref = "coords_from")
+
+    # get coordinates/ umap cell embedding
+    coords_df <-
+      getFromSeurat(
+        return_value = base::as.data.frame(seurat_object@reductions[[coords_from]]@cell.embeddings[, 1:2]),
+        error_handling = "warning",
+        error_value = NULL,
+        error_ref = glue::glue("coordinates/{coords_from} cell embedding")
+      )
+
+    # try tsne if umap did not work
+    if(base::is.null(coords_df)){
+
+      msg <- glue::glue("Trying to extract surrogate coordinates from slot {coords_from} failed. Please
+                        set the coordinates manually with 'setCoordsDf()'.")
+
+      confuns::give_feedback(msg = msg, fdb.fn = "warning")
+
+      coords_df <- base::data.frame()
+
+    } else {
+
+      coords_df <-
+        tibble::rownames_to_column(.data = coords_df, var = "barcodes") %>%
+        magrittr::set_colnames(value = c("barcodes", "x", "y")) %>%
+        dplyr::mutate(sample = {{sample_name}}) %>%
+        dplyr::select(barcodes, sample, x, y)
+
+    }
+
+    # get scaled matrix
+    assay <- seurat_object@assays[[assay_name]]
+
+    scaled_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = assay_slot),
+        error_handling = "stop",
+        error_ref = "scaled matrix",
+        error_value = NULL
+      )
+
+    # get count matrix
+    count_mtr <-
+      getFromSeurat(
+        return_value = methods::slot(assay, name = "counts"),
+        error_handling = "warning",
+        error_value = base::matrix(),
+        error_ref = "count matrix"
+      )
+
+    # no image
+    image_object <- NULL
+
+  }
+
+
+  # 3. Postprocess ----------------------------------------------------------
+
+  confuns::give_feedback(
+    msg = "Transferring feature and dimensional reduction data.",
+    verbose = verbose
+  )
+
+  # check if barcodes are identical
+  barcodes_matrix <- base::colnames(scaled_mtr) %>% base::sort()
+  barcodes_coordinates <- dplyr::pull(coords_df, var = "barcodes") %>% base::sort()
+
+  if(!base::identical(barcodes_matrix, barcodes_coordinates)){
+
+    base::stop("The barcodes of the coordinate system and the column names of the assay must be identical. Please check the seurat object for integrity.")
+
+  }
+
+  # feature data
+
+  seurat_object@meta.data$barcodes <- NULL
+
+  fdata <-
+    tibble::rownames_to_column(.data = seurat_object@meta.data, var = "barcodes") %>%
+    dplyr::select(barcodes, dplyr::everything())
+
+  # savely discard colum 'orig.ident'
+  fdata <- base::tryCatch(
+
+    dplyr::select(fdata, -orig.ident),
+
+    error = function(error){ fdata }
+
+  )
+
+  spata_object <- setFeatureDf(object = spata_object, feature_df = fdata)
+
+  # 4. Pass to Spata --------------------------------------------------------
+
+
+  # dimensional reduction: pca
+  pca_df <- base::tryCatch({
+
+    pca_df <-
+      base::as.data.frame(seurat_object@reductions$pca@cell.embeddings) %>%
+      tibble::rownames_to_column(var = "barcodes") %>%
+      dplyr::select(barcodes, dplyr::everything())
+
+    base::colnames(pca_df) <- stringr::str_remove_all(base::colnames(pca_df), pattern = "_")
+
+    pca_df
+
+  },
+
+  error = function(error){
+
+    msg <- "Could not find or transfer PCA-data. Did you process the seurat-object correctly?"
+
+    confuns::give_feedback(msg = msg, fdb.fn = "warning")
+
+   return(data.frame())
+
+  }
+
+  )
+
+  spata_object <- setPcaDf(object = spata_object, pca_df = pca_df, fdb_fn = "warning")
+
+
+  # dimensional reduction: umap
+
+  umap_df <- base::tryCatch({
+
+    base::data.frame(
+      barcodes = base::rownames(seurat_object@reductions$umap@cell.embeddings),
+      umap1 = seurat_object@reductions$umap@cell.embeddings[,1],
+      umap2 = seurat_object@reductions$umap@cell.embeddings[,2],
+      stringsAsFactors = FALSE
+    ) %>% tibble::remove_rownames()
+
+  }, error = function(error){
+
+    msg <- "Could not find or transfer UMAP-data. Did you process the seurat-object correctly?"
+
+    confuns::give_feedback(msg = msg, fdb.fn = "warning")
+
+   return(data.frame())
+
+  }
+
+  )
+
+  spata_object <- setUmapDf(object = spata_object, umap_df = umap_df)
+
+
+  # dimensional reduction: tsne
+
+  tsne_df <- base::tryCatch({
+
+    base::data.frame(
+      barcodes = base::rownames(seurat_object@reductions$tsne@cell.embeddings),
+      tsne1 = seurat_object@reductions$tsne@cell.embeddings[,1],
+      tsne2 = seurat_object@reductions$tsne@cell.embeddings[,2],
+      stringsAsFactors = FALSE
+    ) %>% tibble::remove_rownames()
+
+  }, error = function(error){
+
+    msg <- "Could not find or transfer TSNE-data. Did you process the seurat-object correctly?"
+
+    confuns::give_feedback(msg = msg, fdb.fn = "warning")
+
+   return(data.frame())
+
+  }
+
+  )
+
+  spata_object <- setTsneDf(object = spata_object, tsne_df = tsne_df)
+
+
+  # data matrices
+
+  spata_object <-
+    setCountMatrix(
+      object = spata_object,
+      count_mtr = count_mtr[base::rowSums(base::as.matrix(count_mtr)) != 0, ]
+    )
+
+  spata_object <-
+    setScaledMatrix(
+      object = spata_object,
+      scaled_mtr = scaled_mtr[base::rowSums(base::as.matrix(scaled_mtr)) != 0, ]
+    )
+
+  # coordinates & image
+
+  if(!base::is.null(image_object)){
+
+    spata_object <- setImageObject(spata_object, image_object = image_object)
+
+  } else {
+
+    spata_object <- setCoordsDf(object = spata_object, coords_df = coords_df)
+
+  }
+
+
+  # other lists
+  spata_object <- setBarcodes(spata_object, barcodes = barcodes_matrix)
+
+  spata_object <- setInitiationInfo(spata_object)
+
+  spata_object <-
+    setActiveMatrix(spata_object, mtr_name = "scaled")
+
+  spata_object <-
+    setActiveExpressionMatrix(spata_object, mtr_name = "scaled")
+
+  #äspata_object <-
+  #  computeGeneMetaData(object = spata_object, verbose = verbose)
+
+  # 5. Return spata object ---------------------------------------------------
+
+ return(spata_object)
+
+}
+
+
+
+
 # v -----------------------------------------------------------------------
 
 #' @keywords internal
