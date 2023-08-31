@@ -17,9 +17,6 @@ tissue slide or several consecutive slides of one and the same tissue portion.
 \item{\code{coordinates}}{data.frame. Data.frame that stores information about identified
 or known entities located on the imaged tissue, such as cells or capture spots.}
 
-\item{\code{coordinates_id}}{character. The name of the variable of the data.frame
-in @slot coordinates that uniquely identifies each observation.}
-
 \item{\code{images}}{list. List of objects of class \code{HistoImage}. Leaving}
 
 \item{\code{method}}{SpatialMethod. Object of class \code{SpatialMethod}.

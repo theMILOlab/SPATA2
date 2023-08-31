@@ -8,6 +8,7 @@ plotIasEvaluation(
   object,
   id,
   variables,
+  method_eval = "corr",
   distance = NA_integer_,
   binwidth = ccDist(object),
   n_bins_circle = NA_integer_,
@@ -30,6 +31,9 @@ plotIasEvaluation(
   corr_text_size = 1,
   force_grid = FALSE,
   bcsp_exclude = NULL,
+  ncol = NULL,
+  nrow = NULL,
+  make_pretty = FALSE,
   verbose = NULL
 )
 }
@@ -99,6 +103,8 @@ corresponding p-value.}
 of \code{variables} being of length 1.}
 
 \item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

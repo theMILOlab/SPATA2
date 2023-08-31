@@ -512,6 +512,7 @@ depr_info <-
       "combine_with_wd" = "add_wd",
       "euol" = "unit",
       "discrete_feature" = "grouping_variable",
+      "display_trajectory_parts" = NA_character_,
       "linealpha" = "line_alpha",
       "linecolor" = "line_color",
       "linesize" = "line_size",
@@ -519,6 +520,7 @@ depr_info <-
       "trajectory_name" = "id"
     ),
     args_spec = list(
+      "addSpatialTrajectory" = list("segment_df" = "traj_df", "vertices" = NA_character_),
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
       "getCoordsDf" = list("type" = NA_character_),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
@@ -527,7 +529,19 @@ depr_info <-
       "include_tissue_outline" = list("outline_var" = NA_character_),
       "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
       "plotImage" = list("frame_by" = NA_character_, "unit" = NA_character_),
-      "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = "...", "vlinecolor" = "...", "vlinesize" = "..."),
+      "plotSurface" = list(
+        "bcsp_rm" = "bcs_rm",
+        "complete" = NA_character_,
+        "display_title" = NA_character_,
+        "highlight_groups" = NA_character_,
+        "order_by" = NA_character_,
+        "order_desc" = NA_character_,
+        "sctm_pixels" = NA_character_,
+        "sctm_interpolate" = NA_character_,
+        "use_scattermore" = NA_character_
+        ),
+      "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = NA_character_, "vlinecolor" = NA_character_, "vlinesize" = NA_character_),
+      "project_on_trajectory" = list("segment_df" = "traj_df"),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
       "setImageDirLowres" = list("dir_lowres" = "dir"),
@@ -564,6 +578,20 @@ helper_content <- list(
     c("Choose the angle (in °) with which to rotate the image by shifting the slider."),
   angle_transf_value =
     c("Choose the angle (in °) with which to rotate the image by manually typing it."),
+  connection_modes =
+    c("Live Mode: With a double click, set the start point of your trajectory.
+      As you move the cursor across the plot, the spatial trajectory tracks your movement in real-time.
+      A second double click locks the trajectory as the end point, capturing the path you followed.",
+      "",
+      "Click Mode: Begin by double clicking to establish the start point.
+      A subsequent double click defines the end point of the trajectory.
+      Unlike in 'Live' mode, the trajectory isn't displayed during cursor movement to the future end point.",
+      "",
+      " Double click to designate the start point. Much like 'Live' mode,
+      the trajectory mirrors your cursor's path. However, in 'Draw' mode,
+      it precisely traces the journey your cursor has taken after the initial double click,
+      capturing curves and changes in direction."
+      ),
   flip_around_axis =
     c("Click on the axis around which to flip the image. Clicking again will revert the flipping."),
   image_to_align =
@@ -859,7 +887,7 @@ si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6
 
 
 
-smrd_projection_df_names <- c("trajectory_part", "proj_length_binned", "trajectory_order", "trajectory_part_order")
+smrd_projection_df_names <- c("trajectory_order", "proj_length_binned")
 
 
 #' @title List of summarizing formulas

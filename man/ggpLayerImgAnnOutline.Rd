@@ -17,7 +17,8 @@ ggpLayerImgAnnOutline(
   line_color = "black",
   line_size = 1.5,
   line_type = "solid",
-  inner = TRUE,
+  use_colors = FALSE,
+  inner = FALSE,
   ...
 )
 }
@@ -39,7 +40,15 @@ selection. See section \emph{Selection of image annotation with tags} for more i
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of image annotation with tags} for more information.}
 
-\item{alpha, fill, size, }{Numeric values. Given to \code{ggplot2::geom_polygon()}.}
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
+
+\item{use_colors}{Logical value. If \code{TRUE}, the color aesthetic is used to display
+each image annotation in a different color while providing a legend.}
 
 \item{inner}{Logical value. If \code{FALSE}, only outer borders of the image annotation
 are displayed.}

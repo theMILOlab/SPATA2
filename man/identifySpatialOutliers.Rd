@@ -11,7 +11,7 @@ identifySpatialOutliers(object, ...)
 \S4method{identifySpatialOutliers}{spata2}(
   object,
   method = c("outline", "dbscan"),
-  img_name = refImage(object),
+  img_name = refImage(),
   buffer = NULL,
   dbscan_eps = NULL,
   dbscan_minPts = 3,

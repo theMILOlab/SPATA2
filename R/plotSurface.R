@@ -46,235 +46,69 @@ setMethod(
                         color_by = NULL,
                         alpha_by = NULL,
                         method_gs = NULL,
-                        normalize = NULL,
                         smooth = FALSE,
-                        smooth_span = NULL,
+                        smooth_span = 0.2,
                         pt_alpha = NULL,
                         pt_clr = NULL,
                         pt_clrp = NULL,
                         pt_clrsp = NULL,
-                        pt_size = NULL,
-                        pt_size_fixed = NULL,
                         clrp_adjust = NULL,
-                        use_scattermore = FALSE,
-                        sctm_pixels = c(1024, 1024),
-                        sctm_interpolate = FALSE,
                         display_image = NULL,
-                        display_title = NULL,
-                        complete = NULL,
-                        verbose = NULL,
-                        highlight_groups = NULL,
+                        img_alpha = 1,
                         transform_with = NULL,
-                        bcsp_rm = NULL,
-                        na_rm = FALSE,
-                        pt_size_legend = 10,
-                        order_by = NULL,
-                        order_desc = FALSE,
+                        bcs_rm = NULL,
+                        xrange = getCoordsRange(object)$x,
+                        yrange = getCoordsRange(object)$y,
+                        verbose = NULL,
                         ...){
 
-    deprecated(...)
-
-    # 1. Control --------------------------------------------------------------
-
-    # work around pt_alpha
-    scale_alpha <- base::is.character(alpha_by)
-
-    # lazy check
     hlpr_assign_arguments(object)
 
-    if(scale_alpha){ pt_alpha <- NULL }
-
-
-    check_pt(pt_size, pt_alpha, pt_clrsp)
-    check_display(display_title, display_image)
-
-    # -----
-
-    # 2. Data extraction and plot preparation ---------------------------------
-
-    if(!base::is.null(transform_with)){
-
-      if(!base::is.list(transform_with) & base::length(transform_with) == 1){
-
-        transform_with <-
-          purrr::set_names(
-            x = transform_with,
-            set_names = color_by
-          )
-
-      }
-
-    }
-
-    coords_df <-
-      getCoordsDf(object) %>%
-      hlpr_join_with_aes(
-        object = object,
-        df = .,
-        variables = c(alpha_by, color_by),
-        method_gs = method_gs,
-        normalize = normalize,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        verbose = verbose
-      ) %>%
-      confuns::transform_df(
-        df = .,
-        transform.with = transform_with
-      )
-
-    coords_df <-
-      order_df(
-        df = coords_df,
-        order_by = order_by,
-        order_desc = order_desc
-      )
-
-    if(base::is.character(alpha_by) && !base::is.numeric(coords_df[[alpha_by]])){
-
-      stop("Variable specified in argument 'alpha_by' must be numeric.")
-
-    }
-
-    # -----
-
-
-    # 5. Plotting --------------------------------------------------------------
-
-    pt_color <- pt_clr
-
-    params <-
-      adjust_ggplot_params(
-        params = list(color = pt_color, size = pt_size, alpha = pt_alpha)
-      )
-
-    n_points <- base::nrow(coords_df)
-
-
-    if(base::is.character(color_by) & base::is.character(alpha_by)){
-
-      mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]], alpha = .data[[alpha_by]])
-
-    } else if(base::is.character(color_by)){
-
-      mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]])
-
-    } else if(base::is.character(alpha_by)){
-
-      mapping <- ggplot2::aes(x = x, y = y, alpha = .data[[alpha_by]])
-
-    } else {
-
-      mapping <- ggplot2::aes(x = x, y = y)
-
-    }
-    if(n_points >= 10000 & base::isTRUE(use_scattermore)){
-
-      point_add_on <-
-        confuns::make_scattermore_add_on(
-          mapping = mapping,
-          pt.alpha = pt_alpha,
-          pt.color = pt_color,
-          pt.size = pt_size,
-          alpha.by = alpha_by,
-          color.by = color_by,
-          sctm.interpolate = sctm_interpolate,
-          sctm.pixels = sctm_pixels,
-          na.rm = na_rm
-        )
-
-    } else if(base::isTRUE(pt_size_fixed)){
-
-      point_add_on <-
-        geom_point_fixed(
-          params,
-          na.rm = na_rm,
-          mapping = mapping
-        )
-
-    } else {
-
-      point_add_on <-
-        ggplot2::layer(
-          geom = "point",
-          stat = "identity",
-          position = "identity",
-          params = params,
-          mapping = mapping
-        )
-
-    }
-
-    color_var <- pull_var(coords_df, color_by)
-
-    if(base::is.numeric(color_var)){
-
-      coords_df <- dplyr::arrange(coords_df, {{color_by}})
-
-    } else if(!base::is.null(color_by) & base::is.character(highlight_groups)){
-
-      all_groups <- getGroupNames(object, discrete_feature = color_by)
-
-      check_one_of(
-        input = highlight_groups,
-        against = all_groups
-      )
-
-      grey_out <-
-        all_groups[!all_groups %in% highlight_groups] %>%
-        purrr::set_names(x = base::rep("lightgrey", base::length(.)), nm = .)
-
-      clrp_adjust <- c(clrp_adjust, grey_out)
-
-    }
-
-
-    if(base::is.character(bcsp_rm)){
-
-      coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcsp_rm}})
-
-    }
-
-    if(!base::is.null(color_by) && color_by %in% getGroupingOptions(object)){
-
-      size_add_on <- legendColor(size = pt_size_legend)
-
-    } else {
-
-      size_add_on <- NULL
-
-    }
+    main_plot <-
+      ggplot2::ggplot() +
+      ggplot2::theme_void()
 
     if(base::isTRUE(display_image)){
 
-      image_add_on <- ggpLayerImage(object)
-
-    } else {
-
-      image_add_on <- NULL
+      main_plot <-
+        main_plot +
+        ggpLayerImage(object, img_alpha = img_alpha)
 
     }
 
-    coords_add_on <- ggplot2::coord_equal()
-    coords_add_on$default <- TRUE
+    if(containsMethod(object, method_name = c("Visium", "SlideSeq"))){
 
-    ggplot2::ggplot(data = coords_df) +
-      image_add_on +
-      point_add_on +
-      scale_color_add_on(
-        aes = "color",
-        variable = pull_var(coords_df, color_by),
-        clrp = pt_clrp,
-        clrsp = pt_clrsp,
-        clrp.adjust = clrp_adjust,
-        ...
-      ) +
-      ggplot2::theme_void() +
-      coords_add_on +
-      size_add_on
+      main_plot <-
+        main_plot +
+        ggpLayerSpots(
+          object = object,
+          alpha_by = alpha_by,
+          color_by = color_by,
+          spot_alpha = pt_alpha,
+          spot_clr = pt_clr,
+          clrp = pt_clrp,
+          clrsp = pt_clrsp,
+          clrp_adjust = clrp_adjust,
+          smooth = smooth,
+          smooth_span = smooth_span,
+          method_gs = method_gs,
+          transform_with = transform_with,
+          xrange = xrange,
+          yrange = yrange,
+          ...
+        )
 
+    }
 
-    # -----
+    if(!base::is.null(color_by) &&
+       !isNumericVariable(object, variable = color_by)){
+
+      main_plot +
+        legendColor(size = 5)
+
+    }
+
+    return(main_plot)
 
   }
 )
@@ -306,8 +140,6 @@ setMethod(
     # 1. Control --------------------------------------------------------------
 
     coords_df <- object
-
-    check_pt(pt_size, pt_alpha, pt_clrsp)
 
     # -----
 
@@ -530,6 +362,7 @@ plotSurfaceBase <- function(object,
                             smooth = FALSE,
                             smooth_span = 0.2,
                             display_axes = FALSE,
+                            display_axes_title = FALSE,
                             display_image = NULL,
                             highlight_barcodes = NULL,
                             highlight_alpha = 0.75,
@@ -540,6 +373,7 @@ plotSurfaceBase <- function(object,
                             expand = 0,
                             pty = "s",
                             verbose = NULL,
+                            unit = "px",
                             ...){
 
   # work around pt_alpha
@@ -550,23 +384,35 @@ plotSurfaceBase <- function(object,
 
   if(scale_alpha){ pt_alpha <- NULL }
 
-  confuns::are_vectors(
-    c("xrange", "yrange"),
-    mode = "numeric",
-    of.length = 2,
-    skip.allow = TRUE,
-    skip.val = NULL
-  )
-
   coords_df <- getCoordsDf(object)
 
-  if(base::is.numeric(xrange)){
+  if(unit == "px"){
+
+    scale_fct <- 1
+
+  } else {
+
+    is_unit_dist(unit, error = TRUE)
+
+    # is applied during plotting step
+    scale_fct <-
+      getPixelScaleFactor(object, unit = unit) %>%
+      base::as.numeric()
+
+  }
+
+
+  if(!base::is.null(xrange)){
+
+    xrange <- as_pixel(input = xrange, object = object)
 
     coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
 
   }
 
-  if(base::is.numeric(yrange)){
+  if(!base::is.null(yrange)){
+
+    yrange <- as_pixel(input = yrange, object = object)
 
     coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
 
@@ -642,6 +488,37 @@ plotSurfaceBase <- function(object,
 
   }
 
+  if(base::is.null(xrange)){
+
+    xlim <- NULL
+
+  } else {
+
+    xlim <- xrange*scale_fct
+
+  }
+
+  if(base::is.null(yrange)){
+
+    ylim <- NULL
+
+  } else {
+
+    ylim <- yrange*scale_fct
+
+  }
+
+  if(base::isTRUE(display_axes_title)){
+
+    xlab <- stringr::str_c("x-coordinates [", unit, "]")
+    ylab <- stringr::str_c("y-coordinates [", unit, "]")
+
+  } else {
+
+    xlab <- NA_character_
+    ylab <- NA_character_
+
+  }
 
   if(base::is.character(color_by)){
 
@@ -649,24 +526,24 @@ plotSurfaceBase <- function(object,
     graphics::plot.new()
     graphics::par(pty = pty, ...)
     graphics::plot(
-      x = coords_df$x,
-      y = coords_df$y,
+      x = coords_df$x*scale_fct,
+      y = coords_df$y*scale_fct,
       col = ggplot2::alpha("white", 0),
-      xlab = NA_character_,
-      ylab = NA_character_,
+      xlab = xlab,
+      ylab = ylab,
       axes = display_axes,
-      xlim = xrange,
-      ylim = yrange
+      xlim = xlim,
+      ylim = ylim
     )
 
     if(base::isTRUE(display_image) && !base::is.null(img)){
 
       graphics::rasterImage(
         image = img,
-        xleft = xrange[1],
-        xright = xrange[2],
-        ybottom = yrange[1],
-        ytop = yrange[2]
+        xleft = xrange[1]*scale_fct,
+        xright = xrange[2]*scale_fct,
+        ybottom = yrange[1]*scale_fct,
+        ytop = yrange[2]*scale_fct
       )
 
     }
@@ -683,7 +560,8 @@ plotSurfaceBase <- function(object,
       pt_clrp = pt_clrp,
       xrange = xrange,
       yrange = yrange,
-      clrp_adjust = clrp_adjust
+      clrp_adjust = clrp_adjust,
+      scale_fct = scale_fct
     )
 
   } else {
@@ -692,31 +570,31 @@ plotSurfaceBase <- function(object,
     graphics::plot.new()
     graphics::par(pty = pty, ...)
     graphics::plot(
-      x = coords_df$x,
-      y = coords_df$y,
+      x = coords_df$x*scale_fct,
+      y = coords_df$y*scale_fct,
       col = ggplot2::alpha("white", 0),
-      xlab = NA_character_,
-      ylab = NA_character_,
+      xlab = xlab,
+      ylab = ylab,
       axes = display_axes,
-      xlim = xrange,
-      ylim = yrange
+      xlim = xlim,
+      ylim = ylim
     )
 
     if(base::isTRUE(display_image) && !base::is.null(img)){
 
       graphics::rasterImage(
         image = img,
-        xleft = xrange[1],
-        xright = xrange[2],
-        ybottom = yrange[1],
-        ytop = yrange[2]
+        xleft = xrange[1]*scale_fct,
+        xright = xrange[2]*scale_fct,
+        ybottom = yrange[1]*scale_fct,
+        ytop = yrange[2]*scale_fct
       )
 
     }
 
     graphics::points(
-      x = coords_df$x,
-      y = coords_df$y,
+      x = coords_df$x*scale_fct,
+      y = coords_df$y*scale_fct,
       pch = 19,
       cex = pt_size,
       col = ggplot2::alpha(pt_color, alpha = pt_alpha),
@@ -731,8 +609,8 @@ plotSurfaceBase <- function(object,
       dplyr::filter(coords_df, barcodes %in% highlight_barcodes)
 
     graphics::points(
-      x = highlight_df$x,
-      y = highlight_df$y,
+      x = highlight_df$x*scale_fct,
+      y = highlight_df$y*scale_fct,
       pch = 19,
       cex = pt_size + pt_size*0.1,
       col = ggplot2::alpha(highlight_color, highlight_alpha),

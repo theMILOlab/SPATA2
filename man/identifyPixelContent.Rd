@@ -12,7 +12,7 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{spata2}(
   object,
-  img_name,
+  img_name = NULL,
   percentile = 0,
   compactness_factor = 10,
   superpixel = 600,
@@ -24,7 +24,7 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{HistoImaging}(
   object,
-  img_name,
+  img_name = NULL,
   percentile = 99,
   compactness_factor = 10,
   superpixel = 1000,
@@ -102,6 +102,7 @@ the computational progress will be printed.
 \value{
 The method for class \code{Image} returns a data.frame of the following
 variables.
+
 \itemize{
 \item{\emph{pixel}:}{ character. Pixel index.}
 \item{\emph{width}:}{ numeric. Pixel position on horizontal axis of the image.}
@@ -124,7 +125,7 @@ categorizing it as tissue from tissue segments or fragments, artifacts, or backg
 }
 \details{
 If \code{img_name} specifies multiple images, the function
-iterates over all of them.
+iterates over all of them. If it is \code{NULL} the active image is picked.
 }
 \seealso{
 For subsequent image processing: \code{\link[=identifyTissueOutline]{identifyTissueOutline()}},\code{\link[=identifyBackgroundColor]{identifyBackgroundColor()}}.

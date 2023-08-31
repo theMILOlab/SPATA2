@@ -9,9 +9,9 @@
 \usage{
 identifyTissueOutline(object, ...)
 
-\S4method{identifyTissueOutline}{spata2}(object, img_name, verbose = NULL)
+\S4method{identifyTissueOutline}{spata2}(object, img_name = NULL, verbose = NULL)
 
-\S4method{identifyTissueOutline}{HistoImaging}(object, img_name, verbose = TRUE)
+\S4method{identifyTissueOutline}{HistoImaging}(object, img_name = NULL, verbose = TRUE)
 
 \S4method{identifyTissueOutline}{HistoImage}(object, verbose = TRUE)
 }

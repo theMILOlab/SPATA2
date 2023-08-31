@@ -10,7 +10,7 @@
 \usage{
 tissueOutlineIdentified(object, ...)
 
-\S4method{tissueOutlineIdentified}{spata2}(object)
+\S4method{tissueOutlineIdentified}{spata2}(object, error = FALSE)
 
 containsSpatialOutliers(object, ...)
 

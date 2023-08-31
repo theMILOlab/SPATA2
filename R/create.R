@@ -583,6 +583,268 @@ create_model_df <- function(input,
 
 }
 
+#' @keywords internal
+create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = NULL, ...){
+
+  shinydashboard::dashboardPage(
+
+    shinydashboard::dashboardHeader(title = "Spatial Trajectories"),
+
+    shinydashboard::dashboardSidebar(
+      collapsed = TRUE,
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem(
+          text = "Trajectories",
+          tabName = "trajectories",
+          selected = TRUE
+        )
+      )
+    ),
+
+    shinydashboard::dashboardBody(
+
+      shinybusy::add_busy_spinner(
+        spin = "cube-grid",
+        color = "red",
+        margins = c(0,10)
+      ),
+
+      shinydashboard::tabItem(
+        tabName = "trajectories",
+        shiny::fluidRow(
+          shiny::column(
+            width = 3,
+            shinydashboard::box(
+              width = 12,
+              container(
+                width = 12,
+                shiny::tags$h3(shiny::strong("Instructions")),
+                shiny::helpText(
+                  "1. Determine whether you wish to draw trajectories based
+                  on a data variable (such as clustering or gene expression) or
+                  using histology information. To omit data-driven coloring,
+                  select 'none' and set the point transparency to 100%. For additional
+                  adjustments to the plot's appearance, access the settings via
+                  the gear button located at the top left corner of the plot."
+                ),
+                shiny::HTML("<br>"),
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 6,
+                    shiny::uiOutput("color_by")
+                  ),
+                  shiny::column(
+                    width = 6,
+                    shiny::sliderInput(
+                      inputId = "pt_transp",
+                      label = "Point transparency [%]:",
+                      min = 0,
+                      max = 100,
+                      value = 50,
+                      step = 1
+                    )
+                  )
+                ),
+                shiny::helpText(
+                  "2. Create a trajectory by interacting with the plot on the right."
+                ) %>% add_helper(content = helper_content$connection_modes),
+                shiny::HTML("<br>"),
+                shiny::helpText(
+                  "3. Input a value to define the width of the trajectory and then
+                  click the 'Highlight' button."
+                ),
+                shiny::HTML("<br>"),
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 6,
+                    shiny::numericInput(
+                      inputId = "width_trajectory",
+                      label = "Trajectory Width:",
+                      value = 0,
+                      min = 0,
+                      max = Inf,
+                      step = 0.0001,
+                      width = "100%"
+                    )
+                  ),
+                  shiny::column(
+                    width = 6,
+                    shiny::uiOutput(outputId = "unit")
+                  )
+                ),
+                shiny::splitLayout(
+                  shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
+                  shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
+                  cellWidths = c("50%", "50%")
+                ),
+                shiny::HTML("<br>"),
+                shiny::helpText(
+                  "4. Provide an ID for the trajectory and include a descriptive
+                  'guiding comment'. Click the 'Save' button to store this information.
+                  Keep in mind that you can save the same trajectory multiple times by
+                  assigning new width values, as long as you use different IDs each time."
+                ),
+                shiny::splitLayout(
+                  shiny::actionButton(
+                    inputId = "save_trajectory",
+                    label = "Save Trajectory",
+                    width = "100%"
+                  ),
+                  shiny::textInput(
+                    inputId = "id_trajectory",
+                    label = NULL,
+                    placeholder = "ID trajectory",
+                    value = ""
+                  ),
+                  cellWidths = c("50%", "50%")
+                ),
+                shiny::textInput(
+                  inputId = "comment_trajectory",
+                  label = NULL,
+                  placeholder = "A guiding comment.",
+                  value = ""
+                ),
+                shiny::HTML("<br>"),
+              ),
+              container(
+                width = 12,
+                align = "center",
+                shinyWidgets::actionBttn(
+                  inputId = "close_app",
+                  label = "Close application",
+                  color = "success",
+                  style = "gradient"
+                ),
+                shiny::HTML("<br>"),
+                shiny::helpText(
+                  "If you want to return to the R Session click here to return the updated object.
+                   (Do not close the app with the button on the top right or the progress is lost."
+                )
+              )
+            )
+          ),
+          shiny::column(
+            width = 6,
+            shiny::fluidRow(
+              shiny::div(
+                class = "large-plot",
+                shinydashboard::box(
+                  width = 12,
+                  title = NULL,
+                  shiny::column(
+                    width = 10,
+                    offset = 0.5,
+                    shiny::fluidRow(
+                      shiny::splitLayout(
+                        shiny::verbatimTextOutput(outputId = "hover_pos"),
+                        shiny::verbatimTextOutput(outputId = "hover_sp"),
+                        shiny::verbatimTextOutput(outputId = "hover_ep"),
+                        cellWidths = "33%"
+                      )
+                    ),
+                    shiny::fluidRow(
+                      shinyWidgets::dropdownButton(
+                        circle = FALSE,
+                        icon = shiny::icon("gear", verify_fa = FALSE),
+                        shiny::selectInput(
+                          inputId = "line_color",
+                          label = "Line color:",
+                          choices = c("black","blue", "green", "red","yellow",  "white"),
+                          selected = "black"
+                        ),
+                        shiny::uiOutput(outputId = "pt_clrp"),
+                        shiny::uiOutput(outputId = "pt_clrsp"),
+                        # slider inputs
+                        shiny::sliderInput(
+                          inputId = "line_size",
+                          label = "Line size:",
+                          min = 1,
+                          max = 5,
+                          value = 1.5,
+                          step = 0.01
+                        ),
+                        shiny::uiOutput("pt_size")
+
+                      )
+                    ),
+                    shiny::plotOutput(
+                      outputId = "plot_bg",
+                      height = plot_height,
+                      brush = shiny::brushOpts(
+                        id = "brushed_area",
+                        resetOnNew = TRUE
+                      ),
+                      dblclick = "dbl_click",
+                      hover = hoverOpts(
+                        id = "hover",
+                        delay = 100,
+                        delayType = "throttle",
+                        clip = TRUE,
+                        nullOutside = TRUE
+                      )
+                    ),
+                    shiny::plotOutput(
+                      outputId = "plot_sm",
+                      height = plot_height,
+                      brush = shiny::brushOpts(
+                        id = "brushed_area",
+                        resetOnNew = TRUE
+                      ),
+                      dblclick = "dbl_click",
+                      hover = hoverOpts(
+                        id = "hover",
+                        delay = 100,
+                        delayType = "throttle",
+                        clip = TRUE,
+                        nullOutside = TRUE
+                      )
+                    ),
+                    shiny::tags$style(
+                      "
+                        .large-plot {
+                            position: relative;
+                        }
+                        #plot_bg {
+                            position: absolute;
+                        }
+                        #plot_highlight {
+                            position: absolute;
+                        }
+                        #plot_sm {
+                            position: absolute;
+                        }
+
+                      "
+                    ),
+                    breaks(30),
+                    shiny::fluidRow(
+                      shiny::column(
+                        width = 6,
+                        shinyModuleZoomingUI()
+                      ),
+                      shiny::column(
+                        width = 6,
+                        htmlH5("Connection mode:"),
+                        shinyWidgets::radioGroupButtons(
+                          inputId = "connection_mode",
+                          label = NULL,
+                          choices = c("Live" = "live", "On Click" = "click", "Draw" = "draw"),
+                          selected = "live",
+                          justified = TRUE
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+            )
+          )
+        ) # first fluid row
+      ) # tab item
+    ) # dashboard body
+  )
+}
+
 
 
 # createI -----------------------------------------------------------------
@@ -1534,7 +1796,6 @@ createImageAnnotations <- function(object, ...){
 # outputs -----------------------------------------------------------------
 
           # plot outputs
-
           output$annotation_plot <- shiny::renderPlot({
 
             annotation_plot()
@@ -3211,8 +3472,9 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 #'
 #' @param id Character value. The id of the spatial trajectory.
 #' @param width Distance measure. The width of the spatial trajectory.
-#' @param segment_df Data.frame with four numeric variables that describe the
-#' course of the trajectory, namely *x*, *y*, *xend* and *yend*.
+#' @param segment_df Data.frame with *x* and *y* as variables corresponding
+#' to the vertices of the trajectory. IN case of more than three rows the
+#' trajectory is assumed to have a curve.
 #' @param start,end Numeric vectors of length two. Can be provided instead of
 #' `segment_df`. If so, `start` corresponds to *x* and *y* and `end` corresponds to
 #' *xend* and *yend* of the segment.
@@ -3224,594 +3486,939 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
 createSpatialTrajectories <- function(object){
 
-  validation(x = object)
+  shiny::runApp(
+    shiny::shinyApp(
+      ui = create_spatial_trajectories_ui(),
+      server = function(input, output, session){
 
-  app <- "createSpatialTrajectories"
+        shinyhelper::observe_helpers()
 
-  new_object <-
-    shiny::runApp(
-      shiny::shinyApp(
-        ui = function(){
+        # objects
+        mai_vec <- base::rep(0.5, 4)
 
-          shinydashboard::dashboardPage(
+        # reactive values ---------------------------------------------------------
 
-            shinydashboard::dashboardHeader(title = "Spatial Trajectories"),
+        proj_df <- shiny::reactiveVal(value = NULL)
 
-            shinydashboard::dashboardSidebar(
-              collapsed = TRUE,
-              shinydashboard::sidebarMenu(
-                shinydashboard::menuItem(
-                  text = "Trajectories",
-                  tabName = "create_trajectories",
-                  selected = TRUE
-                )
-              )
-            ),
+        spata_object <- shiny::reactiveVal(value = object)
 
-            shinydashboard::dashboardBody(
+        start_point <- shiny::reactiveVal(value = list(x = NULL, y = NULL))
+        start_point_set <- shiny::reactiveVal(value = FALSE)
 
-              #----- busy indicator
-              shinybusy::add_busy_spinner(spin = "cube-grid", color = "red", margins = c(0,10)),
+        temp_traj_vals <- shiny::reactiveValues(
+          x = NULL,
+          y = NULL
+        )
+
+        traj_vals <- shiny::reactiveValues(
+          x = NULL,
+          y = NULL
+        )
+
+        traj_drawn <- shiny::reactiveVal(value = FALSE)
+
+        trigger_zoom_out <- shiny::reactiveVal(value = 0)
+
+
+        # render UIs --------------------------------------------------------------
+
+        output$color_by <- shiny::renderUI({
+
+          shinyWidgets::pickerInput(
+            inputId = "color_by",
+            label = "Color points by:",
+            choices =
+              list(
+                "none",
+                Genes = getGenes(object),
+                Features = getFeatureNames(object) %>% base::unname()
+              ),
+            options = list(`live-search` = TRUE),
+            multiple = FALSE,
+            selected = "none"
+          )
+
+        })
+
+        output$pt_clrp <- shiny::renderUI({
+
+          shiny::selectInput(
+            inputId = "pt_clrp",
+            label = "Point colorpalette:",
+            choices = validColorPalettes(flatten = TRUE),
+            selected = getDefault(object, arg = "pt_clrp")
+          )
+
+        })
+
+        output$pt_clrsp <- shiny::renderUI({
+
+          shiny::selectInput(
+            inputId = "pt_clrsp",
+            label = "Point colorspectrum",
+            choices = validColorSpectra(flatten = TRUE),
+            selected = getDefault(object, arg = "pt_clrsp")
+          )
+
+        })
+
+        output$pt_size <- shiny::renderUI({
+
+          val <- 1
+
+          shiny::sliderInput(
+            inputId = "pt_size",
+            label = "Point size:",
+            min = 1,
+            max = val*3,
+            value = val,
+            step = 0.01
+          )
+
+        })
+
+        output$unit <- shiny::renderUI({
+
+          if(containsScaleFactor(object, fct_name = "pixel")){
+
+            choices <- validUnitsOfLength()
+
+          } else {
+
+            choices <- c("pixel" = "px")
+
+          }
+
+          shiny::selectInput(
+            inputId = "unit",
+            label = "Unit:",
+            choices = choices,
+            selected = "px",
+            width = "100%"
+          )
+
+        })
 
 
 
-              #----- trajectory tab
-              shiny::fluidRow(
-                shiny::column(
-                  width = 2,
-                  shinydashboard::box(
-                    width = 12,
-                    container(
-                      width = 12,
-                      shiny::tags$h3(shiny::strong("Instructions")),
-                      shiny::HTML("<br>"),
-                      shiny::helpText("1. Click on 'Plot & Update' to display the sample according to the adjustments you set up or changed."),
-                      shiny::HTML("<br>"),
-                      shiny::helpText("2. Determine the vertices of the trajectory by 'double - clicking' the position on the plot."),
-                      shiny::HTML("<br>"),
-                      shiny::helpText("3. Enter a value for the trajectory width and highlight or reset the trajectory by clicking the respective button below."),
-                      shiny::HTML("<br>"),
-                      shiny::fluidRow(
-                        shiny::column(
-                          width = 6,
-                          shiny::numericInput(
-                            inputId = "width_trajectory",
-                            label = NULL,
-                            value = 20,
-                            min = 0.1,
-                            max = Inf,
-                            step = 0.1
-                          )
-                        ),
-                        shiny::column(
-                          width = 6,
-                          shiny::uiOutput(outputId = "unit")
-                        )
-                      ),
-                      shiny::splitLayout(
-                          shiny::actionButton("highlight_trajectory", label = "Highlight", width = "100%"),
-                          shiny::actionButton("reset_trajectory", label = "Reset ", width = "100%"),
-                          cellWidths = c("50%", "50%")
-                      ),
-                      shiny::HTML("<br>"),
-                      shiny::helpText("4. Enter the ID you want to give the trajectory as well as a 'guiding comment' and click the 'Save'-button."),
-                      shiny::splitLayout(
-                        shiny::actionButton("save_trajectory", "Save Trajectory", width = "100%"),
-                        shiny::textInput("id_trajectory", label = NULL, placeholder = "ID trajectory", value = ""),
-                        cellWidths = c("50%", "50%")
-                      ),
-                      shiny::textInput("comment_trajectory", label = NULL, placeholder = "A guiding comment.", value = ""),
-                      shiny::HTML("<br>"),
-                      shiny::helpText("5. If you are done click on 'Close application'."),
+        # reactive expressions ----------------------------------------------------
 
-                    )
-                  ),
-                  container(
-                    width = 12,
-                    align = "center",
-                    shinyWidgets::actionBttn(
-                      inputId = "close_app",
-                      label = "Close application",
-                      color = "success",
-                      style = "gradient"
-                    ),
-                    shiny::HTML("<br>"),
-                    shiny::helpText("If you are done click here to return the updated object.")
-                  )
-                ),
-                shiny::column(
-                  width = 5,
-                  moduleSurfacePlotUI(id = "trajectories")
-                ),
-                shiny::column(
-                  width = 5,
-                  shinydashboard::box(
-                    width = 12,
-                    container(
-                      width = 12,
-                      strongH3("Added Spatial Trajectories"),
-                      shiny::plotOutput(outputId = "trajectory_plot"),
-                      breaks(2),
-                      container(
-                        width = 3,
-                        shinyWidgets::actionBttn(
-                          inputId = "update_plot",
-                          label = "Update plot",
-                          style = "material-flat",
-                          color = "primary",
-                          size = "sm"
-                        )
-                      ),
-                      breaks(3),
-                      shiny::fluidRow(
-                        shiny::column(
-                          width = 3,
-                          shiny::uiOutput(outputId = "nrow")
-                        ),
-                        shiny::column(
-                          width = 3,
-                          shiny::uiOutput(outputId = "ncol")
-                        )
-                      ),
-                      breaks(1),
-                      shiny::fluidRow(
-                        shiny::column(
-                          width = 12,
-                          container(
-                            width = 3,
-                            strongH5("Trajectory IDs:") %>% add_helper(content = text$createSpatialTrajectories$trajectory_ids)
-                          ),
-                          container(
-                            width = 12,
-                            shiny::uiOutput(outputId = "trajectory_ids")
-                          )
-                        )
-                      ),
-                      breaks(1),
-                      shiny::fluidRow(
-                        splitHorizontally(
-                          numericSlider(inputId = "sgmt_size", app = app, min = 0.5, max = 5, step = 0.01, value = 1),
-                          numericSlider(inputId = "transparency_1", app = app, min = 0, max = 1, step = 0.01, value = 0.75),
-                          numericSlider(inputId = "transparency_2", app = app, min = 0, max = 1, step = 0.01, value = 0.25)
+        brushed_area <- shiny::reactive({
 
-                        )
-                      )
+          input$brushed_area
 
-                    )
-                  )
-                )
-              )
+        })
+
+        color_by <- shiny::reactive({
+
+          if(base::is.null(input$color_by)){
+
+            NULL
+
+          } else if(input$color_by == "none"){
+
+            NULL
+
+          } else {
+
+            input$color_by
+
+          }
+
+        })
+
+        connection_mode <- shiny::reactive({
+
+          input$connection_mode
+
+        })
+
+        coords_df <- shiny::reactive({
+
+          coords_df <- getCoordsDf(object = spata_object())
+
+          coords_df$x <- coords_df$x * scale_fct()
+          coords_df$y <- coords_df$y * scale_fct()
+
+          return(coords_df)
+
+        })
+
+        default_ranges <- shiny::reactive({
+
+          getImageRange(object = object) %>%
+            purrr::map(.f = ~ .x * scale_fct())
+
+        })
+
+        display_axes <- shiny::reactive({
+
+          if(!shiny::isTruthy(input$display_axes)){
+
+            TRUE
+
+          } else {
+
+            input$display_axes
+
+          }
+
+        })
+
+        do_plot <- shiny::reactive({ length(temp_traj_vals$x) >= 1})
+
+        highlight_barcodes <- shiny::reactive({
+
+          if(base::is.data.frame(proj_df())){
+
+            proj_df()[["barcodes"]]
+
+          } else {
+
+            NULL
+
+          }
+
+        })
+
+        hover_x <- shiny::reactive({
+
+          utils::tail(temp_traj_vals$x, 1)
+
+        })
+
+        hover_y <- shiny::reactive({
+
+          utils::tail(temp_traj_vals$y, 1)
+
+        })
+
+        img_name <- shiny::reactive({
+
+          activeImage(spata_object())
+
+        })
+
+        line_color <- shiny::reactive({
+
+          if(!shiny::isTruthy(input$line_color)){
+
+            "black"
+
+          } else {
+
+            input$line_color
+
+          }
+
+        })
+
+        line_size <- shiny::reactive({
+
+          if(!shiny::isTruthy(input$line_size)){
+
+            1.5
+
+          } else {
+
+            input$line_size
+
+          }
+
+        })
+
+        n_digits <- shiny::reactive({ 4 })
+
+        pt_alpha <- shiny::reactive({
+
+          if(!shiny::isTruthy(input$pt_transp)){
+
+            0.9
+
+          } else {
+
+            1 - (input$pt_transp/100)
+
+          }
+
+        })
+
+        pt_clrp <- shiny::reactive({
+
+          if(base::is.null(input$pt_clrp)){
+
+            getDefault(object, arg = "pt_clrp")
+
+          } else {
+
+            input$pt_clrp
+
+          }
+
+        })
+
+        pt_clrsp <- shiny::reactive({
+
+          if(base::is.null(input$pt_clrsp)){
+
+            getDefault(object, arg = "pt_clrsp")
+
+          } else {
+
+            input$pt_clrsp
+
+          }
+
+        })
+
+        pt_size <- shiny::reactive({
+
+          if(!shiny::isTruthy(input$pt_size)){
+
+            1
+
+          } else {
+
+            input$pt_size
+
+          }
+
+        })
+
+        scale_fct <- shiny::reactive({
+
+          if(unit() != "px"){
+
+            getPixelScaleFactor(object, unit = unit()) %>%
+              base::as.numeric()
+
+          } else {
+
+            1
+
+          }
+
+        })
+
+        traj_df <- shiny::reactive({
+
+          out <-
+            shiny::reactiveValuesToList(traj_vals) %>%
+            base::as.data.frame() %>%
+            tibble::as_tibble() %>%
+            dplyr::select(x, y)
+
+          assign(x = "traj_vals", value = out, envir = .GlobalEnv)
+
+          if(base::nrow(out) >= 3){
+
+            confuns::give_feedback(
+              msg = "Interpolating points along trajectory.",
+              verbose = TRUE,
+              with.time = FALSE
             )
 
-          )},
-        server = function(input, output, session){
+            out <- interpolate_points_along_path(out)
 
-          shinyhelper::observe_helpers()
+          }
 
-          # Reactive values ---------------------------------------------------------
-          spata_obj <- shiny::reactiveVal(value = object)
-          highlighted <- shiny::reactiveVal(value = FALSE)
+          return(out)
 
-          vertices_df <-
-            shiny::reactiveVal(value = data.frame(x = numeric(0), y = numeric(0)))
+        })
 
-          segment_df <- shiny::reactiveVal(value = empty_segment_df)
+        traj_ids <- shiny::reactive({
 
-          projection_df <- shiny::reactiveVal(value = empty_ctdf)
+          getTrajectoryIds(spata_object())
 
-          current <- shiny::reactiveVal(value = list())
+        })
 
-          # -----
+        traj_ready_to_be_drawn <- shiny::reactive({
+
+          base::length(traj_vals$x) >= 2
+
+        })
+
+        unit <- shiny::reactive({
+
+          if(!shiny::isTruthy(input$unit)){
+
+            "px"
+
+          } else {
+
+            input$unit
+
+          }
+
+        })
+
+        width <- shiny::reactive({
+
+          stringr::str_c(input$width_trajectory, unit()) %>%
+            as_pixel(input = ., object = spata_object())
+
+        })
+
+        xlab <- shiny::reactive({
+
+          if(display_axes()){
+
+            stringr::str_c("x-coordinates [", unit(), "]")
+
+          } else {
+
+            NA_character_
+
+          }
+
+        })
+
+        xrange <- shiny::reactive({
+
+          getCoordsRange(object)$x
+
+        })
+
+        ylab <- shiny::reactive({
+
+          if(display_axes()){
+
+            stringr::str_c("y-coordinates [", unit(), "]")
+
+          } else {
+
+            NA_character_
+
+          }
+
+        })
+
+        yrange <- shiny::reactive({
+
+          getCoordsRange(object)$y
+
+        })
+
+        zooming <- shiny::reactive({
+
+          if(purrr::is_empty(zooming_output())){
+
+            zo <- default_ranges()
+
+          } else {
+
+            zo <- zooming_output()
+
+          }
+
+          return(zo)
+
+        })
+
+        # module outputs ----------------------------------------------------------
+
+        zooming_output <-
+          shinyModuleZoomingServer(
+            brushed_area = brushed_area,
+            object = object,
+            trigger_zoom_out = trigger_zoom_out
+          )
+
+        # reactive events ---------------------------------------------------------
 
 
-          # UI Outputs --------------------------------------------------------------
 
-          output$trajectory_ids <- shiny::renderUI({
+        # observe events ----------------------------------------------------------
 
-            shiny::req(base::length(trajectory_ids()) >= 1)
+        oe <- shiny::observeEvent(input$close_app, {
 
-            shinyWidgets::checkboxGroupButtons(
-              inputId = "trajectory_ids",
-              label = NULL,
-              choices = trajectory_ids(),
-              selected = NULL,
-              checkIcon = list(
-                yes = shiny::icon("ok", lib = "glyphicon"),
-                no = shiny::icon("remove", lib = "glyphicon")
-              )
-            )
+          shiny::stopApp(returnValue = spata_object())
 
-          })
+        })
 
-          output$ncol <- shiny::renderUI({
+        oe <- shiny::observeEvent(input$dbl_click, {
 
-            shiny::numericInput(
-              inputId = "ncol",
-              label = "Number of columns:",
-              value = 0,
-              min = 0,
-              max = 1000,
-              step = 1,
-              width = "100%"
-            ) %>% add_helper(content = text$createSpatialTrajectories$ncol)
+          if(!traj_drawn()){
 
-          })
+            if(!start_point_set()){
 
-          output$nrow <- shiny::renderUI({
-
-            shiny::numericInput(
-              inputId = "nrow",
-              label = "Number of rows:",
-              value = 0,
-              min = 0,
-              max = 1000,
-              step = 1,
-              width = "100%"
-            ) %>% add_helper(content = text$createSpatialTrajectories$nrow)
-
-          })
-
-
-          output$unit <- shiny::renderUI({
-
-            if(containsPixelScaleFactor(object)){
-
-              choices <- validUnitsOfLength()
+              start_point(list(x = input$dbl_click$x, y = input$dbl_click$y, unit = input$unit))
+              start_point_set(TRUE)
 
             } else {
 
-              choices <- "px"
+              if(connection_mode() == "live"){
+
+                ltv <- base::length(temp_traj_vals$x)
+
+                traj_vals$x <- c(start_point()$x, temp_traj_vals$x[ltv])
+                traj_vals$y <- c(start_point()$y, temp_traj_vals$y[ltv])
+                traj_vals$unit <- input$unit
+
+
+              } else if(connection_mode() == "click"){
+
+                traj_vals$x <- c(start_point()$x, input$dbl_click$x)
+                traj_vals$y <- c(start_point()$y, input$dbl_click$y)
+                traj_vals$unit <- input$unit
+
+              } else {
+
+                traj_vals$x <- c(start_point()$x, temp_traj_vals$x)
+                traj_vals$y <- c(start_point()$y, temp_traj_vals$y)
+                traj_vals$unit <- input$unit
+
+              }
+
+              temp_traj_vals$x <- NULL
+              temp_traj_vals$y <- NULL
 
             }
 
-            shiny::selectInput(
-              inputId = "unit",
-              label = NULL,
-              choices = choices,
-              selected = "px"
+          } else if(traj_drawn()){
+
+            confuns::give_feedback(
+              msg = "Decide what you want to to with the trajectory on the plot before creating a new one.",
+              fdb.fn = "stop",
+              with.time = FALSE
             )
 
+          }
 
-          })
+        })
 
+        oe <- shiny::observeEvent(input$highlight_trajectory, {
 
-          # Modularized plot surface part -------------------------------------------
+          checkpoint(
+            evaluate = traj_drawn(),
+            case_false = "no_trajectory_drawn"
+          )
 
+          checkpoint(
+            evaluate = width() != 0,
+            case_false = "width_0"
+          )
 
-          module_return <-
-            moduleSurfacePlotServer(
-              id = "trajectories",
+          confuns::give_feedback(
+            msg = "Projecting surrounding spots on trajectory.",
+            verbose = TRUE,
+            with.time = FALSE
+          )
+
+          projection_df <-
+            project_on_trajectory(
+              coords_df = coords_df(),
+              traj_df = traj_df(),
+              width = input$width_trajectory
+            )
+
+          proj_df(projection_df)
+
+        })
+
+        oe <- shiny::observeEvent(input$hover, {
+
+          if(start_point_set() & !traj_drawn()){
+
+            if(connection_mode() == "live"){
+
+              temp_traj_vals$x <- input$hover$x
+              temp_traj_vals$y <- input$hover$y
+              temp_traj_vals$unit <- input$unit
+
+            } else if(connection_mode() == "draw"){
+
+              temp_traj_vals$x <- c(temp_traj_vals$x, input$hover$x)
+              temp_traj_vals$y <- c(temp_traj_vals$y, input$hover$y)
+              temp_traj_vals$unit <- input$unit
+
+            } else if(connection_mode() == "click"){
+
+              # effect takes place after second dbl click
+
+            }
+
+          }
+
+        })
+
+        oe <- shiny::observeEvent(input$reset_trajectory, {
+
+          proj_df(NULL)
+
+          start_point(list(x = NULL, y = NULL))
+          start_point_set(FALSE)
+
+          temp_traj_vals$x <- NULL
+          temp_traj_vals$y <- NULL
+          temp_traj_vals$unit <- NULL
+
+          traj_vals$x <- NULL
+          traj_vals$y <- NULL
+          temp_traj_vals$unit <- NULL
+
+          traj_drawn(FALSE)
+
+        })
+
+        oe <- shiny::observeEvent(input$save_trajectory, {
+
+          checkpoint(
+            evaluate = shiny::isTruthy(input$id_trajectory),
+            case_false = "invalid_trajectory_name"
+          )
+
+          checkpoint(
+            evaluate = !(input$id_trajectory %in% traj_ids()),
+            case_false = "occupied_trajectory_name"
+          )
+
+          checkpoint(
+            evaluate = !(base::is.null(proj_df())),
+            case_false = "no_trajectory_highlighted"
+          )
+
+          object <- spata_object()
+
+          spat_traj <-
+            SpatialTrajectory(
+              comment = input$comment_trajectory,
+              id = input$id_trajectory,
+              width = input$width_trajectory,
+              width_unit = input$unit,
+              sample = getSampleName(object),
+              info = list(img_name = img_name()),
+              segment = traj_df(),
+              projection = proj_df()[,c("barcodes", "projection_length")]
+            )
+
+          object <-
+            setTrajectory(
               object = object,
-              final_plot = shiny::reactive(final_plot()),
-              reactive_object = shiny::reactive(spata_obj()),
-              highlighted = highlighted
+              trajectory = spat_traj,
+              overwrite = FALSE
             )
 
-          n_col <- shiny::reactive({
+          spata_object(object)
 
-            shiny::req(input$ncol)
+          confuns::give_feedback(msg = "Trajectory saved.")
 
-            if(input$ncol == 0){
+        })
 
-              NULL
+        # adjust coordinate based data
+        oe <- shiny::observeEvent(c(input$unit), {
+
+          # trigger zooming out
+          trigger_zoom_out(trigger_zoom_out() + 1)
+
+          # adjust trajectory values
+          # start point
+          sp <- start_point()
+          if(!base::is.null(sp$x)){ # if x is not NULL neither is y
+
+            sp$x <-
+              as_unit(
+                input = stringr::str_c(sp$x, sp$unit),
+                unit = input$unit, # new unit
+                object = object
+              )
+
+            sp$y <-
+              as_unit(
+                input = stringr::str_c(sp$y, sp$unit),
+                unit = input$unit, # new unit
+                object = object
+              )
+
+            sp$unit <- input$unit
+
+            start_point(sp)
+
+          }
+
+          # temp traj vals
+          if(!base::is.null(temp_traj_vals$x)){
+
+            temp_traj_vals$x <-
+              as_unit(
+                input = stringr::str_c(temp_traj_vals$x, temp_traj_vals$unit),
+                unit = input$unit, # new unit
+                object = object
+              )
+
+            temp_traj_vals$y <-
+              as_unit(
+                input = stringr::str_c(temp_traj_vals$y, temp_traj_vals$unit),
+                unit = input$unit, # new unit
+                object = object
+              )
+
+            temp_traj_vals$unit <- input$unit
+
+          }
+
+          # traj vals
+          if(!base::is.null(traj_vals$x)){
+
+            traj_vals$x <-
+              as_unit(
+                input = stringr::str_c(traj_vals$x, traj_vals$unit),
+                unit = input$unit, # new unit
+                object = object
+              )
+
+            traj_vals$y <-
+              as_unit(
+                input = stringr::str_c(traj_vals$y, traj_vals$unit),
+                unit = input$unit, # new unit
+                object = object
+              )
+
+            traj_vals$unit <- input$unit
+
+          }
+
+
+        })
+
+
+
+        # text outputs ------------------------------------------------------------
+
+        output$hover_sp <- shiny::renderPrint({
+
+          if(start_point_set()){
+
+            x <- start_point()$x %>% base::round(digits = n_digits())
+            y <- start_point()$y %>% base::round(digits = n_digits())
+
+          } else {
+
+            x <- ""
+            y <- ""
+
+          }
+
+          base::paste0("Start Point \nx: ", x, unit(), " \ny: ", y, unit()) %>%
+            base::cat()
+
+        })
+
+        output$hover_ep <- shiny::renderPrint({
+
+          if(traj_ready_to_be_drawn()){
+
+            x <- utils::tail(traj_vals$x, 1) %>% base::round(digits = n_digits())
+            y <- utils::tail(traj_vals$y, 1) %>% base::round(digits = n_digits())
+
+          } else {
+
+            x <- ""
+            y <- ""
+
+          }
+
+          base::paste0("End Point \nx: ", x, unit(), " \ny: ", y, unit()) %>%
+            base::cat()
+
+        })
+
+        output$hover_angle <- shiny::renderPrint({
+
+          angle <-
+            calculate_angle(
+              x1 = start_point()$x,
+              y1 = start_point()$y,
+              x2 = hover_x(),
+              y2 = hover_y()
+            )
+
+          base::paste0("Angle: ", angle, "°")
+
+        })
+
+        output$hover_pos <- shiny::renderPrint({
+
+          # awkward workaround for weird hover behaviour after setting
+          # the start point
+
+          base::tryCatch({
+
+            if(start_point_set() &
+               connection_mode() %in% c("live", "draw") &
+               !traj_drawn()){
+
+              ltv <- base::length(temp_traj_vals$x)
+
+              base::paste0(
+                "Cursor Position \nx: ",
+                base::round(temp_traj_vals$x[ltv], digits = n_digits()), unit(),
+                " \ny: ",
+                base::round(temp_traj_vals$y[ltv], digits = n_digits()), unit()
+              ) %>%
+                base::cat()
+
+            } else if(traj_drawn()){
+
+              base::paste0(
+                "Cursor: \nx: ",
+                base::round(input$hover$x, digits = n_digits()), unit(),
+                " \ny: ",
+                base::round(input$hover$y, digits = n_digits()), unit()
+              ) %>%
+                base::cat()
+
+            } else if(!base::all(base::is.numeric(c(input$hover$x, input$hover$y)))){
+
+              base::cat(base::paste0("Cursor Position \nx: ", unit(), "\ny: ", unit()))
 
             } else {
 
-              input$ncol
+              base::paste0(
+                "Cursor Position \nx: ",
+                base::round(input$hover$x, digits = n_digits()), unit(),
+                " \ny: ",
+                base::round(input$hover$y, digits = n_digits()), unit()
+              ) %>%
+                base::cat()
 
             }
 
-          })
+          }, error = function(error){
 
-          n_row <- shiny::reactive({
-
-            shiny::req(input$nrow)
-
-            if(input$nrow == 0){
-
-              NULL
-
-            } else {
-
-              input$nrow
-
-            }
-
-          })
-
-
-          width <- shiny::reactive({
-
-            stringr::str_c(
-              input$width_trajectory,
-              input$unit,
-              sep = ""
+            base::cat(
+              "Cursor Position \nx: searching (move) \ny: searching (move)"
             )
 
           })
 
-          width_pixel <- shiny::reactive({
+        })
 
-            as_pixel(
-              input = width(),
-              object = spata_obj(),
-              add_attr = FALSE
+        output$traj_ids <- shiny::renderPrint({
+
+          traj_ids()
+
+        })
+
+        # plot outputs ------------------------------------------------------------
+
+        output$plot_bg <- shiny::renderPlot({
+
+          plotSurfaceBase(
+            object = object,
+            color_by = color_by(),
+            pt_clrp = pt_clrp(),
+            pt_clrsp = pt_clrsp(),
+            display_axes = display_axes(),
+            mai = mai_vec,
+            xrange = zooming()$x %>% stringr::str_c(., unit()),
+            yrange = zooming()$y %>% stringr::str_c(., unit()),
+            pt_alpha = pt_alpha(),
+            pt_size = pt_size(),
+            unit = unit(),
+            highlight_barcodes = highlight_barcodes()
+          )
+
+          graphics::title(main = stringr::str_c("Unit: ", unit()))
+
+          # plot steady point as start point
+          if(start_point_set()){
+
+            graphics::points(
+              x = start_point()$x,
+              y = start_point()$y,
+              pch = 19,
+              col = line_color(),
+              asp = 1,
+              cex = line_size()
             )
 
-          })
+          }
 
+          # plot whole trajectory after second point is set
+          if(traj_ready_to_be_drawn()){
 
-          # update current()
-          oe <- shiny::observeEvent(module_return()$current_setting(), {
+            ltv <- length(traj_vals$x)
 
-            current(module_return()$current_setting())
-
-          })
-
-          # final plot
-          final_plot <- shiny::reactive({
-
-            module_return()$assembled_plot() +
-              trajectory_point_add_on() +
-              trajectory_segment_add_on()
-
-          })
-
-          trajectory_ids <- shiny::reactive({
-
-            getSpatialTrajectoryIds(object = spata_obj())
-
-          })
-
-          trajectory_plot <- shiny::eventReactive(input$update_plot, {
-
-            shiny::validate(
-              shiny::need(
-                expr = shiny::isTruthy(input$trajectory_ids),
-                message = "No trajectory chosen."
-              )
+            graphics::points(
+              x = traj_vals$x[1],
+              y = traj_vals$y[1],
+              pch = 19,
+              col = line_color(),
+              asp = 1,
+              cex = line_size()
             )
 
-            plotSpatialTrajectories(
-              object = spata_obj(),
-              display_facets = TRUE,
-              display_image = containsImage(spata_obj()),
-              ids = input$trajectory_ids,
-              sgmt_size = input$sgmt_size,
-              pt_alpha = (1 - input$transparency_1),
-              pt_alpha2 = (1 - input$transparency_2),
-              nrow = n_row(),
-              ncol = n_col()
-            )
+            if(connection_mode() == "draw"){
 
-
-          })
-
-          # highlight points of trajectory
-          trajectory_point_add_on <- shiny::reactive({
-
-            if(!base::nrow(projection_df()) == 0){
-
-              joined_traj_df <-
-                dplyr::left_join(
-                  x = projection_df(),
-                  y = dplyr::select(module_return()$smoothed_df(), -x, -y),
-                  by = "barcodes"
-                )
-
-              color_var <- dplyr::pull(.data = joined_traj_df, module_return()$variable())
-              size <- module_return()$current_setting()$pt_size
-
-              add_on_layer <-
-                list(
-                  ggplot2::geom_point(
-                    data = joined_traj_df, size = size, alpha = 1,
-                    mapping = ggplot2::aes(x = x, y = y, color = color_var)
-                  )
-                )
-
-            } else {
-
-              add_on_layer <- list()
-
-            }
-
-            return(add_on_layer)
-
-          })
-
-          # trjectory add ons
-          trajectory_segment_add_on <- shiny::reactive({
-
-            new_layer <- list()
-
-            # update geom_point layer
-            if(base::nrow(vertices_df()) >= 1){
-
-              new_layer[[1]] <-
-                ggplot2::geom_point(
-                  data = vertices_df(),
-                  mapping = ggplot2::aes(x = x, y = y),
-                  size = 3.5, color = "black"
-                )
-
-            }
-
-            # update geom_segment layer
-            if(base::nrow(segment_df()) >= 1){
-
-              new_layer[[2]] <-
-                ggplot2::geom_segment(
-                  data = segment_df(),
-                  mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
-                  size = 1.25, color = "black",
-                  arrow = ggplot2::arrow(length = ggplot2::unit(0.125, "inches"))
-                )
-
-            }
-
-            return(new_layer)
-
-          })
-
-          # -----
-
-
-          # Observe events and reactive events --------------------------------------
-
-          # 1. add trajectory vertice consecutively
-          oe <- shiny::observeEvent(module_return()$dblclick(), {
-
-            # 1. prolong and update data.frame
-            vrtcs_list <- module_return()$dblclick()
-
-            new_df <-
-              dplyr::add_row(
-                .data = vertices_df(),
-                x = vrtcs_list$x,
-                y = vrtcs_list$y
-              )
-
-            vertices_df(new_df)
-
-            # 2. update trajectory df
-            n_vrt <- nrow(vertices_df())
-
-            if(n_vrt >= 2){
-
-              stdf <-
-                segment_df() %>%
-                dplyr::add_row(
-                  x = base::as.numeric(vertices_df()[(n_vrt-1), 1]),
-                  y = base::as.numeric(vertices_df()[(n_vrt-1), 2]),
-                  xend = base::as.numeric(vertices_df()[(n_vrt), 1]),
-                  yend = base::as.numeric(vertices_df()[(n_vrt), 2]),
-                  part = stringr::str_c("part", n_vrt-1 , sep = "_")
-                )
-
-              segment_df(stats::na.omit(stdf))
-
-            } else {
-
-              segment_df(
-                data.frame(
-                  x = numeric(0),
-                  y = numeric(0),
-                  xend = numeric(0),
-                  yend = numeric(0),
-                  part = character(0),
-                  stringsAsFactors = FALSE
-                )
+              graphics::lines(
+                x = traj_vals$x,
+                y = traj_vals$y,
+                type = "l",
+                lwd = line_size()*1.5,
+                col = line_color()
               )
 
             }
 
-          })
-
-          # 2.1
-          oe <- shiny::observeEvent(input$highlight_trajectory, {
-
-            checkpoint(evaluate = base::nrow(segment_df()) >= 1, case_false = "insufficient_n_vertices2")
-
-            projection_df <-
-              project_on_trajectory(
-                segment_df = segment_df(),
-                width = width_pixel(),
-                coords_df = getCoordsDf(object = spata_obj())
-              )
-
-            highlighted(TRUE)
-            projection_df(projection_df)
-
-          })
-
-          # 2.2 reset current() vertices
-          oe <- shiny::observeEvent(input$reset_trajectory, {
-
-            vertices_df(data.frame(x = numeric(0), y = numeric(0)))
-
-            segment_df(empty_segment_df)
-
-            projection_df(empty_ctdf)
-
-            highlighted(FALSE)
-
-          })
-
-          ##--- 3. save the highlighted trajectory
-          oe <- shiny::observeEvent(input$save_trajectory, {
-
-            traj_names <- getSpatialTrajectoryIds(object = spata_obj())
-
-            ## control
-            checkpoint(
-              evaluate = base::nrow(projection_df()) > 0,
-              case_false = "insufficient_n_vertices2"
+            graphics::arrows(
+              x0 = traj_vals$x[ltv-1],
+              y0 = traj_vals$y[ltv-1],
+              x1 = traj_vals$x[ltv],
+              y1 = traj_vals$y[ltv],
+              length = 0.15,
+              lwd = line_size()*1.5,
+              col = line_color()
             )
 
-            checkpoint(
-              evaluate = shiny::isTruthy(x = input$id_trajectory),
-              case_false = "invalid_trajectory_name"
-            )
+            traj_drawn(TRUE)
 
-            checkpoint(
-              evaluate = !input$id_trajectory %in% traj_names,
-              case_false = "id_in_use"
-            )
+          } else {
 
-            ## save trajectory
-            spata_obj <- spata_obj()
+            traj_drawn(FALSE)
 
-            spata_obj <-
-              addSpatialTrajectory(
-                object = spata_obj(),
-                id = input$id_trajectory,
-                segment_df = segment_df(),
-                comment = input$comment_trajectory,
-                width = width()
-              )
+          }
 
-            spata_obj(spata_obj)
+        })
 
-            ## feedback and reset
+        output$plot_sm <- shiny::renderPlot({
 
-            shiny::showNotification(
-              ui = "Spatial trajectory has been stored.",
-              type = "message",
-              duration = 7
-            )
+          graphics::par(pty = "s", mai = mai_vec)
 
-            vertices_df(data.frame(x = numeric(0), y = numeric(0)))
+          # no interactive plotting if trajectory is plotted
+          if(!traj_drawn()){
 
-            segment_df(empty_segment_df)
+            x <- c(start_point()$x, temp_traj_vals$x)
+            y <- c(start_point()$y, temp_traj_vals$y)
+            col <- line_color()
 
-            projection_df(empty_ctdf)
+          } else {
 
-            highlighted(FALSE)
+            x <- base::mean(zooming()$x)
+            y <- base::mean(zooming()$y)
+            col <- ggplot2::alpha("white", 0)
 
-          })
+          }
 
-          ##--- 5. close application and return spata object
-          oe <- shiny::observeEvent(input$close_app, {
+          graphics::plot(
+            x = x,
+            y = y,
+            type = "l",
+            axes = display_axes(),
+            xlim = zooming()$x,
+            ylim = zooming()$y,
+            xlab = NA_character_,
+            ylab = NA_character_,
+            col = line_color(),
+            lwd = line_size()*1.5
+          )
 
-            shiny::stopApp(returnValue = spata_obj())
+          graphics::title(main = stringr::str_c("Unit: ", unit()))
 
-          })
+        }, bg = "transparent")
 
-
-
-          # Outputs -----------------------------------------------------------------
-
-          output$trajectory_plot <- shiny::renderPlot({
-
-            trajectory_plot()
-
-          })
-
-
-        }))
-
-  return(new_object)
+      }
+    )
+  )
 
 }
-

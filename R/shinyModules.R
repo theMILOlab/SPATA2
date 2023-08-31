@@ -29,9 +29,10 @@
 shinyModuleZoomingServer <- function(id = "m1",
                                      default = list(),
                                      brushed_area = NULL,
-                                     object = NULL,
                                      dims = NULL,
-                                     persp = "ccs"){
+                                     persp = "ccs",
+                                     trigger_zoom_out = NULL,
+                                     ...){
 
   shiny::moduleServer(
     id = id,
@@ -104,12 +105,7 @@ shinyModuleZoomingServer <- function(id = "m1",
 
       }, ignoreInit = TRUE)
 
-      oe <- shiny::observeEvent(c(input$zoom_out), {
-
-        checkpoint(
-          evaluate = n_zooms() != 0,
-          case_false = "not_zoomed_in"
-        )
+      oe <- shiny::observeEvent(c(input$zoom_out, trigger_zoom_out()), {
 
         interactive$zooming <- list()
 
@@ -130,6 +126,7 @@ shinyModuleZoomingServer <- function(id = "m1",
         }
 
         # list(x = c(,), y = c(,), dims = c(, , ))
+
         return(out_list)
 
       })

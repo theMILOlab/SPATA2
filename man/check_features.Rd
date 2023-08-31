@@ -4,13 +4,7 @@
 \alias{check_features}
 \title{Check feature variables input}
 \usage{
-check_features(
-  object,
-  features,
-  valid_classes = NULL,
-  max_length = NULL,
-  of_sample = NA
-)
+check_features(object, features, valid_classes = NULL, max_length = NULL, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

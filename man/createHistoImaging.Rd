@@ -7,12 +7,11 @@
 \usage{
 createHistoImaging(
   sample,
-  hist_img_ref,
+  hist_img_ref = NULL,
   hist_imgs = list(),
   active = NULL,
   unload = TRUE,
   coordinates = tibble::tibble(),
-  coordinates_id = NULL,
   meta = list(),
   method = SpatialMethod(),
   misc = list(),
@@ -23,7 +22,7 @@ createHistoImaging(
 createHistoImagingVisium(
   dir,
   sample,
-  img_ref = "hires",
+  img_ref = "lowres",
   img_active = "lowres",
   meta = list(),
   misc = list(),
@@ -44,16 +43,13 @@ to the active image. Defaults to the reference image.}
 \item{coordinates}{Data.frame of at least three variables:
 
 \itemize{
-\item{\code{coordinates_id}: }{Character variable with unique IDs for each observation.}
+\item{\emph{barcodes}: }{Character variable with unique IDs for each observation.}
 \item{\emph{x_orig}: }{Numeric variable representing x-coordinates in a cartesian coordinate system.}
 \item{\emph{y_orig}: }{Numeric variable representing y-coordinates in a cartesian coordinate system.}
 }
 
 Coordinates should align with the tissue outline of the reference \code{HistoImage} after being
 multiplied withe its coordinate scale factor in slot @scale_factors$coords.}
-
-\item{coordinates_id}{Character value. The name of the ID variable of the data.frame
-from \code{coordinates} when it is extracted via \code{getCoordsDf()}.}
 
 \item{meta}{List of meta data regarding the tissue.}
 
@@ -68,10 +64,17 @@ the computational progress will be printed.
 
 \item{dir}{The directory to the output folder of the platform.}
 
-\item{img_ref, img_active}{Character values specifying the active and reference images. Choose between \emph{'lowres'} and \emph{'hires'}.
-Setting both \code{img_ref} and \code{img_active} to the same value indicates that only one image is used,
-and the other image will not be read automatically. In such cases, manual registration of the
-unselected image is required using the \code{registerHistoImage()} function.}
+\item{img_ref, img_active}{Character values specifying which of the images to register and how to register
+them. See details of \code{\link{HistoImaging}} for more information about the definitions
+of the reference image and the active image. Setting both arguments to the same
+value results in the function to register the specified image as the active
+as well as the reference image. Additional images can be registered later on
+at any time using the funciton \code{\link[=registerImage]{registerImage()}}. Valid input options depend
+on the platform used:
+
+\itemize{
+\item{\emph{Visium}:}{ Either \emph{'lowres'} or \emph{'hires'}.}
+}}
 
 \item{empty_image_slots}{Logical value. If \code{TRUE}, content of slot @image
 of all \code{HistoImage} objects is emptied except for the active one.}
@@ -81,7 +84,7 @@ An object of class \code{HistoImaging}
 }
 \description{
 Official constructor function of the S4 class \code{HistoImaging}.
-Functions suffixed by the platform name are wrappers written for the
+Functions suffixed by the platform name are wrappers written for their
 standardized output folder.
 }
 \seealso{

@@ -819,12 +819,13 @@ process_seurat_object <- function(seurat_object,
 
 #' @title Project barcode spots on a trajectory
 #'
-#' @description Projects every barcode spot that falls in to the rectangle
-#' defined by the trajectory and the width parameter on the trajectory
-#' and saves the projection length in a vector.
+#' @description Projects every barcode spot onto the trajectory.
 #'
-#' @param segment_df A data.frame specifying each segment of the whole
-#' trajectory with variables \code{x, y, xend, yend}.
+#' @param traj_df A data.frame specifying the course of the trajectory. Requires
+#' *x* and *y* variables that correspond to the position of the points that build
+#' the trajectory. If nrow(traj_df) == 2, the trajectory is a straight geometrical
+#' vector and handled as such. If nrow(traj_df) >= 3, the trajectory is considered
+#' to have a curvature.
 #' @param width Numeric value that determines the width of the
 #' trajectory.
 #' @inherit check_sample params
@@ -833,93 +834,150 @@ process_seurat_object <- function(seurat_object,
 #' as well as
 #' \itemize{
 #'  \item{\emph{projection_length}: indicating the position of every barcode-spot
-#'  with respect to the direction of the trajectory-part. The higher the barcode-spots
-#'  value is the farther away it is from the starting point of the trajectory-part
+#'  with respect to the direction of the trajectory. The higher the barcode-spots
+#'  value is the farther away it is from the starting point of the trajectory
 #'  it belongs to. }
 #'  \item{\emph{trajectory_part}: indicating the part of the trajectory the barcode-spot
-#'   belongs to.}
+#'   belongs to. **Depracated**}
 #'   }
 #'
 #' @export
 #' @keywords internal
 project_on_trajectory <- function(coords_df,
-                                  segment_df,
-                                  width){
+                                  traj_df,
+                                  width,
+                                  ...){
 
-  projection_df <-
-    purrr::map_df(
-      .x = 1:base::nrow(segment_df),
-      .f = function(i){
+  deprecated(...)
 
-        # One dimensional part ----------------------------------------------------
+  if(base::nrow(traj_df) == 2){
 
-        trajectory_part <- segment_df[i,1:4]
+    # One dimensional part ----------------------------------------------------
 
-        start_point <- base::as.numeric(trajectory_part[,c("x", "y")])
-        end_point <- base::as.numeric(trajectory_part[,c("xend", "yend")])
+    start_point <- base::as.numeric(traj_df[1, c("x", "y")])
+    end_point <- base::as.numeric(traj_df[2, c("x", "y")])
 
-        trajectory_vec <- end_point - start_point
+    trajectory_vec <- end_point - start_point
 
-        # factor with which to compute the width vector
-        trajectory_magnitude <- base::sqrt((trajectory_vec[1])^2 + (trajectory_vec[2])^2)
-        trajectory_factor <- width / trajectory_magnitude
+    # factor with which to compute the width vector
+    trajectory_magnitude <- base::sqrt((trajectory_vec[1])^2 + (trajectory_vec[2])^2)
+    trajectory_factor <- width / trajectory_magnitude
 
-        # orthogonal trajectory vector
-        orth_trajectory_vec <- (c(-trajectory_vec[2], trajectory_vec[1]) * trajectory_factor)
+    # orthogonal trajectory vector
+    orth_trajectory_vec <- (c(-trajectory_vec[2], trajectory_vec[1]) * trajectory_factor)
 
+    # Two dimensional part ----------------------------------------------------
 
-        # Two dimensional part ----------------------------------------------------
+    # determine trajectory frame points 'tfps' making up the square that embraces
+    # the points
+    tfp1.1 <- start_point + orth_trajectory_vec
+    tfp1.2 <- start_point - orth_trajectory_vec
+    tfp2.1 <- end_point - orth_trajectory_vec
+    tfp2.2 <- end_point + orth_trajectory_vec
 
-        # determine trajectory frame points 'tfps' making up the square that embraces
-        # the points
-        tfp1.1 <- start_point + orth_trajectory_vec
-        tfp1.2 <- start_point - orth_trajectory_vec
-        tfp2.1 <- end_point - orth_trajectory_vec
-        tfp2.2 <- end_point + orth_trajectory_vec
+    trajectory_frame <-
+      data.frame(
+        x = c(tfp1.1[1], tfp1.2[1], tfp2.1[1], tfp2.2[1]),
+        y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
+      )
 
-        trajectory_frame <-
-          data.frame(
-            x = c(tfp1.1[1], tfp1.2[1], tfp2.1[1], tfp2.2[1]),
-            y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
-          )
+    # calculate every point of interests projection on the trajectory vector using 'vector projection'  on a local
+    # coordinate system 'lcs' to sort the points according to the trajectories direction
 
-        # calculate every point of interests projection on the trajectory vector using 'vector projection'  on a local
-        # coordinate system 'lcs' to sort the points according to the trajectories direction
-
-        lcs <- data.frame(
-          x = c(tfp1.1[1], tfp1.1[1]),
-          y = c(tfp1.1[2], tfp1.1[2]),
-          xend = c(tfp2.2[1], tfp1.2[1]),
-          yend = c(tfp2.2[2], tfp1.2[2]),
-          id = c("local length axis", "local width axis")
-        )
-
-        positions <-
-          sp::point.in.polygon(
-            point.x = coords_df$x,
-            point.y = coords_df$y,
-            pol.x = trajectory_frame$x,
-            pol.y = trajectory_frame$y
-          )
-
-
-        # Data wrangling part -----------------------------------------------------
-
-        # points of interest data.frame
-        points_of_interest <-
-          dplyr::mutate(.data = coords_df, position = {{positions}}) %>%
-          dplyr::filter(position != 0) %>% # filter only those that fall in the trajectory frame
-          dplyr::select(-position) %>%
-          dplyr::group_by(barcodes) %>%
-          dplyr::mutate(
-            projection_length = project_on_vector(lcs = lcs, x = x, y = y),
-            trajectory_part = stringr::str_c("Part", i, sep = " ")
-          ) %>%
-          dplyr::arrange(projection_length) %>%  # arrange barcodes according to their projection value
-          dplyr::ungroup()
-
-      }
+    lcs <- data.frame(
+      x = c(tfp1.1[1], tfp1.1[1]),
+      y = c(tfp1.1[2], tfp1.1[2]),
+      xend = c(tfp2.2[1], tfp1.2[1]),
+      yend = c(tfp2.2[2], tfp1.2[2]),
+      id = c("local length axis", "local width axis")
     )
+
+    positions <-
+      sp::point.in.polygon(
+        point.x = coords_df$x,
+        point.y = coords_df$y,
+        pol.x = trajectory_frame$x,
+        pol.y = trajectory_frame$y
+      )
+
+    # Data wrangling part -----------------------------------------------------
+
+    # points of interest data.frame
+    projection_df <-
+      dplyr::mutate(.data = coords_df, position = {{positions}}) %>%
+      dplyr::filter(position != 0) %>% # filter only those that fall in the trajectory frame
+      dplyr::select(-position) %>%
+      dplyr::group_by(barcodes) %>%
+      dplyr::mutate(
+        projection_length = project_on_vector(lcs = lcs, x = x, y = y),
+        trajectory_part = "Part 1" # can be removed
+      ) %>%
+      dplyr::arrange(projection_length) %>%  # arrange barcodes according to their projection value
+      dplyr::ungroup()
+
+  } else if(base::nrow(traj_df) >= 3){
+
+    traj_df_proc <-
+      dplyr::mutate(
+        .data = dplyr::select(traj_df, x, y),
+        tp = stringr::str_c("tp", 1:base::nrow(traj_df)),
+        prev_x = dplyr::lag(x),
+        prev_y = dplyr::lag(y)
+      ) %>%
+      dplyr::group_by(tp) %>%
+      dplyr::mutate(
+        # distance to neighbor
+        dtn = compute_distance(c(x,y), c(prev_x, prev_y)),
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        # first value is NA cause it has no prev_x,prev_y
+        dtn = tidyr::replace_na(dtn, replace = 0),
+        projection_length = base::cumsum(dtn)
+      )
+
+    dist_df <-
+      tidyr::expand_grid(
+        barcodes = coords_df$barcodes,
+        tp = traj_df_proc$tp # tp = trajectory point
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = coords_df[, c("barcodes", "x", "y")],
+        by = "barcodes"
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::rename(traj_df_proc, xp = x, yp = y),
+        by = "tp"
+      ) %>%
+      dplyr::group_by(barcodes, tp) %>%
+      dplyr::mutate(
+        d = compute_distance(c(x, y), c(xp, yp))
+      ) %>%
+      dplyr::ungroup()
+
+    projection_df <-
+      dplyr::group_by(dist_df, barcodes) %>%
+      dplyr::filter(d == base::min(d)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        index =
+          stringr::str_remove(tp, pattern = "^tp") %>%
+          base::as.numeric(),
+        trajectory_part = "Part 1" # can be removed
+      ) %>%
+      dplyr::filter(d <= {{width}}) %>%
+      dplyr::select(barcodes, x, y, projection_length, trajectory_part) %>%
+      dplyr::arrange(projection_length)
+
+  } else {
+
+    stop("`traj_df` must have at least two rows.")
+
+  }
+
+  projection_df$sample <- base::unique(coords_df$sample)
 
   return(projection_df)
 

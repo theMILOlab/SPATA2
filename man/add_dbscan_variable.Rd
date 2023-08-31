@@ -20,16 +20,14 @@ add_tissue_section_variable(coords_df, ccd, minPts = 3, ...)
 \arguments{
 \item{coords_df}{Data.frame with \emph{x} and \emph{y} variable.}
 
-\item{eps}{size (radius) of the epsilon neighborhood. Can be omitted if
-\code{x} is a frNN object.}
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
 
-\item{minPts}{number of minimum points required in the eps neighborhood for
-core points (including the point itself).}
+\item{minPts}{Numeric value. Given to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines the
+number of minimum points required in the eps neighborhood for core points
+(including the point itself)}
 
 \item{name}{Name of the added variable.}
-
-\item{x}{a data matrix, a data.frame, a \link{dist} object or a \link[dbscan]{frNN} object with
-fixed-radius nearest neighbors.}
 
 \item{...}{To silently drop deprecated arguments.}
 

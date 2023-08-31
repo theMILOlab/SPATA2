@@ -365,6 +365,25 @@ filterDeaDf <- function(dea_df,
 
 }
 
+find_elbow_point <- function(df){
+
+  x <- df[[1]]
+  y <- df[[2]]
+
+  # Calculate the slope of the line connecting the first and last points
+  slope <- (y[length(y)] - y[1]) / (x[length(x)] - x[1])
+
+  # Calculate the perpendicular distance from each point to the line
+  distances <- abs((y - y[1]) - slope * (x - x[1])) / sqrt(1 + slope^2)
+
+  # Find the index of the point with the maximum distance
+  elbow_index <- which.max(distances)
+
+  return(as.integer(df[[1]][elbow_index]))
+
+}
+
+
 #' @title Cluster sample via monocle3
 #'
 #' @description Assign barcode spots to clusters according to different clustering

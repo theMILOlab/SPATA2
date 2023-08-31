@@ -9,9 +9,10 @@ shinyModuleZoomingServer(
   id = "m1",
   default = list(),
   brushed_area = NULL,
-  object = NULL,
   dims = NULL,
-  persp = "ccs"
+  persp = "ccs",
+  trigger_zoom_out = NULL,
+  ...
 )
 
 shinyModuleZoomingUI(id = "m1")
@@ -23,9 +24,11 @@ shinyModuleZoomingUI(id = "m1")
 returns a list of four slots named \emph{xmin}, \emph{xmax}, \emph{ymin} and \emph{ymax} each being
 a numeric value.}
 
-\item{object}{An object for which a method for \code{getImageRange()} is defined.}
-
 \item{dims}{Image dimensions of the original, complete image during zooming.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{object}{An object for which a method for \code{getImageRange()} is defined.}
 }
 \value{
 A reactive expression which, if called with \verb{<reactiveExpression>()}

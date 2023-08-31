@@ -49,7 +49,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   object@used_genesets <- SPATA2::gsdf
 
   # set version
-  object@version <- current_spata_version
+  object@version <- current_spata2_version
 
   return(object)
 

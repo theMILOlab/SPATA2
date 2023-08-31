@@ -63,6 +63,116 @@ makeContent.resizingTextGrob <- function(x) {
 }
 
 
+
+#' @title Compute an orthogonal vector
+#'
+#' @description Computes the start and enpoint of a vector that crosses an
+#' input vector orthogonally at its start point, end point or at its midth section.
+#'
+#' @param sp,ep Numeric vectors of length two. Correspond to the start- and end
+#' point of the geometrical vector for which to compute the orthogonal vector.
+#' @param out_length The length/magnitude of the orthogonal vector.
+#' @param inters_loc The location of the intersection. Valid input options are
+#' *'sp'*, *'ep'* or *'m'*.
+#'
+#' @return List of two slots named sp and ep with vectors of length two that
+#' correspond to the start- and end point of the crossing vector.
+#' @export
+#'
+make_orthogonal_segment <- function(sp, ep, out_length, inters_loc = "m"){
+
+  x <- sp[1]
+  xend <- ep[1]
+  y <- sp[2]
+  yend <- ep[2]
+
+  length_segment <- sqrt((xend - x)^2 + (yend - y)^2)
+  unit_vector <- c((xend - x) / length_segment, (yend - y) / length_segment)
+  orthogonal_unit_vector <- c(-unit_vector[2], unit_vector[1])
+
+  if (inters_loc == "sp") {
+    x_pos <- x
+    y_pos <- y
+  } else if (inters_loc == "m") {
+    x_pos <- (x + xend) / 2
+    y_pos <- (y + yend) / 2
+  } else if (inters_loc == "ep") {
+    x_pos <- xend
+    y_pos <- yend
+  } else {
+    stop("Invalid value for inters_loc")
+  }
+
+  x_orthogonal_start <- x_pos + orthogonal_unit_vector[1] * out_length
+  y_orthogonal_start <- y_pos + orthogonal_unit_vector[2] * out_length
+  x_orthogonal_end <- x_pos - orthogonal_unit_vector[1] * out_length
+  y_orthogonal_end <- y_pos - orthogonal_unit_vector[2] * out_length
+
+  orthogonal_vector <- list(
+    sp = c(x = x_orthogonal_start, y = y_orthogonal_start),
+    ep = c(x = x_orthogonal_end, y = y_orthogonal_end)
+  )
+
+  return(orthogonal_vector)
+
+}
+
+#' @title Make orthogonal segments
+#' @param sp,ep Numeric vectors of x- and y-coordinates that correspond to the
+#' start- and end point of the vector for which the orthogonal segment is
+#' computed.
+#' @param out_length The length of the orthogonal vector.
+#'
+#' @return A list of two slots named *sp* and *ep*. Both contain
+#' numeric vectors of length two that correspond to the start and
+#' end point of the orthogonal vector.
+#'
+make_orthogonal_segments <- function(sp, ep, binwidth, out_length) {
+
+  x <- sp[1]
+  xend <- sp[2]
+  y <- ep[1]
+  yend <- ep[2]
+
+  # Calculate the length of the segment
+  length_segment <- sqrt((xend - x)^2 + (yend - y)^2)
+
+  # Determine the number of orthogonal segments
+  num_segments <- floor(length_segment / binwidth) + 1
+
+  # Calculate the unit vector along the segment
+  unit_vector <- c((xend - x) / length_segment, (yend - y) / length_segment)
+
+  # Calculate the orthogonal unit vector
+  orthogonal_unit_vector <- c(-unit_vector[2], unit_vector[1])
+
+  # Create a data frame to store the orthogonal segments
+  orthogonal_segments <- data.frame(x = numeric(), y = numeric(), xend = numeric(), yend = numeric())
+
+  # Calculate the orthogonal segments
+  for (i in 0:(num_segments - 1)) {
+    x_pos <- x + i * binwidth * unit_vector[1]
+    y_pos <- y + i * binwidth * unit_vector[2]
+
+    x_orthogonal_start <- x_pos + orthogonal_unit_vector[1] * out_length
+    y_orthogonal_start <- y_pos + orthogonal_unit_vector[2] * out_length
+    x_orthogonal_end <- x_pos - orthogonal_unit_vector[1] * out_length
+    y_orthogonal_end <- y_pos - orthogonal_unit_vector[2] * out_length
+
+    orthogonal_segments <-
+      dplyr::add_row(
+        .data = orthogonal_segments,
+        x = x_orthogonal_start,
+        y = y_orthogonal_start,
+        xend = x_orthogonal_end,
+        yend = y_orthogonal_end
+      )
+  }
+
+  return(orthogonal_segments)
+
+}
+
 #' @keywords internal
 make_scattermore_add_on <- function(mapping,
                                     alpha,
@@ -1504,7 +1614,6 @@ moduleSurfacePlotServer <- function(id,
         )
 
       })
-
 
       return(return_list)
 

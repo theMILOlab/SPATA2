@@ -2,12 +2,29 @@
 % Please edit documentation in R/add.R
 \name{addImageAnnotation}
 \alias{addImageAnnotation}
+\alias{addImageAnnotation,spata2-method}
 \alias{addImageAnnotation,HistoImaging-method}
 \title{Add an image annotation manually}
 \usage{
 addImageAnnotation(object, ...)
 
-\S4method{addImageAnnotation}{HistoImaging}(object, tags, area, parent_name, id = NULL)
+\S4method{addImageAnnotation}{spata2}(
+  object,
+  tags,
+  area,
+  parent_name,
+  id = NULL,
+  overwrite = FALSE
+)
+
+\S4method{addImageAnnotation}{HistoImaging}(
+  object,
+  tags,
+  area,
+  parent_name,
+  id = NULL,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -27,6 +44,8 @@ with numbers that correspond to inner polygons - holes within the annotation.}
 which the annotation was drawn.}
 
 \item{id}{Character value. The ID of the image annotation.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
 The input \code{spata2} object containing the added or computed

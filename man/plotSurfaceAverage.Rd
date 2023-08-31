@@ -52,9 +52,6 @@ the point size must be adjusted with the argument \code{pt_size}.}
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
-\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
-are removed before analysis or plotting.}
-
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{

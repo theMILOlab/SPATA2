@@ -470,6 +470,7 @@ plotIasBarplotSC <- function(object,
 plotIasEvaluation <- function(object,
                               id,
                               variables,
+                              method_eval = "corr",
                               distance = NA_integer_,
                               binwidth = ccDist(object),
                               n_bins_circle = NA_integer_,
@@ -492,6 +493,9 @@ plotIasEvaluation <- function(object,
                               corr_text_size = 1,
                               force_grid = FALSE,
                               bcsp_exclude = NULL,
+                              ncol = NULL,
+                              nrow = NULL,
+                              make_pretty = FALSE,
                               verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -504,7 +508,7 @@ plotIasEvaluation <- function(object,
       binwidth = binwidth,
       n_bins_circle = n_bins_circle,
       variables = variables,
-      remove_circle_bins = "Core",
+      remove_circle_bins = TRUE,
       summarize_by = "bins_circle",
       normalize_by = "sample",
       bcsp_exclude = bcsp_exclude
@@ -513,6 +517,7 @@ plotIasEvaluation <- function(object,
 
   plot_screening_evaluation(
     df = ias_df,
+    method_eval = method_eval,
     variables = variables,
     var_order = "bins_order",
     model_subset = model_subset,
@@ -531,6 +536,9 @@ plotIasEvaluation <- function(object,
     corr_text_sep = corr_text_sep,
     corr_text_size = corr_text_size,
     force_grid = force_grid,
+    nrow = nrow,
+    ncol = ncol,
+    make_pretty = make_pretty,
     verbose = verbose
   )
 

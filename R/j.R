@@ -89,18 +89,18 @@ joinWith <- function(object,
   # -----
 
   output_df <-
-  joinWithVariables(
-    object = object,
-    spata_df = spata_df,
-    variables = input_list,
-    method_gs = method_gs,
-    average_genes = average_genes,
-    uniform_genes = uniform_genes,
-    smooth = smooth,
-    smooth_span = smooth_span,
-    verbose = verbose,
-    normalize = normalize
-  )
+    joinWithVariables(
+      object = object,
+      spata_df = spata_df,
+      variables = input_list,
+      method_gs = method_gs,
+      average_genes = average_genes,
+      uniform_genes = uniform_genes,
+      smooth = smooth,
+      smooth_span = smooth_span,
+      verbose = verbose,
+      normalize = normalize
+    )
 
   return(output_df)
 
@@ -475,15 +475,6 @@ joinWithGeneSets <- function(object,
 
   mtr_name <- getActiveMatrixName(object, verbose = verbose)
 
-  if(mtr_name == "counts"){
-
-    rlang::warn(
-      message = "Active matrix is 'counts'. It is recommended to use scaled expression data for gene-set expression.",
-      .frequency = "once",
-    )
-
-  }
-
   rna_assay <- getMatrix(object, mtr_name = mtr_name)
 
   gene_set_df <- getGeneSetDf(object = object)
@@ -715,17 +706,17 @@ joinWithPca <- function(object,
                         n_pcs = NULL,
                         verbose = NULL,
                         force = FALSE,
-                        of_sample = NA){
+                        ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object = object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   check_spata_df(spata_df = spata_df)
 
   pca_df <- getPcaDf(object = object,
-                     n_pcs = n_pcs,
-                     of_sample = of_sample) %>%
+                     n_pcs = n_pcs) %>%
     dplyr::select(-dplyr::any_of("sample"))
 
   cnames_pca <-
@@ -762,16 +753,17 @@ joinWithTsne <- function(object,
                          spata_df,
                          verbose = NULL,
                          force = FALSE,
-                         of_sample = NA){
+                         ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object = object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   check_spata_df(spata_df = spata_df)
 
   tsne_df <-
-    getTsneDf(object = object, of_sample = of_sample)%>%
+    getTsneDf(object = object)%>%
     dplyr::select(-dplyr::any_of("sample"))
 
   cnames_tsne <-
@@ -808,16 +800,17 @@ joinWithUmap <- function(object,
                          spata_df,
                          verbose = NULL,
                          force = FALSE,
-                         of_sample = NA){
+                         ...){
+
+  deprecated(...)
 
   hlpr_assign_arguments(object = object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   check_spata_df(spata_df = spata_df)
 
   umap_df <-
-    getUmapDf(object = object, of_sample = of_sample) %>%
+    getUmapDf(object = object) %>%
     dplyr::select(-dplyr::any_of("sample"))
 
   cnames_umap <-

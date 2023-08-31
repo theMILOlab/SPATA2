@@ -14,30 +14,20 @@ plotSurface(object, ...)
   color_by = NULL,
   alpha_by = NULL,
   method_gs = NULL,
-  normalize = NULL,
   smooth = FALSE,
-  smooth_span = NULL,
+  smooth_span = 0.2,
   pt_alpha = NULL,
   pt_clr = NULL,
   pt_clrp = NULL,
   pt_clrsp = NULL,
-  pt_size = NULL,
-  pt_size_fixed = NULL,
   clrp_adjust = NULL,
-  use_scattermore = FALSE,
-  sctm_pixels = c(1024, 1024),
-  sctm_interpolate = FALSE,
   display_image = NULL,
-  display_title = NULL,
-  complete = NULL,
-  verbose = NULL,
-  highlight_groups = NULL,
+  img_alpha = 1,
   transform_with = NULL,
-  bcsp_rm = NULL,
-  na_rm = FALSE,
-  pt_size_legend = 10,
-  order_by = NULL,
-  order_desc = FALSE,
+  bcs_rm = NULL,
+  xrange = getCoordsRange(object)$x,
+  yrange = getCoordsRange(object)$y,
+  verbose = NULL,
   ...
 )
 
@@ -82,10 +72,6 @@ expression of those genes will be calculated and displayed. Must be in \code{get
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
-
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
@@ -101,35 +87,13 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
-\item{pt_size}{Numeric value. Specifies the size of all points.}
-
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
-\code{scattermore::geom_scattermore()} which allows quick plotting of several
-thousand data points. If the number of data points plotted is bigger than
-10.000 it is used anyway.}
-
-\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
-of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
-the point size must be adjusted with the argument \code{pt_size}.}
-
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
-
-\item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
-
-\item{complete}{Logical. If the provided \code{SPATA2} object has been subsetted by
-\code{subsetBySegment()} the original sample is completed with grey barcode
-spots.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 
 \item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -140,8 +104,38 @@ Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
-\item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
-are removed before analysis or plotting.}
+\item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
+to be removed prior to analysis or visualization by their barcode.}
+
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{pt_size}{Numeric value. Specifies the size of all points.}
+
+\item{image}{An image of class \emph{Image} to be displayed in the background.
+Easily accessible via \code{SPATA::image()}.}
+
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
+
+\item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
+of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
+the point size must be adjusted with the argument \code{pt_size}.}
 
 \item{order_by}{Character value or \code{NULL}. If character, the specified
 variable is used to order the data points.}
@@ -149,8 +143,9 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
-\item{image}{An image of class \emph{Image} to be displayed in the background.
-Easily accessible via \code{SPATA::image()}.}
+\item{complete}{Logical. If the provided \code{SPATA2} object has been subsetted by
+\code{subsetBySegment()} the original sample is completed with grey barcode
+spots.}
 }
 \description{
 Displays the spatial dimension of the sample and colors the

@@ -4,11 +4,14 @@
 \alias{project_on_trajectory}
 \title{Project barcode spots on a trajectory}
 \usage{
-project_on_trajectory(coords_df, segment_df, width)
+project_on_trajectory(coords_df, traj_df, width, ...)
 }
 \arguments{
-\item{segment_df}{A data.frame specifying each segment of the whole
-trajectory with variables \code{x, y, xend, yend}.}
+\item{traj_df}{A data.frame specifying the course of the trajectory. Requires
+\emph{x} and \emph{y} variables that correspond to the position of the points that build
+the trajectory. If nrow(traj_df) == 2, the trajectory is a straight geometrical
+vector and handled as such. If nrow(traj_df) >= 3, the trajectory is considered
+to have a curvature.}
 
 \item{width}{Numeric value that determines the width of the
 trajectory.}
@@ -18,16 +21,14 @@ A data.frame containing the variables \emph{barcodes, sample, x, y}
 as well as
 \itemize{
 \item{\emph{projection_length}: indicating the position of every barcode-spot
-with respect to the direction of the trajectory-part. The higher the barcode-spots
-value is the farther away it is from the starting point of the trajectory-part
+with respect to the direction of the trajectory. The higher the barcode-spots
+value is the farther away it is from the starting point of the trajectory
 it belongs to. }
 \item{\emph{trajectory_part}: indicating the part of the trajectory the barcode-spot
-belongs to.}
+belongs to. \strong{Depracated}}
 }
 }
 \description{
-Projects every barcode spot that falls in to the rectangle
-defined by the trajectory and the width parameter on the trajectory
-and saves the projection length in a vector.
+Projects every barcode spot onto the trajectory.
 }
 \keyword{internal}

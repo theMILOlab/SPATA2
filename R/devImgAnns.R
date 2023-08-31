@@ -327,7 +327,6 @@ setMethod(
 
       }
 
-
       # scale_fct = 1, if parent_name and img_name are equal
       scale_fct <-
         compute_img_scale_fct(
@@ -827,6 +826,7 @@ setMethod(
   f = "getImgAnnIds",
   signature = "spata2",
   definition = function(object,
+                        ids = NULL,
                         tags = NULL,
                         test = "any",
                         ...){
@@ -834,6 +834,7 @@ setMethod(
     getHistoImaging(object) %>%
     getImgAnnIds(
       object = .,
+      ids = ids,
       tags = tags,
       test = test,
       ...
@@ -848,13 +849,24 @@ setMethod(
   f = "getImgAnnIds",
   signature = "HistoImaging",
   definition = function(object,
+                        ids = NULL,
                         tags = NULL,
                         test = "any",
                         ...){
 
     if(nImageAnnotations(object) >= 1){
 
-      out <- base::names(object@annotations)
+      out <-
+        getImageAnnotations(
+          object = object,
+          ids = ids,
+          tags = tags,
+          test = test,
+          add_barcodes = FALSE,
+          add_image = FALSE
+          ) %>%
+        purrr::map_chr(.f = ~ .x@id) %>%
+        base::unname()
 
     } else {
 
@@ -927,6 +939,9 @@ setMethod(
 #' the borders of the image annotation.
 #'
 #' @inherit argument_dummy params
+#' @param img_name Character value or `NULL`. The name of the image to which the
+#' output coordinates of the outline are scaled (due to different image resolutions).
+#' If `NULL`, defaults to the currently active image.
 #'
 #' @return A data.frame that contains variables \emph{id}, *border*,
 #' and the numeric variables *x*, *y* and *tags*.
@@ -958,6 +973,7 @@ setMethod(
                         test = "any",
                         outer = TRUE,
                         inner = TRUE,
+                        img_name = NULL,
                         add_tags = FALSE,
                         sep = " & ",
                         last = " & "){
@@ -970,6 +986,7 @@ setMethod(
         test = test,
         outer = outer,
         inner = inner,
+        img_name = img_name,
         add_tags = add_tags,
         sep = sep,
         last = last
@@ -990,6 +1007,7 @@ setMethod(
                         test = "any",
                         outer = TRUE,
                         inner = TRUE,
+                        img_name = NULL,
                         add_tags = FALSE,
                         sep = " & ",
                         last = " & "){
@@ -1000,6 +1018,7 @@ setMethod(
         ids = ids,
         tags = tags,
         test = test,
+        img_name = img_name,
         add_barcodes = FALSE,
         add_image = FALSE
       )
@@ -1117,6 +1136,70 @@ setMethod(
 
   }
 )
+
+
+mergeImageAnnotations <- function(object,
+                                  ids,
+                                  id,
+                                  tags = NULL,
+                                  tags_expand = TRUE,
+                                  concavity = 3,
+                                  discard_old = FALSE,
+                                  overwrite = FALSE){
+
+  pxl_df <- getPixelDf(object)
+
+  merged_outline <-
+    purrr::map_df(
+      .x = ids,
+      .f = function(idx){
+
+        outline_df <- getImgAnnOutlineDf(object, id = idx)
+
+        pxl_index <-
+          sp::point.in.polygon(
+            point.x = pxl_df$width,
+            point.y = pxl_df$height,
+            pol.x = outline_df$x,
+            pol.y = outline_df$y
+          )
+
+        out <- pxl_df[pxl_index %in% c(1,2,3), ]
+
+      }
+    ) %>%
+    dplyr::distinct() %>%
+    dplyr::select(x = width, y = height) %>%
+    base::as.matrix() %>%
+    concaveman::concaveman(points = ., concavity = concavity) %>%
+    tibble::as_tibble() %>%
+    magrittr::set_colnames(value = c("x", "y"))
+
+  if(base::isTRUE(discard_old)){
+
+    object <- discardImageAnnotations(object, ids = ids)
+
+  }
+
+  if(base::isTRUE(tags_expand)){
+
+    tags <- base::unique(c(tags, "mergeImageAnnotations"))
+
+  }
+
+  object <-
+    addImageAnnotation(
+      object = object,
+      id = id,
+      tags = tags,
+      area = list(outer = merged_outline),
+      overwrite = overwrite,
+      parent_name = activeImage(object)
+    )
+
+  return(object)
+
+}
 
 
 

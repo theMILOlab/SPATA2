@@ -9,7 +9,7 @@ plotTrajectoryLineplot(
   object,
   id,
   variables,
-  binwidth = getCCD(object),
+  binwidth = getCCD(object, unit = "px"),
   n_bins = NA_integer_,
   unit = getSpatialMethod(object)@unit,
   round = 2,
@@ -19,13 +19,9 @@ plotTrajectoryLineplot(
   smooth_se = TRUE,
   clrp = NULL,
   clrp_adjust = NULL,
-  display_trajectory_parts = NULL,
   display_facets = NULL,
   line_color = NULL,
   line_size = 1.5,
-  vlinecolor = "grey",
-  vlinesize = 1,
-  vlinetype = "dashed",
   x_nth = 7L,
   xi = (getTrajectoryLength(object, id)/2),
   yi = 0.5,
@@ -105,10 +101,6 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{display_trajectory_parts}{Logical. If set to TRUE the returned plot
-visualizes the parts in which the trajectory has been partitioned while beeing
-drawn.}
-
 \item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
 or feature are displayed via \code{ggplot2::facet_wrap()}}
 
@@ -116,12 +108,6 @@ or feature are displayed via \code{ggplot2::facet_wrap()}}
 
 \item{line_size}{Numeric value. Specifies the thicknes of the lines with which
 the trajectory dynamics are displayed.}
-
-\item{vlinesize, vlinecolor}{Adjusts size and color of vertical lines that
-display the trajectory parts.}
-
-\item{vlinetype}{Adjusts the type of the vertical lines that display the trajectory
-parts.}
 
 \item{x_nth}{Numeric value. If the number of breaks/labels on the
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
@@ -143,6 +129,10 @@ the computational progress will be printed.
 
 \item{...}{Additional arguments given to \code{ggplot2::facet_wrap()} if argument
 \code{display_facets} is set to TRUE.}
+
+\item{display_trajectory_parts}{Logical. If set to TRUE the returned plot
+visualizes the parts in which the trajectory has been partitioned while beeing
+drawn.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

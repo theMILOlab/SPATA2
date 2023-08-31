@@ -10,7 +10,7 @@
 \usage{
 plotImageBase(object, ...)
 
-\S4method{plotImageBase}{spata2}(object, xrange = NULL, yrange = NULL, ...)
+\S4method{plotImageBase}{spata2}(object, xrange = NULL, yrange = NULL, axes = FALSE, ...)
 
 \S4method{plotImageBase}{HistoImaging}(
   object,

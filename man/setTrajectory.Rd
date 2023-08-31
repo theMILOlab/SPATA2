@@ -5,19 +5,15 @@
 \alias{setTrajectories}
 \title{Set trajectories}
 \usage{
-setTrajectory(object, trajectory, align = TRUE, overwrite = FALSE)
+setTrajectory(object, trajectory, overwrite = FALSE)
 
-setTrajectories(object, trajectories, align = TRUE, overwrite = FALSE)
+setTrajectories(object, trajectories, overwrite = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{trajectory}{An object of class \code{Trajectory.}}
-
-\item{align}{Logical value. If \code{TRUE}, trajectories of class \code{SpatialTrajectory}
-are aligned with image justification changes of the image of the
-\code{SPATA2} object.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 

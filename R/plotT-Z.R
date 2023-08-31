@@ -623,10 +623,6 @@ plotTrajectoryHeatmap <- function(object,
 #' \code{display_facets} is set to TRUE.
 #' @param line_size Numeric value. Specifies the thicknes of the lines with which
 #' the trajectory dynamics are displayed.
-#' @param vlinesize,vlinecolor Adjusts size and color of vertical lines that
-#' display the trajectory parts.
-#' @param vlinetype Adjusts the type of the vertical lines that display the trajectory
-#' parts.
 #'
 #' @inherit ggpLayerLineplotAid params
 #'
@@ -636,7 +632,7 @@ plotTrajectoryHeatmap <- function(object,
 plotTrajectoryLineplot <- function(object,
                                    id,
                                    variables,
-                                   binwidth = getCCD(object),
+                                   binwidth = getCCD(object, unit = "px"),
                                    n_bins = NA_integer_,
                                    unit = getSpatialMethod(object)@unit,
                                    round = 2,
@@ -646,13 +642,9 @@ plotTrajectoryLineplot <- function(object,
                                    smooth_se = TRUE,
                                    clrp = NULL,
                                    clrp_adjust = NULL,
-                                   display_trajectory_parts = NULL,
                                    display_facets = NULL,
                                    line_color = NULL,
                                    line_size = 1.5,
-                                   vlinecolor = "grey",
-                                   vlinesize = 1,
-                                   vlinetype = "dashed",
                                    x_nth = 7L,
                                    xi = (getTrajectoryLength(object, id)/2),
                                    yi = 0.5,
@@ -706,30 +698,6 @@ plotTrajectoryLineplot <- function(object,
       breaks_dist = as_unit(input = breaks, unit = unit, object = object),
       variables = base::factor(variables, levels = vars)
     )
-
-  if(base::isTRUE(display_trajectory_parts)){
-
-    vline_df <-
-      result_df %>%
-      dplyr::group_by(trajectory_part) %>%
-      dplyr::filter(
-        trajectory_order %in% c(base::min(trajectory_order), base::max(trajectory_order)) &
-          trajectory_part_order == 1 &
-          trajectory_order != 1
-      )
-
-    trajectory_part_add_on <- list(
-      ggplot2::geom_vline(
-        data = vline_df,
-        mapping = ggplot2::aes(xintercept = trajectory_order),
-        size = vlinesize, color = vlinecolor, linetype = vlinetype
-      )
-    )
-
-  } else {
-
-    trajectory_part_add_on <- NULL
-  }
 
   if(base::isTRUE(display_facets)){
 
@@ -788,13 +756,11 @@ plotTrajectoryLineplot <- function(object,
 
   }
 
-
   ggplot2::ggplot(
     data = result_df,
     mapping = ggplot2::aes(x = breaks, y = values)
   ) +
     ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi, ...) +
-    trajectory_part_add_on +
     ggplot2::geom_smooth(
       size = line_size,
       span = smooth_span,

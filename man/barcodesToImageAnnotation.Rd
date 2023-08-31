@@ -9,66 +9,134 @@ barcodesToImageAnnotation(
   barcodes,
   id,
   tags = NULL,
-  force1 = FALSE,
-  concavity = 2,
-  eps = getCCD(object, unit = "px") * 1.25,
+  tags_expand = TRUE,
+  use_dbscan = TRUE,
+  eps = getCCD(object) * 1.25,
   minPts = 3,
-  sep = "_",
-  expand_outline = getCCD(object, unit = "px")/2,
+  min_size = 5,
+  force1 = FALSE,
+  concavity = 3,
+  expand_outline = getCCD(object)/2,
   overwrite = FALSE,
   verbose = NULL
 )
 }
 \arguments{
-\item{object}{A valid \code{spata2} object.}
+\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{barcodes}{Character vector. A vector of barcode-spots that cover histological
+\item{barcodes}{Character vector. A vector of data points that cover histological
 areas that are supposed to annotated as image annotations.}
 
-\item{id}{Name of the created image annotation. If multiple areas are identified (see details)
-this name is suffixed with a number.}
+\item{id}{Character value. The ID of the image annotation.}
 
-\item{tags}{Character vector or NULL. If character, the tags for the image annotation selection.
-See section Selection of image annotation with tags for more information.}
+\item{tags}{A character vector of tags for the image annotation.}
 
-\item{force1}{Logical value. If \code{TRUE}, the function assumes that the barcodes
-cover one contiguous area and creates only one image annotation.}
+\item{tags_expand}{Logical value. If \code{TRUE}, the tags with which the image
+annotations are tagged are expanded by the unsuffixed \code{id}, the \code{variable},
+the \code{threshold} and \emph{'barcodesToImageAnnotation()'}.}
 
-\item{concavity}{Given to \code{concaveman::concaveman()}.}
+\item{use_dbscan}{Logical value. If \code{TRUE}, the DBSCAN algorithm is used to identify
+spatial clusters and outliers before the outline of the image annotation is drawn.}
 
-\item{eps}{Distance measure. Converted to pixel unit and given to \code{eps} of
-\code{dbscan::dbscan()}. Defaults to the center-to-center distance multiplied with 1.25.}
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
 
-\item{minPts}{Given to \code{minPts} of \code{dbscan::dbscan()}. Defaults to 3.}
+\item{minPts}{Numeric value. Given to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines the
+number of minimum points required in the eps neighborhood for core points
+(including the point itself)}
 
-\item{sep}{Character value. The separator between image annotation id and suffix.}
+\item{min_size}{Numeric value. The minimum number of data points a dbscan cluster
+must have in order not to be discarded as a spatial outlier.}
 
-\item{expand_outline}{Distance measure. Defines how much the identified outline of each
-area is buffered. If 0, no buffering is performed and the outer barcode-spots of
-each area are representative of the outline.}
+\item{force1}{Logical value. If \code{TRUE}, spatial sub groups identified by DBSCAN
+are merged into one cluster.}
 
-\item{overwrite}{Logical. Set to \code{TRUE} in order to overwrite existing image
-annotations.}
+\item{concavity}{Numeric value. Given to argument \code{concavity} of
+\code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
+1 results in a relatively detailed shape, Infinity results in a convex hull.
+You can use values lower than 1, but they can produce pretty crazy shapes.}
 
-\item{verbose}{Logical. If set to \code{TRUE} informative messages regarding the computational
-progress will be printed.}
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
-An updated \code{spata2} object
+The input \code{spata2} object containing the added or computed
+results.
 }
 \description{
-Creates image annotations from a list of barcodes by identifying
-the spots that outline the area covered by them. See details for more information.
+Creates image annotations from a list of barcodes from
+data points that cover the area to be outlined. See details for more information.
 }
 \details{
 The functions filters the coordinates data.frame obtained via \code{getCoordsDf()}
-based on the input of argument \code{barcodes}. If \code{force1} is not \code{TRUE}, the
-Density-based Spatial Clustering of Applications with Noise (DBSCAN) is applied
-to identify multiple areas covered by the barcodes denoted in \code{barcodes}.
-\code{concaveman::concaveman()} creates a polygon for each area identified by
-\code{dbscan} that is required to outline the area. Each polygon is used to create
-an image annotation combining input for \code{id} with a numeric suffix.
+based on the input of argument \code{barcodes}.
+
+Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
+identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
+detects multiple dense clusters, they can be merged into a single group
+if \code{force1} is also set to \code{TRUE}.
+
+It is essential to note that bypassing the DBSCAN step may lead to the inclusion
+of individual data points dispersed across the sample. This results in an image
+annotation that essentially spans the entirety of the sample, lacking the
+segregation of specific variable expressions. Similarly, enabling \code{force1}
+might unify multiple segregated areas, present on both sides of the sample, into one
+group and subsequently, one image annotation encompassing the whole sample.
+Consider to allow the creation of multiple image annotations (suffixed with an index)
+and merging them afterwards via \code{mergeImageAnnotations()} if they are too
+close together.
+
+Lastly, the remaining data points are fed into the concaveman algorithm on a
+per-group basis. The algorithm calculates concave polygons outlining the groups
+of data points. If \code{dbscan_use} is \code{FALSE}, all data points that remained after the
+initial filtering are submitted to the algorithm. Subsequently, these polygons are
+integrated into \code{addImageAnnotation()} along with the unsuffixed \code{id} and
+\code{tags} input arguments. The ID is suffixed with an index for each group.
 }
+\section{Distance measures}{
+
+
+Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
+To specifically refer to a distance the unit must be specified. There are
+three ways to create valid input for these arguments.
+
+\strong{1. In pixel:}
+
+There are two valid input options to specify the distance in pixel:
+
+\itemize{
+\item{numeric:}{ Single numeric values, e.g. \code{arg_input = c(2, 3.554, 69, 100.67)}. If no unit
+is specified the input will be interpreted as pixels.}
+\item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
+}
+
+Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+refers to a distance the pixel side length is meant. If pixel refers to an area the
+number of pixels is meant.
+
+\strong{2. According to the Systeme international d`unites (SI):}
+
+Specifying distances in SI units e.g. \code{arg_input = c('2mm', '4mm')} etc.
+requires the input to be a character as the unit must be provided as suffix.
+Between the numeric value and the unit must be no empty space! Valid suffixes
+can be obtained using the function \code{validUnitsOfLengthSI()}.
+
+\strong{3. As vectors of class \code{unit}:}
+
+Behind the scenes \code{SPATA2} works with the \code{units} package. Input
+is converted into vectors of class \code{units}. Therefore, input can be directly
+provided this way: \code{arg_input = units::set_unit(x = c(2,4), value = 'mm')}
+Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
+to specify the input in pixel you have to use input option 1. In pixel.
+}
+
 \examples{
 
 library(SPATA2)
@@ -125,4 +193,12 @@ object_ex3 <-
 
 plotImageAnnotations(object_ex3, expand = "1mm")
 
+}
+\seealso{
+See \code{\link[=addImageAnnotation]{addImageAnnotation()}}, \code{\link[=expressionToImageAnnotation]{expressionToImageAnnotation()}},
+\code{\link[=groupToImageAnnotation]{groupToImageAnnotation()}} for additional functions to create image annotations.
+
+See \code{\link[=mergeImageAnnotations]{mergeImageAnnotations()}} to merge image annotations.
+
+See \code{\link{ImageAnnotation}}-class for details about the S4 architecture.
 }

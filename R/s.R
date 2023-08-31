@@ -779,7 +779,9 @@ shift_screening_df_to_long <- function(df, var_order = "bins_order", suffix = "_
 }
 
 #' @keywords internal
-shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory_order", ...){
+shift_smrd_projection_df <- function(smrd_projection_df,
+                                     var_order = "trajectory_order",
+                                     ...){
 
   tidyr::pivot_longer(
     data = smrd_projection_df,
@@ -787,7 +789,10 @@ shift_smrd_projection_df <- function(smrd_projection_df, var_order = "trajectory
     names_to = "variables",
     values_to = "values"
   ) %>%
-    dplyr::select({{var_order}}, variables, values, dplyr::any_of(x = "trajectory_part"), ...)
+    dplyr::select(
+      {{var_order}}, variables, values,
+      dplyr::any_of(x = "trajectory_part"),
+      ...)
 
 }
 
@@ -1408,7 +1413,20 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
     dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     setCoordsDf(object, coords_df = .)
 
-  object@data[[1]] <- purrr::map(.x = object@data[[1]], .f = ~ .x[, bcs_keep])
+  object@data[[1]] <-
+    purrr::map(
+      .x = object@data[[1]],
+      .f = function(mtr){
+
+        if(base::is.matrix(mtr) | is(mtr, class2 = "Matrix")){
+
+          mtr <- mtr[, bcs_keep]
+
+        }
+
+        return(mtr)
+
+      })
 
   object@images[[1]]@annotations <-
     purrr::map(
@@ -1620,7 +1638,7 @@ summarize_and_shift_variable_df <- function(grouped_df, variables){
 #' @keywords internal
 summarize_corr_string <- function(x, y){
 
-  res <- stats::cor.test(x = x, y = y)
+  res <- stats::cor.test(x = x, y = y, alternative = "greater")
 
   out <- stringr::str_c(res$estimate, res$p.value, sep = "_")
 
@@ -1656,19 +1674,26 @@ summarize_projection_df <- function(projection_df,
     dplyr::select_if(.predicate = base::is.numeric) %>%
     base::names()
 
-  binned_projection_df <- bin_projection_df(projection_df, n_bins = n_bins, binwidth = binwidth)
+  binned_projection_df <-
+    bin_projection_df(
+      projection_df = projection_df,
+      n_bins = n_bins,
+      binwidth = binwidth
+      )
 
   smrd_projection_df <-
-    dplyr::select(binned_projection_df, dplyr::any_of(c(projection_df_names, num_vars)), proj_length_binned) %>%
-    dplyr::group_by(trajectory_part, proj_length_binned) %>%
+    dplyr::select(
+      .data = binned_projection_df,
+      dplyr::any_of(c(projection_df_names, num_vars)),
+      proj_length_binned
+      ) %>%
+    dplyr::group_by(proj_length_binned) %>%
     dplyr::summarise(
       dplyr::across(
         .cols = dplyr::all_of(num_vars),
         .fns = summarize_formulas[[summarize_with]]
       )
     ) %>%
-    # while beeing grouped by trajectory_part
-    dplyr::mutate(trajectory_part_order = dplyr::row_number()) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(trajectory_order = dplyr::row_number()) %>%
     dplyr::select(dplyr::all_of(smrd_projection_df_names), dplyr::everything())
@@ -1700,21 +1725,23 @@ summarizeIAS <- function(ias, method_padj = "fdr"){
     dplyr::summarise(
       n_bins_angle = dplyr::n_distinct(bins_angle),
       corr_mean = base::mean(corr),
-      corr_median = stats::median(corr),
-      corr_min = base::min(corr),
-      corr_max = base::max(corr),
-      corr_sd = stats::sd(corr),
+      #corr_median = stats::median(corr),
+      #corr_min = base::min(corr),
+      #corr_max = base::max(corr),
+      #corr_sd = stats::sd(corr),
       raoc_mean = base::mean(raoc),
       p_value_mean = base::mean(p_value),
-      p_value_median = stats::median(p_value),
-      p_value_combined = base::prod(p_value)
+      #p_value_median = stats::median(p_value),
+      #p_value_combined = base::prod(p_value),
+      rmse_mean = base::mean(rmse),
+      mae_mean = base::mean(mae)
     ) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
       ias_score = (raoc_mean + corr_mean) / 2,
-      p_value_mean_adjusted = stats::p.adjust(p = p_value_mean, method = method_padj),
-      p_value_median_adjusted = stats::p.adjust(p = p_value_median, method = method_padj),
-      p_value_combined_adjusted = stats::p.adjust(p = p_value_combined, method = method_padj)
+      p_value_mean_adjusted = stats::p.adjust(p = p_value_mean, method = method_padj)
+      #p_value_median_adjusted = stats::p.adjust(p = p_value_median, method = method_padj),
+      #p_value_combined_adjusted = stats::p.adjust(p = p_value_combined, method = method_padj)
     ) %>%
     dplyr::select(variables, models, ias_score, dplyr::everything())
 

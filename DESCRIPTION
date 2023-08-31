@@ -1,7 +1,7 @@
 Package: SPATA2
 Type: Package
 Title: A Toolbox for Spatial Gene Expression Analysis
-Version: 2.0.4
+Version: 3.0.0
 Authors@R: as.person(c(
     "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]", 
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]", 
@@ -102,10 +102,12 @@ Collate:
     'plotSurface.R'
     'plotT-Z.R'
     'plot_.R'
+    'plot_mae.R'
     'r-objects.R'
     'r.R'
     'runA-Z.R'
     's.R'
+    'sdegs.R'
     'setA-Z.R'
     'shinyModules.R'
     't.R'

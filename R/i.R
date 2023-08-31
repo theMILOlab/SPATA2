@@ -563,8 +563,6 @@ include_tissue_outline <- function(coords_df,
 
         }
 
-
-
         input_df$obs_in_section <-
           sp::point.in.polygon(
             point.x = input_df[["x"]],
@@ -895,6 +893,64 @@ inferSingleCellGradient <- function(object,
   }
 
   return(out_df)
+
+}
+
+#' @title Interpolate points along path
+#'
+#' @description Ensures equally distributed number of points along a
+#' curved trajectory.
+#'
+#' @param data Data.frame of x- and y-coordinates.
+#'
+#' @keywords internal
+interpolate_points_along_path <- function(data, max_distance = 1) {
+
+  interpolated_data <- data[1,]
+
+  for(i in 2:nrow(data)){
+
+    prev_point <- data[i-1, ]
+    current_point <- data[i, ]
+
+    distance <- sqrt((current_point$x - prev_point$x)^2 + (current_point$y - prev_point$y)^2)
+
+    if(distance > max_distance){
+
+      num_interpolations <- ceiling(distance / max_distance)
+
+      for(j in 1:num_interpolations){
+
+        interpolation_fraction <- j / (num_interpolations + 1)
+
+        interpolated_x <- prev_point$x + interpolation_fraction * (current_point$x - prev_point$x)
+
+        interpolated_y <- prev_point$y + interpolation_fraction * (current_point$y - prev_point$y)
+
+        interpolated_data <-
+          rbind(
+            interpolated_data,
+            data.frame(
+              x = interpolated_x,
+              y = interpolated_y
+            )
+          )
+
+      }
+
+    }
+
+    interpolated_data <-
+      rbind(
+        interpolated_data,
+        current_point
+      )
+
+  }
+
+  out <- interpolated_data
+
+  return(out[reduce_vec(x = 1:nrow(out), nth = 2), ])
 
 }
 

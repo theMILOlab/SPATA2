@@ -1200,6 +1200,242 @@ plotSurface2 <- function(...){
 }
 
 
+plotSurfaceOld <- function(object,
+                           color_by = NULL,
+                           alpha_by = NULL,
+                           method_gs = NULL,
+                           normalize = NULL,
+                           smooth = FALSE,
+                           smooth_span = NULL,
+                           pt_alpha = NULL,
+                           pt_clr = NULL,
+                           pt_clrp = NULL,
+                           pt_clrsp = NULL,
+                           pt_size = NULL,
+                           pt_size_fixed = NULL,
+                           clrp_adjust = NULL,
+                           use_scattermore = FALSE,
+                           sctm_pixels = c(1024, 1024),
+                           sctm_interpolate = FALSE,
+                           display_image = NULL,
+                           display_title = NULL,
+                           complete = NULL,
+                           verbose = NULL,
+                           highlight_groups = NULL,
+                           transform_with = NULL,
+                           bcsp_rm = NULL,
+                           na_rm = FALSE,
+                           pt_size_legend = 10,
+                           order_by = NULL,
+                           order_desc = FALSE,
+                           ...){
+
+  deprecated(...)
+
+  # 1. Control --------------------------------------------------------------
+
+  # work around pt_alpha
+  scale_alpha <- base::is.character(alpha_by)
+
+  # lazy check
+  hlpr_assign_arguments(object)
+
+  if(scale_alpha){ pt_alpha <- NULL }
+
+
+  check_pt(pt_size, pt_alpha, pt_clrsp)
+  check_display(display_title, display_image)
+
+  # -----
+
+  # 2. Data extraction and plot preparation ---------------------------------
+
+  if(!base::is.null(transform_with)){
+
+    if(!base::is.list(transform_with) & base::length(transform_with) == 1){
+
+      transform_with <-
+        purrr::set_names(
+          x = transform_with,
+          set_names = color_by
+        )
+
+    }
+
+  }
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    hlpr_join_with_aes(
+      object = object,
+      df = .,
+      variables = c(alpha_by, color_by),
+      method_gs = method_gs,
+      normalize = normalize,
+      smooth = smooth,
+      smooth_span = smooth_span,
+      verbose = verbose
+    ) %>%
+    confuns::transform_df(
+      df = .,
+      transform.with = transform_with
+    )
+
+  coords_df <-
+    order_df(
+      df = coords_df,
+      order_by = order_by,
+      order_desc = order_desc
+    )
+
+  if(base::is.character(alpha_by) && !base::is.numeric(coords_df[[alpha_by]])){
+
+    stop("Variable specified in argument 'alpha_by' must be numeric.")
+
+  }
+
+  # -----
+
+
+  # 5. Plotting --------------------------------------------------------------
+
+  pt_color <- pt_clr
+
+  params <-
+    adjust_ggplot_params(
+      params = list(color = pt_color, size = pt_size, alpha = pt_alpha)
+    )
+
+  n_points <- base::nrow(coords_df)
+
+
+  if(base::is.character(color_by) & base::is.character(alpha_by)){
+
+    mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]], alpha = .data[[alpha_by]])
+
+  } else if(base::is.character(color_by)){
+
+    mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]])
+
+  } else if(base::is.character(alpha_by)){
+
+    mapping <- ggplot2::aes(x = x, y = y, alpha = .data[[alpha_by]])
+
+  } else {
+
+    mapping <- ggplot2::aes(x = x, y = y)
+
+  }
+  if(n_points >= 10000 & base::isTRUE(use_scattermore)){
+
+    point_add_on <-
+      confuns::make_scattermore_add_on(
+        mapping = mapping,
+        pt.alpha = pt_alpha,
+        pt.color = pt_color,
+        pt.size = pt_size,
+        alpha.by = alpha_by,
+        color.by = color_by,
+        sctm.interpolate = sctm_interpolate,
+        sctm.pixels = sctm_pixels,
+        na.rm = na_rm
+      )
+
+  } else if(base::isTRUE(pt_size_fixed)){
+
+    point_add_on <-
+      geom_point_fixed(
+        params,
+        na.rm = na_rm,
+        mapping = mapping
+      )
+
+  } else {
+
+    point_add_on <-
+      ggplot2::layer(
+        geom = "point",
+        stat = "identity",
+        position = "identity",
+        params = params,
+        mapping = mapping
+      )
+
+  }
+
+  color_var <- pull_var(coords_df, color_by)
+
+  if(base::is.numeric(color_var)){
+
+    coords_df <- dplyr::arrange(coords_df, {{color_by}})
+
+  } else if(!base::is.null(color_by) & base::is.character(highlight_groups)){
+
+    all_groups <- getGroupNames(object, discrete_feature = color_by)
+
+    check_one_of(
+      input = highlight_groups,
+      against = all_groups
+    )
+
+    grey_out <-
+      all_groups[!all_groups %in% highlight_groups] %>%
+      purrr::set_names(x = base::rep("lightgrey", base::length(.)), nm = .)
+
+    clrp_adjust <- c(clrp_adjust, grey_out)
+
+  }
+
+
+  if(base::is.character(bcsp_rm)){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcsp_rm}})
+
+  }
+
+  if(!base::is.null(color_by) && color_by %in% getGroupingOptions(object)){
+
+    size_add_on <- legendColor(size = pt_size_legend)
+
+  } else {
+
+    size_add_on <- NULL
+
+  }
+
+  if(base::isTRUE(display_image)){
+
+    image_add_on <- ggpLayerImage(object)
+
+  } else {
+
+    image_add_on <- NULL
+
+  }
+
+  coords_add_on <- ggplot2::coord_equal()
+  coords_add_on$default <- TRUE
+
+  ggplot2::ggplot(data = coords_df) +
+    image_add_on +
+    point_add_on +
+    scale_color_add_on(
+      aes = "color",
+      variable = pull_var(coords_df, color_by),
+      clrp = pt_clrp,
+      clrsp = pt_clrsp,
+      clrp.adjust = clrp_adjust,
+      ...
+    ) +
+    ggplot2::theme_void() +
+    coords_add_on +
+    size_add_on
+
+
+  # -----
+
+}
+
 # s -----------------------------------------------------------------------
 
 #' @keywords internal

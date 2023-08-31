@@ -9,12 +9,13 @@ addSpatialTrajectory(
   object,
   id,
   width,
-  segment_df = NULL,
+  traj_df = NULL,
   start = NULL,
   end = NULL,
-  vertices = NULL,
   comment = base::character(1),
-  overwrite = FALSE
+  overwrite = FALSE,
+  img_name = NULL,
+  ...
 )
 
 createSpatialTrajectories(object)
@@ -27,17 +28,23 @@ objects of classes for which a method has been defined.}
 
 \item{width}{Distance measure. The width of the spatial trajectory.}
 
-\item{segment_df}{Data.frame with four numeric variables that describe the
-course of the trajectory, namely \emph{x}, \emph{y}, \emph{xend} and \emph{yend}.}
-
 \item{start, end}{Numeric vectors of length two. Can be provided instead of
 \code{segment_df}. If so, \code{start} corresponds to \emph{x} and \emph{y} and \code{end} corresponds to
 \emph{xend} and \emph{yend} of the segment.}
 
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{segment_df}{Data.frame with \emph{x} and \emph{y} as variables corresponding
+to the vertices of the trajectory. IN case of more than three rows the
+trajectory is assumed to have a curve.}
+
 \item{vertices}{List of numeric vectors of length two or \code{NULL}. If list,
 sets additional vertices along the trajectory.}
-
-\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
 The input \code{spata2} object containing the added or computed

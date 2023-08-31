@@ -54,7 +54,7 @@ nest_shifted_projection_df <- function(shifted_projection_df){
 #' @export
 nGenes <- function(object, mtr_name = NULL){
 
-  getExpressionMatrix(object, mtr_name) %>%
+  getExpressionMatrix(object, mtr_name = mtr_name, verbose = FALSE) %>%
     base:::nrow()
 
 }

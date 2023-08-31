@@ -33,7 +33,7 @@ runBayesSpaceClustering(
   overwrite = FALSE,
   assign_sce = NULL,
   assign_envir = .GlobalEnv,
-  seed = NULL,
+  seed = 123,
   verbose = NULL,
   ...
 )
@@ -127,18 +127,11 @@ An updated \code{SPATA2} object.
 }
 \description{
 A wrapper around the BayesSpace clustering pipeline introduced
-by \emph{Zhao et al. 2021}.
+by \emph{Zhao et al. (2021)}.
 }
 \details{
 This function is a wrapper around \code{readVisium()},
 \code{spatialPreprocess()}, \code{qTune()} and \code{spatialCluster()}
 of the \code{BayesSpace} package. The results are stored in form of a grouping
 variable in the feature data.frame of the returned \code{SPATA2} object.
-}
-\author{
-Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
-Williams SR, Uytingco CR, Taylor SEB, Nghiem P, Bielas JH, Gottardo R.
-Spatial transcriptomics at subspot resolution with BayesSpace.
-Nat Biotechnol. 2021 Nov;39(11):1375-1384. doi: 10.1038/s41587-021-00935-2.
-Epub 2021 Jun 3. PMID: 34083791; PMCID: PMC8763026.
 }

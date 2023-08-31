@@ -537,12 +537,13 @@ getSparkxResults <- function(object, test = TRUE){
 #' @export
 #'
 
-getSpataDf <- function(object, of_sample = NA){
+getSpataDf <- function(object, ...){
+
+  deprecated(...)
 
   check_object(object)
-  of_sample <- check_sample(object, of_sample)
 
-  getCoordsDf(object, of_sample)[,c("barcodes", "sample")] %>%
+  getCoordsDf(object)[,c("barcodes", "sample")] %>%
     tibble::as_tibble()
 
 }
@@ -991,12 +992,7 @@ getTrajectoryLength <- function(object,
 
   tobj <- getTrajectory(object, id = id)
 
-  start <- base::as.numeric(tobj@segment[,c("x", "y")])
-  end <- base::as.numeric(tobj@segment[,c("xend", "yend")])
-
-  dist <-
-    compute_distance(start, end) %>%
-    stringr::str_c(., "px")
+  dist <- base::max(tobj@projection$projection_length)
 
   out <-
     as_unit(

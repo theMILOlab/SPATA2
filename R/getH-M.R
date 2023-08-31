@@ -368,7 +368,7 @@ getIasExpansion <- function(object,
           .x = expansions,
           .f = ~ include_tissue_outline(
             coords_df = getCoordsDf(object),
-            #outline_df = getTissueOutlineDf(object),
+            outline_df = getTissueOutlineDf(object),
             input_df = .x,
             img_ann_center = getImgAnnCenter(object, id = id),
             remove = FALSE,

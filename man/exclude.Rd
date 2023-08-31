@@ -12,7 +12,7 @@
 \usage{
 exclude(object, ...)
 
-\S4method{exclude}{HistoImaging}(object, ids, reason)
+\S4method{exclude}{HistoImaging}(object, barcodes, reason)
 
 excludeSpatialOutliers(object, ...)
 
@@ -30,7 +30,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{ids}{Character vector. The IDs to exclude.}
+\item{barcodes}{Character vector. The barcodes to exclude.}
 
 \item{reason}{Character value. The reasoning for exclusion.}
 }

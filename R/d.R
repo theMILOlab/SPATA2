@@ -541,11 +541,11 @@ discardImageAnnotations <- function(object, ids){
     against = getImgAnnIds(object)
   )
 
-  io <- getImageObject(object)
+  imgaging <- getHistoImaging(object)
 
-  io@annotations <- io@annotations[!base::names(io@annotations) %in% ids]
+  imgaging@annotations <- imgaging@annotations[!base::names(imgaging@annotations) %in% ids]
 
-  object <- setImageObject(object, image_object = io)
+  object <- setHistoImaging(object, imaging = imgaging)
 
   return(object)
 

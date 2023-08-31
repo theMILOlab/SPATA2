@@ -3,40 +3,58 @@
 
 #' @title Create image annotations from a list of barcodes
 #'
-#' @description Creates image annotations from a list of barcodes by identifying
-#' the spots that outline the area covered by them. See details for more information.
+#' @description Creates image annotations from a list of barcodes from
+#' data points that cover the area to be outlined. See details for more information.
 #'
-#' @param object A valid `spata2` object.
-#' @param barcodes Character vector. A vector of barcode-spots that cover histological
+#' @param barcodes Character vector. A vector of data points that cover histological
 #' areas that are supposed to annotated as image annotations.
-#' @param id Name of the created image annotation. If multiple areas are identified (see details)
-#' this name is suffixed with a number.
-#' @param tags Character vector or NULL. If character, the tags for the image annotation selection.
-#' See section Selection of image annotation with tags for more information.
-#' @param force1 Logical value. If `TRUE`, the function assumes that the barcodes
-#' cover one contiguous area and creates only one image annotation.
-#' @param concavity Given to `concaveman::concaveman()`.
-#' @param eps Distance measure. Converted to pixel unit and given to `eps` of
-#' `dbscan::dbscan()`. Defaults to the center-to-center distance multiplied with 1.25.
-#' @param minPts Given to `minPts` of `dbscan::dbscan()`. Defaults to 3.
-#' @param sep Character value. The separator between image annotation id and suffix.
-#' @param expand_outline Distance measure. Defines how much the identified outline of each
-#' area is buffered. If 0, no buffering is performed and the outer barcode-spots of
-#' each area are representative of the outline.
-#' @param overwrite Logical. Set to `TRUE` in order to overwrite existing image
-#' annotations.
-#' @param verbose Logical. If set to `TRUE` informative messages regarding the computational
-#'  progress will be printed.
+#' @param use_dbscan Logical value. If `TRUE`, the DBSCAN algorithm is used to identify
+#' spatial clusters and outliers before the outline of the image annotation is drawn.
+#' @param min_size Numeric value. The minimum number of data points a dbscan cluster
+#' must have in order not to be discarded as a spatial outlier.
+#' @param force1 Logical value. If `TRUE`, spatial sub groups identified by DBSCAN
+#' are merged into one cluster.
+#' @param tags_expand Logical value. If `TRUE`, the tags with which the image
+#' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,
+#' the `threshold` and *'barcodesToImageAnnotation()'*.
 #'
-#' @return An updated `spata2` object
+#' @inherit addImageAnnotation params return
+#' @inherit add_dbscan_variable params
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
 #'
 #' @details The functions filters the coordinates data.frame obtained via `getCoordsDf()`
-#' based on the input of argument `barcodes`. If `force1` is not `TRUE`, the
-#' Density-based Spatial Clustering of Applications with Noise (DBSCAN) is applied
-#' to identify multiple areas covered by the barcodes denoted in `barcodes`.
-#' `concaveman::concaveman()` creates a polygon for each area identified by
-#' `dbscan` that is required to outline the area. Each polygon is used to create
-#' an image annotation combining input for `id` with a numeric suffix.
+#' based on the input of argument `barcodes`.
+#'
+#' Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
+#' identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
+#' detects multiple dense clusters, they can be merged into a single group
+#' if \code{force1} is also set to \code{TRUE}.
+#'
+#' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
+#' of individual data points dispersed across the sample. This results in an image
+#' annotation that essentially spans the entirety of the sample, lacking the
+#' segregation of specific variable expressions. Similarly, enabling \code{force1}
+#' might unify multiple segregated areas, present on both sides of the sample, into one
+#' group and subsequently, one image annotation encompassing the whole sample.
+#' Consider to allow the creation of multiple image annotations (suffixed with an index)
+#' and merging them afterwards via `mergeImageAnnotations()` if they are too
+#' close together.
+#'
+#' Lastly, the remaining data points are fed into the concaveman algorithm on a
+#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
+#' initial filtering are submitted to the algorithm. Subsequently, these polygons are
+#' integrated into \code{addImageAnnotation()} along with the unsuffixed \code{id} and
+#' \code{tags} input arguments. The ID is suffixed with an index for each group.
+#'
+#' @seealso See [`addImageAnnotation()`], [`expressionToImageAnnotation()`],
+#' [`groupToImageAnnotation()`] for additional functions to create image annotations.
+#'
+#' See [`mergeImageAnnotations()`] to merge image annotations.
+#'
+#' See [`ImageAnnotation`]-class for details about the S4 architecture.
 #'
 #' @export
 #'
@@ -100,12 +118,14 @@ barcodesToImageAnnotation <- function(object,
                                       barcodes,
                                       id,
                                       tags = NULL,
-                                      force1 = FALSE,
-                                      concavity = 2,
-                                      eps = getCCD(object, unit = "px")*1.25,
+                                      tags_expand = TRUE,
+                                      use_dbscan = TRUE,
+                                      eps = getCCD(object)*1.25,
                                       minPts = 3,
-                                      sep = "_",
-                                      expand_outline = getCCD(object, unit = "px")/2,
+                                      min_size = 5,
+                                      force1 = FALSE,
+                                      concavity = 3,
+                                      expand_outline = getCCD(object)/2,
                                       overwrite = FALSE,
                                       verbose = NULL){
 
@@ -121,109 +141,122 @@ barcodesToImageAnnotation <- function(object,
   confuns::is_value(x = id, mode = "character")
 
   # check that no unknown barcodes are among input
-  confuns::is_vec(barcodes, mode = "character", min.length = 3) # need three spots to build polygon
+  # need three spots to build polygon
+  confuns::is_vec(barcodes, mode = "character", min.length = 3)
 
-  coords_df <-
+  coords_df_proc <-
     getCoordsDf(object) %>%
     dplyr::filter(barcodes %in% {{barcodes}}) %>%
     dplyr::select(x, y)
 
-  if(base::isTRUE(force1)){
+  # use dbscan
+  if(base::isTRUE(use_dbscan)){
 
-    confuns::check_none_of(
-      input = id,
-      against = getImgAnnIds(object),
-      ref.against = "image annotation IDs"
-    )
-
-    outline_plg <-
-      concaveman::concaveman(
-        points = base::as.matrix(coords_df),
-        concavity = concavity
+    coords_df_prepped <-
+      add_dbscan_variable(
+        coords_df = coords_df_proc,
+        eps = eps,
+        minPts = minPts,
+        name = "areas"
       ) %>%
-      base::as.data.frame() %>%
-      tibble::as_tibble() %>%
-      magrittr::set_colnames(value = c("x", "y")) %>%
-      buffer_area(buffer = expand_outline)
+      dplyr::group_by(areas) %>%
+      dplyr::mutate(area_size = dplyr::n()) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(areas != "0" & area_size >= 3)
 
+    # ignore sub clusters identified by DBSCAN
+    if(base::isTRUE(force1)){
+
+      coords_df_prepped[["areas"]] <- "1"
+
+    }
+
+  } else { # or skip
+
+    coords_df_prepped <-
+      dplyr::mutate(
+        .data = coords_df_proc,
+        areas = "1"
+      )
+
+  }
+
+  areas_to_annotate <-
+    dplyr::group_by(coords_df_prepped, areas) %>%
+    dplyr::mutate(areas_count = dplyr::n()) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(areas_count > {{min_size}}) %>%
+    dplyr::pull(areas) %>%
+    base::unique()
+
+  img_ann_ids <- stringr::str_c(id, base::seq_along(areas_to_annotate), sep = "_")
+
+  confuns::check_none_of(
+    input = img_ann_ids,
+    against = getImgAnnIds(object),
+    ref.against = "image annotation IDs",
+    overwrite = overwrite
+  )
+
+  for(i in base::seq_along(areas_to_annotate)){
+
+    area <- areas_to_annotate[i]
+
+    df_concave <- dplyr::filter(coords_df_prepped, areas == {{area}})
+
+    # apply concaveman
+    outline_df <-
+      dplyr::select(df_concave, x, y) %>%
+      base::as.matrix() %>%
+      concaveman::concaveman(points = ., concavity = concavity) %>%
+      tibble::as_tibble() %>%
+      magrittr::set_colnames(value = c("x", "y"))
+
+    if(expand_outline != 0){
+
+      outline_df <- buffer_area(outline_df, buffer = expand_outline)
+
+    }
+
+    if(base::isTRUE(tags_expand)){
+
+      tags_in <-
+        base::unique(c(tags, id, "barcodesToImageAnnotation"))
+
+    } else {
+
+      tags_in <- tags
+
+    }
+
+    # create image annotation
     object <-
       addImageAnnotation(
         object = object,
-        tags = tags,
-        id = id,
-        area = list(outer = outline_plg)
+        id = stringr::str_c(id, i, sep = "_"),
+        tags = tags_in,
+        area = list(outer = outline_df),
+        parent_name = activeImage(object), # for the scaling
+        overwrite = overwrite
       )
-
-  } else {
-
-    eps <- base::as.numeric(eps)
-    minPts <- base::as.numeric(minPts)
-
-    coords_df_flt <-
-      add_dbscan_variable(coords_df, eps = eps, minPts = minPts, name = "dbscan_img_ann") %>%
-      dplyr::group_by(dbscan_img_ann) %>%
-      dplyr::mutate(count = dplyr::n()) %>%
-      dplyr::ungroup() %>%
-      # remove areas of two or fewer spots
-      dplyr::filter(dbscan_img_ann != "0" & count >= 3)
-
-    n_outlier <- base::nrow(coords_df) - base::nrow(coords_df_flt)
-
-    if(n_outlier > 0){
-
-      ref <- base::ifelse(n_outlier > 1, yes = "spots", no = "spot")
-      ref2 <- base::ifelse(n_outlier > 1, yes = "were", no = "was")
-
-      confuns::give_feedback(
-        msg = glue::glue("{n_outlier} {ref} {ref2} identified as spatial outliers and removed."),
-        verbose = verbose
-      )
-
-    }
-
-    # create future image annotation IDs and prevent unwanted overwriting
-    areas <- base::unique(coords_df_flt$dbscan_img_ann)
-
-    img_ann_ids <- stringr::str_c(id, 1:base::length(areas), sep = sep)
-
-    confuns::check_none_of(
-      input = img_ann_ids,
-      against = getImgAnnIds(object),
-      ref.against = "image annotation IDs",
-      overwrite = overwrite
-    )
-
-    for(i in base::seq_along(img_ann_ids)){
-
-      area <- areas[i]
-
-      coords_mtr <-
-        dplyr::filter(coords_df_flt, dbscan_img_ann == {{area}}) %>%
-        dplyr::select(x, y) %>%
-        base::as.matrix()
-
-      outline_plg <-
-        concaveman::concaveman(points = coords_mtr, concavity = concavity) %>%
-        base::as.data.frame() %>%
-        tibble::as_tibble() %>%
-        magrittr::set_colnames(value = c("x", "y")) %>%
-        buffer_area(buffer = expand_outline)
-
-      object <-
-        addImageAnnotation(
-          object = object,
-          id = img_ann_ids[i],
-          tags = tags,
-          area = list(outer = outline_plg)
-        )
-
-    }
 
   }
+
+  confuns::give_feedback(
+    msg =
+      glue::glue(
+        "Created {base::length(img_ann_ids)} {ref1}: {ref2}",
+        ref1 = confuns::adapt_reference(img_ann_ids, "image annotation"),
+        ref2 = confuns::scollapse(string = img_ann_ids)
+      ),
+    verbose = verbose
+  )
 
   return(object)
 
 }
+
+
 
 #' @title Bin barcode-spots by angle
 #'
@@ -720,25 +753,28 @@ bin_projection_df <- function(projection_df, n_bins = NULL, binwidth = NULL){
   # if n_bins is valid numeric input it has been set manually
   if(base::is.numeric(n_bins) & !base::is.na(n_bins)){
 
-    binned_projection_df <-
-      dplyr::mutate(
-        .data = projection_df,
-        proj_length_binned = base::cut(projection_length, breaks = n_bins),
-        order_numeric = base::as.numeric(proj_length_binned)
-      )
+    # do nothing
 
   } else {
 
+    # compute n_bins
     is_dist_pixel(input = binwidth, error = TRUE)
 
-    binned_projection_df <-
-      dplyr::mutate(
-        .data = projection_df,
-        proj_length_binned = plyr::round_any(x = projection_length, accuracy = {{binwidth}}, f = base::ceiling),
-        order_numeric = base::as.factor(proj_length_binned) %>% base::as.numeric()
-      )
+    max_val <- projection_df$projection_length %>% base::max()
+    min_val <- projection_df$projection_length %>% base::min()
+
+    n_bins <-
+      base::ceiling((max_val - min_val)/binwidth) %>%
+      base::as.numeric()
 
   }
+
+  binned_projection_df <-
+    dplyr::mutate(
+      .data = projection_df,
+      proj_length_binned = base::cut(projection_length, breaks = n_bins),
+      order_numeric = base::as.numeric(proj_length_binned)
+    )
 
   return(binned_projection_df)
 

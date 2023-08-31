@@ -28,7 +28,7 @@ The \code{spata2}- Class
 \item{\code{data}}{See documentation for S4-object 'data'}
 
 \item{\code{dea}}{A list in which every slot is named according to a discrete feature for which differential gene expression
-analysis has been conducted (via \code{findDeGenes()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).}
+analysis has been conducted (via \code{runDEA()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).}
 
 \item{\code{dim_red}}{See documentation for S4-object 'dim_red'}
 

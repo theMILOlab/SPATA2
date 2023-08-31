@@ -11,15 +11,20 @@ getImageAnnotationIds(...)
 
 getImgAnnIds(object, ...)
 
-\S4method{getImgAnnIds}{spata2}(object, tags = NULL, test = "any", ...)
+\S4method{getImgAnnIds}{spata2}(object, ids = NULL, tags = NULL, test = "any", ...)
 
-\S4method{getImgAnnIds}{HistoImaging}(object, tags = NULL, test = "any", ...)
+\S4method{getImgAnnIds}{HistoImaging}(object, ids = NULL, tags = NULL, test = "any", ...)
 }
 \arguments{
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of image annotation with tags} for more information.}

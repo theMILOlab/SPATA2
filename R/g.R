@@ -479,13 +479,15 @@ ggpLayerAxesSI <- function(object,
         axis.ticks.x = ggplot2::element_line(),
         axis.ticks.length.x = ggplot2::unit(5, "points"),
         axis.text.x = ggplot2::element_text(),
-        axis.title.x = ggplot2::element_text()
+        axis.title.x = ggplot2::element_text(),
+        panel.border = ggplot2::element_rect()
       ),
       y = ggplot2::theme(
         axis.ticks.y = ggplot2::element_line(),
         axis.ticks.length.y = ggplot2::unit(5, "points"),
         axis.text.y = ggplot2::element_text(),
-        axis.title.y = ggplot2::element_text(angle = 90)
+        axis.title.y = ggplot2::element_text(angle = 90),
+        panel.border = ggplot2::element_rect(fill = NA)
       )
     )
 
@@ -659,7 +661,7 @@ ggpLayerEncirclingIAS <- function(object,
 
   } else {
 
-    tissueSectionsIdentified(object, error = TRUE)
+    containsTissueOutline(object, error = TRUE)
 
     out_list <-
       purrr::map(
@@ -766,13 +768,9 @@ ggpLayerFixFrame <- function(object){
 #' @description Sets the limits on the x- and y-axis of a ggplot based on the coordinate
 #' range or the image range.
 #'
-#' @param opt Character value. Either \emph{'scale'} or \emph{'coords'}. If \emph{'scale'},
-#' Depending on the input either functions \code{scale_x/y_continuous()} or
-#' \code{coord_cartesian()} is used.
-#'
 #' @param opt Specifies the function with which the limits are set. If
 #' \emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.
-#' If \emph{'coords'}, \code{ggplot2::coord_cartesian()} is used.
+#' If \emph{'ccs'}, \code{ggplot2::coord_cartesian()} is used.
 #'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
@@ -781,7 +779,7 @@ ggpLayerFixFrame <- function(object){
 #'
 #' @export
 #'
-ggpLayerFrameByCoords <- function(object = "object", opt = "coords"){
+ggpLayerFrameByCoords <- function(object = "object", opt = "ccs"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
@@ -790,7 +788,7 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "coords"){
 
   confuns::check_one_of(
     input = opt,
-    against = c("scale", "coords")
+    against = c("scale", "ccs")
   )
 
   if(opt == "scale"){
@@ -815,7 +813,7 @@ ggpLayerFrameByCoords <- function(object = "object", opt = "coords"){
 
 #' @rdname ggpLayerFrameByCoords
 #' @export
-ggpLayerFrameByImage <- function(object = "object", opt = "coords"){
+ggpLayerFrameByImage <- function(object = "object", opt = "ccs"){
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
@@ -824,7 +822,7 @@ ggpLayerFrameByImage <- function(object = "object", opt = "coords"){
 
   confuns::check_one_of(
     input = opt,
-    against = c("scale", "coords")
+    against = c("scale", "ccs")
   )
 
   if(opt == "scale"){
@@ -1101,10 +1099,12 @@ ggpLayerHorizonIAS <- function(object,
 #' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
 #' with \code{createImageAnnotations()}.
 #'
-#' @param alpha,fill,size, Numeric values. Given to \code{ggplot2::geom_polygon()}.
 #' @param inner Logical value. If `FALSE`, only outer borders of the image annotation
 #' are displayed.
+#' @param use_colors Logical value. If `TRUE`, the color aesthetic is used to display
+#' each image annotation in a different color while providing a legend.
 #'
+#' @inherit argument_dummy params
 #' @inherit getImageAnnotations params details
 #' @inherit ggpLayer_dummy return
 #'
@@ -1122,7 +1122,8 @@ ggpLayerImgAnnOutline <- function(object = "object",
                                   line_color = "black",
                                   line_size = 1.5,
                                   line_type = "solid",
-                                  inner = TRUE,
+                                  use_colors = FALSE,
+                                  inner = FALSE,
                                   ...){
 
         deprecated(...)
@@ -1151,17 +1152,36 @@ ggpLayerImgAnnOutline <- function(object = "object",
                 getImgAnnOutlineDf(object, ids = id) %>%
                 dplyr::filter(border == "outer")
 
-              out <-
-                ggplot2::geom_polygon(
-                  data = df,
-                  size = line_size,
-                  color = line_color,
-                  linetype = line_type,
-                  alpha = alpha,
-                  fill = fill,
-                  mapping = ggplot2::aes(x = x, y = y),
-                  ...
-                )
+              if(base::isTRUE(use_colors)){
+
+                out <-
+                  ggplot2::geom_polygon(
+                    data = df,
+                    size = line_size,
+                    linetype = line_type,
+                    alpha = alpha,
+                    fill = fill,
+                    mapping = ggplot2::aes(x = x, y = y, color = ids),
+                    ...
+                  )
+
+              } else {
+
+                out <-
+                  ggplot2::geom_polygon(
+                    data = df,
+                    size = line_size,
+                    color = line_color,
+                    linetype = line_type,
+                    alpha = alpha,
+                    fill = fill,
+                    mapping = ggplot2::aes(x = x, y = y),
+                    ...
+                  )
+
+              }
+
+
 
             } else {
 
@@ -2054,9 +2074,9 @@ ggpLayerTrajectories <- function(object = "object",
 
   out <-
     list(
-      ggplot2::geom_segment(
+      ggplot2::geom_path(
         data = segment_df,
-        mapping = ggplot2::aes(x = x, y= y, xend = xend, yend = yend),
+        mapping = ggplot2::aes(x = x, y = y, group = ids),
         arrow = arrow,
         ...
       )
@@ -2228,5 +2248,100 @@ gradientToModelSTS <- function(object,
   ) %>%
     dplyr::select(dplyr::all_of(variables)) %>%
     base::as.list()
+
+}
+
+
+#' @title Create image annotations from a group of data points
+#'
+#' @description Creates image annotations based on the spatial extent of a
+#' group of data points (spots or cells). See details for more information.
+#'
+#' @param grouping Character value. The grouping variable containing the group
+#' of interest.
+#' @param group Character value. The group of interest.
+#' @param tags_expand Logical value. If `TRUE`, the tags with which the image
+#' annotations are tagged are expanded by the unsuffixed `id`, the `grouping`,
+#' the `group` and *'groupToImageAnnotation'*.
+#'
+#' @inherit barcodesToImageAnnotation params seealso return
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @details The functions filters the coordinates data.frame obtained via `getCoordsDf()`
+#' based on the input of argument `grouping` and `group`.
+#'
+#' Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
+#' identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
+#' detects multiple dense clusters, they can be merged into a single group
+#' if \code{force1} is also set to \code{TRUE}.
+#'
+#' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
+#' of individual data points dispersed across the sample. This results in an image
+#' annotation that essentially spans the entirety of the sample, lacking the
+#' segregation of specific variable expressions. Similarly, enabling \code{force1}
+#' might unify multiple segregated areas, present on both sides of the sample, into one
+#' group and subsequently, one image annotation encompassing the whole sample.
+#' Consider to allow the creation of multiple image annotations (suffixed with an index)
+#' and merging them afterwards via `mergeImageAnnotations()` if they are too
+#' close together.
+#'
+#' Lastly, the remaining data points are fed into the concaveman algorithm on a
+#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
+#' initial filtering are submitted to the algorithm. Subsequently, these polygons are
+#' integrated into \code{addImageAnnotation()} along with the unsuffixed \code{id} and
+#' \code{tags} input arguments. The ID is suffixed with an index for each group.
+#'
+#' @export
+groupToImageAnnotation <- function(object,
+                                   grouping,
+                                   group,
+                                   id,
+                                   tags = NULL,
+                                   tags_expand = TRUE,
+                                   use_dbscan = TRUE,
+                                   eps = getCCD(object)*1.25,
+                                   minPts = 3,
+                                   min_size = 5,
+                                   force1 = FALSE,
+                                   concavity = 3,
+                                   expand_outline = getCCD(object)/2,
+                                   overwrite = FALSE,
+                                   verbose = NULL){
+
+  barcodes <-
+    joinWith(
+      object = object,
+      features = grouping,
+      verbose = FALSE
+    ) %>%
+    confuns::check_across_subset(
+      across = grouping,
+      across.subset = group
+    ) %>%
+    dplyr::pull(barcodes)
+
+  if(base::isTRUE(tags_expand)){
+
+    tags <- base::unique(c(tags, grouping, group, "groupToImageAnnotation"))
+
+  }
+
+  barcodesToImageAnnotation(
+    object = object,
+    barcodes = barcodes,
+    id = id,
+    tags = tags,
+    tags_expand = FALSE,
+    force1 = force1,
+    concavity = concavity,
+    eps = eps,
+    minPts = minPts,
+    expand_outline = expand_outline,
+    overwrite = overwrite,
+    verbose = verbose
+  )
 
 }

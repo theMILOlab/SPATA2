@@ -21,6 +21,7 @@ getImgAnnOutlineDf(object, ...)
   test = "any",
   outer = TRUE,
   inner = TRUE,
+  img_name = NULL,
   add_tags = FALSE,
   sep = " & ",
   last = " & "
@@ -33,6 +34,7 @@ getImgAnnOutlineDf(object, ...)
   test = "any",
   outer = TRUE,
   inner = TRUE,
+  img_name = NULL,
   add_tags = FALSE,
   sep = " & ",
   last = " & "
@@ -61,6 +63,10 @@ is not included in the output.}
 
 \item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
 are not included in the output.}
+
+\item{img_name}{Character value or \code{NULL}. The name of the image to which the
+output coordinates of the outline are scaled (due to different image resolutions).
+If \code{NULL}, defaults to the currently active image.}
 }
 \value{
 A data.frame that contains variables \emph{id}, \emph{border},

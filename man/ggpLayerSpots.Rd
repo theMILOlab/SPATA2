@@ -23,14 +23,16 @@ ggpLayerSpots(object, ...)
   smooth = FALSE,
   smooth_span = 0.2,
   normalize = NULL,
+  transform_with = NULL,
   method_gs = NULL,
+  bcs_rm = NULL,
   xrange = NULL,
   yrange = NULL,
   unit = NULL,
   breaks = NULL,
   expand = TRUE,
   scale_fct = 1,
-  add_labs = TRUE
+  add_labs = FALSE
 )
 
 \S4method{ggpLayerSpots}{HistoImaging}(
@@ -50,8 +52,9 @@ ggpLayerSpots(object, ...)
   unit = NULL,
   breaks = NULL,
   expand = TRUE,
+  bcs_rm = NULL,
   scale_fct = 1,
-  add_labs = TRUE
+  add_labs = FALSE
 )
 
 \S4method{ggpLayerSpots}{data.frame}(
@@ -61,7 +64,8 @@ ggpLayerSpots(object, ...)
   spot_alpha = 0.9,
   spot_clr = "lightgrey",
   spot_size = 1,
-  scale_fct = 1
+  scale_fct = 1,
+  bcs_rm = NULL
 )
 }
 \arguments{
@@ -96,9 +100,21 @@ Given to argument \code{span} of \code{stats::loess()}.}
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
+\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
+Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
+Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
+Or it can be a list of functions (and function names).
+
+Useful if you want to apply more than one transformation on variables mapped to
+plotting aesthetics. Input for \code{transform_with} is applied before the
+respective \code{<aes>_trans} argument.}
+
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
+\item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
+to be removed prior to analysis or visualization by their barcode.}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.
@@ -149,7 +165,4 @@ family.
 \description{
 Plots the barcoded spots of \emph{Visium} or \emph{SlideSeq}
 experiments in space.
-}
-\details{
-Method for \code{HistoImaging} and \code{spata2}.
 }

@@ -345,7 +345,7 @@ remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
 
 #' @title Initiate `spata2` object from platform
 #'
-#' @description A colleciton of functions that initiate `spata2` objects
+#' @description A collection of functions that initiate `spata2` objects
 #' from standardized output folders.
 #'
 #' @param directory_visium Character value. Directory to a visium folder. Should contain
@@ -360,14 +360,14 @@ remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
 #' @return An object of class `spata2`.
 #' @export
 #'
-initiateSpataObject_Visium <- function(directory_visium,
-                                       sample_name,
-                                       mtr = "filtered",
-                                       img_active = "lowres",
-                                       img_ref = "hires",
-                                       directory_spata = NULL,
-                                       gene_set_path = NULL,
-                                       verbose = TRUE){
+initiateSpataObjectVisium <- function(directory_visium,
+                                      sample_name,
+                                      mtr = "filtered",
+                                      img_active = "lowres",
+                                      img_ref = "lowres",
+                                      directory_spata = NULL,
+                                      gene_set_path = NULL,
+                                      verbose = TRUE){
 
   isDirVisium(dir = directory_visium, error = TRUE)
 
@@ -384,17 +384,25 @@ initiateSpataObject_Visium <- function(directory_visium,
 
   if(mtr == "filtered"){
 
-    mtr_path <- base::file.path(dir, "filtered_feature_bc_matrix.h5")
+    mtr_pattern <- "filtered_feature_bc_matrix.h5$"
 
   } else if(mtr == "raw"){
 
-    mtr_path <- bas::file.path(dir, "raw_feature_bc_matrix.h5")
+    mtr_pattern <- "raw_feature_bc_matrix.h5$"
 
   }
 
-  if(!mtr_path %in% files){
+  mtr_path <- files[stringr::str_detect(files, pattern = mtr_pattern)]
 
-    stop(glue::glue("'{mtr_path}' is missing."))
+  if(base::length(mtr_path) > 1){
+
+    warning("Multiple matrices found. Picking first.")
+
+    mtr_path <- mtr_path[1]
+
+  } else if(base::length(mtr_path) == 0){
+
+    stop(glue::glue("'{mtr_pattern}' is missing.", mtr_pattern = stringr::str_remove(mtr_pattern, "\\$")))
 
   }
 
@@ -436,18 +444,20 @@ initiateSpataObject_Visium <- function(directory_visium,
   # set active content
   object <- setActiveMatrix(object, mtr_name = "counts")
 
+  object <- setInitiationInfo(object)
+
   return(object)
 
 }
 
 
 
-
-
 #' @title Process `spata2` object using `Seurat`
 #'
 #' @description A wrapper around the most essential processing functions
-#' of the `Seurat` package.
+#' of the `Seurat` package. A temporary `Seurat` object is created using the
+#' data from the `spata2` object and is processed. Then the processed
+#' data is transferred back to the `spata2` object.
 #'
 #' @inherit process_seurat_object params
 #' @inherit argument_dummy params

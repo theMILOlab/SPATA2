@@ -8,6 +8,7 @@ plot_screening_evaluation(
   df,
   variables,
   var_order,
+  method_eval = "corr",
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
@@ -24,9 +25,13 @@ plot_screening_evaluation(
   corr_pos_y = NULL,
   corr_text_sep = "\\n",
   corr_text_size = 1,
+  clr_model = "steelblue",
+  clr_segment = "tomato",
+  clr_variable = "forestgreen",
   force_grid = FALSE,
   nrow = NULL,
   ncol = NULL,
+  make_pretty = FALSE,
   verbose = TRUE
 )
 }

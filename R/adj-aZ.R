@@ -1761,79 +1761,30 @@ asSeurat <- function(object,
 #' @return An object of class `SingleCellExperiment`.
 #' @export
 
-asSingleCellExperiment <- function(object, type = "none", ...){
+asSingleCellExperiment <- function(object){
 
-    colData <-
-      joinWith(
-        object = object,
-        spata_df = getCoordsDf(object),
-        features = getFeatureNames(object),
-        verbose = FALSE
-      ) %>%
-      base::as.data.frame()
+  seurat <- Seurat::CreateSeuratObject(getCountMatrix(object))
 
-    base::rownames(colData) <- colData[["barcodes"]]
+  seurat@meta.data <-
+    dplyr::left_join(
+      x = tibble::rownames_to_column(seurat@meta.data, var = "barcodes"),
+      y = getCoordsDf(object),
+      by = "barcodes"
+    ) %>%
+    dplyr::left_join(
+      x = .,
+      y = getFeatureDf(object),
+      by = "barcodes"
+    ) %>%
+    dplyr::mutate(spot = barcodes) %>%
+    tibble::column_to_rownames(var = "barcodes")
 
-    dot_list <- list(...)
+  sce <- Seurat::as.SingleCellExperiment(seurat)
 
-    if(type == "BayesSpace"){
+  return(sce)
 
-      if(!"spot" %in% base::names(dot_list)){
+}
 
-        dot_list[["spot"]] <- "barcodes"
-
-      }
-
-    }
-
-    renaming <-
-      confuns::keep_named(dot_list) %>%
-      purrr::keep(.p = base::is.character)
-
-    if(base::length(renaming) >= 1){
-
-      renaming_vec <-
-        purrr::set_names(
-          x = purrr::flatten_chr(renaming),
-          nm = base::names(renaming)
-        )
-
-      colData <- dplyr::rename(colData, renaming_vec)
-
-    }
-
-    sce <-
-      SingleCellExperiment::SingleCellExperiment(
-        assays = list(counts = getCountMatrix(object)),
-        colData = colData,
-        metadata = list(
-          converted_from = base::class(object)
-        )
-      )
-
-    sce@metadata[["sample"]] <- getSampleName(object)
-    sce@metadata[["origin_class"]] <- base::class(object)
-
-    if(type == "BayesSpace"){
-
-      sce@metadata[["BayesSpace.data"]] <-
-        list(
-          platform = getSpatialMethod(object)@name,
-          is.enhanced = FALSE
-        )
-
-    }
-
-
-    if(containsImageObject(object)){
-
-      sce@metadata[["image"]] <- getImageObject(object)
-
-    }
-
-    return(sce)
-
-  }
 
 
 #' @title Transform to `SummarizedExperiment`

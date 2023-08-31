@@ -37,15 +37,19 @@ are encircled.}
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
-are removed before analysis or plotting.}
+are removed before analysis or plotting. (Deprecated in favor of \code{bcs_rm}).}
 
 \item{outlier_rm, minPts}{Logical. If \code{TRUE}, spatial outlier of the group to outline
 are removed from the outline via \verb{dbscan::dbscan(..., minPts = minPts}). Ignored
 if \code{plot_type} is not \emph{'surface'}.}
 
-\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
-Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
-Default by object initiation is 1.}
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
+
+\item{concavity}{Numeric value. Given to argument \code{concavity} of
+\code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
+1 results in a relatively detailed shape, Infinity results in a convex hull.
+You can use values lower than 1, but they can produce pretty crazy shapes.}
 
 \item{expand_outline}{Distance measure with which to expand the outline. Must be
 provided in pixel units!}

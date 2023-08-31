@@ -5,9 +5,9 @@
 \alias{ggpLayerFrameByImage}
 \title{Set plot limits}
 \usage{
-ggpLayerFrameByCoords(object = "object", opt = "coords")
+ggpLayerFrameByCoords(object = "object", opt = "ccs")
 
-ggpLayerFrameByImage(object = "object", opt = "coords")
+ggpLayerFrameByImage(object = "object", opt = "ccs")
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -15,7 +15,7 @@ objects of classes for which a method has been defined.}
 
 \item{opt}{Specifies the function with which the limits are set. If
 \emph{'scale'} (the default), \code{ggplot2::scale_x|y_continuous()} is used.
-If \emph{'coords'}, \code{ggplot2::coord_cartesian()} is used.}
+If \emph{'ccs'}, \code{ggplot2::coord_cartesian()} is used.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

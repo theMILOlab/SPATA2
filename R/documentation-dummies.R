@@ -43,7 +43,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #' Use \code{getGroupNames()} to obtain all valid input options.
 #'
 #' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
-#' are removed before analysis or plotting.
+#' are removed before analysis or plotting. (Deprecated in favor of `bcs_rm`).
+#'
+#' @param bcs_rm Character vector or `NULL`. If character, specifies the observations
+#' to be removed prior to analysis or visualization by their barcode.
 #'
 #' @param clrp Character value. Specifies the color palette to be used to represent
 #' groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
@@ -57,9 +60,11 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param clrsp Character value. Specifies the color spectrum to be used to represent
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
-#' @param concavity Given to `concavity` of `ggforce::geom_mark_hull()`.
-#' Can be optimized for every sample via `object <- setDefault(object, concavity = ...)`.
-#' Default by object initiation is 1.
+#'
+#' @param concavity Numeric value. Given to argument `concavity` of
+#' [`concaveman::concaveman()`]. Determines the relative measure of concavity.
+#' 1 results in a relatively detailed shape, Infinity results in a convex hull.
+#' You can use values lower than 1, but they can produce pretty crazy shapes.
 #'
 #' @param dir Character value. The chosen directory. See details for possible
 #' requirements.
@@ -74,6 +79,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param display_ribbon Logical value. If TRUE, a ribbon is displayed around
 #' the main line of the plot visualizing uncertainty using standard deviation.
 #' @param display_title Logical value. If set to TRUE an informative title is displayed.
+#'
+#' @param eps Distance measure. Given to `eps` of [`dbscan::dbscan()`]. Determines
+#' the size (radius) of the epsilon neighborhood.
 #'
 #' @param error Logical. If \code{TRUE} and the input is invalid the
 #' function throws an error.
@@ -126,6 +134,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param method_padj Character value. The method with which adjusted p-values are
 #' calculated. Use \code{validPadjMethods()} to obtain all valid input options.
+#'
+#' @param minPts Numeric value. Given to [`dbscan::dbscan()`]. Determines the
+#' number of minimum points required in the eps neighborhood for core points
+#' (including the point itself)
 #'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
@@ -562,7 +574,7 @@ sample_name <- function(sample_name){}
 #' is displayed on the top resulting in mirror inverted visualization of the image.
 #'
 #' We chose to use a Cartesian coordinate system in `SPATA2` because we believe it provides a more intuitive
-#' framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+#' framework for the spatial alignment of tissue, spatial annotations, spatial trajectories,
 #' barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
 #' in form of *x*- and *y*-variables. See [`getCoordsDf()`], [`getImgAnnOutlineDf()`], [`getTissueOutlineDf()`] etc.
 #'
@@ -595,6 +607,34 @@ sample_name <- function(sample_name){}
 #' and then select among them via tags and test. If `ids` is `NULL`, you select
 #' among all image annotations via tags and test. And if `tags` is also `NULL`,
 #' the function uses all image annoations.
+#'
+#' @section Selection of spatial annotations with tags:
+#'
+#' Input for argument \code{tags} specifies the tags of interest.
+#' Argument \code{test} decides about how the specified tags are used to select
+#' the spatial annotations of interest. There are multiple options:
+#'
+#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
+#' must be tagged with at least one of the input tags.
+#'
+#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can contain tags that are not specified.
+#'
+#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
+#' must be tagged with all of the input tags. Can not be tagged with anything else.
+#'
+#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
+#' annotation must **not** be tagged with the combination of input tags.
+#'
+#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
+#' must **not** contain any of the input tags.
+#'
+#' Note that the filtering process happens after the filtering by input for argument
+#' \code{ids}. You can first select a group of annotations by naming their IDs
+#' and then select among them via tags and test. If `ids` is `NULL`, you select
+#' among all annotations via tags and test. And if `tags` is also `NULL`,
+#' the function uses all  annotations.
+#'
 #' @keywords internal
 section_dummy  <- function(){}
 

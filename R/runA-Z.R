@@ -280,7 +280,7 @@ runAutoencoderDenoising <- function(object,
 #' @title Clustering with BayesSpace
 #'
 #' @description A wrapper around the BayesSpace clustering pipeline introduced
-#' by \emph{Zhao et al. 2021}.
+#' by *Zhao et al. (2021)*.
 #'
 #' @param q_force Numeric value or `FALSE`. If numeric, it forces the number
 #' of output clusters with input value. If `FALSE`, the optimal number
@@ -314,7 +314,7 @@ runAutoencoderDenoising <- function(object,
 #' of the `BayesSpace` package. The results are stored in form of a grouping
 #' variable in the feature data.frame of the returned \code{SPATA2} object.
 #'
-#' @author Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
+#' @reference Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
 #'  Williams SR, Uytingco CR, Taylor SEB, Nghiem P, Bielas JH, Gottardo R.
 #'  Spatial transcriptomics at subspot resolution with BayesSpace.
 #'  Nat Biotechnol. 2021 Nov;39(11):1375-1384. doi: 10.1038/s41587-021-00935-2.
@@ -356,7 +356,7 @@ runBayesSpaceClustering <- function(object,
                                     overwrite = FALSE,
                                     assign_sce = NULL,
                                     assign_envir = .GlobalEnv,
-                                    seed = NULL,
+                                    seed = 123,
                                     verbose = NULL,
                                     ...){
 
@@ -367,7 +367,8 @@ runBayesSpaceClustering <- function(object,
   confuns::is_vec(x = burn.in, mode = "numeric", of.length = 2)
   confuns::is_vec(x = nrep, mode = "numeric", of.length = 2)
 
-  platform <- getSpatialMethod(object)@name
+  platform <-
+    stringr::str_extract(getSpatialMethod(object)@name, pattern = "Visium|ST")
 
   confuns::check_none_of(
     input = name,
@@ -376,67 +377,45 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  directory_10X <- object@information$initiation$input$directory_10X
+  sce <- asSingleCellExperiment(object)
 
-  if(base::is.character(directory_10X) & base::dir.exists(directory_10X)){
+  if(FALSE){
 
-    confuns::give_feedback(
-      msg = glue::glue("Reading from {directory_10X}."),
-      verbose = verbose
-    )
+    if(base::isTRUE(empty_remove)){
 
-    sce <- BayesSpace::readVisium(dirname = directory_10X)
+      require(SingleCellExperiment)
 
-    barcodes <- getBarcodes(object)
+      sce <- sce[, colSums(SingleCellExperiment::counts(sce)) > 0]
 
-    if(!base::is.character(barcodes)){
+    } else {
 
-      barcodes <- barcodes[[1]]
+      spots_no_read <-
+        SingleCellExperiment::counts(sce) %>%
+        base::as.matrix() %>%
+        base::colSums() %>%
+        base::as.data.frame() %>%
+        tibble::rownames_to_column("barcodes") %>%
+        dplyr::filter(.==0) %>%
+        dplyr::pull(barcodes)
 
-    }
+      if(base::length(spots_no_read) > 0){
 
-    sce <- sce[,barcodes]
+        confuns::give_feedback(
+          msg = " --- Size factor was optimized ---- ",
+          verbose = verbose
+        )
 
-  } else {
+        row_sub <-
+          stats::runif(
+            n = base::length(spots_no_read),
+            min = 1,
+            max = base::nrow(sce@assays@data$counts)
+          ) %>%
+          base::round()
 
-    # use asSingleCellExperiment
-    sce <- asSingleCellExperiment(object, type = "BayesSpace")
+        sce@assays@data$counts[row_sub, spots.no.read] <-  1
 
-  }
-
-  if(base::isTRUE(empty_remove)){
-
-    require(SingleCellExperiment)
-
-    sce <- sce[, colSums(SingleCellExperiment::counts(sce)) > 0]
-
-  } else {
-
-    spots_no_read <-
-      SingleCellExperiment::counts(sce) %>%
-      base::as.matrix() %>%
-      base::colSums() %>%
-      base::as.data.frame() %>%
-      tibble::rownames_to_column("barcodes") %>%
-      dplyr::filter(.==0) %>%
-      dplyr::pull(barcodes)
-
-    if(base::length(spots_no_read) > 0){
-
-      confuns::give_feedback(
-        msg = " --- Size factor was optimized ---- ",
-        verbose = verbose
-      )
-
-      row_sub <-
-        stats::runif(
-          n = base::length(spots_no_read),
-          min = 1,
-          max = base::nrow(sce@assays@data$counts)
-        ) %>%
-        base::round()
-
-      sce@assays@data$counts[row_sub, spots.no.read] <-  1
+      }
 
     }
 
@@ -478,11 +457,7 @@ runBayesSpaceClustering <- function(object,
 
     logliks <- base::attr(bayes_space_out, "q.logliks")
 
-    optimal_cluster <-
-      akmedoids::elbow_point(
-        x = logliks$q,
-        y = logliks$loglik)$x %>%
-      base::round()
+    optimal_cluster <- find_elbow_point(logliks)
 
     confuns::give_feedback(
       msg = glue::glue("Calculated optimal input for `q`: {optimal_cluster}."),
@@ -1044,7 +1019,7 @@ runCnvAnalysis <- function(object,
     msg <- glue::glue("Saving infercnv-object under '{save_dir}'.")
 
     confuns::give_feedback(msg = msg, verbose = verbose)
-    
+
     if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
 
     base::saveRDS(infercnv_obj, file = save_dir)
@@ -1052,8 +1027,8 @@ runCnvAnalysis <- function(object,
   }
 
   confuns::give_feedback(msg = "Plotting results.", verbose = verbose)
-  
-  
+
+
   if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
 
 
@@ -1474,29 +1449,27 @@ runDeAnalysis <- function(...){
 #'
 
 runGSEA <- function(object,
-                        across,
-                        methods_de = "wilcox",
-                        max_adj_pval = 0.05,
-                        min_lfc = 0,
-                        n_highest_lfc = NULL,
-                        n_lowest_pval = NULL,
-                        gene_set_list = NULL,
-                        gene_set_names = NULL,
-                        test = c("hypergeometric", "kstest"),
-                        background = nGenes(object),
-                        absolute = FALSE,
-                        power = 1,
-                        pval = 1,
-                        fdr = 1,
-                        reduce = TRUE,
-                        quiet = TRUE,
-                        chr_to_fct = TRUE,
-                        verbose = NULL){
+                    across,
+                    methods_de = "wilcox",
+                    max_adj_pval = 0.05,
+                    min_lfc = 0,
+                    n_highest_lfc = NULL,
+                    n_lowest_pval = NULL,
+                    gene_set_list = NULL,
+                    gene_set_names = NULL,
+                    test = c("hypergeometric", "kstest"),
+                    background = nGenes(object),
+                    absolute = FALSE,
+                    power = 1,
+                    pval = 1,
+                    fdr = 1,
+                    reduce = TRUE,
+                    quiet = TRUE,
+                    chr_to_fct = TRUE,
+                    verbose = NULL){
 
     check_object(object)
     hlpr_assign_arguments(object)
-
-    of_sample <- check_sample(object)
 
     dea_overview <- getDeaOverview(object)
 
@@ -1506,7 +1479,7 @@ runGSEA <- function(object,
       input = across,
       against = base::names(dea_overview),
       fdb.opt = 2,
-      ref.opt.2 = "grouping options across which de-analysis has been computed"
+      ref.opt.2 = "grouping options across which DEA has been computed"
     )
 
     methods_de <- base::unique(methods_de)
@@ -1563,7 +1536,7 @@ runGSEA <- function(object,
 
         if(!base::is.null(dea_df)){
 
-          group_names <- getGroupNames(object, discrete_feature = across_value)
+          group_names <- getGroupNames(object, grouping_variable = across_value)
 
           n_groups <- base::length(group_names)
 
@@ -1575,7 +1548,7 @@ runGSEA <- function(object,
 
           give_feedback(msg = msg, verbose = verbose)
 
-          object@dea[[of_sample]][[across_value]][[method_de]][["hypeR_gsea"]] <-
+          object@dea[[1]][[across_value]][[method_de]][["hypeR_gsea"]] <-
             purrr::map2(
               .x = group_names,
               .y = base::seq_along(group_names),
@@ -1660,6 +1633,50 @@ runGSEA <- function(object,
     return(object)
 
   }
+
+
+# runI --------------------------------------------------------------------
+
+#' @title Run image processing pipeline
+#'
+#' @description A wrapper around the image processing functions:
+#'
+#' \itemize{
+#'  \item{[`identifyPixelContent()`]}{}
+#'  \item{[`identifyTissueOutline()`]}{}
+#'  \item{[`identifyBackgroundColor()`]}
+#'  \item{[`identifySpatialOutliers()`]}
+#'  }
+#'
+#' @param ... Arguments passed to [`identifyPixelContent()`].
+#'
+#' @inherit identifySpatialOutliers params
+#' @inherit identifyPixelContent params
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+
+runImagePipeline <- function(object,
+                             img_name = NULL,
+                             method = c("outline", "dbscan"),
+                             test = "all",
+                             verbose = TRUE,
+                             ...){
+
+  object <- identifyPixelContent(object, img_name = img_name, verbose = verbose, ...)
+
+  object <- identifyTissueOutline(object, img_name = img_name, verbose = verbose)
+
+  object <- identifyBackgroundColor(object, img_name = img_name, verbose = verbose)
+
+  object <- identifySpatialOutliers(object = object, img_name = img_name, method = method)
+
+  return(object)
+
+}
+
 
 # runP --------------------------------------------------------------------
 

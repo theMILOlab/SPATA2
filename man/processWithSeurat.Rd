@@ -54,5 +54,7 @@ results.
 }
 \description{
 A wrapper around the most essential processing functions
-of the \code{Seurat} package.
+of the \code{Seurat} package. A temporary \code{Seurat} object is created using the
+data from the \code{spata2} object and is processed. Then the processed
+data is transferred back to the \code{spata2} object.
 }

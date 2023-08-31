@@ -26,6 +26,28 @@ si_dist_to_si_dist_fct <- function(from, to){
 
 # evaluate ----------------------------------------------------------------
 
+compute_mae <- function(gradient, model){
+
+  # use abs() to ensure positive values
+  errors <- base::abs(x = (gradient - model))
+
+  output <- base::mean(errors)
+
+  return(output)
+
+}
+
+compute_rmse <- function(gradient, model) {
+
+  errors <- gradient - model
+  squared_residuals <- errors^2
+  mean_squared_error <- base::mean(squared_residuals)
+  rmse <- base::sqrt(mean_squared_error)
+
+  return(rmse)
+
+}
+
 #' @export
 evaluate_model_fits <- function(input_df,
                                 var_order,
@@ -41,7 +63,9 @@ evaluate_model_fits <- function(input_df,
     dplyr::filter(!base::all(base::is.na(values))) %>%
     dplyr::summarize(
       rauc = {if(with_raoc){ summarize_rauc(x = values_models, y = values, n = {{n}}) }},
-      corr_string = {if(with_corr){ summarize_corr_string(x = values_models, y = values) }}
+      corr_string = {if(with_corr){ summarize_corr_string(x = values_models, y = values) }},
+      rmse = compute_rmse(gradient = values, model = values_models),
+      mae = compute_mae(gradient = values, model = values_models)
     ) %>%
     dplyr::ungroup()
 
@@ -62,7 +86,7 @@ evaluate_model_fits <- function(input_df,
 
   }
 
-  eval_df <- dplyr::select(eval_df, variables, models, dplyr::any_of(c( "p_value", "corr", "raoc", "rauc")))
+  eval_df <- dplyr::select(eval_df, variables, models, dplyr::any_of(c( "p_value", "corr", "raoc", "rauc", "rmse", "mae")))
 
   return(eval_df)
 
@@ -318,7 +342,255 @@ exchangeImage <- function(object,
 
 }
 
+#' @title Create image annotations based on expression values
+#'
+#' @description Creates image annotations based on gene expression or any other
+#' continous data variable (e.g. read counts, copy number alterations). See
+#' details for more.
+#'
+#' @param threshold Character value. Determines the method and/or the threshold
+#' by which the data points are filtered. Valid input options are *'kmeans_high'*,
+#' *'kmeans_low'* and *operator.value* combinations such as *'>0.75'* or *'<=0.5'*.
+#' See details for more.
+#' @param tags_expand Logical value. If `TRUE`, the tags with which the image
+#' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,
+#' the `threshold` and *'expressionToImageAnnotation'*.
+#'
+#' @inherit variable_num params
+#'
+#' @inherit barcodesToImageAnnotation params seealso return
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @details
+#' The function \code{expressionToImageAnnotation()} facilitates the mapping of expression values
+#' associated with data points (spots or cells) to an image. This process is achieved by identifying
+#' data points that meet the criteria set by the \code{threshold} input, encompassing them within a
+#' polygon that serves as the foundation for creating an \code{ImageAnnotation}. The annotation procedure,
+#' based on the position of data points showcasing specific expression values, involves the following key steps.
+#'
+#' \enumerate{
+#'   \item{Data point filtering:}{ The data points from the coordinates data.frame are selectively retained
+#'   based on the values of the variable specified in the \code{variable} argument. How the filtering
+#'   is conducted depends on `threshold`.}
+#'   \item{Grouping:}{ The remaining data points are organized into groups, a behavior influenced by the values
+#'   of \code{use_dbscan} and \code{force1} arguments.}
+#'   \item{Outlining:}{ Each group of data points is subject to the concaveman algorithm, resulting in
+#'   the creation of an outlining polygon.}
+#'   \item{Image annotation:}{ The generated concave polygons serve as the foundation for crafting image annotations.}
+#' }
+#'
+#' In-depth Explanation:
+#' Initially, the coordinates data.frame is joined with the variable indicated in
+#' the \code{variable} argument. Subsequently, the \code{threshold} input is applied.
+#' Two primary methods exist for conducting thresholding. If \code{threshold} is
+#' either *'kmeans_high'* or *'kmeans_low'*, the data points undergo clustering
+#' based solely on their variable values, with \code{centers = 2}. Depending on
+#' the chosen approach, the group of data points with the highest or lowest mean
+#' is retained, while the other group is excluded.
+#'
+#' Alternatively, the threshold can comprise a combination of a logical operator
+#' (e.g., \code{'>'}, \code{'>='}, \code{'<='}, or \code{'<'}) and a numeric value.
+#' This combination filters the data points accordingly. For instance, using
+#' \code{variable = 'GFAP'} and \code{threshold = '> 0.75'} results in retaining
+#' only those data points with a GFAP value of 0.75 or higher.
+#'
+#' Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
+#' identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
+#' detects multiple dense clusters, they can be merged into a single group
+#' if \code{force1} is also set to \code{TRUE}.
+#'
+#' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
+#' of individual data points dispersed across the sample. This results in an image
+#' annotation that essentially spans the entirety of the sample, lacking the
+#' segregation of specific variable expressions. Similarly, enabling \code{force1}
+#' might unify multiple segregated areas, present on both sides of the sample, into one
+#' group and subsequently, one image annotation encompassing the whole sample.
+#' Consider to allow the creation of multiple image annotations (suffixed with an index)
+#' and merging them afterwards via `mergeImageAnnotations()` if they are too
+#' close together.
+#'
+#' Lastly, the remaining data points are fed into the concaveman algorithm on a
+#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
+#' initial filtering are submitted to the algorithm. Subsequently, these polygons are
+#' integrated into \code{addImageAnnotation()} along with the unsuffixed \code{id} and
+#' \code{tags} input arguments. The ID is suffixed with an index for each group.
+#'
+#' @examples
+#'
+#'  library(patchwork)
+#'
+#'  object <- downloadSpataObject("275_T")
+#'
+#'  # create an image annotation based on the segragated area of
+#'  # high expression in hypoxia signatures
+#'  object <-
+#'    expressionToImageAnnotation(
+#'      object = object,
+#'      variable = "HM_HYPOXIA",
+#'      threshold = "kmeans_high",
+#'      id = "hypoxia"
+#'      )
+#'
+#'   # visualize both
+#'   plotSurface(object, color_by = "HM_HYPOXIA") +
+#'    legendLeft() +
+#'   plotImage(object) +
+#'    ggpLayerImgAnnOutline(object, tags = c("hypoxia", "expressionToImageAnnotation"))
+#'
+#' @export
+#'
+expressionToImageAnnotation <- function(object,
+                                        variable,
+                                        threshold,
+                                        id,
+                                        tags = NULL,
+                                        tags_expand = TRUE,
+                                        use_dbscan = TRUE,
+                                        eps = getCCD(object)*1.25,
+                                        minPts = 3,
+                                        force1 = FALSE,
+                                        min_size = 5,
+                                        concavity = 3,
+                                        expand_outline = getCCD(object)/2,
+                                        method_gs = NULL,
+                                        transform_with = NULL,
+                                        overwrite = FALSE,
+                                        verbose = NULL,
+                                        ...){
 
+  hlpr_assign_arguments(object)
+
+  # check input validity
+  base::stopifnot(is_dist(expand_outline))
+  expand_outline <- as_pixel(expand_outline, object = object, add_attr = FALSE)
+
+  base::stopifnot(is_dist(eps))
+  eps <- as_pixel(eps, object = object, add_attr = FALSE)
+
+  confuns::is_value(x = id, mode = "character")
+  confuns::is_value(x = variable, mode = "character")
+
+  if(!base::is.list(transform_with) & !base::is.null(transform_with)){
+
+    transform_with <-
+      purrr::set_names(x = list(transform_with), nm = variable)
+
+  }
+
+  # get variable
+  coords_df <-
+    getCoordsDf(object) %>%
+    joinWithVariables(
+      object = object,
+      spata_df = .,
+      variables = variable,
+      method_gs = method_gs,
+      verbose = FALSE
+    ) %>%
+    confuns::transform_df(transform.with = transform_with)
+
+  # apply threshold
+  if(stringr::str_detect(threshold, pattern = "kmeans")){
+
+    coords_df[["km_out"]] <-
+      stats::kmeans(x = coords_df[[variable]], centers = 2)[["cluster"]] %>%
+      base::as.character()
+
+    smrd_df <-
+      dplyr::group_by(coords_df, km_out) %>%
+      dplyr::summarise(
+        {{variable}} := base::mean(!!rlang::sym(variable))
+      )
+
+    if(threshold == "kmeans_high"){
+
+      group_keep <-
+        dplyr::filter(
+          .data = smrd_df,
+          !!rlang::sym(variable) == base::max(!!rlang::sym(variable))
+        ) %>%
+        dplyr::pull(km_out)
+
+    } else if(threshold == "kmeans_low") {
+
+      group_keep <-
+        dplyr::filter(
+          .data = smrd_df,
+          !!rlang::sym(variable) == base::min(!!rlang::sym(variable))
+        ) %>%
+        dplyr::pull(km_out)
+
+    }
+
+    coords_df_proc <-
+      dplyr::filter(.data = coords_df, km_out == {{group_keep}})
+
+  } else {
+
+    threshold <- stringr::str_remove_all(threshold, pattern = " ")
+
+    operator <- stringr::str_extract(threshold, pattern = ">|<|>=|<=")
+
+    tvalue <-
+      stringr::str_remove(threshold, pattern = operator) %>%
+      base::as.numeric()
+
+    if(operator == ">"){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) > {{tvalue}})
+
+    } else if(operator == ">="){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) >= {{tvalue}})
+
+    } else if(operator == "<="){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) <= {{tvalue}})
+
+    } else if(operator == "<"){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) < {{tvalue}})
+
+    }
+
+  }
+
+  barcodes <- coords_df_proc[["barcodes"]]
+
+  if(base::isTRUE(tags_expand)){
+
+    tags <- base::unique(c(tags, variable, threshold, "expressionToImageAnnotation"))
+
+  }
+
+  object <-
+    barcodesToImageAnnotation(
+      object = object,
+      barcodes = barcodes,
+      id = id,
+      tags = tags,
+      tags_expand = FALSE,
+      use_dbscan = use_dbscan,
+      eps = eps,
+      minPts = minPts,
+      min_size = min_size,
+      force1 = force1,
+      concavity = concavity,
+      expand_outline = expand_outline,
+      overwrite = overwrite,
+      verbose = verbose
+    )
+
+  return(object)
+
+}
 
 
 

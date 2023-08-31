@@ -261,7 +261,7 @@ updateSpataObject <- function(object,
 
   } else if(package == "SPATA2"){
 
-    if(base::identical(object@version, current_spata_version)){
+    if(base::identical(object@version, current_spata2_version)){
 
       give_feedback(msg = "Object is up to date.", verbose = verbose)
 

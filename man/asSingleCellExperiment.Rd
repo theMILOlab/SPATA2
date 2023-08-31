@@ -4,7 +4,7 @@
 \alias{asSingleCellExperiment}
 \title{Transform to \code{SingleCellExperiment}}
 \usage{
-asSingleCellExperiment(object, type = "none", ...)
+asSingleCellExperiment(object)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

@@ -28,12 +28,14 @@ checkpoint(
     "Group names must start with a letter and must contain at least one letter.",
     still_drawing =
     "You are still drawing. Double click on the plot to leave the drawing mode. Then click on 'Highlight' again.",
-    occupied_trajectory_name = "This trajectory name is already taken.",
     invalid_trajectory_name = "Please enter a valid name for the trajectory.",
+    no_trajectory_drawn = "Please draw the trajectory first.", no_trajectory_highlighted
+    = "Please highlight the trajectory first.", occupied_trajectory_name =
+    "This trajectory name is already taken.", 
+     width_0 = "Width must not be 0.",
     insufficient_n_genes = "Please determine at least two genes.", invalid_gs_string1 =
     "The class-prefix must not contain '_'.", invalid_gs_string2 =
-    "Please enter a valid string for the class-prefix and the gene-set name.", 
-    
+    "Please enter a valid string for the class-prefix and the gene-set name.",
     occupied_gs_name = "This gene-set name is already taken.", no_img_anns_selected =
     "No image annotations selected to plot.", invalid_expand = "Invalid expand input."),
   warning_notifications = list(),

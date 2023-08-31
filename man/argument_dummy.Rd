@@ -55,16 +55,20 @@ than groups you are not interested in.)
 Use \code{getGroupNames()} to obtain all valid input options.}
 
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
-are removed before analysis or plotting.}
+are removed before analysis or plotting. (Deprecated in favor of \code{bcs_rm}).}
+
+\item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
+to be removed prior to analysis or visualization by their barcode.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{concavity}{Given to \code{concavity} of \code{ggforce::geom_mark_hull()}.
-Can be optimized for every sample via \code{object <- setDefault(object, concavity = ...)}.
-Default by object initiation is 1.}
+\item{concavity}{Numeric value. Given to argument \code{concavity} of
+\code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
+1 results in a relatively detailed shape, Infinity results in a convex hull.
+You can use values lower than 1, but they can produce pretty crazy shapes.}
 
 \item{dir}{Character value. The chosen directory. See details for possible
 requirements.}
@@ -76,6 +80,9 @@ of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
 the main line of the plot visualizing uncertainty using standard deviation.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
+
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}
@@ -129,6 +136,10 @@ or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given 
 
 \item{method_padj}{Character value. The method with which adjusted p-values are
 calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
+
+\item{minPts}{Numeric value. Given to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines the
+number of minimum points required in the eps neighborhood for core points
+(including the point itself)}
 
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}

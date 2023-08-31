@@ -323,14 +323,10 @@ setMethod(
 
     # merge
     var_df <-
-      dplyr::select(
-        .data = var_df,
-        dplyr::all_of(object@coordinates_id),
-        dplyr::all_of(vars)
-      )
+      dplyr::select( .data = var_df, barcodes, dplyr::all_of(vars))
 
     object@coordinates <-
-      dplyr::left_join(x = object@coordinates, y = var_df, by = c("id" = object@coordinates_id))
+      dplyr::left_join(x = object@coordinates, y = var_df, by = "barcodes")
 
     return(object)
 
@@ -2906,6 +2902,24 @@ setGeneric(name = "containsMethod", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsMethod",
+  signature = "spata2",
+  definition = function(object, method_name, error = FALSE){
+
+    imaging <- getHistoImaging(object)
+
+    containsMethod(
+      object = imaging,
+      method_name = method_name,
+      error = error
+    )
+
+  }
+)
+
+#' @rdname containsMethod
+#' @export
+setMethod(
+  f = "containsMethod",
   signature = "HistoImaging",
   definition = function(object, method_name, error = FALSE){
 
@@ -2987,6 +3001,9 @@ setMethod(
 #'
 #' @description Tests if specifics scale factors are set or not.
 #'
+#' @param fct_name Character value. The name of the scale factor of interest.
+#' E.g. *'pixel'* or *'coords'*.
+#'
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
@@ -2997,6 +3014,28 @@ setGeneric(name = "containsScaleFactor", def = function(object, ...){
   standardGeneric(f = "containsScaleFactor")
 
 })
+
+#' @rdname containsScaleFactor
+#' @export
+setMethod(
+  f = "containsScaleFactor",
+  signature = "spata2",
+  definition = function(object,
+                        fct_name,
+                        img_name = NULL,
+                        error = FALSE){
+
+    imaging <- getHistoImaging(object)
+
+    containsScaleFactor(
+      object = imaging,
+      fct_name = fct_name,
+      img_name = img_name,
+      error = error
+    )
+
+  }
+)
 
 #' @rdname containsScaleFactor
 #' @export
@@ -3159,9 +3198,6 @@ createHistoImage <- function(dir,
                              verbose = TRUE,
                              ...){
 
-  # validate input
-  confuns::are_values(c("dir", "img_name", "sample"), mode = "character")
-
   dir <- base::normalizePath(dir)
 
   # set basic slots
@@ -3190,7 +3226,7 @@ createHistoImage <- function(dir,
 #' @title Create an object of class `HistoImaging`
 #'
 #' @description Official constructor function of the S4 class `HistoImaging`.
-#' Functions suffixed by the platform name are wrappers written for the
+#' Functions suffixed by the platform name are wrappers written for their
 #' standardized output folder.
 #'
 #' @param sample Character value. The sample name of the tissue.
@@ -3205,24 +3241,31 @@ createHistoImage <- function(dir,
 #' @param coordinates Data.frame of at least three variables:
 #'
 #'  \itemize{
-#'   \item{`coordinates_id`: }{Character variable with unique IDs for each observation.}
+#'   \item{*barcodes*: }{Character variable with unique IDs for each observation.}
 #'   \item{*x_orig*: }{Numeric variable representing x-coordinates in a cartesian coordinate system.}
 #'   \item{*y_orig*: }{Numeric variable representing y-coordinates in a cartesian coordinate system.}
 #'   }
 #'
 #' Coordinates should align with the tissue outline of the reference `HistoImage` after being
 #' multiplied withe its coordinate scale factor in slot @@scale_factors$coords.
-#' @param coordinates_id Character value. The name of the ID variable of the data.frame
-#' from `coordinates` when it is extracted via `getCoordsDf()`.
 #' @param meta List of meta data regarding the tissue.
 #' @param misc List of miscellaneous information.
 #'
 #' @param dir The directory to the output folder of the platform.
 #' @param img_ref,img_active
-#' Character values specifying the active and reference images. Choose between *'lowres'* and *'hires'*.
-#' Setting both `img_ref` and `img_active` to the same value indicates that only one image is used,
-#' and the other image will not be read automatically. In such cases, manual registration of the
-#' unselected image is required using the `registerHistoImage()` function.
+#' Character values specifying which of the images to register and how to register
+#' them. See details of [`HistoImaging`] for more information about the definitions
+#' of the reference image and the active image. Setting both arguments to the same
+#' value results in the function to register the specified image as the active
+#' as well as the reference image. Additional images can be registered later on
+#' at any time using the funciton [`registerImage()`]. Valid input options depend
+#' on the platform used:
+#'
+#' \itemize{
+#'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
+#' }
+#'
+#'
 #'
 #' @inherit argument_dummy params
 #'
@@ -3232,12 +3275,11 @@ createHistoImage <- function(dir,
 #' @export
 #'
 createHistoImaging <- function(sample,
-                               hist_img_ref,
+                               hist_img_ref = NULL,
                                hist_imgs = list(),
                                active = NULL,
                                unload = TRUE,
                                coordinates = tibble::tibble(),
-                               coordinates_id = NULL,
                                meta = list(),
                                method = SpatialMethod(),
                                misc = list(),
@@ -3305,24 +3347,21 @@ createHistoImaging <- function(sample,
   # coordinates
   if(!purrr::is_empty(x = coordinates)){
 
-    confuns::is_value(x = coordinates_id, mode = "character")
-
     confuns::check_data_frame(
       df = coordinates,
       var.class = purrr::set_names(
         x = c("character", "numeric", "numeric"),
-        nm = c("id", "x_orig", "y_orig")
+        nm = c("barcodes", "x_orig", "y_orig")
       )
     )
 
     confuns::is_key_variable(
       df = coordinates,
-      key.name = "id",
+      key.name = "barcodes",
       stop.if.false = TRUE
     )
 
     object@coordinates <- coordinates
-    object@coordinates_id <- coordinates_id
 
   }
 
@@ -3333,7 +3372,7 @@ createHistoImaging <- function(sample,
 #' @export
 createHistoImagingVisium <- function(dir,
                                      sample,
-                                     img_ref = "hires",
+                                     img_ref = "lowres",
                                      img_active = "lowres",
                                      meta = list(),
                                      misc = list(),
@@ -3465,7 +3504,6 @@ createHistoImagingVisium <- function(dir,
       active = img_active,
       unload = TRUE,
       coordinates = coords_df,
-      coordinates_id = "barcodes",
       method = method,
       meta = meta,
       misc = misc
@@ -3489,7 +3527,7 @@ createHistoImagingVisium <- function(dir,
 #' of previous algorithms.
 #'
 #' @inherit argument_dummy params
-#' @param ids Character vector. The IDs to exclude.
+#' @param barcodes Character vector. The barcodes to exclude.
 #' @param reason Character value. The reasoning for exclusion.
 #'
 #' @inherit update_dummy return
@@ -3510,19 +3548,19 @@ setGeneric(name = "exclude", def = function(object, ...){
 setMethod(
   f = "exclude",
   signature = "HistoImaging",
-  definition = function(object, ids, reason){
+  definition = function(object, barcodes, reason){
 
     object@coordinates <-
       dplyr::mutate(
         .data = object@coordinates,
         exclude_reason = dplyr::case_when(
           exclude ~ exclude_reason,
-          id %in% {{ids}} ~ {{reason}},
+          barcodes %in% {{barcodes}} ~ {{reason}},
           TRUE ~ ""
         ),
         exclude = dplyr::case_when(
           exclude ~ TRUE,
-          id %in% {{ids}} ~ TRUE,
+          barcodes %in% {{barcodes}} ~ TRUE,
           TRUE ~ FALSE
         )
       )
@@ -3567,11 +3605,11 @@ setMethod(
 
     containsSpatialOutliers(object, error = TRUE)
 
-    exclude_ids <-
+    exclude_bcs <-
       dplyr::filter(object@coordinates, section == "outlier") %>%
-      dplyr::pull(id)
+      dplyr::pull(barcodes)
 
-    object <- exclude(object, ids = exclude_ids, reason = "spatial_outlier")
+    object <- exclude(object, barcodes = exclude_bcs, reason = "spatial_outlier")
 
     return(object)
 
@@ -3603,7 +3641,7 @@ setMethod(
        base::length(fragments) == 1 &&
        fragments == "all"){
 
-      exclude_ids <- frgmt_df[["id"]]
+      exclude_ids <- frgmt_df[["barcodes"]]
 
     } else if(base::is.character(fragments) |
               base::is.numeric(fragments)) {
@@ -3623,7 +3661,7 @@ setMethod(
         against = frgmt_idx
       )
 
-      exclude_ids <- frgmt_df[frgmt_df[["id"]] %in% {{fragments}}][["id"]]
+      exclude_ids <- frgmt_df[frgmt_df[["barcodes"]] %in% {{fragments}}][["barcodes"]]
 
     } else {
 
@@ -3632,7 +3670,7 @@ setMethod(
     }
 
 
-    object <- exclude(object, ids = exclude_ids, reason = "on_tissue_fragment")
+    object <- exclude(object, barcodes = exclude_ids, reason = "on_tissue_fragment")
 
     return(object)
 
@@ -3968,9 +4006,6 @@ setMethod(
 
     } else {
 
-      id_name <- object@coordinates_id
-
-
       if("exclude" %in% base::colnames(coords_df) & base::isTRUE(exclude)){
 
         coords_df <-
@@ -4008,7 +4043,7 @@ setMethod(
       out <-
         dplyr::select(
           .data = coords_df,
-          {{id_name}}:= id,
+          barcodes,
           sample,
           dplyr::any_of(c( "x", "y", "height", "width")),
           dplyr::everything()
@@ -5026,7 +5061,6 @@ setMethod(
 
     }
 
-
     if(base::isTRUE(content) & base::isTRUE(transform)){
 
       transform <- FALSE
@@ -5651,7 +5685,7 @@ setMethod(
 
       df <-
         transform_coords(
-          outline_df = df,
+          coords_df = df,
           transformations = object@transformations,
           ranges = getImageRange(object),
           center = getImageCenter(object)
@@ -5693,6 +5727,10 @@ setMethod(
 
   }
 )
+
+
+
+# ggpLayers ---------------------------------------------------------------
 
 #' @title Add capture area to surface plot
 #'
@@ -5964,8 +6002,6 @@ setMethod(
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
-#' @details Method for `HistoImaging` and `spata2`.
-#'
 #' @export
 #'
 setGeneric(name = "ggpLayerSpots", def = function(object, ...){
@@ -5992,16 +6028,16 @@ setMethod(
                         smooth = FALSE,
                         smooth_span = 0.2,
                         normalize = NULL,
+                        transform_with = NULL,
                         method_gs = NULL,
+                        bcs_rm = NULL,
                         xrange = NULL,
                         yrange = NULL,
                         unit = NULL,
                         breaks = NULL,
                         expand = TRUE,
                         scale_fct = 1,
-                        add_labs = TRUE
-
-  ){
+                        add_labs = FALSE){
 
     hlpr_assign_arguments(object)
 
@@ -6025,7 +6061,8 @@ setMethod(
           smooth_span = smooth_span,
           normalize = normalize,
           method_gs = method_gs
-        )
+        ) %>%
+        confuns::transform_df(df = ., transform.with = transform_with)
 
       imaging <- addVarToCoords(imaging, var_df = var_df, vars = vars)
 
@@ -6047,6 +6084,7 @@ setMethod(
       unit = unit,
       breaks = breaks,
       expand = expand,
+      bcs_rm = bcs_rm,
       scale_fct = scale_fct,
       add_labs = add_labs
     )
@@ -6076,21 +6114,18 @@ setMethod(
                         unit = NULL,
                         breaks = NULL,
                         expand = TRUE,
+                        bcs_rm = NULL,
                         scale_fct = 1,
-                        add_labs = TRUE){
+                        add_labs = FALSE){
 
     # validate input
-    containsMethod(object, method = "Visium", error = TRUE)
+    containsMethod(object, method_name = "Visium", error = TRUE)
 
     coords_df <- getCoordsDf(object)
 
-    if(!containsScaleFactor(object, fct_name = "pixel")){
+    if(!containsScaleFactor(object, fct_name = "pixel") | base::is.null(unit)){
 
       unit <- "px"
-
-    } else if(base::is.null(unit)){
-
-      unit <- object@method@unit
 
     }
 
@@ -6182,7 +6217,8 @@ setMethod(
         spot_alpha = spot_alpha,
         spot_clr = spot_clr,
         spot_size = spot_size,
-        scale_fct = scale_fct
+        scale_fct = scale_fct,
+        bcs_rm = bcs_rm
       )
 
     out[["coord_equal"]] <-
@@ -6194,7 +6230,7 @@ setMethod(
 
     out[["coord_equal"]]$default <- TRUE
 
-    if(unit %in% validUnitsOfLengthSI()){
+    if(unit %in% validUnitsOfLengthSI() | base::isTRUE(add_labs)){
 
       out[["axes"]] <-
         ggpLayerAxesSI(
@@ -6221,9 +6257,6 @@ setMethod(
 
     }
 
-    out[["legend_size"]] <-
-      SPATA2::legendColor(size = 5)
-
     return(out)
 
   }
@@ -6240,7 +6273,8 @@ setMethod(
                         spot_alpha = 0.9,
                         spot_clr = "lightgrey",
                         spot_size = 1,
-                        scale_fct = 1){
+                        scale_fct = 1,
+                        bcs_rm = NULL){
 
     # adjust params to mapped aesthetics
 
@@ -6272,7 +6306,11 @@ setMethod(
 
     }
 
-    out <- list()
+    if(base::is.character(bcs_rm)){
+
+      object <- dplyr::filter(object, !barcodes %in% {{bcs_rm}})
+
+    }
 
     df <-
       dplyr::mutate(
@@ -6430,6 +6468,8 @@ setMethod(
               outline <- buffer_area(outline, buffer = expand_outline)
 
             }
+
+            outline[["section"]] <- s
 
             ggplot2::geom_polygon(
               data = outline,
@@ -6743,6 +6783,11 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object, img_name = NULL, verbose = TRUE, ...){
 
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
 
     confuns::check_one_of(
       input = img_name,
@@ -6777,7 +6822,7 @@ setMethod(
     )
 
     col_df <-
-      getPixelDf(object, colors = TRUE, content = TRUE) %>%
+      getPixelDf(object, colors = TRUE, content = TRUE, transform = FALSE) %>%
       dplyr::filter(content == "background") %>%
       dplyr::summarise(
         dplyr::across(
@@ -6830,7 +6875,7 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @details If `img_name` specifies multiple images, the function
-#' iterates over all of them.
+#' iterates over all of them. If it is `NULL` the active image is picked.
 #'
 #' @seealso
 #' For subsequent image processing: [`identifyTissueOutline()`],[`identifyBackgroundColor()`].
@@ -6839,6 +6884,7 @@ setMethod(
 #'
 #' @return The method for class `Image` returns a data.frame of the following
 #' variables.
+#'
 #' \itemize{
 #'  \item{*pixel*:}{ character. Pixel index.}
 #'  \item{*width*:}{ numeric. Pixel position on horizontal axis of the image.}
@@ -6867,7 +6913,7 @@ setMethod(
   f = "identifyPixelContent",
   signature = "spata2",
   definition = function(object,
-                        img_name,
+                        img_name = NULL,
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 600,
@@ -6875,6 +6921,12 @@ setMethod(
                         dbscan_minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
 
     imaging <- getHistoImaging(object)
 
@@ -6904,7 +6956,7 @@ setMethod(
   f = "identifyPixelContent",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name,
+                        img_name = NULL,
                         percentile = 99,
                         compactness_factor = 10,
                         superpixel = 1000,
@@ -6912,6 +6964,12 @@ setMethod(
                         dbscan_minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
 
     confuns::check_one_of(
       input = img_name,
@@ -6958,7 +7016,7 @@ setMethod(
                         verbose = TRUE){
 
     confuns::give_feedback(
-      msg = "Identifying pixel content of image '{object@name}'.",
+      msg = glue::glue("Identifying pixel content of image '{object@name}'."),
       verbose = verbose
     )
 
@@ -7331,7 +7389,7 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         method = c("outline", "dbscan"),
-                        img_name = refImage(object),
+                        img_name = refImage(),
                         buffer = NULL,
                         dbscan_eps = NULL,
                         dbscan_minPts = 3,
@@ -7392,8 +7450,6 @@ setMethod(
     # overwrite active image temporarily
     active_image <- activeImage(object)
     object <- activateImageInt(object, img_name = img_name)
-
-    id_var <- object@coordinates_id
 
     coords_df <-
       getCoordsDf(object = object, img_name = img_name)
@@ -7463,9 +7519,9 @@ setMethod(
             polygon_df = section_df,
             strictly = FALSE # may lie on edge of outline -> allow
           ) %>%
-          dplyr::pull({{id_var}})
+          dplyr::pull(barcodes)
 
-        coords_df[coords_df[[id_var]] %in% spot_in_section, "section_outline"] <- section
+        coords_df[coords_df[["barcodes"]] %in% spot_in_section, "section_outline"] <- section
 
       }
 
@@ -7590,7 +7646,7 @@ setMethod(
   f = "identifyTissueOutline",
   signature = "spata2",
   definition = function(object,
-                        img_name,
+                        img_name = NULL,
                         verbose = NULL
   ){
 
@@ -7612,7 +7668,13 @@ setMethod(
 setMethod(
   f = "identifyTissueOutline",
   signature = "HistoImaging",
-  definition = function(object, img_name, verbose = TRUE){
+  definition = function(object, img_name = NULL, verbose = TRUE){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
 
     confuns::check_one_of(
       input = img_name,
@@ -7827,9 +7889,11 @@ setMethod(
   signature = "spata2",
   definition = function(object, img_name, ...){
 
-    dir <- getImageDir(object, img_name = img_name)
+    imaging <- getHistoImaging(object)
 
-    object <- exchangeImage(object, image = dir, ...)
+    imaging <- loadImage(imaging, img_name = img_name)
+
+    object <- setHistoImaging(object, imaging = imaging)
 
     return(object)
 
@@ -7867,7 +7931,7 @@ setMethod(
       duration = 20
     )
 
-    object@image <-   EBImage::readImage(files = object@dir)
+    object@image <- EBImage::readImage(files = object@dir)
 
     return(object)
 
@@ -8111,11 +8175,9 @@ setGeneric(name = "plotImageBase", def = function(object, ...){
 setMethod(
   f = "plotImageBase",
   signature = "spata2",
-  definition = function(object, xrange = NULL, yrange = NULL, ...){
+  definition = function(object, xrange = NULL, yrange = NULL, axes = FALSE, ...){
 
     img <- getImageRaster(object, xrange = xrange, yrange = yrange)
-
-    img_info <- getImageRasterInfo(object, xrange = xrange, yrange = yrange)
 
     coords_df <- getCoordsDf(object)
 
@@ -8149,7 +8211,7 @@ setMethod(
       x = coords_df$x,
       y = coords_df$y,
       col = ggplot2::alpha("white", 0),
-      axes = FALSE,
+      axes = axes,
       xlab = NA_character_,
       ylab = NA_character_,
       xlim = xrange,
@@ -9062,13 +9124,13 @@ read_coords_visium <- function(dir_coords){
     coords_df <-
       readr::read_csv(file = dir_coords, col_names = FALSE, show_col_types = FALSE) %>%
       tibble::as_tibble() %>%
-      magrittr::set_colnames(value = c("id", "tissue", "row", "col", "imagerow", "imagecol")) %>%
+      magrittr::set_colnames(value = c("barcodes", "tissue", "row", "col", "imagerow", "imagecol")) %>%
       dplyr::mutate(
         exclude = (tissue != 1),
         exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
       ) %>%
       dplyr::rename(x_orig = imagecol, y_orig = imagerow) %>%
-      dplyr::select(id, x_orig, y_orig, exclude, exclude_reason)
+      dplyr::select(barcodes, x_orig, y_orig, row, col, exclude, exclude_reason)
 
     # space ranger v2
   } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.csv")){
@@ -9081,7 +9143,7 @@ read_coords_visium <- function(dir_coords){
         exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
       ) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres) %>%
-      dplyr::select(id = barcode, x_orig, y_orig, exclude, exclude_reason)
+      dplyr::select(barcodes = barcode, x_orig, y_orig, exclude, exclude_reason)
 
   }
 
@@ -9575,11 +9637,17 @@ setGeneric(name = "tissueOutlineIdentified", def = function(object, ...){
 setMethod(
   f = "tissueOutlineIdentified",
   signature = "spata2",
-  definition = function(object){
+  definition = function(object, error = FALSE){
 
     coords_df <- getCoordsDf(object)
 
     out <- "outline" %in% base::colnames(coords_df)
+
+    feedback_missing(
+      x = out,
+      use_fn = "identifySpatialOutliers",
+      error = error
+    )
 
     return(out)
 

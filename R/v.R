@@ -60,7 +60,7 @@ validation <- function(x){
       base::warning(
         glue::glue(
           "Provided spata2-object is of version {version_string(object@version)}. ",
-          "Latest version is {version_string(current_spata_version)}. ",
+          "Latest version is {version_string(current_spata2_version)}. ",
           "Make sure to use 'updateSpataObject()' to ensure the objects integrity."
         )
       )
@@ -298,7 +298,7 @@ validUnitsOfAreaSI <- function(){
 #' @export
 validUnitsOfLength <- function(){
 
-  c(uol_si_abbr, "px")
+  c(uol_si_abbr, "pixel" = "px")
 
 }
 

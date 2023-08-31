@@ -167,7 +167,7 @@ add_outline_variable <- function(input_df, id_var = "barcodes"){
 #' @param name Name of the added variable.
 #' @param ... To silently drop deprecated arguments.
 #'
-#' @inherit dbscan::dbscan params
+#' @inherit argument_dummy params
 #'
 #' @return Data.frame with additional variable containing numbers. 0 means
 #' that the spot is not connected to any other spot (probably artefact). 1-n
@@ -920,7 +920,7 @@ setGeneric(name = "addImageAnnotation", def = function(object, ...){
 
 })
 
-#' @rdname createImageAnnotations
+#' @rdname addImageAnnotation
 #' @export
 setMethod(
   f = "addImageAnnotation",
@@ -929,7 +929,8 @@ setMethod(
                         tags,
                         area,
                         parent_name,
-                        id = NULL){
+                        id = NULL,
+                        overwrite = FALSE){
 
     imaging <- getHistoImaging(object)
 
@@ -939,7 +940,8 @@ setMethod(
         tags = tags,
         area = area,
         parent_name = parent_name,
-        id = id
+        id = id,
+        overwrite = overwrite
       )
 
     object <- setHistoImaging(object, imaging = imaging)
@@ -958,14 +960,16 @@ setMethod(
                         tags,
                         area,
                         parent_name,
-                        id = NULL){
+                        id = NULL,
+                        overwrite = FALSE){
 
     if(base::is.character(id)){
 
       confuns::check_none_of(
         input = id,
         against = getImgAnnIds(object),
-        ref.against = "image annotation IDs"
+        ref.against = "image annotation IDs",
+        overwrite = overwrite
       )
 
     } else {
@@ -1088,7 +1092,8 @@ addPointsBase <- function(object,
                           smooth = NULL,
                           smooth_span = NULL,
                           xrange = NULL,
-                          yrange = NULL){
+                          yrange = NULL,
+                          scale_fct = 1){
 
   # work around pt_alpha
   scale_alpha <- base::is.character(alpha_by)
@@ -1156,8 +1161,8 @@ addPointsBase <- function(object,
   }
 
   graphics::points(
-    x = coords_df$x,
-    y = coords_df$y,
+    x = coords_df$x*scale_fct,
+    y = coords_df$y*scale_fct,
     pch = 19,
     cex = pt_size,
     col = ggplot2::alpha(col_input, alpha = pt_alpha),
@@ -1250,13 +1255,32 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 addSpatialTrajectory <- function(object,
                                  id,
                                  width,
-                                 segment_df = NULL,
+                                 traj_df = NULL,
                                  start = NULL,
                                  end = NULL,
-                                 vertices = NULL,
                                  comment = base::character(1),
-                                 overwrite = FALSE){
+                                 overwrite = FALSE,
+                                 img_name = NULL,
+                                 ...){
 
+  deprecated(...)
+
+  if(base::is.null(img_name) & containsHistoImaging(object)){
+
+    img_name <- activeImage(object)
+
+  } else if(base::is.character(img_name) & containsHistoImaging(object)) {
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+  } else {
+
+    img_name <- NULL
+
+  }
 
   is_dist(input = width, error = TRUE)
 
@@ -1288,95 +1312,48 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  if(!base::is.null(vertices)){
-
-    vertices <-
-      as_pixel(input = vertices, object = object, add_attr = FALSE) %>%
-      base::as.numeric()
-
-  }
-
-  if(!base::is.data.frame(segment_df)){
+  if(!base::is.data.frame(traj_df)){
 
     confuns::is_value(x = comment, mode = "character")
 
+    confuns::check_data_frame(
+      df = traj_df,
+      var.class = list("x" = "numeric", "y" = "numeric")
+    )
+
     # assemble segment df
-    segment_df <-
+    traj_df <-
       base::data.frame(
-        x = start[1],
-        y = start[2],
-        xend = end[1],
-        yend = end[2],
-        part = "part_1",
+        x = c(start[1], end[1]),
+        y = c(start[2], end[2]),
         stringsAsFactors = FALSE
       )
-
-    if(confuns::is_list(vertices) & base::length(vertices) >= 1){
-
-      for(nth in base::seq_along(vertices)){
-
-        if(!confuns::is_vec(x = vertices[[nth]], mode = "numeric", of.length = 2, verbose = FALSE)){
-
-          stop("Every slot of input list for argument 'vertices' must be a numeric vector of length 2.")
-
-        }
-
-        segment_df$xend[nth] <- vertices[[nth]][1]
-        segment_df$yend[nth] <- vertices[[nth]][2]
-
-        segment_df <-
-          dplyr::add_row(
-            .data = segment_df,
-            x = vertices[[nth]][1],
-            y = vertices[[nth]][2],
-            xend = end[1],
-            yend = end[2],
-            part = stringr::str_c("part", nth+1, sep = "_")
-          )
-
-      }
-
-    }
 
   }
 
   coords_df <- getCoordsDf(object)
 
+  if(base::nrow(traj_df) >= 3){
+
+    traj_df <- interpolate_points_along_path(data = traj_df)
+
+  }
+
   projection_df <-
     project_on_trajectory(
       coords_df = coords_df,
-      segment_df = segment_df,
+      traj_df = traj_df,
       width = width
     ) %>%
-    dplyr::select(barcodes, sample, x, y, projection_length, trajectory_part)
-
-
-  if(containsImage(object)){
-
-    io <- getHistoImaging(object)
-
-    info <-
-      list(
-        current_dim = io@image_info$dim_stored,
-        current_just = list(
-          angle = io@justification$angle,
-          flipped = io@justification$flipped
-        )
-      )
-
-  } else {
-
-    info <- list()
-
-  }
+    dplyr::select(barcodes, projection_length)
 
   spat_traj <-
     SpatialTrajectory(
       comment = comment,
       id = id,
-      info = info,
+      info = list(parent_name = img_name),
       projection = projection_df,
-      segment = segment_df,
+      segment = traj_df,
       sample = object@samples,
       width = width,
       width_unit = width_unit
@@ -1386,7 +1363,6 @@ addSpatialTrajectory <- function(object,
     setTrajectory(
       object = object,
       trajectory = spat_traj,
-      align = FALSE,
       overwrite = overwrite
       )
 

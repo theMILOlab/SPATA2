@@ -17,6 +17,7 @@ plotSurfaceBase(
   smooth = FALSE,
   smooth_span = 0.2,
   display_axes = FALSE,
+  display_axes_title = FALSE,
   display_image = NULL,
   highlight_barcodes = NULL,
   highlight_alpha = 0.75,
@@ -27,6 +28,7 @@ plotSurfaceBase(
   expand = 0,
   pty = "s",
   verbose = NULL,
+  unit = "px",
   ...
 )
 }

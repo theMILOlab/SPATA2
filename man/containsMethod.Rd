@@ -2,10 +2,13 @@
 % Please edit documentation in R/devImaging.R
 \name{containsMethod}
 \alias{containsMethod}
+\alias{containsMethod,spata2-method}
 \alias{containsMethod,HistoImaging-method}
 \title{Check availability of specific methods}
 \usage{
 containsMethod(object, ...)
+
+\S4method{containsMethod}{spata2}(object, method_name, error = FALSE)
 
 \S4method{containsMethod}{HistoImaging}(object, method_name, error = FALSE)
 }

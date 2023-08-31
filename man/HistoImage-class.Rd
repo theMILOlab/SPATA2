@@ -28,7 +28,7 @@ the reference image.}
 \item{\code{image_info}}{list. A list of miscellaneous slots that carrie information
 regarding the image. Protected slots are:
 \itemize{
-\item{dims}{Numeric vector of length three. Output of \code{base::dim()} on the read image.}
+\item{\emph{dims}:}{ Numeric vector of length three. Output of \code{base::dim()} on the read image.}
 }}
 
 \item{\code{name}}{character. The name of the image.}

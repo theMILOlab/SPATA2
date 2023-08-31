@@ -6,69 +6,20 @@
 \alias{ImageAnnotation}
 \title{The \code{ImageAnnotation} - Class}
 \description{
-S4 class that represents manually annotated structures in
-histology images.
+An S4 class designed to capture spatial annotations by outlining areas
+of interest on images. This class provides a flexible framework for creating annotations
+that visually highlight specific regions within images, such as histological structures,
+cellular patterns, or other histomorphological features in images from spatial multi-omic
+studies.
+}
+\details{
+This class is an extension of class \code{\link{SpatialAnnotation}} and
+inherits all of its slots.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{area}}{list. A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
-Observations correspond to the vertices of the polygons that are needed to represent the
-image annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
-of the image annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
-with numbers that correspond to inner polygons - holes within the annotation.}
-
-\item{\code{id}}{character. String to identify the object in a list of multiple objects
-of the same class.}
-
-\item{\code{image}}{image. Cropped version of the annotated parent image that only contains
-the area where the annotated structure is located (plus expand). This slot should
-be empty as long as the \code{ImageAnnotation} object is located in an
-object of class \code{HistologyImaging}. Extracting it with \code{getImageAnnotation()}
-or \code{getImageAnnotations()} can add a cropped image to the slot. The parameters
-with which the image was cropped should be in the list of slot @image_info.}
-
-\item{\code{image_info}}{list. List of information around the image that is currently
-stored in slot @image after being cropped and set within \code{getImageAnnotation()}
-or \code{getImageAnnotations()}.}
-
-\item{\code{info}}{list. Stores meta data and miscellaneous information regarding the
-image annotation. Slots that should always exist:
-\itemize{
-\item{parent_name:}{ Character string. Content from slot @name of the \code{HistoImage}
-object that contains the image the annotation was drawn on.}
-\item{sample:}{ Character string. The sample to which the annotation belongs.}
+\item{\code{parent_name}}{Character string. The name of the image this annotation
+was drawn on.}
 }}
-
-\item{\code{misc}}{list. A flexible list for miscellaneous input.}
-
-\item{\code{tags}}{character. Vector of arbitrary length. Contains tags that can be used
-to group and select image annotations in different manners.}
-}}
-
-\section{Selection of image annotations with tags}{
-
-
-Input for argument \code{tags} specifies the tags of interest.
-Argument \code{test} decides about how the specified tags are used to select
-the image annotations of interest. There are multiple options:
-\enumerate{
-\item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-must be tagged with at least one of the input tags.
-\item Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-must be tagged with all of the input tags. Can contain tags that are not specified.
-\item Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-must be tagged with all of the input tags. Can not be tagged with anything else.
-\item Argument \code{test} set to \emph{not_identical} or \emph{4}: To be included, an image
-annotation must \strong{not} be tagged with the combination of input tags.
-\item Argument \code{test} set to \emph{'none'} or \emph{5}: To be included, an image annotation
-must \strong{not} contain any of the input tags.
-}
-
-Note that the filtering process happens after the filtering by input for argument
-\code{ids}. You can first select a group of image annotations by naming their IDs
-and then select among them via tags and test. If \code{ids} is \code{NULL}, you select
-among all image annotations via tags and test. And if \code{tags} is also \code{NULL},
-the function uses all image annoations.
-}
 

@@ -27,6 +27,9 @@ is set to the smaller of the number of columnns in data.}
 \emph{'kd'} tree or a \emph{'bd'} (box-decomposition, AMNSW98) tree which
 may perform better for larger point sets.}
 
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

@@ -16,7 +16,8 @@ addPointsBase(
   smooth = NULL,
   smooth_span = NULL,
   xrange = NULL,
-  yrange = NULL
+  yrange = NULL,
+  scale_fct = 1
 )
 }
 \arguments{

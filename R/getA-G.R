@@ -565,6 +565,8 @@ getCountMatrix <- function(object, ...){
   # lazy control
   check_object(object)
 
+  barcodes <- getCoordsDf(object)
+
   # adjusting control
   count_mtr <- object@data[[1]][["counts"]]
 

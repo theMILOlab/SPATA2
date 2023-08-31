@@ -444,7 +444,9 @@ check_features <- function(object,
                            features,
                            valid_classes = NULL,
                            max_length = NULL,
-                           of_sample = NA){
+                           ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -452,7 +454,7 @@ check_features <- function(object,
 
   # -----
 
-  fnames <- getFeatureNames(object = object, of_sample = of_sample)
+  fnames <- getFeatureNames(object = object)
 
   # 2. Check if/how many features actually exist  ---------------------------
 
@@ -1988,8 +1990,11 @@ checkpoint <- function(evaluate = TRUE,
                          still_drawing = "You are still drawing. Double click on the plot to leave the drawing mode. Then click on 'Highlight' again.",
 
                          # trajectory
-                         occupied_trajectory_name = "This trajectory name is already taken.",
                          invalid_trajectory_name = "Please enter a valid name for the trajectory.",
+                         no_trajectory_drawn = "Please draw the trajectory first.",
+                         no_trajectory_highlighted = "Please highlight the trajectory first.",
+                         occupied_trajectory_name = "This trajectory name is already taken.",
+                         width_0 = "Width must not be 0.",
 
                          # gene sets
                          insufficient_n_genes = "Please determine at least two genes.",

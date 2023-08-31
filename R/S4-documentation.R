@@ -11,6 +11,56 @@
 
 # 0 - classes on which other classes depend on ----------------------------
 
+#' @title The \code{SpatialAnnotation} - Class
+#'
+#' @description S4 class that represents annotations for spatial data,
+#' allowing users to define and store polygons that outline areas of interest
+#' within images or datasets. It serves as the overarching class for different
+#' spatial annotation methods.
+#'
+#' @slot area list. A named list of data.frames with the numeric variables *x_orig* and *y_orig*.
+#' Observations correspond to the vertices of the polygons that are needed to represent the
+#' image annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' with numbers that correspond to inner polygons - holes within the annotation.
+#' @slot id character. String to identify the object in a list of multiple objects
+#' of the same class.
+#' @slot image A cropped version of an image that focuses solely on the area containing the
+#' annotation, along with an expansion margin. This slot is designed to remain
+#' empty until the annotation object is explicitly extracted or used, contributing to efficient
+#' data storage. Extraction through functions like `getSpatialAnnotation()` or
+#' `getSpatialAnnotation()` populates this slot with the cropped image. The parameters
+#' used for cropping the image are stored in the `@@image_info` slot.
+#' @slot image_info A list containing information related to the image stored in the @@image slot.
+#' This information pertains to the cropped image obtained and set using functions like
+#' `getSpatialAnnotation()` or `getSpatialAnnotations()`. It serves as metadata
+#' around the cropped image and may include parameters or details about the cropping process.
+#' @slot misc list. A flexible list for miscellaneous input.
+#' @slot sample Character string. The sample to which the annotation belongs.
+#' @slot tags character. Vector of arbitrary length. Contains tags that can be used
+#' to group and select spatial annotations in different manners.
+#' @slot version A list of three slots denoting the version of `SPATA2` under
+#' which the object has been created.
+#'
+#' @details The following classes are derivatives of this class: [`GroupAnnotation`],
+#'  [`ImageAnnotation`], [`NumericAnnotation`]
+#'
+#' @inheritSection section_dummy Selection of spatial annotations with tags
+#'
+
+SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
+                              slots = list(
+                                area = "list",
+                                id = "character",
+                                image = "Image",
+                                image_info = "list",
+                                misc = "list",
+                                sample = "character",
+                                tags = "character",
+                                version = "list"
+                              ))
+
+
 #' @title The \code{SpatialMethod} - Class
 #'
 #' @description Abstracts the concept of spatial biology experiments
@@ -85,10 +135,31 @@ Trajectory <- setClass(Class = "Trajectory",
                        ))
 
 
-# H -----------------------------------------------------------------------
 
-image_class <- "Image"
-base::attr(x = image_class, which = "package") <- "EBImage"
+#' @title The `GroupAnnotation` - Class
+#'
+#' @description An S4 class designed to represent the spatial extent of data points,
+#' such as cells or barcoded spots, by filtering and outlining them based on predefined groups.
+#' This class allows for the creation of annotations that highlight specific spatial clusters,
+#' areas, or patterns identified through grouping techniques. It provides a means to focus on
+#' regions of interest within spatial multi-omic datasets using predefined categorizations.
+#'
+#' @slot grouping Character value. The name of the grouping variable that
+#' contains the outlined group.
+#' @slot group Character value. The name of the outlined group.
+#' @slot parameters list. A named list of the parameters set up to compute
+#' the spatial outline.
+#'
+#' @details This class is an extension of class [`SpatialAnnotation`] and
+#' inherits all of its slots.
+
+GroupAnnotation <- setClass(Class = "GroupAnnotation",
+                            slots = list(
+                              grouping = "character",
+                              group = "character",
+                              parameters = "list"
+                            ),
+                            contains = "SpatialAnnotation")
 
 # H -----------------------------------------------------------------------
 
@@ -112,7 +183,7 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' @slot image_info list. A list of miscellaneous slots that carrie information
 #' regarding the image. Protected slots are:
 #' \itemize{
-#'  \item{dims}{Numeric vector of length three. Output of `base::dim()` on the read image.}
+#'  \item{*dims*:}{ Numeric vector of length three. Output of `base::dim()` on the read image.}
 #'  }
 #' @slot name character. The name of the image.
 #' @slot outline list. List of two data.frames in which each row corresponds to
@@ -186,8 +257,6 @@ HistoImage <- setClass(Class = "HistoImage",
 #' @slot annotations list. List of objects of class \code{ImageAnnotation}.
 #' @slot coordinates data.frame. Data.frame that stores information about identified
 #' or known entities located on the imaged tissue, such as cells or capture spots.
-#' @slot coordinates_id character. The name of the variable of the data.frame
-#' in @@slot coordinates that uniquely identifies each observation.
 #' @slot images list. List of objects of class `HistoImage`. Leaving
 #' @slot method SpatialMethod. Object of class `SpatialMethod`.
 #' slot @@image empty can or should be done for more efficient utilization of memory.
@@ -202,7 +271,6 @@ HistoImaging <- setClass(Class = "HistoImaging",
                          slots = list(
                            annotations = "list",
                            coordinates = "data.frame",
-                           coordinates_id = "character",
                            images = "list",
                            method = "SpatialMethod",
                            meta = "list",
@@ -216,55 +284,29 @@ HistoImaging <- setClass(Class = "HistoImaging",
 
 # I -----------------------------------------------------------------------
 
+
+
 #' @title The \code{ImageAnnotation} - Class
 #'
-#' @description S4 class that represents manually annotated structures in
-#' histology images.
+#' @description An S4 class designed to capture spatial annotations by outlining areas
+#' of interest on images. This class provides a flexible framework for creating annotations
+#' that visually highlight specific regions within images, such as histological structures,
+#' cellular patterns, or other histomorphological features in images from spatial multi-omic
+#' studies.
 #'
-#' @slot area list. A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
-#' Observations correspond to the vertices of the polygons that are needed to represent the
-#' image annotation. **Must** contain a slot named *outer* which sets the outer border
-#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
-#' with numbers that correspond to inner polygons - holes within the annotation.
-#' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class.
-#' @slot image image. Cropped version of the annotated parent image that only contains
-#' the area where the annotated structure is located (plus expand). This slot should
-#' be empty as long as the \code{ImageAnnotation} object is located in an
-#' object of class \code{HistologyImaging}. Extracting it with \code{getImageAnnotation()}
-#' or \code{getImageAnnotations()} can add a cropped image to the slot. The parameters
-#' with which the image was cropped should be in the list of slot @@image_info.
-#' @slot image_info list. List of information around the image that is currently
-#' stored in slot @@image after being cropped and set within \code{getImageAnnotation()}
-#' or \code{getImageAnnotations()}.
-#' @slot info list. Stores meta data and miscellaneous information regarding the
-#' image annotation. Slots that should always exist:
-#' \itemize{
-#'  \item{parent_name:}{ Character string. Content from slot @@name of the `HistoImage`
-#'  object that contains the image the annotation was drawn on.}
-#'  \item{sample:}{ Character string. The sample to which the annotation belongs.}
-#' }
-#' @slot misc list. A flexible list for miscellaneous input.
-#' @slot tags character. Vector of arbitrary length. Contains tags that can be used
-#' to group and select image annotations in different manners.
+#' @slot parent_name Character string. The name of the image this annotation
+#' was drawn on.
 #'
-#' @inheritSection section_dummy Selection of image annotations with tags
+#' @details This class is an extension of class [`SpatialAnnotation`] and
+#' inherits all of its slots.
 #'
 #' @export
 #'
 ImageAnnotation <- setClass(Class = "ImageAnnotation",
-                                     slots = list(
-                                       area = "list",
-                                       id = "character",
-                                       image = image_class,
-                                       image_info = "list",
-                                       info = "list",
-                                       misc = "list",
-                                       tags = "character",
-                                       version = "list"
-                                     )
-)
-
+                            slots = list(
+                              parent_name = "character"
+                            ),
+                            contains = "SpatialAnnotation")
 
 #' @title The \code{ImageAnnotationScreening} - Class
 #'
@@ -294,28 +336,90 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' @export
 #'
 ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
-                                               slots = list(
-                                                 angle_span = "numeric",
-                                                 binwidth = "numeric",
-                                                 coords = "data.frame",
-                                                 distance = "numeric",
-                                                 img_annotation = "ImageAnnotation",
-                                                 info = "list",
-                                                 method_padj = "character",
-                                                 models = "data.frame",
-                                                 n_bins_angle = "numeric",
-                                                 n_bins_circle = "numeric",
-                                                 results_primary = "data.frame",
-                                                 results = "data.frame",
-                                                 sample = "character",
-                                                 summarize_with = "character",
-                                                 bcsp_exclude = "character"
-                                               ))
+                                      slots = list(
+                                        angle_span = "numeric",
+                                        binwidth = "numeric",
+                                        coords = "data.frame",
+                                        distance = "numeric",
+                                        img_annotation = "ImageAnnotation",
+                                        info = "list",
+                                        method_padj = "character",
+                                        models = "data.frame",
+                                        n_bins_angle = "numeric",
+                                        n_bins_circle = "numeric",
+                                        results_primary = "data.frame",
+                                        results = "data.frame",
+                                        sample = "character",
+                                        summarize_with = "character",
+                                        bcsp_exclude = "character"
+                                      ))
 
 
+# N -----------------------------------------------------------------------
+
+#' @title The `NumericAnnotation` - Class
+#'
+#' @description An S4 class designed to represent the spatial extent
+#' of data points, such as cells or barcoded spots, by filtering and outlining them
+#' according to their values for a specific numeric variable. This class is particularly
+#' suitable for creating annotations that highlight areas of interest based on continuous
+#' characteristics like gene expression or other numeric attributes derived from
+#' spatial multi-omic datasets.
+#'
+#' @slot parameters list. A named list of the parameters set up to compute
+#' the spatial outline.
+#' @slot threshold character. The threshold parameter by which the data points were filtered.
+#' @slot variable character. The name of the numeric variable based on which the
+#' annotation was created.
+#'
+#' @details This class is an extension of class [`SpatialAnnotation`] and
+#' inherits all of its slots.
+#'
+NumericAnnotation <- setClass(Class = "NumericAnnotation",
+                              slots = list(
+                                variable = "character",
+                                threshold = "character",
+                                parameters = "list"
+                              ),
+                              contains = "SpatialAnnotation")
 
 
 # S -----------------------------------------------------------------------
+
+#' @title The `SDEGS`-class
+#'
+#' @description S4 class that serves as a container for results of detection of spatially
+#' differentially expressed genes (SDEGs) as suggested by *Zeng et al. 2023*.
+#' Contains the results of [`findSDEGS()`]
+#'
+#' @slot coordinates data.frame. Data.frame of four variables *barcodes*, *x*, *y*,
+#' *bins_circle* to visualize the testing set up.
+#' @slot dea_1v1 list. List of data.frames each containing the differentially
+#' expressed genes for the circle bin vs. *Control* according to which the slot containing
+#' the data.frame is named (as returned by `Seurat::FindMarkers()`).
+#' @slot dea_all data.frame.  Data.frame of DEA testing as returned by `Seurat::FindAllMarkers()`.
+#' @slot spatial_parameters list. List of three slots named *binwidth*, *distance*,
+#' *n_bins_circle* as was set up using the corresponding parameters.
+#' @slot sample character. Name of the sample to which the results belong.
+#'
+#' @references This is an R-implementation of the approach suggested by
+#' Zeng, H., Huang, J., Zhou, H. et al. Integrative in situ mapping of single-cell
+#' transcriptional states and tissue histopathology in a mouse model of Alzheimer's
+#' disease. Nat Neurosci 26, 430-446 (2023).
+#'
+#' @seealso [`findSDEGS()`]
+#'
+#' @export
+#'
+SDEGS <- methods::setClass(Class = "SDEGS",
+                           slots = list(
+                             coordinates = "data.frame",
+                             dea_1v1 = "list",
+                             dea_all = "data.frame",
+                             img_ann = "ImageAnnotation",
+                             spatial_parameters = "list",
+                             sample = "character"
+                           ))
 
 
 #' @title The `spata2`- Class
@@ -333,7 +437,7 @@ ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
 #'
 #' @slot data See documentation for S4-object 'data'
 #' @slot dea A list in which every slot is named according to a discrete feature for which differential gene expression
-#' analysis has been conducted (via \code{findDeGenes()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).
+#' analysis has been conducted (via \code{runDEA()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).
 #' @slot dim_red See documentation for S4-object 'dim_red'
 #' @slot fdata A data.frame containing the additionally computed features. Must contain the variables:
 #'  \describe{
@@ -385,70 +489,9 @@ spata2 <- setClass("spata2",
                              )
 )
 
+# SpatialAnnotation - other S4 classes inherit from it. Is listed on top under 0
 
 # SpatialMethod - other S4 classes inherit from it. Is listed on top under 0
-
-
-#' @title The `SpatialSegmentation` - Class
-#'
-#' @description Abstracts the concept of manual segmentation/annotation
-#' of the sample surface.
-#'
-#' @slot id character. String to identify the object in a list of multiple objects of
-#' the same class.
-#'
-#' @slot info list. Stores meta data and miscellaneous information regarding the
-#' spatial segmentation. Slots that should always exist:
-#'  \itemize{
-#'   \item{sample:}{ Character string. The name of the sample (slot @@sample of the `spata2` object.)}
-#'   }
-#'
-#' @slot segments list. A named, nested list. Named according to the labels
-#' given to each segment. E.g. list of length two with slot *necrosis* and *vivid*.
-#' Each named slot is a unnamed list. In this list each slot is a list of data.frames with
-#' a *x* and a *y* variable. First data.frame, named *exterior* corresponds to the exterior border of
-#' the segment. Every following data.frame is named *interior*-suffix where the suffix is a number
-#' and corresponds to interior holes of the segment.
-#'
-#' @keywords internal
-#'
-SpatialSegmentation <- setClass(Class = "SpatialSegmentation",
-                                slots = list(
-                                  id = "character",
-                                  info = "list",
-                                  segments = "list"
-                                ))
-
-#' @title The `SpatialSegment` - Class
-#'
-#' @description Abstracts the concept of an annotated segment within a spatial
-#' segmentation.
-#'
-#' @slot info list. Stores meta data and miscellaneous information regarding the
-#' spatial segment. Slots that should always exist:
-#'  \itemize{
-#'   \item{image_origin:}{ Character string. Content of slot @@info$origin of the `HistologyImaging` at the
-#'   time the segment was drawn.}
-#'   \item{parent_id:}{ Character string. The ID of the spatial segmentation this segment is part of.}
-#'   \item{pot:}{ POSIXct. The point of time when the segment was drawn. Used to handle overlapping
-#'   segments.}
-#'   \item{sample:}{ Character string. The name of the sample (slot @@sample of the `spata2` object.)}
-#'   }
-#' @slot label character. Character string. The label that was given to the segment.
-#' Corresponds to the group name of the barcode-spots that fall into the segment.
-#' @slot polygons list. List of data.frames with *x* and *y* variables that contain
-#' the vertices of the polygon. The first polygon (should be named *outer*) defines
-#' the outer ring of the segment. Further polygons (should be named *inner* suffixed
-#' with a number) define holes within the segment.
-#'
-#' @keywords internal
-SpatialSegment <- setClass(Class = "SpatialSegment",
-                           slots = list(
-                             info = "list",
-                             label = "character",
-                             polygons = "list"
-                           ))
-
 
 
 #' @title The \code{SpatialTrajectory} - Class

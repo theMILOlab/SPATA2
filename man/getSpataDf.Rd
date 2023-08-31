@@ -4,13 +4,10 @@
 \alias{getSpataDf}
 \title{Obtain a spata-data.frame}
 \usage{
-getSpataDf(object, of_sample = NA)
+getSpataDf(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A tidy data.frame containing the character variables \emph{barcodes}

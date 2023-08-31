@@ -2,10 +2,13 @@
 % Please edit documentation in R/devImaging.R
 \name{containsScaleFactor}
 \alias{containsScaleFactor}
+\alias{containsScaleFactor,spata2-method}
 \alias{containsScaleFactor,HistoImaging-method}
 \title{Check availability of specific scale factors}
 \usage{
 containsScaleFactor(object, ...)
+
+\S4method{containsScaleFactor}{spata2}(object, fct_name, img_name = NULL, error = FALSE)
 
 \S4method{containsScaleFactor}{HistoImaging}(object, fct_name, img_name = NULL, error = FALSE)
 }
@@ -14,6 +17,9 @@ containsScaleFactor(object, ...)
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{fct_name}{Character value. The name of the scale factor of interest.
+E.g. \emph{'pixel'} or \emph{'coords'}.}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}

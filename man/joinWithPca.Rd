@@ -6,18 +6,11 @@
 \alias{joinWithUmap}
 \title{Join barcodes with additional variables}
 \usage{
-joinWithPca(
-  object,
-  spata_df,
-  n_pcs = NULL,
-  verbose = NULL,
-  force = FALSE,
-  of_sample = NA
-)
+joinWithPca(object, spata_df, n_pcs = NULL, verbose = NULL, force = FALSE, ...)
 
-joinWithTsne(object, spata_df, verbose = NULL, force = FALSE, of_sample = NA)
+joinWithTsne(object, spata_df, verbose = NULL, force = FALSE, ...)
 
-joinWithUmap(object, spata_df, verbose = NULL, force = FALSE, of_sample = NA)
+joinWithUmap(object, spata_df, verbose = NULL, force = FALSE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -31,9 +24,6 @@ the computational progress will be printed.
 \item{force}{Logical. Only relevant if the spata data.frame provided
 already contains the variables that would be added with the function.
 If set to TRUE, the variables are added anyway.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Addtional arguments given to \code{dplyr::left_join()}.}
 }

@@ -177,9 +177,13 @@ setCoordsDf <- function(object, coords_df, ...){
 
   object@coordinates[[1]] <- coords_df
 
-  if(containsImageObject(object)){
+  if(containsHistoImaging(object)){
 
-    object@images[[1]]@coordinates <- coords_df
+    imaging <- getHistoImaging(object)
+
+    imaging@coordinates <- coords_df
+
+    object <- setHistoImaging(object, imaging = imaging)
 
   }
 
@@ -563,23 +567,17 @@ setImageAnnotation <- function(object, img_ann, align = TRUE, overwrite = FALSE)
     overwrite = overwrite
   )
 
-  io <- getImageObject(object)
-
-  if(base::isTRUE(align)){
-
-    img_ann <- alignImageAnnotation(img_ann = img_ann, image_object = io)
-
-  }
-
   # ensure empty image
   img_ann@image <- EBImage::as.Image(base::matrix())
 
   # ensure no barcodes
   img_ann@misc$barcodes <- NULL
 
-  io@annotations[[img_ann@id]] <- img_ann
+  imaging <- getHistoImaging(object)
 
-  object <- setImageObject(object, image_object = io)
+  imaging@annotations[[img_ann@id]] <- img_ann
+
+  object <- setHistoImaging(object, imaging = imaging)
 
   return(object)
 
@@ -1153,26 +1151,13 @@ setTissueOutline <- function(object, verbose = NULL){
 #'
 #' @param trajectory An object of class `Trajectory.`
 #' @param trajectories List of objects of class `Trajectory`.
-#' @param align Logical value. If `TRUE`, trajectories of class `SpatialTrajectory`
-#' are aligned with image justification changes of the image of the
-#' `SPATA2` object.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
 
-setTrajectory <- function(object, trajectory, align = TRUE, overwrite = FALSE){
-
-  if(isSpatialTrajectory(trajectory) & base::isTRUE(align)){
-
-    trajectory <-
-      alignSpatialTrajectory(
-        spat_traj = trajectory,
-        image_object = getImageObject(object)
-      )
-
-  }
+setTrajectory <- function(object, trajectory, overwrite = FALSE){
 
   if(nTrajectories(object) != 0 ){
 
@@ -1199,7 +1184,7 @@ setTrajectory <- function(object, trajectory, align = TRUE, overwrite = FALSE){
 
 #' @rdname setTrajectory
 #' @export
-setTrajectories <- function(object, trajectories, align = TRUE, overwrite = FALSE){
+setTrajectories <- function(object, trajectories, overwrite = FALSE){
 
   trajectories <- purrr::keep(.x = trajectories, .p = isTrajectory)
 
@@ -1209,7 +1194,6 @@ setTrajectories <- function(object, trajectories, align = TRUE, overwrite = FALS
       setTrajectory(
         object = object,
         trajectory = traj,
-        align = align,
         overwrite = overwrite
       )
 
