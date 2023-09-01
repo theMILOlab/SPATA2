@@ -3,7 +3,7 @@
 \name{plotClockplot}
 \alias{plotClockplot}
 \alias{plotClockplot,spata2-method}
-\alias{plotClockplot,ImageAnnotationScreening-method}
+\alias{plotClockplot,SpatialAnnotationScreening-method}
 \title{Plota clockplot}
 \usage{
 plotClockplot(object, ...)
@@ -27,7 +27,7 @@ plotClockplot(object, ...)
   ...
 )
 
-\S4method{plotClockplot}{ImageAnnotationScreening}(
+\S4method{plotClockplot}{SpatialAnnotationScreening}(
   object,
   variables,
   model_subset = NULL,
@@ -43,7 +43,7 @@ plotClockplot(object, ...)
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{id}{Character value. The ID of the image annotation of interest.}
+\item{id}{Character value. The ID of the spatial annotation of interest.}
 
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 

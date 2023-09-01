@@ -2,13 +2,13 @@
 % Please edit documentation in R/getH-M.R
 \name{getModelEvaluationDf}
 \alias{getModelEvaluationDf}
-\alias{getModelEvaluationDf,ImageAnnotationScreening-method}
+\alias{getModelEvaluationDf,SpatialAnnotationScreening-method}
 \alias{getModelEvaluationDf,SpatialTrajectoryScreening-method}
 \title{Obtain model evaluation}
 \usage{
 getModelEvaluationDf(object, ...)
 
-\S4method{getModelEvaluationDf}{ImageAnnotationScreening}(object, smrd = TRUE)
+\S4method{getModelEvaluationDf}{SpatialAnnotationScreening}(object, smrd = TRUE)
 
 \S4method{getModelEvaluationDf}{SpatialTrajectoryScreening}(object, ...)
 }

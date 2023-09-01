@@ -742,7 +742,7 @@ check_gene_sets <- function(object,
 
 #' @export
 #' @keywords internal
-check_ias_input <- function(distance = NA_integer_,
+check_sas_input <- function(distance = NA_integer_,
                             binwidth = NA_integer_,
                             n_bins_circle = NA_integer_,
                             object = NULL,

@@ -550,10 +550,10 @@ process_ranges <- function(xrange = getImageRange(object)$x,
     )
 
   out <- list(
-    xmin = xrange_out %>% base::min(),
-    xmax = xrange_out %>% base::max(),
-    ymin = yrange_out %>% base::min(),
-    ymax = yrange_out %>% base::max()
+    xmin = xrange_out %>% base::min() %>% base::floor(),
+    xmax = xrange_out %>% base::max() %>% base::ceiling(),
+    ymin = yrange_out %>% base::min() %>% base::floor(),
+    ymax = yrange_out %>% base::max() %>% base::ceiling()
   )
 
   return(out)

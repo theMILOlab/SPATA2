@@ -1,49 +1,46 @@
 
 
 
-#' @title Obtain object of class \code{ImageAnnotation}
+#' @title Obtain object of class \code{SpatialAnnotation}
 #'
 #' @description Extracts object of class \code{ImageAnnotaion} by
 #' its id.
 #'
-#' @param id Character value. The ID of the image annotation of interest.
+#' @param id Character value. The ID of the spatial annotation of interest.
 #'
-#' @inherit getImageAnnotations params
+#' @inherit getSpatialAnnotations params
 #' @inherit argument_dummy params
 #'
 #' @inheritSection section_dummy Expansion of cropped image sections
 #'
-#' @return An object of class \code{ImageAnnotation}.
+#' @return An object of class \code{SpatialAnnotation}.
 #' @export
 #'
 
-setGeneric(name = "getImageAnnotation", def = function(object, ...){
+setGeneric(name = "getSpatialAnnotation", def = function(object, ...){
 
-  standardGeneric(f = "getImageAnnotation")
+  standardGeneric(f = "getSpatialAnnotation")
 
 })
 
-#' @rdname getImageAnnotation
+#' @rdname getSpatialAnnotation
 #' @export
 setMethod(
-  f = "getImageAnnotation",
+  f = "getSpatialAnnotation",
   signature = "spata2",
   definition = function(object,
                         id,
-                        img_name = NULL,
-                        add_barcodes = TRUE,
-                        strictly = FALSE,
                         add_image = TRUE,
                         expand = 0,
-                        square = FALSE){
+                        square = FALSE,
+                        ...){
+
+    deprecated(...)
 
     getHistoImaging(object) %>%
-      getImageAnnotation(
+      getSpatialAnnotation(
         object = .,
         id = id,
-        img_name = img_name,
-        add_barcodes = add_barcodes,
-        strictly = strictly,
         add_image = add_image,
         expand = expand,
         square = square
@@ -51,57 +48,125 @@ setMethod(
 
   })
 
-#' @rdname getImageAnnotation
+#' @rdname getSpatialAnnotation
 #' @export
 setMethod(
-  f = "getImageAnnotation",
+  f = "getSpatialAnnotation",
   signature = "HistoImaging",
   definition = function(object,
                         id,
-                        img_name = NULL,
-                        add_barcodes = TRUE,
-                        strictly = FALSE,
                         add_image = TRUE,
                         expand = 0,
                         square = FALSE){
 
     confuns::check_one_of(
       input = id,
-      against = getImgAnnIds(object)
+      against = getSpatAnnIds(object),
+      ref.input = "spatial annotations IDs"
     )
 
-    getImageAnnotations(
-      object = object,
-      ids = id,
-      img_name = img_name,
-      flatten = TRUE,
-      add_barcodes = add_barcodes,
-      add_image = add_image,
-      square = square,
-      expand = expand
-    )
+    spat_ann <- object@annotations[[id]]
+
+    # scale coordinates
+    scale_fct <- getScaleFactor(object, fct_name = "coords")
+
+    spat_ann@area <-
+      purrr::map(
+        .x = spat_ann@area,
+        .f = function(df){
+
+          df[["x"]] <- df[["x_orig"]] * scale_fct
+          df[["y"]] <- df[["y_orig"]] * scale_fct
+
+          return(df)
+
+        }
+      )
+
+    # add image
+    if(base::isTRUE(add_image)){
+
+      xrange <- base::range(spat_ann@area$outer[["x"]])
+      yrange <- base::range(spat_ann@area$outer[["y"]])
+
+      # make image section to square if desired
+      if(base::isTRUE(square)){
+
+        xdist <- xrange[2] - xrange[1]
+        ydist <- yrange[2] - yrange[1]
+
+        xmean <- base::mean(xrange)
+        ymean <- base::mean(yrange)
+
+        if(xdist > ydist){
+
+          xdisth <- xdist/2
+
+          yrange <- c(ymean - xdisth, ymean + xdisth)
+
+        } else if(ydist > xdist) {
+
+          ydisth <- ydist/2
+
+          xrange <- c(xmean - ydisth, xmean + ydisth)
+
+        }
+
+      }
+
+      # process and expand if desired
+      img_sec <-
+        process_ranges(
+          xrange = xrange,
+          yrange = yrange,
+          expand = expand,
+          object = object
+        )
+
+      # extract image
+      spat_ann@image <-
+        getImage(
+          object = object,
+          xrange = c(img_sec$xmin, img_sec$xmax),
+          yrange = c(img_sec$ymin, img_sec$ymax)
+        )
+
+      # store image extraction info in list
+      img_list <- list()
+
+      for(val in base::names(img_sec)){ # sets xmin - ymax
+
+        img_list[[val]] <- img_sec[[val]]
+
+      }
+
+      img_list$expand <- process_expand_input(expand)
+
+      img_list$square <- square
+
+      spat_ann@image_info <- img_list
+
+    }
+
+    return(spat_ann)
 
   }
 )
 
 
-#' @title Obtain list of \code{ImageAnnotation}-objects
+#' @title Obtain list of \code{SpatialAnnotation}-objects
 #'
 #' @description Extracts a list of objects of class \code{ImageAnnotaion}.
 #'
 #' @param add_barcodes Logical. If `TRUE`, barcodes of spots that fall into the
-#' area of an image annotation are identified and added to slot @@misc$barcodes
-#' of the output image annotations.
+#' area of an spatial annotation are identified and added to slot @@misc$barcodes
+#' of the output spatial annotations.
 #' @param add_image Logical. If TRUE, the area of the histology image that
-#' is occupied by the annotated structure is added to the \code{ImageAnnotation}
+#' is occupied by the annotated structure is added to the \code{SpatialAnnotation}
 #' object in slot @@image. Dimensions of the image can be adjusted with `square`
 #' and `expand`.
-#' @param img_name Character value or `NULL`. The image to which the outline
-#' of the image annotation is scaled. Furthermore, if `add_image = TRUE`, the
-#' image from which a section cropped to the outline is stored in slot @@image
-#' of the returned image annotation. If `NULL`, the active image is chosen.
 #' @param strictly Logical. If `TRUE`, only barcodes of spots that are strictly interior
-#' to the area of an image annotation are added to the output. If `FALSE`,
+#' to the area of an spatial annotation are added to the output. If `FALSE`,
 #' barcodes of spots that are on the relative interior of the area or are
 #' vertices of the border are added, too.
 #'
@@ -111,402 +176,143 @@ setMethod(
 #'
 #' @note To test how the extracted image section looks like depending
 #' on input for argument `square` and `expand` use
-#' `plotImageAnnotations(..., encircle = FALSE)`.
+#' `plotSpatialAnnotations(..., encircle = FALSE)`.
 #'
 #' @inheritSection section_dummy Expansion of cropped image sections
-#' @inheritSection section_dummy Selection of image annotations with tags
+#' @inheritSection section_dummy Selection of spatial annotations
 #'
-#' @return A list of objects of class \code{ImageAnnotation}.
+#' @return A list of objects of class \code{SpatialAnnotation}.
 #'
 #' @export
 
-setGeneric(name = "getImageAnnotations", def = function(object, ...){
+setGeneric(name = "getSpatialAnnotations", def = function(object, ...){
 
-  standardGeneric(f = "getImageAnnotations")
+  standardGeneric(f = "getSpatialAnnotations")
 
 })
 
-#' @rdname getImageAnnotations
+#' @rdname getSpatialAnnotations
 #' @export
 setMethod(
-  f = "getImageAnnotations",
+  f = "getSpatialAnnotations",
   signature = "spata2",
   definition = function(object,
                         ids = NULL,
+                        class = NULL,
                         tags = NULL,
                         test = "any",
-                        img_name = NULL,
-                        add_barcodes = TRUE,
-                        strictly = FALSE,
                         add_image = TRUE,
                         expand = 0,
                         square = FALSE,
-                        flatten = FALSE,
-                        check = FALSE){
+                        error = FALSE,
+                        ...){
+
+    deprecated(...)
 
     getHistoImaging(object) %>%
-      getImageAnnotations(
+      getSpatialAnnotations(
         object = .,
         ids = ids,
         tags = tags,
         test = test,
-        img_name = img_name,
-        add_barcodes = add_barcodes,
-        strictly = strictly,
         add_image = add_image,
         expand = expand,
         square = square,
-        flatten = flatten,
-        check = check
+        error = error
       )
 
 
   }
 )
 
-#' @rdname getImageAnnotations
+#' @rdname getSpatialAnnotations
 #' @export
 setMethod(
-  f = "getImageAnnotations",
+  f = "getSpatialAnnotations",
   signature = "HistoImaging",
   definition = function(object,
                         ids = NULL,
+                        class = NULL,
                         tags = NULL,
                         test = "any",
-                        img_name = NULL,
-                        add_barcodes = TRUE,
-                        strictly = FALSE,
                         add_image = TRUE,
                         expand = 0,
                         square = FALSE,
-                        flatten = FALSE,
-                        check = FALSE){
+                        error = FALSE,
+                        ...){
 
-    img_annotations <- object@annotations
+    containsSpatialAnnotations(object = object, error = error)
 
-    # check validity
-    if(base::is.null(img_name)){
-
-      img_name <- activeImage(object)
-
-    } else {
-
-      confuns::check_one_of(
-        input = img_name,
-        against = getImageNames(object)
+    spat_ann_ids <-
+      getSpatAnnIds(
+        object = object,
+        ids = ids,
+        class = class,
+        tags = tags,
+        test = test
       )
 
-    }
+    out <- list()
 
-    if(base::isTRUE(check)){
+    for(id in spat_ann_ids){
 
-      check_availability(
-        test = base::length(img_annotations) >= 1,
-        ref_x = "any image annotations",
-        ref_fns = "`createImageAnnotations()`"
-      )
-
-    }
-
-    if(base::is.character(ids)){
-
-      check_image_annotation_ids(object, ids)
-
-      img_annotations <- purrr::keep(.x = img_annotations, .p = ~ .x@id %in% ids)
-
-    } else if(base::is.numeric(ids)){
-
-      img_annotations <- img_annotations[ids]
-
-    }
-
-    base::stopifnot(base::length(test) == 1)
-
-    # subset annotations
-    if(base::is.character(tags)){
-
-      check_image_annotation_tags(object, tags)
-
-      img_annotations <-
-        purrr::keep(
-          .x = img_annotations,
-          .p = function(img_ann){
-
-            if(test == "any" | test == 1){
-
-              out <- base::any(tags %in% img_ann@tags)
-
-            } else if(test == "all" | test == 2){
-
-              out <- base::all(tags %in% img_ann@tags)
-
-            } else if(test == "identical" | test == 3){
-
-              tags_input <- base::sort(tags)
-              tags_img_ann <- base::sort(img_ann@tags)
-
-              out <- base::identical(tags_input, tags_img_ann)
-
-            } else if(test == "not_identical" | test == 4){
-
-              tags_input <- base::sort(tags)
-              tags_img_ann <- base::sort(img_ann@tags)
-
-              out <- !base::identical(tags_input, tags_img_ann)
-
-            } else if(test == "none" | test == 5){
-
-              out <- !base::any(tags %in% img_ann@tags)
-
-            } else {
-
-              stop(invalid_img_ann_tests)
-
-            }
-
-            return(out)
-
-          }
-        )
-
-    }
-
-    for(nm in base::names(img_annotations)){
-
-      # activate required image internally
-      object <-
-        activateImageInt(
+      out[[id]] <-
+        getSpatialAnnotation(
           object = object,
-          img_name = img_name,
-          load = add_image
-          )
-
-      img_ann <- img_annotations[[nm]]
-
-      parent_name <- img_ann@info$parent_name
-
-      # alternative options to map image annoation to parent image
-      if(base::is.null(parent_name)){
-
-        warning(glue::glue("Parent of image annotation {nm} is not set!"))
-
-        dims <- img_ann@info$current_dim
-
-        if(base::is.null(dims)){
-
-          warning("No dimensions found to map the image annotation to parent image. Using default image.")
-
-        } else {
-
-          image_dims <-
-            purrr::map(
-              .x = object@images,
-              .f = ~ .x@image_info$dims
-            )
-
-          for(i in base::seq_along(image_dims)){
-
-            if(dims[1] == image_dims[[i]][1] & dims[2] == image_dims[[i]][2]){
-
-              parent_name <- base::names(image_dims)[i]
-
-              break()
-
-            }
-
-          }
-
-        }
-
-        if(base::is.null(parent_name)){
-
-          warning("Could not map image annotation to parent image. Using default image.")
-
-
-        }
-
-      }
-
-      # scale_fct = 1, if parent_name and img_name are equal
-      scale_fct <-
-        compute_img_scale_fct(
-          hist_img1 = getHistoImage(object, img_name = parent_name),
-          hist_img2 = getHistoImage(object, img_name = img_name)
+          id = id,
+          add_image = add_image,
+          expand = expand,
+          square  = square
         )
-
-      # scale outline of the annotation area
-      img_ann@area <-
-        purrr::map(
-          .x = img_ann@area,
-          .f =
-            ~ dplyr::mutate(
-              .data = .x,
-              dplyr::across(.cols = dplyr::everything(), .fns = ~ .x * scale_fct)
-            )
-        )
-
-      if(base::isTRUE(add_image)){
-
-        img_ann_range <-
-          purrr::map(
-            .x = img_ann@area$outer,
-            .f = base::range
-          )
-
-        xrange <- img_ann_range$x
-        yrange <- img_ann_range$y
-
-        xmean <- base::mean(xrange)
-        ymean <- base::mean(yrange)
-
-        # make image section to square
-        if(base::isTRUE(square)){
-
-          xdist <- xrange[2] - xrange[1]
-
-          ydist <- yrange[2] - yrange[1]
-
-          if(xdist > ydist){
-
-            xdisth <- xdist/2
-
-            yrange <- c(ymean - xdisth, ymean + xdisth)
-
-          } else if(ydist > xdist) {
-
-            ydisth <- ydist/2
-
-            xrange <- c(xmean - ydisth, xmean + ydisth)
-
-          } else {
-
-            # both ranges are equally long
-
-          }
-
-        }
-
-        # getImage already outputs warnings
-        base::suppressWarnings({
-
-          range_list <-
-            process_ranges(
-              xrange = xrange,
-              yrange = yrange,
-              expand = expand,
-              object = object
-            ) %>%
-            purrr::map(.f = ~ base::round(.x, 0))
-
-        })
-
-        img_ann@image <-
-          getImage(
-            object = object,
-            img_name = img_name,
-            xrange = c(range_list$xmin, range_list$xmax),
-            yrange = c(range_list$ymin, range_list$ymax),
-            expand = 0 # already has been expanded
-          )
-
-        img_list <- list()
-
-        for(val in base::names(range_list)){ # sets xmin - ymax
-
-          img_list[[val]] <- range_list[[val]]
-
-        }
-
-        img_list$orig_ranges <- list(x = xrange, y = yrange)
-
-        img_list$expand <- process_expand_input(expand)
-
-        img_list$square <- square
-
-        img_list$xmin_parent <- 0
-        img_list$ymin_parent <- 0
-
-        img_list$xmax_parent <- getImageRange(object, img_name = parent_name)$x[2]
-        img_list$ymax_parent <- getImageRange(object, img_name = parent_name)$y[2]
-
-        img_list$ymin_coords <-
-          img_list$ymax_parent - img_list$ymax
-
-        img_list$ymax_coords <-
-          img_list$ymax_parent - img_list$ymin
-
-        # set list
-        img_ann@image_info <- img_list
-
-      }
-
-      if(base::isTRUE(add_barcodes)){
-
-        img_ann@misc$barcodes <-
-          getBarcodesInPolygonList(
-            object = object,
-            polygon_list = img_ann@area,
-            strictly = strictly
-          )
-
-      }
-
-      img_annotations[[nm]] <- img_ann
 
     }
 
-    if(base::isTRUE(flatten) && base::length(img_annotations) == 1){
-
-      img_annotations <- img_annotations[[1]]
-
-    }
-
-    return(img_annotations)
+    return(out)
 
   }
 )
 
 
-#' @title Obtain area of image annotation
+#' @title Obtain area of spatial annotation
 #'
-#' @description Computes the area of an image annotation in SI units of area.
+#' @description Computes the area of an spatial annotation in SI units of area.
 #'
 #' @inherit argument_dummy params
 #' @inherit as_unit params
-#' @inherit getImageAnnotation params
+#' @inherit getSpatialAnnotation params
 #'
 #' @return Numeric vector of the same length as `ids`. Named accordingly.
-#' Contains the area of the image annotations in the unit that is specified in `unit`.
+#' Contains the area of the spatial annotations in the unit that is specified in `unit`.
 #' The unit is attached to the output as an attribute named *unit*. E.g. if
 #' `unit = *mm2*` the output value has the unit *mm^2*.
 #'
 #' @details First, the side length of each pixel is calculated and based on that the area.
 #'
 #' Second, the number of pixels that fall in the area given by the outer border
-#' of the image annotation is computed with `sp::point.in.polygon()`.
+#' of the spatial annotation is computed with `sp::point.in.polygon()`.
 #'
-#' Third, if the image annotation contains holes the pixel that fall in these
+#' Third, if the spatial annotation contains holes the pixel that fall in these
 #' holes are removed.
 #'
 #' Fourth, the number of remaining pixels s multiplied with
 #' the area per pixel.
 #'
-#' @inheritSection section_dummy Selection of image annotations with tags
+#' @inheritSection section_dummy Selection of spatial annotations
 #'
-#' @seealso [`getImgAnnOutlineDf()`], [`getCCD()`], [`as_unit()`]
+#' @seealso [`getSpatAnnOutlineDf()`], [`getCCD()`], [`as_unit()`]
 #'
 #' @export
 #'
-setGeneric(name = "getImgAnnArea", def = function(object, ...){
+setGeneric(name = "getSpatAnnArea", def = function(object, ...){
 
-  standardGeneric(f = "getImgAnnArea")
+  standardGeneric(f = "getSpatAnnArea")
 
 })
 
-#' @rdname getImgAnnArea
+#' @rdname getSpatAnnArea
 #' @export
 setMethod(
-  f = "getImgAnnArea",
+  f = "getSpatAnnArea",
   signature = "spata2",
   definition = function(object,
                         ids = NULL,
@@ -520,7 +326,7 @@ setMethod(
     hlpr_assign_arguments(object)
 
     getHistoImaging(object) %>%
-      getImgAnnArea(
+      getSpatAnnArea(
         object = .,
         ids = ids,
         unit = unit,
@@ -534,10 +340,10 @@ setMethod(
   }
 )
 
-#' @rdname getImgAnnArea
+#' @rdname getSpatAnnArea
 #' @export
 setMethod(
-  f = "getImgAnnArea",
+  f = "getSpatAnnArea",
   signature = "HistoImaging",
   definition = function(object,
                         ids = NULL,
@@ -559,13 +365,13 @@ setMethod(
 
       confuns::check_one_of(
         input = ids,
-        against = getImgAnnIds(object)
+        against = getSpatAnnIds(object)
       )
 
     } else {
 
       ids <-
-        getImgAnnIds(
+        getSpatAnnIds(
           object = object,
           ...
         )
@@ -577,13 +383,13 @@ setMethod(
     # determine pixel area
     scale_fct <- getPixelScaleFactor(object, unit = unit)
 
-    # determine how many pixels lay inside the image annotation
+    # determine how many pixels lay inside the spatial annotation
 
     pixel_df <- getPixelDf(object = object)
 
     n_ids <- base::length(ids)
 
-    ref_ia <- confuns::adapt_reference(ids, sg = "image annotation")
+    ref_ia <- confuns::adapt_reference(ids, sg = "spatial annotation")
 
     pb <- confuns::create_progress_bar(total = n_ids)
 
@@ -603,7 +409,7 @@ setMethod(
 
           }
 
-          border_df <- getImgAnnOutlineDf(object, ids = id)
+          border_df <- getSpatAnnOutlineDf(object, ids = id)
 
           pixel_loc <-
             sp::point.in.polygon(
@@ -643,9 +449,9 @@ setMethod(
           n_pixel_inside <- base::nrow(pixel_inside)
 
           # multiply number of pixels with area per pixel
-          area_img_ann <- n_pixel_inside * scale_fct
+          area_spat_ann <- n_pixel_inside * scale_fct
 
-          base::as.numeric(area_img_ann)
+          base::as.numeric(area_spat_ann)
 
         }
       ) %>%
@@ -657,34 +463,34 @@ setMethod(
   }
 )
 
-#' @title Obtain center of an image annotation
+#' @title Obtain center of an spatial annotation
 #'
-#' @description \code{getImgAnnCenter()} computes the
+#' @description \code{getSpatAnnCenter()} computes the
 #' x- and y- coordinates of the center of the outer border, returns
-#' a numeric vector of length two. `getImgAnnCenters()` computes the center of the outer
+#' a numeric vector of length two. `getSpatAnnCenters()` computes the center of the outer
 #' and every inner border and returns a list of numeric vectors of length two.
 #'
-#' @inherit getImageAnnotation params
+#' @inherit getSpatialAnnotation params
 #' @inherit argument_dummy params
 #'
 #' @return Numeric vector of length two or a list of these. Values are named *x* and *y*.
 #'
 #' @export
 
-setGeneric(name = "getImgAnnCenter", def = function(object, ...){
+setGeneric(name = "getSpatAnnCenter", def = function(object, ...){
 
-  standardGeneric(f = "getImgAnnCenter")
+  standardGeneric(f = "getSpatAnnCenter")
 
 })
 
-#' @rdname getImgAnnCenter
+#' @rdname getSpatAnnCenter
 #' @export
 setMethod(
-  f = "getImgAnnCenter",
+  f = "getSpatAnnCenter",
   signature = "spata2",
   definition = function(object, id){
 
-    border_df <- getImgAnnOutlineDf(object, ids = id, inner = FALSE)
+    border_df <- getSpatAnnOutlineDf(object, ids = id, inner = FALSE)
 
     x <- base::mean(base::range(border_df$x))
     y <- base::mean(base::range(border_df$y))
@@ -696,11 +502,11 @@ setMethod(
   }
 )
 
-#' @rdname getImgAnnCenter
+#' @rdname getSpatAnnCenter
 #' @export
 setMethod(
-  f = "getImgAnnCenter",
-  signature = "ImageAnnotation",
+  f = "getSpatAnnCenter",
+  signature = "SpatialAnnotation",
   definition = function(object){
 
     border_df <- object@area[["outer"]]
@@ -715,24 +521,24 @@ setMethod(
   }
 )
 
-#' @rdname getImgAnnCenter
+#' @rdname getSpatAnnCenter
 #' @export
-setGeneric(name = "getImgAnnCenters", def = function(object, ...){
+setGeneric(name = "getSpatAnnCenters", def = function(object, ...){
 
-  standardGeneric(f = "getImgAnnCenters")
+  standardGeneric(f = "getSpatAnnCenters")
 
 })
 
-#' @rdname getImgAnnCenter
+#' @rdname getSpatAnnCenter
 #' @export
 setMethod(
-  f = "getImgAnnCenters",
+  f = "getSpatAnnCenters",
   signature = "spata2",
   definition = function(object, id, outer = TRUE, inner = TRUE){
 
-    img_ann <- getImageAnnotation(object, id = id, add_barcodes = FALSE, add_image = FALSE)
+    spat_ann <- getSpatialAnnotation(object, id = id, add_barcodes = FALSE, add_image = FALSE)
 
-    area <- img_ann@area
+    area <- spat_ann@area
 
     if(base::isFALSE(outer)){
 
@@ -763,11 +569,11 @@ setMethod(
   }
 )
 
-#' @rdname getImgAnnCenter
+#' @rdname getSpatAnnCenter
 #' @export
 setMethod(
-  f = "getImgAnnCenters",
-  signature = "ImageAnnotation",
+  f = "getSpatAnnCenters",
+  signature = "SpatialAnnotation",
   definition = function(object, outer = TRUE, inner = TRUE){
 
     area <- object@area
@@ -801,124 +607,46 @@ setMethod(
   }
 )
 
-#' @title Obtain image annotations ids
-#'
-#' @description Extracts image annotation IDs as a character vector.
-#'
-#' @param scale_fct Numeric value with which to scale the ranges.
-#' @inherit argument_dummy
-#'
-#' @inheritSection section_dummy Selection of image annotations with tags
-#'
-#' @return Character vector.
-#' @export
-#'
-setGeneric(name = "getImgAnnIds", def = function(object, ...){
-
-  standardGeneric(f = "getImgAnnIds")
-
-})
-
-
-#' @rdname getImgAnnIds
-#' @export
-setMethod(
-  f = "getImgAnnIds",
-  signature = "spata2",
-  definition = function(object,
-                        ids = NULL,
-                        tags = NULL,
-                        test = "any",
-                        ...){
-
-    getHistoImaging(object) %>%
-    getImgAnnIds(
-      object = .,
-      ids = ids,
-      tags = tags,
-      test = test,
-      ...
-    )
-
-  }
-)
-
-#' @rdname getImgAnnIds
-#' @export
-setMethod(
-  f = "getImgAnnIds",
-  signature = "HistoImaging",
-  definition = function(object,
-                        ids = NULL,
-                        tags = NULL,
-                        test = "any",
-                        ...){
-
-    if(nImageAnnotations(object) >= 1){
-
-      out <-
-        getImageAnnotations(
-          object = object,
-          ids = ids,
-          tags = tags,
-          test = test,
-          add_barcodes = FALSE,
-          add_image = FALSE
-          ) %>%
-        purrr::map_chr(.f = ~ .x@id) %>%
-        base::unname()
-
-    } else {
-
-      out <- base::character(0)
-
-    }
-
-    return(out)
-
-  }
-)
-
-#' @title Obtain image annotations range
+#' @title Obtain spatial annotations range
 #'
 #' @description Extracts the minimum and maximum x- and y-coordinates
-#' of the image annotation border.
+#' of the spatial annotation border.
 #'
-#' @inherit getImageAnnotation params
+#' @inherit getSpatialAnnotation params
 #'
 #' @return List of length two. Named with *x* and *y*. Each slot
 #' contains a vector of length two with the minima and maxima in pixel.
 #' @export
 #'
-setGeneric(name = "getImgAnnRange", def = function(object, ...){
+setGeneric(name = "getSpatAnnRange", def = function(object, ...){
 
-  standardGeneric(f = "getImgAnnRange")
+  standardGeneric(f = "getSpatAnnRange")
 
 })
 
-#' @rdname getImgAnnRange
+#' @rdname getSpatAnnRange
 #' @export
 setMethod(
-  f = "getImgAnnRange",
+  f = "getSpatAnnRange",
   signature = "spata2",
   definition = function(object, id, scale_fct = 1){
 
     getHistoImaging(object) %>%
-      getImgAnnRange(object = ., id = id, scale_fct = scale_fct)
+      getSpatAnnRange(object = ., id = id, scale_fct = scale_fct)
 
   }
 )
 
-#' @rdname getImgAnnRange
+#' @rdname getSpatAnnRange
 #' @export
 setMethod(
-  f = "getImgAnnRange",
+  f = "getSpatAnnRange",
   signature = "HistoImaging",
   definition = function(object, id, scale_fct = 1){
 
     confuns::check_one_of(
       input = id,
-      against = getImgAnnIds(object)
+      against = getSpatAnnIds(object)
     )
 
     out <-
@@ -933,60 +661,57 @@ setMethod(
 
 
 
-#' @title Obtain image annotation border data.frame
+#' @title Obtain spatial annotation border data.frame
 #'
 #' @description Extracts the coordinates of the vertices of the polygon that represents
-#' the borders of the image annotation.
+#' the borders of the spatial annotation.
 #'
 #' @inherit argument_dummy params
-#' @param img_name Character value or `NULL`. The name of the image to which the
-#' output coordinates of the outline are scaled (due to different image resolutions).
-#' If `NULL`, defaults to the currently active image.
-#'
 #' @return A data.frame that contains variables \emph{id}, *border*,
 #' and the numeric variables *x*, *y* and *tags*.
 #'
-#' @inherit getImageAnnotations details
+#' @inherit getSpatialAnnotations details
 #'
 #' @details The variables \emph{x} and \emph{y} give the position of the vertices of the polygon
-#' that was drawn to encircle the structure `createImageAnnotations()`. These vertices correspond
-#' to the border of the annotation.
+#' that was drawn to used the area via [`createGroupAnnotations()`],
+#' [`createImageAnnotations()`] or [`createNumericAnnotations()`]. These vertices
+#' correspond to the border of the annotation.
 #'
-#' @inheritSection section_dummy Selection of image annotations with tags
+#' @inheritSection section_dummy Selection of spatial annotations
 #'
 #' @export
 #'
-setGeneric(name = "getImgAnnOutlineDf", def = function(object, ...){
+setGeneric(name = "getSpatAnnOutlineDf", def = function(object, ...){
 
-  standardGeneric(f = "getImgAnnOutlineDf")
+  standardGeneric(f = "getSpatAnnOutlineDf")
 
 })
 
-#' @rdname getImgAnnOutlineDf
+#' @rdname getSpatAnnOutlineDf
 #' @export
 setMethod(
-  f = "getImgAnnOutlineDf",
+  f = "getSpatAnnOutlineDf",
   signature = "spata2",
   definition = function(object,
                         ids = NULL,
+                        class = NULL,
                         tags = NULL,
                         test = "any",
                         outer = TRUE,
                         inner = TRUE,
-                        img_name = NULL,
                         add_tags = FALSE,
                         sep = " & ",
                         last = " & "){
 
     getHistoImaging(object) %>%
-      getImgAnnOutlineDf(
+      getSpatAnnOutlineDf(
         object = .,
         ids = ids,
+        class = class,
         tags = tags,
         test = test,
         outer = outer,
         inner = inner,
-        img_name = img_name,
         add_tags = add_tags,
         sep = sep,
         last = last
@@ -996,45 +721,44 @@ setMethod(
 )
 
 
-#' @rdname getImgAnnOutlineDf
+#' @rdname getSpatAnnOutlineDf
 #' @export
 setMethod(
-  f = "getImgAnnOutlineDf",
+  f = "getSpatAnnOutlineDf",
   signature = "HistoImaging",
   definition = function(object,
                         ids = NULL,
+                        class = NULL,
                         tags = NULL,
                         test = "any",
                         outer = TRUE,
                         inner = TRUE,
-                        img_name = NULL,
                         add_tags = FALSE,
                         sep = " & ",
                         last = " & "){
 
-    img_anns <-
-      getImageAnnotations(
+    spat_anns <-
+      getSpatialAnnotations(
         object = object,
         ids = ids,
+        class = class,
         tags = tags,
         test = test,
-        img_name = img_name,
-        add_barcodes = FALSE,
         add_image = FALSE
       )
 
     out <-
       purrr::map_df(
-        .x = img_anns,
-        .f = function(img_ann){
+        .x = spat_anns,
+        .f = function(spat_ann){
 
           tag <-
-            scollapse(string = img_ann@tags, sep = sep, last = last) %>%
+            scollapse(string = spat_ann@tags, sep = sep, last = last) %>%
             base::as.character()
 
           out <-
             purrr::imap_dfr(
-              .x = img_ann@area,
+              .x = spat_ann@area,
               .f = function(area, name){
 
                 dplyr::mutate(
@@ -1045,7 +769,7 @@ setMethod(
               }
             ) %>%
             dplyr::mutate(
-              ids = img_ann@id %>% base::factor()
+              ids = spat_ann@id %>% base::factor()
             ) %>%
             tibble::as_tibble()
 
@@ -1080,9 +804,9 @@ setMethod(
   }
 )
 
-#' @title Obtain image annotations tags
+#' @title Obtain spatial annotation tags
 #'
-#' @description Extracts all unique tags with which image annotations
+#' @description Extracts all unique tags with which spatial annotations
 #' have been tagged.
 #'
 #' @inherit argument_dummy
@@ -1090,37 +814,37 @@ setMethod(
 #' @return Character vector.
 #' @export
 #'
-setGeneric(name = "getImgAnnTags", def = function(object, ...){
+setGeneric(name = "getSpatAnnTags", def = function(object, ...){
 
-  standardGeneric(f = "getImgAnnTags")
+  standardGeneric(f = "getSpatAnnTags")
 
 })
 
-#' @rdname getImgAnnTags
+#' @rdname getSpatAnnTags
 #' @export
 setMethod(
-  f = "getImgAnnTags",
+  f = "getSpatAnnTags",
   signature = "spata2",
   definition = function(object){
 
     getHistoImaging(object) %>%
-      getImgAnnTags()
+      getSpatAnnTags()
 
   }
 )
 
-#' @rdname getImgAnnTags
+#' @rdname getSpatAnnTags
 #' @export
 setMethod(
-  f = "getImgAnnTags",
+  f = "getSpatAnnTags",
   signature = "HistoImaging",
   definition = function(object){
 
-    if(nImageAnnotations(object) >= 1){
+    if(nSpatialAnnotations(object) >= 1){
 
       out <-
         purrr::map(
-          .x = getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE),
+          .x = getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE),
           .f = ~ .x@tags
         ) %>%
         purrr::flatten_chr() %>%
@@ -1137,15 +861,15 @@ setMethod(
   }
 )
 
-
-mergeImageAnnotations <- function(object,
-                                  ids,
-                                  id,
-                                  tags = NULL,
-                                  tags_expand = TRUE,
-                                  concavity = 3,
-                                  discard_old = FALSE,
-                                  overwrite = FALSE){
+#! integrate that
+mergeSpatialAnnotations <- function(object,
+                                    ids,
+                                    id,
+                                    tags = NULL,
+                                    tags_expand = TRUE,
+                                    concavity = 3,
+                                    discard_old = FALSE,
+                                    overwrite = FALSE){
 
   pxl_df <- getPixelDf(object)
 
@@ -1154,7 +878,7 @@ mergeImageAnnotations <- function(object,
       .x = ids,
       .f = function(idx){
 
-        outline_df <- getImgAnnOutlineDf(object, id = idx)
+        outline_df <- getSpatAnnOutlineDf(object, id = idx)
 
         pxl_index <-
           sp::point.in.polygon(
@@ -1173,28 +897,27 @@ mergeImageAnnotations <- function(object,
     base::as.matrix() %>%
     concaveman::concaveman(points = ., concavity = concavity) %>%
     tibble::as_tibble() %>%
-    magrittr::set_colnames(value = c("x", "y"))
+    magrittr::set_colnames(value = c("x_orig", "y_orig"))
 
   if(base::isTRUE(discard_old)){
 
-    object <- discardImageAnnotations(object, ids = ids)
+    object <- discardSpatialAnnotations(object, ids = ids)
 
   }
 
   if(base::isTRUE(tags_expand)){
 
-    tags <- base::unique(c(tags, "mergeImageAnnotations"))
+    tags <- base::unique(c(tags, "mergeSpatialAnnotations"))
 
   }
 
   object <-
-    addImageAnnotation(
+    addSpatialAnnotation(
       object = object,
       id = id,
       tags = tags,
       area = list(outer = merged_outline),
-      overwrite = overwrite,
-      parent_name = activeImage(object)
+      overwrite = overwrite
     )
 
   return(object)
@@ -1203,21 +926,23 @@ mergeImageAnnotations <- function(object,
 
 
 
-#' @title Plot image annotations
+#' @title Plot spatial annotations
 #'
-#' @description Plots structures and areas that were annotated with `createImageAnnotations()`.
+#' @description Plots image sections containing the areas that were annotated via
+#' [`createGroupAnnotations()`], [`createImageAnnotations()`] or
+#' [`createNumericAnnotations()`] .
 #'
 #' @param plot Logical value. If TRUE, the plots are plotted immediately
 #' via \code{gridExtra.grid.arrange()} and the list of plots is returned
 #' invisibly. Else the list of plots is simply returned.
-#' @param display_title Logical value. If TRUE, the number of each image annotation
+#' @param display_title Logical value. If TRUE, the number of each spatial annotation
 #' is plotted in the title.
-#' @param display_subtitle Logical value. If TRUE, the ID of each image annotation
+#' @param display_subtitle Logical value. If TRUE, the ID of each spatial annotation
 #' is plotted in the subtitle.
-#' @param display_caption Logial value. If TRUE, the tags of each image annotation
+#' @param display_caption Logial value. If TRUE, the tags of each spatial annotation
 #' are plotted in the caption.
-#' @param encircle Logical value. If TRUE, a polygon is drawn around the
-#' exact extent of the annotated structure encircled drawn in \code{createImageAnnotations()}.
+#' @param outline Logical value. If TRUE, a polygon is drawn around the
+#' exact extent of the annotated structure.
 #' @param unit Character value. The unit in which the x- and y-axis text
 #' are displayed. Use `validUnitsOfLengthSI()` to obtain all valid input options.
 #' @param round Numeric value or `FALSE`. If numeric and `unit` is not *px*, rounds
@@ -1228,25 +953,25 @@ mergeImageAnnotations <- function(object,
 #' no scale bar is plotted.
 #' @param ... Additional arguments given to `ggpLayerScaleBarSI()` if input for
 #' `sb_dist` is a valid distance measure. Exception: `xrange` and `yrange` are
-#' set to the ranges of the image that was cropped to display the image annotation.
+#' set to the ranges of the image that was cropped to display the spatial annotation.
 #'
 #' @inherit argument_dummy params
-#' @inherit ggpLayerImgAnnBorder params
+#' @inherit ggpLayerSpatAnnOutline params
 #'
-#' @details At first, the image section that contains the image annotation is
+#' @details At first, the image section that contains the spatial annotation is
 #' cropped such that it only contains the extent of the polygon that represents
-#' the borders of the annotation (ranges can be obtained with `getImageAnnotatationRange()`).
+#' the borders of the annotation (ranges can be obtained with `getSpatAnnRange()`).
 #' Using arguments `square` and `expand` can be used to expand the displayed
 #' image section individually.
 #'
 #' @inheritSection section_dummy Distance measures
 #' @inheritSection section_dummy Expansion of cropped image sections
-#' @inheritSection section_dummy Selection of image annotations with tags
+#' @inheritSection section_dummy Selection of spatial annotations
 #'
 #' @return A list of ggplots. Each slot contains a plot
-#' that visualizes an image annotation.
+#' that visualizes an spatial annotation.
 #'
-#' @seealso [`getImageAnnotations()`]
+#' @seealso [`getSpatialAnnotations()`]
 #'
 #' @export
 #'
@@ -1259,20 +984,20 @@ mergeImageAnnotations <- function(object,
 #'
 #' data("image_annotations")
 #'
-#' object <- setImageAnnotations(object, img_anns = image_annotations[["275_T"]])
+#' object <- setSpatialAnnotations(object, spat_anns = image_annotations[["275_T"]])
 #'
-#' plotImageAnnotations(
+#' plotSpatialAnnotations(
 #'  object = object,
-#'  ids = "img_ann_1",
+#'  ids = "spat_ann_1",
 #'  expand = "0.5mm",
 #'  encircle = T # no encircling possible if expand = 0
 #'  )
 #'
 #' ### Example 1
 #'
-#' plotImageAnnotations(
+#' plotSpatialAnnotations(
 #'  object = object,
-#'  ids = "img_ann_1",
+#'  ids = "spat_ann_1",
 #'  expand = 0,
 #'  encircle = FALSE # no encircling possible if expand = 0
 #'  )
@@ -1280,9 +1005,9 @@ mergeImageAnnotations <- function(object,
 #'  process_expand_input(0)
 #'
 #' ### Example 2
-#' plotImageAnnotations(
+#' plotSpatialAnnotations(
 #'  object = object,
-#'  ids = "img_ann_1",
+#'  ids = "spat_ann_1",
 #'  expand = 50, # all sides are expanded with 50px -> 100px gain per axis
 #'  encircle = TRUE
 #'  )
@@ -1290,9 +1015,9 @@ mergeImageAnnotations <- function(object,
 #'  process_expand_input(50)
 #'
 #' ### Example 3
-#' plotImageAnnotations(
+#' plotSpatialAnnotations(
 #'  object = object,
-#'  ids = "img_ann_1",
+#'  ids = "spat_ann_1",
 #'  expand = c("1mm", "2mm"),
 #'  encircle = TRUE
 #'  )
@@ -1300,9 +1025,9 @@ mergeImageAnnotations <- function(object,
 #'  process_expand_input(c("1mm", "2mm"))
 #'
 #' ### Example 4
-#' plotImageAnnotations(
+#' plotSpatialAnnotations(
 #'  object = object,
-#'  ids = "img_ann_1",
+#'  ids = "spat_ann_1",
 #'  expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')),
 #'  encircle = TRUE
 #'  )
@@ -1311,9 +1036,9 @@ mergeImageAnnotations <- function(object,
 #'
 #'
 #' ### Example 5
-#' plotImageAnnotations(
+#' plotSpatialAnnotations(
 #'  object = object,
-#'  ids = "img_ann_1",
+#'  ids = "spat_ann_1",
 #'  expand = "1mm!", # center image and force axis length of 1mm
 #'  encircle = TRUE,
 #'  dist_sb = "100um",
@@ -1325,25 +1050,24 @@ mergeImageAnnotations <- function(object,
 #'  process_expand_input("1mm!")
 #'
 #'
-setGeneric(name = "plotImageAnnotations", def = function(object, ...){
+setGeneric(name = "plotSpatialAnnotations", def = function(object, ...){
 
-  standardGeneric(f = "plotImageAnnotations")
+  standardGeneric(f = "plotSpatialAnnotations")
 
 })
 
-#' @rdname plotImageAnnotations
+#' @rdname plotSpatialAnnotations
 #' @export
 setMethod(
-  f = "plotImageAnnotations",
+  f = "plotSpatialAnnotations",
   signature = "spata2",
   definition = function(object,
                         ids = NULL,
-                        img_name = NULL,
                         tags = NULL,
                         test = "any",
                         expand = "25%",
                         square = TRUE,
-                        encircle = TRUE,
+                        outline = TRUE,
                         inner = TRUE,
                         unit = getSpatialMethod(object)@unit,
                         round = 2,
@@ -1363,15 +1087,14 @@ setMethod(
                         ...){
 
     getHistoImaging(object) %>%
-      plotImageAnnotations(
+      plotSpatialAnnotations(
         object = .,
         ids = ids,
-        img_name = img_name,
         tags = tags,
         test = test,
         expand = expand,
         square = square,
-        encircle = encircle,
+        outline = outline,
         inner = inner,
         unit = unit,
         round = round,
@@ -1394,19 +1117,18 @@ setMethod(
   }
 )
 
-#' @rdname plotImageAnnotations
+#' @rdname plotSpatialAnnotations
 #' @export
 setMethod(
-  f = "plotImageAnnotations",
+  f = "plotSpatialAnnotations",
   signature = "HistoImaging",
   definition = function(object,
                         ids = NULL,
-                        img_name = NULL,
                         tags = NULL,
                         test = "any",
                         expand = "25%",
                         square = TRUE,
-                        encircle = TRUE,
+                        outline = TRUE,
                         inner = TRUE,
                         unit = getSpatialMethod(object)@unit,
                         round = 2,
@@ -1432,58 +1154,48 @@ setMethod(
       against = validUnitsOfLength()
     )
 
-    if(base::is.character(img_name)){
-
-      object <- activateImageInt(object, img_name = img_name, load = TRUE)
-
-    }
-
-    img_annotations <-
-      getImageAnnotations(
+    spat_annotations <-
+      getSpatialAnnotations(
         object = object,
-        img_name = img_name,
         ids = ids,
         tags = tags,
         test = test,
         expand = expand,
         square = square,
-        add_image = TRUE,
-        add_barcodes = FALSE,
-        check = TRUE
+        add_image = TRUE
       )
 
     plist <-
       purrr::map(
-        .x = img_annotations,
-        .f = function(img_ann){
+        .x = spat_annotations,
+        .f = function(spat_ann){
 
-          image_raster <- grDevices::as.raster(x = img_ann@image)
+          image_raster <- grDevices::as.raster(x = spat_ann@image)
 
-          img_info <- img_ann@image_info
+          img_info <- spat_ann@image_info
 
           limits_x <- c(img_info$xmin, img_info$xmax)
           limits_y <- c(img_info$ymin_coords, img_info$ymax_coords)
 
-          raster_add_on <- ggpLayerImage(object = img_ann, rescale_axes = TRUE)
+          raster_add_on <- ggpLayerImage(object = spat_ann, rescale_axes = TRUE)
 
-          if(base::isTRUE(encircle)){
+          if(base::isTRUE(outline)){
 
-            img_ann_sf <-
-              getImgAnnSf(
+            spat_ann_sf <-
+              getSpatAnnSf(
                 object = object,
-                id = img_ann@id,
-                img_name = img_name
+                id = spat_ann@id
                 )
 
             if(base::isFALSE(inner)){
 
-              img_ann_sf <- img_ann_sf["outer"]
+              spat_ann_sf <- spat_ann_sf[["outer"]]
 
             }
 
-            encircle_add_on <-
+            outline_add_on <-
               ggplot2::geom_sf(
-                data = img_ann_sf,
+                data = spat_ann_sf,
                 size = line_size,
                 color = line_color,
                 linetype = line_type,
@@ -1493,7 +1205,7 @@ setMethod(
 
           } else {
 
-            encircle_add_on <- list()
+            outline_add_on <- list()
 
           }
 
@@ -1537,7 +1249,7 @@ setMethod(
             ggplot2::ggplot() +
             ggplot2::theme_bw() +
             raster_add_on +
-            encircle_add_on +
+            outline_add_on +
             ggplot2::scale_x_continuous(
               #limits = limits_x,
               expand = c(0, 0),
@@ -1562,7 +1274,7 @@ setMethod(
               ggplot2::labs(
                 title = stringr::str_c(
                   "Annotation ",
-                  stringr::str_extract(img_ann@id, "\\d*$")
+                  stringr::str_extract(spat_ann@id, "\\d*$")
                 )) +
               ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
@@ -1572,7 +1284,7 @@ setMethod(
 
             plot_out <-
               plot_out +
-              ggplot2::labs(subtitle = img_ann@id)
+              ggplot2::labs(subtitle = spat_ann@id)
 
           }
 
@@ -1582,7 +1294,7 @@ setMethod(
               plot_out +
               ggplot2::labs(
                 caption = scollapse(
-                  string = img_ann@tags,
+                  string = spat_ann@tags,
                   sep = ", ",
                   last = " & "
                 ) %>% stringr::str_c("Tags: ", .)

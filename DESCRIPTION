@@ -74,6 +74,7 @@ Collate:
     'dev.R'
     'devImaging.R'
     'devImgAnns.R'
+    'devSpatAnns.R'
     'devTemp.R'
     'documentation-dummies.R'
     'downgrade.R'

@@ -451,6 +451,7 @@ depr_info <-
     fns = list(
       # deprecated            ~   replaced by
       "add_outline_variable" = "add_tissue_section_variable",
+      "addImageAnnotation" = "addSpatialAnnotation",
       "adjustdDefaultInstructions" = "setDefault",
       "assessTrajectoryTrends" = "spatialTrajectoryScreening",
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
@@ -468,6 +469,15 @@ depr_info <-
       "getImageAnnotationScreeningDf" = "getIasDf",
       "getImageAnnotationTags" = "getImgAnnTags",
       "getImageObject" = "getHistoImaging",
+
+      "getImgAnnArea" = "getSpatAnnArea",
+      "getImgAnnCenter" = "getSpatAnnCenter",
+      "getImgAnnCenters" = "getSpatAnnCenters",
+      "getImgAnnIds" = "getSpatAnnIds",
+      "getImgAnnRange" = "getSpatAnnRange",
+      "getImgAnnOutlineDf" = "getSpatAnnOutlineDf",
+      "getImgAnnTags" = "getSpatAnnTags",
+
       "getMethod" = "getSpatialMethod",
       "getMethodUnit" = "getSpatialMethod()@unit",
       "getMethodName" = "getSpatialMethod()@name",
@@ -484,7 +494,13 @@ depr_info <-
       "is_euol_dist" = "is_dist_euol",
       "is_dist_euol" = "is_dist_si",
       "is_pixel_dist" = "is_dist_pixel",
+
+      "lastImageAnnotation" = "lastSpatialAnnotation",
+
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
+
+      "plotImageAnnotations" = "plotSpatialAnnotations",
+
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
       "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",

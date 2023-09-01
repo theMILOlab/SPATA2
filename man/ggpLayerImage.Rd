@@ -5,7 +5,7 @@
 \alias{ggpLayerImage,spata2-method}
 \alias{ggpLayerImage,HistoImaging-method}
 \alias{ggpLayerImage,HistoImage-method}
-\alias{ggpLayerImage,ImageAnnotation-method}
+\alias{ggpLayerImage,SpatialAnnotation-method}
 \alias{ggpLayerImage,Image-method}
 \alias{ggpLayerImage,data.frame-method}
 \title{Add histology image}
@@ -32,7 +32,7 @@ ggpLayerImage(object, ...)
 
 \S4method{ggpLayerImage}{HistoImage}(object, transform = TRUE, scale_fct = 1, img_alpha = 1, ...)
 
-\S4method{ggpLayerImage}{ImageAnnotation}(object, img_alpha = 1, rescale_axes = TRUE, scale_fct = 1, ...)
+\S4method{ggpLayerImage}{SpatialAnnotation}(object, img_alpha = 1, rescale_axes = TRUE, scale_fct = 1, ...)
 
 \S4method{ggpLayerImage}{Image}(object, scale_fct = 1, img_alpha = 1, ...)
 
@@ -74,7 +74,7 @@ where pixel heights start from the top. Consequently, in \emph{image space}, pix
 is displayed on the top resulting in mirror inverted visualization of the image.
 
 We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
-framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+framework for the spatial alignment of tissue, spatial annotations, spatial trajectories,
 barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
 in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
 

@@ -3,6 +3,13 @@
 # a -----------------------------------------------------------------------
 
 
+addImageAnnotation <- function(object, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  addSpatialAnnotation(object, ...)
+
+}
 
 #' @keywords internal
 adjustDefaultInstructions <- function(...){
@@ -168,7 +175,6 @@ check_customized_trends <- function(length_trajectory,
 }
 
 
-#' @rdname check_atdf
 check_rtdf <- function(rtdf, variable = NULL){
 
   # check classes
@@ -254,7 +260,6 @@ check_slot_coordinates <- function(object){
 
 }
 
-#' @rdname check_slot_coordinates
 #'
 #' @keywords internal
 check_slot_data <- function(object){
@@ -297,7 +302,6 @@ check_slot_data <- function(object){
 }
 
 
-#' @rdname check_slot_coordinates
 #' @keywords internal
 check_slot_dim_red <- function(object){
 
@@ -426,7 +430,6 @@ check_slot_dim_red <- function(object){
 
 }
 
-#' @rdname check_slot_coordinates
 #' @keywords internal
 check_slot_fdata <- function(object){
 
@@ -517,7 +520,6 @@ check_slot_fdata <- function(object){
 }
 
 
-#' @rdname check_slot_coordinates
 #' @keywords internal
 check_slot_image <- function(object){
 
@@ -583,7 +585,6 @@ check_slot_image <- function(object){
 }
 
 
-#' @rdname check_slot_coordinates
 #' @keywords internal
 check_slot_samples <- function(object){
 
@@ -602,7 +603,6 @@ check_slot_samples <- function(object){
 }
 
 
-#' @rdname check_slot_coordinates
 #' @keywords internal
 check_slot_scvelo <- function(object){
 
@@ -611,7 +611,6 @@ check_slot_scvelo <- function(object){
 }
 
 
-#' @rdname check_slot_coordinates
 #' @keywords internal
 check_slot_trajectories <- function(object){
 
@@ -707,7 +706,6 @@ check_slot_trajectories <- function(object){
 
 }
 
-#' @rdname check_slot_coordinates
 #' @export
 #' @keywords internal
 check_trajectory_object <- function(t_object, t_object_name, t_object_sample){
@@ -825,7 +823,6 @@ check_trajectory_object <- function(t_object, t_object_name, t_object_sample){
 
 }
 
-#' @rdname check_slot_coordinates
 #' @export
 #' @keywords internal
 check_slot_used_genesets <- function(object){
@@ -903,7 +900,6 @@ check_slot_used_genesets <- function(object){
 
 }
 
-#' @rdname check_slot_coordinates
 #' @export
 #' @keywords internal
 check_slot_version <- function(object){
@@ -927,6 +923,139 @@ containsHistologyImaging <- function(object){
   out <- methods::is(object = img, class2 = "HistologyImaging")
 
   return(out)
+
+}
+
+
+#' @title Create object of class `HistologyImaging`
+#'
+#' @description Creates an object of class `HistologyImaging` that is used to
+#' store the image, image meta data and image annotations.
+#'
+#' Located in slot @@images in the \code{SPATA2} object.
+#'
+#' @param id Character value. Name of the `HistologyImaging` object.
+#' @param image Image input or character value. If character, input is interpreted as a directory
+#' to a file or to an URL and is read with `EBImage::readImage()`. The read image
+#' should be of type *.png*, *.jpeg* or *.tiff*. Capital letters work, too.
+#'
+#' If not character, the function ensures that the input is - or is convertible - to
+#' class `Image` via `EBImage::as.Image()`. If that fails, an error is thrown.
+#'
+#' @param img_scale_fct Numeric value between 0 and 1. If lower than 1, is used
+#' to downscale the image before setting it.
+#' @param coordinates  A data.frame of observational units that underlie the image
+#'  in case of spatially resolved multi-omic studies. Should contain at least the
+#'  two variables: *x*, *y* and a variable that identifies the observational units (e.g. *barcodes*).
+#'
+#' @return An object of class `HistologyImaging`.
+#'
+#' @seealso `?HistologyImaging` for the documentation of all slots.
+#'
+#' @export
+
+createHistologyImaging <- function(image,
+                                   id = 'imageid',
+                                   img_scale_fct = 1,
+                                   meta = list(),
+                                   pxl_scale_fct = NULL,
+                                   coordinates = NULL,
+                                   verbose = TRUE,
+                                   ...){
+
+  # empty image object
+  hist_im <- HistologyImaging()
+
+  hist_im@id <- id[1]
+
+  # set image
+  if(base::is.character(image)){
+
+    # ensure character value
+    image <- image[1]
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading image from '{image}'."),
+      verbose = verbose
+    )
+
+    hist_im@image <- EBImage::readImage(files = image[1])
+
+    hist_im@dir_default <- image
+
+    origin <- image
+
+  } else {
+
+    hist_im@image <- EBImage::as.Image(x = image)
+
+    origin <- base::substitute(expr = image)
+
+  }
+
+  dim_input <- base::dim(hist_im@image)
+  dim_stored <- base::dim(hist_im@image)
+
+  # rescale default image if needed
+  if(img_scale_fct > 1){
+
+    stop("`img_scale_fct` must not be > 1.")
+
+  } else if(img_scale_fct < 1){
+
+    dim_stored <- dim_input
+
+    dim_stored[1:2] <- dim_input[1:2] * img_scale_fct
+
+    hist_im@image <-
+      EBImage::resize(
+        x = hist_im@image,
+        w = dim_stored[1],
+        h = dim_stored[2]
+      )
+
+  }
+
+  # set info slot
+  hist_im@image_info <-
+    list(
+      dim_input = dim_input,
+      dim_stored = dim_stored,
+      img_scale_fct = img_scale_fct,
+      origin = origin
+    )
+
+  # set justification
+  hist_im@justification <-
+    list(
+      angle = 0,
+      flipped = list(horizontal = FALSE, vertical = FALSE)
+      # track = TRUE/FALSE as an instruction?
+    )
+
+  # set coordinates
+  if(base::is.null(coordinates)){
+
+    hist_im@coordinates <-
+      tidyr::expand_grid(
+        x = reduce_vec(x = 1:hist_im@image_info$dim_input[1], n = 10), # take every 10th element
+        y = reduce_vec(x = 1:hist_im@image_info$dim_input[2], n = 10)
+      )
+
+  } else if(base::is.data.frame(coordinates)){
+
+    confuns::check_data_frame(
+      df = coordinates,
+      var.class = list(x = "numeric", y = "numeric")
+    )
+
+    hist_im@coordinates <- coordinates
+
+  }
+
+  hist_im@misc <- list(...)
+
+  return(hist_im)
 
 }
 
@@ -1633,7 +1762,6 @@ flipCoords <- function(...){
 
 # g -----------------------------------------------------------------------
 
-#' @rdname getImgAnnOutlineDf
 #' @keywords internal
 #' @export
 getImgAnnBorderDf <- function(...){
@@ -1644,7 +1772,6 @@ getImgAnnBorderDf <- function(...){
 
 }
 
-#' @rdname getImgAnnOutlineDf
 #' @keywords internal
 #' @export
 getImageAnnotationAreaDf <- function(...){
@@ -1656,7 +1783,6 @@ getImageAnnotationAreaDf <- function(...){
 }
 
 
-#' @rdname getImgAnnCenter
 #' @keywords internal
 #' @export
 getImageAnnotationCenter <- function(...){
@@ -1680,7 +1806,6 @@ getImageAnnotationCenter <- function(...){
 #'
 #'
 
-#' @rdname getImgAnnIds
 #' @keywords internal
 #' @export
 getImageAnnotationIds <- function(...){
@@ -1730,7 +1855,6 @@ getMethodName <- function(object){
 
 }
 
-#' @rdname downloadPubExample
 #' @export
 getPubExample <- function(...){
 
@@ -1740,7 +1864,6 @@ getPubExample <- function(...){
 
 }
 
-#' @rdname getSampleName
 #' @export
 #' @keywords internal
 getSampleNames <- function(object){
@@ -1860,6 +1983,63 @@ getSegmentNames <- function(object,
 
 }
 
+getImgAnnArea <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnArea(...)
+
+}
+
+getImgAnnCenter <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnCenter(...)
+
+}
+
+getImgAnnCenters <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnCenters(...)
+
+}
+
+getImgAnnIds <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnIds(...)
+
+}
+
+getImgAnnOutlineDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnOutlineDf(...)
+
+}
+
+getImgAnnRange <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnRange(...)
+
+}
+
+getImgAnnTags <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSpatAnnTags(...)
+
+}
+
+
 #' @title Deprecated
 #' @export
 #' @keywords internal
@@ -1910,7 +2090,6 @@ ggpLayerImageAnnotation <- function(...){
 }
 
 #' @keywords internal
-#' @rdname ggpLayerImgAnnOutline
 #' @export
 ggpLayerImgAnnBorder <- function(...){
 

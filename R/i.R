@@ -48,7 +48,7 @@ img_ann_highlight_group_button <- function(){
 #' \code{n_bins_circle}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
 #' see details section.
 #'
-#' @inherit getImageAnnotation params
+#' @inherit getSpatialAnnotation params
 #' @param variables Character vector. All numeric variables (meaning genes,
 #' gene-sets and numeric features) that are supposed to be included in
 #' the screening process.
@@ -77,10 +77,11 @@ img_ann_highlight_group_button <- function(){
 #' @inherit argument_dummy params
 #' @inherit buffer_area params
 #'
-#' @return An object of class \code{ImageAnnotationScreening}. See documentation
-#' with \code{?ImageAnnotationScreening} for more information.
+#' @return An object of class \code{SpatialAnnotationScreening}. See documentation
+#' with \code{?SpatialAnnotationScreening} for more information.
 #'
-#' @seealso [`createImageAnnotations`]
+#' @seealso [`createGroupAnnotations()`], [`createImageAnnotations()`],
+#' [`createNumericAnnotations()`]
 #'
 #' @details In conjunction with argument \code{id} which provides the
 #' ID of the image annotation of interest the arguments \code{distance},
@@ -133,9 +134,8 @@ img_ann_highlight_group_button <- function(){
 #' \code{n_bins_circle}.
 #'
 #' Once the parameters are set and calculated the polygon that is used to
-#' define the borders of the image annotation (the one you draw with
-#' \code{createImageAnnotation()}) is repeatedly expanded by the distance indicated
-#' by parameter \code{binwidth}. The number of times this expansion is
+#' define the borders of the spatial annotation is repeatedly expanded by the distance
+#' indicated by parameter \code{binwidth}. The number of times this expansion is
 #' repeated is equal to the parameter \code{n_bins_circle}. Every time the
 #' polygon is expanded, the newly enclosed barcode-spots are binned (grouped)
 #' and the bin is given a number that is equal to the number of the expansion.
@@ -143,7 +143,7 @@ img_ann_highlight_group_button <- function(){
 #' bin 1, barcode spots that lie a distance of \code{binwidth} away are binned into
 #' bin 2, etc.
 #'
-#' Note that the function \code{plotSurfaceIas()} allows to visually check
+#' Note that the function [`plotSurfaceSAS()`] allows to visually check
 #' if your input results in the desired screening.
 #'
 #' \bold{How the screening works:} For every gene that is included in the
@@ -170,7 +170,7 @@ img_ann_highlight_group_button <- function(){
 #' is calculated and stored as the IAS-Score.
 #'
 #' @export
-imageAnnotationScreening <- function(object,
+spatialAnnotationScreening <- function(object,
                                      id,
                                      variables,
                                      distance = NA_integer_,
@@ -199,7 +199,7 @@ imageAnnotationScreening <- function(object,
     verbose = verbose
   )
 
-  img_ann <- getImageAnnotation(object, id = id)
+  img_ann <- getSpatialAnnotation(object, id = id)
 
   input_binwidth <- binwidth
   input_distance <- distance
@@ -224,7 +224,7 @@ imageAnnotationScreening <- function(object,
   }
 
   ias_df <-
-    getIasDf(
+    getSasDf(
       object = object,
       id = id,
       variables = variables,
@@ -381,7 +381,7 @@ imageAnnotationScreening <- function(object,
   )
 
   ias_out <-
-    ImageAnnotationScreening(
+    SpatialAnnotationScreening(
       angle_span = angle_span,
       binwidth = binwidth,
       coords = getCoordsDf(object),
@@ -443,7 +443,7 @@ imageAnnotationToSegmentation <- function(object,
     overwrite = overwrite
   )
 
-  bcsp_inside <- getImgAnnBarcodes(object, ids = ids)
+  bcsp_inside <- getSpatAnnBarcodes(object, ids = ids)
 
   fdata <-
     getFeatureDf(object) %>%
@@ -476,7 +476,7 @@ imageAnnotationToSegmentation <- function(object,
 #' allows to relate observations to the spatial position and extent of image
 #' annotations.
 #'
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @param input_df A data.frame that contains at least numeric *x* and *y*
 #' variables.
 #' @param outline_df A data.frame that contains the ouline/hull of all tissue sections.
@@ -494,7 +494,7 @@ imageAnnotationToSegmentation <- function(object,
 include_tissue_outline <- function(coords_df,
                                    outline_df = NULL, # hull_df should be used by calling function!
                                    input_df,
-                                   img_ann_center = NULL,
+                                   spat_ann_center = NULL,
                                    ias_circles = FALSE,
                                    ccd = NULL,
                                    remove = TRUE,
@@ -645,13 +645,13 @@ include_tissue_outline <- function(coords_df,
   # if multiple sections on visium slide
   # identify to which image section the img ann belongs
   if(base::length(sections) > 1 &
-     base::is.numeric(img_ann_center) &
+     base::is.numeric(spat_ann_center) &
      base::nrow(proc_df) != 0){
 
     section_of_img_ann <-
       dplyr::group_by(.data = coords_df, barcodes) %>%
       dplyr::mutate(
-        dist = compute_distance(starting_pos = c(x,y), final_pos = img_ann_center )
+        dist = compute_distance(starting_pos = c(x,y), final_pos = spat_ann_center )
       ) %>%
       dplyr::ungroup() %>%
       dplyr::filter(dist == base::min(dist)) %>%
@@ -679,13 +679,13 @@ include_tissue_outline <- function(coords_df,
 #' @description Integration of single cell deconvolution and SPATA2s image annotations.
 #'
 #' @param as_models Adjusts the output to a list that is a valid input for
-#' `models_add`-argument of `imageAnnotationScreening()`.
+#' `models_add`-argument of `spatialAnnotationScreening()`.
 #'
-#' @inherit imageAnnotationScreening params
-#' @inherit getIasDf params
+#' @inherit spatialAnnotationScreening params
+#' @inherit getSasDf params
 #' @inherit argument_dummy params
 #'
-#' @return Data.frame as is returned by `getIasDf()` with cell types as variables.
+#' @return Data.frame as is returned by `getSasDf()` with cell types as variables.
 #' @export
 #'
 inferSingleCellGradient <- function(object,
@@ -780,7 +780,7 @@ inferSingleCellGradient <- function(object,
       .f = function(idx){
 
         ref_area_df <-
-          getIasBinAreas(
+          getSasBinAreas(
             object = object,
             id = idx,
             binwidth = binwidth,
@@ -799,19 +799,19 @@ inferSingleCellGradient <- function(object,
             coords_df = coords_df,
             input_df = sc_input,
             outline_var = outline_var,
-            img_ann_center = getImgAnnCenter(object, id = idx),
+            spat_ann_center = getSpatAnnCenter(object, id = idx),
             ccd = getCCD(object, unit = "px")
           ) %>%
           bin_by_expansion(
             coords_df = .,
-            area_df = getImgAnnOutlineDf(object, ids = idx),
+            area_df = getSpatAnnOutlineDf(object, ids = idx),
             binwidth = ias_input$binwidth,
             n_bins_circle = ias_input$n_bins_circle,
             remove = remove_circle_bins
           ) %>%
           bin_by_angle(
             coords_df = .,
-            center = getImgAnnCenter(object, id = idx),
+            center = getSpatAnnCenter(object, id = idx),
             n_bins_angle = n_bins_angle,
             angle_span = angle_span,
             var_to_bin = "cell_id",

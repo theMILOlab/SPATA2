@@ -9,12 +9,12 @@ buffer_area(df, buffer, close_plg = TRUE)
 \arguments{
 \item{df}{Data.frame with variables \emph{x} and \emph{y} describing the
 vertices of the polygon that encircles the area based on which the barcode-spots
-are binned. E.g. slot @area of \code{ImageAnnotation}-objects. Note that the order of
+are binned. E.g. slot @area of \code{SpatialAnnotation}-objects. Note that the order of
 observations in the data.frame must correspond to the order of vertices
 of the polygon.}
 
 \item{buffer}{The distance by which to consecutively expand the
-area that covers the image annotation screening. Given to argument
+area that covers the spatial annotation screening. Given to argument
 \code{dist} of function \code{sf::st_buffer()}.}
 }
 \description{
@@ -26,7 +26,7 @@ Buffers the area of a polygon.
 
  object <- downloadSpataObject("313_T")
 
- object <- setImageAnnotation(object, img_ann = image_annotations[["313_T"]][["necrotic_center"]])
+ object <- setSpatialAnnotation(object, img_ann = image_annotations[["313_T"]][["necrotic_center"]])
 
  outline1 <- getImgAnnOutlineDf(object, ids = "necrotic_center")
 

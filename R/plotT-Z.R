@@ -17,7 +17,7 @@
 #' @param ... Additional arguments given to \code{ggplot2::facet_wrap()}.
 #'
 #' @inherit argument_dummy params
-#' @inherit plotIasLineplot params
+#' @inherit plotSasLineplot params
 #' @inherit ggplot_dummy return
 #'
 #' @export
@@ -143,7 +143,7 @@ plotTrajectoryBarplot <- function(object,
 #' @description Plots inferred gene expression along a spatial trajectory
 #' against model values.
 #'
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @inherit plotScatterplot params
 #' @inherit argument_dummy params
 #' @inherit plot_screening_evaluation
@@ -1620,7 +1620,7 @@ plotViolinplot <- function(object,
 #' @title Compare evaluation of spatially opposing fits
 #'
 #' @description Plots a volcano plot by using the model evaluation
-#' of spatial fitting as implemented by \code{imageAnnotationScreening()}
+#' of spatial fitting as implemented by \code{spatialAnnotationScreening()}
 #' and \code{spatialTrajectoryScreening()}.
 #'
 #' @param eval Character value. The variable to use for the x-axis.
@@ -1664,7 +1664,7 @@ setGeneric(name = "plotVolcano", def = function(object, ...){
 #' @export
 setMethod(
   f = "plotVolcano",
-  signature = "ImageAnnotationScreening",
+  signature = "SpatialAnnotationScreening",
   definition = function(object,
                         eval = "corr_mean",
                         pval = "p_value_mean",

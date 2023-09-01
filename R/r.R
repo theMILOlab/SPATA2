@@ -49,10 +49,10 @@ reduce_vec <- function(x, nth, start.with = 1){
 
 
 
-#' @title Relate observations to an image annotation
+#' @title Relate observations to a spatial annotation
 #'
 #' @description Relates observations in an external data.frame
-#' to the spatial position and extent of an image annotation.
+#' to the spatial position and extent of an spatial annotation.
 #'
 #' @param input_df Data.frame with at least three columns.
 #' \itemize{
@@ -64,33 +64,33 @@ reduce_vec <- function(x, nth, start.with = 1){
 #' If `NULL`, a variable named *inp_id* is created using the prefix *'ID'+
 #' and the rownumber.
 #' @param distance,binwidth,n_bins_circle If exactly two of the three arguments
-#' are not `NA_integer_` but valid input as is documented in [`imageAnnotationScreening()`]
+#' are not `NA_integer_` but valid input as is documented in [`spatialAnnotationScreening()`]
 #' the output contains binning results.
 #' @param calc_dist_to Character. One of *'border'* (the default), *'center'* or
 #' *'none'*. If *'border'*, the distance of every observation to its closest point
-#' on the image annotation **border** is calculated. If *'center'* the distance
-#' of every observation to the **center** of the image annotation is computed,
-#' as is returned by [`getImgAnnCenter()`]. If *'none'*, distance calculation
+#' on the spatial annotation **border** is calculated. If *'center'* the distance
+#' of every observation to the **center** of the spatial annotation is computed,
+#' as is returned by [`getSpatAnnCenter()`]. If *'none'*, distance calculation
 #' is skipped.
 #' @param inc_outline Logical value. If `TRUE`, the function [`include_tissue_outline()`]
 #' is used to remove observations that do not fall on the tissue section of the
-#' image annotation. See examples and documentation of [`include_tissue_outline()`]
+#' spatial annotation. See examples and documentation of [`include_tissue_outline()`]
 #' for more information.
 #' @param unit Character. The unit in which to calculate the distance.
 #'
 #' @inherit argument_dummy params
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #'
 #' @return The input data.frame with additional columns:
 #'
 #' \itemize{
 #'  \item{*angle* :}{ numeric. The angle between the observation point and the center of the
-#'  image annotation.}
+#'  spatial annotation.}
 #'  \item{*bins_angle* :} factor. Groups created based on the variable *angle*. Number of levels
 #'  depends on input for argument `n_bins_angle`.
 #'  \item{*bins_circle* :} factor. Groups created based on the variable *dist_to_ia*. Number of levels
 #'  dpeends on input for arguments `distance`, `binwidth` and/or `n_bins_circle`.
-#'  \item{*dist_to_ia* :} numeric. Distance to the image annotation.
+#'  \item{*dist_to_ia* :} numeric. Distance to the spatial annotation.
 #'  \item{*dist_unit* :} character. The unit in which distance was measured.
 #' }
 #'
@@ -98,7 +98,7 @@ reduce_vec <- function(x, nth, start.with = 1){
 #' [`include_tissue_outline()`] are added.
 #'
 #' @export
-relateToImageAnnotation <- function(object,
+relateToSpatialAnnotation <- function(object,
                                     id,
                                     input_df,
                                     input_id_var = NULL,
@@ -110,8 +110,7 @@ relateToImageAnnotation <- function(object,
                                     unit = "px",
                                     inc_outline = TRUE,
                                     verbose = NULL,
-                                    ...
-){
+                                    ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
@@ -153,8 +152,8 @@ relateToImageAnnotation <- function(object,
     stop.if.false = TRUE
   )
 
-  img_ann_center <- getImgAnnCenter(object, id = id)
-  img_ann_border <- getImgAnnBorderDf(object, ids = id)
+  img_ann_center <- getSpatAnnCenter(object, id = id)
+  img_ann_border <- getSpatAnnBorderDf(object, ids = id)
 
   if(base::isTRUE(inc_outline)){
 
@@ -670,19 +669,19 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 }
 
 
-#' @title Rename image annotation ID
+#' @title Rename spatial annotation ID
 #'
-#' @description Renames image annotation created with \code{createImageAnnotations()}.
+#' @description Renames spatial annotation created with \code{createImageAnnotations()}.
 #'
-#' @param id Character value. The current ID of the image annotation to be
+#' @param id Character value. The current ID of the spatial annotation to be
 #' renamed.
-#' @param new_id Character value. The new ID of the image annotation.
+#' @param new_id Character value. The new ID of the spatial annotation.
 #' @param inherit argument_dummy params
 #'
 #' @return An updates spata object.
 #' @export
 #'
-renameImgAnn <- function(object, id, new_id){
+renameSpatAnn <- function(object, id, new_id){
 
   confuns::are_values(c("id", "new_id"), mode = "character")
 
@@ -693,7 +692,7 @@ renameImgAnn <- function(object, id, new_id){
   confuns::check_none_of(
     input = new_id,
     against = img_ann_ids,
-    ref.against = "image annotation IDs"
+    ref.against = "spatial annotation IDs"
   )
 
   io <- getImageObject(object)
@@ -1061,10 +1060,10 @@ rotate_coords_df <- function(df,
 #'  \item{`rotateAll()`:}{ Rotates image as well as every single spatial aspect.
 #'  **Always tracks the justification.**}
 #'  \item{`rotateImage()`:}{ Rotates the image.}
-#'  \item{`rotateCoordinates()`:}{ Rotates the coordinates data.frame, image annotations
+#'  \item{`rotateCoordinates()`:}{ Rotates the coordinates data.frame, spatial annotations
 #'  and spatial trajectories.}
 #'  \item{`rotateCoordsDf()`:}{ Rotates the coordinates data.frame.}
-#'  \item{`rotateImageAnnotations()`:}{ Rotates image annotations.}
+#'  \item{`rotateImageAnnotations()`:}{ Rotates spatial annotations.}
 #'  \item{`rotateSpatialTrajectories()`:}{ Rotates spatial trajectories.}
 #'  }
 #'
@@ -1268,7 +1267,7 @@ rotateImageAnnotations <- function(object,
   } else {
 
     confuns::give_feedback(
-      msg = "No image annotations found. Returning input object.",
+      msg = "No spatial annotations found. Returning input object.",
       verbose = verbose
     )
 

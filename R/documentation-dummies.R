@@ -234,11 +234,11 @@ across_dummy <- function(across, across_subset, relevel){}
 #' the experiment. Must be one of `validSpatialMethods()`. Defaults to *'Unknown'*.
 #'
 #' @param tags Character vector or `NULL`. If character, the tags for the image annotation
-#' selection. See section *Selection of image annotation with tags* for more information.
+#' selection. See section *Selection of spatial annotations* for more information.
 #'
 #' @param test Character value. One of *any*. *all*, *identical*, *not_identical* and
 #' *none*. Specifies how input for `tags` is used to select image annotations.
-#' See section *Selection of image annotation with tags* for more information.
+#' See section *Selection of spatial annotations* for more information.
 #'
 #' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters
 #' given to `ggplot2::geom_text()` that control the appearance of text of the plot.
@@ -608,11 +608,21 @@ sample_name <- function(sample_name){}
 #' among all image annotations via tags and test. And if `tags` is also `NULL`,
 #' the function uses all image annoations.
 #'
-#' @section Selection of spatial annotations with tags:
+#' @section Selection of spatial annotations:
 #'
-#' Input for argument \code{tags} specifies the tags of interest.
-#' Argument \code{test} decides about how the specified tags are used to select
-#' the spatial annotations of interest. There are multiple options:
+#' Selection of spatial annotations via the arguments `ids`, `class`, `tags` and
+#' `test` works in three steps:
+#'
+#' First, if `ids` is a character it prefilters the annotations by ID and only
+#' the specified ones are submitted to the next steps. If it is `NULL`, all
+#' annotations are submitted to the next steps.
+#'
+#' Secondd, if `class` is a character it filters the annotations remaining
+#' after the first step by their class. If `NULL`, the step is skipped.
+#'
+#' Third, if `tags` is a character it is used in combination with `test` to select
+#' from the spatial annotations that remain after the second step based on the meta data
+#' they are tagged with. There are multiple options:
 #'
 #' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 #' must be tagged with at least one of the input tags.
@@ -629,11 +639,10 @@ sample_name <- function(sample_name){}
 #' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
 #' must **not** contain any of the input tags.
 #'
-#' Note that the filtering process happens after the filtering by input for argument
-#' \code{ids}. You can first select a group of annotations by naming their IDs
-#' and then select among them via tags and test. If `ids` is `NULL`, you select
-#' among all annotations via tags and test. And if `tags` is also `NULL`,
-#' the function uses all  annotations.
+#' If `tags` is `NULL`, the step is skipped. Therefore, if `ids`, `class` and `tags`
+#' are all NULL, which is the default, all annotations are selected as all subsetting
+#' steps are skipped. Eventually, the remaining spatial annotations are submitted to
+#' whatever the respective function does.
 #'
 #' @keywords internal
 section_dummy  <- function(){}

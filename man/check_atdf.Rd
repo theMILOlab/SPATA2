@@ -2,12 +2,9 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{check_atdf}
 \alias{check_atdf}
-\alias{check_rtdf}
 \title{Check assessed trajectory data.frame}
 \usage{
 check_atdf(atdf)
-
-check_rtdf(rtdf, variable = NULL)
 }
 \description{
 Check assessed trajectory data.frame

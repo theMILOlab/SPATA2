@@ -2,39 +2,9 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{check_slot_coordinates}
 \alias{check_slot_coordinates}
-\alias{check_slot_data}
-\alias{check_slot_dim_red}
-\alias{check_slot_fdata}
-\alias{check_slot_image}
-\alias{check_slot_samples}
-\alias{check_slot_scvelo}
-\alias{check_slot_trajectories}
-\alias{check_trajectory_object}
-\alias{check_slot_used_genesets}
-\alias{check_slot_version}
 \title{Check spata slots}
 \usage{
 check_slot_coordinates(object)
-
-check_slot_data(object)
-
-check_slot_dim_red(object)
-
-check_slot_fdata(object)
-
-check_slot_image(object)
-
-check_slot_samples(object)
-
-check_slot_scvelo(object)
-
-check_slot_trajectories(object)
-
-check_trajectory_object(t_object, t_object_name, t_object_sample)
-
-check_slot_used_genesets(object)
-
-check_slot_version(object)
 }
 \arguments{
 \item{object}{A spata-object.}

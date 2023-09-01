@@ -36,7 +36,7 @@ plotTrajectoryEvaluation(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the image annotation of interest.}
+\item{id}{Character value. The ID of the spatial annotation of interest.}
 
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in

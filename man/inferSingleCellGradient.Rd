@@ -33,7 +33,7 @@ Must have at least three columns:
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
-\item{id}{Character value. The ID of the image annotation of interest.}
+\item{id}{Character value. The ID of the spatial annotation of interest.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 image annotation to the \emph{horizon} in the periphery up to which the screening
@@ -61,10 +61,10 @@ an angle span relative to the center of the image annotation.
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
 
 \item{as_models}{Adjusts the output to a list that is a valid input for
-\code{models_add}-argument of \code{imageAnnotationScreening()}.}
+\code{models_add}-argument of \code{spatialAnnotationScreening()}.}
 }
 \value{
-Data.frame as is returned by \code{getIasDf()} with cell types as variables.
+Data.frame as is returned by \code{getSasDf()} with cell types as variables.
 }
 \description{
 Integration of single cell deconvolution and SPATA2s image annotations.

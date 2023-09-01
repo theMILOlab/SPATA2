@@ -894,119 +894,6 @@ addGeneSetsInteractive <- function(object){
 
 # addI --------------------------------------------------------------------
 
-#' @title Add an image annotation manually
-#'
-#' @description Adds image annotations manually by assembling the object
-#' based on the function input.
-#'
-#' @param area A named list of data.frames with the numeric variables \emph{x} and \emph{y}.
-#' Observations correspond to the vertices of the polygons that are needed to represent the
-#' image annotation. **Must** contain a slot named *outer* which sets the outer border
-#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
-#' with numbers that correspond to inner polygons - holes within the annotation.
-#' @param id Character value. The ID of the image annotation.
-#' @param parent_name Character value. The name of the image on
-#' which the annotation was drawn.
-#' @param tags A character vector of tags for the image annotation.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setGeneric(name = "addImageAnnotation", def = function(object, ...){
-
-  standardGeneric(f = "addImageAnnotation")
-
-})
-
-#' @rdname addImageAnnotation
-#' @export
-setMethod(
-  f = "addImageAnnotation",
-  signature = "spata2",
-  definition = function(object,
-                        tags,
-                        area,
-                        parent_name,
-                        id = NULL,
-                        overwrite = FALSE){
-
-    imaging <- getHistoImaging(object)
-
-    imaging <-
-      addImageAnnotation(
-        object = imaging,
-        tags = tags,
-        area = area,
-        parent_name = parent_name,
-        id = id,
-        overwrite = overwrite
-      )
-
-    object <- setHistoImaging(object, imaging = imaging)
-
-    return(object)
-
-  }
-)
-
-#' @rdname addImageAnnotation
-#' @export
-setMethod(
-  f = "addImageAnnotation",
-  signature = "HistoImaging",
-  definition = function(object,
-                        tags,
-                        area,
-                        parent_name,
-                        id = NULL,
-                        overwrite = FALSE){
-
-    if(base::is.character(id)){
-
-      confuns::check_none_of(
-        input = id,
-        against = getImgAnnIds(object),
-        ref.against = "image annotation IDs",
-        overwrite = overwrite
-      )
-
-    } else {
-
-      number <- lastImageAnnotation(object) + 1
-
-      id <- stringr::str_c("img_ann_", number)
-
-    }
-
-    if(!shiny::isTruthy(tags)){
-
-      tags <- "no_tags"
-
-    }
-
-    area <- purrr::map(.x = area, .f = tibble::as_tibble)
-
-    img_ann <-
-      ImageAnnotation(
-        area = area,
-        id = id,
-        tags = tags
-      )
-
-    img_ann@info[["parent_name"]] <- parent_name
-    img_ann@info[["sample"]] <- object@sample
-
-    img_ann@version <- current_spata2_version
-
-    object@annotations[[id]] <- img_ann
-
-    return(object)
-
-  }
-)
-
 #' @title Add individual image directories
 #'
 #' @description Adds specific image directories beyond *lowres*
@@ -1228,6 +1115,179 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
   return(object)
 
 }
+
+
+#' @title Add an spatial annotation manually
+#'
+#' @description Adds spatial annotations manually by assembling the object
+#' based on the function input.
+#'
+#' @param area A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
+#' Observations correspond to the vertices of the polygons that are needed to represent the
+#' spatial annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the spatial annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' with numbers that correspond to inner polygons - holes within the annotation.
+#'
+#' The scale of the two variables must correspond to the scale of the *x_orig* and
+#' *y_orig* variables of the coordinates data.frame.
+#' @param id Character value. The ID of the spatial annotation.
+#' @param tags A character vector of tags for the spatial annotation.
+#' @param ... Additional slot content given to `methods::new()` when
+#' constructing the `SpatialAnnotation` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`getCoordsDf()`]
+#'
+#' @export
+#'
+setGeneric(name = "addSpatialAnnotation", def = function(object, ...){
+
+  standardGeneric(f = "addSpatialAnnotation")
+
+})
+
+#' @rdname addSpatialAnnotation
+#' @export
+setMethod(
+  f = "addSpatialAnnotation",
+  signature = "spata2",
+  definition = function(object,
+                        tags,
+                        area,
+                        parent_name,
+                        id = NULL,
+                        overwrite = FALSE,
+                        class = "SpatialAnnotation",
+                        ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <-
+      addSpatialAnnotation(
+        object = imaging,
+        tags = tags,
+        area = area,
+        id = id,
+        overwrite = overwrite,
+        class = class,
+        ...
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname addSpatialAnnotation
+#' @export
+setMethod(
+  f = "addSpatialAnnotation",
+  signature = "HistoImaging",
+  definition =  function(object,
+                         tags,
+                         area,
+                         id = NULL,
+                         overwrite = FALSE,
+                         class = "SpatialAnnotation",
+                         ...){
+
+    confuns::check_one_of(
+      input = class,
+      against = c("SpatialAnnotation", "ImageAnnotation", "NumericAnnotation", "GroupAnnotation")
+    )
+
+    if(base::is.character(id)){
+
+      confuns::check_none_of(
+        input = id,
+        against = getSpatAnnIds(object),
+        ref.against = "spatial annotation IDs",
+        overwrite = overwrite
+      )
+
+    } else {
+
+      number <- lastSpatialAnnotation(object) + 1
+
+      id <- stringr::str_c("spat_ann_", number)
+
+    }
+
+    if(!shiny::isTruthy(tags)){
+
+      tags <- "no_tags"
+
+    }
+
+    # check area input
+    area <-
+      purrr::imap(
+        .x = area,
+        .f = function(df, name){
+
+          df <- tibble::as_tibble(df)
+
+          confuns::check_data_frame(
+            df = df,
+            ref = glue::glue("area data.frame {name}"),
+            var.class = list(x_orig = "numeric", y_orig = "numeric")
+          )
+
+          return(df)
+
+        }
+      )
+
+    # check dot input
+    dot_input <- base::names(list(...))
+
+    if(class == "GroupAnnotation"){
+
+      if(!base::any(c("grouping", "group", "parameters") %in% dot_input)){
+
+        stop("Need `grouping`, `group` and `parameters` for class GroupAnnotation.")
+
+      }
+
+    } else if(class == "ImageAnnotation"){
+
+      if(!"parent_name" %in% dot_input){
+
+        stop("Need `parent_name` for class ImageAnnotation.")
+
+      }
+
+    } else if(class == "NumericAnnotation"){
+
+      if(!base::any(c("variable", "threshold", "parameters") %in% dot_input)){
+
+        stop("Need `variable`, `threshold` and `parameters` for class NumericAnnotation.")
+
+      }
+
+    }
+
+    # create spatial annotatition
+    spat_ann <-
+      methods::new(
+        Class = class,
+        area = area,
+        id = id,
+        tags = tags,
+        sample = object@sample,
+        version = current_spata2_version,
+        ...
+      )
+
+    object@annotations[[id]] <- spat_ann
+
+    return(object)
+
+  })
 
 
 #' @rdname createSpatialTrajectories

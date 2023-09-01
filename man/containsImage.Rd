@@ -3,7 +3,7 @@
 \name{containsImage}
 \alias{containsImage}
 \alias{containsImage,spata2-method}
-\alias{containsImage,ImageAnnotation-method}
+\alias{containsImage,SpatialAnnotation-method}
 \alias{containsImage,HistoImage-method}
 \title{Check availability of an image}
 \usage{
@@ -11,7 +11,7 @@ containsImage(object, ...)
 
 \S4method{containsImage}{spata2}(object, img_name = NULL, error = FALSE)
 
-\S4method{containsImage}{ImageAnnotation}(object, error = FALSE)
+\S4method{containsImage}{SpatialAnnotation}(object, error = FALSE)
 
 \S4method{containsImage}{HistoImage}(object, error = FALSE)
 }

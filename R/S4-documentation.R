@@ -2,7 +2,8 @@
 
 # miscellaneous -----------------------------------------------------------
 
-
+image_class <- "Image"
+base::attr(x = image_class, which = "package") <- "EBImage"
 
 
 
@@ -20,9 +21,14 @@
 #'
 #' @slot area list. A named list of data.frames with the numeric variables *x_orig* and *y_orig*.
 #' Observations correspond to the vertices of the polygons that are needed to represent the
-#' image annotation. **Must** contain a slot named *outer* which sets the outer border
-#' of the image annotation. **Can** contain multiple slots named *inner* (suffixed)
+#' spatial annotation. **Must** contain a slot named *outer* which sets the outer border
+#' of the spatial annotation. **Can** contain multiple slots named *inner* (suffixed)
 #' with numbers that correspond to inner polygons - holes within the annotation.
+#'
+#' Upon extraction via `getSpatAnnOutlineDf()` or extraction of the whole annotation
+#' via `getSpatialAnnotation()` and `getSpatialAnnotations()` the variables *x* and *y*
+#' are created by scaling *x_orig* and *y_orig* to the current resolution of the
+#' active image to ensure alignment.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
 #' @slot image A cropped version of an image that focuses solely on the area containing the
@@ -35,7 +41,8 @@
 #' This information pertains to the cropped image obtained and set using functions like
 #' `getSpatialAnnotation()` or `getSpatialAnnotations()`. It serves as metadata
 #' around the cropped image and may include parameters or details about the cropping process.
-#' @slot misc list. A flexible list for miscellaneous input.
+#' @slot misc list. A flexible list for miscellaneous input such as meta data
+#' or to implement new ideas..
 #' @slot sample Character string. The sample to which the annotation belongs.
 #' @slot tags character. Vector of arbitrary length. Contains tags that can be used
 #' to group and select spatial annotations in different manners.
@@ -45,14 +52,14 @@
 #' @details The following classes are derivatives of this class: [`GroupAnnotation`],
 #'  [`ImageAnnotation`], [`NumericAnnotation`]
 #'
-#' @inheritSection section_dummy Selection of spatial annotations with tags
+#' @inheritSection section_dummy Selection of spatial annotations
 #'
 
 SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
                               slots = list(
                                 area = "list",
                                 id = "character",
-                                image = "Image",
+                                image = image_class,
                                 image_info = "list",
                                 misc = "list",
                                 sample = "character",
@@ -163,10 +170,6 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 
 # H -----------------------------------------------------------------------
 
-image_class <- "Image"
-base::attr(x = image_class, which = "package") <- "EBImage"
-
-
 #' @title The \code{HistoImage} - Class
 #'
 #' @description S4 class that contains an histology image and information and data
@@ -236,7 +239,7 @@ HistoImage <- setClass(Class = "HistoImage",
                          aligned = "logical",
                          bg_color = "character",
                          dir = "character",
-                         image = "Image",
+                         image = image_class,
                          image_info = "list",
                          name = "character",
                          outline = "list",
@@ -291,8 +294,7 @@ HistoImaging <- setClass(Class = "HistoImaging",
 #' @description An S4 class designed to capture spatial annotations by outlining areas
 #' of interest on images. This class provides a flexible framework for creating annotations
 #' that visually highlight specific regions within images, such as histological structures,
-#' cellular patterns, or other histomorphological features in images from spatial multi-omic
-#' studies.
+#' cellular patterns, or other histo-morphological features in images.
 #'
 #' @slot parent_name Character string. The name of the image this annotation
 #' was drawn on.
@@ -308,18 +310,18 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
                             ),
                             contains = "SpatialAnnotation")
 
-#' @title The \code{ImageAnnotationScreening} - Class
+#' @title The \code{SpatialAnnotationScreening} - Class
 #'
 #' @description S4 class that contains input for and output of the
-#' function \code{imageAnnotationScreening()}.
+#' function \code{SpatialAnnotationScreening()}.
 #'
 #' @slot angle_span numeric. Vector of length two. Confines the area of interest
 #' by angle relative to the center of the image annotation.
 #' @slot binwidth numeric. The value with which the polygon that encircles
 #' the image annotation is consecutively expanded via \code{sf::st_buffer()},
 #' @slot coords data.frame. Coordinates data.frame of the sample.
-#' @slot img_annotation ImageAnnotation. The \code{ImageAnnotation}-object of
-#' the image annotation chosen for the screening.
+#' @slot annotation SpatialAnnotation. The spatial annotation chosen for the
+#' screening.
 #' @slot info list. Miscellaneous information.
 #' @slot method_padj character. The method with which p-values were adjusted.
 #' @slot models data.frame. The model data.frame that has been used for the
@@ -335,24 +337,24 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #'
 #' @export
 #'
-ImageAnnotationScreening <-  setClass(Class = "ImageAnnotationScreening",
-                                      slots = list(
-                                        angle_span = "numeric",
-                                        binwidth = "numeric",
-                                        coords = "data.frame",
-                                        distance = "numeric",
-                                        img_annotation = "ImageAnnotation",
-                                        info = "list",
-                                        method_padj = "character",
-                                        models = "data.frame",
-                                        n_bins_angle = "numeric",
-                                        n_bins_circle = "numeric",
-                                        results_primary = "data.frame",
-                                        results = "data.frame",
-                                        sample = "character",
-                                        summarize_with = "character",
-                                        bcsp_exclude = "character"
-                                      ))
+SpatialAnnotationScreening <-  setClass(Class = "SpatialAnnotationScreening",
+                                        slots = list(
+                                          angle_span = "numeric",
+                                          annotation = "SpatialAnnotation",
+                                          binwidth = "numeric",
+                                          coords = "data.frame",
+                                          distance = "numeric",
+                                          info = "list",
+                                          method_padj = "character",
+                                          models = "data.frame",
+                                          n_bins_angle = "numeric",
+                                          n_bins_circle = "numeric",
+                                          results_primary = "data.frame",
+                                          results = "data.frame",
+                                          sample = "character",
+                                          summarize_with = "character",
+                                          bcsp_exclude = "character"
+                                        ))
 
 
 # N -----------------------------------------------------------------------

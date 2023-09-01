@@ -2,13 +2,13 @@
 % Please edit documentation in R/getN-Z.R
 \name{getResultsVec}
 \alias{getResultsVec}
-\alias{getResultsVec,ImageAnnotationScreening-method}
+\alias{getResultsVec,SpatialAnnotationScreening-method}
 \alias{getResultsVec,SpatialTrajectoryScreening-method}
 \title{Obtain screening results stored in vectors}
 \usage{
 getResultsVec(object, ...)
 
-\S4method{getResultsVec}{ImageAnnotationScreening}(
+\S4method{getResultsVec}{SpatialAnnotationScreening}(
   object,
   eval = "ias_score",
   pval = "p_value_mean_adjusted",

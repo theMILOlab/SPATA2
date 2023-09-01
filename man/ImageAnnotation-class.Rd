@@ -9,8 +9,7 @@
 An S4 class designed to capture spatial annotations by outlining areas
 of interest on images. This class provides a flexible framework for creating annotations
 that visually highlight specific regions within images, such as histological structures,
-cellular patterns, or other histomorphological features in images from spatial multi-omic
-studies.
+cellular patterns, or other histo-morphological features in images.
 }
 \details{
 This class is an extension of class \code{\link{SpatialAnnotation}} and

@@ -21,7 +21,7 @@ objects of classes for which a method has been defined.}
 
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
-See section \emph{Selection of image annotation with tags} for more information.}
+See section \emph{Selection of spatial annotations} for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

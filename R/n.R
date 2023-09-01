@@ -69,28 +69,28 @@ nGenes <- function(object, mtr_name = NULL){
 #' @return Numeric value.
 #'
 #' @export
-setGeneric(name = "nImageAnnotations", def = function(object, ...){
+setGeneric(name = "nSpatialAnnotations", def = function(object, ...){
 
-  standardGeneric(f = "nImageAnnotations")
+  standardGeneric(f = "nSpatialAnnotations")
 
 })
 
-#' @rdname nImageAnnotations
+#' @rdname nSpatialAnnotations
 #' @export
 setMethod(
-  f = "nImageAnnotations",
+  f = "nSpatialAnnotations",
   signature = "spata2",
   definition = function(object){
 
-    getHistoImaging(object) %>% nImageAnnotations()
+    getHistoImaging(object) %>% nSpatialAnnotations()
 
   }
 )
 
-#' @rdname nImageAnnotations
+#' @rdname nSpatialAnnotations
 #' @export
 setMethod(
-  f = "nImageAnnotations",
+  f = "nSpatialAnnotations",
   signature = "HistoImaging",
   definition = function(object){
 

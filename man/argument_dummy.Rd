@@ -244,11 +244,11 @@ Processing of the image output depending on argument \code{expand} happens after
 the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'Unknown'}.}
 
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
-selection. See section \emph{Selection of image annotation with tags} for more information.}
+selection. See section \emph{Selection of spatial annotations} for more information.}
 
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
-See section \emph{Selection of image annotation with tags} for more information.}
+See section \emph{Selection of spatial annotations} for more information.}
 
 \item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
 given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}

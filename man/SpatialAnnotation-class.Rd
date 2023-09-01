@@ -20,9 +20,14 @@ The following classes are derivatives of this class: \code{\link{GroupAnnotation
 \describe{
 \item{\code{area}}{list. A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
 Observations correspond to the vertices of the polygons that are needed to represent the
-image annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
-of the image annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
-with numbers that correspond to inner polygons - holes within the annotation.}
+spatial annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
+of the spatial annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
+with numbers that correspond to inner polygons - holes within the annotation.
+
+Upon extraction via \code{getSpatAnnOutlineDf()} or extraction of the whole annotation
+via \code{getSpatialAnnotation()} and \code{getSpatialAnnotations()} the variables \emph{x} and \emph{y}
+are created by scaling \emph{x_orig} and \emph{y_orig} to the current resolution of the
+active image to ensure alignment.}
 
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}
@@ -39,7 +44,8 @@ This information pertains to the cropped image obtained and set using functions 
 \code{getSpatialAnnotation()} or \code{getSpatialAnnotations()}. It serves as metadata
 around the cropped image and may include parameters or details about the cropping process.}
 
-\item{\code{misc}}{list. A flexible list for miscellaneous input.}
+\item{\code{misc}}{list. A flexible list for miscellaneous input such as meta data
+or to implement new ideas..}
 
 \item{\code{sample}}{Character string. The sample to which the annotation belongs.}
 
@@ -50,12 +56,22 @@ to group and select spatial annotations in different manners.}
 which the object has been created.}
 }}
 
-\section{Selection of spatial annotations with tags}{
+\section{Selection of spatial annotations}{
 
 
-Input for argument \code{tags} specifies the tags of interest.
-Argument \code{test} decides about how the specified tags are used to select
-the spatial annotations of interest. There are multiple options:
+Selection of spatial annotations via the arguments \code{ids}, \code{class}, \code{tags} and
+\code{test} works in three steps:
+
+First, if \code{ids} is a character it prefilters the annotations by ID and only
+the specified ones are submitted to the next steps. If it is \code{NULL}, all
+annotations are submitted to the next steps.
+
+Secondd, if \code{class} is a character it filters the annotations remaining
+after the first step by their class. If \code{NULL}, the step is skipped.
+
+Third, if \code{tags} is a character it is used in combination with \code{test} to select
+from the spatial annotations that remain after the second step based on the meta data
+they are tagged with. There are multiple options:
 \enumerate{
 \item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 must be tagged with at least one of the input tags.
@@ -69,10 +85,9 @@ annotation must \strong{not} be tagged with the combination of input tags.
 must \strong{not} contain any of the input tags.
 }
 
-Note that the filtering process happens after the filtering by input for argument
-\code{ids}. You can first select a group of annotations by naming their IDs
-and then select among them via tags and test. If \code{ids} is \code{NULL}, you select
-among all annotations via tags and test. And if \code{tags} is also \code{NULL},
-the function uses all  annotations.
+If \code{tags} is \code{NULL}, the step is skipped. Therefore, if \code{ids}, \code{class} and \code{tags}
+are all NULL, which is the default, all annotations are selected as all subsetting
+steps are skipped. Eventually, the remaining spatial annotations are submitted to
+whatever the respective function does.
 }
 

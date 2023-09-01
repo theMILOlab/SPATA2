@@ -2,13 +2,13 @@
 % Please edit documentation in R/plotT-Z.R
 \name{plotVolcano}
 \alias{plotVolcano}
-\alias{plotVolcano,ImageAnnotationScreening-method}
+\alias{plotVolcano,SpatialAnnotationScreening-method}
 \alias{plotVolcano,SpatialTrajectoryScreening-method}
 \title{Compare evaluation of spatially opposing fits}
 \usage{
 plotVolcano(object, ...)
 
-\S4method{plotVolcano}{ImageAnnotationScreening}(
+\S4method{plotVolcano}{SpatialAnnotationScreening}(
   object,
   eval = "corr_mean",
   pval = "p_value_mean",
@@ -78,6 +78,6 @@ of the plot.}
 }
 \description{
 Plots a volcano plot by using the model evaluation
-of spatial fitting as implemented by \code{imageAnnotationScreening()}
+of spatial fitting as implemented by \code{spatialAnnotationScreening()}
 and \code{spatialTrajectoryScreening()}.
 }

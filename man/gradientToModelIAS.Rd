@@ -29,7 +29,7 @@ gradientToModelSTS(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. ID of the spatial trajectory or the image annotation
+\item{id}{Character value. ID of the spatial trajectory or the spatial annotation
 of interest.}
 
 \item{variables}{Character vector. All numeric variables (meaning genes,

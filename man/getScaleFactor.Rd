@@ -2,13 +2,13 @@
 % Please edit documentation in R/devImaging.R
 \name{getScaleFactor}
 \alias{getScaleFactor}
-\alias{getScaleFactor,HistoImaging-method}
+\alias{getScaleFactor,ANY-method}
 \alias{getScaleFactor,HistoImage-method}
 \title{Obtain scale factors}
 \usage{
 getScaleFactor(object, ...)
 
-\S4method{getScaleFactor}{HistoImaging}(object, fct_name, img_name = NULL)
+\S4method{getScaleFactor}{ANY}(object, fct_name, img_name = NULL)
 
 \S4method{getScaleFactor}{HistoImage}(object, fct_name)
 }
@@ -27,5 +27,21 @@ If \code{NULL}, the active histo image is chosen by default.}
 Single value whose properties depend on \code{fct_name}.
 }
 \description{
-Extracts scale factors.
+Extracts scale factors. See details for more.
+}
+\details{
+This function gives access to slot @scale_factors of each registered \code{\link{HistoImage}}.
+As it is a list it can be flexibly expanded. The following scale factor slots are
+reserved:
+
+\itemize{
+\item{\emph{coords}:}{ The coordinate scale factor used to create variables \emph{x} and \emph{y} from
+variables \emph{x_orig} and \emph{y_orig} in the coordinates data.frame and the outline data.frames
+of the spatial annotations and the tissue. The scale factor depends on the deviation in
+resolution from the original image - based on which the coordinates data.frame
+was created - and the image picked in \code{img_name} which defaults to to the active
+image. If the active image is the original image, this scale factor is 1.}
+\item{\emph{pixel}:}{ The pixel scale factor is used to convert pixel values into SI units.
+It should have an attribute called "unit" conforming to the format "SI-unit/px}
+}
 }

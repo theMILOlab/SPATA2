@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{createImageAnnotations}
 \alias{createImageAnnotations}
-\title{Add image annotations}
+\title{Add spatial annotations based on histo-morphological features}
 \usage{
 createImageAnnotations(object, ...)
 }
@@ -17,21 +17,12 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Functions to add image annotations the \code{SPATA2} object. For
-interactive drawing use \code{createImageAnnotaions()}. To set them with code
-use \code{addImageAnnotation()}.
+Opens an interface in which the user can interactively outline
+histomorphological features of an image. The outline created this way is
+used to create a \code{\link{SpatialAnnotation}} of subclass \code{\link{ImageAnnotation}}.
 
-Not to confuse with \code{createSegmentation()}.
-}
-\note{
-The interface allows to zoom in on the sample. This is useful if your
-spata object contains an HE-image as background and you want to classify
-barcode spots based on the histology. As these images are displayed by pixels
-the resolution decreases the more you zoom in. Many experiments (such as
-the Visium output) contain high resolution images. You can use the function
-\code{exchangeImage()} to read in images of higher resolution for a better
-histological classification.
+Not to confuse with \code{createSpatialSegmentation()}.
 }
 \seealso{
-exchangeImage(), plotImageAnnotations(), getImageAnnotations()
+\code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}
 }

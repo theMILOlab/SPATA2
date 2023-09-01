@@ -133,7 +133,7 @@ where pixel heights start from the top. Consequently, in \emph{image space}, pix
 is displayed on the top resulting in mirror inverted visualization of the image.
 
 We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
-framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+framework for the spatial alignment of tissue, spatial annotations, spatial trajectories,
 barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
 in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
 
@@ -167,12 +167,22 @@ among all image annotations via tags and test. And if \code{tags} is also \code{
 the function uses all image annoations.
 }
 
-\section{Selection of spatial annotations with tags}{
+\section{Selection of spatial annotations}{
 
 
-Input for argument \code{tags} specifies the tags of interest.
-Argument \code{test} decides about how the specified tags are used to select
-the spatial annotations of interest. There are multiple options:
+Selection of spatial annotations via the arguments \code{ids}, \code{class}, \code{tags} and
+\code{test} works in three steps:
+
+First, if \code{ids} is a character it prefilters the annotations by ID and only
+the specified ones are submitted to the next steps. If it is \code{NULL}, all
+annotations are submitted to the next steps.
+
+Secondd, if \code{class} is a character it filters the annotations remaining
+after the first step by their class. If \code{NULL}, the step is skipped.
+
+Third, if \code{tags} is a character it is used in combination with \code{test} to select
+from the spatial annotations that remain after the second step based on the meta data
+they are tagged with. There are multiple options:
 \enumerate{
 \item Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
 must be tagged with at least one of the input tags.
@@ -186,11 +196,10 @@ annotation must \strong{not} be tagged with the combination of input tags.
 must \strong{not} contain any of the input tags.
 }
 
-Note that the filtering process happens after the filtering by input for argument
-\code{ids}. You can first select a group of annotations by naming their IDs
-and then select among them via tags and test. If \code{ids} is \code{NULL}, you select
-among all annotations via tags and test. And if \code{tags} is also \code{NULL},
-the function uses all  annotations.
+If \code{tags} is \code{NULL}, the step is skipped. Therefore, if \code{ids}, \code{class} and \code{tags}
+are all NULL, which is the default, all annotations are selected as all subsetting
+steps are skipped. Eventually, the remaining spatial annotations are submitted to
+whatever the respective function does.
 }
 
 \keyword{internal}

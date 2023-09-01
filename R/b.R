@@ -1,24 +1,24 @@
 
 
 
-#' @title Create image annotations from a list of barcodes
+#' @title Create spatial annotations from a list of barcodes
 #'
-#' @description Creates image annotations from a list of barcodes from
+#' @description Creates spatial annotations from a list of barcodes from
 #' data points that cover the area to be outlined. See details for more information.
 #'
 #' @param barcodes Character vector. A vector of data points that cover histological
-#' areas that are supposed to annotated as image annotations.
+#' areas that are supposed to annotated as spatial annotations.
 #' @param use_dbscan Logical value. If `TRUE`, the DBSCAN algorithm is used to identify
-#' spatial clusters and outliers before the outline of the image annotation is drawn.
+#' spatial clusters and outliers before the outline of the spatial annotation is drawn.
 #' @param min_size Numeric value. The minimum number of data points a dbscan cluster
 #' must have in order not to be discarded as a spatial outlier.
 #' @param force1 Logical value. If `TRUE`, spatial sub groups identified by DBSCAN
 #' are merged into one cluster.
 #' @param tags_expand Logical value. If `TRUE`, the tags with which the image
 #' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,
-#' the `threshold` and *'barcodesToImageAnnotation()'*.
+#' the `threshold` and *'barcodesToSpatialAnnotation()'*.
 #'
-#' @inherit addImageAnnotation params return
+#' @inherit addSpatialAnnotation params return
 #' @inherit add_dbscan_variable params
 #' @inherit argument_dummy params
 #'
@@ -37,24 +37,22 @@
 #' annotation that essentially spans the entirety of the sample, lacking the
 #' segregation of specific variable expressions. Similarly, enabling \code{force1}
 #' might unify multiple segregated areas, present on both sides of the sample, into one
-#' group and subsequently, one image annotation encompassing the whole sample.
-#' Consider to allow the creation of multiple image annotations (suffixed with an index)
-#' and merging them afterwards via `mergeImageAnnotations()` if they are too
+#' group and subsequently, one spatial annotation encompassing the whole sample.
+#' Consider to allow the creation of multiple spatial annotations (suffixed with an index)
+#' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
 #' close together.
 #'
 #' Lastly, the remaining data points are fed into the concaveman algorithm on a
 #' per-group basis. The algorithm calculates concave polygons outlining the groups
 #' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
 #' initial filtering are submitted to the algorithm. Subsequently, these polygons are
-#' integrated into \code{addImageAnnotation()} along with the unsuffixed \code{id} and
+#' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
 #' \code{tags} input arguments. The ID is suffixed with an index for each group.
 #'
-#' @seealso See [`addImageAnnotation()`], [`expressionToImageAnnotation()`],
-#' [`groupToImageAnnotation()`] for additional functions to create image annotations.
+#' @seealso
+#' See [`mergeSpatialAnnotations()`] to merge spatial annotations.
 #'
-#' See [`mergeImageAnnotations()`] to merge image annotations.
-#'
-#' See [`ImageAnnotation`]-class for details about the S4 architecture.
+#' See [`SpatialAnnotation`]-class for details about the S4 architecture.
 #'
 #' @export
 #'
@@ -82,59 +80,57 @@
 #'
 #' print(necrotic_barcodes)
 #'
-#' # convert list of barcodes to image annotations with default setting
+#' # convert list of barcodes to spatial annotations with default setting
 #' object_ex1 <-
-#'  barcodesToImageAnnotation(
+#'  barcodesToSpatialAnnotation(
 #'   object = object,
 #'   barcodes = necrotic_barcodes,
 #'   id = "necrosis",
 #'   )
 #'
-#' plotImageAnnotations(object_ex1, expand = "1mm")
+#' plotSpatialAnnotations(object_ex1, expand = "1mm")
 #'
 #' # skip algorithm to detect multiple areas
 #' object_ex2 <-
-#'  barcodesToImageAnnotation(
+#'  barcodesToSpatialAnnotation(
 #'   object = object,
 #'   barcodes = necrotic_barcodes,
 #'   id = "necrosis",
 #'   force1 = TRUE
 #'   )
 #'
-#' plotImageAnnotations(object_ex2, expand = "1mm")
+#' plotSpatialAnnotations(object_ex2, expand = "1mm")
 #'
 #' # manipulate the outline via `expand_outline`
 #' object_ex3 <-
-#'  barcodesToImageAnnotation(
+#'  barcodesToSpatialAnnotation(
 #'   object = object,
 #'   barcodes = necrotic_barcodes,
 #'   id = "necrosis",
 #'   expand_outline = getCCD(object)*4.5 # *4.5 is too high, defaults to *1.25
 #'   )
 #'
-#' plotImageAnnotations(object_ex3, expand = "1mm")
+#' plotSpatialAnnotations(object_ex3, expand = "1mm")
 #'
-barcodesToImageAnnotation <- function(object,
-                                      barcodes,
-                                      id,
-                                      tags = NULL,
-                                      tags_expand = TRUE,
-                                      use_dbscan = TRUE,
-                                      eps = getCCD(object)*1.25,
-                                      minPts = 3,
-                                      min_size = 5,
-                                      force1 = FALSE,
-                                      concavity = 3,
-                                      expand_outline = getCCD(object)/2,
-                                      overwrite = FALSE,
-                                      verbose = NULL){
+barcodesToSpatialAnnotation <- function(object,
+                                        barcodes,
+                                        id,
+                                        tags = NULL,
+                                        tags_expand = TRUE,
+                                        use_dbscan = TRUE,
+                                        eps = getCCD(object)*1.25,
+                                        minPts = 3,
+                                        min_size = 5,
+                                        force1 = FALSE,
+                                        concavity = 2,
+                                        overwrite = FALSE,
+                                        class = "SpatialAnnotation",
+                                        verbose = NULL,
+                                        ...){
 
   hlpr_assign_arguments(object)
 
   # check input validity
-  base::stopifnot(is_dist(expand_outline))
-  expand_outline <- as_pixel(expand_outline, object = object, add_attr = FALSE)
-
   base::stopifnot(is_dist(eps))
   eps <- as_pixel(eps, object = object, add_attr = FALSE)
 
@@ -146,8 +142,7 @@ barcodesToImageAnnotation <- function(object,
 
   coords_df_proc <-
     getCoordsDf(object) %>%
-    dplyr::filter(barcodes %in% {{barcodes}}) %>%
-    dplyr::select(x, y)
+    dplyr::filter(barcodes %in% {{barcodes}})
 
   # use dbscan
   if(base::isTRUE(use_dbscan)){
@@ -189,12 +184,12 @@ barcodesToImageAnnotation <- function(object,
     dplyr::pull(areas) %>%
     base::unique()
 
-  img_ann_ids <- stringr::str_c(id, base::seq_along(areas_to_annotate), sep = "_")
+  spat_ann_ids <- stringr::str_c(id, base::seq_along(areas_to_annotate), sep = "_")
 
   confuns::check_none_of(
-    input = img_ann_ids,
-    against = getImgAnnIds(object),
-    ref.against = "image annotation IDs",
+    input = spat_ann_ids,
+    against = getSpatAnnIds(object),
+    ref.against = "spatial annotation IDs",
     overwrite = overwrite
   )
 
@@ -202,26 +197,23 @@ barcodesToImageAnnotation <- function(object,
 
     area <- areas_to_annotate[i]
 
-    df_concave <- dplyr::filter(coords_df_prepped, areas == {{area}})
+    df_concave <-
+      dplyr::filter(coords_df_prepped, areas == {{area}})
 
     # apply concaveman
     outline_df <-
-      dplyr::select(df_concave, x, y) %>%
+      # use original x_orig and y_orig variables!
+      # are scaled to x and y during extraction
+      dplyr::select(df_concave, x_orig, y_orig) %>%
       base::as.matrix() %>%
       concaveman::concaveman(points = ., concavity = concavity) %>%
       tibble::as_tibble() %>%
-      magrittr::set_colnames(value = c("x", "y"))
-
-    if(expand_outline != 0){
-
-      outline_df <- buffer_area(outline_df, buffer = expand_outline)
-
-    }
+      magrittr::set_colnames(value = c("x_orig", "y_orig"))
 
     if(base::isTRUE(tags_expand)){
 
       tags_in <-
-        base::unique(c(tags, id, "barcodesToImageAnnotation"))
+        base::unique(c(tags, id, "barcodesToSpatialAnnotation"))
 
     } else {
 
@@ -229,15 +221,25 @@ barcodesToImageAnnotation <- function(object,
 
     }
 
-    # create image annotation
+    # create spatial annotation
     object <-
-      addImageAnnotation(
+      addSpatialAnnotation(
         object = object,
         id = stringr::str_c(id, i, sep = "_"),
         tags = tags_in,
         area = list(outer = outline_df),
-        parent_name = activeImage(object), # for the scaling
-        overwrite = overwrite
+        overwrite = overwrite,
+        class = class,
+        parameters = list(
+          use_dbscan = use_dbscan,
+          eps = eps,
+          minPts = minPts,
+          min_size = min_size,
+          force1 = force1,
+          concavity = concavity
+        ),
+        misc = list(barcodes = barcodes),
+        ...
       )
 
   }
@@ -245,9 +247,9 @@ barcodesToImageAnnotation <- function(object,
   confuns::give_feedback(
     msg =
       glue::glue(
-        "Created {base::length(img_ann_ids)} {ref1}: {ref2}",
-        ref1 = confuns::adapt_reference(img_ann_ids, "image annotation"),
-        ref2 = confuns::scollapse(string = img_ann_ids)
+        "Created {base::length(spat_ann_ids)} {ref1}: {ref2}",
+        ref1 = confuns::adapt_reference(spat_ann_ids, "spatial annotation"),
+        ref2 = confuns::scollapse(string = spat_ann_ids)
       ),
     verbose = verbose
   )
@@ -563,13 +565,13 @@ bin_by_angle <- function(coords_df,
 #' to be binned.
 #' @param area_df Data.frame with variables \emph{x} and \emph{y} describing the
 #' vertices of the polygon that encircles the area based on which the barcode-spots
-#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects.
+#' are binned. E.g. slot @@area of \code{SpatialAnnotation}-objects.
 #' @param remove Character or logical. If character, denotes circle bins that
 #' are removed. If TRUE, bins \emph{'Core' and 'Outside'} are removed. If FALSE,
 #' ignored.
 #' @param drop Logical value. If TRUE, unused levels of the \emph{bins_circle}
 #' variables are dropped.
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @export
 #'
 bin_by_expansion <- function(coords_df,
@@ -815,11 +817,11 @@ breaks <- function(n){
 #'
 #' @param df Data.frame with variables \emph{x} and \emph{y} describing the
 #' vertices of the polygon that encircles the area based on which the barcode-spots
-#' are binned. E.g. slot @@area of \code{ImageAnnotation}-objects. Note that the order of
+#' are binned. E.g. slot @@area of \code{SpatialAnnotation}-objects. Note that the order of
 #' observations in the data.frame must correspond to the order of vertices
 #' of the polygon.
 #' @param buffer The distance by which to consecutively expand the
-#' area that covers the image annotation screening. Given to argument
+#' area that covers the spatial annotation screening. Given to argument
 #' \code{dist} of function \code{sf::st_buffer()}.
 #'
 #' @export
@@ -830,7 +832,7 @@ breaks <- function(n){
 #'
 #'  object <- downloadSpataObject("313_T")
 #'
-#'  object <- setImageAnnotation(object, img_ann = image_annotations[["313_T"]][["necrotic_center"]])
+#'  object <- setSpatialAnnotation(object, img_ann = image_annotations[["313_T"]][["necrotic_center"]])
 #'
 #'  outline1 <- getImgAnnOutlineDf(object, ids = "necrotic_center")
 #'

@@ -2,13 +2,13 @@
 % Please edit documentation in R/getN-Z.R
 \name{getResultsDf}
 \alias{getResultsDf}
-\alias{getResultsDf,ImageAnnotationScreening-method}
+\alias{getResultsDf,SpatialAnnotationScreening-method}
 \alias{getResultsDf,SpatialTrajectoryScreening-method}
 \title{Obtain results stored in data.frames}
 \usage{
 getResultsDf(object, ...)
 
-\S4method{getResultsDf}{ImageAnnotationScreening}(
+\S4method{getResultsDf}{SpatialAnnotationScreening}(
   object,
   eval = "ias_score",
   pval = "p_value_mean_adjusted",

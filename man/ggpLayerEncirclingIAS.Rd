@@ -25,7 +25,7 @@ ggpLayerEncirclingIAS(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the image annotation of interest.}
+\item{id}{Character value. The ID of the spatial annotation of interest.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 image annotation to the \emph{horizon} in the periphery up to which the screening
@@ -47,7 +47,7 @@ information about distance values.}
 of the area expansion.}
 
 \item{line_size_core}{Numeric. The size with which to display the core outline
-of the image annotation.}
+of the spatial annotation.}
 
 \item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
 
@@ -66,7 +66,7 @@ family.
 }
 \description{
 Adds the circular expansion used by the IAS-algorithm
-of the area of  an image annotation to a surface plot.
+of the area of  an spatial annotation to a surface plot.
 }
 \examples{
 

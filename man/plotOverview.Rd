@@ -2,13 +2,13 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotOverview}
 \alias{plotOverview}
-\alias{plotOverview,ImageAnnotationScreening-method}
+\alias{plotOverview,SpatialAnnotationScreening-method}
 \alias{plotOverview,SpatialTrajectoryScreening-method}
 \title{Plot overview of S4 objects}
 \usage{
 plotOverview(object, ...)
 
-\S4method{plotOverview}{ImageAnnotationScreening}(
+\S4method{plotOverview}{SpatialAnnotationScreening}(
   object,
   eval = "ias_score",
   pval = "p_value_mean_adjusted",

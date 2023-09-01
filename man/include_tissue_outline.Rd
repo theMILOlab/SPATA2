@@ -8,7 +8,7 @@ include_tissue_outline(
   coords_df,
   outline_df = NULL,
   input_df,
-  img_ann_center = NULL,
+  spat_ann_center = NULL,
   ias_circles = FALSE,
   ccd = NULL,
   remove = TRUE,

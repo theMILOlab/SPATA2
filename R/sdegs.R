@@ -8,7 +8,7 @@
 #'
 #' @param id Character value. The image annotation of interest.
 #'
-#' @inherit getIasDf params
+#' @inherit getSasDf params
 #' @inherit argument_dummy params
 #' @inherit runDEA params
 #'
@@ -37,7 +37,7 @@ findSDEGS <- function(object,
   genes <- genes[!genes %in% genes_rm]
 
   spatial_parameters <-
-    check_ias_input(
+    check_sas_input(
       distance = distance,
       binwidth = binwidth,
       n_bins_circle = n_bins_circle,
@@ -46,15 +46,14 @@ findSDEGS <- function(object,
     )
 
   # get grouping
-  ias_df <-
-    getIasDf(
+  sas_df <-
+    getSasDf(
       object = object,
       id = id,
       distance = distance,
       n_bins_circle = n_bins_circle,
       binwidth = binwidth,
-      angle_span = angle_span,
-      summarize_by = NULL
+      angle_span = angle_span
     ) %>%
     dplyr::mutate(
       bins_circle = base::as.character(bins_circle),
@@ -69,13 +68,13 @@ findSDEGS <- function(object,
     )
 
   barcodes_keep <-
-    dplyr::filter(ias_df, bins_circle != "Core") %>%
+    dplyr::filter(sas_df, bins_circle != "Core") %>%
     dplyr::pull(barcodes)
 
   object <-
     addFeatures(
       object = object,
-      feature_df = ias_df[,c("barcodes", "bins_circle")],
+      feature_df = sas_df[,c("barcodes", "bins_circle")],
       overwrite = TRUE
     )
 
@@ -129,7 +128,7 @@ findSDEGS <- function(object,
 
   dea_1v1 <-
     purrr::map(
-      .x = stringr::str_c("Circle", ias_input$n_bins_circle),
+      .x = stringr::str_c("Circle", sas_input$n_bins_circle),
       .f = function(circle){
 
         confuns::give_feedback(
@@ -153,11 +152,11 @@ findSDEGS <- function(object,
           tibble::as_tibble()
       }
     ) %>%
-    purrr::set_names(nm = stringr::str_c("Circle", ias_input$n_bins_circle))
+    purrr::set_names(nm = stringr::str_c("Circle", sas_input$n_bins_circle))
 
   out <-
     SDEGS(
-      coordinates = ias_df,
+      coordinates = sas_df,
       dea_1v1 = dea_1v1,
       dea_all = dea_all,
       spatial_parameters =

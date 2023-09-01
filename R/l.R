@@ -14,10 +14,10 @@ labsNone <- function(){
 }
 
 #' @export
-lastImageAnnotation <- function(object){
+lastSpatialAnnotation <- function(object){
 
   ios <-
-    getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE) %>%
+    getSpatialAnnotations(object, add_image = FALSE) %>%
     purrr::keep(.p = ~ stringr::str_detect(string = .x@id, pattern = "^img_ann_\\d*$"))
 
   if(base::length(ios) == 0){

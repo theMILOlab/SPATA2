@@ -5,7 +5,7 @@
 \alias{getImageDf,spata2-method}
 \alias{getImageDf,HistoImaging-method}
 \alias{getImageDf,HistoImage-method}
-\alias{getImageDf,ImageAnnotation-method}
+\alias{getImageDf,SpatialAnnotation-method}
 \alias{getImageDf,Image-method}
 \title{Obtain image as a data.frame}
 \usage{
@@ -17,7 +17,7 @@ getImageDf(object, ...)
 
 \S4method{getImageDf}{HistoImage}(object, transform = TRUE, scale_fct = 1)
 
-\S4method{getImageDf}{ImageAnnotation}(object, rescale_axes = TRUE, scale_fct = 1)
+\S4method{getImageDf}{SpatialAnnotation}(object, rescale_axes = TRUE, scale_fct = 1)
 
 \S4method{getImageDf}{Image}(object, scale_fct = 1)
 }
@@ -34,7 +34,7 @@ If \code{NULL}, the active histo image is chosen by default.}
 (height/width) to the position in the original image.
 
 The image annotation contains a crop of the original image that only shows
-the area of the image annotation (plus \code{expand}, see \code{\link[=getImageAnnotation]{getImageAnnotation()}}).}
+the area of the image annotation (plus \code{expand}, see \code{\link[=getSpatialAnnotation]{getSpatialAnnotation()}}).}
 }
 \value{
 Data.frame with three variables.

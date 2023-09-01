@@ -61,10 +61,10 @@ object content or to rotate single aspects.
 \item{\code{rotateAll()}:}{ Rotates image as well as every single spatial aspect.
 \strong{Always tracks the justification.}}
 \item{\code{rotateImage()}:}{ Rotates the image.}
-\item{\code{rotateCoordinates()}:}{ Rotates the coordinates data.frame, image annotations
+\item{\code{rotateCoordinates()}:}{ Rotates the coordinates data.frame, spatial annotations
 and spatial trajectories.}
 \item{\code{rotateCoordsDf()}:}{ Rotates the coordinates data.frame.}
-\item{\code{rotateImageAnnotations()}:}{ Rotates image annotations.}
+\item{\code{rotateImageAnnotations()}:}{ Rotates spatial annotations.}
 \item{\code{rotateSpatialTrajectories()}:}{ Rotates spatial trajectories.}
 }
 

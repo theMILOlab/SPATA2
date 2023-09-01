@@ -27,7 +27,7 @@ plotTrajectoryBarplot(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the image annotation of interest.}
+\item{id}{Character value. The ID of the spatial annotation of interest.}
 
 \item{grouping_variable}{Character value. The grouping variable of interest. Use
 \code{getGroupingOptions()} to obtain all valid input options.}

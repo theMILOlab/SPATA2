@@ -21,7 +21,7 @@ to be binned.}
 
 \item{area_df}{Data.frame with variables \emph{x} and \emph{y} describing the
 vertices of the polygon that encircles the area based on which the barcode-spots
-are binned. E.g. slot @area of \code{ImageAnnotation}-objects.}
+are binned. E.g. slot @area of \code{SpatialAnnotation}-objects.}
 
 \item{binwidth}{Distance value. The width of the circular bins to which
 the barcode-spots are assigned. We recommend to set it equal to the center-center

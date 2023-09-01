@@ -314,7 +314,7 @@ runAutoencoderDenoising <- function(object,
 #' of the `BayesSpace` package. The results are stored in form of a grouping
 #' variable in the feature data.frame of the returned \code{SPATA2} object.
 #'
-#' @reference Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
+#' @references Zhao E, Stone MR, Ren X, Guenthoer J, Smythe KS, Pulliam T,
 #'  Williams SR, Uytingco CR, Taylor SEB, Nghiem P, Bielas JH, Gottardo R.
 #'  Spatial transcriptomics at subspot resolution with BayesSpace.
 #'  Nat Biotechnol. 2021 Nov;39(11):1375-1384. doi: 10.1038/s41587-021-00935-2.

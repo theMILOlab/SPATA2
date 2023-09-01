@@ -937,12 +937,12 @@ plotSurfaceComparison2 <- function(coords_df,
 #' @title Plot screening area of IAS-algorithm
 #'
 #' @description Plots the surface of the sample three times with different
-#' coloring to visualize how \code{imageAnnotationScreening()} screens
+#' coloring to visualize how [`spatialAnnotationScreening()`] screens
 #' the sample depending on the input of arguments \code{binwidth}, \code{n_bins_circle},
 #' \code{n_bins_angle}.
 #'
-#' @inherit getImageAnnotation params
-#' @inherit imageAnnotationScreening params
+#' @inherit getSpatialAnnotation params
+#' @inherit spatialAnnotationScreening params
 #' @param color_core,color_outside Character value. Denotes
 #' the colors with which the area of image annotation (\code{color_core})
 #' and the area that is not included in the screening (\code{color_outside})
@@ -955,23 +955,23 @@ plotSurfaceComparison2 <- function(coords_df,
 #'
 #' @return An invisible list of ggplots.
 #'
-#' @details The method for class \code{ImageAnnotationScreening} (the output of
-#' the function \code{imageAnnotationScreening()}) can be used
+#' @details The method for class \code{SpatialAnnotationScreening} (the output of
+#' the function \code{spatialAnnotationScreening()}) can be used
 #' to show the area on which the results base. Therefore, it does not have
 #' arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
 #'
 #' @export
 
-setGeneric(name = "plotSurfaceIAS", def = function(object, ...){
+setGeneric(name = "plotSurfaceSAS", def = function(object, ...){
 
-  standardGeneric(f = "plotSurfaceIAS")
+  standardGeneric(f = "plotSurfaceSAS")
 
 })
 
-#' @rdname plotSurfaceIAS
+#' @rdname plotSurfaceSAS
 #' @export
 setMethod(
-  f = "plotSurfaceIAS",
+  f = "plotSurfaceSAS",
   signature = "spata2",
   definition = function(object,
                         id,
@@ -1124,11 +1124,11 @@ setMethod(
 )
 
 
-#' @rdname plotSurfaceIAS
+#' @rdname plotSurfaceSAS
 #' @export
 setMethod(
-  f = "plotSurfaceIAS",
-  signature = "ImageAnnotationScreening",
+  f = "plotSurfaceSAS",
+  signature = "SpatialAnnotationScreening",
   definition = function(object,
                         pt_alpha = NA_integer_,
                         pt_clrp = c("inferno", "default"),

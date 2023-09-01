@@ -551,14 +551,14 @@ ggpLayerColorGroupScale <- function(object,
 #' @title Add IAS area expansion
 #'
 #' @description Adds the circular expansion used by the IAS-algorithm
-#' of the area of  an image annotation to a surface plot.
+#' of the area of  an spatial annotation to a surface plot.
 #'
 #' @param line_size Numeric. The size with which to display encircling lines
 #' of the area expansion.
 #' @param line_size_core Numeric. The size with which to display the core outline
-#' of the image annotation.
+#' of the spatial annotation.
 #'
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
@@ -860,7 +860,7 @@ ggpLayerFrameByImage <- function(object = "object", opt = "ccs"){
 #' the encircling.
 #'
 #' @inherit ggpLayerTissueOutline params
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
@@ -1018,11 +1018,11 @@ ggpLayerGroupOutline <- function(object,
 #' @title Add IAS area horizon
 #'
 #' @description Adds the last circular expansion used by the IAS-algorithm
-#' of the area of  an image annotation to a surface plot in order to
+#' of the area of  an spatial annotation to a surface plot in order to
 #' visualize the border between screened tissue and everything beyond that
 #' is not included in the screening.
 #'
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @inherit ggpLayerEncirclingIAS params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
@@ -1065,9 +1065,9 @@ ggpLayerHorizonIAS <- function(object,
 
   hlpr_assign_arguments(object)
 
-  img_ann <- getImageAnnotation(object = object, id = id, add_image = FALSE)
+  img_ann <- getSpatialAnnotation(object = object, id = id, add_image = FALSE)
 
-  border_df <- getImgAnnOutlineDf(object, id, inner = FALSE)
+  border_df <- getSpatAnnOutlineDf(object, id, inner = FALSE)
 
   input <-
     check_ias_input(
@@ -1094,18 +1094,18 @@ ggpLayerHorizonIAS <- function(object,
 
 }
 
-#' @title Add borders of annotated structures
+#' @title Add outline of spatial annotations
 #'
-#' @description Adds ggplot2 layer of polygons of structures that were annotated within the image
-#' with \code{createImageAnnotations()}.
+#' @description Adds a ggplot2 layer of polygons visualizing the outline
+#' of spatial annotations.
 #'
-#' @param inner Logical value. If `FALSE`, only outer borders of the image annotation
+#' @param inner Logical value. If `FALSE`, only outer borders of the annotation
 #' are displayed.
 #' @param use_colors Logical value. If `TRUE`, the color aesthetic is used to display
-#' each image annotation in a different color while providing a legend.
+#' each outline in a different color while providing a legend.
 #'
 #' @inherit argument_dummy params
-#' @inherit getImageAnnotations params details
+#' @inherit getSpatialAnnotations params details
 #' @inherit ggpLayer_dummy return
 #'
 #' @note Adds two additional layers to set the scales for the color- and
@@ -1113,18 +1113,18 @@ ggpLayerHorizonIAS <- function(object,
 #'
 #' @export
 #'
-ggpLayerImgAnnOutline <- function(object = "object",
-                                  ids = NULL,
-                                  tags = NULL,
-                                  test = "any",
-                                  alpha = 0.5,
-                                  fill = NA,
-                                  line_color = "black",
-                                  line_size = 1.5,
-                                  line_type = "solid",
-                                  use_colors = FALSE,
-                                  inner = FALSE,
-                                  ...){
+ggpLayerSpatAnnOutline <- function(object = "object",
+                                   ids = NULL,
+                                   tags = NULL,
+                                   test = "any",
+                                   alpha = 0.5,
+                                   fill = NA,
+                                   line_color = "black",
+                                   line_size = 1.5,
+                                   line_type = "solid",
+                                   use_colors = FALSE,
+                                   inner = FALSE,
+                                   ...){
 
         deprecated(...)
 
@@ -1132,13 +1132,13 @@ ggpLayerImgAnnOutline <- function(object = "object",
 
         hlpr_assign_arguments(object)
 
-        ids <- getImgAnnIds(object, tags = tags, test = test, ids = ids)
+        ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
 
         purrr::map(
           .x = ids,
           .f = function(id){
 
-            img_ann <- getImageAnnotation(object, id = id, add_image = FALSE)
+            img_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
 
             if(!"inner1" %in% base::names(img_ann@area)){
 
@@ -1149,7 +1149,7 @@ ggpLayerImgAnnOutline <- function(object = "object",
             if(base::isFALSE(inner)){
 
               df <-
-                getImgAnnOutlineDf(object, ids = id) %>%
+                getSpatAnnOutlineDf(object, ids = id) %>%
                 dplyr::filter(border == "outer")
 
               if(base::isTRUE(use_colors)){
@@ -1185,7 +1185,7 @@ ggpLayerImgAnnOutline <- function(object = "object",
 
             } else {
 
-              df <- getImgAnnSf(object, id)
+              df <- getSpatAnnSf(object, id)
 
               ggplot2::geom_sf(
                 data = df,
@@ -1204,22 +1204,22 @@ ggpLayerImgAnnOutline <- function(object = "object",
 
       }
 
-#' @title Add pointer towards image annotations
+#' @title Add pointer towards spatial annotations
 #'
 #' @description Adds segments and, if desired, labels to the surface plot that
-#' point towards and highlight the position of image annotations.
+#' point towards and highlight the position of spatial annotations.
 #'
 #' @param color_by Character value or `NULL`. If character, one of *'id'* or *'label'*
 #' which colors the the pointers accordingly.
 #' @param ptr_angles,ptr_lengths Numeric value of length 1 or of length equal to the number
-#' of image annotations. Specifies the angle from which the segments points
-#' towards the image annotation as well as their length. `ptr_lengths` works
+#' of spatial annotations. Specifies the angle from which the segments points
+#' towards the spatial annotation as well as their length. `ptr_lengths` works
 #' within the SPATA2 distance framework. See section *Distance measures* for more
 #' information.
 #' @param ptr_labels Specifies if and how the pointers are labeled. If `NULL`,
-#' the default, the image annotations are labeled by their ID. If character,
-#' specifies the exact label of each image annotation and should be of length 1
-#' or of length equal to the number of image annotations. If `FALSE`, no text
+#' the default, the spatial annotations are labeled by their ID. If character,
+#' specifies the exact label of each spatial annotation and should be of length 1
+#' or of length equal to the number of spatial annotations. If `FALSE`, no text
 #' is displayed.
 #' @param ptr_alpha Numeric value. Specifies the transparency of the pointers.
 #' @param ptr_arrow `NULL` or `arrow` as displayed by `grid::arrow()`.
@@ -1229,11 +1229,11 @@ ggpLayerImgAnnOutline <- function(object = "object",
 #' @param text_dist Distance measure. Specifies the distance from the text to
 #' the pointer.
 #' @param point_at Character value. If *'center'*, the pointer is directed at
-#' the center of the image annotation. If *'border'*, the pointer points
-#' at a random point of the image annotation border - recommended if the
-#' image annotation is big.
+#' the center of the spatial annotation. If *'border'*, the pointer points
+#' at a random point of the spatial annotation border - recommended if the
+#' spatial annotation is big.
 #' @param seed Numeric value or `NULL`. If numeric, sets seed before picking
-#' a random point of the image annotation border if `point_at = 'border'`.
+#' a random point of the spatial annotation border if `point_at = 'border'`.
 #'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return details
@@ -1241,7 +1241,7 @@ ggpLayerImgAnnOutline <- function(object = "object",
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
-ggpLayerImgAnnPointer <- function(object,
+ggpLayerSpatAnnPointer <- function(object,
                                   ids = NULL,
                                   tags = NULL,
                                   test = "any",
@@ -1266,9 +1266,9 @@ ggpLayerImgAnnPointer <- function(object,
 
   hlpr_assign_arguments(object)
 
-  # check and get image annotations
+  # check and get spatial annotations
   img_anns <-
-    getImageAnnotations(
+    getSpatialAnnotations(
       object = object,
       ids = ids,
       tags = tags,
@@ -1288,7 +1288,7 @@ ggpLayerImgAnnPointer <- function(object,
 
     } else if(base::length(ptr_angles) != base::length(ptr_angles)){
 
-      stop("If numeric, length of input for argument `ptr_angles` must be 1 or equal to number of image annotations.")
+      stop("If numeric, length of input for argument `ptr_angles` must be 1 or equal to number of spatial annotations.")
 
     }
 
@@ -1307,7 +1307,7 @@ ggpLayerImgAnnPointer <- function(object,
 
     } else if(base::length(ptr_labels) != base::length(img_anns)){
 
-      stop("If character, length of input for argument `ptr_labels` must be 1 or equal to number of image annotations.")
+      stop("If character, length of input for argument `ptr_labels` must be 1 or equal to number of spatial annotations.")
 
     }
 
@@ -1345,7 +1345,7 @@ ggpLayerImgAnnPointer <- function(object,
 
         if(point_at == "center"){
 
-          center <- getImgAnnCenter(img_ann)
+          center <- getSpatAnnCenter(img_ann)
 
         } else if(point_at == "border"){
 
@@ -1490,7 +1490,7 @@ ggpLayerImgAnnPointer <- function(object,
 }
 
 
-#' @title Add a rectangular around an image annotation
+#' @title Add a rectangular around an spatial annotation
 #'
 #' @description Adds a rectangular to the surface plot that visualizes
 #' the spatial extent of the cropped image section as plotted by
@@ -1501,13 +1501,13 @@ ggpLayerImgAnnPointer <- function(object,
 #'
 #' @export
 #'
-ggpLayerImgAnnRect <- function(object, ids, expand = "25%", ...){
+ggpLayerSpatAnnRect <- function(object, ids, expand = "25%", ...){
 
   purrr::map(
     .x = ids,
     .f = function(id){
 
-      img_ann <- getImageAnnotation(object, id = id, expand = expand)
+      img_ann <- getSpatialAnnotation(object, id = id, expand = expand)
 
       ggpLayerRect(
         object = object,
@@ -2194,11 +2194,11 @@ ggpLayerZoom <- function(object = NULL,
 #' of functions related to Spatial Trajectory Screening (STS) or
 #' Image Annotation Screening (IAS). To screen for gradient cooexpression.
 #'
-#' @param id Character value. ID of the spatial trajectory or the image annotation
+#' @param id Character value. ID of the spatial trajectory or the spatial annotation
 #' of interest.
 #' @param distance,binwidth,n_bins_circle,n_bins The input given to the desired
 #' screening- or visualization functions.
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @inherit spatialTrajectoryScreening params
 #'
 #' @export
@@ -2252,96 +2252,4 @@ gradientToModelSTS <- function(object,
 }
 
 
-#' @title Create image annotations from a group of data points
-#'
-#' @description Creates image annotations based on the spatial extent of a
-#' group of data points (spots or cells). See details for more information.
-#'
-#' @param grouping Character value. The grouping variable containing the group
-#' of interest.
-#' @param group Character value. The group of interest.
-#' @param tags_expand Logical value. If `TRUE`, the tags with which the image
-#' annotations are tagged are expanded by the unsuffixed `id`, the `grouping`,
-#' the `group` and *'groupToImageAnnotation'*.
-#'
-#' @inherit barcodesToImageAnnotation params seealso return
-#' @inherit argument_dummy params
-#'
-#' @inheritSection section_dummy Distance measures
-#'
-#' @details The functions filters the coordinates data.frame obtained via `getCoordsDf()`
-#' based on the input of argument `grouping` and `group`.
-#'
-#' Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
-#' identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
-#' detects multiple dense clusters, they can be merged into a single group
-#' if \code{force1} is also set to \code{TRUE}.
-#'
-#' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
-#' of individual data points dispersed across the sample. This results in an image
-#' annotation that essentially spans the entirety of the sample, lacking the
-#' segregation of specific variable expressions. Similarly, enabling \code{force1}
-#' might unify multiple segregated areas, present on both sides of the sample, into one
-#' group and subsequently, one image annotation encompassing the whole sample.
-#' Consider to allow the creation of multiple image annotations (suffixed with an index)
-#' and merging them afterwards via `mergeImageAnnotations()` if they are too
-#' close together.
-#'
-#' Lastly, the remaining data points are fed into the concaveman algorithm on a
-#' per-group basis. The algorithm calculates concave polygons outlining the groups
-#' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
-#' initial filtering are submitted to the algorithm. Subsequently, these polygons are
-#' integrated into \code{addImageAnnotation()} along with the unsuffixed \code{id} and
-#' \code{tags} input arguments. The ID is suffixed with an index for each group.
-#'
-#' @export
-groupToImageAnnotation <- function(object,
-                                   grouping,
-                                   group,
-                                   id,
-                                   tags = NULL,
-                                   tags_expand = TRUE,
-                                   use_dbscan = TRUE,
-                                   eps = getCCD(object)*1.25,
-                                   minPts = 3,
-                                   min_size = 5,
-                                   force1 = FALSE,
-                                   concavity = 3,
-                                   expand_outline = getCCD(object)/2,
-                                   overwrite = FALSE,
-                                   verbose = NULL){
 
-  barcodes <-
-    joinWith(
-      object = object,
-      features = grouping,
-      verbose = FALSE
-    ) %>%
-    confuns::check_across_subset(
-      across = grouping,
-      across.subset = group
-    ) %>%
-    dplyr::pull(barcodes)
-
-  if(base::isTRUE(tags_expand)){
-
-    tags <- base::unique(c(tags, grouping, group, "groupToImageAnnotation"))
-
-  }
-
-  barcodesToImageAnnotation(
-    object = object,
-    barcodes = barcodes,
-    id = id,
-    tags = tags,
-    tags_expand = FALSE,
-    force1 = force1,
-    concavity = concavity,
-    eps = eps,
-    minPts = minPts,
-    expand_outline = expand_outline,
-    overwrite = overwrite,
-    verbose = verbose
-  )
-
-}

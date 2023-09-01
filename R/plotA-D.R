@@ -339,7 +339,7 @@ plotBoxplot <- function(object,
 #'
 #' @inherit object_dummy params
 #' @inherit variables_num params
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #' @inherit ggplot2::facet_wrap params
 #' @inherit ggplot2::facet_grid params
 #' @inherit argument_dummy params
@@ -388,7 +388,7 @@ setMethod(
     binwidth  <- input_list$binwidth
 
     temp_ias <-
-      imageAnnotationScreening(
+      spatialAnnotationScreening(
         object = object,
         id = id,
         variables = variables,
@@ -417,7 +417,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotClockplot",
-  signature = "ImageAnnotationScreening",
+  signature = "SpatialAnnotationScreening",
   definition = function(object,
                         variables,
                         model_subset = NULL,

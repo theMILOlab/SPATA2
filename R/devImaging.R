@@ -2845,7 +2845,7 @@ setMethod(
 #' @export
 setMethod(
   f = "containsImage",
-  signature = "ImageAnnotation",
+  signature = "SpatialAnnotation",
   definition = function(object, error = FALSE){
 
     out <- !base::identical(x = object@image, y = empty_image)
@@ -4475,7 +4475,7 @@ setMethod(
 #' (height/width) to the position in the original image.
 #'
 #' The image annotation contains a crop of the original image that only shows
-#' the area of the image annotation (plus `expand`, see [`getImageAnnotation()`]).
+#' the area of the image annotation (plus `expand`, see [`getSpatialAnnotation()`]).
 #'
 #' @inherit argument_dummy params
 #'
@@ -4544,7 +4544,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageDf",
-  signature = "ImageAnnotation",
+  signature = "SpatialAnnotation",
   definition = function(object, rescale_axes = TRUE, scale_fct = 1){
 
     containsImage(object, error = TRUE)
@@ -5439,12 +5439,29 @@ setMethod(
 
 #' @title Obtain scale factors
 #'
-#' @description Extracts scale factors.
+#' @description Extracts scale factors. See details for more.
 #'
 #' @param fct_name Character value. Name of the scale factor.
 #' @inherit argument_dummy params
 #'
 #' @return Single value whose properties depend on `fct_name`.
+#'
+#' @details
+#' This function gives access to slot @@scale_factors of each registered [`HistoImage`].
+#' As it is a list it can be flexibly expanded. The following scale factor slots are
+#' reserved:
+#'
+#' \itemize{
+#'  \item{*coords*:}{ The coordinate scale factor used to create variables *x* and *y* from
+#'  variables *x_orig* and *y_orig* in the coordinates data.frame and the outline data.frames
+#'  of the spatial annotations and the tissue. The scale factor depends on the deviation in
+#'  resolution from the original image - based on which the coordinates data.frame
+#'  was created - and the image picked in `img_name` which defaults to to the active
+#'  image. If the active image is the original image, this scale factor is 1.}
+#'  \item{*pixel*:}{ The pixel scale factor is used to convert pixel values into SI units.
+#'   It should have an attribute called "unit" conforming to the format "SI-unit/px}
+#'  }
+#'
 #' @export
 #'
 setGeneric(name = "getScaleFactor", def = function(object, ...){
@@ -5453,11 +5470,12 @@ setGeneric(name = "getScaleFactor", def = function(object, ...){
 
 })
 
+
 #' @rdname getScaleFactor
 #' @export
 setMethod(
   f = "getScaleFactor",
-  signature = "HistoImaging",
+  signature = "ANY",
   definition = function(object, fct_name, img_name = NULL){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -5924,7 +5942,7 @@ setMethod(
 #' @export
 setMethod(
   f = "ggpLayerImage",
-  signature = "ImageAnnotation",
+  signature = "SpatialAnnotation",
   definition = function(object,
                         img_alpha = 1,
                         rescale_axes = TRUE,

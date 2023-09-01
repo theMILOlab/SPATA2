@@ -3,6 +3,16 @@
 
 
 
+# l -----------------------------------------------------------------------
+
+
+lastImageAnnotation <- function(...){
+
+  deprecated(fn = TRUE)
+
+  lastSpatialAnnotation(...)
+
+}
 
 # m -----------------------------------------------------------------------
 
@@ -1059,6 +1069,14 @@ plotDistributionDiscrete <- function(object,
     ggplot2::theme(strip.background = ggplot2::element_blank()) +
     scale_y_add_on +
     ggplot2::labs(y = y_title, x = NULL)
+
+}
+
+plotImageAnnotations <- function(...){
+
+  deprecated(fn = TRUE)
+
+  plotSpatialAnnotations(...)
 
 }
 

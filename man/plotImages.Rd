@@ -130,7 +130,7 @@ where pixel heights start from the top. Consequently, in \emph{image space}, pix
 is displayed on the top resulting in mirror inverted visualization of the image.
 
 We chose to use a Cartesian coordinate system in \code{SPATA2} because we believe it provides a more intuitive
-framework for the spatial alignment of tissue, image annotations, spatial trajectories,
+framework for the spatial alignment of tissue, spatial annotations, spatial trajectories,
 barcoded sots, single cells, etc. where coordinates in the corresponding data.frames are provided
 in form of \emph{x}- and \emph{y}-variables. See \code{\link[=getCoordsDf]{getCoordsDf()}}, \code{\link[=getImgAnnOutlineDf]{getImgAnnOutlineDf()}}, \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} etc.
 

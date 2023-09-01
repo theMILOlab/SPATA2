@@ -442,7 +442,7 @@ create_image_annotations_ui <- function(plot_height = "600px", breaks_add = NULL
 #'
 #' @param var_order Character. The name of the variable that is supposed to
 #' indicate the direction.
-#' @inherit imageAnnotationScreening params
+#' @inherit spatialAnnotationScreening params
 #'
 #' @return Data.frame.
 #'
@@ -847,28 +847,119 @@ create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = N
 
 
 
+
+
+# createG -----------------------------------------------------------------
+
+#' @title Create spatial annotations from a group of data points
+#'
+#' @description Creates spatial annotations based on the spatial extent of a
+#' group of data points (spots or cells). See details for more information.
+#'
+#' @param grouping Character value. The grouping variable containing the group
+#' of interest.
+#' @param group Character value. The group of interest.
+#' @param tags_expand Logical value. If `TRUE`, the tags with which the image
+#' annotations are tagged are expanded by the unsuffixed `id`, the `grouping`,
+#' the `group` and *'createGroupAnnotations'*.
+#'
+#' @inherit barcodesToSpatialAnnotation params seealso return
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @details The functions filters the coordinates data.frame obtained via `getCoordsDf()`
+#' based on the input of argument `grouping` and `group`.
+#'
+#' Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
+#' identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
+#' detects multiple dense clusters, they can be merged into a single group
+#' if \code{force1} is also set to \code{TRUE}.
+#'
+#' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
+#' of individual data points dispersed across the sample. This results in an image
+#' annotation that essentially spans the entirety of the sample, lacking the
+#' segregation of specific variable expressions. Similarly, enabling \code{force1}
+#' might unify multiple segregated areas, present on both sides of the sample, into one
+#' group and subsequently, one image annotation encompassing the whole sample.
+#' Consider to allow the creation of multiple spatial annotations (suffixed with an index)
+#' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
+#' close together.
+#'
+#' Lastly, the remaining data points are fed into the concaveman algorithm on a
+#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
+#' initial filtering are submitted to the algorithm. Subsequently, these polygons are
+#' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
+#' \code{tags} input arguments. The ID is suffixed with an index for each group.
+#'
+#' @export
+createGroupAnnotations <- function(object,
+                                   grouping,
+                                   group,
+                                   id,
+                                   tags = NULL,
+                                   tags_expand = TRUE,
+                                   use_dbscan = TRUE,
+                                   eps = getCCD(object)*1.25,
+                                   minPts = 3,
+                                   min_size = 5,
+                                   force1 = FALSE,
+                                   concavity = 2,
+                                   overwrite = FALSE,
+                                   verbose = NULL){
+
+  barcodes <-
+    joinWith(
+      object = object,
+      features = grouping,
+      verbose = FALSE
+    ) %>%
+    confuns::check_across_subset(
+      across = grouping,
+      across.subset = group
+    ) %>%
+    dplyr::pull(barcodes)
+
+  if(base::isTRUE(tags_expand)){
+
+    tags <- base::unique(c(tags, grouping, group))
+
+  }
+
+  barcodesToSpatialAnnotation(
+    object = object,
+    barcodes = barcodes,
+    id = id,
+    tags = tags,
+    tags_expand = FALSE,
+    force1 = force1,
+    concavity = concavity,
+    eps = eps,
+    minPts = minPts,
+    overwrite = overwrite,
+    grouping = grouping, # pass on to addSpatialAnnotation()
+    group = group, # ...
+    class = "GroupAnnotation",
+    verbose = verbose
+  )
+
+}
+
 # createI -----------------------------------------------------------------
 
-#' @title Add image annotations
+#' @title Add spatial annotations based on histo-morphological features
 #'
-#' @description Functions to add image annotations the `SPATA2` object. For
-#' interactive drawing use `createImageAnnotaions()`. To set them with code
-#' use `addImageAnnotation()`.
+#' @description Opens an interface in which the user can interactively outline
+#' histomorphological features of an image. The outline created this way is
+#' used to create a [`SpatialAnnotation`] of subclass [`ImageAnnotation`].
 #'
-#' Not to confuse with \code{createSegmentation()}.
+#' Not to confuse with \code{createSpatialSegmentation()}.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @note The interface allows to zoom in on the sample. This is useful if your
-#' spata object contains an HE-image as background and you want to classify
-#' barcode spots based on the histology. As these images are displayed by pixels
-#' the resolution decreases the more you zoom in. Many experiments (such as
-#' the Visium output) contain high resolution images. You can use the function
-#' \code{exchangeImage()} to read in images of higher resolution for a better
-#' histological classification.
-#'
-#' @seealso exchangeImage(), plotImageAnnotations(), getImageAnnotations()
+#' @seealso [`addSpatialAnnotation()`]
 #'
 #' @export
 #'
@@ -988,7 +1079,7 @@ createImageAnnotations <- function(object, ...){
 
             if(input$drawing_mode == "Single"){
 
-              val <- stringr::str_c("img_ann", (lastImageAnnotation(spata_object()) + 1), sep = "_")
+              val <- stringr::str_c("img_ann", (lastSpatialAnnotation(spata_object()) + 1), sep = "_")
 
               out <-
                 shiny::tagList(
@@ -1141,7 +1232,7 @@ createImageAnnotations <- function(object, ...){
             shinyWidgets::checkboxGroupButtons(
               inputId = "tags_select",
               label = NULL,
-              choices = getImgAnnTags(spata_object()),
+              choices = getSpatAnnTags(spata_object()),
               selected = NULL,
               checkIcon = list(
                 yes = shiny::icon("ok", lib = "glyphicon"),
@@ -1157,7 +1248,7 @@ createImageAnnotations <- function(object, ...){
             shiny::selectizeInput(
               inputId = "tags",
               label = NULL,
-              choices = getImgAnnTags(spata_object()),
+              choices = getSpatAnnTags(spata_object()),
               multiple = TRUE,
               options = list(create = TRUE),
               width = "100%"
@@ -1184,10 +1275,10 @@ createImageAnnotations <- function(object, ...){
             if(input$display_mode == "Surface"){
 
               plotImage(object = spata_object()) +
-                ggpLayerImgAnnOutline(
+                ggpLayerSpatAnnOutline(
                   object = spata_object(),
                   ids = input$img_ann_ids,
-                  display_color = FALSE,
+                  use_color = FALSE,
                   line_size = input$linesize2,
                   alpha = (1 - input$transparency)
                 )
@@ -1196,7 +1287,7 @@ createImageAnnotations <- function(object, ...){
 
               expand <- check_expand_shiny(input$expand)
 
-              plotImageAnnotations(
+              plotSpatialAnnotations(
                 object = spata_object(),
                 ids = input$img_ann_ids,
                 expand = expand,
@@ -1253,6 +1344,12 @@ createImageAnnotations <- function(object, ...){
             }
 
             return(out)
+
+          })
+
+          coords_scale_fct <- shiny::reactive({
+
+            getScaleFactor(object, fct_name = "coords", img_name = img_name())
 
           })
 
@@ -1324,11 +1421,11 @@ createImageAnnotations <- function(object, ...){
 
             if(input$test == "ignore"){
 
-              getImgAnnIds(object = spata_object())
+              getSpatAnnIds(object = spata_object())
 
             } else {
 
-              getImgAnnIds(
+              getSpatAnnIds(
                 object = spata_object(),
                 tags = input$tags_select,
                 test = input$test
@@ -1387,13 +1484,8 @@ createImageAnnotations <- function(object, ...){
             plotSurface(
               object = spata_object(),
               color_by = NULL,
-              #pt_clrp = input$pt_clrp,
-              #pt_clrsp = input$pt_clrsp,
               pt_alpha = 0,
               display_image = TRUE,
-              #smooth = pt_smooth()$smooth,
-              #smooth_span = pt_smooth()$smooth_span,
-              na_rm = TRUE,
               verbose = FALSE
             ) +
               ggplot2::theme(
@@ -1499,7 +1591,7 @@ createImageAnnotations <- function(object, ...){
               )
 
               checkpoint(
-                evaluate = !id %in% getImgAnnIds(spata_object()),
+                evaluate = !id %in% getSpatAnnIds(spata_object()),
                 case_false = "name_in_use"
               )
 
@@ -1515,13 +1607,28 @@ createImageAnnotations <- function(object, ...){
 
             for(i in 1:n_img_anns()){
 
+              area <-
+                purrr::map(
+                  .x = img_ann_list[[i]],
+                  .f = function(area_df){
+
+                    dplyr::transmute(
+                      .data = area_df,
+                      x_orig = x / coords_scale_fct(),
+                      y_orig = y / coords_scale_fct()
+                    )
+
+                  }
+                )
+
               object <-
-                addImageAnnotation(
+                addSpatialAnnotation(
                   object = object,
                   tags = input$tags,
                   area = img_ann_list[[i]],
                   id = id,
-                  parent_name = img_name()
+                  parent_name = img_name(),
+                  class = "ImageAnnotation"
                 )
 
             }
@@ -1922,151 +2029,254 @@ createImageAnnotations <- function(object, ...){
 }
 
 
-#' @title Create object of class `HistologyImaging`
+
+# createN -----------------------------------------------------------------
+
+#' @title Create spatial annotations based on numeric values
 #'
-#' @description Creates an object of class `HistologyImaging` that is used to
-#' store the image, image meta data and image annotations.
+#' @description Creates spatial annotations based on gene expression or any other
+#' continous data variable (e.g. read counts, copy number alterations). See
+#' details for more.
 #'
-#' Located in slot @@images in the \code{SPATA2} object.
+#' @param threshold Character value. Determines the method and/or the threshold
+#' by which the data points are filtered. Valid input options are *'kmeans_high'*,
+#' *'kmeans_low'* and *operator.value* combinations such as *'>0.75'* or *'<=0.5'*.
+#' See details for more.
+#' @param tags_expand Logical value. If `TRUE`, the tags with which the image
+#' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,
+#' the `threshold` and *'createGroupAnnotations'*.
 #'
-#' @param id Character value. Name of the `HistologyImaging` object.
-#' @param image Image input or character value. If character, input is interpreted as a directory
-#' to a file or to an URL and is read with `EBImage::readImage()`. The read image
-#' should be of type *.png*, *.jpeg* or *.tiff*. Capital letters work, too.
+#' @inherit variable_num params
 #'
-#' If not character, the function ensures that the input is - or is convertible - to
-#' class `Image` via `EBImage::as.Image()`. If that fails, an error is thrown.
+#' @inherit barcodesToSpatialAnnotation params seealso return
+#' @inherit argument_dummy params
 #'
-#' @param img_scale_fct Numeric value between 0 and 1. If lower than 1, is used
-#' to downscale the image before setting it.
-#' @param coordinates  A data.frame of observational units that underlie the image
-#'  in case of spatially resolved multi-omic studies. Should contain at least the
-#'  two variables: *x*, *y* and a variable that identifies the observational units (e.g. *barcodes*).
+#' @inheritSection section_dummy Distance measures
 #'
-#' @return An object of class `HistologyImaging`.
+#' @details
+#' The function \code{createNumericAnnotations()} facilitates the mapping of expression values
+#' associated with data points (spots or cells) to an image. This process is achieved by identifying
+#' data points that meet the criteria set by the \code{threshold} input, encompassing them within a
+#' polygon that serves as the foundation for creating a \code{SpatialAnnotation}. The annotation procedure,
+#' based on the position of data points showcasing specific expression values, involves the following key steps.
 #'
-#' @seealso `?HistologyImaging` for the documentation of all slots.
+#' \enumerate{
+#'   \item{Data point filtering:}{ The data points from the coordinates data.frame are selectively retained
+#'   based on the values of the variable specified in the \code{variable} argument. How the filtering
+#'   is conducted depends on `threshold`.}
+#'   \item{Grouping:}{ The remaining data points are organized into groups, a behavior influenced by the values
+#'   of \code{use_dbscan} and \code{force1} arguments.}
+#'   \item{Outlining:}{ Each group of data points is subject to the concaveman algorithm, resulting in
+#'   the creation of an outlining polygon.}
+#'   \item{Image annotation:}{ The generated concave polygons serve as the foundation for crafting spatial annotations.}
+#' }
+#'
+#' In-depth Explanation:
+#' Initially, the coordinates data.frame is joined with the variable indicated in
+#' the \code{variable} argument. Subsequently, the \code{threshold} input is applied.
+#' Two primary methods exist for conducting thresholding. If \code{threshold} is
+#' either *'kmeans_high'* or *'kmeans_low'*, the data points undergo clustering
+#' based solely on their variable values, with \code{centers = 2}. Depending on
+#' the chosen approach, the group of data points with the highest or lowest mean
+#' is retained, while the other group is excluded.
+#'
+#' Alternatively, the threshold can comprise a combination of a logical operator
+#' (e.g., \code{'>'}, \code{'>='}, \code{'<='}, or \code{'<'}) and a numeric value.
+#' This combination filters the data points accordingly. For instance, using
+#' \code{variable = 'GFAP'} and \code{threshold = '> 0.75'} results in retaining
+#' only those data points with a GFAP value of 0.75 or higher.
+#'
+#' Following filtering, if \code{use_dbscan} is \code{TRUE}, the DBSCAN algorithm
+#' identifies spatial outliers, which are then removed. Furthermore, if DBSCAN
+#' detects multiple dense clusters, they can be merged into a single group
+#' if \code{force1} is also set to \code{TRUE}.
+#'
+#' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
+#' of individual data points dispersed across the sample. This results in an image
+#' annotation that essentially spans the entirety of the sample, lacking the
+#' segregation of specific variable expressions. Similarly, enabling \code{force1}
+#' might unify multiple segregated areas, present on both sides of the sample, into one
+#' group and subsequently, one image annotation encompassing the whole sample.
+#' Consider to allow the creation of multiple spatial annotations (suffixed with an index)
+#' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
+#' close together.
+#'
+#' Lastly, the remaining data points are fed into the concaveman algorithm on a
+#' per-group basis. The algorithm calculates concave polygons outlining the groups
+#' of data points. If `dbscan_use` is `FALSE`, all data points that remained after the
+#' initial filtering are submitted to the algorithm. Subsequently, these polygons are
+#' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
+#' \code{tags} input arguments. The ID is suffixed with an index for each group.
+#'
+#' @examples
+#'
+#'  library(patchwork)
+#'
+#'  object <- downloadSpataObject("275_T")
+#'
+#'  # create an image annotation based on the segragated area of
+#'  # high expression in hypoxia signatures
+#'  object <-
+#'    createGroupAnnotations(
+#'      object = object,
+#'      variable = "HM_HYPOXIA",
+#'      threshold = "kmeans_high",
+#'      id = "hypoxia"
+#'      )
+#'
+#'   # visualize both
+#'   plotSurface(object, color_by = "HM_HYPOXIA") +
+#'    legendLeft() +
+#'   plotImage(object) +
+#'    ggpLayerSpatAnnOutline(object, tags = c("hypoxia", "createGroupAnnotations"))
 #'
 #' @export
+#'
+createNumericAnnotations <- function(object,
+                                     variable,
+                                     threshold,
+                                     id,
+                                     tags = NULL,
+                                     tags_expand = TRUE,
+                                     use_dbscan = TRUE,
+                                     eps = getCCD(object)*1.25,
+                                     minPts = 3,
+                                     force1 = FALSE,
+                                     min_size = 5,
+                                     concavity = 2,
+                                     method_gs = NULL,
+                                     transform_with = NULL,
+                                     overwrite = FALSE,
+                                     verbose = NULL,
+                                     ...){
 
-createHistologyImaging <- function(image,
-                                   id = 'imageid',
-                                   img_scale_fct = 1,
-                                   meta = list(),
-                                   pxl_scale_fct = NULL,
-                                   coordinates = NULL,
-                                   verbose = TRUE,
-                                   ...){
+  hlpr_assign_arguments(object)
 
-  # empty image object
-  hist_im <- HistologyImaging()
+  # check input validity
+  base::stopifnot(is_dist(eps))
+  eps <- as_pixel(eps, object = object, add_attr = FALSE)
 
-  hist_im@id <- id[1]
+  confuns::is_value(x = id, mode = "character")
+  confuns::is_value(x = variable, mode = "character")
 
-  # set image
-  if(base::is.character(image)){
+  if(!base::is.list(transform_with) & !base::is.null(transform_with)){
 
-    # ensure character value
-    image <- image[1]
+    transform_with <-
+      purrr::set_names(x = list(transform_with), nm = variable)
 
-    confuns::give_feedback(
-      msg = glue::glue("Reading image from '{image}'."),
-      verbose = verbose
-    )
+  }
 
-    hist_im@image <- EBImage::readImage(files = image[1])
+  # get variable
+  coords_df <-
+    getCoordsDf(object) %>%
+    joinWithVariables(
+      object = object,
+      spata_df = .,
+      variables = variable,
+      method_gs = method_gs,
+      verbose = FALSE
+    ) %>%
+    confuns::transform_df(transform.with = transform_with)
 
-    hist_im@dir_default <- image
+  # apply threshold
+  if(stringr::str_detect(threshold, pattern = "kmeans")){
 
-    origin <- image
+    coords_df[["km_out"]] <-
+      stats::kmeans(x = coords_df[[variable]], centers = 2)[["cluster"]] %>%
+      base::as.character()
+
+    smrd_df <-
+      dplyr::group_by(coords_df, km_out) %>%
+      dplyr::summarise(
+        {{variable}} := base::mean(!!rlang::sym(variable))
+      )
+
+    if(threshold == "kmeans_high"){
+
+      group_keep <-
+        dplyr::filter(
+          .data = smrd_df,
+          !!rlang::sym(variable) == base::max(!!rlang::sym(variable))
+        ) %>%
+        dplyr::pull(km_out)
+
+    } else if(threshold == "kmeans_low") {
+
+      group_keep <-
+        dplyr::filter(
+          .data = smrd_df,
+          !!rlang::sym(variable) == base::min(!!rlang::sym(variable))
+        ) %>%
+        dplyr::pull(km_out)
+
+    }
+
+    coords_df_proc <-
+      dplyr::filter(.data = coords_df, km_out == {{group_keep}})
 
   } else {
 
-    hist_im@image <- EBImage::as.Image(x = image)
+    threshold <- stringr::str_remove_all(threshold, pattern = " ")
 
-    origin <- base::substitute(expr = image)
+    operator <- stringr::str_extract(threshold, pattern = ">|<|>=|<=")
+
+    tvalue <-
+      stringr::str_remove(threshold, pattern = operator) %>%
+      base::as.numeric()
+
+    if(operator == ">"){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) > {{tvalue}})
+
+    } else if(operator == ">="){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) >= {{tvalue}})
+
+    } else if(operator == "<="){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) <= {{tvalue}})
+
+    } else if(operator == "<"){
+
+      coords_df_proc <-
+        dplyr::filter(.data = coords_df, !!rlang::sym(variable) < {{tvalue}})
+
+    }
 
   }
 
-  dim_input <- base::dim(hist_im@image)
-  dim_stored <- base::dim(hist_im@image)
+  barcodes <- coords_df_proc[["barcodes"]]
 
-  # rescale default image if needed
-  if(img_scale_fct > 1){
+  if(base::isTRUE(tags_expand)){
 
-    stop("`img_scale_fct` must not be > 1.")
-
-  } else if(img_scale_fct < 1){
-
-    dim_stored <- dim_input
-
-    dim_stored[1:2] <- dim_input[1:2] * img_scale_fct
-
-    hist_im@image <-
-      EBImage::resize(
-        x = hist_im@image,
-        w = dim_stored[1],
-        h = dim_stored[2]
-      )
+    tags <- base::unique(c(tags, variable, threshold))
 
   }
 
-  # set info slot
-  hist_im@image_info <-
-    list(
-      dim_input = dim_input,
-      dim_stored = dim_stored,
-      img_scale_fct = img_scale_fct,
-      origin = origin
+  object <-
+    barcodesToSpatialAnnotation(
+      object = object,
+      barcodes = barcodes,
+      id = id,
+      tags = tags,
+      tags_expand = FALSE,
+      use_dbscan = use_dbscan,
+      eps = eps,
+      minPts = minPts,
+      min_size = min_size,
+      force1 = force1,
+      concavity = concavity,
+      overwrite = overwrite,
+      variable = variable, # pass on to addSpatialAnnotation()
+      threshold = threshold, # ...
+      class = "NumericAnnotation",
+      verbose = verbose
     )
 
-  # set justification
-  hist_im@justification <-
-    list(
-      angle = 0,
-      flipped = list(horizontal = FALSE, vertical = FALSE)
-      # track = TRUE/FALSE as an instruction?
-    )
-
-  # set coordinates
-  if(base::is.null(coordinates)){
-
-    hist_im@coordinates <-
-      tidyr::expand_grid(
-        x = reduce_vec(x = 1:hist_im@image_info$dim_input[1], n = 10), # take every 10th element
-        y = reduce_vec(x = 1:hist_im@image_info$dim_input[2], n = 10)
-      )
-
-  } else if(base::is.data.frame(coordinates)){
-
-    confuns::check_data_frame(
-      df = coordinates,
-      var.class = list(x = "numeric", y = "numeric")
-    )
-
-    hist_im@coordinates <- coordinates
-
-  }
-
-  hist_im@misc <- list(...)
-
-  return(hist_im)
-
-}
-
-
-createHistologyImagingFromSpaceRanger <- function(directory, image_name){
-
-  base::stopifnot(isDirToSpaceRangerOutput(directory))
-
-  space_ranger_version <- whichSpaceRangerVersion(directory)
-
-  # read coordinates
-  if(space_ranger_version == "Version1"){
-
-    coordinates
-
-  }
+  return(object)
 
 }
 
