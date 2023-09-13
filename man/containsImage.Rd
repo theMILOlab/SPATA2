@@ -2,14 +2,14 @@
 % Please edit documentation in R/devImaging.R
 \name{containsImage}
 \alias{containsImage}
-\alias{containsImage,spata2-method}
+\alias{containsImage,ANY-method}
 \alias{containsImage,SpatialAnnotation-method}
 \alias{containsImage,HistoImage-method}
 \title{Check availability of an image}
 \usage{
 containsImage(object, ...)
 
-\S4method{containsImage}{spata2}(object, img_name = NULL, error = FALSE)
+\S4method{containsImage}{ANY}(object, img_name = NULL, error = FALSE)
 
 \S4method{containsImage}{SpatialAnnotation}(object, error = FALSE)
 
@@ -31,6 +31,6 @@ function throws an error.}
 Logical value.
 }
 \description{
-Checks if slot @image of the \code{HistoImage} object
-in the \code{SPATA2} object contains an image or if it is empty.
+Checks if the input object has an image in the
+respective slot or if the slot is empty.
 }

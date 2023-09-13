@@ -1678,6 +1678,73 @@ runImagePipeline <- function(object,
 }
 
 
+
+
+# runK --------------------------------------------------------------------
+
+#' @title Clustering with Kmeans
+#'
+#' @description A wrapper around the Kmeans clustering algorithm. Iterates over all
+#' combinations of `ks` and `methods_kmeans` and stores the resulting clustering
+#' variables in the feature data.frame.
+#'
+#' @inherit argument_dummy params
+#' @param ks Numeric vector. Denotes all options for k-clusters over which
+#' to iterate. Values <1 are discarded. (Givent o `centers` of `stats::kmeans()`).
+#' @param methods_kmeans A character vector of kmeans methods. Should be one
+#' or more of *c("Hartigan-Wong", "Lloyd", "Forgy", "MacQueen")*. (Given to `algorithm`
+#' of `stats::kmeans()`).
+#' @param naming A [`glue::glue()`] instruction on how to name the resulting cluster variables.
+#' use *method_kmeans* to refer to the method and *k* for the value of k.
+#' @param n_pcs Integer value. The number of principal components to use for
+#' the clustering.
+#' @param ... Additional arguments given to [`stats::kmeans()`].
+#'
+#' @inherit update_dummy return
+#'
+#' @seealso [`getFeatureDf()`], [`getFeatureNames()`], [`getGroupingOptions()`],
+#' [`getGroupNames()`]
+#'
+#' @export
+
+runKmeansClustering <- function(object,
+                                ks,
+                                methods_kmeans = "Hartigan-Wong",
+                                prefix = "K",
+                                naming = "{method_kmeans}_k{k}",
+                                n_pcs = 30,
+                                overwrite = TRUE){
+
+  pca_df <-
+    getPcaDf(object, n_pcs = n_pcs) %>%
+    dplyr::select(barcodes, dplyr::where(fn = base::is.numeric))
+
+  cluster_df <-
+    confuns::initiateAnalysis(
+      data = pca_mtr,
+      key_name = "barcodes",
+      verbose = FALSE
+      ) %>%
+    confuns::computeClusteringKmeans(
+      object = .,
+      ks = ks,
+      methods_kmeans = methods_kmeans,
+      ...
+    ) %>%
+    confuns::getClusterVarsKmeans(
+      object = .,
+      ks = ks,
+      methods_kmeans = methods_kmeans,
+      prefix = prefix,
+      naming = naming
+    )
+
+  object <- addFeatures(object, feature_df = cluster_df)
+
+  return(object)
+
+}
+
 # runP --------------------------------------------------------------------
 
 #' @title Run Principal Component Analysis

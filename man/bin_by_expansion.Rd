@@ -10,9 +10,12 @@ bin_by_expansion(
   binwidth,
   n_bins_circle,
   remove = FALSE,
-  bcsp_exclude = NULL,
+  bcs_exclude = NULL,
+  core = TRUE,
+  periphery = TRUE,
   drop = TRUE,
-  arrange = TRUE
+  arrange = TRUE,
+  ...
 )
 }
 \arguments{
@@ -23,23 +26,20 @@ to be binned.}
 vertices of the polygon that encircles the area based on which the barcode-spots
 are binned. E.g. slot @area of \code{SpatialAnnotation}-objects.}
 
-\item{binwidth}{Distance value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
-
-\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}.
-(See details for more.)}
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
 \item{remove}{Character or logical. If character, denotes circle bins that
 are removed. If TRUE, bins \emph{'Core' and 'Outside'} are removed. If FALSE,
 ignored.}
 
-\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
+\item{bcs_exclude}{Character value containing name(s) of data points to be excluded from the analysis.}
 
 \item{drop}{Logical value. If TRUE, unused levels of the \emph{bins_circle}
 variables are dropped.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 Bins barcode-spots by consecutively expanding a polygon.

@@ -343,113 +343,6 @@ remove_stress_and_mt_genes <- function(mtr, verbose = TRUE){
 
 }
 
-#' @title Initiate `spata2` object from platform
-#'
-#' @description A collection of functions that initiate `spata2` objects
-#' from standardized output folders.
-#'
-#' @param directory_visium Character value. Directory to a visium folder. Should contain
-#' the subdirectory *'.../spatial'*.
-#' @param sample_name Character value. Name of the sample.
-#' @param mtr The matrix to load. One of `c("filtered", "raw")`.
-#'
-#' @inherit createHistoImagingVisium params
-#'
-#' @seealso [`createHistoImagingVisium`]
-#'
-#' @return An object of class `spata2`.
-#' @export
-#'
-initiateSpataObjectVisium <- function(directory_visium,
-                                      sample_name,
-                                      mtr = "filtered",
-                                      img_active = "lowres",
-                                      img_ref = "lowres",
-                                      directory_spata = NULL,
-                                      gene_set_path = NULL,
-                                      verbose = TRUE){
-
-  isDirVisium(dir = directory_visium, error = TRUE)
-
-  # validate and process input directory
-  dir <- base::normalizePath(directory_visium)
-
-  files <- base::list.files(dir, recursive = TRUE, full.names = TRUE)
-
-  # check and load required mtr
-  confuns::check_one_of(
-    input = mtr,
-    against = c("filtered", "raw")
-  )
-
-  if(mtr == "filtered"){
-
-    mtr_pattern <- "filtered_feature_bc_matrix.h5$"
-
-  } else if(mtr == "raw"){
-
-    mtr_pattern <- "raw_feature_bc_matrix.h5$"
-
-  }
-
-  mtr_path <- files[stringr::str_detect(files, pattern = mtr_pattern)]
-
-  if(base::length(mtr_path) > 1){
-
-    warning("Multiple matrices found. Picking first.")
-
-    mtr_path <- mtr_path[1]
-
-  } else if(base::length(mtr_path) == 0){
-
-    stop(glue::glue("'{mtr_pattern}' is missing.", mtr_pattern = stringr::str_remove(mtr_pattern, "\\$")))
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
-    verbose = verbose
-  )
-
-  count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
-
-  # load images
-  imaging <-
-    createHistoImagingVisium(
-      dir = dir,
-      sample = sample_name,
-      img_ref = img_ref,
-      img_active = img_active,
-      verbose = verbose
-    )
-
-  # create spata2 object
-  object <-
-    initiateSpataObject_Empty(
-      sample_name = sample_name,
-      spatial_method = imaging@method@name
-    )
-
-  # set required content
-  object <- setCountMatrix(object, count_mtr = count_mtr)
-
-  object <-
-    setFeatureDf(
-      object = object,
-      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
-    )
-
-  object <- setHistoImaging(object, imaging = imaging)
-
-  # set active content
-  object <- setActiveMatrix(object, mtr_name = "counts")
-
-  object <- setInitiationInfo(object)
-
-  return(object)
-
-}
-
 
 
 #' @title Process `spata2` object using `Seurat`
@@ -462,19 +355,20 @@ initiateSpataObjectVisium <- function(directory_visium,
 #' @inherit process_seurat_object params
 #' @inherit argument_dummy params
 #'
+#' @details By default this function computes a normalized, scaled data which
+#' is added to the processed matrices under the name *scaled*.
+#'
 #' @inherit update_dummy return
 #'
 #' @export
 #'
 processWithSeurat <- function(object,
-                              NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
-                              FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
+                              NormalizeData = TRUE,
+                              FindVariableFeatures = TRUE,
                               ScaleData = TRUE,
-                              RunPCA = list(npcs = 60),
+                              RunPCA = list(npcs = 30),
                               FindNeighbors = list(dims = 1:30),
-                              FindClusters = list(resolution = 0.8),
-                              RunTSNE = TRUE,
-                              RunUMAP = list(dims = 1:30),
+                              FindClusters = TRUE,
                               overwrite = FALSE,
                               verbose = TRUE){
 
@@ -488,7 +382,6 @@ processWithSeurat <- function(object,
     process_seurat_object(
       seurat_object = seurat_object,
       calculate_rb_and_mt = TRUE,
-      remove_stress_and_mt = TRUE,
       SCTransform = FALSE,
       NormalizeData = NormalizeData,
       FindVariableFeatures = FindVariableFeatures,
@@ -496,35 +389,65 @@ processWithSeurat <- function(object,
       RunPCA = RunPCA,
       FindNeighbors = FindNeighbors,
       FindClusters = FindClusters,
+      RunTSNE = FALSE,
+      RunUMAP = FALSE,
       verbose = verbose
     )
 
-  # set content
-  object <-
-    setScaledMatrix(
-      object = object,
-      scaled_mtr = seurat_object@assays[["RNA"]]@scale.data
+
+  if(!base::isFALSE(ScaleData)){
+
+    # scaled matrix
+    object <-
+      setProcessedMatrix(
+        object = object,
+        proc_mtr = seurat_object@assays[["RNA"]]@scale.data,
+        name = "scaled"
       )
 
-  meta_df <-
-    tibble::rownames_to_column(.data = seurat_object@meta.data, "barcodes")
-
-  if(base::isFALSE(overwrite)){
-
-    meta_df <-
-      dplyr::select(
-        .data = meta_df,
-        barcodes,
-        dplyr::everything(),
-        -dplyr::any_of(x = getFeatureNames(object))
-      )
+    object <- setActiveMatrix(object, mtr_name = "scaled")
 
   }
 
-  if(base::ncol(meta_df) > 1){
 
-    object <-
-      addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
+  if(!base::isFALSE(RunPCA)){
+
+    # principal components
+    pca_df <-
+      seurat_object@reductions$pca@cell.embeddings %>%
+      base::as.data.frame() %>%
+      tibble::rownames_to_column(var = "barcodes") %>%
+      tibble::as_tibble() %>%
+      dplyr::rename_with(.fn = ~ stringr::str_remove(.x, pattern = "_"))
+
+    object <- setPcaDf(object, pca_df = pca_df)
+
+  }
+
+  if(!base::isFALSE(FindClusters)){
+
+    # clusters and
+    meta_df <-
+      tibble::rownames_to_column(.data = seurat_object@meta.data, "barcodes")
+
+    if(base::isFALSE(overwrite)){
+
+      meta_df <-
+        dplyr::select(
+          .data = meta_df,
+          barcodes,
+          dplyr::everything(),
+          -dplyr::any_of(x = getFeatureNames(object))
+        )
+
+    }
+
+    if(base::ncol(meta_df) > 1){
+
+      object <-
+        addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
+
+    }
 
   }
 
@@ -657,4 +580,422 @@ whichSpaceRangerVersion <- function(dir){
 }
 
 
+
+
+#' @title Relate points to spatial annotations
+#'
+#' @description Adds the spatial relation of each data point to a spatial
+#' annotation in form of five variables. See details fore more.
+#'
+#' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
+#' if not empty.
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame.
+#'
+#' @details The coordinates data.frame as returned by [`getCoordsDf()`] with five
+#' additional variables:
+#'
+#' \itemize{
+#'  \item{*dist*:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
+#'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `binwidth`.}
+#'  \item{*angle*:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
+#'  \item{*bins_angle*:}{ Factor. The bin the data point was assigned to based on its *angle* value.}
+#'  \item{*rel_loc*:}{ Factor. Either *'Core'*, if the data point lies inside the spatial annotation, or
+#'  *'Periphery'* if the data point lies outside of the boundaries of the spatial annotation.}
+#'  }
+#' @export
+#'
+getCoordsDfSA <- function(object,
+                          id,
+                          distance = distToEdge(object, id),
+                          binwidth = recBinwidth(object),
+                          n_bins_dist = NA_integer_,
+                          angle_span = c(0,360),
+                          n_bins_angle = 1,
+                          bcs_exclude = NULL,
+                          verbose = NULL,
+                          ...){
+
+  deprecated(...)
+  hlpr_assign_arguments(object)
+
+
+  # check and process input -------------------------------------------------
+
+  input_list <-
+    check_sas_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_dist = n_bins_dist,
+      object = object,
+      verbose = verbose
+    )
+
+  distance <- input_list$distance
+  n_bins_dist <- input_list$n_bins_dist
+  binwidth  <- input_list$binwidth
+
+  angle_span <- c(from = angle_span[1], to = angle_span[2])
+  range_span <- base::range(angle_span)
+
+  if(angle_span[1] == angle_span[2]){
+
+    stop("Invalid input for argument `angle_span`. Must contain to different values.")
+
+  } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
+
+    stop("Input for argument `angle_span` must range from 0 to 360.")
+
+  }
+
+
+  # obtain required data ----------------------------------------------------
+
+  coords_df <- getCoordsDf(object)
+
+  spat_ann <- getSpatialAnnotation(object, id = id)
+  spat_ann_bcs <- spat_ann@misc$barcodes
+
+  outline_df <- getSpatAnnOutlineDf(object)
+
+
+  # distance ----------------------------------------------------------------
+
+  # increase number of vertices
+  avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
+
+  outline_df <-
+    increase_polygon_vertices(
+      polygon = outline_df[,c("x", "y")],
+      avg_dist = avg_dist/4
+      )
+
+  # compute distance to closest vertex
+  nn_out <-
+    RANN::nn2(
+      data = base::as.matrix(outline_df),
+      query = base::as.matrix(coords_df[,c("x", "y")]),
+      k = 1
+      )
+
+  coords_df$dist <- base::as.numeric(nn_out$nn.dists)
+  coords_df$dist[coords_df$barcodes %in% spat_ann_bcs] <-
+    -coords_df$dist[coords_df$barcodes %in% spat_ann_bcs]
+
+  # bin pos dist
+  coords_df_pos <-
+    dplyr::filter(coords_df, dist >= 0) %>%
+    dplyr::mutate(bins_dist = make_bins(dist, binwidth = {{binwidth}}))
+
+  # bin neg dist
+  coords_df_neg <-
+    dplyr::filter(coords_df, dist < 0) %>%
+    dplyr::mutate(
+      bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE))
+
+  # merge
+  new_levels <-
+    c(
+      base::levels(coords_df_neg$bins_dist),
+      base::levels(coords_df_pos$bins_dist),
+      "Outside"
+    )
+
+  coords_df_merged <-
+    base::rbind(coords_df_neg, coords_df_pos) %>%
+    dplyr::mutate(
+      bins_dist = base::as.character(bins_dist),
+      bins_dist =
+        dplyr::case_when(
+          dist > {{distance}} ~ "Outside",
+          TRUE ~ bins_dist
+        ),
+      bins_dist = base::factor(bins_dist, levels = new_levels),
+      rel_loc = dplyr::if_else(dist < 0, true = "Core", false = "Periphery")
+      )
+
+  # angle -------------------------------------------------------------------
+
+  center <- getSpatAnnCenter(object, id = id)
+
+  from <- angle_span[1]
+  to <- angle_span[2]
+
+  confuns::give_feedback(
+    msg = glue::glue("Including area between {from}° and {to}°."),
+    verbose = verbose
+  )
+
+  prel_angle_df <-
+    dplyr::group_by(.data = coords_df_merged, barcodes) %>%
+    dplyr::mutate(
+      angle = compute_angle_between_two_points(
+        p1 = c(x = x, y = y),
+        p2 = center
+      )
+    ) %>%
+    dplyr::ungroup()
+
+  # create angle bins
+  if(angle_span[["from"]] > angle_span[["to"]]){
+
+    range_vec <- c(
+      angle_span[["from"]]:360,
+      0:angle_span[["to"]]
+    )
+
+    nth <- base::floor(base::length(range_vec)/n_bins_angle)
+
+    bin_list <- base::vector(mode = "list", length = n_bins_angle)
+
+    for(i in 1:n_bins_angle){
+
+      if(i == 1){
+
+        sub <- 1:nth
+
+      } else {
+
+        sub <- ((nth*(i-1))+1):(nth*i)
+
+      }
+
+      bin_list[[i]] <- range_vec[sub]
+
+    }
+
+    if(base::any(base::is.na(bin_list[[n_bins_angle]]))){
+
+      bin_list[[(n_bins_angle)-1]] <-
+        c(bin_list[[(n_bins_angle-1)]], bin_list[[n_bins_angle]]) %>%
+        rm_na()
+
+      bin_list[[n_bins_angle]] <- NULL
+
+    }
+
+    all_vals <- purrr::flatten_dbl(bin_list)
+
+    bin_list[[n_bins_angle]] <-
+      c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
+
+    prel_angle_bin_df <-
+      dplyr::ungroup(prel_angle_df) %>%
+      dplyr::filter(base::round(angle) %in% range_vec) %>%
+      dplyr::mutate(
+        angle_round = base::round(angle),
+        bins_angle = ""
+      )
+
+    bin_names <- base::character(n_bins_angle)
+
+    for(i in base::seq_along(bin_list)){
+
+      angles <- bin_list[[i]]
+
+      bin_names[i] <-
+        stringr::str_c(
+          "[", angles[1], ",", utils::tail(angles,1), "]"
+        )
+
+      prel_angle_bin_df[prel_angle_bin_df$angle_round %in% angles, "bins_angle"] <-
+        bin_names[i]
+
+    }
+
+    prel_angle_bin_df$angle_round <- NULL
+
+    prel_angle_bin_df$bins_angle <-
+      base::factor(
+        x = prel_angle_bin_df$bins_angle,
+        levels = bin_names
+      )
+
+  } else {
+
+    range_vec <- range_span[1]:range_span[2]
+
+    sub <-
+      base::seq(
+        from = 1,
+        to = base::length(range_vec),
+        length.out = n_bins_angle+1
+      ) %>%
+      base::round()
+
+    breaks <- range_vec[sub]
+
+    prel_angle_bin_df <-
+      dplyr::ungroup(prel_angle_df) %>%
+      dplyr::filter(base::round(angle) %in% range_vec) %>%
+      dplyr::mutate(
+        bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
+      )
+
+  }
+
+  sas_df <- prel_angle_bin_df
+
+  # relative location
+  sas_df <-
+    dplyr::mutate(
+      .data = sas_df,
+      rel_loc = dplyr::case_when(
+        dist > {{distance}} ~ "Outside",
+        !base::round(angle) %in% range_vec ~ "Outside",
+        TRUE ~ rel_loc
+      )
+    )
+
+  if(!purrr::is_empty(x = list(...))){
+
+    sas_df <- joinWithVariables(object = object, spata_df = sas_df, ...)
+
+  }
+
+  return(sas_df)
+
+}
+
+
+
+
+process_coords_df_sa <- function(coords_df,
+                                 variables,
+                                 core = TRUE,
+                                 periphery = TRUE,
+                                 bcs_exclude = NULL,
+                                 summarize_by = c("bins_angle", "bins_dist"),
+                                 format = "wide"){
+
+  # filter
+  if(base::isFALSE(core)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "Core")
+
+  }
+
+  if(base::isFALSE(periphery)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "Periphery")
+
+  }
+
+  if(base::is.character(bcs_exclude)){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
+
+  }
+
+  coords_df <- dplyr::filter(coords_df, rel_loc != "Outside")
+
+  # summarize
+  smrd_df <-
+    dplyr::group_by(.data = coords_df, dplyr::pick({{summarize_by}})) %>%
+    dplyr::summarize(
+      dplyr::across(
+        .cols = dplyr::all_of(x = variables),
+        .fns = base::mean
+      )
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      dist = extract_bin_dist_val(bins_dist),
+      bins_dist = base::droplevels(bins_dist),
+      bins_order = base::as.numeric(bins_dist),
+      dplyr::across(
+        .cols = dplyr::all_of(variables),
+        .fns = confuns::normalize
+      )
+    ) %>%
+    dplyr::select(dplyr::starts_with("bins_"), dist, dplyr::everything())
+
+  # shift
+  if(format == "long"){
+
+    smrd_df <-
+      tidyr::pivot_longer(
+        data = smrd_df,
+        cols = dplyr::all_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      )
+
+  }
+
+  return(smrd_df)
+
+}
+
+extract_bin_dist_val <- function(bins_dist){
+
+  out <-
+    stringr::str_remove_all(bins_dist, pattern = "\\[|\\]") %>%
+    stringr::str_split_fixed(pattern = ",", n = 2) %>%
+    base::apply(X = ., MARGIN = 2, FUN = base::as.numeric) %>%
+    base::rowMeans()
+
+  return(out)
+
+}
+
+
+
+
+#' @title Distance to cover the whole tissue
+#'
+#' @description Computes the distance from the center of a spatial annotation
+#' to the **farest** point of the tissue outline.
+#'
+#' @inherit spatialAnnotationScreening params
+#' @param unit The output unit of the distance measure.
+#'
+#' @return Distance measure.
+#' @export
+#'
+distToEdge <- function(object, id, unit = getDefaultUnit(object)){
+
+  section <- whichTissueSection(object, id)
+
+  center <- getSpatAnnCenter(object, id = id)
+
+  section_mtr <-
+    getTissueOutlineDf(object, by_section = TRUE) %>%
+    dplyr::filter(section == {{section}}) %>%
+    dplyr::select(x, y) %>%
+    base::as.matrix()
+
+  nn2_out <-
+    RANN::nn2(
+      data = section_mtr,
+      query = base::t(base::as.matrix(center)),
+      k = base::nrow(section_mtr)
+      )
+
+  out <-
+    base::max(nn2_out$nn.dists) %>%
+    as_unit(unit = unit, object = object)
+
+  return(out)
+
+}
+
+
+
+#' @title Obtain default unit
+#'
+#' @description Extracts the default unit of the spatial method the
+#' `spata2` object relies on.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+getDefaultUnit <- function(object){
+
+  getSpatialMethod(object)@unit
+
+}
 

@@ -367,19 +367,29 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
-    pxl_df <- getPixelDf(object)
+    if(containsImage(object)){
 
-    if(are_all_dist(xrange)){
+      pxl_df <- getPixelDf(object)
 
-      xrange <- as_pixel(xrange, object = object, add_attr = FALSE)
+      if(are_all_dist(xrange)){
 
-      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = width, left = xrange[1], right = xrange[2]))
+        xrange <- as_pixel(xrange, object = object, add_attr = FALSE)
+
+        pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = width, left = xrange[1], right = xrange[2]))
+
+      }
+
+      breaks_x <-
+        dplyr::pull(pxl_df, width) %>%
+        stats::quantile()
+
+    } else {
+
+      breaks_x <-
+        getCaptureArea(object, unit = "px")[["x"]] %>%
+        stats::quantile()
 
     }
-
-    breaks_x <-
-      dplyr::pull(pxl_df, width) %>%
-      stats::quantile()
 
   }
 
@@ -416,19 +426,29 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
-    pxl_df <- getPixelDf(object)
+    if(containsImage(object)){
 
-    if(are_all_dist(yrange)){
+      pxl_df <- getPixelDf(object)
 
-      yrange <- as_pixel(yrange, object = object, add_attr = FALSE)
+      if(are_all_dist(yrange)){
 
-      pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = height, left = yrange[1], right = yrange[2]))
+        yrange <- as_pixel(yrange, object = object, add_attr = FALSE)
+
+        pxl_df <- dplyr::filter(pxl_df, dplyr::between(x = height, left = yrange[1], right = yrange[2]))
+
+      }
+
+      breaks_y <-
+        dplyr::pull(pxl_df, height) %>%
+        stats::quantile()
+
+    } else {
+
+      breaks_y <-
+        getCaptureArea(object, unit = "px")[["y"]] %>%
+        stats::quantile()
 
     }
-
-    breaks_y <-
-      dplyr::pull(pxl_df, height) %>%
-      stats::quantile()
 
   }
 
@@ -467,9 +487,15 @@ ggpLayerAxesSI <- function(object,
         y = ggplot2::labs(y = glue::glue("y-coordinates [{unit}]"))
       )
 
+    title_x <- ggplot2::element_text()
+    title_y <- ggplot2::element_text(angle = 90)
+
   } else {
 
     labs_add_on <- NULL
+
+    title_x <- ggplot2::element_blank()
+    title_y <- ggplot2::element_blank()
 
   }
 
@@ -479,14 +505,14 @@ ggpLayerAxesSI <- function(object,
         axis.ticks.x = ggplot2::element_line(),
         axis.ticks.length.x = ggplot2::unit(5, "points"),
         axis.text.x = ggplot2::element_text(),
-        axis.title.x = ggplot2::element_text(),
+        axis.title.x = title_x,
         panel.border = ggplot2::element_rect()
       ),
       y = ggplot2::theme(
         axis.ticks.y = ggplot2::element_line(),
         axis.ticks.length.y = ggplot2::unit(5, "points"),
         axis.text.y = ggplot2::element_text(),
-        axis.title.y = ggplot2::element_text(angle = 90),
+        axis.title.y = title_y,
         panel.border = ggplot2::element_rect(fill = NA)
       )
     )

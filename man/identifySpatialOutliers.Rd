@@ -10,11 +10,11 @@ identifySpatialOutliers(object, ...)
 
 \S4method{identifySpatialOutliers}{spata2}(
   object,
-  method = c("outline", "dbscan"),
-  img_name = refImage(),
+  method,
+  img_name = NULL,
   buffer = NULL,
-  dbscan_eps = NULL,
-  dbscan_minPts = 3,
+  eps = recDbscanEps(object),
+  minPts = recDbscanMinPts(object),
   test = "any",
   verbose = NULL
 )
@@ -22,10 +22,10 @@ identifySpatialOutliers(object, ...)
 \S4method{identifySpatialOutliers}{HistoImaging}(
   object,
   method = c("outline", "dbscan"),
-  img_name = refImage(object),
+  img_name = NULL,
   buffer = NULL,
-  dbscan_eps = NULL,
-  dbscan_minPts = 3,
+  eps = NULL,
+  minPts = 3,
   test = "any",
   verbose = TRUE
 )
@@ -36,7 +36,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{method}{Character vector. The method(s) to use. A combination of \emph{'outline'}
+\item{method}{Character vector. The method(s) to use. A combination of \emph{'image'}
 and/or \emph{'dbscan'}. See details for more.}
 
 \item{img_name}{Character value. The name of the image whose tissue outline
@@ -45,7 +45,7 @@ is used if \code{method} contains \emph{'outline'}.}
 \item{buffer}{Numeric value. Expands the tissue outline to include observations
 that lie on the edge of the outline and are mistakenly removed.}
 
-\item{dbscan_eps, dbscan_minPts}{Given to the corresponding arguments of
+\item{eps, minPts}{Given to the corresponding arguments of
 \code{\link[dbscan:dbscan]{dbscan::dbscan()}} if \code{method} contains \emph{'dbscan'}.}
 
 \item{test}{Character value. Only required if \code{method = c('dbscan', 'outline')}. If
@@ -63,33 +63,67 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Assigns observations like cells or spots to the tissue sections or
-fragments they are located on or labels them as artefacts/spatial outliers.
+Assigns data points to the tissue sections or
+fragments they are located on or labels them as artefacts/spatial outliers. See
+details for more.
 }
 \details{
-This function identifies spatial outliers using a combination of two methods: \emph{outline} and \emph{dbscan}.
+This function categorizes the data points of the object based on their spatial
+proximity, grouping those that are close enough to be deemed part of a single
+contiguous tissue section. Data points that are isolated and situated at a
+significant distance from others are identified as spatial outliers.
+The resulting classifications are saved in a 'section' variable within the
+object's coordinates data.frame.
 
-Method \emph{outline}:
-The \emph{outline} method involves identifying the tissue outline using the \code{identifyTissueOutline()} function,
-which results in a polygon with multiple vertices. For each observation, the function checks which polygon it falls within
-and assigns it to the corresponding group. If an observation does not fall within any of the tissue polygons,
-it is considered a spatial outlier.
+This function identifies spatial outliers using a combination of two methods:
+
+Method \emph{tissue_outline}:
+The \emph{tissue_outline} method involves the image based tissue outline from the
+\code{identifyTissueOutline()} function. This function has created polygons that
+outline the tissue or tissue sections identified in the image. For each data point,
+the function checks which polygon it falls within and assigns it to the corresponding
+group. If an observation does not fall within any of the tissue polygons, it is
+considered a spatial outlier. As this method requires image processing steps, it does not
+work for platforms that do not provide images of the analyzed tissue such as
+\emph{MERFISH} or \emph{SlideSeq}.
 
 Method \emph{dbscan}:
-The \emph{dbscan} method applies the DBSCAN algorithm to the observations. Please refer to the documentation
-of \code{dbscan::dbscan()} for a more detailed explanation. The \code{dbscan_eps} and \code{dbscan_minPts} arguments are passed
-directly to the corresponding arguments of the DBSCAN function. Note that if the input object does not contain
-a center-to-center distance, \code{dbscan_eps} must not be set to \code{NULL}. Observations that are not assigned to any cluster,
-indicated by being assigned to cluster 0, are considered spatial outliers.
+The \emph{dbscan} method applies the DBSCAN algorithm to the data points. Please
+refer to the documentation of \code{dbscan::dbscan()} for a more detailed explanation.
+The \code{eps} and \code{minPts} arguments are passed directly to the
+corresponding arguments of the DBSCAN function.Data points that are not assigned
+to any spatial cluster, indicated by being assigned to cluster 0, are considered
+spatial outliers.
 
-If \code{method = c('outlier', 'dbscan')}, both algorithms are applied. Whether an observation is considered a spatial outlier
-depends on the \code{test} argument:
+For objects derived from the Visium platform with a fixed center to center
+distance, we recommend to set \code{eps = getCCD(object, unit = "px")*1.25}
+and \code{minPts = 3}which has worked well for us. For objects derived
+from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
+we recommend the average minimal distance between the data points times 10 for
+\code{eps} and \code{minPts = 2}. The function
+defaults to these recommendations using \code{\link[=recDbscanEps]{recDbscanEps()}} and \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
+by default. This can, of course, be overwritten manually by the user by
+specifying the parameters otherwise!
+
+If \code{method = c('tissue_outline', 'dbscan')}, both algorithms are applied. Whether a
+data point is considered a spatial outlier depends on the \code{test} argument:
 
 \itemize{
-\item{\code{test = 'any'}:} The observation is considered a spatial outlier if either of the two tests classifies it as an outlier.
-\item{\code{test = 'all'}:} The observation is considered a spatial outlier only if both tests classify it as an outlier.
+\item{\code{test = 'any'}:} The data point is considered a spatial outlier if
+either of the two tests classifies it as an outlier.
+\item{\code{test = 'all'}:} The data point is considered a spatial outlier
+only if both tests classify it as an outlier.
 }
+
+If \code{method = 'tissue_outline'} or \code{method = 'dbscan'} only one of the two
+methods is applied. Note that for \emph{tissue_outline} the results from the
+image processing pipeline must be available.
+
+The results can be visualized using \code{plotSurface(object, color_by = "section")}.
+In case of bad results the function can be run over and over again with
+changing parameters as the results are simply overwritten.
 }
 \seealso{
-\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}
+\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, \code{\link[=runImagePipeline]{runImagePipeline()}},
+\code{\link[=mergeTissueSections]{mergeTissueSections()}}
 }

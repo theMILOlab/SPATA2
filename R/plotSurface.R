@@ -52,13 +52,16 @@ setMethod(
                         pt_clr = NULL,
                         pt_clrp = NULL,
                         pt_clrsp = NULL,
+                        pt_size = NULL,
                         clrp_adjust = NULL,
                         display_image = NULL,
                         img_alpha = 1,
                         transform_with = NULL,
+                        use_scattermore = NULL,
                         bcs_rm = NULL,
-                        xrange = getCoordsRange(object)$x,
-                        yrange = getCoordsRange(object)$y,
+                        na_rm = FALSE,
+                        xrange = getCaptureArea(object)$x,
+                        yrange = getCaptureArea(object)$y,
                         verbose = NULL,
                         ...){
 
@@ -76,29 +79,29 @@ setMethod(
 
     }
 
-    if(containsMethod(object, method_name = c("Visium", "SlideSeq"))){
-
-      main_plot <-
-        main_plot +
-        ggpLayerSpots(
-          object = object,
-          alpha_by = alpha_by,
-          color_by = color_by,
-          spot_alpha = pt_alpha,
-          spot_clr = pt_clr,
-          clrp = pt_clrp,
-          clrsp = pt_clrsp,
-          clrp_adjust = clrp_adjust,
-          smooth = smooth,
-          smooth_span = smooth_span,
-          method_gs = method_gs,
-          transform_with = transform_with,
-          xrange = xrange,
-          yrange = yrange,
-          ...
-        )
-
-    }
+    main_plot <-
+      main_plot +
+      ggpLayerPoints(
+        object = object,
+        alpha_by = alpha_by,
+        color_by = color_by,
+        pt_alpha = pt_alpha,
+        pt_clr = pt_clr,
+        pt_size = pt_size,
+        clrp = pt_clrp,
+        clrsp = pt_clrsp,
+        clrp_adjust = clrp_adjust,
+        smooth = smooth,
+        smooth_span = smooth_span,
+        method_gs = method_gs,
+        transform_with = transform_with,
+        xrange = xrange,
+        yrange = yrange,
+        bcs_rm = bcs_rm,
+        na_rm = na_rm,
+        use_scattermore = use_scattermore,
+        ...
+      )
 
     if(!base::is.null(color_by) &&
        !isNumericVariable(object, variable = color_by)){
@@ -932,9 +935,8 @@ plotSurfaceComparison2 <- function(coords_df,
 
 }
 
-# plotSurfaceI ------------------------------------------------------------
 
-#' @title Plot screening area of IAS-algorithm
+#' @title Plot screening area of SAS-algorithm
 #'
 #' @description Plots the surface of the sample three times with different
 #' coloring to visualize how [`spatialAnnotationScreening()`] screens
@@ -1002,8 +1004,8 @@ setMethod(
 
     if(base::length(pt_clrp) != 2){ pt_clrp <- base::rep(pt_clrp, 2)}
 
-    ias_df <-
-      getIasDf(
+    sas_df <-
+      getSasDf(
         object = object,
         id = id,
         variables = NULL,
@@ -1024,8 +1026,8 @@ setMethod(
 
     if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
 
-    circle_levels <- base::levels(ias_df$bins_circle)
-    angle_levels <- base::levels(ias_df$bins_angle)
+    circle_levels <- base::levels(sas_df$bins_circle)
+    angle_levels <- base::levels(sas_df$bins_angle)
 
     circle_clrp_adjust <-
       confuns::color_vector(
@@ -1051,7 +1053,7 @@ setMethod(
         base::suppressWarnings({
 
           plotSurface(
-            object = ias_df,
+            object = sas_df,
             color_by = "bins_circle",
             pt_clrp = pt_clrp[1],
             clrp_adjust = circle_clrp_adjust,
@@ -1069,7 +1071,7 @@ setMethod(
         base::suppressWarnings({
 
           plotSurface(
-            object = ias_df,
+            object = sas_df,
             color_by = "bins_angle",
             pt_clrp = pt_clrp[2],
             clrp_adjust = angle_clrp_adjust,
@@ -1086,21 +1088,21 @@ setMethod(
 
       p$angle <-
         plotSurface(
-          object = dplyr::filter(ias_df, !bins_circle %in% c("Core", "Outside")),
+          object = dplyr::filter(sas_df, !bins_circle %in% c("Core", "Outside")),
           color_by = "angle",
           pt_size = pt_size,
           pt_clrsp = pt_clrsp,
           pt_alpha = pt_alpha
         ) +
         geom_point_fixed(
-          data = dplyr::filter(ias_df, bins_circle == "Core"),
+          data = dplyr::filter(sas_df, bins_circle == "Core"),
           mapping = ggplot2::aes(x = x, y = y),
           size = pt_size,
           color = color_core,
           alpha = pt_alpha
         ) +
         geom_point_fixed(
-          data = dplyr::filter(ias_df, bins_circle == "Outside"),
+          data = dplyr::filter(sas_df, bins_circle == "Outside"),
           mapping = ggplot2::aes(x = x, y = y),
           size = pt_size,
           color = color_outside,
@@ -1154,7 +1156,7 @@ setMethod(
     binwidth <- object@binwidth
     n_bins_angle <- object@n_bins_angle
 
-    ias_df <-
+    sas_df <-
       bin_by_area(
         coords_df = coords_df,
         area_df = img_ann@area,
@@ -1174,8 +1176,8 @@ setMethod(
 
     if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
 
-    circle_levels <- base::levels(ias_df$bins_circle)
-    angle_levels <- base::levels(ias_df$bins_angle)
+    circle_levels <- base::levels(sas_df$bins_circle)
+    angle_levels <- base::levels(sas_df$bins_angle)
 
     circle_clrp_adjust <-
       confuns::color_vector(
@@ -1201,7 +1203,7 @@ setMethod(
         base::suppressWarnings({
 
           plotSurface(
-            object = ias_df,
+            object = sas_df,
             color_by = "bins_circle",
             pt_clrp = "milo",
             pt_size = pt_size,
@@ -1219,7 +1221,7 @@ setMethod(
         base::suppressWarnings({
 
           plotSurface(
-            object = ias_df,
+            object = sas_df,
             color_by = "bins_angle",
             pt_clrp = "milo",
             pt_size = pt_size,
@@ -1235,21 +1237,21 @@ setMethod(
 
       p$angle <-
         plotSurface(
-          object = dplyr::filter(ias_df, !bins_circle %in% c("Core", "Outside")),
+          object = dplyr::filter(sas_df, !bins_circle %in% c("Core", "Outside")),
           color_by = "angle",
           pt_size = pt_size,
           pt_clrsp = pt_clrsp,
           pt_alpha = pt_alpha
         ) +
         geom_point_fixed(
-          data = dplyr::filter(ias_df, bins_circle == "Core"),
+          data = dplyr::filter(sas_df, bins_circle == "Core"),
           mapping = ggplot2::aes(x = x, y = y),
           size = pt_size,
           color = color_core,
           alpha = pt_alpha
         ) +
         geom_point_fixed(
-          data = dplyr::filter(ias_df, bins_circle == "Outside"),
+          data = dplyr::filter(sas_df, bins_circle == "Outside"),
           mapping = ggplot2::aes(x = x, y = y),
           size = pt_size,
           color = color_outside,

@@ -21,6 +21,7 @@ Imports:
     dbscan,
     dplyr,
     DT,
+    FNN,
     ggalt,
     ggforce,
     ggplot2,
@@ -96,6 +97,7 @@ Collate:
     'o.R'
     'p.R'
     'package-dependencies.R'
+    'plg_handling.R'
     'plotA-D.R'
     'plotF-G.R'
     'plotH-M.R'

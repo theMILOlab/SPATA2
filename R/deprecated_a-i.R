@@ -174,6 +174,14 @@ check_customized_trends <- function(length_trajectory,
 
 }
 
+check_ias_input <- function(...){
+
+  deprecated(fn = TRUE)
+
+  check_sas_input(...)
+
+}
+
 
 check_rtdf <- function(rtdf, variable = NULL){
 

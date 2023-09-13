@@ -12,10 +12,10 @@ createNumericAnnotations(
   tags = NULL,
   tags_expand = TRUE,
   use_dbscan = TRUE,
-  eps = getCCD(object) * 1.25,
-  minPts = 3,
+  eps = recDbscanEps(object),
+  minPts = recDbscanMinPts(object),
   force1 = FALSE,
-  min_size = 5,
+  min_size = nBarcodes(object) * 0.01,
   concavity = 2,
   method_gs = NULL,
   transform_with = NULL,
@@ -90,7 +90,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional slot content given to \code{methods::new()} when
+constructing the \code{SpatialAnnotation} object.}
 }
 \value{
 The input \code{spata2} object containing the added or computed
@@ -217,7 +218,5 @@ to specify the input in pixel you have to use input option 1. In pixel.
 
 }
 \seealso{
-See \code{\link[=mergeSpatialAnnotations]{mergeSpatialAnnotations()}} to merge spatial annotations.
-
-See \code{\link{SpatialAnnotation}}-class for details about the S4 architecture.
+\code{\link[=recDbscanEps]{recDbscanEps()}}, \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
 }

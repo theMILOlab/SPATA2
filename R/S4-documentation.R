@@ -95,9 +95,14 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 #'
 #'  \itemize{
 #'   \item{*ccd*:}{ Center to center distance as a spatial distance measure in SI units.}
-#'   \item{*spot_size*:} {Spot size used to ensure that the size of spots is plotted in a way that
-#'   their borders align perfectly when visualizing them via `ggplot2::geom_point()`.}
+#'   \item{*diameter*:}{ Diameter of each spot in micrometer.}
 #'  }
+#'
+#' For methods that of type *SlideSeq* (currently known *SlideSeqV1*):
+#'
+#'  \itemize{
+#'   \item{*diameter*:}{ Diameter of each bead in micrometer.}
+#'   }
 #'
 #' @inheritSection section_dummy Distance measures
 #'
@@ -262,7 +267,6 @@ HistoImage <- setClass(Class = "HistoImage",
 #' or known entities located on the imaged tissue, such as cells or capture spots.
 #' @slot images list. List of objects of class `HistoImage`. Leaving
 #' @slot method SpatialMethod. Object of class `SpatialMethod`.
-#' slot @@image empty can or should be done for more efficient utilization of memory.
 #' @slot meta list. List for meta data regarding the imaged tissue portion.
 #' @slot misc list. A flexible list for miscellaneous input.
 #' @slot name_img_ref character. The name of the image that is used as a reference for aligning
@@ -349,11 +353,10 @@ SpatialAnnotationScreening <-  setClass(Class = "SpatialAnnotationScreening",
                                           models = "data.frame",
                                           n_bins_angle = "numeric",
                                           n_bins_circle = "numeric",
-                                          results_primary = "data.frame",
+                                          results_by_angle = "data.frame",
                                           results = "data.frame",
                                           sample = "character",
-                                          summarize_with = "character",
-                                          bcsp_exclude = "character"
+                                          summarize_with = "character"
                                         ))
 
 
@@ -849,6 +852,7 @@ default_instructions <- setClass(Class = "default_instructions",
                                             smooth_se = "logical",
                                             smooth_span = "numeric",
                                             uniform_genes = "character",
+                                            use_scattermore = "logical",
                                             verbose = "logical")
 )
 

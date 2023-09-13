@@ -893,6 +893,8 @@ create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = N
 #' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
 #' \code{tags} input arguments. The ID is suffixed with an index for each group.
 #'
+#' @seealso [`recDbscanEps()`], [`recDbscanMinPts()`]
+#'
 #' @export
 createGroupAnnotations <- function(object,
                                    grouping,
@@ -901,9 +903,9 @@ createGroupAnnotations <- function(object,
                                    tags = NULL,
                                    tags_expand = TRUE,
                                    use_dbscan = TRUE,
-                                   eps = getCCD(object)*1.25,
-                                   minPts = 3,
-                                   min_size = 5,
+                                   eps = recDbscanEps(object),
+                                   minPts = recDbscanMinPts(object),
+                                   min_size = nBarcodes(object)*0.01,
                                    force1 = FALSE,
                                    concavity = 2,
                                    overwrite = FALSE,
@@ -937,6 +939,7 @@ createGroupAnnotations <- function(object,
     concavity = concavity,
     eps = eps,
     minPts = minPts,
+    min_size = min_size,
     overwrite = overwrite,
     grouping = grouping, # pass on to addSpatialAnnotation()
     group = group, # ...
@@ -2108,6 +2111,8 @@ createImageAnnotations <- function(object, ...){
 #' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
 #' \code{tags} input arguments. The ID is suffixed with an index for each group.
 #'
+#' @seealso [`recDbscanEps()`], [`recDbscanMinPts()`]
+#'
 #' @examples
 #'
 #'  library(patchwork)
@@ -2139,10 +2144,10 @@ createNumericAnnotations <- function(object,
                                      tags = NULL,
                                      tags_expand = TRUE,
                                      use_dbscan = TRUE,
-                                     eps = getCCD(object)*1.25,
-                                     minPts = 3,
+                                     eps = recDbscanEps(object),
+                                     minPts = recDbscanMinPts(object),
                                      force1 = FALSE,
-                                     min_size = 5,
+                                     min_size = nBarcodes(object)*0.01,
                                      concavity = 2,
                                      method_gs = NULL,
                                      transform_with = NULL,

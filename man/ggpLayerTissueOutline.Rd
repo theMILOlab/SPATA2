@@ -11,8 +11,8 @@ ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{spata2}(
   object,
+  method,
   img_name = NULL,
-  opt = "image",
   by_section = TRUE,
   fragments = FALSE,
   line_alpha = 0.9,
@@ -27,7 +27,7 @@ ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{HistoImaging}(
   object,
-  opt = "image",
+  method,
   img_name = NULL,
   by_section = TRUE,
   fragments = FALSE,
@@ -65,11 +65,6 @@ objects of classes for which a method has been defined.}
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
-\item{opt}{Character value. One of \code{c("coords", "image")}. If \emph{'coords'},
-the outline is computed based on the coordinate position of the plotted entities
-(cells, spots etc.). If \emph{'image'}, the outline is plotted solely based on
-the image analysis results.}
-
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
@@ -85,6 +80,11 @@ provided in pixel units!}
 \item{smooth_with}{Character vaule. Sets the method with which to smooth
 the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.
 If \emph{'none'}, no smoothing is conducted.}
+
+\item{metnod}{Character value. One of \code{c("coords", "image")}. If \emph{'coords'},
+the outline is computed based on the coordinate position of the plotted entities
+(cells, spots etc.). If \emph{'image'}, the outline is plotted solely based on
+the image analysis results.}
 
 \item{inc_outline}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
 }

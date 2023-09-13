@@ -482,6 +482,12 @@ joinWithGeneSets <- function(object,
 
   if(base::isTRUE(smooth)){
 
+    spata_df <- base::as.data.frame(spata_df)
+
+    base::rownames(spata_df) <- spata_df$barcodes
+
+    assign("spata_df", spata_df, envir = .GlobalEnv)
+
     x <- dplyr::pull(spata_df, var = x)
     y <- dplyr::pull(spata_df, var = y)
     smooth_ref <- " and smoothing "
@@ -572,6 +578,8 @@ joinWithGeneSets <- function(object,
             magrittr::set_colnames(value = gene_sets[i]) %>%
             tibble::rownames_to_column(var = "barcodes")
 
+          assign("geneset_vls", geneset_vls, envir = .GlobalEnv)
+
         } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
 
           geneset_vls <-
@@ -620,6 +628,9 @@ joinWithGeneSets <- function(object,
       if(base::isTRUE(smooth)){
 
         variable <- dplyr::pull(.data = geneset_vls, var = gene_sets[i])
+
+        x <- spata_df[geneset_vls$barcodes, ][["x"]]
+        y <- spata_df[geneset_vls$barcodes, ][["y"]]
 
         model <- stats::loess(formula = variable ~ x*y, span = smooth_span/10)
 

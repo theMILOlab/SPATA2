@@ -2,50 +2,45 @@
 % Please edit documentation in R/setA-Z.R
 \name{setCountMatrix}
 \alias{setCountMatrix}
-\alias{setDenoisedMatrix}
-\alias{setNormalizedMatrix}
-\alias{setScaledMatrix}
+\alias{setProcessedMatrix}
 \title{Set data matrices}
 \usage{
-setCountMatrix(object, count_mtr, of_sample = NA)
+setCountMatrix(object, count_mtr, ...)
 
-setDenoisedMatrix(object, denoised_mtr, of_sample = NA)
-
-setNormalizedMatrix(object, normalized_mtr, of_sample = NA)
-
-setScaledMatrix(object, scaled_mtr, of_sample = NA)
+setProcessedMatrix(object, proc_mtr, name, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{count_mtr, normalized_mtr, scaled_mtr, denoised_mtr}{Matrices whose column names refer
-to the barcodes and whose rownames refer to the gene names.}
+\item{count_mtr}{The count matrix with rownames corresponding to the feature names
+and the column names corresponding to the barcodes.}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
+\item{proc_mtr}{The processed matrix with rownames corresponding to the feature names
+and the column names corresponding to the barcodes.}
+
+\item{name}{Character value. The name with which to refer to the processed matrix.}
 }
 \value{
 A spata object containing the set input.
 }
 \description{
-\code{SPATA} in general distinguishes between three types of data matrices.
-There are \emph{count-matrices} containing the raw counts, \emph{normalized-matrices}
-containing (log-)normalized counts, and \emph{scaled-matrices} containing scaled, denoised or in any other
-way processed and normalized count data.
-
-The majority of \code{SPATA}-functions leans on data carried in expression matrices.
-They default to the one that is set as the \emph{active expression matrix} - use
-\code{getActiveMatrixName()} to see which one it currently is. After
-initiating a spata-object \emph{'scaled'} should be the default. After running
-\code{runAutoencoderDenoising()} \emph{'denoised'} becomes the default
-expression matrix.
-
-To set one of those three matrices use these functions.
-To add additional matrices use \code{addExpressionMatrix()}.
+Functions to set data matrices of different assays.
 }
 \details{
 All \code{set*()}-functions offer a save way to set certain
 slots of your spata-object. They do check the input for validity but
 effectively overwrite everything that is occupying the slot to be set -
 use with caution.
+}
+\note{
+\code{SPATA2} in general distinguishes between two types of data matrices.
+There are \emph{count matrices} containing the raw counts, and \emph{processed matrices}
+that contain processed expression data obtained via single or subsequent processing
+steps such as log normalization, scaling, denoising etc. Count matrices are always
+stored in slot @mtr_counts in their \code{\link{Assay}} object and do not need a name. Processed
+matrices are stored in a list stored in slot @mtr_proc of the \code{\link{Assay}} object
+and therefore need further naming. Their name should correspond to the method
+with which they were processed. E.g. \emph{log_norm} if it was created by log normalizing
+the counts. Or \emph{scaled} if it was created by subsequent \emph{scaling} of the \emph{log_norm}
+matrix.
 }

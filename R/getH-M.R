@@ -41,7 +41,7 @@
 getSasBinAreas <- function(object,
                            id,
                            distance = NA_integer_,
-                           n_bins_circle = NA_integer_,
+                           n_bins_dist = NA_integer_,
                            binwidth = getCCD(object),
                            angle_span = c(0, 360),
                            n_bins_angle = 1,
@@ -62,7 +62,7 @@ getSasBinAreas <- function(object,
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       object = object,
       verbose = verbose
     )
@@ -103,7 +103,7 @@ getSasBinAreas <- function(object,
       coords_df = pxl_df,
       area_df = getSpatAnnOutlineDf(object, ids = id),
       binwidth = ias_input$binwidth,
-      n_bins_circle = ias_input$n_bins_circle,
+      n_bins_dist = ias_input$n_bins_dist,
       remove = remove_circle_bins
     ) %>%
       bin_by_angle(
@@ -125,7 +125,7 @@ getSasBinAreas <- function(object,
         bins_order =
           dplyr::case_when(
             bins_circle == "Core" ~ 0,
-            bins_circle == "Outside" ~ (base::max(ias_input$n_bins_circle)+1),
+            bins_circle == "Outside" ~ (base::max(ias_input$n_bins_dist)+1),
             TRUE ~  base::as.numeric(stringr::str_extract(bins_circle, pattern = "\\d*$"))
           )
       ) %>%
@@ -204,65 +204,55 @@ getSasBinAreas <- function(object,
 
 getSasDf <- function(object,
                      id,
-                     distance = NA_integer_,
-                     n_bins_circle = NA_integer_,
-                     binwidth = getCCD(object),
+                     distance = distToEdge(object, id),
+                     binwidth = recBinwidth(object),
+                     n_bins_dist = NA_integer_,
                      angle_span = c(0,360),
                      n_bins_angle = 1,
                      variables = NULL,
                      method_gs = NULL,
-                     summarize_by = c("bins_angle", "bins_circle"),
-                     summarize_with = "mean",
-                     normalize_by = "sample",
-                     normalize = FALSE,
-                     remove_circle_bins = FALSE,
-                     remove_angle_bins = FALSE,
-                     rename_angle_bins = FALSE,
-                     bcsp_exclude = NULL,
+                     summarize_by = c("bins_angle", "bins_dist"),
+                     core = TRUE,
+                     periphery = TRUE,
+                     bcs_exclude = NULL,
                      verbose = FALSE,
                      ...){
 
-  if(base::length(id) > 1){
-
-    base::stopifnot(summarize_with %in% c("mean", "median"))
-
+  sas_df <-
     purrr::map_df(
       .x = id,
       .f = function(idx){
 
-        get_spat_ann_helper(
+        getCoordsDfSA(
           object = object,
-          id = idx,
+          id = id,
           distance = distance,
-          n_bins_circle = n_bins_circle,
+          n_bins_dist = n_bins_dist,
           binwidth = binwidth,
           angle_span = angle_span,
           n_bins_angle = n_bins_angle,
           variables = variables,
-          method_gs = method_gs,
-          summarize_by = summarize_by,
-          summarize_with = summarize_with,
-          normalize_by = normalize_by,
-          normalize = normalize,
-          remove_circle_bins = remove_circle_bins,
-          remove_angle_bins = remove_angle_bins,
-          bcsp_exclude = bcsp_exclude,
-          drop = TRUE,
           verbose = verbose
         ) %>%
-          dplyr::mutate(spat_ann_id = {{idx}})
+          process_coords_df_sa(
+            coords_df = .,
+            variables = variables,
+            core = core,
+            periphery = periphery,
+            bcs_exclude = bcs_exclude
+          )
 
       }
-    ) %>%
-      dplyr::group_by(
-        dplyr::pick(
-          dplyr::any_of(c("bins_circle", "bins_order", "bins_angle"))
-          )
-        ) %>%
+    )
+
+  if(base::length(id) > 1){
+
+    sas_df <-
+      dplyr::group_by(sas_df, dplyr::pick(dplyr::where(base::is.factor))) %>%
       dplyr::summarise(
         dplyr::across(
-          .cols = dplyr::all_of(variables),
-          .fns = summarize_formulas[[summarize_with]]
+          .cols = dplyr::where(base::is.numeric), # summarize `dist`, too
+          .fns = base::mean
         )
       ) %>%
       dplyr::ungroup() %>%
@@ -274,30 +264,9 @@ getSasDf <- function(object,
       ) %>%
       dplyr::select(dplyr::everything())
 
-  } else {
-
-    get_spat_ann_helper(
-      object = object,
-      id = id,
-      distance = distance,
-      n_bins_circle = n_bins_circle,
-      binwidth = binwidth,
-      angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
-      variables = variables,
-      method_gs = method_gs,
-      summarize_by = summarize_by,
-      summarize_with = summarize_with,
-      normalize_by = normalize_by,
-      normalize = normalize,
-      remove_circle_bins = remove_circle_bins,
-      remove_angle_bins = remove_angle_bins,
-      bcsp_exclude = bcsp_exclude,
-      drop = TRUE,
-      verbose = verbose
-    )
-
   }
+
+  return(sas_df)
 
 }
 
@@ -305,7 +274,7 @@ getSasDf <- function(object,
 #' @title Obtain expanded spatial annotation polygons
 #'
 #' @description Expands polygons of spatial annotations according
-#' to `distance`, `binwidth` and `n_bins_circle` input.
+#' to `distance`, `binwidth` and `n_bins_dist` input.
 #'
 #' @inherit spatialAnnotationScreening params
 #'
@@ -316,7 +285,7 @@ getSasExpansion <- function(object,
                             id,
                             distance = NA_integer_,
                             binwidth = getCCD(object),
-                            n_bins_circle = NA_integer_,
+                            n_bins_dist = NA_integer_,
                             direction = "outwards",
                             inc_outline = TRUE,
                             verbose = NULL){
@@ -327,7 +296,7 @@ getSasExpansion <- function(object,
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       object = object,
       verbose = verbose
     )
@@ -335,13 +304,13 @@ getSasExpansion <- function(object,
   area_df <- getSpatAnnOutlineDf(object, ids = id)
 
   binwidth <- ias_input$binwidth
-  n_bins_circle <- base::max(ias_input$n_bins_circle)
+  n_bins_dist <- base::max(ias_input$n_bins_dist)
 
-  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
+  circle_names <- stringr::str_c("Circle", 1:n_bins_dist, sep = " ")
 
   circles <-
     purrr::set_names(
-      x = c((1:n_bins_circle)*binwidth),
+      x = c((1:n_bins_dist)*binwidth),
       nm = circle_names
     )
 

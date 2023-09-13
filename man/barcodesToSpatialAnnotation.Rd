@@ -13,7 +13,7 @@ barcodesToSpatialAnnotation(
   use_dbscan = TRUE,
   eps = getCCD(object) * 1.25,
   minPts = 3,
-  min_size = 5,
+  min_size = nBarcodes(object) * 0.01,
   force1 = FALSE,
   concavity = 2,
   overwrite = FALSE,
@@ -65,7 +65,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional slot content given to \code{methods::new()} when
+constructing the \code{SpatialAnnotation} object.}
 }
 \value{
 The input \code{spata2} object containing the added or computed

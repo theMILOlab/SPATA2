@@ -380,46 +380,189 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
 }
 
-#' @title Remove annotation
+#' @title Remove spatial annotations
 #'
-#' @description Removes annotations within annotation variables.
+#' @description Removes spatial annotations from the spata2 object.
 #'
-#' @param ann_var Character value. The annotation variable that contains
-#' the barcode spot annotations you want to alter.
-#' @param groups Character vector. The annotation / group names you want
-#' to remove.
+#' @param ids Character value. The IDs of the spatial annotations to
+#' remove.
 #'
-#' @details As the default within every annotation variable is \emph{'unnamed'}
-#' removing the annotation effectively renames the annotation back to \emph{'unnamed'}.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @return An updated spata object.
-#'
-#' @keywords internal
+#' @export
 
-removeAnnotation <- function(object, ann_var, groups){
-
-  confuns::is_value(x = ann_var, mode = "character")
-  confuns::is_vec(x = groups, mode = "character")
+removeSpatialAnnotations <- function(object, ids){
 
   confuns::check_one_of(
-    input = ann_var,
-    against = getAnnotationNames(object, fdb_fn = "stop")
+    input = ids,
+    against = getSpatAnnIds(object)
   )
 
-  confuns::check_one_of(
-    input = groups,
-    against = getGroupNames(object, discrete_feature = ann_var)
-  )
+  imaging <- getHistoImaging(object)
 
-  fdata <- getFeatureDf(object = object)
+  imaging@annotations <-
+    imaging@annotations[!base::names(imaging@annotations) %in% ids]
 
-  fdata[[ann_var]][fdata[[ann_var]] %in% groups] <- "unnamed"
-
-  object <- setFeatureDf(object, feature_df = fdata)
+  object <- setHistoImaging(object, imaging = imaging)
 
   return(object)
 
 }
+
+
+
+#' @title Remove genes from the `spata2` object
+#'
+#' @description Functions that removes genes from the `spata2` object by removing
+#' them from count matrix and all processed matrices of the assay.
+#'
+#'  \itemize{
+#'   \item{`removeGenes()`:}{ Removes user specified genes.}
+#'   \item{`removeGenesZeroCounts()`:}{ Removes genes that do not have a single account
+#'   across all data points.}
+#'   \item{`removeGenesStress()`:}{ Removes mitochondrial and stress related genes.}
+#'   }
+#'
+#' @param genes Character vector. Names of genes to remove.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#' @param show_warnings Logical value. If `TRUE`, **warnings** about genes that were not found
+#' although they were mentioned in the vector of genes that are to be discarded
+#' are suppressed.
+#'
+#' @details This step affects the matrices of the object and thus all subsequent
+#' analysis steps. Analysis steps that have already been conducted are not affected!
+#' This includes clustering, DEA, GSEA etc. It is advisable to integrate this
+#' step as early as possible in the processing pipeline.
+#'
+#' @export
+#'
+removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # apply to count matrix
+  count_mtr <- getCountMatrix(object)
+
+  genes_count <- base::rownames(count_mtr)
+
+  if(base::isTRUE(show_warnings)){
+
+    confuns::check_one_of(
+      input = genes,
+      against = genes_count,
+      fdb.fn = "warning",
+      fdb.opt = 2,
+      ref.opt.2 = "genes of count matrix"
+    )
+
+  }
+
+  genes_rm <- genes[genes %in% genes_count]
+
+  count_mtr <- count_mtr[genes_rm, ]
+
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+
+  # apply to other matrices
+  mtr_names <- getProcessedMatrixNames(object)
+
+  if(base::length(mtr_names) >= 1){
+
+    for(mn in mtr_names){
+
+      mtr <- getProcessedMatrix(object, mtr_name = mn)
+
+      genes_mtr <- base::rownames(mtr)
+
+      if(base::isTRUE(show_warnings)){
+
+        confuns::check_one_of(
+          input = genes,
+          against = genes_mtr,
+          fdb.fn = "warning",
+          fdb.opt = 2,
+          ref.opt.2 = glue::glue("genes of matrix '{mn}'")
+        )
+
+      }
+
+      genes_rm_proc <- genes[genes %in% genes_mtr]
+
+      mtr <- mtr[genes_rm_proc, ]
+
+      object <- setProcessedMatrix(object, proc_mtr = mtr, name = mn)
+
+    }
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Removed {base::length(genes_rm)} gene(s)."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+#' @rdname removeGenes
+#' @export
+removeGenesStress <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::give_feedback(
+    msg = "Removing stress genes and mitochondrial genes.",
+    verbose = verbose
+  )
+
+  count_mtr <- getCountMatrix(object)
+
+  genes_rm <-
+    c(
+      base::rownames(count_mtr)[base::grepl("^RPL", base::rownames(count_mtr))],
+      base::rownames(count_mtr)[base::grepl("^RPS", base::rownames(count_mtr))],
+      base::rownames(count_mtr)[base::grepl("^MT-", base::rownames(count_mtr))],
+      c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1')
+    )
+
+  object <-
+    removeGenes(
+      object = object,
+      genes = genes_rm,
+      show_warnings = TRUE,
+      verbose = verbose
+    )
+
+  return(object)
+
+}
+
+#' @rdname removeGenes
+#' @export
+removeGenesZeroCounts <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  count_mtr <- getCountMatrix(object)
+
+  genes_zero_counts <-
+    base::rownames(count_mtr)[Matrix::rowSums(count_mtr) == 0]
+
+  object <-
+    removeGenes(
+      object = object,
+      genes = genes_zero_counts,
+      show_warnings = TRUE,
+      verbose = verbose
+    )
+
+  return(object)
+
+}
+
 
 
 

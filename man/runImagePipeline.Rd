@@ -20,7 +20,7 @@ objects of classes for which a method has been defined.}
 \item{img_name}{Character value. The name of the image whose tissue outline
 is used if \code{method} contains \emph{'outline'}.}
 
-\item{method}{Character vector. The method(s) to use. A combination of \emph{'outline'}
+\item{method}{Character vector. The method(s) to use. A combination of \emph{'image'}
 and/or \emph{'dbscan'}. See details for more.}
 
 \item{test}{Character value. Only required if \code{method = c('dbscan', 'outline')}. If

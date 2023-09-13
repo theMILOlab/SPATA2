@@ -365,6 +365,12 @@ flexible_call_dummy <- function(...){}
 gene_set_path <- function(gene_set_path){}
 
 
+
+#' @title get_names
+#' @return Character vector of names. If no content is present the character
+#' vector is of length 0.
+get_names_dummy <- function(){}
+
 #' @title ggpLayer
 #'
 #' @return \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

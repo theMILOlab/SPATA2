@@ -12,9 +12,9 @@ createGroupAnnotations(
   tags = NULL,
   tags_expand = TRUE,
   use_dbscan = TRUE,
-  eps = getCCD(object) * 1.25,
-  minPts = 3,
-  min_size = 5,
+  eps = recDbscanEps(object),
+  minPts = recDbscanMinPts(object),
+  min_size = nBarcodes(object) * 0.01,
   force1 = FALSE,
   concavity = 2,
   overwrite = FALSE,
@@ -138,7 +138,5 @@ to specify the input in pixel you have to use input option 1. In pixel.
 }
 
 \seealso{
-See \code{\link[=mergeSpatialAnnotations]{mergeSpatialAnnotations()}} to merge spatial annotations.
-
-See \code{\link{SpatialAnnotation}}-class for details about the S4 architecture.
+\code{\link[=recDbscanEps]{recDbscanEps()}}, \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
 }

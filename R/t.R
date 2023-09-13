@@ -251,9 +251,7 @@ theme_ridgeplot_gradient <- function(overlap = 0.5){
   list(
     ggplot2::theme_classic(),
     ggplot2::theme(
-      axis.line.x = ggplot2::element_line(
-        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
-      ),
+      axis.line.x = ggplot2::element_line(),
       axis.line.y = ggplot2::element_blank(),
       axis.text.y = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank(),

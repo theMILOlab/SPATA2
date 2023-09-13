@@ -4,7 +4,7 @@
 \alias{addExpressionMatrix}
 \title{Add an expression matrix}
 \usage{
-addExpressionMatrix(object, expr_mtr, mtr_name, of_sample = "")
+addExpressionMatrix(object, expr_mtr, mtr_name, overwrite = FALSE, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -14,9 +14,6 @@ column names correspond to the barcode-spots.}
 
 \item{mtr_name}{A character value that denotes the name of the exprssion matrix with
 which one can refer to it in subsequent functions.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 The input \code{spata2} object containing the added or computed

@@ -20,13 +20,16 @@ plotSurface(object, ...)
   pt_clr = NULL,
   pt_clrp = NULL,
   pt_clrsp = NULL,
+  pt_size = NULL,
   clrp_adjust = NULL,
   display_image = NULL,
   img_alpha = 1,
   transform_with = NULL,
+  use_scattermore = NULL,
   bcs_rm = NULL,
-  xrange = getCoordsRange(object)$x,
-  yrange = getCoordsRange(object)$y,
+  na_rm = FALSE,
+  xrange = getCaptureArea(object)$x,
+  yrange = getCaptureArea(object)$y,
   verbose = NULL,
   ...
 )
@@ -87,6 +90,8 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
+\item{pt_size}{Numeric value. Specifies the size of all points.}
+
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
@@ -103,6 +108,11 @@ Or it can be a list of functions (and function names).
 Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
+
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
 
 \item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
 to be removed prior to analysis or visualization by their barcode.}
@@ -123,15 +133,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{pt_size}{Numeric value. Specifies the size of all points.}
-
 \item{image}{An image of class \emph{Image} to be displayed in the background.
 Easily accessible via \code{SPATA::image()}.}
-
-\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
-\code{scattermore::geom_scattermore()} which allows quick plotting of several
-thousand data points. If the number of data points plotted is bigger than
-10.000 it is used anyway.}
 
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}

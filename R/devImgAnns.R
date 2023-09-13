@@ -201,7 +201,7 @@ setMethod(
                         class = NULL,
                         tags = NULL,
                         test = "any",
-                        add_image = TRUE,
+                        add_image = containsImage(object),
                         expand = 0,
                         square = FALSE,
                         error = FALSE,
@@ -235,7 +235,7 @@ setMethod(
                         class = NULL,
                         tags = NULL,
                         test = "any",
-                        add_image = TRUE,
+                        add_image = containsImage(objec),
                         expand = 0,
                         square = FALSE,
                         error = FALSE,
@@ -861,17 +861,49 @@ setMethod(
   }
 )
 
-#! integrate that
+
+
+#' @title Merge spatial annotations
+#'
+#' @description Merges the spatial extent of two or more spatial annotations
+#' into one.
+#'
+#' @param ids Character vector of ids from spatial annotations to merge.
+#' @param id Character value. The ID of the new spatial annotation
+#' @param remove_old Logical value. If `TRUE`, the *old* spatial annotations
+#' denoted in `ids` are removed from the object.
+#'
+#' @inherit createGroupAnnotations params
+#' @inherit update_dummy return
+#'
+#' @seealso [`getSpatAnnIds()`]
+#'
+#' @export
+#'
 mergeSpatialAnnotations <- function(object,
                                     ids,
                                     id,
                                     tags = NULL,
                                     tags_expand = TRUE,
-                                    concavity = 3,
-                                    discard_old = FALSE,
+                                    concavity = 2,
+                                    remove_old = FALSE,
                                     overwrite = FALSE){
 
-  pxl_df <- getPixelDf(object)
+  if(containsImage(object)){
+
+    pxl_df <-
+      getPixelDf(object) %>%
+      dplyr::rename(x = width, y = height)
+
+  } else {
+
+    pxl_df <-
+      tidyr::expand_grid(
+        x = 1:getCaptureArea(object, unit = "px")[["x"]][2],
+        y = 1:getCaptureArea(object, unit = "px")[["y"]][2]
+      )
+
+  }
 
   merged_outline <-
     purrr::map_df(
@@ -882,8 +914,8 @@ mergeSpatialAnnotations <- function(object,
 
         pxl_index <-
           sp::point.in.polygon(
-            point.x = pxl_df$width,
-            point.y = pxl_df$height,
+            point.x = pxl_df$x,
+            point.y = pxl_df$y,
             pol.x = outline_df$x,
             pol.y = outline_df$y
           )
@@ -893,15 +925,15 @@ mergeSpatialAnnotations <- function(object,
       }
     ) %>%
     dplyr::distinct() %>%
-    dplyr::select(x = width, y = height) %>%
+    dplyr::select(x, y) %>%
     base::as.matrix() %>%
     concaveman::concaveman(points = ., concavity = concavity) %>%
     tibble::as_tibble() %>%
     magrittr::set_colnames(value = c("x_orig", "y_orig"))
 
-  if(base::isTRUE(discard_old)){
+  if(base::isTRUE(remove_old)){
 
-    object <- discardSpatialAnnotations(object, ids = ids)
+    object <- removeSpatialAnnotations(object, ids = ids)
 
   }
 

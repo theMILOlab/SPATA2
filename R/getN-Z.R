@@ -54,6 +54,40 @@ getPcaMtr <- function(object,
 }
 
 
+#' @rdname getCountMatrix
+#' @export
+getProcessedMatrix <- function(object, mtr_name){
+
+  confuns::check_one_of(
+    input = mtr_name,
+    against = getProcessedMatrixNames(object)
+  )
+
+  object@data[[1]][[mtr_name]]
+
+}
+
+
+#' @title Obtain names of processed matrices
+#'
+#' @description Extract names of processed matrices.
+#'
+#' @inherit argument_dummy params
+#' @inherit get_names_dummy return
+#'
+#' @export
+#'
+getProcessedMatrixNames <- function(object){
+
+  mtr_names <- base::names(object@data[[1]])
+
+  mtr_names <- mtr_names[mtr_names != "counts"]
+
+  return(mtr_names)
+
+}
+
+
 #' @title Obtain trajectory projection
 #'
 #' @description Extracts the projection data.frame of a trajectory. If \code{variables}
@@ -92,6 +126,7 @@ getProjectionDf <- function(object,
   return(out)
 
 }
+
 
 
 
@@ -636,7 +671,7 @@ get_spat_ann_helper <- function(object,
   add_sd <- FALSE
 
   input_list <-
-    check_ias_input(
+    check_sas_input(
       distance = distance,
       binwidth = binwidth,
       n_bins_circle = n_bins_circle,

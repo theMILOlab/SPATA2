@@ -2,7 +2,7 @@
 % Please edit documentation in R/i.R
 \name{imageAnnotationToSegmentation}
 \alias{imageAnnotationToSegmentation}
-\title{Convert image annotation to segmentation}
+\title{Convert spatial annotation to segmentation}
 \usage{
 imageAnnotationToSegmentation(
   object,
@@ -17,17 +17,17 @@ imageAnnotationToSegmentation(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector. Specifies the image annotation(s) of interest.
-Barcode-spots that fall into the area of these annotations are labeled
+\item{ids}{Character vector. Specifies the spatial annotation(s) of interest.
+data points that fall into the area of these annotations are labeled
 with the input for argument \code{inside}.}
 
 \item{segmentation_name}{Character value. The name of the new segmentation variable.}
 
-\item{inside}{Character value. The group name for the barcode-spots that
-are located inside the area of the image annotation(s).}
+\item{inside}{Character value. The group name for the data points that
+are located inside the area of the spatial annotation(s).}
 
-\item{outside}{Character value. The group name for the barcode-spots that
-are located outside the area of the image annotation(s).}
+\item{outside}{Character value. The group name for the data points that
+are located outside the area of the spatial annotation(s).}
 
 \item{overwrite}{Logical. Set to TRUE to overwrite existing variables with
 the same name.}
@@ -37,6 +37,6 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Converts one or more image annotations to a binary
+Converts one or more spatial annotations to a binary
 segmentation variable in the feature data.frame.
 }

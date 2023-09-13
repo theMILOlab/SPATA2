@@ -195,43 +195,35 @@ setCoordsDf <- function(object, coords_df, ...){
 
 #' @title Set data matrices
 #'
-#' @description \code{SPATA} in general distinguishes between three types of data matrices.
-#' There are \emph{count-matrices} containing the raw counts, \emph{normalized-matrices}
-#' containing (log-)normalized counts, and \emph{scaled-matrices} containing scaled, denoised or in any other
-#' way processed and normalized count data.
-#'
-#' The majority of \code{SPATA}-functions leans on data carried in expression matrices.
-#' They default to the one that is set as the \emph{active expression matrix} - use
-#' \code{getActiveMatrixName()} to see which one it currently is. After
-#' initiating a spata-object \emph{'scaled'} should be the default. After running
-#'  \code{runAutoencoderDenoising()} \emph{'denoised'} becomes the default
-#' expression matrix.
-#'
-#' To set one of those three matrices use these functions.
-#' To add additional matrices use \code{addExpressionMatrix()}.
+#' @description Functions to set data matrices of different assays.
 #'
 #' @inherit check_sample params
-#' @param count_mtr,normalized_mtr,scaled_mtr,denoised_mtr Matrices whose column names refer
-#' to the barcodes and whose rownames refer to the gene names.
+#' @param count_mtr The count matrix with rownames corresponding to the feature names
+#' and the column names corresponding to the barcodes.
+#' @param proc_mtr The processed matrix with rownames corresponding to the feature names
+#' and the column names corresponding to the barcodes.
+#' @param name Character value. The name with which to refer to the processed matrix.
 #'
 #' @inherit set_dummy details return
+#'
+#' @note \code{SPATA2} in general distinguishes between two types of data matrices.
+#' There are *count matrices* containing the raw counts, and *processed matrices*
+#' that contain processed expression data obtained via single or subsequent processing
+#' steps such as log normalization, scaling, denoising etc. Count matrices are always
+#' stored in slot @@mtr_counts in their [`Assay`] object and do not need a name. Processed
+#' matrices are stored in a list stored in slot @@mtr_proc of the [`Assay`] object
+#' and therefore need further naming. Their name should correspond to the method
+#' with which they were processed. E.g. *log_norm* if it was created by log normalizing
+#' the counts. Or *scaled* if it was created by subsequent *scaling* of the *log_norm*
+#' matrix.
+#'
 #' @export
 
-setCountMatrix <- function(object, count_mtr, of_sample = NA){
+setCountMatrix <- function(object, count_mtr, ...){
 
-  check_object(object)
+  deprecated(...)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  ###### New for Test
-
-  #New argument potentially rising probmens in linux
-  #if(!class(object@data[[of_sample]])=="list"){ object@data[[of_sample]]=list() }
-
-  ########
-
-
-  object@data[[of_sample]][["counts"]] <- count_mtr
+  object@data[[1]][["counts"]] <- count_mtr
 
   return(object)
 
@@ -416,19 +408,6 @@ setDefaultTrajectory <- function(object, id, verbose = NULL){
 setDefaultTrajectoryId <- setDefaultTrajectory
 
 
-#' @rdname setCountMatrix
-#' @export
-setDenoisedMatrix <- function(object, denoised_mtr, of_sample = NA){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  object@data[[of_sample]][["denoised"]] <- denoised_mtr
-
-  return(object)
-
-}
 
 
 
@@ -446,6 +425,11 @@ setDirectoryInstructions <- function(object){
   return(object)
 
 }
+
+
+
+# setE --------------------------------------------------------------------
+
 
 # setF --------------------------------------------------------------------
 
@@ -839,22 +823,6 @@ setInitiationInfo <- function(object, additional_input = list()){
 
 # setN --------------------------------------------------------------------
 
-#' @rdname setCountMatrix
-#' @export
-setNormalizedMatrix <- function(object, normalized_mtr, of_sample = NA){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  object@data[[of_sample]][["normalized"]] <- normalized_mtr
-
-  return(object)
-
-}
-
-
-
 # setO --------------------------------------------------------------------
 
 #' @title Set outline variable name
@@ -959,72 +927,75 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 #'
 setPixelScaleFactor <- function(object, pxl_scale_fct = NULL, verbose = NULL){
 
-  hlpr_assign_arguments(object)
 
-  if(base::is.null(pxl_scale_fct)){
 
-    confuns::give_feedback(
-      msg = "Computing pixel scale factor.",
-      verbose = verbose
-    )
 
-    object@information$pxl_scale_fct <-
-      getPixelScaleFactor(
-        object = object,
-        unit =  getSpatialMethod(object)@unit,
-        force = TRUE,
-        verbose = verbose
-      )
 
-  } else {
-
-    base::stopifnot(base::length(pxl_scale_fct) == 1)
-
-    base::stopifnot(base::all(base::class(pxl_scale_fct) == "units"))
-
-    object@information$pxl_scale_fct <- pxl_scale_fct
-
-  }
 
   return(object)
 
 }
 
 
-# setS --------------------------------------------------------------------
 
 #' @rdname setCountMatrix
 #' @export
-setScaledMatrix <- function(object, scaled_mtr, of_sample = NA){
+setProcessedMatrix <- function(object, proc_mtr, name, ...){
 
-  check_object(object)
+  confuns::is_value(x = name, mode = "character")
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  object@data[[of_sample]][["scaled"]] <- scaled_mtr
+  object@data[[1]][[name]] <- proc_mtr
 
   return(object)
 
 }
 
+# setS --------------------------------------------------------------------
 
-#' @title Set the `SpatialMethod` object
+
+
+#' @title Set spatial method
 #'
-#' @description Sets the object of class `SpatialMethod`.
+#' @description Sets the [`SpatialMethod`] object containing information
+#' of the platform used.
 #'
 #' @param method An object of class `SpatialMethod`.
 #' @inherit argument_dummy params
-#' @inherit update_dummy return
 #'
+#' @inherit update_dummy return
 #' @export
 #'
-setSpatialMethod <- function(object, method){
+setGeneric(name = "setSpatialMethod", def = function(object, ...){
 
-  object@information$method <- method
+  standardGeneric(f = "setSpatialMethod")
 
-  return(object)
+})
 
-}
+#' @rdname setSpatialMethod
+#' @export
+setMethod(
+  f = "setSpatialMethod",
+  signature = "spata2",
+  definition = function(object, method, ...){
+
+    base::stopifnot(methods::is(method, class2 = "SpatialMethod"))
+
+    object@information$method <- method
+
+    if(containsHistoImaging(object)){
+
+      imaging <- getHistoImaging(object)
+
+      imaging@method <- method
+
+      object <- setHistoImaging(object, imaging = imaging)
+
+    }
+
+    return(object)
+
+  }
+)
 
 
 #' @title Set slot content of `SpatialMethod` object

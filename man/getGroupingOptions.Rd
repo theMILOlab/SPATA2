@@ -10,8 +10,8 @@ getGroupingOptions(object, ...)
 \item{object}{A valid spata-object.}
 }
 \value{
-Character vector of variables that assign the
-barcode spots to groups.
+Character vector of variables that assign
+data points to groups.
 }
 \description{
 Obtain variable names that group the barcode spots

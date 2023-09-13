@@ -2,6 +2,8 @@
 % Please edit documentation in R/devImaging.R
 \name{createHistoImaging}
 \alias{createHistoImaging}
+\alias{createHistoImagingMERFISH}
+\alias{createHistoImagingSlideSeqV1}
 \alias{createHistoImagingVisium}
 \title{Create an object of class \code{HistoImaging}}
 \usage{
@@ -17,6 +19,23 @@ createHistoImaging(
   misc = list(),
   verbose = TRUE,
   ...
+)
+
+createHistoImagingMERFISH(
+  dir,
+  sample,
+  file_coords = NULL,
+  meta = list(),
+  misc = list(),
+  verbose = TRUE
+)
+
+createHistoImagingSlideSeqV1(
+  dir,
+  sample,
+  file_coords = NULL,
+  meta = list(),
+  misc = list()
 )
 
 createHistoImagingVisium(
@@ -63,6 +82,16 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{dir}{The directory to the output folder of the platform.}
+
+\item{file_coords}{Character value or \code{NULL}. If character, specifies the filename
+\strong{within} the directory \code{dir} that leads to the coordinates .csv file. If \code{NULL}
+the expected filename is tried:
+
+\itemize{
+\item{\emph{MERFISH}:}{ File that contains \emph{'cell_metadata'} and ends with \emph{'.csv'}}
+\item{\emph{SlideSeqV1}:}{ File that ends with \emph{'...MatchedBeadLocation.csv'}}
+\item{\emph{Visium}:}{ File named \emph{'tissue_positions_list.csv'} or \emph{'tissue_positions.csv'}}
+}}
 
 \item{img_ref, img_active}{Character values specifying which of the images to register and how to register
 them. See details of \code{\link{HistoImaging}} for more information about the definitions

@@ -3,7 +3,7 @@
 \name{plotSasBarplot}
 \alias{plotSasBarplot}
 \alias{plotSasBarplotSC}
-\title{Plot IAS barplot}
+\title{Plot SAS barplot}
 \usage{
 plotSasBarplot(
   object,
@@ -11,7 +11,7 @@ plotSasBarplot(
   grouping_variable,
   distance = NA_integer_,
   binwidth = getCCD(object),
-  n_bins_circle = NA_integer_,
+  n_bins_dist = NA_integer_,
   include_area = FALSE,
   unit = getSpatialMethod(object)@unit,
   round = 2,
@@ -34,7 +34,7 @@ plotSasBarplotSC(
   sc_input,
   distance = NA_integer_,
   binwidth = getCCD(object),
-  n_bins_circle = NA_integer_,
+  n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
   include_area = FALSE,
   unit = getSpatialMethod(object)@unit,
@@ -62,21 +62,21 @@ objects of classes for which a method has been defined.}
 \code{getGroupingOptions()} to obtain all valid input options.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
-image annotation to the \emph{horizon} in the periphery up to which the screening
+spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
+information about distance values. Defaults to a distance that covers the whole
+tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{binwidth}{Distance value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
-\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}.
-(See details for more.)}
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
 
 \item{unit}{Character value. The unit in which the distance
-to the image annotation is displayed on the x-axis.
+to the spatial annotation is displayed on the x-axis.
 
 If \code{FALSE}, plots the bin numbers instead.}
 
@@ -93,18 +93,16 @@ to the group and the respective named element denotes the color with which to
 represent the group.}
 
 \item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
-to highlight where the border of the image annotation runs.}
+to highlight where the border of the spatial annotation runs.}
 
 \item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
-represents the border of the image annotation.}
+represents the border of the spatial annotation.}
 
 \item{x_nth}{Numeric value. If the number of breaks/labels on the
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
-
-\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -120,7 +118,7 @@ Must have at least three columns:
 }}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the image annotation.
+an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
 }
 \value{
@@ -128,7 +126,7 @@ A ggplot.
 }
 \description{
 Plots changes in clustering proportion against the distance to
-an image annotation.
+a spatial annotation.
 }
 \section{Distance measures}{
 

@@ -744,24 +744,24 @@ check_gene_sets <- function(object,
 #' @keywords internal
 check_sas_input <- function(distance = NA_integer_,
                             binwidth = NA_integer_,
-                            n_bins_circle = NA_integer_,
+                            n_bins_dist = NA_integer_,
                             object = NULL,
                             verbose = TRUE){
 
-  n_bins_circle <- base::max(n_bins_circle)
+  n_bins_dist <- base::max(n_bins_dist)
 
   # check what is specified
   dist_spec <- !base::is.na(distance)
   binwidth_spec <- !base::is.na(binwidth)
-  n_bins_circle_spec <- !base::is.na(n_bins_circle)
+  n_bins_dist_spec <- !base::is.na(n_bins_dist)
 
   distance_orig <- distance
   binwidth_orig <- binwidth
 
-  if(base::all(dist_spec, binwidth_spec, n_bins_circle_spec)){
+  if(base::all(dist_spec, binwidth_spec, n_bins_dist_spec)){
 
     # binwidth is always set to getCCD() by default
-    # specifying n_bins_circle AND distance manually overwrites binwidth
+    # specifying n_bins_dist AND distance manually overwrites binwidth
     binwidth_spec <- FALSE
 
   }
@@ -792,7 +792,7 @@ check_sas_input <- function(distance = NA_integer_,
 
   if(dist_spec & binwidth_spec){
 
-    n_bins_circle <- base::ceiling(distance / binwidth)
+    n_bins_dist <- base::ceiling(distance / binwidth)
 
     vd <- extract_value(distance_orig)
     vb <- extract_value(binwidth_orig)
@@ -801,14 +801,14 @@ check_sas_input <- function(distance = NA_integer_,
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {vd}{ud} and `binwidth` = {vb}{ub}. Calculated `n_bins_circle` = {n_bins_circle}."
+        "Specified `distance` = {vd}{ud} and `binwidth` = {vb}{ub}. Calculated `n_bins_dist` = {n_bins_dist}."
         ),
       verbose = verbose
     )
 
-  } else if(dist_spec & n_bins_circle){
+  } else if(dist_spec & n_bins_dist){
 
-    binwidth <- distance / n_bins_circle
+    binwidth <- distance / n_bins_dist
 
     vd <- extract_value(distance_orig)
     ud <- extract_unit(distance_orig)
@@ -823,14 +823,14 @@ check_sas_input <- function(distance = NA_integer_,
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `distance` = {vd}{ud} and `n_bins_circle` = {n_bins_circle}. Calculated `binwidth` = {binwidth_ref}{ud}."
+        "Specified `distance` = {vd}{ud} and `n_bins_dist` = {n_bins_dist}. Calculated `binwidth` = {binwidth_ref}{ud}."
         ),
       verbose = verbose
     )
 
-  } else if(n_bins_circle_spec & binwidth_spec){
+  } else if(n_bins_dist_spec & binwidth_spec){
 
-    distance <- n_bins_circle * binwidth
+    distance <- n_bins_dist * binwidth
 
     vb <- extract_value(binwidth_orig)
     ub <- extract_unit(binwidth_orig)
@@ -845,20 +845,20 @@ check_sas_input <- function(distance = NA_integer_,
 
     confuns::give_feedback(
       msg = glue::glue(
-        "Specified `binwidth` = {vb}{ub} and `n_bins_circle` = {n_bins_circle}. Calculated `distance` = {distance_ref}{ub}."
+        "Specified `binwidth` = {vb}{ub} and `n_bins_dist` = {n_bins_dist}. Calculated `distance` = {distance_ref}{ub}."
         ),
       verbose = verbose
     )
 
   } else {
 
-    stop("Invalid input or input combination for arguments `distance`, `binwidth` and `n_bins_circle`.")
+    stop("Invalid input or input combination for arguments `distance`, `binwidth` and `n_bins_dist`.")
 
   }
 
-  n_bins_circle <- 1:n_bins_circle
+  n_bins_dist <- 1:n_bins_dist
 
-  out <- list(distance = distance, n_bins_circle = n_bins_circle, binwidth = binwidth)
+  out <- list(distance = distance, n_bins_dist = n_bins_dist, binwidth = binwidth)
 
   return(out)
 

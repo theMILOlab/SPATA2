@@ -3,42 +3,32 @@
 \name{plotSasRidgeplot}
 \alias{plotSasRidgeplot}
 \alias{plotSasRidgeplotSC}
-\title{Plot IAS rideplot}
+\title{Plot SAS rideplot}
 \usage{
 plotSasRidgeplot(
   object,
   id,
   variables,
-  distance = NA_integer_,
-  n_bins_circle = NA_integer_,
-  binwidth = getCCD(object),
+  distance = distToEdge(object, id),
+  binwidth = recBinwidth(object),
+  n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
-  n_bins_angle = 1,
-  method_gs = NULL,
   smooth_span = 0.3,
   unit = getSpatialMethod(object)@unit,
-  round = 2,
   clrp = NULL,
   clrp_adjust = NULL,
   line_color = "black",
   line_size = 1.5,
   fill = NULL,
   alpha = 1,
-  normalize_by = "sample",
-  summarize_with = "mean",
-  include_area = FALSE,
-  display_border = TRUE,
-  bcsp_exclude = NA_integer_,
   border_linealpha = 0.75,
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
-  x_nth = 7L,
-  sc_input = NULL,
-  ncol = 1,
-  nrow = NULL,
   overlap = 0.5,
   strip_pos = "right",
+  free_y = FALSE,
+  ggpLayers = NULL,
   verbose = NULL,
   ...
 )
@@ -48,7 +38,7 @@ plotSasRidgeplotSC(
   id,
   sc_input,
   distance = NA_integer_,
-  n_bins_circle = NA_integer_,
+  n_bins_dist = NA_integer_,
   binwidth = getCCD(object),
   angle_span = c(0, 360),
   smooth_span = 0.3,
@@ -88,37 +78,27 @@ gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
-image annotation to the \emph{horizon} in the periphery up to which the screening
+spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
+information about distance values. Defaults to a distance that covers the whole
+tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}.
-(See details for more.)}
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
-\item{binwidth}{Distance value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the image annotation.
+an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
-
-\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
-(See details for more.)}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{unit}{Character value. Specifies the desired unit.}
-
-\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
-of \code{base::round()}. Rounds transformed values before they are returned.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
@@ -134,32 +114,12 @@ represent the group.}
 \item{line_size}{Numeric value. Specifies the thicknes of the lines with which
 the trajectory dynamics are displayed.}
 
-\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
-Specifies the function with which the bins are summarized.}
-
-\item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
-to highlight where the border of the image annotation runs.}
-
-\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
-
 \item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
-represents the border of the image annotation.}
+represents the border of the spatial annotation.}
 
-\item{x_nth}{Numeric value. If the number of breaks/labels on the
-x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
-every label is kept. If 2, every second label is kept. If 3, every
-third label is kept. And so on.}
-
-\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
-Must have at least three columns:
-\itemize{
-\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
-\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
-\item{\emph{cell_type} :}{ factor Cell type of the cell.}
-}}
-
-\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -169,103 +129,112 @@ the computational progress will be printed.
 \item{...}{Needed arguments that depend on the input/unit combination. If
 one of both is \emph{'px'}, argument \code{object} must be specified.}
 
+\item{sc_input}{Data.frame that contains the results from single cell deconvolution.
+Must have at least three columns:
+\itemize{
+\item{\emph{x} : }{ numeric. Position of cell on the x axis in pixel.},
+\item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
+\item{\emph{cell_type} :}{ factor Cell type of the cell.}
+}}
+
+\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
+of \code{base::round()}. Rounds transformed values before they are returned.}
+
 \item{scale}{Logical value. If \code{TRUE}, density of cell types is scaled
 to make them comparable. Else, the absolute values defined by count/\code{unit}^2
 is plotted.}
+
+\item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
+to highlight where the border of the spatial annotation runs.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 }
 \value{
 A ggplot.
 }
 \description{
 Plots gene expression changes against the distance to
-an the image annotation using the desing of ridgeplots.
+to the spatial annotation using the desing of ridgeplots.
 }
 \details{
 In conjunction with argument \code{id} which provides the
-ID of the image annotation of interest the arguments \code{distance},
-\code{binwidth}, \code{n_bins_circle}, \code{angle_span} and \code{n_bins_angle} can be used
+ID of the spatial annotation of interest the arguments \code{distance},
+\code{binwidth}, \code{n_bins_dist}, \code{angle_span} and \code{n_bins_angle} can be used
 to specify the exact area that is screened as well as the resolution of the screening.
 
-\bold{How the algorithm works:} During the IAS-algorithm the barcode spots are
-binned according to their localisation to the image annotation. Every bin's mean
+\bold{How the algorithm works:} During the SAS-algorithm the data points are
+binned according to their localisation to the spatial annotation. Every bin's mean
 expression of a given gene is then aligned in an ascending order - mean expression
 of bin 1, mean expression of bin 2, ... up to the last bin, the bin with the
-barcode-spots that lie farest away from the image annotation. This allows to infer
-the gene expression changes in relation to the image annotation and
+data points that lie farest away from the spatial annotation. This allows to infer
+the gene expression changes in relation to the spatial annotation and
 to screen for genes whose expression changes resemble specific biological
 behaviors. E.g. linear ascending: gene expression increases linearly with
-the distance to the image annotation. E.g. immediate descending: gene expression
-is high in close proximity to the image annotation and declines logarithmically
-with the distance to the image annotation.
+the distance to the spatial annotation. E.g. immediate descending: gene expression
+is high in close proximity to the spatial annotation and declines logarithmically
+with the distance to the spatial annotation.
 
 \bold{How circular binning works:}
-To bin barcode-spots according to their localisation to the image annotation
+To bin data points according to their localisation to the spatial annotation
 three parameters are required:
 
 \itemize{
-\item{\code{distance}: The distance from the border of the image annotation to
-the \emph{horizon} in the periphery up to which the screening is conducted. Unit
-of the distance is pixel as is the unit of the image.
+\item{\code{distance}: The distance from the border of the spatial annotation to
+the \emph{horizon} in the periphery up to which the screening is conducted.
 }
-\item{\code{binwidth}: The width of every bin. Unit is pixel.}
-\item{\code{n_bins_circle}: The number of bins that are created.}
+\item{\code{binwidth}: The width of every bin.}
+\item{\code{n_bins_dist}: The number of bins that are created.}
 }
-
-Regarding parameter \code{n_bins_circle}: The suffix \code{_circle} is used for one
-thing to emphasize that bins are created in a circular fashion around the image
-annotation (although the shape of the polygon that was created to encircle the
-image annotation is maintained). Additionally, the suffix is needed to delineate
-it from argument \code{n_bins_angle} which can be used to increase the
-resolution of the screening.
 
 These three parameters stand in the following relation to each other:
 
 \enumerate{
-\item{\code{n_bins_circle} = \code{distance} / \code{binwidth}}
-\item{\code{distance} = \code{n_bins_circle} * \code{binwidth}}
-\item{\code{binwidth} = \code{distance} / \code{n_bins_circle}}
+\item{\code{n_bins_dist} = \code{distance} / \code{binwidth}}
+\item{\code{distance} = \code{n_bins_dist} * \code{binwidth}}
+\item{\code{binwidth} = \code{distance} / \code{n_bins_dist}}
 }
 
 Therefore, only two of the three arguments must be specified as the remaining
 one is calculated. We recommend to stick to the first option: Specifying
 \code{distance} and \code{binwidth} and letting the function calculate
-\code{n_bins_circle}.
+\code{n_bins_dist}.
 
 Once the parameters are set and calculated the polygon that is used to
 define the borders of the spatial annotation is repeatedly expanded by the distance
 indicated by parameter \code{binwidth}. The number of times this expansion is
-repeated is equal to the parameter \code{n_bins_circle}. Every time the
-polygon is expanded, the newly enclosed barcode-spots are binned (grouped)
+repeated is equal to the parameter \code{n_bins_dist}. Every time the
+polygon is expanded, the newly enclosed data points are binned (grouped)
 and the bin is given a number that is equal to the number of the expansion.
-Thus, barcode-spots that are adjacent to the image annotation are binned into
-bin 1, barcode spots that lie a distance of \code{binwidth} away are binned into
+Thus, data points that are adjacent to the spatial annotation are binned into
+bin 1, data points that lie a distance of \code{binwidth} away are binned into
 bin 2, etc.
 
-Note that the function \code{\link[=plotSurfaceSAS]{plotSurfaceSAS()}} allows to visually check
-if your input results in the desired screening.
+Note that \code{\link[=plotSurfaceSAS]{plotSurfaceSAS()}} and/or \code{\link[=ggpLayerExpansionsSAS]{ggpLayerExpansionsSAS()}} allow to
+visually inspect if your input results in the desired screening.
 
-\bold{How the screening works:} For every gene that is included in the
-screening process every bin's mean expression is calculated and then
-aligned in an ascending order - mean expression of bin 1, mean expression
-of bin 2, ... up to the last bin, namely the bin with the barcode-spots that lie
-farest away from the image annotation. This allows to infer
-the gene expression changes in relation to the image annotation and
+\bold{How the screening works:} For every numeric variable (e.g. genes) that
+is included in the screening process every bin's mean expression is calculated
+and then aligned in an ascending order - mean expression of distance bin 1,
+mean expression of distance bin 2, ... up to the last bin, namely the bin
+with the data points that lie farest away from the spatial annotation. This
+allows to infer the gene expression changes in relation to the spatial annotation and
 to screen for genes whose expression changes resemble specific biological
 behaviors. The gene expression change is fitted to every model that is included.
 (Use \code{showModels()} to visualize the predefined models of \code{SPATA2}).
 A gene-model-fit is evaluated twofold:
 
 \itemize{
-\item{Residuals area over the curve}: The area under the curve (AUC) of the
-residuals between the inferred expression changes and the model is calculated,
-normalized against the number of bins and then subtracted from 1.
+\item{Mean Absolute Error}: Description.
+\item{Root Mean Squared Error}: Description.
 \item{Pearson correlation}: The inferred expression changes is correlated
 with the model. (Correlation as well as the corresponding p-value depend
 on the number of bins!)
 }
-
-Eventually, the mean of the RAOC and the Correlation for every gene-model-fit
-is calculated and stored as the IAS-Score.
 }
 \section{Distance measures}{
 

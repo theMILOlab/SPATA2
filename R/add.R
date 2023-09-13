@@ -313,6 +313,7 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 # addE --------------------------------------------------------------------
 
 
+
 #' @title Add an expression matrix
 #'
 #' @description Adds an expression matrix to the object's data slot and
@@ -327,20 +328,30 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 #'
 #' @inherit update_dummy return
 #' @export
+addExpressionMatrix <- function(object, expr_mtr, mtr_name, overwrite = FALSE, ...){
 
-addExpressionMatrix <- function(object, expr_mtr, mtr_name, of_sample = ""){
-
-  check_object(object)
+  deprecated(...)
 
   confuns::is_value(x = mtr_name, mode = "character")
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+  confuns::check_none_of(
+    input = mtr_name,
+    against = getExpressionMatrixNames(object),
+    overwrite = overwrite
+  )
 
-  object@data[[of_sample]][[mtr_name]] <- expr_mtr
+  object@data[[1]][[mtr_name]] <- expr_mtr
 
   return(object)
 
 }
+
+
+
+
+
+
+
 
 
 

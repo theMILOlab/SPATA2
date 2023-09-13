@@ -2630,11 +2630,14 @@ compute_img_scale_fct <- function(hist_img1, hist_img2){
 
 #' @title Compute pixel scale factor
 #'
-#' @description Computes the pixel scale factor. Currently, only possible for spatial methods
-#' *VisiumSmall* and *VisiumLarge*.
+#' @description Computes the pixel scale factor. Only possible for methods
+#' that have a fixed center to center distance between their
+#' observational units (e.g. Visium).
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @seealso [`containsCCD()`], [`getPixelScaleFactor()`], [`setPixelScaleFactor()`]
 #'
 #' @export
 #'
@@ -2669,90 +2672,80 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object, verbose = TRUE, ...){
 
+    containsCCD(object, error = TRUE)
+
     ccd <- getCCD(object)
 
-    # for Visium
-    if(containsMethod(object, method = c("VisiumSmall", "VisiumLarge"))){
+    confuns::give_feedback(
+      msg = "Computing pixel scale factor.",
+      verbose = verbose
+    )
 
-      confuns::give_feedback(
-        msg = "Computing pixel scale factor.",
-        verbose = verbose
+    coords_scale_fct <-
+      getScaleFactor(
+        object = object,
+        img_name = object@name_img_ref,
+        fct_name = "coords"
       )
 
-      coords_scale_fct <-
-        getScaleFactor(
-          object = object,
-          img_name = object@name_img_ref,
-          fct_name = "coords"
-        )
+    coords_df <-
+      getCoordsDf(object, img_name = object@name_img_ref)
 
-      coords_df <-
-        getCoordsDf(object, img_name = object@name_img_ref)
+    bc_origin <- coords_df$barcodes
+    bc_destination <- coords_df$barcodes
 
-      xname <- base::names(coords_df)[4]
-      yname <- base::names(coords_df)[3]
+    spots_compare <-
+      tidyr::expand_grid(bc_origin, bc_destination) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
+        by = "bc_origin"
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
+        by = "bc_destination"
+      ) %>%
+      dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
 
-      bc_origin <- coords_df$barcodes
-      bc_destination <- coords_df$barcodes
+    bcsp_dist_pixel <-
+      dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
+      dplyr::filter(dist_round == base::min(dist_round)) %>%
+      dplyr::ungroup() %>%
+      dplyr::pull(distance) %>%
+      stats::median()
 
-      spots_compare <-
-        tidyr::expand_grid(bc_origin, bc_destination) %>%
-        dplyr::left_join(
-          x = .,
-          y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
-          by = "bc_origin"
-          ) %>%
-        dplyr::left_join(
-          x = .,
-          y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
-          by = "bc_destination"
-          ) %>%
-        dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+    ccd_val <- extract_value(ccd)
+    ccd_unit <- extract_unit(ccd)
 
-      bcsp_dist_pixel <-
-        dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
-        dplyr::group_by(bc_origin) %>%
-        dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
-        dplyr::filter(dist_round == base::min(dist_round)) %>%
-        dplyr::ungroup() %>%
-        dplyr::pull(distance) %>%
-        stats::median()
+    pxl_scale_fct <-
+      units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+      units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
+      base::as.numeric()
 
-      ccd_val <- extract_value(ccd)
-      ccd_unit <- extract_unit(ccd)
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
 
-      pxl_scale_fct <-
-        units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
-        units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
-        base::as.numeric()
+    # set in ref image
+    ref_img <- getHistoImage(object, img_name = object@name_img_ref)
 
-      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
+    ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
 
-      # set in ref image
-      ref_img <- getHistoImage(object, img_name = object@name_img_ref)
+    object <- setHistoImage(object, hist_img = ref_img)
 
-      ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
+    # set in all other slots
+    for(img_name in getImageNames(object, ref = FALSE)){
 
-      object <- setHistoImage(object, hist_img = ref_img)
+      hist_img <- getHistoImage(object, img_name = img_name)
 
-      # set in all other slots
-      for(img_name in getImageNames(object, ref = FALSE)){
+      sf <-
+        base::max(ref_img@image_info$dims)/
+        base::max(hist_img@image_info$dims)
 
-        hist_img <- getHistoImage(object, img_name = img_name)
+      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
 
-        sf <-
-          base::max(ref_img@image_info$dims)/
-          base::max(hist_img@image_info$dims)
-
-        hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
-
-        object <- setHistoImage(object, hist_img = hist_img)
-
-      }
-
-    } else {
-
-      stop(glue::glue("Can not compute pixel scale factor for object of method {object@method@name}."))
+      object <- setHistoImage(object, hist_img = hist_img)
 
     }
 
@@ -2811,10 +2804,50 @@ setMethod(
   definition = contains_ccd
 )
 
+
+#' @title Check availability of cells
+#'
+#' @description Checks if the object revolves around a spatial method
+#' with single cells as the observational unit.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @seealso [`containsSpots()`]
+#'
+#' @export
+#'
+setGeneric(name = "containsCells", def = function(object, ...){
+
+  standardGeneric(f = "containsCells")
+
+})
+
+#' @rdname containsCells
+#' @export
+setMethod(
+  f = "containsCells",
+  signature = "ANY",
+  definition = function(object, error = FALSE){
+
+    out <- getSpatialMethod(object)@observational_unit == "cell"
+
+    if(base::isFALSE(out) && base::isTRUE(error)){
+
+      stop("Object does not contain cells as observational units.")
+
+    }
+
+    return(out)
+
+  }
+)
+
 #' @title Check availability of an image
 #'
-#' @description Checks if slot @@image of the `HistoImage` object
-#' in the `SPATA2` object contains an image or if it is empty.
+#' @description Checks if the input object has an image in the
+#' respective slot or if the slot is empty.
 #'
 #' @inherit argument_dummy params
 #'
@@ -2832,7 +2865,7 @@ setGeneric(name = "containsImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsImage",
-  signature = "spata2",
+  signature = "ANY",
   definition = function(object, img_name = NULL, error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -2880,6 +2913,43 @@ setMethod(
 
   }
 )
+
+#' @title Check if the object contains only a pseudo image
+#'
+#' @description Tests if the object only contains a pseudo image which
+#' makes it not suitable for image depending processes.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+setGeneric(name = "containsPseudoImage", def = function(object, ...){
+
+  setGeneric(name = "containsPseudoImage")
+
+})
+
+#' @rdname containsPseudoImage
+#' @export
+setMethod(
+  f = "containsPseudoImage",
+  signature = "ANY",
+  definition = function(object, error = FALSE){
+
+    img_names <- getImageNames(object)
+
+    out <- base::all(img_names == "pseudo")
+
+    if(base::isTRUE(out) & base::isTRUE(error)){
+
+      stop("This object only contains a pseudo image. It is not suitable for image
+           related functions.")
+
+    }
+
+    return(out)
+
+  })
 
 #' @title Check availability of specific methods
 #'
@@ -3068,6 +3138,45 @@ setMethod(
   }
 )
 
+#' @title Check availability of spots
+#'
+#' @description Checks if the object revolves around a spatial method
+#' with grid based spots as the observational unit.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @seealso [`containsCells()`]
+#'
+#' @export
+#'
+setGeneric(name = "containsSpots", def = function(object, ...){
+
+  standardGeneric(f = "containsSpots")
+
+})
+
+#' @rdname containsSpots
+#' @export
+setMethod(
+  f = "containsSpots",
+  signature = "ANY",
+  definition = function(object, error = FALSE){
+
+    out <- getSpatialMethod(object)@observational_unit == "spot"
+
+    if(base::isFALSE(out) && base::isTRUE(error)){
+
+      stop("Object does not contain spots as observational units.")
+
+    }
+
+    return(out)
+
+  }
+)
+
 #' @title Check availability of tissue outline
 #'
 #' @description Tests if the object contains tissue outline
@@ -3229,15 +3338,8 @@ createHistoImage <- function(dir,
 #' Functions suffixed by the platform name are wrappers written for their
 #' standardized output folder.
 #'
-#' @param sample Character value. The sample name of the tissue.
-#' @param hist_img_ref The `HistoImaging` serving as the reference image.
-#' Should be created with `createHistoImage()`.
-#' @param hist_imgs List of additional `HistoImaging` objects for slot @@images.
 #' @param active Character value. Name of the `HistoImage` that is set
 #' to the active image. Defaults to the reference image.
-#' @param empty_image_slots Logical value. If `TRUE`, content of slot @@image
-#' of all `HistoImage` objects is emptied except for the active one.
-#'
 #' @param coordinates Data.frame of at least three variables:
 #'
 #'  \itemize{
@@ -3248,10 +3350,22 @@ createHistoImage <- function(dir,
 #'
 #' Coordinates should align with the tissue outline of the reference `HistoImage` after being
 #' multiplied withe its coordinate scale factor in slot @@scale_factors$coords.
-#' @param meta List of meta data regarding the tissue.
-#' @param misc List of miscellaneous information.
-#'
 #' @param dir The directory to the output folder of the platform.
+#' @param empty_image_slots Logical value. If `TRUE`, content of slot @@image
+#' of all `HistoImage` objects is emptied except for the active one.
+#' @param file_coords Character value or `NULL`. If character, specifies the filename
+#' **within** the directory `dir` that leads to the coordinates .csv file. If `NULL`
+#' the expected filename is tried:
+#'
+#'  \itemize{
+#'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
+#'   \item{*SlideSeqV1*:}{ File that ends with *'...MatchedBeadLocation.csv'*}
+#'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
+#'   }
+#'
+#' @param hist_img_ref The `HistoImaging` serving as the reference image.
+#' Should be created with `createHistoImage()`.
+#' @param hist_imgs List of additional `HistoImaging` objects for slot @@images.
 #' @param img_ref,img_active
 #' Character values specifying which of the images to register and how to register
 #' them. See details of [`HistoImaging`] for more information about the definitions
@@ -3265,7 +3379,9 @@ createHistoImage <- function(dir,
 #'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
 #' }
 #'
-#'
+#' @param meta List of meta data regarding the tissue.
+#' @param misc List of miscellaneous information.
+#' @param sample Character value. The sample name of the tissue.
 #'
 #' @inherit argument_dummy params
 #'
@@ -3368,6 +3484,152 @@ createHistoImaging <- function(sample,
   return(object)
 
 }
+
+#' @rdname createHistoImaging
+#' @export
+createHistoImagingMERFISH <- function(dir,
+                                      sample,
+                                      file_coords = NULL,
+                                      meta = list(),
+                                      misc = list(),
+                                      verbose = TRUE){
+
+  # read coordinates
+  if(!base::is.character(file_coords)){
+
+    file_coords <-
+      base::list.files(path = dir, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "cell_metadata.*\\.csv$")
+
+    if(base::length(file_coords) == 0){
+
+      stop("Did not find coordinates. If not specified otherwise, directory
+           must contain one '~...cell_metadata...' .csv -file.")
+
+    } else if(base::length(file_coords) > 1){
+
+      stop("Found more than one potential barcode files. Please specify argument
+           `file_coords`.")
+
+    }
+
+  } else {
+
+    file_coords <- base::file.path(dir, file_coords)
+
+    if(!base::file.exists(file_coords)){
+
+      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
+
+    }
+
+  }
+
+  misc[["dirs"]][["coords"]] <- file_coords
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading coordinates from: '{file_coords}'"),
+    verbose = verbose
+  )
+
+  coords_df <- read_coords_merfish(dir_coords = file_coords)
+
+  # create pseudo image
+  pseudo_histo_image <-
+    HistoImage(
+      active = TRUE,
+      image = empty_image,
+      name = "pseudo",
+      reference = TRUE,
+      scale_factors = list(coords = 1)
+    )
+
+  imaging <-
+    HistoImaging(
+      coordinates = coords_df,
+      images = list(pseudo = pseudo_histo_image),
+      meta = meta,
+      method = spatial_methods[["MERFISH"]],
+      misc = misc,
+      name_img_ref = "pseudo",
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(imaging)
+
+}
+
+
+#' @rdname createHistoImaging
+#' @export
+createHistoImagingSlideSeqV1 <- function(dir,
+                                         sample,
+                                         file_coords = NULL,
+                                         meta = list(),
+                                         misc = list()){
+
+  # read coordinates
+  if(!base::is.character(file_coords)){
+
+    file_coords <-
+      base::list.files(path = dir, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "MatchedBeadLocation\\.csv$")
+
+    if(base::length(file_coords) == 0){
+
+      stop("Did not find coordinates. If not specified otherwise, directory
+           must contain one '~...MatchedBeadLocation.csv' file.")
+
+    } else if(base::length(file_coords) > 1){
+
+      stop("Found more than one potential barcode files. Please specify argument
+           `file_coords`.")
+
+    }
+
+  } else {
+
+    file_coords <- base::file.path(dir, file_coords)
+
+    if(!base::file.exists(file_coords)){
+
+      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
+
+    }
+
+  }
+
+  misc[["misc"]][["coords"]] <- file_coords
+  coords_df <-  read_coords_slide_seq_v1(dir_coords = file_coords)
+
+  # create pseudo image
+  pseudo_histo_image <-
+    HistoImage(
+      active = TRUE,
+      image = empty_image,
+      name = "pseudo",
+      reference = TRUE,
+      scale_factors = list(coords = 1)
+    )
+
+  imaging <-
+    HistoImaging(
+      coordinates = coords_df,
+      images = list(pseudo = pseudo_histo_image),
+      meta = meta,
+      method = SlideSeqV1,
+      misc = misc,
+      name_img_ref = "pseudo",
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(imaging)
+
+}
+
+
 #' @rdname createHistoImaging
 #' @export
 createHistoImagingVisium <- function(dir,
@@ -3426,11 +3688,13 @@ createHistoImagingVisium <- function(dir,
 
     space_ranger_version <- 2
     coords_df <- read_coords_visium(dir_coords = v2_coords_path)
+    misc[["dirs"]][["coords"]] <- v2_coords_path
 
   } else if(v1_coords_path %in% files){
 
     space_ranger_version <- 1
     coords_df <- read_coords_visium(dir_coords = v1_coords_path)
+    misc[["dirs"]][["coords"]] <- v1_coords_path
 
   }
 
@@ -3513,6 +3777,76 @@ createHistoImagingVisium <- function(dir,
   object <- computePixelScaleFactor(object, verbose = verbose)
 
   return(object)
+
+}
+
+
+
+
+# d -----------------------------------------------------------------------
+
+#' @title DBSCAN parameter recommendations
+#'
+#' @description Suggests a value for DBSCAN applications within `SPATA2`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value in case of `recDbscanMinPts()`. Distance measure
+#' in case of `recDbscanEps()`.
+#'
+#' @details
+#' For objects derived from the Visium platform with a fixed center to center
+#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
+#' and `minPts = 3`.
+#'
+#' For objects derived from platforms that do not rely on a fixed grid of
+#' data points (MERFISH, SlideSeq, etc.) we recommend the average minimal
+#' distance between the data points times 10 for `eps` and `minPts = 12`.
+#'
+#' `recDbscanEps()` and `recDbscanMinPts()` are wrappers around these recommendations.
+#'
+#' @export
+#'
+recDbscanEps <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- getCCD(object)*1.25
+
+  } else {
+
+    coords_mtr <-
+      getCoordsDf(object) %>%
+      dplyr::select(x, y) %>%
+      base::as.matrix()
+
+    knn_out <-
+      FNN::knn.dist(data = coords_mtr, k = 1) %>%
+      base::mean()
+
+    out <- knn_out*10
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname recDbscanEps
+#' @export
+recDbscanMinPts <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- 3
+
+  } else {
+
+    out <- 12
+
+  }
+
+  return(out)
 
 }
 
@@ -4253,6 +4587,42 @@ setMethod(
 
 
 
+
+
+# getC --------------------------------------------------------------------
+
+#' @title Obtain capture area
+#'
+#' @description Extracts the frame in which data points are plotted
+#' by default.
+#'
+#' @param unit If character, forces the output unit of the capture area.
+#' @inherit argument_dummy params
+#'
+#' @return List of two length two vectors named *x* and *y*. Values correspond
+#' to the range of the capture area along the respective axis.
+#'
+#' @seealso [`setCaptureArea()`]
+#'
+#' @export
+
+getCaptureArea <- function(object, unit = NULL){
+
+  ca <- getSpatialMethod(object)@capture_area
+
+  if(base::is.character(unit)){
+
+    ca <- purrr::map(.x = ca, .f = ~ as_unit(input = .x, unit = unit, object = object))
+
+  }
+
+  return(ca)
+
+}
+
+
+
+
 # getH --------------------------------------------------------------------
 
 #' @title Obtain object of class \code{HistoImaging}
@@ -4329,7 +4699,7 @@ setMethod(
 
     deprecated(...)
 
-    check_object(object)
+    containsPseudoImage(object, error = TRUE)
 
     feedback_range_input(xrange = xrange, yrange = yrange)
 
@@ -4363,6 +4733,8 @@ setMethod(
                         transform = TRUE,
                         scale_fct = 1,
                         ...){
+
+    containsPseudoImage(object, error = TRUE)
 
     getImage(
       object = getHistoImage(object, img_name),
@@ -5118,8 +5490,8 @@ setMethod(
                         hex_code = FALSE,
                         use_greyscale = FALSE,
                         frgmt_threshold = c(0.0005, 0.01),
-                        dbscan_eps = 1,
-                        dbscan_minPts = 3,
+                        eps = 1,
+                        minPts = 3,
                         ...){
 
     # extract image data and create base pixel df
@@ -6007,10 +6379,10 @@ setMethod(
   }
 )
 
-#' @title Adds barcoded spots to the surface plot
+#' @title Adds data points to the surface plot
 #'
-#' @description Plots the barcoded spots of *Visium* or *SlideSeq*
-#' experiments in space.
+#' @description Adds the data points (beads, cells, spots, etc.) of the object
+#' to the plot.
 #'
 #' @param spot_alpha,spot_size,spot_clr Parameters to set the aesthetics
 #' alpha, size, and color of the spots. Arguments `alpha_by` and `color_by`
@@ -6022,24 +6394,24 @@ setMethod(
 #'
 #' @export
 #'
-setGeneric(name = "ggpLayerSpots", def = function(object, ...){
+setGeneric(name = "ggpLayerPoints", def = function(object, ...){
 
-  standardGeneric(f = "ggpLayerSpots")
+  standardGeneric(f = "ggpLayerPoints")
 
 })
 
-#' @rdname ggpLayerSpots
+#' @rdname ggpLayerPoints
 #' @export
 setMethod(
-  f = "ggpLayerSpots",
+  f = "ggpLayerPoints",
   signature = "spata2",
   definition = function(object,
                         alpha_by = NULL,
                         color_by = NULL,
-                        spot_alpha = 0.9,
-                        spot_clr = "lightgrey",
-                        spot_size = getSpotSize(object),
-                        scale_spot_size = TRUE,
+                        pt_alpha = 0.9,
+                        pt_clr = "lightgrey",
+                        pt_size = NULL,
+                        scale_pt_size = TRUE,
                         clrp = NULL,
                         clrp_adjust = NULL,
                         clrsp = NULL,
@@ -6048,14 +6420,16 @@ setMethod(
                         normalize = NULL,
                         transform_with = NULL,
                         method_gs = NULL,
-                        bcs_rm = NULL,
                         xrange = NULL,
                         yrange = NULL,
                         unit = NULL,
                         breaks = NULL,
                         expand = TRUE,
                         scale_fct = 1,
-                        add_labs = FALSE){
+                        use_scattermore = FALSE,
+                        add_labs = FALSE,
+                        bcs_rm = NULL,
+                        na_rm = FALSE){
 
     hlpr_assign_arguments(object)
 
@@ -6086,14 +6460,14 @@ setMethod(
 
     }
 
-    ggpLayerSpots(
+    ggpLayerPoints(
       object = imaging,
       img_name = NULL,
       alpha_by = alpha_by,
       color_by = color_by,
-      spot_alpha = spot_alpha,
-      spot_clr = spot_clr,
-      spot_size = spot_size,
+      pt_alpha = pt_alpha,
+      pt_clr = pt_clr,
+      pt_size = pt_size,
       clrp = clrp,
       clrp_adjust = clrp_adjust,
       clrsp = clrsp,
@@ -6104,40 +6478,41 @@ setMethod(
       expand = expand,
       bcs_rm = bcs_rm,
       scale_fct = scale_fct,
-      add_labs = add_labs
+      use_scattermore = use_scattermore,
+      add_labs = add_labs,
+      na_rm = na_rm
     )
 
   }
 )
 
 
-#' @rdname ggpLayerSpots
+#' @rdname ggpLayerPoints
 #' @export
 setMethod(
-  f = "ggpLayerSpots",
+  f = "ggpLayerPoints",
   signature = "HistoImaging",
   definition = function(object,
                         img_name = NULL,
                         alpha_by = NULL,
                         color_by = NULL,
-                        spot_alpha = 0.9,
-                        spot_clr = "lightgrey",
-                        spot_size = getSpotSize(object),
+                        pt_alpha = 0.9,
+                        pt_clr = "lightgrey",
+                        pt_size = 1,
                         clrp = "sifre",
                         clrp_adjust = NULL,
                         clrsp = "inferno",
-                        scale_spot_size = TRUE,
+                        scale_pt_size = TRUE,
                         xrange = NULL,
                         yrange = NULL,
                         unit = NULL,
                         breaks = NULL,
                         expand = TRUE,
                         bcs_rm = NULL,
+                        na_rm = FALSE,
                         scale_fct = 1,
+                        use_scattermore = FALSE,
                         add_labs = FALSE){
-
-    # validate input
-    containsMethod(object, method_name = "Visium", error = TRUE)
 
     coords_df <- getCoordsDf(object)
 
@@ -6152,7 +6527,7 @@ setMethod(
 
       xspec <- FALSE
       xrange <-
-        c("0mm", getSpatialMethod(object)@fiducial_frame[["x"]]) %>%
+        getCaptureArea(object)[["x"]] %>%
         as_pixel(input = ., object = object)
 
     } else {
@@ -6166,7 +6541,7 @@ setMethod(
 
       yspec <- FALSE
       yrange <-
-        c("0mm", getSpatialMethod(object)@fiducial_frame[["y"]]) %>%
+        getCaptureArea(object)[["y"]] %>%
         as_pixel(input = ., object = object)
 
     } else {
@@ -6177,12 +6552,23 @@ setMethod(
     }
 
     # scale spot size to plot frame
-    if(base::isTRUE(scale_spot_size)){
+    if(base::isTRUE(scale_pt_size)){
 
       mx_range <- base::max(c(base::diff(xrange), base::diff(yrange)))
-      mx_dims <- base::max(getImageDims(object))
 
-      spot_size <- (mx_dims/mx_range)*spot_size
+      if(containsImage(object)){
+
+        mx_dims <- base::max(getImageDims(object))
+
+      } else {
+
+        mx_dims <-
+          purrr::map_dbl(coords_df[,c("x", "y")], .f = base::max) %>%
+          base::max()
+
+      }
+
+      pt_size <- (mx_dims/mx_range)*pt_size
 
     }
 
@@ -6228,15 +6614,17 @@ setMethod(
 
     # use method for data.frame
     out[["spots"]] <-
-      ggpLayerSpots(
+      ggpLayerPoints(
         object = coords_df,
         alpha_by = alpha_by,
         color_by = color_by,
-        spot_alpha = spot_alpha,
-        spot_clr = spot_clr,
-        spot_size = spot_size,
+        pt_alpha = pt_alpha,
+        pt_clr = pt_clr,
+        pt_size = pt_size,
         scale_fct = scale_fct,
-        bcs_rm = bcs_rm
+        use_scattermore = use_scattermore,
+        bcs_rm = bcs_rm,
+        na_rm = na_rm
       )
 
     out[["coord_equal"]] <-
@@ -6280,26 +6668,25 @@ setMethod(
   }
 )
 
-#' @rdname ggpLayerSpots
+#' @rdname ggpLayerPoints
 #' @export
 setMethod(
-  f = "ggpLayerSpots",
+  f = "ggpLayerPoints",
   signature = "data.frame",
   definition = function(object,
                         alpha_by = NULL,
                         color_by = NULL,
-                        spot_alpha = 0.9,
-                        spot_clr = "lightgrey",
-                        spot_size = 1,
+                        pt_alpha = 0.9,
+                        pt_clr = "lightgrey",
+                        pt_size = 1,
                         scale_fct = 1,
-                        bcs_rm = NULL){
+                        use_scattermore = FALSE,
+                        bcs_rm = NULL,
+                        na_rm = FALSE){
+
+    pt_color <- pt_clr
 
     # adjust params to mapped aesthetics
-
-    pt_alpha <- spot_alpha
-    pt_color <- spot_clr
-    pt_size <- spot_size
-
     params <-
       adjust_ggplot_params(
         params = list(color = pt_color, size = pt_size, alpha = pt_alpha)
@@ -6339,12 +6726,34 @@ setMethod(
         )
       )
 
-    # return layer
-    geom_point_fixed(
-      params,
-      data = df,
-      mapping = mapping
-    )
+    if(base::isTRUE(use_scattermore)){
+
+      layer_out <-
+        confuns::make_scattermore_add_on(
+          data = df,
+          mapping = mapping,
+          pt.alpha = pt_alpha,
+          pt.color = pt_color,
+          pt.size = pt_size,
+          alpha.by = alpha_by,
+          color.by = color_by,
+          sctm.interpolate = FALSE,
+          sctm.pixels = c(1024, 1024),
+          na.rm = na_rm
+        )
+
+    } else {
+
+      # return layer
+      layer_out <-
+        geom_point_fixed(
+          params,
+          data = df,
+          mapping = mapping
+        )
+
+    }
+
 
 
   }
@@ -6354,7 +6763,7 @@ setMethod(
 #'
 #' @description Adds a hull that outlines the tissue.
 #'
-#' @param opt Character value. One of `c("coords", "image")`. If *'coords'*,
+#' @param metnod Character value. One of `c("coords", "image")`. If *'coords'*,
 #' the outline is computed based on the coordinate position of the plotted entities
 #' (cells, spots etc.). If *'image'*, the outline is plotted solely based on
 #' the image analysis results.
@@ -6396,8 +6805,8 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "spata2",
   definition = function(object,
+                        method,
                         img_name = NULL,
-                        opt = "image",
                         by_section = TRUE,
                         fragments = FALSE,
                         line_alpha = 0.9,
@@ -6415,7 +6824,7 @@ setMethod(
       getHistoImaging(object) %>%
       ggpLayerTissueOutline(
         object = .,
-        opt = opt,
+        method = method,
         img_name = img_name, # always uses default image
         by_section = by_section,
         fragments = fragments,
@@ -6440,7 +6849,7 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "HistoImaging",
   definition = function(object,
-                        opt = "image",
+                        method,
                         img_name = NULL,
                         by_section = TRUE,
                         fragments = FALSE,
@@ -6453,20 +6862,38 @@ setMethod(
                         expand_outline = 0,
                         ...){
 
+    confuns::check_one_of(
+      input = method,
+      against = c("coords", "image")
+    )
 
-    if(opt == "coords"){
-
-      containsSpatialOutliers(object, error = TRUE)
+    if(method == "coords"){
 
       coords_df <-
-        getCoordsDf(object, img_name = img_name) %>%
-        dplyr::filter(section != "artefact")
+        getCoordsDf(object, img_name = img_name)
 
       if(base::isFALSE(by_section)){
 
         coords_df[["section"]] <- "all_spots"
 
+      } else {
+
+        if(!"section" %in% base::names(coords_df)){
+
+          rlang::warn(
+            message = "No section variable found. Consider running `identifySpatialOutliers()` for improved results.",
+            .frequency = "once",
+            .frequency_id = "no_section_variable"
+
+          )
+
+        }
+
+        coords_df[["section"]] <- "tissue_section_1"
+
       }
+
+      coords_df <- dplyr::filter(coords_df, section != "artefact")
 
       out <-
         purrr::map(
@@ -6875,11 +7302,11 @@ setMethod(
 #' Given as an argument to `$spixel_segmentation()` function.
 #' @param compactness_factor Numeric value controlling the compactness of superpixels.
 #' Given as an argument to `$spixel_segmentation()` function.
-#' @param dbscan_eps Numeric value specifying the value of `eps` parameter used in `dbscan::dbscan()`
+#' @param eps Numeric value specifying the value of `eps` parameter used in `dbscan::dbscan()`
 #' when applied on the tissue pixels. If the value is less than 1, it is calculated
 #' as a percentage of the width or height of the image, depending on which is larger.
 #' If the value is greater than or equal to 1, it is taken as an absolute value.
-#' @param dbscan_minPts Numeric value specifying the value of `minPts` parameter used in `dbscan::dbscan()`
+#' @param minPts Numeric value specifying the value of `minPts` parameter used in `dbscan::dbscan()`
 #' when applied on the tissue pixels identified as potential tissue. If the value is less than 1,
 #' it is calculated as a percentage of the width or height of the image, depending on which is larger.
 #' If the value is greater than or equal to 1, it is taken as an absolute value.
@@ -6935,8 +7362,8 @@ setMethod(
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 600,
-                        dbscan_eps = 0.005,
-                        dbscan_minPts = 0.005,
+                        eps = 0.005,
+                        minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
 
@@ -6955,8 +7382,8 @@ setMethod(
         percentile = percentile,
         compactness_factor = compactness_factor,
         superpixel = superpixel,
-        dbscan_eps = dbscan_eps,
-        dbscan_minPts = dbscan_minPts,
+        eps = eps,
+        minPts = minPts,
         frgmt_threshold = frgmt_threshold,
         verbose = verbose
       )
@@ -6978,8 +7405,8 @@ setMethod(
                         percentile = 99,
                         compactness_factor = 10,
                         superpixel = 1000,
-                        dbscan_eps = 0.005,
-                        dbscan_minPts = 0.005,
+                        eps = 0.005,
+                        minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
 
@@ -7004,8 +7431,8 @@ setMethod(
           percentile = percentile,
           compactness_factor = compactness_factor,
           superpixel = superpixel,
-          dbscan_eps = dbscan_eps,
-          dbscan_minPts = dbscan_minPts,
+          eps = eps,
+          minPts = minPts,
           frgmt_threshold = frgmt_threshold,
           verbose = verbose
         )
@@ -7028,8 +7455,8 @@ setMethod(
                         percentile = 99,
                         compactness_factor = 10,
                         superpixel = 1000,
-                        dbscan_eps = 0.005,
-                        dbscan_minPts = 0.005,
+                        eps = 0.005,
+                        minPts = 0.005,
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
 
@@ -7050,8 +7477,8 @@ setMethod(
         percentile = percentile,
         compactness_factor = compactness_factor,
         superpixel = superpixel,
-        dbscan_eps = dbscan_eps,
-        dbscan_minPts = dbscan_minPts,
+        eps = eps,
+        minPts = minPts,
         frgmt_threshold = frgmt_threshold,
         verbose = verbose
       )
@@ -7078,8 +7505,8 @@ setMethod(
                         compactness_factor = 10,
                         superpixel = 1000,
                         frgmt_threshold = c(0.001, 0.05),
-                        dbscan_eps = 0.005,
-                        dbscan_minPts = 0.005,
+                        eps = 0.005,
+                        minPts = 0.005,
                         verbose = TRUE,
                         ...){
 
@@ -7213,23 +7640,15 @@ setMethod(
           )
       )
 
-    if(dbscan_eps >= 1){
+    if(eps < 1){
 
-      eps <- dbscan_eps
-
-    } else {
-
-      eps <- dbscan_eps * base::max(img_dims[1:2])
+      eps <- eps * base::max(img_dims[1:2])
 
     }
 
-    if(dbscan_minPts >= 1){
+    if(minPts < 1){
 
-      minPts <- dbscan_minPts
-
-    } else {
-
-      minPts <- dbscan_minPts * base::max(img_dims[1:2])
+      minPts <- minPts * base::max(img_dims[1:2])
 
     }
 
@@ -7346,16 +7765,17 @@ setMethod(
 
 #' @title Identify spatial outliers
 #'
-#' @description Assigns observations like cells or spots to the tissue sections or
-#' fragments they are located on or labels them as artefacts/spatial outliers.
+#' @description Assigns data points to the tissue sections or
+#' fragments they are located on or labels them as artefacts/spatial outliers. See
+#' details for more.
 #'
-#' @param method Character vector. The method(s) to use. A combination of *'outline'*
+#' @param method Character vector. The method(s) to use. A combination of *'image'*
 #' and/or *'dbscan'*. See details for more.
 #' @param img_name Character value. The name of the image whose tissue outline
 #' is used if `method` contains *'outline'*.
 #' @param buffer Numeric value. Expands the tissue outline to include observations
 #' that lie on the edge of the outline and are mistakenly removed.
-#' @param dbscan_eps,dbscan_minPts Given to the corresponding arguments of
+#' @param eps,minPts Given to the corresponding arguments of
 #' [`dbscan::dbscan()`] if `method` contains *'dbscan'*.
 #' @param test Character value. Only required if `method = c('dbscan', 'outline')`. If
 #' *'any'*, spots are labeled as outliers if at least one method identifies them
@@ -7367,31 +7787,63 @@ setMethod(
 #' @inherit update_dummy return
 #'
 #' @details
-#' This function identifies spatial outliers using a combination of two methods: *outline* and *dbscan*.
+#' This function categorizes the data points of the object based on their spatial
+#' proximity, grouping those that are close enough to be deemed part of a single
+#' contiguous tissue section. Data points that are isolated and situated at a
+#' significant distance from others are identified as spatial outliers.
+#' The resulting classifications are saved in a 'section' variable within the
+#' object's coordinates data.frame.
 #'
-#' Method *outline*:
-#' The *outline* method involves identifying the tissue outline using the `identifyTissueOutline()` function,
-#' which results in a polygon with multiple vertices. For each observation, the function checks which polygon it falls within
-#' and assigns it to the corresponding group. If an observation does not fall within any of the tissue polygons,
-#' it is considered a spatial outlier.
+#' This function identifies spatial outliers using a combination of two methods:
+#'
+#' Method *tissue_outline*:
+#' The *tissue_outline* method involves the image based tissue outline from the
+#' `identifyTissueOutline()` function. This function has created polygons that
+#' outline the tissue or tissue sections identified in the image. For each data point,
+#' the function checks which polygon it falls within and assigns it to the corresponding
+#' group. If an observation does not fall within any of the tissue polygons, it is
+#' considered a spatial outlier. As this method requires image processing steps, it does not
+#' work for platforms that do not provide images of the analyzed tissue such as
+#' *MERFISH* or *SlideSeq*.
 #'
 #' Method *dbscan*:
-#' The *dbscan* method applies the DBSCAN algorithm to the observations. Please refer to the documentation
-#' of `dbscan::dbscan()` for a more detailed explanation. The `dbscan_eps` and `dbscan_minPts` arguments are passed
-#' directly to the corresponding arguments of the DBSCAN function. Note that if the input object does not contain
-#' a center-to-center distance, `dbscan_eps` must not be set to `NULL`. Observations that are not assigned to any cluster,
-#' indicated by being assigned to cluster 0, are considered spatial outliers.
+#' The *dbscan* method applies the DBSCAN algorithm to the data points. Please
+#' refer to the documentation of `dbscan::dbscan()` for a more detailed explanation.
+#' The `eps` and `minPts` arguments are passed directly to the
+#' corresponding arguments of the DBSCAN function.Data points that are not assigned
+#' to any spatial cluster, indicated by being assigned to cluster 0, are considered
+#' spatial outliers.
 #'
-#' If `method = c('outlier', 'dbscan')`, both algorithms are applied. Whether an observation is considered a spatial outlier
-#' depends on the `test` argument:
+#' For objects derived from the Visium platform with a fixed center to center
+#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
+#' and `minPts = 3`which has worked well for us. For objects derived
+#' from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
+#' we recommend the average minimal distance between the data points times 10 for
+#' `eps` and `minPts = 2`. The function
+#' defaults to these recommendations using [`recDbscanEps()`] and [`recDbscanMinPts()`]
+#' by default. This can, of course, be overwritten manually by the user by
+#' specifying the parameters otherwise!
+#'
+#' If `method = c('tissue_outline', 'dbscan')`, both algorithms are applied. Whether a
+#' data point is considered a spatial outlier depends on the `test` argument:
 #'
 #' \itemize{
-#'  \item{`test = 'any'`:} The observation is considered a spatial outlier if either of the two tests classifies it as an outlier.
-#'  \item{`test = 'all'`:} The observation is considered a spatial outlier only if both tests classify it as an outlier.
+#'  \item{`test = 'any'`:} The data point is considered a spatial outlier if
+#'   either of the two tests classifies it as an outlier.
+#'  \item{`test = 'all'`:} The data point is considered a spatial outlier
+#'   only if both tests classify it as an outlier.
 #' }
-
 #'
-#' @seealso [`identifyTissueOutline()`]
+#' If `method = 'tissue_outline'` or `method = 'dbscan'` only one of the two
+#' methods is applied. Note that for *tissue_outline* the results from the
+#' image processing pipeline must be available.
+#'
+#' The results can be visualized using `plotSurface(object, color_by = "section")`.
+#' In case of bad results the function can be run over and over again with
+#' changing parameters as the results are simply overwritten.
+#'
+#' @seealso [`identifyTissueOutline()`], [`runImagePipeline()`],
+#' [`mergeTissueSections()`]
 #'
 #' @export
 setGeneric(name = "identifySpatialOutliers", def = function(object, ...){
@@ -7406,11 +7858,11 @@ setMethod(
   f = "identifySpatialOutliers",
   signature = "spata2",
   definition = function(object,
-                        method = c("outline", "dbscan"),
-                        img_name = refImage(),
+                        method,
+                        img_name = NULL,
                         buffer = NULL,
-                        dbscan_eps = NULL,
-                        dbscan_minPts = 3,
+                        eps = recDbscanEps(object),
+                        minPts = recDbscanMinPts(object),
                         test = "any",
                         verbose = NULL){
 
@@ -7422,8 +7874,8 @@ setMethod(
         object = .,
         method = method,
         img_name = img_name,
-        dbscan_eps = dbscan_eps,
-        dbscan_minPts = dbscan_minPts,
+        eps = eps,
+        minPts = minPts,
         test = test,
         verbose = verbose
       )
@@ -7442,13 +7894,12 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object,
                         method = c("outline", "dbscan"),
-                        img_name = refImage(object),
+                        img_name = NULL,
                         buffer = NULL,
-                        dbscan_eps = NULL,
-                        dbscan_minPts = 3,
+                        eps = NULL,
+                        minPts = 3,
                         test = "any",
-                        verbose = TRUE
-  ){
+                        verbose = TRUE){
 
     confuns::give_feedback(
       msg = "Identifying spatial outliers.",
@@ -7474,23 +7925,21 @@ setMethod(
 
     if("dbscan" %in% method){
 
-      containsMethod(object, method = c("Visium"), error = TRUE)
+      if(!is_dist(eps)){
 
-      if(!is_dist(dbscan_eps)){
-
-        dbscan_eps <- getCCD(object, unit = "px")*2
+        eps <- getCCD(object, unit = "px")*2
 
       } else {
 
-        dbscan_eps <- as_pixel(input = dbscan_eps, object = object)
+        eps <- as_pixel(input = eps, object = object)
 
       }
 
       coords_df <-
         add_dbscan_variable(
           coords_df = coords_df,
-          eps = dbscan_eps,
-          minPts = dbscan_minPts,
+          eps = eps,
+          minPts = minPts,
           name = "section_dbscan"
         )
 
@@ -7531,7 +7980,7 @@ setMethod(
         }
 
 
-        spot_in_section <-
+        ob_in_section <-
           identify_obs_in_polygon(
             coords_df = coords_df,
             polygon_df = section_df,
@@ -7539,7 +7988,7 @@ setMethod(
           ) %>%
           dplyr::pull(barcodes)
 
-        coords_df[coords_df[["barcodes"]] %in% spot_in_section, "section_outline"] <- section
+        coords_df[coords_df[["barcodes"]] %in% ob_in_section, "section_outline"] <- section
 
       }
 
@@ -9123,9 +9572,9 @@ pixel_df_to_image <- function(pxl_df){
 #'
 #' @param dir_coords Character value. Directory to the coordinates data.frame.
 #'
-#' @return Data.frame of four columns:
+#' @return Data.frame of at least four columns:
 #'  \itemize{
-#'   \item{*id*:}{ Character. Unique identifier of each observation.}
+#'   \item{*barcodes*:}{ Character. Unique identifier of each observation.}
 #'   \item{*exclude*:}{ Logical. Indicates whether to exclude the observation by default.}
 #'   \item{*exclude_reason*:}{ Character. The reason for why to exclude the observation.}
 #'   \item{*x_orig*:}{ Numeric. x-coordinates of the original input.}
@@ -9134,6 +9583,43 @@ pixel_df_to_image <- function(pxl_df){
 #'
 #' @export
 
+read_coords <- function(...){}
+
+#' @rdname read_coords
+#' @export
+read_coords_merfish <- function(dir_coords){
+
+  coords_df <-
+    readr::read_csv(file = dir_coords, show_col_types = FALSE, col_names = TRUE)  %>%
+    dplyr::mutate(
+      barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_"),
+      exclude = FALSE,
+      exclude_reason = ""
+      ) %>%
+    dplyr::select(
+      barcodes, x_orig = center_x, y_orig = center_y,
+      dplyr::everything(),
+      -dplyr::matches("^\\.")
+    )
+
+  return(coords_df)
+
+}
+
+#' @rdname read_coords
+#' @export
+read_coords_slide_seq_v1 <- function(dir_coords){
+
+  coords_df <-
+    readr::read_delim(file = dir_coords, show_col_types = FALSE) %>%
+    magrittr::set_colnames(value = c("barcodes", "x_orig", "y_orig")) %>%
+    dplyr::mutate(exclude = FALSE, exclude_reason = "") %>%
+    tibble::as_tibble()
+
+}
+
+#' @rdname read_coords
+#' @export
 read_coords_visium <- function(dir_coords){
 
   # space ranger v1
@@ -9166,6 +9652,51 @@ read_coords_visium <- function(dir_coords){
   }
 
   return(coords_df)
+
+}
+
+
+#' @title Platform dependent binwidth recommendation
+#'
+#' @description Recommends a binwidth parameter for the spatial screening algorithms
+#' based on the platform used.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details
+#' For objects derived from the Visium platform we recommend a binwidth equal
+#' to the center to center distance as obtained by `getCCD()`.
+#'
+#' For objects derived from platforms that do not rely on a fixed grid of
+#' data points (MERFISH, SlideSeq, etc.) we recommend the average minimal
+#' distance between the data points.
+#'
+#' `recBinwidth()` is a wrapper around these recommendations.
+#'
+#' @return Distance measure.
+#'
+#' @export
+#'
+recBinwidth <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- getCCD(object)
+
+  } else {
+
+    coords_mtr <-
+      getCoordsDf(object) %>%
+      dplyr::select(x, y) %>%
+      base::as.matrix()
+
+    out <-
+      FNN::knn.dist(data = coords_mtr, k = 1) %>%
+      base::mean()
+
+  }
+
+  return(out)
 
 }
 
@@ -9466,6 +9997,14 @@ setMethod(
   }
 )
 
+round_range <- function(coords_range) {
+
+  out <- c(0, 10^base::ceiling(base::log10(coords_range[2])))
+
+  return(out)
+
+}
+
 rotate_sf = function(x) matrix(c(cos(x), sin(x), -sin(x), cos(x)), 2, 2)
 
 
@@ -9491,6 +10030,52 @@ scale_image <- function(image, scale_fct){
   }
 
   return(out)
+
+}
+
+#' @title Set capture area
+#'
+#' @description Sets the capture area for objects from platforms with
+#' varying capture areas / field of view.
+#'
+#' @param x,y Vectors of length two that correspond to the range of the
+#' respective axis. If `NULL`, the respective range stays as is.
+#' @inherit argument_dummy
+#'
+#' @note The spatial methods *VisiumSmall* and *VisiumLarge* have a capture
+#' area by default. You can override it but it is not recommended.
+#'
+#' @seealso [`getCaptureArea()`]
+#'
+#' @export
+
+setCaptureArea <- function(object, x = NULL, y = NULL){
+
+  sm <- getSpatialMethod(object)
+
+  if(!base::is.null(x)){
+
+    base::stopifnot(base::length(x) == 2)
+
+    is_dist(input = x, error = TRUE)
+
+    sm@capture_area$x <- x
+
+  }
+
+  if(!base::is.null(y)){
+
+    base::stopifnot(base::length(y) == 2)
+
+    is_dist(input = y, error = TRUE)
+
+    sm@capture_area$y <- y
+
+  }
+
+  object <- setSpatialMethod(object, method = sm)
+
+  return(object)
 
 }
 
@@ -9588,6 +10173,58 @@ setGeneric(name = "setScaleFactor", def = function(object, ...){
 #' @export
 setMethod(
   f = "setScaleFactor",
+  signature = "spata2",
+  definition = function(object, fct_name, value){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- setScaleFactor(imaging, fct_name = fct_name, value = value)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname setScaleFactor
+#' @export
+setMethod(
+  f = "setScaleFactor",
+  signature = "HistoImaging",
+  definition = function(object, fct_name, value){
+
+    ref_img <- getHistoImageRef(object)
+
+    ref_img <- setScaleFactor(ref_img, fct_name = fct_name, value = value)
+
+    object <- setHistoImage(object, hist_img = ref_img)
+
+    # set in all other images
+    # (no images if only pseudo image exists)
+    for(img_name in getImageNames(object, ref = FALSE)){
+
+      hist_img <- getHistoImage(object, img_name = img_name)
+
+      sf <-
+        base::max(ref_img@image_info$dims)/
+        base::max(hist_img@image_info$dims)
+
+      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname setScaleFactor
+#' @export
+setMethod(
+  f = "setScaleFactor",
   signature = "HistoImage",
   definition = function(object, fct_name, value){
 
@@ -9629,6 +10266,9 @@ stretch_image <- function(image,
   return(image_out)
 
 }
+
+
+
 
 # t -----------------------------------------------------------------------
 
@@ -10108,5 +10748,50 @@ setMethod(
 
 
 
+
+
+
+
+# w -----------------------------------------------------------------------
+
+#' @title Tissue section belonging
+#'
+#' @description Checks to which tissue section the spatial annotation
+#' belongs. (Only required in case of multiple tissue sections per sample.)
+#'
+#' @inherit spatialAnnotationScreening params
+#'
+#' @return Character value.
+#' @export
+
+whichTissueSection <- function(object, id){
+
+  center <- getSpatAnnCenter(object, id = id)
+
+  outline_df <- getTissueOutlineDf(object, by_section = TRUE)
+
+  for(section in base::unique(outline_df$section)){
+
+    section_df <- dplyr::filter(outline_df, section == {{section}})
+
+    test_inside <-
+      sp::point.in.polygon(
+        point.x = center[1],
+        point.y = center[2],
+        pol.x = section_df$x,
+        pol.y = section_df$y
+      )
+
+    if(test_inside == 1){
+
+      break()
+
+    }
+
+  }
+
+  return(section)
+
+}
 
 

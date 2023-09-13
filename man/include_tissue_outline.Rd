@@ -26,7 +26,7 @@ Must contain variables \emph{x}, \emph{y} and \emph{section}.}
 variables.}
 
 \item{ias_circles}{Logical value. If \code{TRUE}, input data.frame is assumed
-to contain polygon coordinates of the expanded image annotation encircling
+to contain polygon coordinates of the expanded spatial annotation encircling
 and sorts them after filtering for those that lie inside the tissue section
 in order to plot them via \code{ggplot2::geom_path()}.}
 

@@ -6,14 +6,12 @@
 \usage{
 processWithSeurat(
   object,
-  NormalizeData = list(normalization.method = "LogNormalize", scale.factor = 1000),
-  FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
+  NormalizeData = TRUE,
+  FindVariableFeatures = TRUE,
   ScaleData = TRUE,
-  RunPCA = list(npcs = 60),
+  RunPCA = list(npcs = 30),
   FindNeighbors = list(dims = 1:30),
-  FindClusters = list(resolution = 0.8),
-  RunTSNE = TRUE,
-  RunUMAP = list(dims = 1:30),
+  FindClusters = TRUE,
   overwrite = FALSE,
   verbose = TRUE
 )
@@ -37,10 +35,6 @@ for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 
 \item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
 
-\item{RunTSNE}{A named list of arguments given to \code{Seurat::RunTSNE()}, TRUE or FALSE.}
-
-\item{RunUMAP}{A named list of arguments given to \code{Seurat::RunUMAP()}, TRUE or FALSE.}
-
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -57,4 +51,8 @@ A wrapper around the most essential processing functions
 of the \code{Seurat} package. A temporary \code{Seurat} object is created using the
 data from the \code{spata2} object and is processed. Then the processed
 data is transferred back to the \code{spata2} object.
+}
+\details{
+By default this function computes a normalized, scaled data which
+is added to the processed matrices under the name \emph{scaled}.
 }

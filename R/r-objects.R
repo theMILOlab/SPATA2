@@ -124,6 +124,7 @@ default_instructions_object <-
                smooth_se = TRUE,
                smooth_span = 0.25,
                uniform_genes = "discard",
+               use_scattermore = FALSE,
                verbose = TRUE)
 
 
@@ -537,6 +538,7 @@ depr_info <-
     ),
     args_spec = list(
       "addSpatialTrajectory" = list("segment_df" = "traj_df", "vertices" = NA_character_),
+      "bin_by_expansion" = list("bcsp_exclude" = "bcs_exclude"),
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
       "getCoordsDf" = list("type" = NA_character_),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
@@ -709,7 +711,16 @@ invalid_img_ann_tests <-
 # m -----------------------------------------------------------------------
 
 #' @export
+MERFISH <-
+  SpatialMethod(
+    name = "MERFISH",
+    observational_unit = "cell",
+    unit = "mm",
+    version = current_spata2_version
+  )
 
+
+#' @export
 model_formulas <-
   list(
     one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
@@ -901,7 +912,15 @@ sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc"))
 si_factors <- c("m" = 1, "dm" = 1/10, "cm" = 1/100, "mm" = 1/10^3, "um" = 1/10^6, "nm" = 1/10^9)
 
 
-
+#' @export
+SlideSeqV1 <-
+  SpatialMethod(
+    method_specifics = list(diameter = "10um"),
+    name = "SlideSeqV1",
+    observational_unit = "bead",
+    unit = "mm",
+    version = current_spata2_version
+  )
 
 smrd_projection_df_names <- c("trajectory_order", "proj_length_binned")
 
@@ -916,6 +935,8 @@ summarize_formulas <-
     "min" = ~ base::min(.x, na.rm = TRUE),
     "sd" = ~ stats::sd(.x, na.rm = TRUE)
   )
+
+
 
 
 # t -----------------------------------------------------------------------
@@ -949,12 +970,12 @@ threshold_scattermore <- 100000
 #' @export
 VisiumSmall <-
   SpatialMethod(
-    capture_area = list(x = "6.5mm", y = "6.5mm"),
-    fiducial_frame = list(x = "8mm", y = "8mm"),
+    capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
+    fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm")),
     info = list(),
-    method_specifics = list(ccd = "100um"),
+    method_specifics = list(ccd = "100um", diameter = "55um"),
     name = "VisiumSmall",
-    observational_unit = "barcoded_spot",
+    observational_unit = "spot",
     unit = "mm",
     version = current_spata2_version
   )
@@ -962,15 +983,16 @@ VisiumSmall <-
 #' @export
 VisiumLarge <-
   SpatialMethod(
-    capture_area = list(x = "11mm", y = "11mm"),
-    fiducial_frame = list(x = "12.5mm", y = "12.5mm"),
+    capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
+    fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm")),
     info = list(),
-    method_specifics = list(ccd = "100um"),
+    method_specifics = list(ccd = "100um", diameter = "55um"),
     name = "VisiumLarge",
-    observational_unit = "barcoded_spot",
+    observational_unit = "spot",
     unit = "mm",
     version = current_spata2_version
   )
+
 
 
 
@@ -981,7 +1003,9 @@ VisiumLarge <-
 #' @export
 spatial_methods <-
   list(
-    Undefined = SpatialMethod(name = "Undefined", version = current_spata2_version),
-    VisiumSmall = VisiumSmall,
-    VisiumLarge = VisiumLarge
+    "MERFISH" = MERFISH,
+    "SlideSeqV1" = SlideSeqV1,
+    "Undefined" = SpatialMethod(name = "Undefined", version = current_spata2_version),
+    "VisiumSmall" = VisiumSmall,
+    "VisiumLarge" = VisiumLarge
   )

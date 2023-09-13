@@ -52,7 +52,7 @@ compute_rmse <- function(gradient, model) {
 evaluate_model_fits <- function(input_df,
                                 var_order,
                                 with_corr = TRUE,
-                                with_raoc = TRUE){
+                                with_raoc = FALSE){
 
   n <- dplyr::n_distinct(input_df[[var_order]])
 
@@ -62,8 +62,8 @@ evaluate_model_fits <- function(input_df,
     dplyr::group_by(input_df, variables, models) %>%
     dplyr::filter(!base::all(base::is.na(values))) %>%
     dplyr::summarize(
-      rauc = {if(with_raoc){ summarize_rauc(x = values_models, y = values, n = {{n}}) }},
-      corr_string = {if(with_corr){ summarize_corr_string(x = values_models, y = values) }},
+      #rauc = {if(with_raoc){ summarize_rauc(x = values_models, y = values, n = {{n}}) }},
+      corr_string = summarize_corr_string(x = values_models, y = values),
       rmse = compute_rmse(gradient = values, model = values_models),
       mae = compute_mae(gradient = values, model = values_models)
     ) %>%

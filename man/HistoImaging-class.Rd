@@ -19,8 +19,7 @@ or known entities located on the imaged tissue, such as cells or capture spots.}
 
 \item{\code{images}}{list. List of objects of class \code{HistoImage}. Leaving}
 
-\item{\code{method}}{SpatialMethod. Object of class \code{SpatialMethod}.
-slot @image empty can or should be done for more efficient utilization of memory.}
+\item{\code{method}}{SpatialMethod. Object of class \code{SpatialMethod}.}
 
 \item{\code{meta}}{list. List for meta data regarding the imaged tissue portion.}
 

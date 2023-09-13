@@ -42,6 +42,7 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
   object@autoencoder <- empty_list
   object@cnv <- empty_list
+  object@data <- empty_list
   object@dea <- empty_list
   object@images <- empty_list
   object@spatial <- empty_list
@@ -56,6 +57,489 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 }
 
 
+
+
+
+#' @title Initiate a `spata2` object from platform MERFISH
+#'
+#' @description Wrapper function around the necessary content to create a
+#' `spata2` object from the standardized output of the MERFISH platform.
+#'
+#' @param directory_merfish Character value. Directory to a MERFISH folder
+#' that should contain a .csv file called *cell_by_gene.csv* and a .csv file
+#' called *cell_metadata.csv*. Deviating filenames can be specified using
+#' arguments `file_counts` and `file_cell_meta`, respectively.
+#' @param file_counts Character value or `NULL`. If character, specifies
+#' the filename of .csv file that contains the gene counts by cell. Use only
+#' if filename deviates from the default.
+#' @param file_cell_meta Character value or `NULL`. If character, specifies
+#' the filename of the .csv file that contains cell meta data, in particular,
+#' spatial location via the variables *center_x* and *center_y*.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return An object of class `spata2`.
+#'
+#' @details MERFISH output does not come with an image. However, many spatial information such
+#' as coordinates, coordinate scale factors or spatial annotations are stored
+#' in class [`HistoImaging`] and [`HistoImage`]. The `spata2` object is equipped
+#' with a `HistoImaging` object that contains an empty `HistoImage` called *pseudo*.
+#'
+#' MERFISH works in micron space. The coordinates of the cellular centroids are
+#' provided in unit um. Therefore no pixel scale factor must be computed or set
+#' to work with SI units.
+#'
+#' @export
+
+initiateSpataObjectMERFISH <- function(directory_merfish,
+                                       sample_name,
+                                       file_counts = NULL,
+                                       file_cell_meta = NULL,
+                                       verbose = TRUE){
+
+  directory_merfish <- base::normalizePath(directory_merfish)
+
+  files_in_dir <-
+    base::list.files(path = directory_merfish, full.names = TRUE)
+
+  # read counts
+  if(!base::is.character(file_counts)){
+
+    file_counts <-
+      stringr::str_subset(files_in_dir, pattern = "cell_by_gene.csv")
+
+    if(base::length(file_counts) == 0){
+
+      stop("Did not find counts. If not specified otherwise, directory must contain
+           one '~...cell_by_gene.csv' file.")
+
+    } else if(base::length(file_counts) > 1){
+
+      stop("Found more than one potential counts file. Please specify argument `file_counts`.")
+
+    }
+
+  } else {
+
+    file_counts <- base::file.path(directory_merfish, file_counts)
+
+    if(!base::file.exists(file_counts)){
+
+      stop(glue::glue("Directory to counts '{file_counts}' does not exist."))
+
+    }
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading counts from: '{file_counts}'."),
+    verbose = verbose
+  )
+
+  if(stringr::str_detect(string = file_counts, pattern = "\\.csv$")){
+
+    count_mtr <-
+      readr::read_csv(file = file_counts, show_col_types = FALSE) %>%
+      dplyr::mutate(barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_")) %>%
+      dplyr::select(-dplyr::matches("^\\.")) %>%
+      tibble::column_to_rownames("barcodes") %>%
+      dplyr::select_if(.predicate = base::is.numeric) %>%
+      base::as.matrix() %>%
+      base::t() %>%
+      Matrix::Matrix()
+
+  } # more options ?
+
+  # create histo imaging
+  imaging <-
+    createHistoImagingMERFISH(
+      dir = directory_merfish,
+      sample = sample_name
+    )
+
+  # create spata2
+  object <-
+    initiateSpataObject_Empty(
+      sample_name = sample_name,
+      spatial_method = imaging@method@name
+    )
+
+  # set required content
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+  object <- setActiveMatrix(object, mtr_name = "counts")
+
+  object <-
+    setFeatureDf(
+      object = object,
+      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
+    )
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  # set active content
+
+  object <-
+    setDefault(
+      object = object,
+      display_image = FALSE, # MERFISH does not come with an image
+      pt_size = 1, # many obs of small size
+      use_scattermore = TRUE # usually to many points for ggplot2 to handle
+    )
+
+  object <- setInitiationInfo(object)
+
+  # set spatial information
+
+  # MERFISH works in micron space
+  pxl_scale_fct <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
+  object <- setScaleFactor(object, fct_name = "pixel", value = pxl_scale_fct)
+
+  object <-
+    setCaptureArea(
+      object = object,
+      x = getCoordsRange(object)$x %>% round_range() %>% as_millimeter(object = object),
+      y = getCoordsRange(object)$y %>% round_range() %>% as_millimeter(object = object)
+    )
+
+  confuns::give_feedback(
+    msg = "Estimated field of view range based on cell coordinates. Specify with `setCaptureaArea()`.",
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+
+#' @title Initiate a `spata2` object from platform SlideSeq
+#'
+#' @description Wrapper function around the necessary content to create a
+#' `spata2` object from the standardized output of the SlideSeq platform.
+#'
+#' @param directory_slide_seq Character value. Directory to a SlideSeq folder
+#' that contains a count matrix and bead locations.
+#' @param file_counts Character value or `NULL`. If character, specifies
+#' the filename of the count matrix. If `NULL`, the SlideSeq folder is skimmed
+#' for a file ending with *.mtx*.
+#' @param file_barcodes Character value or `NULL`. If character, specifies
+#' the filename of the barcode names for the count matrix if it does not
+#' contain column names. If `NULL`, the SlideSeq folder is skimmed
+#' for a file ending with *barcodes.tsv*.
+#' @param file_genes Character value or `NULL`. If character, specifies
+#' the filename of the gene names for the count matrix if it does not
+#' contain row names. If `NULL`, the SlideSeq folder is skimmed
+#' for a file ending with *genes.tsv*.
+#' @param file_coords Character value or `NULL`. If character, specifies
+#' the filename of the coordinates. If `NULL`, the SlideSeq folder is skimmed
+#' for a file ending with *MatchedBeadLocation.csv*.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return An object of class `spata2`.
+#'
+#' @details SlideSeqV1 does not come with an image. However, many spatial information such
+#' as coordinates, coordinate scale factors or spatial annotations are stored
+#' in class [`HistoImaging`] and [`HistoImage`]. The `spata2` object is equipped
+#' with a `HistoImaging` object that contains an empty `HistoImage` called *pseudo*.
+#'
+#' @export
+
+initiateSpataObjectSlideSeqV1 <- function(directory_slide_seq,
+                                          sample_name,
+                                          file_counts = NULL,
+                                          file_barcodes = NULL,
+                                          file_genes = NULL,
+                                          file_coords = NULL,
+                                          verbose = TRUE){
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading from directory {directory_slide_seq}."),
+    verbose = verbose
+  )
+
+  # read counts
+  if(base::is.null(file_counts)){
+
+    file_counts <-
+      base::list.files(path = directory_slide_seq, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "\\.mtx")
+
+    if(base::length(file_counts) == 0){
+
+      stop("Did not find count matrix. Directory must contain a .mtx file.")
+
+    } else if(base::length(file_counts) > 1){
+
+      stop("Found more than one potential count matrices. Please specify argument `mtr`.")
+
+    }
+
+  } else {
+
+    file_counts <- base::file.path(directory_slide_seq, file_counts)
+
+    if(!base::file.exists(file_counts)){
+
+      stop(glue::glue("Directory to count matrix '{file_counts}' does not exist."))
+
+    }
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading count matrix from {file_counts}."),
+    verbose = verbose
+  )
+
+  count_mtr <- Matrix::readMM(file = file_counts)
+
+  # read barcodes
+  if(!base::is.character(base::colnames(count_mtr))){
+
+    if(!base::is.character(file_barcodes)){
+
+      file_barcodes <-
+        base::list.files(path = directory_slide_seq, full.names = TRUE) %>%
+        stringr::str_subset(pattern = "barcodes\\.tsv$")
+
+      if(base::length(file_barcodes) == 0){
+
+        stop("Did not find barcodes. If not specified otherwise, directory must contain one '~...barcodes.tsv' file.")
+
+      } else if(base::length(file_barcodes) > 1){
+
+        stop("Found more than one potential barcode files. Please specify argument `file_barcodes`.")
+
+      }
+
+    } else if(!base::file.exists(file_barcodes)){
+
+      stop(glue::glue("Directory to barcodes '{file_barcodes}' does not exist."))
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading barcodes from '{file_barcodes}'."),
+      verbose = verbose
+    )
+
+    barcodes <-
+      readr::read_tsv(
+        file = file_barcodes,
+        col_names = FALSE,
+        show_col_types = FALSE
+      )
+
+    base::colnames(count_mtr) <- barcodes[[1]]
+
+  }
+
+  # read genes
+  if(!base::is.character(base::rownames(count_mtr))){
+
+    if(!base::is.character(file_genes)){
+
+      file_genes <-
+        base::list.files(path = directory_slide_seq, full.names = TRUE) %>%
+        stringr::str_subset(pattern = "genes\\.tsv$")
+
+      if(base::length(file_genes) == 0){
+
+        stop("Did not find gene names. If not specified otherwise, directory must contain one '~...genes.tsv' file.")
+
+      } else if(base::length(file_genes) > 1){
+
+        stop("Found more than one potential gene files. Please specify argument `file_genes`.")
+
+      }
+
+    } else {
+
+      file_genes <- base::file.path(directory_slide_seq, file_genes)
+
+      if(!base::file.exists(file_genes)){
+
+        stop(glue::glue("Directory to gene names '{file_genes}' does not exist."))
+
+      }
+
+    }
+
+    confuns::give_feedback(
+      msg = glue::glue("Reading gene names from '{file_genes}'."),
+      verbose = verbose
+    )
+
+    gene_names <-
+      readr::read_tsv(
+        file = file_genes,
+        col_names = FALSE,
+        show_col_types = FALSE
+      )
+
+    base::rownames(count_mtr) <- gene_names[[1]]
+
+  }
+
+  # create histo imaging
+  imaging <-
+    createHistoImagingSlideSeqV1(
+      dir = directory_slide_seq,
+      sample = sample_name
+    )
+
+  # create spata2
+  object <-
+    initiateSpataObject_Empty(
+      sample_name = sample_name,
+      spatial_method = imaging@method@name
+    )
+
+  # set required content
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+
+  object <-
+    setFeatureDf(
+      object = object,
+      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
+    )
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  # set active content
+  object <- setActiveMatrix(object, mtr_name = "counts")
+
+  object <- setInitiationInfo(object)
+
+  object <-
+    setDefault(
+      object = object,
+      display_image = FALSE, # SlideSeqV1 does not come with an image)
+      pt_size = 1 # many beads of small size
+    )
+
+  return(object)
+
+}
+
+#' @title Initiate `spata2` object from platform Visium
+#'
+#' @description Wrapper function around the necessary content to create a
+#' `spata2` object from standardized output of the Visium platform.
+#'
+#' @param directory_visium Character value. Directory to a visium folder. Should contain
+#' the subdirectory *'.../spatial'*.
+#' @param sample_name Character value. Name of the sample.
+#' @param mtr The matrix to load. One of `c("filtered", "raw")`.
+#'
+#' @inherit createHistoImagingVisium params
+#'
+#' @seealso [`createHistoImagingVisium`]
+#'
+#' @return An object of class `spata2`.
+#' @export
+#'
+initiateSpataObjectVisium <- function(directory_visium,
+                                      sample_name,
+                                      mtr = "filtered",
+                                      img_active = "lowres",
+                                      img_ref = "lowres",
+                                      verbose = TRUE){
+
+  isDirVisium(dir = directory_visium, error = TRUE)
+
+  # validate and process input directory
+  dir <- base::normalizePath(directory_visium)
+
+  files <- base::list.files(dir, recursive = TRUE, full.names = TRUE)
+
+  # check and load required mtr
+  confuns::check_one_of(
+    input = mtr,
+    against = c("filtered", "raw")
+  )
+
+  if(mtr == "filtered"){
+
+    mtr_pattern <- "filtered_feature_bc_matrix.h5$"
+
+  } else if(mtr == "raw"){
+
+    mtr_pattern <- "raw_feature_bc_matrix.h5$"
+
+  }
+
+  mtr_path <- files[stringr::str_detect(files, pattern = mtr_pattern)]
+
+  if(base::length(mtr_path) > 1){
+
+    warning("Multiple matrices found. Picking first.")
+
+    mtr_path <- mtr_path[1]
+
+  } else if(base::length(mtr_path) == 0){
+
+    stop(glue::glue("'{mtr_pattern}' is missing.", mtr_pattern = stringr::str_remove(mtr_pattern, "\\$")))
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
+    verbose = verbose
+  )
+
+  count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
+
+  # load images
+  imaging <-
+    createHistoImagingVisium(
+      dir = dir,
+      sample = sample_name,
+      img_ref = img_ref,
+      img_active = img_active,
+      verbose = verbose
+    )
+
+  # create spata2 object
+  object <-
+    initiateSpataObject_Empty(
+      sample_name = sample_name,
+      spatial_method = imaging@method@name
+    )
+
+  # set required content
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+
+  object <-
+    setFeatureDf(
+      object = object,
+      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
+    )
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  # set active content
+  object <- setActiveMatrix(object, mtr_name = "counts")
+
+  object <- setInitiationInfo(object)
+
+  # set default
+  object <- setDefault(object, pt_size = getSpotSize(object))
+
+  return(object)
+
+}
+
+
+
+
+
+
+
+
+
+
+# deprecated --------------------------------------------------------------
 
 #' @title Initiate a `spata2` object from a raw count matrix
 #'

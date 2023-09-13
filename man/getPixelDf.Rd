@@ -53,8 +53,8 @@ getPixelDf(object, ...)
   hex_code = FALSE,
   use_greyscale = FALSE,
   frgmt_threshold = c(5e-04, 0.01),
-  dbscan_eps = 1,
-  dbscan_minPts = 3,
+  eps = 1,
+  minPts = 3,
   ...
 )
 }
@@ -80,6 +80,13 @@ This argument works within the \code{SPATA2} distance framework.
 If values are specified in European units of length the input is
 immediately converted to pixel units. See info section \emph{Distance measures}
 for more information.}
+
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
+
+\item{minPts}{Numeric value. Given to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines the
+number of minimum points required in the eps neighborhood for core points
+(including the point itself)}
 
 \item{tissue}{Logical value. If \code{TRUE}, adds a variable called \emph{pxl_group}
 that indicates whether the pixel is placed on a contiguous tissue section, on

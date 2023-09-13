@@ -529,10 +529,10 @@ plotRiverplot <- function(object,
 
 # plotS -------------------------------------------------------------------
 
-#' @title Plot IAS barplot
+#' @title Plot SAS barplot
 #'
 #' @description Plots changes in clustering proportion against the distance to
-#' an image annotation.
+#' a spatial annotation.
 #'
 #' @inherit plotSasLineplot params return
 #' @inherit argument_dummy params
@@ -546,7 +546,7 @@ plotSasBarplot <- function(object,
                            grouping_variable,
                            distance = NA_integer_,
                            binwidth = getCCD(object),
-                           n_bins_circle = NA_integer_,
+                           n_bins_dist = NA_integer_,
                            include_area = FALSE,
                            unit = getSpatialMethod(object)@unit,
                            round = 2,
@@ -568,7 +568,7 @@ plotSasBarplot <- function(object,
     check_sas_input(
       binwidth = binwidth,
       distance = distance,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       object = object,
       verbose = FALSE
     )
@@ -580,7 +580,7 @@ plotSasBarplot <- function(object,
       id = id,
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       summarize_by = FALSE,
       remove_circle_bins = !include_area,
       bcsp_exclude = bcsp_exclude,
@@ -600,7 +600,7 @@ plotSasBarplot <- function(object,
       breaks = bins_order - 1
     )
 
-  # in case of an image annotation that is too small to contain barcode spots
+  # in case of a spatial annotation that is too small to contain barcode spots
   if(base::isTRUE(include_area)){
 
     n_core_spots <-
@@ -613,7 +613,7 @@ plotSasBarplot <- function(object,
 
       warning(
         glue::glue(
-          "`include_area` is TRUE but image annotation {id} is too small to contain barcode spots."
+          "`include_area` is TRUE but spatial annotation {id} is too small to contain barcode spots."
         )
       )
 
@@ -718,7 +718,7 @@ plotSasBarplotSC <- function(object,
                              sc_input,
                              distance = NA_integer_,
                              binwidth = getCCD(object),
-                             n_bins_circle = NA_integer_,
+                             n_bins_dist = NA_integer_,
                              angle_span = c(0,360),
                              include_area = FALSE,
                              unit = getSpatialMethod(object)@unit,
@@ -741,7 +741,7 @@ plotSasBarplotSC <- function(object,
     check_sas_input(
       binwidth = binwidth,
       distance = distance,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       object = object,
       verbose = FALSE
     )
@@ -766,7 +766,7 @@ plotSasBarplotSC <- function(object,
           coords_df = sc_input,
           area_df = getImgAnnBorderDf(object, ids = idx),
           binwidth = sas_input$binwidth,
-          n_bins_circle = sas_input$n_bins_circle,
+          n_bins_dist = sas_input$n_bins_dist,
           remove = rm_cb
         ) %>%
           bin_by_angle(
@@ -789,7 +789,7 @@ plotSasBarplotSC <- function(object,
     )
 
 
-  # in case of an image annotation that is too small to contain barcode spots
+  # in case of a spatial annotation that is too small to contain barcode spots
   if(base::isTRUE(include_area)){
 
     n_core_spots <-
@@ -802,7 +802,7 @@ plotSasBarplotSC <- function(object,
 
       warning(
         glue::glue(
-          "`include_area` is TRUE but image annotation {id} is too small to contain cells."
+          "`include_area` is TRUE but spatial annotation {id} is too small to contain cells."
         )
       )
 
@@ -900,7 +900,7 @@ plotSasBarplotSC <- function(object,
 
 }
 
-#' @title Plot IAS evaluation per variable-model pair
+#' @title Plot SAS evaluation per variable-model pair
 #'
 #' @description Plots inferred gene expression along the distance to an image
 #' annotation against model values.
@@ -927,7 +927,7 @@ plotSasEvaluation <- function(object,
                               method_eval = "corr",
                               distance = NA_integer_,
                               binwidth = ccDist(object),
-                              n_bins_circle = NA_integer_,
+                              n_bins_dist = NA_integer_,
                               angle_span = c(0,360),
                               model_subset = NULL,
                               model_remove = NULL,
@@ -960,7 +960,7 @@ plotSasEvaluation <- function(object,
       id = id,
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       variables = variables,
       remove_circle_bins = TRUE,
       summarize_by = "bins_circle",
@@ -1000,10 +1000,10 @@ plotSasEvaluation <- function(object,
 }
 
 
-#' @title Plot IAS heatmap
+#' @title Plot SAS heatmap
 #'
 #' @description Plots gene expression changes against the distance
-#' an the image annotation using a heatmap.
+#' to the spatial annotation using a heatmap.
 #'
 #' @inherit spatialAnnotationScreening params details
 #' @inherit plotSasLineplot params
@@ -1018,21 +1018,18 @@ plotSasEvaluation <- function(object,
 plotSasHeatmap <- function(object,
                            id,
                            variables,
-                           distance = NA_integer_,
-                           n_bins_circle = NA_integer_,
-                           binwidth = getCCD(object),
+                           distance = distToEdge(object, id),
+                           binwidth = recBinwidth(object),
+                           n_bins_dist = NA_integer_,
                            angle_span = c(0,360),
+                           unit = getSpatialMethod(object)@unit,
                            arrange_rows = "input",
                            method_gs = "mean",
                            smooth_span = 0.4,
                            multiplier = 10,
                            clrsp = "inferno",
                            .cols = dplyr::everything(),
-                           summarize_with = "mean",
                            .f = NULL,
-                           bcsp_exclude = NULL,
-                           include_area = FALSE,
-                           display_border = FALSE,
                            border_linealpha = 0.75,
                            border_linecolor = "black",
                            border_linesize = 1,
@@ -1049,24 +1046,33 @@ plotSasHeatmap <- function(object,
 
   smooth <- TRUE
 
+  sas_input <-
+    check_sas_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_dist,
+      object = object,
+      verbose = verbose
+    )
+
+  distance <- sas_input$distance
+  binwidth <- sas_input$binwidth
+  n_bins_dist <- sas_input$n_bins_dist
+
   # -----
 
   # 2. Data wrangling -------------------------------------------------------
 
-  img_ann_df <-
+  sas_df <-
     getSasDf(
       object = object,
       id = id,
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       n_bins_angle = 1,
       angle_span = angle_span,
       variables = variables,
-      summarize_by = "bins_circle",
-      summarize_with = summarize_with,
-      remove_circle_bins = !include_area,
-      bcsp_exclude = bcsp_exclude,
       verbose = verbose
     ) %>%
     tidyr::pivot_longer(
@@ -1077,9 +1083,9 @@ plotSasHeatmap <- function(object,
 
   wide_df <-
     tidyr::pivot_wider(
-      data = img_ann_df,
+      data = sas_df,
       id_cols = variables,
-      names_from = bins_circle,
+      names_from = bins_dist,
       values_from = "values"
     )
 
@@ -1184,8 +1190,20 @@ plotSasHeatmap <- function(object,
       sas_order = base::factor(x = circle_order, levels = sas_levels),
       variables = base::factor(x = variables, levels = var_levels),
       sas_ord_num = base::as.character(circle_order) %>% stringr::str_remove("^V") %>% base::as.numeric(),
+      dist = scales::rescale(x = sas_ord_num, to = base::range(sas_df$dist)),
       sas_part = "none"
     )
+
+  if(!base::is.null(unit)){
+
+    scale_fct <- getPixelScaleFactor(object, unit = unit)
+    df_smoothed$dist <- df_smoothed$dist * scale_fct
+
+  } else {
+
+    unit <- "px"
+
+  }
 
   if(!base::is.null(.f)){
 
@@ -1198,63 +1216,49 @@ plotSasHeatmap <- function(object,
 
   }
 
-  if(base::isTRUE(display_border)){
-
-    xintercept <- if(base::isTRUE(include_area)){ multiplier + 0.5 } else { 0.5 }
-
-    border_add_on <-
-      ggplot2::geom_vline(
-        xintercept = xintercept,
-        alpha = border_linealpha,
-        color = border_linecolor,
-        size = border_linesize,
-        linetype = border_linetype
-      )
-
-  } else {
-
-    border_add_on <- NULL
-
-  }
-
-  out <-
-    ggplot2::ggplot(data = df_smoothed) +
-    ggplot2::geom_tile(mapping = ggplot2::aes(x = sas_ord_num, y = variables, fill = values)) +
-    border_add_on +
+  ggplot2::ggplot(data = df_smoothed) +
+    ggplot2::geom_tile(mapping = ggplot2::aes(x = dist, y = variables, fill = values)) +
+    ggplot2::geom_vline(
+      xintercept = 0,
+      alpha = border_linealpha,
+      color = border_linecolor,
+      size = border_linesize,
+      linetype = border_linetype
+    ) +
+    ggplot2::coord_cartesian(expand = FALSE) +
     ggplot2::theme_classic() +
-    ggplot2::labs(x = NULL, y = NULL, fill = "Expr.") +
     ggplot2::theme(
       axis.ticks = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_blank(),
       axis.line.y = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_blank(),
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_blank()
     ) +
+    ggplot2::labs(
+      x = glue::glue("Distance to Annotation [{unit}]."),
+      y = NULL,
+      fill = "Expr.") +
     scale_color_add_on(aes = "fill", clrsp = clrsp)
-
-  return(out)
 
 }
 
 
-#' @title Plot IAS lineplot
+#' @title Plot SAS lineplot
 #'
-#' @description Plots gene expression changes against the distance to
-#' an the image annotation using lineplots.
+#' @description Plots expression changes against the distance to
+#' a spatial annotation using lineplots.
 #'
 #' @param facet_by Either \emph{'variables'} or \emph{'bins_angle'}.
 #' If \emph{'bins_angle'} length of \code{variables} must be one.
 #' @param unit Character value. The unit in which the distance
-#' to the image annotation is displayed on the x-axis.
+#' to the spatial annotation is displayed on the x-axis.
 #'
 #' If `FALSE`, plots the bin numbers instead.
 #'
 #' @param display_border Logical value. If `TRUE`, displays a vertical line
-#' to highlight where the border of the image annotation runs.
+#' to highlight where the border of the spatial annotation runs.
 #' @param border_linealpha,border_linecolor,border_linesize,border_linetype Given
 #' to `ggplot2::geom_vline()`. Adjusts appearance of the vertical line that
-#' represents the border of the image annotation.
+#' represents the border of the spatial annotation.
 #'
 #' @inherit as_unit params
 #' @inherit getSasDf params
@@ -1271,433 +1275,128 @@ plotSasHeatmap <- function(object,
 plotSasLineplot <- function(object,
                             id,
                             variables,
-                            distance = NA_integer_,
-                            n_bins_circle = NA_integer_,
-                            binwidth = getCCD(object),
+                            distance = distToEdge(object, id),
+                            binwidth = recBinwidth(object),
+                            n_bins_dist = NA_integer_,
                             angle_span = c(0,360),
                             n_bins_angle = 1,
-                            method_gs = NULL,
                             smooth_span = 0.2,
-                            smooth_se = FALSE,
+                            smooth_se = TRUE,
                             unit = getSpatialMethod(object)@unit,
-                            round = 2,
                             clrp = NULL,
                             clrp_adjust = NULL,
-                            line_color = NULL,
+                            line_color = "black",
                             line_size = 1.5,
-                            facet_by = "variables",
-                            normalize_by = "sample",
-                            summarize_with = "mean",
-                            bcsp_exclude = NULL,
                             nrow = NULL,
                             ncol = NULL,
-                            include_area = FALSE,
-                            display_border = TRUE,
                             border_linealpha = 0.75,
                             border_linecolor = "black",
                             border_linesize = 1,
                             border_linetype = "dashed",
-                            x_nth = 7L,
-                            xi = NULL,
-                            yi = NULL,
-                            model_aid = NULL,
-                            sc_input = NULL,
-                            verbose = NULL,
-                            ...){
+                            ggpLayers = list(),
+                            verbose = NULL){
 
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  # currentyl not in use
-  display_ribbon = FALSE
-  ribbon_alpha = 0.5
-  ribbon_color = "lightgrey"
-  display_error_bar = FALSE
-  sd_alpha = 0.9
-  sd_color = "black"
-
-  add_sd <- FALSE #base::any(base::isTRUE(display_ribbon), base::isTRUE(display_error_bar))
-
-  if(facet_by == "bins_angle"){
-
-    if(!n_bins_angle > 1){
-
-      warning("Facetting by angle with only one angle bin. Increase `n_bins_angle`.")
-
-    }
-
-    if(base::length(variables) > 1){
-
-      warning("Facetting by angle can only display one variable. Taking first element.")
-
-      variables <- variables[1]
-
-    }
-
-    summarize_by <- c("bins_angle", "bins_circle")
-    normalize_by <- "bins_angle"
-
-
-
-  } else {
-
-    summarize_by <- c("bins_circle")
-    normalize_by <- "sample"
-
-    n_bins_angle <- 1
-
-  }
-
-  sas_input <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      object = object,
-      verbose = FALSE
-    )
-
+  # prepare sas df
   variables <- base::unique(variables)
-
-  rm_cb <- c("Core", "Outside")
-
-  if(base::isTRUE(include_area)){
-
-    rm_cb <- "Outside"
-
-  }
 
   sas_df <-
     getSasDf(
       object = object,
       id = id,
-      binwidth = binwidth,
       distance = distance,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
+      binwidth = binwidth,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
-      summarize_by = summarize_by,
-      normalize_by = normalize_by,
-      remove_angle_bins = TRUE,
-      remove_circle_bins = rm_cb,
-      normalize = c(FALSE, FALSE),
-      bcsp_exclude = bcsp_exclude,
-      verbose = verbose
-    )
+      verbose = FALSE
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(variables),
+      names_to = "variables",
+      values_to = "values"
+    ) %>%
+    dplyr::mutate(variables = base::factor(variables, levels = {{variables}}))
 
-  if(!base::is.null(sc_input)){
+  if(unit != "px"){
 
-    sc_df <-
-      inferSingleCellGradient(
-        object = object,
-        sc_input = sc_input,
-        id = id,
-        binwidth = binwidth,
-        distance = distance,
-        angle_span = angle_span,
-        n_bins_angle = n_bins_angle,
-        n_bins_circle = n_bins_circle,
-        remove_circle_bins = rm_cb
-      )
-
-    cell_types <-
-      base::unique(sc_input[["cell_type"]]) %>%
-      base::as.character()
-
-    variables <- c(variables, cell_types)
-
-    sas_df <- dplyr::left_join(x = sas_df, y = sc_df, by = c(summarize_by, "bins_order"))
-
-  }
-
-  # in case of an image annotation that is too small to contain barcode spots
-  if(base::isTRUE(include_area)){
-
-    n_core_spots <-
-      dplyr::filter(sas_df, bins_circle == "Core") %>%
-      base::nrow()
-
-    include_area <- n_core_spots >= 1
-
-    if(n_core_spots == 0){
-
-      warning(
-        glue::glue(
-          "`include_area` is TRUE but image annotation {id} is too small to contain barcode spots."
-        )
-      )
-
-    }
-
-  }
-
-
-  # is unit
-  bw_dist <-
-    as_unit(
-      input = sas_input$binwidth,
-      unit = unit,
-      object = object
-    )
-
-
-  if(base::isTRUE(add_sd)){
-
-    plot_df <- shift_screening_df_to_long(df = sas_df, var_order = "bins_order")
+    scale_fct <- getPixelScaleFactor(object, unit = unit)
+    sas_df[["dist"]] <- sas_df[["dist"]] * scale_fct
 
   } else {
 
-    plot_df <-
-      tidyr::pivot_longer(
-        data = sas_df,
-        cols = dplyr::any_of(variables),
-        names_to = "variables",
-        values_to = "values"
-      )
+    unit <- "px"
 
   }
 
-  plot_df <-
-    dplyr::mutate(
-      .data = plot_df,
-      # bin 1 -> 0. 0 * dist = 0 for first bin -> no distance to img an
-      breaks = dplyr::if_else(condition = bins_circle == "Core", true = bins_order, false = (bins_order - 0.5)),
-      breaks = as_pixel(input = (breaks * bw_dist), object = object), # multiply with binwidth to get actual distance
-      variables = base::factor(variables, levels = {{variables}})
-    )
+  # make plot add ons
 
-  if(facet_by == "variables"){
+  # facets
+  if(n_bins_angle > 1){
 
     facet_add_on <-
-      ggplot2::facet_wrap(facets = . ~ variables, ncol = ncol, nrow = nrow)
+      ggplot2::facet_grid(
+        cols = ggplot2::vars(variables),
+        rows = ggplot2::vars(bins_angle)
+      )
 
-    ylab <- "Inferred expression change"
-
-  } else if(facet_by == "bins_angle"){
+  } else {
 
     facet_add_on <-
-      ggplot2::facet_wrap(facets = . ~ bins_angle, ncol = ncol, nrow = nrow)
-
-    # variables must be of length 1 if facet_by == bins_angle
-    ylab <- stringr::str_c("Inferred expression change (", variables, ")")
+      ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol)
 
   }
 
-  # add border if desired
-  if(base::isTRUE(display_border)){
-
-    border_add_on <-
-      ggplot2::geom_vline(
-        xintercept = as_pixel(0.25*bw_dist, object = object),
-        alpha = border_linealpha,
-        color = border_linecolor,
-        size = border_linesize,
-        linetype = border_linetype
-      )
-
-  } else {
-
-    border_add_on <- NULL
-
-  }
-
-  # labels
-  if(unit %in% validUnitsOfLength()){
-
-    plot_df[["labels"]] <-
-      as_unit(
-        input = plot_df[["breaks"]],
-        unit = unit,
-        object = object,
-        round = round
-      )
-
-    plot_df <-
-      dplyr::mutate(
-        .data = plot_df,
-        labels = base::as.character(labels),
-        labels = dplyr::if_else(
-          condition = bins_circle == "Core",
-          true = "IA",
-          false = labels
-        )
-      )
-
-    xlab <-  glue::glue("Distance to '{id}' [{unit}]")
-
-  } else {
-
-    plot_df[["labels"]] <- base::as.character(plot_df[["bins_order"]])
-
-    plot_df[["labels"]][plot_df[["breaks"]] < 0 ] <- "IA"
-
-    xlab <- "Bins"
-
-  }
-
-  # set axes theme
-  display_axis_text <- c("x", "y")
-
-  theme_add_on <- list()
-
-  theme_add_on <-
-    c(
-      theme_add_on,
-      list(ggplot2::theme(
-        axis.text.x = ggplot2::element_text(vjust = 0.85),
-        axis.ticks.x = ggplot2::element_line()
-      )
-      )
+  # border
+  border_add_on <-
+    ggplot2::geom_vline(
+      xintercept = 0,
+      alpha = border_linealpha,
+      color = border_linecolor,
+      linewidth = border_linesize,
+      linetype = border_linetype
     )
-
-  if("y" %in% display_axis_text){
-
-    theme_add_on <-
-      c(
-        theme_add_on,
-        list(ggplot2::theme(axis.text.y = ggplot2::element_text()))
-      )
-
-  }
-
-  # line colors
-  if(base::is.character(line_color) & base::length(line_color) == 1){
-
-    lvls <- base::levels(plot_df[[facet_by]])
-
-    clrp_adjust <-
-      purrr::set_names(
-        x = base::rep(line_color, base::length(lvls)),
-        nm = lvls
-      )
-
-  }
-
-  # create line
-  if(smooth_span == 0){
-
-    line_add_on <-
-      ggplot2::geom_path(
-        size = line_size,
-        mapping = ggplot2::aes(color = .data[[facet_by]])
-      )
-
-  } else {
-
-    line_add_on <-
-      ggplot2::geom_smooth(
-        size = line_size,
-        span = smooth_span,
-        method = "loess",
-        formula = y ~ x,
-        se = smooth_se,
-        mapping = ggplot2::aes(color = .data[[facet_by]])
-      )
-
-  }
-
-  # adjust y scale
-  if(base::is.character(normalize_by)){
-
-    scale_y_add_on <-
-      ggplot2::scale_y_continuous(
-        breaks = base::seq(0 , 1, 0.2),
-        labels = base::seq(0 , 1, 0.2), limits = c(0,1)
-      )
-
-  } else {
-
-    scale_y_add_on <- NULL
-
-  }
-
-  breaks <-
-    base::as.numeric(plot_df[["breaks"]]) %>%
-    base::unique() %>%
-    reduce_vec(nth = x_nth)
-
-  labels <-
-    base::as.character(plot_df[["labels"]]) %>%
-    base::unique() %>%
-    reduce_vec(nth = x_nth)
-
-  # add model to background
-
-  if(!base::is.null(model_aid)){
-
-    model <- model_aid[["model"]]
-
-    mdf <-
-      create_model_df(
-        input = dplyr::n_distinct(plot_df[["breaks"]])
-      ) %>%
-      dplyr::select(!!rlang::sym(model)) %>%
-      purrr::set_names(nm = "values") %>%
-      dplyr::mutate(
-        breaks = base::unique(plot_df[["breaks"]])
-      )
-
-    params <- model_aid[["params"]]
-
-    model_add_on <-
-      ggplot2::layer(
-        geom = ggplot2::GeomLine,
-        stat = "identity",
-        position = "identity",
-        data = mdf,
-        params = params
-      )
-
-  } else {
-
-    model_add_on <- NULL
-
-  }
-
-  # debug later why isnt it removed automatically?
-  plot_df <- dplyr::filter(plot_df, bins_circle != "Outside")
-
-  if(facet_by == "bins_angle"){
-
-    plot_df <- dplyr::filter(plot_df, bins_angle != "Outside")
-
-  }
 
   # plot
-  p <-
-    ggplot2::ggplot(
-      data = plot_df,
-      mapping = ggplot2::aes(x = breaks, y = values)
+  breaks_x <-
+    base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
+    base::ceiling()
+
+  ggplot2::ggplot(data = sas_df, mapping = ggplot2::aes(x = dist, y = values)) +
+    ggpLayers +
+    ggplot2::geom_smooth(
+      data = sas_df,
+      mapping = ggplot2::aes(x = dist, y = values, color = variables),
+      span = smooth_span,
+      se = smooth_se,
+      linewidth = line_size
     ) +
-    ggpLayerLineplotAid(
-      object = object,
-      xi = xi,
-      yi = yi,
-      l = as_pixel(sas_input$distance, object = object)
+    border_add_on +
+    facet_add_on +
+    ggplot2::scale_x_continuous(
+      breaks = breaks_x,
+      labels = base::as.character(breaks_x)
     ) +
-    model_add_on +
-    line_add_on +
-    confuns::scale_color_add_on(
-      variable = plot_df[[facet_by]],
-      clrp = clrp,
-      clrp.adjust = clrp_adjust
+    ggplot2::scale_y_continuous(
+      breaks = base::seq(0 , 1, 0.2),
+      labels = base::seq(0 , 1, 0.2),
     ) +
-    ggplot2::scale_x_continuous(breaks = breaks, labels = labels, expand = c(0, 0)) +
-    scale_y_add_on +
+    ggplot2::coord_cartesian(
+      xlim = base::range(sas_df[["dist"]])*1.025,
+      ylim = c(-0.025,1.025),
+      expand = FALSE
+      ) +
     ggplot2::theme_classic() +
     ggplot2::theme(
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")),
+      axis.line.x = ggplot2::element_line(),
       axis.line.y = ggplot2::element_line(),
       strip.background = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = xlab, y = ylab, color = facet_by) +
-    facet_add_on +
-    border_add_on +
-    theme_add_on
-
-  return(p)
+    ggplot2::labs(
+      x = glue::glue("Distance to Annotation [{unit}]"),
+      y = "Expression"
+    ) +
+    legendNone()
 
 }
 
@@ -1708,7 +1407,7 @@ plotSasLineplotSC <- function(object,
                               id,
                               sc_input,
                               distance = NA_integer_,
-                              n_bins_circle = NA_integer_,
+                              n_bins_dist = NA_integer_,
                               binwidth = getCCD(object),
                               angle_span = c(0,360),
                               n_bins_angle = 1,
@@ -1788,7 +1487,7 @@ plotSasLineplotSC <- function(object,
     check_sas_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       object = object,
       verbose = FALSE
     )
@@ -1812,7 +1511,7 @@ plotSasLineplotSC <- function(object,
       distance = distance,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       remove_circle_bins = rm_cb
     )
 
@@ -2084,210 +1783,10 @@ plotSasLineplotSC <- function(object,
 }
 
 
-#' @title Plot IAS model fitting
-#'
-#' @description Plots an IAS lineplot in combination with models
-#' fitted to the binned distance towards the image annotation.
-#'
-#' @param area_alpha Numeric value. The alpha value for the area under the curve
-#' of the resiudals.
-#' @param linecolors,linetypes The colors and types of the three lines. First value stands for the
-#' values of the variable, second on for the models, third one for the residuals.
-#' @param display_residuals Logical value. If TRUE, the residuals curve is displayed.
-#'
-#' @inherit plotSurfaceSAS
-#' @inherit argument_dummy params
-#' @inherit getSpatialTrajectoryIds params
-#' @inherit add_models params
-#' @inherit variable_num params
-#'
-#' @inherit ggplot_dummy return
-#'
-#' @export
-#'
-plotSasLineplotFitted <- function(object,
-                                  id,
-                                  variables,
-                                  distance,
-                                  binwidth = getCCD(object),
-                                  n_bins = NA_integer_,
-                                  model_subset = NULL,
-                                  model_remove = NULL,
-                                  model_add = NULL,
-                                  method_gs = NULL,
-                                  lineorder = c(1,2,3),
-                                  linesize = 1,
-                                  linecolors = c("forestgreen", "blue4", "red3"),
-                                  linetypes = c("solid", "solid", "dotted"),
-                                  display_residuals = TRUE,
-                                  area_alpha = 0.25,
-                                  nrow = NULL,
-                                  ncol = NULL,
-                                  force_grid = FALSE,
-                                  verbose = NULL,
-                                  ...){
-
-  hlpr_assign_arguments(object)
-
-  lv <- base::length(variables)
-
-  if(lv > 1){
-
-    variable <- "Variables"
-
-  } else if(lv == 1) {
-
-    variable <- variables
-
-  }
-
-
-  plot_df <-
-    purrr::map_df(
-      .x = variables,
-      .f = function(v){
-
-        stdf <-
-          getSasDf(
-            object = object,
-            id = id,
-            variables = v,
-            distance = distance,
-            n_bins_circle = n_bins_circle,
-            binwidth = binwidth,
-            method_gs = method_gs,
-            summarize_by = "bins_circle",
-            remove_circle_bins = TRUE,
-            normalize = TRUE ,
-            format = "long",
-            verbose = FALSE
-          ) %>%
-          tidyr::pivot_longer(
-            cols = dplyr::all_of(v),
-            names_to = "variables",
-            values_to = "values"
-          ) %>%
-          dplyr::select(-bins_circle)
-
-        out_df <-
-          add_models(
-            input_df = stdf,
-            var_order = "bins_order",
-            model_subset = model_subset,
-            model_remove = model_remove,
-            model_add = model_add,
-            verbose = FALSE
-          ) %>%
-          shift_for_plotting(var_order = "bins_order") %>%
-          dplyr::mutate(
-            origin = stringr::str_replace_all(string = origin, pattern = v, replacement = "Variables"),
-            origin = base::factor(origin, levels = c("Models", "Residuals", "Variables")[lineorder]),
-            models = base::factor(models),
-            variables = {{v}}
-          )
-
-        return(out_df)
-
-      }
-    )
-
-
-  if(!confuns::is_named(linecolors)){
-
-    linecolors <- purrr::set_names(x = linecolors, nm = c("Variables", "Models", "Residuals"))
-
-  }
-
-  if(!confuns::is_named(linetypes)){
-
-    linetypes <- purrr::set_names(x = linetypes, nm = c("Variables", "Models", "Residuals"))
-
-  }
-
-  if(base::isFALSE(display_residuals)){
-
-    plot_df <- dplyr::filter(plot_df, origin != "Residuals")
-
-    area_add_on <- NULL
-
-  } else {
-
-    area_add_on <-
-      list(
-        ggplot2::geom_area(
-          data = dplyr::filter(plot_df, origin == "Residuals"),
-          mapping = ggplot2::aes(fill = origin),
-          alpha = area_alpha
-        ),
-        ggplot2::scale_fill_manual(values = linecolors)
-      )
-
-  }
-
-  if(base::length(variables) > 1 | base::isTRUE(force_grid)){
-
-    facet_add_on <-
-      ggplot2::facet_grid(
-        rows = ggplot2::vars(variables),
-        cols = ggplot2::vars(models),
-        ...
-      )
-
-  } else {
-
-    facet_add_on <-
-      ggplot2::facet_wrap(
-        facets = . ~ models,
-        nrow = nrow,
-        ncol = ncol,
-        ...
-      )
-
-  }
-
-  if(base::is.na(n_bins)){
-
-    binwidth <- stringr::str_c(extract_value(binwidth), extract_unit(binwidth))
-
-  } else {
-
-    binwidth <-
-      (getTrajectoryLength(object, id = id, unit = "px") / n_bins) %>%
-      as_unit(input = ., unit = extract_unit(getCCD(object)), object = object)
-
-  }
-
-
-  ggplot2::ggplot(
-    data = plot_df,
-    mapping = ggplot2::aes(x = bins_order, y = values)
-  ) +
-    area_add_on +
-    ggplot2::geom_line(
-      mapping = ggplot2::aes(linetype = origin, color = origin),
-      size = linesize
-    ) +
-    facet_add_on +
-    scale_color_add_on(
-      variable = plot_df[["origin"]],
-      clrp = "milo",
-      clrp.adjust = linecolors
-    ) +
-    ggplot2::scale_linetype_manual(values = linetypes) +
-    ggplot2::theme_classic() +
-    ggplot2::labs(
-      x = glue::glue("IAS Bins ({binwidth})"),
-      y = "Inferred Expression"
-    ) +
-    ggplot2::theme_bw()
-
-}
-
-
-#' @title Plot IAS rideplot
+#' @title Plot SAS rideplot
 #'
 #' @description Plots gene expression changes against the distance to
-#' an the image annotation using the desing of ridgeplots.
+#' to the spatial annotation using the desing of ridgeplots.
 #'
 #' @param scale Logical value. If `TRUE`, density of cell types is scaled
 #' to make them comparable. Else, the absolute values defined by count/`unit`^2
@@ -2309,276 +1808,104 @@ plotSasLineplotFitted <- function(object,
 plotSasRidgeplot <- function(object,
                              id,
                              variables,
-                             distance = NA_integer_,
-                             n_bins_circle = NA_integer_,
-                             binwidth = getCCD(object),
+                             distance = distToEdge(object, id),
+                             binwidth = recBinwidth(object),
+                             n_bins_dist = NA_integer_,
                              angle_span = c(0,360),
-                             n_bins_angle = 1,
-                             method_gs = NULL,
                              smooth_span = 0.3,
                              unit = getSpatialMethod(object)@unit,
-                             round = 2,
                              clrp = NULL,
                              clrp_adjust = NULL,
                              line_color = "black",
                              line_size = 1.5,
                              fill = NULL,
                              alpha = 1,
-                             normalize_by = "sample",
-                             summarize_with = "mean",
-                             include_area = FALSE,
-                             display_border = TRUE,
-                             bcsp_exclude = NA_integer_,
                              border_linealpha = 0.75,
                              border_linecolor = "black",
                              border_linesize = 1,
                              border_linetype = "dashed",
-                             x_nth = 7L,
-                             sc_input = NULL,
-                             ncol = 1,
-                             nrow = NULL,
                              overlap = 0.5,
                              strip_pos = "right",
+                             free_y = FALSE,
+                             ggpLayers = NULL,
                              verbose = NULL,
                              ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
 
-  facet_by <- "variables"
-  summarize_by <- c("bins_circle")
-  n_bins_angle <- 1
-
-  sas_input <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      verbose = FALSE,
-      object = object
-    )
-
+  # prepare sas df
   variables <- base::unique(variables)
-
-  rm_cb <- c("Core", "Outside")
-
-  if(base::isTRUE(include_area)){
-
-    rm_cb <- "Outside"
-
-  }
 
   sas_df <-
     getSasDf(
       object = object,
       id = id,
-      binwidth = sas_input$binwidth,
-      distance = sas_input$distance,
-      n_bins_circle = sas_input$n_bins_circle,
+      distance = distance,
+      n_bins_dist,
+      binwidth = binwidth,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
-      summarize_by = summarize_by,
-      normalize_by = normalize_by,
-      remove_angle_bins = TRUE,
-      remove_circle_bins = rm_cb,
-      bcsp_exclude = bcsp_exclude,
-      normalize = c(FALSE, FALSE),
-      verbose = verbose
-    )
-
-  if(base::is.data.frame(sc_input)){
-
-    sc_df <-
-      inferSingleCellGradient(
-        object = object,
-        sc_input = sc_input,
-        id = id,
-        binwidth = binwidth,
-        distance = distance,
-        angle_span = angle_span,
-        n_bins_angle = n_bins_angle,
-        n_bins_circle = n_bins_circle,
-        remove_circle_bins = rm_cb
-      )
-
-    cell_types <-
-      base::unique(sc_input[["cell_type"]]) %>%
-      base::as.character()
-
-    variables <- c(cell_types, variables)
-
-    sas_df <- dplyr::left_join(x = sas_df, y = sc_df, by = c(summarize_by, "bins_order"))
-
-  }
-
-  bw_dist <-
-    as_unit(
-      input = sas_input$binwidth,
-      unit = unit,
-      object = object
-    )
-
-  # in case of an image annotation that is too small to contain barcode spots
-  if(base::isTRUE(include_area)){
-
-    n_core_spots <-
-      dplyr::filter(sas_df, bins_circle == "Core") %>%
-      base::nrow()
-
-    include_area <- n_core_spots >= 1
-
-    if(n_core_spots == 0){
-
-      warning(
-        glue::glue(
-          "`include_area` is TRUE but image annotation {id} is too small to contain barcode spots."
-        )
-
-      )
-    }
-  }
-
-  plot_df <-
+      verbose = FALSE
+    ) %>%
     tidyr::pivot_longer(
-      data = sas_df,
-      cols = dplyr::any_of(variables),
+      cols = dplyr::all_of(variables),
       names_to = "variables",
       values_to = "values"
     ) %>%
-    dplyr::mutate(
-      #breaks = dplyr::if_else(condition = bins_circle == "Core", true = bins_order, false = (bins_order - 0.5)),
-      bins_order_adj = bins_order - 0.5,
-      breaks = bins_order_adj,
-      #temporary solution to awkward problem (can not convert negative units)
-      breaks = dplyr::if_else(condition = bins_circle == "Core", true = (breaks*-1), false = breaks),
-      breaks = as_pixel(input = (breaks * bw_dist), object = object), # multiply with binwidth to get actual distance
-      #temporary solution to awkward problem
-      breaks = dplyr::if_else(condition = bins_circle == "Core", true = (breaks*-1), false = breaks),
-      breaks = base::round(breaks, round),
-      variables = base::factor(variables, levels = {{variables}})
-    )
+    dplyr::mutate(variables = base::factor(variables, levels = {{variables}}))
 
-  facet_add_on <-
-    ggplot2::facet_wrap(
-      facets = . ~ variables,
-      ncol = ncol,
-      nrow = nrow,
-      strip.position = strip_pos
-    )
+  if(unit != "px"){
 
-  ylab <- "Inferred expression change"
-
-  # add border if desired
-  if(base::isTRUE(display_border)){
-
-    border_add_on <-
-      ggplot2::geom_vline(
-        xintercept = 0,
-        alpha = border_linealpha,
-        color = border_linecolor,
-        size = border_linesize,
-        linetype = border_linetype
-      )
+    scale_fct <- getPixelScaleFactor(object, unit = unit)
+    sas_df[["dist"]] <- sas_df[["dist"]] * scale_fct
 
   } else {
 
-    border_add_on <- NULL
+    unit <- "px"
 
   }
 
-  # labels
-  if(unit %in% validUnitsOfLength()){
+  # make plot add ons
 
-    # is unit
-    bw_dist <-
-      as_unit(
-        input = sas_input$binwidth,
-        unit = unit,
-        object = object,
-        round = round
-      )
+  # line and ridges
+  if(smooth_span <= 0){
 
-    plot_df[["labels"]] <- plot_df[["bins_order_adj"]] * bw_dist
-
-    plot_df <-
-      dplyr::mutate(
-        .data = plot_df,
-        labels = base::round(labels, round),
-        labels = base::as.character(labels),
-        labels = dplyr::if_else(
-          condition = bins_circle == "Core",
-          true = "IA",
-          false = labels
-        )
-      )
-
-    xlab <-  glue::glue("Dist. to {id} [{unit}]")
-
-  } else {
-
-    plot_df[["labels"]] <- base::as.character(plot_df[["bins_order_adj"]])
-    plot_df[["labels"]][plot_df[["breaks"]] < 0 ] <- "IA"
-    xlab <- "Bins"
+    stop("`smooth_span` must be bigger than 0.")
 
   }
-  # set axes theme
-  display_axis_text <- c("x", "y")
 
-  theme_add_on <- list()
-
-  theme_add_on <-
-    c(
-      theme_add_on,
-      list(ggplot2::theme(
-        axis.text.x = ggplot2::element_text(vjust = 0.85),
-        axis.ticks.x = ggplot2::element_line()
-      )
-      )
+  line_add_on <-
+    ggplot2::geom_smooth(
+      data = sas_df,
+      color = line_color,
+      size = line_size,
+      span = smooth_span,
+      method = "loess",
+      formula = y ~ x,
+      se = FALSE
     )
 
-  if("y" %in% display_axis_text){
+  linefill_add_on <-
+    ggplot2::stat_smooth(
+      data = sas_df,
+      mapping = ggplot2::aes(fill = variables),
+      geom = "area",
+      alpha = alpha,
+      size = 0,
+      span = smooth_span,
+      method = "loess",
+      formula = y ~ x,
+      se = FALSE
+    )
 
-    theme_add_on <-
-      c(
-        theme_add_on,
-        list(ggplot2::theme(axis.text.y = ggplot2::element_text()))
-      )
-  }
+  # breaks
+  breaks_x <-
+    base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
+    base::ceiling()
 
-  # create line
-  if(smooth_span == 0){
-
-    stop("`smooth_span` must not be zero in plotSasRidgeplot().")
-
-  } else {
-
-    line_add_on <-
-      ggplot2::geom_smooth(
-        data = plot_df,
-        color = line_color,
-        size = line_size,
-        span = smooth_span,
-        method = "loess",
-        formula = y ~ x,
-        se = FALSE
-      )
-
-    linefill_add_on <-
-      ggplot2::stat_smooth(
-        data = plot_df,
-        mapping = ggplot2::aes(fill = variables),
-        geom = "area",
-        alpha = alpha,
-        size = 0,
-        span = smooth_span,
-        method = "loess",
-        formula = y ~ x,
-        se = FALSE
-      )
-
-  }
-
+  # clrp adjust
   if(base::is.character(fill)){
 
     cpa_new <-
@@ -2600,30 +1927,49 @@ plotSasRidgeplot <- function(object,
 
   }
 
-  breaks <-
-    base::as.numeric(plot_df[["breaks"]]) %>%
-    base::unique() %>%
-    reduce_vec(nth = x_nth)
-
-  labels <-
-    base::as.character(plot_df[["labels"]]) %>%
-    base::unique() %>%
-    reduce_vec(nth = x_nth)
-
-  # plot
-  ggplot2::ggplot(
-    data = plot_df,
-    mapping = ggplot2::aes(x = breaks, y = values)
-  ) +
+  # plotting
+  ggplot2::ggplot(data = sas_df, mapping = ggplot2::aes(x = dist, y = values)) +
+    ggpLayers +
     line_add_on +
     linefill_add_on +
-    ggplot2::scale_x_continuous(breaks = breaks, labels = labels, expand = c(0, NA)) +
+    ggplot2::geom_vline(
+      xintercept = 0,
+      alpha = border_linealpha,
+      color = border_linecolor,
+      linewidth = border_linesize,
+      linetype = border_linetype
+    ) +
+    ggplot2::facet_wrap(
+      facets = . ~ variables,
+      ncol = 1,
+      strip.position = strip_pos,
+      scales = base::ifelse(test = base::isTRUE(free_y), yes = "free_y", no = "fixed")
+    ) +
+    scale_color_add_on(
+      aes = "fill",
+      variable = sas_df[["variables"]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
+    ggplot2::scale_x_continuous(
+      breaks = breaks_x,
+      labels = base::as.character(breaks_x)
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = base::seq(0 , 1, 0.2),
+      labels = base::seq(0 , 1, 0.2),
+    ) +
+    ggplot2::coord_cartesian(
+      xlim = base::range(sas_df[["dist"]])*1.025,
+      ylim = c(-0.025, 1.025),
+      expand = FALSE
+    ) +
     theme_ridgeplot_gradient(overlap = overlap) +
-    ggplot2::labs(x = xlab, y = ylab, color = facet_by) +
-    facet_add_on +
-    border_add_on +
-    theme_add_on +
-    ggplot2::scale_fill_manual(values = clrp_adjust, name = "Variables")
+    ggplot2::labs(
+      x = glue::glue("Distance to Annotation [{unit}]"),
+      y = "Expression"
+    ) +
+    legendNone()
 
 }
 
@@ -2633,7 +1979,7 @@ plotSasRidgeplotSC <- function(object,
                                id,
                                sc_input,
                                distance = NA_integer_,
-                               n_bins_circle = NA_integer_,
+                               n_bins_dist = NA_integer_,
                                binwidth = getCCD(object),
                                angle_span = c(0,360),
                                smooth_span = 0.3,
@@ -2672,7 +2018,7 @@ plotSasRidgeplotSC <- function(object,
     check_sas_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       verbose = FALSE,
       object = object
     )
@@ -2704,7 +2050,7 @@ plotSasRidgeplotSC <- function(object,
       binwidth = binwidth,
       distance = distance,
       angle_span = angle_span,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       remove_circle_bins = rm_cb,
       normalize = scale,
       area_unit = area_unit
@@ -2803,7 +2149,7 @@ plotSasRidgeplotSC <- function(object,
 
     if(base::length(id) > 1){
 
-      ref_id <- "Image Annotations"
+      ref_id <- "spatial annotations"
 
     } else {
 

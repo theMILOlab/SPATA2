@@ -16,8 +16,8 @@ identifyPixelContent(object, ...)
   percentile = 0,
   compactness_factor = 10,
   superpixel = 600,
-  dbscan_eps = 0.005,
-  dbscan_minPts = 0.005,
+  eps = 0.005,
+  minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
   verbose = TRUE
 )
@@ -28,8 +28,8 @@ identifyPixelContent(object, ...)
   percentile = 99,
   compactness_factor = 10,
   superpixel = 1000,
-  dbscan_eps = 0.005,
-  dbscan_minPts = 0.005,
+  eps = 0.005,
+  minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
   verbose = TRUE
 )
@@ -39,8 +39,8 @@ identifyPixelContent(object, ...)
   percentile = 99,
   compactness_factor = 10,
   superpixel = 1000,
-  dbscan_eps = 0.005,
-  dbscan_minPts = 0.005,
+  eps = 0.005,
+  minPts = 0.005,
   frgmt_threshold = c(0.001, 0.05),
   verbose = TRUE
 )
@@ -51,8 +51,8 @@ identifyPixelContent(object, ...)
   compactness_factor = 10,
   superpixel = 1000,
   frgmt_threshold = c(0.001, 0.05),
-  dbscan_eps = 0.005,
-  dbscan_minPts = 0.005,
+  eps = 0.005,
+  minPts = 0.005,
   verbose = TRUE,
   ...
 )
@@ -77,12 +77,12 @@ Given as an argument to \verb{$spixel_segmentation()} function.}
 \item{superpixel}{Numeric value specifying the number of superpixels to compute.
 Given as an argument to \verb{$spixel_segmentation()} function.}
 
-\item{dbscan_eps}{Numeric value specifying the value of \code{eps} parameter used in \code{dbscan::dbscan()}
+\item{eps}{Numeric value specifying the value of \code{eps} parameter used in \code{dbscan::dbscan()}
 when applied on the tissue pixels. If the value is less than 1, it is calculated
 as a percentage of the width or height of the image, depending on which is larger.
 If the value is greater than or equal to 1, it is taken as an absolute value.}
 
-\item{dbscan_minPts}{Numeric value specifying the value of \code{minPts} parameter used in \code{dbscan::dbscan()}
+\item{minPts}{Numeric value specifying the value of \code{minPts} parameter used in \code{dbscan::dbscan()}
 when applied on the tissue pixels identified as potential tissue. If the value is less than 1,
 it is calculated as a percentage of the width or height of the image, depending on which is larger.
 If the value is greater than or equal to 1, it is taken as an absolute value.}

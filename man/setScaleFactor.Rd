@@ -2,10 +2,16 @@
 % Please edit documentation in R/devImaging.R
 \name{setScaleFactor}
 \alias{setScaleFactor}
+\alias{setScaleFactor,spata2-method}
+\alias{setScaleFactor,HistoImaging-method}
 \alias{setScaleFactor,HistoImage-method}
 \title{Set scale factors}
 \usage{
 setScaleFactor(object, ...)
+
+\S4method{setScaleFactor}{spata2}(object, fct_name, value)
+
+\S4method{setScaleFactor}{HistoImaging}(object, fct_name, value)
 
 \S4method{setScaleFactor}{HistoImage}(object, fct_name, value)
 }

@@ -37,7 +37,7 @@ relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
 
 \item{unit}{Character value. The unit in which the distance
-to the image annotation is displayed on the x-axis.
+to the spatial annotation is displayed on the x-axis.
 
 If \code{FALSE}, plots the bin numbers instead.}
 

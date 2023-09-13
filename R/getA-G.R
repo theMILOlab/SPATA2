@@ -556,14 +556,19 @@ getCoordsRange <- function(object){
 }
 
 
-#' @rdname getMatrix
+#' @title Obtain data matrices
+#'
+#' @description Extracts count or processed data matrices.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A matrix with rownames corresponding to the features and
+#'  column names corresponding to the barcodes.
+#'
 #' @export
 getCountMatrix <- function(object, ...){
 
   deprecated(...)
-
-  # lazy control
-  check_object(object)
 
   barcodes <- getCoordsDf(object)
 
@@ -1885,8 +1890,8 @@ getGenesInteractive <- function(object){
 #' @inherit across_dummy params
 #' @inherit check_sample params
 #'
-#' @return Character vector of variables that assign the
-#' barcode spots to groups.
+#' @return Character vector of variables that assign
+#' data points to groups.
 #' @export
 
 getGroupingOptions <- function(object, ...){

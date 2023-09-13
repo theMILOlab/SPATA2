@@ -42,8 +42,13 @@ For methods of type Visium (currently known \emph{VisiumSmall} and \emph{VisiumL
 
 \itemize{
 \item{\emph{ccd}:}{ Center to center distance as a spatial distance measure in SI units.}
-\item{\emph{spot_size}:} {Spot size used to ensure that the size of spots is plotted in a way that
-their borders align perfectly when visualizing them via \code{ggplot2::geom_point()}.}
+\item{\emph{diameter}:}{ Diameter of each spot in micrometer.}
+}
+
+For methods that of type \emph{SlideSeq} (currently known \emph{SlideSeqV1}):
+
+\itemize{
+\item{\emph{diameter}:}{ Diameter of each bead in micrometer.}
 }
 }
 

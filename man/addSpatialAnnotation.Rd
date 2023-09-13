@@ -33,7 +33,8 @@ addSpatialAnnotation(object, ...)
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional slot content given to \code{methods::new()} when
+constructing the \code{SpatialAnnotation} object.}
 
 \item{tags}{A character vector of tags for the spatial annotation.}
 

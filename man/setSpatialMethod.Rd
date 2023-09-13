@@ -2,13 +2,18 @@
 % Please edit documentation in R/setA-Z.R
 \name{setSpatialMethod}
 \alias{setSpatialMethod}
-\title{Set the \code{SpatialMethod} object}
+\alias{setSpatialMethod,spata2-method}
+\title{Set spatial method}
 \usage{
-setSpatialMethod(object, method)
+setSpatialMethod(object, ...)
+
+\S4method{setSpatialMethod}{spata2}(object, method, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{method}{An object of class \code{SpatialMethod}.}
 }
@@ -17,5 +22,6 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Sets the object of class \code{SpatialMethod}.
+Sets the \code{\link{SpatialMethod}} object containing information
+of the platform used.
 }

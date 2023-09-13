@@ -28,6 +28,10 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Computes the pixel scale factor. Currently, only possible for spatial methods
-\emph{VisiumSmall} and \emph{VisiumLarge}.
+Computes the pixel scale factor. Only possible for methods
+that have a fixed center to center distance between their
+observational units (e.g. Visium).
+}
+\seealso{
+\code{\link[=containsCCD]{containsCCD()}}, \code{\link[=getPixelScaleFactor]{getPixelScaleFactor()}}, \code{\link[=setPixelScaleFactor]{setPixelScaleFactor()}}
 }

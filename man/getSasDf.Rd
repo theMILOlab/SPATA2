@@ -8,21 +8,17 @@
 getSasDf(
   object,
   id,
-  distance = NA_integer_,
-  n_bins_circle = NA_integer_,
-  binwidth = getCCD(object),
+  distance = distToEdge(object, id),
+  binwidth = recBinwidth(object),
+  n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
   n_bins_angle = 1,
   variables = NULL,
   method_gs = NULL,
-  summarize_by = c("bins_angle", "bins_circle"),
-  summarize_with = "mean",
-  normalize_by = "sample",
-  normalize = FALSE,
-  remove_circle_bins = FALSE,
-  remove_angle_bins = FALSE,
-  rename_angle_bins = FALSE,
-  bcsp_exclude = NULL,
+  summarize_by = c("bins_angle", "bins_dist"),
+  core = TRUE,
+  periphery = TRUE,
+  bcs_exclude = NULL,
   verbose = FALSE,
   ...
 )
@@ -36,21 +32,21 @@ objects of classes for which a method has been defined.}
 \item{id}{Character value. The ID of the spatial annotation of interest.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
-image annotation to the \emph{horizon} in the periphery up to which the screening
+spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
+information about distance values. Defaults to a distance that covers the whole
+tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{n_bins_circle}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}.
-(See details for more.)}
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
-\item{binwidth}{Distance value. The width of the circular bins to which
-the barcode-spots are assigned. We recommend to set it equal to the center-center
-distance: \code{binwidth = getCCD(object)}. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values.}
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the image annotation.
+an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
 
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
@@ -64,14 +60,7 @@ the screening process.}
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
-Specifies the function with which the bins are summarized.}
-
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
-
-\item{bcsp_exclude}{Character value containing name(s) of barcode-spots to be excluded from the analysis.}
+\item{bcs_exclude}{Character value containing name(s) of data points to be excluded from the analysis.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

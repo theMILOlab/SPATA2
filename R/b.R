@@ -120,7 +120,7 @@ barcodesToSpatialAnnotation <- function(object,
                                         use_dbscan = TRUE,
                                         eps = getCCD(object)*1.25,
                                         minPts = 3,
-                                        min_size = 5,
+                                        min_size = nBarcodes(object)*0.01,
                                         force1 = FALSE,
                                         concavity = 2,
                                         overwrite = FALSE,
@@ -157,7 +157,7 @@ barcodesToSpatialAnnotation <- function(object,
       dplyr::group_by(areas) %>%
       dplyr::mutate(area_size = dplyr::n()) %>%
       dplyr::ungroup() %>%
-      dplyr::filter(areas != "0" & area_size >= 3)
+      dplyr::filter(areas != "0" & area_size >= {{min_size}})
 
     # ignore sub clusters identified by DBSCAN
     if(base::isTRUE(force1)){
@@ -180,11 +180,12 @@ barcodesToSpatialAnnotation <- function(object,
     dplyr::group_by(coords_df_prepped, areas) %>%
     dplyr::mutate(areas_count = dplyr::n()) %>%
     dplyr::ungroup() %>%
-    dplyr::filter(areas_count > {{min_size}}) %>%
+    dplyr::filter(areas_count >= {{min_size}}) %>%
     dplyr::pull(areas) %>%
     base::unique()
 
-  spat_ann_ids <- stringr::str_c(id, base::seq_along(areas_to_annotate), sep = "_")
+  spat_ann_ids <-
+    stringr::str_c(id, base::seq_along(areas_to_annotate), sep = "_")
 
   confuns::check_none_of(
     input = spat_ann_ids,
@@ -221,6 +222,21 @@ barcodesToSpatialAnnotation <- function(object,
 
     }
 
+    # identify barcodes inside the polygon
+    coords_df <- getCoordsDf(object)
+
+    res <-
+      sp::point.in.polygon(
+        point.x = coords_df[["x_orig"]],
+        point.y = coords_df[["y_orig"]],
+        pol.x = outline_df[["x_orig"]],
+        pol.y = outline_df[["y_orig"]]
+      )
+
+    coords_df_sub <- coords_df[res %in% c(1,2), ]
+
+    barcodes <- coords_df_sub[["barcodes"]]
+
     # create spatial annotation
     object <-
       addSpatialAnnotation(
@@ -244,15 +260,26 @@ barcodesToSpatialAnnotation <- function(object,
 
   }
 
-  confuns::give_feedback(
-    msg =
-      glue::glue(
-        "Created {base::length(spat_ann_ids)} {ref1}: {ref2}",
-        ref1 = confuns::adapt_reference(spat_ann_ids, "spatial annotation"),
-        ref2 = confuns::scollapse(string = spat_ann_ids)
-      ),
-    verbose = verbose
-  )
+  if(base::length(spat_ann_ids) >= 1){
+
+    confuns::give_feedback(
+      msg =
+        glue::glue(
+          "Created {base::length(spat_ann_ids)} {ref1}: {ref2}",
+          ref1 = confuns::adapt_reference(spat_ann_ids, "spatial annotation"),
+          ref2 = confuns::scollapse(string = spat_ann_ids)
+        ),
+      verbose = verbose
+    )
+
+  } else {
+
+    confuns::give_feedback(
+      msg = "Did not create any spatial annotation. Check parameters `variable`, `eps`, `minPts` and `min_size`.",
+      verbose = TRUE
+    )
+
+  }
 
   return(object)
 
@@ -407,7 +434,6 @@ bin_by_angle <- function(coords_df,
 
     bin_list[[n_bins_angle]] <-
       c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
-
 
     prel_angle_bin_df <-
       dplyr::ungroup(prel_angle_df) %>%
@@ -579,13 +605,18 @@ bin_by_expansion <- function(coords_df,
                              binwidth,
                              n_bins_circle,
                              remove = FALSE,
-                             bcsp_exclude = NULL,
+                             bcs_exclude = NULL,
+                             core = TRUE,
+                             periphery = TRUE,
                              drop = TRUE,
-                             arrange = TRUE){
+                             arrange = TRUE,
+                             ...){
+
+  deprecated(...)
 
   n_bins_circle <- base::max(n_bins_circle)
 
-  circle_names <- stringr::str_c("Circle", 1:n_bins_circle, sep = " ")
+  circle_names <- stringr::str_c("Circle", 1:n_bins_circle)
 
   circles <-
     purrr::set_names(
@@ -595,15 +626,26 @@ bin_by_expansion <- function(coords_df,
 
   binwidth_vec <- c("Core" = 0, circles)
 
+  outer_df <- dplyr::filter(area_df, border == "outer")
+
   # create new variable. Default is 'Outside'.
   # values will be overwritten with every additional loop
   coords_df$bins_circle <- "Outside"
-  coords_df$border <- NA_character_
+  coords_df$dist <- 0
 
-  # if outer circles exist
-  if("outer" %in% area_df[["border"]]){
+  # assign "core" group
+  coords_df$pt_in_plg <-
+    sp::point.in.polygon(
+      point.x = coords_df$x,
+      point.y = coords_df$y,
+      pol.x = outer_df$x,
+      pol.y = outer_df$y
+    )
 
-    outer_df <- dplyr::filter(area_df, border == "outer")
+  coords_df$bins_circle[coords_df$pt_in_plg %in% c(1,2)] <- "Core"
+
+  # bin periphery
+  if(base::isTRUE(periphery)){
 
     expansions_pos <-
       purrr::imap(
@@ -611,7 +653,19 @@ bin_by_expansion <- function(coords_df,
         .f = ~ buffer_area(df = outer_df[c("x", "y")], buffer = .x)
       )
 
-    for(exp in base::names(expansions_pos)){
+    for(i in base::seq_along(expansions_pos)){
+
+      exp <- base::names(expansions_pos)[i]
+
+      if(exp == "Core"){
+
+        dist_circle <- 0
+
+      } else {
+
+        dist_circle <- binwidth*i - binwidth/2
+
+      }
 
       exp_df <- expansions_pos[[exp]]
 
@@ -630,87 +684,82 @@ bin_by_expansion <- function(coords_df,
             # if bins_circle is NOT 'Outside' it has already bin binned
             bins_circle == "Outside" & pt_in_plg %in% c(1,2) ~ {{exp}},
             TRUE ~ bins_circle
-          ),
-          border = dplyr::case_when(
-            pt_in_plg %in% c(1,2) ~ "outer",
-            TRUE ~ border
           )
         )
+
+      coords_df$dist[coords_df$bins_circle == exp] <- dist_circle
+
     }
 
   }
 
-  # if inner circles exist
-  if("inner1" %in% area_df[["border"]]){
+  # make levels
+  bin_levels <- c(base::names(binwidth_vec), "Outside")
 
-    holes <-
-      stringr::str_subset(area_df[["border"]], pattern = "inner") %>%
-      base::unique()
+  # bin core
+  if(base::isTRUE(core)){
 
-    # correct binwidth vec for screening towards the inside
-    binwidth_vec_neg <-
-      purrr::set_names(
-        x = (-binwidth_vec[1:(n_bins_circle-1)]),
-        nm = base::names(binwidth_vec)[2:n_bins_circle]
-      )
+    continue <- TRUE
+    i <- 1
 
-    for(h in base::seq_along(holes)){
+    coords_df$bins_circle[coords_df$bins_circle == "Core"] <- "Core1"
 
-      hole <- holes[h]
+    # compute max inwards distance
+    outer_df$vert <- stringr::str_c("Vert", 1:base::nrow(outer_df))
 
-      hole_df <- dplyr::filter(area_df, border == {{hole}})
+    while(continue){
 
-      expansions_neg <-
-        purrr::imap(
-          .x = binwidth_vec_neg,
-          .f = ~ buffer_area(df = hole_df[c("x", "y")], buffer = .x)
-        ) %>%
-        purrr::discard(.p = base::is.null) %>%
-        purrr::map(.f = tibble::as_tibble)
+      distance <- -(binwidth*i)
 
-      for(exp in base::rev(base::names(expansions_neg))){
+      outline_df <- buffer_area(df = outer_df, buffer = distance)
 
-        exp_df <- expansions_neg[[exp]]
+      if(!base::is.null(outline_df)){
 
         coords_df$pt_in_plg <-
           sp::point.in.polygon(
             point.x = coords_df$x,
             point.y = coords_df$y,
-            pol.x = exp_df$x,
-            pol.y = exp_df$y
+            pol.x = outline_df$x,
+            pol.y = outline_df$y
           )
 
-        coords_df <-
-          dplyr::mutate(
-            .data = coords_df,
-            bins_circle = dplyr::case_when(
-              # if bins_circle is NOT 'Outside' it has already bin binned
-              # if bins_circle is 'Core' it can be overwritten as 'Core'
-              # means everything inside the outer border
-              bins_circle %in% c("Outside", "Core") & pt_in_plg %in% c(1,2) ~ {{exp}},
-              TRUE ~ bins_circle
-            ),
-            border = dplyr::case_when(
-              pt_in_plg %in% c(1,2) ~ {{hole}},
-              TRUE ~ border
-            )
-          )
+        if(base::any(coords_df$pt_in_plg %in% c(1,2))){
+
+          coords_df$bins_circle[coords_df$pt_in_plg %in% c(1,2)] <-
+            stringr::str_c("Core", i+1)
+
+          coords_df$dist[coords_df$pt_in_plg %in% c(1,2)] <-
+            distance + binwidth/2
+
+          i <- i + 1
+
+        } else {
+
+          continue <- FALSE
+
+        }
+
+      } else {
+
+        continue <- FALSE
+
+      }
+
+      if(base::isFALSE(continue)){
+
+        break()
 
       }
 
     }
 
-  }
+    bin_levels_core <- stringr::str_c("Core", i:1)
 
-  # Option bcsp_exclude: Rename manually selected spots to "Outside"
-  if(base::is.character(bcsp_exclude)){
-    if(any(!bcsp_exclude %in% coords_df$barcodes)){
-      warning("Barcode(s) given in `bcsp_exclude` not found in spata object. Is the format correct?")
-    }
-    coords_df[coords_df$barcodes %in% bcsp_exclude,]$bins_circle <- "Outside"
-  }
+    bin_levels <- bin_levels[bin_levels != "Core"]
 
-  bin_levels <- c(base::names(binwidth_vec), "Outside")
+    bin_levels <- c(bin_levels_core, bin_levels)
+
+  }
 
   out_df <-
     dplyr::mutate(
@@ -740,6 +789,18 @@ bin_by_expansion <- function(coords_df,
   if(base::isTRUE(arrange)){
 
     out_df <- dplyr::arrange(out_df, bins_order)
+
+  }
+
+  if(base::is.character(bcs_exclude)){
+
+    if(any(!bcs_exclude %in% coords_df$barcodes)){
+
+      warning("Barcode(s) given in `bcs_exclude` not found in spata object. Is the format correct?")
+
+    }
+
+    coords_df[coords_df$barcodes %in% bcs_exclude,]$bins_circle <- "Outside"
 
   }
 
