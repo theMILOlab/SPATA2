@@ -3138,6 +3138,49 @@ setMethod(
   }
 )
 
+
+#' @title Check availability of section variable
+#'
+#' @description Tests if the results of [`identifySpatialOutliers()`] exist
+#' in the object, namely a variable called *section* in the coordinates
+#' data.frame.
+#'
+#' @inherit argument_dummy params
+#'
+#' @seealso [`containsSpatialOutliers()`] to check if the section variable
+#' contains any identified spatial outliers.
+#'
+#' @return Logical value.
+#' @export
+#'
+setGeneric(name = "containsSectionVariable", def = function(object, ...){
+
+  standardGeneric(f = "containsSectionVariable")
+
+})
+
+#' @rdname containsSectionVariable
+#' @export
+setMethod(
+  f = "containsSectionVariable",
+  signature = "ANY",
+  definition = function(object, error = FALSE, ...){
+
+    coords_df <- getCoordsDf(object)
+
+    out <- "section" %in% base::colnames(coords_df)
+
+    feedback_missing(
+      x = out,
+      use_fn = "identifySpatialOutliers",
+      error = error
+    )
+
+    return(out)
+
+  }
+)
+
 #' @title Check availability of spots
 #'
 #' @description Checks if the object revolves around a spatial method
@@ -3535,19 +3578,10 @@ createHistoImagingMERFISH <- function(dir,
   coords_df <- read_coords_merfish(dir_coords = file_coords)
 
   # create pseudo image
-  pseudo_histo_image <-
-    HistoImage(
-      active = TRUE,
-      image = empty_image,
-      name = "pseudo",
-      reference = TRUE,
-      scale_factors = list(coords = 1)
-    )
-
   imaging <-
     HistoImaging(
       coordinates = coords_df,
-      images = list(pseudo = pseudo_histo_image),
+      images = list(pseudo = PseudoHistoImage),
       meta = meta,
       method = spatial_methods[["MERFISH"]],
       misc = misc,
@@ -3604,19 +3638,10 @@ createHistoImagingSlideSeqV1 <- function(dir,
   coords_df <-  read_coords_slide_seq_v1(dir_coords = file_coords)
 
   # create pseudo image
-  pseudo_histo_image <-
-    HistoImage(
-      active = TRUE,
-      image = empty_image,
-      name = "pseudo",
-      reference = TRUE,
-      scale_factors = list(coords = 1)
-    )
-
   imaging <-
     HistoImaging(
       coordinates = coords_df,
-      images = list(pseudo = pseudo_histo_image),
+      images = list(pseudo = PseudoHistoImage),
       meta = meta,
       method = SlideSeqV1,
       misc = misc,
@@ -3853,9 +3878,9 @@ recDbscanMinPts <- function(object){
 
 # e -----------------------------------------------------------------------
 
-#' @title Exclude observations
+#' @title Exclude data points
 #'
-#' @description Excludes observations from further integration in analysis
+#' @description Excludes data points from further integration in analysis
 #' or plots by setting their *exclude* value to `TRUE`. Depending on the
 #' suffix of the function exclusion happens based on results
 #' of previous algorithms.
@@ -3866,8 +3891,8 @@ recDbscanMinPts <- function(object){
 #'
 #' @inherit update_dummy return
 #'
-#' @note `excludeSpatialOutliers()` and `excludeTissueFragments()` require the output
-#' of `identifyTissueOutline()`.
+#' @note `excludeTissueFragments()` requires the output of [`identifyTissueOutline()`] and
+#' `excludeSpatialOutliers()` requires the output of [`identifySpatialOutliers()`]
 #'
 #' @export
 #'
@@ -4229,9 +4254,9 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame that, among others, contains at least the
-#' variables *x* and *y* as well as an ID-variable.
+#' variables *x_orig*, *y_orig* and *barcodes*
 #'
-#' @seealso [`activateImage()`]
+#' @seealso [`activateImage()`], [`activeImage()`]
 #'
 #' @export
 
@@ -4246,7 +4271,11 @@ setGeneric(name = "getCoordsDf", def = function(object, ...){
 setMethod(
   f = "getCoordsDf",
   signature = "spata2",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object,
+                        img_name = NULL,
+                        exclude = TRUE,
+                        as_is = FALSE,
+                         ...){
 
     deprecated(...)
 
@@ -4263,7 +4292,14 @@ setMethod(
 
       imaging <- getHistoImaging(object)
 
-      coords_df <- getCoordsDf(imaging, img_name = img_name)
+      coords_df <-
+        getCoordsDf(
+          object = imaging,
+          img_name = img_name,
+          exclude = exclude,
+          as_is = as_is,
+          ...
+          )
 
     } else {
 
@@ -4282,33 +4318,6 @@ setMethod(
           .fns = base::as.integer
         )
       )
-
-    ###
-
-    if(FALSE){
-
-      joinWith <- confuns::keep_named(list(...))
-
-      joinWith[["object"]] <- NULL
-      joinWith[["spata_df"]] <- NULL
-
-      if(base::length(joinWith) >= 1){
-
-        coords_df <-
-          confuns::call_flexibly(
-            fn = "joinWith",
-            fn.ns = "SPATA2",
-            default = list(object = object, spata_df = coords_df),
-            v.fail = coords_df,
-            verbose = FALSE
-          )
-
-      }
-
-    }
-
-
-    # -----
 
     coords_df <- tibble::as_tibble(coords_df)
 
@@ -4390,6 +4399,41 @@ setMethod(
   }
 )
 
+
+#' @title Obtain coordinates matrix
+#'
+#' @description Wraps the coordinates in a matrix with column names *x* and *y*
+#' and rownames that correspond to the barcodes.
+#'
+#' @param img_name Character value. The name of the image the coordinates are
+#' scaled to. If `NULL`, defaults to the active image.
+#' @param orig Logical value. If `TRUE`, the coordinates are not scaled to any
+#' image.
+#' @inherit argument_dummy params
+#'
+#' @return A matrix.
+#' @export
+#'
+getCoordsMtr <- function(object, img_name = NULL, orig = FALSE){
+
+  coords_mtr <-
+    getCoordsDf(object)[, c("barcodes", "x_orig", "y_orig")] %>%
+    dplyr::select(barcodes, x = x_orig , y = y_orig) %>%
+    tibble::column_to_rownames(var = "barcodes") %>%
+    base::as.matrix()
+
+  if(base::isFALSE(orig)){
+
+    scale_fct <- getScaleFactor(object, img_name = img_name, fct_name = "coords")
+
+    coords_mtr[, "x"] <- coords_mtr[, "x"] * scale_fct
+    coords_mtr[, "y"] <- coords_mtr[, "y"] * scale_fct
+
+  }
+
+  return(coords_mtr)
+
+}
 
 #' @title Obtain object of class `HistoImage`
 #'
@@ -4519,6 +4563,19 @@ setGeneric(name = "getHistoImageRef", def = function(object, ...){
   standardGeneric(f = "getHistoImageRef")
 
 })
+
+#' @rdname getHistoImage
+#' @export
+setMethod(
+  f = "getHistoImageRef",
+  signature = "spata2",
+  definition = function(object, ...){
+
+    getHistoImaging(object) %>%
+      getHistoImageRef()
+
+  }
+)
 
 #' @rdname getHistoImage
 #' @export
@@ -6124,12 +6181,14 @@ setMethod(
 
 #' @title Add capture area to surface plot
 #'
-#' @description Plots the capture area as a rectangular and/or
+#' @description Adds the capture area as a rectangular and/or
 #' crops the frame of the plot accordingly.
 #'
 #' @param opt Combination of *'rect'* and/or *'crop'*.
 #' @inherit ggpLayerRect params
 #' @inherit ggpLayerZoom params
+#'
+#' @seealso [`getCaptureArea()`]
 #'
 #' @return List of ggpLayer outputs.
 #' @export
@@ -6140,29 +6199,25 @@ ggpLayerCaptureArea <- function(object,
                                 rect_clr = "black",
                                 rect_line_type = "solid",
                                 rect_size = 1,
-                                expand_rect = 1.025,
+                                expand_rect = 0.025,
                                 expand_x = ggplot2::waiver(),
                                 expand_y = ggplot2::waiver()){
 
-  # distance from center
-  dfc <-
-    purrr::map_dbl(
-      .x = getSpatialMethod(object)@capture_area,
-      .f = ~ as_pixel(input = .x, object = object)/2
-    )*expand_rect
+  # capture ranges
+  cr <-
+    purrr::map(
+      .x = getCaptureArea(object),
+      .f = function(capture_range){
 
-  center <-
-    getCoordsDf(object, exclude = FALSE)[c("x", "y")] %>%
-    purrr::map(.f = base::range) %>%
-    purrr::map_dbl(.f = base::mean)
+        capture_range <- as_pixel(capture_range, object = object)
 
-  xrange <-
-    c(xmin = center["x"] - dfc["x"], xmax = center["x"] + dfc["x"]) %>%
-    base::unname()
+        capture_range[1] <- capture_range[1] * (1-expand_rect)
+        capture_range[2] <- capture_range[2] * (1+expand_rect)
 
-  yrange <-
-    c(ymin = center["y"] - dfc["y"], ymax = center["y"] + dfc["y"]) %>%
-    base::unname()
+        return(capture_range)
+
+      }
+    )
 
   out <- list()
 
@@ -6171,8 +6226,8 @@ ggpLayerCaptureArea <- function(object,
     out[["rect"]] <-
       ggpLayerRect(
         object = object,
-        xrange = xrange,
-        yrange = yrange,
+        xrange = cr$x,
+        yrange = cr$y,
         alpha = rect_alpha,
         color = rect_clr,
         fill = NA,
@@ -6187,8 +6242,8 @@ ggpLayerCaptureArea <- function(object,
     out[["crop"]] <-
       ggpLayerZoom(
         object = object,
-        xrange = xrange*expand_rect,
-        yrange = yrange*expand_rect,
+        xrange = cr$x,
+        yrange = cr$y,
         expand_x = expand_x,
         expand_y = expand_y
       )
@@ -6763,8 +6818,8 @@ setMethod(
 #'
 #' @description Adds a hull that outlines the tissue.
 #'
-#' @param metnod Character value. One of `c("coords", "image")`. If *'coords'*,
-#' the outline is computed based on the coordinate position of the plotted entities
+#' @param method Character value. One of `c("coords", "image")`. If *'coords'*,
+#' the outline is computed based on the coordinate position of the plotted data points
 #' (cells, spots etc.). If *'image'*, the outline is plotted solely based on
 #' the image analysis results.
 #' @param smooth_with Character vaule. Sets the method with which to smooth
@@ -6805,7 +6860,7 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "spata2",
   definition = function(object,
-                        method,
+                        method = "image",
                         img_name = NULL,
                         by_section = TRUE,
                         fragments = FALSE,
@@ -6815,7 +6870,7 @@ setMethod(
                         line_type = "solid",
                         transform = TRUE,
                         scale_fct = 1,
-                        expand_outline = 0,
+                        expand_outline = recBinwidth(object, "px")/1.25,
                         ...){
 
     hlpr_assign_arguments(object)
@@ -6849,7 +6904,7 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "HistoImaging",
   definition = function(object,
-                        method,
+                        method = "image",
                         img_name = NULL,
                         by_section = TRUE,
                         fragments = FALSE,
@@ -6928,7 +6983,7 @@ setMethod(
           }
         )
 
-    } else if(opt == "image"){
+    } else if(method == "image"){
 
       out <-
         getHistoImage(
@@ -7766,10 +7821,11 @@ setMethod(
 #' @title Identify spatial outliers
 #'
 #' @description Assigns data points to the tissue sections or
-#' fragments they are located on or labels them as artefacts/spatial outliers. See
-#' details for more.
+#' fragments they are located on or labels them as spatial outliers and saves
+#' the results in a new variable of the coordinates data.frame called *section*.
+#' See details for more.
 #'
-#' @param method Character vector. The method(s) to use. A combination of *'image'*
+#' @param method Character vector. The method(s) to use. A combination of *'outline'*
 #' and/or *'dbscan'*. See details for more.
 #' @param img_name Character value. The name of the image whose tissue outline
 #' is used if `method` contains *'outline'*.
@@ -7791,13 +7847,14 @@ setMethod(
 #' proximity, grouping those that are close enough to be deemed part of a single
 #' contiguous tissue section. Data points that are isolated and situated at a
 #' significant distance from others are identified as spatial outliers.
-#' The resulting classifications are saved in a 'section' variable within the
+#'
+#' The resulting classifications are saved in a *section* variable within the
 #' object's coordinates data.frame.
 #'
 #' This function identifies spatial outliers using a combination of two methods:
 #'
-#' Method *tissue_outline*:
-#' The *tissue_outline* method involves the image based tissue outline from the
+#' Method *outline*:
+#' The *outline* method involves the image based tissue outline from the
 #' `identifyTissueOutline()` function. This function has created polygons that
 #' outline the tissue or tissue sections identified in the image. For each data point,
 #' the function checks which polygon it falls within and assigns it to the corresponding
@@ -7824,7 +7881,7 @@ setMethod(
 #' by default. This can, of course, be overwritten manually by the user by
 #' specifying the parameters otherwise!
 #'
-#' If `method = c('tissue_outline', 'dbscan')`, both algorithms are applied. Whether a
+#' If `method = c('outline', 'dbscan')`, both algorithms are applied. Whether a
 #' data point is considered a spatial outlier depends on the `test` argument:
 #'
 #' \itemize{
@@ -7834,8 +7891,8 @@ setMethod(
 #'   only if both tests classify it as an outlier.
 #' }
 #'
-#' If `method = 'tissue_outline'` or `method = 'dbscan'` only one of the two
-#' methods is applied. Note that for *tissue_outline* the results from the
+#' If `method = 'outline'` or `method = 'dbscan'` only one of the two
+#' methods is applied. Note that for `method = 'outline'` the results from the
 #' image processing pipeline must be available.
 #'
 #' The results can be visualized using `plotSurface(object, color_by = "section")`.
@@ -8093,10 +8150,15 @@ setMethod(
 #' @details If `img_name` specifies multiple images, the function
 #' iterates over all of them.
 #'
-#' @note Requires results of [`identifyPixelContent()`]
+#' @note For `spata2` objects: If the `spata2` object contains a registered image
+#' the results of [`identifyPixelContent()`] is required.
 #'
-#' @seealso [excludeSpatialOutliers()], [`excludeTissueFragments()`],
-#' [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
+#' If the `spata2` object does not contain a registered image because the
+#' underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
+#' a workaround is applied and the tissue outline is identified by outlining all
+#' data points instead of outlining pixels that were identified as *tissue pixels*.
+#'
+#' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
 #'
 #' @export
 #'
@@ -8114,16 +8176,45 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         img_name = NULL,
-                        verbose = NULL
-  ){
+                        verbose = NULL){
 
     hlpr_assign_arguments(object)
 
-    imaging <- getHistoImaging(object)
+    # does the object relies on a pseudo image
+    img_names <- getImageNames(object)
 
-    imaging <- identifyTissueOutline(imaging, img_name = img_name)
+    contains_only_pseudo <-
+      base::length(img_names) == 1 && img_names == "pseudo"
 
-    object <- setHistoImaging(object, imaging = imaging)
+    if(contains_only_pseudo){
+
+      tissue_outline <-
+        getCoordsMtr(object, orig = TRUE) %>%
+        concaveman::concaveman(points = ., concavity = 2) %>%
+        tibble::as_tibble() %>%
+        magrittr::set_colnames(value = c("x", "y"))
+
+      pseudo_hist_img <- getHistoImage(object, img_name = "pseudo")
+
+      pseudo_hist_img@outline[["tissue_whole"]] <- tissue_outline
+      pseudo_hist_img@outline[["tissue_sections"]] <-
+        dplyr::mutate(tissue_outline, section = "tissue_section_1")
+
+      object <- setHistoImage(object, hist_img = pseudo_hist_img)
+
+    } else if(containsImage(object, img_name = img_name)){
+
+      imaging <- getHistoImaging(object)
+
+      imaging <- identifyTissueOutline(imaging, img_name = img_name)
+
+      object <- setHistoImaging(object, imaging = imaging)
+
+    } else {
+
+      stop("Object does neither contain an image nor a pseudo image.")
+
+    }
 
     return(object)
 
@@ -9677,7 +9768,7 @@ read_coords_visium <- function(dir_coords){
 #'
 #' @export
 #'
-recBinwidth <- function(object){
+recBinwidth <- function(object, unit = NULL){
 
   if(containsCCD(object)){
 
@@ -9693,6 +9784,12 @@ recBinwidth <- function(object){
     out <-
       FNN::knn.dist(data = coords_mtr, k = 1) %>%
       base::mean()
+
+  }
+
+  if(!base::is.null(unit)){
+
+    out <- as_unit(input = out, unit = unit, object = object)
 
   }
 
@@ -9851,9 +9948,21 @@ setMethod(
       )
 
     hist_img@scale_factors <-
-      purrr::map(
+      purrr::imap(
         .x = hist_img_ref@scale_factors,
-        .f = ~ .x * img_scale_fct
+        .f = function(fct, name){
+
+          if(name == "coords"){
+
+            fct / img_scale_fct
+
+          } else if(name == "pixel"){
+
+            fct * img_scale_fct
+
+          }
+
+        }
       )
 
     # add to HistoImaging
@@ -10036,7 +10145,7 @@ scale_image <- function(image, scale_fct){
 #' @title Set capture area
 #'
 #' @description Sets the capture area for objects from platforms with
-#' varying capture areas / field of view.
+#' a specific capture area / field of view.
 #'
 #' @param x,y Vectors of length two that correspond to the range of the
 #' respective axis. If `NULL`, the respective range stays as is.
@@ -10096,6 +10205,24 @@ setGeneric(name = "setHistoImage", def = function(object, ...){
   standardGeneric(f = "setHistoImage")
 
 })
+
+#' @rdname setHistoImage
+#' @export
+setMethod(
+  f = "setHistoImage",
+  signature = "spata2",
+  definition = function(object, hist_img, ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- setHistoImage(imaging, hist_img = hist_img)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
 
 #' @rdname setHistoImage
 #' @export
@@ -10273,86 +10400,58 @@ stretch_image <- function(image,
 # t -----------------------------------------------------------------------
 
 
-#' @title Check availability of tissue information
+#' @title Check if spatial outliers exist
 #'
-#' @description Checks if `identifySpatialOutliers()` and `identifyTissueOutline()`
-#' has been run successfully.
+#' @description Checks if [`identifySpatialOutliers()`] has identified any
+#' spatial outliers.
 #'
 #' @inherit argument_dummy params
+#'
+#' @seealso [`excludeSpatialOutliers()`] to exclude spatial outliers from further
+#' analysis.
 #'
 #' @return Logical value.
 #' @export
 #'
-
-setGeneric(name = "tissueOutlineIdentified", def = function(object, ...){
-
-  standardGeneric(f = "tissueOutlineIdentified")
-
-})
-
-#' @rdname tissueOutlineIdentified
-#' @export
-setMethod(
-  f = "tissueOutlineIdentified",
-  signature = "spata2",
-  definition = function(object, error = FALSE){
-
-    coords_df <- getCoordsDf(object)
-
-    out <- "outline" %in% base::colnames(coords_df)
-
-    feedback_missing(
-      x = out,
-      use_fn = "identifySpatialOutliers",
-      error = error
-    )
-
-    return(out)
-
-  }
-)
-
-# -> convert to containsTissueOutline
-
-spatial_outliers_identified <- function(object, error = FALSE){
-
-  coords_df <- getCoordsDf(object)
-
-  out <- "section" %in% base::colnames(coords_df)
-
-  feedback_missing(
-    x = out,
-    use_fn = "identifySpatialOutliers",
-    error = error
-  )
-
-  return(out)
-
-}
-
-#' @rdname tissueOutlineIdentified
-#' @export
 setGeneric(name = "containsSpatialOutliers", def = function(object, ...){
 
   standardGeneric(f = "containsSpatialOutliers")
 
 })
 
-#' @rdname tissueOutlineIdentified
+#' @rdname containsSpatialOutliers
 #' @export
 setMethod(
   f = "containsSpatialOutliers",
-  signature = "spata2",
-  definition = spatial_outliers_identified
+  signature = "ANY",
+  definition = function(object, ...){
+
+    containsSectionVariable(object, error = TRUE)
+
+    n_outlier <-
+      getCoordsDf(object) %>%
+      dplyr::filter(section == "outlier") %>%
+      base::nrow()
+
+    out <- n_outlier >= 1
+
+    fdb_fn <- list(...)[["fdb_fn"]]
+
+    if(base::isFALSE(out) & base::is.character(fdb_fn)){
+
+      confuns::give_feedback(
+        msg = "No spatial outliers in this object.",
+        fdb.fn = fdb_fn,
+        with.time = FALSE
+      )
+
+    }
+
+    return(out)
+
+  }
 )
 
-#' @rdname tissueOutlineIdentified
-#' @export
-setMethod(
-  f = "containsSpatialOutliers",
-  signature = "HistoImaging",
-  definition = spatial_outliers_identified
-)
 
 #' @title Transform image
 #'
@@ -10621,7 +10720,7 @@ setMethod(
     if(containsImage(object)){
 
       confuns::give_feedback(
-        msg = glue::glue("Unloading image of {object@name}."),
+        msg = glue::glue("Unloading image {object@name}."),
         verbose = verbose
       )
 

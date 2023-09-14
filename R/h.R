@@ -164,11 +164,8 @@ hlpr_assign_arguments <- function(object){
 
       arg_value <- methods::slot(default_instructions, name = arg)
 
-      base::assign(
-        x = arg,
-        value = arg_value,
-        envir = ce
-      )
+      base::assign(x = arg, value = arg_value, envir = ce)
+
     }
 
   }

@@ -45,6 +45,10 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
+\item{class}{Character vector or \code{NULL}. If character, defines the subtypes
+of spatial annotations to consider. Must be a combination of \emph{c('Group', 'Image'
+'Numeric')}.}
+
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
 
@@ -76,10 +80,6 @@ Processing of the image output depending on argument \code{expand} happens after
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}
 
-\item{add_barcodes}{Logical. If \code{TRUE}, barcodes of spots that fall into the
-area of an spatial annotation are identified and added to slot @misc$barcodes
-of the output spatial annotations.}
-
 \item{strictly}{Logical. If \code{TRUE}, only barcodes of spots that are strictly interior
 to the area of an spatial annotation are added to the output. If \code{FALSE},
 barcodes of spots that are on the relative interior of the area or are
@@ -89,7 +89,7 @@ vertices of the border are added, too.}
 A list of objects of class \code{SpatialAnnotation}.
 }
 \description{
-Extracts a list of objects of class \code{ImageAnnotaion}.
+Extracts a list of objects of class \code{\link{SpatialAnnotation}}.
 }
 \note{
 To test how the extracted image section looks like depending

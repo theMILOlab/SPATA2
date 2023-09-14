@@ -957,7 +957,7 @@ createGroupAnnotations <- function(object,
 #' histomorphological features of an image. The outline created this way is
 #' used to create a [`SpatialAnnotation`] of subclass [`ImageAnnotation`].
 #'
-#' Not to confuse with \code{createSpatialSegmentation()}.
+#' Not to confuse with [`createSpatialSegmentation()`].
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -1628,7 +1628,7 @@ createImageAnnotations <- function(object, ...){
                 addSpatialAnnotation(
                   object = object,
                   tags = input$tags,
-                  area = img_ann_list[[i]],
+                  area = area,
                   id = id,
                   parent_name = img_name(),
                   class = "ImageAnnotation"
@@ -1802,8 +1802,6 @@ createImageAnnotations <- function(object, ...){
 
           # zooming in and out
           oe <- shiny::observeEvent(input$zoom_in,{
-
-            print("clicked on zoom_in")
 
             interactive$zooming[[(n_zooms() + 1)]] <- current_zooming()
 
@@ -2122,7 +2120,7 @@ createImageAnnotations <- function(object, ...){
 #'  # create an image annotation based on the segragated area of
 #'  # high expression in hypoxia signatures
 #'  object <-
-#'    createGroupAnnotations(
+#'    createNUmericAnnotations(
 #'      object = object,
 #'      variable = "HM_HYPOXIA",
 #'      threshold = "kmeans_high",

@@ -380,36 +380,38 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
 }
 
-#' @title Remove spatial annotations
+
+#' @title Remove spatial outliers
 #'
-#' @description Removes spatial annotations from the spata2 object.
-#'
-#' @param ids Character value. The IDs of the spatial annotations to
-#' remove.
+#' @description Removes data points that were identified as spatial outliers
+#' and all their related data.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
+#' @seealso [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
+#'
 #' @export
+#'
+removeSpatialOutliers <- function(object, verbose = NULL){
 
-removeSpatialAnnotations <- function(object, ids){
+  hlpr_assign_arguments(object)
 
-  confuns::check_one_of(
-    input = ids,
-    against = getSpatAnnIds(object)
-  )
+  containsSectionVariable(object, error = TRUE)
 
-  imaging <- getHistoImaging(object)
+  if(containsSpatialOutliers(object, fdb_fn = "message")){
 
-  imaging@annotations <-
-    imaging@annotations[!base::names(imaging@annotations) %in% ids]
+    barcodes_keep <-
+      getCoordsDf(object, as_is = TRUE) %>%
+      dplyr::filter(section != "outlier")
 
-  object <- setHistoImaging(object, imaging = imaging)
+    object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
+
+  }
 
   return(object)
 
 }
-
 
 
 #' @title Remove genes from the `spata2` object
@@ -442,6 +444,8 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
+  genes_rm <- genes
+
   # apply to count matrix
   count_mtr <- getCountMatrix(object)
 
@@ -450,7 +454,7 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
   if(base::isTRUE(show_warnings)){
 
     confuns::check_one_of(
-      input = genes,
+      input = genes_rm,
       against = genes_count,
       fdb.fn = "warning",
       fdb.opt = 2,
@@ -459,9 +463,9 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
 
   }
 
-  genes_rm <- genes[genes %in% genes_count]
+  genes_keep <- genes_count[!genes_count %in% genes_rm]
 
-  count_mtr <- count_mtr[genes_rm, ]
+  count_mtr <- count_mtr[genes_keep, ]
 
   object <- setCountMatrix(object, count_mtr = count_mtr)
 
@@ -479,7 +483,7 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
       if(base::isTRUE(show_warnings)){
 
         confuns::check_one_of(
-          input = genes,
+          input = genes_rm,
           against = genes_mtr,
           fdb.fn = "warning",
           fdb.opt = 2,
@@ -488,9 +492,9 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
 
       }
 
-      genes_rm_proc <- genes[genes %in% genes_mtr]
+      genes_keep <- genes_mtr[!genes_mtr %in% genes_rm]
 
-      mtr <- mtr[genes_rm_proc, ]
+      mtr <- mtr[genes_keep, ]
 
       object <- setProcessedMatrix(object, proc_mtr = mtr, name = mn)
 
@@ -532,7 +536,7 @@ removeGenesStress <- function(object, verbose = NULL){
     removeGenes(
       object = object,
       genes = genes_rm,
-      show_warnings = TRUE,
+      show_warnings = FALSE,
       verbose = verbose
     )
 
@@ -563,6 +567,37 @@ removeGenesZeroCounts <- function(object, verbose = NULL){
 
 }
 
+
+
+#' @title Remove spatial annotations
+#'
+#' @description Removes spatial annotations from the spata2 object.
+#'
+#' @param ids Character value. The IDs of the spatial annotations to
+#' remove.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+
+removeSpatialAnnotations <- function(object, ids){
+
+  confuns::check_one_of(
+    input = ids,
+    against = getSpatAnnIds(object)
+  )
+
+  imaging <- getHistoImaging(object)
+
+  imaging@annotations <-
+    imaging@annotations[!base::names(imaging@annotations) %in% ids]
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  return(object)
+
+}
 
 
 

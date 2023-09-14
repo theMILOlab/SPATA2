@@ -80,7 +80,7 @@ plotHistogram <- function(object,
 #'
 #' @description Overview dotplot to compare screening results of selected models.
 #'
-#' @param data Output of `spatialAnnotationScreening()` or `spatialTrajectoryScreening()` 
+#' @param data Output of `spatialAnnotationScreening()` or `spatialTrajectoryScreening()`
 #'   in the form of `screening_results@results`.
 #' @param model_remove (Optional) A character vector specifying models to remove from the plot.
 #' @param scale_factor A numeric value to scale the point sizes. Default is 1.
@@ -100,41 +100,68 @@ plotHistogram <- function(object,
 #'
 #' @export
 #'
-plot_model_comparison_dotplot <- function(data, 
-                                          model_remove = NULL, 
-                                          scale_factor = 1, 
-                                          pt_size = 0.1, 
-                                          label_vars = 2, 
+plot_model_comparison_dotplot <- function(data,
+                                          eval = "mae",
+                                          pval = "p_value",
+                                          model_subset = NULL,
+                                          model_remove = NULL,
+                                          scale_factor = 1,
+                                          pt_size = 1.5,
+                                          label_vars = 2,
                                           label_size = 4,
-                                          threshold_pval = 0.05, 
+                                          threshold_pval = 0.05,
                                           label_color = "#4d4d4d",
-                                          x_label = "Gene-model correlation"
-) {
-  
-  data <- data[data$corr_mean >= 0,]
-    
-  # Scale point size based on p-values
-  max_size <- scale_factor * max(-log10(data$p_value_mean_adjusted))
+                                          x_label = "Gene-model correlation") {
 
-  if (!is.null(model_remove)) {
-    data <- data[!grepl(paste(model_remove, collapse = "|"), data$models), ]
+  data <- data[data$corr >= 0,]
+
+  # Scale point size based on p-values
+  max_size <- scale_factor * max(-log10(data[[pval]]))
+
+  if(!base::is.null(model_remove)){
+
+    data <- data[!base::grepl(paste(model_remove, collapse = "|"), data$models), ]
+
+  }
+
+  if(!base::is.null(model_subset)){
+
+    data <- dplyr::filter(data, stringr::str_detect(models, pattern = model_subset))
+
   }
 
   # Select top variables to label for each model
-  labeled_data <- data %>%
-    group_by(models) %>%
-    top_n(-label_vars, p_value_mean_adjusted)
-  
-  ggplot(data, aes(x = corr_mean, y = reorder(models, -log10(p_value_mean_adjusted)), 
-                    size = -log10(p_value_mean_adjusted), color = p_value_mean_adjusted < threshold_pval)) +
-    geom_point() +
-    scale_color_manual(values = c("grey50", "#ff7256"), labels = c(paste0(">= ", threshold_pval), paste0("< ", threshold_pval))) +
-    scale_size_continuous(range = c(pt_size, max_size)) +
-    labs(x = x_label, y = "Model", size = "-log10(p-value adj.)", color = "p-value adj.") +
-    theme_minimal() +
-    guides(size = guide_legend(override.aes = list(size = c(pt_size, mean(c(pt_size, max_size)), max_size)))) + # Adjust dot size in legend
-    theme(panel.grid.major.y = element_blank()) +
-    geom_text_repel(data = labeled_data, aes(label = ifelse(((corr_mean >= 0)), variables, '')), color = label_color, size = label_size)
+
+  data <-
+    dplyr::group_by(data, variables) %>%
+    dplyr::slice_min(!!rlang::sym(eval), n = 1)
+
+  labeled_data <-
+    dplyr::group_by(data, models) %>%
+    dplyr::slice_min(!!rlang::sym(eval), n = label_vars, with_ties = FALSE)
+
+  ggplot2::ggplot(
+    data = data,
+    mapping = ggplot2::aes(x = .data[[eval]], y = reorder(models, -log10(.data[[pval]])))
+    ) +
+    ggplot2::geom_point(
+      data = data,
+      size = pt_size,
+      color = dplyr::if_else(data[[pval]] < threshold_pval, "#ff7256", "grey50")
+    ) +
+    ggplot2::scale_color_manual(values = c("grey50", "#ff7256"), labels = c(paste0(">= ", threshold_pval), paste0("< ", threshold_pval))) +
+    ggplot2::scale_size_continuous(range = c(pt_size, max_size)) +
+    ggplot2::scale_x_continuous(limits = c(0,1)) +
+    ggplot2::labs(x = x_label, y = "Model") +
+    ggplot2::theme_minimal() +
+    ggplot2::guides(size = guide_legend(override.aes = list(size = c(pt_size, mean(c(pt_size, max_size)), max_size)))) + # Adjust dot size in legend
+    ggplot2::theme(panel.grid.major.y = element_blank()) +
+    ggrepel::geom_text_repel(
+      data = labeled_data,
+      mapping = ggplot2::aes(label = ifelse(((.data[[eval]] >= 0)), variables, '')),
+      color = label_color,
+      size = label_size
+      )
 }
 
 

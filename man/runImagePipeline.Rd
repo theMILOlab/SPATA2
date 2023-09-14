@@ -4,29 +4,14 @@
 \alias{runImagePipeline}
 \title{Run image processing pipeline}
 \usage{
-runImagePipeline(
-  object,
-  img_name = NULL,
-  method = c("outline", "dbscan"),
-  test = "all",
-  verbose = TRUE,
-  ...
-)
+runImagePipeline(object, img_name = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{img_name}{Character value. The name of the image whose tissue outline
-is used if \code{method} contains \emph{'outline'}.}
-
-\item{method}{Character vector. The method(s) to use. A combination of \emph{'image'}
-and/or \emph{'dbscan'}. See details for more.}
-
-\item{test}{Character value. Only required if \code{method = c('dbscan', 'outline')}. If
-\emph{'any'}, spots are labeled as outliers if at least one method identifies them
-as outliers. If \emph{'all'}, spots are labeled as outliers if both methods identify
-them as outliers.}
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -46,6 +31,5 @@ A wrapper around the image processing functions:
 \item{\code{\link[=identifyPixelContent]{identifyPixelContent()}}}{}
 \item{\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}}{}
 \item{\code{\link[=identifyBackgroundColor]{identifyBackgroundColor()}}}
-\item{\code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}}
 }
 }

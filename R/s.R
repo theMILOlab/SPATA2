@@ -1376,18 +1376,17 @@ strongH5 <- function(text){
 
 #' @title Subsetting by barcodes
 #'
-#' @description Removes unwanted barcode spots from the object without any significant
+#' @description Removes unwanted data points from the object without any significant
 #' post processing.
 #'
-#' @param barcodes Character vector. The barcodes of the barcode spots that are
+#' @param barcodes Character vector. The barcodes of the data points that are
 #' supposed to be \bold{kept}.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @return An updated \code{spata2} object.
 #'
-#' @details Unused levels of factor variables in the feature data.frame are dropped
-#' and directory settings are reset to NULL.
+#' @details Unused levels of factor variables in the feature data.frame are dropped.
 #'
 #' @export
 #'
@@ -1397,22 +1396,25 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   bcs_keep <- barcodes
 
+  # coordinates data.frame
+  object <-
+    getCoordsDf(object, as_is = TRUE) %>%
+    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
+    setCoordsDf(object, coords_df = ., force = TRUE)
+
+  # feature df
   object <-
     getFeatureDf(object) %>%
     dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     dplyr::mutate(
       dplyr::across(
-        .cols = where(base::is.factor),
+        .cols = dplyr::where(base::is.factor),
         .fns = base::droplevels
       )
     ) %>%
     setFeatureDf(object = object, feature_df = .)
 
-  object <-
-    getCoordsDf(object) %>%
-    dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
-    setCoordsDf(object, coords_df = .)
-
+  # data matrices
   object@data[[1]] <-
     purrr::map(
       .x = object@data[[1]],
@@ -1428,19 +1430,20 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
       })
 
+  # miscellaneous
   object@images[[1]]@annotations <-
     purrr::map(
       .x = object@images[[1]]@annotations,
-      .f = function(img_ann){
+      .f = function(spat_ann){
 
-        if(base::is.character(img_ann@misc[["barcodes"]])){
+        if(base::is.character(spat_ann@misc[["barcodes"]])){
 
-          img_ann@misc[["barcodes"]] <-
-            img_ann@misc[["barcodes"]][img_ann@misc[["barcodes"]] %in% bcs_keep]
+          spat_ann@misc[["barcodes"]] <-
+            spat_ann@misc[["barcodes"]][spat_ann@misc[["barcodes"]] %in% bcs_keep]
 
         }
 
-        return(img_ann)
+        return(spat_ann)
 
       }
     )
@@ -1458,28 +1461,10 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
       }
     )
 
-  object@information$barcodes <-
-    object@information$barcodes[object@information$barcodes %in% bcs_keep]
-
-  object@information[["subset"]][["barcodes"]] <-
-    c(barcodes, object@information[["subset"]][["barcodes"]])
-
-  if(base::is.numeric(object@information[["subsetted"]])){
-
-    object@information[["subsetted"]] <- object@information[["subsetted"]]+ 1
-
-  } else {
-
-    object@information[["subsetted"]] <- 1
-
-  }
-
-  object <- setTissueOutline(object, verbose = verbose)
-
   n_bcsp <- nBarcodes(object)
 
   confuns::give_feedback(
-    msg = glue::glue("{n_bcsp} barcode spots remaining."),
+    msg = glue::glue("{n_bcsp} barcodes remaining."),
     verbose = verbose
   )
 

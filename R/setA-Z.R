@@ -192,6 +192,78 @@ setCoordsDf <- function(object, coords_df, ...){
 }
 
 
+setGeneric(name = "setCoordsDf", def = function(object, ...){
+
+  standardGeneric(f = "setCoordsDf")
+
+})
+
+#' @rdname setCoordsDf
+#' @export
+setMethod(
+  f = "setCoordsDf",
+  signature = "spata2",
+  definition = function(object, coords_df, force = FALSE){
+
+    if(containsHistoImaging(object)){
+
+      imaging <- getHistoImaging(object)
+
+      imaging <- setCoordsDf(imaging, coords_df = coords_df, force = force)
+
+      object <- setHistoImaging(object, imaging = imaging)
+
+    }
+
+    object@coordinates[[1]] <- coords_df
+
+    return(object)
+
+  }
+)
+
+#' @rdname setCoordsDf
+#' @export
+setMethod(
+  f = "setCoordsDf",
+  signature = "HistoImaging",
+  definition = function(object, coords_df, force = FALSE){
+
+    confuns::check_data_frame(
+      df = coords_df,
+      var.class = list("barcodes" = "character",
+                       "x_orig" = c("integer", "double", "numeric"),
+                       "y_orig" = c("integer", "double", "numeric")),
+      ref = "coords_df"
+    )
+
+    if(base::isTRUE(force) | purrr::is_empty(object@coordinates)){
+
+      object@coordinates <- coords_df
+
+    } else {
+
+      if(base::nrow(object@coordinates) != base::nrow(coords_df)){
+
+        stop("Different number of rows.")
+
+      }
+
+      if(base::ncol(object@coordinates) != base::ncol(coords_df)){
+
+        stop("Different number of columns.")
+
+      }
+
+      object@coordinates <- coords_df
+
+    }
+
+    return(object)
+
+  }
+)
+
 
 #' @title Set data matrices
 #'
@@ -952,7 +1024,42 @@ setProcessedMatrix <- function(object, proc_mtr, name, ...){
 
 # setS --------------------------------------------------------------------
 
+#' @title Set spatial annotations
+#'
+#' @description Sets spatial annotations in the correct slot. Expects a
+#' valid spatial annotation and does not conduct any further checks or
+#' adjustments.
+#'
+#' @param spat_ann An object of class [`SpatialAnnotation`].
+#' @inherit argument_dummy params
+#'
+#' @note [`GroupAnnotation`], [`NumericAnnotation`], [`ImageAnnotation`] are
+#' derivatives of the `SpatialAnnotation` class and are valid inputs, too!
+#'
+#' @export
+setGeneric(name = "setSpatialAnnotation", def = function(object, ...){
 
+  standardGeneric(f = "setSpatialAnnotation")
+
+})
+
+#' @rdname setSpatialAnnotation
+#' @export
+setMethod(
+  f = "setSpatialAnnotation",
+  signature = "spata2",
+  definition = function(object, spat_ann, ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging@annotations[[spat_ann@id]] <- spat_ann
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
 
 #' @title Set spatial method
 #'

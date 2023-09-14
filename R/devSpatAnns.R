@@ -7,7 +7,7 @@
 #'
 #' @param class Character vector or `NULL`. If character, defines the subtypes
 #' of spatial annotations to consider. Must be a combination of *c('Group', 'Image'
-#' 'Numeric').
+#' 'Numeric')*.
 #' @inherit argument_dummy
 #'
 #' @seealso S4-classes [`SpatialAnnotation`], [`GroupAnnotation`], [`ImageAnnotation`],

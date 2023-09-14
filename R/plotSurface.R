@@ -106,8 +106,7 @@ setMethod(
     if(!base::is.null(color_by) &&
        !isNumericVariable(object, variable = color_by)){
 
-      main_plot +
-        legendColor(size = 5)
+      main_plot <- main_plot + legendColor(size = 5)
 
     }
 

@@ -2,10 +2,13 @@
 % Please edit documentation in R/devImaging.R
 \name{setHistoImage}
 \alias{setHistoImage}
+\alias{setHistoImage,spata2-method}
 \alias{setHistoImage,HistoImaging-method}
 \title{Set \code{HistoImage}}
 \usage{
 setHistoImage(object, ...)
+
+\S4method{setHistoImage}{spata2}(object, hist_img, ...)
 
 \S4method{setHistoImage}{HistoImaging}(object, hist_img, ...)
 }

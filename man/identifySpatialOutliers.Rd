@@ -36,7 +36,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{method}{Character vector. The method(s) to use. A combination of \emph{'image'}
+\item{method}{Character vector. The method(s) to use. A combination of \emph{'outline'}
 and/or \emph{'dbscan'}. See details for more.}
 
 \item{img_name}{Character value. The name of the image whose tissue outline
@@ -64,21 +64,23 @@ results.
 }
 \description{
 Assigns data points to the tissue sections or
-fragments they are located on or labels them as artefacts/spatial outliers. See
-details for more.
+fragments they are located on or labels them as spatial outliers and saves
+the results in a new variable of the coordinates data.frame called \emph{section}.
+See details for more.
 }
 \details{
 This function categorizes the data points of the object based on their spatial
 proximity, grouping those that are close enough to be deemed part of a single
 contiguous tissue section. Data points that are isolated and situated at a
 significant distance from others are identified as spatial outliers.
-The resulting classifications are saved in a 'section' variable within the
+
+The resulting classifications are saved in a \emph{section} variable within the
 object's coordinates data.frame.
 
 This function identifies spatial outliers using a combination of two methods:
 
-Method \emph{tissue_outline}:
-The \emph{tissue_outline} method involves the image based tissue outline from the
+Method \emph{outline}:
+The \emph{outline} method involves the image based tissue outline from the
 \code{identifyTissueOutline()} function. This function has created polygons that
 outline the tissue or tissue sections identified in the image. For each data point,
 the function checks which polygon it falls within and assigns it to the corresponding
@@ -105,7 +107,7 @@ defaults to these recommendations using \code{\link[=recDbscanEps]{recDbscanEps(
 by default. This can, of course, be overwritten manually by the user by
 specifying the parameters otherwise!
 
-If \code{method = c('tissue_outline', 'dbscan')}, both algorithms are applied. Whether a
+If \code{method = c('outline', 'dbscan')}, both algorithms are applied. Whether a
 data point is considered a spatial outlier depends on the \code{test} argument:
 
 \itemize{
@@ -115,8 +117,8 @@ either of the two tests classifies it as an outlier.
 only if both tests classify it as an outlier.
 }
 
-If \code{method = 'tissue_outline'} or \code{method = 'dbscan'} only one of the two
-methods is applied. Note that for \emph{tissue_outline} the results from the
+If \code{method = 'outline'} or \code{method = 'dbscan'} only one of the two
+methods is applied. Note that for \code{method = 'outline'} the results from the
 image processing pipeline must be available.
 
 The results can be visualized using \code{plotSurface(object, color_by = "section")}.

@@ -11,7 +11,7 @@ ggpLayerCaptureArea(
   rect_clr = "black",
   rect_line_type = "solid",
   rect_size = 1,
-  expand_rect = 1.025,
+  expand_rect = 0.025,
   expand_x = ggplot2::waiver(),
   expand_y = ggplot2::waiver()
 )
@@ -30,6 +30,9 @@ See details and examples of \code{?is_dist} and \code{?as_unit} for more informa
 List of ggpLayer outputs.
 }
 \description{
-Plots the capture area as a rectangular and/or
+Adds the capture area as a rectangular and/or
 crops the frame of the plot accordingly.
+}
+\seealso{
+\code{\link[=getCaptureArea]{getCaptureArea()}}
 }

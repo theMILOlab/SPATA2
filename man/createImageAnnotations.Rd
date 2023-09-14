@@ -21,7 +21,7 @@ Opens an interface in which the user can interactively outline
 histomorphological features of an image. The outline created this way is
 used to create a \code{\link{SpatialAnnotation}} of subclass \code{\link{ImageAnnotation}}.
 
-Not to confuse with \code{createSpatialSegmentation()}.
+Not to confuse with \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
 }
 \seealso{
 \code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}

@@ -42,9 +42,14 @@ If \code{img_name} specifies multiple images, the function
 iterates over all of them.
 }
 \note{
-Requires results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}
+For \code{spata2} objects: If the \code{spata2} object contains a registered image
+the results of \code{\link[=identifyPixelContent]{identifyPixelContent()}} is required.
+
+If the \code{spata2} object does not contain a registered image because the
+underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
+a workaround is applied and the tissue outline is identified by outlining all
+data points instead of outlining pixels that were identified as \emph{tissue pixels}.
 }
 \seealso{
-\code{\link[=excludeSpatialOutliers]{excludeSpatialOutliers()}}, \code{\link[=excludeTissueFragments]{excludeTissueFragments()}},
 \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
 }

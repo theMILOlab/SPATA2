@@ -606,9 +606,9 @@ ggpLayerColorGroupScale <- function(object,
 
 ggpLayerEncirclingIAS <- function(object,
                                   id,
-                                  distance = NA_integer_,
-                                  n_bins_circle = NA_integer_,
-                                  binwidth = getCCD(object),
+                                  distance = distToEdge(object, id),
+                                  n_bins_dist = NA_integer_,
+                                  binwidth = recBinwidth(object),
                                   alpha_core = 0,
                                   fill_core = NA,
                                   line_color = "black",
@@ -639,7 +639,7 @@ ggpLayerEncirclingIAS <- function(object,
               id = idx,
               distance = distance,
               binwidth = binwidth,
-              n_bins_circle = n_bins_circle,
+              n_bins_dist = n_bins_dist,
               direction = direction,
               inc_outline = FALSE,
               verbose = verbose
@@ -704,7 +704,7 @@ ggpLayerEncirclingIAS <- function(object,
               id = idx,
               distance = distance,
               binwidth = binwidth,
-              n_bins_circle = n_bins_circle,
+              n_bins_dist = n_bins_dist,
               direction = direction,
               inc_outline = TRUE,
               verbose = verbose
@@ -1076,9 +1076,9 @@ ggpLayerGroupOutline <- function(object,
 #'
 ggpLayerHorizonIAS <- function(object,
                                id,
-                               distance = NA_integer_,
-                               binwidth = getCCD(object),
-                               n_bins_circle = NA_integer_,
+                               distance = distToEdge(object, id),
+                               binwidth = recBinwidth(object),
+                               n_bins_dist = NA_integer_,
                                alpha_core = 0,
                                fill_core = NA,
                                line_color = "black",
@@ -1099,13 +1099,13 @@ ggpLayerHorizonIAS <- function(object,
     check_ias_input(
       distance = distance,
       binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
+      n_bins_dist = n_bins_dist,
       object = object,
     )
 
   distance <- input$distance
   binwidth <- input$binwidth
-  n_bins_circle <- input$n_bins_circle
+  n_bins_dist <- input$n_bins_dist
 
   out <-
     ggpLayerEncirclingIAS(
@@ -2222,7 +2222,7 @@ ggpLayerZoom <- function(object = NULL,
 #'
 #' @param id Character value. ID of the spatial trajectory or the spatial annotation
 #' of interest.
-#' @param distance,binwidth,n_bins_circle,n_bins The input given to the desired
+#' @param distance,binwidth,n_bins_dist,n_bins The input given to the desired
 #' screening- or visualization functions.
 #' @inherit spatialAnnotationScreening params
 #' @inherit spatialTrajectoryScreening params
@@ -2232,9 +2232,9 @@ ggpLayerZoom <- function(object = NULL,
 gradientToModelIAS <- function(object,
                                id,
                                variables,
-                               distance = NA_integer_,
-                               binwidth = getCCD(object),
-                               n_bins_circle = NA_integer_,
+                               distance = distToEdge(object, id),
+                               binwidth = recBinwidth(object),
+                               n_bins_dist = NA_integer_,
                                include_area = FALSE,
                                verbose = TRUE){
 
@@ -2242,7 +2242,7 @@ gradientToModelIAS <- function(object,
     object = object,
     id = id,
     distance = distance,
-    n_bins_circle = n_bins_circle,
+    n_bins_dist = n_bins_dist,
     binwidth = binwidth,
     remove_circle_bins = !include_area,
     variables = variables,

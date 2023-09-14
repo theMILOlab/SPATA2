@@ -10,7 +10,7 @@ subsetByBarcodes(object, barcodes, verbose = NULL)
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{barcodes}{Character vector. The barcodes of the barcode spots that are
+\item{barcodes}{Character vector. The barcodes of the data points that are
 supposed to be \bold{kept}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -22,10 +22,9 @@ the computational progress will be printed.
 An updated \code{spata2} object.
 }
 \description{
-Removes unwanted barcode spots from the object without any significant
+Removes unwanted data points from the object without any significant
 post processing.
 }
 \details{
-Unused levels of factor variables in the feature data.frame are dropped
-and directory settings are reset to NULL.
+Unused levels of factor variables in the feature data.frame are dropped.
 }

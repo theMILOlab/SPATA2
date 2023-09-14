@@ -12,7 +12,6 @@ addSpatialAnnotation(object, ...)
   object,
   tags,
   area,
-  parent_name,
   id = NULL,
   overwrite = FALSE,
   class = "SpatialAnnotation",

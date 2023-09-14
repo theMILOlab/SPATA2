@@ -74,11 +74,16 @@ You can use values lower than 1, but they can produce pretty crazy shapes.}
 be handled specified as a character of length one. This can be either 'mean
 or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
-\item{transform_with}{List or NULL. If list, can be used to transform continuous variables before plotting.
+\item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
-Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
-Or it can be a list of functions (and function names).
+E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
 
+\itemize{
+\item{Single function:}{ \code{transform_with = list(GFAP = log10)}},
+\item{Multiple functions:}{ \verb{transform_with = list(GFAP = list(log10, log2)}}
+}
+
+In case of plotting:
 Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
@@ -203,7 +208,7 @@ to specify the input in pixel you have to use input option 1. In pixel.
  # create an image annotation based on the segragated area of
  # high expression in hypoxia signatures
  object <-
-   createGroupAnnotations(
+   createNUmericAnnotations(
      object = object,
      variable = "HM_HYPOXIA",
      threshold = "kmeans_high",

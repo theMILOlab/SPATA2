@@ -8,7 +8,7 @@
 \alias{excludeSpatialOutliers,HistoImaging-method}
 \alias{excludeTissueFragments}
 \alias{excludeTissueFragments,HistoImaging-method}
-\title{Exclude observations}
+\title{Exclude data points}
 \usage{
 exclude(object, ...)
 
@@ -39,12 +39,12 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Excludes observations from further integration in analysis
+Excludes data points from further integration in analysis
 or plots by setting their \emph{exclude} value to \code{TRUE}. Depending on the
 suffix of the function exclusion happens based on results
 of previous algorithms.
 }
 \note{
-\code{excludeSpatialOutliers()} and \code{excludeTissueFragments()} require the output
-of \code{identifyTissueOutline()}.
+\code{excludeTissueFragments()} requires the output of \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} and
+\code{excludeSpatialOutliers()} requires the output of \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}
 }

@@ -11,7 +11,8 @@ runKmeansClustering(
   prefix = "K",
   naming = "{method_kmeans}_k{k}",
   n_pcs = 30,
-  overwrite = TRUE
+  overwrite = TRUE,
+  ...
 )
 }
 \arguments{

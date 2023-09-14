@@ -7,6 +7,7 @@
 \alias{getHistoImageActive}
 \alias{getHistoImageActive,HistoImaging-method}
 \alias{getHistoImageRef}
+\alias{getHistoImageRef,spata2-method}
 \alias{getHistoImageRef,HistoImaging-method}
 \title{Obtain object of class \code{HistoImage}}
 \usage{
@@ -21,6 +22,8 @@ getHistoImageActive(object, ...)
 \S4method{getHistoImageActive}{HistoImaging}(object)
 
 getHistoImageRef(object, ...)
+
+\S4method{getHistoImageRef}{spata2}(object, ...)
 
 \S4method{getHistoImageRef}{HistoImaging}(object, ...)
 }

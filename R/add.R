@@ -1167,7 +1167,6 @@ setMethod(
   definition = function(object,
                         tags,
                         area,
-                        parent_name,
                         id = NULL,
                         overwrite = FALSE,
                         class = "SpatialAnnotation",
@@ -1282,7 +1281,7 @@ setMethod(
 
     }
 
-    # create spatial annotatition
+    # create spatial annotation
     spat_ann <-
       methods::new(
         Class = class,
@@ -1293,6 +1292,20 @@ setMethod(
         version = current_spata2_version,
         ...
       )
+
+    # add barcodes if not provided via ...
+    if(base::is.null(spat_ann@misc$barcodes)){
+
+      scale_fct <- getScaleFactor(object, fct_name = "coords")
+
+      outline <- spat_ann@area$outer
+      outline$x <- outline$x_orig * scale_fct
+      outline$y <- outline$y_orig * scale_fct
+
+      spat_ann@misc$barcodes <-
+        getBarcodesInPolygon(object = object, polygon_df = outline)
+
+    }
 
     object@annotations[[id]] <- spat_ann
 

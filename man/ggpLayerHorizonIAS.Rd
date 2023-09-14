@@ -7,9 +7,9 @@
 ggpLayerHorizonIAS(
   object,
   id,
-  distance = NA_integer_,
-  binwidth = getCCD(object),
-  n_bins_circle = NA_integer_,
+  distance = distToEdge(object, id),
+  binwidth = recBinwidth(object),
+  n_bins_dist = NA_integer_,
   alpha_core = 0,
   fill_core = NA,
   line_color = "black",
@@ -25,7 +25,10 @@ ggpLayerHorizonIAS(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the spatial annotation of interest.}
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
@@ -36,6 +39,10 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 

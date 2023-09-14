@@ -15,7 +15,7 @@ respective axis. If \code{NULL}, the respective range stays as is.}
 }
 \description{
 Sets the capture area for objects from platforms with
-varying capture areas / field of view.
+a specific capture area / field of view.
 }
 \note{
 The spatial methods \emph{VisiumSmall} and \emph{VisiumLarge} have a capture

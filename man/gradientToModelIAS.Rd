@@ -9,9 +9,9 @@ gradientToModelIAS(
   object,
   id,
   variables,
-  distance = NA_integer_,
-  binwidth = getCCD(object),
-  n_bins_circle = NA_integer_,
+  distance = distToEdge(object, id),
+  binwidth = recBinwidth(object),
+  n_bins_dist = NA_integer_,
   include_area = FALSE,
   verbose = TRUE
 )
@@ -36,7 +36,7 @@ of interest.}
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{distance, binwidth, n_bins_circle, n_bins}{The input given to the desired
+\item{distance, binwidth, n_bins_dist, n_bins}{The input given to the desired
 screening- or visualization functions.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding

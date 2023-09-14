@@ -25,7 +25,10 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{id}{Character value. The ID of the spatial annotation of interest.}
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 
 \item{add_image}{Logical. If TRUE, the area of the histology image that
 is occupied by the annotated structure is added to the \code{SpatialAnnotation}

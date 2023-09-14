@@ -1645,12 +1645,10 @@ runGSEA <- function(object,
 #'  \item{[`identifyPixelContent()`]}{}
 #'  \item{[`identifyTissueOutline()`]}{}
 #'  \item{[`identifyBackgroundColor()`]}
-#'  \item{[`identifySpatialOutliers()`]}
 #'  }
 #'
 #' @param ... Arguments passed to [`identifyPixelContent()`].
 #'
-#' @inherit identifySpatialOutliers params
 #' @inherit identifyPixelContent params
 #' @inherit argument_dummy params
 #'
@@ -1660,8 +1658,6 @@ runGSEA <- function(object,
 
 runImagePipeline <- function(object,
                              img_name = NULL,
-                             method = c("outline", "dbscan"),
-                             test = "all",
                              verbose = TRUE,
                              ...){
 
@@ -1670,8 +1666,6 @@ runImagePipeline <- function(object,
   object <- identifyTissueOutline(object, img_name = img_name, verbose = verbose)
 
   object <- identifyBackgroundColor(object, img_name = img_name, verbose = verbose)
-
-  object <- identifySpatialOutliers(object = object, img_name = img_name, method = method)
 
   return(object)
 
@@ -1713,7 +1707,8 @@ runKmeansClustering <- function(object,
                                 prefix = "K",
                                 naming = "{method_kmeans}_k{k}",
                                 n_pcs = 30,
-                                overwrite = TRUE){
+                                overwrite = TRUE,
+                                ...){
 
   pca_df <-
     getPcaDf(object, n_pcs = n_pcs) %>%
@@ -1721,7 +1716,7 @@ runKmeansClustering <- function(object,
 
   cluster_df <-
     confuns::initiateAnalysis(
-      data = pca_mtr,
+      data = pca_df,
       key_name = "barcodes",
       verbose = FALSE
       ) %>%
@@ -1739,7 +1734,7 @@ runKmeansClustering <- function(object,
       naming = naming
     )
 
-  object <- addFeatures(object, feature_df = cluster_df)
+  object <- addFeatures(object, feature_df = cluster_df, overwrite = overwrite)
 
   return(object)
 
@@ -1876,18 +1871,15 @@ runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  coords_mtr <-
-    getCoordsDf(object) %>%
-    tibble::column_to_rownames(var = "barcodes") %>%
-    dplyr::select(x, y, -sample) %>%
-    base::as.matrix()
-
+  coords_mtr <- getCoordsMtr(object)
   count_mtr <- getCountMatrix(object)
+
+  barcodes <- base::colnames(count_mtr)
 
   sparkx_out <-
     SPARK::sparkx(
-      count_in = count_mtr,
-      locus_in = coords_mtr,
+      count_in = count_mtr[ ,barcodes],
+      locus_in = coords_mtr[barcodes, ],
       numCores = numCores,
       option = option,
       verbose = verbose

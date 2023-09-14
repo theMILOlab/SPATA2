@@ -456,7 +456,55 @@ processWithSeurat <- function(object,
 }
 
 
+#' @title Apply SCTransform
+#'
+#' @description Runs the pipeline suggested by [`Seurat::SCTransform()`] and
+#' extracts a matrix fromt he resulting assay object.
+#'
+#' @param slot The slot of the output assay in the `Seurat` object from where to
+#' take the matrix.
+#' @param name The name under which to store the matrix.
+#' @param exchange_counts Logical. If `TRUE`, the counts matrix of the `spata2`
+#' object is exchanged for the counts matrix in the output assay.
+#' @param ... Additional arguments given to `Seurat::SCTransform()`.
+#'
+#' @inherit update_dummy return
+#' @inherit argument_dummy params
+#'
+#' @export
+#'
+processWithSCT <- function(object,
+                           slot = "scale.data",
+                           name = "sct_scaled",
+                           exchange_counts = FALSE,
+                           ...){
 
+  seurat_object <-
+    Seurat::CreateSeuratObject(counts = getCountMatrix(object)) %>%
+    Seurat::SCTransform(object = ., assay = "RNA", new.assay.name = "SCT", ...)
+
+  if(base::isTRUE(exchange_counts)){
+
+    object <-
+      setCountMatrix(
+        object = object,
+        count_mtr = seurat_object[["SCT"]]@counts
+      )
+
+  }
+
+  object <-
+    setProcessedMatrix(
+      object = object,
+      proc_mtr = methods::slot(object = seurat_object[["SCT"]], name = slot),
+      name = name
+    )
+
+  object <- setActiveMatrix(object, mtr_name = name)
+
+  return(object)
+
+}
 
 
 #' @title Directory tests
@@ -607,7 +655,7 @@ whichSpaceRangerVersion <- function(dir){
 #' @export
 #'
 getCoordsDfSA <- function(object,
-                          id,
+                          id = idSA(object),
                           distance = distToEdge(object, id),
                           binwidth = recBinwidth(object),
                           n_bins_dist = NA_integer_,
@@ -954,7 +1002,7 @@ extract_bin_dist_val <- function(bins_dist){
 #' @return Distance measure.
 #' @export
 #'
-distToEdge <- function(object, id, unit = getDefaultUnit(object)){
+distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object)){
 
   section <- whichTissueSection(object, id)
 
@@ -998,4 +1046,75 @@ getDefaultUnit <- function(object){
   getSpatialMethod(object)@unit
 
 }
+
+
+
+#' @title Quick access to IDs
+#'
+#' @description Handy functions to access the ID of a spatial annotation
+#' or a spatial trajectory if there exist only one of each in the object. Mostly
+#' used to define the default of dependent functions. Return an error if there
+#' are no or more than one IDs found.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+
+idSA <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  id <- getSpatAnnIds(object)
+
+  if(base::length(id) == 0){
+
+    stop("No spatial annotations found in this object.")
+
+  } else if(base::length(id) > 1){
+
+    stop("More than one spatial annotation found in this object. Please specify argument `id`.")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Spatial annotation: '{id}'"),
+    verbose = verbose
+  )
+
+  return(id)
+
+}
+
+
+#' @rdname idSA
+#' @export
+idST <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  id <- getSpatialTrajectoryIds(object)
+
+  if(base::length(id) == 0){
+
+    stop("No spatial trajectories found in this object.")
+
+  } else if(base::length(id) > 1){
+
+    stop("More than one spatial trajectories found in this object. Please specify argument `id`.")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Spatial trajectory: '{id}'"),
+    verbose = verbose
+  )
+
+  return(id)
+
+}
+
+
+
 

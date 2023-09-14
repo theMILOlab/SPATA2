@@ -6,7 +6,10 @@
 #' @description Extracts object of class \code{ImageAnnotaion} by
 #' its id.
 #'
-#' @param id Character value. The ID of the spatial annotation of interest.
+#' @param id Character value specifying the ID of the spatial annotation of interest.
+#' If there is only one spatial annotation in the object, the function
+#' will default to using it. However, if there are multiple annotations,
+#' this argument must be explicitly specified to identify the target annotation.
 #'
 #' @inherit getSpatialAnnotations params
 #' @inherit argument_dummy params
@@ -29,7 +32,7 @@ setMethod(
   f = "getSpatialAnnotation",
   signature = "spata2",
   definition = function(object,
-                        id,
+                        id = idSA(object),
                         add_image = TRUE,
                         expand = 0,
                         square = FALSE,
@@ -54,7 +57,7 @@ setMethod(
   f = "getSpatialAnnotation",
   signature = "HistoImaging",
   definition = function(object,
-                        id,
+                        id = idSA(object),
                         add_image = TRUE,
                         expand = 0,
                         square = FALSE){
@@ -156,11 +159,8 @@ setMethod(
 
 #' @title Obtain list of \code{SpatialAnnotation}-objects
 #'
-#' @description Extracts a list of objects of class \code{ImageAnnotaion}.
+#' @description Extracts a list of objects of class [`SpatialAnnotation`].
 #'
-#' @param add_barcodes Logical. If `TRUE`, barcodes of spots that fall into the
-#' area of an spatial annotation are identified and added to slot @@misc$barcodes
-#' of the output spatial annotations.
 #' @param add_image Logical. If TRUE, the area of the histology image that
 #' is occupied by the annotated structure is added to the \code{SpatialAnnotation}
 #' object in slot @@image. Dimensions of the image can be adjusted with `square`
@@ -170,7 +170,7 @@ setMethod(
 #' barcodes of spots that are on the relative interior of the area or are
 #' vertices of the border are added, too.
 #'
-#' @inherit getBarcodesInPolygon params
+#' @inherit getSpatAnnIds params
 #' @inherit argument_dummy params
 #' @inherit getImage details
 #'

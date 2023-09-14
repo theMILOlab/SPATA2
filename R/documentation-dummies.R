@@ -243,11 +243,16 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters
 #' given to `ggplot2::geom_text()` that control the appearance of text of the plot.
 #'
-#' @param transform_with List or NULL. If list, can be used to transform continuous variables before plotting.
+#' @param transform_with List or `NULL.` If list, can be used to transform continuous variables before usage.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
-#' Slot content can either be a character vector of function names. Use \code{validScaleTransformations()} to obtain all valid character value inputs.
-#' Or it can be a list of functions (and function names).
+#' E.g if the variable of interest is *GFAP* gene expression, the following would work:
 #'
+#' \itemize{
+#'  \item{Single function:}{ `transform_with = list(GFAP = log10)`},
+#'  \item{Multiple functions:}{ `transform_with = list(GFAP = list(log10, log2)`}
+#' }
+#'
+#' In case of plotting:
 #' Useful if you want to apply more than one transformation on variables mapped to
 #' plotting aesthetics. Input for \code{transform_with} is applied before the
 #' respective \code{<aes>_trans} argument.

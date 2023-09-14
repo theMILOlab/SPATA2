@@ -7,8 +7,8 @@
 \usage{
 plotSasBarplot(
   object,
-  id,
   grouping_variable,
+  id = idSA(object),
   distance = NA_integer_,
   binwidth = getCCD(object),
   n_bins_dist = NA_integer_,
@@ -56,10 +56,13 @@ plotSasBarplotSC(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the spatial annotation of interest.}
-
 \item{grouping_variable}{Character value. The grouping variable of interest. Use
 \code{getGroupingOptions()} to obtain all valid input options.}
+
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening

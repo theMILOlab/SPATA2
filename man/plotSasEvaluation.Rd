@@ -6,11 +6,11 @@
 \usage{
 plotSasEvaluation(
   object,
-  id,
   variables,
+  id = idSA(object),
   method_eval = "corr",
-  distance = NA_integer_,
-  binwidth = ccDist(object),
+  distance = distToEdge(object),
+  binwidth = recBinwidth(object),
   n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
   model_subset = NULL,
@@ -41,11 +41,14 @@ plotSasEvaluation(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the spatial annotation of interest.}
-
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
+
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening

@@ -38,8 +38,8 @@ selection. See section \emph{Selection of spatial annotations} for more informat
 See section \emph{Selection of spatial annotations} for more information.}
 
 \item{class}{Character vector or \code{NULL}. If character, defines the subtypes
-of spatial annotations to consider. Must be a combination of *c('Group', 'Image'
-'Numeric').}
+of spatial annotations to consider. Must be a combination of \emph{c('Group', 'Image'
+'Numeric')}.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}

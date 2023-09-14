@@ -8,7 +8,7 @@
 \usage{
 getCoordsDf(object, ...)
 
-\S4method{getCoordsDf}{spata2}(object, img_name = NULL, ...)
+\S4method{getCoordsDf}{spata2}(object, img_name = NULL, exclude = TRUE, as_is = FALSE, ...)
 
 \S4method{getCoordsDf}{HistoImaging}(
   object,
@@ -31,12 +31,12 @@ to be aligned. If \code{NULL}, defaults to the active image.}
 }
 \value{
 Data.frame that, among others, contains at least the
-variables \emph{x} and \emph{y} as well as an ID-variable.
+variables \emph{x_orig}, \emph{y_orig} and \emph{barcodes}
 }
 \description{
 Extracts the coordinates data.frame of the identified
 or known entities the analysis revolves around.
 }
 \seealso{
-\code{\link[=activateImage]{activateImage()}}
+\code{\link[=activateImage]{activateImage()}}, \code{\link[=activeImage]{activeImage()}}
 }

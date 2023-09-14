@@ -10,7 +10,10 @@ getSpatAnnSf(object, id, img_name = NULL)
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. The ID of the spatial annotation of interest.}
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 }
 \value{
 An object of class \code{POLYGON} from the \code{sf} package.

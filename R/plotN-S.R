@@ -542,8 +542,8 @@ plotRiverplot <- function(object,
 #' @export
 #'
 plotSasBarplot <- function(object,
-                           id,
                            grouping_variable,
+                           id = idSA(object),
                            distance = NA_integer_,
                            binwidth = getCCD(object),
                            n_bins_dist = NA_integer_,
@@ -922,11 +922,11 @@ plotSasBarplotSC <- function(object,
 #' @export
 #'
 plotSasEvaluation <- function(object,
-                              id,
                               variables,
+                              id = idSA(object),
                               method_eval = "corr",
-                              distance = NA_integer_,
-                              binwidth = ccDist(object),
+                              distance = distToEdge(object),
+                              binwidth = recBinwidth(object),
                               n_bins_dist = NA_integer_,
                               angle_span = c(0,360),
                               model_subset = NULL,
@@ -1016,8 +1016,8 @@ plotSasEvaluation <- function(object,
 #' @export
 
 plotSasHeatmap <- function(object,
-                           id,
                            variables,
+                           id = idSA(object),
                            distance = distToEdge(object, id),
                            binwidth = recBinwidth(object),
                            n_bins_dist = NA_integer_,
@@ -1273,10 +1273,11 @@ plotSasHeatmap <- function(object,
 #' @export
 #'
 plotSasLineplot <- function(object,
-                            id,
                             variables,
+                            id = idSA(object),
                             distance = distToEdge(object, id),
                             binwidth = recBinwidth(object),
+                            core = TRUE,
                             n_bins_dist = NA_integer_,
                             angle_span = c(0,360),
                             n_bins_angle = 1,
@@ -1309,6 +1310,7 @@ plotSasLineplot <- function(object,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
+      core = core,
       verbose = FALSE
     ) %>%
     tidyr::pivot_longer(
@@ -1369,7 +1371,9 @@ plotSasLineplot <- function(object,
       mapping = ggplot2::aes(x = dist, y = values, color = variables),
       span = smooth_span,
       se = smooth_se,
-      linewidth = line_size
+      linewidth = line_size,
+      method = "loess",
+      formula = y ~ x
     ) +
     border_add_on +
     facet_add_on +
@@ -1404,8 +1408,8 @@ plotSasLineplot <- function(object,
 #' @rdname plotSasLineplot
 #' @export
 plotSasLineplotSC <- function(object,
-                              id,
                               sc_input,
+                              id = idSA(object),
                               distance = NA_integer_,
                               n_bins_dist = NA_integer_,
                               binwidth = getCCD(object),
@@ -1806,8 +1810,8 @@ plotSasLineplotSC <- function(object,
 #' @export
 #'
 plotSasRidgeplot <- function(object,
-                             id,
                              variables,
+                             id = idSA(object),
                              distance = distToEdge(object, id),
                              binwidth = recBinwidth(object),
                              n_bins_dist = NA_integer_,
@@ -1976,8 +1980,8 @@ plotSasRidgeplot <- function(object,
 #' @rdname plotSasRidgeplot
 #' @export
 plotSasRidgeplotSC <- function(object,
-                               id,
                                sc_input,
+                               id = idSA(object),
                                distance = NA_integer_,
                                n_bins_dist = NA_integer_,
                                binwidth = getCCD(object),

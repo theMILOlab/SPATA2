@@ -68,7 +68,6 @@ img_ann_highlight_group_button <- function(){
 #'  (See details fore more.)
 #' @param n_bins_angle Numeric value. Number of bins that are created by angle.
 #' (See details for more.)
-#'
 #' @param bcs_exclude Character value containing name(s) of data points to be excluded from the analysis.
 #'
 #' @inherit add_models params
@@ -167,8 +166,8 @@ img_ann_highlight_group_button <- function(){
 #'
 #' @export
 spatialAnnotationScreening <- function(object,
-                                       id,
                                        variables,
+                                       id = idSA(object),
                                        distance = distToEdge(object, id),
                                        binwidth = recBinwidth(object),
                                        n_bins_dist = NA_integer_,
@@ -408,7 +407,6 @@ spatialAnnotationScreening <- function(object,
       y = circularity_eval,
       by = c("variables", "models")
     )
-
 
   info <- list(
     id = id,
