@@ -1478,135 +1478,143 @@ spatialAnnotationScreening <- function(object,
 
 # angle wise model fitting  -----------------------------------------------
 
-  sas_df_smrd_by_angle <-
-    process_coords_df_sa(
-      coords_df = coords_df,
-      variables = variables,
-      core = core,
-      periphery = periphery,
-      bcs_exclude = bcs_exclude,
-      summarize_by = c("bins_angle", "bins_dist"),
-      format = "wide"
+  if(n_bins_angle > 1){
+
+    sas_df_smrd_by_angle <-
+      process_coords_df_sa(
+        coords_df = coords_df,
+        variables = variables,
+        core = core,
+        periphery = periphery,
+        bcs_exclude = bcs_exclude,
+        summarize_by = c("bins_angle", "bins_dist"),
+        format = "wide"
+      )
+
+    min_circles <- 5
+
+    angle_bins <-
+      dplyr::select(sas_df_smrd_by_angle, bins_angle, bins_dist) %>%
+      dplyr::group_by(bins_angle) %>%
+      dplyr::tally() %>%
+      dplyr::filter(n >= min_circles) %>%
+      dplyr::pull(bins_angle) %>%
+      base::droplevels() %>%
+      base::levels()
+
+    n_total <- base::length(angle_bins)
+
+    time_start <- base::Sys.time()
+    bin_duration <- NULL
+    fn_envir <- base::environment()
+
+    confuns::give_feedback(
+      msg = "Fitting models by bin.",
+      verbose = verbose
     )
 
-  min_circles <- 5
+    results_by_angle <-
+      purrr::map_df(
+        .x = angle_bins,
+        .f = function(bin){
 
-  angle_bins <-
-    dplyr::select(sas_df_smrd_by_angle, bins_angle, bins_dist) %>%
-    dplyr::group_by(bins_angle) %>%
-    dplyr::tally() %>%
-    dplyr::filter(n >= min_circles) %>%
-    dplyr::pull(bins_angle) %>%
-    base::droplevels() %>%
-    base::levels()
+          start_bin <- base::Sys.time()
 
-  n_total <- base::length(angle_bins)
+          nth <- base::which(angle_bins == bin)
 
-  time_start <- base::Sys.time()
-  bin_duration <- NULL
-  fn_envir <- base::environment()
-
-  confuns::give_feedback(
-    msg = "Fitting models by bin.",
-    verbose = verbose
-  )
-
-  results_by_angle <-
-    purrr::map_df(
-      .x = angle_bins,
-      .f = function(bin){
-
-        start_bin <- base::Sys.time()
-
-        nth <- base::which(angle_bins == bin)
-
-        confuns::give_feedback(
-          msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
-          verbose = verbose
-        )
-
-        bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
-
-        if(!base::is.null(bin_dur)){
-
-          # -1 cause nth bin is yet to be screened
-          n_remaining <- n_total - (nth-1)
-
-          dur_sec <-
-            base::as.numeric(bin_dur * n_remaining) %>%
-            base::round(digits = 2)
-
-          dur_min <- base::round(dur_sec/60, digits = 2)
-          dur_hours <- base::round(dur_sec/3600, digits = 2)
-
-          est_end <- base::Sys.time() + dur_sec
-
-          msg <- glue::glue("Estimated end of screening: {est_end}.")
-
-          confuns::give_feedback(msg = msg, verbose = verbose)
-
-        }
-
-        bin_angle_df <-
-          dplyr::filter(sas_df_smrd_by_angle, bins_angle == {{bin}}) %>%
-          dplyr::select(-bins_dist, -bins_angle) %>%
-          tidyr::pivot_longer(
-            cols = dplyr::all_of(variables),
-            names_to = "variables",
-            values_to = "values"
+          confuns::give_feedback(
+            msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
+            verbose = verbose
           )
 
-        shifted_df_with_models <-
-          dplyr::left_join(
-            x = bin_angle_df,
-            y = model_df,
-            by = "bins_order"
-          ) %>%
-          dplyr::arrange(variables) %>%
-          shift_for_evaluation(var_order = "bins_order")
+          bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
 
-        results <-
-          base::suppressWarnings({
+          if(!base::is.null(bin_dur)){
 
-            evaluate_model_fits(
-              input_df = shifted_df_with_models,
-              var_order = "bins_order"
+            # -1 cause nth bin is yet to be screened
+            n_remaining <- n_total - (nth-1)
+
+            dur_sec <-
+              base::as.numeric(bin_dur * n_remaining) %>%
+              base::round(digits = 2)
+
+            dur_min <- base::round(dur_sec/60, digits = 2)
+            dur_hours <- base::round(dur_sec/3600, digits = 2)
+
+            est_end <- base::Sys.time() + dur_sec
+
+            msg <- glue::glue("Estimated end of screening: {est_end}.")
+
+            confuns::give_feedback(msg = msg, verbose = verbose)
+
+          }
+
+          bin_angle_df <-
+            dplyr::filter(sas_df_smrd_by_angle, bins_angle == {{bin}}) %>%
+            dplyr::select(-bins_dist, -bins_angle) %>%
+            tidyr::pivot_longer(
+              cols = dplyr::all_of(variables),
+              names_to = "variables",
+              values_to = "values"
             )
 
-          }) %>%
-          dplyr::mutate(bins_angle = {{bin}})
+          shifted_df_with_models <-
+            dplyr::left_join(
+              x = bin_angle_df,
+              y = model_df,
+              by = "bins_order"
+            ) %>%
+            dplyr::arrange(variables) %>%
+            shift_for_evaluation(var_order = "bins_order")
 
-        end_bin <- base::Sys.time()
+          results <-
+            base::suppressWarnings({
 
-        base::assign(
-          x = "bin_duration",
-          value = base::difftime(end_bin, start_bin, units = "secs"),
-          envir = fn_envir
-        )
+              evaluate_model_fits(
+                input_df = shifted_df_with_models,
+                var_order = "bins_order"
+              )
 
-        return(results)
+            }) %>%
+            dplyr::mutate(bins_angle = {{bin}})
 
-      }
-    )
+          end_bin <- base::Sys.time()
 
-  # merge circularity check
-  circularity_eval <-
-    dplyr::group_by(results_by_angle, variables, models) %>%
-    dplyr::summarise(
-      dplyr::across(
-        .cols = dplyr::all_of(c("p_value", "corr", "rmse", "mae")),
-        .fns = ~ base::mean(.x, na.rm = TRUE),
-        .names = "circ_{.col}"
+          base::assign(
+            x = "bin_duration",
+            value = base::difftime(end_bin, start_bin, units = "secs"),
+            envir = fn_envir
+          )
+
+          return(results)
+
+        }
       )
-    ) %>%
-    dplyr::ungroup()
 
-  results <-
-    dplyr::left_join(
-      x = results,
-      y = circularity_eval,
-      by = c("variables", "models")
-    )
+    # merge circularity check
+    circularity_eval <-
+      dplyr::group_by(results_by_angle, variables, models) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of(c("p_value", "corr", "rmse", "mae")),
+          .fns = ~ base::mean(.x, na.rm = TRUE),
+          .names = "circ_{.col}"
+        )
+      ) %>%
+      dplyr::ungroup()
+
+    results <-
+      dplyr::left_join(
+        x = results,
+        y = circularity_eval,
+        by = c("variables", "models")
+      )
+
+  } else {
+
+    results_by_angle <- base::data.frame()
+
+  }
 
   info <- list(
     id = id,

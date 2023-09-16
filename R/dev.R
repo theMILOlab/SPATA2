@@ -480,8 +480,81 @@ whichSpaceRangerVersion <- function(dir){
 
 
 
+#' @export
+findOptimalDistanceSAS <- function(object,
+                                   id,
+                                   variables,
+                                   core = TRUE,
+                                   binwidth = recBinwidth(object),
+                                   threshold = 0.25){
 
 
+  dte <- distToEdge(object, id = id, unit = extract_unit(binwidth))
+
+  # require 5 bins to identify all basic patterns
+  n_bins_start <- 5
+  dist_start <- binwidth*n_bins_start
+
+  bw_unit <- extract_unit(binwidth)
+
+  bwv <- extract_value(binwidth)
+  dsv <- extract_value(dist_start)
+  dtev <- extract_value(dte)
+
+  n_reps <- base::ceiling(dtev/bwv)
+
+  iterations <- 0:n_reps
+
+  pb <- confuns::create_progress_bar(base::length(iterations))
+
+  results_all <-
+    purrr::map_df(
+      .x = iterations,
+      .f = function(i){
+
+        pb$tick()
+
+        dist_test <- bwv * (n_bins_start+i)
+
+        dist_test <- as_unit(dist_test, unit = bw_unit, object = object)
+
+        sas <-
+          spatialAnnotationScreening(
+            object = object,
+            variables = variables,
+            id = id,
+            distance = dist_test,
+            binwidth = binwidth,
+            core = core,
+            n_bins_angle = 1,
+            verbose = FALSE
+          )
+
+        results <- sas@results
+        results$dist_test <- dist_test
+
+        return(results)
+
+      }
+    )
+
+  out <-
+    dplyr::group_by(results_all, variables, dist_test) %>%
+     dplyr::slice_min(order_by = mae, n = 1) %>%
+     dplyr::ungroup() %>%
+     dplyr::mutate(valid_fit = mae < {{threshold}}) %>%
+     dplyr::group_by(dist_test) %>%
+     dplyr::summarise(
+       n_valid_fits = base::sum(valid_fit),
+       dplyr::across(
+         .cols = c(corr, rmse, mae),
+         .fns = base::mean
+       )
+     )
+
+  return(out)
+
+}
 
 
 

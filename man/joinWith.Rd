@@ -41,7 +41,7 @@ joinWithGenes(
   smooth = FALSE,
   smooth_span = 0.02,
   normalize = TRUE,
-  verbose = TRUE
+  verbose = NULL
 )
 
 joinWithGeneSets(

@@ -1221,7 +1221,7 @@ getCoordsDfSA <- function(object,
 
   if(!purrr::is_empty(x = list(...))){
 
-    sas_df <- joinWithVariables(object = object, spata_df = sas_df, ...)
+    sas_df <- joinWithVariables(object = object, spata_df = sas_df, verbose = verbose, ...)
 
   }
 

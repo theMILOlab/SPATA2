@@ -202,7 +202,9 @@ joinWithGenes <- function(object,
                           smooth = FALSE,
                           smooth_span = 0.02,
                           normalize = TRUE,
-                          verbose = TRUE){
+                          verbose = NULL){
+
+  hlpr_assign_arguments(object)
 
   # 1. Control --------------------------------------------------------------
 
@@ -330,11 +332,17 @@ joinWithGenes <- function(object,
 
     if(base::isTRUE(verbose) && base::isTRUE(smooth)){
 
-      confuns::give_feedback(msg = glue::glue("Joining and smoothing {n_genes} {ref}."))
+      confuns::give_feedback(
+        msg = glue::glue("Joining and smoothing {n_genes} {ref}."),
+        verbose = verbose
+        )
 
     } else if(base::isTRUE(verbose)){
 
-      confuns::give_feedback(msg = glue::glue("Joining {n_genes} {ref}."))
+      confuns::give_feedback(
+        msg = glue::glue("Joining {n_genes} {ref}."),
+        verbose = verbose
+        )
 
     }
 
@@ -414,8 +422,6 @@ joinWithGenes <- function(object,
 
   if(base::isTRUE(normalize)){
 
-    confuns::give_feedback(msg = "Normalizing values.", verbose = verbose)
-
     joined_df <-
       purrr::imap_dfr(.x = joined_df,
                       .f = hlpr_normalize_imap,
@@ -424,8 +430,6 @@ joinWithGenes <- function(object,
       )
 
   }
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
 
   # -----
 
@@ -662,8 +666,6 @@ joinWithGeneSets <- function(object,
 
   if(base::isTRUE(normalize)){
 
-    confuns::give_feedback(msg = "Normalizing values.", verbose = verbose)
-
     # normalize
     joined_df <-
       purrr::imap_dfr(.x = joined_df,
@@ -672,8 +674,6 @@ joinWithGeneSets <- function(object,
                     subset = gene_sets)
 
   }
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
 
   if(base::length(ignored_gs) > 1){
 
