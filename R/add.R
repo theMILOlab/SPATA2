@@ -308,8 +308,6 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 
 }
 
-
-
 # addE --------------------------------------------------------------------
 
 
@@ -900,6 +898,62 @@ addGeneSetsInteractive <- function(object){
 
 
 
+# addH --------------------------------------------------------------------
+
+#' @title Add object of class `HistoImage`
+#'
+#' @description Adds objects of class `HistoImage` to list of
+#' registered histology images. Should only be used within `registerHistoImage()`.
+#'
+#' @param hist_img An object of class `HistoImage` created with `createHistoImage()`.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setGeneric(name = "addHistoImage", def = function(object, hist_img, ...){
+
+  standardGeneric(f = "addHistoImage")
+
+})
+
+#' @rdname addHistoImage
+#' @export
+setMethod(
+  f = "addHistoImage",
+  signature = "HistoImaging",
+  definition = function(object, hist_img, overwrite = FALSE){
+
+    confuns::check_none_of(
+      input = hist_img@name,
+      against = getImageNames(object),
+      ref.input = "name of input histology image",
+      ref.against = "registered histology images",
+      overwrite = overwrite
+    )
+
+    if(object@image_reference@name == hist_img@name){
+
+      stop("Name of input HistoImage is equal to name of current reference HistoImage.
+           Please use `setHistoImageRef()` to exchange the reference HistoImage."
+      )
+
+    }
+
+    if(getHistoImageActive(object)@name == hist_img@name){
+
+      stop("Name of input HistoImage is equal to name of currently active HistoImage.
+           Please use `setHistoImageActive()` to exchange the active HistoImage."
+      )
+
+    }
+
+    object@images[[hist_img@name]] <- hist_img
+
+    return(object)
+
+  }
+)
 
 
 
@@ -1069,6 +1123,102 @@ addPointsBase <- function(object,
 
 }
 
+add_polygon <- function(x, y, poly = NULL, color = "black", size = 2, scale_fct = 1) {
+
+  if(base::is.data.frame(poly)){
+
+    if(!"section" %in% base::colnames(poly)){
+
+      poly$section <- "whole"
+
+    }
+
+    for(section in base::unique(poly$section)){
+
+      polygon(
+        x = poly[poly$section == section, ][["x"]] * scale_fct,
+        y = poly[poly$section == section, ][["y"]] * scale_fct,
+        border = color,
+        lwd = size
+      )
+
+    }
+
+  } else {
+
+    if(base::is.numeric(scale_fct)){
+
+      x <- x * scale_fct
+      y <- y * scale_fct
+
+    }
+
+    polygon(x, y, border = color, lwd = size)
+
+  }
+
+}
+
+#' @title Add polygons to a base plot
+#'
+#' @description Adds polygons to a base plot.
+#'
+#' @param x,y Numeric vectors representing x- and y-coordinates of the
+#' vertices of the polygon.
+#' @param poly Data.frame of at least two variables named *x* and *y*
+#' representing the coordinates of the vertices of the polygon. If
+#' variable *section* exists multiple polygons are plotted based
+#' on the number of different groups in this variable. Overwrites `x`
+#' and `y`.
+#' @param color Color of the lines.
+#' @param size Width of the lines.
+#' @param scale_fct A factor with which the vertice positions are scaled.
+#'
+#' @return Output of `graphics::polygon()` is directly plotted.
+#' @export
+#'
+addPolygonBase <- function(x,
+                           y,
+                           poly = NULL,
+                           color = "black",
+                           size = 2,
+                           scale_fct = 1){
+
+  if(base::is.data.frame(poly)){
+
+    if(!"section" %in% base::colnames(poly)){
+
+      poly$section <- "whole"
+
+    }
+
+    for(section in base::unique(poly$section)){
+
+      graphics::polygon(
+        x = poly[poly$section == section, ][["x"]] * scale_fct,
+        y = poly[poly$section == section, ][["y"]] * scale_fct,
+        border = color,
+        lwd = size
+      )
+
+    }
+
+  } else {
+
+    if(base::is.numeric(scale_fct)){
+
+      x <- x * scale_fct
+      y <- y * scale_fct
+
+    }
+
+    graphics::polygon(x, y, border = color, lwd = size)
+
+  }
+
+}
+
+
 
 
 
@@ -1130,8 +1280,7 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
 #' @title Add an spatial annotation manually
 #'
-#' @description Adds spatial annotations manually by assembling the object
-#' based on the function input.
+#' @description Adds spatial annotations using a polygon.
 #'
 #' @param area A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
 #' Observations correspond to the vertices of the polygons that are needed to represent the
@@ -1456,6 +1605,119 @@ addSpatialTrajectory <- function(object,
 
 # addT --------------------------------------------------------------------
 
+#' @title Add polygons to a base plot
+#'
+#' @description Adds polygons to a base plot.
+#'
+#' @param x,y Numeric vectors representing x- and y-coordinates of the
+#' vertices of the polygon.
+#' @param poly Data.frame of at least two variables named *x* and *y*
+#' representing the coordinates of the vertices of the polygon. If
+#' variable *section* exists multiple polygons are plotted based
+#' on the number of different groups in this variable. Overwrites `x`
+#' and `y`.
+#' @param color Color of the lines.
+#' @param size Width of the lines.
+#' @param scale_fct A factor with which the vertice positions are scaled.
+#'
+#' @return Output of `graphics::polygon()` is directly plotted.
+#' @export
+#'
+setGeneric(name = "addTissueOutlineBase", def = function(object, ...){
+
+  standardGeneric(f = "addTissueOutlineBase")
+
+})
+
+#' @rdname addTissueOutlineBase
+#' @export
+setMethod(
+  f = "addTissueOutlineBase",
+  signature = "HistoImage",
+  definition = function(object,
+                        by_section = FALSE,
+                        persp = "coords",
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 1,
+                        line_type = "solid",
+                        scale_fct = 1,
+                        init = list(),
+                        rect = FALSE,
+                        ...){
+
+    df <-
+      getTissueOutlineDf(
+        object = object,
+        by_section = by_section
+      )
+
+    if(persp == "coords"){
+
+      xvar <- "x"
+      yvar <- "y"
+
+    } else if(persp == "image"){
+
+      xvar <- "width"
+      yvar <- "height"
+
+    }
+
+    if(!purrr::is_empty(init)){
+
+      xrange <- as_pixel(input = init[["x"]][c(1,2)], object = object)
+      yrange <- as_pixel(input = init[["y"]][c(1,2)], object = object)
+
+      graphics::plot.new()
+      #graphics::par(pty = "s")
+      graphics::plot(
+        x = xrange,
+        y = yrange,
+        type = "l",
+        xlim = xrange,
+        ylim = yrange,
+        col = ggplot2::alpha("white", 0),
+        xlab = if_null(init[["xlab"]], NA_character_),
+        ylab = if_null(init[["ylab"]], NA_character_),
+        axes = if_null(init[["axes"]], FALSE)
+      )
+
+    }
+
+    if(base::isTRUE(rect)){
+
+      graphics::rect(
+        xleft = graphics::par("usr")[1],
+        xright = graphics::par("usr")[2],
+        ybottom = graphics::par("usr")[3],
+        ytop = graphics::par("usr")[4],
+        border = "black"
+      )
+
+    }
+
+    purrr::walk(
+      .x = base::unique(df[["section"]]),
+      .f = function(s){
+
+        dfs <- dplyr::filter(df, section == {{s}})
+
+        graphics::polygon(
+          x = dfs[[xvar]]*scale_fct,
+          y = dfs[[yvar]]*scale_fct,
+          border = ggplot2::alpha(line_color, line_alpha),
+          lty = line_type,
+          lwd = line_size,
+          ...
+        )
+
+      }
+    )
+
+  }
+)
+
 addTrajectoryObject <- function(object,
                                 trajectory_name,
                                 trajectory_object,
@@ -1492,3 +1754,58 @@ addTrajectoryObject <- function(object,
 
 
 
+
+
+# addV --------------------------------------------------------------------
+
+
+
+#' @title Add variable to coordinates data.frame
+#'
+#' @description Adds variables to the coordinates data.frame in slot @@coordinates.
+#'
+#' @inherit argument_dummy params
+#' @param var_df Data.frame with the variables to merge.
+#' @param vars Character vector. Subset of variables to add.
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setGeneric(name = "addVarToCoords", def = function(object, ...){
+
+  standardGeneric(f = "addVarToCoords")
+
+})
+
+#' @rdname addVarToCoords
+#' @export
+setMethod(
+  f = "addVarToCoords",
+  signature = "HistoImaging",
+  definition = function(object, var_df, vars, overwrite = FALSE){
+
+    # prevent/allow overwriting
+    confuns::check_none_of(
+      input = vars,
+      against = base::colnames(object@coordinates),
+      overwrite = overwrite
+    )
+
+    for(v in vars){
+
+      object@coordinates[[v]] <- NULL
+
+    }
+
+    # merge
+    var_df <-
+      dplyr::select( .data = var_df, barcodes, dplyr::all_of(vars))
+
+    object@coordinates <-
+      dplyr::left_join(x = object@coordinates, y = var_df, by = "barcodes")
+
+    return(object)
+
+  }
+)

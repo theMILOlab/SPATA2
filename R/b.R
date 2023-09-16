@@ -1,5 +1,28 @@
 
 
+background_white <- function(image, percentile = 99){
+
+  pxl_df <- getPixelDf(object = image, colors = TRUE, hex_code = TRUE)
+
+  # assume that background consists of a small set of colors in very high
+  # numbers
+  color_count <-
+    dplyr::group_by(pxl_df, color) %>%
+    dplyr::tally() %>%
+    dplyr::arrange(dplyr::desc(n))
+
+  cutoff <- stats::quantile(x = color_count$n, probs = percentile/100)
+
+  bg_colors <-
+    dplyr::filter(color_count, n >= {{cutoff}}) %>%
+    dplyr::pull(color)
+
+  pxl_df[pxl_df$color %in% bg_colors, c("col1", "col2", "col3")] <- 1
+
+  pixel_df_to_image(pxl_df)
+
+}
+
 
 #' @title Create spatial annotations from a list of barcodes
 #'

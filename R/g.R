@@ -98,8 +98,7 @@ geom_text_fixed <- function(...,
 }
 
 
-# ggp ---------------------------------------------------------------------
-
+# ggpLayer ----------------------------------------------------------------
 
 #' @title Initiate ggplot2 layering
 #'
@@ -244,7 +243,7 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'  # ----- for gradient plots
 #'
 #'  plotSurface(object, color_by = "FN1") +
-#'   ggpLayerHorizonIAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
+#'   ggpLayerHorizonSAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
 #'
 #'  # no axis specification
 #'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
@@ -524,6 +523,84 @@ ggpLayerAxesSI <- function(object,
   )
 
 }
+
+
+#' @title Add capture area to surface plot
+#'
+#' @description Adds the capture area as a rectangular and/or
+#' crops the frame of the plot accordingly.
+#'
+#' @param opt Combination of *'rect'* and/or *'crop'*.
+#' @inherit ggpLayerRect params
+#' @inherit ggpLayerZoom params
+#'
+#' @seealso [`getCaptureArea()`]
+#'
+#' @return List of ggpLayer outputs.
+#' @export
+#'
+ggpLayerCaptureArea <- function(object,
+                                opt = c("rect"),
+                                rect_alpha = 0.9,
+                                rect_clr = "black",
+                                rect_line_type = "solid",
+                                rect_size = 1,
+                                expand_rect = 0.025,
+                                expand_x = ggplot2::waiver(),
+                                expand_y = ggplot2::waiver()){
+
+  # capture ranges
+  cr <-
+    purrr::map(
+      .x = getCaptureArea(object),
+      .f = function(capture_range){
+
+        capture_range <- as_pixel(capture_range, object = object)
+
+        capture_range[1] <- capture_range[1] * (1-expand_rect)
+        capture_range[2] <- capture_range[2] * (1+expand_rect)
+
+        return(capture_range)
+
+      }
+    )
+
+  out <- list()
+
+  if("rect" %in% opt){
+
+    out[["rect"]] <-
+      ggpLayerRect(
+        object = object,
+        xrange = cr$x,
+        yrange = cr$y,
+        alpha = rect_alpha,
+        color = rect_clr,
+        fill = NA,
+        size = rect_size,
+        linetype = rect_line_type
+      )
+
+  }
+
+  if("crop" %in% opt){
+
+    out[["crop"]] <-
+      ggpLayerZoom(
+        object = object,
+        xrange = cr$x,
+        yrange = cr$y,
+        expand_x = expand_x,
+        expand_y = expand_y
+      )
+
+  }
+
+  return(out)
+
+}
+
+
 
 
 #' @title Add group specific color spectrum
@@ -1066,7 +1143,7 @@ ggpLayerGroupOutline <- function(object,
 #'    )
 #'
 #'  plotSurface(object) +
-#'   ggpLayerHorizonIAS(
+#'   ggpLayerHorizonSAS(
 #'    object = object,
 #'    id = "necrotic_center",
 #'    distance = "2.25mm",
@@ -1074,7 +1151,7 @@ ggpLayerGroupOutline <- function(object,
 #'    )
 #'
 #'
-ggpLayerHorizonIAS <- function(object,
+ggpLayerHorizonSAS <- function(object,
                                id,
                                distance = distToEdge(object, id),
                                binwidth = recBinwidth(object),
@@ -1120,433 +1197,569 @@ ggpLayerHorizonIAS <- function(object,
 
 }
 
-#' @title Add outline of spatial annotations
+
+
+#' @title Add histology image
 #'
-#' @description Adds a ggplot2 layer of polygons visualizing the outline
-#' of spatial annotations.
+#' @description Creates ggplot2 layer with the histology image
+#' as a raster.
 #'
-#' @param inner Logical value. If `FALSE`, only outer borders of the annotation
-#' are displayed.
-#' @param use_colors Logical value. If `TRUE`, the color aesthetic is used to display
-#' each outline in a different color while providing a legend.
-#'
-#' @inherit argument_dummy params
-#' @inherit getSpatialAnnotations params details
 #' @inherit ggpLayer_dummy return
-#'
-#' @note Adds two additional layers to set the scales for the color- and
-#' fill aesthetic of the plot.
-#'
-#' @export
-#'
-ggpLayerSpatAnnOutline <- function(object = "object",
-                                   ids = NULL,
-                                   tags = NULL,
-                                   test = "any",
-                                   alpha = 0.5,
-                                   fill = NA,
-                                   line_color = "black",
-                                   line_size = 1.5,
-                                   line_type = "solid",
-                                   use_colors = FALSE,
-                                   inner = FALSE,
-                                   ...){
-
-        deprecated(...)
-
-        if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
-        hlpr_assign_arguments(object)
-
-        ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
-
-        purrr::map(
-          .x = ids,
-          .f = function(id){
-
-            img_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
-
-            if(!"inner1" %in% base::names(img_ann@area)){
-
-              inner <- FALSE
-
-            }
-
-            if(base::isFALSE(inner)){
-
-              df <-
-                getSpatAnnOutlineDf(object, ids = id) %>%
-                dplyr::filter(border == "outer")
-
-              if(base::isTRUE(use_colors)){
-
-                out <-
-                  ggplot2::geom_polygon(
-                    data = df,
-                    size = line_size,
-                    linetype = line_type,
-                    alpha = alpha,
-                    fill = fill,
-                    mapping = ggplot2::aes(x = x, y = y, color = ids),
-                    ...
-                  )
-
-              } else {
-
-                out <-
-                  ggplot2::geom_polygon(
-                    data = df,
-                    size = line_size,
-                    color = line_color,
-                    linetype = line_type,
-                    alpha = alpha,
-                    fill = fill,
-                    mapping = ggplot2::aes(x = x, y = y),
-                    ...
-                  )
-
-              }
-
-
-
-            } else {
-
-              df <- getSpatAnnSf(object, id)
-
-              ggplot2::geom_sf(
-                data = df,
-                size = line_size,
-                color = line_color,
-                linetype = line_type,
-                alpha = alpha,
-                fill = fill,
-                ...
-              )
-
-            }
-
-          }
-        )
-
-      }
-
-#' @title Add pointer towards spatial annotations
-#'
-#' @description Adds segments and, if desired, labels to the surface plot that
-#' point towards and highlight the position of spatial annotations.
-#'
-#' @param color_by Character value or `NULL`. If character, one of *'id'* or *'label'*
-#' which colors the the pointers accordingly.
-#' @param ptr_angles,ptr_lengths Numeric value of length 1 or of length equal to the number
-#' of spatial annotations. Specifies the angle from which the segments points
-#' towards the spatial annotation as well as their length. `ptr_lengths` works
-#' within the SPATA2 distance framework. See section *Distance measures* for more
-#' information.
-#' @param ptr_labels Specifies if and how the pointers are labeled. If `NULL`,
-#' the default, the spatial annotations are labeled by their ID. If character,
-#' specifies the exact label of each spatial annotation and should be of length 1
-#' or of length equal to the number of spatial annotations. If `FALSE`, no text
-#' is displayed.
-#' @param ptr_alpha Numeric value. Specifies the transparency of the pointers.
-#' @param ptr_arrow `NULL` or `arrow` as displayed by `grid::arrow()`.
-#' @param ptr_color Character value. Specifies the color of the pointers if
-#' `color_by` is not a character.
-#' @param ptr_size Numeric value. Specifies the size (thickness) of the pointers.
-#' @param text_dist Distance measure. Specifies the distance from the text to
-#' the pointer.
-#' @param point_at Character value. If *'center'*, the pointer is directed at
-#' the center of the spatial annotation. If *'border'*, the pointer points
-#' at a random point of the spatial annotation border - recommended if the
-#' spatial annotation is big.
-#' @param seed Numeric value or `NULL`. If numeric, sets seed before picking
-#' a random point of the spatial annotation border if `point_at = 'border'`.
-#'
 #' @inherit argument_dummy params
-#' @inherit ggpLayer_dummy return details
 #'
-#' @inheritSection section_dummy Distance measures
+#' @details
+#' The image is plotted via `ggplot2::geom_raster()` by mapping the pixel position
+#' to the x-axis and the y-axis. See section Image visualization
+#' with `ggplot2` for more details.
+#'
+#' @inheritSection section_dummy Image visualization with ggplot2
 #'
 #' @export
-ggpLayerSpatAnnPointer <- function(object,
-                                  ids = NULL,
-                                  tags = NULL,
-                                  test = "any",
-                                  color_by = NULL,
-                                  ptr_angles = 45,
-                                  ptr_labels = NULL,
-                                  ptr_lengths = "250um",
-                                  ptr_alpha = 0.9,
-                                  ptr_arrow = NULL,
-                                  ptr_color = "black",
-                                  ptr_size = 1,
-                                  text_alpha = 0.9,
-                                  text_color = "black",
-                                  text_dist = 0,
-                                  text_nudge_x = 0,
-                                  text_nudge_y = 0,
-                                  text_size = 4,
-                                  point_at = "center",
-                                  seed = NULL,
-                                  clrp = NULL,
-                                  clrp_adjust = NULL){
+#'
 
-  hlpr_assign_arguments(object)
+setGeneric(name = "ggpLayerImage", def = function(object, ...){
 
-  # check and get spatial annotations
-  img_anns <-
-    getSpatialAnnotations(
-      object = object,
-      ids = ids,
-      tags = tags,
-      test = test,
-      add_barcodes = FALSE,
-      add_image = FALSE,
-      check = TRUE
-    )
+  standardGeneric(f = "ggpLayerImage")
 
+})
 
-  # check ptr_angles
-  if(base::is.numeric(ptr_angles)){
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        transform = TRUE,
+                        img_alpha = 1,
+                        scale_fct = 1,
+                        ...){
 
-    if(base::length(ptr_angles) == 1){
-
-      ptr_angles <- base::rep(ptr_angles, base::length(ptr_angles))
-
-    } else if(base::length(ptr_angles) != base::length(ptr_angles)){
-
-      stop("If numeric, length of input for argument `ptr_angles` must be 1 or equal to number of spatial annotations.")
-
-    }
-
-  } else {
-
-    stop("Invalid input for argument `ptr_angles`. Must be numeric.")
-
-  }
-
-  # check ptr_labels
-  if(base::is.character(ptr_labels)){
-
-    if(base::length(ptr_labels) == 1){
-
-      ptr_labels <- base::rep(ptr_labels, base::length(img_anns))
-
-    } else if(base::length(ptr_labels) != base::length(img_anns)){
-
-      stop("If character, length of input for argument `ptr_labels` must be 1 or equal to number of spatial annotations.")
-
-    }
-
-  } else {
-
-    ptr_labels <-
-      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
-      base::unname()
-
-  }
-
-  # check ptr_lengths
-  is_dist(input = ptr_lengths, error = TRUE)
-
-  ptr_lengths <- as_pixel(input = ptr_lengths, object = object, add_attr = FALSE)
-
-  if(base::length(ptr_lengths) == 1){
-
-    ptr_lengths <- base::rep(ptr_lengths, base::length(img_anns))
-
-  }
-
-  if(base::length(text_dist) == 1){
-
-    text_dist <- base::rep(text_dist, base::length(img_anns))
-
-  }
-
-  plot_df <-
-    purrr::pmap_dfr(
-      .l = list(img_anns, ptr_angles, ptr_labels, ptr_lengths, text_dist),
-      .f = function(img_ann, angle, label, len, prolong){
-
-        area <- img_ann@area[["outer"]]
-
-        if(point_at == "center"){
-
-          center <- getSpatAnnCenter(img_ann)
-
-        } else if(point_at == "border"){
-
-          if(base::is.numeric(seed)){
-
-            set.seed(seed)
-
-          }
-
-          center <-
-            area[base::sample(x = 1:base::nrow(area), size = 1),] %>%
-            base::as.numeric() %>%
-            purrr::set_names(nm = c("x", "y"))
-
-        }
-
-        dist <- as_pixel(input = len, object = object, add_attr = FALSE)
-
-        confuns::make_trig_vec(
-          start = center,
-          angle = angle,
-          dist = dist,
-          prolong = as_pixel(prolong, object = object, add_attr = FALSE),
-          prolong.opt = "a"
-        ) %>%
-          dplyr::mutate(label = label, id = img_ann@id) %>%
-          dplyr::select(label, dplyr::everything())
-
-      }
-    )
-
-  if(base::is.character(color_by)){
-
-    confuns::check_one_of(
-      input = color_by,
-      against = c("label", "id")
-    )
-
-  }
-
-
-  # segment
-  if(base::is.character(color_by)){
-
-    segm_add_on <-
-      ggplot2::geom_segment(
-        data = plot_df,
-        mapping = ggplot2::aes(
-          x = xend,
-          y = yend,
-          xend = x,
-          yend = y,
-          color = .data[[color_by]],
-        ),
-        alpha = ptr_alpha,
-        arrow = ptr_arrow,
-        size = ptr_size
-      )
-
-  } else {
-
-    segm_add_on <-
-      ggplot2::geom_segment(
-        data = plot_df,
-        mapping = ggplot2::aes(
-          x = xend,
-          y = yend,
-          xend = x,
-          yend = y,
-        ),
-        alpha = ptr_alpha,
-        arrow = ptr_arrow,
-        color = ptr_color,
-        size = ptr_size
+    # use method for Image
+    getHistoImaging(object) %>%
+      ggpLayerImage(
+        object = .,
+        img_name = img_name,
+        transform = transform,
+        scale_fct = scale_fct,
+        img_alpha = img_alpha
       )
 
   }
+)
 
-  # text
-  if(!base::any(base::isFALSE(ptr_labels))){
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        img_alpha = 1,
+                        ...){
 
-    if(base::is.character(color_by)){
+    image <- getImage(object, img_name = img_name, transform = transform)
 
-      text_add_on <-
-        ggplot2::geom_text(
-          data = plot_df,
-          mapping = ggplot2::aes(
-            x = xend_p1,
-            y = yend_p1,
-            label = label,
-            color = .data[[color_by]]
-          ),
-          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
-          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
-          alpha = text_alpha,
-          size = text_size
+    # use method for Image
+    ggpLayerImage(
+      object = image,
+      scale_fct = scale_fct,
+      img_alpha = img_alpha
+    )
+
+  }
+)
+
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "HistoImage",
+  definition = function(object,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        img_alpha = 1,
+                        ...){
+
+    if(!containsImage(object)){
+
+      object <- loadImage(object)
+
+    }
+
+    if(base::isTRUE(transform)){
+
+      image <-
+        transform_image(
+          image = object@image,
+          transformations = object@transformations
         )
 
     } else {
 
-      text_add_on <-
-        ggplot2::geom_text(
-          data = plot_df,
-          mapping = ggplot2::aes(
-            x = xend_p1,
-            y = yend_p1,
-            label = label
-          ),
-          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
-          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
-          alpha = text_alpha,
-          color = text_color,
-          size = text_size
+      image <- object@image
+
+    }
+
+    # use method for Image
+    ggpLayerImage(image, scale_fct = scale_fct, img_alpha = img_alpha)
+
+  }
+)
+
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "SpatialAnnotation",
+  definition = function(object,
+                        img_alpha = 1,
+                        rescale_axes = TRUE,
+                        scale_fct = 1,
+                        ...){
+
+    image_df <-
+      getImageDf(
+        object = object,
+        rescale_axes = rescale_axes,
+        scale_fct = scale_fct
+      )
+
+    # flip to display in x- and y-space
+    ggplot2::geom_raster(
+      data = image_df,
+      mapping = ggplot2::aes(x = width, y = height),
+      fill = image_df[["color"]],
+      alpha = img_alpha
+    )
+
+  }
+)
+
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "Image",
+  definition = function(object,
+                        scale_fct = 1,
+                        img_alpha = 1,
+                        ...){
+
+    image_df <- getImageDf(object, scale_fct = scale_fct)
+
+    # flip to display in x- and y-space
+    ggplot2::geom_raster(
+      data = image_df,
+      mapping = ggplot2::aes(x = width, y = height),
+      fill = image_df[["color"]],
+      alpha = img_alpha
+    )
+
+  }
+)
+
+#' @rdname ggpLayerImage
+#' @export
+setMethod(
+  f = "ggpLayerImage",
+  signature = "data.frame",
+  definition = function(object, fill_by, img_alpha = 1){
+
+    # flip to display in x- and y-space
+    ggplot2::geom_raster(
+      data = object,
+      mapping = ggplot2::aes(x = width, y = height, fill = .data[[fill_by]]),
+      alpha = img_alpha
+    )
+
+  }
+)
+
+
+
+#' @title Adds data points to the surface plot
+#'
+#' @description Adds the data points (beads, cells, spots, etc.) of the object
+#' to the plot.
+#'
+#' @param spot_alpha,spot_size,spot_clr Parameters to set the aesthetics
+#' alpha, size, and color of the spots. Arguments `alpha_by` and `color_by`
+#' are prioritized.
+#'
+#' @inherit ggpLayerAxesSI params
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return
+#'
+#' @export
+#'
+setGeneric(name = "ggpLayerPoints", def = function(object, ...){
+
+  standardGeneric(f = "ggpLayerPoints")
+
+})
+
+#' @rdname ggpLayerPoints
+#' @export
+setMethod(
+  f = "ggpLayerPoints",
+  signature = "spata2",
+  definition = function(object,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_clr = "lightgrey",
+                        pt_size = NULL,
+                        scale_pt_size = TRUE,
+                        clrp = NULL,
+                        clrp_adjust = NULL,
+                        clrsp = NULL,
+                        smooth = FALSE,
+                        smooth_span = 0.2,
+                        normalize = NULL,
+                        transform_with = NULL,
+                        method_gs = NULL,
+                        xrange = NULL,
+                        yrange = NULL,
+                        unit = NULL,
+                        breaks = NULL,
+                        expand = TRUE,
+                        scale_fct = 1,
+                        use_scattermore = FALSE,
+                        add_labs = FALSE,
+                        bcs_rm = NULL,
+                        na_rm = FALSE){
+
+    hlpr_assign_arguments(object)
+
+    # coords df
+    imaging <- getHistoImaging(object)
+    coords_df <- getCoordsDf(imaging)
+
+    # join variables from SPATA2 object
+    vars <- base::unique(c(alpha_by, color_by))
+
+    vars <- vars[!vars %in% base::colnames(coords_df)]
+
+    if(base::length(vars) >= 1){
+
+      var_df <-
+        joinWithVariables(
+          object = object,
+          spata_df = coords_df,
+          variables = vars,
+          smooth = smooth,
+          smooth_span = smooth_span,
+          normalize = normalize,
+          method_gs = method_gs
+        ) %>%
+        confuns::transform_df(df = ., transform.with = transform_with)
+
+      imaging <- addVarToCoords(imaging, var_df = var_df, vars = vars)
+
+    }
+
+    ggpLayerPoints(
+      object = imaging,
+      img_name = NULL,
+      alpha_by = alpha_by,
+      color_by = color_by,
+      pt_alpha = pt_alpha,
+      pt_clr = pt_clr,
+      pt_size = pt_size,
+      clrp = clrp,
+      clrp_adjust = clrp_adjust,
+      clrsp = clrsp,
+      xrange = xrange,
+      yrange = yrange,
+      unit = unit,
+      breaks = breaks,
+      expand = expand,
+      bcs_rm = bcs_rm,
+      scale_fct = scale_fct,
+      use_scattermore = use_scattermore,
+      add_labs = add_labs,
+      na_rm = na_rm
+    )
+
+  }
+)
+
+
+#' @rdname ggpLayerPoints
+#' @export
+setMethod(
+  f = "ggpLayerPoints",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_clr = "lightgrey",
+                        pt_size = 1,
+                        clrp = "sifre",
+                        clrp_adjust = NULL,
+                        clrsp = "inferno",
+                        scale_pt_size = TRUE,
+                        xrange = NULL,
+                        yrange = NULL,
+                        unit = NULL,
+                        breaks = NULL,
+                        expand = TRUE,
+                        bcs_rm = NULL,
+                        na_rm = FALSE,
+                        scale_fct = 1,
+                        use_scattermore = FALSE,
+                        add_labs = FALSE){
+
+    coords_df <- getCoordsDf(object)
+
+    if(!containsScaleFactor(object, fct_name = "pixel") | base::is.null(unit)){
+
+      unit <- "px"
+
+    }
+
+    # ensure converted, numeric ranges
+    if(base::is.null(xrange)){
+
+      xspec <- FALSE
+      xrange <-
+        getCaptureArea(object)[["x"]] %>%
+        as_pixel(input = ., object = object)
+
+    } else {
+
+      xspec <- TRUE
+      xrange <- as_pixel(input = xrange[1:2], object = object)
+
+    }
+
+    if(base::is.null(yrange)){
+
+      yspec <- FALSE
+      yrange <-
+        getCaptureArea(object)[["y"]] %>%
+        as_pixel(input = ., object = object)
+
+    } else {
+
+      yspec <- TRUE
+      yrange <- as_pixel(input = yrange[1:2], object = object)
+
+    }
+
+    # scale spot size to plot frame
+    if(base::isTRUE(scale_pt_size)){
+
+      mx_range <- base::max(c(base::diff(xrange), base::diff(yrange)))
+
+      if(containsImage(object)){
+
+        mx_dims <- base::max(getImageDims(object))
+
+      } else {
+
+        mx_dims <-
+          purrr::map_dbl(coords_df[,c("x", "y")], .f = base::max) %>%
+          base::max()
+
+      }
+
+      pt_size <- (mx_dims/mx_range)*pt_size
+
+    }
+
+    # make fiducial breaks
+    if(base::is.null(breaks)){
+
+      breaks <- list()
+
+      # xrange
+      if(base::isFALSE(xspec)){
+
+        round_range_x <-
+          as_unit(input = xrange, unit = unit, object = object) %>%
+          extract_value() %>%
+          base::ceiling()
+
+        breaks$x <-
+          base::seq(from = round_range_x[1], to = round_range_x[2]) %>%
+          reduce_vec(nth = 2) %>%
+          stringr::str_c(., "mm")
+
+      }
+
+      # yrange
+      if(base::isFALSE(yspec)){
+
+        round_range_y <-
+          as_unit(input = yrange, unit = unit, object = object) %>%
+          extract_value() %>%
+          base::ceiling()
+
+        breaks$y <-
+          base::seq(from = round_range_y[1], to = round_range_y[2]) %>%
+          reduce_vec(nth = 2) %>%
+          stringr::str_c(., "mm")
+
+      }
+
+    }
+
+    # assemble output
+    out <- list()
+
+    # use method for data.frame
+    out[["spots"]] <-
+      ggpLayerPoints(
+        object = coords_df,
+        alpha_by = alpha_by,
+        color_by = color_by,
+        pt_alpha = pt_alpha,
+        pt_clr = pt_clr,
+        pt_size = pt_size,
+        scale_fct = scale_fct,
+        use_scattermore = use_scattermore,
+        bcs_rm = bcs_rm,
+        na_rm = na_rm
+      )
+
+    out[["coord_equal"]] <-
+      ggplot2::coord_equal(
+        xlim = xrange,
+        ylim = yrange,
+        expand = true_if_null(expand)
+      )
+
+    out[["coord_equal"]]$default <- TRUE
+
+    if(unit %in% validUnitsOfLengthSI() | base::isTRUE(add_labs)){
+
+      out[["axes"]] <-
+        ggpLayerAxesSI(
+          object = object,
+          unit = unit,
+          add_labs = add_labs,
+          xrange = xrange,
+          yrange = yrange,
+          breaks = breaks
         )
 
     }
 
-  }
+    if(base::is.character(color_by)){
 
-  if(base::is.character(color_by)){
-
-    color_add_on <-
-      scale_color_add_on(
-        variable = plot_df[[color_by]],
-        clrp = clrp,
-        clrp.adjust = clrp_adjust
-      )
-
-  } else {
-
-    color_add_on <- NULL
-
-  }
-
-  # return
-  list(
-    segm_add_on,
-    text_add_on,
-    color_add_on
-  )
-
-}
-
-
-#' @title Add a rectangular around an spatial annotation
-#'
-#' @description Adds a rectangular to the surface plot that visualizes
-#' the spatial extent of the cropped image section as plotted by
-#' `plotImageAnnotations()`.
-#'
-#' @inherit argument_dummy params
-#' @inherit ggplot_dummy return
-#'
-#' @export
-#'
-ggpLayerSpatAnnRect <- function(object, ids, expand = "25%", ...){
-
-  purrr::map(
-    .x = ids,
-    .f = function(id){
-
-      img_ann <- getSpatialAnnotation(object, id = id, expand = expand)
-
-      ggpLayerRect(
-        object = object,
-        xrange = c(img_ann@image_info$xmin, img_ann@image_info$xmax),
-        yrange = c(img_ann@image_info$ymin_coords, img_ann@image_info$ymax_coords),
-        ...
-      )
+      out[["color_scale"]] <-
+        scale_color_add_on(
+          aes = "color",
+          variable = coords_df[[color_by]],
+          clrp = clrp,
+          clrp.adjust = clrp_adjust,
+          clrsp = clrsp
+        )
 
     }
 
-  )
+    return(out)
 
-}
+  }
+)
+
+#' @rdname ggpLayerPoints
+#' @export
+setMethod(
+  f = "ggpLayerPoints",
+  signature = "data.frame",
+  definition = function(object,
+                        alpha_by = NULL,
+                        color_by = NULL,
+                        pt_alpha = 0.9,
+                        pt_clr = "lightgrey",
+                        pt_size = 1,
+                        scale_fct = 1,
+                        use_scattermore = FALSE,
+                        bcs_rm = NULL,
+                        na_rm = FALSE){
+
+    pt_color <- pt_clr
+
+    # adjust params to mapped aesthetics
+    params <-
+      adjust_ggplot_params(
+        params = list(color = pt_color, size = pt_size, alpha = pt_alpha)
+      )
+
+    # create mapping
+    if(base::is.character(color_by) & base::is.character(alpha_by)){
+
+      mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]], alpha = .data[[alpha_by]])
+
+    } else if(base::is.character(color_by)){
+
+      mapping <- ggplot2::aes(x = x, y = y, color = .data[[color_by]])
+
+    } else if(base::is.character(alpha_by)){
+
+      mapping <- ggplot2::aes(x = x, y = y, alpha = .data[[alpha_by]])
+
+    } else {
+
+      mapping <- ggplot2::aes(x = x, y = y)
+
+    }
+
+    if(base::is.character(bcs_rm)){
+
+      object <- dplyr::filter(object, !barcodes %in% {{bcs_rm}})
+
+    }
+
+    df <-
+      dplyr::mutate(
+        .data = object,
+        dplyr::across(
+          .cols = dplyr::where(base::is.numeric),
+          .fns = ~ .x * scale_fct
+        )
+      )
+
+    if(base::isTRUE(use_scattermore)){
+
+      layer_out <-
+        confuns::make_scattermore_add_on(
+          data = df,
+          mapping = mapping,
+          pt.alpha = pt_alpha,
+          pt.color = pt_color,
+          pt.size = pt_size,
+          alpha.by = alpha_by,
+          color.by = color_by,
+          sctm.interpolate = FALSE,
+          sctm.pixels = c(1024, 1024),
+          na.rm = na_rm
+        )
+
+    } else {
+
+      # return layer
+      layer_out <-
+        geom_point_fixed(
+          params,
+          data = df,
+          mapping = mapping
+        )
+
+    }
+
+
+
+  }
+)
+
 
 #' @title Add horizontal and vertical lines
 #'
@@ -2034,6 +2247,435 @@ ggpLayerScaleBarSI <- function(object,
 }
 
 
+#' @title Add outline of spatial annotations
+#'
+#' @description Adds a ggplot2 layer of polygons visualizing the outline
+#' of spatial annotations.
+#'
+#' @param inner Logical value. If `FALSE`, only outer borders of the annotation
+#' are displayed.
+#' @param use_colors Logical value. If `TRUE`, the color aesthetic is used to display
+#' each outline in a different color while providing a legend.
+#'
+#' @inherit argument_dummy params
+#' @inherit getSpatialAnnotations params details
+#' @inherit ggpLayer_dummy return
+#'
+#' @note Adds two additional layers to set the scales for the color- and
+#' fill aesthetic of the plot.
+#'
+#' @export
+#'
+ggpLayerSpatAnnOutline <- function(object = "object",
+                                   ids = NULL,
+                                   tags = NULL,
+                                   test = "any",
+                                   alpha = 0.5,
+                                   fill = NA,
+                                   line_color = "black",
+                                   line_size = 1.5,
+                                   line_type = "solid",
+                                   use_colors = FALSE,
+                                   inner = FALSE,
+                                   ...){
+
+  deprecated(...)
+
+  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
+
+  hlpr_assign_arguments(object)
+
+  ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
+
+  purrr::map(
+    .x = ids,
+    .f = function(id){
+
+      img_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+
+      if(!"inner1" %in% base::names(img_ann@area)){
+
+        inner <- FALSE
+
+      }
+
+      if(base::isFALSE(inner)){
+
+        df <-
+          getSpatAnnOutlineDf(object, ids = id) %>%
+          dplyr::filter(border == "outer")
+
+        if(base::isTRUE(use_colors)){
+
+          out <-
+            ggplot2::geom_polygon(
+              data = df,
+              size = line_size,
+              linetype = line_type,
+              alpha = alpha,
+              fill = fill,
+              mapping = ggplot2::aes(x = x, y = y, color = ids),
+              ...
+            )
+
+        } else {
+
+          out <-
+            ggplot2::geom_polygon(
+              data = df,
+              size = line_size,
+              color = line_color,
+              linetype = line_type,
+              alpha = alpha,
+              fill = fill,
+              mapping = ggplot2::aes(x = x, y = y),
+              ...
+            )
+
+        }
+
+
+
+      } else {
+
+        df <- getSpatAnnSf(object, id)
+
+        ggplot2::geom_sf(
+          data = df,
+          size = line_size,
+          color = line_color,
+          linetype = line_type,
+          alpha = alpha,
+          fill = fill,
+          ...
+        )
+
+      }
+
+    }
+  )
+
+}
+
+#' @title Add pointer towards spatial annotations
+#'
+#' @description Adds segments and, if desired, labels to the surface plot that
+#' point towards and highlight the position of spatial annotations.
+#'
+#' @param color_by Character value or `NULL`. If character, one of *'id'* or *'label'*
+#' which colors the the pointers accordingly.
+#' @param ptr_angles,ptr_lengths Numeric value of length 1 or of length equal to the number
+#' of spatial annotations. Specifies the angle from which the segments points
+#' towards the spatial annotation as well as their length. `ptr_lengths` works
+#' within the SPATA2 distance framework. See section *Distance measures* for more
+#' information.
+#' @param ptr_labels Specifies if and how the pointers are labeled. If `NULL`,
+#' the default, the spatial annotations are labeled by their ID. If character,
+#' specifies the exact label of each spatial annotation and should be of length 1
+#' or of length equal to the number of spatial annotations. If `FALSE`, no text
+#' is displayed.
+#' @param ptr_alpha Numeric value. Specifies the transparency of the pointers.
+#' @param ptr_arrow `NULL` or `arrow` as displayed by `grid::arrow()`.
+#' @param ptr_color Character value. Specifies the color of the pointers if
+#' `color_by` is not a character.
+#' @param ptr_size Numeric value. Specifies the size (thickness) of the pointers.
+#' @param text_dist Distance measure. Specifies the distance from the text to
+#' the pointer.
+#' @param point_at Character value. If *'center'*, the pointer is directed at
+#' the center of the spatial annotation. If *'border'*, the pointer points
+#' at a random point of the spatial annotation border - recommended if the
+#' spatial annotation is big.
+#' @param seed Numeric value or `NULL`. If numeric, sets seed before picking
+#' a random point of the spatial annotation border if `point_at = 'border'`.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return details
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @export
+ggpLayerSpatAnnPointer <- function(object,
+                                   ids = NULL,
+                                   tags = NULL,
+                                   test = "any",
+                                   color_by = NULL,
+                                   ptr_angles = 45,
+                                   ptr_labels = NULL,
+                                   ptr_lengths = "250um",
+                                   ptr_alpha = 0.9,
+                                   ptr_arrow = NULL,
+                                   ptr_color = "black",
+                                   ptr_size = 1,
+                                   text_alpha = 0.9,
+                                   text_color = "black",
+                                   text_dist = 0,
+                                   text_nudge_x = 0,
+                                   text_nudge_y = 0,
+                                   text_size = 4,
+                                   point_at = "center",
+                                   seed = NULL,
+                                   clrp = NULL,
+                                   clrp_adjust = NULL){
+
+  hlpr_assign_arguments(object)
+
+  # check and get spatial annotations
+  img_anns <-
+    getSpatialAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      test = test,
+      add_barcodes = FALSE,
+      add_image = FALSE,
+      check = TRUE
+    )
+
+
+  # check ptr_angles
+  if(base::is.numeric(ptr_angles)){
+
+    if(base::length(ptr_angles) == 1){
+
+      ptr_angles <- base::rep(ptr_angles, base::length(ptr_angles))
+
+    } else if(base::length(ptr_angles) != base::length(ptr_angles)){
+
+      stop("If numeric, length of input for argument `ptr_angles` must be 1 or equal to number of spatial annotations.")
+
+    }
+
+  } else {
+
+    stop("Invalid input for argument `ptr_angles`. Must be numeric.")
+
+  }
+
+  # check ptr_labels
+  if(base::is.character(ptr_labels)){
+
+    if(base::length(ptr_labels) == 1){
+
+      ptr_labels <- base::rep(ptr_labels, base::length(img_anns))
+
+    } else if(base::length(ptr_labels) != base::length(img_anns)){
+
+      stop("If character, length of input for argument `ptr_labels` must be 1 or equal to number of spatial annotations.")
+
+    }
+
+  } else {
+
+    ptr_labels <-
+      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
+      base::unname()
+
+  }
+
+  # check ptr_lengths
+  is_dist(input = ptr_lengths, error = TRUE)
+
+  ptr_lengths <- as_pixel(input = ptr_lengths, object = object, add_attr = FALSE)
+
+  if(base::length(ptr_lengths) == 1){
+
+    ptr_lengths <- base::rep(ptr_lengths, base::length(img_anns))
+
+  }
+
+  if(base::length(text_dist) == 1){
+
+    text_dist <- base::rep(text_dist, base::length(img_anns))
+
+  }
+
+  plot_df <-
+    purrr::pmap_dfr(
+      .l = list(img_anns, ptr_angles, ptr_labels, ptr_lengths, text_dist),
+      .f = function(img_ann, angle, label, len, prolong){
+
+        area <- img_ann@area[["outer"]]
+
+        if(point_at == "center"){
+
+          center <- getSpatAnnCenter(img_ann)
+
+        } else if(point_at == "border"){
+
+          if(base::is.numeric(seed)){
+
+            set.seed(seed)
+
+          }
+
+          center <-
+            area[base::sample(x = 1:base::nrow(area), size = 1),] %>%
+            base::as.numeric() %>%
+            purrr::set_names(nm = c("x", "y"))
+
+        }
+
+        dist <- as_pixel(input = len, object = object, add_attr = FALSE)
+
+        confuns::make_trig_vec(
+          start = center,
+          angle = angle,
+          dist = dist,
+          prolong = as_pixel(prolong, object = object, add_attr = FALSE),
+          prolong.opt = "a"
+        ) %>%
+          dplyr::mutate(label = label, id = img_ann@id) %>%
+          dplyr::select(label, dplyr::everything())
+
+      }
+    )
+
+  if(base::is.character(color_by)){
+
+    confuns::check_one_of(
+      input = color_by,
+      against = c("label", "id")
+    )
+
+  }
+
+
+  # segment
+  if(base::is.character(color_by)){
+
+    segm_add_on <-
+      ggplot2::geom_segment(
+        data = plot_df,
+        mapping = ggplot2::aes(
+          x = xend,
+          y = yend,
+          xend = x,
+          yend = y,
+          color = .data[[color_by]],
+        ),
+        alpha = ptr_alpha,
+        arrow = ptr_arrow,
+        size = ptr_size
+      )
+
+  } else {
+
+    segm_add_on <-
+      ggplot2::geom_segment(
+        data = plot_df,
+        mapping = ggplot2::aes(
+          x = xend,
+          y = yend,
+          xend = x,
+          yend = y,
+        ),
+        alpha = ptr_alpha,
+        arrow = ptr_arrow,
+        color = ptr_color,
+        size = ptr_size
+      )
+
+  }
+
+  # text
+  if(!base::any(base::isFALSE(ptr_labels))){
+
+    if(base::is.character(color_by)){
+
+      text_add_on <-
+        ggplot2::geom_text(
+          data = plot_df,
+          mapping = ggplot2::aes(
+            x = xend_p1,
+            y = yend_p1,
+            label = label,
+            color = .data[[color_by]]
+          ),
+          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
+          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
+          alpha = text_alpha,
+          size = text_size
+        )
+
+    } else {
+
+      text_add_on <-
+        ggplot2::geom_text(
+          data = plot_df,
+          mapping = ggplot2::aes(
+            x = xend_p1,
+            y = yend_p1,
+            label = label
+          ),
+          nudge_x = as_pixel(text_nudge_x, object = object, add_attr = FALSE),
+          nudge_y = as_pixel(text_nudge_y, object = object, add_attr = FALSE),
+          alpha = text_alpha,
+          color = text_color,
+          size = text_size
+        )
+
+    }
+
+  }
+
+  if(base::is.character(color_by)){
+
+    color_add_on <-
+      scale_color_add_on(
+        variable = plot_df[[color_by]],
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
+      )
+
+  } else {
+
+    color_add_on <- NULL
+
+  }
+
+  # return
+  list(
+    segm_add_on,
+    text_add_on,
+    color_add_on
+  )
+
+}
+
+
+#' @title Add a rectangular around an spatial annotation
+#'
+#' @description Adds a rectangular to the surface plot that visualizes
+#' the spatial extent of the cropped image section as plotted by
+#' `plotImageAnnotations()`.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @export
+#'
+ggpLayerSpatAnnRect <- function(object, ids, expand = "25%", ...){
+
+  purrr::map(
+    .x = ids,
+    .f = function(id){
+
+      img_ann <- getSpatialAnnotation(object, id = id, expand = expand)
+
+      ggpLayerRect(
+        object = object,
+        xrange = c(img_ann@image_info$xmin, img_ann@image_info$xmax),
+        yrange = c(img_ann@image_info$ymin_coords, img_ann@image_info$ymax_coords),
+        ...
+      )
+
+    }
+
+  )
+
+}
+
+
 #' @title Add coordinates theme
 #'
 #' @description Adds a theme to the plot that displays the coordinates of
@@ -2062,6 +2704,382 @@ ggpLayerThemeCoords <- function(unit = NULL){
   )
 
 }
+
+
+#' @title Add a hull that outlines the tissue
+#'
+#' @description Adds a hull that outlines the tissue.
+#'
+#' @param method Character value. One of `c("coords", "image")`. If *'coords'*,
+#' the outline is computed based on the coordinate position of the plotted data points
+#' (cells, spots etc.). If *'image'*, the outline is plotted solely based on
+#' the image analysis results.
+#' @param smooth_with Character vaule. Sets the method with which to smooth
+#' the tissue outline polygon. One of `c("chaikin", "densify", "ksmooth", "spline", "none")`.
+#' If *'none'*, no smoothing is conducted.
+#' @param expand_outline Distance measure with which to expand the outline. Must be
+#' provided in pixel units!
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return
+#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
+#'
+#' @param inc_outline Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
+#'
+#' @seealso [`identifyPixelContent()`],[`identifyTissueOutline()`],[`identifySpatialOutliers()`]
+#'
+#' @export
+#'
+#' @examples
+#'
+#' object <- download("MCD_LMU")
+#'
+#' plotImage(object, unit = "mm") +
+#'  ggpLayerTissueOutline(object, inc_outline = TRUE)
+#'
+#' plotImage(object, unit = "mm") +
+#'  ggpLayerTissueOutline(object, inc_outline = FALSE)
+#'
+
+setGeneric(name = "ggpLayerTissueOutline", def = function(object, ...){
+
+  standardGeneric(f = "ggpLayerTissueOutline")
+
+})
+
+#' @rdname ggpLayerTissueOutline
+#' @export
+setMethod(
+  f = "ggpLayerTissueOutline",
+  signature = "spata2",
+  definition = function(object,
+                        method = "image",
+                        img_name = NULL,
+                        by_section = TRUE,
+                        fragments = FALSE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 1,
+                        line_type = "solid",
+                        transform = TRUE,
+                        scale_fct = 1,
+                        expand_outline = recBinwidth(object, "px")/1.25,
+                        ...){
+
+    hlpr_assign_arguments(object)
+
+    out <-
+      getHistoImaging(object) %>%
+      ggpLayerTissueOutline(
+        object = .,
+        method = method,
+        img_name = img_name, # always uses default image
+        by_section = by_section,
+        fragments = fragments,
+        line_alpha = line_alpha,
+        line_color = line_color,
+        line_size = line_size,
+        line_type = line_type,
+        transform = transform,
+        scale_fct = scale_fct,
+        expand_outline = expand_outline,
+        ...
+      )
+
+    return(out)
+
+  }
+)
+
+#' @rdname ggpLayerTissueOutline
+#' @export
+setMethod(
+  f = "ggpLayerTissueOutline",
+  signature = "HistoImaging",
+  definition = function(object,
+                        method = "image",
+                        img_name = NULL,
+                        by_section = TRUE,
+                        fragments = FALSE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 1,
+                        line_type = "solid",
+                        transform = TRUE,
+                        scale_fct = 1,
+                        expand_outline = 0,
+                        ...){
+
+    confuns::check_one_of(
+      input = method,
+      against = c("coords", "image")
+    )
+
+    if(method == "coords"){
+
+      coords_df <-
+        getCoordsDf(object, img_name = img_name)
+
+      if(base::isFALSE(by_section)){
+
+        coords_df[["section"]] <- "all_spots"
+
+      } else {
+
+        if(!"section" %in% base::names(coords_df)){
+
+          rlang::warn(
+            message = "No section variable found. Consider running `identifySpatialOutliers()` for improved results.",
+            .frequency = "once",
+            .frequency_id = "no_section_variable"
+
+          )
+
+        }
+
+        coords_df[["section"]] <- "tissue_section_1"
+
+      }
+
+      coords_df <- dplyr::filter(coords_df, section != "artefact")
+
+      out <-
+        purrr::map(
+          .x = base::unique(coords_df[["section"]]),
+          .f = function(s){
+
+            outline <-
+              dplyr::filter(coords_df, section == {{s}}) %>%
+              dplyr::select(x, y) %>%
+              base::as.matrix() %>%
+              concaveman::concaveman(points = .) %>%
+              base::as.data.frame() %>%
+              magrittr::set_colnames(value = c("x", "y"))
+
+            if(expand_outline > 0){
+
+              outline <- buffer_area(outline, buffer = expand_outline)
+
+            }
+
+            outline[["section"]] <- s
+
+            ggplot2::geom_polygon(
+              data = outline,
+              mapping = ggplot2::aes(x = x, y = y, group = section),
+              alpha = line_alpha,
+              color = line_color,
+              fill = NA,
+              linetype = line_type
+            )
+
+          }
+        )
+
+    } else if(method == "image"){
+
+      out <-
+        getHistoImage(
+          object = object,
+          img_name = img_name
+        ) %>%
+        ggpLayerTissueOutline(
+          object = .,
+          by_section = by_section,
+          fragments = fragments,
+          line_alpha = line_alpha,
+          line_color = line_color,
+          line_size = line_size,
+          line_type = line_type,
+          transform = transform,
+          scale_fct = scale_fct,
+          expand_outline = expand_outline,
+          ...
+        )
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname ggpLayerTissueOutline
+#' @export
+setMethod(
+  f = "ggpLayerTissueOutline",
+  signature = "HistoImage",
+  definition = function(object,
+                        by_section = TRUE,
+                        fragments = FALSE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 1,
+                        line_type = "solid",
+                        transform = TRUE,
+                        smooth_with = "chaikin",
+                        scale_fct = 1,
+                        expand_outline = 0,
+                        ...){
+
+    confuns::check_one_of(
+      input = smooth_with,
+      against = c("chaikin", "densify", "ksmooth", "spline", "none")
+    )
+
+    df <-
+      getTissueOutlineDf(
+        object = object,
+        by_section = by_section,
+        transform = transform
+      ) %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::where(fn = base::is.numeric),
+          .fns = ~ .x * scale_fct
+        )
+      )
+
+    if(base::isFALSE(by_section)){
+
+      df[["section"]] <- "tissue_section_whole"
+
+    }
+
+    df <-
+      purrr::map_df(
+        .x = base::unique(df[["section"]]),
+        .f = function(s){
+
+          mtr_section <-
+            dplyr::filter(df, section == {{s}}) %>%
+            dplyr::select(x, y) %>%
+            base::as.matrix()
+
+          if(smooth_with == "chaikin"){
+
+            mtr_smoothed <-
+              smoothr::smooth_chaikin(x = mtr_section)
+
+          } else if(smooth_with == "densify"){
+
+            mtr_smoothed <-
+              smoothr::smooth_densify(x = mtr_section)
+
+          } else if(smooth_with == "ksmooth"){
+
+            mtr_smoothed <-
+              smoothr::smooth_ksmooth(x = mtr_section)
+
+          } else if(smooth_with == "spline"){
+
+            mtr_smoothed <-
+              smoothr::smooth_spline(x = mtr_section)
+
+          } else if(smooth_with == "none"){
+
+            mtr_smoothed <- mtr_section
+
+          }
+
+          out <-
+            base::as.data.frame(mtr_smoothed) %>%
+            magrittr::set_colnames(value = c("x", "y"))
+
+          if(expand_outline > 0){
+
+            out <- buffer_area(out, buffer = expand_outline)
+
+          }
+
+          out[["section"]] <- s
+
+          return(out)
+
+        }
+      )
+
+    # no effect if by_section = TRUE/FALSE
+    if(base::isFALSE(fragments)){
+
+      df <-
+        dplyr::filter(
+          .data = df,
+          !stringr::str_detect(section, pattern = "tissue_fragment")
+        )
+
+      line_color_frgmt <- NULL
+
+    } else if(base::isTRUE(fragments)){
+
+      line_color_frgmt <- line_color
+
+    } else if(base::is.character(fragments)){
+
+      line_color_frgmt <- fragments
+
+    }
+
+    mapping <- ggplot2::aes(x = x, y = y, group = section)
+
+    if(base::isFALSE(fragments)){
+
+      out <-
+        list(
+          ggplot2::geom_polygon(
+            data = df,
+            mapping = mapping,
+            alpha = line_alpha,
+            color = line_color,
+            fill = NA,
+            size = line_size,
+            linetype = line_type,
+            ...
+          )
+        )
+
+    } else {
+
+      out <-
+        purrr::map(
+          .x = c("section", "fragment"),
+          .f = function(pattern){
+
+            if(pattern == "section"){
+
+              color <- line_color
+
+            } else {
+
+              color <- line_color_frgmt
+            }
+
+            plot_df <-
+              dplyr::filter(
+                .data = df,
+                stringr::str_detect(section, pattern = pattern)
+              )
+
+            ggplot2::geom_polygon(
+              data = plot_df,
+              mapping = mapping,
+              alpha = line_alpha,
+              color = color,
+              fill = NA,
+              size = line_size,
+              linetype = line_type,
+              ...
+            )
+
+          }
+        )
+
+    }
+
+    return(out)
+
+  }
+)
+
 
 
 
@@ -2211,6 +3229,27 @@ ggpLayerZoom <- function(object = NULL,
 
 
 
+
+
+
+# ggplot ------------------------------------------------------------------
+
+ggplot_polygon <- function(poly, lim, color = "black", size = 2){
+
+  ggplot2::ggplot() +
+    ggplot2::geom_polygon(
+      data = poly,
+      mapping = aes(x = x, y = y),
+      color = color,
+      size = size,
+      fill = NA
+    ) +
+    ggplot2::coord_fixed(
+      xlim = c(1, lim),
+      ylim = c(1, lim)
+    )
+
+}
 
 # gr ----------------------------------------------------------------------
 

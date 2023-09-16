@@ -5,7 +5,1210 @@
 
 # id ----------------------------------------------------------------------
 
+identify_artefact_threshold <- function(numbers) {
+  # Calculate the median and MAD
+  median_value <- median(numbers)
+  mad_value <- mad(numbers)
 
+  # Calculate the threshold multiplier based on the MAD
+  threshold_multiplier <- 3.5  # Adjust this value based on your needs
+  if (mad_value > 0) {
+    threshold_multiplier <- qnorm(0.75) * (median(abs(numbers - median_value)) / mad_value)
+  }
+
+  # Calculate the artifact threshold based on the median and MAD
+  artifact_threshold <- median_value + threshold_multiplier * mad_value
+
+  # Return the calculated artifact threshold and threshold multiplier
+  return(list(threshold = artifact_threshold, threshold_multiplier = threshold_multiplier))
+}
+
+identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
+
+  confuns::check_data_frame(
+    df = polygon_df,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  confuns::check_data_frame(
+    df = coords_df,
+    var.class = list(x = "numeric", y = "numeric")
+  )
+
+  res <-
+    sp::point.in.polygon(
+      point.x = coords_df[["x"]],
+      point.y = coords_df[["y"]],
+      pol.x = polygon_df[["x"]],
+      pol.y = polygon_df[["y"]]
+    )
+
+  valid_res <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
+
+  coords_df_sub <- coords_df[res %in% valid_res, ]
+
+  return(coords_df_sub)
+
+}
+
+
+#' @title Quick access to IDs
+#'
+#' @description Handy functions to access the ID of a spatial annotation
+#' or a spatial trajectory if there exist only one of each in the object. Mostly
+#' used to define the default of dependent functions. Return an error if there
+#' are no or more than one IDs found.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+
+idSA <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  id <- getSpatAnnIds(object)
+
+  if(base::length(id) == 0){
+
+    stop("No spatial annotations found in this object.")
+
+  } else if(base::length(id) > 1){
+
+    stop("More than one spatial annotation found in this object. Please specify argument `id`.")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Spatial annotation: '{id}'"),
+    verbose = verbose
+  )
+
+  return(id)
+
+}
+
+
+#' @rdname idSA
+#' @export
+idST <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  id <- getSpatialTrajectoryIds(object)
+
+  if(base::length(id) == 0){
+
+    stop("No spatial trajectories found in this object.")
+
+  } else if(base::length(id) > 1){
+
+    stop("More than one spatial trajectories found in this object. Please specify argument `id`.")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Spatial trajectory: '{id}'"),
+    verbose = verbose
+  )
+
+  return(id)
+
+}
+
+#' @title Identifies the background color
+#'
+#' @description Identifies the background color based on the results
+#' of [`identifyPixelContent()`] by averaging the color values of
+#' all pixels identified as background.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy params
+#'
+#' @export
+#'
+setGeneric(name = "identifyBackgroundColor", def = function(object, ...){
+
+  standardGeneric(f = "identifyBackgroundColor")
+
+})
+
+#' @rdname identifyBackgroundColor
+#' @export
+setMethod(
+  f = "identifyBackgroundColor",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, verbose = NULL, ...){
+
+    hlpr_assign_arguments(object)
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- identifyBackgroundColor(imaging, img_name = img_name, verbose = verbose)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyBackgroundColor
+#' @export
+setMethod(
+  f = "identifyBackgroundColor",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, verbose = TRUE, ...){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    for(i in base::seq_along(img_name)){
+
+      hist_img <- getHistoImage(object, img_name = img_name[i])
+
+      hist_img <- identifyBackgroundColor(hist_img)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyBackgroundColor
+#' @export
+setMethod(
+  f = "identifyBackgroundColor",
+  signature = "HistoImage",
+  definition = function(object, verbose = TRUE, ...){
+
+    confuns::give_feedback(
+      msg = glue::glue("Identifying background color for image '{object@name}'."),
+      verbose = verbose
+    )
+
+    col_df <-
+      getPixelDf(object, colors = TRUE, content = TRUE, transform = FALSE) %>%
+      dplyr::filter(content == "background") %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::starts_with("col"),
+          .fns = ~ base::mean(.x, na.rm = TRUE)
+        )
+      ) %>%
+      magrittr::set_colnames(value = c("red", "green", "blue"))
+
+    object@bg_color <-
+      grDevices::rgb(
+        red = col_df$red,
+        green = col_df$green,
+        blue = col_df$blue
+      )
+
+    return(object)
+
+  })
+
+
+#' @title Identify pixel content
+#'
+#' @description Determines the type of content displayed by each pixel in the image,
+#' categorizing it as tissue from tissue segments or fragments, artifacts, or background.
+#'
+#' @param percentile Numeric value between 0 and 100.
+#' Specifies the percentile of colors to set to plain white, assuming that
+#' this percentile of colors is responsible for the background.
+#' If set to 0, the function is not called.
+#' @param superpixel Numeric value specifying the number of superpixels to compute.
+#' Given as an argument to `$spixel_segmentation()` function.
+#' @param compactness_factor Numeric value controlling the compactness of superpixels.
+#' Given as an argument to `$spixel_segmentation()` function.
+#' @param eps Numeric value specifying the value of `eps` parameter used in `dbscan::dbscan()`
+#' when applied on the tissue pixels. If the value is less than 1, it is calculated
+#' as a percentage of the width or height of the image, depending on which is larger.
+#' If the value is greater than or equal to 1, it is taken as an absolute value.
+#' @param minPts Numeric value specifying the value of `minPts` parameter used in `dbscan::dbscan()`
+#' when applied on the tissue pixels identified as potential tissue. If the value is less than 1,
+#' it is calculated as a percentage of the width or height of the image, depending on which is larger.
+#' If the value is greater than or equal to 1, it is taken as an absolute value.
+#' @param frgmt_threshold Numeric vector of length 2 specifying the range of the number of pixels
+#' an identified object must have to be considered a tissue fragment. Objects with a lower number
+#' of pixels than the minimum threshold are considered artifacts, and objects with a higher number
+#' of pixels than the maximum threshold are considered tissue sections. If a threshold value is less than 1,
+#' it is calculated as a percentage of the total number of pixels in the image.
+#' If a threshold value is greater than or equal to 1, it is taken as an absolute value.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details If `img_name` specifies multiple images, the function
+#' iterates over all of them. If it is `NULL` the active image is picked.
+#'
+#' @seealso
+#' For subsequent image processing: [`identifyTissueOutline()`],[`identifyBackgroundColor()`].
+#' For visualization of results: [`plotImageMask()`], [`plotPixelContent()`].
+#' For extraction of results: [`getPixelDf()`].
+#'
+#' @return The method for class `Image` returns a data.frame of the following
+#' variables.
+#'
+#' \itemize{
+#'  \item{*pixel*:}{ character. Pixel index.}
+#'  \item{*width*:}{ numeric. Pixel position on horizontal axis of the image.}
+#'  \item{*height*:}{ numeric. Pixel position on the vertical axis of the image.}
+#'  \item{*clusterK2*:}{ character. Either *'background'* or *'tissue'*.}
+#'  \item{*colTiss#* :}{ numeric. Numeric variables that correspond to the color dimensions
+#'  of the image mask based on which the clustering of *clusterK2* was conducted.}
+#'  \item{*clusterDBSCAN*:}{ character. Cluster results of dbscan::dbscan() after removal
+#'  of background pixels.}
+#'  \item{*clusterDBSCAN_size*:}{numeric. Size of each dbscan cluster.}
+#'  \item{*content*:}{ character. The identified content of each pixel.}
+#' }
+#'
+#' Methods for S4-classes serving as containers return the input object with the
+#' the results stored in the corresponding slots.
+
+setGeneric(name = "identifyPixelContent", def = function(object, ...){
+
+  standardGeneric(f = "identifyPixelContent")
+
+})
+
+#' @rdname identifyPixelContent
+#' @export
+setMethod(
+  f = "identifyPixelContent",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        percentile = 0,
+                        compactness_factor = 10,
+                        superpixel = 600,
+                        eps = 0.005,
+                        minPts = 0.005,
+                        frgmt_threshold = c(0.001, 0.05),
+                        verbose = TRUE){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
+
+    imaging <- getHistoImaging(object)
+
+    imaging <-
+      identifyPixelContent(
+        object = imaging,
+        img_name = img_name,
+        percentile = percentile,
+        compactness_factor = compactness_factor,
+        superpixel = superpixel,
+        eps = eps,
+        minPts = minPts,
+        frgmt_threshold = frgmt_threshold,
+        verbose = verbose
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyPixelContent
+#' @export
+setMethod(
+  f = "identifyPixelContent",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        percentile = 99,
+                        compactness_factor = 10,
+                        superpixel = 1000,
+                        eps = 0.005,
+                        minPts = 0.005,
+                        frgmt_threshold = c(0.001, 0.05),
+                        verbose = TRUE){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    for(i in base::seq_along(img_name)){
+
+      hist_img <- getHistoImage(object, img_name = img_name[i])
+
+      hist_img <-
+        identifyPixelContent(
+          object = hist_img,
+          percentile = percentile,
+          compactness_factor = compactness_factor,
+          superpixel = superpixel,
+          eps = eps,
+          minPts = minPts,
+          frgmt_threshold = frgmt_threshold,
+          verbose = verbose
+        )
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyPixelContent
+#' @export
+setMethod(
+  f = "identifyPixelContent",
+  signature = "HistoImage",
+  definition = function(object,
+                        percentile = 99,
+                        compactness_factor = 10,
+                        superpixel = 1000,
+                        eps = 0.005,
+                        minPts = 0.005,
+                        frgmt_threshold = c(0.001, 0.05),
+                        verbose = TRUE){
+
+    confuns::give_feedback(
+      msg = glue::glue("Identifying pixel content of image '{object@name}'."),
+      verbose = verbose
+    )
+
+    if(!containsImage(object)){
+
+      object <- loadImage(object)
+
+    }
+
+    pxl_df_out <-
+      identifyPixelContent(
+        object = object@image,
+        percentile = percentile,
+        compactness_factor = compactness_factor,
+        superpixel = superpixel,
+        eps = eps,
+        minPts = minPts,
+        frgmt_threshold = frgmt_threshold,
+        verbose = verbose
+      )
+
+    out_vec <- pxl_df_out[["content"]]
+
+    base::names(out_vec) <-
+      stringr::str_c(pxl_df_out[["pixel"]], "_w", pxl_df_out[["width"]], "_h", pxl_df_out[["height"]])
+
+    object@pixel_content <- out_vec
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyPixelContent
+#' @export
+setMethod(
+  f = "identifyPixelContent",
+  signature = "Image",
+  definition = function(object,
+                        percentile = 99,
+                        compactness_factor = 10,
+                        superpixel = 1000,
+                        frgmt_threshold = c(0.001, 0.05),
+                        eps = 0.005,
+                        minPts = 0.005,
+                        verbose = TRUE,
+                        ...){
+
+    image_orig <- object
+
+    # extract image data and create base pixel df
+    img_dims <- base::dim(image_orig@.Data)
+
+    # use greyscaled image, if desired
+    if(FALSE){
+
+      # temporarily padd image to square for clahe()
+      image_orig <- padd_image(image_orig)
+
+      # use greyscale and enhance contrast, then reduce to original dims
+      EBImage::colorMode(image_orig) <- EBImage::Grayscale
+      image_orig <- EBImage::clahe(image_orig)
+
+    }
+
+    if(base::length(img_dims) == 3){
+
+      n <- img_dims[3]
+
+    } else {
+
+      n <- 1
+
+    }
+
+    pxl_df_base <-
+      tidyr::expand_grid(
+        width = 1:img_dims[1],
+        height = 1:img_dims[2]
+      )
+
+    pxl_df_base[["pixel"]] <- stringr::str_c("px", 1:base::nrow(pxl_df_base))
+
+    pxl_df_base <- dplyr::select(pxl_df_base, pixel, width, height)
+
+    # increase contrast by setting potential background pixels to white
+    if(percentile != 0){
+
+      image_proc <- background_white(image_orig, percentile = percentile)
+
+    } else {
+
+      image_proc <- image_orig
+
+    }
+
+
+    # use slicap to create a binary image with a tissue mask
+    init <- SuperpixelImageSegmentation::Image_Segmentation$new()
+
+    spx_masks <-
+      init$spixel_segmentation(
+        input_image = image_proc,
+        method = "slic",
+        compactness_factor = compactness_factor,
+        superpixel = superpixel,
+        verbose = verbose,
+        # can not be adjusted
+        AP_data = TRUE,
+        kmeans_method = "kmeans",
+        adjust_centroids_and_return_masks = TRUE
+      )
+
+    # potentially problematic:
+    # assumes that all background pixel are identified as one cluster (what if heterogeneous background?)
+    # assumes that the background is the cluster with the highest area / number of pixels
+    # (as the tissue is usually composed of several different clusters each being small in size)
+    # masks are presented in white (white value = 1, black value = 0)
+    # ---> pick mask with highest mean to obtain background cluster
+    mm <- purrr::map_dbl(spx_masks[["masks"]], .f = base::mean)
+
+    mask_tissue <- base::which(mm == base::max(mm))
+
+    image_mask <- EBImage::as.Image(spx_masks[["masks"]][[mask_tissue]])
+
+    # extract the color values of the processed image
+    for(i in 1:n){
+
+      temp_df <-
+        reshape::melt(image_mask@.Data[ , ,i]) %>%
+        magrittr::set_colnames(value = c("width", "height", stringr::str_c("colTiss", i))) %>%
+        tibble::as_tibble()
+
+      pxl_df_base <-
+        dplyr::left_join(x = pxl_df_base, y = temp_df, by = c("width", "height")) %>%
+        dplyr::filter(width <= img_dims[1], height <= img_dims[2])
+
+    }
+
+    # cluster color values with k = 2 in order to get background and tissue cluster
+    k_out <-
+      stats::kmeans(
+        x = base::as.matrix(dplyr::select(pxl_df_base, dplyr::starts_with("colTiss"))),
+        centers = 2
+      )
+
+    pxl_df_base$clusterK2 <- base::as.character(k_out$cluster)
+
+    # identify background based on mean color intensity
+    background_cluster <-
+      dplyr::group_by(pxl_df_base, clusterK2) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::starts_with("col"),
+          .fns = base::mean
+        )
+      )
+
+    background_cluster[["rowMean"]] <-
+      dplyr::select(background_cluster, dplyr::starts_with("col")) %>%
+      base::as.matrix() %>%
+      base::rowMeans()
+
+    background_cluster_group <-
+      dplyr::filter(background_cluster, rowMean == base::max(rowMean, na.rm = TRUE)) %>%
+      dplyr::pull(clusterK2)
+
+    pxl_df_base <-
+      dplyr::mutate(
+        .data = pxl_df_base,
+        clusterK2 =
+          dplyr::if_else(
+            condition = clusterK2 == {background_cluster_group},
+            true = "background",
+            false = "tissue"
+          )
+      )
+
+    if(eps < 1){
+
+      eps <- eps * base::max(img_dims[1:2])
+
+    }
+
+    if(minPts < 1){
+
+      minPts <- minPts * base::max(img_dims[1:2])
+
+    }
+
+    # cluster pixel based on dbscan to identify possible tissue fragments
+    pxl_df_tissue <-
+      # 1. identify and remove background pixel, such that alleged tissue pixel remain
+      dplyr::mutate(.data = pxl_df_base, background = clusterK2 == "background") %>%
+      dplyr::filter(!background) %>%
+      # 2. identify different tissue sections / parted tissue fragments / artefacts by ...
+      # 2.1 ...running dbscan to identify contiguous pixel groups
+      add_dbscan_variable(
+        eps = eps,
+        minPts = minPts,
+        name = "clusterDBSCAN",
+        x = "width",
+        y = "height"
+      ) %>%
+      # 2.2 ... quantifying their size by counting the pixels per DSCAN group
+      dplyr::group_by(clusterDBSCAN) %>%
+      dplyr::mutate(clusterDBSCAN_size = dplyr::n()) %>%
+      dplyr::ungroup()
+
+    # set the frgmt threshold as an absolute measure based on the input
+    threshold <- c(0, 0)
+
+    for(i in 1:2){
+
+      if(frgmt_threshold[i] > 1){
+
+        threshold[i] <- frgmt_threshold[i]
+
+      } else {
+
+        threshold[i] <- base::nrow(pxl_df_base)*frgmt_threshold[i]
+
+      }
+
+    }
+
+    threshold <- base::ceiling(threshold)
+
+    # add results to base pxl_df
+    pxl_df <-
+      dplyr::left_join(
+        x = pxl_df_base,
+        y = pxl_df_tissue[c("pixel", "background", "clusterDBSCAN", "clusterDBSCAN_size")],
+        by = "pixel"
+      ) %>%
+      dplyr::mutate(
+        content = dplyr::case_when(
+          clusterDBSCAN == "0" ~ "artefact",
+          !background & clusterDBSCAN_size > {threshold[2]} ~ stringr::str_c("tissue_section", clusterDBSCAN),
+          !background & clusterDBSCAN_size > {threshold[1]} ~ stringr::str_c("tissue_fragment", clusterDBSCAN),
+          !background & clusterDBSCAN_size < {threshold[1]} ~ "artefact",
+          TRUE ~ "background"
+        ),
+        content_type = stringr::str_remove(string = content, pattern = "\\d*$")
+      ) %>%
+      dplyr::arrange(dplyr::desc(content_type))
+
+
+    pxl_df_out <-
+      purrr::map_dfr(
+        .x = base::unique(pxl_df[["content_type"]]),
+        .f = function(ctype){
+
+          df_ctype <- dplyr::filter(pxl_df, content_type == {{ctype}})
+
+          if(ctype %in% c("background", "artefact")){
+
+            out <-
+              dplyr::mutate(
+                .data = df_ctype,
+                content_index = 1L,
+                content_type = {{ctype}}
+              )
+
+          } else {
+
+            df_ctype[["content_index"]] <-
+              dplyr::group_by(.data = df_ctype, content) %>%
+              dplyr::group_indices()
+
+            out <-
+              dplyr::mutate(
+                .data = df_ctype,
+                content =
+                  stringr::str_remove(content, pattern = "\\d*$") %>%
+                  stringr::str_c(., content_index, sep = "_")
+              )
+
+          }
+
+          # create levels
+          levels_ordered <-
+            dplyr::distinct(out, content, content_index) %>%
+            dplyr::arrange(content_index) %>%
+            dplyr::pull(content)
+
+          out[["content"]] <- base::factor(out[["content"]], levels = levels_ordered)
+
+          # sort factor
+
+          return(out)
+
+        }
+      )
+
+    return(pxl_df_out)
+
+  }
+)
+
+
+#' @title Identify spatial outliers
+#'
+#' @description Assigns data points to the tissue sections or
+#' fragments they are located on or labels them as spatial outliers and saves
+#' the results in a new variable of the coordinates data.frame called *section*.
+#' See details for more.
+#'
+#' @param method Character vector. The method(s) to use. A combination of *'outline'*
+#' and/or *'dbscan'*. See details for more.
+#' @param img_name Character value. The name of the image whose tissue outline
+#' is used if `method` contains *'outline'*.
+#' @param buffer Numeric value. Expands the tissue outline to include observations
+#' that lie on the edge of the outline and are mistakenly removed.
+#' @param eps,minPts Given to the corresponding arguments of
+#' [`dbscan::dbscan()`] if `method` contains *'dbscan'*.
+#' @param test Character value. Only required if `method = c('dbscan', 'outline')`. If
+#' *'any'*, spots are labeled as outliers if at least one method identifies them
+#' as outliers. If *'all'*, spots are labeled as outliers if both methods identify
+#' them as outliers.
+#'
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#' @inherit update_dummy return
+#'
+#' @details
+#' This function categorizes the data points of the object based on their spatial
+#' proximity, grouping those that are close enough to be deemed part of a single
+#' contiguous tissue section. Data points that are isolated and situated at a
+#' significant distance from others are identified as spatial outliers.
+#'
+#' The resulting classifications are saved in a *section* variable within the
+#' object's coordinates data.frame.
+#'
+#' This function identifies spatial outliers using a combination of two methods:
+#'
+#' Method *outline*:
+#' The *outline* method involves the image based tissue outline from the
+#' `identifyTissueOutline()` function. This function has created polygons that
+#' outline the tissue or tissue sections identified in the image. For each data point,
+#' the function checks which polygon it falls within and assigns it to the corresponding
+#' group. If an observation does not fall within any of the tissue polygons, it is
+#' considered a spatial outlier. As this method requires image processing steps, it does not
+#' work for platforms that do not provide images of the analyzed tissue such as
+#' *MERFISH* or *SlideSeq*.
+#'
+#' Method *dbscan*:
+#' The *dbscan* method applies the DBSCAN algorithm to the data points. Please
+#' refer to the documentation of `dbscan::dbscan()` for a more detailed explanation.
+#' The `eps` and `minPts` arguments are passed directly to the
+#' corresponding arguments of the DBSCAN function.Data points that are not assigned
+#' to any spatial cluster, indicated by being assigned to cluster 0, are considered
+#' spatial outliers.
+#'
+#' For objects derived from the Visium platform with a fixed center to center
+#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
+#' and `minPts = 3`which has worked well for us. For objects derived
+#' from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
+#' we recommend the average minimal distance between the data points times 10 for
+#' `eps` and `minPts = 2`. The function
+#' defaults to these recommendations using [`recDbscanEps()`] and [`recDbscanMinPts()`]
+#' by default. This can, of course, be overwritten manually by the user by
+#' specifying the parameters otherwise!
+#'
+#' If `method = c('outline', 'dbscan')`, both algorithms are applied. Whether a
+#' data point is considered a spatial outlier depends on the `test` argument:
+#'
+#' \itemize{
+#'  \item{`test = 'any'`:} The data point is considered a spatial outlier if
+#'   either of the two tests classifies it as an outlier.
+#'  \item{`test = 'all'`:} The data point is considered a spatial outlier
+#'   only if both tests classify it as an outlier.
+#' }
+#'
+#' If `method = 'outline'` or `method = 'dbscan'` only one of the two
+#' methods is applied. Note that for `method = 'outline'` the results from the
+#' image processing pipeline must be available.
+#'
+#' The results can be visualized using `plotSurface(object, color_by = "section")`.
+#' In case of bad results the function can be run over and over again with
+#' changing parameters as the results are simply overwritten.
+#'
+#' @seealso [`identifyTissueOutline()`], [`runImagePipeline()`],
+#' [`mergeTissueSections()`]
+#'
+#' @export
+setGeneric(name = "identifySpatialOutliers", def = function(object, ...){
+
+  standardGeneric(f = "identifySpatialOutliers")
+
+})
+
+#' @rdname identifySpatialOutliers
+#' @export
+setMethod(
+  f = "identifySpatialOutliers",
+  signature = "spata2",
+  definition = function(object,
+                        method,
+                        img_name = NULL,
+                        buffer = NULL,
+                        eps = recDbscanEps(object),
+                        minPts = recDbscanMinPts(object),
+                        test = "any",
+                        verbose = NULL){
+
+    hlpr_assign_arguments(object)
+
+    imaging <-
+      getHistoImaging(object) %>%
+      identifySpatialOutliers(
+        object = .,
+        method = method,
+        img_name = img_name,
+        eps = eps,
+        minPts = minPts,
+        test = test,
+        verbose = verbose
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifySpatialOutliers
+#' @export
+setMethod(
+  f = "identifySpatialOutliers",
+  signature = "HistoImaging",
+  definition = function(object,
+                        method = c("outline", "dbscan"),
+                        img_name = NULL,
+                        buffer = NULL,
+                        eps = NULL,
+                        minPts = 3,
+                        test = "any",
+                        verbose = TRUE){
+
+    confuns::give_feedback(
+      msg = "Identifying spatial outliers.",
+      verbose = verbose
+    )
+
+    confuns::check_one_of(
+      input = method,
+      against = c("outline", "dbscan")
+    )
+
+    confuns::check_one_of(
+      input = test,
+      against = c("all", "any")
+    )
+
+    # overwrite active image temporarily
+    active_image <- activeImage(object)
+    object <- activateImageInt(object, img_name = img_name)
+
+    coords_df <-
+      getCoordsDf(object = object, img_name = img_name)
+
+    if("dbscan" %in% method){
+
+      if(!is_dist(eps)){
+
+        eps <- getCCD(object, unit = "px")*2
+
+      } else {
+
+        eps <- as_pixel(input = eps, object = object)
+
+      }
+
+      coords_df <-
+        add_dbscan_variable(
+          coords_df = coords_df,
+          eps = eps,
+          minPts = minPts,
+          name = "section_dbscan"
+        )
+
+    }
+
+    if("outline" %in% method){
+
+      containsTissueOutline(object, img_name = img_name, error = TRUE)
+
+      outline_df <-
+        getTissueOutlineDf(
+          object = object,
+          img_name = img_name,
+          by_section = TRUE
+        )
+
+      # declare all obs as artefacts
+      coords_df[["section_outline"]] <- "artefact"
+
+      if(!base::is.numeric(buffer)){
+
+        buffer <- getCCD(object, unit = "px")
+
+      }
+
+      # then set actual section name
+      for(section in base::unique(outline_df$section)){
+
+        section_df <-
+          dplyr::filter(outline_df, section == {{section}})
+
+        if(buffer != 0){
+
+          section_df <-
+            dplyr::select(section_df, x,y) %>%
+            buffer_area(buffer = buffer)
+
+        }
+
+        ob_in_section <-
+          identify_obs_in_polygon(
+            coords_df = coords_df,
+            polygon_df = section_df,
+            strictly = FALSE # may lie on edge of outline -> allow
+          ) %>%
+          dplyr::pull(barcodes)
+
+        coords_df[coords_df[["barcodes"]] %in% ob_in_section, "section_outline"] <- section
+
+      }
+
+    }
+
+    if(base::all(c("dbscan", "outline") %in% method)){
+
+      if(test == "any"){
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            section = dplyr::case_when(
+              section_dbscan == "0" | section_outline == "artefact" ~ "outlier",
+              TRUE ~ section_outline
+            )
+          )
+
+      } else if(test == "all") {
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            section = dplyr::case_when(
+              section_dbscan == "0" & section_outline == "artefact" ~ "outlier",
+              TRUE ~ section_outline
+            )
+          )
+
+      }
+
+    } else if(method == "dbscan"){
+
+      coords_df <-
+        dplyr::mutate(
+          .data = coords_df,
+          section = dplyr::case_when(
+            section_dbscan == "0" ~ "outlier",
+            TRUE ~ stringr::str_c("tissue_section_", section_dbscan)
+          )
+        )
+
+    } else if(method == "outline"){
+
+      coords_df <-
+        dplyr::mutate(
+          .data = coords_df,
+          section =
+            dplyr::if_else(
+              condition = section_outline == "artefact",
+              true = "outlier",
+              false = section_outline
+            )
+        )
+
+    }
+
+    vars <- c("section", "section_outline", "section_dbscan")
+    vars <- vars[vars %in% base::colnames(coords_df)]
+
+    # order group names
+    sections <-
+      stringr::str_subset(coords_df$section, pattern = "^tissue_section") %>%
+      base::unique() %>%
+      base::sort()
+
+    fragments <-
+      stringr::str_subset(coords_df$section, pattern = "^tissue_fragment") %>%
+      base::unique() %>%
+      base::sort()
+
+    section_levels <- c(sections, fragments, "outlier")
+
+    coords_df$section <- base::factor(coords_df$section, levels = section_levels)
+
+    object <-
+      addVarToCoords(
+        object = object,
+        var_df = coords_df,
+        vars = vars,
+        overwrite = TRUE
+      )
+
+    # restore original active image
+    object <- activateImageInt(object, img_name = active_image)
+
+    return(object)
+
+  }
+)
+
+#' @title Identify tissue outline
+#'
+#' @description Identifies the outline of each tissue section on the image
+#' as well as the outline of the whole tissue.
+#'
+#' @inherit getPixelDf params
+#' @inherit argument_dummy params
+#' @inherit dbscan::dbscan params
+#' @inherit update_dummy return
+#'
+#' @details If `img_name` specifies multiple images, the function
+#' iterates over all of them.
+#'
+#' @note For `spata2` objects: If the `spata2` object contains a registered image
+#' the results of [`identifyPixelContent()`] is required.
+#'
+#' If the `spata2` object does not contain a registered image because the
+#' underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
+#' a workaround is applied and the tissue outline is identified by outlining all
+#' data points instead of outlining pixels that were identified as *tissue pixels*.
+#'
+#' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
+#'
+#' @export
+#'
+
+setGeneric(name = "identifyTissueOutline", def = function(object, ...){
+
+  standardGeneric(f = "identifyTissueOutline")
+
+})
+
+#' @rdname identifyTissueOutline
+#' @export
+setMethod(
+  f = "identifyTissueOutline",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        verbose = NULL){
+
+    hlpr_assign_arguments(object)
+
+    # does the object relies on a pseudo image
+    img_names <- getImageNames(object)
+
+    contains_only_pseudo <-
+      base::length(img_names) == 1 && img_names == "pseudo"
+
+    if(contains_only_pseudo){
+
+      tissue_outline <-
+        getCoordsMtr(object, orig = TRUE) %>%
+        concaveman::concaveman(points = ., concavity = 2) %>%
+        tibble::as_tibble() %>%
+        magrittr::set_colnames(value = c("x", "y"))
+
+      pseudo_hist_img <- getHistoImage(object, img_name = "pseudo")
+
+      pseudo_hist_img@outline[["tissue_whole"]] <- tissue_outline
+      pseudo_hist_img@outline[["tissue_sections"]] <-
+        dplyr::mutate(tissue_outline, section = "tissue_section_1")
+
+      object <- setHistoImage(object, hist_img = pseudo_hist_img)
+
+    } else if(containsImage(object, img_name = img_name)){
+
+      imaging <- getHistoImaging(object)
+
+      imaging <- identifyTissueOutline(imaging, img_name = img_name)
+
+      object <- setHistoImaging(object, imaging = imaging)
+
+    } else {
+
+      stop("Object does neither contain an image nor a pseudo image.")
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname identifyTissueOutline
+#' @export
+setMethod(
+  f = "identifyTissueOutline",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, verbose = TRUE){
+
+    if(base::is.null(img_name)){
+
+      img_name <- activeImage(object)
+
+    }
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    purrr::walk(
+      .x = img_name,
+      .f = ~containsPixelContent(object, img_name = .x, error = TRUE)
+    )
+
+    for(i in base::seq_along(img_name)){
+
+      hist_img <- getHistoImage(object, img_name = img_name[i])
+
+      hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
+
+#' @rdname identifyTissueOutline
+#' @export
+setMethod(
+  f = "identifyTissueOutline",
+  signature = "HistoImage",
+  definition = function(object, verbose = TRUE){
+
+    containsPixelContent(object, error = TRUE)
+
+    confuns::give_feedback(
+      msg = glue::glue("Identifying tissue outline of image '{object@name}'."),
+      verbose = verbose
+    )
+
+    if(!containsImage(object)){
+
+      object <- loadImage(object, verbose = verbose)
+
+    }
+
+    img_dims <- getImageDims(object)
+
+    pxl_df <-
+      getPixelDf(
+        object = object,
+        content =  TRUE,
+        transform = FALSE
+      ) %>%
+      dplyr::filter(!content %in% c("artefact", "background"))
+
+    outline <- list()
+
+    mtr_whole <-
+      dplyr::select(pxl_df, x = width, y = height) %>%
+      base::as.matrix()
+
+    outline$tissue_whole <-
+      concaveman::concaveman(points = mtr_whole, concavity = 1) %>%
+      tibble::as_tibble() %>%
+      magrittr::set_colnames(value = c("x", "y")) %>%
+      dplyr::mutate(section = "whole")
+
+    content_groups <-
+      base::droplevels(pxl_df[["content"]]) %>%
+      base::levels()
+
+    outline$tissue_sections <-
+      purrr::map_df(
+        .x = content_groups,
+        .f = function(cg){
+
+          out <-
+            dplyr::filter(pxl_df, content == {{cg}}) %>%
+            dplyr::select(x = width, y = height) %>%
+            base::as.matrix() %>%
+            concaveman::concaveman(points = ., concavity = 1) %>%
+            tibble::as_tibble() %>%
+            dplyr::mutate(section = {{cg}}) %>%
+            dplyr::select(x = V1, y = V2, section)
+
+          return(out)
+
+        }
+      )
+
+    object@outline <- outline
+
+    return(object)
+
+  }
+)
 
 # if ----------------------------------------------------------------------
 
@@ -105,9 +1308,9 @@ img_ann_highlight_group_button <- function(){
 #' is high in close proximity to the spatial annotation and declines logarithmically
 #' with the distance to the spatial annotation.
 #'
-#' \bold{How circular binning works:}
+#' \bold{How distance binning works:}
 #' To bin data points according to their localisation to the spatial annotation
-#' three parameters are required:
+#' two of the following three parameters are required (the third one is calculated):
 #'
 #'  \itemize{
 #'    \item{\code{distance}: The distance from the border of the spatial annotation to
@@ -125,10 +1328,6 @@ img_ann_highlight_group_button <- function(){
 #'   \item{\code{binwidth} = \code{distance} / \code{n_bins_dist}}
 #'  }
 #'
-#' Therefore, only two of the three arguments must be specified as the remaining
-#' one is calculated. We recommend to stick to the first option: Specifying
-#' \code{distance} and \code{binwidth} and letting the function calculate
-#' \code{n_bins_dist}.
 #'
 #' Once the parameters are set and calculated the polygon that is used to
 #' define the borders of the spatial annotation is repeatedly expanded by the distance
@@ -155,14 +1354,12 @@ img_ann_highlight_group_button <- function(){
 #' A gene-model-fit is evaluated twofold:
 #'
 #'  \itemize{
-#'    \item{Mean Absolute Error}: Description.
-#'    \item{Root Mean Squared Error}: Description.
+#'    \item{Mean Absolute Error}: Add description.
+#'    \item{Root Mean Squared Error}: Add description.
 #'    \item{Pearson correlation}: The inferred expression changes is correlated
 #'    with the model. (Correlation as well as the corresponding p-value depend
 #'    on the number of bins!)
 #'   }
-#'
-#'
 #'
 #' @export
 spatialAnnotationScreening <- function(object,
@@ -170,9 +1367,9 @@ spatialAnnotationScreening <- function(object,
                                        id = idSA(object),
                                        distance = distToEdge(object, id),
                                        binwidth = recBinwidth(object),
-                                       n_bins_dist = NA_integer_,
+                                       n_bins_dist = NA_integer_, # remove option completely?
                                        angle_span = c(0,360),
-                                       n_bins_angle = 1,
+                                       n_bins_angle = 12,
                                        core = TRUE,
                                        periphery = TRUE,
                                        model_subset = NULL,
@@ -226,7 +1423,8 @@ spatialAnnotationScreening <- function(object,
       n_bins_dist = n_bins_dist,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
-      variables = variables
+      variables = variables,
+      verbose = FALSE
     )
 
 # general fitting by distance ---------------------------------------------
@@ -290,6 +1488,8 @@ spatialAnnotationScreening <- function(object,
       summarize_by = c("bins_angle", "bins_dist"),
       format = "wide"
     )
+
+  min_circles <- 5
 
   angle_bins <-
     dplyr::select(sas_df_smrd_by_angle, bins_angle, bins_dist) %>%
@@ -517,7 +1717,7 @@ imageAnnotationToSegmentation <- function(object,
 #' @param outline_df A data.frame that contains the ouline/hull of all tissue sections.
 #' Must contain variables *x*, *y* and *section*.
 #' @inherit argument_dummy params
-#' @param ias_circles Logical value. If `TRUE`, input data.frame is assumed
+#' @param sas_circles Logical value. If `TRUE`, input data.frame is assumed
 #' to contain polygon coordinates of the expanded spatial annotation encircling
 #' and sorts them after filtering for those that lie inside the tissue section
 #' in order to plot them via `ggplot2::geom_path()`.
@@ -526,11 +1726,11 @@ imageAnnotationToSegmentation <- function(object,
 #' @return Filtered input data.frame.
 #' @export
 #'
-include_tissue_outline <- function(coords_df,
+include_tissue_outline <- function(input_df,
                                    outline_df = NULL, # hull_df should be used by calling function!
-                                   input_df,
+                                   coords_df = NULL, # either of both must be not NULL
                                    spat_ann_center = NULL,
-                                   ias_circles = FALSE,
+                                   sas_circles = FALSE,
                                    ccd = NULL,
                                    remove = TRUE,
                                    inside_if = c(1,2),
@@ -538,22 +1738,33 @@ include_tissue_outline <- function(coords_df,
                                    buffer = 0,
                                    ...){
 
-  is_dist_pixel(input = ccd, error = TRUE)
 
-  outline_var <- "section"
+  # identify sections
+  if(base::is.null(outline_df)){
 
-  if(!outline_var %in% base::colnames(coords_df)){
+    is_dist_pixel(input = ccd, error = TRUE)
 
-    coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
+    outline_var <- "section"
 
-    coords_df <- dplyr::filter(coords_df, outline != "0")
+    if(!outline_var %in% base::colnames(coords_df)){
+
+      coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
+
+      coords_df <- dplyr::filter(coords_df, outline != "0")
+
+    }
+
+    sections <- base::unique(coords_df[[outline_var]])
+
+  } else {
+
+    sections <- base::unique(outline_df$section)
 
   }
 
-  sections <- base::unique(coords_df[[outline_var]])
-
   buffer <- base::as.numeric(buffer)
 
+  # iterate over sections
   proc_df <-
     purrr::map_df(
       .x = sections,
@@ -573,8 +1784,7 @@ include_tissue_outline <- function(coords_df,
                 concavity = 1
               ) %>%
               base::as.data.frame() %>%
-              magrittr::set_colnames(value = c("x", "y")) %>%
-              arrange_as_polygon()
+              magrittr::set_colnames(value = c("x", "y"))
 
           } else if(opt == "chull") {
 
@@ -616,7 +1826,7 @@ include_tissue_outline <- function(coords_df,
 
         if("inside" %in% out_df[["pos_rel"]]){
 
-          if(base::isTRUE(ias_circles)){
+          if(base::isTRUE(sas_circles)){
 
             out_df[["part"]] <- 0
             out_df[["number"]] <- 0
@@ -678,7 +1888,7 @@ include_tissue_outline <- function(coords_df,
     )
 
   # if multiple sections on visium slide
-  # identify to which image section the img ann belongs
+  # identify to which image section the spat ann belongs
   if(base::length(sections) > 1 &
      base::is.numeric(spat_ann_center) &
      base::nrow(proc_df) != 0){
@@ -706,6 +1916,61 @@ include_tissue_outline <- function(coords_df,
 
   return(proc_df)
 
+
+}
+
+#' @seealso compute_avg_vertex_distance
+
+increase_polygon_vertices <- function(polygon_df, avg_dist) {
+
+  polygon_df <- base::as.data.frame(polygon_df)
+
+  # ensure the polygon is closed (first and last point are the same)
+  if(!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])){
+
+    polygon_df <- base::rbind(polygon_df, polygon_df[1, ])
+
+  }
+
+  # initialize a new data frame to store interpolated vertices
+  interpolated_df <- data.frame(x = numeric(0), y = numeric(0))
+
+  # loop through each pair of consecutive vertices
+  for(i in 1:(base::nrow(polygon_df) - 1)){
+
+    x1 <- polygon_df[i, "x"]
+    y1 <- polygon_df[i, "y"]
+    x2 <- polygon_df[i + 1, "x"]
+    y2 <- polygon_df[i + 1, "y"]
+
+    # calculate the distance between the consecutive vertices
+    dist_between_vertices <- base::sqrt((x2 - x1)^2 + (y2 - y1)^2)
+
+    # calculate the number of interpolated vertices needed
+    num_interpolated <- base::max(1, floor(dist_between_vertices / avg_dist))
+
+    # calculate the step size for interpolation
+    step_x <- (x2 - x1) / (num_interpolated + 1)
+    step_y <- (y2 - y1) / (num_interpolated + 1)
+
+    # add the original vertex to the interpolated data frame
+    interpolated_df <- base::rbind(interpolated_df, data.frame(x = x1, y = y1))
+
+    # interpolate new vertices between the consecutive vertices
+    for (j in 1:num_interpolated) {
+
+      new_x <- x1 + j * step_x
+      new_y <- y1 + j * step_y
+
+      interpolated_df <- base::rbind(interpolated_df, data.frame(x = new_x, y = new_y))
+
+    }
+  }
+
+  # combine the original and interpolated vertices
+  new_polygon_df <- base::rbind(polygon_df, interpolated_df)
+
+  return(new_polygon_df)
 
 }
 
@@ -930,6 +2195,13 @@ inferSingleCellGradient <- function(object,
   return(out_df)
 
 }
+
+initiate_plot <- function(xlim = c(1, 600), ylim = c(1,600), main = "") {
+
+  plot(0, 0, type = "n", xlim = xlim, ylim = ylim, xlab = "x", ylab = "y", main = main, asp = 1)
+
+}
+
 
 #' @title Interpolate points along path
 #'

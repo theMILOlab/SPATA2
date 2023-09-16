@@ -55,8 +55,7 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Adds spatial annotations manually by assembling the object
-based on the function input.
+Adds spatial annotations using a polygon.
 }
 \seealso{
 \code{\link[=getCoordsDf]{getCoordsDf()}}

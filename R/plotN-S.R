@@ -294,6 +294,131 @@ plotPcaVariation <- function(object,
 }
 
 
+#' @rdname plotImageMask
+#' @export
+setGeneric(name = "plotPixelContent", def = function(object, ...){
+
+  standardGeneric(f = "plotPixelContent")
+
+})
+
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotPixelContent",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        clrp = "sifre",
+                        clr_bg = "white",
+                        clr_fragments = "red",
+                        clr_tissue = "forestgreen",
+                        clr_artefact = "blue",
+                        type = FALSE,
+                        clrp_adjust = NULL){
+
+    getHistoImaging(object) %>%
+      plotPixelContent(
+        object = .,
+        img_name = img_name,
+        clrp = clrp,
+        clr_bg = clr_bg,
+        clr_fragments = clr_fragments,
+        clr_artefact = clr_artefact,
+        type = type,
+        clrp_adjust = clrp_adjust
+      )
+
+  }
+)
+
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotPixelContent",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        clrp = "sifre",
+                        clr_bg = "white",
+                        clr_fragments = "red",
+                        clr_tissue = "forestgreen",
+                        clr_artefact = "blue",
+                        type = TRUE,
+                        clrp_adjust = NULL){
+
+    getHistoImage(object, img_name = img_name) %>%
+      plotPixelContent(
+        object = .,
+        clrp = clrp,
+        clr_bg = clr_bg,
+        clr_fragments = clr_fragments,
+        clr_artefact = clr_artefact,
+        type = type,
+        clrp_adjust = clrp_adjust
+      )
+
+  }
+)
+
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotPixelContent",
+  signature = "HistoImage",
+  definition = function(object,
+                        clrp = "sifre",
+                        clr_bg = "white",
+                        clr_fragments = "red",
+                        clr_tissue = "forestgreen",
+                        clr_artefact = "blue",
+                        type = TRUE,
+                        clrp_adjust = NULL){
+
+    pxl_df <- getPixelDf(object, content = TRUE, transform = FALSE)
+
+    color_by <- base::ifelse(test = type, yes = "content_type", no = "content")
+
+    # adjust color palette
+    if(!"background" %in% base::names(clrp_adjust)){
+
+      if(!base::is.character(clrp_adjust)){
+
+        clrp_adjust <- base::character(0)
+
+      }
+
+      clrp_adjust["background"] <- clr_bg
+
+    }
+
+    if(color_by == "content_type"){
+
+      clrp_adjust["tissue_section"] <- clr_tissue
+      clrp_adjust["tissue_fragment"] <- clr_fragments
+      clrp_adjust["artefact"] <- clr_artefact
+
+    }
+
+    ggplot2::ggplot() +
+      ggplot2::geom_raster(
+        data = pxl_df,
+        mapping = ggplot2::aes(x = width, y = height, fill = .data[[color_by]])
+      ) +
+      theme_image(panel.border = ggplot2::element_rect(color = "black")) +
+      scale_color_add_on(
+        aes = "fill",
+        variable = pxl_df[[color_by]],
+        clrp = clrp,
+        clrp.adjust = clrp_adjust
+      ) +
+      ggplot2::coord_equal(expand = FALSE) +
+      ggplot2::labs(x = "Width [pixel]", y = "Height [pixel]")
+
+  }
+)
+
+
 #' @title Monocle3 Pseudotime
 #'
 #' @description A wrapper around \code{monocle3::plot_cells()}.
@@ -544,21 +669,20 @@ plotRiverplot <- function(object,
 plotSasBarplot <- function(object,
                            grouping_variable,
                            id = idSA(object),
-                           distance = NA_integer_,
+                           distance = distToEdge(object, id),
                            binwidth = getCCD(object),
                            n_bins_dist = NA_integer_,
-                           include_area = FALSE,
-                           unit = getSpatialMethod(object)@unit,
-                           round = 2,
+                           core = TRUE,
+                           periphery = TRUE,
+                           unit = getDefaultUnit(object),
                            clrp = NULL,
                            clrp_adjust = NULL,
-                           position = "fill",
-                           display_border = TRUE,
-                           border_linealpha = 0.75,
+                           border_linealpha = 0,
                            border_linecolor = "black",
                            border_linesize = 1,
                            border_linetype = "dashed",
-                           x_nth = 1,
+                           bar_width_fct = 1.1,
+                           expand_x_fct = 1.05,
                            bcsp_exclude = NULL,
                            verbose = NULL){
 
@@ -570,143 +694,104 @@ plotSasBarplot <- function(object,
       distance = distance,
       n_bins_dist = n_bins_dist,
       object = object,
-      verbose = FALSE
+      verbose = TRUE
     )
 
-  # extract data
-  sas_df <-
-    getSasDf(
+  binwidth <- sas_input$binwidth
+  distance <- sas_input$distance
+  n_bins_dist <- sas_input$n_bins_dist
+
+  # extract data and filter
+  coords_df <-
+    getCoordsDfSA(
       object = object,
       id = id,
       distance = distance,
       binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      summarize_by = FALSE,
-      remove_circle_bins = !include_area,
-      bcsp_exclude = bcsp_exclude,
-      verbose = verbose
-    ) %>%
-    joinWith(
-      object = object,
-      spata_df = .,
-      features = grouping_variable,
-      verbose = verbose
+      angle_span = angle_span,
+      variables = variables,
+      verbose = FALSE
     )
 
-  plot_df <-
-    dplyr::mutate(
-      .data = sas_df,
-      # bin 1 -> 0. 0 * dist = 0 for bin 1 -> no distance to img an
-      breaks = bins_order - 1
-    )
+  if(base::isFALSE(core)){
 
-  # in case of a spatial annotation that is too small to contain barcode spots
-  if(base::isTRUE(include_area)){
-
-    n_core_spots <-
-      dplyr::filter(sas_df, bins_circle == "Core") %>%
-      base::nrow()
-
-    include_area <- n_core_spots >= 1
-
-    if(n_core_spots == 0){
-
-      warning(
-        glue::glue(
-          "`include_area` is TRUE but spatial annotation {id} is too small to contain barcode spots."
-        )
-      )
-
-    }
+    coords_df <- dplyr::filter(coords_df, rel_loc != "Core")
 
   }
 
-  # add border if desired
-  if(base::isTRUE(display_border)){
+  if(base::isFALSE(periphery)){
 
-    border_add_on <-
-      ggplot2::geom_vline(
-        xintercept = - .50,
-        alpha = border_linealpha,
-        color = border_linecolor,
-        size = border_linesize,
-        linetype = border_linetype
-      )
+    coords_df <- dplyr::filter(coords_df, rel_loc != "Periphery")
+
+  }
+
+  if(base::is.character(bcs_exclude)){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
+
+  }
+
+  coords_df <-
+    dplyr::filter(coords_df, rel_loc != "Outside") %>%
+    dplyr::mutate(dist = extract_bin_dist_val(bins_dist))
+
+  # adjust unit
+
+  if(unit != "px"){
+
+    scale_fct <- getPixelScaleFactor(object, unit = unit)
+    coords_df[["dist"]] <- coords_df[["dist"]] * scale_fct
 
   } else {
 
-    border_add_on <- NULL
+    unit <- "px"
 
   }
 
-  # labels
-  if(unit %in% validUnitsOfLength()){
+  # plot
+  breaks_x <-
+    base::seq(from = 0 , to = base::max(coords_df$dist), length.out = 5) %>%
+    base::ceiling()
 
-    # is unit
-    bw_dist <-
-      as_unit(
-        input = sas_input$binwidth,
-        unit = unit,
-        object = object,
-        round = round
-      )
-
-    plot_df[["labels"]] <- plot_df[["breaks"]] * bw_dist
-
-    plot_df <-
-      dplyr::mutate(
-        .data = plot_df,
-        labels = base::as.character(labels),
-        labels = dplyr::if_else(
-          condition = bins_circle == "Core",
-          true = "IA",
-          false = labels
-        )
-      )
-
-    xlab <-  glue::glue("Dist. to {id} [{unit}]")
-
-  } else {
-
-    plot_df[["labels"]] <- base::as.character(plot_df[["bins_order"]])
-
-    plot_df[["labels"]][plot_df[["breaks"]] < 0 ] <- "IA"
-
-    xlab <- "Bins"
-
-  }
-
-  breaks <-
-    base::as.numeric(plot_df[["breaks"]]) %>%
-    base::unique() %>%
-    reduce_vec(nth = x_nth)
-
-  labels <-
-    base::as.character(plot_df[["labels"]]) %>%
-    base::unique() %>%
-    reduce_vec(nth = x_nth)
-
-  ggplot2::ggplot(data = plot_df) +
+  ggplot2::ggplot(data = coords_df) +
     ggplot2::geom_bar(
-      mapping = ggplot2::aes(x = breaks, fill = .data[[grouping_variable]]),
+      data = coords_df,
+      mapping = ggplot2::aes(x = dist, fill = .data[[grouping_variable]]),
       color = "black",
-      position = position
+      position = position,
+      width = base::max(coords_df$dist)/dplyr::n_distinct(coords_df$dist)*bar_width_fct
     ) +
-    border_add_on +
-    ggplot2::scale_x_continuous(breaks = breaks, labels = labels) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.line.y = ggplot2::element_blank(),
-      axis.text.y = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed"))
+    ggplot2::geom_vline(
+      xintercept = 0,
+      alpha = border_linealpha,
+      color = border_linecolor,
+      size = border_linesize,
+      linetype = border_linetype
     ) +
-    ggplot2::labs(x = xlab, y = NULL) +
     scale_color_add_on(
       aes = "fill",
-      variable = plot_df[[grouping_variable]],
+      variable = coords_df[[grouping_variable]],
       clrp = clrp,
       clrp.adjust = clrp_adjust
-    )
+    ) +
+    ggplot2::scale_x_continuous(
+      breaks = breaks_x,
+      labels = breaks_x
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = c(0, 0.25, 0.5, 0.75, 1),
+      labels = c("0", "25", "50", "75", "100")
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      #axis.line.y = ggplot2::element_blank(),
+      #axis.text.y = ggplot2::element_blank(),
+      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed"))
+    ) +
+    ggplot2::labs(
+      x = glue::glue("Distance to Annotation '{unit}'"),
+      y = "Percentage [%]"
+      )
 
 }
 
@@ -1816,6 +1901,7 @@ plotSasRidgeplot <- function(object,
                              binwidth = recBinwidth(object),
                              n_bins_dist = NA_integer_,
                              angle_span = c(0,360),
+                             core = TRUE,
                              smooth_span = 0.3,
                              unit = getSpatialMethod(object)@unit,
                              clrp = NULL,
@@ -1849,8 +1935,8 @@ plotSasRidgeplot <- function(object,
       n_bins_dist,
       binwidth = binwidth,
       angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
       variables = variables,
+      core = core,
       verbose = FALSE
     ) %>%
     tidyr::pivot_longer(
@@ -2360,6 +2446,408 @@ plotScatterplot <- function(object,
     ggplot2::theme_bw()
 
 }
+
+
+#' @title Plot spatial annotations
+#'
+#' @description Plots image sections containing the areas that were annotated via
+#' [`createGroupAnnotations()`], [`createImageAnnotations()`] or
+#' [`createNumericAnnotations()`] .
+#'
+#' @param plot Logical value. If TRUE, the plots are plotted immediately
+#' via \code{gridExtra.grid.arrange()} and the list of plots is returned
+#' invisibly. Else the list of plots is simply returned.
+#' @param display_title Logical value. If TRUE, the number of each spatial annotation
+#' is plotted in the title.
+#' @param display_subtitle Logical value. If TRUE, the ID of each spatial annotation
+#' is plotted in the subtitle.
+#' @param display_caption Logial value. If TRUE, the tags of each spatial annotation
+#' are plotted in the caption.
+#' @param outline Logical value. If TRUE, a polygon is drawn around the
+#' exact extent of the annotated structure.
+#' @param unit Character value. The unit in which the x- and y-axis text
+#' are displayed. Use `validUnitsOfLengthSI()` to obtain all valid input options.
+#' @param round Numeric value or `FALSE`. If numeric and `unit` is not *px*, rounds
+#' axes text.
+#' @param sb_dist Distance measure or `FALSE`. If distance measure,
+#' defines the distance in SI units that a scale bar illustrates.
+#' Scale bar is plotted with `ggpLayerScaleBarSI()`. If `FALSE`,
+#' no scale bar is plotted.
+#' @param ... Additional arguments given to `ggpLayerScaleBarSI()` if input for
+#' `sb_dist` is a valid distance measure. Exception: `xrange` and `yrange` are
+#' set to the ranges of the image that was cropped to display the spatial annotation.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayerSpatAnnOutline params
+#'
+#' @details At first, the image section that contains the spatial annotation is
+#' cropped such that it only contains the extent of the polygon that represents
+#' the borders of the annotation (ranges can be obtained with `getSpatAnnRange()`).
+#' Using arguments `square` and `expand` can be used to expand the displayed
+#' image section individually.
+#'
+#' @inheritSection section_dummy Distance measures
+#' @inheritSection section_dummy Expansion of cropped image sections
+#' @inheritSection section_dummy Selection of spatial annotations
+#'
+#' @return A list of ggplots. Each slot contains a plot
+#' that visualizes an spatial annotation.
+#'
+#' @seealso [`getSpatialAnnotations()`]
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' object <- downloadSpataObject(sample_name = "275_T", verbose = FALSE)
+#'
+#' data("image_annotations")
+#'
+#' object <- setSpatialAnnotations(object, spat_anns = image_annotations[["275_T"]])
+#'
+#' plotSpatialAnnotations(
+#'  object = object,
+#'  ids = "spat_ann_1",
+#'  expand = "0.5mm",
+#'  encircle = T # no encircling possible if expand = 0
+#'  )
+#'
+#' ### Example 1
+#'
+#' plotSpatialAnnotations(
+#'  object = object,
+#'  ids = "spat_ann_1",
+#'  expand = 0,
+#'  encircle = FALSE # no encircling possible if expand = 0
+#'  )
+#'
+#'  process_expand_input(0)
+#'
+#' ### Example 2
+#' plotSpatialAnnotations(
+#'  object = object,
+#'  ids = "spat_ann_1",
+#'  expand = 50, # all sides are expanded with 50px -> 100px gain per axis
+#'  encircle = TRUE
+#'  )
+#'
+#'  process_expand_input(50)
+#'
+#' ### Example 3
+#' plotSpatialAnnotations(
+#'  object = object,
+#'  ids = "spat_ann_1",
+#'  expand = c("1mm", "2mm"),
+#'  encircle = TRUE
+#'  )
+#'
+#'  process_expand_input(c("1mm", "2mm"))
+#'
+#' ### Example 4
+#' plotSpatialAnnotations(
+#'  object = object,
+#'  ids = "spat_ann_1",
+#'  expand = list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')),
+#'  encircle = TRUE
+#'  )
+#'
+#'  process_expand_input(list(x = c('1mm', '0.5mm'), y = c('0.25mm', '1mm')))
+#'
+#'
+#' ### Example 5
+#' plotSpatialAnnotations(
+#'  object = object,
+#'  ids = "spat_ann_1",
+#'  expand = "1mm!", # center image and force axis length of 1mm
+#'  encircle = TRUE,
+#'  dist_sb = "100um",
+#'  text_color = "white",
+#'  sgmt_color = "white",
+#'  pos = "bottom_right",
+#'  )
+#'
+#'  process_expand_input("1mm!")
+#'
+#'
+setGeneric(name = "plotSpatialAnnotations", def = function(object, ...){
+
+  standardGeneric(f = "plotSpatialAnnotations")
+
+})
+
+#' @rdname plotSpatialAnnotations
+#' @export
+setMethod(
+  f = "plotSpatialAnnotations",
+  signature = "spata2",
+  definition = function(object,
+                        ids = NULL,
+                        tags = NULL,
+                        test = "any",
+                        expand = "25%",
+                        square = TRUE,
+                        outline = TRUE,
+                        inner = TRUE,
+                        unit = getSpatialMethod(object)@unit,
+                        round = 2,
+                        line_color = "black",
+                        line_size = 1.5,
+                        line_type = "solid",
+                        fill = "orange",
+                        alpha = 0.25,
+                        sb_dist = FALSE,
+                        display_title = FALSE,
+                        display_subtitle = TRUE,
+                        display_caption = FALSE,
+                        ggpLayers = list(),
+                        nrow = NULL,
+                        ncol = NULL,
+                        plot = TRUE,
+                        ...){
+
+    getHistoImaging(object) %>%
+      plotSpatialAnnotations(
+        object = .,
+        ids = ids,
+        tags = tags,
+        test = test,
+        expand = expand,
+        square = square,
+        outline = outline,
+        inner = inner,
+        unit = unit,
+        round = round,
+        line_color = line_color,
+        line_size = line_size,
+        line_type = line_type,
+        fill = fill,
+        alpha = alpha,
+        sb_dist = sb_dist,
+        display_title = display_title,
+        display_subtitle = display_subtitle,
+        display_caption = display_caption,
+        ggpLayers = ggpLayers,
+        nrow = nrow,
+        ncol = ncol,
+        plot = plot,
+        ...
+      )
+
+  }
+)
+
+#' @rdname plotSpatialAnnotations
+#' @export
+setMethod(
+  f = "plotSpatialAnnotations",
+  signature = "HistoImaging",
+  definition = function(object,
+                        ids = NULL,
+                        tags = NULL,
+                        test = "any",
+                        expand = "25%",
+                        square = TRUE,
+                        outline = TRUE,
+                        inner = TRUE,
+                        unit = getSpatialMethod(object)@unit,
+                        round = 2,
+                        line_color = "black",
+                        line_size = 1.5,
+                        line_type = "solid",
+                        fill = "orange",
+                        alpha = 0.25,
+                        sb_dist = FALSE,
+                        display_title = FALSE,
+                        display_subtitle = TRUE,
+                        display_caption = FALSE,
+                        ggpLayers = list(),
+                        nrow = NULL,
+                        ncol = NULL,
+                        plot = TRUE,
+                        ...){
+
+    deprecated(...)
+
+    confuns::check_one_of(
+      input = unit,
+      against = validUnitsOfLength()
+    )
+
+    spat_annotations <-
+      getSpatialAnnotations(
+        object = object,
+        ids = ids,
+        tags = tags,
+        test = test,
+        expand = expand,
+        square = square,
+        add_image = TRUE
+      )
+
+    plist <-
+      purrr::map(
+        .x = spat_annotations,
+        .f = function(spat_ann){
+
+          image_raster <- grDevices::as.raster(x = spat_ann@image)
+
+          img_info <- spat_ann@image_info
+
+          limits_x <- c(img_info$xmin, img_info$xmax)
+          limits_y <- c(img_info$ymin_coords, img_info$ymax_coords)
+
+          raster_add_on <- ggpLayerImage(object = spat_ann, rescale_axes = TRUE)
+
+          if(base::isTRUE(outline)){
+
+            spat_ann_sf <-
+              getSpatAnnSf(
+                object = object,
+                id = spat_ann@id
+              )
+
+            if(base::isFALSE(inner)){
+
+              spat_ann_sf <- spat_ann_sf[["outer"]]
+
+            }
+
+            outline_add_on <-
+              ggplot2::geom_sf(
+                data = spat_ann_sf,
+                size = line_size,
+                color = line_color,
+                linetype = line_type,
+                alpha = alpha,
+                fill = fill
+              )
+
+          } else {
+
+            outline_add_on <- list()
+
+          }
+
+          if(unit == "px"){
+
+            labels <- ggplot2::waiver()
+
+          } else {
+
+            labels  <-
+              ~ transform_pixels_to_dist_si(
+                input = .x,
+                unit = unit,
+                object = object,
+                as_numeric = TRUE,
+                round = round
+              )
+
+          }
+
+          if(is_dist_si(input = sb_dist)){
+
+            scale_bar_add_on <-
+              ggpLayerScaleBarSI(
+                object = object,
+                sb_dist = sb_dist,
+                xrange = c(img_info$xmin, img_info$xmax),
+                yrange = c(img_info$ymin_coords, img_info$ymax_coords)
+                #...
+              )
+
+          } else {
+
+            scale_bar_add_on <- ggpLayerThemeCoords()
+
+          }
+
+          coords_df <- getCoordsDf(object)
+
+          plot_out <-
+            ggplot2::ggplot() +
+            ggplot2::theme_bw() +
+            raster_add_on +
+            outline_add_on +
+            ggplot2::scale_x_continuous(
+              #limits = limits_x,
+              expand = c(0, 0),
+              labels = labels
+            ) +
+            ggplot2::scale_y_continuous(
+              #limits = limits_y,
+              expand = c(0, 0),
+              labels = labels
+            ) +
+            scale_bar_add_on +
+            ggplot2::labs(
+              x = glue::glue("x-coordinates [{unit}]"),
+              y = glue::glue("y-coordinates [{unit}]")
+            ) +
+            ggpLayers
+
+          if(base::isTRUE(display_title)){
+
+            plot_out <-
+              plot_out +
+              ggplot2::labs(
+                title = stringr::str_c(
+                  "Annotation ",
+                  stringr::str_extract(spat_ann@id, "\\d*$")
+                )) +
+              ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+
+          }
+
+          if(base::isTRUE(display_subtitle)){
+
+            plot_out <-
+              plot_out +
+              ggplot2::labs(subtitle = spat_ann@id)
+
+          }
+
+          if(base::isTRUE(display_caption)){
+
+            plot_out <-
+              plot_out +
+              ggplot2::labs(
+                caption = scollapse(
+                  string = spat_ann@tags,
+                  sep = ", ",
+                  last = " & "
+                ) %>% stringr::str_c("Tags: ", .)
+              ) +
+              ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
+
+          }
+
+          return(plot_out)
+
+        }
+      )
+
+    if(base::isTRUE(plot)){
+
+      patchwork::wrap_plots(
+        grobs = plist,
+        nrow = nrow,
+        ncol = ncol
+      )
+
+    } else {
+
+      return(plist)
+
+    }
+
+
+  }
+)
+
 
 #' @title Plot spatial trajectory
 #'

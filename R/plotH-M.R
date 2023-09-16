@@ -73,6 +73,792 @@ plotHistogram <- function(object,
 
 
 
+# plotI -------------------------------------------------------------------
+
+
+#' @title Plot histology image (ggplot2)
+#'
+#' @description Plots the histology image with `ggplot2`.
+#'
+#' @param unit Character value. Units of x- and y-axes. Defaults
+#' to *'px'*.
+#' @param ... Additional arguments given to `ggpLayerZoom()`.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @inheritSection section_dummy Distance measures
+#' @inheritSection section_dummy Image visualization with ggplot2
+#'
+#' @export
+#'
+setGeneric(name = "plotImage", def = function(object, ...){
+
+  standardGeneric(f = "plotImage")
+
+})
+
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        outline = FALSE,
+                        by_section = TRUE,
+                        fragments = TRUE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 0.5,
+                        line_type = "solid",
+                        transform = TRUE,
+                        img_alpha = 1,
+                        scale_fct = 1,
+                        xrange = NULL,
+                        yrange = NULL,
+                        ...){
+
+    deprecated(...)
+
+    getHistoImaging(object) %>%
+      plotImage(
+        object = .,
+        img_name = img_name,
+        fragments = fragments,
+        outline = outline,
+        transform = transform,
+        line_alpha = line_alpha,
+        line_color = line_color,
+        line_size = line_size,
+        line_type = line_type,
+        img_alpha = img_alpha,
+        scale_fct = scale_fct,
+        xrange = xrange,
+        yrange = yrange,
+        ...
+      )
+
+  }
+)
+
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        outline = FALSE,
+                        by_section = TRUE,
+                        fragments = TRUE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 0.5,
+                        line_type = "solid",
+                        transform = TRUE,
+                        img_alpha = 1,
+                        scale_fct = 1,
+                        xrange = NULL,
+                        yrange = NULL,
+                        ...){
+
+    getHistoImage(object, img_name = img_name) %>%
+      plotImage(
+        object = .,
+        by_section = by_section,
+        fragments = fragments,
+        outline = outline,
+        transform = transform,
+        line_alpha = line_alpha,
+        line_color = line_color,
+        line_size = line_size,
+        line_type = line_type,
+        img_alpha = img_alpha,
+        scale_fct = scale_fct,
+        xrange = xrange,
+        yrange = yrange,
+        ...
+      )
+
+  }
+)
+
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "HistoImage",
+  definition = function(object,
+                        outline = FALSE,
+                        by_section = TRUE,
+                        fragments = TRUE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 1,
+                        line_type = "solid",
+                        transform = TRUE,
+                        img_alpha = 1,
+                        scale_fct = 1,
+                        xrange = NULL,
+                        yrange = NULL,
+                        display_subtitle = FALSE,
+                        ...){
+
+    layer_coord_equal <- ggplot2::coord_equal(expand = FALSE)
+    layer_coord_equal$default <- TRUE
+
+    if(base::isTRUE(display_subtitle)){
+
+      subtitle <- object@name
+
+    } else {
+
+      subtitle <- NULL
+
+    }
+
+    out <-
+      ggplot2::ggplot() +
+      ggpLayerImage(
+        object = object,
+        transform = transform,
+        scale_fct = scale_fct,
+        img_alpha = img_alpha
+      ) +
+      theme_image() +
+      layer_coord_equal +
+      ggplot2::labs(
+        subtitle = subtitle,
+        x = "Width [pixel]",
+        y = "Height [pixel]"
+      )
+
+    if(base::isTRUE(outline)){
+
+      out <-
+        out +
+        ggpLayerTissueOutline(
+          object = object,
+          by_section = by_section,
+          fragments = fragments,
+          transform = transform,
+          line_alpha = line_alpha,
+          line_color = line_color,
+          line_size = line_size,
+          line_type = line_type,
+          scale_fct = scale_fct
+        )
+
+    }
+
+    if(!base::is.null(xrange) & !base::is.null(yrange)){
+
+      out <-
+        out +
+        ggpLayerZoom(
+          object = object,
+          xrange = xrange,
+          yrange = yrange,
+          ...
+        )
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname plotImage
+#' @export
+setMethod(
+  f = "plotImage",
+  signature = "Image",
+  definition = function(object, scale_fct = 1, img_alpha = 1, ...){
+
+    ggplot2::ggplot() +
+      ggpLayerImage(object, scale_fct = scale_fct, img_alpha = img_alpha) +
+      ggplot2::coord_equal() +
+      theme_image()
+
+  }
+)
+
+
+#' @title Plot histology image
+#'
+#' @description Plots the histology image as a raster.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A plot that is immediately plotted.
+#' @export
+#'
+setGeneric(name = "plotImageBase", def = function(object, ...){
+
+  standardGeneric(f = "plotImageBase")
+
+})
+
+#' @rdname plotImageBase
+#' @export
+setMethod(
+  f = "plotImageBase",
+  signature = "spata2",
+  definition = function(object, xrange = NULL, yrange = NULL, axes = FALSE, ...){
+
+    img <- getImageRaster(object, xrange = xrange, yrange = yrange)
+
+    coords_df <- getCoordsDf(object)
+
+    if(base::is.numeric(xrange)){
+
+      coords_df <- dplyr::filter(coords_df, dplyr::between(x = x, left = xrange[1], right = xrange[2]))
+
+    }
+
+    if(base::is.numeric(yrange)){
+
+      coords_df <- dplyr::filter(coords_df, dplyr::between(x = y, left = yrange[1], right = yrange[2]))
+
+    }
+
+    if(!base::is.numeric(xrange)){
+
+      xrange <- getImageRange(object)$x
+
+    }
+
+    if(!base::is.numeric(yrange)){
+
+      yrange <- getImageRange(object)$y
+
+    }
+
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = coords_df$x,
+      y = coords_df$y,
+      col = ggplot2::alpha("white", 0),
+      axes = axes,
+      xlab = NA_character_,
+      ylab = NA_character_,
+      xlim = xrange,
+      ylim = yrange
+    )
+
+    graphics::rasterImage(
+      image = img,
+      xleft = xrange[1],
+      xright = xrange[2],
+      ybottom = yrange[1],
+      ytop = yrange[2]
+    )
+
+  }
+)
+
+#' @rdname plotImageBase
+#' @export
+setMethod(
+  f = "plotImageBase",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        xrange = NULL,
+                        yrange = NULL,
+                        scale_fct = 1,
+                        axes = TRUE,
+                        ...){
+
+    plotImageBase(
+      object = getHistoImage(object, img_name = img_name),
+      scale_fct = scale_fct,
+      xrange = xrange,
+      yrange = yrange,
+      axes = axes,
+    )
+
+
+  }
+)
+
+#' @rdname plotImageBase
+#' @export
+setMethod(
+  f = "plotImageBase",
+  signature = "HistoImage",
+  definition = function(object,
+                        img_name = NULL,
+                        xrange = NULL,
+                        yrange = NULL,
+                        scale_fct = 1,
+                        axes = TRUE,
+                        ...){
+
+    if(!base::is.null(xrange)){
+
+      xrange <- as_pixel(input = xrange, object = object)
+
+    }
+
+    if(!base::is.null(yrange)){
+
+      yrange <- as_pixel(input = yrange, object = object)
+
+    }
+
+
+    getImage(
+      object = object,
+      img_name = img_name,
+      xrange = xrange,
+      yrange = yrange
+    ) %>%
+      plotImageBase(
+        object = .,
+        xrange = xrange,
+        yrange = yrange,
+        scale_fct = scale_fct,
+        axes = axes
+      )
+
+  }
+)
+
+#' @rdname plotImageBase
+#' @export
+setMethod(
+  f = "plotImageBase",
+  signature = "Image",
+  definition = function(object,
+                        scale_fct = 1,
+                        xrange = NULL,
+                        yrange = NULL,
+                        axes = TRUE,
+                        ...){
+
+    # scale
+    image <-
+      scale_image(
+        image = object,
+        scale_fct = scale_fct
+      )
+
+    # get dims if not provided
+    dims <- base::dim(image)
+
+    # if specified xrange and yrange are not scaled!
+    if(base::is.null(xrange)){
+
+      xrange <- c(0, dims[1])
+
+    }
+
+    if(base::is.null(yrange)){
+
+      yrange <- c(0, dims[2])
+
+    }
+
+    # plot
+    graphics::plot.new()
+    graphics::par(pty = "s", ...)
+    graphics::plot(
+      x = c(0, dims[1]),
+      y = c(0, dims[2]),
+      col = ggplot2::alpha("white", alpha = 0),
+      xlab = NA_character_,
+      ylab = NA_character_,
+      xlim = xrange,
+      ylim = yrange,
+      axes = axes
+    )
+
+    graphics::rasterImage(
+      image = image,
+      xleft = 0,
+      xright = dims[1],
+      ybottom = 0,
+      ytop = dims[2]
+    )
+
+  })
+
+
+#' @title Plot pixel content
+#'
+#' @description Visualizes the results of [`identifyPixelContent()`].
+#' \itemize{
+#'  \item{`plotImageMask()`:}{ Distinguishes pixel in back- and foreground. Foreground being the tissue.}
+#'  \item{`plotPixelContent():`}{ Visualizes the classification of each pixel in detail.}
+#'  }
+#'
+#' @param clr_fg,clr_bg Character values. Color with which to display
+#' foreground and background of the mask.
+#' @param clr_artefact,clr_fragments,clr_tissue Character values. Colors
+#' with which to display the content type if `type = FALSE`.
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @note Always plots the original justification of the image without
+#' transformations.
+#'
+#' @export
+#'
+setGeneric(name = "plotImageMask", def = function(object, ...){
+
+  standardGeneric(f = "plotImageMask")
+
+})
+
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotImageMask",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        clr_fg = "black",
+                        clr_bg = "white"){
+
+    getHistoImaging(object) %>%
+      plotImageMask(object = ., img_name = img_name, clr_fg = clr_fg, clr_bg = clr_bg)
+
+  }
+)
+
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotImageMask",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        clr_fg = "black",
+                        clr_bg = "white"){
+
+    getHistoImage(object, img_name = img_name) %>%
+      plotImageMask(object = ., clr_fg = clr_fg, clr_bg = clr_bg)
+
+  }
+)
+
+#' @rdname plotImageMask
+#' @export
+setMethod(
+  f = "plotImageMask",
+  signature = "HistoImage",
+  definition = function(object,
+                        clr_fg = "black",
+                        clr_bg = "white"){
+
+    pxl_df <-
+      getPixelDf(object, content = TRUE, transform = FALSE) %>%
+      dplyr::mutate(
+        Mask = content != "background",
+        MasK = base::as.character(Mask)
+      )
+
+    ggplot2::ggplot() +
+      ggplot2::geom_raster(
+        data = pxl_df,
+        mapping = ggplot2::aes(x = width, y = height, fill = Mask)
+      ) +
+      ggplot2::scale_fill_manual(
+        values = c("TRUE" = clr_fg, "FALSE" = clr_bg),
+        guide = "none"
+      ) +
+      theme_image(panel.border = ggplot2::element_rect(color = "black")) +
+      ggplot2::coord_equal(expand = FALSE) +
+      ggplot2::labs(x = "Width [pixel]", y = "Height [pixel]")
+
+  })
+
+
+#' @title Plot histology images (ggplot2)
+#'
+#' @description Reads in and plots all images known to the `SPATA2` object.
+#'
+#' @param img_names Character vector or `NULL`. If character, specifies the images
+#' by name. If `NULL`, all images are plotted.
+#' @param ... Additionel arguments given to `plotImage()`.
+#'
+#' @return A ggplot assembled with via `patchwork::wrap_plots()`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Distance measures
+#' @inheritSection section_dummy Image visualization with ggplot2
+#'
+#' @seealso [`getImageDirectories()`]
+#'
+#' @export
+
+setGeneric(name = "plotImages", def = function(object, ...){
+
+  standardGeneric(f = "plotImages")
+
+})
+
+#' @rdname plotImages
+#' @export
+setMethod(
+  f = "plotImages",
+  signature = "spata2",
+  definition = function(object,
+                        img_names = NULL,
+                        by_section = TRUE,
+                        outline = FALSE,
+                        outline_ref = FALSE,
+                        fragments = TRUE,
+                        line_alpha = line_alpha_ref*0.75,
+                        line_alpha_ref = 1,
+                        line_color = "black",
+                        line_color_ref = "red",
+                        line_size = 0.5,
+                        line_size_ref = line_size * 1.5,
+                        transform = TRUE,
+                        img_alpha = 1,
+                        against_ref = FALSE,
+                        alignment_eval = FALSE,
+                        ncol = NULL,
+                        nrow = NULL,
+                        verbose = TRUE){
+
+    hlpr_assign_arguments(object)
+
+    getHistoImaging(object) %>%
+      plotImages(
+        object = .,
+        img_names = img_names,
+        ncol = ncol,
+        nrow = nrow,
+        image = TRUE,
+        outline = outline,
+        outline_ref = outline_ref,
+        by_section = by_section,
+        fragments = fragments,
+        line_alpha = line_alpha,
+        line_alpha_ref = line_alpha_ref,
+        line_color = line_color,
+        line_color_ref = line_color_ref,
+        line_size = line_size,
+        line_size_ref = line_size_ref,
+        transform = transform,
+        img_alpha = img_alpha,
+        against_ref = against_ref,
+        alignment_eval = alignment_eval,
+        verbose = verbose
+      )
+
+  }
+)
+
+#' @rdname plotImages
+#' @export
+setMethod(
+  f = "plotImages",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_names = NULL,
+                        ncol = NULL,
+                        nrow = NULL,
+                        image = TRUE,
+                        outline = FALSE,
+                        outline_ref = FALSE,
+                        by_section = TRUE,
+                        fragments = TRUE,
+                        line_alpha = line_alpha_ref*0.75,
+                        line_alpha_ref = 1,
+                        line_color = "black",
+                        line_color_ref = "red",
+                        line_size = 0.5,
+                        line_size_ref = line_size * 1.5,
+                        transform = TRUE,
+                        img_alpha = 1,
+                        against_ref = FALSE,
+                        alignment_eval = FALSE,
+                        verbose = TRUE){
+
+    ref_name <- object@name_img_ref
+
+    if(base::is.null(img_names)){
+
+      img_names <- getImageNames(object)
+
+    } else {
+
+      confuns::check_one_of(
+        input = img_names,
+        against = getImageNames(object)
+      )
+
+    }
+
+    if(base::isTRUE(against_ref) & !(ref_name %in% img_names)){
+
+      img_names <- base::unique(c(img_names, ref_name))
+
+    }
+
+    image_list <-
+      purrr::map(
+        .x = img_names,
+        .f = function(name){
+
+          # adjust title
+          if(name == getHistoImageActive(object)@name){
+
+            if(name == ref_name){
+
+              title_add <- "(Active Image, Reference Image)"
+
+            } else {
+
+              title_add <- "(Active Image)"
+
+            }
+
+            hist_img <- getHistoImageActive(object)
+
+          } else if(name == ref_name) {
+
+            title_add <- "(Reference Image)"
+
+            hist_img <- getHistoImageRef(object)
+
+          } else {
+
+            hist_img <- getHistoImage(object, img_name = name)
+
+            title_add <- ""
+
+          }
+
+          if(base::isTRUE(alignment_eval)){
+
+            if(base::isTRUE(hist_img@aligned) & base::isTRUE(transform)){
+
+              ares <- base::round(hist_img@overlap[[2]], digits = 2)*100
+
+              title_add <- stringr::str_c(title_add, " - Aligned (", ares, "%)")
+
+            } else if(base::isTRUE(transform) & name != ref_name){
+
+              title_add <- stringr::str_c(title_add, " - Not aligned")
+
+            } else {
+
+              # title_add stays as is
+
+            }
+
+          }
+
+          title <- stringr::str_c(hist_img@name, " ", title_add)
+
+          p <-
+            ggplot2::ggplot() +
+            theme_image() +
+            ggplot2::coord_equal(expand = FALSE) +
+            ggplot2::labs(subtitle = title, x = NULL, y = NULL)
+
+          transform_checked <- transform | name == ref_name
+
+          # first add image
+          if(base::isTRUE(image)){
+
+            # ggpLayerImage loads the image if slot @image is empty
+            p <-
+              p +
+              ggpLayerImage(
+                object = hist_img,
+                transform = transform_checked,
+                img_alpha = img_alpha
+              )
+
+          }
+
+          # second add reference outline in specified color
+          if(base::isTRUE(outline_ref)){
+
+            hist_img_ref <- getHistoImageRef(object)
+
+            scale_fct <-
+              compute_img_scale_fct(
+                hist_img1 = hist_img_ref,
+                hist_img2 = hist_img
+              )
+
+            p <-
+              p +
+              ggpLayerTissueOutline(
+                object = hist_img_ref,
+                by_section = by_section,
+                fragments = fragments,
+                line_alpha = line_alpha_ref,
+                line_color = line_color_ref,
+                line_size = line_size_ref,
+                transform = TRUE, # no transformation needed as its the reference
+                scale_fct = scale_fct
+              )
+
+          }
+
+          # third add image outline allow normal outline of reference if needed
+          if((base::isTRUE(outline) & name != ref_name) |
+             (base::isTRUE(outline) & base::isFALSE(outline_ref) & name == ref_name)){
+
+            p <-
+              p +
+              ggpLayerTissueOutline(
+                object = hist_img,
+                by_section = by_section,
+                fragments = fragments,
+                line_alpha = line_alpha,
+                line_color = line_color,
+                line_size = line_size,
+                transform = transform_checked,
+                scale_fct = 1
+              )
+
+          }
+
+          return(p)
+
+        }
+      ) %>%
+      purrr::set_names(nm = img_names)
+
+
+    if(ref_name %in% img_names){
+
+      image_list <- image_list[c(ref_name, img_names[img_names != ref_name])]
+
+    }
+
+    if(base::isTRUE(against_ref) && ref_name %in% img_names){
+
+      p1 <- image_list[[ref_name]]
+      p2 <-
+        confuns::lselect(image_list, -{{ref_name}}) %>%
+        patchwork::wrap_plots(ncol = ncol, nrow = nrow)
+
+      out <- p1|p2
+
+    } else {
+
+      out <- patchwork::wrap_plots(image_list, ncol = ncol, nrow = nrow)
+
+    }
+
+    return(out)
+
+  }
+)
 
 # plotM -------------------------------------------------------------------
 

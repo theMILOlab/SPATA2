@@ -256,63 +256,141 @@ loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
 #' @keywords internal
 loadGeneSetDf <- loadGSDF
 
-
-
-
-
-#' @rdname loadImageLowres
-#' @export
-loadImageDefault <- function(object, ...){
-
-  dir <- getImageDirDefault(object, fdb_fn = TRUE, check = TRUE)
-
-  object <- exchangeImage(object, image = dir, ...)
-
-  return(object)
-
-}
-
-
-#' @rdname loadImageLowres
-#' @export
-loadImageHighres <- function(object, ...){
-
-  dir <- getImageDirHighres(object)
-
-  object <- exchangeImage(object, image = dir, ...)
-
-  return(object)
-
-}
-
-#' @title Load known images
+#' @title Load image
 #'
-#' @description Wrapper around the required `getImageDir*()` function and
-#' `exchangeImage()`. Exchanges the image of the `SPATA2` object by using
-#' the directories that have been set with \code{setImageDir*()} family
-#' or with `addImageDir()`.
+#' @description Loads the image based on the directory stored in slot @@dir
+#' of the `HistoImage` object.
 #'
-#' @param ... Additional arguments given to `exchangeImage()`.
-#' @param name Character value. Name of the image directory.
+#' @param force Logical value. If `TRUE`, image is loaded even if
+#' the image slot is not empty.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`setImageDirLowres()`], [`setImageDirHighres()`],
-#' [`setImageDirDefault()`], [`addImageDir()`],  [`exchangeImage()`], [getImagaDirectories()]
+#' @seealso [`unloadImage()`],[`unloadImages()`]
 #'
 #' @export
-#'
-loadImageLowres <- function(object, ...){
+setGeneric(name = "loadImage", def = function(object, ...){
 
-  dir <- getImageDirLowres(object)
+  standardGeneric(f = "loadImage")
 
-  object <- exchangeImage(object, image = dir, ...)
+})
 
-  return(object)
+#' @rdname loadImage
+#' @export
+setMethod(
+  f = "loadImage",
+  signature = "spata2",
+  definition = function(object, img_name, ...){
 
-}
+    imaging <- getHistoImaging(object)
 
+    imaging <- loadImage(imaging, img_name = img_name)
 
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname loadImage
+#' @export
+setMethod(
+  f = "loadImage",
+  signature = "HistoImaging",
+  definition = function(object, img_name, verbose = TRUE){
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- loadImage(hist_img, verbose = verbose)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+#' @rdname loadImage
+#' @export
+setMethod(
+  f = "loadImage",
+  signature = "HistoImage",
+  definition = function(object, verbose = TRUE){
+
+    confuns::give_feedback(
+      msg = glue::glue("Loading image {object@name}."),
+      verbose = verbose,
+      duration = 20
+    )
+
+    object@image <- EBImage::readImage(files = object@dir)
+
+    return(object)
+
+  }
+)
+
+#' @rdname loadImage
+#' @export
+setGeneric(name = "loadImages", def = function(object, ...){
+
+  standardGeneric(f = "loadImages")
+
+})
+
+#' @rdname loadImage
+#' @export
+setMethod(
+  f = "loadImages",
+  signature = "spata2",
+  definition = function(object, verbose = TRUE, force = FALSE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- loadImages(imaging, verbose = verbose, force = force)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname loadImage
+#' @export
+setMethod(
+  f = "loadImages",
+  signature = "HistoImaging",
+  definition = function(object, verbose = TRUE, force = FALSE){
+
+    img_names <- getImageNames(object)
+
+    for(img_name in img_names){
+
+      hist_img <- getHistoImage(object, img_name = img_name)
+
+      if(!containsImage(hist_img) | base::isTRUE(force)){
+
+        hist_img <- loadImage(hist_img)
+
+      } else {
+
+        confuns::give_feedback(
+          msg = glue::glue("Image {hist_img@name} is already loaded."),
+          verbose = verbose
+        )
+
+      }
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
 
 
 #' @title Load corresponding objects

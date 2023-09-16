@@ -1,10 +1,95 @@
 
 
 
+# deprecate?
+padd_image <- function(image, bg_value = 1){
+
+  img_dim <- base::dim(image)
+
+  w <- img_dim[1]
+  h <- img_dim[2]
+  cdims <- img_dim[3]
+
+  side_length <- base::max(c(w,h))
+
+  pxl_df <- getPixelDf(object = image, colors = T, hex_code = T)
+
+  # height must be padded
+
+  if(w == h){
+
+    out <- image
+
+  } else {
+
+    if(w > h){
+
+      pad_df <-
+        tidyr::expand_grid(
+          height = (h+1):w,
+          width = 1:w
+        )
+
+      # width must be padded
+    } else if(w < h){
+
+      pad_df <-
+        tidyr::expand_grid(
+          height = 1:h,
+          width = (w+1):h
+        )
+
+    }
+
+    bg_color <-
+      dplyr::group_by(pxl_df, color) %>%
+      dplyr::tally() %>%
+      dplyr::arrange(dplyr::desc(n)) %>%
+      dplyr::pull(color) %>%
+      utils::head(1) %>%
+      grDevices::col2rgb() %>%
+      base::t() %>%
+      base::as.numeric()
+
+    for(i in 1:cdims){
+
+      col_var <- stringr::str_c("col", i)
+
+      col_val <- bg_color[i]/255
+
+      pad_df[[col_var]] <- col_val
+
+    }
+
+    pxl_df_padded <-
+      dplyr::select(pxl_df, width, height, dplyr::starts_with("col"), -color) %>%
+      base::rbind(., pad_df)
+
+    padded_array <- base::array(data = 0, dim = c(side_length, side_length, cdims))
+
+    for(i in 1:cdims){
+
+      padded_array[, , i] <-
+        reshape2::acast(
+          data = pxl_df_padded,
+          formula = width ~ height,
+          value.var = stringr::str_c("col", i)
+        )
+
+    }
+
+    out <- EBImage::Image(data = padded_array, colormode = image@colormode)
+
+  }
+
+  return(out)
+
+}
 
 
 
-# pick --------------------------------------------------------------------
+
+
 #' @keywords internal
 pick_vars <- function(df, input, order_by, neg_log){
 
@@ -94,6 +179,38 @@ pick_vars <- function(df, input, order_by, neg_log){
   return(out_df)
 
 }
+
+
+pixel_df_to_image <- function(pxl_df){
+
+  cdims <-
+    dplyr::select(pxl_df, dplyr::matches("col\\d")) %>%
+    base::names()
+
+  array_out <-
+    base::array(
+      data = 0,
+      dim = c(base::max(pxl_df$width), base::max(pxl_df$height), base::length(cdims))
+    )
+
+  for(i in base::seq_along(cdims)){
+
+    array_out[, , i] <-
+      reshape2::acast(
+        data = pxl_df,
+        formula = width ~ height,
+        value.var = stringr::str_c("col", i)
+      )
+
+  }
+
+  out <- EBImage::Image(data = array_out, colormode = EBImage::Color)
+
+  return(out)
+
+}
+
+
 
 
 
@@ -315,6 +432,73 @@ process_axis <- function(axis){
 
 }
 
+
+process_coords_df_sa <- function(coords_df,
+                                 variables,
+                                 core = TRUE,
+                                 periphery = TRUE,
+                                 bcs_exclude = NULL,
+                                 summarize_by = c("bins_angle", "bins_dist"),
+                                 format = "wide"){
+
+  # filter
+  if(base::isFALSE(core)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "core")
+
+  }
+
+  if(base::isFALSE(periphery)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "periphery")
+
+  }
+
+  if(base::is.character(bcs_exclude)){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
+
+  }
+
+  coords_df <- dplyr::filter(coords_df, rel_loc != "outside")
+
+  # summarize
+  smrd_df <-
+    dplyr::group_by(.data = coords_df, dplyr::pick({{summarize_by}})) %>%
+    dplyr::summarize(
+      dplyr::across(
+        .cols = dplyr::all_of(x = variables),
+        .fns = base::mean
+      )
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      dist = extract_bin_dist_val(bins_dist),
+      bins_dist = base::droplevels(bins_dist),
+      bins_order = base::as.numeric(bins_dist),
+      dplyr::across(
+        .cols = dplyr::all_of(variables),
+        .fns = confuns::normalize
+      )
+    ) %>%
+    dplyr::select(dplyr::starts_with("bins_"), dist, dplyr::everything())
+
+  # shift
+  if(format == "long"){
+
+    smrd_df <-
+      tidyr::pivot_longer(
+        data = smrd_df,
+        cols = dplyr::all_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      )
+
+  }
+
+  return(smrd_df)
+
+}
 
 #' @title Process expand input
 #' @return Returns always a list of length two. Two slots named h (height)
@@ -812,6 +996,167 @@ process_seurat_object <- function(seurat_object,
 }
 
 
+
+#' @title Process `spata2` object using `Seurat`
+#'
+#' @description A wrapper around the most essential processing functions
+#' of the `Seurat` package. A temporary `Seurat` object is created using the
+#' data from the `spata2` object and is processed. Then the processed
+#' data is transferred back to the `spata2` object.
+#'
+#' @inherit process_seurat_object params
+#' @inherit argument_dummy params
+#'
+#' @details By default this function computes a normalized, scaled data which
+#' is added to the processed matrices under the name *scaled*.
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+processWithSeurat <- function(object,
+                              NormalizeData = TRUE,
+                              FindVariableFeatures = TRUE,
+                              ScaleData = TRUE,
+                              RunPCA = list(npcs = 30),
+                              FindNeighbors = list(dims = 1:30),
+                              FindClusters = TRUE,
+                              overwrite = FALSE,
+                              verbose = TRUE){
+
+  seurat_object <-
+    Seurat::CreateSeuratObject(
+      counts = getCountMatrix(object),
+      assay = "RNA"
+    )
+
+  seurat_object <-
+    process_seurat_object(
+      seurat_object = seurat_object,
+      calculate_rb_and_mt = TRUE,
+      SCTransform = FALSE,
+      NormalizeData = NormalizeData,
+      FindVariableFeatures = FindVariableFeatures,
+      ScaleData = ScaleData,
+      RunPCA = RunPCA,
+      FindNeighbors = FindNeighbors,
+      FindClusters = FindClusters,
+      RunTSNE = FALSE,
+      RunUMAP = FALSE,
+      verbose = verbose
+    )
+
+
+  if(!base::isFALSE(ScaleData)){
+
+    # scaled matrix
+    object <-
+      setProcessedMatrix(
+        object = object,
+        proc_mtr = seurat_object@assays[["RNA"]]@scale.data,
+        name = "scaled"
+      )
+
+    object <- setActiveMatrix(object, mtr_name = "scaled")
+
+  }
+
+
+  if(!base::isFALSE(RunPCA)){
+
+    # principal components
+    pca_df <-
+      seurat_object@reductions$pca@cell.embeddings %>%
+      base::as.data.frame() %>%
+      tibble::rownames_to_column(var = "barcodes") %>%
+      tibble::as_tibble() %>%
+      dplyr::rename_with(.fn = ~ stringr::str_remove(.x, pattern = "_"))
+
+    object <- setPcaDf(object, pca_df = pca_df)
+
+  }
+
+  if(!base::isFALSE(FindClusters)){
+
+    # clusters and
+    meta_df <-
+      tibble::rownames_to_column(.data = seurat_object@meta.data, "barcodes")
+
+    if(base::isFALSE(overwrite)){
+
+      meta_df <-
+        dplyr::select(
+          .data = meta_df,
+          barcodes,
+          dplyr::everything(),
+          -dplyr::any_of(x = getFeatureNames(object))
+        )
+
+    }
+
+    if(base::ncol(meta_df) > 1){
+
+      object <-
+        addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
+
+    }
+
+  }
+
+  return(object)
+
+}
+
+
+#' @title Apply SCTransform
+#'
+#' @description Runs the pipeline suggested by [`Seurat::SCTransform()`] and
+#' extracts a matrix fromt he resulting assay object.
+#'
+#' @param slot The slot of the output assay in the `Seurat` object from where to
+#' take the matrix.
+#' @param name The name under which to store the matrix.
+#' @param exchange_counts Logical. If `TRUE`, the counts matrix of the `spata2`
+#' object is exchanged for the counts matrix in the output assay.
+#' @param ... Additional arguments given to `Seurat::SCTransform()`.
+#'
+#' @inherit update_dummy return
+#' @inherit argument_dummy params
+#'
+#' @export
+#'
+processWithSCT <- function(object,
+                           slot = "scale.data",
+                           name = "sct_scaled",
+                           exchange_counts = FALSE,
+                           ...){
+
+  seurat_object <-
+    Seurat::CreateSeuratObject(counts = getCountMatrix(object)) %>%
+    Seurat::SCTransform(object = ., assay = "RNA", new.assay.name = "SCT", ...)
+
+  if(base::isTRUE(exchange_counts)){
+
+    object <-
+      setCountMatrix(
+        object = object,
+        count_mtr = seurat_object[["SCT"]]@counts
+      )
+
+  }
+
+  object <-
+    setProcessedMatrix(
+      object = object,
+      proc_mtr = methods::slot(object = seurat_object[["SCT"]], name = slot),
+      name = name
+    )
+
+  object <- setActiveMatrix(object, mtr_name = name)
+
+  return(object)
+
+}
 
 # project -----------------------------------------------------------------
 

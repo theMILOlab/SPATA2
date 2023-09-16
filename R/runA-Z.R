@@ -1802,6 +1802,131 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 
 # runS --------------------------------------------------------------------
 
+#' @title Run spatial differential expression analysis
+#'
+#' @description This function conducts differential expression analysis (*DEA*)
+#' where data points are grouped based on their distance to a [SpatialAnnotation].
+#'
+#' @param interval Distance measure. The width of the spatial intervals in which
+#' the data points are grouped starting from the boundary of the spatial annotation
+#' till the edge of the tissue is reached.
+#' @param naming A [`glue::glue()`] instruction on how to create the name of the
+#' grouping variable.Providing a simple string without glue syntax works, too.
+#' @inherit getSpatialAnnotation params
+#' @inherit runDEA params
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @seealso [`createGroupAnnotations()`], [`createImageAnnotations()`],
+#' [`createNumericAnnotations()`] to create spatial annotations.
+#'
+#' The function [`getCoordsDfSA()`] relates data points to a spatial annotation.
+#' This information is used by `runSDEA()` to create the spatial grouping.
+#'
+#' [`plotDeaDotplot()`] to visualize results.
+#'
+#' @details This function bases on the concept of [`runDEA()`] where gene expression
+#' is compared across different groups within a grouping variable. However, in contrast to
+#' `runDEA()` where the grouping variable is denoted via `across`, the function [`runSDEA()`]
+#' creates a grouping variable in which data points are grouped based on their distance
+#' to a [`SpatialAnnotation`]. This approach aims to identify genes that are upregulated
+#' within certain distance intervals to the spatial annotation of interest. The spatial
+#' interval is defined via the argument `interval`. E.g. if `interval = 500um` data points
+#' are grouped in 500um intervals starting from the boundaries of the spatial annotation
+#' until the edge of the tissue is reached. The names of the groups correspond
+#' to the distance itself: *500um*, *1000um*, *1500um*, etc. If `interval = 0.5mm`, which
+#' is equivalent to 500um, the grouping will be the same but the group names correspond
+#' to *0.5mm*, *1mm*, *1.5mm*, etc. Data points that lie within the boundaries
+#' of the spatial annotation are assigned to group *core*.
+#'
+#' The grouping variable created this way is stored in the feature data.frame as
+#' any other grouping variable and the DEA results are stored in slot @dea as all
+#' other DEA results.
+#'
+#' @inheritSection section_dummy Distance measures
+#'
+#' @export
+#'
+runSDEA <- function(object,
+                    interval,
+                    id = idSA(object),
+                    naming = "sdea_{id}",
+                    method_de = "wilcox",
+                    base = 2,
+                    overwrite = FALSE,
+                    ...){
+
+  var_name <-
+    glue::glue(naming) %>%
+    base::as.character()
+
+  # get genes
+  genes <- getGenes(object)
+  genes <- genes[!genes %in% genes_rm]
+
+  spatial_parameters <-
+    check_sas_input(
+      distance = distToEdge(object, id = id),
+      binwidth = interval,
+      n_bins_dist = NA_integer_,
+      object = object,
+      verbose = FALSE
+    )
+
+  # which unit
+  unit <- extract_unit(interval)
+
+  sdea_groups <-
+    stringr::str_c(
+      extract_value(interval) * spatial_parameters$n_bins_dist,
+      extract_unit(interval)
+    )
+
+  sdea_levels <- c("core", sdea_groups)
+
+  # get grouping
+  coords_df <-
+    getCoordsDfSA(
+      object = object,
+      id = id,
+      distance = spatial_parameters$distance,
+      binwidth = spatial_parameters$binwidth,
+      dist_unit = unit,
+      verbose = FALSE
+    ) %>%
+    dplyr::mutate(
+      bins_sdea = extract_bin_dist_val(bins_dist, fn = "max"),
+      bins_sdea = stringr::str_c(bins_sdea, {{unit}}),
+      bins_sdea =
+        dplyr::case_when(
+          rel_loc == "core" ~ "core",
+          rel_loc == "outside" ~ "control",
+          TRUE ~ bins_sdea
+        ),
+      bins_sdea = base::factor(bins_sdea, levels = sdea_levels)
+    )
+
+  coords_df[[var_name]] <- coords_df$bins_sdea
+
+  object <-
+    addFeatures(
+      object = object,
+      feature_df = coords_df[,c("barcodes", var_name)],
+      overwrite = overwrite
+    )
+
+  object <- runDEA(object, across = var_name, method_de = method_de)
+
+  confuns::give_feedback(
+    msg = glue::glue("Added variable '{var_name}' and DEA results to the object."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
 #' @title Clustering with Seurat
 #'
 #' @description A wrapper around the Seurat clustering pipeline suggested by

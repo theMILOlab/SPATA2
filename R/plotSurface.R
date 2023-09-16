@@ -3,15 +3,21 @@
 #' @title Plot the surface of the sample
 #'
 #' @description Displays the spatial dimension of the sample and colors the
-#' surface according to the expression of genes, gene sets or features.
+#' surface according to the expression of genes, gene sets or features. There
+#' are methods for multiple classes:
 #'
 #' \itemize{
-#'
-#'  \item{ \code{plotSurface()} Takes the `SPATA2` object or a data.frame.}
-#'  \item{ \code{plotSurfaceInteractive()} Takes only the `SPATA2` object and opens a shiny
-#'  application which allows for interactive plotting.}
-#'
-#' }
+#'  \item{`spata2`:}{ The most versatile method with which all sorts of spatial
+#'  data can be visualized.}
+#'  \item{`data.frame`:}{ Method for a data.frame that contains at least the
+#'  variables *x* and *y*.}
+#'  \item{`SDEGS`:}{ Method to visualize the surface based on the set up with
+#'  which [`findSDEGS()`] was run.}
+#'  \item{[`SpatialAnnotationScreening`]:}{ Method to visualize the surface based
+#'  on the setup with which [`spatialAnnotationScreening()`] was run.}
+#'  \item{[`SpatialTrajectoryScreening`]:}{ Method to visualize the surface based
+#'  on the setup with which [`spatialAnnotationScreening()`] was run.}
+#'  }
 #'
 #' @inherit argument_dummy params
 #' @inherit check_color_to params
@@ -210,6 +216,25 @@ setMethod(
   }
 )
 
+#' @param clr_core,clr_control Colors with which to display data points that
+#' are part of the *core* group (inside the spatial annotation) and the *control*
+#' group (neither inside the annotation nor inside the distance intervals)
+#' @rdname plotSurface
+#' @export
+setMethod(
+  f = "plotSurface",
+  signature = "SDEGS",
+  function(object, pt_clrp = "inferno", clr_core = "tomato", clr_control = "lightgrey"){
+
+    plotSurface(
+      object = object@coordinates,
+      color_by = "bins_sdeg",
+      pt_clrp = pt_clrp,
+      clrp_adjust = c("core" = clr_core, "control" = clr_control)
+    )
+
+  }
+)
 
 
 # plotSurfaceA ------------------------------------------------------------

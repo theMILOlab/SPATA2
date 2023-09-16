@@ -4,6 +4,7 @@
 \alias{plotSurface}
 \alias{plotSurface,spata2-method}
 \alias{plotSurface,data.frame-method}
+\alias{plotSurface,SDEGS-method}
 \alias{plotSurfaceInteractive}
 \title{Plot the surface of the sample}
 \usage{
@@ -52,6 +53,13 @@ plotSurface(object, ...)
   order_desc = FALSE,
   na_rm = TRUE,
   ...
+)
+
+\S4method{plotSurface}{SDEGS}(
+  object,
+  pt_clrp = "inferno",
+  clr_core = "tomato",
+  clr_control = "lightgrey"
 )
 
 plotSurfaceInteractive(object)
@@ -151,19 +159,29 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
+\item{clr_core, clr_control}{Colors with which to display data points that
+are part of the \emph{core} group (inside the spatial annotation) and the \emph{control}
+group (neither inside the annotation nor inside the distance intervals)}
+
 \item{complete}{Logical. If the provided \code{SPATA2} object has been subsetted by
 \code{subsetBySegment()} the original sample is completed with grey barcode
 spots.}
 }
 \description{
 Displays the spatial dimension of the sample and colors the
-surface according to the expression of genes, gene sets or features.
+surface according to the expression of genes, gene sets or features. There
+are methods for multiple classes:
 
 \itemize{
-
-\item{ \code{plotSurface()} Takes the \code{SPATA2} object or a data.frame.}
-\item{ \code{plotSurfaceInteractive()} Takes only the \code{SPATA2} object and opens a shiny
-application which allows for interactive plotting.}
-
+\item{\code{spata2}:}{ The most versatile method with which all sorts of spatial
+data can be visualized.}
+\item{\code{data.frame}:}{ Method for a data.frame that contains at least the
+variables \emph{x} and \emph{y}.}
+\item{\code{SDEGS}:}{ Method to visualize the surface based on the set up with
+which \code{\link[=findSDEGS]{findSDEGS()}} was run.}
+\item{\code{\link{SpatialAnnotationScreening}}:}{ Method to visualize the surface based
+on the setup with which \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}} was run.}
+\item{\code{\link{SpatialTrajectoryScreening}}:}{ Method to visualize the surface based
+on the setup with which \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}} was run.}
 }
 }

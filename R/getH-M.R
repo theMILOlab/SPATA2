@@ -4,14 +4,190 @@
 # getH --------------------------------------------------------------------
 
 
+#' @title Obtain object of class `HistoImage`
+#'
+#' @description Extracts the S4-containers of registered images. Note that
+#' slot @@image might be empty. Use `loadImage()` in that case.
+#'
+#' \itemize{
+#'  \item{`getHistoImage()`:}{ Extracts object by name. If `img_name = NULL` the active `HistoImage` image is returned.}
+#'  \item{`getHistoImageActive()`:}{ Extracts the active `HistoImage` object.}
+#'  \item{`getHistoImageRef()`:}{ Extracts the reference `HistoImage` object.}
+#'  }
+#'
+#' @inherit argument_dummy params
+#' @param ...
+#'
+#' @export
 
+setGeneric(name = "getHistoImage", def = function(object, ...){
+
+  standardGeneric(f = "getHistoImage")
+
+})
+
+#' @rdname getHistoImage
+#' @export
+setMethod(
+  f = "getHistoImage",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, ...){
+
+    getHistoImaging(object) %>%
+      getHistoImage(object = ., img_name = img_name, ...)
+
+  }
+)
+
+#' @rdname getHistoImage
+#' @export
+setMethod(
+  f = "getHistoImage",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, ...){
+
+    if(base::is.null(img_name)){
+
+      out <- getHistoImageActive(object)
+
+    } else {
+
+      confuns::check_one_of(
+        input = img_name,
+        against = getImageNames(object),
+        ref.input = "registered histology images"
+      )
+
+      out <- object@images[[img_name]]
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getHistoImage
+#' @export
+setGeneric(name = "getHistoImageActive", def = function(object, ...){
+
+  standardGeneric(f = "getHistoImageActive")
+
+})
+
+#' @rdname getHistoImage
+#' @export
+setMethod(
+  f = "getHistoImageActive",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    out <-
+      purrr::keep(
+        .x = object@images,
+        .p = function(hist_img){
+
+          if(base::length(hist_img@active) == 0){
+
+            warning(glue::glue("Slot @active of HistoImage {hist_img@name} is empty."))
+
+            out <- FALSE
+
+          } else if(base::length(hist_img@active) > 1){
+
+            warning(glue::glue("Length of slot @active of HistoImage {hist_img@name} is > 1."))
+
+            out <- hist_img@active[1]
+
+          } else {
+
+            out <- hist_img@active
+
+          }
+
+          return(out)
+
+        }
+      )
+
+    if(base::length(out) > 1){
+
+      warning("More than one active image. Picking first one.")
+
+    } else if(base::length(out) == 0){
+
+      stop("No active image. Please specify `img_name` or activate an HistoImage with `activateImage()`.")
+
+    }
+
+    out[[1]]
+
+  })
+
+
+#' @rdname getHistoImage
+#' @export
+setGeneric(name = "getHistoImageRef", def = function(object, ...){
+
+  standardGeneric(f = "getHistoImageRef")
+
+})
+
+#' @rdname getHistoImage
+#' @export
+setMethod(
+  f = "getHistoImageRef",
+  signature = "spata2",
+  definition = function(object, ...){
+
+    getHistoImaging(object) %>%
+      getHistoImageRef()
+
+  }
+)
+
+#' @rdname getHistoImage
+#' @export
+setMethod(
+  f = "getHistoImageRef",
+  signature = "HistoImaging",
+  definition = function(object, ...){
+
+    object@images[[object@name_img_ref]]
+
+  }
+)
+
+#' @title Obtain object of class \code{HistoImaging}
+#'
+#' @description Extracts the S4-object used as a container for
+#' images.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Object of class \code{HistoImaging}.
+#'
+#' @note `getImageObject()` is deprecated as of version v3.0.0 in favor
+#' of `getHistoImaging()`.
+#'
+#' @seealso [`getImage()`],[`getHistoImage()`]
+#'
+#' @export
+#'
+getHistoImaging <- function(object){
+
+  containsHistoImaging(object, error = TRUE)
+
+  object@images[[1]]
+
+}
 
 # getI --------------------------------------------------------------------
 
-#' @title Calculate IAS bin area
+
+#' @title Calculate SAS bin area
 #'
-#' @description Computes the area circular bins of the IAS algorithm
-#' cover.
+#' @description Computes the area covered by each distance bin of the SAS algorithm.
 #'
 #' @param use_outline Logical value. If `TRUE`, uses the outline variable
 #' set with `setOutlineVarName()` or if none is set DBSCAN to identify the
@@ -30,22 +206,17 @@
 #'
 #' @return Data.frame in which each observation corresponds to a circular bin.
 #'
-#' @note If multiple tissue sections are located on the Visium slide use `createSpatialSegmentation()`
-#' to encircle each section and set the variable name in which you saved the
-#' encircling via `setOutlineVarName()`. Else the areas of the circle bins might
-#' include space that is not covered by tissue. This might distort computation
-#' results.
 #'
 #' @export
 #'
 getSasBinAreas <- function(object,
-                           id,
-                           distance = NA_integer_,
+                           area_unit,
+                           id = idSA(object),
+                           distance = distToEdge(object, id),
+                           binwidth = recBinwidth(object),
                            n_bins_dist = NA_integer_,
-                           binwidth = getCCD(object),
                            angle_span = c(0, 360),
                            n_bins_angle = 1,
-                           area_unit = NULL,
                            use_outline = TRUE,
                            remove_circle_bins = "Outside",
                            verbose = NULL){
@@ -58,80 +229,279 @@ getSasBinAreas <- function(object,
 
   }
 
-  ias_input <-
-    check_ias_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      object = object,
-      verbose = verbose
-    )
-
   area_scale_fct <-
     getPixelScaleFactor(object, unit = area_unit) %>%
     base::as.numeric()
 
-  pxl_df <- getPixelDf(object)
+  if(containsPseudoImage(object)){
+
+    stop("add pseudo logic")
+
+  } else {
+
+    coords_df <-
+      getPixelDf(object) %>%
+      dplyr::mutate(x = width, y = height)
+
+  }
 
   if(base::isTRUE(use_outline)){
 
-    outline_var <- getOutlineVarName(object)
+    containsTissueOutline(object, error = TRUE)
 
-    if(base::is.character(outline_var)){
-
-      coords_df <- getCoordsDf(object, features = outline_var)
-
-    } else {
-
-      coords_df <- getCoordsDf(object)
-
-    }
-
-    pxl_df <-
+    coords_df <-
       include_tissue_outline(
-        coords_df = coords_df,
-        input_df = pxl_df,
-        outline_var = outline_var,
-        spat_ann_center = getSpatAnnCenter(object, id),
-        ccd = getCCD(object, "px")
+        input_df = coords_df,
+        outline_df = getTissueOutlineDf(object),
+        spat_ann_center = getSpatAnnCenter(object, id)
       )
 
   }
 
-  out_df <-
-    bin_by_expansion(
-      coords_df = pxl_df,
-      area_df = getSpatAnnOutlineDf(object, ids = id),
-      binwidth = ias_input$binwidth,
-      n_bins_dist = ias_input$n_bins_dist,
-      remove = remove_circle_bins
-    ) %>%
-      bin_by_angle(
-        coords_df = .,
-        center = getSpatAnnCenter(object, id = id),
-        n_bins_angle = n_bins_angle,
-        angle_span = angle_span,
-        var_to_bin = "pixel",
-        verbose = FALSE
-      ) %>%
-      dplyr::group_by(bins_circle, bins_angle) %>%
-      dplyr::summarise(n_pixel = dplyr::n()) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(
-        id = {{id}},
-        area_scale_fct = {{area_scale_fct}},
-        area = n_pixel * area_scale_fct,
-        unit = area_unit,
-        bins_order =
-          dplyr::case_when(
-            bins_circle == "Core" ~ 0,
-            bins_circle == "Outside" ~ (base::max(ias_input$n_bins_dist)+1),
-            TRUE ~  base::as.numeric(stringr::str_extract(bins_circle, pattern = "\\d*$"))
-          )
-      ) %>%
-      dplyr::select(id, bins_circle, bins_order, bins_angle, dplyr::everything())
+  {
 
-  return(out_df)
+    input_list <-
+      check_sas_input(
+        distance = distance,
+        binwidth = binwidth,
+        n_bins_dist = n_bins_dist,
+        object = object,
+        verbose = verbose
+      )
+
+    distance <- input_list$distance
+    n_bins_dist <- input_list$n_bins_dist
+    binwidth  <- input_list$binwidth
+
+    angle_span <- c(from = angle_span[1], to = angle_span[2])
+    range_span <- base::range(angle_span)
+
+    if(angle_span[1] == angle_span[2]){
+
+      stop("Invalid input for argument `angle_span`. Must contain to different values.")
+
+    } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
+
+      stop("Input for argument `angle_span` must range from 0 to 360.")
+
+    }
+
+
+    # obtain required data ----------------------------------------------------
+
+    spat_ann <- getSpatialAnnotation(object, id = id)
+
+    outline_df <- getSpatAnnOutlineDf(object, id = id)
+
+    pixel_pos <-
+      sp::point.in.polygon(
+        point.x = coords_df$x,
+        point.y = coords_df$y,
+        pol.x = outline_df$x,
+        pol.y = outline_df$y
+      )
+
+    spat_ann_pxl <- coords_df[pixel_pos %in% c(1,2),][["pixel"]]
+
+    # distance ----------------------------------------------------------------
+
+    # increase number of vertices
+    avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
+
+    outline_df <-
+      increase_polygon_vertices(
+        polygon = outline_df[,c("x", "y")],
+        avg_dist = avg_dist/4
+      )
+
+    # compute distance to closest vertex
+    nn_out <-
+      RANN::nn2(
+        data = base::as.matrix(outline_df),
+        query = base::as.matrix(coords_df[,c("x", "y")]),
+        k = 1
+      )
+
+    coords_df$dist <- base::as.numeric(nn_out$nn.dists)
+    coords_df$dist[coords_df$pixel %in% spat_ann_pxl] <-
+      -coords_df$dist[coords_df$pixel %in% spat_ann_pxl]
+
+    # bin pos dist
+    coords_df_pos <-
+      dplyr::filter(coords_df, dist >= 0) %>%
+      dplyr::mutate(bins_dist = make_bins(dist, binwidth = {{binwidth}}))
+
+    # bin neg dist
+    coords_df_neg <-
+      dplyr::filter(coords_df, dist < 0) %>%
+      dplyr::mutate(
+        bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE))
+
+    # merge
+    new_levels <-
+      c(
+        base::levels(coords_df_neg$bins_dist),
+        base::levels(coords_df_pos$bins_dist),
+        "Outside"
+      )
+
+    coords_df_merged <-
+      base::rbind(coords_df_neg, coords_df_pos) %>%
+      dplyr::mutate(
+        bins_dist = base::as.character(bins_dist),
+        bins_dist =
+          dplyr::case_when(
+            dist > {{distance}} ~ "Outside",
+            TRUE ~ bins_dist
+          ),
+        bins_dist = base::factor(bins_dist, levels = new_levels),
+        rel_loc = dplyr::if_else(dist < 0, true = "Core", false = "Periphery")
+      )
+
+    # angle -------------------------------------------------------------------
+
+    center <- getSpatAnnCenter(object, id = id)
+
+    from <- angle_span[1]
+    to <- angle_span[2]
+
+    confuns::give_feedback(
+      msg = glue::glue("Including area between {from}° and {to}°."),
+      verbose = verbose
+    )
+
+    prel_angle_df <-
+      dplyr::group_by(.data = coords_df_merged, pixel) %>%
+      dplyr::mutate(
+        angle = compute_angle_between_two_points(
+          p1 = c(x = x, y = y),
+          p2 = center
+        )
+      ) %>%
+      dplyr::ungroup()
+
+    # create angle bins
+    if(angle_span[["from"]] > angle_span[["to"]]){
+
+      range_vec <- c(
+        angle_span[["from"]]:360,
+        0:angle_span[["to"]]
+      )
+
+      nth <- base::floor(base::length(range_vec)/n_bins_angle)
+
+      bin_list <- base::vector(mode = "list", length = n_bins_angle)
+
+      for(i in 1:n_bins_angle){
+
+        if(i == 1){
+
+          sub <- 1:nth
+
+        } else {
+
+          sub <- ((nth*(i-1))+1):(nth*i)
+
+        }
+
+        bin_list[[i]] <- range_vec[sub]
+
+      }
+
+      if(base::any(base::is.na(bin_list[[n_bins_angle]]))){
+
+        bin_list[[(n_bins_angle)-1]] <-
+          c(bin_list[[(n_bins_angle-1)]], bin_list[[n_bins_angle]]) %>%
+          rm_na()
+
+        bin_list[[n_bins_angle]] <- NULL
+
+      }
+
+      all_vals <- purrr::flatten_dbl(bin_list)
+
+      bin_list[[n_bins_angle]] <-
+        c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
+
+      prel_angle_bin_df <-
+        dplyr::ungroup(prel_angle_df) %>%
+        dplyr::filter(base::round(angle) %in% range_vec) %>%
+        dplyr::mutate(
+          angle_round = base::round(angle),
+          bins_angle = ""
+        )
+
+      bin_names <- base::character(n_bins_angle)
+
+      for(i in base::seq_along(bin_list)){
+
+        angles <- bin_list[[i]]
+
+        bin_names[i] <-
+          stringr::str_c(
+            "[", angles[1], ",", utils::tail(angles,1), "]"
+          )
+
+        prel_angle_bin_df[prel_angle_bin_df$angle_round %in% angles, "bins_angle"] <-
+          bin_names[i]
+
+      }
+
+      prel_angle_bin_df$angle_round <- NULL
+
+      prel_angle_bin_df$bins_angle <-
+        base::factor(
+          x = prel_angle_bin_df$bins_angle,
+          levels = bin_names
+        )
+
+    } else {
+
+      range_vec <- range_span[1]:range_span[2]
+
+      sub <-
+        base::seq(
+          from = 1,
+          to = base::length(range_vec),
+          length.out = n_bins_angle+1
+        ) %>%
+        base::round()
+
+      breaks <- range_vec[sub]
+
+      prel_angle_bin_df <-
+        dplyr::ungroup(prel_angle_df) %>%
+        dplyr::filter(base::round(angle) %in% range_vec) %>%
+        dplyr::mutate(
+          bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
+        )
+
+    }
+
+    sas_df <- prel_angle_bin_df
+
+    # relative location
+    sas_df <-
+      dplyr::mutate(
+        .data = sas_df,
+        rel_loc = dplyr::case_when(
+          dist > {{distance}} ~ "Outside",
+          !base::round(angle) %in% range_vec ~ "Outside",
+          TRUE ~ rel_loc
+        )
+      )
+
+  }
+
+  area_df <-
+    dplyr::group_by(sas_df, bins_dist, bins_angle) %>%
+    dplyr::tally() %>%
+    dplyr::mutate(
+      area = n * area_scale_fct,
+      unit = {{area_unit}}
+      )
+
+  return(area_df)
 
 }
 
@@ -211,9 +581,9 @@ getSasDf <- function(object,
                      n_bins_angle = 1,
                      variables = NULL,
                      method_gs = NULL,
-                     summarize_by = c("bins_angle", "bins_dist"),
                      core = TRUE,
                      periphery = TRUE,
+                     summarize_by = c("bins_circle", "bins_angle"),
                      bcs_exclude = NULL,
                      verbose = FALSE,
                      ...){
@@ -245,6 +615,7 @@ getSasDf <- function(object,
       }
     )
 
+  # average the expression of multiple ids
   if(base::length(id) > 1){
 
     sas_df <-
@@ -382,402 +753,721 @@ getSpatialAnnotationScreeningDf <- function(...){
 
 # getImage ----------------------------------------------------------------
 
-
-
-#' @title Obtain spatial annotation summary
+#' @title Obtain `Image` object
 #'
-#' @description Extracts information about spatial annotations in a
-#' data.frame.
+#' @description Extracts the image as an object of class `Image`
+#' as specified in the package `EBImage`.
 #'
-#' @param area Logical. If `TRUE`, the area of each spatial annotation
-#' is added in a variable named *area*.
-#' @param unit_area The unit of the *area* variable.
-#' @param center Logical. If `TRUE`, two variables named *center_x* and
-#' *center_y* area added providing the center coordinates of the image
-#' annotation.
-#' @param unit_center The unit of the center variables.
-#' @param genes Character value or `NULL`. If character, the gene expression
-#' of the named genes is summarized among all barcode spots that fall in the
-#' area of the spatial annotation and are added as a variable.
-#' @param summarize_with Character value. The summarizing function with
-#' which the gene expression values are summarized.
-#' @param tags_to_lgl Logical. If `TRUE`, tag information is displayed in logical
-#' variables where each variable is named like one of the unique tags and
-#' every value is either `TRUE` if the annotation cotnains the tag or `FALSE`
-#' if not.
-#' @param tags_keep Logical. If `TRUE`, variable *tags* is not removed if
-#' `tags_to_lgl` is `TRUE`.
-#'
-#' @inherit getSpatialAnnotations params
 #' @inherit argument_dummy params
+#' @inherit check_sample params
 #'
-#' @inheritSection section_dummy Selection of spatial annotations
+#' @return Object of class `Image`.
 #'
-#' @return Data.frame in which each row corresponds to an spatial annotation identified
-#' by the variable *id*.
+#' @seealso [`getHistoImage()`],[`getHistoImaging()`]
 #'
 #' @export
-#'
-getSpatAnnSummaryDf <- function(object,
-                               ids = NULL,
-                               area = TRUE,
-                               unit_area = "mm2",
-                               center = TRUE,
-                               unit_center = "px",
-                               genes = NULL,
-                               summarize_with = "mean",
-                               tags_to_lgl = TRUE,
-                               tags_keep = FALSE,
-                               verbose = NULL){
 
-  hlpr_assign_arguments(object)
+setGeneric(name = "getImage", def = function(object, ...){
 
-  if(base::is.character(ids)){
+  standardGeneric(f = "getImage")
 
-    confuns::check_one_of(
-      input = ids,
-      against = getSpatAnnIds(object)
-    )
+})
 
-  } else {
+#' @rdname getImage
+#' @export
+setMethod(
+  f = "getImage",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        xrange = NULL,
+                        yrange = NULL,
+                        expand = 0,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        ...){
 
-    ids <- getSpatAnnIds(object)
+    deprecated(...)
 
-  }
+    containsPseudoImage(object, error = TRUE)
 
+    feedback_range_input(xrange = xrange, yrange = yrange)
 
-  confuns::check_one_of(
-    input = unit_area,
-    against = validUnitsOfArea()
-  )
-
-  confuns::check_one_of(
-    input = unit_center,
-    against = validUnitsOfLength()
-  )
-
-  if(base::is.character(genes)){
-
-    gene_df <-
-      joinWith(
-        object = object,
-        spata_df = getSpataDf(object),
-        genes = genes,
-        smooth = FALSE,
-        verbose = verbose
+    out <-
+      getHistoImaging(object) %>%
+      getImage(
+        object = .,
+        img_name = img_name,
+        transform = transform,
+        xrange = xrange,
+        yrange = yrange,
+        expand = expand,
+        scale_fct = scale_fct
       )
 
+    return(out)
+
   }
+)
 
+#' @rdname getImage
+#' @export
+setMethod(
+  f = "getImage",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        xrange = NULL,
+                        yrange = NULL,
+                        expand = 0,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        ...){
 
-  prel_df <-
-    purrr::map_df(
-      .x = ids,
-      .f = function(id){
+    containsPseudoImage(object, error = TRUE)
 
-        spat_ann <-
-          getSpatialAnnotation(
-            object = object,
-            id = id,
-            add_barcodes = TRUE,
-            add_image = FALSE
-          )
-
-        df <-
-          tibble::tibble(
-            id = spat_ann@id,
-            parent_id = spat_ann@info$parent_id,
-            parent_origin = spat_ann@info$parent_origin
-          )
-
-        if(base::isTRUE(center)){
-
-          center_pos <-
-            getSpatAnnCenter(object, id = id) %>%
-            as_unit(input = ., unit = unit_center, object = object)
-
-          df$center_x <- center_pos["x"]
-          df$center_y <- center_pos["y"]
-
-        }
-
-        df$tags <- stringr::str_c(spat_ann@tags, collapse = "|")
-
-        if(base::is.character(genes)){
-
-          smrd_df <-
-            dplyr::filter(gene_df, barcodes %in% spat_ann@misc$barcodes) %>%
-            dplyr::summarise(
-              dplyr::across(
-                .cols = dplyr::all_of(genes),
-                .fns = summarize_formulas[[summarize_with]]
-              )
-            )
-
-          df <-
-            base::cbind(df, smrd_df) %>%
-            tibble::as_tibble()
-
-        }
-
-        return(df)
-
-      }
+    getImage(
+      object = getHistoImage(object, img_name),
+      xrange = xrange,
+      yrange = yrange,
+      expand = expand,
+      transform = transform,
+      scale_fct = scale_fct
     )
 
-  # add area measure
-  if(base::isTRUE(area)){
+  }
+)
 
-    area_df <-
-      getSpatAnnArea(
-        object = object,
-        ids = ids,
-        unit = unit_area
-      ) %>%
-      base::as.data.frame() %>%
-      tibble::rownames_to_column(var = "id") %>%
-      magrittr::set_colnames(value = c("id", "area"))
+#' @rdname getImage
+#' @export
+setMethod(
+  f = "getImage",
+  signature = "HistoImage",
+  definition = function(object,
+                        xrange = NULL,
+                        yrange = NULL,
+                        expand = 0,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        ...){
 
-    prel_df <-
-      dplyr::left_join(
-        x = prel_df,
-        y = area_df,
-        by = "id"
-      ) %>%
-      dplyr::select(
-        id, parent_id, parent_origin, dplyr::any_of(c("center_x", "center_y")),
-        area,
-        dplyr::everything()
+    if(!containsImage(object)){
+
+      object <- loadImage(object, verbose = TRUE)
+
+      rlang::warn(
+        message = glue::glue("To avoid loading frequently required images every function call anew,
+          you can utilize the `loadImage(..., img_name = '{object@name}')` function."),
+        .frequency = "once",
+        .frequency_id = "hint_loadImage"
       )
 
-  }
+    }
 
-  # shift tags
-  if(base::isTRUE(tags_to_lgl)){
+    image <- object@image
 
-    all_tags <-
-      stringr::str_c(prel_df$tags, collapse = "|") %>%
-      stringr::str_split(pattern = "\\|") %>%
-      purrr::flatten_chr() %>%
-      base::unique()
+    if(base::isTRUE(transform)){
 
-    for(tag in all_tags){
-
-      prel_df[[tag]] <- FALSE
-
-      prel_df <-
-        dplyr::mutate(
-          .data = prel_df,
-          {{tag}} := stringr::str_detect(string = tags, pattern = tag)
+      image <-
+        transform_image(
+          image = image,
+          transformations = object@transformations,
+          bg_col = getBackgroundColor(object, default = "white")
         )
 
     }
 
-  }
+    if(!base::is.null(xrange) | !base::is.null(yrange)){
 
-  if(base::isTRUE(tags_keep)){
+      if(base::is.null(xrange)){ xrange <- 1:base::dim(image)[1] }
 
-    out <- prel_df
+      if(base::is.null(yrange)){ yrange <- 1:base::dim(image)[2] }
 
-  } else {
+      range_list <-
+        process_ranges(
+          xrange = xrange,
+          yrange = yrange,
+          expand = expand,
+          object = object
+        )
 
-    out <- dplyr::select(prel_df, -tags)
+      xmin <- range_list$xmin
+      xmax <- range_list$xmax
+      ymin <- range_list$ymin
+      ymax <- range_list$ymax
 
-  }
+      if(base::length(base::dim(image)) == 3){
 
-  return(out)
+        image <- image[xmin:xmax, , ]
+        image <- image[, ymin:ymax, ]
 
-}
+      } else if(base::length(base::dim(image))== 2){
 
+        image <- image[xmin:xmax, ]
+        image <- image[, ymin:ymax]
 
-
-
-
-#' @rdname getImageDirLowres
-#' @export
-getImageDir <- function(object, name){
-
-  io <- getHistoImaging(object)
-
-  if(name %in% c("default", "highres", "lowres")){
-
-    out <- methods::slot(io, name = stringr::str_c("dir_", name))
-
-  } else {
-
-    if(base::length(io@dir_add) == 0){
-
-      stop("No additional image directories found.")
-
-    } else {
-
-      confuns::check_one_of(
-        input = name,
-        against = base::names(io@dir_add),
-        ref.opt.2 = "additional image directories",
-        fdb.opt = 2
-      )
+      }
 
     }
 
-    out <- io@dir_add[[name]]
+    # scale
+    if(scale_fct != 1){
 
-  }
+      image <-
+        EBImage::resize(
+          x = image,
+          w = base::dim(image)[1] * scale_fct,
+          h = base::dim(image)[2] * scale_fct
+        )
 
-  return(out)
+    }
 
-}
+    return(image)
 
-#' @rdname getImageDirLowres
-#' @export
-getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){
-
-  dir_default <- getHistoImaging(object)@dir_default
-
-  if(base::length(dir_default) == 0 || base::is.na(dir_default)){
-
-    msg <- "Could not find directory to default image. Set with `setImageDirDefault()`."
-
-    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
-
-  }
-
-  if(base::isTRUE(check)){
-
-    confuns::check_directories(directories = dir_default, type = "files")
-
-  }
-
-  return(dir_default)
-
-}
+  })
 
 
-#' @rdname getImageDirLowres
-#' @export
-getImageDirectories <- function(object){
-
-  io <- getHistoImaging(object)
-
-  c(
-    "default" = io@dir_default,
-    "lowres" = io@dir_lowres,
-    "highres" = io@dir_highres,
-    purrr::map_chr(
-      .x = io@dir_add,
-      .f = ~ .x
-    )
-  )
-
-}
-
-
-#' @rdname getImageDirLowres
-#' @export
-getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
-
-  dir_highres <- getHistoImaging(object)@dir_highres
-
-  if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
-
-    msg <- "Could not find directory to high resolution image. Set with `setImageDirHighres()`."
-
-    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
-
-  }
-
-  if(base::isTRUE(check)){
-
-    confuns::check_directories(directories = dir_highres, type = "files")
-
-  }
-
-  return(dir_highres)
-
-}
-
-
-#' @title Obtain image directories
+#' @title Obtain image center
 #'
-#' @description Extracts image directories known to the `SPATA2` object.
-#'
-#' @param check Logical value. If `TRUE`, it is checked if the file actually exists.
-#' @param name Character value. The name of the image of interest. Should be one
-#' of Get
+#' @description Computes and extracts center of the image frame.
 #'
 #' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+setGeneric(name = "getImageCenter", def = function(object, ...){
+
+  standardGeneric(f = "getImageCenter")
+
+})
+
+#' @rdname getImageCenter
+#' @export
+setMethod(
+  f = "getImageCenter",
+  signature = "spata2",
+  definition = function(object){
+
+    getImageRange(object) %>%
+      purrr::map_dbl(.f = base::mean)
+
+  }
+)
+
+#' @rdname getImageCenter
+#' @export
+setMethod(
+  f = "getImageCenter",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL){
+
+    hi <- getHistoImage(object, img_name = img_name)
+
+    getImageRange(hi) %>%
+      purrr::map_dbl(.f =)
+
+  }
+)
+
+#' @rdname getImageCenter
+#' @export
+setMethod(
+  f = "getImageCenter",
+  signature = "HistoImage",
+  definition = function(object){
+
+    getImageRange(object) %>%
+      purrr::map_dbl(.f = base::mean)
+
+  }
+)
+
+#' @title Obtain image as a data.frame
+#'
+#' @description Extracts a data.frame in which each row corresponds
+#' to a pixel in the image. (Faster than `getPixelDf()`, though without
+#' any further options.)
+#'
+#' @param rescale_axes Logical value. If `TRUE`, rescales the pixel positions
+#' (height/width) to the position in the original image.
+#'
+#' The image annotation contains a crop of the original image that only shows
+#' the area of the image annotation (plus `expand`, see [`getSpatialAnnotation()`]).
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame with three variables.
+#'
+#'  \itemize{
+#'   \item{*width*:}{ Numeric. Width value of the pixel (position on horizontal axis).}
+#'   \item{*height*:}{ Numeric. Height value of the pixel (position on vertical axis).}
+#'   \item{*color*:}{ Character. HEX-code of the color the pixel carries.}
+#'   }
+#'
+#' @seealso [`getPixelDf()`]
+#'
+#' @export
+#'
+setGeneric(name = "getImageDf", def = function(object, ...){
+
+  standardGeneric(f = "getImageDf")
+
+})
+
+#' @rdname getImageDf
+#' @export
+setMethod(
+  f = "getImageDf",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, transform = TRUE, scale_fct = 1, ...){
+
+    getImageDf(
+      object = getHistoImaging(object),
+      img_name = img_name,
+      transform = transform,
+      scale_fct = scale_fct
+    )
+
+  }
+)
+
+#' @rdname getImageDf
+#' @export
+setMethod(
+  f = "getImageDf",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, transform = TRUE, scale_fct = 1){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getImageDf(object = ., transform = transform, scale_fct = scale_fct)
+
+  }
+)
+
+#' @rdname getImageDf
+#' @export
+setMethod(
+  f = "getImageDf",
+  signature = "HistoImage",
+  definition = function(object, transform = TRUE, scale_fct = 1){
+
+    getImage(object, transform = transform) %>%
+      getImageDf(object = ., scale_fct = scale_fct)
+
+  }
+)
+
+#' @rdname getImageDf
+#' @export
+setMethod(
+  f = "getImageDf",
+  signature = "SpatialAnnotation",
+  definition = function(object, rescale_axes = TRUE, scale_fct = 1){
+
+    containsImage(object, error = TRUE)
+
+    out <-
+      getImageDf(object = object@image, scale_fct = scale_fct)
+
+    if(base::isTRUE(rescale_axes)){
+
+      info_list <- object@image_info
+
+      toX <- c(info_list$xmin, info_list$xmax)
+      toY <- c(info_list$ymin, info_list$ymax)
+
+      range(out$width)
+
+      out$width <- scales::rescale(out$width, to = toX)
+      out$height <- scales::rescale(out$height, to = toY)
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getImageDf
+#' @export
+setMethod(
+  f = "getImageDf",
+  signature = "Image",
+  definition = function(object, scale_fct = 1){
+
+    out <-
+      scale_image(image = object, scale_fct = scale_fct) %>%
+      # account for changes in dimension after raster transformation
+      EBImage::transpose() %>%
+      # transform to raster
+      grDevices::as.raster(x = .) %>%
+      base::as.matrix() %>%
+      reshape2::melt() %>%
+      magrittr::set_colnames(c("width", "height", "color")) %>%
+      tibble::as_tibble()
+
+    return(out)
+
+  }
+)
+
+
+
+#' @title Obtain image dimensions/ranges
+#'
+#' @description Extracts information regarding the image.
+#'
+#' \itemize{
+#'  \item{`getImageDims()`:}{ Extracts dimensions of the image, namely width, height and depth.}
+#'  \item{`getImageRange()`:} Extracts range of the image axis.
+#'  }
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Similar output, different data structure:
+#'
+#' \itemize{
+#'  \item{`getImageDims()`:}{ Vector of length three: image width, image height, image depth}
+#'  \item{`getImageRange()`:}{ Named list, names are *x* and *y*. Each slot contains a
+#'  vector of length two that describes the range of the x- and y-axis.}
+#' }
+#'
+#' @details In case of confusion due to overlapping naming conventions: X-axis,
+#' x and x-range in terms of coordinates, corresponds to image width in terms of
+#' image analysis. Y-axis, y  and y-range, in terms of coordinates, refers to
+#' image-height in terms of image analysis. `SPATA2` primarily uses coordinates
+#' naming convention.
+#'
+#' @export
+setGeneric(name = "getImageDims", def = function(object, ...){
+
+  standardGeneric(f = "getImageDims")
+
+})
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageDims",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, ...){
+
+    deprecated(...)
+
+    getHistoImaging(object) %>%
+      getImageDims(object = ., img_name = img_name)
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageDims",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, ...){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getImageDims()
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageDims",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    object@image_info$dims
+
+  }
+)
+
+
+
+
+
+#' @title Obtain image origin
+#'
+#' @description Extracts the origin of the image that is currently set.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Either a directory or *Global.Env.* if it was read in from
+#' the global environment.
+#'
+getImageOrigin <- function(object){
+
+  io <- getImageObject(object)
+
+  io@image_info$origin
+
+}
+
+
+#' @rdname getImageDims
+#' @export
+setGeneric(name = "getImageRange", def = function(object, ...){
+
+  standardGeneric(f = "getImageRange")
+
+})
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageRange",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, ...){
+
+    deprecated(...)
+
+    getHistoImaging(object) %>%
+      getImageRange(object = ., img_name = img_name)
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageRange",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getImageRange()
+
+  }
+)
+
+#' @rdname getImageDims
+#' @export
+setMethod(
+  f = "getImageRange",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    deprecated(...)
+
+    out <- list()
+
+    img_dims <- getImageDims(object, ...)
+
+    out$x <- c(1,img_dims[[1]])
+    out$y <- c(1,img_dims[[2]])
+
+    return(out)
+
+  }
+)
+
+
+#' @title Obtain image raster-(information)
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+
+setGeneric(name = "getImageRaster", def = function(object, ...){
+
+  standardGeneric(f = "getImageRaster")
+
+})
+
+#' @rdname getImageRaster
+#' @export
+setMethod(
+  f = "getImageRaster",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        transform = TRUE,
+                        xrange = NULL,
+                        yrange = NULL,
+                        expand = 0){
+
+    img <-
+      getImage(
+        object = object,
+        img_name = img_name,
+        transform = transform,
+        xrange = xrange,
+        yrange = yrange,
+        expand = expand
+      ) %>%
+      # flip to visualize in x and y space
+      EBImage::flip() %>%
+      grDevices::as.raster()
+
+    return(img)
+
+  }
+)
+
+#' @rdname getImageRaster
+#' @export
+setMethod(
+  f = "getImageRaster",
+  signature = "HistoImage",
+  definition = function(object, xrange = NULL, yrange = NULL, expand = 0){
+
+    getImage(
+      object = object,
+      xrange = xrange,
+      yrange = yrange,
+      expand = expand
+    ) %>%
+      # flip to visualize in x and y space
+      EBImage::flip() %>%
+      grDevices::as.raster()
+
+  }
+)
+
+
+#' @rdname getImageRaster
+#' @export
+getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
+
+  getImageRaster(object, xrange = xrange, yrange = yrange) %>%
+    magick::image_info()
+
+}
+
+#' @title Obtain image transformation instructions
+#'
+#' @description Extracts a list that contains information regarding required
+#' image transformations to ensure alignment.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A list with the following structure:
+#'  \itemize{
+#'   \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
+#'  b y which the image needs to be rotated in **clockwise** direction. Defaults to 0.}
+#'   \item{*flip*:}{ List of two logical values named *horizontal* and *vertical*. Both default to `FALSE`}
+#'   \item{*scale*:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
+#'   \item{*translate*:}{ Vector of two numeric values named *horizontal* and *vertical*. Indicate
+#'   the number of pixels the image needs to be translated. Positive values shift the image
+#'   **downwards** or to the right, respectively. Negative values shift the image **upwards**
+#'   or to the left, respectively. Both default to 0.}
+#'  }
+#' @export
+
+setGeneric(name = "getImageTransformations", def = function(object, ...){
+
+  standardGeneric(f = "getImageTransformations")
+
+})
+
+#' @rdname getImageTransformations
+#' @export
+setMethod(
+  f = "getImageTransformations",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, ...){
+
+    getHistoImaging(object) %>%
+      getImageTransformations(object = ., img_name = img_name)
+
+  }
+)
+
+#' @rdname getImageTransformations
+#' @export
+setMethod(
+  f = "getImageTransformations",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, ...){
+
+    getHistoImaging(object) %>%
+      getImageTransformations(object = ., img_name = img_name)
+
+  }
+)
+
+#' @rdname getImageTransformations
+#' @export
+setMethod(
+  f = "getImageTransformations",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, ...){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getImageTransformations()
+
+  }
+)
+
+#' @rdname getImageTransformations
+#' @export
+setMethod(
+  f = "getImageTransformations",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    object@transformations
+
+  }
+)
+
+
+
+
+#' @title Obtain names of registered `HistoImage` objects
+#'
+#' @description Extracts the names of the `HistoImage` objects currently
+#' registered in the object.
+#'
+#' @inherit argument_dummy params
+#' @param ref Logical value. If `FALSE`, name of the reference image is not
+#' included.
 #'
 #' @return Character vector.
-#'
-#' @details `getImageDirectories()` returns all image directories known to
-#' the `SPATA2` object. `getImageDirLowres()`, `getImageDirHighres()` and
-#' `getImageDirDefault()` return the directories of the respective slot of
-#' the `HistoImaging` object. `getImageDir()` extracts specific directories
-#' that were set with `setImageDir()` by name.
-#'
-#' @seealso [`setImageDir()`] to set specific image directories. [`loadImage()`],
-#' [`loadImageHighres()`], [`loadImageLowres()`], [`loadImageDefault()`] to
-#' exchange images.
-#'
 #' @export
-#'
-getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
+setGeneric(name = "getImageNames", def = function(object, ...){
 
-  dir_lowres <- getHistoImaging(object)@dir_lowres
+  standardGeneric(f = "getImageNames")
 
-  if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
+})
 
-    msg <- "Could not find directory to low resolution image. Set with `setImageDirLowres()`."
+#' @rdname getImageNames
+#' @export
+setMethod(
+  f = "getImageNames",
+  signature = "spata2",
+  definition = function(object, ref = TRUE, ...){
 
-    confuns::give_feedback(msg = msg, fdb.fn = fdb_fn, with.time = FALSE)
+    getHistoImaging(object) %>%
+      getImageNames(object, ref = ref)
 
   }
+)
 
-  if(base::isTRUE(check)){
+#' @rdname getImageNames
+#' @export
+setMethod(
+  f = "getImageNames",
+  signature = "HistoImaging",
+  definition = function(object, ref = TRUE, ...){
 
-    confuns::check_directories(directories = dir_lowres, type = "files")
+    out <-
+      purrr::discard(object@images, .p = ~ .x@reference) %>%
+      base::names()
+
+    if(base::isTRUE(ref)){
+
+      out <- c(object@name_img_ref, out)
+
+    }
+
+    return(out)
 
   }
-
-  return(dir_lowres)
-
-}
-
-
-#' @title Obatain image information
-#'
-#' @description Extracts a list of information about the currently set
-#' image.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return List that contains information of slots @@image_info and @@justification
-#' of the `HistoImaging` object.
-#' @export
-#'
-getImageInfo <- function(object){
-
-  io <- getHistoImaging(object)
-
-  c(
-    io@image_info,
-    io@justification
-  )
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+)
 
 
 #' @title Obtain image sections by barcode spot

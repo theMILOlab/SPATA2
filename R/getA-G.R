@@ -1,5 +1,48 @@
 # getA --------------------------------------------------------------------
 
+#' @title Obtain name of active content
+#'
+#' @description Gets the name of currently active content in the object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+setGeneric(name = "getActive", def = function(object, ...){
+
+  standardGeneric(f = "getActive")
+
+})
+
+#' @rdname getActive
+#' @export
+setMethod(
+  f = "getActive",
+  signature = "spata2",
+  definition = function(object, what){
+
+    confuns::check_one_of(
+      input = what,
+      against = c("image"),
+      ref.against = "content that can be (de-)activated"
+    )
+
+    if(what == "image"){
+
+      x <-
+        getHistoImaging(object) %>%
+        getHistoImageActive(object = .)
+
+      out <- x@name
+
+    }
+
+    return(out)
+
+  })
+
+
 #' @title Obtain name of currently active data matrix
 #'
 #' @inherit check_sample params
@@ -107,6 +150,74 @@ getAutoencoderSetUp <- function(object, mtr_name, of_sample = NA){
 
 
 # getB --------------------------------------------------------------------
+
+
+#' @title Obtain background color
+#'
+#' @description Extracts results of [`identifyBackgroundColor()`].
+#'
+#' @param default Color to default to if no background color is set.
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+setGeneric(name = "getBackgroundColor", def = function(object, ...){
+
+  standardGeneric(f = "getBackgroundColor")
+
+})
+
+#' @rdname getBackgroundColor
+#' @export
+setMethod(
+  f = "getBackgroundColor",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, default = "white", ...){
+
+
+    getHistoImaging(object) %>%
+      getBackgroundColor(object = ., img_name = img_name, default = default)
+
+  }
+)
+
+#' @rdname getBackgroundColor
+#' @export
+setMethod(
+  f = "getBackgroundColor",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, default = "white", ...){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getBackgroundColor(object = ., default = default)
+
+  }
+)
+
+#' @rdname getBackgroundColor
+#' @export
+setMethod(
+  f = "getBackgroundColor",
+  signature = "HistoImage",
+  definition = function(object, default = "white"){
+
+    bg_col <- object@bg_color
+
+    if(base::length(bg_col) == 0){
+
+      if(base::is.character(default)){
+
+        bg_col <- default
+
+      }
+
+    }
+
+    return(bg_col)
+
+  }
+)
 
 #' @title Obtain specific barcodes
 #'
@@ -388,6 +499,128 @@ getBarcodeSpotDistances <- function(object,
 
 # getC --------------------------------------------------------------------
 
+#' @title Obtain capture area
+#'
+#' @description Extracts the frame in which data points are plotted
+#' by default.
+#'
+#' @param unit If character, forces the output unit of the capture area.
+#' @inherit argument_dummy params
+#'
+#' @return List of two length two vectors named *x* and *y*. Values correspond
+#' to the range of the capture area along the respective axis.
+#'
+#' @seealso [`setCaptureArea()`]
+#'
+#' @export
+
+getCaptureArea <- function(object, unit = NULL){
+
+  ca <- getSpatialMethod(object)@capture_area
+
+  if(base::is.character(unit)){
+
+    ca <- purrr::map(.x = ca, .f = ~ as_unit(input = .x, unit = unit, object = object))
+
+  }
+
+  return(ca)
+
+}
+
+
+
+#' @title Obtain center to center distance
+#'
+#' @description Extracts the center to center distance from
+#' barcode-spots depending on the method used.
+#'
+#' @inherit argument_dummy params
+#' @param unit Character value or \code{NULL}. If character, specifies
+#' the unit in which the distance is supposed to be returned.
+#' Use \code{validUnitsOfLength()} to obtain  all valid input options.
+#'
+#' @return Character value.
+#' @export
+#'
+
+setGeneric(name = "getCCD", def = function(object, ...){
+
+  standardGeneric(f = "getCCD")
+
+})
+
+#' @rdname getCCD
+#' @export
+setMethod(
+  f = "getCCD",
+  signature = "spata2",
+  definition = function(object,
+                        unit = NULL,
+                        as_numeric = FALSE,
+                        round = FALSE){
+
+    check_object(object)
+
+    method <- getSpatialMethod(object)
+
+    ccd <- method@method_specifics[["ccd"]]
+
+    if(base::is.null(ccd)){
+
+      stop(glue::glue("No center to center distance found for method {method@name}. Set manually with `setCCD()`."))
+
+    }
+
+    ccd_unit <- extract_unit(ccd)
+
+    if(base::is.null(unit)){ unit <- ccd_unit }
+
+    out <-
+      as_unit(
+        input = ccd,
+        unit = unit,
+        object = object,
+        as_numeric = as_numeric,
+        round = round
+      )
+
+    return(out)
+
+  }
+)
+
+#' @rdname getCCD
+#' @export
+setMethod(
+  f = "getCCD",
+  signature = "HistoImaging",
+  definition = function(object,
+                        unit = NULL,
+                        as_numeric = FALSE,
+                        round = FALSE){
+
+    containsCCD(object, error = TRUE)
+
+    ccd <- object@method@method_specifics[["ccd"]]
+
+    ccd_unit <- extract_unit(ccd)
+
+    if(base::is.null(unit)){ unit <- ccd_unit }
+
+    out <-
+      as_unit(
+        input = ccd,
+        unit = unit,
+        object = object,
+        as_numeric = as_numeric,
+        round = round
+      )
+
+    return(out)
+
+  }
+)
 
 
 #' @title Obtain chromosome information
@@ -536,6 +769,501 @@ getCoordsCenter <- function(object){
     purrr::map_dbl(.f = base::mean)
 
 }
+
+#' @title Obtain coordinates
+#'
+#' @description Extracts the coordinates data.frame of the identified
+#' or known entities the analysis revolves around.
+#'
+#' @param img_name The name of the image based on which the coordinates are supposed
+#' to be aligned. If `NULL`, defaults to the active image.
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame that, among others, contains at least the
+#' variables *x_orig*, *y_orig* and *barcodes*
+#'
+#' @seealso [`activateImage()`], [`activeImage()`]
+#'
+#' @export
+
+setGeneric(name = "getCoordsDf", def = function(object, ...){
+
+  standardGeneric(f = "getCoordsDf")
+
+})
+
+#' @rdname getCoordsDf
+#' @export
+setMethod(
+  f = "getCoordsDf",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        exclude = TRUE,
+                        as_is = FALSE,
+                        ...){
+
+    deprecated(...)
+
+    # 1. Control --------------------------------------------------------------
+
+    # lazy check
+    check_object(object)
+
+    # -----
+
+    # 2. Data wrangling -------------------------------------------------------
+
+    if(containsHistoImaging(object)){
+
+      imaging <- getHistoImaging(object)
+
+      coords_df <-
+        getCoordsDf(
+          object = imaging,
+          img_name = img_name,
+          exclude = exclude,
+          as_is = as_is,
+          ...
+        )
+
+    } else {
+
+      coords_df <- object@coordinates[[1]] %>% tibble::as_tibble()
+
+    }
+
+    ### old code - remove?
+    coords_df$sample <- object@samples
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        dplyr::across(
+          .cols = dplyr::any_of(c("col", "row")),
+          .fns = base::as.integer
+        )
+      )
+
+    coords_df <- tibble::as_tibble(coords_df)
+
+    return(coords_df)
+
+  }
+)
+
+#' @rdname getCoordsDf
+#' @export
+setMethod(
+  f = "getCoordsDf",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        exclude = TRUE,
+                        scale = TRUE,
+                        wh = FALSE,
+                        as_is = FALSE,
+                        ...){
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    coords_df <- object@coordinates
+
+    if(base::isTRUE(as_is)){
+
+      out <- coords_df
+
+    } else {
+
+      if("exclude" %in% base::colnames(coords_df) & base::isTRUE(exclude)){
+
+        coords_df <-
+          dplyr::filter(coords_df, !exclude) %>%
+          dplyr::select(-dplyr::any_of(c("exclude", "exclude_reason")))
+
+      }
+
+      if(base::isTRUE(scale)){
+
+        coords_scale_fct <- getScaleFactor(hist_img, fct_name = "coords")
+
+        if(base::is.null(coords_scale_fct)){
+
+          coords_scale_fct <- 1
+
+        }
+
+        coords_df <-
+          dplyr::mutate(
+            .data = coords_df,
+            x = x_orig * coords_scale_fct,
+            y = y_orig * coords_scale_fct,
+            sample = object@sample
+          )
+
+      }
+
+      if(base::isTRUE(wh)){
+
+        coords_df <- add_wh(coords_df, height = getImageRange(hist_img)$y)
+
+      }
+
+      out <-
+        dplyr::select(
+          .data = coords_df,
+          barcodes,
+          sample,
+          dplyr::any_of(c( "x", "y", "height", "width")),
+          dplyr::everything()
+        )
+
+    }
+
+    return(out)
+
+  }
+)
+
+
+#' @title Relate points to spatial annotations
+#'
+#' @description Adds the spatial relation to a spatial
+#' annotation to the coordinates data.frame. See details for more.
+#'
+#' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
+#' if not empty.
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame.
+#'
+#' @details The coordinates data.frame as returned by [`getCoordsDf()`] with five
+#' additional variables:
+#'
+#' \itemize{
+#'  \item{*dist*:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
+#'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `binwidth`.}
+#'  \item{*angle*:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
+#'  \item{*bins_angle*:}{ Factor. The bin the data point was assigned to based on its *angle* value.}
+#'  \item{*rel_loc*:}{ Character. Possible values are *'core'*, if the data point lies inside the spatial annotation,
+#'  *'periphery'* if the data point lies outside of the boundaries of the spatial annotation but inside
+#'  the area denoted via `distance` and *outside*, if the data point lies beyond the screening area (it's
+#'  distance to the spatial annotation boundaries is bigger than the value denoted in `distance`).}
+#'  }
+#' @export
+#'
+getCoordsDfSA <- function(object,
+                          id = idSA(object),
+                          distance = distToEdge(object, id),
+                          binwidth = recBinwidth(object),
+                          n_bins_dist = NA_integer_,
+                          angle_span = c(0,360),
+                          n_bins_angle = 1,
+                          verbose = NULL,
+                          dist_unit = "px",
+                          ...){
+
+  deprecated(...)
+  hlpr_assign_arguments(object)
+
+
+  # check and process input -------------------------------------------------
+
+  input_list <-
+    check_sas_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_dist = n_bins_dist,
+      object = object,
+      verbose = verbose
+    )
+
+  distance <- input_list$distance
+  n_bins_dist <- input_list$n_bins_dist
+  binwidth  <- input_list$binwidth
+
+  angle_span <- c(from = angle_span[1], to = angle_span[2])
+  range_span <- base::range(angle_span)
+
+  if(angle_span[1] == angle_span[2]){
+
+    stop("Invalid input for argument `angle_span`. Must contain to different values.")
+
+  } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
+
+    stop("Input for argument `angle_span` must range from 0 to 360.")
+
+  }
+
+
+  # obtain required data ----------------------------------------------------
+
+  coords_df <- getCoordsDf(object)
+
+  spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+  spat_ann_bcs <- spat_ann@misc$barcodes
+
+  outline_df <- getSpatAnnOutlineDf(object)
+
+
+  # distance ----------------------------------------------------------------
+
+  # increase number of vertices
+  avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
+
+  outline_df <-
+    increase_polygon_vertices(
+      polygon = outline_df[,c("x", "y")],
+      avg_dist = avg_dist/4
+    )
+
+  # compute distance to closest vertex
+  nn_out <-
+    RANN::nn2(
+      data = base::as.matrix(outline_df),
+      query = base::as.matrix(coords_df[,c("x", "y")]),
+      k = 1
+    )
+
+  coords_df$dist <- base::as.numeric(nn_out$nn.dists)
+
+  # if specified as SI unit, "think in SI units"
+  if(base::is.character(dist_unit)){
+
+    if(dist_unit %in% validUnitsOfLengthSI()){
+
+      # provide as numeric value cause dist is just scaled down
+      binwidth <-
+        as_unit(input = binwidth, unit = dist_unit, object = object) %>%
+        extract_value()
+
+      distance <-
+        as_unit(input = distance, unit = dist_unit, object = object) %>%
+        extract_value()
+
+      scale_fct <- getPixelScaleFactor(object, unit = dist_unit)
+
+      coords_df$dist <- coords_df$dist * scale_fct
+
+    }
+
+  }
+
+  coords_df$dist_unit <- dist_unit
+
+  coords_df$dist[coords_df$barcodes %in% spat_ann_bcs] <-
+    -coords_df$dist[coords_df$barcodes %in% spat_ann_bcs]
+
+  # bin pos dist
+  coords_df_pos <-
+    dplyr::filter(coords_df, dist >= 0) %>%
+    dplyr::mutate(bins_dist = make_bins(dist, binwidth = {{binwidth}}))
+
+  # bin neg dist
+  coords_df_neg <-
+    dplyr::filter(coords_df, dist < 0) %>%
+    dplyr::mutate(
+      bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE))
+
+  # merge
+  new_levels <-
+    c(
+      base::levels(coords_df_neg$bins_dist),
+      base::levels(coords_df_pos$bins_dist),
+      "outside"
+    )
+
+  coords_df_merged <-
+    base::rbind(coords_df_neg, coords_df_pos) %>%
+    dplyr::mutate(
+      bins_dist = base::as.character(bins_dist),
+      bins_dist =
+        dplyr::case_when(
+          dist > {{distance}} ~ "outside",
+          TRUE ~ bins_dist
+        ),
+      bins_dist = base::factor(bins_dist, levels = new_levels),
+      rel_loc = dplyr::if_else(dist < 0, true = "core", false = "periphery")
+    )
+
+  # angle -------------------------------------------------------------------
+
+  center <- getSpatAnnCenter(object, id = id)
+
+  from <- angle_span[1]
+  to <- angle_span[2]
+
+  confuns::give_feedback(
+    msg = glue::glue("Including area between {from}° and {to}°."),
+    verbose = verbose
+  )
+
+  prel_angle_df <-
+    dplyr::group_by(.data = coords_df_merged, barcodes) %>%
+    dplyr::mutate(
+      angle = compute_angle_between_two_points(
+        p1 = c(x = x, y = y),
+        p2 = center
+      )
+    ) %>%
+    dplyr::ungroup()
+
+  # create angle bins
+  if(angle_span[["from"]] > angle_span[["to"]]){
+
+    range_vec <- c(
+      angle_span[["from"]]:360,
+      0:angle_span[["to"]]
+    )
+
+    nth <- base::floor(base::length(range_vec)/n_bins_angle)
+
+    bin_list <- base::vector(mode = "list", length = n_bins_angle)
+
+    for(i in 1:n_bins_angle){
+
+      if(i == 1){
+
+        sub <- 1:nth
+
+      } else {
+
+        sub <- ((nth*(i-1))+1):(nth*i)
+
+      }
+
+      bin_list[[i]] <- range_vec[sub]
+
+    }
+
+    if(base::any(base::is.na(bin_list[[n_bins_angle]]))){
+
+      bin_list[[(n_bins_angle)-1]] <-
+        c(bin_list[[(n_bins_angle-1)]], bin_list[[n_bins_angle]]) %>%
+        rm_na()
+
+      bin_list[[n_bins_angle]] <- NULL
+
+    }
+
+    all_vals <- purrr::flatten_dbl(bin_list)
+
+    bin_list[[n_bins_angle]] <-
+      c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
+
+    prel_angle_bin_df <-
+      dplyr::ungroup(prel_angle_df) %>%
+      dplyr::filter(base::round(angle) %in% range_vec) %>%
+      dplyr::mutate(
+        angle_round = base::round(angle),
+        bins_angle = ""
+      )
+
+    bin_names <- base::character(n_bins_angle)
+
+    for(i in base::seq_along(bin_list)){
+
+      angles <- bin_list[[i]]
+
+      bin_names[i] <-
+        stringr::str_c(
+          "[", angles[1], ",", utils::tail(angles,1), "]"
+        )
+
+      prel_angle_bin_df[prel_angle_bin_df$angle_round %in% angles, "bins_angle"] <-
+        bin_names[i]
+
+    }
+
+    prel_angle_bin_df$angle_round <- NULL
+
+    prel_angle_bin_df$bins_angle <-
+      base::factor(
+        x = prel_angle_bin_df$bins_angle,
+        levels = bin_names
+      )
+
+  } else {
+
+    range_vec <- range_span[1]:range_span[2]
+
+    sub <-
+      base::seq(
+        from = 1,
+        to = base::length(range_vec),
+        length.out = n_bins_angle+1
+      ) %>%
+      base::round()
+
+    breaks <- range_vec[sub]
+
+    prel_angle_bin_df <-
+      dplyr::ungroup(prel_angle_df) %>%
+      dplyr::filter(base::round(angle) %in% range_vec) %>%
+      dplyr::mutate(
+        bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
+      )
+
+  }
+
+  sas_df <- prel_angle_bin_df
+
+  # relative location
+  sas_df <-
+    dplyr::mutate(
+      .data = sas_df,
+      rel_loc = dplyr::case_when(
+        dist > {{distance}} ~ "outside",
+        !base::round(angle) %in% range_vec ~ "outside",
+        TRUE ~ rel_loc
+      )
+    )
+
+  if(!purrr::is_empty(x = list(...))){
+
+    sas_df <- joinWithVariables(object = object, spata_df = sas_df, ...)
+
+  }
+
+  return(sas_df)
+
+}
+
+#' @title Obtain coordinates matrix
+#'
+#' @description Wraps the coordinates in a matrix with column names *x* and *y*
+#' and rownames that correspond to the barcodes.
+#'
+#' @param img_name Character value. The name of the image the coordinates are
+#' scaled to. If `NULL`, defaults to the active image.
+#' @param orig Logical value. If `TRUE`, the coordinates are not scaled to any
+#' image.
+#' @inherit argument_dummy params
+#'
+#' @return A matrix.
+#' @export
+#'
+getCoordsMtr <- function(object, img_name = NULL, orig = FALSE){
+
+  coords_mtr <-
+    getCoordsDf(object)[, c("barcodes", "x_orig", "y_orig")] %>%
+    dplyr::select(barcodes, x = x_orig , y = y_orig) %>%
+    tibble::column_to_rownames(var = "barcodes") %>%
+    base::as.matrix()
+
+  if(base::isFALSE(orig)){
+
+    scale_fct <- getScaleFactor(object, img_name = img_name, fct_name = "coords")
+
+    coords_mtr[, "x"] <- coords_mtr[, "x"] * scale_fct
+    coords_mtr[, "y"] <- coords_mtr[, "y"] * scale_fct
+
+  }
+
+  return(coords_mtr)
+
+}
+
 
 #' @title Obtain coordinate range
 #'
@@ -904,6 +1632,24 @@ getDefaultTrajectory <- function(object, ...){
 #' @rdname setDefaultTrajectory
 #' @export
 getDefaultTrajectoryId <- getDefaultTrajectory
+
+#' @title Obtain default unit
+#'
+#' @description Extracts the default unit of the spatial method the
+#' `spata2` object relies on.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+getDefaultUnit <- function(object){
+
+  getSpatialMethod(object)@unit
+
+}
+
+
 
 
 #' @title Obtain dim red data.frame

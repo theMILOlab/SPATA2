@@ -14,6 +14,58 @@ lastImageAnnotation <- function(...){
 
 }
 
+#' @rdname loadImageLowres
+#' @export
+loadImageDefault <- function(object, ...){
+
+  dir <- getImageDirDefault(object, fdb_fn = TRUE, check = TRUE)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
+
+#' @rdname loadImageLowres
+#' @export
+loadImageHighres <- function(object, ...){
+
+  dir <- getImageDirHighres(object)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
+#' @title Load known images
+#'
+#' @description Wrapper around the required `getImageDir*()` function and
+#' `exchangeImage()`. Exchanges the image of the `SPATA2` object by using
+#' the directories that have been set with \code{setImageDir*()} family
+#' or with `addImageDir()`.
+#'
+#' @param ... Additional arguments given to `exchangeImage()`.
+#' @param name Character value. Name of the image directory.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`setImageDirLowres()`], [`setImageDirHighres()`],
+#' [`setImageDirDefault()`], [`addImageDir()`],  [`exchangeImage()`], [getImagaDirectories()]
+#'
+#' @export
+#'
+loadImageLowres <- function(object, ...){
+
+  dir <- getImageDirLowres(object)
+
+  object <- exchangeImage(object, image = dir, ...)
+
+  return(object)
+
+}
+
 # m -----------------------------------------------------------------------
 
 #' @keywords internal
@@ -1651,6 +1703,40 @@ plotSurfaceOld <- function(object,
 
 }
 
+
+
+# r -----------------------------------------------------------------------
+
+
+#' @title Reset image justification
+#'
+#' @description Resets slot @@justification of the `HistologyImaging` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+resetImageJustification <- function(object){
+
+  io <- getImageObject(object)
+
+  io@justification <-
+    list(
+      angle = 0,
+      flipped = list(
+        "horizontal" = FALSE,
+        "vertical" = FALSE
+      )
+    )
+
+  object <- setImageObject(object, image_object = io)
+
+  return(object)
+}
+
+
+
 # s -----------------------------------------------------------------------
 
 setDenoisedMatrix <- function(object, denoised_mtr, ...){
@@ -1662,6 +1748,213 @@ setDenoisedMatrix <- function(object, denoised_mtr, ...){
   return(objec)
 
 }
+
+
+
+setImage <- function(object, image, of_sample = ""){
+
+  check_object(object)
+
+  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
+
+  object@images[[of_sample]]@image <- image
+
+  return(object)
+
+}
+
+
+
+#' @title Set image annotations
+#'
+#' @description Sets image annotations in the correct slot.
+#'
+#' @param img_ann An object of class `ImageAnnotation`.
+#' @param img_anns List of objects of class `ImageAnnotation`.
+#' @param align Logical value. If `TRUE`, image annotations
+#' are aligned with image justification changes of the image of the
+#' `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @export
+setImageAnnotation <- function(object, img_ann, align = TRUE, overwrite = FALSE){
+
+  check <-
+    base::identical(
+      x = base::class(ImageAnnotation()),
+      y = base::class(img_ann)
+    )
+
+  if(!check){
+
+    stop("Input for argument `img_ann` must be of class 'ImageAnnotation' from the SPATA2 package.")
+
+  }
+
+  confuns::check_none_of(
+    input = getImgAnnIds(object),
+    against = img_ann@id,
+    ref.input = "input image annotation",
+    ref.against = "image annotation IDs",
+    overwrite = overwrite
+  )
+
+  # ensure empty image
+  img_ann@image <- EBImage::as.Image(base::matrix())
+
+  # ensure no barcodes
+  img_ann@misc$barcodes <- NULL
+
+  imaging <- getHistoImaging(object)
+
+  imaging@annotations[[img_ann@id]] <- img_ann
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  return(object)
+
+}
+
+#' @rdname setImageAnnotation
+#' @export
+setImageAnnotations <- function(object, img_anns, align = TRUE, overwrite = FALSE){
+
+  if(!base::isTRUE(overwrite)){
+
+    ids <-
+      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
+      base::unname()
+
+    confuns::check_none_of(
+      input = ids,
+      against = getImgAnnIds(object),
+      ref.input = "input image annotations",
+      ref.against = "image annotation IDs present"
+    )
+
+  }
+
+  for(img_ann in base::names(img_anns)){
+
+    object <-
+      setImageAnnotation(
+        object = object,
+        img_ann = img_anns[[img_ann]],
+        align = align,
+        overwrite = overwrite
+      )
+
+  }
+
+  return(object)
+
+}
+
+
+
+#' @rdname setImageDirLowres
+#' @export
+setImageDirDefault <- function(object, dir, check = TRUE, verbose = NULL, ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir, type = "files")
+
+  }
+
+  img_object <- getImageObject(object)
+
+  img_object@dir_default <- dir
+
+  object <- setImageObject(object, image_object = img_object)
+
+  confuns::give_feedback(
+    msg = glue::glue("Default image directory set to '{dir}'."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+
+#' @rdname setImageDirLowres
+#' @export
+setImageDirHighres <- function(object, dir, check = TRUE, verbose = NULL, ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir, type = "files")
+
+  }
+
+  img_object <- getImageObject(object)
+
+  img_object@dir_highres <- dir
+
+  object <- setImageObject(object, image_object = img_object)
+
+  confuns::give_feedback(
+    msg = glue::glue("Image directory high resolution set to '{dir}'."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+#' @title Set image directories
+#'
+#' @description Sets image directories that facilitate image exchanges.
+#'
+#' @param check Logical value. If set to TRUE the input directory is checked
+#' for validity and it is checked if the file actually exists.
+#'
+#' @inherit addImageDir params
+#' @inherit argument_dummy params
+#' @inherit update_dummy params
+#'
+#' @seealso [`addImageDir()`]
+#'
+#' @export
+#'
+setImageDirLowres <- function(object, dir, check = TRUE, verbose = NULL, ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir, type = "files")
+
+  }
+
+  img_object <- getImageObject(object)
+
+  img_object@dir_lowres <- dir
+
+  object <- setImageObject(object, image_object = img_object)
+
+  confuns::give_feedback(
+    msg = glue::glue("Image directory low resolution set to '{dir}'."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+
 
 setNormalizedMatrix <- function(object, normalized_mtr, ...){
 
@@ -2037,6 +2330,16 @@ subsetByBarcodes_ExprMtr <- function(object,
 tab_create_trajectories_return <- function(){
 
   deprecated(fn = TRUE)
+
+}
+
+
+transform_outline <- function(...){
+
+  deprecated(fn = TRUE)
+
+  transform_coords(...)
+
 
 }
 

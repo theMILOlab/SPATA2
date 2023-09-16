@@ -1,5 +1,212 @@
 
 
+#' @title Read coordinate data.frames
+#'
+#' @description Reads in coordinates data.frame from various platforms.
+#'
+#' @param dir_coords Character value. Directory to the coordinates data.frame.
+#'
+#' @return Data.frame of at least four columns:
+#'  \itemize{
+#'   \item{*barcodes*:}{ Character. Unique identifier of each observation.}
+#'   \item{*exclude*:}{ Logical. Indicates whether to exclude the observation by default.}
+#'   \item{*exclude_reason*:}{ Character. The reason for why to exclude the observation.}
+#'   \item{*x_orig*:}{ Numeric. x-coordinates of the original input.}
+#'   \item{*y_orig*:}{ Numeric. y-coordinates of the original input.}
+#'   }
+#'
+#' @export
+
+read_coords <- function(...){}
+
+#' @rdname read_coords
+#' @export
+read_coords_merfish <- function(dir_coords){
+
+  coords_df <-
+    readr::read_csv(file = dir_coords, show_col_types = FALSE, col_names = TRUE)  %>%
+    dplyr::mutate(
+      barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_"),
+      exclude = FALSE,
+      exclude_reason = ""
+    ) %>%
+    dplyr::select(
+      barcodes, x_orig = center_x, y_orig = center_y,
+      dplyr::everything(),
+      -dplyr::matches("^\\.")
+    )
+
+  return(coords_df)
+
+}
+
+#' @rdname read_coords
+#' @export
+read_coords_slide_seq_v1 <- function(dir_coords){
+
+  coords_df <-
+    readr::read_delim(file = dir_coords, show_col_types = FALSE) %>%
+    magrittr::set_colnames(value = c("barcodes", "x_orig", "y_orig")) %>%
+    dplyr::mutate(exclude = FALSE, exclude_reason = "") %>%
+    tibble::as_tibble()
+
+}
+
+#' @rdname read_coords
+#' @export
+read_coords_visium <- function(dir_coords){
+
+  # space ranger v1
+  if(stringr::str_detect(dir_coords, pattern = "tissue_positions_list.csv")){
+
+    coords_df <-
+      readr::read_csv(file = dir_coords, col_names = FALSE, show_col_types = FALSE) %>%
+      tibble::as_tibble() %>%
+      magrittr::set_colnames(value = c("barcodes", "tissue", "row", "col", "imagerow", "imagecol")) %>%
+      dplyr::mutate(
+        exclude = (tissue != 1),
+        exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
+      ) %>%
+      dplyr::rename(x_orig = imagecol, y_orig = imagerow) %>%
+      dplyr::select(barcodes, x_orig, y_orig, row, col, exclude, exclude_reason)
+
+    # space ranger v2
+  } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.csv")){
+
+    coords_df <-
+      readr::read_csv(file = dir_coords, col_names = TRUE, show_col_types = FALSE) %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate(
+        exclude = (in_tissue != 1),
+        exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
+      ) %>%
+      dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres) %>%
+      dplyr::select(barcodes = barcode, x_orig, y_orig, exclude, exclude_reason)
+
+  }
+
+  return(coords_df)
+
+}
+
+
+#' @title Platform dependent binwidth recommendation
+#'
+#' @description Recommends a binwidth parameter for the spatial screening algorithms
+#' based on the platform used.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details
+#' For objects derived from the Visium platform we recommend a binwidth equal
+#' to the center to center distance as obtained by `getCCD()`.
+#'
+#' For objects derived from platforms that do not rely on a fixed grid of
+#' data points (MERFISH, SlideSeq, etc.) we recommend the average minimal
+#' distance between the data points.
+#'
+#' `recBinwidth()` is a wrapper around these recommendations.
+#'
+#' @return Distance measure.
+#'
+#' @export
+#'
+recBinwidth <- function(object, unit = NULL){
+
+  if(containsCCD(object)){
+
+    out <- getCCD(object)
+
+  } else {
+
+    coords_mtr <-
+      getCoordsDf(object) %>%
+      dplyr::select(x, y) %>%
+      base::as.matrix()
+
+    out <-
+      FNN::knn.dist(data = coords_mtr, k = 1) %>%
+      base::mean()
+
+  }
+
+  if(!base::is.null(unit)){
+
+    out <- as_unit(input = out, unit = unit, object = object)
+
+  }
+
+  return(out)
+
+}
+
+
+#' @title DBSCAN parameter recommendations
+#'
+#' @description Suggests a value for DBSCAN applications within `SPATA2`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value in case of `recDbscanMinPts()`. Distance measure
+#' in case of `recDbscanEps()`.
+#'
+#' @details
+#' For objects derived from the Visium platform with a fixed center to center
+#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
+#' and `minPts = 3`.
+#'
+#' For objects derived from platforms that do not rely on a fixed grid of
+#' data points (MERFISH, SlideSeq, etc.) we recommend the average minimal
+#' distance between the data points times 10 for `eps` and `minPts = 12`.
+#'
+#' `recDbscanEps()` and `recDbscanMinPts()` are wrappers around these recommendations.
+#'
+#' @export
+#'
+recDbscanEps <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- getCCD(object)*1.25
+
+  } else {
+
+    coords_mtr <-
+      getCoordsDf(object) %>%
+      dplyr::select(x, y) %>%
+      base::as.matrix()
+
+    knn_out <-
+      FNN::knn.dist(data = coords_mtr, k = 1) %>%
+      base::mean()
+
+    out <- knn_out*10
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname recDbscanEps
+#' @export
+recDbscanMinPts <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- 3
+
+  } else {
+
+    out <- 12
+
+  }
+
+  return(out)
+
+}
+
+
 #' @title Reduces vector length
 #'
 #' @description Reduces length of vectors by keeping every `nth` element.
@@ -45,7 +252,180 @@ reduce_vec <- function(x, nth, start.with = 1){
 }
 
 
+#' @title Obtain name of reference content
+#'
+#' @description Handy functions to quickly access the name of reference content.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character value.
+#' @export
+#'
+setGeneric(name = "refImage", def = function(object, ...){
 
+  standardGeneric(f = "refImage")
+
+})
+
+#' @rdname refImage
+#' @export
+setMethod(
+  f = "refImage",
+  signature = "spata2",
+  definition = function(object){
+
+    getHistoImaging(object) %>%
+      refImage()
+
+  }
+)
+
+#' @rdname refImage
+#' @export
+setMethod(
+  f = "refImage",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    object@name_img_ref
+
+  }
+)
+
+
+#' @title Register or remove images
+#'
+#' @description Use `registerImage()` to add a new image in form of a `HistoImage`
+#' to the object.
+#'
+#' Use `removeImage()` to savely discard images and their `HistoImage` container
+#' that are no longer needed.
+#'
+#' Do not confuse with [`loadImage()`] and [`unloadImage()`].
+#'
+#' @param img_name Character value. The image to remove. Must neither be
+#' the active nor the reference image.
+#'
+#' @inherit createHistoImage params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setGeneric(name = "registerImage", def = function(object, ...){
+
+  standardGeneric(f = "registerImage")
+
+})
+
+#' @rdname registerImage
+#' @export
+setMethod(
+  f = "registerImage",
+  signature = "spata2",
+  definition = function(object,
+                        dir,
+                        img_name,
+                        unload = TRUE,
+                        process = FALSE,
+                        verbose = TRUE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <-
+      registerImage(
+        object = imaging,
+        dir = dir,
+        img_name = img_name,
+        unload = unload,
+        process = process,
+        verbose = verbose
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname registerImage
+#' @export
+setMethod(
+  f = "registerImage",
+  signature = "HistoImaging",
+  definition = function(object,
+                        dir,
+                        img_name,
+                        unload = FALSE,
+                        process = FALSE,
+                        verbose = TRUE){
+
+    confuns::check_none_of(
+      input = img_name,
+      against = getImageNames(object),
+      ref.against = "registered HistoImages"
+    )
+
+    hist_img <-
+      createHistoImage(
+        dir = dir,
+        img_name = img_name,
+        sample = object@sample,
+        active = FALSE,
+        reference = FALSE,
+        scale_factors = list(),
+        verbose = verbose
+      )
+
+    if(base::isTRUE(process)){
+
+      hist_img <- identifyPixelContent(object = hist_img, verbose = verbose)
+
+      hist_img <- identifyTissueOutline(object, hist_img, verbose = verbose)
+
+    }
+
+    if(base::isTRUE(unload)){
+
+      hist_img <- unloadImage(hist_img)
+
+    }
+
+    # compute scale factors
+    hist_img_ref <- getHistoImageRef(object)
+
+    img_scale_fct <-
+      compute_img_scale_fct(
+        hist_img1 = hist_img,
+        hist_img2 = hist_img_ref
+      )
+
+    hist_img@scale_factors <-
+      purrr::imap(
+        .x = hist_img_ref@scale_factors,
+        .f = function(fct, name){
+
+          if(name == "coords"){
+
+            fct / img_scale_fct
+
+          } else if(name == "pixel"){
+
+            fct * img_scale_fct
+
+          }
+
+        }
+      )
+
+    # add to HistoImaging
+    object@images[[img_name]] <- hist_img
+
+    return(object)
+
+  }
+)
 
 
 
@@ -403,7 +783,8 @@ removeSpatialOutliers <- function(object, verbose = NULL){
 
     barcodes_keep <-
       getCoordsDf(object, as_is = TRUE) %>%
-      dplyr::filter(section != "outlier")
+      dplyr::filter(section != "outlier") %>%
+      dplyr::pull(barcodes)
 
     object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
 
@@ -568,6 +949,60 @@ removeGenesZeroCounts <- function(object, verbose = NULL){
 }
 
 
+#' @rdname registerImage
+#' @export
+setGeneric(name = "removeImage", def = function(object, ...){
+
+  standardGeneric(f = "removeImage")
+
+})
+
+#' @rdname registerImage
+#' @export
+setMethod(
+  f = "removeImage",
+  signature = "spata2",
+  definition = function(object, img_name){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- removeImage(imaging, img_name = img_name)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname registerImage
+#' @export
+setMethod(
+  f = "removeImage",
+  signature = "HistoImaging",
+  definition = function(object, img_name){
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    if(img_name == object@name_img_ref){
+
+      stop("Removing the reference image is not allowed.")
+
+    } else if(img_name == activeImage(object)){
+
+      stop("Removing the active image is not allowed.")
+
+    }
+
+    object@images[[img_name]] <- NULL
+
+    return(object)
+
+  }
+)
 
 #' @title Remove spatial annotations
 #'
@@ -598,6 +1033,11 @@ removeSpatialAnnotations <- function(object, ids){
   return(object)
 
 }
+
+
+
+
+
 
 
 
@@ -706,7 +1146,6 @@ renameFeatures <- function(object, ..., of_sample = NA){
   return(object)
 
 }
-
 
 
 #' @title Rename cluster/group names
@@ -965,34 +1404,83 @@ renameSegments <- function(object, ..., of_sample = NA){
 }
 
 
-
-#' @title Reset image justification
+#' @title Reset image transformations
 #'
-#' @description Resets slot @@justification of the `HistologyImaging` object.
+#' @description Resets the transformation values of an image defined
+#' by usage of [`alignImage()`], [`alignImageAuto()`] or [`alignImageInteractive()`].
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
+#' @seealso [`getImageTransformations()`]
+#'
 #' @export
 #'
-resetImageJustification <- function(object){
+setGeneric(name = "resetImageTransformations", def = function(object, ...){
 
-  io <- getImageObject(object)
+  standardGeneric(f = "resetImageTransformations")
 
-  io@justification <-
-    list(
-      angle = 0,
-      flipped = list(
-        "horizontal" = FALSE,
-        "vertical" = FALSE
+})
+
+#' @rdname resetImageTransformations
+#' @export
+setMethod(
+  f = "resetImageTransformations",
+  signature = "spata2",
+  definition = function(object, img_name, ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- resetImageTransformations(imaging, img_name = img_name)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+
+#' @rdname resetImageTransformations
+#' @export
+setMethod(
+  f = "resetImageTransformations",
+  signature = "HistoImaging",
+  definition = function(object, img_name, ...){
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- resetImageTransformations(hist_img)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+
+#' @rdname resetImageTransformations
+#' @export
+setMethod(
+  f = "resetImageTransformations",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    object <-
+      alignImage(
+        object = object,
+        angle = 0,
+        flip_h = FALSE,
+        flip_v = FALSE,
+        transl_h = 0,
+        transl_v = 0
       )
-    )
 
-  object <- setImageObject(object, image_object = io)
+    return(object)
 
-  return(object)
-}
-
+  }
+)
 
 
 #' @title Used for GeomSegmentFixed
@@ -1016,6 +1504,15 @@ resizingTextGrob <- function(...){
 
 #' @keywords internal
 rm_na <- function(x){ x[!base::is.na(x)] }
+
+
+round_range <- function(coords_range) {
+
+  out <- c(0, 10^base::ceiling(base::log10(coords_range[2])))
+
+  return(out)
+
+}
 
 
 # inspired by https://rdrr.io/github/ErasmusOIC/SMoLR/src/R/rotate.R
@@ -1211,6 +1708,8 @@ rotate_coords_df <- function(df,
   return(df)
 
 }
+
+rotate_sf = function(x) matrix(c(cos(x), sin(x), -sin(x), cos(x)), 2, 2)
 
 
 

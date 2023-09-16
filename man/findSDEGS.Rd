@@ -8,8 +8,8 @@ findSDEGS(
   object,
   id,
   distance = NA_integer_,
-  n_bins_circle = NA_integer_,
-  binwidth = getCCD(object),
+  binwidth = NA_integer_,
+  n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
   genes_rm = character(0),
   variable.features.n = 3000,
@@ -34,6 +34,10 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
+
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
@@ -45,11 +49,37 @@ to obtain all valid input options.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-An S4 object of class \code{SDEGS}.
+An S4 object of class \code{\link{SDEGS}} storing the results.
 }
 \description{
 Identifies spatially differentially expressed genes (SDEGs) as
 suggested by \emph{Zeng et al. (2023)}.
+}
+\details{
+Groups the data points in spatial intervals depending on their distance
+to the spatial annotation up to a specified distance. Then gene expression is
+tested across the created groups as well as in 1v1 comparison to data points
+outside the interval based groups (group \emph{control}).
+
+\bold{How distance binning works:}
+To bin data points according to their localisation to the spatial annotation
+two of the following three parameters are required (the third one is calculated):
+
+\itemize{
+\item{\code{distance}: The distance from the border of the spatial annotation to
+the \emph{horizon} in the periphery up to which the screening is conducted.
+}
+\item{\code{binwidth}: The width of every bin.}
+\item{\code{n_bins_dist}: The number of bins that are created.}
+}
+
+These three parameters stand in the following relation to each other:
+
+\enumerate{
+\item{\code{n_bins_dist} = \code{distance} / \code{binwidth}}
+\item{\code{distance} = \code{n_bins_dist} * \code{binwidth}}
+\item{\code{binwidth} = \code{distance} / \code{n_bins_dist}}
+}
 }
 \references{
 Zeng, H., Huang, J., Zhou, H. et al. Integrative in situ mapping of single-cell

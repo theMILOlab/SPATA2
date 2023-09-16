@@ -181,7 +181,7 @@ deprecatedInfo <- function(){
 
 
 
-# discard -----------------------------------------------------------------
+# dis ---------------------------------------------------------------------
 
 
 #' @title Discard an expression matrix
@@ -597,9 +597,48 @@ discardSpatialTrajectory <- function(object, id){
 }
 
 
+#' @title Distance to cover the whole tissue
+#'
+#' @description Computes the distance from the center of a spatial annotation
+#' to the **farest** point of the tissue outline.
+#'
+#' @inherit spatialAnnotationScreening params
+#' @param unit The output unit of the distance measure.
+#'
+#' @return Distance measure.
+#' @export
+#'
+distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object)){
+
+  section <- whichTissueSection(object, id)
+
+  center <- getSpatAnnCenter(object, id = id)
+
+  section_mtr <-
+    getTissueOutlineDf(object, by_section = TRUE) %>%
+    dplyr::filter(section == {{section}}) %>%
+    dplyr::select(x, y) %>%
+    base::as.matrix()
+
+  nn2_out <-
+    RANN::nn2(
+      data = section_mtr,
+      query = base::t(base::as.matrix(center)),
+      k = base::nrow(section_mtr)
+    )
+
+  out <-
+    base::max(nn2_out$nn.dists) %>%
+    as_unit(unit = unit, object = object)
+
+  return(out)
+
+}
 
 
 
+
+# download ----------------------------------------------------------------
 
 
 #' @title Download data from the publication

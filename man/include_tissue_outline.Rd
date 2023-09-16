@@ -5,11 +5,11 @@
 \title{Include spatial extent of tissue sections in analysis}
 \usage{
 include_tissue_outline(
-  coords_df,
-  outline_df = NULL,
   input_df,
+  outline_df = NULL,
+  coords_df = NULL,
   spat_ann_center = NULL,
-  ias_circles = FALSE,
+  sas_circles = FALSE,
   ccd = NULL,
   remove = TRUE,
   inside_if = c(1, 2),
@@ -19,13 +19,13 @@ include_tissue_outline(
 )
 }
 \arguments{
-\item{outline_df}{A data.frame that contains the ouline/hull of all tissue sections.
-Must contain variables \emph{x}, \emph{y} and \emph{section}.}
-
 \item{input_df}{A data.frame that contains at least numeric \emph{x} and \emph{y}
 variables.}
 
-\item{ias_circles}{Logical value. If \code{TRUE}, input data.frame is assumed
+\item{outline_df}{A data.frame that contains the ouline/hull of all tissue sections.
+Must contain variables \emph{x}, \emph{y} and \emph{section}.}
+
+\item{sas_circles}{Logical value. If \code{TRUE}, input data.frame is assumed
 to contain polygon coordinates of the expanded spatial annotation encircling
 and sorts them after filtering for those that lie inside the tissue section
 in order to plot them via \code{ggplot2::geom_path()}.}

@@ -153,7 +153,7 @@ to specify the input in pixel you have to use input option 1. In pixel.
  # ----- for gradient plots
 
  plotSurface(object, color_by = "FN1") +
-  ggpLayerHorizonIAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
+  ggpLayerHorizonSAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
 
  # no axis specification
  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")

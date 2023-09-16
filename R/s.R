@@ -345,6 +345,31 @@ scale_coords_df <- function(df,
 
 }
 
+scale_image <- function(image, scale_fct){
+
+  if(scale_fct != 1){
+
+    out <-
+      EBImage::resize(
+        x = image,
+        w = base::dim(image)[1] * scale_fct,
+        h = base::dim(image)[2] * scale_fct
+      )
+
+  } else {
+
+    out <- image
+
+  }
+
+  return(out)
+
+}
+
+
+
+
+
 #' @keywords internal
 scale_nuclei_df <- function(object,
                             nuclei_df,
@@ -1357,6 +1382,47 @@ splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidt
 
 
 # str ---------------------------------------------------------------------
+
+
+
+
+
+
+
+
+stretch_image <- function(image,
+                          axis,
+                          fct,
+                          bg_col = "white"){
+
+  img_dims_orig <- base::dim(image)
+  img_dims_str <- img_dims_orig
+
+  if(axis == "horizontal"){
+
+    img_dims_str[1] <- img_dims_str[1] * fct
+    mat <- base::matrix(c(fct, 0, 1, 0, 1, 1), nrow = 3)
+
+  } else if(axis == "vertical"){
+
+    img_dims_str[2] <- img_dims_str[2] * fct
+    mat <- base::matrix(c(1, 0, 1, 0, fct, 1), nrow = 3)
+
+  }
+
+  image_out <-
+    EBImage::affine(
+      x = image,
+      m = mat,
+      output.dim = img_dims_str[1:2],
+      bg.col = bg_col
+    )
+
+  return(image_out)
+
+}
+
+
 
 #' @keywords internal
 strongH3 <- function(text){

@@ -3,6 +3,72 @@
 
 
 
+# ce ----------------------------------------------------------------------
+
+
+# Function to center a polygon in a window
+center_polygon <- function(polygon, window_size) {
+  # Calculate the centroid of the polygon
+  centroid <- colMeans(polygon)
+
+  req_centroid <- c(window_size/2, window_size/2)
+
+  req_translation <- req_centroid - centroid
+
+  # Translate the polygon by the computed vector
+  polygon[["x"]] <- polygon[["x"]] + req_translation["x"]
+  polygon[["y"]] <- polygon[["y"]] + req_translation["y"]
+
+  # Return the centered polygon
+  return(polygon)
+}
+
+#' @title Center tissue
+#'
+#' @description Computes the necessary translations in order to center
+#' the identified tissue outline in the center of the image.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setGeneric(name = "centerTissueOutline", def = function(object, ...){
+
+  standardGeneric(f = "centerTissueOutline")
+
+})
+
+#' @rdname centerTissueOutline
+#' @export
+setMethod(
+  f = "centerTissueOutline",
+  signature = "HistoImage",
+  definition = function(object, verbose = TRUE, ...){
+
+    confuns::give_feedback(
+      msg = "Centering tissue outline.",
+      verbose = verbose
+    )
+
+    center <- getImageCenter(object)
+
+    outline_centroid <- getTissueOutlineCentroid(object, transform = FALSE)[c("x", "y")]
+
+    req_translation <- center - outline_centroid
+
+    object@transformations$translate$centroid_alignment$horizontal <-
+      base::unname(object@transformations$translate$centroid_alignment$horizontal + req_translation["x"])
+
+    object@transformations$translate$centroid_alignment$vertical <-
+      base::unname(object@transformations$translate$centroid_alignment$vertical - req_translation["y"])
+
+    object@centered <- TRUE
+
+    return(object)
+
+  }
+)
 
 # cl ----------------------------------------------------------------------
 
@@ -75,6 +141,63 @@ compute_angle_between_two_points <- function(p1, p2){
 
 }
 
+compute_area <- function(poly){
+
+  sf::st_polygon(base::list(base::as.matrix(poly))) %>%
+    sf::st_area()
+
+}
+
+
+
+compute_avg_dp_distance <- function(object, vars = c("x_orig", "y_orig")){
+
+  getCoordsDf(object) %>%
+    dplyr::select(dplyr::all_of(vars)) %>%
+    base::as.matrix() %>%
+    FNN::knn.dist(data = ., k = 1) %>%
+    base::mean()
+
+}
+
+compute_avg_vertex_distance <- function(polygon_df) {
+
+  # ensure the polygon is closed (first and last point are the same)
+  if(!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])){
+
+    polygon_df <- base::rbind(polygon_df, polygon_df[1, ])
+
+  }
+
+  # initialize a vector to store vertex distances
+  vertex_distances <- base::numeric(nrow(polygon_df))
+
+  # loop through each vertex
+  for (i in 1:base::nrow(polygon_df)) {
+
+    x1 <- polygon_df[i, "x"]
+    y1 <- polygon_df[i, "y"]
+
+    # calculate the distances to all other vertices
+    distances <- base::sqrt((polygon_df$x - x1)^2 + (polygon_df$y - y1)^2)
+
+    # set the distance to itself to infinity
+    distances[i] <- Inf
+
+    # find the minimum distance
+    min_distance <- base::min(distances)
+
+    # store the minimum distance in the vector
+    vertex_distances[i] <- base::min_distance
+
+  }
+
+  # compute the average vertex distance
+  avg_distance <- base::mean(vertex_distances)
+
+  return(avg_distance)
+}
+
 
 
 #' @title Compute the distance between to points
@@ -95,6 +218,64 @@ compute_distance <- function(starting_pos, final_pos){
 
 }
 
+#' @title Compute scale factor of two images
+#'
+#' @description Computes the factor with which the dimensions
+#' of **image 1** must be multiplied in order to equal dimensions of
+#' image 2.
+#'
+#' @param hist_img1,hist_img2 Objects of class `HistoImage`.
+#'
+#' @return Numeric value.
+#' @export
+#'
+compute_img_scale_fct <- function(hist_img1, hist_img2){
+
+  # first dimension of dims suffices as images are always padded to have equal
+  # width and height
+  base::max(hist_img2@image_info[["dims"]])/
+    base::max(hist_img1@image_info[["dims"]])
+
+}
+
+compute_mae <- function(gradient, model){
+
+  # use abs() to ensure positive values
+  errors <- base::abs(x = (gradient - model))
+
+  output <- base::mean(errors)
+
+  return(output)
+
+}
+
+compute_overlap_polygon <- function(poly1, poly2){
+
+  a <- sf::st_polygon(base::list(base::as.matrix(poly1)))
+  b <- sf::st_polygon(base::list(base::as.matrix(poly2)))
+
+  sf::st_intersection(x = a, y = b) %>%
+    sf::st_area()
+
+}
+
+compute_overlap_st_polygon <- function(st_poly1, st_poly2){
+
+  sf::st_intersection(x = st_poly1, y = st_poly2) %>%
+    sf::st_area()
+
+}
+
+compute_rmse <- function(gradient, model) {
+
+  errors <- gradient - model
+  squared_residuals <- errors^2
+  mean_squared_error <- base::mean(squared_residuals)
+  rmse <- base::sqrt(mean_squared_error)
+
+  return(rmse)
+
+}
 
 
 # computeC ----------------------------------------------------------------
@@ -311,6 +492,136 @@ computeGeneNormality <- function(object, mtr_name = "scaled", verbose = NULL){
 }
 
 
+
+
+
+# computeP ----------------------------------------------------------------
+
+#' @title Compute pixel scale factor
+#'
+#' @description Computes the pixel scale factor. Only possible for methods
+#' that have a fixed center to center distance between their
+#' observational units (e.g. Visium).
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`containsCCD()`], [`getPixelScaleFactor()`], [`setPixelScaleFactor()`]
+#'
+#' @export
+#'
+setGeneric(name = "computePixelScaleFactor", def = function(object, ...){
+
+  standardGeneric(f = "computePixelScaleFactor")
+
+})
+
+#' @rdname computePixelScaleFactor
+#' @export
+setMethod(
+  f = "computePixelScaleFactor",
+  signature = "spata2",
+  definition = function(object, verbose = TRUE, ...){
+
+    imaging <-
+      getHistoImaging(object) %>%
+      computePixelScaleFactor(.)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname computePixelScaleFactor
+#' @export
+setMethod(
+  f = "computePixelScaleFactor",
+  signature = "HistoImaging",
+  definition = function(object, verbose = TRUE, ...){
+
+    containsCCD(object, error = TRUE)
+
+    ccd <- getCCD(object)
+
+    confuns::give_feedback(
+      msg = "Computing pixel scale factor.",
+      verbose = verbose
+    )
+
+    coords_scale_fct <-
+      getScaleFactor(
+        object = object,
+        img_name = object@name_img_ref,
+        fct_name = "coords"
+      )
+
+    coords_df <-
+      getCoordsDf(object, img_name = object@name_img_ref)
+
+    bc_origin <- coords_df$barcodes
+    bc_destination <- coords_df$barcodes
+
+    spots_compare <-
+      tidyr::expand_grid(bc_origin, bc_destination) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y),
+        by = "bc_origin"
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y),
+        by = "bc_destination"
+      ) %>%
+      dplyr::mutate(distance = sqrt((xd - xo)^2 + (yd - yo)^2))
+
+    bcsp_dist_pixel <-
+      dplyr::filter(spots_compare, bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::mutate(dist_round = base::round(distance, digits = 0)) %>%
+      dplyr::filter(dist_round == base::min(dist_round)) %>%
+      dplyr::ungroup() %>%
+      dplyr::pull(distance) %>%
+      stats::median()
+
+    ccd_val <- extract_value(ccd)
+    ccd_unit <- extract_unit(ccd)
+
+    pxl_scale_fct <-
+      units::set_units(x = (ccd_val/bcsp_dist_pixel), value = ccd_unit, mode = "standard") %>%
+      units::set_units(x = ., value = object@method@unit, mode = "standard") %>%
+      base::as.numeric()
+
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(object@method@unit, "/px")
+
+    # set in ref image
+    ref_img <- getHistoImage(object, img_name = object@name_img_ref)
+
+    ref_img <- setScaleFactor(ref_img, fct_name = "pixel", value = pxl_scale_fct)
+
+    object <- setHistoImage(object, hist_img = ref_img)
+
+    # set in all other slots
+    for(img_name in getImageNames(object, ref = FALSE)){
+
+      hist_img <- getHistoImage(object, img_name = img_name)
+
+      sf <-
+        base::max(ref_img@image_info$dims)/
+        base::max(hist_img@image_info$dims)
+
+      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
 
 # concatenate -------------------------------------------------------------
 

@@ -26,27 +26,6 @@ si_dist_to_si_dist_fct <- function(from, to){
 
 # evaluate ----------------------------------------------------------------
 
-compute_mae <- function(gradient, model){
-
-  # use abs() to ensure positive values
-  errors <- base::abs(x = (gradient - model))
-
-  output <- base::mean(errors)
-
-  return(output)
-
-}
-
-compute_rmse <- function(gradient, model) {
-
-  errors <- gradient - model
-  squared_residuals <- errors^2
-  mean_squared_error <- base::mean(squared_residuals)
-  rmse <- base::sqrt(mean_squared_error)
-
-  return(rmse)
-
-}
 
 #' @export
 evaluate_model_fits <- function(input_df,
@@ -343,6 +322,195 @@ exchangeImage <- function(object,
 }
 
 
+#' @title Exclude data points
+#'
+#' @description Excludes data points from further integration in analysis
+#' or plots by setting their *exclude* value to `TRUE`. Depending on the
+#' suffix of the function exclusion happens based on results
+#' of previous algorithms.
+#'
+#' @inherit argument_dummy params
+#' @param barcodes Character vector. The barcodes to exclude.
+#' @param reason Character value. The reasoning for exclusion.
+#'
+#' @inherit update_dummy return
+#'
+#' @note `excludeTissueFragments()` requires the output of [`identifyTissueOutline()`] and
+#' `excludeSpatialOutliers()` requires the output of [`identifySpatialOutliers()`]
+#'
+#' @export
+#'
+setGeneric(name = "exclude", def = function(object, ...){
+
+  standardGeneric(f = "exclude")
+
+})
+
+#' @rdname exclude
+#' @export
+setMethod(
+  f = "exclude",
+  signature = "HistoImaging",
+  definition = function(object, barcodes, reason){
+
+    object@coordinates <-
+      dplyr::mutate(
+        .data = object@coordinates,
+        exclude_reason = dplyr::case_when(
+          exclude ~ exclude_reason,
+          barcodes %in% {{barcodes}} ~ {{reason}},
+          TRUE ~ ""
+        ),
+        exclude = dplyr::case_when(
+          exclude ~ TRUE,
+          barcodes %in% {{barcodes}} ~ TRUE,
+          TRUE ~ FALSE
+        )
+      )
+
+    return(object)
+
+  }
+)
+
+#' @rdname exclude
+#' @export
+setGeneric(name = "excludeSpatialOutliers", def = function(object, ...){
+
+  standardGeneric(f = "excludeSpatialOutliers")
+
+})
+
+#' @rdname exclude
+#' @export
+setMethod(
+  f = "excludeSpatialOutliers",
+  signature = "spata2",
+  definition = function(object){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- excludeSpatialOutliers(imaging)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname exclude
+#' @export
+setMethod(
+  f = "excludeSpatialOutliers",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    containsSpatialOutliers(object, error = TRUE)
+
+    exclude_bcs <-
+      dplyr::filter(object@coordinates, section == "outlier") %>%
+      dplyr::pull(barcodes)
+
+    object <- exclude(object, barcodes = exclude_bcs, reason = "spatial_outlier")
+
+    return(object)
+
+  }
+)
+
+#' @rdname exclude
+#' @export
+setGeneric(name = "excludeTissueFragments", def = function(object, ...){
+
+  standardGeneric(f = "excludeTissueFragments")
+
+})
+
+#' @rdname exclude
+#' @export
+setMethod(
+  f = "excludeTissueFragments",
+  signature = "HistoImaging",
+  definition = function(object, fragments = "all"){
+
+    containsSpatialOutliers(object, error = TRUE)
+
+    frgmt_df <-
+      object@coordinates %>%
+      dplyr::filter(stringr::str_detect(section, pattern = "tissue_fragment"))
+
+    if(base::is.character(fragments) &&
+       base::length(fragments) == 1 &&
+       fragments == "all"){
+
+      exclude_ids <- frgmt_df[["barcodes"]]
+
+    } else if(base::is.character(fragments) |
+              base::is.numeric(fragments)) {
+
+      fragments <-
+        base::as.character(fragments)
+
+      frgmt_idx <-
+        stringr::str_remove_all(frgmt_df$section, pattern = "tissue_fragment") %>%
+        base::unique() %>%
+        base::as.numeric() %>%
+        base::sort() %>%
+        base::as.character()
+
+      confuns::check_one_of(
+        input = fragments,
+        against = frgmt_idx
+      )
+
+      exclude_ids <- frgmt_df[frgmt_df[["barcodes"]] %in% {{fragments}}][["barcodes"]]
+
+    } else {
+
+      stop("Invalid input for `fragments`. Must be character or numeric.")
+
+    }
+
+
+    object <- exclude(object, barcodes = exclude_ids, reason = "on_tissue_fragment")
+
+    return(object)
+
+  }
+)
+
+
+
+extract_bin_dist_val <- function(bins_dist, fn = "mean"){
+
+  confuns::check_one_of(
+    input = fn,
+    against = c("mean", "min", "max")
+  )
+
+  mtr <-
+    stringr::str_remove_all(bins_dist, pattern = "\\[|\\]") %>%
+    stringr::str_split_fixed(pattern = ",", n = 2) %>%
+    base::apply(X = ., MARGIN = 2, FUN = base::as.numeric)
+
+  if(fn == "mean"){
+
+    out <- base::rowMeans(mtr)
+
+  } else if(fn == "max"){
+
+    out <- MatrixGenerics::rowMaxs(mtr)
+
+  } else if(fn == "min"){
+
+    out <- MatrixGenerics::rowMins(mtr)
+
+  }
+
+  return(out)
+
+}
 
 #' @title Extract distance units
 #'

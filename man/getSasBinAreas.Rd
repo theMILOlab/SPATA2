@@ -2,17 +2,17 @@
 % Please edit documentation in R/getH-M.R
 \name{getSasBinAreas}
 \alias{getSasBinAreas}
-\title{Calculate IAS bin area}
+\title{Calculate SAS bin area}
 \usage{
 getSasBinAreas(
   object,
-  id,
-  distance = NA_integer_,
+  area_unit,
+  id = idSA(object),
+  distance = distToEdge(object, id),
+  binwidth = recBinwidth(object),
   n_bins_dist = NA_integer_,
-  binwidth = getCCD(object),
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  area_unit = NULL,
   use_outline = TRUE,
   remove_circle_bins = "Outside",
   verbose = NULL
@@ -33,13 +33,13 @@ is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
-specified. (See details for more.)}
-
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
@@ -63,8 +63,7 @@ the computational progress will be printed.
 Data.frame in which each observation corresponds to a circular bin.
 }
 \description{
-Computes the area circular bins of the IAS algorithm
-cover.
+Computes the area covered by each distance bin of the SAS algorithm.
 }
 \details{
 Approximates the area each circular bin covers
@@ -73,11 +72,4 @@ Afterwards the number of pixels per bin is multiplied
 with the area scale factor as is obtained by \code{getPixelScaleFactor(object, unit = unit)}
 where unit is the squared unit of input for argument \code{binwidth}. E.g.
 if \code{binwidth} = \emph{'0.1mm'} then \code{unit} = \emph{mm2}.
-}
-\note{
-If multiple tissue sections are located on the Visium slide use \code{createSpatialSegmentation()}
-to encircle each section and set the variable name in which you saved the
-encircling via \code{setOutlineVarName()}. Else the areas of the circle bins might
-include space that is not covered by tissue. This might distort computation
-results.
 }

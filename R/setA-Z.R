@@ -102,6 +102,51 @@ setBarcodes <- function(object, barcodes){
 
 # setC --------------------------------------------------------------------
 
+#' @title Set capture area
+#'
+#' @description Sets the capture area for objects from platforms with
+#' a specific capture area / field of view.
+#'
+#' @param x,y Vectors of length two that correspond to the range of the
+#' respective axis. If `NULL`, the respective range stays as is.
+#' @inherit argument_dummy
+#'
+#' @note The spatial methods *VisiumSmall* and *VisiumLarge* have a capture
+#' area by default. You can override it but it is not recommended.
+#'
+#' @seealso [`getCaptureArea()`]
+#'
+#' @export
+
+setCaptureArea <- function(object, x = NULL, y = NULL){
+
+  sm <- getSpatialMethod(object)
+
+  if(!base::is.null(x)){
+
+    base::stopifnot(base::length(x) == 2)
+
+    is_dist(input = x, error = TRUE)
+
+    sm@capture_area$x <- x
+
+  }
+
+  if(!base::is.null(y)){
+
+    base::stopifnot(base::length(y) == 2)
+
+    is_dist(input = y, error = TRUE)
+
+    sm@capture_area$y <- y
+
+  }
+
+  object <- setSpatialMethod(object, method = sm)
+
+  return(object)
+
+}
 
 
 #' @title Set center to center distance
@@ -566,216 +611,102 @@ setGeneSetDf <- function(object, gene_set_df){
 
 # setH --------------------------------------------------------------------
 
+#' @title Set `HistoImage`
+#'
+#' @description Sets object of class `HistoImage`.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#' @param hist_img An object of class `HistoImage`.
+#'
+#' @seealso [`registerHistoImage()`]
+#'
+#' @export
 
+setGeneric(name = "setHistoImage", def = function(object, ...){
+
+  standardGeneric(f = "setHistoImage")
+
+})
+
+#' @rdname setHistoImage
+#' @export
+setMethod(
+  f = "setHistoImage",
+  signature = "spata2",
+  definition = function(object, hist_img, ...){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- setHistoImage(imaging, hist_img = hist_img)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname setHistoImage
+#' @export
+setMethod(
+  f = "setHistoImage",
+  signature = "HistoImaging",
+  definition = function(object, hist_img, ...){
+
+    object@images[[hist_img@name]] <- hist_img
+
+    return(object)
+
+  }
+)
 
 
 
 
 # setI --------------------------------------------------------------------
 
-
-setImage <- function(object, image, of_sample = ""){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  object@images[[of_sample]]@image <- image
-
-  return(object)
-
-}
-
-
-
-#' @title Set image annotations
+#' @title Set image transformation instructions
 #'
-#' @description Sets image annotations in the correct slot.
-#'
-#' @param img_ann An object of class `ImageAnnotation`.
-#' @param img_anns List of objects of class `ImageAnnotation`.
-#' @param align Logical value. If `TRUE`, image annotations
-#' are aligned with image justification changes of the image of the
-#' `SPATA2` object.
+#' @description Sets image transformation instruction list.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @export
-setImageAnnotation <- function(object, img_ann, align = TRUE, overwrite = FALSE){
+setGeneric(name = "setImageTransformations", def = function(object, ...){
 
-  check <-
-    base::identical(
-      x = base::class(ImageAnnotation()),
-      y = base::class(img_ann)
+  standardGeneric(f = "setImageTransformations")
+
+})
+
+#' @rdname setImageTransformations
+#' @export
+setMethod(
+  f = "setImageTransformations",
+  signature = "HistoImaging",
+  definition = function(object, img_name, transformations, ...){
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object),
+      ref.against = "registered images"
     )
 
-  if(!check){
+    hist_img <- getHistoImage(object, img_name = img_name)
 
-    stop("Input for argument `img_ann` must be of class 'ImageAnnotation' from the SPATA2 package.")
+    hist_img@transformations <- transformations
 
-  }
+    object <- setHistoImage(object, hist_img = hist_img)
 
-  confuns::check_none_of(
-    input = getImgAnnIds(object),
-    against = img_ann@id,
-    ref.input = "input image annotation",
-    ref.against = "image annotation IDs",
-    overwrite = overwrite
-  )
-
-  # ensure empty image
-  img_ann@image <- EBImage::as.Image(base::matrix())
-
-  # ensure no barcodes
-  img_ann@misc$barcodes <- NULL
-
-  imaging <- getHistoImaging(object)
-
-  imaging@annotations[[img_ann@id]] <- img_ann
-
-  object <- setHistoImaging(object, imaging = imaging)
-
-  return(object)
-
-}
-
-#' @rdname setImageAnnotation
-#' @export
-setImageAnnotations <- function(object, img_anns, align = TRUE, overwrite = FALSE){
-
-  if(!base::isTRUE(overwrite)){
-
-    ids <-
-      purrr::map_chr(.x = img_anns, .f = ~ .x@id) %>%
-      base::unname()
-
-    confuns::check_none_of(
-      input = ids,
-      against = getImgAnnIds(object),
-      ref.input = "input image annotations",
-      ref.against = "image annotation IDs present"
-    )
+    return(object)
 
   }
-
-  for(img_ann in base::names(img_anns)){
-
-    object <-
-      setImageAnnotation(
-        object = object,
-        img_ann = img_anns[[img_ann]],
-        align = align,
-        overwrite = overwrite
-      )
-
-  }
-
-  return(object)
-
-}
+)
 
 
+# setH --------------------------------------------------------------------
 
-#' @rdname setImageDirLowres
-#' @export
-setImageDirDefault <- function(object, dir, check = TRUE, verbose = NULL, ...){
-
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  if(base::isTRUE(check)){
-
-    confuns::check_directories(directories = dir, type = "files")
-
-  }
-
-  img_object <- getImageObject(object)
-
-  img_object@dir_default <- dir
-
-  object <- setImageObject(object, image_object = img_object)
-
-  confuns::give_feedback(
-    msg = glue::glue("Default image directory set to '{dir}'."),
-    verbose = verbose
-  )
-
-  return(object)
-
-}
-
-
-#' @rdname setImageDirLowres
-#' @export
-setImageDirHighres <- function(object, dir, check = TRUE, verbose = NULL, ...){
-
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  if(base::isTRUE(check)){
-
-    confuns::check_directories(directories = dir, type = "files")
-
-  }
-
-  img_object <- getImageObject(object)
-
-  img_object@dir_highres <- dir
-
-  object <- setImageObject(object, image_object = img_object)
-
-  confuns::give_feedback(
-    msg = glue::glue("Image directory high resolution set to '{dir}'."),
-    verbose = verbose
-  )
-
-  return(object)
-
-}
-
-#' @title Set image directories
-#'
-#' @description Sets image directories that facilitate image exchanges.
-#'
-#' @param check Logical value. If set to TRUE the input directory is checked
-#' for validity and it is checked if the file actually exists.
-#'
-#' @inherit addImageDir params
-#' @inherit argument_dummy params
-#' @inherit update_dummy params
-#'
-#' @seealso [`addImageDir()`]
-#'
-#' @export
-#'
-setImageDirLowres <- function(object, dir, check = TRUE, verbose = NULL, ...){
-
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  if(base::isTRUE(check)){
-
-    confuns::check_directories(directories = dir, type = "files")
-
-  }
-
-  img_object <- getImageObject(object)
-
-  img_object@dir_lowres <- dir
-
-  object <- setImageObject(object, image_object = img_object)
-
-  confuns::give_feedback(
-    msg = glue::glue("Image directory low resolution set to '{dir}'."),
-    verbose = verbose
-  )
-
-  return(object)
-
-}
 
 
 #' @title Set `HistoImaging`
@@ -1023,6 +954,88 @@ setProcessedMatrix <- function(object, proc_mtr, name, ...){
 }
 
 # setS --------------------------------------------------------------------
+#' @title Set scale factors
+#'
+#' @description Sets scale factor values.
+#'
+#' @param fct_name Character value. Name of the scale factor.
+#' @param value Value to set.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setGeneric(name = "setScaleFactor", def = function(object, ...){
+
+  standardGeneric(f = "setScaleFactor")
+
+})
+
+#' @rdname setScaleFactor
+#' @export
+setMethod(
+  f = "setScaleFactor",
+  signature = "spata2",
+  definition = function(object, fct_name, value){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- setScaleFactor(imaging, fct_name = fct_name, value = value)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname setScaleFactor
+#' @export
+setMethod(
+  f = "setScaleFactor",
+  signature = "HistoImaging",
+  definition = function(object, fct_name, value){
+
+    ref_img <- getHistoImageRef(object)
+
+    ref_img <- setScaleFactor(ref_img, fct_name = fct_name, value = value)
+
+    object <- setHistoImage(object, hist_img = ref_img)
+
+    # set in all other images
+    # (no images if only pseudo image exists)
+    for(img_name in getImageNames(object, ref = FALSE)){
+
+      hist_img <- getHistoImage(object, img_name = img_name)
+
+      sf <-
+        base::max(ref_img@image_info$dims)/
+        base::max(hist_img@image_info$dims)
+
+      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
+#' @rdname setScaleFactor
+#' @export
+setMethod(
+  f = "setScaleFactor",
+  signature = "HistoImage",
+  definition = function(object, fct_name, value){
+
+    object@scale_factors[[fct_name]] <- value
+
+    return(object)
+
+  }
+)
 
 #' @title Set spatial annotations
 #'

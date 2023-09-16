@@ -15,9 +15,9 @@ getSasDf(
   n_bins_angle = 1,
   variables = NULL,
   method_gs = NULL,
-  summarize_by = c("bins_angle", "bins_dist"),
   core = TRUE,
   periphery = TRUE,
+  summarize_by = c("bins_circle", "bins_angle"),
   bcs_exclude = NULL,
   verbose = FALSE,
   ...

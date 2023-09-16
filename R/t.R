@@ -364,6 +364,232 @@ transfer_slot_content <- function(recipient,
 }
 
 
+#' @title Transform image
+#'
+#' @description Transforms the image or the tissue outline.
+#'
+#' @param image Image comptabible with the `EBImage`-package.
+#' @param transformations List of transformation instructions. See
+#' slot @@transformations of class `HistoImage`.
+#'
+#' @return Transformed input.
+#' @export
+#'
+transform_image <- function(image, transformations, bg_col = "white"){
+
+  # only required after usage of alignImageAuto()
+  if(!base::is.null(transformations$center)){
+
+    if(!base::all(transformations$center == 0)){
+
+      image <-
+        EBImage::translate(
+          x = image,
+          v = base::as.numeric(transformations$center),
+          bg.col = bg_col
+        )
+
+    }
+
+  }
+
+  # rotate first
+  if(transformations$angle != 0){
+
+    angle <- transformations$angle
+
+    image <-
+      EBImage::rotate(
+        x = image,
+        angle = angle,
+        output.dim = base::dim(image)[c(1,2)],
+        bg.col = bg_col
+      )
+
+  }
+
+  # flip second
+  if(base::isTRUE(transformations$flip$horizontal)){
+
+    image <- EBImage::flip(x = image)
+
+  }
+
+  if(base::isTRUE(transformations$flip$vertical)){
+
+    image <- EBImage::flop(x = image)
+
+  }
+
+  # translate third
+  if(!base::all(transformations$translate == 0)){
+
+    image <-
+      EBImage::translate(
+        x = image,
+        v = base::as.numeric(transformations$translate),
+        bg.col = bg_col
+      )
+
+  }
+
+  # stretch fourth
+  if(!base::all(transformations$stretch == 1)){
+
+    if(transformations$stretch$horizontal != 1){
+
+      image <-
+        stretch_image(
+          image = image,
+          axis = "horizontal",
+          fct = transformations$stretch$horizontal
+        )
+
+    }
+
+    if(transformations$stretch$vertical != 1){
+
+      image <-
+        stretch_image(
+          image = image,
+          axis = "vertical",
+          fct = transformations$stretch$vertical
+        )
+
+    }
+
+  }
+
+  return(image)
+
+}
+
+#' @title Transform coordinates
+#'
+#' @description Applies spatial linear transformations on a set of points
+#' in a Cartesian coordinate system.
+#'
+#' @param outline_df Data.frame with x- and y-coordinates.
+#' @param transformations List of transformation instructions. See
+#' slot @@transformations of class `HistoImage`.
+#'
+#' @return Transformed input.
+#' @export
+#'
+
+transform_coords <- function(coords_df, transformations, center, ranges, ...){
+
+  deprecated(...)
+
+  # only required after usage of alignImageAuto()
+  if(!base::is.null(transformations$center)){
+
+    if(!base::all(transformations$center == 0)){
+
+      coords_df <-
+        dplyr::mutate(
+          .data = coords_df,
+          dplyr::across(
+            .cols = dplyr::any_of(c("x", "width")),
+            .fns = ~ .x + transformations$center$horizontal
+          ),
+          dplyr::across(
+            .cols = dplyr::any_of(c("y", "height")),
+            # reverse vertical translation to align with image translation
+            .fns = ~ .x + (transformations$center$vertical) #
+          )
+        )
+
+    }
+
+  }
+
+  # first rotate
+  if(transformations$angle != 0){
+
+    coords_df <-
+      rotate_coords_df(
+        df = coords_df,
+        coord_vars = list(pair1 = c("x", "y"), pair2 = c("width", "height")),
+        # apply reverted as image is displayed in x-/y-space but rotated in image space
+        angle = 360-transformations$angle,
+        center = center
+      )
+
+  }
+
+  # second flip
+  if(base::isTRUE(transformations$flip$horizontal)){
+
+    coords_df <-
+      flip_coords_df(
+        df = coords_df,
+        ranges = ranges,
+        axis = "horizontal",
+        xvars = c("x", "width"),
+        yvars = c("y", "height")
+      )
+
+  }
+
+  if(base::isTRUE(transformations$flip$vertical)){
+
+    coords_df <-
+      flip_coords_df(
+        df = coords_df,
+        ranges = ranges,
+        axis = "vertical",
+        xvars = c("x", "width"),
+        yvars = c("y", "height")
+      )
+
+  }
+
+  # third translate
+  if(!base::all(transformations$translate == 0)){
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        dplyr::across(
+          .cols = dplyr::any_of(c("x", "width")),
+          .fns = ~ .x + transformations$translate$horizontal
+        ),
+        dplyr::across(
+          .cols = dplyr::any_of(c("y", "height")),
+          # reverse vertical translation to align with image translation
+          .fns = ~ .x + transformations$translate$vertical #
+        )
+      )
+
+  }
+
+
+  # fourth stretching
+  if(!base::all(transformations$stretch == 1)){
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        dplyr::across(
+          .cols = dplyr::any_of(c("x", "width")),
+          .fns = ~ .x * transformations$stretch$horizontal
+        ),
+        dplyr::across(
+          .cols = dplyr::any_of(c("y", "height")),
+          # reverse vertical translation to align with image translation
+          .fns = ~ .x * transformations$stretch$vertical #
+        )
+      )
+
+  }
+
+  return(coords_df)
+
+}
+
+
+
 #' @title Convert from European Units of Length to pixels
 #'
 #' @description Transforms European units of length (e.g. \emph{'2mm'}, \emph{'400.50um'})

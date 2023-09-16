@@ -1770,6 +1770,449 @@ flipCoords <- function(...){
 
 # g -----------------------------------------------------------------------
 
+#' @title Obtain IAS results (data.frame)
+#'
+#' @description Extracts (and filters) the summarized IAS results in form
+#' of a data.frame
+#'
+#' @param var_pval,var_eval Character value. Specifies the p-value- and the
+#' evaluation variable based on which the thresholds are applied.
+#' @param threshold_pval,threshold_eval Numeric value. Used to filter
+#' the output accordingly.
+#'
+#' @inherit object_dummy params
+#' @inherit add_models params
+#'
+#' @return Data.frame.
+#' @export
+#' @keywords internal
+
+getSmrdResultsDf <-  function(ias,
+                              eval = "ias_score",
+                              pval = "p_value_mean_adjusted",
+                              threshold_pval = 1,
+                              threshold_eval = 0,
+                              model_subset = NULL,
+                              model_remove = NULL){
+
+  rdf <-
+    dplyr::filter(
+      .data = ias@results,
+      !!rlang::sym(pval) <= {{threshold_pval}} &
+        !!rlang::sym(eval) >= {{threshold_eval}}
+    )
+
+  if(base::is.character(model_subset)){
+
+    rdf <- dplyr::filter(rdf, stringr::str_detect(models, pattern = model_subset))
+
+  }
+
+  if(base::is.character(model_remove)){
+
+    rdf <- dplyr::filter(rdf, !stringr::str_detect(models, pattern = model_remove))
+
+  }
+
+  rdf <- dplyr::arrange(rdf, dplyr::desc(!!rlang::sym(eval)))
+
+  return(rdf)
+
+}
+
+#' @title Obtain spatial annotation summary
+#'
+#' @description Extracts information about spatial annotations in a
+#' data.frame.
+#'
+#' @param area Logical. If `TRUE`, the area of each spatial annotation
+#' is added in a variable named *area*.
+#' @param unit_area The unit of the *area* variable.
+#' @param center Logical. If `TRUE`, two variables named *center_x* and
+#' *center_y* area added providing the center coordinates of the image
+#' annotation.
+#' @param unit_center The unit of the center variables.
+#' @param genes Character value or `NULL`. If character, the gene expression
+#' of the named genes is summarized among all barcode spots that fall in the
+#' area of the spatial annotation and are added as a variable.
+#' @param summarize_with Character value. The summarizing function with
+#' which the gene expression values are summarized.
+#' @param tags_to_lgl Logical. If `TRUE`, tag information is displayed in logical
+#' variables where each variable is named like one of the unique tags and
+#' every value is either `TRUE` if the annotation cotnains the tag or `FALSE`
+#' if not.
+#' @param tags_keep Logical. If `TRUE`, variable *tags* is not removed if
+#' `tags_to_lgl` is `TRUE`.
+#'
+#' @inherit getSpatialAnnotations params
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Selection of spatial annotations
+#'
+#' @return Data.frame in which each row corresponds to an spatial annotation identified
+#' by the variable *id*.
+#'
+#' @export
+#'
+getSpatAnnSummaryDf <- function(object,
+                                ids = NULL,
+                                area = TRUE,
+                                unit_area = "mm2",
+                                center = TRUE,
+                                unit_center = "px",
+                                genes = NULL,
+                                summarize_with = "mean",
+                                tags_to_lgl = TRUE,
+                                tags_keep = FALSE,
+                                verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(base::is.character(ids)){
+
+    confuns::check_one_of(
+      input = ids,
+      against = getSpatAnnIds(object)
+    )
+
+  } else {
+
+    ids <- getSpatAnnIds(object)
+
+  }
+
+
+  confuns::check_one_of(
+    input = unit_area,
+    against = validUnitsOfArea()
+  )
+
+  confuns::check_one_of(
+    input = unit_center,
+    against = validUnitsOfLength()
+  )
+
+  if(base::is.character(genes)){
+
+    gene_df <-
+      joinWith(
+        object = object,
+        spata_df = getSpataDf(object),
+        genes = genes,
+        smooth = FALSE,
+        verbose = verbose
+      )
+
+  }
+
+
+  prel_df <-
+    purrr::map_df(
+      .x = ids,
+      .f = function(id){
+
+        spat_ann <-
+          getSpatialAnnotation(
+            object = object,
+            id = id,
+            add_barcodes = TRUE,
+            add_image = FALSE
+          )
+
+        df <-
+          tibble::tibble(
+            id = spat_ann@id,
+            parent_id = spat_ann@info$parent_id,
+            parent_origin = spat_ann@info$parent_origin
+          )
+
+        if(base::isTRUE(center)){
+
+          center_pos <-
+            getSpatAnnCenter(object, id = id) %>%
+            as_unit(input = ., unit = unit_center, object = object)
+
+          df$center_x <- center_pos["x"]
+          df$center_y <- center_pos["y"]
+
+        }
+
+        df$tags <- stringr::str_c(spat_ann@tags, collapse = "|")
+
+        if(base::is.character(genes)){
+
+          smrd_df <-
+            dplyr::filter(gene_df, barcodes %in% spat_ann@misc$barcodes) %>%
+            dplyr::summarise(
+              dplyr::across(
+                .cols = dplyr::all_of(genes),
+                .fns = summarize_formulas[[summarize_with]]
+              )
+            )
+
+          df <-
+            base::cbind(df, smrd_df) %>%
+            tibble::as_tibble()
+
+        }
+
+        return(df)
+
+      }
+    )
+
+  # add area measure
+  if(base::isTRUE(area)){
+
+    area_df <-
+      getSpatAnnArea(
+        object = object,
+        ids = ids,
+        unit = unit_area
+      ) %>%
+      base::as.data.frame() %>%
+      tibble::rownames_to_column(var = "id") %>%
+      magrittr::set_colnames(value = c("id", "area"))
+
+    prel_df <-
+      dplyr::left_join(
+        x = prel_df,
+        y = area_df,
+        by = "id"
+      ) %>%
+      dplyr::select(
+        id, parent_id, parent_origin, dplyr::any_of(c("center_x", "center_y")),
+        area,
+        dplyr::everything()
+      )
+
+  }
+
+  # shift tags
+  if(base::isTRUE(tags_to_lgl)){
+
+    all_tags <-
+      stringr::str_c(prel_df$tags, collapse = "|") %>%
+      stringr::str_split(pattern = "\\|") %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    for(tag in all_tags){
+
+      prel_df[[tag]] <- FALSE
+
+      prel_df <-
+        dplyr::mutate(
+          .data = prel_df,
+          {{tag}} := stringr::str_detect(string = tags, pattern = tag)
+        )
+
+    }
+
+  }
+
+  if(base::isTRUE(tags_keep)){
+
+    out <- prel_df
+
+  } else {
+
+    out <- dplyr::select(prel_df, -tags)
+
+  }
+
+  return(out)
+
+}
+
+
+
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDir <- function(object, name){
+
+  io <- getHistoImaging(object)
+
+  if(name %in% c("default", "highres", "lowres")){
+
+    out <- methods::slot(io, name = stringr::str_c("dir_", name))
+
+  } else {
+
+    if(base::length(io@dir_add) == 0){
+
+      stop("No additional image directories found.")
+
+    } else {
+
+      confuns::check_one_of(
+        input = name,
+        against = base::names(io@dir_add),
+        ref.opt.2 = "additional image directories",
+        fdb.opt = 2
+      )
+
+    }
+
+    out <- io@dir_add[[name]]
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){
+
+  dir_default <- getHistoImaging(object)@dir_default
+
+  if(base::length(dir_default) == 0 || base::is.na(dir_default)){
+
+    msg <- "Could not find directory to default image. Set with `setImageDirDefault()`."
+
+    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_default, type = "files")
+
+  }
+
+  return(dir_default)
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirectories <- function(object){
+
+  io <- getHistoImaging(object)
+
+  c(
+    "default" = io@dir_default,
+    "lowres" = io@dir_lowres,
+    "highres" = io@dir_highres,
+    purrr::map_chr(
+      .x = io@dir_add,
+      .f = ~ .x
+    )
+  )
+
+}
+
+
+#' @rdname getImageDirLowres
+#' @export
+getImageDirHighres <- function(object, fdb_fn = "warning", check = FALSE, ...){
+
+  dir_highres <- getHistoImaging(object)@dir_highres
+
+  if(base::length(dir_highres) == 0 || base::is.na(dir_highres)){
+
+    msg <- "Could not find directory to high resolution image. Set with `setImageDirHighres()`."
+
+    give_feedback(msg = msg, fdb.fb = fdb_fn, with.time = FALSE)
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_highres, type = "files")
+
+  }
+
+  return(dir_highres)
+
+}
+
+
+#' @title Obtain image directories
+#'
+#' @description Extracts image directories known to the `SPATA2` object.
+#'
+#' @param check Logical value. If `TRUE`, it is checked if the file actually exists.
+#' @param name Character value. The name of the image of interest. Should be one
+#' of Get
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Character vector.
+#'
+#' @details `getImageDirectories()` returns all image directories known to
+#' the `SPATA2` object. `getImageDirLowres()`, `getImageDirHighres()` and
+#' `getImageDirDefault()` return the directories of the respective slot of
+#' the `HistoImaging` object. `getImageDir()` extracts specific directories
+#' that were set with `setImageDir()` by name.
+#'
+#' @seealso [`setImageDir()`] to set specific image directories. [`loadImage()`],
+#' [`loadImageHighres()`], [`loadImageLowres()`], [`loadImageDefault()`] to
+#' exchange images.
+#'
+#' @export
+#'
+getImageDirLowres <- function(object, fdb_fn = "warning", check = FALSE){
+
+  dir_lowres <- getHistoImaging(object)@dir_lowres
+
+  if(base::length(dir_lowres) == 0 || base::is.na(dir_lowres)){
+
+    msg <- "Could not find directory to low resolution image. Set with `setImageDirLowres()`."
+
+    confuns::give_feedback(msg = msg, fdb.fn = fdb_fn, with.time = FALSE)
+
+  }
+
+  if(base::isTRUE(check)){
+
+    confuns::check_directories(directories = dir_lowres, type = "files")
+
+  }
+
+  return(dir_lowres)
+
+}
+
+#' @title Obatain image information
+#'
+#' @description Extracts a list of information about the currently set
+#' image.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return List that contains information of slots @@image_info and @@justification
+#' of the `HistoImaging` object.
+#' @export
+#'
+getImageInfo <- function(object){
+
+  io <- getHistoImaging(object)
+
+  c(
+    io@image_info,
+    io@justification
+  )
+
+}
+
+
+#' @rdname getHistoImaging
+#' @keywords internal
+#' @export
+getImageObject <- function(object){
+
+  deprecated(fn = TRUE)
+
+  getHistoImaging(object)
+
+}
+
 #' @keywords internal
 #' @export
 getImgAnnBorderDf <- function(...){
@@ -2423,6 +2866,86 @@ hlpr_filter_trend <- function(atdf, limit, poi){
 
 
 # i -----------------------------------------------------------------------
+
+identifyTissueSections <- function(object, eps = getCCD(object, "px")*1.25, minPts = 3){
+
+  coords_df <-
+    getCoordsDf(object) %>%
+    add_tissue_section_variable(
+      coords_df = .,
+      ccd = eps,
+      name = "section",
+      minPts = minPts
+    )
+
+  object <- setCoordsDf(object, coords_df = coords_df)
+
+  return(object)
+
+}
+
+identifyTissueSections2 <- function(object, ...){
+
+  imaging <- getHistoImaging(object)
+
+  # add variable 'section'
+  imaging <- identifySpatialOutliers(object = imaging)
+
+  coords_df <- getCoordsDf(imaging)
+
+  # add variable 'outline'
+  coords_df <-
+    purrr::map_df(
+      .x = base::unique(coords_df[["section"]]),
+      .f = function(section){
+
+        coords_df_sub <-
+          dplyr::filter(coords_df, section == {{section}})
+
+        coords_mtr <-
+          tibble::column_to_rownames(coords_df_sub, "barcodes") %>%
+          dplyr::select(x, y) %>%
+          base::as.matrix()
+
+        out <-
+          concaveman::concaveman(points = coords_mtr) %>%
+          base::as.data.frame() %>%
+          tibble::as_tibble() %>%
+          magrittr::set_colnames(c("xp", "yp")) %>%
+          dplyr::mutate(id = stringr::str_c("P", dplyr::row_number()))
+
+        map_to_bcsp <-
+          tidyr::expand_grid(
+            id = out$id,
+            barcodes = coords_df_sub$barcodes
+          ) %>%
+          dplyr::left_join(y = coords_df_sub[,c("barcodes", "x", "y")], by = "barcodes") %>%
+          dplyr::left_join(y = out, by = "id") %>%
+          dplyr::group_by(id, barcodes) %>%
+          dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
+          dplyr::ungroup() %>%
+          dplyr::group_by(id) %>%
+          dplyr::filter(dist == base::min(dist)) %>%
+          dplyr::ungroup()
+
+        coords_df_sub[["outline"]] <- coords_df_sub[["barcodes"]] %in% map_to_bcsp[["barcodes"]]
+
+        return(coords_df_sub)
+
+      }
+    ) %>%
+    # outline of section == 0 is always FALSE
+    dplyr::mutate(
+      outline = dplyr::if_else(condition = section == "artefact", true = FALSE, false = outline)
+    )
+
+  imaging <- addVarToCoords(imaging, var_df = coords_df, vars = "outline")
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  return(object)
+
+}
 
 #' @keywords internal
 incorporate_tissue_outline <- function(...){

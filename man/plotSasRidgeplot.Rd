@@ -13,6 +13,7 @@ plotSasRidgeplot(
   binwidth = recBinwidth(object),
   n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
+  core = TRUE,
   smooth_span = 0.3,
   unit = getSpatialMethod(object)@unit,
   clrp = NULL,
@@ -182,9 +183,9 @@ the distance to the spatial annotation. E.g. immediate descending: gene expressi
 is high in close proximity to the spatial annotation and declines logarithmically
 with the distance to the spatial annotation.
 
-\bold{How circular binning works:}
+\bold{How distance binning works:}
 To bin data points according to their localisation to the spatial annotation
-three parameters are required:
+two of the following three parameters are required (the third one is calculated):
 
 \itemize{
 \item{\code{distance}: The distance from the border of the spatial annotation to
@@ -201,11 +202,6 @@ These three parameters stand in the following relation to each other:
 \item{\code{distance} = \code{n_bins_dist} * \code{binwidth}}
 \item{\code{binwidth} = \code{distance} / \code{n_bins_dist}}
 }
-
-Therefore, only two of the three arguments must be specified as the remaining
-one is calculated. We recommend to stick to the first option: Specifying
-\code{distance} and \code{binwidth} and letting the function calculate
-\code{n_bins_dist}.
 
 Once the parameters are set and calculated the polygon that is used to
 define the borders of the spatial annotation is repeatedly expanded by the distance
@@ -232,8 +228,8 @@ behaviors. The gene expression change is fitted to every model that is included.
 A gene-model-fit is evaluated twofold:
 
 \itemize{
-\item{Mean Absolute Error}: Description.
-\item{Root Mean Squared Error}: Description.
+\item{Mean Absolute Error}: Add description.
+\item{Root Mean Squared Error}: Add description.
 \item{Pearson correlation}: The inferred expression changes is correlated
 with the model. (Correlation as well as the corresponding p-value depend
 on the number of bins!)

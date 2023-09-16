@@ -9,21 +9,20 @@ plotSasBarplot(
   object,
   grouping_variable,
   id = idSA(object),
-  distance = NA_integer_,
+  distance = distToEdge(object, id),
   binwidth = getCCD(object),
   n_bins_dist = NA_integer_,
-  include_area = FALSE,
-  unit = getSpatialMethod(object)@unit,
-  round = 2,
+  core = TRUE,
+  periphery = TRUE,
+  unit = getDefaultUnit(object),
   clrp = NULL,
   clrp_adjust = NULL,
-  position = "fill",
-  display_border = TRUE,
-  border_linealpha = 0.75,
+  border_linealpha = 0,
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
-  x_nth = 1,
+  bar_width_fct = 1.1,
+  expand_x_fct = 1.05,
   bcsp_exclude = NULL,
   verbose = NULL
 )
@@ -83,9 +82,6 @@ to the spatial annotation is displayed on the x-axis.
 
 If \code{FALSE}, plots the bin numbers instead.}
 
-\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
-of \code{base::round()}. Rounds transformed values before they are returned.}
-
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
@@ -95,17 +91,9 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
-to highlight where the border of the spatial annotation runs.}
-
 \item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
 represents the border of the spatial annotation.}
-
-\item{x_nth}{Numeric value. If the number of breaks/labels on the
-x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
-every label is kept. If 2, every second label is kept. If 3, every
-third label is kept. And so on.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -123,6 +111,17 @@ Must have at least three columns:
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
+
+\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
+of \code{base::round()}. Rounds transformed values before they are returned.}
+
+\item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
+to highlight where the border of the spatial annotation runs.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
 }
 \value{
 A ggplot.

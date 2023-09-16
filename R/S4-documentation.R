@@ -52,6 +52,20 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' @details The following classes are derivatives of this class: [`GroupAnnotation`],
 #'  [`ImageAnnotation`], [`NumericAnnotation`]
 #'
+#' @seealso The following functions can be used to create spatial annotations:
+#'
+#' \itemize{
+#'  \item{[`addSpatialAnnotation()`]:}{ Based on polygon input.}
+#'  \item{[`barcodesToImageAnnotation()`]:}{ Based on the spatial extent of a
+#'  set of data points identified by the input barcodes.}
+#'  \item{[`createGroupAnnotations()`]:}{ Based on the spatial extent of one or more
+#'  groups of data points.}
+#'  \item{[`createImageAnnotations()`]:}{ Based on interactive drawing
+#'  on images.}
+#'  \item{[`createNumericAnnotations()`]:}{ Based on the expression of numeric
+#'  features such as gene expression, read counts, copy number alterations, etc.}
+#'  }
+#'
 #' @inheritSection section_dummy Selection of spatial annotations
 #'
 
@@ -398,13 +412,15 @@ NumericAnnotation <- setClass(Class = "NumericAnnotation",
 #' Contains the results of [`findSDEGS()`]
 #'
 #' @slot coordinates data.frame. Data.frame of four variables *barcodes*, *x*, *y*,
-#' *bins_circle* to visualize the testing set up.
+#' *bins_dist* to visualize the testing set up.
 #' @slot dea_1v1 list. List of data.frames each containing the differentially
 #' expressed genes for the circle bin vs. *Control* according to which the slot containing
 #' the data.frame is named (as returned by `Seurat::FindMarkers()`).
 #' @slot dea_all data.frame.  Data.frame of DEA testing as returned by `Seurat::FindAllMarkers()`.
+#' @slot spat_ann SpatialAnnotation. The spatial annotation based on which
+#' the testing was conducted.
 #' @slot spatial_parameters list. List of three slots named *binwidth*, *distance*,
-#' *n_bins_circle* as was set up using the corresponding parameters.
+#' *n_bins_dist* as was set up using the corresponding parameters.
 #' @slot sample character. Name of the sample to which the results belong.
 #'
 #' @references This is an R-implementation of the approach suggested by
@@ -421,7 +437,7 @@ SDEGS <- methods::setClass(Class = "SDEGS",
                              coordinates = "data.frame",
                              dea_1v1 = "list",
                              dea_all = "data.frame",
-                             img_ann = "ImageAnnotation",
+                             spat_ann = "SpatialAnnotation",
                              spatial_parameters = "list",
                              sample = "character"
                            ))

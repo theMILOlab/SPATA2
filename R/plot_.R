@@ -1,4 +1,45 @@
 
+plot_polygon <- function(poly, lim, size = 2, scale_fct = 1){
+
+  lim <- base::unique(c(1, lim))
+
+  initiate_plot(xlim = lim, ylim = lim)
+  add_polygon(poly = poly, color = "black", size = size, scale_fct = scale_fct)
+
+}
+
+
+plot_polygon_overlap <- function(poly1,
+                                 poly2,
+                                 lim,
+                                 color = ggplot2::alpha("red", 0.5),
+                                 size = 2,
+                                 main = ""){
+
+  lim <- base::unique(c(1,lim))
+
+  a <- sf::st_polygon(base::list(base::as.matrix(poly1)))
+  b <- sf::st_polygon(base::list(base::as.matrix(poly2)))
+
+  inter <- sf::st_intersection(x = a, y = b)
+
+  area <- sf::st_area(inter) %>% base::round(digits = 2)
+
+  if(main == ""){
+
+    main <- stringr::str_c("Overlap: ", area)
+
+  }
+
+  initiate_plot(xlim = lim, ylim = lim, main = main)
+  plot(inter, add = TRUE, col = color, lwd = size, main = main)
+  add_polygon(x = as.numeric(as.matrix(a)[,1]), y = as.numeric(as.matrix(a)[,2]), color = "black", size = size*1.25)
+  add_polygon(x = as.numeric(as.matrix(b)[,1]), y = as.numeric(as.matrix(b)[,2]), color = "red", size = size)
+
+
+}
+
+
 #' @title Helper
 #' @param force_grid Logical value. If `TRUE`, `facet_grid()` is used regardless
 #' of `variables` being of length 1.

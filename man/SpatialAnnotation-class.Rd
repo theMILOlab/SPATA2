@@ -91,3 +91,18 @@ steps are skipped. Eventually, the remaining spatial annotations are submitted t
 whatever the respective function does.
 }
 
+\seealso{
+The following functions can be used to create spatial annotations:
+
+\itemize{
+\item{\code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}:}{ Based on polygon input.}
+\item{\code{\link[=barcodesToImageAnnotation]{barcodesToImageAnnotation()}}:}{ Based on the spatial extent of a
+set of data points identified by the input barcodes.}
+\item{\code{\link[=createGroupAnnotations]{createGroupAnnotations()}}:}{ Based on the spatial extent of one or more
+groups of data points.}
+\item{\code{\link[=createImageAnnotations]{createImageAnnotations()}}:}{ Based on interactive drawing
+on images.}
+\item{\code{\link[=createNumericAnnotations]{createNumericAnnotations()}}:}{ Based on the expression of numeric
+features such as gene expression, read counts, copy number alterations, etc.}
+}
+}

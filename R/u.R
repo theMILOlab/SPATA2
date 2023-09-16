@@ -1,4 +1,150 @@
 
+#' @title Empty image slot
+#'
+#' @description Removes the image from slot @@image of a `HistoImage`.
+#' Useful for efficient data storing.
+#'
+#' @param img_name Character value. The name of the image to unload.
+#' @param active. Logical value. If `FALSE`, the default,
+#' the image from the active `HistoImage` is not unloaded.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`loadImage()`],[`loadImages()`]
+#'
+#' @export
+#'
+setGeneric(name = "unloadImage", def = function(object, ...){
+
+  standardGeneric(f = "unloadImage")
+
+})
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImage",
+  signature = "HistoImage",
+  definition = function(object, verbose = TRUE, ...){
+
+    if(containsImage(object)){
+
+      confuns::give_feedback(
+        msg = glue::glue("Unloading image {object@name}."),
+        verbose = verbose
+      )
+
+      object@image <- empty_image
+
+    }
+
+    return(object)
+
+  })
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImage",
+  signature = "HistoImaging",
+  definition = function(object, img_name, verbose = TRUE, ...){
+
+    confuns::check_one_of(
+      input = name,
+      against = getImageNames(object)
+    )
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- unloadImage(hist_img, verbose = verbose)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+#' @rdname unloadImage
+#' @export
+setGeneric(name = "unloadImages", def = function(object, ...){
+
+  standardGeneric(f = "unloadImages")
+
+})
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImages",
+  signature = "spata2",
+  definition = function(object, active = FALSE, verbose = TRUE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <- unloadImages(imaging, active = active, verbose = verbose)
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImages",
+  signature = "HistoImaging",
+  definition = function(object, active = FALSE, verbose = TRUE){
+
+    hist_img_names <- getImageNames(object)
+
+    for(hin in hist_img_names){
+
+      hist_img <- getHistoImage(object, img_name = hin)
+
+      if(!hist_img@active){
+
+        if(containsImage(hist_img)){
+
+          hist_img@image <- empty_image
+
+          confuns::give_feedback(
+            msg = glue::glue("Unloading image '{hin}'."),
+            verbose = verbose
+          )
+
+        }
+
+      } else {
+
+        if(base::isTRUE(active)){
+
+          if(containsImage(hist_img)){
+
+            hist_img@image <- empty_image
+
+            confuns::give_feedback(
+              msg = glue::glue("Unloading image '{hin}'."),
+              verbose = verbose
+            )
+
+          }
+
+        }
+
+      }
+
+      object <- setHistoImage(object, hist_img = hist_img)
+
+    }
+
+    return(object)
+
+  }
+)
+
 
 
 # update ------------------------------------------------------------------

@@ -949,6 +949,499 @@ createGroupAnnotations <- function(object,
 
 }
 
+
+# createH -----------------------------------------------------------------
+
+#' @title Create an object of class `HistoImage`
+#'
+#' @description Official constructor function of the S4 class `HistoImage`.
+#'
+#' @param dir Character value. The directory from where to retrieve the image.
+#' @param img_name Character value. The name of the `HistoImage` with which
+#' to refer to it via arguments `img_name` and `img_names`.
+#' @param sample Character value. The sample name to which the image belongs.
+#' Should be equal to slot @@sample of the `HistoImaging` object in which
+#' the `HistoImage` is stored.
+#' @param reference Logical value. If `TRUE`, the `HistoImage` is
+#' treated as the reference image for all other registered images in
+#' the `HistoImaging` object.
+#' @param scale_factors list. Sets slot @@scale_factors,
+#' @inherit argument_dummy params
+#'
+#' @return An object of class `HistoImage`
+#'
+#' @seealso [`HistoImage-class`]
+#'
+#' @export
+#'
+createHistoImage <- function(dir,
+                             img_name,
+                             sample,
+                             active = FALSE,
+                             scale_factors = list(coords = 1),
+                             reference = FALSE,
+                             verbose = TRUE,
+                             ...){
+
+  dir <- base::normalizePath(dir)
+
+  # set basic slots
+  hist_img <- HistoImage()
+  hist_img@active <- active
+  hist_img@aligned <- FALSE
+  hist_img@dir <- dir
+  hist_img@name <- img_name
+  hist_img@reference <- reference
+  hist_img@sample <- sample
+  hist_img@scale_factors <- scale_factors
+  hist_img@transformations <- default_image_transformations
+
+  # load and set image
+  hist_img <- loadImage(object = hist_img, verbose = verbose)
+
+  hist_img@image_info <-
+    list(dims = base::dim(hist_img@image))
+
+  # return output
+  return(hist_img)
+
+}
+
+
+#' @title Create an object of class `HistoImaging`
+#'
+#' @description Official constructor function of the S4 class `HistoImaging`.
+#' Functions suffixed by the platform name are wrappers written for their
+#' standardized output folder.
+#'
+#' @param active Character value. Name of the `HistoImage` that is set
+#' to the active image. Defaults to the reference image.
+#' @param coordinates Data.frame of at least three variables:
+#'
+#'  \itemize{
+#'   \item{*barcodes*: }{Character variable with unique IDs for each observation.}
+#'   \item{*x_orig*: }{Numeric variable representing x-coordinates in a cartesian coordinate system.}
+#'   \item{*y_orig*: }{Numeric variable representing y-coordinates in a cartesian coordinate system.}
+#'   }
+#'
+#' Coordinates should align with the tissue outline of the reference `HistoImage` after being
+#' multiplied withe its coordinate scale factor in slot @@scale_factors$coords.
+#' @param dir The directory to the output folder of the platform.
+#' @param empty_image_slots Logical value. If `TRUE`, content of slot @@image
+#' of all `HistoImage` objects is emptied except for the active one.
+#' @param file_coords Character value or `NULL`. If character, specifies the filename
+#' **within** the directory `dir` that leads to the coordinates .csv file. If `NULL`
+#' the expected filename is tried:
+#'
+#'  \itemize{
+#'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
+#'   \item{*SlideSeqV1*:}{ File that ends with *'...MatchedBeadLocation.csv'*}
+#'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
+#'   }
+#'
+#' @param hist_img_ref The `HistoImaging` serving as the reference image.
+#' Should be created with `createHistoImage()`.
+#' @param hist_imgs List of additional `HistoImaging` objects for slot @@images.
+#' @param img_ref,img_active
+#' Character values specifying which of the images to register and how to register
+#' them. See details of [`HistoImaging`] for more information about the definitions
+#' of the reference image and the active image. Setting both arguments to the same
+#' value results in the function to register the specified image as the active
+#' as well as the reference image. Additional images can be registered later on
+#' at any time using the funciton [`registerImage()`]. Valid input options depend
+#' on the platform used:
+#'
+#' \itemize{
+#'  \item{*Visium*:}{ Either *'lowres'* or *'hires'*.}
+#' }
+#'
+#' @param meta List of meta data regarding the tissue.
+#' @param misc List of miscellaneous information.
+#' @param sample Character value. The sample name of the tissue.
+#'
+#' @inherit argument_dummy params
+#'
+#' @seealso [`createHistoImage()`], [`registerHistoImage()`]
+#'
+#' @return An object of class `HistoImaging`
+#' @export
+#'
+createHistoImaging <- function(sample,
+                               hist_img_ref = NULL,
+                               hist_imgs = list(),
+                               active = NULL,
+                               unload = TRUE,
+                               coordinates = tibble::tibble(),
+                               meta = list(),
+                               method = SpatialMethod(),
+                               misc = list(),
+                               verbose = TRUE,
+                               ...){
+
+  confuns::is_value(x = sample, mode = "character")
+
+  # basic
+  object <- HistoImaging()
+  object@sample <- sample
+  object@meta <- meta
+  object@method <- method
+  object@misc <- misc
+  object@version <- current_spata2_version
+
+  # set registered images
+  object@images <-
+    purrr::keep(.x = hist_imgs, .p = ~ methods::is(.x, class2 = "HistoImage")) %>%
+    purrr::map(.x = ., .f = function(hist_img){
+
+      if(hist_img@sample != sample){
+
+        stop(glue::glue("HistoImage {hist_img@name} is from sample {hist_img@sample}."))
+
+      }
+
+      hist_img@active <- FALSE
+      hist_img@reference <- FALSE
+
+      return(hist_img)
+
+    }) %>%
+    purrr::set_names(x = ., nm = purrr::map_chr(.x = ., .f = ~ .x@name))
+
+  # set reference image
+  object@name_img_ref <- hist_img_ref@name
+  object@images[[hist_img_ref@name]] <- hist_img_ref
+
+  if(base::is.null(active)){
+
+    active <- hist_img_ref@name
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Active image: {active}."),
+    verbose = verbose
+  )
+
+  object <-
+    activateImage(
+      object = object,
+      img_name = active,
+      verbose = FALSE
+    )
+
+  # empty image slots
+  if(base::isTRUE(unload)){
+
+    object <- unloadImages(object, active = FALSE)
+
+  }
+
+  # coordinates
+  if(!purrr::is_empty(x = coordinates)){
+
+    confuns::check_data_frame(
+      df = coordinates,
+      var.class = purrr::set_names(
+        x = c("character", "numeric", "numeric"),
+        nm = c("barcodes", "x_orig", "y_orig")
+      )
+    )
+
+    confuns::is_key_variable(
+      df = coordinates,
+      key.name = "barcodes",
+      stop.if.false = TRUE
+    )
+
+    object@coordinates <- coordinates
+
+  }
+
+  return(object)
+
+}
+
+#' @rdname createHistoImaging
+#' @export
+createHistoImagingMERFISH <- function(dir,
+                                      sample,
+                                      file_coords = NULL,
+                                      meta = list(),
+                                      misc = list(),
+                                      verbose = TRUE){
+
+  # read coordinates
+  if(!base::is.character(file_coords)){
+
+    file_coords <-
+      base::list.files(path = dir, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "cell_metadata.*\\.csv$")
+
+    if(base::length(file_coords) == 0){
+
+      stop("Did not find coordinates. If not specified otherwise, directory
+           must contain one '~...cell_metadata...' .csv -file.")
+
+    } else if(base::length(file_coords) > 1){
+
+      stop("Found more than one potential barcode files. Please specify argument
+           `file_coords`.")
+
+    }
+
+  } else {
+
+    file_coords <- base::file.path(dir, file_coords)
+
+    if(!base::file.exists(file_coords)){
+
+      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
+
+    }
+
+  }
+
+  misc[["dirs"]][["coords"]] <- file_coords
+
+  confuns::give_feedback(
+    msg = glue::glue("Reading coordinates from: '{file_coords}'"),
+    verbose = verbose
+  )
+
+  coords_df <- read_coords_merfish(dir_coords = file_coords)
+
+  # create pseudo image
+  imaging <-
+    HistoImaging(
+      coordinates = coords_df,
+      images = list(pseudo = PseudoHistoImage),
+      meta = meta,
+      method = spatial_methods[["MERFISH"]],
+      misc = misc,
+      name_img_ref = "pseudo",
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(imaging)
+
+}
+
+
+#' @rdname createHistoImaging
+#' @export
+createHistoImagingSlideSeqV1 <- function(dir,
+                                         sample,
+                                         file_coords = NULL,
+                                         meta = list(),
+                                         misc = list()){
+
+  # read coordinates
+  if(!base::is.character(file_coords)){
+
+    file_coords <-
+      base::list.files(path = dir, full.names = TRUE) %>%
+      stringr::str_subset(pattern = "MatchedBeadLocation\\.csv$")
+
+    if(base::length(file_coords) == 0){
+
+      stop("Did not find coordinates. If not specified otherwise, directory
+           must contain one '~...MatchedBeadLocation.csv' file.")
+
+    } else if(base::length(file_coords) > 1){
+
+      stop("Found more than one potential barcode files. Please specify argument
+           `file_coords`.")
+
+    }
+
+  } else {
+
+    file_coords <- base::file.path(dir, file_coords)
+
+    if(!base::file.exists(file_coords)){
+
+      stop(glue::glue("Directory to coordinates '{file_coords}' does not exist."))
+
+    }
+
+  }
+
+  misc[["misc"]][["coords"]] <- file_coords
+  coords_df <-  read_coords_slide_seq_v1(dir_coords = file_coords)
+
+  # create pseudo image
+  imaging <-
+    HistoImaging(
+      coordinates = coords_df,
+      images = list(pseudo = PseudoHistoImage),
+      meta = meta,
+      method = SlideSeqV1,
+      misc = misc,
+      name_img_ref = "pseudo",
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(imaging)
+
+}
+
+
+#' @rdname createHistoImaging
+#' @export
+createHistoImagingVisium <- function(dir,
+                                     sample,
+                                     img_ref = "lowres",
+                                     img_active = "lowres",
+                                     meta = list(),
+                                     misc = list(),
+                                     verbose = TRUE){
+
+  # check input directory
+  isDirVisium(dir = dir, error = TRUE)
+
+  # get all files in folder and subfolders
+  files <- base::list.files(dir, full.names = TRUE, recursive = TRUE)
+
+  # check required image availability
+  req_images <- base::unique(c(img_ref, img_active))
+
+  confuns::check_one_of(
+    input = req_images,
+    against = c("lowres", "hires"),
+    ref.input = "required images"
+  )
+
+  lowres_path <- base::file.path(dir, "spatial", "tissue_lowres_image.png")
+  hires_path <- base::file.path(dir, "spatial", "tissue_hires_image.png")
+
+  if("lowres" %in% req_images){
+
+    if(!lowres_path %in% files){
+
+      stop(glue::glue("'{lowres_path}' is missing."))
+
+    }
+
+  }
+
+  if("hires" %in% req_images){
+
+    if(!hires_path %in% files){
+
+      stop(glue::glue("'{hires_path}' is missing."))
+
+    }
+
+  }
+
+  # load in data
+
+  # check and load tissue positions for different space ranger versions
+  v1_coords_path <- base::file.path(dir, "spatial", "tissue_positions_list.csv")
+  v2_coords_path <- base::file.path(dir, "spatial", "tissue_positions.csv")
+
+  if(v2_coords_path %in% files){
+
+    space_ranger_version <- 2
+    coords_df <- read_coords_visium(dir_coords = v2_coords_path)
+    misc[["dirs"]][["coords"]] <- v2_coords_path
+
+  } else if(v1_coords_path %in% files){
+
+    space_ranger_version <- 1
+    coords_df <- read_coords_visium(dir_coords = v1_coords_path)
+    misc[["dirs"]][["coords"]] <- v1_coords_path
+
+  }
+
+  if(base::nrow(coords_df) < 10000){
+
+    method <- spatial_methods[["VisiumSmall"]]
+
+  } else {
+
+    method <- spatial_methods[["VisiumLarge"]]
+
+  }
+
+  # load scalefactors
+  scale_factors <-
+    jsonlite::read_json(path = base::file.path(dir, "spatial", "scalefactors_json.json"))
+
+  # load images
+  # reference image
+  img_list <- list()
+
+  if("hires" %in% req_images){
+
+    img_list[["hires"]] <-
+      createHistoImage(
+        dir = hires_path,
+        sample = sample,
+        img_name ="hires",
+        scale_factors =
+          list(
+            coords = scale_factors$tissue_hires_scalef
+          ),
+        reference = img_ref == "hires",
+        verbose = verbose
+      )
+
+  }
+
+  if("lowres" %in% req_images){
+
+    img_list[["lowres"]] <-
+      createHistoImage(
+        dir = lowres_path,
+        sample = sample,
+        img_name ="lowres",
+        scale_factors =
+          list(
+            coords = scale_factors$tissue_lowres_scalef
+          ),
+        reference = img_ref == "lowres",
+        verbose = verbose
+      )
+  }
+
+  # compute spot size
+  spot_size <-
+    scale_factors$fiducial_diameter_fullres*
+    scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]]/
+    base::max(getImageDims(img_list[[img_ref]]))*100
+
+  spot_scale_fct <- 1.15
+
+  method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+
+  # create output
+  object <-
+    createHistoImaging(
+      sample = sample,
+      hist_img_ref = img_list[[img_ref]],
+      hist_imgs = img_list[req_images[req_images != img_ref]],
+      active = img_active,
+      unload = TRUE,
+      coordinates = coords_df,
+      method = method,
+      meta = meta,
+      misc = misc
+    )
+
+  # compute pixel scale factor
+  object <- computePixelScaleFactor(object, verbose = verbose)
+
+  return(object)
+
+}
+
+
+
+
+
 # createI -----------------------------------------------------------------
 
 #' @title Add spatial annotations based on histo-morphological features

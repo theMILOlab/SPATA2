@@ -14,7 +14,7 @@ Contains the results of \code{\link[=findSDEGS]{findSDEGS()}}
 
 \describe{
 \item{\code{coordinates}}{data.frame. Data.frame of four variables \emph{barcodes}, \emph{x}, \emph{y},
-\emph{bins_circle} to visualize the testing set up.}
+\emph{bins_dist} to visualize the testing set up.}
 
 \item{\code{dea_1v1}}{list. List of data.frames each containing the differentially
 expressed genes for the circle bin vs. \emph{Control} according to which the slot containing
@@ -22,8 +22,11 @@ the data.frame is named (as returned by \code{Seurat::FindMarkers()}).}
 
 \item{\code{dea_all}}{data.frame.  Data.frame of DEA testing as returned by \code{Seurat::FindAllMarkers()}.}
 
+\item{\code{spat_ann}}{SpatialAnnotation. The spatial annotation based on which
+the testing was conducted.}
+
 \item{\code{spatial_parameters}}{list. List of three slots named \emph{binwidth}, \emph{distance},
-\emph{n_bins_circle} as was set up using the corresponding parameters.}
+\emph{n_bins_dist} as was set up using the corresponding parameters.}
 
 \item{\code{sample}}{character. Name of the sample to which the results belong.}
 }}

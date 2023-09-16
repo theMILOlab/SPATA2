@@ -54,6 +54,453 @@ getPcaMtr <- function(object,
 }
 
 
+#' @title Obtain pixel data.frame
+#'
+#' @description Extracts a data.frame in which each row corresponds
+#' to a pixel in the current image with x- and y-coordinates.
+#'
+#' @param colors Logical value. If `TRUE`, adds all colors from the image
+#' as variables named *col1*-*col.n* where n is the number of colors.
+#' @param tissue Logical value. If `TRUE`, adds a variable called *pxl_group*
+#' that indicates whether the pixel is placed on a contiguous tissue section, on
+#' artefact tissue fragments or on background.
+#' @inherit argument_dummy params
+#'
+#' @return Data.frame.
+#' @export
+#'
+setGeneric(name = "getPixelDf", def = function(object, ...){
+
+  standardGeneric(f = "getPixelDf")
+
+})
+
+#' @rdname getPixelDf
+#' @export
+setMethod(
+  f = "getPixelDf",
+  signature = "spata2",
+  definition = function(object,
+                        img_name = NULL,
+                        colors = FALSE,
+                        hex_code = FALSE,
+                        content = FALSE,
+                        transform = TRUE,
+                        xrange = NULL,
+                        yrange = NULL,
+                        scale_fct = 1){
+
+    getHistoImaging(object = object) %>%
+      getPixelDf(
+        object = .,
+        img_name = img_name,
+        colors = colors,
+        hex_code = hex_code,
+        content = content,
+        transform = transform,
+        xrange = xrange,
+        yrange = yrange,
+        scale_fct = scale_fct
+      )
+
+  }
+)
+
+
+#' @rdname getPixelDf
+#' @export
+setMethod(
+  f = "getPixelDf",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        colors = FALSE,
+                        hex_code = FALSE,
+                        content =  FALSE,
+                        xrange = NULL,
+                        yrange = NULL,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        ...){
+
+    # use methods for HistoImage
+    getHistoImage(
+      object = object,
+      img_name = img_name
+    ) %>%
+      # use method for Image
+      getPixelDf(
+        object = .,
+        colors = colors,
+        hex_code = hex_code,
+        content = content,
+        xrange = xrange,
+        yrange = yrange,
+        transform = transform,
+        scale_fct = scale_fct
+      )
+
+  }
+)
+
+#' @rdname getPixelDf
+#' @export
+setMethod(
+  f = "getPixelDf",
+  signature = "HistoImage",
+  definition = function(object,
+                        colors = FALSE,
+                        hex_code = FALSE,
+                        content =  FALSE,
+                        xrange = NULL,
+                        yrange = NULL,
+                        transform = TRUE,
+                        scale_fct = 1,
+                        ...){
+
+    # stop right from the beginning if missing
+    if(base::isTRUE(content)){
+
+      containsPixelContent(object, error = TRUE)
+
+    }
+
+    if(base::isTRUE(content) & base::isTRUE(transform)){
+
+      transform <- FALSE
+
+      warning("`transform` set to FALSE to merge pixel content.")
+
+    }
+
+    img <-
+      getImage(
+        object = object,
+        xrange = xrange,
+        yrange = yrange,
+        transform = transform,
+        scale_fct = scale_fct
+      )
+
+    # use method for class Image
+    pxl_df <-
+      getPixelDf(
+        object = img,
+        hex_code = hex_code,
+        colors = colors
+      )
+
+    # merge content
+    if(base::isTRUE(content)){
+
+      content_df <-
+        base::as.data.frame(object@pixel_content) %>%
+        magrittr::set_colnames(value = "content") %>%
+        tibble::rownames_to_column("pixel") %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate(pixel = stringr::str_extract(string = pixel, pattern = "px\\d*")) %>%
+        dplyr::select(pixel, content) %>%
+        dplyr::mutate(content_type = stringr::str_remove(content, pattern = "_\\d*$"))
+
+      # merge via width and height due to possible transformations
+      pxl_df <- dplyr::left_join(x = pxl_df, y = content_df, by = "pixel")
+
+    }
+
+    return(pxl_df)
+
+  }
+)
+
+#' @rdname getPixelDf
+#' @export
+setMethod(
+  f = "getPixelDf",
+  signature = "Image",
+  definition = function(object,
+                        colors = FALSE,
+                        hex_code = FALSE,
+                        use_greyscale = FALSE,
+                        frgmt_threshold = c(0.0005, 0.01),
+                        eps = 1,
+                        minPts = 3,
+                        ...){
+
+    # extract image data and create base pixel df
+    image <- object
+
+    img_dims <- base::dim(image@.Data)
+
+    if(base::length(img_dims) == 3){
+
+      n <- img_dims[3]
+
+    } else {
+
+      n <- 1
+
+    }
+
+    pxl_df_base <-
+      tidyr::expand_grid(
+        width = 1:img_dims[1],
+        height = 1:img_dims[2]
+      )
+
+    pxl_df_base[["pixel"]] <-
+      stringr::str_c("px", 1:base::nrow(pxl_df_base))
+
+    pxl_df_base <-
+      dplyr::select(pxl_df_base, pixel, width, height)
+
+    # output pxl_df that is continuously grown in columns based on the input
+    pxl_df <- pxl_df_base
+
+    # 2. add colors to pxl_df
+    if(base::isTRUE(colors)){
+
+      for(i in 1:n){
+
+        col_df <-
+          reshape::melt(image@.Data[ , ,i]) %>%
+          magrittr::set_colnames(value = c("width", "height", stringr::str_c("col", i))) %>%
+          tibble::as_tibble()
+
+        pxl_df <-
+          dplyr::left_join(x = pxl_df, y = col_df, by = c("width", "height"))
+
+      }
+
+    }
+
+    # 3. add color hex code to pxl_df
+    if(base::isTRUE(hex_code)){
+
+      if(n >= 3){
+
+        channels = c("red", "green", "blue")
+
+        pxl_df_temp <-
+          purrr::map_df(
+            .x = 1:img_dims[3],
+            .f = function(cdim){ # iterate over color dimensions
+
+              reshape2::melt(image[ , ,cdim], value.name = "intensity") %>%
+                dplyr::select(-dplyr::any_of("Var3")) %>%
+                magrittr::set_names(value = c("width", "height", "intensity")) %>%
+                dplyr::mutate(channel = channels[cdim]) %>%
+                tibble::as_tibble()
+
+            }
+          ) %>%
+          tidyr::pivot_wider(
+            id_cols = c("width", "height"),
+            names_from = "channel",
+            values_from = "intensity"
+          ) %>%
+          dplyr::mutate(
+            color = grDevices::rgb(green = green, red = red, blue = blue)
+          )
+
+        pxl_df <-
+          dplyr::left_join(
+            x = pxl_df,
+            y = pxl_df_temp[,c("width", "height", "color")],
+            by = c("width", "height")
+          )
+
+      } else {
+
+        warning("`hex_code` is TRUE but image does not contain three color channels. Skipping.")
+
+      }
+
+    }
+
+
+    pxl_df <- dplyr::select(pxl_df, pixel, width, height, dplyr::everything())
+
+    return(pxl_df)
+
+  }
+)
+
+
+
+
+#' @title Obtain scale factor for pixel to SI conversion
+#'
+#' @description Extracts side length of pixel sides depending
+#' on the resolution of the chosen image.
+#'
+#' @param unit Character value. The SI-unit of interest.
+#' Determines the reference unit for the pixel size.
+#' @param switch Logical value. If `TRUE`, the unit of the output is switched.
+#' See details for more.
+#' @inherit ggpLayerAxesSI params
+#' @inherit argument_dummy params
+#' @inherit is_dist params
+#'
+#' @return A single numeric value with the unit defined in attribute *unit*.
+#'
+#' @details
+#' If `switch` is `FALSE`, the default, the output is to be interpreted as
+#' unit/pixel. E.g. with `unit = 'um'` an output of *15 'um/px'* means that under the current resolution
+#' of the image height and width one pixel corresponds to *15 um* in height and
+#' width in the original tissue.
+#'
+#' If `switch` is `TRUE`, the output is to be interpreted as pixel/unit.  E.g.
+#' an output value of *0.07 'px/um'* means that under the current image resolution
+#' one micrometer corresponds to 0.07 pixel in the image.
+#'
+#' @seealso [`computePixelScaleFactor()`], [`setScaleFactor()`]
+#'
+#' @export
+#'
+
+setGeneric(name = "getPixelScaleFactor", def = function(object, ...){
+
+  standardGeneric(f = "getPixelScaleFactor")
+
+})
+
+#' @rdname getPixelScaleFactor
+#' @export
+setMethod(
+  f = "getPixelScaleFactor",
+  signature = "spata2",
+  definition = function(object,
+                        unit,
+                        img_name = NULL,
+                        switch = FALSE,
+                        add_attr = TRUE,
+                        verbose = NULL,
+                        ...){
+
+    hlpr_assign_arguments(object)
+
+    pxl_scale_fct <-
+      getHistoImaging(object) %>%
+      getPixelScaleFactor(
+        object = .,
+        unit = unit,
+        img_name = img_name,
+        switch = switch,
+        add_attr = add_attr,
+        verbose = verbose
+      )
+
+    return(pxl_scale_fct)
+
+  }
+)
+
+#' @rdname getPixelScaleFactor
+#' @export
+setMethod(
+  f = "getPixelScaleFactor",
+  signature = "HistoImaging",
+  definition = function(object,
+                        unit,
+                        img_name = NULL,
+                        switch = FALSE,
+                        add_attr = TRUE,
+                        verbose = NULL,
+                        ...){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getPixelScaleFactor(
+        object = .,
+        unit = unit,
+        switch = switch,
+        add_attr = add_attr,
+        verbose = verbose
+      )
+
+  }
+)
+
+#' @rdname getPixelScaleFactor
+#' @export
+setMethod(
+  f = "getPixelScaleFactor",
+  signature = "HistoImage",
+  definition = function(object,
+                        unit,
+                        switch = FALSE,
+                        add_attr = TRUE,
+                        verbose = TRUE,
+                        ...){
+
+    # get and check pixel scale factor
+    pxl_scale_fct <-
+      getScaleFactor(
+        object = object,
+        fct_name = "pixel"
+      )
+
+    if(base::is.null(pxl_scale_fct)){
+
+      stop(glue::glue("No pixel scale factor exists for image {object@name}."))
+
+    }
+
+    square <- unit %in% validUnitsOfAreaSI()
+
+    # extract required_unit as scale factor is stored/computed with distance values
+    # (equal to unit if square == FALSE)
+    required_unit <- stringr::str_extract(unit, pattern = "[a-z]*")
+
+    # scale factors are stored with unit/px unit
+    # extracts unit
+    unit_per_px <-
+      confuns::str_extract_before(
+        string = base::attr(pxl_scale_fct, which = "unit"),
+        pattern = "\\/"
+      )
+
+    pxl_scale_fct <-
+      units::set_units(x = pxl_scale_fct, value = unit_per_px, mode = "standard") %>%
+      units::set_units(x = ., value = required_unit, mode = "standard")
+
+    # adjust for areas if needed
+    if(base::isTRUE(square)){
+
+      pxl_scale_fct <- pxl_scale_fct^2
+
+    }
+
+    # if argument switch is TRUE provide scale factor as px/euol
+    if(base::isTRUE(switch)){
+
+      pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
+
+      pxl_scale_fct <- 1/pxl_scale_fct
+
+      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c("px/", unit, sep = "")
+
+    } else {
+
+      pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
+
+      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(unit, "/px", sep = "")
+
+    }
+
+    # remove attribute if needed
+    if(!base::isTRUE(add_attr)){
+
+      base::attr(pxl_scale_fct, which = "unit") <- NULL
+
+    }
+
+    return(pxl_scale_fct)
+
+  }
+)
+
+
+
 #' @rdname getCountMatrix
 #' @export
 getProcessedMatrix <- function(object, mtr_name){
@@ -426,6 +873,70 @@ getSampleName <- function(object){
 }
 
 
+#' @title Obtain scale factors
+#'
+#' @description Extracts scale factors. See details for more.
+#'
+#' @param fct_name Character value. Name of the scale factor.
+#' @inherit argument_dummy params
+#'
+#' @return Single value whose properties depend on `fct_name`.
+#'
+#' @details
+#' This function gives access to slot @@scale_factors of each registered [`HistoImage`].
+#' As it is a list it can be flexibly expanded. The following scale factor slots are
+#' reserved:
+#'
+#' \itemize{
+#'  \item{*coords*:}{ The coordinate scale factor used to create variables *x* and *y* from
+#'  variables *x_orig* and *y_orig* in the coordinates data.frame and the outline data.frames
+#'  of the spatial annotations and the tissue. The scale factor depends on the deviation in
+#'  resolution from the original image - based on which the coordinates data.frame
+#'  was created - and the image picked in `img_name` which defaults to to the active
+#'  image. If the active image is the original image, this scale factor is 1.}
+#'  \item{*pixel*:}{ The pixel scale factor is used to convert pixel values into SI units.
+#'   It should have an attribute called "unit" conforming to the format "SI-unit/px}
+#'  }
+#'
+#' @export
+#'
+setGeneric(name = "getScaleFactor", def = function(object, ...){
+
+  standardGeneric(f = "getScaleFactor")
+
+})
+
+
+#' @rdname getScaleFactor
+#' @export
+setMethod(
+  f = "getScaleFactor",
+  signature = "ANY",
+  definition = function(object, fct_name, img_name = NULL){
+
+    getHistoImage(object, img_name = img_name) %>%
+      getScaleFactor(object = ., fct_name = fct_name)
+
+  }
+)
+
+#' @rdname getScaleFactor
+#' @export
+setMethod(
+  f = "getScaleFactor",
+  signature = "HistoImage",
+  definition = function(object, fct_name){
+
+    out <- object@scale_factors[[fct_name]]
+
+    return(out)
+
+  }
+)
+
+
+
+
 #' @title Obtain segmentation variable names
 #'
 #' @description Extracts the names of the variables that have been created
@@ -555,6 +1066,198 @@ getSparkxResults <- function(object, test = TRUE){
 
 }
 
+
+
+#' @title Obtain area of spatial annotation
+#'
+#' @description Computes the area of an spatial annotation in SI units of area.
+#'
+#' @inherit argument_dummy params
+#' @inherit as_unit params
+#' @inherit getSpatialAnnotation params
+#'
+#' @return Numeric vector of the same length as `ids`. Named accordingly.
+#' Contains the area of the spatial annotations in the unit that is specified in `unit`.
+#' The unit is attached to the output as an attribute named *unit*. E.g. if
+#' `unit = *mm2*` the output value has the unit *mm^2*.
+#'
+#' @details First, the side length of each pixel is calculated and based on that the area.
+#'
+#' Second, the number of pixels that fall in the area given by the outer border
+#' of the spatial annotation is computed with `sp::point.in.polygon()`.
+#'
+#' Third, if the spatial annotation contains holes the pixel that fall in these
+#' holes are removed.
+#'
+#' Fourth, the number of remaining pixels s multiplied with
+#' the area per pixel.
+#'
+#' @inheritSection section_dummy Selection of spatial annotations
+#'
+#' @seealso [`getSpatAnnOutlineDf()`], [`getCCD()`], [`as_unit()`]
+#'
+#' @export
+#'
+setGeneric(name = "getSpatAnnArea", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnArea")
+
+})
+
+#' @rdname getSpatAnnArea
+#' @export
+setMethod(
+  f = "getSpatAnnArea",
+  signature = "spata2",
+  definition = function(object,
+                        ids = NULL,
+                        unit = "mm2",
+                        tags = NULL,
+                        test = "any",
+                        as_numeric = TRUE,
+                        verbose = NULL,
+                        ...){
+
+    hlpr_assign_arguments(object)
+
+    getHistoImaging(object) %>%
+      getSpatAnnArea(
+        object = .,
+        ids = ids,
+        unit = unit,
+        tags = tags,
+        test = test,
+        as_numeric = as_numeric,
+        verbose = verbose,
+        ...
+      )
+
+  }
+)
+
+#' @rdname getSpatAnnArea
+#' @export
+setMethod(
+  f = "getSpatAnnArea",
+  signature = "HistoImaging",
+  definition = function(object,
+                        ids = NULL,
+                        unit = "mm2",
+                        tags = NULL,
+                        test = "any",
+                        as_numeric = TRUE,
+                        verbose = NULL,
+                        ...){
+
+    deprecated(...)
+
+    confuns::check_one_of(
+      input = unit,
+      against = validUnitsOfArea()
+    )
+
+    if(base::is.character(ids)){
+
+      confuns::check_one_of(
+        input = ids,
+        against = getSpatAnnIds(object)
+      )
+
+    } else {
+
+      ids <-
+        getSpatAnnIds(
+          object = object,
+          ...
+        )
+
+    }
+
+    unit_length <- stringr::str_extract(string = unit, pattern = "[a-z]*")
+
+    # determine pixel area
+    scale_fct <- getPixelScaleFactor(object, unit = unit)
+
+    # determine how many pixels lay inside the spatial annotation
+
+    pixel_df <- getPixelDf(object = object)
+
+    n_ids <- base::length(ids)
+
+    ref_ia <- confuns::adapt_reference(ids, sg = "spatial annotation")
+
+    pb <- confuns::create_progress_bar(total = n_ids)
+
+    confuns::give_feedback(
+      msg = glue::glue("Computing area for {n_ids} {ref_ia}."),
+      verbose = verbose
+    )
+
+    out <-
+      purrr::map_dbl(
+        .x = ids,
+        .f = function(id){
+
+          if(base::isTRUE(verbose)){
+
+            pb$tick()
+
+          }
+
+          border_df <- getSpatAnnOutlineDf(object, ids = id)
+
+          pixel_loc <-
+            sp::point.in.polygon(
+              point.x = pixel_df[["x"]],
+              point.y = pixel_df[["y"]],
+              pol.x = border_df[["x"]],
+              pol.y = border_df[["y"]]
+            )
+
+          pixel_inside <- pixel_df[pixel_loc != 0, ]
+
+          # remove pixel that fall into inner holes
+          inner_holes <- dplyr::filter(border_df, border != "outer")
+
+          if(base::nrow(inner_holes) != 0){
+
+            # consecutively reduce the number of rows in the pixel_inside data.frame
+            for(hole in base::unique(inner_holes$border)){
+
+              hole_df <- dplyr::filter(border_df, border == {{hole}})
+
+              pixel_loc <-
+                sp::point.in.polygon(
+                  point.x = pixel_inside[["x"]],
+                  point.y = pixel_inside[["y"]],
+                  pol.x = hole_df[["x"]],
+                  pol.y = hole_df[["y"]]
+                )
+
+              # keep those that are NOT inside the holes
+              pixel_inside <- pixel_inside[pixel_loc == 0, ]
+
+            }
+
+          }
+
+          n_pixel_inside <- base::nrow(pixel_inside)
+
+          # multiply number of pixels with area per pixel
+          area_spat_ann <- n_pixel_inside * scale_fct
+
+          base::as.numeric(area_spat_ann)
+
+        }
+      ) %>%
+      purrr::set_names(nm = ids) %>%
+      units::set_units(value = unit, mode = "standard")
+
+    return(out)
+
+  }
+)
+
 #' @title Obtain barcodes by image annotation tag
 #'
 #' @description Extracts the barcodes that are covered by the extent of the
@@ -581,6 +1284,152 @@ getSpatAnnBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
     base::unique()
 
 }
+
+
+#' @title Obtain center of an spatial annotation
+#'
+#' @description \code{getSpatAnnCenter()} computes the
+#' x- and y- coordinates of the center of the outer border, returns
+#' a numeric vector of length two. `getSpatAnnCenters()` computes the center of the outer
+#' and every inner border and returns a list of numeric vectors of length two.
+#'
+#' @inherit getSpatialAnnotation params
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two or a list of these. Values are named *x* and *y*.
+#'
+#' @export
+
+setGeneric(name = "getSpatAnnCenter", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnCenter")
+
+})
+
+#' @rdname getSpatAnnCenter
+#' @export
+setMethod(
+  f = "getSpatAnnCenter",
+  signature = "spata2",
+  definition = function(object, id){
+
+    border_df <- getSpatAnnOutlineDf(object, ids = id, inner = FALSE)
+
+    x <- base::mean(base::range(border_df$x))
+    y <- base::mean(base::range(border_df$y))
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getSpatAnnCenter
+#' @export
+setMethod(
+  f = "getSpatAnnCenter",
+  signature = "SpatialAnnotation",
+  definition = function(object){
+
+    border_df <- object@area[["outer"]]
+
+    x <- base::mean(base::range(border_df$x))
+    y <- base::mean(base::range(border_df$y))
+
+    out <- c(x = x, y = y)
+
+    return(out)
+
+  }
+)
+
+#' @rdname getSpatAnnCenter
+#' @export
+setGeneric(name = "getSpatAnnCenters", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnCenters")
+
+})
+
+#' @rdname getSpatAnnCenter
+#' @export
+setMethod(
+  f = "getSpatAnnCenters",
+  signature = "spata2",
+  definition = function(object, id, outer = TRUE, inner = TRUE){
+
+    spat_ann <- getSpatialAnnotation(object, id = id, add_barcodes = FALSE, add_image = FALSE)
+
+    area <- spat_ann@area
+
+    if(base::isFALSE(outer)){
+
+      area$outer <- NULL
+
+    }
+
+    if(base::isFALSE(inner)){
+
+      area <- area[c("outer")]
+
+    }
+
+    purrr::map(
+      .x = area,
+      .f = function(border_df){
+
+        x <- base::mean(base::range(border_df$x))
+        y <- base::mean(base::range(border_df$y))
+
+        out <- c(x = x, y = y)
+
+        return(out)
+
+      }
+    )
+
+  }
+)
+
+#' @rdname getSpatAnnCenter
+#' @export
+setMethod(
+  f = "getSpatAnnCenters",
+  signature = "SpatialAnnotation",
+  definition = function(object, outer = TRUE, inner = TRUE){
+
+    area <- object@area
+
+    if(base::isFALSE(outer)){
+
+      area$outer <- NULL
+
+    }
+
+    if(base::isFALSE(inner)){
+
+      area <- area[c("outer")]
+
+    }
+
+    purrr::map(
+      .x = area,
+      .f = function(border_df){
+
+        x <- base::mean(base::range(border_df$x))
+        y <- base::mean(base::range(border_df$y))
+
+        out <- c(x = x, y = y)
+
+        return(out)
+
+      }
+    )
+
+  }
+)
+
 
 #' @title Obtain image annotation screening data.frame
 #'
@@ -940,6 +1789,394 @@ getSpatAnnCenterBcsp <- function(object, id){
 
 
 
+
+
+#' @title Obtain IDs of spatial annotations
+#'
+#' @description Extracts spatial annotation IDs as a character vector.
+#'
+#' @param class Character vector or `NULL`. If character, defines the subtypes
+#' of spatial annotations to consider. Must be a combination of *c('Group', 'Image'
+#' 'Numeric')*.
+#' @inherit argument_dummy
+#'
+#' @seealso S4-classes [`SpatialAnnotation`], [`GroupAnnotation`], [`ImageAnnotation`],
+#'  [`NumericAnnotation`]
+#'
+#' @inheritSection section_dummy Selection of spatial annotations
+#'
+#' @return Character vector. If no spatial annotations are returned the character
+#' vector is of length 0. If this is because no spatial annotations have been
+#' stored yet, the functions remains silent. If this is due to the selection
+#' options, the function throws a warning.
+#'
+#' @export
+#'
+setGeneric(name = "getSpatAnnIds", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnIds")
+
+})
+
+
+#' @rdname getSpatAnnIds
+#' @export
+setMethod(
+  f = "getSpatAnnIds",
+  signature = "ANY",
+  definition = function(object,
+                        ids = NULL,
+                        tags = NULL,
+                        test = "any",
+                        class = NULL){
+
+    getHistoImaging(object) %>%
+      getSpatAnnIds(
+        object = .,
+        ids = ids,
+        tags = tags,
+        test = test,
+        class = class
+      )
+
+  }
+)
+
+
+#' @rdname getSpatAnnIds
+#' @export
+setMethod(
+  f = "getSpatAnnIds",
+  signature = "HistoImaging",
+  definition = function(object,
+                        ids = NULL,
+                        tags = NULL,
+                        test = "any",
+                        class = NULL,
+                        error = FALSE){
+
+    spat_anns <- object@annotations
+    spat_ann_ids <- base::names(object@annotations)
+
+    if(base::length(spat_ann_ids) >= 1){
+
+      # 1. subset based on `ids`
+      if(base::is.character(ids) & base::length(ids) >= 1){
+
+        confuns::check_one_of(
+          input = ids,
+          against = spat_ann_ids
+        )
+
+        spat_ann_ids <- ids
+
+      }
+
+      # 2. subset based on `class`
+      if(base::is.character(class)){
+
+        confuns::check_one_of(
+          input = class,
+          against = c("Group", "Image", "Numeric")
+        )
+
+        class_sub <-
+          purrr::keep(
+            .x = spat_anns,
+            .f = function(sa){
+
+              base::any(
+                stringr::str_detect(
+                  string = base::class(sa),
+                  pattern = stringr::str_c(class, sep = "|")
+                )
+              )
+
+            }
+          ) %>%
+          base::names()
+
+        if(base::length(class_sub) == 0){
+
+          warning("No spatial annotations remain after subsetting by class.")
+
+        }
+
+        spat_anns <- spat_anns[class_sub]
+        spat_ann_ids <- spat_ann_ids[spat_ann_ids %in% class_sub]
+
+      }
+
+      # 3. subset based on `tags` and `test`
+      if(base::is.character(tags)){
+
+        tags_sub <-
+          purrr::keep(
+            .x = spat_anns,
+            .p = function(spat_ann){
+
+              if(test == "any" | test == 1){
+
+                out <- base::any(tags %in% spat_ann@tags)
+
+              } else if(test == "all" | test == 2){
+
+                out <- base::all(tags %in% spat_ann@tags)
+
+              } else if(test == "identical" | test == 3){
+
+                tags_input <- base::sort(tags)
+                tags_spat_ann <- base::sort(spat_ann@tags)
+
+                out <- base::identical(tags_input, tags_spat_ann)
+
+              } else if(test == "not_identical" | test == 4){
+
+                tags_input <- base::sort(tags)
+                tags_spat_ann <- base::sort(spat_ann@tags)
+
+                out <- !base::identical(tags_input, tags_spat_ann)
+
+              } else if(test == "none" | test == 5){
+
+                out <- !base::any(tags %in% spat_ann@tags)
+
+              } else {
+
+                stop(invalid_spat_ann_tests)
+
+              }
+
+              return(out)
+
+            }
+          ) %>%
+          base::names()
+
+        if(base::length(tags_sub) == 0){
+
+          warning("No spatial annotations remain after subsetting by tags.")
+
+        }
+
+        spat_anns <- spat_anns[tags_sub]
+        spat_ann_ids <- spat_ann_ids[spat_ann_ids %in% tags_sub]
+
+      }
+
+    } else {
+
+      spat_ann_ids <- base::character(0)
+
+    }
+
+    # return subset
+    return(spat_ann_ids)
+
+  }
+
+)
+
+
+#' @title Obtain spatial annotation border data.frame
+#'
+#' @description Extracts the coordinates of the vertices of the polygon that represents
+#' the borders of the spatial annotation.
+#'
+#' @inherit argument_dummy params
+#' @return A data.frame that contains variables \emph{id}, *border*,
+#' and the numeric variables *x*, *y* and *tags*.
+#'
+#' @inherit getSpatialAnnotations details
+#'
+#' @details The variables \emph{x} and \emph{y} give the position of the vertices of the polygon
+#' that was drawn to used the area via [`createGroupAnnotations()`],
+#' [`createImageAnnotations()`] or [`createNumericAnnotations()`]. These vertices
+#' correspond to the border of the annotation.
+#'
+#' @inheritSection section_dummy Selection of spatial annotations
+#'
+#' @export
+#'
+setGeneric(name = "getSpatAnnOutlineDf", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnOutlineDf")
+
+})
+
+#' @rdname getSpatAnnOutlineDf
+#' @export
+setMethod(
+  f = "getSpatAnnOutlineDf",
+  signature = "spata2",
+  definition = function(object,
+                        ids = NULL,
+                        class = NULL,
+                        tags = NULL,
+                        test = "any",
+                        outer = TRUE,
+                        inner = TRUE,
+                        add_tags = FALSE,
+                        sep = " & ",
+                        last = " & "){
+
+    getHistoImaging(object) %>%
+      getSpatAnnOutlineDf(
+        object = .,
+        ids = ids,
+        class = class,
+        tags = tags,
+        test = test,
+        outer = outer,
+        inner = inner,
+        add_tags = add_tags,
+        sep = sep,
+        last = last
+      )
+
+  }
+)
+
+
+#' @rdname getSpatAnnOutlineDf
+#' @export
+setMethod(
+  f = "getSpatAnnOutlineDf",
+  signature = "HistoImaging",
+  definition = function(object,
+                        ids = NULL,
+                        class = NULL,
+                        tags = NULL,
+                        test = "any",
+                        outer = TRUE,
+                        inner = TRUE,
+                        add_tags = FALSE,
+                        sep = " & ",
+                        last = " & "){
+
+    spat_anns <-
+      getSpatialAnnotations(
+        object = object,
+        ids = ids,
+        class = class,
+        tags = tags,
+        test = test,
+        add_image = FALSE
+      )
+
+    out <-
+      purrr::map_df(
+        .x = spat_anns,
+        .f = function(spat_ann){
+
+          tag <-
+            scollapse(string = spat_ann@tags, sep = sep, last = last) %>%
+            base::as.character()
+
+          out <-
+            purrr::imap_dfr(
+              .x = spat_ann@area,
+              .f = function(area, name){
+
+                dplyr::mutate(
+                  .data = area,
+                  border = {{name}}
+                )
+
+              }
+            ) %>%
+            dplyr::mutate(
+              ids = spat_ann@id %>% base::factor()
+            ) %>%
+            tibble::as_tibble()
+
+          if(base::isTRUE(add_tags)){
+
+            out$tags <- tag
+
+            out$tags <- base::as.factor(out$tags)
+
+          }
+
+          return(out)
+
+        }
+      ) %>%
+      dplyr::select(ids, border, x, y, dplyr::everything())
+
+    if(!base::isTRUE(outer)){
+
+      out <- dplyr::filter(out, border != "outer")
+
+    }
+
+    if(!base::isTRUE(inner)){
+
+      out <- dplyr::filter(out, !stringr::str_detect(border, pattern = "inner"))
+
+    }
+
+    return(out)
+
+  }
+)
+
+
+#' @title Obtain spatial annotations range
+#'
+#' @description Extracts the minimum and maximum x- and y-coordinates
+#' of the spatial annotation border.
+#'
+#' @inherit getSpatialAnnotation params
+#'
+#' @return List of length two. Named with *x* and *y*. Each slot
+#' contains a vector of length two with the minima and maxima in pixel.
+#' @export
+#'
+setGeneric(name = "getSpatAnnRange", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnRange")
+
+})
+
+#' @rdname getSpatAnnRange
+#' @export
+setMethod(
+  f = "getSpatAnnRange",
+  signature = "spata2",
+  definition = function(object, id, scale_fct = 1){
+
+    getHistoImaging(object) %>%
+      getSpatAnnRange(object = ., id = id, scale_fct = scale_fct)
+
+  }
+)
+
+#' @rdname getSpatAnnRange
+#' @export
+setMethod(
+  f = "getSpatAnnRange",
+  signature = "HistoImaging",
+  definition = function(object, id, scale_fct = 1){
+
+    confuns::check_one_of(
+      input = id,
+      against = getSpatAnnIds(object)
+    )
+
+    out <-
+      dplyr::select(.data = object@annotations[[id]]@area[["outer"]], x, y) %>%
+      purrr::map(.f = base::range) %>%
+      purrr::map(.f = ~ .x * scale_fct)
+
+    return(out)
+
+  }
+)
+
+
+
+
 #' @title Obtain simple feature
 #'
 #' @description Exracts an object as created by `sf::st_polygon()` that
@@ -971,6 +2208,64 @@ getSpatAnnSf <- function(object, id, img_name = NULL){
 
 }
 
+
+
+#' @title Obtain spatial annotation tags
+#'
+#' @description Extracts all unique tags with which spatial annotations
+#' have been tagged.
+#'
+#' @inherit argument_dummy
+#'
+#' @return Character vector.
+#' @export
+#'
+setGeneric(name = "getSpatAnnTags", def = function(object, ...){
+
+  standardGeneric(f = "getSpatAnnTags")
+
+})
+
+#' @rdname getSpatAnnTags
+#' @export
+setMethod(
+  f = "getSpatAnnTags",
+  signature = "spata2",
+  definition = function(object){
+
+    getHistoImaging(object) %>%
+      getSpatAnnTags()
+
+  }
+)
+
+#' @rdname getSpatAnnTags
+#' @export
+setMethod(
+  f = "getSpatAnnTags",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    if(nSpatialAnnotations(object) >= 1){
+
+      out <-
+        purrr::map(
+          .x = getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE),
+          .f = ~ .x@tags
+        ) %>%
+        purrr::flatten_chr() %>%
+        base::unique()
+
+    } else {
+
+      out <- base::character(0)
+
+    }
+
+    return(out)
+
+  }
+)
 
 #' @title Obtain a spata-data.frame
 #'
@@ -1060,6 +2355,336 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
 }
 
+
+
+
+
+
+#' @title Obtain object of class \code{SpatialAnnotation}
+#'
+#' @description Extracts object of class \code{ImageAnnotaion} by
+#' its id.
+#'
+#' @param id Character value specifying the ID of the spatial annotation of interest.
+#' If there is only one spatial annotation in the object, the function
+#' will default to using it. However, if there are multiple annotations,
+#' this argument must be explicitly specified to identify the target annotation.
+#'
+#' @inherit getSpatialAnnotations params
+#' @inherit argument_dummy params
+#'
+#' @inheritSection section_dummy Expansion of cropped image sections
+#'
+#' @return An object of class \code{SpatialAnnotation}.
+#' @export
+#'
+
+setGeneric(name = "getSpatialAnnotation", def = function(object, ...){
+
+  standardGeneric(f = "getSpatialAnnotation")
+
+})
+
+#' @rdname getSpatialAnnotation
+#' @export
+setMethod(
+  f = "getSpatialAnnotation",
+  signature = "spata2",
+  definition = function(object,
+                        id = idSA(object),
+                        add_image = TRUE,
+                        expand = 0,
+                        square = FALSE,
+                        ...){
+
+    deprecated(...)
+
+    getHistoImaging(object) %>%
+      getSpatialAnnotation(
+        object = .,
+        id = id,
+        add_image = add_image,
+        expand = expand,
+        square = square
+      )
+
+  })
+
+#' @rdname getSpatialAnnotation
+#' @export
+setMethod(
+  f = "getSpatialAnnotation",
+  signature = "HistoImaging",
+  definition = function(object,
+                        id = idSA(object),
+                        add_image = TRUE,
+                        expand = 0,
+                        square = FALSE){
+
+    confuns::check_one_of(
+      input = id,
+      against = getSpatAnnIds(object),
+      ref.input = "spatial annotations IDs"
+    )
+
+    spat_ann <- object@annotations[[id]]
+
+    # scale coordinates
+    scale_fct <- getScaleFactor(object, fct_name = "coords")
+
+    spat_ann@area <-
+      purrr::map(
+        .x = spat_ann@area,
+        .f = function(df){
+
+          df[["x"]] <- df[["x_orig"]] * scale_fct
+          df[["y"]] <- df[["y_orig"]] * scale_fct
+
+          return(df)
+
+        }
+      )
+
+    # add image
+    if(base::isTRUE(add_image)){
+
+      xrange <- base::range(spat_ann@area$outer[["x"]])
+      yrange <- base::range(spat_ann@area$outer[["y"]])
+
+      # make image section to square if desired
+      if(base::isTRUE(square)){
+
+        xdist <- xrange[2] - xrange[1]
+        ydist <- yrange[2] - yrange[1]
+
+        xmean <- base::mean(xrange)
+        ymean <- base::mean(yrange)
+
+        if(xdist > ydist){
+
+          xdisth <- xdist/2
+
+          yrange <- c(ymean - xdisth, ymean + xdisth)
+
+        } else if(ydist > xdist) {
+
+          ydisth <- ydist/2
+
+          xrange <- c(xmean - ydisth, xmean + ydisth)
+
+        }
+
+      }
+
+      # process and expand if desired
+      img_sec <-
+        process_ranges(
+          xrange = xrange,
+          yrange = yrange,
+          expand = expand,
+          object = object
+        )
+
+      # extract image
+      spat_ann@image <-
+        getImage(
+          object = object,
+          xrange = c(img_sec$xmin, img_sec$xmax),
+          yrange = c(img_sec$ymin, img_sec$ymax)
+        )
+
+      # store image extraction info in list
+      img_list <- list()
+
+      for(val in base::names(img_sec)){ # sets xmin - ymax
+
+        img_list[[val]] <- img_sec[[val]]
+
+      }
+
+      img_list$expand <- process_expand_input(expand)
+
+      img_list$square <- square
+
+      spat_ann@image_info <- img_list
+
+    }
+
+    return(spat_ann)
+
+  }
+)
+
+
+#' @title Obtain list of \code{SpatialAnnotation}-objects
+#'
+#' @description Extracts a list of objects of class [`SpatialAnnotation`].
+#'
+#' @param add_image Logical. If TRUE, the area of the histology image that
+#' is occupied by the annotated structure is added to the \code{SpatialAnnotation}
+#' object in slot @@image. Dimensions of the image can be adjusted with `square`
+#' and `expand`.
+#' @param strictly Logical. If `TRUE`, only barcodes of spots that are strictly interior
+#' to the area of an spatial annotation are added to the output. If `FALSE`,
+#' barcodes of spots that are on the relative interior of the area or are
+#' vertices of the border are added, too.
+#'
+#' @inherit getSpatAnnIds params
+#' @inherit argument_dummy params
+#' @inherit getImage details
+#'
+#' @note To test how the extracted image section looks like depending
+#' on input for argument `square` and `expand` use
+#' `plotSpatialAnnotations(..., encircle = FALSE)`.
+#'
+#' @inheritSection section_dummy Expansion of cropped image sections
+#' @inheritSection section_dummy Selection of spatial annotations
+#'
+#' @return A list of objects of class \code{SpatialAnnotation}.
+#'
+#' @export
+
+setGeneric(name = "getSpatialAnnotations", def = function(object, ...){
+
+  standardGeneric(f = "getSpatialAnnotations")
+
+})
+
+#' @rdname getSpatialAnnotations
+#' @export
+setMethod(
+  f = "getSpatialAnnotations",
+  signature = "spata2",
+  definition = function(object,
+                        ids = NULL,
+                        class = NULL,
+                        tags = NULL,
+                        test = "any",
+                        add_image = containsImage(object),
+                        expand = 0,
+                        square = FALSE,
+                        error = FALSE,
+                        ...){
+
+    deprecated(...)
+
+    getHistoImaging(object) %>%
+      getSpatialAnnotations(
+        object = .,
+        ids = ids,
+        tags = tags,
+        test = test,
+        add_image = add_image,
+        expand = expand,
+        square = square,
+        error = error
+      )
+
+
+  }
+)
+
+#' @rdname getSpatialAnnotations
+#' @export
+setMethod(
+  f = "getSpatialAnnotations",
+  signature = "HistoImaging",
+  definition = function(object,
+                        ids = NULL,
+                        class = NULL,
+                        tags = NULL,
+                        test = "any",
+                        add_image = containsImage(objec),
+                        expand = 0,
+                        square = FALSE,
+                        error = FALSE,
+                        ...){
+
+    containsSpatialAnnotations(object = object, error = error)
+
+    spat_ann_ids <-
+      getSpatAnnIds(
+        object = object,
+        ids = ids,
+        class = class,
+        tags = tags,
+        test = test
+      )
+
+    out <- list()
+
+    for(id in spat_ann_ids){
+
+      out[[id]] <-
+        getSpatialAnnotation(
+          object = object,
+          id = id,
+          add_image = add_image,
+          expand = expand,
+          square  = square
+        )
+
+    }
+
+    return(out)
+
+  }
+)
+
+
+
+#' @title Obtain spatial method
+#'
+#' @description Extracts an S4 object of class `SpatialMethod` that contains
+#' meta data about the set up of the protocol that was followed to create
+#' the data used for the object.
+#'
+#' @inherit argument_dummy
+#'
+#' @return An object of class `SpatialMethod`.
+#'
+#' @seealso [`SpatialMethod-class`]
+#'
+#' @export
+
+setGeneric(name = "getSpatialMethod", def = function(object, ...){
+
+  standardGeneric(f = "getSpatialMethod")
+
+})
+
+#' @rdname getSpatialMethod
+#' @export
+setMethod(
+  f = "getSpatialMethod",
+  signature = "spata2",
+  definition = function(object){
+
+    x <- object@information$method
+
+    out <-
+      transfer_slot_content(
+        recipient = SpatialMethod(),
+        donor = x,
+        verbose = FALSE
+      )
+
+    return(out)
+
+  }
+)
+
+#' @rdname getSpatialMethod
+#' @export
+setMethod(
+  f = "getSpatialMethod",
+  signature = "HistoImaging",
+  definition = function(object){
+
+    object@method
+
+  }
+)
 
 
 #' @title Obtain objects of class \code{SpatialTrajectory}.
@@ -1159,58 +2784,46 @@ getSpatialTrajectoryIds <- function(object){
 
 }
 
-
-
-#' @title Obtain IAS results (data.frame)
+#' @title Obtain spot size
 #'
-#' @description Extracts (and filters) the summarized IAS results in form
-#' of a data.frame
+#' @description Extracts the spot size with which to display
+#' the barcoded spots in surface plots.
 #'
-#' @param var_pval,var_eval Character value. Specifies the p-value- and the
-#' evaluation variable based on which the thresholds are applied.
-#' @param threshold_pval,threshold_eval Numeric value. Used to filter
-#' the output accordingly.
+#' @inherit argument_dummy params
 #'
-#' @inherit object_dummy params
-#' @inherit add_models params
-#'
-#' @return Data.frame.
+#' @return Numeric value.
 #' @export
-#' @keywords internal
+#'
+setGeneric(name = "getSpotSize", def = function(object, ...){
 
-getSmrdResultsDf <-  function(ias,
-                              eval = "ias_score",
-                              pval = "p_value_mean_adjusted",
-                              threshold_pval = 1,
-                              threshold_eval = 0,
-                              model_subset = NULL,
-                              model_remove = NULL){
+  standardGeneric(f = "getSpotSize")
 
-  rdf <-
-    dplyr::filter(
-      .data = ias@results,
-      !!rlang::sym(pval) <= {{threshold_pval}} &
-        !!rlang::sym(eval) >= {{threshold_eval}}
-    )
+})
 
-  if(base::is.character(model_subset)){
+#' @rdname getSpotSize
+#' @export
+setMethod(
+  f = "getSpotSize",
+  signature = "spata2",
+  definition = function(object, ...){
 
-    rdf <- dplyr::filter(rdf, stringr::str_detect(models, pattern = model_subset))
+    getHistoImaging(object) %>%
+      getSpotSize()
 
   }
+)
 
-  if(base::is.character(model_remove)){
+#' @rdname getSpotSize
+#' @export
+setMethod(
+  f = "getSpotSize",
+  signature = "HistoImaging",
+  definition = function(object, ...){
 
-    rdf <- dplyr::filter(rdf, !stringr::str_detect(models, pattern = model_remove))
+    object@method@method_specifics[["spot_size"]]
 
   }
-
-  rdf <- dplyr::arrange(rdf, dplyr::desc(!!rlang::sym(eval)))
-
-  return(rdf)
-
-}
-
+)
 
 
 #' @title Obtain spatial trajectory screening data.frame
@@ -1260,6 +2873,169 @@ getStsDf <- function(object,
 # getT --------------------------------------------------------------------
 
 
+#' @title Obtain tissue outline centroid
+#'
+#' @description Extracts the centroid of the polygon used to outline
+#' the whole tissue.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric vector of length two.
+#' @export
+setGeneric(name = "getTissueOutlineCentroid", def = function(object, ...){
+
+  standardGeneric(f = "getTissueOutlineCentroid")
+
+})
+
+#' @rdname getTissueOutlineCentroid
+#' @export
+setMethod(
+  f = "getTissueOutlineCentroid",
+  signature = "HistoImaging",
+  definition = function(object, img_name = NULL, transform = TRUE,  ...){
+
+    getTissueOutlineDf(
+      object = object,
+      img_name = img_name,
+      transform = transform,
+      by_section = FALSE
+    ) %>%
+      dplyr::select(x,y) %>%
+      base::colMeans()
+
+  })
+
+#' @rdname getTissueOutlineCentroid
+#' @export
+setMethod(
+  f = "getTissueOutlineCentroid",
+  signature = "HistoImage",
+  definition = function(object, transform = TRUE, ...){
+
+    getTissueOutlineDf(
+      object = object,
+      transform = transform,
+      by_section = FALSE
+    ) %>% dplyr::select(x,y) %>% base::colMeans()
+
+  })
+
+#' @title Obtain outline barcode spots
+#'
+#' @description Extracts the polygons necessary to outline the tissue.
+#'
+#' @inherit argument_dummy params
+#' @param remove Logical. If `TRUE`, none-outline spots are removed from
+#' the output.
+#' @param force Logical. If `TRUE`, forces computation.
+#'
+#' @return Output of `getCoordsDf()` filtered based on the *outline* variable.
+#'
+#' @export
+#'
+setGeneric(name = "getTissueOutlineDf", def = function(object, ...){
+
+  standardGeneric(f = "getTissueOutlineDf")
+
+})
+
+#' @rdname getTissueOutlineDf
+#' @export
+setMethod(
+  f = "getTissueOutlineDf",
+  signature = "spata2",
+  definition = function(object, img_name = NULL, by_section = TRUE, transform = TRUE, ...){
+
+    getHistoImaging(object) %>%
+      getTissueOutlineDf(
+        object = .,
+        img_name = img_name,
+        by_section = by_section,
+        transform = transform
+      )
+
+  }
+)
+
+#' @rdname getTissueOutlineDf
+#' @export
+setMethod(
+  f = "getTissueOutlineDf",
+  signature = "HistoImaging",
+  definition = function(object,
+                        img_name = NULL,
+                        by_section = TRUE,
+                        transform = TRUE){
+
+    if(base::is.null(img_name)){
+
+      out_df <-
+        getTissueOutlineDf(
+          object = getHistoImageRef(object),
+          by_section = by_section,
+          transform = transform
+        )
+
+    } else {
+
+      out_df <-
+        getTissueOutlineDf(
+          object = getHistoImage(object, img_name = img_name),
+          by_section = by_section,
+          transform = transform
+        )
+
+    }
+
+    return(out_df)
+
+  }
+)
+
+#' @rdname getTissueOutlineDf
+#' @export
+setMethod(
+  f = "getTissueOutlineDf",
+  signature = "HistoImage",
+  definition = function(object, by_section = TRUE, transform = TRUE){
+
+    if(purrr::is_empty(object@outline)){
+
+      stop(
+        glue::glue(
+          "No tissue outline found for image '{object@name}'."
+        )
+      )
+
+    }
+
+    if(base::isTRUE(by_section)){
+
+      df <- object@outline[["tissue_sections"]]
+
+    } else {
+
+      df <- object@outline[["tissue_whole"]]
+
+    }
+
+    if(base::isTRUE(transform)){
+
+      df <-
+        transform_coords(
+          coords_df = df,
+          transformations = object@transformations,
+          ranges = getImageRange(object),
+          center = getImageCenter(object)
+        )
+
+    }
+
+    return(df)
+
+  }
+)
 
 
 
@@ -1553,3 +3329,31 @@ getVariableNames <- function(object){
 
 
 
+
+
+#' @title Obtain window size of padded image
+#'
+#' @description Extracts the window size (max. dimension) of the image in pixel.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value.
+#' @export
+#'
+setGeneric(name = "getWindowSize", def = function(object, ...){
+
+  standardGeneric(f = "getWindowSize")
+
+})
+
+#' @rdname getWindowSize
+#' @export
+setMethod(
+  f = "getWindowSize",
+  signature = "HistoImage",
+  definition = function(object, ...){
+
+    getImageDims(object)[1]
+
+  }
+)

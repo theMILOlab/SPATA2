@@ -22,6 +22,70 @@ make_angle_bins <- function(n){
 
 }
 
+make_bins <- function(numeric_vector, binwidth, neg = FALSE) {
+
+  numeric_vector <- base::abs(numeric_vector)
+
+  # Calculate the minimum and maximum values of the numeric vector
+  min_value <- min(numeric_vector)
+  max_value <- max(numeric_vector)
+
+  # Create a sequence of breaks (bin edges)
+  breaks <- seq(min_value, max_value, by = binwidth)
+
+  # Bin the numeric vector
+  bin_indices <- floor((abs(numeric_vector) - min_value) / binwidth) + 1
+
+  if(base::isTRUE(neg)){
+
+    prefix <- "-"
+
+    ranges <-
+      stringr::str_c(
+        "[",
+        prefix,
+        bin_indices*base::round(binwidth,2),
+        ",",
+        prefix,
+        (bin_indices-1)*base::round(binwidth,2),
+        "]"
+      )
+
+  } else {
+
+    prefix <- ""
+
+    ranges <-
+      stringr::str_c(
+        "[",
+        prefix,
+        (bin_indices-1)*base::round(binwidth,2),
+        ",",
+        prefix,
+        bin_indices*base::round(binwidth,2),
+        "]"
+      )
+
+  }
+
+  ranges <- stringr::str_replace(ranges, pattern = "-0", replacement = "0")
+
+  levels_out <-
+    ranges[base::order(bin_indices)] %>%
+    base::unique()
+
+  if(base::isTRUE(neg)){
+
+    levels_out <- base::rev(levels_out)
+
+  }
+
+  out <- base::factor(ranges, levels = levels_out)
+
+  return(out)
+
+}
+
 
 #' @title Make content for segments grob
 #' @description Used in conjunction with GeomSegmentFixed
@@ -230,6 +294,11 @@ make_scattermore_add_on <- function(mapping,
 }
 
 
+make_sf_polygon <- function(poly){
+
+  sf::st_polygon(base::list(base::as.matrix(poly)))
+
+}
 
 
 # map ---------------------------------------------------------------------
@@ -394,6 +463,100 @@ mergeGroups <- function(object,
     object@dea[[sample_name]][[grouping_variable]] <- list()
 
   }
+
+  return(object)
+
+}
+
+
+#' @title Merge spatial annotations
+#'
+#' @description Merges the spatial extent of two or more spatial annotations
+#' into one.
+#'
+#' @param ids Character vector of ids from spatial annotations to merge.
+#' @param id Character value. The ID of the new spatial annotation
+#' @param remove_old Logical value. If `TRUE`, the *old* spatial annotations
+#' denoted in `ids` are removed from the object.
+#'
+#' @inherit createGroupAnnotations params
+#' @inherit update_dummy return
+#'
+#' @seealso [`getSpatAnnIds()`]
+#'
+#' @export
+#'
+mergeSpatialAnnotations <- function(object,
+                                    ids,
+                                    id,
+                                    tags = NULL,
+                                    tags_expand = TRUE,
+                                    concavity = 2,
+                                    remove_old = FALSE,
+                                    overwrite = FALSE){
+
+  if(containsImage(object)){
+
+    pxl_df <-
+      getPixelDf(object) %>%
+      dplyr::rename(x = width, y = height)
+
+  } else {
+
+    pxl_df <-
+      tidyr::expand_grid(
+        x = 1:getCaptureArea(object, unit = "px")[["x"]][2],
+        y = 1:getCaptureArea(object, unit = "px")[["y"]][2]
+      )
+
+  }
+
+  merged_outline <-
+    purrr::map_df(
+      .x = ids,
+      .f = function(idx){
+
+        outline_df <- getSpatAnnOutlineDf(object, id = idx)
+
+        pxl_index <-
+          sp::point.in.polygon(
+            point.x = pxl_df$x,
+            point.y = pxl_df$y,
+            pol.x = outline_df$x,
+            pol.y = outline_df$y
+          )
+
+        out <- pxl_df[pxl_index %in% c(1,2,3), ]
+
+      }
+    ) %>%
+    dplyr::distinct() %>%
+    dplyr::select(x, y) %>%
+    base::as.matrix() %>%
+    concaveman::concaveman(points = ., concavity = concavity) %>%
+    tibble::as_tibble() %>%
+    magrittr::set_colnames(value = c("x_orig", "y_orig"))
+
+  if(base::isTRUE(remove_old)){
+
+    object <- removeSpatialAnnotations(object, ids = ids)
+
+  }
+
+  if(base::isTRUE(tags_expand)){
+
+    tags <- base::unique(c(tags, "mergeSpatialAnnotations"))
+
+  }
+
+  object <-
+    addSpatialAnnotation(
+      object = object,
+      id = id,
+      tags = tags,
+      area = list(outer = merged_outline),
+      overwrite = overwrite
+    )
 
   return(object)
 
