@@ -983,7 +983,7 @@ plotSurfaceComparison2 <- function(coords_df,
 #'
 #' @details The method for class \code{SpatialAnnotationScreening} (the output of
 #' the function \code{spatialAnnotationScreening()}) can be used
-#' to show the area on which the results base. Therefore, it does not have
+#' to show the area on which the results are based on. Therefore, it does not have
 #' arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
 #'
 #' @export
@@ -1003,21 +1003,15 @@ setMethod(
                         id,
                         distance = NA_integer_,
                         binwidth = getCCD(object),
-                        n_bins_circle = NA_integer_,
+                        n_bins_dist = NA_integer_,
+                        core = TRUE,
                         angle_span = c(0,360),
                         n_bins_angle = 1,
-                        outer = TRUE,
-                        inner = TRUE,
                         pt_alpha = NA_integer_,
-                        pt_clrp = c("inferno", "default"),
-                        pt_clrsp = "inferno",
                         pt_size = NULL,
-                        color_core = ggplot2::alpha("grey", 0),
+                        pt_clrp = "default",
                         color_outside = ggplot2::alpha("lightgrey", 0.25),
                         show_plots = TRUE,
-                        display_angle = FALSE,
-                        display_bins_angle = TRUE,
-                        display_bins_circle = TRUE,
                         ggpLayers = list(),
                         remove_circle_bins = FALSE,
                         bcsp_exclude = NULL,
@@ -1026,121 +1020,57 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    if(base::length(pt_clrp) != 2){ pt_clrp <- base::rep(pt_clrp, 2)}
-
-    sas_df <-
-      getSasDf(
-        object = object,
-        id = id,
-        variables = NULL,
+    # all checks
+    sas_input <-
+      check_sas_input(
         distance = distance,
         binwidth = binwidth,
-        n_bins_circle = n_bins_circle,
-        angle_span = angle_span,
-        outer = outer,
-        inner = inner,
-        n_bins_angle = n_bins_angle,
-        remove_circle_bins = remove_circle_bins,
-        rename_angle_bins = TRUE,
-        bcsp_exclude = bcsp_exclude,
-        drop = c(FALSE, TRUE),
-        summarize_by = FALSE,
+        n_bins_dist,
+        object = object,
         verbose = verbose
       )
 
-    if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
+    distance <- sas_input$distance
+    binwidth <- sas_input$binwidth
+    n_bins_dist <- sas_input$n_bins_dist
 
-    circle_levels <- base::levels(sas_df$bins_circle)
-    angle_levels <- base::levels(sas_df$bins_angle)
+    sas_df <-
+      getCoordsDfSA(
+        object = object,
+        id = id,
+        distance = distance,
+        binwidth = binwidth,
+        n_bins_dist = n_bins_dist,
+        n_bins_angle = n_bins_angle,
+        angle_span = angle_span,
+        verbose = verbose
+    )
 
+    circle_levels <- base::levels((sas_df$bins_dist))
     circle_clrp_adjust <-
       confuns::color_vector(
-        clrp = pt_clrp[1],
+        clrp = pt_clrp,
         names = circle_levels,
         n.colors = base::length(circle_levels),
-        clrp.adjust = c("Core" = color_core, "Outside" = color_outside)
+        clrp.adjust = c("outside" = color_outside)
       )
 
-    angle_clrp_adjust <-
-      confuns::color_vector(
-        clrp = pt_clrp[2],
-        names = angle_levels,
-        n.colors = base::length(angle_levels),
-        clrp.adjust = c("Core" = color_core, "Outside" = color_outside)
-      )
-
-    p <- list()
-
-    if(base::isTRUE(display_bins_circle)){
-
-      p$bins_circle <-
+    p <-
         base::suppressWarnings({
 
           plotSurface(
-            object = sas_df,
-            color_by = "bins_circle",
-            pt_clrp = pt_clrp[1],
+            object = coords_df,
+            color_by = "bins_dist",
+            pt_clrp = pt_clrp,
             clrp_adjust = circle_clrp_adjust,
             pt_alpha = pt_alpha,
             pt_size = pt_size
-          ) + ggpLayers
-
+          )  + ggpLayers
         })
-
-    }
-
-    if(base::isTRUE(display_bins_angle)){
-
-      p$bins_angle <-
-        base::suppressWarnings({
-
-          plotSurface(
-            object = sas_df,
-            color_by = "bins_angle",
-            pt_clrp = pt_clrp[2],
-            clrp_adjust = angle_clrp_adjust,
-            pt_alpha = pt_alpha,
-            pt_size = pt_size
-          ) + ggpLayers
-
-        })
-
-    }
-
-
-    if(base::isTRUE(display_angle)){
-
-      p$angle <-
-        plotSurface(
-          object = dplyr::filter(sas_df, !bins_circle %in% c("Core", "Outside")),
-          color_by = "angle",
-          pt_size = pt_size,
-          pt_clrsp = pt_clrsp,
-          pt_alpha = pt_alpha
-        ) +
-        geom_point_fixed(
-          data = dplyr::filter(sas_df, bins_circle == "Core"),
-          mapping = ggplot2::aes(x = x, y = y),
-          size = pt_size,
-          color = color_core,
-          alpha = pt_alpha
-        ) +
-        geom_point_fixed(
-          data = dplyr::filter(sas_df, bins_circle == "Outside"),
-          mapping = ggplot2::aes(x = x, y = y),
-          size = pt_size,
-          color = color_outside,
-          alpha = pt_alpha
-        )  +
-        ggpLayers
-
-    }
 
     if(base::isTRUE(show_plots)){
 
-      p_plot <- p[["bins_circle"]] + p[["bins_angle"]] + p[["angle"]]
-
-      plot(p_plot)
+      plot(p)
 
     }
 

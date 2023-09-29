@@ -896,8 +896,8 @@ plot_model_comparison_dotplot <- function(data,
                                           label_vars = 2,
                                           label_size = 4,
                                           threshold_pval = 0.05,
-                                          label_color = "#4d4d4d",
-                                          x_label = "Gene-model correlation") {
+                                          label_color = "#4d4d4d"
+                                          ) {
 
   data <- data[data$corr >= 0,]
 
@@ -937,8 +937,8 @@ plot_model_comparison_dotplot <- function(data,
     ) +
     ggplot2::scale_color_manual(values = c("grey50", "#ff7256"), labels = c(paste0(">= ", threshold_pval), paste0("< ", threshold_pval))) +
     ggplot2::scale_size_continuous(range = c(pt_size, max_size)) +
-    ggplot2::scale_x_continuous(limits = c(0,1)) +
-    ggplot2::labs(x = x_label, y = "Model") +
+    #ggplot2::scale_x_continuous(limits = c(0,1)) +
+    ggplot2::labs(x = eval, y = "Model") +
     ggplot2::theme_minimal() +
     ggplot2::guides(size = guide_legend(override.aes = list(size = c(pt_size, mean(c(pt_size, max_size)), max_size)))) + # Adjust dot size in legend
     ggplot2::theme(panel.grid.major.y = element_blank()) +
