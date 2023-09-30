@@ -408,7 +408,10 @@ addFeatures <- function(object,
                         feature_names = NULL,
                         key_variable = "barcodes",
                         overwrite = FALSE,
+                        verbose = NULL,
                         ...){
+
+  hlpr_assign_arguments(object)
 
   deprecated(...)
 
@@ -531,7 +534,7 @@ addFeatures <- function(object,
 
       if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
-      base::warning(glue::glue("Only {n_bc_feat} barcode-spots of {n_bc_obj} were found in 'feature_df'. Not found barcode-spots obtain NAs for all features to be joined."))
+      warning(glue::glue("Only {n_bc_feat} barcode-spots of {n_bc_obj} were found in 'feature_df'. Not found barcode-spots obtain NAs for all features to be joined."))
 
     }
 
@@ -562,7 +565,7 @@ addFeatures <- function(object,
 
       if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
-      base::warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
+      warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
 
     }
 

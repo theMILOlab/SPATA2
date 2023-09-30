@@ -993,7 +993,6 @@ VisiumSmall <-
   SpatialMethod(
     capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
     fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm")),
-    info = list(),
     method_specifics = list(ccd = "100um", diameter = "55um"),
     name = "VisiumSmall",
     observational_unit = "spot",
@@ -1006,7 +1005,6 @@ VisiumLarge <-
   SpatialMethod(
     capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
     fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm")),
-    info = list(),
     method_specifics = list(ccd = "100um", diameter = "55um"),
     name = "VisiumLarge",
     observational_unit = "spot",
@@ -1015,6 +1013,16 @@ VisiumLarge <-
   )
 
 
+# x -----------------------------------------------------------------------
+
+#' @export
+Xenium <-
+  SpatialMethod(
+    name = "Xenium",
+    observational_unit = "cell",
+    unit = "mm",
+    version = current_spata2_version
+  )
 
 
 
@@ -1028,5 +1036,6 @@ spatial_methods <-
     "SlideSeqV1" = SlideSeqV1,
     "Undefined" = SpatialMethod(name = "Undefined", version = current_spata2_version),
     "VisiumSmall" = VisiumSmall,
-    "VisiumLarge" = VisiumLarge
+    "VisiumLarge" = VisiumLarge,
+    "Xenium" = Xenium
   )

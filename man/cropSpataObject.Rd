@@ -4,7 +4,13 @@
 \alias{cropSpataObject}
 \title{Subset by x- and y-range}
 \usage{
-cropSpataObject(object, xrange, yrange, verbose = NULL)
+cropSpataObject(
+  object,
+  xrange,
+  yrange,
+  adjust_capture_area = TRUE,
+  verbose = NULL
+)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -21,6 +27,9 @@ If values are specified in European units of length the input is
 immediately converted to pixel units. See info section \emph{Distance measures}
 for more information.}
 
+\item{adjust_capture_area}{Logical. If \code{TRUE}, the capture area is adjusted
+to the input of \code{xrange} and \code{yrange}. If \code{FALSE}, it stays as is. Defaults to \code{TRUE}.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -32,7 +41,7 @@ results.
 }
 \description{
 Creates a subset of the original \code{SPATA2} object
-based on x- and y-range. Barcode-spots that fall into the
+based on x- and y-range. Data poitns that fall into the
 rectangle given by \code{xrange} and \code{yrange} are kept.
 }
 \seealso{

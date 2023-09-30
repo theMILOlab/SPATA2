@@ -228,12 +228,9 @@ setMethod(
 #' @description Determines the type of content displayed by each pixel in the image,
 #' categorizing it as tissue from tissue segments or fragments, artifacts, or background.
 #'
-#' @param percentile Numeric value between 0 and 100.
-#' Specifies the percentile of colors to set to plain white, assuming that
-#' this percentile of colors is responsible for the background.
-#' If set to 0, the function is not called.
 #' @param superpixel Numeric value specifying the number of superpixels to compute.
-#' Given as an argument to `$spixel_segmentation()` function.
+#' Given as an argument to `$spixel_segmentation()` function. Increased values can
+#' improve the output but increase runtime.
 #' @param compactness_factor Numeric value controlling the compactness of superpixels.
 #' Given as an argument to `$spixel_segmentation()` function.
 #' @param eps Numeric value specifying the value of `eps` parameter used in `dbscan::dbscan()`
@@ -251,9 +248,10 @@ setMethod(
 #' it is calculated as a percentage of the total number of pixels in the image.
 #' If a threshold value is greater than or equal to 1, it is taken as an absolute value.
 #'
+#' @inherit background_white params details
 #' @inherit argument_dummy params
 #'
-#' @details If `img_name` specifies multiple images, the function
+#' @note If `img_name` specifies multiple images, the function
 #' iterates over all of them. If it is `NULL` the active image is picked.
 #'
 #' @seealso
@@ -336,7 +334,7 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object,
                         img_name = NULL,
-                        percentile = 99,
+                        percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
                         eps = 0.005,
@@ -386,7 +384,7 @@ setMethod(
   f = "identifyPixelContent",
   signature = "HistoImage",
   definition = function(object,
-                        percentile = 99,
+                        percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
                         eps = 0.005,
@@ -435,7 +433,7 @@ setMethod(
   f = "identifyPixelContent",
   signature = "Image",
   definition = function(object,
-                        percentile = 99,
+                        percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
                         frgmt_threshold = c(0.001, 0.05),
@@ -530,7 +528,7 @@ setMethod(
       if (!requireNamespace("reshape", quietly = TRUE)) {
         stop("Please install 'reshape'")
       }
-      
+
       temp_df <-
         reshape::melt(image_mask@.Data[ , ,i]) %>%
         magrittr::set_colnames(value = c("width", "height", stringr::str_c("colTiss", i))) %>%
@@ -759,7 +757,7 @@ setMethod(
 #'
 #' For objects derived from the Visium platform with a fixed center to center
 #' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
-#' and `minPts = 3`which has worked well for us. For objects derived
+#' and `minPts = 3` which has worked well for us. For objects derived
 #' from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
 #' we recommend the average minimal distance between the data points times 10 for
 #' `eps` and `minPts = 2`. The function

@@ -66,8 +66,8 @@ setMethod(
                         use_scattermore = NULL,
                         bcs_rm = NULL,
                         na_rm = FALSE,
-                        xrange = getCaptureArea(object)$x,
-                        yrange = getCaptureArea(object)$y,
+                        xrange = getCoordsRange(object)$x,
+                        yrange = getCoordsRange(object)$y,
                         verbose = NULL,
                         ...){
 
@@ -106,6 +106,7 @@ setMethod(
         bcs_rm = bcs_rm,
         na_rm = na_rm,
         use_scattermore = use_scattermore,
+        verbose = verbose,
         ...
       )
 
@@ -1001,38 +1002,21 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         id,
-                        distance = NA_integer_,
-                        binwidth = getCCD(object),
+                        distance,
+                        binwidth = recBinwidth(object),
                         n_bins_dist = NA_integer_,
-                        core = TRUE,
+                        color_by = c("dist", "bins_dist", "angle", "bins_angle"),
+                        unit = extract_unit(binwidth),
                         angle_span = c(0,360),
                         n_bins_angle = 1,
-                        pt_alpha = NA_integer_,
-                        pt_size = NULL,
-                        pt_clrp = "default",
                         color_outside = ggplot2::alpha("lightgrey", 0.25),
                         show_plots = TRUE,
                         ggpLayers = list(),
-                        remove_circle_bins = FALSE,
                         bcsp_exclude = NULL,
                         verbose = NULL,
                         ...){
 
     hlpr_assign_arguments(object)
-
-    # all checks
-    sas_input <-
-      check_sas_input(
-        distance = distance,
-        binwidth = binwidth,
-        n_bins_dist,
-        object = object,
-        verbose = verbose
-      )
-
-    distance <- sas_input$distance
-    binwidth <- sas_input$binwidth
-    n_bins_dist <- sas_input$n_bins_dist
 
     sas_df <-
       getCoordsDfSA(
@@ -1043,38 +1027,43 @@ setMethod(
         n_bins_dist = n_bins_dist,
         n_bins_angle = n_bins_angle,
         angle_span = angle_span,
+        dist_unit = unit,
         verbose = verbose
     )
 
-    circle_levels <- base::levels((sas_df$bins_dist))
-    circle_clrp_adjust <-
-      confuns::color_vector(
-        clrp = pt_clrp,
-        names = circle_levels,
-        n.colors = base::length(circle_levels),
-        clrp.adjust = c("outside" = color_outside)
-      )
+    p_list <-
+      purrr::map(
+        .x = color_by,
+        .f = function(cb){
 
-    p <-
-        base::suppressWarnings({
+          object <-
+            addFeatures(
+              object = object,
+              feature_df = sas_df,
+              feature_names = cb,
+              overwrite = TRUE,
+              verbose = FALSE
+              )
 
-          plotSurface(
-            object = coords_df,
-            color_by = "bins_dist",
-            pt_clrp = pt_clrp,
-            clrp_adjust = circle_clrp_adjust,
-            pt_alpha = pt_alpha,
-            pt_size = pt_size
-          )  + ggpLayers
-        })
+          p_out <-
+            plotSurface(object, color_by = cb, verbose = FALSE, ...) +
+            ggpLayers[[cb]] + # add specific layers
+            ggpLayers[base::names(ggpLayers) == ""] # add general layers
+
+          return(p_out)
+
+        }
+      ) %>%
+      purrr::set_names(nm = color_by)
+
 
     if(base::isTRUE(show_plots)){
 
-      plot(p)
+      plot(patchwork::wrap_plots(p_list))
 
     }
 
-    base::invisible(p)
+    base::invisible(p_list)
 
   }
 )

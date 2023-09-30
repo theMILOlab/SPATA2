@@ -25,7 +25,7 @@ identifyPixelContent(object, ...)
 \S4method{identifyPixelContent}{HistoImaging}(
   object,
   img_name = NULL,
-  percentile = 99,
+  percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
   eps = 0.005,
@@ -36,7 +36,7 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{HistoImage}(
   object,
-  percentile = 99,
+  percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
   eps = 0.005,
@@ -47,7 +47,7 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{Image}(
   object,
-  percentile = 99,
+  percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
   frgmt_threshold = c(0.001, 0.05),
@@ -66,16 +66,24 @@ objects of classes for which a method has been defined.}
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
-\item{percentile}{Numeric value between 0 and 100.
-Specifies the percentile of colors to set to plain white, assuming that
-this percentile of colors is responsible for the background.
-If set to 0, the function is not called.}
+\item{percentile}{Numeric value between 0 and 100 (inclusive) specifying the percentile
+threshold for background color determination. If bigger than 0, it determines
+the \strong{top} percentile of colors to identify as background based on the frequency
+they appear in the image. This can improve identifying tissue pixels in images
+where the edge between tissue and background is continuous rather than sharp
+and thus difficult to identify using computational approaches. It follows the
+hypothesis that the background consists of many pixels of equal color while
+the tissue consists of pixels of heterogenous colors.
+
+Values between 0-100 are valid. Usually values between 0.5-2.5 work well.
+Test resuls with \code{\link[=plotPixelContent]{plotPixelContent()}}.}
 
 \item{compactness_factor}{Numeric value controlling the compactness of superpixels.
 Given as an argument to \verb{$spixel_segmentation()} function.}
 
 \item{superpixel}{Numeric value specifying the number of superpixels to compute.
-Given as an argument to \verb{$spixel_segmentation()} function.}
+Given as an argument to \verb{$spixel_segmentation()} function. Increased values can
+improve the output but increase runtime.}
 
 \item{eps}{Numeric value specifying the value of \code{eps} parameter used in \code{dbscan::dbscan()}
 when applied on the tissue pixels. If the value is less than 1, it is calculated
@@ -124,6 +132,13 @@ Determines the type of content displayed by each pixel in the image,
 categorizing it as tissue from tissue segments or fragments, artifacts, or background.
 }
 \details{
+If \code{percentile} is not 0, the \code{\link[=background_white]{background_white()}} function processes the
+image by identifying the most frequently occurring colors setting their RGB values
+to 1, effectively turning them white (assuming that the image is in grayscale,
+with 1 representing white). The \code{percentile} parameter allows you to adjust the
+sensitivity of the background removal, allowing for more precise isolation of the main subject.
+}
+\note{
 If \code{img_name} specifies multiple images, the function
 iterates over all of them. If it is \code{NULL} the active image is picked.
 }

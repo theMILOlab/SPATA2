@@ -1601,13 +1601,20 @@ setMethod(
 
           })
 
+          zoom_out <- shiny::reactive({
+
+            # prevents error
+
+          })
+
 
           # module outputs ----------------------------------------------------------
 
           zooming_output <-
             shinyModuleZoomingServer(
               brushed_area = brushed_area,
-              object = object
+              object = object,
+              trigger_zoom_out = zoom_out
             )
 
           # observe events ----------------------------------------------------------

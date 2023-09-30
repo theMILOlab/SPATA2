@@ -34,7 +34,8 @@ ggpLayerPoints(object, ...)
   use_scattermore = FALSE,
   add_labs = FALSE,
   bcs_rm = NULL,
-  na_rm = FALSE
+  na_rm = FALSE,
+  verbose = NULL
 )
 
 \S4method{ggpLayerPoints}{HistoImaging}(
@@ -170,6 +171,11 @@ thousand data points. If the number of data points plotted is bigger than
 
 \item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
 to be removed prior to analysis or visualization by their barcode.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}

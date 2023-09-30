@@ -415,7 +415,8 @@ initiateSpataObjectSlideSeqV1 <- function(directory_slide_seq,
     setDefault(
       object = object,
       display_image = FALSE, # SlideSeqV1 does not come with an image)
-      pt_size = 1 # many beads of small size
+      pt_size = 1.5, # many beads of small size
+      use_scattermore = TRUE
     )
 
   return(object)
@@ -531,8 +532,86 @@ initiateSpataObjectVisium <- function(directory_visium,
 }
 
 
+#' @title Initiate `spata2` object from platform Xenium
+#'
+#' @description Wrapper function around the necessary content to create a
+#' `spata2` object from standardized output of the Xenium platform.
+#'
+#' @param directory_visium Character value. Directory to a xenium folder. Should contain
+#' the subdirectory *'.../cell_feature_matrix'* and the file *'.../cells.csv.gz'*..
+#' @param sample_name Character value. Name of the sample.
+#'
+#' @return An object of class `spata2`.
+#' @export
+#'
+initiateSpataObjectXenium <- function(directory_xenium,
+                                      sample_name,
+                                      verbose = TRUE){
 
+  mtr_path <- base::file.path(directory_xenium, "cell_feature_matrix/")
 
+  confuns::give_feedback(
+    msg = glue::glue("Reading count matrix from '{mtr_path}'."),
+    verbose = verbose
+  )
+
+  # read count matrix
+  count_mtr <-
+    base::suppressMessages({
+
+      Seurat::Read10X(data.dir = mtr_path)[["Gene Expression"]]
+
+    })
+
+  # create imaging
+  imaging <-
+    createHistoImagingXenium(
+      dir = directory_xenium,
+      sample = sample_name
+    )
+
+  # create spata2 object
+  object <-
+    initiateSpataObject_Empty(
+      sample_name = sample_name,
+      spatial_method = imaging@method@name
+    )
+
+  # set required content
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+
+  object <-
+    setFeatureDf(
+      object = object,
+      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
+    )
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  # set active content
+  object <- setActiveMatrix(object, mtr_name = "counts")
+
+  object <- setInitiationInfo(object)
+
+  # Xenium works in micron space
+  pxl_scale_fct <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
+  object <- setScaleFactor(object, fct_name = "pixel", value = pxl_scale_fct)
+
+  base::options(scipen = 999)
+
+  object <-
+    setCaptureArea(
+      object = object,
+      x = getCoordsRange(object)$x %>% as_millimeter(object = object),
+      y = getCoordsRange(object)$y %>% as_millimeter(object = object)
+    )
+
+  # set default
+  object <- setDefault(object, display_image = FALSE, pt_size = 0.5)
+
+  return(object)
+
+}
 
 
 

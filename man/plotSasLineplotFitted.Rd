@@ -95,6 +95,6 @@ fitted to the binned distance towards the image annotation.
 \details{
 The method for class \code{SpatialAnnotationScreening} (the output of
 the function \code{spatialAnnotationScreening()}) can be used
-to show the area on which the results base. Therefore, it does not have
+to show the area on which the results are based on. Therefore, it does not have
 arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
 }

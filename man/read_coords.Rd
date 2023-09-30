@@ -5,6 +5,7 @@
 \alias{read_coords_merfish}
 \alias{read_coords_slide_seq_v1}
 \alias{read_coords_visium}
+\alias{read_coords_xenium}
 \title{Read coordinate data.frames}
 \usage{
 read_coords(...)
@@ -14,12 +15,14 @@ read_coords_merfish(dir_coords)
 read_coords_slide_seq_v1(dir_coords)
 
 read_coords_visium(dir_coords)
+
+read_coords_xenium(dir_coords)
 }
 \arguments{
 \item{dir_coords}{Character value. Directory to the coordinates data.frame.}
 }
 \value{
-Data.frame of at least four columns:
+Data.frame of at least five columns:
 \itemize{
 \item{\emph{barcodes}:}{ Character. Unique identifier of each observation.}
 \item{\emph{exclude}:}{ Logical. Indicates whether to exclude the observation by default.}

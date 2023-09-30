@@ -5,6 +5,7 @@
 \alias{createHistoImagingMERFISH}
 \alias{createHistoImagingSlideSeqV1}
 \alias{createHistoImagingVisium}
+\alias{createHistoImagingXenium}
 \title{Create an object of class \code{HistoImaging}}
 \usage{
 createHistoImaging(
@@ -47,6 +48,8 @@ createHistoImagingVisium(
   misc = list(),
   verbose = TRUE
 )
+
+createHistoImagingXenium(dir, sample, meta = list(), misc = list())
 }
 \arguments{
 \item{sample}{Character value. The sample name of the tissue.}
@@ -91,6 +94,7 @@ the expected filename is tried:
 \item{\emph{MERFISH}:}{ File that contains \emph{'cell_metadata'} and ends with \emph{'.csv'}}
 \item{\emph{SlideSeqV1}:}{ File that ends with \emph{'...MatchedBeadLocation.csv'}}
 \item{\emph{Visium}:}{ File named \emph{'tissue_positions_list.csv'} or \emph{'tissue_positions.csv'}}
+\item{\emph{Xenium}:}{ File named \emph{'cells.csv.gz'}.}
 }}
 
 \item{img_ref, img_active}{Character values specifying which of the images to register and how to register

@@ -99,7 +99,7 @@ spatial outliers.
 
 For objects derived from the Visium platform with a fixed center to center
 distance, we recommend to set \code{eps = getCCD(object, unit = "px")*1.25}
-and \code{minPts = 3}which has worked well for us. For objects derived
+and \code{minPts = 3} which has worked well for us. For objects derived
 from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
 we recommend the average minimal distance between the data points times 10 for
 \code{eps} and \code{minPts = 2}. The function

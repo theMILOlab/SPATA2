@@ -6,7 +6,7 @@
 #'
 #' @param dir_coords Character value. Directory to the coordinates data.frame.
 #'
-#' @return Data.frame of at least four columns:
+#' @return Data.frame of at least five columns:
 #'  \itemize{
 #'   \item{*barcodes*:}{ Character. Unique identifier of each observation.}
 #'   \item{*exclude*:}{ Logical. Indicates whether to exclude the observation by default.}
@@ -17,7 +17,9 @@
 #'
 #' @export
 
-read_coords <- function(...){}
+read_coords <- function(...){
+  # dummy
+  }
 
 #' @rdname read_coords
 #' @export
@@ -89,6 +91,19 @@ read_coords_visium <- function(dir_coords){
 
 }
 
+#' @rdname read_coords
+#' @export
+read_coords_xenium <- function(dir_coords){
+
+  coords_df <-
+    utils::read.csv(dir_coords) %>%
+    tibble::as_tibble() %>%
+    dplyr::select(barcodes = cell_id, x_orig = x_centroid, y_orig = y_centroid, cell_area) %>%
+    dplyr::mutate(exclude = FALSE, exclude_reason = "", cell_area = units::set_units(cell_area, value = "um2"))
+
+  return(coords_df)
+
+}
 
 #' @title Platform dependent binwidth recommendation
 #'
@@ -115,7 +130,7 @@ recBinwidth <- function(object, unit = NULL){
 
   if(containsCCD(object)){
 
-    out <- getCCD(object)
+    out <- getCCD(object, unit = getDefaultUnit(object))
 
   } else {
 
@@ -764,7 +779,8 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 #' @title Remove spatial outliers
 #'
 #' @description Removes data points that were identified as spatial outliers
-#' and all their related data.
+#' and all their related data. If no spatial outliers exist, the input object
+#' is returned as is.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -786,6 +802,16 @@ removeSpatialOutliers <- function(object, verbose = NULL){
       dplyr::filter(section != "outlier") %>%
       dplyr::pull(barcodes)
 
+    n_rm <-
+      getCoordsDf(object, as_is = TRUE) %>%
+      dplyr::filter(section == "outlier") %>%
+      base::nrow()
+
+    confuns::give_feedback(
+      msg = glue::glue("Spatial outliers to remove: {n_rm}."),
+      verbose = verbose
+    )
+
     object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
 
   }
@@ -802,7 +828,7 @@ removeSpatialOutliers <- function(object, verbose = NULL){
 #'
 #'  \itemize{
 #'   \item{`removeGenes()`:}{ Removes user specified genes.}
-#'   \item{`removeGenesZeroCounts()`:}{ Removes genes that do not have a single account
+#'   \item{`removeGenesZeroCounts()`:}{ Removes genes that do not have a single count
 #'   across all data points.}
 #'   \item{`removeGenesStress()`:}{ Removes mitochondrial and stress related genes.}
 #'   }
@@ -1036,7 +1062,79 @@ removeSpatialAnnotations <- function(object, ids){
 
 
 
+#' @title Remove data points from tissue fragments
+#'
+#' @description Removes data points that fall on tissue fragments as
+#' identified by [`identifyTissueOutline()`] and [`identifySpatialOutliers()`]
+#'
+#' @param fragments Numeric vector, character vector or `NULL`. If `NULL`,
+#' all tissue fragments are removed. If numeric or character indicates the
+#' fragments to be removed.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`removeSpatialOutliers()`], [`identifyTissueOutline()`] and [`identifySpatialOutliers()`]
+#'
+#' @export
+#'
+removeTissueFragments <- function(object,
+                                  fragments = NULL,
+                                  fdb_fn = "message"){
 
+  containsSectionVariable(object, error = TRUE)
+
+  coords_df <- getCoordsDf(object)
+
+  all_fragments <-
+    dplyr::filter(coords_df, stringr::str_detect(section, "tissue_fragment")) %>%
+    dplyr::pull(section) %>%
+    base::unique() %>%
+    base::as.character()
+
+  if(base::length(all_fragments) == 0){
+
+    confuns::give_feedback(
+      msg = "No tissue fragments in this sample.",
+      fdb.fn = fdb_fn,
+      verbose = base::is.character(fdb_fn)
+    )
+
+  } else {
+
+    if(base::is.null(fragments)){
+
+      fragments <- all_fragments
+
+    } else {
+
+      if(!base::is.character(fragments)){
+
+        fragments <-
+          stringr::str_c("tissue_fragment_", fragments) %>%
+          base::unique()
+
+      }
+
+      confuns::check_one_of(
+        input = fragments,
+        against = all_fragments
+      )
+
+    }
+
+    barcodes_keep <-
+      dplyr::filter(coords_df, !section %in% {{fragments}}) %>%
+      dplyr::pull(barcodes)
+
+    object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
+
+  }
+
+  return(object)
+
+
+}
 
 
 

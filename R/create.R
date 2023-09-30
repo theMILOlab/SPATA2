@@ -1037,6 +1037,7 @@ createHistoImage <- function(dir,
 #'   \item{*MERFISH*:}{ File that contains *'cell_metadata'* and ends with *'.csv'*}
 #'   \item{*SlideSeqV1*:}{ File that ends with *'...MatchedBeadLocation.csv'*}
 #'   \item{*Visium*:}{ File named *'tissue_positions_list.csv'* or *'tissue_positions.csv'*}
+#'   \item{*Xenium*:}{ File named *'cells.csv.gz'*.}
 #'   }
 #'
 #' @param hist_img_ref The `HistoImaging` serving as the reference image.
@@ -1409,8 +1410,8 @@ createHistoImagingVisium <- function(dir,
 
   # compute spot size
   spot_size <-
-    scale_factors$fiducial_diameter_fullres*
-    scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]]/
+    scale_factors$fiducial_diameter_fullres *
+    scale_factors[[stringr::str_c("tissue", img_ref, "scalef", sep = "_")]] /
     base::max(getImageDims(img_list[[img_ref]]))*100
 
   spot_scale_fct <- 1.15
@@ -1435,6 +1436,35 @@ createHistoImagingVisium <- function(dir,
   object <- computePixelScaleFactor(object, verbose = verbose)
 
   return(object)
+
+}
+
+
+#' @rdname createHistoImaging
+#' @export
+createHistoImagingXenium <- function(dir,
+                                     sample,
+                                     meta = list(),
+                                     misc = list()){
+
+  file_coords <- base::file.path(dir, "cells.csv.gz")
+
+  coords_df <- read_coords_xenium(dir_coords = file_coords)
+
+  # create pseudo image
+  imaging <-
+    HistoImaging(
+      coordinates = coords_df,
+      images = list(pseudo = PseudoHistoImage),
+      meta = meta,
+      method = spatial_methods[["Xenium"]],
+      misc = misc,
+      name_img_ref = "pseudo",
+      sample = sample,
+      version = current_spata2_version
+    )
+
+  return(imaging)
 
 }
 

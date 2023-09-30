@@ -1430,7 +1430,8 @@ setMethod(
                         use_scattermore = FALSE,
                         add_labs = FALSE,
                         bcs_rm = NULL,
-                        na_rm = FALSE){
+                        na_rm = FALSE,
+                        verbose = NULL){
 
     hlpr_assign_arguments(object)
 
@@ -1453,7 +1454,8 @@ setMethod(
           smooth = smooth,
           smooth_span = smooth_span,
           normalize = normalize,
-          method_gs = method_gs
+          method_gs = method_gs,
+          verbose = verbose
         ) %>%
         confuns::transform_df(df = ., transform.with = transform_with)
 
@@ -1718,14 +1720,21 @@ setMethod(
 
     }
 
+
     df <-
       dplyr::mutate(
         .data = object,
         dplyr::across(
-          .cols = dplyr::where(base::is.numeric),
+          .cols = dplyr::all_of(c("x", "y")),
           .fns = ~ .x * scale_fct
         )
       )
+
+    if(base::is.character(color_by)){
+
+      df <- dplyr::arrange(df, !!rlang::sym(color_by))
+
+    }
 
     if(base::isTRUE(use_scattermore)){
 
@@ -1739,7 +1748,7 @@ setMethod(
           alpha.by = alpha_by,
           color.by = color_by,
           sctm.interpolate = FALSE,
-          sctm.pixels = c(1024, 1024),
+          sctm.pixels = c(2024, 2024),
           na.rm = na_rm
         )
 
@@ -2284,6 +2293,8 @@ ggpLayerSpatAnnOutline <- function(object = "object",
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
   hlpr_assign_arguments(object)
+
+  containsSpatialAnnotations(object, error = T)
 
   ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
 

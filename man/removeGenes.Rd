@@ -37,7 +37,7 @@ them from count matrix and all processed matrices of the assay.
 
 \itemize{
 \item{\code{removeGenes()}:}{ Removes user specified genes.}
-\item{\code{removeGenesZeroCounts()}:}{ Removes genes that do not have a single account
+\item{\code{removeGenesZeroCounts()}:}{ Removes genes that do not have a single count
 across all data points.}
 \item{\code{removeGenesStress()}:}{ Removes mitochondrial and stress related genes.}
 }

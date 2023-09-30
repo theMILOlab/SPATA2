@@ -10,6 +10,7 @@ addFeatures(
   feature_names = NULL,
   key_variable = "barcodes",
   overwrite = FALSE,
+  verbose = NULL,
   ...
 )
 }

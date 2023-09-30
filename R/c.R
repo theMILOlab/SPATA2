@@ -881,20 +881,29 @@ crop_image <- function(image,
 #' @title Subset by x- and y-range
 #'
 #' @description Creates a subset of the original `SPATA2` object
-#' based on x- and y-range. Barcode-spots that fall into the
+#' based on x- and y-range. Data poitns that fall into the
 #' rectangle given by `xrange` and `yrange` are kept.
 #'
+#' @param adjust_capture_area Logical. If `TRUE`, the capture area is adjusted
+#' to the input of `xrange` and `yrange`. If `FALSE`, it stays as is. Defaults to `TRUE`.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @seealso [`ggpLayerRect()`] to visualize the rectangle based on which
 #' the subsetting is done.
 #'
+#'
 #' @export
 #'
-cropSpataObject <- function(object, xrange, yrange, verbose = NULL){
+cropSpataObject <- function(object,
+                            xrange,
+                            yrange,
+                            adjust_capture_area = TRUE,
+                            verbose = NULL){
 
   hlpr_assign_arguments(object)
+
+  unit <- getDefaultUnit(object)
 
   xrange <- as_pixel(input = xrange, object = object, add_attr = FALSE)
   yrange <- as_pixel(input = yrange, object = object, add_attr = FALSE)
@@ -910,6 +919,17 @@ cropSpataObject <- function(object, xrange, yrange, verbose = NULL){
   object_cropped <- subsetByBarcodes(object, barcodes = barcodes, verbose = verbose)
 
   object_cropped@information$cropped <- list(xrange = xrange, yrange = yrange)
+
+  if(base::isTRUE(adjust_capture_area)){
+
+    object_cropped <-
+      setCaptureArea(
+        object = object_cropped,
+        x = as_unit(xrange, unit = unit, object = object),
+        y = as_unit(yrange, unit = unit, object = object)
+      )
+
+  }
 
   return(object_cropped)
 

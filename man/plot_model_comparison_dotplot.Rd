@@ -15,8 +15,7 @@ plot_model_comparison_dotplot(
   label_vars = 2,
   label_size = 4,
   threshold_pval = 0.05,
-  label_color = "#4d4d4d",
-  x_label = "Gene-model correlation"
+  label_color = "#4d4d4d"
 )
 }
 \arguments{

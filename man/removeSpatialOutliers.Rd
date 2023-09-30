@@ -21,7 +21,8 @@ results.
 }
 \description{
 Removes data points that were identified as spatial outliers
-and all their related data.
+and all their related data. If no spatial outliers exist, the input object
+is returned as is.
 }
 \seealso{
 \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}, \code{\link[=containsSpatialOutliers]{containsSpatialOutliers()}}

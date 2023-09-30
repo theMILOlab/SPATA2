@@ -11,25 +11,16 @@ plotSurfaceSAS(object, ...)
 \S4method{plotSurfaceSAS}{spata2}(
   object,
   id,
-  distance = NA_integer_,
-  binwidth = getCCD(object),
-  n_bins_circle = NA_integer_,
+  distance,
+  binwidth = recBinwidth(object),
+  n_bins_dist = NA_integer_,
+  color_by = c("dist", "bins_dist", "angle", "bins_angle"),
+  unit = extract_unit(binwidth),
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  outer = TRUE,
-  inner = TRUE,
-  pt_alpha = NA_integer_,
-  pt_clrp = c("inferno", "default"),
-  pt_clrsp = "inferno",
-  pt_size = NULL,
-  color_core = ggplot2::alpha("grey", 0),
   color_outside = ggplot2::alpha("lightgrey", 0.25),
   show_plots = TRUE,
-  display_angle = FALSE,
-  display_bins_angle = TRUE,
-  display_bins_circle = TRUE,
   ggpLayers = list(),
-  remove_circle_bins = FALSE,
   bcsp_exclude = NULL,
   verbose = NULL,
   ...
@@ -72,6 +63,10 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
+
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
@@ -79,11 +74,16 @@ an angle span relative to the center of the spatial annotation.
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
 
-\item{outer}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the outer border of the image annotation
-is not included in the output.}
+\item{show_plots}{Logical value. If TRUE, the plots are immediately
+plotted. If FALSE, only a list of plots is returned (invisibly).}
 
-\item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
-are not included in the output.}
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
@@ -100,19 +100,8 @@ the colors with which the area of image annotation (\code{color_core})
 and the area that is not included in the screening (\code{color_outside})
 is displayed.}
 
-\item{show_plots}{Logical value. If TRUE, the plots are immediately
-plotted. If FALSE, only a list of plots is returned (invisibly).}
-
 \item{display_angle, display_bins_angle, display_circle}{Logical value.
 If TRUE, the plot is included. If FALSE, plotting is skipped.}
-
-\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
-Skim \code{ggpLayer*()}-functions for more options.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 An invisible list of ggplots.
@@ -126,6 +115,6 @@ the sample depending on the input of arguments \code{binwidth}, \code{n_bins_cir
 \details{
 The method for class \code{SpatialAnnotationScreening} (the output of
 the function \code{spatialAnnotationScreening()}) can be used
-to show the area on which the results base. Therefore, it does not have
+to show the area on which the results are based on. Therefore, it does not have
 arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
 }

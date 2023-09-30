@@ -29,8 +29,8 @@ plotSurface(object, ...)
   use_scattermore = NULL,
   bcs_rm = NULL,
   na_rm = FALSE,
-  xrange = getCaptureArea(object)$x,
-  yrange = getCaptureArea(object)$y,
+  xrange = getCoordsRange(object)$x,
+  yrange = getCoordsRange(object)$y,
   verbose = NULL,
   ...
 )

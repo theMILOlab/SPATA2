@@ -479,7 +479,16 @@ whichSpaceRangerVersion <- function(dir){
 
 
 
-
+#' @title Optimize `distance`-input
+#'
+#' @description This function suggests a value for the `distance`-parameter
+#' of the `spatialAnnotationScreening()` algorithm by consecutively running it
+#' while consecutively expanding the distance with the `binwidth` input. This is
+#' done till the maximum distance is reached. For every run, the number of
+#' valid best fits is counted. The distance with the most best fits is returned.
+#'
+#' @inherit spatialAnnotationScreening params
+#'
 #' @export
 findOptimalDistanceSAS <- function(object,
                                    id,

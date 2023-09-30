@@ -931,6 +931,7 @@ setMethod(
 #' @description Adds the spatial relation to a spatial
 #' annotation to the coordinates data.frame. See details for more.
 #'
+#' @inherit spatialAnnotationScreening params
 #' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
 #' if not empty.
 #' @inherit argument_dummy params

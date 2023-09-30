@@ -21,6 +21,32 @@ getCoordsDfSA(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
+
+\item{distance}{Distance value. Specifies the distance from the border of the
+spatial annotation to the \emph{horizon} in the periphery up to which the screening
+is conducted. (See details for more.) - See details of \code{?is_dist} for more
+information about distance values. Defaults to a distance that covers the whole
+tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
+
+\item{angle_span}{Numeric vector of length 2. Confines the area screened by
+an angle span relative to the center of the spatial annotation.
+(See details fore more.)}
+
+\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
+(See details for more.)}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
