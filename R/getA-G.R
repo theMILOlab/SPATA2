@@ -1003,7 +1003,7 @@ getCoordsDfSA <- function(object,
   spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
   spat_ann_bcs <- spat_ann@misc$barcodes
 
-  outline_df <- getSpatAnnOutlineDf(object)
+  outline_df <- getSpatAnnOutlineDf(object, id = id)
 
 
   # distance ----------------------------------------------------------------

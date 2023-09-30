@@ -494,6 +494,9 @@ setMethod(
 
 
     # use slicap to create a binary image with a tissue mask
+    if (!requireNamespace("SuperpixelImageSegmentation", quietly = TRUE)) {
+      stop("Please install 'SuperpixelImageSegmentation' to identify the pixel content")
+    }
     init <- SuperpixelImageSegmentation::Image_Segmentation$new()
 
     spx_masks <-
@@ -524,6 +527,10 @@ setMethod(
     # extract the color values of the processed image
     for(i in 1:n){
 
+      if (!requireNamespace("reshape", quietly = TRUE)) {
+        stop("Please install 'reshape'")
+      }
+      
       temp_df <-
         reshape::melt(image_mask@.Data[ , ,i]) %>%
         magrittr::set_colnames(value = c("width", "height", stringr::str_c("colTiss", i))) %>%
