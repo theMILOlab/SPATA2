@@ -435,6 +435,7 @@ joinWithGenes <- function(object,
 
 #' @rdname joinWith
 #' @export
+
 joinWithGeneSets <- function(object,
                              spata_df = getCoordsDf(object),
                              gene_sets,
@@ -475,21 +476,18 @@ joinWithGeneSets <- function(object,
 
   mtr_name <- getActiveMatrixName(object, verbose = verbose)
 
-  if(mtr_name == "counts"){
-
-    rlang::warn(
-      message = "Active matrix is 'counts'. It is recommended to use scaled expression data for gene-set expression.",
-      .frequency = "once",
-    )
-
-  }
-
   rna_assay <- getMatrix(object, mtr_name = mtr_name)
 
   gene_set_df <- getGeneSetDf(object = object)
   joined_df <- spata_df
 
   if(base::isTRUE(smooth)){
+
+    spata_df <- base::as.data.frame(spata_df)
+
+    base::rownames(spata_df) <- spata_df$barcodes
+
+    assign("spata_df", spata_df, envir = .GlobalEnv)
 
     x <- dplyr::pull(spata_df, var = x)
     y <- dplyr::pull(spata_df, var = y)
@@ -581,6 +579,8 @@ joinWithGeneSets <- function(object,
             magrittr::set_colnames(value = gene_sets[i]) %>%
             tibble::rownames_to_column(var = "barcodes")
 
+          assign("geneset_vls", geneset_vls, envir = .GlobalEnv)
+
         } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
 
           geneset_vls <-
@@ -630,6 +630,9 @@ joinWithGeneSets <- function(object,
 
         variable <- dplyr::pull(.data = geneset_vls, var = gene_sets[i])
 
+        x <- spata_df[geneset_vls$barcodes, ][["x"]]
+        y <- spata_df[geneset_vls$barcodes, ][["y"]]
+
         model <- stats::loess(formula = variable ~ x*y, span = smooth_span/10)
 
         geneset_vls[, gene_sets[i]] <- stats::predict(model)
@@ -660,25 +663,21 @@ joinWithGeneSets <- function(object,
 
   if(base::isTRUE(normalize)){
 
-    confuns::give_feedback(msg = "Normalizing values.", verbose = verbose)
-
     # normalize
     joined_df <-
       purrr::imap_dfr(.x = joined_df,
-                    .f = hlpr_normalize_imap,
-                    aspect = "Gene set",
-                    subset = gene_sets)
+                      .f = hlpr_normalize_imap,
+                      aspect = "Gene set",
+                      subset = gene_sets)
 
   }
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
 
   if(base::length(ignored_gs) > 1){
 
     base::message("Warning:")
     base::append(x = ignored_gs,
                  values = "\n(Run 'adjustGeneSetDf()' in order to avoid this warning message.)") %>%
-    base::writeLines()
+      base::writeLines()
 
   }
 

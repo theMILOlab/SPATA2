@@ -1205,12 +1205,26 @@ getTrajectoryLength <- function(object,
 
   tobj <- getTrajectory(object, id = id)
 
-  start <- base::as.numeric(tobj@segment[,c("x", "y")])
-  end <- base::as.numeric(tobj@segment[,c("xend", "yend")])
+  segm_df <- tobj@segment
 
   dist <-
-    compute_distance(start, end) %>%
-    stringr::str_c(., "px")
+    purrr::map_chr(
+      .x = 1:base::nrow(segm_df),
+      .f = function(i){
+
+        start <- base::as.numeric(segm_df[i,c("x", "y")])
+        end <- base::as.numeric(segm_df[i,c("xend", "yend")])
+
+        dist_out <-
+          compute_distance(start, end) %>%
+          stringr::str_c(., "px")
+
+        return(dist_out)
+
+      }
+    ) %>%
+    as_pixel(input = ., object = object) %>%
+    base::sum()
 
   out <-
     as_unit(

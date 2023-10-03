@@ -19,7 +19,6 @@ plotTrajectoryHeatmap(
   smooth_span = NULL,
   multiplier = 10,
   with_ggplot = TRUE,
-  display_trajectory_parts = FALSE,
   display_parts_with = "lines",
   line_alpha = 1,
   line_color = "red",
@@ -80,10 +79,6 @@ is the number of bins multiplied with the input for this argument.}
 \item{with_ggplot}{Logical value. If set to TRUE the heatmap is plotted with
 \code{ggplot2::geom_tile()} and a ggplot is returned.}
 
-\item{display_trajectory_parts}{Logical value. If TRUE and the trajectory
-contains more than one part the parts are displayed by facetting the plot
-or by adding vertical lines.}
-
 \item{display_parts_with}{Character value. Either \emph{'facets'} or \emph{'lines'}.}
 
 \item{line_alpha}{Numeric value. Specifies the transparency of the lines.}
@@ -108,6 +103,10 @@ the computational progress will be printed.
 
 \item{...}{Additional parameters given to \code{pheatmap::pheatmap()}. If argument
 \code{with_ggplot} is TRUE given to \code{scale_color_add_on()}.}
+
+\item{display_trajectory_parts}{Logical value. If TRUE and the trajectory
+contains more than one part the parts are displayed by facetting the plot
+or by adding vertical lines.}
 }
 \value{
 A heatmap of class 'pheatmap' or a ggplot.

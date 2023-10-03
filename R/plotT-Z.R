@@ -80,24 +80,41 @@ plotTrajectoryBarplot <- function(object,
       levels = base::unique(plot_df[["trajectory_order"]])
     )
 
-  breaks <-
-    base::unique(plot_df[["breaks"]]) %>%
-    reduce_vec(x = ., nth = x_nth)
-
-  labels <-
-    base::unique(plot_df[["proj_length_binned"]] + (binwidth/2)) %>%
-    as_unit(input = ., unit = unit, object = object) %>%
-    base::round(x = ., digits = round) %>%
-    reduce_vec(x = ., nth = x_nth)
-
-  if(base::isTRUE(display_trajectory_parts)){
+  if(dplyr::n_distinct(plot_df$trajectory_part) > 1){
 
     facet_add_on <-
-      ggplot2::facet_wrap(. ~ trajectory_part, scales = scales, ...)
+      list(
+        ggplot2::facet_wrap(. ~ trajectory_part, scales = scales, ...),
+        ggplot2::theme(
+          axis.ticks.x = ggplot2::element_blank(),
+          axis.text.x = ggplot2::element_blank()
+        ),
+        ggplot2::labs(x = "Trajectory Course", y = NULL)
+      )
+
 
   } else {
 
-    facet_add_on <- list()
+    breaks <-
+      base::unique(plot_df[["breaks"]]) %>%
+      reduce_vec(x = ., nth = x_nth)
+
+    labels <-
+      base::unique(plot_df[["proj_length_binned"]] + (binwidth/2)) %>%
+      as_unit(input = ., unit = unit, object = object) %>%
+      base::round(x = ., digits = round) %>%
+      reduce_vec(x = ., nth = x_nth)
+
+    facet_add_on <-
+      list(
+        ggplot2::scale_x_discrete(
+          breaks = breaks,
+          labels = labels,
+          expand = expand_x
+        ),
+        ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL)
+
+      )
 
   }
 
@@ -108,12 +125,6 @@ plotTrajectoryBarplot <- function(object,
       mapping = ggplot2::aes(x = breaks, fill = .data[[grouping_variable]]),
       position = position,
       width = 0.9
-      ) +
-    facet_add_on +
-    ggplot2::scale_x_discrete(
-      breaks = breaks,
-      labels = labels,
-      expand = expand_x
     ) +
     ggplot2::scale_y_continuous(
       breaks = c(0, 0.25, 0.5, 0.75, 1),
@@ -133,7 +144,8 @@ plotTrajectoryBarplot <- function(object,
       axis.line.y = ggplot2::element_line(),
       panel.grid = ggplot2::element_blank()
     ) +
-    ggplot2::labs(x = glue::glue("Trajectory Course [{unit}]"), y = NULL)
+    facet_add_on
+
 
 }
 
@@ -284,7 +296,6 @@ plotTrajectoryHeatmap <- function(object,
                                   smooth_span = NULL,
                                   multiplier = 10,
                                   with_ggplot = TRUE,
-                                  display_trajectory_parts = FALSE,
                                   display_parts_with = "lines",
                                   line_alpha = 1,
                                   line_color = "red",
@@ -362,7 +373,7 @@ plotTrajectoryHeatmap <- function(object,
   # if the heatmap is to be splitted into the trajectory parts
   n_parts <- base::length(base::unique(trajectory_object@projection$trajectory_part))
 
-  if(base::isTRUE(split_columns) | base::isTRUE(display_trajectory_parts) && n_parts > 1){
+  if(base::isTRUE(split_columns)){
 
     gaps <-
       dplyr::select(.data = stdf, trajectory_part, trajectory_part_order) %>%
@@ -486,65 +497,6 @@ plotTrajectoryHeatmap <- function(object,
         traj_part = "none"
       )
 
-    if(base::isTRUE(display_trajectory_parts)){
-
-      gap_seq <- base::seq_along(gaps)
-
-      if(display_parts_with == "facets"){
-
-        for(i in gap_seq){
-
-          threshold <- gaps[i]
-
-          val <-
-            english::ordinal(i) %>%
-            base::as.character()
-
-          df_smoothed <-
-            df_smoothed %>%
-            dplyr::mutate(
-              traj_part = dplyr::if_else(
-                condition = traj_ord_num <= {{threshold}} & traj_part == "none",
-                true = val,
-                false = traj_part
-              )
-            )
-
-        }
-
-        traj_part_levels <-
-          english::ordinal(x = gap_seq) %>%
-          base::as.character()
-
-        df_smoothed$traj_part <-
-          base::factor(x = df_smoothed$traj_part, levels = traj_part_levels)
-
-        traj_part_add_on <- ggplot2::facet_wrap(facets = . ~ traj_part, nrow = 1, scales = "free_x")
-
-      } else {
-
-        df_line <-
-          base::data.frame(x = gaps) %>%
-          dplyr::filter(x != base::max(x))
-
-        traj_part_add_on <-
-          ggplot2::geom_vline(
-            data = df_line,
-            mapping = ggplot2::aes(xintercept = x),
-            color = line_color,
-            alpha = line_alpha,
-            size = line_size,
-            linetype = line_type
-          )
-
-      }
-
-    } else {
-
-      traj_part_add_on <- NULL
-
-    }
-
     if(!base::is.null(.f)){
 
       df_smoothed$variables <-
@@ -559,7 +511,6 @@ plotTrajectoryHeatmap <- function(object,
     out <-
       ggplot2::ggplot(data = df_smoothed, mapping = ggplot2::aes(x = traj_ord_num, y = variables, fill = values)) +
       ggplot2::geom_tile() +
-      traj_part_add_on +
       ggplot2::theme_classic() +
       ggplot2::labs(x = "Trajectory Direction", y = NULL, fill = "Expr.") +
       ggplot2::theme(
@@ -710,18 +661,13 @@ plotTrajectoryLineplot <- function(object,
   if(base::isTRUE(display_trajectory_parts)){
 
     vline_df <-
-      result_df %>%
-      dplyr::group_by(trajectory_part) %>%
-      dplyr::filter(
-        trajectory_order %in% c(base::min(trajectory_order), base::max(trajectory_order)) &
-          trajectory_part_order == 1 &
-          trajectory_order != 1
-      )
+      dplyr::filter(result_df, trajectory_part != "Part 1") %>%
+      dplyr::slice_min(trajectory_order, n = 1)
 
     trajectory_part_add_on <- list(
       ggplot2::geom_vline(
         data = vline_df,
-        mapping = ggplot2::aes(xintercept = trajectory_order),
+        mapping = ggplot2::aes(xintercept = breaks),
         size = vlinesize, color = vlinecolor, linetype = vlinetype
       )
     )
@@ -793,7 +739,7 @@ plotTrajectoryLineplot <- function(object,
     data = result_df,
     mapping = ggplot2::aes(x = breaks, y = values)
   ) +
-    ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi, ...) +
+    ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi) +
     trajectory_part_add_on +
     ggplot2::geom_smooth(
       size = line_size,
@@ -1118,18 +1064,13 @@ plotTrajectoryRidgeplot <- function(object,
   if(base::isTRUE(display_trajectory_parts)){
 
     vline_df <-
-      result_df %>%
-      dplyr::group_by(trajectory_part) %>%
-      dplyr::filter(
-        trajectory_order %in% c(base::min(trajectory_order), base::max(trajectory_order)) &
-          trajectory_part_order == 1 &
-          trajectory_order != 1
-      )
+      dplyr::filter(result_df, trajectory_part != "Part 1") %>%
+      dplyr::slice_min(trajectory_order, n = 1)
 
     trajectory_part_add_on <- list(
       ggplot2::geom_vline(
         data = vline_df,
-        mapping = ggplot2::aes(xintercept = trajectory_order),
+        mapping = ggplot2::aes(xintercept = breaks),
         size = vlinesize, color = vlinecolor, linetype = vlinetype
       )
     )
@@ -1225,9 +1166,9 @@ plotTrajectoryRidgeplot <- function(object,
     mapping = ggplot2::aes(x = breaks, y = values)
   ) +
     ggpLayerLineplotAid(object, id = id, xi = xi, yi = yi) +
-    trajectory_part_add_on +
     line_add_on +
     linefill_add_on +
+    trajectory_part_add_on +
     ggplot2::scale_x_continuous(
       breaks = breaks,
       labels = labels,
