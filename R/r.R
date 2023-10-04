@@ -1882,20 +1882,20 @@ rotateImage <- function(object,
 
   }
 
-  io <- getImageObject(object)
+  io <- getHistoImaging(object)
 
   image_dims <- getImageDims(object)
 
-  io@image <-
+  io@images[[activeImage(object)]]@image <-
     EBImage::rotate(
-      x = io@image,
+      x = io@images[[activeImage(object)]]@image,
       angle = angle,
       output.dim = image_dims[1:2],
       bg.col = "white"
       )
 
   # save rotation
-  new_angle <- io@justification$angle + angle
+  new_angle <- io@images[[activeImage(object)]]@transformations$angle + angle
 
   if(new_angle > 360){
 
@@ -1907,14 +1907,14 @@ rotateImage <- function(object,
 
     if(new_angle == 360){ new_angle <- 0}
 
-    io@justification$angle <- new_angle
+    io@images[[activeImage(object)]]@transformations$angle <- new_angle
 
   }
 
-  io@image_info$dim_stored <- base::dim(io@image)
+  io@images[[activeImage(object)]]@image_info$dims <- base::dim(io@images[[activeImage(object)]]@image)
 
   # set image
-  object <- setImageObject(object, image_object = io)
+  object <- setHistoImaging(object, imaging = io)
 
   return(object)
 

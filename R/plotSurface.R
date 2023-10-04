@@ -985,7 +985,7 @@ plotSurfaceComparison2 <- function(coords_df,
 #' @details The method for class \code{SpatialAnnotationScreening} (the output of
 #' the function \code{spatialAnnotationScreening()}) can be used
 #' to show the area on which the results are based on. Therefore, it does not have
-#' arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
+#' arguments \code{binwidth}, \code{n_bins_dist} and \code{n_bins_angle}.
 #'
 #' @export
 
