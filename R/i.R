@@ -1644,6 +1644,8 @@ spatialAnnotationScreening <- function(object,
       sample = object@samples
     )
 
+  SAS_out@results$q_value = p.adjust(SAS_out@results$p_value, method = "fdr")
+
   confuns::give_feedback(
     msg = "Done.",
     verbose = verbose
