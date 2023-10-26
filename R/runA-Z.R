@@ -1851,10 +1851,13 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 runSDEA <- function(object,
                     interval,
                     id = idSA(object),
+                    distance = distToEdge(object, id = idSA(object)),
                     naming = "sdea_{id}",
                     method_de = "wilcox",
                     base = 2,
                     overwrite = FALSE,
+                    genes_rm = character(0),
+                    verbose = NULL,
                     ...){
 
   var_name <-
@@ -1867,7 +1870,7 @@ runSDEA <- function(object,
 
   spatial_parameters <-
     check_sas_input(
-      distance = distToEdge(object, id = id),
+      distance = distance,
       binwidth = interval,
       n_bins_dist = NA_integer_,
       object = object,

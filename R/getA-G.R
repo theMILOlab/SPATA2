@@ -1804,11 +1804,11 @@ getExpressionMatrixNames <- function(object, ...){
 
 # getF --------------------------------------------------------------------
 
-#' @title Obtain feature data
+#' @title Obtain barcode metadata
 #'
 #' @inherit check_sample params
 #'
-#' @return The feature data data.frame of the specified object and sample(s).
+#' @return The meta data.frame of the specified object and sample(s).
 #' @export
 
 getFeatureDf <- function(object, ...){
@@ -1823,7 +1823,7 @@ getFeatureDf <- function(object, ...){
 
   if(base::is.null(fdata) | base::nrow(fdata) == 0){
 
-    stop("Could not find feature data.")
+    stop("Could not find barcode metadata.")
 
   }
 
