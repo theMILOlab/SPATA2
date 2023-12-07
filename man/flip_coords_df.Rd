@@ -8,8 +8,8 @@ flip_coords_df(
   df,
   axis,
   ranges,
-  xvars = c("x", "xend", "col", "imagecol"),
-  yvars = c("y", "yend", "row", "imagerow"),
+  xvars = c("x_orig", "x", "xend", "col", "imagecol"),
+  yvars = c("y_orig", "y", "yend", "row", "imagerow"),
   verbose = FALSE,
   error = FALSE,
   ...

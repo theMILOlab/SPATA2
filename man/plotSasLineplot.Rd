@@ -11,8 +11,7 @@ plotSasLineplot(
   id = idSA(object),
   distance = distToEdge(object, id),
   binwidth = recBinwidth(object),
-  core = TRUE,
-  n_bins_dist = NA_integer_,
+  core = FALSE,
   angle_span = c(0, 360),
   n_bins_angle = 1,
   smooth_span = 0.2,
@@ -20,16 +19,20 @@ plotSasLineplot(
   unit = getSpatialMethod(object)@unit,
   clrp = NULL,
   clrp_adjust = NULL,
-  line_color = "black",
+  line_color = NULL,
   line_size = 1.5,
   nrow = NULL,
   ncol = NULL,
   border_linealpha = 0.75,
-  border_linecolor = "black",
+  border_linecolor = alpha("white", 0),
   border_linesize = 1,
-  border_linetype = "dashed",
+  border_linetype = "solid",
+  display_eval = TRUE,
+  pos_x = 0,
+  pos_y = 1,
   ggpLayers = list(),
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 
 plotSasLineplotSC(
@@ -93,10 +96,6 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
-\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
-specified. (See details for more.)}
-
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
@@ -142,6 +141,9 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{...}{Needed arguments that depend on the input/unit combination. If
+one of both is \emph{'px'}, argument \code{object} must be specified.}
+
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:
 \itemize{
@@ -149,6 +151,10 @@ Must have at least three columns:
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
+
+\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
+denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
+specified. (See details for more.)}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean
@@ -173,9 +179,6 @@ third label is kept. And so on.}
 \item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
 
 \item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
-
-\item{...}{Needed arguments that depend on the input/unit combination. If
-one of both is \emph{'px'}, argument \code{object} must be specified.}
 }
 \value{
 A ggplot.

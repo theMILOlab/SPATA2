@@ -4,11 +4,14 @@
 \alias{getProjectionDf}
 \title{Obtain trajectory projection}
 \usage{
-getProjectionDf(object, id, ...)
+getProjectionDf(object, id, img_name = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{...}{Given to \code{joinWith()}}
 }

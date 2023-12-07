@@ -464,10 +464,10 @@ process_coords_df_sa <- function(coords_df,
 
   # summarize
   smrd_df <-
-    dplyr::group_by(.data = coords_df, dplyr::pick({{summarize_by}})) %>%
+    dplyr::group_by(.data = coords_df, dist_unit, dplyr::pick({{summarize_by}})) %>%
     dplyr::summarize(
       dplyr::across(
-        .cols = dplyr::all_of(x = variables),
+        .cols = dplyr::any_of(x = variables),
         .fns = base::mean
       )
     ) %>%
@@ -477,7 +477,7 @@ process_coords_df_sa <- function(coords_df,
       bins_dist = base::droplevels(bins_dist),
       bins_order = base::as.numeric(bins_dist),
       dplyr::across(
-        .cols = dplyr::all_of(variables),
+        .cols = dplyr::any_of(variables),
         .fns = confuns::normalize
       )
     ) %>%
@@ -489,7 +489,88 @@ process_coords_df_sa <- function(coords_df,
     smrd_df <-
       tidyr::pivot_longer(
         data = smrd_df,
-        cols = dplyr::all_of(variables),
+        cols = dplyr::any_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      )
+
+  }
+
+  return(smrd_df)
+
+}
+
+
+process_coords_df_sa2 <- function(coords_df,
+                                 variables,
+                                 binwidth,
+                                 core = TRUE,
+                                 periphery = TRUE,
+                                 bcs_exclude = NULL,
+                                 summarize_by = c("bins_angle", "bins_dist"),
+                                 format = "wide"){
+
+  # filter
+  if(base::isFALSE(core)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "core")
+
+  }
+
+  if(base::isFALSE(periphery)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "periphery")
+
+  }
+
+  if(base::is.character(bcs_exclude)){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
+
+  }
+
+  coords_df <- dplyr::filter(coords_df, rel_loc != "outside")
+
+  spat_meta <-
+    dplyr::distinct(coords_df, bins_angle, bins_dist, dist_unit) %>%
+    dplyr::mutate(
+      bins_dist = base::droplevels(bins_dist),
+      bins_order = base::as.numeric(bins_dist)
+    )
+
+  dist_vals <- coords_df[["dist"]]
+  span <- binwidth/base::max(dist_vals)
+  out_pred <- define_positions(dist = )
+
+  pb <- confuns::create_progress_bar(total = base::length(variables))
+
+  # summarize
+  smrd_df <-
+    purrr::map_dfc(
+      .x = dplyr::select(coords_df, dplyr::all_of(variables)),
+      .f = function(var){
+
+        pb$tick()
+
+        stats::loess(var ~ dist_vals, span = span) %>%
+          stats::predict(object = ., out_pred) %>%
+          confuns::normalize()
+
+      }
+    ) %>%
+    dplyr::mutate(bins_order = 1:dplyr::n()) %>%
+    dplyr::left_join(x = spat_meta, y = ., by = "bins_order") %>%
+    dplyr::mutate(dist = extract_bin_dist_val(bins_dist)) %>%
+    dplyr::arrange(bins_order)
+
+
+  # shift
+  if(format == "long"){
+
+    smrd_df <-
+      tidyr::pivot_longer(
+        data = smrd_df,
+        cols = dplyr::any_of(variables),
         names_to = "variables",
         values_to = "values"
       )
@@ -1114,7 +1195,7 @@ processWithSeurat <- function(object,
 #' extracts a matrix fromt he resulting assay object.
 #'
 #' @param slot The slot of the output assay in the `Seurat` object from where to
-#' take the matrix.
+#' take the matrix. Defaults to *data*.
 #' @param name The name under which to store the matrix.
 #' @param exchange_counts Logical. If `TRUE`, the counts matrix of the `spata2`
 #' object is exchanged for the counts matrix in the output assay.
@@ -1126,8 +1207,8 @@ processWithSeurat <- function(object,
 #' @export
 #'
 processWithSCT <- function(object,
-                           slot = "scale.data",
-                           name = "sct_scaled",
+                           slot = "data",
+                           name = "sct_data",
                            exchange_counts = FALSE,
                            ...){
 

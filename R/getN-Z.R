@@ -551,24 +551,46 @@ getProcessedMatrixNames <- function(object){
 #'
 getProjectionDf <- function(object,
                             id,
+                            width = NULL,
+                            img_name = NULL,
                             ...){
 
   traj_obj <- getTrajectory(object = object, id = id)
+
+  if(base::is.null(width)){
+
+    width <- getTrajectoryWidth(object, id = id)
+
+  }
+
+  width <- as_pixel(width, object = object)
+
+  projection_df <-
+    project_on_trajectory(
+      coords_df = getCoordsDf(object),
+      traj_df = getTrajectorySegmentDf(object, id = id),
+      width = width
+    ) %>%
+    dplyr::select(barcodes, projection_length)
 
   if(base::is.character(list(...)[["variables"]])){
 
     out <-
       joinWith(
         object = object,
-        spata_df = traj_obj@projection,
+        spata_df = projection_df,
         ...
       )
 
   } else {
 
-    out <- traj_obj@projection
+    out <- projection_df
 
   }
+
+  coords_scale_fct <- getScaleFactor(object, fct_name = "coords", img_name = img_name)
+
+  out$projection_length <- out$projection_length * coords_scale_fct
 
   return(out)
 
@@ -869,6 +891,654 @@ getSampleAreaSize <- function(object, unit){
 getSampleName <- function(object){
 
   object@samples
+
+}
+
+
+#' @title Calculate SAS bin area
+#'
+#' @description Computes the area covered by each distance bin of the SAS algorithm.
+#'
+#' @param use_outline Logical value. If `TRUE`, uses the outline variable
+#' set with `setOutlineVarName()` or if none is set DBSCAN to identify the
+#' outline of the tissue section or sections in case of multiple tissue sections
+#' on one Visium slide to only compute the area of circle bins that covers the
+#' tissue section.
+#'
+#' @inherit getSasDf params
+#'
+#' @details Approximates the area each circular bin covers
+#' by assigning each pixel to the circular bin it falls into.
+#' Afterwards the number of pixels per bin is multiplied
+#' with the area scale factor as is obtained by `getPixelScaleFactor(object, unit = unit)`
+#' where unit is the squared unit of input for argument `binwidth`. E.g.
+#' if `binwidth` = *'0.1mm'* then `unit` = *mm2*.
+#'
+#' @return Data.frame in which each observation corresponds to a circular bin.
+#'
+#'
+#' @export
+#'
+getSasBinAreas <- function(object,
+                           area_unit,
+                           id = idSA(object),
+                           distance = distToEdge(object, id),
+                           binwidth = recBinwidth(object),
+                           n_bins_dist = NA_integer_,
+                           angle_span = c(0, 360),
+                           n_bins_angle = 1,
+                           use_outline = TRUE,
+                           remove_circle_bins = "Outside",
+                           verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  if(base::is.null(area_unit)){
+
+    area_unit <- stringr::str_c(extract_unit(binwidth), "2")
+
+  }
+
+  area_scale_fct <-
+    getPixelScaleFactor(object, unit = area_unit) %>%
+    base::as.numeric()
+
+  if(containsPseudoImage(object)){
+
+    stop("add pseudo logic")
+
+  } else {
+
+    coords_df <-
+      getPixelDf(object) %>%
+      dplyr::mutate(x = width, y = height)
+
+  }
+
+  if(base::isTRUE(use_outline)){
+
+    containsTissueOutline(object, error = TRUE)
+
+    coords_df <-
+      include_tissue_outline(
+        input_df = coords_df,
+        outline_df = getTissueOutlineDf(object),
+        spat_ann_center = getSpatAnnCenter(object, id)
+      )
+
+  }
+
+  {
+
+    input_list <-
+      check_sas_input(
+        distance = distance,
+        binwidth = binwidth,
+        n_bins_dist = n_bins_dist,
+        object = object,
+        verbose = verbose
+      )
+
+    distance <- input_list$distance
+    n_bins_dist <- input_list$n_bins_dist
+    binwidth  <- input_list$binwidth
+
+    angle_span <- c(from = angle_span[1], to = angle_span[2])
+    range_span <- base::range(angle_span)
+
+    if(angle_span[1] == angle_span[2]){
+
+      stop("Invalid input for argument `angle_span`. Must contain to different values.")
+
+    } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
+
+      stop("Input for argument `angle_span` must range from 0 to 360.")
+
+    }
+
+
+    # obtain required data ----------------------------------------------------
+
+    spat_ann <- getSpatialAnnotation(object, id = id)
+
+    outline_df <- getSpatAnnOutlineDf(object, id = id)
+
+    pixel_pos <-
+      sp::point.in.polygon(
+        point.x = coords_df$x,
+        point.y = coords_df$y,
+        pol.x = outline_df$x,
+        pol.y = outline_df$y
+      )
+
+    spat_ann_pxl <- coords_df[pixel_pos %in% c(1,2),][["pixel"]]
+
+    # distance ----------------------------------------------------------------
+
+    # increase number of vertices
+    avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
+
+    outline_df <-
+      increase_polygon_vertices(
+        polygon = outline_df[,c("x", "y")],
+        avg_dist = avg_dist/4
+      )
+
+    # compute distance to closest vertex
+    nn_out <-
+      RANN::nn2(
+        data = base::as.matrix(outline_df),
+        query = base::as.matrix(coords_df[,c("x", "y")]),
+        k = 1
+      )
+
+    coords_df$dist <- base::as.numeric(nn_out$nn.dists)
+    coords_df$dist[coords_df$pixel %in% spat_ann_pxl] <-
+      -coords_df$dist[coords_df$pixel %in% spat_ann_pxl]
+
+    # bin pos dist
+    coords_df_pos <-
+      dplyr::filter(coords_df, dist >= 0) %>%
+      dplyr::mutate(bins_dist = make_bins(dist, binwidth = {{binwidth}}))
+
+    # bin neg dist
+    coords_df_neg <-
+      dplyr::filter(coords_df, dist < 0) %>%
+      dplyr::mutate(
+        bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE))
+
+    # merge
+    new_levels <-
+      c(
+        base::levels(coords_df_neg$bins_dist),
+        base::levels(coords_df_pos$bins_dist),
+        "Outside"
+      )
+
+    coords_df_merged <-
+      base::rbind(coords_df_neg, coords_df_pos) %>%
+      dplyr::mutate(
+        bins_dist = base::as.character(bins_dist),
+        bins_dist =
+          dplyr::case_when(
+            dist > {{distance}} ~ "Outside",
+            TRUE ~ bins_dist
+          ),
+        bins_dist = base::factor(bins_dist, levels = new_levels),
+        rel_loc = dplyr::if_else(dist < 0, true = "Core", false = "Periphery")
+      )
+
+    # angle -------------------------------------------------------------------
+
+    center <- getSpatAnnCenter(object, id = id)
+
+    from <- angle_span[1]
+    to <- angle_span[2]
+
+    confuns::give_feedback(
+      msg = glue::glue("Including area between {from}° and {to}°."),
+      verbose = verbose
+    )
+
+    prel_angle_df <-
+      dplyr::group_by(.data = coords_df_merged, pixel) %>%
+      dplyr::mutate(
+        angle = compute_angle_between_two_points(
+          p1 = c(x = x, y = y),
+          p2 = center
+        )
+      ) %>%
+      dplyr::ungroup()
+
+    # create angle bins
+    if(angle_span[["from"]] > angle_span[["to"]]){
+
+      range_vec <- c(
+        angle_span[["from"]]:360,
+        0:angle_span[["to"]]
+      )
+
+      nth <- base::floor(base::length(range_vec)/n_bins_angle)
+
+      bin_list <- base::vector(mode = "list", length = n_bins_angle)
+
+      for(i in 1:n_bins_angle){
+
+        if(i == 1){
+
+          sub <- 1:nth
+
+        } else {
+
+          sub <- ((nth*(i-1))+1):(nth*i)
+
+        }
+
+        bin_list[[i]] <- range_vec[sub]
+
+      }
+
+      if(base::any(base::is.na(bin_list[[n_bins_angle]]))){
+
+        bin_list[[(n_bins_angle)-1]] <-
+          c(bin_list[[(n_bins_angle-1)]], bin_list[[n_bins_angle]]) %>%
+          rm_na()
+
+        bin_list[[n_bins_angle]] <- NULL
+
+      }
+
+      all_vals <- purrr::flatten_dbl(bin_list)
+
+      bin_list[[n_bins_angle]] <-
+        c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
+
+      prel_angle_bin_df <-
+        dplyr::ungroup(prel_angle_df) %>%
+        dplyr::filter(base::round(angle) %in% range_vec) %>%
+        dplyr::mutate(
+          angle_round = base::round(angle),
+          bins_angle = ""
+        )
+
+      bin_names <- base::character(n_bins_angle)
+
+      for(i in base::seq_along(bin_list)){
+
+        angles <- bin_list[[i]]
+
+        bin_names[i] <-
+          stringr::str_c(
+            "[", angles[1], ",", utils::tail(angles,1), "]"
+          )
+
+        prel_angle_bin_df[prel_angle_bin_df$angle_round %in% angles, "bins_angle"] <-
+          bin_names[i]
+
+      }
+
+      prel_angle_bin_df$angle_round <- NULL
+
+      prel_angle_bin_df$bins_angle <-
+        base::factor(
+          x = prel_angle_bin_df$bins_angle,
+          levels = bin_names
+        )
+
+    } else {
+
+      range_vec <- range_span[1]:range_span[2]
+
+      sub <-
+        base::seq(
+          from = 1,
+          to = base::length(range_vec),
+          length.out = n_bins_angle+1
+        ) %>%
+        base::round()
+
+      breaks <- range_vec[sub]
+
+      prel_angle_bin_df <-
+        dplyr::ungroup(prel_angle_df) %>%
+        dplyr::filter(base::round(angle) %in% range_vec) %>%
+        dplyr::mutate(
+          bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
+        )
+
+    }
+
+    sas_df <- prel_angle_bin_df
+
+    # relative location
+    sas_df <-
+      dplyr::mutate(
+        .data = sas_df,
+        rel_loc = dplyr::case_when(
+          dist > {{distance}} ~ "Outside",
+          !base::round(angle) %in% range_vec ~ "Outside",
+          TRUE ~ rel_loc
+        )
+      )
+
+  }
+
+  area_df <-
+    dplyr::group_by(sas_df, bins_dist, bins_angle) %>%
+    dplyr::tally() %>%
+    dplyr::mutate(
+      area = n * area_scale_fct,
+      unit = {{area_unit}}
+    )
+
+  return(area_df)
+
+}
+
+#' @title Obtain spatial annotation screening data.frame
+#'
+#' @description Extracts a data.frame of inferred gradients of numeric
+#' variables as a fucntion of distance to spatial annotations.
+#'
+#' @inherit bin_by_expansion params
+#' @inherit bin_by_angle params
+#'
+#' @inherit getSpatAnnOutlineDf params
+#' @inherit spatialAnnotationScreening params
+#' @inherit joinWith params
+#'
+#' @return Data.frame.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(SPATAData)
+#'
+#' data("image_annotations")
+#'
+#' necrotic_spat_ann <- image_annotations[["313_T"]][["necrotic_center"]]
+#'
+#' object <- downloadSpataObject(sample_name = "313_T")
+#'
+#' object <- setSpatialAnnotation(object = object, spat_ann = necrotic_spat_ann)
+#'
+#' plotSurfaceIAS(
+#'  object = object,
+#'  id = "necrotic_center",
+#'  distance = 200
+#'  )
+#'
+#' plotSurfaceIAS(
+#'  object = object,
+#'  id = "necrotic_center",
+#'  distance = 200,
+#'  binwidth = getCCD(object)*4, # lower resolution by increasing binwidth for visualization
+#'  n_bins_angle = 12,
+#'  display_angle = TRUE
+#'  )
+#'
+#' getSasDf(
+#'   object = object,
+#'   id = "necrotic_center",
+#'   distance = 200,
+#'   variables = "VEGFA"
+#'   )
+#'
+#' getSasDf(
+#'   object = object,
+#'    id = "necrotic_center",
+#'    distance = 200,
+#'    variables = "VEGFA"
+#'    )
+#'
+#' getSasDf(
+#'   object = object,
+#'    id = "necrotic_center",
+#'    distance = 200,
+#'    variables = "VEGFA",
+#'    n_bins_angle = 12
+#'    )
+#'
+
+getSasDf <- function(object,
+                     id,
+                     distance = distToEdge(object, id),
+                     binwidth = recBinwidth(object),
+                     core = FALSE,
+                     angle_span = c(0,360),
+                     n_bins_angle = 1,
+                     variables = NULL,
+                     unit = getDefaultUnit(object),
+                     ro = c(0, 1),
+                     format = "wide",
+                     bcs_exclude = NULL,
+                     verbose = FALSE,
+                     ...){
+
+  deprecated(...)
+
+  sas_df <-
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+
+        # ensure that both values are of the same unit
+        binwidth <- as_unit(binwidth, unit = unit, object = object)
+        distance <- as_unit(distance, unit = unit, object = object)
+
+        coords_df_sa <-
+          getCoordsDfSA(
+            object = object,
+            id = id,
+            distance = distance,
+            angle_span = angle_span,
+            n_bins_angle = n_bins_angle,
+            variables = variables,
+            dist_unit = unit, # ensure that distance is computed in correct unit
+            verbose = verbose
+          ) %>%
+          # removes (core and) periphery (periphery = outside of distance threshold)
+          dplyr::filter(!rel_loc %in% {{rm_loc}})
+
+        if(base::isTRUE(core)){
+
+          min_dist <-
+            base::min(coords_df_sa[["dist"]]) %>%
+            stringr::str_c(., unit)
+
+        } else {
+
+          min_dist <- stringr::str_c(0, unit)
+
+        }
+
+        expr_est_pos <-
+          compute_positions_expression_estimates(
+            min_dist = min_dist,
+            max_dist = distance,
+            amccd = binwidth
+          )
+
+        # prepare output
+        sas_df <-
+          tibble::tibble(
+            dist = expr_est_pos,
+            dist_unit = unit,
+            bins_order = 1:base::length(expr_est_pos), # keep for compatibility?
+            expr_est_idx = 1:base::length(expr_est_pos)
+          )
+
+        dist_screened <-
+          base::diff(c(extract_value(min_dist),extract_value(distance)))
+
+        span <- base::as.numeric(binwidth/dist_screened)
+
+        if(base::is.numeric(list(...)[["span"]])){
+
+          span <- list(...)[["span"]]
+
+        }
+
+        confuns::give_feedback(
+          msg = glue::glue("`span` = {span}"),
+          verbose = verbose
+        )
+
+        for(var in variables){
+
+          coords_df_sa[["var.x"]] <- coords_df_sa[[var]]
+
+          loess_model <-
+            stats::loess(
+              formula = var.x ~ dist,
+              data = coords_df_sa,
+              span = span,
+              family = "gaussian",
+              #statistics = "none",
+              surface = "direct",
+              degree = 1
+            )
+
+          sas_df[[var]] <-
+            infer_gradient(loess_model, expr_est_pos = expr_est_pos, ro = ro)
+
+        }
+
+        return(sas_df)
+
+      }
+    )
+
+  # average the expression of multiple ids
+  if(base::length(id) > 1){
+
+    sas_df <-
+      dplyr::group_by(sas_df, dist_unit, dplyr::pick(dplyr::where(base::is.factor))) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::where(base::is.numeric), # summarize `dist`, too
+          .fns = base::mean
+        )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        dplyr::across(
+          .cols = dplyr::all_of(variables),
+          .fns = ~ confuns::normalize(.x)
+        )
+      ) %>%
+      dplyr::select(dplyr::everything())
+
+  }
+
+  if(format == "long"){
+
+    var_order <- base::unique(variables)
+
+    sas_df <-
+      tidyr::pivot_longer(
+        data = sas_df,
+        cols = dplyr::all_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      ) %>%
+      dplyr::mutate(variables = base::factor(variables, levels = {{var_order}}))
+
+  }
+
+  return(sas_df)
+
+}
+
+
+#' @title Obtain expanded spatial annotation polygons
+#'
+#' @description Expands polygons of spatial annotations according
+#' to `distance`, `binwidth` and `n_bins_dist` input.
+#'
+#' @inherit spatialAnnotationScreening params
+#'
+#' @return List of data.frames.
+#' @export
+#'
+getSasExpansion <- function(object,
+                            id,
+                            distance = NA_integer_,
+                            binwidth = getCCD(object),
+                            n_bins_dist = NA_integer_,
+                            direction = "outwards",
+                            inc_outline = TRUE,
+                            verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  ias_input <-
+    check_sas_input(
+      distance = distance,
+      binwidth = binwidth,
+      n_bins_dist = n_bins_dist,
+      object = object,
+      verbose = verbose
+    )
+
+  area_df <- getSpatAnnOutlineDf(object, ids = id)
+
+  binwidth <- ias_input$binwidth
+  n_bins_dist <- base::max(ias_input$n_bins_dist)
+
+  circle_names <- stringr::str_c("Circle", 1:n_bins_dist, sep = " ")
+
+  circles <-
+    purrr::set_names(
+      x = c((1:n_bins_dist)*binwidth),
+      nm = circle_names
+    )
+
+  binwidth_vec <- c("Core" = 0, circles)
+
+  if(direction == "outwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    expansions <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
+          dplyr::mutate(bins_circle = .y)
+      )
+
+    if(base::isTRUE(inc_outline)){
+
+      ccd <- getCCD(object, unit = "px")
+
+      expansions <-
+        purrr::map(
+          .x = expansions,
+          .f = ~ include_tissue_outline(
+            coords_df = getCoordsDf(object),
+            outline_df = getTissueOutlineDf(object),
+            input_df = .x,
+            spat_ann_center = getSpatAnnCenter(object, id = id),
+            remove = FALSE,
+            sas_circles = TRUE,
+            ccd = ccd,
+            buffer = ccd*0.5
+          )
+        ) %>%
+        purrr::discard(.p = base::is.null)
+
+    }
+
+  } else if(direction == "inwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    expansions <-
+      purrr::imap(
+        .x = binwidth_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = -(.x)) %>%
+          dplyr::mutate(bins_circle = .y)
+      )
+
+  }
+
+  return(expansions)
+
+}
+
+#' @rdname getSasDf
+#' @export
+getSpatialAnnotationScreeningDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getSasDf(...)
 
 }
 
@@ -2165,7 +2835,8 @@ setMethod(
     )
 
     out <-
-      dplyr::select(.data = object@annotations[[id]]@area[["outer"]], x, y) %>%
+      getSpatAnnOutlineDf(object, id = id, inner = FALSE) %>%
+      dplyr::select(x, y) %>%
       purrr::map(.f = base::range) %>%
       purrr::map(.f = ~ .x * scale_fct)
 
@@ -2839,33 +3510,96 @@ setMethod(
 #' @export
 #'
 getStsDf <- function(object,
-                     id,
                      variables,
-                     binwidth = getCCD(object),
-                     n_bins = NA_integer_,
-                     methods_gs = NULL,
-                     smooth_span = 0,
+                     id = idST(object),
+                     binwidth = recBinwidth(object),
+                     width = NULL,
+                     unit = getDefaultUnit(object),
+                     ro = c(0, 1),
+                     bcs_exclude = NULL,
                      format = "wide",
-                     verbose = NULL,
+                     verbose = FALSE,
                      ...){
 
   deprecated(...)
 
-  hlpr_assign_arguments(object)
+  # ensure that both values are of the same unit
+  distance <- getTrajectoryLength(object, id = id, unit = unit)
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
 
-  getTrajectoryDf(
-    object = object,
-    id = id,
-    variables = variables,
-    binwidth = binwidth,
-    n_bins = n_bins,
-    methods_gs = methods_gs,
-    smooth_span = smooth_span,
-    normalize = TRUE,
-    summarize_with = "mean",
-    format = format,
-    verbose = verbose
-  )
+  coords_df_st <-
+    getCoordsDfST(
+      object = object,
+      id = id,
+      width = width,
+      variables = variables,
+      dist_unit = unit, # ensure that distance is computed in correct unit
+      verbose = verbose
+    )
+
+  min_dist <-
+    base::min(coords_df_st[["dist"]], na.rm = TRUE) %>%
+    stringr::str_c(., unit)
+
+  expr_est_pos <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = distance,
+      amccd = binwidth
+    )
+
+  # prepare output
+  sts_df <-
+    tibble::tibble(
+      dist = expr_est_pos,
+      dist_unit = unit,
+      bins_order = 1:base::length(expr_est_pos), # keep for compatibility?
+      expr_est_idx = 1:base::length(expr_est_pos)
+    )
+
+  dist_screened <-
+    base::diff(c(extract_value(min_dist),extract_value(distance)))
+
+  span <- base::as.numeric(binwidth/dist_screened)
+
+  for(var in variables){
+
+    coords_df_st[["var.x"]] <- coords_df_st[[var]]
+
+    loess_model <-
+      stats::loess(
+        formula = var.x ~ dist,
+        data = coords_df_st,
+        span = span,
+        family = "gaussian",
+        statistics = "none",
+        surface = "direct"
+      )
+
+    sts_df[[var]] <-
+      infer_gradient(loess_model, expr_est_pos = expr_est_pos, ro = ro)
+
+  }
+
+  if(format == "long"){
+
+    var_order <- base::unique(variables)
+
+    sts_df <-
+      tidyr::pivot_longer(
+        data = sts_df,
+        cols = dplyr::any_of(variables),
+        names_to = "variables",
+        values_to = "values"
+      ) %>%
+      dplyr::mutate(variables = base::factor(variables, levels = {{var_order}}))
+
+  }
+
+  sts_df <-
+    dplyr::select(sts_df, expr_est_idx, bins_order, dist, dist_unit, dplyr::everything())
+
+  return(sts_df)
 
 }
 
@@ -2972,7 +3706,7 @@ setMethod(
 
       out_df <-
         getTissueOutlineDf(
-          object = getHistoImageRef(object),
+          object = getHistoImageActive(object),
           by_section = by_section,
           transform = transform
         )
@@ -3218,9 +3952,11 @@ getTrajectoryLength <- function(object,
                                 round = FALSE,
                                 as_numeric = FALSE){
 
+  scale_fct <- getScaleFactor(object, fct_name = "coords")
+
   tobj <- getTrajectory(object, id = id)
 
-  dist <- base::max(tobj@projection$projection_length)
+  dist <- base::max(tobj@projection$projection_length)*scale_fct
 
   out <-
     as_unit(
@@ -3253,13 +3989,44 @@ getTrajectorySegmentDf <- function(object,
 
   deprecated(...)
 
-  traj_obj <- getTrajectory(object, trajectory_name)
+  traj_obj <- getTrajectory(object, id)
+
+  scale_fct <- getScaleFactor(object, fct_name = "coords")
 
   out <-
     dplyr::mutate(
       .data = traj_obj@segment,
-      trajectory = {{trajectory_name}}
+      x = x_orig * scale_fct,
+      y = y_orig * scale_fct,
+      trajectory = {{id}}
     )
+
+  return(out)
+
+}
+
+
+#' Title
+#'
+#' @param object
+#' @param id
+#' @param unit
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getTrajectoryWidth <- function(object, id = idST(object), unit = "px"){
+
+  traj <- getTrajectory(object, id = id)
+
+  out <- stringr::str_c(traj@width, traj@width_unit)
+
+  if(unit != "px"){
+
+    out <- as_unit(out, unit = unit, object = object)
+
+  }
 
   return(out)
 

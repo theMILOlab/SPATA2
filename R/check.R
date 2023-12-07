@@ -748,6 +748,8 @@ check_sas_input <- function(distance = NA_integer_,
                             object = NULL,
                             verbose = TRUE){
 
+  verbose <- FALSE
+
   n_bins_dist <- base::max(n_bins_dist)
 
   # check what is specified
@@ -794,8 +796,8 @@ check_sas_input <- function(distance = NA_integer_,
 
     n_bins_dist <- base::ceiling(distance / binwidth)
 
-    vd <- extract_value(distance_orig)
-    vb <- extract_value(binwidth_orig)
+    vd <- extract_value(distance_orig) %>% round(digits = 5)
+    vb <- extract_value(binwidth_orig) %>% round(digits = 5)
     ud <- extract_unit(distance_orig)
     ub <- extract_unit(binwidth_orig)
 

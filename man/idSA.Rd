@@ -8,6 +8,8 @@
 idSA(object, verbose = NULL)
 
 idST(object, verbose = NULL)
+
+idST(object, verbose = NULL)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

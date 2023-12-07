@@ -23,15 +23,184 @@ si_dist_to_si_dist_fct <- function(from, to){
 
 
 
+# estimate ----------------------------------------------------------------
+
+
+estimate_r2_for_sas_run <- function(object,
+                                    id,
+                                    distance,
+                                    core,
+                                    binwidth,
+                                    angle_span = c(0, 360),
+                                    noise_levels = base::seq(from = 0, to = 100, length.out = 11),
+                                    n_sim = 50,
+                                    model_add = NULL,
+                                    model_subset = NULL,
+                                    model_remove = NULL,
+                                    verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  model_df <-
+    create_model_df(
+      input = 1:100, # only need model names
+      model_add = model_add,
+      model_subset = model_subset,
+      model_remove = model_remove,
+      verbose = FALSE
+    )
+
+  mnames <- base::names(model_df)
+
+  simulations <-
+    purrr::map(
+      .x = mnames,
+      .f = function(mname){
+
+        list(
+          id =
+            base::toupper(mname) %>%
+            stringr::str_remove_all(pattern = "[^A-Z]"),
+          n = n_sim,
+          model = mname
+        )
+
+      }
+    ) %>%
+    purrr::set_names(nm = stringr::str_c("S", base::seq_along(mnames)))
+
+  sim_mtr <-
+    simulate_expression_pattern_sas(
+      object = object,
+      id = id,
+      simulations = simulations,
+      core = core,
+      binwidth = binwidth,
+      distance = distance,
+      noise_levels = noise_levels,
+      noise_types = "ed",
+      model_add = model_add,
+      seed = 123,
+      verbose = FALSE
+    )
+
+  object <-
+    addExpressionMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
+    setActiveMatrix(object = ., mtr_name = "simR2", verbose = FALSE)
+
+  variables <- base::rownames(sim_mtr)
+
+  unit <- getDefaultUnit(object)
+
+  coords_df <-
+    getCoordsDfSA(
+      object = object,
+      id = id,
+      distance = distance,
+      binwidth = binwidth,
+      angle_span = angle_span,
+      variables = variables,
+      dist_unit = unit,
+      verbose = FALSE
+    )
+
+  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+
+  coords_df <- dplyr::filter(coords_df, !rel_loc %in% {{rm_loc}})
+
+  # if core is FALSE min dist = 0 to start right from the border
+  # and not with the first data point
+  if(base::isTRUE(core)){
+
+    min_dist <-
+      base::min(coords_df[["dist"]]) %>%
+      stringr::str_c(., unit)
+
+  } else {
+
+    min_dist <- stringr::str_c(0, unit)
+
+  }
+
+  # max_dist does not depend on `core` option
+  min_dist <- as_unit(min_dist, unit = unit, object = object)
+  max_dist <- as_unit(distance, unit = unit, object = object)
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  tot_dist <- max_dist - min_dist
+  span <- base::as.numeric(binwidth/tot_dist)
+
+  expr_est_pos <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = max_dist,
+      amccd = binwidth
+    )
+
+  pb <- confuns::create_progress_bar(total = base::length(variables))
+
+  sas_df <-
+    purrr::map_df(
+      .x = variables,
+      .f = function(var){
+
+        pb$tick()
+
+        # fit loess
+        coords_df[["x.var.x"]] <- coords_df[[var]]
+
+        loess_model <-
+          stats::loess(
+            formula = x.var.x ~ dist,
+            data = coords_df,
+            span = span,
+            family = "gaussian",
+            statistics = "none",
+            surface = "direct"
+          )
+
+        gradient <-
+          infer_gradient(
+            loess_model = loess_model,
+            expr_est_pos = expr_est_pos,
+            ro = c(0,1)
+          )
+
+        out <-
+          tibble::tibble(
+            variables = var,
+            tot_var = compute_total_variation(gradient)
+          )
+
+        return(out)
+
+      }
+    ) %>%
+    add_benchmarking_variables() %>%
+    dplyr::mutate(model_sim = confuns::str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"))
+
+  purrr::map_dbl(
+    .x = base::unique(sas_df$model_sim),
+    .f = function(ms){
+
+      so <-
+        dplyr::filter(sas_df, model_sim == {{ms}}) %>%
+        stats::lm(data = ., formula = noise_perc ~ tot_var) %>%
+        base::summary()
+
+      so[["adj.r.squared"]]
+
+    }
+  ) %>%
+    base::mean()
+
+}
 
 # evaluate ----------------------------------------------------------------
 
 
 #' @export
 evaluate_model_fits <- function(input_df,
-                                var_order,
-                                with_corr = TRUE,
-                                with_raoc = FALSE){
+                                var_order ){
 
   n <- dplyr::n_distinct(input_df[[var_order]])
 
@@ -41,38 +210,22 @@ evaluate_model_fits <- function(input_df,
     dplyr::group_by(input_df, variables, models) %>%
     dplyr::filter(!base::all(base::is.na(values))) %>%
     dplyr::summarize(
-      #rauc = {if(with_raoc){ summarize_rauc(x = values_models, y = values, n = {{n}}) }},
-      corr_string = summarize_corr_string(x = values_models, y = values),
+      corr = compute_corr(x = values_models, y = values),
       rmse = compute_rmse(gradient = values, model = values_models),
       mae = compute_mae(gradient = values, model = values_models)
     ) %>%
     dplyr::ungroup()
 
-  if(with_corr){
-
-    eval_df <-
-      tidyr::separate(eval_df, col = corr_string, into = c("corr", "p_value"), sep = "_") %>%
-      dplyr::mutate(
-        corr = base::as.numeric(corr),
-        p_value = base::as.numeric(p_value)
-      )
-
-  }
-
-  if(with_raoc){
-
-    eval_df <-  dplyr::mutate(.data = eval_df, raoc = 1 - (rauc / max_auc))
-
-  }
-
-  eval_df <- dplyr::select(eval_df, variables, models, dplyr::any_of(c( "p_value", "corr", "raoc", "rauc", "rmse", "mae")))
+  eval_df <-
+    dplyr::select(
+      eval_df,
+      variables,
+      models,
+      dplyr::any_of(c( "p_value", "corr", "raoc", "rauc", "rmse", "mae", "fr_dist")))
 
   return(eval_df)
 
 }
-
-
-
 
 
 
@@ -584,7 +737,7 @@ extract_unit <- function(input){
 extract_value <- function(input){
 
   # regex works for area and distance values
-  stringr::str_extract(input, pattern = regex_num_value) %>%
+  stringr::str_remove(input, pattern = regex_unit) %>%
     base::as.numeric()
 
 }

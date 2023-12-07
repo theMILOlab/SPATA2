@@ -22,12 +22,14 @@ plotSurface(object, ...)
   pt_clrp = NULL,
   pt_clrsp = NULL,
   pt_size = NULL,
+  outline = FALSE,
+  outline_fct = c(2.5, 3.5),
   clrp_adjust = NULL,
   display_image = NULL,
   img_alpha = 1,
   transform_with = NULL,
   use_scattermore = NULL,
-  bcs_rm = NULL,
+  bcs_rm = base::character(0),
   na_rm = FALSE,
   xrange = getCoordsRange(object)$x,
   yrange = getCoordsRange(object)$y,
@@ -49,6 +51,9 @@ plotSurface(object, ...)
   use_scattermore = FALSE,
   sctm_pixels = c(1024, 1024),
   sctm_interpolate = FALSE,
+  outline = FALSE,
+  outline_coords = NULL,
+  outline_fct = c(2, 3),
   order_by = NULL,
   order_desc = FALSE,
   na_rm = TRUE,
@@ -99,6 +104,10 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
+
+\item{outline}{Logical, indicating whether to add an outline to the points.
+If \code{TRUE}, an outline will be added around the points to enhance visibility.
+Default is FALSE.}
 
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
@@ -162,6 +171,10 @@ via \code{order_by} and/or \code{order}.}
 \item{clr_core, clr_control}{Colors with which to display data points that
 are part of the \emph{core} group (inside the spatial annotation) and the \emph{control}
 group (neither inside the annotation nor inside the distance intervals)}
+
+\item{outline_width}{Numeric vector of length 2, specifying the factor with which
+the \code{pt_size} is multiplied to create the white layer (first value) and the
+black layer (second value).}
 
 \item{complete}{Logical. If the provided \code{SPATA2} object has been subsetted by
 \code{subsetBySegment()} the original sample is completed with grey barcode

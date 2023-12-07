@@ -6,8 +6,8 @@
 \usage{
 processWithSCT(
   object,
-  slot = "scale.data",
-  name = "sct_scaled",
+  slot = "data",
+  name = "sct_data",
   exchange_counts = FALSE,
   ...
 )
@@ -17,7 +17,7 @@ processWithSCT(
 objects of classes for which a method has been defined.}
 
 \item{slot}{The slot of the output assay in the \code{Seurat} object from where to
-take the matrix.}
+take the matrix. Defaults to \emph{data}.}
 
 \item{name}{The name under which to store the matrix.}
 

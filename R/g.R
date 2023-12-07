@@ -487,7 +487,7 @@ ggpLayerAxesSI <- function(object,
       )
 
     title_x <- ggplot2::element_text()
-    title_y <- ggplot2::element_text(angle = 90)
+    title_y <- ggplot2::element_text(angle = 90, vjust = 3)
 
   } else {
 
@@ -674,14 +674,14 @@ ggpLayerColorGroupScale <- function(object,
 #' object <- downloadPubExample("313_T")
 #'
 #' plotImageGgplot(object) +
-#'  ggpLayerEncirclingIAS(
+#'  ggpLayerEncirclingSAS(
 #'    object = object,
 #'    id = "necrotic_area",
 #'    distance = "2.25mmm",
 #'    binwidth = "112.5um"
 #'  )
 
-ggpLayerEncirclingIAS <- function(object,
+ggpLayerEncirclingSAS <- function(object,
                                   id,
                                   distance = distToEdge(object, id),
                                   n_bins_dist = NA_integer_,
@@ -691,10 +691,167 @@ ggpLayerEncirclingIAS <- function(object,
                                   line_color = "black",
                                   line_size = (line_size_core * 0.75),
                                   line_size_core = 1,
+                                  line_type = c("solid"),
                                   inc_outline = TRUE,
                                   direction = "outwards",
                                   verbose = NULL,
                                   ...){
+
+  deprecated(...)
+  hlpr_assign_arguments(object)
+
+  if(base::length(line_type) == 1){
+
+    line_type <- base::rep(line_type, 2)
+
+  }
+
+  if(base::isFALSE(inc_outline)){
+
+    out_list <-
+      purrr::map(
+        .x = base::seq_along(id),
+        .f = function(i){
+
+          idx <- id[i]
+
+          if(i > 1){ verbose <- FALSE }
+
+          expansions <-
+            getSasExpansion(
+              object = object,
+              id = idx,
+              distance = distance,
+              binwidth = binwidth,
+              n_bins_dist = n_bins_dist,
+              direction = direction,
+              inc_outline = FALSE,
+              verbose = verbose
+            )
+
+          out_listx <-
+            purrr::map(
+              .x = base::seq_along(expansions),
+              .f = function(i){
+
+                area <- expansions[[i]]
+
+                if(i == 1){
+
+                  ls <- line_size_core
+                  alpha <- alpha_core
+                  fill <- fill_core
+
+                } else {
+
+                  ls <- line_size
+                  alpha <- 0
+                  fill <- NA
+
+                }
+
+                ggplot2::geom_polygon(
+                  data = area,
+                  mapping = ggplot2::aes(x = x, y = y),
+                  alpha = alpha,
+                  fill = fill,
+                  color = line_color,
+                  size = ls,
+                  linetype = line_type[1]
+                )
+
+              }
+            )
+
+          return(out_listx)
+
+        }
+      ) %>%
+      purrr::flatten()
+
+
+  } else {
+
+    containsTissueOutline(object, error = TRUE)
+
+    out_list <-
+      purrr::map(
+        .x = seq_along(id),
+        .f = function(i){
+
+          idx <- id[i]
+
+          if(i > 1){ verbose <- FALSE}
+
+          expansions <-
+            getSasExpansion(
+              object = object,
+              id = idx,
+              distance = distance,
+              binwidth = binwidth,
+              n_bins_dist = n_bins_dist,
+              direction = direction,
+              inc_outline = TRUE,
+              verbose = verbose
+            )
+
+          exp_df <-
+            purrr::map_df(
+              .x = expansions[base::names(expansions) != "Core"],
+              .f = function(df){
+
+                dplyr::mutate(
+                  .data = df,
+                  plot_group = stringr::str_c(bins_circle, pos_rel_group, sep = "_")
+                ) %>%
+                  dplyr::filter(pos_rel == "inside")
+
+              }
+            )
+
+          list(
+            ggplot2::geom_polygon(
+              data = expansions[["Core"]],
+              mapping = ggplot2::aes(x = x, y = y),
+              alpha = alpha_core,
+              color = line_color,
+              fill = fill_core,
+              size = line_size_core,
+              linetype = line_type[1],
+            ),
+            ggplot2::geom_path(
+              data = exp_df,
+              mapping = ggplot2::aes(x = x, y = y, group = plot_group),
+              size = line_size,
+              color = line_color,
+              linetype = line_type[2]
+            )
+          )
+
+        }
+      )
+
+  }
+
+  return(out_list)
+
+}
+
+
+ggpLayerExprEstimates2D <- function(object,
+                                    id,
+                                    distance = distToEdge(object, id),
+                                    n_bins_dist = NA_integer_,
+                                    binwidth = recBinwidth(object),
+                                    alpha_core = 0,
+                                    fill_core = NA,
+                                    line_color = "black",
+                                    line_size = (line_size_core * 0.75),
+                                    line_size_core = 1,
+                                    inc_outline = TRUE,
+                                    direction = "outwards",
+                                    verbose = NULL,
+                                    ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
@@ -711,7 +868,7 @@ ggpLayerEncirclingIAS <- function(object,
           if(i > 1){ verbose <- FALSE }
 
           expansions <-
-            getIasExpansion(
+            getSasExpansion(
               object = object,
               id = idx,
               distance = distance,
@@ -776,7 +933,7 @@ ggpLayerEncirclingIAS <- function(object,
           if(i > 1){ verbose <- FALSE}
 
           expansions <-
-            getIasExpansion(
+            getSasExpansion(
               object = object,
               id = idx,
               distance = distance,
@@ -800,7 +957,7 @@ ggpLayerEncirclingIAS <- function(object,
 
               }
             )
-
+          assign("expansions", expansions, envir = .GlobalEnv)
           list(
             ggplot2::geom_polygon(
               data = expansions[["Core"]],
@@ -826,6 +983,7 @@ ggpLayerEncirclingIAS <- function(object,
   return(out_list)
 
 }
+
 
 
 #' @title Fix ggplot frame
@@ -988,6 +1146,7 @@ ggpLayerGroupOutline <- function(object,
                                  plot_type = "surface",
                                  line_color = "black",
                                  line_size = 1,
+                                 line_type = "solid",
                                  alpha = 0,
                                  bcsp_rm = character(0),
                                  outlier_rm = TRUE,
@@ -1080,14 +1239,26 @@ ggpLayerGroupOutline <- function(object,
             .x = base::unique(group_df[["group_outline"]]),
             .f = function(go){
 
-              dplyr::filter(group_df, group_outline == {{go}}) %>%
+              df <-
+                dplyr::filter(group_df, group_outline == {{go}}) %>%
                 add_outline_variable() %>%
-                arrange_by_outline_variable() %>%
-                buffer_area(buffer = expand_outline, close_plg = TRUE) %>%
+                arrange_by_outline_variable()
+
+              if(expand_outline != 0){
+
+                df <-
+                  buffer_area(df, buffer = expand_outline, close_plg = TRUE)
+
+              }
+
+              df <-
                 dplyr::mutate(
+                  .data = df,
                   !!rlang::sym(grouping) := {{group}},
                   group_outline = {{go}}
                 )
+
+              return(df)
 
             }
           )
@@ -1106,6 +1277,7 @@ ggpLayerGroupOutline <- function(object,
       mapping = ggplot2::aes(x = x, y = y, group = final_group),
       alpha = alpha,
       color = line_color,
+      linetype = line_type,
       size = line_size,
       expand = 0,
       concavity = concavity,
@@ -1126,7 +1298,7 @@ ggpLayerGroupOutline <- function(object,
 #' is not included in the screening.
 #'
 #' @inherit spatialAnnotationScreening params
-#' @inherit ggpLayerEncirclingIAS params
+#' @inherit ggpLayerEncirclingSAS params
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
@@ -1173,11 +1345,12 @@ ggpLayerHorizonSAS <- function(object,
   border_df <- getSpatAnnOutlineDf(object, id, inner = FALSE)
 
   input <-
-    check_ias_input(
+    check_sas_input(
       distance = distance,
       binwidth = binwidth,
       n_bins_dist = n_bins_dist,
       object = object,
+      verbose = verbose
     )
 
   distance <- input$distance
@@ -1185,7 +1358,7 @@ ggpLayerHorizonSAS <- function(object,
   n_bins_dist <- input$n_bins_dist
 
   out <-
-    ggpLayerEncirclingIAS(
+    ggpLayerEncirclingSAS(
       object = object,
       id = id,
       distance = input$distance,
@@ -1930,6 +2103,146 @@ ggpLayerRect <- function(object = "object",
 
 
 
+
+ggpLayerSasEvaluation <- function(object,
+                                  id,
+                                  core,
+                                  variables,
+                                  distance = distToEdge(object, id),
+                                  binwidth = recBinwidth(object),
+                                  angle_span = c(0, 360),
+                                  unit = getDefaultUnit(object),
+                                  model_subset = NULL,
+                                  model_add = NULL,
+                                  pos_x = 1,
+                                  pos_y = 0.75,
+                                  model = "rmse",
+                                  metrics = c("model", "p_value", "rmse"),
+                                  pretty = TRUE,
+                                  verbose = FALSE,
+                                  ...){
+
+  confuns::make_available(...)
+
+  sasx <-
+    spatialAnnotationScreening(
+      object = object,
+      variables = variables,
+      id = id,
+      distance = distance,
+      binwidth = binwidth,
+      core = core,
+      angle_span = angle_span,
+      model_add = model_add,
+      model_subset = model_subset,
+      force_comp = TRUE,
+      verbose = FALSE
+    )
+
+  sas_df <-
+    getSasDf(
+      object = object,
+      id = id,
+      distance = distance,
+      binwidth = binwidth,
+      core = core,
+      verbose = FALSE
+    )
+
+  if(model %in% c("mae", "rmse")){
+
+    text_df_prel <-
+      dplyr::group_by(sasx@results, variables) %>%
+      dplyr::slice_min(order_by = !!rlang::sym(model), n = 1)
+
+  } else if(model == "corr"){
+
+    text_df_prel <-
+      dplyr::group_by(sasx@results, variables) %>%
+      dplyr::slice_max(order_by = corr, n = 1)
+
+  } else {
+
+    text_df_prel <-
+      dplyr::filter(sasx@results, models == {{model}})
+
+  }
+
+  text_df <-
+    dplyr::ungroup(text_df_prel) %>%
+    dplyr::left_join(y = sasx@significance, by = "variables") %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = dplyr::where(base::is.numeric),
+        .fns = ~ base::round(.x, digits = 2)
+      ),
+      text =
+        stringr::str_c(
+          if("model" %in% metrics){stringr::str_c("Model: ", models)},
+          if("tot_var" %in% metrics){stringr::str_c("\nTV: ", tot_var)},
+          if("p_value" %in% metrics){stringr::str_c("\np-value: ", p_value)},
+          if("mae" %in% metrics){stringr::str_c("\nMAE: ", mae)},
+          if("rmse" %in% metrics){stringr::str_c("\nRMSE: ", rmse)},
+          if("corr" %in% metrics){stringr::str_c("\nCorr.: ", corr)}
+        ),
+      x = pos_x,
+      y = pos_y
+    )
+
+  bw <- as_unit(binwidth, unit = unit, object = object)
+
+  bw_val_half <- extract_value(bw)/2
+
+  model_df <-
+    create_model_df(
+      input = sas_df$bins_order,
+      var_order = "bins_order",
+      model_subset = base::unique(text_df$models),
+      verbose = FALSE
+    ) %>%
+    dplyr::left_join(
+      x = .,
+      y = sas_df[,c("bins_order", "dist")],
+      by = "bins_order"
+    ) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(base::unique(text_df$models)),
+      names_to = "models",
+      values_to = "values"
+    ) %>%
+    dplyr::left_join(
+      x = text_df[,c("variables", "models")],
+      y = .,
+      by = "models",
+      relationship = "many-to-many"
+    )
+
+  model_df[["variables"]] <- base::factor(model_df[["variables"]], levels = variables)
+  text_df[["variables"]] <- base::factor(text_df[["variables"]], levels = variables)
+
+  out_model <-
+    confuns::call_flexibly(
+      fn = "geom_line",
+      fn.ns = "ggplot2",
+      default = list(data = model_df, mapping = ggplot2::aes(x = dist, y = values)),
+      v.fail = list()
+    )
+
+  out_text <-
+    confuns::call_flexibly(
+      fn = "geom_text",
+      fn.ns = "ggplot2",
+      default = list(data = text_df, mapping = ggplot2::aes(x = x, y = y, label = text)),
+      v.fail = list()
+    )
+
+  out <- list(model = out_model, text = out_text)
+
+  return(out)
+
+}
+
+
 #' @title Add a scale bar in SI units
 #'
 #' @description Adds a scale bar to the surface plot that visualizes
@@ -2000,7 +2313,7 @@ ggpLayerRect <- function(object = "object",
 #' object <- downloadPubExample("313_T", verbose = FALSE)
 #'
 #' plotImageGgplot(object) +
-#'  ggpLayerEncirclingIAS(
+#'  ggpLayerEncirclingSAS(
 #'    object = object,
 #'    id = "necrotic_area",
 #'    distance = "2.25mm"
@@ -3118,13 +3431,17 @@ ggpLayerTrajectories <- function(object = "object",
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
+  scale_fct <- getScaleFactor(object, fct_name = "coords")
+
   segment_df <-
     purrr::map(
       .x = ids,
       .f = ~ getSpatialTrajectory(object, id = .x)
     ) %>%
     purrr::set_names(nm = ids) %>%
-    purrr::imap_dfr(.f = ~ dplyr::mutate(.x@segment, ids = .y)) %>%
+    purrr::imap_dfr(
+      .f = ~ dplyr::mutate(.x@segment, ids = .y, x = x_orig * scale_fct, y = y_orig * scale_fct)
+      ) %>%
     tibble::as_tibble()
 
   out <-
@@ -3141,6 +3458,72 @@ ggpLayerTrajectories <- function(object = "object",
 
 }
 
+
+ggpLayerTrajectoryBins <- function(object,
+                                   id,
+                                   binwidth = getCCD(object, unit = "px"),
+                                   line_color = "black",
+                                   line_size = 1.5){
+
+  traj <- getTrajectory(object, id = id)
+  width <- traj@width
+  tl <- getTrajectoryLength(object, id = id)
+
+  binwidth <- as_pixel(binwidth, object_t269)
+
+  vline_pos <- seq(from = 0, to = tl, length.out = tl/binwidth)
+
+  trajectory_name <- id
+
+  rect <-
+    make_traj_rect(
+      traj = getTrajectorySegmentDf(object, id = id),
+      width = width
+    )
+
+  orth_segments <-
+    make_orthogonal_segments(
+      sp = base::as.numeric(traj@segment[1, ]),
+      ep = base::as.numeric(traj@segment[2, ]),
+      binwidth = binwidth,
+      out_length = width
+    )
+
+  orth_segments$ids <- id
+
+  rep_n <- function(x, n){
+
+    if(length(x) != n){
+
+      x <- rep(x[1], n)
+
+    }
+
+    return(x)
+
+  }
+
+  line_color <- rep_n(line_color, 2)
+  line_size <- rep_n(line_size, 2)
+
+  list(
+    ggplot2::geom_polygon(
+      data = rect,
+      mapping = ggplot2::aes(x = x, y = y),
+      alpha = 0,
+      color = line_color[1],
+      size = line_size[1],
+      fill = NA
+    ),
+    ggplot2::geom_segment(
+      data = orth_segments,
+      mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
+      color = line_color[2],
+      size = line_size[2]
+    )
+  )
+
+}
 
 #' @title Set plot limits manually
 #'

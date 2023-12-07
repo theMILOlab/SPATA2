@@ -66,9 +66,11 @@ make_bins <- function(numeric_vector, binwidth, neg = FALSE) {
         "]"
       )
 
+    ranges <- stringr::str_replace(ranges, pattern = "-0", replacement = "0")
+
   }
 
-  ranges <- stringr::str_replace(ranges, pattern = "-0", replacement = "0")
+
 
   levels_out <-
     ranges[base::order(bin_indices)] %>%
@@ -86,6 +88,39 @@ make_bins <- function(numeric_vector, binwidth, neg = FALSE) {
 
 }
 
+
+make_traj_rect <- function(traj, width){
+
+  # determines the width of the trajectory (in pixel)
+  trajectory_width <- width
+
+  start_point <- as.numeric(traj[1, c("x", "y")])
+  end_point <- as.numeric(traj[2, c("x", "y")])
+
+  trajectory_vec <- end_point - start_point
+
+  # factor with which to compute the width vector
+  trajectory_magnitude <- sqrt((trajectory_vec[1])^2 + (trajectory_vec[2])^2)
+  trajectory_factor <- trajectory_width / trajectory_magnitude
+
+  # orthogonal trajectory vector
+  orth_trajectory_vec <- (c(-trajectory_vec[2], trajectory_vec[1]) * trajectory_factor)
+
+  tfp1.1 <- start_point + orth_trajectory_vec
+  tfp1.2 <- start_point - orth_trajectory_vec
+  tfp2.1 <- end_point - orth_trajectory_vec
+  tfp2.2 <- end_point + orth_trajectory_vec
+
+  rectangular_df <-
+    tibble(
+      x = c(tfp1.1[1], tfp1.2[1], tfp2.1[1], tfp2.2[1]),
+      y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2]),
+      label = c("A", "D", "C", "B")
+    )
+
+  return(rectangular_df)
+
+}
 
 #' @title Make content for segments grob
 #' @description Used in conjunction with GeomSegmentFixed
@@ -194,8 +229,8 @@ make_orthogonal_segment <- function(sp, ep, out_length, inters_loc = "m"){
 make_orthogonal_segments <- function(sp, ep, binwidth, out_length) {
 
   x <- sp[1]
-  xend <- sp[2]
-  y <- ep[1]
+  xend <- ep[1]
+  y <- sp[2]
   yend <- ep[2]
 
   # Calculate the length of the segment
@@ -630,6 +665,177 @@ mergeTissueSections <- function(object, ...){
 
 }
 
+
+
+
+# model -------------------------------------------------------------------
+
+#' @title Generate Model-Based Ascending or Descending Sequence
+#'
+#' @description Generates a sequence of values based on a model for ascending or descending patterns.
+#'
+#' @param input A numeric vector serving as the basis for generating the sequence.
+#' @param incl,dcl An optional parameter controlling the inclination/declination of the sequence.
+#' @param ro A numeric vector of length 2 specifying the range of values for the output sequence.
+#'   Default is the range of the input vector.
+#'
+#' @return A numeric vector representing the generated ascending or descending sequence.
+#'
+#' @details This function generates a sequence of values based on the input vector and
+#'   inclination parameter. It can produce either an ascending or descending sequence
+#'   depending on the sign of the inclination parameter. You can also specify a custom
+#'   range for the output sequence using the 'ro' parameter.
+#'
+#' @export
+model_ascending <- function(input, incl = 1, ro = range(input)){
+
+  incl_use <- base::abs(incl)
+
+  out_vec <- base::seq_along(input)^incl_use
+
+  if(incl >= 1){
+
+    out_vec <- base::rev(out_vec)*-1
+
+  }
+
+  out_vec <- scales::rescale(out_vec, to = ro)
+
+  return(out_vec)
+
+}
+
+#' @rdname model_ascending
+#' @export
+model_descending <- function(input, dcl = 1, ro = range(input)){
+
+  dcl_use <- base::abs(dcl)
+
+  out_vec <- base::seq_along(input)^dcl_use
+  out_vec <- base::rev(out_vec)
+
+  if(dcl < 1){
+
+    out_vec <- out_vec*-1
+
+  }
+
+  out_vec <- scales::rescale(out_vec, to = ro)
+
+  return(out_vec)
+
+}
+
+
+#' @title Model a peaking pattern
+#'
+#' @description Models a peaking pattern based on an input vector.
+#'
+#' @param input Numeric vector of length greater than 5.
+#' @param dos Numeric value. Degree of smoothness. The higher the value the
+#' smoother the peak. The lower the value the sharper the peak. Should range
+#' between 1-100 (if <1 is multiplied with 100 to rescale).
+#' @param pp Numeric value. Peak position. Determines the position of the
+#' peak either as an index (>= 1) or as a percentage of length (<1).
+#' @param ro Numeric vector of length two. The range of the output vector.
+#' Defaults to the range of the input.
+#'
+#' @return Numeric vector of the same length and range as the input
+#' vector that contains a peaking pattern based on the adjustments
+#' of `dos` and `pp`.
+#'
+#' @export
+#'
+model_peak <- function(input, dos = 100, pp = 0.5, ro = range(input)){
+
+  inp_l <- base::length(input)
+  peak_l <- inp_l * (dos/100)
+
+  peak_out <-
+    base::seq(1.5 * pi , 3.5 * pi, length.out = peak_l) %>%
+    base::sin() %>% scales::rescale(to = ro)
+
+  lpo <- base::length(peak_out)
+
+  remaining <- (inp_l - lpo)
+
+  if(remaining %% 2 != 0){
+
+    if(lpo %% 2 != 0){
+
+      peak_out[(lpo/2)+0.5] <- NA
+      peak_out <- peak_out[!base::is.na(peak_out)]
+
+      lpo <- lpo-1
+      remaining <- (inp_l - lpo)
+
+    } else {
+
+      peak_out <-
+        base::seq(1.5 * pi , 3.5 * pi, length.out = (peak_l+1)) %>%
+        base::sin() %>% scales::rescale(to = c(min(input), max(input)))
+
+      lpo <- lpo+1
+
+    }
+
+  }
+
+  out <- c(
+    base::rep(base::min(ro), remaining/2),
+    peak_out,
+    base::rep(base::min(ro), remaining/2)
+  )
+
+  if(pp != 0.5){
+
+    if(pp < 1){
+
+      pp <- base::round(inp_l * pp, digits = 0)
+
+    }
+
+    p_now <- which(out == base::max(out))
+    p_new <- base::round(inp_l * (pp/100))
+
+    p_dif <- p_new - p_now
+
+    new_out <- base::rep(base::min(ro), inp_l)
+
+    for(i in base::seq_along(out)){
+
+      new_pos <- i+p_dif
+
+      if(!new_pos > inp_l & !new_pos < 0){
+
+        new_out[new_pos] <- out[i]
+
+      }
+
+    }
+
+    out <- new_out
+
+  }
+
+  return(out)
+
+}
+
+
+#' @rdname model_peak
+#' @export
+model_trough <- function(input, dos = 100, pp = 0.5, ro = range(input)){
+
+  mp <- model_peak(input, dos = dos, pp = pp, ro = ro)
+
+  r_mp <- base::range(mp)
+
+  out <- scales::rescale((mp*-1), to = r_mp)
+
+  return(out)
+
+}
 
 
 # module ------------------------------------------------------------------

@@ -9,6 +9,7 @@ plotSasEvaluation(
   variables,
   id = idSA(object),
   method_eval = "corr",
+  core = TRUE,
   distance = distToEdge(object),
   binwidth = recBinwidth(object),
   n_bins_dist = NA_integer_,
@@ -23,12 +24,12 @@ plotSasEvaluation(
   line_color = "blue",
   line_size = 1,
   display_se = FALSE,
-  display_corr = FALSE,
-  corr_p_min = 0.00005,
-  corr_pos_x = NULL,
-  corr_pos_y = NULL,
-  corr_text_sep = "\\n",
-  corr_text_size = 1,
+  display_eval = FALSE,
+  eval_p_min = 5e-05,
+  eval_pos_x = NULL,
+  eval_pos_y = NULL,
+  eval_text_sep = "\\n",
+  eval_text_size = 3,
   force_grid = FALSE,
   bcsp_exclude = NULL,
   ncol = NULL,
@@ -90,17 +91,17 @@ same length as the input vector. Test models with \code{showModels()}.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
-\item{display_corr}{Logical. If TRUE, correlation values are added to the plots.}
+\item{display_eval}{Logical. If TRUE, evaluation values are added to the plots.}
 
-\item{corr_p_min}{Numeric value. Everything below is displayed as \emph{<corr_p_min}.}
+\item{eval_p_min}{Numeric value. Everything below is displayed as \emph{<eval_p_min}.}
 
-\item{corr_pos_x, corr_pos_y}{Numeric vector of length two. The position of
+\item{eval_pos_x, eval_pos_y}{Numeric vector of length two. The position of
 the correlation text with x- and y-coordinates.}
 
-\item{corr_text_sep}{Character value used to separate correlation value and
+\item{eval_text_sep}{Character value used to separate correlation value and
 corresponding p-value.}
 
-\item{corr_text_size}{Numeric value. Size of text.}
+\item{eval_text_size}{Numeric value. Size of text.}
 
 \item{force_grid}{Logical value. If \code{TRUE}, \code{facet_grid()} is used regardless
 of \code{variables} being of length 1.}

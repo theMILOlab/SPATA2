@@ -994,13 +994,13 @@ plotSasBarplotSC <- function(object,
 #' @inherit plotScatterplot params
 #' @inherit plot_screening_evaluation
 #' @inherit argument_dummy params
-#' @param display_corr Logical. If TRUE, correlation values are added to the plots.
-#' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
-#' @param corr_pos_x,corr_pos_y Numeric vector of length two. The position of
+#' @param display_eval Logical. If TRUE, evaluation values are added to the plots.
+#' @param eval_p_min Numeric value. Everything below is displayed as \emph{<eval_p_min}.
+#' @param eval_pos_x,eval_pos_y Numeric vector of length two. The position of
 #' the correlation text with x- and y-coordinates.
-#' @param corr_text_sep Character value used to separate correlation value and
+#' @param eval_text_sep Character value used to separate correlation value and
 #' corresponding p-value.
-#' @param corr_text_size Numeric value. Size of text.
+#' @param eval_text_size Numeric value. Size of text.
 #'
 #' @inheritSection section_dummy Distance measures
 #'
@@ -1010,6 +1010,7 @@ plotSasEvaluation <- function(object,
                               variables,
                               id = idSA(object),
                               method_eval = "corr",
+                              core = TRUE,
                               distance = distToEdge(object),
                               binwidth = recBinwidth(object),
                               n_bins_dist = NA_integer_,
@@ -1024,12 +1025,12 @@ plotSasEvaluation <- function(object,
                               line_color = "blue",
                               line_size = 1,
                               display_se = FALSE,
-                              display_corr = FALSE,
-                              corr_p_min = 5e-05,
-                              corr_pos_x = NULL,
-                              corr_pos_y = NULL,
-                              corr_text_sep = "\n",
-                              corr_text_size = 1,
+                              display_eval = FALSE,
+                              eval_p_min = 5e-05,
+                              eval_pos_x = NULL,
+                              eval_pos_y = NULL,
+                              eval_text_sep = "\n",
+                              eval_text_size = 3,
                               force_grid = FALSE,
                               bcsp_exclude = NULL,
                               ncol = NULL,
@@ -1050,9 +1051,9 @@ plotSasEvaluation <- function(object,
       remove_circle_bins = TRUE,
       summarize_by = "bins_circle",
       normalize_by = "sample",
-      bcsp_exclude = bcsp_exclude
+      bcsp_exclude = bcsp_exclude,
+      core = core
     )
-
 
   plot_screening_evaluation(
     df = sas_df,
@@ -1068,12 +1069,12 @@ plotSasEvaluation <- function(object,
     line_alpha = line_alpha,
     line_size = line_size,
     display_se = display_se,
-    display_corr = display_corr,
-    corr_p_min = corr_p_min,
-    corr_pos_x = corr_pos_x,
-    corr_pos_y = corr_pos_y,
-    corr_text_sep = corr_text_sep,
-    corr_text_size = corr_text_size,
+    display_eval = display_eval,
+    eval_p_min = eval_p_min,
+    eval_pos_x = eval_pos_x,
+    eval_pos_y = eval_pos_y,
+    eval_text_sep = eval_text_sep,
+    eval_text_size = eval_text_size,
     force_grid = force_grid,
     nrow = nrow,
     ncol = ncol,
@@ -1362,8 +1363,7 @@ plotSasLineplot <- function(object,
                             id = idSA(object),
                             distance = distToEdge(object, id),
                             binwidth = recBinwidth(object),
-                            core = TRUE,
-                            n_bins_dist = NA_integer_,
+                            core = FALSE,
                             angle_span = c(0,360),
                             n_bins_angle = 1,
                             smooth_span = 0.2,
@@ -1371,53 +1371,50 @@ plotSasLineplot <- function(object,
                             unit = getSpatialMethod(object)@unit,
                             clrp = NULL,
                             clrp_adjust = NULL,
-                            line_color = "black",
+                            line_color = NULL,
                             line_size = 1.5,
                             nrow = NULL,
                             ncol = NULL,
                             border_linealpha = 0.75,
-                            border_linecolor = "black",
+                            border_linecolor = alpha("white", 0),
                             border_linesize = 1,
-                            border_linetype = "dashed",
+                            border_linetype = "solid",
+                            display_eval = TRUE,
+                            pos_x = 0,
+                            pos_y = 1,
                             ggpLayers = list(),
-                            verbose = NULL){
+                            verbose = NULL,
+                            ...){
+
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
 
   # prepare sas df
   variables <- base::unique(variables)
+
+  var_order <- variables
+
+  distance <- as_unit(distance, unit = unit, object = object)
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
 
   sas_df <-
     getSasDf(
       object = object,
       id = id,
       distance = distance,
-      n_bins_dist = n_bins_dist,
       binwidth = binwidth,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
+      unit = unit,
       core = core,
-      verbose = FALSE
-    ) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::all_of(variables),
-      names_to = "variables",
-      values_to = "values"
-    ) %>%
-    dplyr::mutate(variables = base::factor(variables, levels = {{variables}}))
-
-  if(unit != "px"){
-
-    scale_fct <- getPixelScaleFactor(object, unit = unit)
-    sas_df[["dist"]] <- sas_df[["dist"]] * scale_fct
-
-  } else {
-
-    unit <- "px"
-
-  }
+      format = "long",
+      verbose = FALSE,
+      ...
+    )
 
   # make plot add ons
-
   # facets
   if(n_bins_angle > 1){
 
@@ -1449,23 +1446,100 @@ plotSasLineplot <- function(object,
     base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
     base::ceiling()
 
+  if(base::is.character(line_color)){
+
+    clrp_adjust_add <-
+      purrr::set_names(
+        x = base::rep(line_color, base::length(variables)),
+        nm = variables
+      )
+
+    clrp_adjust <-
+      c(
+        clrp_adjust,
+        clrp_adjust_add[!base::names(clrp_adjust_add) %in% base::names(clrp_adjust)]
+      )
+
+  }
+
+  if(smooth_span == 0){
+
+    line_add_on <-
+      ggplot2::geom_line(
+        data = sas_df,
+        mapping = ggplot2::aes(x = dist, y = values, color = variables),
+        linewidth = line_size
+      )
+
+
+  } else {
+
+    line_add_on <-
+      ggplot2::geom_smooth(
+        data = sas_df,
+        mapping = ggplot2::aes(x = dist, y = values, color = variables),
+        span = smooth_span,
+        se = smooth_se,
+        linewidth = line_size,
+        method = "loess",
+        formula = y ~ x
+      )
+
+  }
+
+
+  if(base::isTRUE(display_eval)){
+
+    text_df <-
+      dplyr::group_by(sas_df, variables) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of("values"),
+          .fns =
+            list(
+              tot_var = ~ compute_total_variation(.x) %>% base::round(digits = 2),
+              rel_var = ~ compute_relative_variation(.x) %>% base::round(digits = 2)
+            )
+        )
+      ) %>%
+      dplyr::mutate(
+        label =
+          stringr::str_c(
+            "TV: ", values_tot_var,
+            "\nRV: ", values_rel_var
+          ),
+        x_pos = base::as.numeric(pos_x),
+        y_pos = base::as.numeric(pos_y)
+      )
+
+    text_add_on <-
+      ggplot2::geom_text(
+        data = text_df,
+        mapping = ggplot2::aes(x = x_pos, y = y_pos, label = label),
+        color = "black",
+        size = line_size*2.5,
+        hjust = 0
+      )
+
+  } else {
+
+    text_add_on <- NULL
+
+  }
+
+
   ggplot2::ggplot(data = sas_df, mapping = ggplot2::aes(x = dist, y = values)) +
     ggpLayers +
-    ggplot2::geom_smooth(
-      data = sas_df,
-      mapping = ggplot2::aes(x = dist, y = values, color = variables),
-      span = smooth_span,
-      se = smooth_se,
-      linewidth = line_size,
-      method = "loess",
-      formula = y ~ x
-    ) +
+    line_add_on +
     border_add_on +
+    text_add_on +
     facet_add_on +
-    ggplot2::scale_x_continuous(
-      breaks = breaks_x,
-      labels = base::as.character(breaks_x)
+    scale_color_add_on(
+      variable = sas_df[["variables"]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
     ) +
+    ggplot2::scale_x_continuous(breaks = breaks_x) +
     ggplot2::scale_y_continuous(
       breaks = base::seq(0 , 1, 0.2),
       labels = base::seq(0 , 1, 0.2),
@@ -1473,7 +1547,7 @@ plotSasLineplot <- function(object,
     ggplot2::coord_cartesian(
       xlim = base::range(sas_df[["dist"]])*1.025,
       ylim = c(-0.025,1.025),
-      expand = FALSE
+      expand = TRUE
       ) +
     ggplot2::theme_classic() +
     ggplot2::theme(
@@ -1483,7 +1557,7 @@ plotSasLineplot <- function(object,
     ) +
     ggplot2::labs(
       x = glue::glue("Distance to Annotation [{unit}]"),
-      y = "Expression"
+      y = "Estimated Relative Expression"
     ) +
     legendNone()
 
@@ -2912,7 +2986,7 @@ plotSpatialTrajectories <- function(object,
 
         traj_obj <- getSpatialTrajectory(object, id)
 
-        projection_df <- traj_obj@projection
+        projection_df <- getProjectionDf(object, id = id)
 
         background_df <-
           getCoordsDf(object = object) %>%
@@ -2985,6 +3059,7 @@ plotSpatialTrajectories <- function(object,
       size = sgmt_size,
       color = sgmt_clr
     ) +
+    facet_add_on +
     ggplot2::theme_void() +
     ggplot2::scale_alpha_manual(values = c("yes" = pt_alpha2, "no" = pt_alpha), guide = "none") +
     scale_color_add_on(

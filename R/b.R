@@ -953,6 +953,8 @@ breaks <- function(n){
 #' @param buffer The distance by which to consecutively expand the
 #' area that covers the spatial annotation screening. Given to argument
 #' \code{dist} of function \code{sf::st_buffer()}.
+#' @param cvars Character vector of length two. The variable names that correspond
+#' to the x- and y-coordinates.
 #'
 #' @export
 #'
@@ -976,10 +978,10 @@ breaks <- function(n){
 #'   geom_polygon(data = outline1, mapping = aes(x = x, y = y), color = "black", fill = NA, size = 2) +
 #'   geom_polygon(data = outline2, mapping = aes(x = x, y = y), color = "red" , fill = NA, size = 2)
 #'
-buffer_area <- function(df, buffer, close_plg = TRUE){
+buffer_area <- function(df, buffer, close_plg = TRUE, cvars = c("x", "y")){
 
-  frow <- df[1, c("x", "y")] %>% base::as.numeric()
-  lrow <- df[base::nrow(df), c("x", "y")] %>% base::as.numeric()
+  frow <- df[1, cvars] %>% base::as.numeric()
+  lrow <- df[base::nrow(df), cvars] %>% base::as.numeric()
 
   if(!base::identical(frow, lrow) & base::isTRUE(close_plg)){
 
@@ -988,7 +990,7 @@ buffer_area <- function(df, buffer, close_plg = TRUE){
   }
 
   area_grown <-
-    sf::st_polygon(x = list(base::as.matrix(df[,c("x", "y")]))) %>%
+    sf::st_polygon(x = list(base::as.matrix(df[,cvars]))) %>%
     sf::st_buffer(dist = buffer) %>%
     base::as.matrix() %>%
     base::as.data.frame()
@@ -1000,7 +1002,7 @@ buffer_area <- function(df, buffer, close_plg = TRUE){
   } else {
 
     out <-
-      magrittr::set_colnames(area_grown, value = c("x", "y")) %>%
+      magrittr::set_colnames(area_grown, value = cvars) %>%
       tibble::as_tibble()
 
   }

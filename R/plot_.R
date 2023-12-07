@@ -59,12 +59,12 @@ plot_screening_evaluation <- function(df,
                                       line_color = "blue",
                                       line_size = 1,
                                       display_se = FALSE,
-                                      display_corr = FALSE,
-                                      corr_p_min = 5e-05,
-                                      corr_pos_x = NULL,
-                                      corr_pos_y = NULL,
-                                      corr_text_sep = "\n",
-                                      corr_text_size = 1,
+                                      display_eval = FALSE,
+                                      eval_p_min = 5e-05,
+                                      eval_pos_x = NULL,
+                                      eval_pos_y = NULL,
+                                      eval_text_sep = "\n",
+                                      eval_text_size = 1,
                                       clr_model = "steelblue",
                                       clr_segment = "tomato",
                                       clr_variable = "forestgreen",
@@ -144,12 +144,12 @@ plot_screening_evaluation <- function(df,
       smooth.size = line_size,
       smooth.se = display_se,
       display.smooth = TRUE,
-      display.corr = display_corr,
-      corr.p.min = corr_p_min,
-      corr.pos.x = corr_pos_x,
-      corr.pos.y = corr_pos_y,
-      corr.text.sep = corr_text_sep,
-      corr.text.size = corr_text_size,
+      display.corr = display_eval,
+      corr.p.min = eval_p_min,
+      corr.pos.x = eval_pos_x,
+      corr.pos.y = eval_pos_y,
+      corr.text.sep = eval_text_sep,
+      corr.text.size = eval_text_size,
       corr.method = "pearson",
       nrow = nrow,
       ncol = ncol
@@ -172,6 +172,8 @@ plot_screening_evaluation <- function(df,
 
   } else {
 
+    assign("df_shifted", df_shifted, .GlobalEnv)
+
     plot_mae(
       df_shifted = df_shifted,
       ref_var = "variable",
@@ -180,7 +182,12 @@ plot_screening_evaluation <- function(df,
       clr_variable = clr_variable,
       nrow = nrow,
       ncol = ncol,
-      force_grid = force_grid
+      force_grid = force_grid,
+      display_eval = display_eval,
+      eval_text_size = eval_text_size,
+      eval_text_sep = eval_text_sep,
+      eval_pos_x = eval_pos_x,
+      eval_pos_y = eval_pos_y
     )
 
   }

@@ -495,6 +495,7 @@ findOptimalDistanceSAS <- function(object,
                                    variables,
                                    core = TRUE,
                                    binwidth = recBinwidth(object),
+                                   n_bins_angle = 12,
                                    threshold = 0.25){
 
 
@@ -525,7 +526,7 @@ findOptimalDistanceSAS <- function(object,
 
         dist_test <- bwv * (n_bins_start+i)
 
-        dist_test <- as_unit(dist_test, unit = bw_unit, object = object)
+        dist_test <- stringr::str_c(dist_test, bw_unit)
 
         sas <-
           spatialAnnotationScreening(
@@ -535,7 +536,7 @@ findOptimalDistanceSAS <- function(object,
             distance = dist_test,
             binwidth = binwidth,
             core = core,
-            n_bins_angle = 1,
+            n_bins_angle = n_bins_angle,
             verbose = FALSE
           )
 

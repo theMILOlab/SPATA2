@@ -21,7 +21,7 @@ plotTrajectoryEvaluation(
   line_size = 1,
   display_se = FALSE,
   display_corr = FALSE,
-  corr_p_min = 0.00005,
+  corr_p_min = 5e-05,
   corr_pos_x = NULL,
   corr_pos_y = NULL,
   corr_text_sep = "\\n",

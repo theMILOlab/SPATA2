@@ -52,7 +52,7 @@ getPixelDf(object, ...)
   colors = FALSE,
   hex_code = FALSE,
   use_greyscale = FALSE,
-  frgmt_threshold = c(0.0005, 0.01),
+  frgmt_threshold = c(5e-04, 0.01),
   eps = 1,
   minPts = 3,
   ...

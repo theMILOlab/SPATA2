@@ -133,7 +133,7 @@ to specify the input in pixel you have to use input option 1. In pixel.
 object <- downloadPubExample("313_T", verbose = FALSE)
 
 plotImageGgplot(object) +
- ggpLayerEncirclingIAS(
+ ggpLayerEncirclingSAS(
    object = object,
    id = "necrotic_area",
    distance = "2.25mm"

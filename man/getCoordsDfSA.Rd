@@ -2,6 +2,7 @@
 % Please edit documentation in R/getA-G.R
 \name{getCoordsDfSA}
 \alias{getCoordsDfSA}
+\alias{getCoordsDfST}
 \title{Relate points to spatial annotations}
 \usage{
 getCoordsDfSA(
@@ -12,8 +13,24 @@ getCoordsDfSA(
   n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  verbose = NULL,
   dist_unit = "px",
+  coords_df = NULL,
+  variables = NULL,
+  format = "wide",
+  verbose = NULL,
+  ...
+)
+
+getCoordsDfST(
+  object,
+  id = idST(object),
+  binwidth = recBinwidth(object),
+  n_bins = NA_integer_,
+  width = NULL,
+  dist_unit = "px",
+  variables = NULL,
+  format = "wide",
+  verbose = NULL,
   ...
 )
 }
@@ -47,13 +64,28 @@ an angle span relative to the center of the spatial annotation.
 \item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
 (See details for more.)}
 
+\item{dist_unit}{Character value. Unit in which the distance is computed.
+Defaults to \emph{pixel}.}
+
+\item{coords_df}{Data.frame. If \code{NULL}, the default, the coordinates data.frame obtained
+via \code{getCoordsDf()} is used. Else other data.frame of observations can be put in
+relation to the spatial annotation. Requires numeric variables named \emph{x} and \emph{y} in
+pixel units.}
+
+\item{variables}{Character vector. All numeric variables (meaning genes,
+gene-sets and numeric features) that are supposed to be included in
+the screening process.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
 \item{...}{Additional arguments given to \code{\link[=joinWithVariables]{joinWithVariables()}}. Only used
-if not empty.}
+if not empty and \code{coords_df} is \code{NULL}.}
+
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
 }
 \value{
 Data.frame.
@@ -68,6 +100,7 @@ additional variables:
 
 \itemize{
 \item{\emph{dist}:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
+\item{\emph{dist_unit}:}{ Character. The unit in which the distance is computed.}
 \item{\emph{bins_dist}:}{ Factor. The bin the data point was assigned to based on its \emph{dist} value and the \code{binwidth}.}
 \item{\emph{angle}:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
 \item{\emph{bins_angle}:}{ Factor. The bin the data point was assigned to based on its \emph{angle} value.}

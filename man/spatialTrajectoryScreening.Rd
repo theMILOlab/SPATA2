@@ -8,13 +8,17 @@ spatialTrajectoryScreening(
   object,
   id,
   variables,
-  n_bins = NA_integer_,
   binwidth = getCCD(object),
+  unit = getDefaultUnit(object),
+  bcs_exclude = character(0),
+  sign_var = "fdr",
+  sign_threshold = 0.05,
+  force_comp = FALSE,
+  model_add = NULL,
   model_subset = NULL,
   model_remove = NULL,
-  model_add = NULL,
-  method_padj = "fdr",
-  summarize_with = "mean",
+  n_random = 1000,
+  seed = 123,
   verbose = NULL
 )
 }
@@ -29,12 +33,14 @@ of interest.}
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{n_bins}{Numeric value or vector of length 2. Specifies exactly how many bins are
-created. (See details for more.)}
-
 \item{binwidth}{Distance value. The width of the bins to which
 the barcode-spots are assigned. Defaults to the center-center
 distance: \code{binwidth = getCCD(object)}.}
+
+\item{model_add}{Named list. Every slot in the list must be either a formula
+containing a function that takes a numeric vector as input and returns a numeric
+vector with the same length as its input vector. Or a numeric vector with the
+same length as the input vector. Test models with \code{showModels()}.}
 
 \item{model_subset}{Character value. Used as a regex to subset models.
 Use \code{validModelNames()} to obtain all model names that are known to \code{SPATA2}
@@ -43,21 +49,16 @@ and \code{showModels()} to visualize them.}
 \item{model_remove}{Character value. Used as a regex to remove models
 are not supposed to be included.}
 
-\item{model_add}{Named list. Every slot in the list must be either a formula
-containing a function that takes a numeric vector as input and returns a numeric
-vector with the same length as its input vector. Or a numeric vector with the
-same length as the input vector. Test models with \code{showModels()}.}
-
-\item{method_padj}{Character value. The method with which adjusted p-values are
-calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
-
-\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
-Specifies the function with which the bins are summarized.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{n_bins}{Numeric value or vector of length 2. Specifies exactly how many bins are
+created. (See details for more.)}
+
+\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
+Specifies the function with which the bins are summarized.}
 }
 \value{
 An object of class \code{SpatialTrajectoryScreening}. See documentation

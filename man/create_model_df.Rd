@@ -10,6 +10,9 @@ create_model_df(
   model_subset = NULL,
   model_remove = NULL,
   model_add = NULL,
+  noise_level = 0,
+  noise = NULL,
+  seed = 123,
   verbose = TRUE
 )
 }

@@ -7,28 +7,19 @@
 \usage{
 plotTrajectoryLineplot(
   object,
-  id,
   variables,
-  binwidth = getCCD(object, unit = "px"),
-  n_bins = NA_integer_,
+  id = idST(object),
+  binwidth = recBinwidth(object),
   unit = getSpatialMethod(object)@unit,
-  round = 2,
-  method_gs = NULL,
-  smooth_method = "loess",
   smooth_span = 0.2,
   smooth_se = TRUE,
-  clrp = NULL,
-  clrp_adjust = NULL,
-  display_facets = NULL,
   line_color = NULL,
   line_size = 1.5,
-  x_nth = 7L,
-  xi = (getTrajectoryLength(object, id)/2),
-  yi = 0.5,
-  summarize_with = "mean",
+  clrp = NULL,
+  clrp_adjust = NULL,
+  ggpLayers = NULL,
   ncol = NULL,
   nrow = NULL,
-  display_model = NULL,
   verbose = NULL,
   ...
 )
@@ -77,20 +68,15 @@ objects of classes for which a method has been defined.}
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
 
-\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
-are binned into.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
-
-\item{smooth_method}{The smoothing method that will be used specified as a
-single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
-
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
+
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
+the trajectory dynamics are displayed.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
@@ -101,24 +87,8 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
-or feature are displayed via \code{ggplot2::facet_wrap()}}
-
-\item{line_color}{Character. Affects color of the main lines of the plot.}
-
-\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
-the trajectory dynamics are displayed.}
-
-\item{x_nth}{Numeric value. If the number of breaks/labels on the
-x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
-every label is kept. If 2, every second label is kept. If 3, every
-third label is kept. And so on.}
-
-\item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
-
-\item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
-
-\item{summarize_with}{Character value. Name of the function with which to summarize.}
+\item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
+Skim \code{ggpLayer*()}-functions for more options.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
@@ -130,9 +100,29 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{ggplot2::facet_wrap()} if argument
 \code{display_facets} is set to TRUE.}
 
+\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
+are binned into.}
+
+\item{method_gs}{Character value. The method according to which gene sets will
+be handled specified as a character of length one. This can be either 'mean
+or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
+
+\item{smooth_method}{The smoothing method that will be used specified as a
+single character value (e.g. \emph{"lm", "glm", "gam", "loess"}).}
+
 \item{display_trajectory_parts}{Logical. If set to TRUE the returned plot
 visualizes the parts in which the trajectory has been partitioned while beeing
 drawn.}
+
+\item{x_nth}{Numeric value. If the number of breaks/labels on the
+x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,
+every label is kept. If 2, every second label is kept. If 3, every
+third label is kept. And so on.}
+
+\item{summarize_with}{Character value. Name of the function with which to summarize.}
+
+\item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
+or feature are displayed via \code{ggplot2::facet_wrap()}}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

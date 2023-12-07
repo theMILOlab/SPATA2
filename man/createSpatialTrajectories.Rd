@@ -14,7 +14,6 @@ addSpatialTrajectory(
   end = NULL,
   comment = base::character(1),
   overwrite = FALSE,
-  img_name = NULL,
   ...
 )
 
@@ -33,9 +32,6 @@ objects of classes for which a method has been defined.}
 \emph{xend} and \emph{yend} of the segment.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
-
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

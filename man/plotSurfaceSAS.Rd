@@ -11,7 +11,7 @@ plotSurfaceSAS(object, ...)
 \S4method{plotSurfaceSAS}{spata2}(
   object,
   id,
-  distance,
+  distance = distToEdge(object, id),
   binwidth = recBinwidth(object),
   n_bins_dist = NA_integer_,
   color_by = c("dist", "bins_dist", "angle", "bins_angle"),
@@ -109,7 +109,7 @@ An invisible list of ggplots.
 \description{
 Plots the surface of the sample three times with different
 coloring to visualize how \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}} screens
-the sample depending on the input of arguments \code{binwidth}, \code{n_bins_circle},
+the sample depending on the input of arguments \code{binwidth}, \code{n_bins_dist},
 \code{n_bins_angle}.
 }
 \details{

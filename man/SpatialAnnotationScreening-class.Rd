@@ -42,6 +42,9 @@ all gene-model fits across all angle bins.}
 
 \item{\code{sample}}{character. The sample name.}
 
+\item{\code{significance}}{data.frame. Data.frame that contains the p-values for
+each variable.}
+
 \item{\code{summarize_with}}{character. Either \emph{'mean'} or \emph{'median'}.}
 }}
 

@@ -11,6 +11,7 @@ ggpLayerGroupOutline(
   plot_type = "surface",
   line_color = "black",
   line_size = 1,
+  line_type = "solid",
   alpha = 0,
   bcsp_rm = character(0),
   outlier_rm = TRUE,
@@ -35,6 +36,9 @@ are encircled.}
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
 are removed before analysis or plotting. (Deprecated in favor of \code{bcs_rm}).}

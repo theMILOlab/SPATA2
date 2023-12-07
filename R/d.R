@@ -181,6 +181,84 @@ deprecatedInfo <- function(){
 
 
 
+
+
+
+# def ---------------------------------------------------------------------
+
+
+define_positions <- function(dist, binwidth){
+
+  # remove unit suffix and force numeric class
+  bw_val <- extract_value(binwidth)
+  dist_vals <- extract_value(dist)
+
+  dist_vals <- dist_vals[!base::is.na(dist_vals)]
+
+  min_dist <- base::min(dist_vals)
+  max_dist <- base::max(dist_vals)
+
+  # return vector of the same length as originally obtained using n_bins_dist
+  out <-
+    base::seq(from = min_dist, to = max_dist, length.out = max_dist/bw_val)
+
+  return(out)
+
+}
+
+
+#' Compute Position-Based Expression Estimates
+#'
+#' This function computes position-based expression estimates given the minimum
+#' and maximum distances and the average minimum center-to-center distance (AMCCD).
+#'
+#' @param min_dist Minimum distance for estimation.
+#' @param max_dist Maximum distance for estimation.
+#' @param amccd Average Minimum Center-to-Center Distance (AMCCD).
+#'
+#' @return A numeric vector representing position-based expression estimates.
+#'
+#' @note This function validates that the units of \code{amccd}, \code{min_dist},
+#' and \code{max_dist} match to ensure consistent unit measurements.
+
+#' @return A numeric vector representing positions for expression estimates.
+#'
+compute_positions_expression_estimates <- function(min_dist, max_dist, amccd){
+
+  base::stopifnot(
+    base::identical(
+      x = extract_unit(min_dist),
+      y = extract_unit(max_dist)
+      )
+    )
+
+  unit_dist <- base::unique(extract_unit(max_dist))
+  unit_amccd <- extract_unit(amccd)
+
+  if(unit_dist != unit_amccd){
+
+    stop("Units of `amccd`, `min_dist` and `max_dist` do not match.")
+
+  }
+
+  # remove unit suffix and force numeric class
+  amccd_val <- extract_value(amccd)
+  min_dist_val <- extract_value(min_dist)
+  max_dist_val <- extract_value(max_dist)
+
+  dist_screened <- base::diff(x = c(min_dist_val, max_dist_val))
+
+  out <-
+    base::seq(
+      from = min_dist_val,
+      to = max_dist_val,
+      length.out = base::ceiling(dist_screened/amccd_val)+1
+      )
+
+  return(out)
+
+}
+
 # dis ---------------------------------------------------------------------
 
 
@@ -612,24 +690,30 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 
   section <- whichTissueSection(object, id)
 
-  center <- getSpatAnnCenter(object, id = id)
+  coords_df <- getCoordsDf(object)
 
-  section_mtr <-
+  spat_ann_mtr <-
+    getSpatAnnOutlineDf(object, id = id) %>%
+    dplyr::filter(section == {{section}}) %>%
+    dplyr::select(x, y) %>%
+    base::as.matrix()
+
+  tissue_mtr <-
     getTissueOutlineDf(object, by_section = TRUE) %>%
     dplyr::filter(section == {{section}}) %>%
     dplyr::select(x, y) %>%
     base::as.matrix()
 
-  nn2_out <-
+  nn_out <-
     RANN::nn2(
-      data = section_mtr,
-      query = base::t(base::as.matrix(center)),
-      k = base::nrow(section_mtr)
+      data = spat_ann_mtr,
+      query = base::as.matrix(coords_df[,c("x", "y")]),
+      searchtype = "priority",
+      k = 1
     )
 
   out <-
-    base::max(nn2_out$nn.dists) %>%
-    as_unit(unit = unit, object = object)
+    as_unit(input = base::max(nn_out$nn.dists)*1.01, object = object, unit = unit)
 
   return(out)
 

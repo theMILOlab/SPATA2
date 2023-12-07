@@ -31,12 +31,6 @@ are rotated. Should range from 1-359.}
 \item{clockwise}{Logical value. If \code{TRUE}, rotation is performed
 in clockwise direction. If \code{FALSE}, the other way round.}
 
-\item{track}{Logical value. If \code{TRUE}, changes regarding the image
-justification (rotations and flipping) are tracked. Assuming that
-image versions of different resolution are stored on your device with the same
-justification as the primarily read image these changes in justification
-can be automatically applied if the image is exchanged via \code{exchangeImage()}.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

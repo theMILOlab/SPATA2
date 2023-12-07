@@ -90,6 +90,32 @@ idSA <- function(object, verbose = NULL){
 
 }
 
+#' @rdname idSA
+#' @export
+idST <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  id <- getSpatialTrajectoryIds(object)
+
+  if(base::length(id) == 0){
+
+    stop("No spatial trajectories found in this object.")
+
+  } else if(base::length(id) > 1){
+
+    stop("More than one spatial trajectories found in this object. Please specify argument `id`.")
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("Spatial trajectory: '{id}'"),
+    verbose = verbose
+  )
+
+  return(id)
+
+}
 
 #' @rdname idSA
 #' @export
@@ -1124,7 +1150,7 @@ setMethod(
 
     purrr::walk(
       .x = img_name,
-      .f = ~containsPixelContent(object, img_name = .x, error = TRUE)
+      .f = ~ containsPixelContent(object, img_name = .x, error = TRUE)
     )
 
     for(i in base::seq_along(img_name)){
@@ -1245,411 +1271,6 @@ img_ann_highlight_group_button <- function(){
     ),
     cellWidths = "100%"
   )
-
-}
-
-#' @title Implementation of the SAS-algorithm
-#'
-#' @description Screens the sample for numeric variables that stand
-#' in meaningful, spatial relation to annotated structures/areas.
-#' For a detailed explanation on how to define the parameters \code{distance},
-#' \code{n_bins_dist}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
-#' see details section.
-#'
-#' @inherit getSpatialAnnotation params
-#' @param variables Character vector. All numeric variables (meaning genes,
-#' gene-sets and numeric features) that are supposed to be included in
-#' the screening process.
-#' @param distance Distance value. Specifies the distance from the border of the
-#' spatial annotation to the \emph{horizon} in the periphery up to which the screening
-#' is conducted. (See details for more.) - See details of \code{?is_dist} for more
-#' information about distance values. Defaults to a distance that covers the whole
-#' tissue using [`distToEdge()`].
-#' @param binwidth Distance value. The width of the distance bins to which
-#' each data point is assigned. Defaults to our platform dependent
-#' recommendation using [`recBinwidth()`].
-#' @param n_bins_dist Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-#' denoted in \code{binwidth}. Not required if `distance` and `binwidth` is
-#' specified. (See details for more.)
-#' @param angle_span Numeric vector of length 2. Confines the area screened by
-#' an angle span relative to the center of the spatial annotation.
-#'  (See details fore more.)
-#' @param n_bins_angle Numeric value. Number of bins that are created by angle.
-#' (See details for more.)
-#' @param bcs_exclude Character value containing name(s) of data points to be excluded from the analysis.
-#'
-#' @inherit add_models params
-#' @inherit argument_dummy params
-#' @inherit buffer_area params
-#'
-#' @return An object of class \code{SpatialAnnotationScreening}. See documentation
-#' with \code{?SpatialAnnotationScreening} for more information.
-#'
-#' @seealso [`createGroupAnnotations()`], [`createImageAnnotations()`],
-#' [`createNumericAnnotations()`] for how to create spatial annotations.
-#'
-#' [`getCoordsDfSA()`] for how to obtain spatial relation of data points to
-#' a spatial annotation.
-#'
-#' [`getSasDf()`] for how to obtain inferred expression gradients as used in
-#' spatial annotation screening.
-#'
-#' [`plotSasLineplot()`] for visualization of inferred expression gradients.
-#'
-#' @details In conjunction with argument \code{id} which provides the
-#' ID of the spatial annotation of interest the arguments \code{distance},
-#' \code{binwidth}, \code{n_bins_dist}, \code{angle_span} and \code{n_bins_angle} can be used
-#' to specify the exact area that is screened as well as the resolution of the screening.
-#'
-#' \bold{How the algorithm works:} During the SAS-algorithm the data points are
-#' binned according to their localisation to the spatial annotation. Every bin's mean
-#' expression of a given gene is then aligned in an ascending order - mean expression
-#' of bin 1, mean expression of bin 2, ... up to the last bin, the bin with the
-#' data points that lie farest away from the spatial annotation. This allows to infer
-#' the gene expression changes in relation to the spatial annotation and
-#' to screen for genes whose expression changes resemble specific biological
-#' behaviors. E.g. linear ascending: gene expression increases linearly with
-#' the distance to the spatial annotation. E.g. immediate descending: gene expression
-#' is high in close proximity to the spatial annotation and declines logarithmically
-#' with the distance to the spatial annotation.
-#'
-#' \bold{How distance binning works:}
-#' To bin data points according to their localisation to the spatial annotation
-#' two of the following three parameters are required (the third one is calculated):
-#'
-#'  \itemize{
-#'    \item{\code{distance}: The distance from the border of the spatial annotation to
-#'     the \emph{horizon} in the periphery up to which the screening is conducted.
-#'     }
-#'     \item{\code{binwidth}: The width of every bin.}
-#'     \item{\code{n_bins_dist}: The number of bins that are created.}
-#'  }
-#'
-#' These three parameters stand in the following relation to each other:
-#'
-#'  \enumerate{
-#'   \item{\code{n_bins_dist} = \code{distance} / \code{binwidth}}
-#'   \item{\code{distance} = \code{n_bins_dist} * \code{binwidth}}
-#'   \item{\code{binwidth} = \code{distance} / \code{n_bins_dist}}
-#'  }
-#'
-#'
-#' Once the parameters are set and calculated the polygon that is used to
-#' define the borders of the spatial annotation is repeatedly expanded by the distance
-#' indicated by parameter \code{binwidth}. The number of times this expansion is
-#' repeated is equal to the parameter \code{n_bins_dist}. Every time the
-#' polygon is expanded, the newly enclosed data points are binned (grouped)
-#' and the bin is given a number that is equal to the number of the expansion.
-#' Thus, data points that are adjacent to the spatial annotation are binned into
-#' bin 1, data points that lie a distance of \code{binwidth} away are binned into
-#' bin 2, etc.
-#'
-#' Note that [`plotSurfaceSAS()`] and/or [`ggpLayerExpansionsSAS()`] allow to
-#' visually inspect if your input results in the desired screening.
-#'
-#' \bold{How the screening works:} For every numeric variable (e.g. genes) that
-#' is included in the screening process every bin's mean expression is calculated
-#' and then aligned in an ascending order - mean expression of distance bin 1,
-#' mean expression of distance bin 2, ... up to the last bin, namely the bin
-#' with the data points that lie farest away from the spatial annotation. This
-#' allows to infer the gene expression changes in relation to the spatial annotation and
-#' to screen for genes whose expression changes resemble specific biological
-#' behaviors. The gene expression change is fitted to every model that is included.
-#' (Use \code{showModels()} to visualize the predefined models of \code{SPATA2}).
-#' A gene-model-fit is evaluated twofold:
-#'
-#'  \itemize{
-#'    \item{Mean Absolute Error}: Add description.
-#'    \item{Root Mean Squared Error}: Add description.
-#'    \item{Pearson correlation}: The inferred expression changes is correlated
-#'    with the model. (Correlation as well as the corresponding p-value depend
-#'    on the number of bins!)
-#'   }
-#'
-#' @export
-spatialAnnotationScreening <- function(object,
-                                       variables,
-                                       id = idSA(object),
-                                       distance = distToEdge(object, id),
-                                       binwidth = recBinwidth(object),
-                                       n_bins_dist = NA_integer_, # remove option completely?
-                                       angle_span = c(0,360),
-                                       n_bins_angle = 12,
-                                       core = TRUE,
-                                       periphery = TRUE,
-                                       model_subset = NULL,
-                                       model_remove = NULL,
-                                       model_add = NULL,
-                                       mtr_name = NULL,
-                                       bcs_exclude = NULL,
-                                       verbose = NULL,
-                                       ...){
-
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  confuns::give_feedback(
-    msg = "Starting spatial annotation screening.",
-    verbose = verbose
-  )
-
-  spat_ann <- getSpatialAnnotation(object, id = id)
-
-  input_binwidth <- binwidth
-  input_distance <- distance
-
-  input_list <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      object = object,
-      verbose = verbose
-    )
-
-  distance <- input_list$distance
-  n_bins_dist <- input_list$n_bins_dist
-  binwidth  <- input_list$binwidth
-
-  if(base::is.character(mtr_name)){
-
-    object <- setActiveMatrix(object, mtr_name = mtr_name, verbose = FALSE)
-
-  }
-
-  # relate barcodes to spatial annotation and merge variables of choice
-  coords_df <-
-    getCoordsDfSA(
-      object = object,
-      id = id,
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
-      variables = variables,
-      verbose = FALSE
-    )
-
-# general fitting by distance ---------------------------------------------
-
-  sas_df_smrd_by_circles <-
-    process_coords_df_sa(
-      coords_df = coords_df,
-      variables = variables,
-      core = core,
-      periphery = periphery,
-      bcs_exclude = bcs_exclude,
-      summarize_by = "bins_dist",
-      format = "wide"
-    )
-
-  # test model input
-  model_df <-
-    create_model_df(
-      input = sas_df_smrd_by_circles$bins_order,
-      var_order = "bins_order",
-      model_subset = model_subset,
-      model_remove = model_remove,
-      model_add = model_add,
-      verbose = verbose
-    )
-
-  # model fitting
-  shifted_df_with_variables <-
-    dplyr::select(sas_df_smrd_by_circles, bins_order, dplyr::all_of(variables)) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::all_of(variables),
-      names_to = "variables",
-      values_to = "values"
-    )
-
-  shifted_df_with_models <-
-    dplyr::left_join(
-      x = shifted_df_with_variables,
-      y = model_df,
-      by = "bins_order"
-    ) %>%
-    dplyr::arrange(variables) %>%
-    shift_for_evaluation(var_order = "bins_order")
-
-  results <-
-    evaluate_model_fits(
-      input_df = shifted_df_with_models,
-      var_order = "bins_order"
-    )
-
-
-# angle wise model fitting  -----------------------------------------------
-
-  if(n_bins_angle > 1){
-
-    sas_df_smrd_by_angle <-
-      process_coords_df_sa(
-        coords_df = coords_df,
-        variables = variables,
-        core = core,
-        periphery = periphery,
-        bcs_exclude = bcs_exclude,
-        summarize_by = c("bins_angle", "bins_dist"),
-        format = "wide"
-      )
-
-    min_circles <- 5
-
-    angle_bins <-
-      dplyr::select(sas_df_smrd_by_angle, bins_angle, bins_dist) %>%
-      dplyr::group_by(bins_angle) %>%
-      dplyr::tally() %>%
-      dplyr::filter(n >= min_circles) %>%
-      dplyr::pull(bins_angle) %>%
-      base::droplevels() %>%
-      base::levels()
-
-    n_total <- base::length(angle_bins)
-
-    time_start <- base::Sys.time()
-    bin_duration <- NULL
-    fn_envir <- base::environment()
-
-    confuns::give_feedback(
-      msg = "Fitting models by bin.",
-      verbose = verbose
-    )
-
-    results_by_angle <-
-      purrr::map_df(
-        .x = angle_bins,
-        .f = function(bin){
-
-          start_bin <- base::Sys.time()
-
-          nth <- base::which(angle_bins == bin)
-
-          confuns::give_feedback(
-            msg = glue::glue("Working on bin {bin}. ({nth}/{n_total})"),
-            verbose = verbose
-          )
-
-          bin_dur <- base::get(x = "bin_duration", envir = fn_envir)
-
-          if(!base::is.null(bin_dur)){
-
-            # -1 cause nth bin is yet to be screened
-            n_remaining <- n_total - (nth-1)
-
-            dur_sec <-
-              base::as.numeric(bin_dur * n_remaining) %>%
-              base::round(digits = 2)
-
-            dur_min <- base::round(dur_sec/60, digits = 2)
-            dur_hours <- base::round(dur_sec/3600, digits = 2)
-
-            est_end <- base::Sys.time() + dur_sec
-
-            msg <- glue::glue("Estimated end of screening: {est_end}.")
-
-            confuns::give_feedback(msg = msg, verbose = verbose)
-
-          }
-
-          bin_angle_df <-
-            dplyr::filter(sas_df_smrd_by_angle, bins_angle == {{bin}}) %>%
-            dplyr::select(-bins_dist, -bins_angle) %>%
-            tidyr::pivot_longer(
-              cols = dplyr::all_of(variables),
-              names_to = "variables",
-              values_to = "values"
-            )
-
-          shifted_df_with_models <-
-            dplyr::left_join(
-              x = bin_angle_df,
-              y = model_df,
-              by = "bins_order"
-            ) %>%
-            dplyr::arrange(variables) %>%
-            shift_for_evaluation(var_order = "bins_order")
-
-          results <-
-            base::suppressWarnings({
-
-              evaluate_model_fits(
-                input_df = shifted_df_with_models,
-                var_order = "bins_order"
-              )
-
-            }) %>%
-            dplyr::mutate(bins_angle = {{bin}})
-
-          end_bin <- base::Sys.time()
-
-          base::assign(
-            x = "bin_duration",
-            value = base::difftime(end_bin, start_bin, units = "secs"),
-            envir = fn_envir
-          )
-
-          return(results)
-
-        }
-      )
-
-    # merge circularity check
-    circularity_eval <-
-      dplyr::group_by(results_by_angle, variables, models) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::all_of(c("p_value", "corr", "rmse", "mae")),
-          .fns = ~ base::mean(.x, na.rm = TRUE),
-          .names = "circ_{.col}"
-        )
-      ) %>%
-      dplyr::ungroup()
-
-    results <-
-      dplyr::left_join(
-        x = results,
-        y = circularity_eval,
-        by = c("variables", "models")
-      )
-
-  } else {
-
-    results_by_angle <- base::data.frame()
-
-  }
-
-  info <- list(
-    id = id,
-    bcs_exclude = bcs_exclude,
-    core = core,
-    input_binwidth = input_binwidth,
-    input_distance = input_distance,
-    mtr_name = mtr_name,
-    n_bins_angle = n_bins_angle,
-    n_bins_dist = n_bins_dist,
-    periphery = periphery
-  )
-
-  SAS_out <-
-    SpatialAnnotationScreening(
-      angle_span = angle_span,
-      coords = coords_df,
-      info = info,
-      models = model_df,
-      results_by_angle = results_by_angle,
-      results = results,
-      sample = object@samples
-    )
-
-  confuns::give_feedback(
-    msg = "Done.",
-    verbose = verbose
-  )
-
-  return(SAS_out)
 
 }
 
@@ -1987,6 +1608,67 @@ increase_polygon_vertices <- function(polygon_df, avg_dist) {
 
 }
 
+
+
+infer_gradient <- function(loess_model,
+                           expr_est_pos,
+                           coef = 0,
+                           ro = c(0, 1)){
+
+  grad <- stats::predict(loess_model, data.frame(dist = expr_est_pos))
+
+  if(base::is.numeric(coef) && (coef != 0 & coef != Inf)){
+
+    outliers <-
+      grDevices::boxplot.stats(x = grad, coef = coef, do.conf = FALSE)[["out"]]
+
+    if(base::length(outliers) >= 1){
+
+      lp <- base::ceiling(base::length(grad)*0.1)
+
+      last_part <- base::seq_along(grad) %>% utils::tail(lp)
+
+      outlier_indices <- base::which(grad %in% outliers)
+
+      outlier_indices <- outlier_indices[outlier_indices %in% last_part]
+
+      if(base::length(outlier_indices) >= 1){
+
+        expr_est_pos2 <- expr_est_pos[-outlier_indices]
+        grad2 <- grad[-outlier_indices]
+
+        temp_df <- tibble::tibble(dist = expr_est_pos2, grad = grad2)
+
+        temp_grad <-
+          stats::loess(
+            formula = grad ~ dist,
+            data = temp_df,
+            span = 0.5,
+            statistics = "none",
+            surface = "direct"
+          ) %>%
+          stats::predict(., data.frame(dist = expr_est_pos))
+
+        grad[outlier_indices] <- temp_grad[outlier_indices]
+
+      }
+
+    }
+
+  }
+
+  if(base::is.numeric(ro)){
+
+    grad <- scales::rescale(grad, to = ro)
+
+  }
+
+  return(grad)
+
+
+}
+
+
 #' @title Count cells depending on distance to spatial annotation
 #'
 #' @description Integration of single cell deconvolution and SPATA2s spatial annotations.
@@ -2208,6 +1890,7 @@ inferSingleCellGradient <- function(object,
   return(out_df)
 
 }
+
 
 initiate_plot <- function(xlim = c(1, 600), ylim = c(1,600), main = "") {
 
@@ -2617,11 +2300,7 @@ is_dist_si <- function(input, error = FALSE){
 
     feedback_distance_input(x = res, error = error)
 
-  } else if(base::is.numeric(input)){
-
-    res <- base::rep(TRUE, base::length(input))
-
-  }  else if(base::all(base::class(input) == "units")){
+  } else if(base::all(base::class(input) == "units")){
 
     unit_attr <- base::attr(input, which = "units")
 
@@ -2640,6 +2319,10 @@ is_dist_si <- function(input, error = FALSE){
     }
 
     res <- base::rep(res, base::length(input))
+
+  } else if(base::is.numeric(input)){
+
+    res <- base::rep(TRUE, base::length(input))
 
   } else {
 
@@ -2720,6 +2403,50 @@ is_image_dir <- function(input, error = FALSE){
   }
 
   return(res)
+
+}
+
+
+#' Check if a Point is Inside a Polygon
+#'
+#' This function determines whether a given point lies inside a polygon defined by its vertices.
+#'
+#' @param point A numeric vector with two elements representing the x (first value) and y (second value) coordinates of the point.
+#' @param polygon_df A data frame with columns 'x' and 'y', containing the vertices of the polygon.
+#' @param strictly Logical, indicating whether the point must strictly lie inside the polygon (TRUE) or might be part of
+#' the polygon boundary (FALSE).
+#'
+#' @return Logical value indicating whether the point is inside the polygon.
+#'
+#' @examples
+#' point <- c(2, 3)
+#' polygon_df <- data.frame(x = c(1, 3, 3, 1), y = c(1, 1, 4, 4))
+#' is_inside_plg(point, polygon_df) # Returns TRUE
+#'
+#' @seealso [`sp::point.in.polygon()`]
+#'
+#' @export
+is_inside_plg <- function(point, polygon_df, strictly = TRUE){
+
+  pos <-
+    sp::point.in.polygon(
+      point.x = point[1],
+      point.y = point[2],
+      pol.x = polygon_df[["x"]],
+      pol.y = polygon_df[["y"]]
+    )
+
+  if(base::isTRUE(strictly)){
+
+    out <- pos == 1
+
+  } else {
+
+    out <- pos != 0
+
+  }
+
+  return(out)
 
 }
 

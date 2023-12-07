@@ -2899,3 +2899,214 @@ plotDensityplot <- function(object,
 }
 
 
+
+
+# plotE -------------------------------------------------------------------
+
+
+#' @title Plot Expression as a Function of Distance to a Spatial Annotation
+#'
+#' @description Generates a scatterplot to visualize the relationship between gene expression and
+#' the distance of data points to an annotation's outline.
+#'
+#' @param variables Character vector. All numeric variables (meaning genes, gene-sets
+#'  and numeric features) that are supposed to be plotted.
+#' @inherit spatialAnnotationScreening params
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @param distance A numeric vector of distances to the annotation's edge.
+#' @param se_fill The fill color for the smoothing line's standard error area (default: "lightgrey").
+#'
+
+plotExprVsDistSA <- function(object,
+                             variables,
+                             core = FALSE,
+                             id = idSA(object),
+                             distance = distToEdge(object, id = id),
+                             binwidth = recBinwidth(object),
+                             pt_alpha = 0.1,
+                             pt_color = "black",
+                             pt_clrp = NULL,
+                             pt_size = 1.5,
+                             line_alpha = 0.9,
+                             line_color = "forestgreen",
+                             line_size = 1.75,
+                             border_linealpha = 1,
+                             border_linecolor = "black",
+                             border_linesize = 1,
+                             border_linetype = "solid",
+                             se_fill = ggplot2::alpha("lightgrey", 0.5),
+                             normalize = FALSE,
+                             unit = getDefaultUnit(object),
+                             ggpLayers = NULL,
+                             ncol = NULL,
+                             nrow = NULL,
+                             ...){
+
+  hlpr_assign_arguments(object)
+
+  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+
+  if(base::isFALSE(core)){border_linealpha <- 0}
+
+  distance <- as_unit(distance, unit = unit, object = object)
+
+  coords_df_sa <-
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        getCoordsDfSA(
+          object = object,
+          id = idx,
+          distance = distance,
+          variables = variables,
+          dist_unit = unit
+        ) %>%
+          dplyr::filter(!rel_loc %in% {{rm_loc}}) %>%
+          tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values") %>%
+          dplyr::mutate(id = {{idx}})
+
+      }
+    ) %>%
+    dplyr::mutate(id = base::factor(id, levels = {{id}}))
+
+  sas_df <-
+    purrr::map_df(
+      .x = id,
+      .f = function(idx){
+
+        getSasDf(
+          object = object,
+          id = idx,
+          distance = distance,
+          variables = variables,
+          unit = unit,
+          ro = NULL,
+          ...
+        ) %>%
+          tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values") %>%
+          dplyr::mutate(id = {{idx}})
+
+      }
+    ) %>%
+    dplyr::mutate(id = base::factor(id, levels = {{id}}))
+
+  if(base::length(id) > 1){
+
+    point_add_on <-
+      list(
+        ggplot2::geom_point(
+          mappping = ggplot2::aes(color = id),
+          alpha = pt_alpha,
+          size = pt_size
+        ),
+        scale_color_add_on(variable = coords_df[["id"]], clrp = pt_clrp)
+      )
+
+
+  } else {
+
+    point_add_on <-
+      ggplot2::geom_point(
+        alpha = pt_alpha,
+        color = pt_color,
+        size = pt_size
+      )
+
+  }
+
+  ggplot2::ggplot(data = coords_df_sa, mapping = ggplot2::aes(x = dist, y = values)) +
+    ggpLayers +
+    point_add_on +
+    ggplot2::geom_line(
+      data = sas_df,
+      mapping = ggplot2::aes(x = dist, y = values),
+      color = line_color,
+      linewidth = line_size
+    ) +
+    ggplot2::geom_vline(
+      xintercept = 0,
+      alpha = border_linealpha,
+      color = border_linecolor,
+      linewidth = border_linesize,
+      linetype = border_linetype
+    ) +
+    ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
+    theme_lineplot_gradient() +
+    ggplot2::labs(
+      x = stringr::str_c("Distance to Annotation [", unit, "]"),
+      y = "Expression"
+    )
+
+}
+
+
+#' @export
+plotExprVsDistST <- function(object,
+                             variables,
+                             id = idST(object),
+                             binwidth = recBinwidth(object),
+                             pt_alpha = 0.5,
+                             pt_color = "black",
+                             pt_clrp = NULL,
+                             pt_size = 1.5,
+                             line_alpha = 0.9,
+                             line_color = "forestgreen",
+                             line_size = 1,
+                             unit = getDefaultUnit(object),
+                             ggpLayers = NULL,
+                             ncol = NULL,
+                             nrow = NULL,
+                             ...){
+
+  hlpr_assign_arguments(object)
+
+  # obtain data points
+  coords_df_st <-
+    getCoordsDfST(
+      object = object,
+      id = id,
+      variables = variables,
+      dist_unit = unit,
+      format = "long"
+    )
+
+  sts_df <-
+    getStsDf(
+      object = object,
+      id = id,
+      variables = variables,
+      unit = unit,
+      ro = NULL,
+      format = "long"
+    )
+
+  ggplot2::ggplot(data = coords_df_st, mapping = ggplot2::aes(x = dist, y = values)) +
+    ggpLayers +
+    ggplot2::geom_point(
+      alpha = pt_alpha,
+      color = pt_color,
+      size = pt_size
+    ) +
+    ggplot2::geom_line(
+      data = sts_df,
+      mapping = ggplot2::aes(x = dist, y = values),
+      color = line_color,
+      linewidth = line_size
+    ) +
+    ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
+    theme_lineplot_gradient() +
+    ggplot2::labs(
+      x = stringr::str_c("Distance along Trajectory [", unit, "]"),
+      y = "Expression"
+    )
+
+}
+
+
+
+
+
+

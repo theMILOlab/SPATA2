@@ -1,12 +1,180 @@
 
 
 
+#' @title Initiate a `spata2` object
+#'
+#' @description Initiates a `spata2` object using the basic inputs, a coordinates
+#' data.frame and a count matrix.
+#'
+#' @param count_mtr A count matrix. Column names are barcodes. Rownames are the
+#' feature (genes, proteins, metabolites etc.).
+#' @param coords_df Data.frame with a variable called *barcodes* as well as the
+#' *x_orig* and *y_orig* or *x* and *y*.
+#' @param dir_img_ref Character value or `NULL`. If character, the directory
+#' to the reference image.
+#' @param name_img_ref Character value or `NULL`. If character, the name of
+#' the reference image. Ignored if `dir_img_ref` is `NULL`.
+#' @param spatial_method Character value or object of class [`SpatialMethod`].
+#' If character, one of `validSpatialMethods()`.
+#' @param meta,misc List of meta- and miscellaneous data for the [`HistoImaging`]
+#' object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details If `dir_img_ref` is not specified, the function creates a [`PseudoHistoImage`].
+#' Use `registerImage()` to register images later on.
+#'
+#' If `dir_img_ref` is specified, the function creates a regular [`HistoImage`].
+#' Note that the x- and y-coordinates provided in the coordinates data.frame are
+#' considered to be the original coordinates and are forced into names *x_orig*
+#' and *y_orig*. Upon retrieval coordinates are scaled to image in use using the
+#' *coordinates scale factor*. This defaults to 1 (but can be adjusted via argument
+#' `scale_factors` which defaults to `scale_factors = list(coords = 1)`). As the
+#' default is 1, the default expects the coordinates and the image to align
+#' perfectly.
+#'
+#' @return An object of class `spata2`.
+#' @export
+#'
+initiateSpataObject <- function(count_mtr,
+                                coords_df,
+                                dir_img_ref = NULL,
+                                name_img_ref = NULL,
+                                spatial_method = "Undefined",
+                                meta = list(),
+                                misc = list(),
+                                scale_factors = list(coords = 1),
+                                verbose = TRUE,
+                                ...){
+
+  # spatial method
+  if(base::is.character(spatial_method)){
+
+    confuns::check_one_of(
+      input = spatial_method,
+      against = validSpatialMethods()
+    )
+
+    spatial_method <- spatial_methods[[spatial_method]]
+
+  }
+
+  # column names
+  cnames_coords <- base::colnames(coords_df)
+
+  if(!base::all(c("barcodes", "x_orig", "y_orig") %in% cnames_coords) &
+     !base::all(c("barcodes", "x", "y") %in% cnames_coords)){
+
+    stop("Data.frame `coords_df` must contain variable 'barcodes' as well as either 'x' and 'y' or 'x_orig' and 'y_orig'.")
+
+  }
+
+  if(!"x_orig" %in% cnames_coords){
+
+    coords_df[["x_orig"]] <- coords_df[["x"]]
+    coords_df[["x"]] <- NULL
+
+  }
+
+  if(!"y_orig" %in% cnames_coords){
+
+    coords_df[["y_orig"]] <- coords_df[["y"]]
+    coords_df[["y"]] <- NULL
+
+  }
+
+  coords_df[["sample"]] <- sample_name
+
+  # barcodes
+  barcodes_coords <- coords_df[["barcodes"]]
+  barcodes_counts <- base::colnames(count_mtr)
+
+  if(!base::all(barcodes_coords %in% barcodes_counts)){
+
+    stop("All barcodes from `coords_df` must be present in `counts_mtr`.")
+
+  }
+
+  # create spata2 object
+  object <-
+    initiateSpataObject_Empty(
+      sample_name = sample_name,
+      spatial_method = spatial_method
+    )
+
+  # imaging
+  if(base::is.character(dir_img_ref)){
+
+    confuns::is_value(name_img_ref, mode = "character")
+
+    hist_img_ref <-
+      createHistoImage(
+        active = TRUE,
+        dir = dir_img_ref,
+        img_name = name_img_ref,
+        reference = TRUE,
+        sample = sample_name,
+        scale_factors = scale_factors,
+        verbose = verbose
+      )
+
+    imaging <-
+      createHistoImaging(
+        sample = sample_name,
+        hist_img_ref = hist_img_ref,
+        active = name_img_ref,
+        unload = FALSE,
+        coordinates = coords_df,
+        meta = meta,
+        method = spatial_method,
+        misc = misc
+      )
+
+  } else if(base::is.null(dir_img_ref)) {
+
+    confuns::give_feedback(
+      msg = "`dir_img_ref` is NULL. Creating pseudo image container.",
+      verbose = verbose
+    )
+
+    imaging <-
+      HistoImaging(
+        coordinates = coords_df,
+        images = list(pseudo = PseudoHistoImage),
+        meta = meta,
+        method = spatial_method,
+        misc = misc,
+        name_img_ref = "pseudo",
+        sample = sample_name,
+        version = current_spata2_version
+      )
+
+    object <- setDefault(object, display_image = FALSE)
+
+  }
+
+  object <- setDefault(object, "pt_size" = 1)
+
+  object <- setCountMatrix(object, count_mtr = count_mtr)
+
+  object <- setFeatureDf(object, feature_df = tibble::tibble(barcodes = barcodes_coords))
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  return(object)
+
+}
+
+
 
 #' @title Initiate an empty `spata2` object
 #'
 #' @inherit initiateSpataObject_ExprMtr params
 #'
 #' @return An empty object of class `spata2`.
+#'
+#' @keywords internal
+#'
 #' @export
 #'
 
@@ -20,11 +188,6 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   # check input
   confuns::is_value(sample_name,  mode = "character")
 
-  confuns::check_one_of(
-    input = spatial_method,
-    against = validSpatialMethods()
-  )
-
   # create object
   class_string <- "spata2"
 
@@ -33,7 +196,21 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   object <- methods::new(Class = class_string, samples = sample_name)
 
   # set basic slots
-  object@information$method <- spatial_methods[[spatial_method]]
+
+  if(base::is.character(spatial_method)){
+
+    confuns::check_one_of(
+      input = spatial_method,
+      against = validSpatialMethods()
+    )
+
+    object@information$method <- spatial_methods[[spatial_method]]
+
+  } else {
+
+    object@information$method <- spatial_method
+
+  }
 
   object <- setDefaultInstructions(object)
 
@@ -55,8 +232,6 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
   return(object)
 
 }
-
-
 
 
 
@@ -612,10 +787,6 @@ initiateSpataObjectXenium <- function(directory_xenium,
   return(object)
 
 }
-
-
-
-
 
 
 # deprecated --------------------------------------------------------------

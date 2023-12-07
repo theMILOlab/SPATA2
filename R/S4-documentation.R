@@ -328,52 +328,6 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
                             ),
                             contains = "SpatialAnnotation")
 
-#' @title The \code{SpatialAnnotationScreening} - Class
-#'
-#' @description S4 class that contains input for and output of the
-#' function \code{SpatialAnnotationScreening()}.
-#'
-#' @slot angle_span numeric. Vector of length two. Confines the area of interest
-#' by angle relative to the center of the image annotation.
-#' @slot binwidth numeric. The value with which the polygon that encircles
-#' the image annotation is consecutively expanded via \code{sf::st_buffer()},
-#' @slot coords data.frame. Coordinates data.frame of the sample.
-#' @slot annotation SpatialAnnotation. The spatial annotation chosen for the
-#' screening.
-#' @slot info list. Miscellaneous information.
-#' @slot method_padj character. The method with which p-values were adjusted.
-#' @slot models data.frame. The model data.frame that has been used for the
-#' screening.
-#' @slot n_bins_angle numeric. Number of bins that were created anglewise.
-#' @slot n_bins_circle numeric. Number of bins that were created circlewise.
-#' @slot results_primary data.frame. Data.frame that contains the results of
-#' the model fitting per angle bin.
-#' @slot results data.frame. Data.frame that contains the summary of
-#' all gene-model fits across all angle bins.
-#' @slot sample character. The sample name.
-#' @slot summarize_with character. Either \emph{'mean'} or \emph{'median'}.
-#'
-#' @export
-#'
-SpatialAnnotationScreening <-  setClass(Class = "SpatialAnnotationScreening",
-                                        slots = list(
-                                          angle_span = "numeric",
-                                          annotation = "SpatialAnnotation",
-                                          binwidth = "numeric",
-                                          coords = "data.frame",
-                                          distance = "numeric",
-                                          info = "list",
-                                          method_padj = "character",
-                                          models = "data.frame",
-                                          n_bins_angle = "numeric",
-                                          n_bins_circle = "numeric",
-                                          results_by_angle = "data.frame",
-                                          results = "data.frame",
-                                          sample = "character",
-                                          summarize_with = "character"
-                                        ))
-
-
 # N -----------------------------------------------------------------------
 
 #' @title The `NumericAnnotation` - Class
@@ -556,6 +510,55 @@ SpatialTrajectory <- setClass(Class = "SpatialTrajectory",
                               contains = "Trajectory")
 
 
+#' @title The \code{SpatialAnnotationScreening} - Class
+#'
+#' @description S4 class that contains input for and output of the
+#' function \code{SpatialAnnotationScreening()}.
+#'
+#' @slot angle_span numeric. Vector of length two. Confines the area of interest
+#' by angle relative to the center of the image annotation.
+#' @slot binwidth numeric. The value with which the polygon that encircles
+#' the image annotation is consecutively expanded via \code{sf::st_buffer()},
+#' @slot coords data.frame. Coordinates data.frame of the sample.
+#' @slot annotation SpatialAnnotation. The spatial annotation chosen for the
+#' screening.
+#' @slot info list. Miscellaneous information.
+#' @slot method_padj character. The method with which p-values were adjusted.
+#' @slot models data.frame. The model data.frame that has been used for the
+#' screening.
+#' @slot n_bins_angle numeric. Number of bins that were created anglewise.
+#' @slot n_bins_circle numeric. Number of bins that were created circlewise.
+#' @slot results_primary data.frame. Data.frame that contains the results of
+#' the model fitting per angle bin.
+#' @slot results data.frame. Data.frame that contains the summary of
+#' all gene-model fits across all angle bins.
+#' @slot sample character. The sample name.
+#' @slot significance data.frame. Data.frame that contains the p-values for
+#' each variable.
+#' @slot summarize_with character. Either \emph{'mean'} or \emph{'median'}.
+#'
+#' @export
+#'
+SpatialAnnotationScreening <-  setClass(Class = "SpatialAnnotationScreening",
+                                        slots = list(
+                                          angle_span = "numeric",
+                                          annotation = "SpatialAnnotation",
+                                          binwidth = "numeric",
+                                          coords = "data.frame",
+                                          distance = "numeric",
+                                          info = "list",
+                                          method_padj = "character",
+                                          models = "data.frame",
+                                          n_bins_angle = "numeric",
+                                          n_bins_circle = "numeric",
+                                          results_by_angle = "data.frame",
+                                          results = "data.frame",
+                                          sample = "character",
+                                          significance = "data.frame",
+                                          summarize_with = "character"
+                                        ))
+
+
 #' @title The \code{SpatialTrajectoryScreening} - class
 #'
 #' @description S4 class that contains input for and output of the
@@ -584,11 +587,13 @@ SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
                                                   binwidth = "numeric",
                                                   coords = "data.frame",
                                                   id = "character",
+                                                  info = "list",
                                                   method_padj = "character",
                                                   models = "data.frame",
                                                   n_bins = "numeric",
                                                   results = "data.frame",
                                                   sample = "character",
+                                                  significance = "data.frame",
                                                   summarize_with = "character",
                                                   spatial_trajectory = "SpatialTrajectory"
                                                 ))

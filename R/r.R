@@ -1,5 +1,76 @@
 
 
+
+random_positions_with_periods <- function(vector, n) {
+
+  vector_length <- length(vector)
+
+  selected_values <- rep(NA, n)
+
+  if (n > vector_length) {
+    stop("Number of positions (n) exceeds vector length.")
+  }
+
+  while (any(is.na(selected_values))) {
+
+    period_length <- vector_length / 3
+
+    # Randomly select at least one position from each period
+    selected_indices <- c(
+      sample(1:floor(period_length), 1),              # First period
+      sample(floor(period_length) + 1:floor(2*period_length), 1),  # Second period
+      sample(floor(2*period_length) + 1:vector_length, 1)  # Third period
+    )
+
+    # Randomly select additional positions from the entire vector
+    remaining_indices <- sample(setdiff(1:vector_length, selected_indices), n - 3)
+
+    # Combine the selected indices
+    all_selected_indices <- c(selected_indices, remaining_indices)
+
+    # Extract values at the selected positions
+    selected_values <- vector[all_selected_indices]
+
+  }
+
+  return(selected_values)
+}
+
+random_positions_within_period <- function(vector, n, period = 1) {
+  if (period < 1 || period > 3) {
+    stop("Invalid period. Choose 1, 2, or 3.")
+  }
+
+  vector_length <- length(vector)
+
+  if (n > vector_length) {
+    stop("Number of positions (n) exceeds vector length.")
+  }
+
+  period_length <- vector_length / 3
+
+  # Determine the start and end indices for the chosen period
+  if (period == 1) {
+    start_index <- 1
+    end_index <- floor(period_length)
+  } else if (period == 2) {
+    start_index <- floor(period_length) + 1
+    end_index <- floor(2 * period_length)
+  } else {
+    start_index <- floor(2 * period_length) + 1
+    end_index <- vector_length
+  }
+
+  # Randomly select n positions within the chosen period
+  selected_indices <- sample(start_index:end_index, n)
+
+  # Extract values at the selected positions
+  selected_values <- vector[selected_indices]
+
+  return(selected_values)
+}
+
+
 #' @title Read coordinate data.frames
 #'
 #' @description Reads in coordinates data.frame from various platforms.
@@ -126,11 +197,11 @@ read_coords_xenium <- function(dir_coords){
 #'
 #' @export
 #'
-recBinwidth <- function(object, unit = NULL){
+recBinwidth <- function(object, unit = getDefaultUnit(object)){
 
   if(containsCCD(object)){
 
-    out <- getCCD(object, unit = getDefaultUnit(object))
+    out <- getCCD(object, unit = unit)
 
   } else {
 

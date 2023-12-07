@@ -2028,42 +2028,6 @@ getSpatAnnSummaryDf <- function(object,
 
 
 
-
-#' @rdname getImageDirLowres
-#' @export
-getImageDir <- function(object, name){
-
-  io <- getHistoImaging(object)
-
-  if(name %in% c("default", "highres", "lowres")){
-
-    out <- methods::slot(io, name = stringr::str_c("dir_", name))
-
-  } else {
-
-    if(base::length(io@dir_add) == 0){
-
-      stop("No additional image directories found.")
-
-    } else {
-
-      confuns::check_one_of(
-        input = name,
-        against = base::names(io@dir_add),
-        ref.opt.2 = "additional image directories",
-        fdb.opt = 2
-      )
-
-    }
-
-    out <- io@dir_add[[name]]
-
-  }
-
-  return(out)
-
-}
-
 #' @rdname getImageDirLowres
 #' @export
 getImageDirDefault <- function(object, fdb_fn = "warning", check = FALSE, ...){

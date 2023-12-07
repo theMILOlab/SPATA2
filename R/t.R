@@ -145,6 +145,112 @@ tab_surface_plots_app <- function(){shinydashboard::tabItem(tabName = "surface_p
 
 
 # te ----------------------------------------------------------------------
+
+
+test_sas_input <- function(object,
+                           id,
+                           distance,
+                           core,
+                           binwidth = recBinwidth(object),
+                           fdb_fn = "stop",
+                           verbose = TRUE){
+
+  unit <- getDefaultUnit(object)
+
+  distance <- as_unit(distance, unit = unit, object = object)
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+
+  span <- as.numeric(binwidth/distance)
+
+  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+
+  # test bin count
+  coords_df <-
+    getCoordsDfSA(object, id = id, distance = distance, binwidth = binwidth, verbose = FALSE) %>%
+    dplyr::filter(!rel_loc %in% {{rm_loc}})
+
+  bin_count <-
+    dplyr::group_by(coords_df, bins_dist) %>%
+    dplyr::tally() %>%
+    dplyr::mutate(perc = n/nrow(coords_df))
+
+  last_20p <- base::nrow(bin_count)*0.20
+  last_20p <- base::floor(last_20p)
+
+  threshold <- stats::median(utils::tail(bin_count$n, last_20p))
+
+  last_bin <- utils::tail(bin_count$n, 1)
+
+  res <- last_bin < threshold/2
+
+  if(base::isTRUE(res)){
+
+    distance_rounded <-
+      base::round(distance, digits = 7) %>%
+      base::as.character() %>%
+      stringr::str_c(., unit)
+
+    obs_unit <-
+      getSpatialMethod(object)@observational_unit %>%
+      stringr::str_c(., "s")
+
+    confuns::give_feedback(
+      msg =
+        glue::glue("Potentially problematic spatial distribution of {obs_unit} with `distance = {distance_rounded}`. Testing different screening parameters."),
+      verbose = verbose
+    )
+
+    distance_input <- distance
+    red_fct <- 1
+
+    while(base::isTRUE(res)){
+
+      red_fct <- red_fct - 0.01
+
+      distance <- distance * red_fct
+
+      coords_df <-
+        getCoordsDfSA(object, id = id, distance = distance, binwidth = binwidth, verbose = FALSE) %>%
+        dplyr::filter(!rel_loc %in% {{rm_loc}})
+
+      bin_count <-
+        dplyr::group_by(coords_df, bins_dist) %>%
+        dplyr::tally() %>%
+        dplyr::mutate(perc = n/nrow(coords_df))
+
+      last_20p <- base::nrow(bin_count)*0.20
+      last_20p <- base::floor(last_20p)
+
+      threshold <- stats::median(utils::tail(bin_count$n, last_20p))
+
+      last_bin <- utils::tail(bin_count$n, 1)
+
+      res <- last_bin < threshold/2
+
+    }
+
+    distance_suggested <- stringr::str_c(base::round(distance, digits = 7), unit)
+
+    confuns::give_feedback(
+      msg = glue::glue("Suggested distance: '{distance_suggested}'."),
+      fdb.fn = fdb_fn,
+      verbose = verbose
+    )
+
+  }
+
+
+  # return results
+  out <-
+    list(
+      distance = distance
+    )
+
+  return(out)
+
+}
+
+
 #' @keywords internal
 textInputWrapper <- function(inputId,
                              label = NULL,

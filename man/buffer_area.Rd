@@ -4,7 +4,7 @@
 \alias{buffer_area}
 \title{Buffer area}
 \usage{
-buffer_area(df, buffer, close_plg = TRUE)
+buffer_area(df, buffer, close_plg = TRUE, cvars = c("x", "y"))
 }
 \arguments{
 \item{df}{Data.frame with variables \emph{x} and \emph{y} describing the
@@ -16,6 +16,9 @@ of the polygon.}
 \item{buffer}{The distance by which to consecutively expand the
 area that covers the spatial annotation screening. Given to argument
 \code{dist} of function \code{sf::st_buffer()}.}
+
+\item{cvars}{Character vector of length two. The variable names that correspond
+to the x- and y-coordinates.}
 }
 \description{
 Buffers the area of a polygon.

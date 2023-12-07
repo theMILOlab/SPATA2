@@ -10,6 +10,7 @@ findOptimalDistanceSAS(
   variables,
   core = TRUE,
   binwidth = recBinwidth(object),
+  n_bins_angle = 12,
   threshold = 0.25
 )
 }
@@ -29,6 +30,9 @@ the screening process.}
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+
+\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
+(See details for more.)}
 }
 \description{
 This function suggests a value for the \code{distance}-parameter

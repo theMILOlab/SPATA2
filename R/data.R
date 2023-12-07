@@ -126,13 +126,6 @@
 "sc_deconvolution"
 
 
-#' List of scale factors for Visium input.
-#'
-#' @docType data
-#' @usage data(scale_factors)
-#'
-"scale_factors"
-
 #' A list of lists of spatial segmentations for specific `SPATA2`
 #' objects - available via the `SPATAData` package. Names of the list slots
 #' correspond to the sample names in variable  *sample* of `SPATAData::source_df`.

@@ -79,7 +79,7 @@ default_instructions_object <-
                clrsp = "inferno",
                colors = default_colors,
                complete = TRUE,
-               concavity = 1,
+               concavity = 2,
                display_facets = TRUE,
                display_image = TRUE,
                display_labels = TRUE,
@@ -742,6 +742,27 @@ model_formulas <-
     abrupt_descending = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
   )
 
+#' @export
+model_formulas_new <-
+  list(
+    # descending
+    descending_linearly = ~ model_descending(.x, dcl = 1, ro = c(0, 1)),
+    descending_gradually = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)),
+    descending_instantly = ~ model_descending(.x, dcl = 10, ro = c(0, 1)),
+    # ascending
+    ascending_linearly = ~ model_ascending(.x, incl = 1, ro = c(0, 1)),
+    ascending_gradually = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)) %>% rev(),
+    ascending_lately = ~ model_descending(.x, dcl = 10, ro = c(0, 1)) %>% rev(),
+    # peak
+    peak_sharp = ~ model_peak(.x, dos = 25, ro  = c(0, 1)),
+    peak_moderate = ~ model_peak(.x, dos = 50, ro = c(0, 1)),
+    peak_gradual = ~ model_peak(.x, dos = 100, ro = c(0, 1)),
+    # trough
+    trough_sharp = ~ model_trough(.x, dos = 25, ro  = c(0, 1)),
+    trough_moderate = ~ model_trough(.x, dos = 50, ro = c(0, 1)),
+    trough_gradual = ~ model_trough(.x, dos = 100, ro = c(0, 1))
+  )
+
 
 
 msg_scale_bar_bad_pos <-
@@ -832,15 +853,15 @@ pub_dropbox_links <- list(
 # NOTE: regular expressions partly depend on each other
 # they are not listed in alphabetical order
 
-# matches normal number: only digits (no points!!)
-# ignores unit-suffix -> use for extraction of value
-regex_number <- "^\\d{1,}(?!.*\\.)"
-
 # matches decimal number: digit, 1!point, at least one following digit
 # ignores unit-suffix -> use for extraction of value
-regex_dec_number <- "^\\d{1,}\\.{1}\\d{1,}"
+regex_dec_number <- "^-{0,1}\\d{1,}\\.{1}\\d{1,}"
 
-regex_scientific_notation <- "[0-9]*e(\\+|-)[0-9]*"
+# matches normal number: only digits (no points!!)
+# ignores unit-suffix -> use for extraction of value
+regex_number <- "^-{0,1}\\d{1,}(?!.*\\.)"
+
+regex_scientific_notation <- "-{0,1}[0-9]*e(\\+|-)[0-9]*"
 
 # matches either normal number or decimal number
 regex_num_value <-

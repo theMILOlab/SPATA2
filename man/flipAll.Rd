@@ -5,7 +5,7 @@
 \alias{flipCoordinates}
 \alias{flipCoordsDf}
 \alias{flipImage}
-\alias{flipImageAnnotations}
+\alias{flipSpatialAnnotations}
 \alias{flipSpatialTrajectories}
 \title{Mirror invert image and coordinates}
 \usage{
@@ -13,11 +13,11 @@ flipAll(object, axis, verbose = FALSE)
 
 flipCoordinates(object, axis, verbose = FALSE)
 
-flipCoordsDf(object, axis, verbose = NULL)
+flipCoordsDf(object, axis, verbose = FALSE)
 
-flipImage(object, axis, track = FALSE, verbose = FALSE)
+flipImage(object, axis, img_name = NULL, verbose = FALSE)
 
-flipImageAnnotations(object, axis, verbose = NULL)
+flipSpatialAnnotations(object, axis, verbose = NULL)
 
 flipSpatialTrajectories(object, axis, verbose = NULL)
 }
@@ -33,11 +33,8 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{track}{Logical value. If \code{TRUE}, changes regarding the image
-justification (rotations and flipping) are tracked. Assuming that
-image versions of different resolution are stored on your device with the same
-justification as the primarily read image these changes in justification
-can be automatically applied if the image is exchanged via \code{exchangeImage()}.}
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 }
 \description{
 The \verb{flip*()} family mirror inverts the current image
@@ -55,13 +52,12 @@ The \verb{flip*()} functions can be used to flip the complete \code{SPATA2}
 object or to flip single aspects.
 
 \itemize{
-\item{\code{flipAll()}:}{ Flips the image as well as every single spatial aspect.
-\strong{Always tracks the justification.}}
+\item{\code{flipAll()}:}{ Flips everything.}
 \item{\code{flipImage()}:}{ Flips only the image.}
-\item{\code{flipCoordinates()}:}{ Flips the coordinates data.frame, image annotations
+\item{\code{flipCoordinates()}:}{ Flips the coordinates data.frame, spatial annotations
 and spatial trajectories.}
 \item{\code{flipCoordsDf()}:}{ Flips the coordinates data.frame.}
-\item{\code{flipImageAnnotations()}:}{ Flips image annotations.}
+\item{\code{flipSpatialAnnotations()}:}{ Flips spatial annotations.}
 \item{\code{flipSpatialTrajectories()}:}{ Flips spatial trajectories.}
 }
 }

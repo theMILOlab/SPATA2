@@ -108,6 +108,21 @@ close_area_df <- function(df){
 #' @export
 compute_angle_between_two_points <- function(p1, p2){
 
+  p1 <- base::as.numeric(p1)[1:2]
+  p2 <- base::as.numeric(p2)[1:2]
+
+  if(base::is.null(base::names(p1))){
+
+    base::names(p1) <- c("x", "y")
+
+  }
+
+  if(base::is.null(base::names(p2))){
+
+    base::names(p2) <- c("x", "y")
+
+  }
+
   angle <- base::atan2(y = (p2["y"] - p1["y"]), x = (p2["x"] - p1["x"])) * 180/pi
 
   if(angle >= 0){
@@ -136,8 +151,7 @@ compute_angle_between_two_points <- function(p1, p2){
 
   }
 
-
-  return(angle)
+  return(base::unname(angle))
 
 }
 
@@ -199,6 +213,34 @@ compute_avg_vertex_distance <- function(polygon_df) {
 }
 
 
+compute_corr <- function(gradient, model){
+
+  cor.test(x = gradient, y = model)$estimate
+
+}
+
+#' Compute Curve Irregularity
+#'
+#' Calculate the irregularity of a curve based on the total variation of its values.
+#'
+#' @param curve A numeric vector representing a curve or sequence of values.
+#'
+#' @return A numeric value indicating the irregularity of the curve.
+#'
+#' @details This function computes the irregularity of a given curve by summing
+#' the absolute differences between adjacent values in the curve. A lower irregularity
+#' value suggests a smoother, less irregular curve, while a higher value indicates
+#' a more irregular pattern.
+#'
+#' @examples
+#' curve <- c(1, 2, 3, 2, 1)
+#' irregularity <- compute_curve_irregularity(curve)
+#'
+compute_curve_irregularity <- function(curve) {
+
+  return(sum(abs(diff(curve)))/length(curve))
+
+}
 
 #' @title Compute the distance between to points
 #'
@@ -215,6 +257,37 @@ compute_distance <- function(starting_pos, final_pos){
 
   # compute effective distance traveled ( = value of direction vector)
   base::sqrt(drvc[1]^2 + drvc[2]^2)
+
+}
+
+
+#' @title Compute loess deviation score
+#'
+#' @description Fits a loess model to a curve and quantifies its noisiness by
+#' averaging the absolute residuals of the curve to the fit.
+#'
+#' @param y Expression gradient.
+#' @param span Given to `span` of `stats::loess()`.
+#'
+#' @return Numeric value.
+#' @export
+#'
+compute_lds <- function(gradient, span = 0.5) {
+
+  x <- 1:base::length(gradient)
+  y <- gradient
+
+  # fit a loess curve
+  loess_fit <- stats::loess(y ~ x, span = span)
+
+  # predict values using the loess fit
+  predicted <- stats::predict(loess_fit, x)
+
+  # calculate residuals
+  residuals <- base::abs(y - predicted)
+
+  # return the mean of the residuals as a measure of noisiness
+  return(base::mean(residuals))
 
 }
 
@@ -266,6 +339,69 @@ compute_overlap_st_polygon <- function(st_poly1, st_poly2){
 
 }
 
+
+
+#' @title Compute p-value based on curve irregularity scores
+#'
+#' @description Compute p-value based on curve irregularity scores
+#'
+#' @param observed Numeric vector. The observed gradient.
+#' @param random A vector of randomly generated irregularity scores
+#' against which to compare the observed one.
+#'
+#' @return A numeric value ranging between 0-1 (inclusive).
+#' @export
+#'
+#'
+#' @examples
+#'
+#' random_lds <-
+#'    map_dbl(
+#'      .x = 1:1000,
+#'      .f = function(i){
+#'
+#'         set.seed(123*i)
+#'
+#'         rg <- runif(20, min = 0, max = 1)
+#'
+#'         compute_lds(rg)
+#'
+#'         })
+#'
+#'  gradient <- scales::rescale(1:20, to = c(0,1))
+#'
+#'  gradient_lds <- compute_lds(gradient)
+#'
+#'  compute_sgs_pvalue(gradient, random = random_lds)
+#'
+compute_sgs_pvalue <- function(gradient, random, span = 0.5){
+
+  observed_score <- compute_lds(gradient = gradient, span = span)
+
+  p_value <- base::sum(random <= observed_score) / base::length(random)
+
+  # sets 20 as the mininmum number of bins to not get punished
+  p_fct <- base::length(gradient) / 20
+
+  p_value <- p_value / p_fct
+
+  return(p_value)
+
+}
+
+
+# compute spearmans rho
+compute_rho <- function(gradient, model){
+
+  base::suppressWarnings({
+
+    stats::cor.test(x = gradient, y = model, method = "spearman")$estimate %>%
+      base::unname()
+
+  })
+
+}
+
 compute_rmse <- function(gradient, model) {
 
   errors <- gradient - model
@@ -276,6 +412,35 @@ compute_rmse <- function(gradient, model) {
   return(rmse)
 
 }
+
+# compute kendalls tau
+compute_tau <- function(gradient, model){
+
+  base::suppressWarnings({
+
+    stats::cor.test(x = gradient, y = model, method = "kendall")$estimate %>%
+      base::unname()
+
+  })
+
+}
+
+# compute total variation
+compute_total_variation <- function(gradient){
+
+  base::sum(base::abs(base::diff(gradient)))
+  #base::sum(diff(gradient)^2)
+
+}
+
+# compute relative variation
+compute_relative_variation <- function(gradient){
+
+  base::sum(base::diff(gradient))
+
+}
+
+# compute
 
 
 # computeC ----------------------------------------------------------------

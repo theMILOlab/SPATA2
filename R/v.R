@@ -337,6 +337,94 @@ version_string <- function(v){
 }
 
 
+
+#' Calculate Distances Between Visium Spots
+#'
+#' This function calculates the pairwise distances between specified Visium spots
+#' based on their x and y coordinates.
+#'
+#' @param type A character vector specifying the type of Visium platform. One of "small" or "large". Default is "small".
+#' @param bcs_o A character vector of barcodes specifying the origin spots. If NULL (default), all barcodes from the specified type are used.
+#' @param bcs_n A character vector of barcodes specifying the neighbor spots. If NULL (default), all barcodes from the specified type are used.
+#' @param nnn A numeric value specifying the number of nearest neighbors to consider. If NULL (default), all neighbors are considered.
+#'
+#' @return A data frame containing the pairwise distances between the specified Visium spots. The data frame contains the following variables:
+#' \itemize{
+#'   \item {\strong{bcs_o}}: Barcode of the origin spot.
+#'   \item {\strong{bcs_n}}: Barcode of the neighbor spot.
+#'   \item {\strong{xo}}: x-coordinate of the origin spot.
+#'   \item {\strong{yo}}: y-coordinate of the origin spot.
+#'   \item {\strong{xn}}: x-coordinate of the neighbor spot.
+#'   \item {\strong{yn}}: y-coordinate of the neighbor spot.
+#'   \item {\strong{distance}}: Calculated distance between the origin and neighbor spots.
+#' }
+#'
+#' @export
+
+visiumSpotDistances <- function(type = c("small", "large"),
+                                bcs_o = NULL,
+                                bcs_n = NULL,
+                                nnn = NULL){
+
+  type <- type[1]
+
+  confuns::check_one_of(
+    input = type,
+    against = c("small", "large")
+  )
+
+  if(type == "small"){
+
+    coords_df <-
+      dplyr::select(
+        .data = visium_spots$VisiumSmall,
+        barcodes = barcode,
+        x = imagecol,
+        y = imagerow
+      )
+
+  } else {
+
+    coords_df <-
+      dplyr::select(
+        .data = visium_spots$VisiumLarge,
+        barcodes = barcode,
+        x = pxl_col_in_fullres,
+        y = pxl_row_in_fullres
+      )
+
+  }
+
+  # o origin, n neighbor
+  if(!base::is.character(bcs_o)){ bcs_o <- coords_df$barcodes }
+  if(!base::is.character(bcs_n)){ bcs_n <- coords_df$barcodes }
+
+  bcs_o <- base::unique(bcs_o)
+  bcs_n <- base::unique(bcs_n)
+
+  distance_df <-
+    tidyr::expand_grid(bcs_o, bcs_n) %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bcs_o = barcodes, xo = x, yo = y), by = "bcs_o") %>%
+    dplyr::left_join(x = ., y = dplyr::select(coords_df, bcs_n = barcodes, xn = x, yn = y), by = "bcs_n") %>%
+    dplyr::mutate(distance = sqrt((xn - xo)^2 + (yn - yo)^2))
+
+  if(base::is.numeric(nnn)){
+
+    confuns::give_feedback(
+      msg = "Arranging barcodes.",
+      verbose = verbose
+    )
+
+    distance_df <-
+      dplyr::group_by(distance_df, bcs_o) %>%
+      dplyr::slice_min(order_by = distance, with_ties = with_ties)
+
+  }
+
+  return(distance_df)
+
+}
+
 # vselect -----------------------------------------------------------------
 
 #' @title Select vector with tidyselect functions

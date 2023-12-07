@@ -4,7 +4,7 @@
 \alias{recBinwidth}
 \title{Platform dependent binwidth recommendation}
 \usage{
-recBinwidth(object, unit = NULL)
+recBinwidth(object, unit = getDefaultUnit(object))
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

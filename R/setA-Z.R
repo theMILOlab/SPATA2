@@ -206,37 +206,6 @@ setCnvResults <- function(object, cnv_list, ...){
 #' @inherit set_dummy params return details
 #' @export
 
-setCoordsDf <- function(object, coords_df, ...){
-
-  check_object(object)
-
-  confuns::check_data_frame(
-    df = coords_df,
-    var.class = list("barcodes" = "character",
-                     "x" = c("integer", "double", "numeric"),
-                     "y" = c("integer", "double", "numeric")),
-    ref = "coords_df"
-  )
-
-  coords_df <- dplyr::mutate(.data = coords_df, sample = getSampleName(object))
-
-  object@coordinates[[1]] <- coords_df
-
-  if(containsHistoImaging(object)){
-
-    imaging <- getHistoImaging(object)
-
-    imaging@coordinates <- coords_df
-
-    object <- setHistoImaging(object, imaging = imaging)
-
-  }
-
-  return(object)
-
-}
-
-
 setGeneric(name = "setCoordsDf", def = function(object, ...){
 
   standardGeneric(f = "setCoordsDf")
@@ -1068,6 +1037,32 @@ setMethod(
     imaging@annotations[[spat_ann@id]] <- spat_ann
 
     object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname setSpatialAnnotaiton
+#' @export
+setGeneric(name = "setSpatialAnnotations", def = function(object, ...){
+
+  standardGeneric(f = "setSpatialAnnotations")
+
+})
+
+#' @rdname setSpatialAnnotaiton
+#' @export
+setMethod(
+  f = "setSpatialAnnotations",
+  signature = "spata2",
+  definition = function(object, spat_anns, ...){
+
+    for(sa in spat_anns){
+
+      object <- setSpatialAnnotation(object, spat_ann = sa)
+
+    }
 
     return(object)
 

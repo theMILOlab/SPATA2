@@ -490,8 +490,6 @@ joinWithGeneSets <- function(object,
 
     base::rownames(spata_df) <- spata_df$barcodes
 
-    assign("spata_df", spata_df, envir = .GlobalEnv)
-
     x <- dplyr::pull(spata_df, var = x)
     y <- dplyr::pull(spata_df, var = y)
     smooth_ref <- " and smoothing "
@@ -555,7 +553,7 @@ joinWithGeneSets <- function(object,
     p_found_genes <- base::round(n_found_genes/n_genes, digits = 2)
 
     # make sure that percentage is equal to or higher than the threshold
-    if(ignore == T){
+    if(TRUE){
 
       if(p_found_genes >= filter_gs){
 
@@ -568,21 +566,39 @@ joinWithGeneSets <- function(object,
           warning(glue::glue("Only one gene ('{genes}') found of gene set '{gs}'."))
 
           geneset_vls <-
-            base::as.matrix(rna_assay[genes,]) %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = gene_sets[i]) %>%
-            tibble::rownames_to_column(var = "barcodes")
+            base::tryCatch({
+
+              base::as.matrix(rna_assay[genes, ]) %>%
+                base::as.data.frame() %>%
+                magrittr::set_colnames(value = gene_sets[i]) %>%
+                tibble::rownames_to_column(var = "barcodes")
+
+            }, error = function(error){
+
+              warning(glue::glue("Error at {gene_sets[i]}: {error}"))
+
+              base::data.frame(barcodes = colnames(rna_assay))
+
+            })
 
         } else if(method_gs == "mean"){
 
           geneset_vls <-
-            base::as.matrix(rna_assay[genes, ]) %>%
-            base::colMeans() %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = gene_sets[i]) %>%
-            tibble::rownames_to_column(var = "barcodes")
+            base::tryCatch({
 
-          assign("geneset_vls", geneset_vls, envir = .GlobalEnv)
+              base::as.matrix(rna_assay[genes, ]) %>%
+                base::colMeans() %>%
+                base::as.data.frame() %>%
+                magrittr::set_colnames(value = gene_sets[i]) %>%
+                tibble::rownames_to_column(var = "barcodes")
+
+            }, error = function(error){
+
+              warning(glue::glue("Error at {gene_sets[i]}: {error}"))
+
+              base::data.frame(barcodes = colnames(rna_assay))
+
+            })
 
         } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
 
@@ -602,49 +618,25 @@ joinWithGeneSets <- function(object,
 
         }
 
-      } else {
+        # smoothing
+        if(base::isTRUE(smooth)){
 
+          variable <- dplyr::pull(.data = geneset_vls, var = gene_sets[i])
 
-        if(base::length(genes) == 1){
+          x <- spata_df[geneset_vls$barcodes, ][["x"]]
+          y <- spata_df[geneset_vls$barcodes, ][["y"]]
 
-          gs <- gene_sets[i]
+          model <- stats::loess(formula = variable ~ x*y, span = smooth_span/10)
 
-          warning(glue::glue("Only one gene found of gene set '{gs}'."))
-
-          geneset_vls <-
-            base::as.data.frame(rna_assay[genes,]) %>%
-            magrittr::set_colnames(value = gene_sets[i]) %>%
-            tibble::rownames_to_column(var = "barcodes")
-
-        } else {
-
-          geneset_vls <-
-            base::colMeans(rna_assay[genes, ]) %>%
-            base::as.data.frame() %>%
-            magrittr::set_colnames(value = gene_sets[i]) %>%
-            tibble::rownames_to_column(var = "barcodes")
+          geneset_vls[, gene_sets[i]] <- stats::predict(model)
 
         }
 
-      }
-
-      # smoothing
-      if(base::isTRUE(smooth)){
-
-        variable <- dplyr::pull(.data = geneset_vls, var = gene_sets[i])
-
-        x <- spata_df[geneset_vls$barcodes, ][["x"]]
-        y <- spata_df[geneset_vls$barcodes, ][["y"]]
-
-        model <- stats::loess(formula = variable ~ x*y, span = smooth_span/10)
-
-        geneset_vls[, gene_sets[i]] <- stats::predict(model)
+        # gradually add gene-set columns to joined_df
+        joined_df <-
+          dplyr::left_join(x = joined_df, y = geneset_vls, by = "barcodes")
 
       }
-
-      # gradually add gene-set columns to joined_df
-      joined_df <-
-        dplyr::left_join(x = joined_df, y = geneset_vls, by = "barcodes")
 
     } else {
 
@@ -665,6 +657,10 @@ joinWithGeneSets <- function(object,
   # 3. Normalize if specified -----------------------------------------------
 
   if(base::isTRUE(normalize)){
+
+    gene_sets <- gene_sets[gene_sets %in% base::colnames(joined_df)]
+
+    assign("joined_df", joined_df, envir = .GlobalEnv)
 
     # normalize
     joined_df <-

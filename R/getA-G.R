@@ -932,8 +932,14 @@ setMethod(
 #' annotation to the coordinates data.frame. See details for more.
 #'
 #' @inherit spatialAnnotationScreening params
+#' @param dist_unit Character value. Unit in which the distance is computed.
+#' Defaults to *pixel*.
+#' @param coords_df Data.frame. If `NULL`, the default, the coordinates data.frame obtained
+#' via `getCoordsDf()` is used. Else other data.frame of observations can be put in
+#' relation to the spatial annotation. Requires numeric variables named *x* and *y* in
+#' pixel units.
 #' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
-#' if not empty.
+#' if not empty and `coords_df` is `NULL`.
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame.
@@ -943,6 +949,7 @@ setMethod(
 #'
 #' \itemize{
 #'  \item{*dist*:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
+#'  \item{*dist_unit*:}{ Character. The unit in which the distance is computed.}
 #'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `binwidth`.}
 #'  \item{*angle*:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
 #'  \item{*bins_angle*:}{ Factor. The bin the data point was assigned to based on its *angle* value.}
@@ -960,28 +967,20 @@ getCoordsDfSA <- function(object,
                           n_bins_dist = NA_integer_,
                           angle_span = c(0,360),
                           n_bins_angle = 1,
-                          verbose = NULL,
                           dist_unit = "px",
+                          coords_df = NULL,
+                          variables = NULL,
+                          format = "wide",
+                          verbose = NULL,
                           ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
 
-
   # check and process input -------------------------------------------------
 
-  input_list <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      object = object,
-      verbose = verbose
-    )
-
-  distance <- input_list$distance
-  n_bins_dist <- input_list$n_bins_dist
-  binwidth  <- input_list$binwidth
+  distance <- as_unit(distance, unit = dist_unit, object = object)
+  binwidth  <- as_unit(binwidth, unit = dist_unit, object = object)
 
   angle_span <- c(from = angle_span[1], to = angle_span[2])
   range_span <- base::range(angle_span)
@@ -996,16 +995,26 @@ getCoordsDfSA <- function(object,
 
   }
 
-
   # obtain required data ----------------------------------------------------
 
-  coords_df <- getCoordsDf(object)
+  if(base::is.null(coords_df)){
+
+    external_coords <- FALSE
+    coords_df <- getCoordsDf(object)
+
+  } else {
+
+    external_coords <- TRUE
+    confuns::check_data_frame(
+      df = coords_df,
+      var.class = list(x = "numeric", y = "numeric", barcodes = "character")
+    )
+
+  }
 
   spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
-  spat_ann_bcs <- spat_ann@misc$barcodes
 
-  outline_df <- getSpatAnnOutlineDf(object, id = id)
-
+  outline_df_orig <- getSpatAnnOutlineDf(object, id = id)
 
   # distance ----------------------------------------------------------------
 
@@ -1014,15 +1023,35 @@ getCoordsDfSA <- function(object,
 
   outline_df <-
     increase_polygon_vertices(
-      polygon = outline_df[,c("x", "y")],
+      polygon = outline_df_orig[,c("x", "y")],
       avg_dist = avg_dist/4
     )
+
+  # obtain obs inside polygon
+  if(external_coords){
+
+    res <-
+      sp::point.in.polygon(
+        point.x = coords_df[["x"]],
+        point.y = coords_df[["y"]],
+        pol.x = outline_df_orig[["x"]],
+        pol.y = outline_df_orig[["y"]]
+      )
+
+    spat_ann_bcs <- coords_df[res %in% c(1,2,3), ][["barcodes"]]
+
+  } else {
+
+    spat_ann_bcs <- spat_ann@misc$barcodes
+
+  }
 
   # compute distance to closest vertex
   nn_out <-
     RANN::nn2(
       data = base::as.matrix(outline_df),
       query = base::as.matrix(coords_df[,c("x", "y")]),
+      searchtype = "priority",
       k = 1
     )
 
@@ -1033,7 +1062,7 @@ getCoordsDfSA <- function(object,
 
     if(dist_unit %in% validUnitsOfLengthSI()){
 
-      # provide as numeric value cause dist is just scaled down
+      # provide as numeric value cause dist is scaled down
       binwidth <-
         as_unit(input = binwidth, unit = dist_unit, object = object) %>%
         extract_value()
@@ -1064,14 +1093,15 @@ getCoordsDfSA <- function(object,
   coords_df_neg <-
     dplyr::filter(coords_df, dist < 0) %>%
     dplyr::mutate(
-      bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE))
+      bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE)
+      )
 
   # merge
   new_levels <-
     c(
       base::levels(coords_df_neg$bins_dist),
       base::levels(coords_df_pos$bins_dist),
-      "outside"
+      "periphery"
     )
 
   coords_df_merged <-
@@ -1080,11 +1110,11 @@ getCoordsDfSA <- function(object,
       bins_dist = base::as.character(bins_dist),
       bins_dist =
         dplyr::case_when(
-          dist > {{distance}} ~ "outside",
+          dist > {{distance}} ~ "periphery",
           TRUE ~ bins_dist
         ),
       bins_dist = base::factor(bins_dist, levels = new_levels),
-      rel_loc = dplyr::if_else(dist < 0, true = "core", false = "periphery")
+      rel_loc = dplyr::if_else(dist < 0, true = "core", false = "environment")
     )
 
   # angle -------------------------------------------------------------------
@@ -1207,28 +1237,141 @@ getCoordsDfSA <- function(object,
 
   }
 
-  sas_df <- prel_angle_bin_df
+  sas_df <-
 
   # relative location
-  sas_df <-
+  coords_df_sa <-
     dplyr::mutate(
-      .data = sas_df,
+      .data = prel_angle_bin_df,
       rel_loc = dplyr::case_when(
-        dist > {{distance}} ~ "outside",
-        !base::round(angle) %in% range_vec ~ "outside",
+        dist > {{distance}} ~ "periphery",
+        !base::round(angle) %in% range_vec ~ "periphery",
         TRUE ~ rel_loc
-      )
+      ) %>%
+        base::factor(levels = c("core", "environment", "periphery"))
     )
 
-  if(!purrr::is_empty(x = list(...))){
+  if(!external_coords && !base::is.null(variables)){
 
-    sas_df <- joinWithVariables(object = object, spata_df = sas_df, verbose = verbose, ...)
+    coords_df_sa <-
+      joinWithVariables(
+        object = object,
+        spata_df = coords_df_sa,
+        variables = variables,
+        verbose = verbose,
+        ...
+        )
+
+    if(format == "long"){
+
+      var_order <- base::unique(variables)
+
+      coords_df_sa <-
+        tidyr::pivot_longer(
+          data = coords_df_sa,
+          cols = dplyr::all_of(variables),
+          names_to = "variables",
+          values_to = "values"
+        ) %>%
+        dplyr::mutate(variables = base::factor(variables, levels = {{var_order}}))
+
+    }
 
   }
 
-  return(sas_df)
+  return(coords_df_sa)
 
 }
+
+
+#' @rdname getCoordsDfSA
+#' @export
+getCoordsDfST <- function(object,
+                          id = idST(object),
+                          binwidth = recBinwidth(object),
+                          n_bins = NA_integer_,
+                          width = NULL,
+                          dist_unit = "px",
+                          variables = NULL,
+                          format = "wide",
+                          verbose = NULL,
+                          ...){
+
+  # scale distance
+  if(dist_unit %in% validUnitsOfLengthSI()){
+
+    scale_fct <-
+      getPixelScaleFactor(object, unit = dist_unit) %>%
+      base::as.numeric()
+
+  } else {
+
+    scale_fct <- 1
+
+  }
+
+  projection_df <- getProjectionDf(object, id = id, width = width)
+
+  # merge data.frames
+  coords_df <-
+    dplyr::left_join(
+      x = getCoordsDf(object),
+      y = projection_df,
+      by = "barcodes"
+    ) %>%
+    dplyr::mutate(
+      dist = projection_length * scale_fct,
+      dist_unit = {{dist_unit}},
+      rel_loc = dplyr::if_else(base::is.na(dist), true = "outside", false = "inside")
+    )
+
+  # how many bins
+  if(base::is.na(n_bins)){
+
+    binwidth <-
+      as_unit(input = binwidth, object = object, unit = dist_unit) %>%
+      base::as.numeric()
+
+    n_bins <- base::ceiling(base::max(coords_df[["dist"]], na.rm = TRUE) / binwidth)
+
+  }
+
+  coords_df[["bins_dist"]] <- base::cut(coords_df[["dist"]], breaks = n_bins)
+  coords_df[["bins_order"]] <- base::as.numeric(coords_df[["bins_dist"]])
+
+  if(base::is.character(variables)){
+
+    coords_df <-
+      joinWithVariables(
+        object = object,
+        spata_df = coords_df,
+        variables = variables,
+        ...
+      )
+
+    if(format == "long"){
+
+      var_order <- base::unique(variables)
+
+      coords_df <-
+        tidyr::pivot_longer(
+          data = coords_df,
+          cols = dplyr::all_of(variables),
+          names_to = "variables",
+          values_to = "values"
+        ) %>%
+        dplyr::mutate(
+          variables = base::factor(variables, levels = {{var_order}})
+        )
+
+    }
+
+  }
+
+  return(coords_df)
+
+}
+
 
 #' @title Obtain coordinates matrix
 #'

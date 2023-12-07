@@ -1,7 +1,6 @@
 
 
 
-
 # save --------------------------------------------------------------------
 
 #' @rdname saveSpataObject
@@ -829,6 +828,14 @@ shift_smrd_projection_df <- function(smrd_projection_df,
 # show --------------------------------------------------------------------
 
 #' @export
+setMethod(f = "show", signature = "ANY", definition = function(object){
+
+  stringr::str_c("An object of class '", base::class(object), "'.") %>%
+    base::writeLines()
+
+})
+
+#' @export
 setMethod(f = "show", signature = "spata2", definition = function(object){
 
   num_samples <- base::length(getSampleNames(object))
@@ -838,7 +845,6 @@ setMethod(f = "show", signature = "spata2", definition = function(object){
   base::print(glue::glue("An object of class 'spata2' that contains {num_samples} {sample_ref} named '{samples}'."))
 
 })
-
 
 #' @export
 setMethod(f = "show", signature = "ImageAnnotation", definition = function(object){
@@ -860,6 +866,18 @@ setMethod(f = "show", signature = "ImageAnnotation", definition = function(objec
   writeLines(
     glue::glue(
       "An object of class 'ImageAnnotation' named '{object@id}'. Tags: {tags}."
+    )
+  )
+
+})
+
+#' @export
+setMethod(f = "show", signature = "SpatialAnnotationScreening", definition = function(object){
+
+
+  writeLines(
+    glue::glue(
+      "An object of class 'SpatialAnnotationScreening'."
     )
   )
 
@@ -1029,6 +1047,9 @@ showModels <- function(input = 100,
                        model_subset = NULL,
                        model_remove = NULL,
                        model_add = NULL,
+                       noise_level = 0,
+                       noise = NULL,
+                       seed = 123,
                        pretty_names = FALSE,
                        x_axis_arrow = TRUE,
                        verbose = NULL,
@@ -1040,6 +1061,9 @@ showModels <- function(input = 100,
       model_subset = model_subset,
       model_remove = model_remove,
       model_add = model_add,
+      noise_level = noise_level,
+      noise = noise,
+      seed = seed,
       verbose = verbose
     ) %>%
     dplyr::rename_with(.fn = ~ stringr::str_remove(.x, "^p_")) %>%
@@ -1084,6 +1108,961 @@ showModels <- function(input = 100,
 
 }
 
+
+
+# sim ---------------------------------------------------------------------
+
+
+#' @title Expression pattern simulation
+#'
+#' @description Simulates expression pattern by modelling expression dependent
+#' on the distance to a spatial annotation.
+#'
+#' @inherit spatialAnnotationScreening params
+#' @param simulations A list of *simulation lists*. A simulations list is a list
+#' that contains at least three slots that provide instructions for a set of
+#' simulations:
+#'
+#' \itemize{
+#'  \item{id}{ Character value. The overall ID of the simulation.}
+#'  \item{n}{ Integer. The number of simulations.}
+#'  \item{model} Character value. The name of the model based on which you want
+#'  to simulate the expression.
+#'  }
+#'
+#' A simulation list can have an additional slot called *noise_levels* which,
+#' if present, overwrites the input for `noise_levels` for the specific simulation.
+#'
+#' @param noise_levels A vector of integers between 0-100 (inclusive). Indicate
+#' the respective levels of noise to be added to each simulation in percent.
+#' 0 indicates no noise. 100 indicates only noise.
+#' @param range_sim The range of the output simulation values.
+#' @param range_random The range of the values randomly assigned to areas
+#' outside of the area of interest.
+#' @param seed Numeric value, given to `set.seed()`.
+#' @param npref Prefix for the simulations. Defaults to SG (simulated gene.)
+#' @param nsep Character value with which to separate the aspects that
+#' build the name of each simulation.
+#'
+#' @return Matrix with rownames corresponding to the simulation names and
+#' colnames corresponding to the barcodes of the object.
+#'
+#' @details Simulation names are created according to the function call
+#' `stringr::str_c(npref, nsep, "NP", nl, nsep, sim_id, nsep, n, sep = "")`.
+#' Where `nl` is the noise level of the simulation, `sim_id` corresponds to
+#' the slot *id* of the simulation list and `n` is the index of the simulation
+#' in case slot *n* of the simulation instruction is bigger than one.
+#'
+#' @export
+#'
+
+simulate_expression_pattern_sas <- function(object,
+                                            id,
+                                            simulations,
+                                            core,
+                                            binwidth = recBinwidth(object),
+                                            distance = distToEdge(object, id),
+                                            angle_span = c(0, 360),
+                                            noise_levels = seq(0,100, length.out = 21),
+                                            noise_types = c("ed", "ep", "fp", "cb"),
+                                            range_sim = c(0,1),
+                                            range_random = base::range(range_sim),
+                                            model_add = NULL,
+                                            seed = 123,
+                                            npref = "SE",
+                                            nsep = ".",
+                                            verbose = TRUE){
+
+  confuns::check_one_of(
+    input = noise_types,
+    against = c("ed", "ep", "fp", "cb")
+  )
+
+  coords_df <-
+    getCoordsDfSA(
+      object = object,
+      id = id,
+      binwidth = binwidth,
+      distance = distance,
+      angle_span = angle_span,
+      verbose = verbose
+    )
+
+  if(base::isFALSE(core)){
+
+    rm_loc <- c("core", "outside")
+
+  } else {
+
+    rm_loc <- "outside"
+
+  }
+
+  # basis for simulation
+  coords_df_sim <-
+    dplyr::filter(coords_df, !rel_loc %in% {{rm_loc}}) %>%
+    dplyr::mutate(bins_order = base::droplevels(bins_dist) %>% base::as.numeric())
+
+  # gets random values
+  coords_df_random <-
+    dplyr::filter(coords_df, rel_loc %in% {{rm_loc}})
+
+  # create model data.frame
+  all_models <-
+    purrr::map_chr(.x = simulations, .f = ~ .x$model) %>%
+    base::unname()
+
+  model_df <-
+    create_model_df(
+      input = dplyr::n_distinct(coords_df_sim$bins_order),
+      var_order = "bins_order",
+      model_subset = all_models,
+      model_add = model_add,
+      verbose = FALSE
+    ) %>%
+    dplyr::select(bins_order, dplyr::all_of(all_models)) %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = dplyr::all_of(all_models),
+        .fns = ~ scales::rescale(x = .x, to = {{range_sim}})
+      )
+    )
+
+
+  # prepare loops
+  loop_instructions <-
+    purrr::map_df(
+      .x = simulations,
+      .f = function(sim){
+
+        nls <- sim$noise_levels
+
+        if(is.null(nls)){
+
+          nls <- noise_levels
+
+        }
+
+        tidyr::expand_grid(
+          id = sim$id,
+          model = sim$model,
+          n = 1:sim$n,
+          nls = nls
+        )
+
+      }
+    ) %>%
+    dplyr::group_by(id, model, n) %>%
+    dplyr::arrange(nls, .by_group = TRUE) %>%
+    dplyr::ungroup()
+
+  n_bcs <- base::nrow(coords_df_sim)
+  n_bins <- base::max(model_df[["bins_order"]])
+  n_sim_runs <- base::nrow(loop_instructions)
+
+  # run loop
+  noise_types_pretty <-
+    c("ed" = "equally distributed",
+      "ep" = "equally punctuated",
+      "fp" = "focally punctuated",
+      "cb" = "combined"
+    )[noise_types]
+
+  ref <- confuns::scollapse(noise_types_pretty, sep = ", ", last = " and ")
+
+  n_sims <-
+    dplyr::distinct(loop_instructions, id, n, nls) %>%
+    base::nrow()
+
+  confuns::give_feedback(
+    msg = glue::glue("Iterating over {n_sims} simulations for {ref} noise."),
+    verbose = verbose
+  )
+
+  coords_df_sim <- # merge models (noise is created during the loop)
+    dplyr::left_join(x = coords_df_sim, y = model_df, by = "bins_order")
+
+  if("fp" %in% noise_types){
+
+    coords_df_sim <-
+      add_grid_variable(coords_df_sim, nr = 4, grid_name = "x.grid.temp.x")
+
+  }
+
+  pb <- confuns::create_progress_bar(total = n_sim_runs)
+
+  for(i in 1:base::nrow(loop_instructions)){
+
+    ##### ----- 0. general prep
+    pb$tick()
+
+    # assign instructions
+    model_name <- loop_instructions$model[i]
+    n <- loop_instructions$n[i]
+    nl <- loop_instructions$nls[i]
+    sim_id <- loop_instructions$id[i]
+
+    #run = combination of model sim with all noise levels
+    seed_run <- seed*n
+
+    # if added are equal to 1
+    noise_scale_fct <- (nl/100)
+    model_scale_fct <- (1-(nl/100))
+
+    # create random noise vector for this run
+    base::set.seed(seed_run)
+    coords_df_sim[["x.random.noise.temp.x"]] <-
+      stats::runif(n = n_bcs, min = base::max(range_sim)*-1, max = max(range_sim))
+      # min = max()*-1 to create  values, too, that are subtracted
+
+
+    ##### ----- 1. equally distributed noise
+    if("ed" %in% noise_types){
+
+      # new name for simulated expression (NTED ~ Noise Type Equally Distributed)
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTED.NP", nl, nsep, "I", n, sep = "")
+
+      # merge model and noise to simulated expression
+      coords_df_sim[[new_name]] <-
+        (coords_df_sim[[model_name]] * model_scale_fct) +
+        (coords_df_sim[["x.random.noise.temp.x"]] * noise_scale_fct)
+
+      coords_df_sim[[new_name]] <-
+        scales::rescale(coords_df_sim[[new_name]], to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+    ##### ----- 2. equally punctuated noise
+    base::set.seed(seed_run)
+    coords_df_sim[["x.random.indices.temp.x"]] <- base::sample(1:n_bcs)
+
+    if("ep" %in% noise_types){
+
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTEP.NP", nl, nsep, "I", n, sep = "")
+
+      perc <- nl/100
+
+      indices_include <- 1:base::ceiling(n_bcs*perc)
+
+      coords_df_sim <-
+        dplyr::mutate(
+          .data = coords_df_sim,
+          {{new_name}} :=
+            dplyr::if_else(
+              condition = x.random.indices.temp.x %in% {{indices_include}},
+              true = x.random.noise.temp.x,
+              false = !!rlang::sym(model_name)
+              )
+        )
+
+      coords_df_sim[[new_name]] <-
+        scales::rescale(coords_df_sim[[new_name]], to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+    #####----- 3. focally punctuated noise
+    if("fp" %in% noise_types){
+
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTFP.NP", nl, nsep, "I", n, sep = "")
+
+      base::set.seed(seed_run)
+      origins <-
+        dplyr::group_by(coords_df_sim, x.grid.temp.x) %>%
+        dplyr::slice_sample(n = 1) %>%
+        dplyr::pull(barcodes) %>%
+        base::sample(size = 4)
+
+      perc <- nl/100
+      size <- n_bcs/base::length(origins)
+
+      coords_df_sim[[new_name]] <- coords_df_sim[[model_name]]
+
+      coords_df_sim <-
+        simulate_spatial_niches(
+          coords_df = coords_df_sim,
+          origins = origins,
+          size = size*perc,
+          size_fct = 1.25,
+          vt = new_name,
+          vf = "x.random.noise.temp.x",
+          seed = seed_run
+        )
+
+      coords_df_sim[[new_name]] <-
+        scales::rescale(coords_df_sim[[new_name]], to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+
+    #####----- 4. combined noise
+    if("cb" %in% noise_types){
+
+      nts <- base::toupper(noise_types[noise_types != "cb"])
+
+      all_names <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NT", nts, ".NP", nl, nsep, "I", n, sep = "")
+
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTCB.NP", nl, nsep, "I", n, sep = "")
+
+      coords_df_sim[[new_name]] <-
+        base::as.matrix(coords_df_sim[ ,all_names]) %>%
+        base::rowMeans() %>%
+        scales::rescale(to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+  }
+
+  coords_df_sim <- coords_df_sim[base::names(coords_df_random)]
+
+  if(base::nrow(coords_df_random) != 0){
+
+    coords_df_sim <- base::rbind(coords_df_sim, coords_df_random)
+
+  }
+
+  mtr_out <-
+    dplyr::select(
+      coords_df_sim,
+      barcodes,
+      dplyr::starts_with(npref) & dplyr::contains("NT") & dplyr::contains("NP")
+    ) %>%
+    tibble::column_to_rownames("barcodes") %>%
+    dplyr::select(dplyr::where(base::is.numeric)) %>%
+    base::as.matrix() %>%
+    base::t() %>%
+    Matrix::Matrix(sparse = TRUE)
+
+  return(mtr_out)
+
+}
+
+
+simulate_random_expression <- function(object,
+                                       n_total,
+                                       range_sim = c(0,1),
+                                       seed = 123,
+                                       naming = "SE.RANDOM.{i}",
+                                       verbose = TRUE){
+
+  coords_df <- getCoordsDf(object)
+
+  n_total <- base::ceiling(n_total)
+  pb <- confuns::create_progress_bar(total = n_total)
+
+  all_names <- base::vector("character", length = n_total)
+
+  rmin <- base::min(range_sim)
+  rmax <- base::max(range_sim)
+
+  confuns::give_feedback(
+    msg = glue::glue("Simulating {n_total} random expressions."),
+    verbose = verbose
+  )
+
+  for(i in 1:n_total){
+
+    pb$tick()
+
+    new_name <-
+      glue::glue(naming) %>%
+      base::as.character()
+
+    all_names[i] <- new_name
+
+    base::set.seed((seed*i))
+
+    coords_df[[new_name]] <-
+      stats::runif(n = base::nrow(coords_df), min = rmin, max = rmax)
+
+  }
+
+  all_names <- base::unique(all_names)
+
+  mtr_out <-
+    dplyr::select(coords_df, barcodes, dplyr::all_of(all_names)) %>%
+    tibble::column_to_rownames("barcodes") %>%
+    dplyr::select(dplyr::where(base::is.numeric)) %>%
+    base::as.matrix() %>%
+    base::t() %>%
+    Matrix::Matrix(sparse = TRUE)
+
+  return(mtr_out)
+
+
+}
+
+#' @rdname simulate_expression_pattern_sas
+#' @export
+simulate_expression_pattern_sts <- function(object,
+                                            id,
+                                            simulations,
+                                            width,
+                                            binwidth = recBinwidth(object),
+                                            noise_levels = seq(0,100, length.out = 21),
+                                            noise_types = c("ed", "ep", "fp", "cb"),
+                                            range_sim = c(0,1),
+                                            range_random = base::range(range_sim),
+                                            model_add = NULL,
+                                            seed = 123,
+                                            npref = "SE",
+                                            nsep = ".",
+                                            verbose = TRUE){
+
+  confuns::check_one_of(
+    input = noise_types,
+    against = c("ed", "ep", "fp", "cb")
+  )
+
+  coords_df <-
+    getCoordsDfST(
+      object = object,
+      id = id,
+      width = width,
+      binwidth = binwidth
+    )
+
+  # basis for simulation
+  coords_df_sim <- dplyr::filter(coords_df, !base::is.na(projection_length))
+
+  # gets random values
+  coords_df_random <- dplyr::filter(coords_df, base::is.na(projection_length))
+
+  # create model data.frame
+  all_models <-
+    purrr::map_chr(.x = simulations, .f = ~ .x$model) %>%
+    base::unname()
+
+  model_df <-
+    create_model_df(
+      input = dplyr::n_distinct(coords_df_sim$bins_order),
+      var_order = "bins_order",
+      model_subset = all_models,
+      model_add = model_add,
+      verbose = FALSE
+    ) %>%
+    dplyr::select(bins_order, dplyr::all_of(all_models)) %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = dplyr::all_of(all_models),
+        .fns = ~ scales::rescale(x = .x, to = {{range_sim}})
+      )
+    )
+
+  # prepare loops
+  loop_instructions <-
+    purrr::map_df(
+      .x = simulations,
+      .f = function(sim){
+
+        nls <- sim$noise_levels
+
+        if(is.null(nls)){
+
+          nls <- noise_levels
+
+        }
+
+        tidyr::expand_grid(
+          id = sim$id,
+          model = sim$model,
+          n = 1:sim$n,
+          nls = nls
+        )
+
+      }
+    ) %>%
+    dplyr::group_by(id, model, n) %>%
+    dplyr::arrange(nls, .by_group = TRUE) %>%
+    dplyr::ungroup()
+
+  n_bcs <- base::nrow(coords_df_sim)
+  n_bins <- base::max(model_df[["bins_order"]])
+  n_sim_runs <- base::nrow(loop_instructions)
+
+  # run loop
+  noise_types_pretty <-
+    c("ed" = "equally distributed",
+      "ep" = "equally punctuated",
+      "fp" = "focally punctuated",
+      "cb" = "combined"
+    )[noise_types]
+
+  ref <- confuns::scollapse(noise_types_pretty, sep = ", ", last = " and ")
+
+  n_sims <-
+    dplyr::distinct(loop_instructions, id, n, nls) %>%
+    base::nrow()
+
+  confuns::give_feedback(
+    msg = glue::glue("Iterating over {n_sims} simulations for {ref} noise."),
+    verbose = verbose
+  )
+
+  coords_df_sim <- # merge models (noise is created during the loop)
+    dplyr::left_join(x = coords_df_sim, y = model_df, by = "bins_order")
+
+  if("fp" %in% noise_types){
+
+    coords_df_sim <-
+      add_grid_variable(coords_df_sim, nr = 4, grid_name = "x.grid.temp.x")
+
+  }
+
+  pb <- confuns::create_progress_bar(total = n_sim_runs)
+
+  for(i in 1:base::nrow(loop_instructions)){
+
+    ##### ----- 0. general prep
+    pb$tick()
+
+    # assign instructions
+    model_name <- loop_instructions$model[i]
+    n <- loop_instructions$n[i]
+    nl <- loop_instructions$nls[i]
+    sim_id <- loop_instructions$id[i]
+
+    #run = combination of model sim with all noise levels
+    seed_run <- seed*n
+
+    # if added are equal to 1
+    noise_scale_fct <- (nl/100)
+    model_scale_fct <- (1-(nl/100))
+
+    # create random noise vector for this run
+    base::set.seed(seed_run)
+    coords_df_sim[["x.random.noise.temp.x"]] <-
+      stats::runif(n = n_bcs, min = base::max(range_sim)*-1, max = max(range_sim))
+    # min = max()*-1 to create  values, too, that are subtracted
+
+
+    ##### ----- 1. equally distributed noise
+    if("ed" %in% noise_types){
+
+      # new name for simulated expression (NTED ~ Noise Type Equally Distributed)
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTED.NP", nl, nsep, "I", n, sep = "")
+
+      # merge model and noise to simulated expression
+      coords_df_sim[[new_name]] <-
+        (coords_df_sim[[model_name]] * model_scale_fct) +
+        (coords_df_sim[["x.random.noise.temp.x"]] * noise_scale_fct)
+
+      coords_df_sim[[new_name]] <-
+        scales::rescale(coords_df_sim[[new_name]], to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+    ##### ----- 2. equally punctuated noise
+    base::set.seed(seed_run)
+    coords_df_sim[["x.random.indices.temp.x"]] <- base::sample(1:n_bcs)
+
+    if("ep" %in% noise_types){
+
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTEP.NP", nl, nsep, "I", n, sep = "")
+
+      perc <- nl/100
+
+      indices_include <- 1:base::ceiling(n_bcs*perc)
+
+      coords_df_sim <-
+        dplyr::mutate(
+          .data = coords_df_sim,
+          {{new_name}} :=
+            dplyr::if_else(
+              condition = x.random.indices.temp.x %in% {{indices_include}},
+              true = x.random.noise.temp.x,
+              false = !!rlang::sym(model_name)
+            )
+        )
+
+      coords_df_sim[[new_name]] <-
+        scales::rescale(coords_df_sim[[new_name]], to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+    #####----- 3. focally punctuated noise
+    if("fp" %in% noise_types){
+
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTFP.NP", nl, nsep, "I", n, sep = "")
+
+      base::set.seed(seed_run)
+      origins <-
+        dplyr::group_by(coords_df_sim, x.grid.temp.x) %>%
+        dplyr::slice_sample(n = 1) %>%
+        dplyr::pull(barcodes) %>%
+        base::sample(size = 4)
+
+      perc <- nl/100
+      size <- n_bcs/base::length(origins)
+
+      coords_df_sim[[new_name]] <- coords_df_sim[[model_name]]
+
+      coords_df_sim <-
+        simulate_spatial_niches(
+          coords_df = coords_df_sim,
+          origins = origins,
+          size = size*perc,
+          size_fct = 1.25,
+          vt = new_name,
+          vf = "x.random.noise.temp.x",
+          seed = seed_run
+        )
+
+      coords_df_sim[[new_name]] <-
+        scales::rescale(coords_df_sim[[new_name]], to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+
+    #####----- 4. combined noise
+    if("cb" %in% noise_types){
+
+      nts <- base::toupper(noise_types[noise_types != "cb"])
+
+      all_names <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NT", nts, ".NP", nl, nsep, "I", n, sep = "")
+
+      new_name <-
+        stringr::str_c(npref, nsep, sim_id, nsep, "NTCB.NP", nl, nsep, "I", n, sep = "")
+
+      coords_df_sim[[new_name]] <-
+        base::as.matrix(coords_df_sim[ ,all_names]) %>%
+        base::rowMeans() %>%
+        scales::rescale(to = range_sim)
+
+      if(base::nrow(coords_df_random) != 0){
+
+        base::set.seed(seed_run)
+
+        coords_df_random[[new_name]] <-
+          stats::runif(
+            n = base::nrow(coords_df_random),
+            min = base::min(range_random),
+            max = base::max(range_random)
+          )
+
+      }
+
+    }
+
+  }
+
+  if(base::nrow(coords_df_random) != 0){
+
+    coords_df_sim <- coords_df_sim[base::names(coords_df_random)]
+
+    coords_df_sim <- base::rbind(coords_df_sim, coords_df_random)
+
+  }
+
+  mtr_out <-
+    dplyr::select(
+      coords_df_sim,
+      barcodes,
+      dplyr::starts_with(npref) & dplyr::contains("NT") & dplyr::contains("NP")
+    ) %>%
+    tibble::column_to_rownames("barcodes") %>%
+    dplyr::select(dplyr::where(base::is.numeric)) %>%
+    base::as.matrix() %>%
+    base::t() %>%
+    Matrix::Matrix(sparse = TRUE)
+
+  return(mtr_out)
+
+}
+
+
+#' Simulate Random Gradients
+#'
+#' This function simulates random expression patterns, computes gradients, and calculates
+#' various metrics for evaluating the inferred expression gradients.
+#'
+#' @param coords_df A data frame containing coordinates and distance information.
+#' @param span The alpha parameter for the loess smoothing, controlling the degree of smoothness.
+#' @param pred_pos A numeric vector of positions for which the gradients are inferred.
+#' @param n The number of simulations to perform (default is 1000).
+#' @param seed The random seed to ensure reproducibility (default is 123).
+#' @param range A numeric vector specifying the range for generating random expression values (default is c(0, 1)).
+#' @param verbose A logical value indicating whether to display progress messages (default is TRUE).
+#' @param ... Additional parameters given to [`obtain_inferred_gradient()`].
+#'
+#' @return A list of length \code{n} containing information about the simulated gradients, Loess Deviation Scores (LDS),
+#' loess models, and total variation for each simulation. The list is named with seed indices to trace the circumstances
+#' under which each simulation was conducted.
+#'
+#' The output list contains the following components:
+#' \describe{
+#'   \item{gradient}{A numeric vector representing the inferred expression gradient.}
+#'   \item{lds}{A numeric value representing the Loess Deviation Score (LDS) for the inferred gradient.}
+#'   \item{model}{A loess model object fitted to the simulated data.}
+#'   \item{tot_var}{A numeric value representing the total variation of the inferred gradient.}
+#' }
+#'
+#' @details This function generates random expression patterns with specified randomness levels, fits loess curves to the data,
+#' computes gradients, LDS, loess models, and total variation for each simulation, and returns the results in a named list.
+#'
+#' @export
+
+simulate_random_gradients <- function(coords_df,
+                                      span,
+                                      expr_est_pos,
+                                      amccd,
+                                      n = 1000,
+                                      seed = 123,
+                                      coef = Inf,
+                                      range = c(0, 1),
+                                      verbose = TRUE,
+                                      ...){
+
+  pb <- confuns::create_progress_bar(total = n)
+
+  confuns::give_feedback(
+    msg = glue::glue("Simulating {n} random expression pattern."),
+    verbose = verbose
+  )
+
+  # distance density
+  dd <- stats::density(x = coords_df[["dist"]])
+  coords_df$dist.weights <- 1-stats::approx(dd$x, dd$y, xout = coords_df$dist)$y
+
+  out_sim <-
+    purrr::map(
+      .x = 1:n,
+      .f = function(i){
+
+        if(verbose){ pb$tick() }
+
+        # multiply seed with i to obtain different seeds each iteration
+        base::set.seed(seed*i)
+
+        # set random expression values for all data points
+        coords_df[["random_expr"]] <-
+          stats::runif(
+            n = base::nrow(coords_df),
+            min = base::min(range),
+            max = base::max(range)
+          )
+
+        loess_model <-
+          stats::loess(
+            formula = random_expr ~ dist,
+            data = coords_df,
+            span = span,
+            family = "gaussian",
+            statistics = "none",
+            surface = "direct"
+          )
+
+        gradient <-
+          infer_gradient(loess_model, expr_est_pos = expr_est_pos, coef = coef, ro = range)
+
+        out_list <-
+          list(
+            coords_df = coords_df[,c("x", "y", "random_expr", "dist")],
+            gradient = gradient,
+            loess_model = loess_model,
+            seed = seed * i,
+            tot_var = compute_total_variation(gradient)
+          )
+
+        return(out_list)
+
+      }
+    ) %>%
+    purrr::set_names(nm = stringr::str_c("seed_", (1:n)*seed))
+
+  return(out_sim)
+
+}
+
+
+#' Create a Spatial Niche in Coordinate Data Frame
+#'
+#' This function creates a spatial niche around specified origin points in a coordinate data frame.
+#' The niche is defined by a specified size and is used to modify values in the data frame based on proximity to the origin points.
+#'
+#' @param coords_df A data frame containing spatial coordinates and other variables.
+#' @param origins A character vector specifying the barcodes of the origin points around which the niche will be created.
+#' @param size A numeric value specifying the size of the niche around each origin point.
+#' @param vt The name of the variable in `coords_df` to which values will be assigned.
+#' @param vf The name of the variable in `coords_df` from which values will be taken. If NULL (default), random values will be generated and assigned.
+#' @param rr A numeric vector of length 2 specifying the range for generating random values. Default is c(0, 1).
+#' @param seed A numeric value specifying the seed for random number generation. Default is 123.
+#'
+#' @return A data frame with the modified values based on the created spatial niche.
+#'
+#' @details
+#' The function works by calculating the distances from each origin point to all other points in `coords_df`.
+#' Points that fall within the specified niche size around each origin are identified, and their values in the `vt` variable are modified based on the `vf` variable.
+#' If `vf` is NULL, random values within the specified range (`rr`) are generated and used.
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(x = runif(100, 0, 10), y = runif(100, 0, 10), value = rnorm(100))
+#' df_with_niche <- simulate_spatial_niches(df, origins = c("A", "B"), size = 5, vt = "value")
+#' }
+#'
+#' @export
+
+simulate_spatial_niches <- function(coords_df,
+                                    origins,
+                                    size,
+                                    size_fct = 1.1,
+                                    vt, # values to
+                                    vf = NULL, # values from
+                                    rr = c(0, 1), # range random
+                                    type = "small",
+                                    seed = 123){
+
+  base::set.seed(seed)
+
+  if(base::is.null(vf)){
+
+    vf <- "x.random.temp"
+    coords_df[[vf]] <-
+      stats::runif(
+        n = base::nrow(coords_df),
+        min = base::min(rr),
+        max = base::max(rr)
+      )
+
+  }
+
+  size <- base::ceiling(size)
+  size_x <- base::ceiling(size*size_fct)
+
+  barcodes_to_consider <- coords_df[["barcodes"]]
+
+  for(bc_o in origins){
+
+    barcodes_niche <-
+      visiumSpotDistances(
+        type = type,
+        bcs_o = bc_o,
+        bcs_n = barcodes_to_consider
+        ) %>%
+      dplyr::slice_min(distance, n = {{size_x}}) %>%
+      dplyr::slice_sample(n = {{size}}) %>%
+      dplyr::pull(bcs_n)
+
+    barcodes_to_consider <- barcodes_to_consider[!barcodes_to_consider %in% barcodes_niche]
+
+    coords_df <-
+      dplyr::mutate(
+        .data = coords_df,
+        !!rlang::sym(vt) :=
+          dplyr::if_else(
+            condition = barcodes %in% {{barcodes_niche}},
+            true = !!rlang::sym(vf),
+            false = !!rlang::sym(vt)
+          )
+      )
+
+  }
+
+  coords_df[["x.random.temp"]] <- NULL
+
+  return(coords_df)
+
+}
 
 # smooth ------------------------------------------------------------------
 
@@ -1154,6 +2133,454 @@ smoothSpatially <- function(coords_df,
 
 # spatial -----------------------------------------------------------------
 
+
+
+#' @title Low level implementation of the spatial gradient screening
+#'
+#' @description Conducts spatial gradient screening. See details for more information.
+#'
+#' @param coords_df A data.frame that contains at least a numeric variable named
+#' *dist* as well the numeric variables denoted in `variables`.
+#' @param variables Character vector of numeric variable names that are integrated
+#' in the screening process.
+#' @param binwidth Units value of the same unit of the *dist* variable in
+#' `coords_df`.
+#' @param n_random Number of random permutations for the significance testing of step 2.
+#' @param sign_var Either *p_value* or *fdr*. Defaults to *fdr*.
+#' @param sign_threshold The significance threshold. Defaults to 0.05.
+#' @param seed Numeric value. Sets the random seed.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A list of four slots:
+#'
+#'  \itemize{
+#'   \item{variables}: A character vector of the names of all variables included
+#'   in the screening.
+#'   \item{model_df}: A data.frame of the models used for step 3.
+#'   \item{loess_models}: A named list of loess models for all variables
+#'   integrated in the screening process. Names correspond to the variable names.
+#'   \item{pval}: Data.frame of three variables: *variable*, *lds*, *p_value* and *fdr*.
+#'   Contains the results of step 2. Each observation corresponds to the inferred
+#'   gradient of a variable.
+#'   \item{eval}: Data.frame of five variable: *variable*, *model*, *corr*, *mae*
+#'   *rmse*. Contains the results of step 3. Each observation corresponds to a
+#'   gradient ~ model fit. Variables correspond to the evaluation metrics of
+#'   the fit.
+
+#'   }
+#'
+#' @export
+
+spatial_gradient_screening <- function(coords_df,
+                                       variables,
+                                       binwidth,
+                                       weighted,
+                                       coef = 0,
+                                       min_dist = NULL,
+                                       max_dist = NULL,
+                                       n_random = 1000,
+                                       sign_var = "fdr",
+                                       sign_threshold = 0.05,
+                                       skip_comp = FALSE,
+                                       force_comp = FALSE,
+                                       model_subset = NULL,
+                                       model_add = NULL,
+                                       model_remove = NULL,
+                                       seed = 123,
+                                       verbose = TRUE){
+
+
+  # Preparation -------------------------------------------------------------
+
+  variables <- base::unique(variables)
+
+  # define the alpha parameter of the loess fitting as the percentage that the
+  # binwidth represents of the distance (both must be of the same unit)
+  total_dist <- base::diff(x = c(min_dist, max_dist))
+  span <- base::as.numeric(binwidth/total_dist)
+
+  expr_est_pos <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = max_dist,
+      amccd = binwidth
+    )
+
+  # create model data.frame for step 3
+  model_df <-
+    create_model_df(
+      input = expr_est_pos,
+      model_add = model_add,
+      model_subset = model_subset,
+      model_remove = model_remove,
+      verbose = FALSE
+    )
+
+  # simulate loess deviation scores from random pattern
+  random_gradients <-
+    simulate_random_gradients(
+      coords_df = coords_df,
+      span = span,
+      expr_est_pos = expr_est_pos,
+      amccd = binwidth,
+      coef = coef,
+      n = n_random,
+      seed = seed,
+      verbose = verbose
+    )
+
+  random_tv <-
+    purrr::map_dbl(.x = random_gradients, .f = ~ .x$tot_var) %>%
+    base::unname()
+
+  model_names <- base::names(model_df)
+  nm <- base::length(model_names)
+
+  model_df[["expr_est_idx"]] <- base::as.integer(1:base::nrow(model_df))
+
+
+  # Step 1: Inferring gradients ---------------------------------------------
+
+  nv <- base::length(variables)
+
+  confuns::give_feedback(
+    msg = glue::glue("Step 1: Inferring the expression gradient of {nv} variables."),
+    verbose = verbose
+  )
+
+  pb <- confuns::create_progress_bar(total = nv)
+
+  loess_list <-
+    purrr::map(
+      .x = variables,
+      .f = function(var){
+
+        pb$tick()
+
+        # fit loess
+        coords_df[["x.var.x"]] <- coords_df[[var]]
+
+        loess_model <-
+          stats::loess(
+            formula = x.var.x ~ dist,
+            data = coords_df,
+            span = span,
+            family = "gaussian",
+            statistics = "none",
+            surface = "direct"
+          )
+
+        gradient <-
+          infer_gradient(
+            loess_model = loess_model,
+            coef = coef,
+            expr_est_pos = expr_est_pos,
+            ro = c(0,1)
+            )
+
+        inf_df <-
+          tibble::tibble(
+            variables = var,
+            expr_est_idx = base::seq_along(expr_est_pos),
+            inf_gradient = gradient
+          )
+
+        # compute p-value
+        observed_tv <- compute_total_variation(inf_df$inf_gradient)
+        observed_rv <- compute_relative_variation(inf_df$inf_gradient)
+
+        p_value <-
+          base::sum(random_tv <= observed_tv) / base::length(random_tv)
+
+        pval_df <-
+          tibble::tibble(
+            variables = var,
+            rel_var = observed_rv,
+            tot_var = observed_tv,
+            norm_var = observed_tv/base::length(expr_est_pos),
+            p_value = p_value
+          )
+
+        # assemble output
+        out <-
+          list(
+            pval_df = pval_df,
+            inf_df = inf_df
+          )
+
+        return(out)
+
+      }
+    ) %>%
+    purrr::set_names(variables)
+
+
+  # Step 2: Test for significance -------------------------------------------
+
+  confuns::give_feedback(
+    msg = "Step 2: Testing pattern for randomness.",
+    verbose = verbose
+  )
+
+  p_value_df <-
+    purrr::map_df(.x = loess_list, .f = ~ .x$pval_df) %>%
+    dplyr::mutate(fdr = stats::p.adjust(p = p_value, method = "fdr"))
+
+  # significant variables
+  significant_variables <-
+    dplyr::filter(p_value_df, !!rlang::sym(sign_var) < {{sign_threshold}}) %>%
+    dplyr::pull(var = "variables")
+
+  nsv <- base::length(significant_variables)
+
+  confuns::give_feedback(
+    msg = glue::glue("A total of {nsv} variables show non random pattern ({sign_var} < {sign_threshold})."),
+    verbose = verbose
+  )
+
+  # Step 3: Compare pattern to predefined models ----------------------------
+
+  if(base::isTRUE(force_comp)){
+
+    variables_for_step3 <- variables
+
+  } else {
+
+    variables_for_step3 <- significant_variables
+
+  }
+
+  n_vars <- base::length(variables_for_step3)
+
+  if(n_vars != 0 & !base::isFALSE(skip_comp)){
+
+    confuns::give_feedback(
+      msg = glue::glue("Step 3: Comparing {n_vars} variables against {nm} models."),
+      verbose = verbose
+    )
+
+    evaluation_df <-
+      purrr::map_df(.x = loess_list[variables_for_step3], .f = ~ .x$inf_df) %>%
+      dplyr::left_join(y = model_df, by = "expr_est_idx") %>%
+      tidyr::pivot_longer(cols = dplyr::all_of(model_names), names_to = "models", values_to = "values") %>%
+      dplyr::group_by(variables, models) %>%
+      dplyr::summarise(
+        corr = compute_corr(gradient = inf_gradient, model = values),
+        mae = compute_mae(gradient = inf_gradient, model = values),
+        rmse = compute_rmse(gradient = inf_gradient, model = values),
+        .groups = "drop"
+      )
+
+  } else {
+
+    evaluation_df <- data.frame()
+
+  }
+
+  # assemble output ---------------------------------------------------------
+
+  out <-
+    list(
+      random_simulations = purrr::map(random_gradients, .f = ~ .x[c("lds", "tot_var")]),
+      variables = variables,
+      models = model_df,
+      loess_fits = purrr::map(.x = loess_list, .f = ~ .x$loess_model),
+      pval = p_value_df,
+      eval = evaluation_df
+    )
+
+  return(out)
+
+}
+
+
+#' @title Implementation of the SAS-algorithm
+#'
+#' @description Screens the sample for numeric variables that stand
+#' in meaningful, spatial relation to annotated structures/areas.
+#' For a detailed explanation on how to define the parameters \code{distance},
+#' \code{n_bins_dist}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
+#' see details section.
+#'
+#' @inherit getSpatialAnnotation params
+#' @param variables Character vector. All numeric variables (meaning genes,
+#' gene-sets and numeric features) that are supposed to be included in
+#' the screening process.
+#' @param distance Distance value. Specifies the distance from the border of the
+#' spatial annotation to the \emph{horizon} in the periphery up to which the screening
+#' is conducted. (See details for more.) - See details of \code{?is_dist} for more
+#' information about distance values. Defaults to a distance that covers the whole
+#' tissue using [`distToEdge()`].
+#' @param binwidth Distance value. The width of the distance bins to which
+#' each data point is assigned. Defaults to our platform dependent
+#' recommendation using [`recBinwidth()`].
+#' @param angle_span Numeric vector of length 2. Confines the area screened by
+#' an angle span relative to the center of the spatial annotation.
+#'  (See details fore more.)
+#' @param bcs_exclude Character value containing name(s) of data points to be excluded from the analysis.
+#'
+#' @inherit add_models params
+#' @inherit argument_dummy params
+#' @inherit buffer_area params
+#'
+#' @return An object of class \code{SpatialAnnotationScreening}. See documentation
+#' with \code{?SpatialAnnotationScreening} for more information.
+#'
+#' @seealso [`createGroupAnnotations()`], [`createImageAnnotations()`],
+#' [`createNumericAnnotations()`] for how to create spatial annotations.
+#'
+#' [`getCoordsDfSA()`] for how to obtain spatial relation of data points to
+#' a spatial annotation.
+#'
+#' [`getSasDf()`] for how to obtain inferred expression gradients as used in
+#' spatial annotation screening.
+#'
+#' [`plotSasLineplot()`] for visualization of inferred expression gradients.
+#'
+#' @export
+#'
+
+spatialAnnotationScreening <- function(object,
+                                       id,
+                                       variables,
+                                       core,
+                                       binwidth = recBinwidth(object),
+                                       distance = distToEdge(object, id),
+                                       angle_span = c(0, 360),
+                                       unit = getDefaultUnit(object),
+                                       bcs_exclude = character(0),
+                                       sign_var = "fdr",
+                                       sign_threshold = 0.05,
+                                       force_comp = FALSE,
+                                       skip_comp = FALSE,
+                                       model_add = NULL,
+                                       model_subset = NULL,
+                                       model_remove = NULL,
+                                       estimate_R2 = TRUE,
+                                       n_random = 1000,
+                                       seed = 123,
+                                       verbose = NULL,
+                                       ...){
+
+  hlpr_assign_arguments(object)
+
+  if(base::isTRUE(estimate_R2)){
+
+    confuns::give_feedback(
+      msg = "Estimating R2 between total variation and noise ratio.",
+      verbose = verbose
+    )
+
+    r2 <-
+      estimate_r2_for_sas_run(
+        object = object,
+        id = id,
+        distance = distance,
+        binwidth = binwidth,
+        angle_span = angle_span,
+        core = core,
+        model_add = model_add,
+        model_subset = model_subset,
+        model_remove = model_remove,
+        ...
+      )
+
+    confuns::give_feedback(
+      msg = glue::glue("Estimated R2: {base::round(r2, digits = 5)}"),
+      verbose = verbose
+    )
+
+  } else {
+
+    r2 <- NULL
+
+  }
+
+  # test input
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  distance <- as_unit(distance, unit = unit, object = object)
+
+  # obtain coords data.frame
+  confuns::give_feedback(
+    msg = "Starting spatial annotation screening.",
+    verbose = verbose
+  )
+
+  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+
+  coords_df <-
+    getCoordsDfSA(
+      object = object,
+      id = id,
+      distance = distance,
+      angle_span = angle_span,
+      variables = variables,
+      dist_unit = unit,
+      verbose = verbose
+    )
+
+  variables <- variables[variables %in% base::names(coords_df)]
+
+  coords_df_flt <-
+    dplyr::filter(coords_df, !rel_loc %in% {{rm_loc}}) %>%
+    dplyr::filter(!barcodes %in% {{bcs_exclude}})
+
+  # if core is FALSE min dist = 0 to start right from the border
+  # and not with the first data point
+  if(base::isTRUE(core)){
+
+    min_dist <-
+      base::min(coords_df[["dist"]]) %>%
+      stringr::str_c(., unit)
+
+  } else {
+
+    min_dist <- stringr::str_c(0, unit)
+
+  }
+
+  # max_dist does not depend on `core` option
+  min_dist <- as_unit(min_dist, unit = unit, object = object)
+  max_dist <- as_unit(distance, unit = unit, object = object)
+
+  sgs_out <-
+    spatial_gradient_screening(
+      coords_df = coords_df_flt,
+      min_dist = min_dist,
+      max_dist = max_dist,
+      variables = variables,
+      binwidth = binwidth,
+      sign_var = sign_var,
+      sign_threshold = sign_threshold,
+      force_comp = force_comp,
+      skip_comp = skip_comp,
+      model_add = model_add,
+      model_subset = model_subset,
+      model_remove = model_remove,
+      n_random = n_random,
+      seed = seed,
+      verbose = verbose
+    )
+
+  SAS_out <-
+    SpatialAnnotationScreening(
+      coords = dplyr::select(coords_df, -dplyr::all_of(variables)),
+      info = list(r2 = r2, random_simulations = sgs_out$random, distance = distance, coef = coef),
+      models = sgs_out$models,
+      significance = sgs_out$pval,
+      results = sgs_out$eval,
+      sample = object@samples
+    )
+
+  confuns::give_feedback(msg = "Done.", verbose = verbose)
+
+  return(SAS_out)
+
+}
+
+
+
 #' @title The Spatial Trajectory Screening algorithm
 #'
 #' @description Screens the sample for numeric variables that follow specific expression
@@ -1210,141 +2637,71 @@ smoothSpatially <- function(coords_df,
 spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
-                                       n_bins = NA_integer_,
                                        binwidth = getCCD(object),
+                                       unit = getDefaultUnit(object),
+                                       bcs_exclude = character(0),
+                                       sign_var = "fdr",
+                                       sign_threshold = 0.05,
+                                       force_comp = FALSE,
+                                       model_add = NULL,
                                        model_subset = NULL,
                                        model_remove = NULL,
-                                       model_add = NULL,
-                                       method_padj = "fdr",
-                                       summarize_with = "mean",
+                                       n_random = 1000,
+                                       seed = 123,
                                        verbose = NULL){
 
   hlpr_assign_arguments(object)
-
-  binwidth <- asPixel(input = binwidth, object = object, as_numeric = TRUE)
-
-  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
-
-  method_padj <- method_padj[1]
-
-  confuns::check_one_of(
-    input = method_padj,
-    against = validPadjMethods()
-  )
 
   confuns::give_feedback(
     msg = "Starting spatial trajectory screening.",
     verbose = verbose
   )
 
-  spat_traj <- getSpatialTrajectory(object, id = id)
-
-  # add variables to be screened
-
-  confuns::give_feedback(
-    msg = "Checking and adding variables to screen.",
-    verbose = verbose
-  )
-
-  projection_df <-
-    joinWithVariables(
+  # obtain coords data.frame
+  coords_df <-
+    getCoordsDfST(
       object = object,
-      spata_df = spat_traj@projection,
+      id = id,
       variables = variables,
-      smooth = FALSE,
-      normalize = TRUE
+      dist_unit = unit,
+      verbose = FALSE
     )
 
-  # bin along trajectory and summarize by bin
-  confuns::give_feedback(
-    msg = "Binning and summarizing projection data.frame.",
-    verbose = verbose
-  )
+  coords_df_flt <-  dplyr::filter(coords_df, rel_loc == "inside")
 
-  smrd_projection_df <-
-    summarize_projection_df(
-      projection_df = projection_df,
-      n_bins = n_bins,
-      binwidth = binwidth,
-      summarize_with = summarize_with
-    )
+  min_dist <- base::min(coords_df[["dist"]], na.rm = TRUE)
+  max_dist <- base::max(coords_df[["dist"]], na.rm = TRUE)
 
-  # normalize along the bins and shift to long format
-  confuns::give_feedback(
-    msg = "Shifting data.frame and adding models.",
-    verbose = verbose
-  )
-
-  shifted_smrd_projection_df <-
-    normalize_smrd_projection_df(smrd_projection_df = smrd_projection_df) %>%
-    shift_smrd_projection_df()
-
-  df_with_models <-
-    add_models(
-      input_df = shifted_smrd_projection_df,
-      var_order = "trajectory_order",
+  sgs_out <-
+    spatial_gradient_screening(
+      coords_df = coords_df_flt,
+      min_dist = units::set_units(min_dist, value = unit, mode = "standard"),
+      max_dist = units::set_units(max_dist, value = unit, mode = "standard"),
+      variables = variables,
+      binwidth = as_unit(binwidth, object = object, unit = unit),
+      sign_var = sign_var,
+      sign_threshold = sign_threshold,
+      force_comp = force_comp,
+      model_add = model_add,
       model_subset = model_subset,
       model_remove = model_remove,
-      model_add = model_add,
-      verbose = verbose
+      n_random = n_random,
+      seed = seed
     )
 
-  models_only <-
-    dplyr::select(df_with_models, -variables, -values) %>%
-    dplyr::distinct()
-
-  # remove to prevent error
-  df_with_models[["trajectory_part"]] <- NULL
-
-  shifted_df_with_models <-
-    shift_for_evaluation(
-      input_df = df_with_models,
-      var_order = "trajectory_order"
-    )
-
-  # evaluate model fits
-  confuns::give_feedback(
-    msg = "Evaluating model fits.",
-    verbose = verbose
-  )
-
-  results <-
-    evaluate_model_fits(
-      input_df = shifted_df_with_models,
-      var_order = "trajectory_order",
-      with_corr = TRUE,
-      with_raoc = TRUE
-    ) %>%
-    dplyr::mutate(
-      sts_score = (corr + raoc) / 2
-    ) %>%
-    dplyr::select(variables, models, sts_score, corr, raoc, p_value, dplyr::everything())
-
-  results[["p_value_adjusted"]] <-
-    stats::p.adjust(p = results[["p_value"]], method = method_padj)
-
-  if(!base::is.numeric(binwidth)){ binwidth <- NA_integer_}
-  if(!base::is.numeric(n_bins)){ n_bins <- NA_integer_ }
-
-  sts <-
+  STS_out <-
     SpatialTrajectoryScreening(
-      binwidth = binwidth,
-      coords = getCoordsDf(object),
-      id = id,
-      method_padj = method_padj,
-      models = models_only,
-      n_bins = n_bins,
-      results = results,
-      summarize_with = summarize_with,
-      spatial_trajectory = spat_traj
+      coords = dplyr::select(coords_df, -dplyr::all_of(variables)),
+      info = list(random_simulations = sgs_out$random),
+      models = sgs_out$models,
+      significance = sgs_out$pval,
+      results = sgs_out$eval,
+      sample = object@samples
     )
 
-  confuns::give_feedback(
-    msg = "Done.",
-    verbose = verbose
-  )
+  confuns::give_feedback(msg = "Done.", verbose = verbose)
 
-  return(sts)
+  return(STS_out)
 
 }
 

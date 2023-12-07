@@ -1,6 +1,64 @@
 # add_ --------------------------------------------------------------------
 
 
+#' Add Grid Variable to Coordinate Data Frame
+#'
+#' This function adds a grid variable to a data frame containing x and y coordinates.
+#' The grid variable represents the grid cell in which each coordinate point falls.
+#'
+#' @param coords_df A data frame containing x and y coordinates.
+#' @param nr The number of grid cells required. The square root of this number determines
+#'  the number of breaks for the x and y axes.
+#' @param grid_name The name of the new grid variable to be
+#'  added to the data frame. Default is "grid".
+#' @param keep_temp Logical. If TRUE, temporary variables
+#'  used in the process (x_bins.temp and y_bins.temp) are retained in the output data frame. Default is FALSE.
+#'
+#' @return A data frame with the added grid variable.
+#'
+#' @export
+
+add_grid_variable <- function(coords_df, nr, grid_name = "grid", keep_temp = FALSE){
+
+  n_breaks <- sqrt(x = nr)
+
+  coords_df[["x_bins.temp"]] <-
+    base::cut(x = coords_df[["x"]], breaks = n_breaks) %>%
+    base::as.numeric() %>%
+    stringr::str_c("X", .)
+
+  coords_df[["y_bins.temp"]] <-
+    base::cut(x = coords_df[["y"]], breaks = n_breaks) %>%
+    base::as.numeric() %>%
+    stringr::str_c("Y", .)
+
+  grid_levels <-
+    tidyr::expand_grid(
+      x = stringr::str_c("X", 1:n_breaks, sep = ""),
+      y = stringr::str_c("Y", 1:n_breaks, sep = ""),
+    ) %>%
+    dplyr::mutate(glevels = stringr::str_c(x, y, sep = "_")) %>%
+    dplyr::pull(glevels)
+
+  coords_df <-
+    dplyr::mutate(
+      .data = coords_df,
+      {{grid_name}} :=
+        stringr::str_c(x_bins.temp, y_bins.temp, sep = "_") %>%
+        base::factor(levels = {{grid_levels}})
+    )
+
+  if(!keep_temp){
+
+    coords_df$x_bins.temp <- NULL
+    coords_df$y_bins.temp <- NULL
+
+  }
+
+  return(coords_df)
+
+}
+
 #' @keywords internal
 add_helper <- function(shiny_tag,
                        content,
@@ -82,6 +140,43 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
     model_add = model_add,
     verbose = verbose
   )
+
+}
+
+
+#' Add Noise to a Model
+#'
+#' This function adds adjustable noise to a model while maintaining a specified
+#' level of randomness.
+#'
+#' @param model A numeric vector representing the original model.
+#' @param random A numeric vector representing random noise to be added.
+#' @param nl A numeric value specifying the noise level as a percentage.
+#'
+#' @return A numeric vector representing the model with added noise.
+#'
+#' @details This function combines a model and random noise while allowing control
+#' over the degree of randomness in the resulting data. The 'nl' parameter defines
+#' the noise level as a percentage, where a higher value adds more randomness to
+#' the model.
+#'
+#' The function scales the model and random noise vectors based on the specified
+#' noise level, ensuring that the original model remains a significant component.
+#' It then merges these scaled vectors to create the final data with the desired
+#' noise level.
+#'
+
+add_noise_to_model <- function(model, random, nl){
+
+  # scale factor model
+  sfm <- (1-(nl/100))
+
+  # scale factor random
+  sfr <- 1-(1-(nl/100))
+
+  merged <- (model * sfm) + (random * sfr)
+
+  return(merged)
 
 }
 
@@ -1496,27 +1591,9 @@ addSpatialTrajectory <- function(object,
                                  end = NULL,
                                  comment = base::character(1),
                                  overwrite = FALSE,
-                                 img_name = NULL,
                                  ...){
 
   deprecated(...)
-
-  if(base::is.null(img_name) & containsHistoImaging(object)){
-
-    img_name <- activeImage(object)
-
-  } else if(base::is.character(img_name) & containsHistoImaging(object)) {
-
-    confuns::check_one_of(
-      input = img_name,
-      against = getImageNames(object)
-    )
-
-  } else {
-
-    img_name <- NULL
-
-  }
 
   is_dist(input = width, error = TRUE)
 
@@ -1532,48 +1609,56 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  if(!base::is.null(start)){
-
-    start <-
-      as_pixel(input = start[1:2], object = object, add_attr = FALSE) %>%
-      base::as.numeric()
-
-  }
-
-  if(!base::is.null(end)){
-
-    end <-
-      as_pixel(input = end[1:2], object = object, add_attr = FALSE) %>%
-      base::as.numeric()
-
-  }
-
   if(!base::is.data.frame(traj_df)){
 
-    confuns::is_value(x = comment, mode = "character")
+    if(!base::is.null(start)){
 
-    confuns::check_data_frame(
-      df = traj_df,
-      var.class = list("x" = "numeric", "y" = "numeric")
-    )
+      start <-
+        as_pixel(input = start[1:2], object = object, add_attr = FALSE) %>%
+        base::as.numeric()
+
+    } else {
+
+      stop("Need `start` input.")
+
+    }
+
+    if(!base::is.null(end)){
+
+      end <-
+        as_pixel(input = end[1:2], object = object, add_attr = FALSE) %>%
+        base::as.numeric()
+
+    } else {
+
+      stop("Need `end` input.")
+
+    }
 
     # assemble segment df
     traj_df <-
-      base::data.frame(
+      tibble::tibble(
         x = c(start[1], end[1]),
-        y = c(start[2], end[2]),
-        stringsAsFactors = FALSE
+        y = c(start[2], end[2])
       )
 
-  }
+  } else {
 
-  coords_df <- getCoordsDf(object)
+    confuns::check_data_frame(
+      df = traj_df,
+      var.class = list(x = "numeric", y = "numeric")
+    )
+
+  }
 
   if(base::nrow(traj_df) >= 3){
 
     traj_df <- interpolate_points_along_path(data = traj_df)
 
   }
+
+  # project on trajectory
+  coords_df <- getCoordsDf(object)
 
   projection_df <-
     project_on_trajectory(
@@ -1583,11 +1668,26 @@ addSpatialTrajectory <- function(object,
     ) %>%
     dplyr::select(barcodes, projection_length)
 
+  # scale to orig scale
+  scale_fct_coords <- getScaleFactor(object, fct_name = "coords")
+
+  projection_df$projection_length <-
+    projection_df$projection_length / scale_fct_coords
+
+  traj_df <-
+    dplyr::transmute(
+      .data = traj_df,
+      x_orig = x / {{scale_fct_coords}},
+      y_orig = y / {{scale_fct_coords}}
+    )
+
+  width <- width / scale_fct_coords
+
+  # create object
   spat_traj <-
     SpatialTrajectory(
       comment = comment,
       id = id,
-      info = list(parent_name = img_name),
       projection = projection_df,
       segment = traj_df,
       sample = object@samples,
@@ -1595,6 +1695,7 @@ addSpatialTrajectory <- function(object,
       width_unit = width_unit
     )
 
+  # set object
   object <-
     setTrajectory(
       object = object,

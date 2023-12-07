@@ -727,7 +727,7 @@ findNearestNeighbourClusters <- function(object,
 #' @description Identifies spatially differentially expressed genes (SDEGs) as
 #' suggested by *Zeng et al. (2023)*.
 #'
-#' @param id Character value. The image annotation of interest.
+#' @param id Character value. The spatial annotation of interest.
 #'
 #' @inherit getSasDf params
 #' @inherit argument_dummy params
@@ -1034,8 +1034,8 @@ findSeuratClusters <- function(object,
 flip_coords_df <- function(df,
                            axis,
                            ranges,
-                           xvars = c("x", "xend", "col", "imagecol"),
-                           yvars = c("y", "yend", "row", "imagerow"),
+                           xvars = c("x_orig", "x", "xend", "col", "imagecol"),
+                           yvars = c("y_orig", "y", "yend", "row", "imagerow"),
                            verbose = FALSE,
                            error = FALSE,
                            ...){
@@ -1110,11 +1110,6 @@ flip_coords_df <- function(df,
 #'
 #' @param axis Character value. The axis around which the content is flipped.
 #' Either *'horizontal'*, *'h'*, *'vertical'* or *'v'*.
-#' @param track Logical value. If `TRUE`, changes regarding the image
-#' justification (rotations and flipping) are tracked. Assuming that
-#' image versions of different resolution are stored on your device with the same
-#' justification as the primarily read image these changes in justification
-#' can be automatically applied if the image is exchanged via `exchangeImage()`.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy params
@@ -1123,13 +1118,12 @@ flip_coords_df <- function(df,
 #' object or to flip single aspects.
 #'
 #' \itemize{
-#'  \item{`flipAll()`:}{ Flips the image as well as every single spatial aspect.
-#'  **Always tracks the justification.**}
+#'  \item{`flipAll()`:}{ Flips everything.}
 #'  \item{`flipImage()`:}{ Flips only the image.}
-#'  \item{`flipCoordinates()`:}{ Flips the coordinates data.frame, image annotations
+#'  \item{`flipCoordinates()`:}{ Flips the coordinates data.frame, spatial annotations
 #'  and spatial trajectories.}
 #'  \item{`flipCoordsDf()`:}{ Flips the coordinates data.frame.}
-#'  \item{`flipImageAnnotations()`:}{ Flips image annotations.}
+#'  \item{`flipSpatialAnnotations()`:}{ Flips spatial annotations.}
 #'  \item{`flipSpatialTrajectories()`:}{ Flips spatial trajectories.}
 #'  }
 #'
@@ -1137,7 +1131,7 @@ flip_coords_df <- function(df,
 #'
 flipAll <- function(object, axis, verbose = FALSE){
 
-  object <- flipImage(object, axis, track = TRUE, verbose = verbose)
+  object <- flipImage(object, axis = axis, verbose = verbose)
 
   object <- flipCoordinates(object, axis = axis, verbose = verbose)
 
@@ -1149,21 +1143,9 @@ flipAll <- function(object, axis, verbose = FALSE){
 #' @export
 flipCoordinates <- function(object, axis, verbose = FALSE){
 
-  if(!containsImage(object)){
-
-    if(base::isTRUE(verbose)){
-
-      warning("Can not flip coordinates without an image.")
-
-    }
-
-  } else {
-
-    object <- flipCoordsDf(object, axis = axis, verbose = verbose)
-    object <- flipImageAnnotations(object, axis = axis, verbose = verbose)
-    object <- flipSpatialTrajectories(object, axis = axis, verbose = verbose)
-
-  }
+  object <- flipCoordsDf(object, axis = axis, verbose = verbose)
+  object <- flipSpatialAnnotations(object, axis = axis, verbose = verbose)
+  object <- flipSpatialTrajectories(object, axis = axis, verbose = verbose)
 
   return(object)
 
@@ -1171,7 +1153,7 @@ flipCoordinates <- function(object, axis, verbose = FALSE){
 
 #' @rdname flipAll
 #' @export
-flipCoordsDf <- function(object, axis, verbose = NULL){
+flipCoordsDf <- function(object, axis, verbose = FALSE){
 
   hlpr_assign_arguments(object)
 
@@ -1188,16 +1170,21 @@ flipCoordsDf <- function(object, axis, verbose = NULL){
 
     axis <- process_axis(axis)
 
-    coords_df <- getCoordsDf(object)
+    coords_df <- getCoordsDf(object, as_is = TRUE)
+    csf <- getScaleFactor(object, fct_name = "coords")
 
     coords_df <-
       flip_coords_df(
         df = coords_df,
         axis = axis,
-        ranges = getImageRange(object)
+        ranges =
+          purrr::map(
+            .x = getImageRange(object),
+            .f = function(ir){ ir[2] <- ir[2]/csf; return(ir) }
+          )
       )
 
-    object <- setCoordsDf(object, coords_df)
+    object <- setCoordsDf(object, coords_df = coords_df, force = TRUE)
 
   }
 
@@ -1207,48 +1194,35 @@ flipCoordsDf <- function(object, axis, verbose = NULL){
 
 #' @rdname flipAll
 #' @export
-
-flipImage <- function(object, axis, track = FALSE, verbose = FALSE){
-
-  io <- getImageObject(object)
+flipImage <- function(object, axis, img_name = NULL, verbose = FALSE){
 
   axis <- process_axis(axis)
 
-  if(axis == "h" | axis == "horizontal"){
+  if(base::is.null(img_name)){ img_name <- activeImage(object) }
 
-    confuns::give_feedback(
-      msg = "Flipping image horizontally.",
-      verbose = verbose
-    )
+  for(img in img_name){
 
-    io@image <- EBImage::flip(io@image)
+    if(axis == "h" | axis == "horizontal"){
 
-    if(base::isTRUE(track)){
+      confuns::give_feedback(
+        msg = "Flipping image horizontally.",
+        verbose = verbose
+      )
 
-      io@justification$flipped$horizontal <-
-        !io@justification$flipped$horizontal
+      object <- alignImage(object, img_name = img, flip_h = T, opt = "add")
 
-    }
+    } else if(axis == "v" | axis == "vertical"){
 
-  } else if(axis == "v" | axis == "vertical"){
+      confuns::give_feedback(
+        msg = "Flipping image vertically.",
+        verbose = verbose
+      )
 
-    confuns::give_feedback(
-      msg = "Flipping image vertically.",
-      verbose = verbose
-    )
-
-    io@image <- EBImage::flop(io@image)
-
-    if(base::isTRUE(track)){
-
-      io@justification$flipped$vertical <-
-        !io@justification$flipped$vertical
+      object <- alignImage(object, img_name = img, flip_v = T, opt = "add")
 
     }
 
   }
-
-  object <- setImageObject(object, image_object = io)
 
   return(object)
 
@@ -1256,55 +1230,56 @@ flipImage <- function(object, axis, track = FALSE, verbose = FALSE){
 
 #' @rdname flipAll
 #' @export
-flipImageAnnotations <- function(object, axis, verbose = NULL){
+flipSpatialAnnotations <- function(object, axis, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
   if(!containsImage(object)){
 
-    warning("Can not flip image annotations without an image.")
+    warning("Can not flip spatial annotations without an image.")
 
   } else {
 
     confuns::give_feedback(
-      msg = "Flipping image annotations.",
+      msg = "Flipping spatial annotations.",
       verbose = verbose
     )
 
-    if(nImageAnnotations(object) >= 1){
+    if(nSpatialAnnotations(object) >= 1){
 
       axis <- process_axis(axis)
 
       # img annotations
-      img_anns <- getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE)
+      spat_anns <- getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE)
+      csf <- getScaleFactor(object, fct_name = "coords")
 
-      img_anns <-
+      spat_anns <-
         purrr::map(
-          .x = img_anns,
-          .f = function(img_ann){
+          .x = spat_anns,
+          .f = function(sa){
 
-            img_ann@area <-
+            sa@area <-
               purrr::map(
-                .x = img_ann@area,
+                .x = sa@area,
                 .f = ~
                   flip_coords_df(
                     df = .x,
                     axis = axis,
-                    ranges = getImageRange(object),
+                    ranges =
+                      purrr::map(
+                        .x = getImageRange(object),
+                        .f = function(ir){ ir[2] <- ir[2]/csf; return(ir) }
+                      ),
                     verbose = FALSE
                   )
               )
 
-
-            # justifications of annotations are always tracked
-            img_ann@info$current_just$flipped[[axis]] <- !img_ann@info$current_just$flipped[[axis]]
-
-            return(img_ann)
+            return(sa)
 
           }
         )
 
-      object <- setImageAnnotations(object, img_anns = img_anns, align = FALSE, overwrite = TRUE)
+      object <- setSpatialAnnotations(object, spat_anns = spat_anns, align = FALSE, overwrite = TRUE)
 
     }
 
@@ -1333,7 +1308,12 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
 
     axis <- process_axis(axis)
 
-    img_ranges <- getImageRange(object)
+    csf <- getScaleFactor(object, fct_name = "coords")
+    img_ranges <-
+      purrr::map(
+        .x = getImageRange(object),
+        .f = function(ir){ ir[2] <- ir[2]/csf; return(ir) }
+      )
 
     if(nSpatialTrajectories(object) != 0){
 
@@ -1352,14 +1332,6 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
                 verbose = FALSE
               )
 
-            spat_traj@projection <-
-              flip_coords_df(
-                df = spat_traj@projection,
-                axis = axis,
-                ranges = img_ranges,
-                verbose = FALSE
-              )
-
             return(spat_traj)
 
           }
@@ -1372,6 +1344,7 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
   }
 
   return(object)
+
 }
 
 

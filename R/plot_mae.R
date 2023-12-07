@@ -6,6 +6,11 @@ plot_mae <- function(df_shifted,
                      clr_model = "steelblue",
                      clr_segment = "tomato",
                      clr_variable = "forestgreen",
+                     display_eval = FALSE,
+                     eval_text_size = 1,
+                     eval_text_sep = "\n",
+                     eval_pos_x = NULL,
+                     eval_pos_y = NULL,
                      make_pretty = TRUE,
                      nrow = NULL,
                      ncol = NULL,
@@ -36,6 +41,46 @@ plot_mae <- function(df_shifted,
         pattern = "variable",
         replacement = ref_var
       )
+
+  }
+
+  if(base::isTRUE(display_eval)){
+
+    if(base::is.null(eval_pos_x)){
+
+      eval_pos_x <- base::max(df_shifted$bins_order) * 0.25
+
+    }
+
+    if(base::is.null(eval_pos_y)){
+
+      eval_pos_y <- 0.85
+
+    }
+
+    text_df <-
+      dplyr::rename(df_shifted, values_models = model_values, values = variable_values) %>%
+      evaluate_model_fits(var_order = "bins_order") %>%
+      dplyr::mutate(
+        rmse = stringr::str_c("RMSE: ", base::round(rmse, digits = 3)),
+        mae = stringr::str_c("MAE:  ", base::round(mae, digits = 3)),
+        text = stringr::str_c(mae, {eval_text_sep}, rmse),
+        x = {eval_pos_x},
+        y = {eval_pos_y}
+      )
+
+    text_add_on <-
+      ggplot2::geom_text(
+        data = text_df,
+        mapping = ggplot2::aes(x = x, y = y, label = text),
+        alpha = 1,
+        color = "black",
+        size = eval_text_size
+      )
+
+  } else {
+
+    text_add_on <- NULL
 
   }
 
@@ -137,6 +182,7 @@ plot_mae <- function(df_shifted,
       variable = dfs2[["type"]],
       clrp.adjust = purrr::set_names(x = c(clr_model, clr_variable), nm = c(ref_model, ref_var))
     ) +
+    text_add_on +
     facet_add_on +
     ggplot2::theme_bw() +
     ggplot2::theme(

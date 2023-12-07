@@ -19,6 +19,14 @@
 #'  on the setup with which [`spatialAnnotationScreening()`] was run.}
 #'  }
 #'
+#' @param outline Logical, indicating whether to add an outline to the points.
+#'   If `TRUE`, an outline will be added around the points to enhance visibility.
+#'   Default is FALSE.
+#'
+#' @param outline_width Numeric vector of length 2, specifying the factor with which
+#' the `pt_size` is multiplied to create the white layer (first value) and the
+#' black layer (second value).
+#'
 #' @inherit argument_dummy params
 #' @inherit check_color_to params
 #' @inherit check_coords_df params
@@ -59,12 +67,14 @@ setMethod(
                         pt_clrp = NULL,
                         pt_clrsp = NULL,
                         pt_size = NULL,
+                        outline = FALSE,
+                        outline_fct = c(2.5,3.5),
                         clrp_adjust = NULL,
                         display_image = NULL,
                         img_alpha = 1,
                         transform_with = NULL,
                         use_scattermore = NULL,
-                        bcs_rm = NULL,
+                        bcs_rm = base::character(0),
                         na_rm = FALSE,
                         xrange = getCoordsRange(object)$x,
                         yrange = getCoordsRange(object)$y,
@@ -85,8 +95,61 @@ setMethod(
 
     }
 
+    if(base::isTRUE(outline)){
+
+      coords_df <-
+        getCoordsDf(object) %>%
+        dplyr::filter(!barcodes %in% {{bcs_rm}})
+
+      outline_width <- c(pt_size*outline_fct[1], pt_size*outline_fct[2])
+
+      if(base::isTRUE(use_scattermore)){
+
+        outline_add_on <-
+          list(
+            scattermore::geom_scattermore(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = "black",
+              pointsize = outline_width[2]
+              ),
+            scattermore::geom_scattermore(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = "white",
+              pointsize = outline_width[1]
+              )
+          )
+
+      } else {
+
+        outline_add_on <-
+          list(
+            geom_point_fixed(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = "black",
+              size = outline_width[2]
+              ),
+            geom_point_fixed(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = "white",
+              size = outline_width[1]
+              )
+          )
+
+      }
+
+    } else {
+
+      outline_add_on <- list()
+
+    }
+
     main_plot <-
       main_plot +
+      outline_add_on +
       ggpLayerPoints(
         object = object,
         alpha_by = alpha_by,
@@ -140,6 +203,9 @@ setMethod(
                         use_scattermore = FALSE,
                         sctm_pixels = c(1024, 1024),
                         sctm_interpolate = FALSE,
+                        outline = FALSE,
+                        outline_coords = NULL,
+                        outline_fct = c(2,3),
                         order_by = NULL,
                         order_desc = FALSE,
                         na_rm = TRUE,
@@ -195,8 +261,69 @@ setMethod(
     coords_add_on <- ggplot2::coord_equal()
     coords_add_on$default <- TRUE
 
+
+    if(base::isTRUE(outline)){
+
+      if(base::is.data.frame(outline_coords)){
+
+        outline_df <- outline_coords
+
+
+      } else {
+
+        outline_df <- object
+
+      }
+
+      outline_width <- c(pt_size*outline_fct[1], pt_size*outline_fct[2])
+
+      if(base::isTRUE(use_scattermore)){
+
+        outline_add_on <-
+          list(
+            scattermore::geom_scattermore(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = outline_df,
+              color = "black",
+              pointsize = outline_width[2]
+            ),
+            scattermore::geom_scattermore(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = outline_df,
+              color = "white",
+              pointsize = outline_width[1]
+            )
+          )
+
+      } else {
+
+        outline_add_on <-
+          list(
+            geom_point_fixed(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = outline_df,
+              color = "black",
+              size = outline_width[2]
+            ),
+            geom_point_fixed(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = outline_df,
+              color = "white",
+              size = outline_width[1]
+            )
+          )
+
+      }
+
+    } else {
+
+      outline_add_on <- list()
+
+    }
+
     ggplot2::ggplot(data = coords_df) +
       hlpr_image_add_on2(image) +
+      outline_add_on +
       point_add_on +
       confuns::scale_color_add_on(
         clrp = pt_clrp,
@@ -692,6 +819,9 @@ plotSurfaceComparison <- function(object,
                                   display_image = NULL,
                                   bcsp_rm = NULL,
                                   na_rm = TRUE,
+                                  outline = FALSE,
+                                  outline_coords = NULL,
+                                  outline_fct = c(2,3),
                                   use_scattermore = FALSE,
                                   sctm_pixels = c(1024, 1024),
                                   sctm_interpolate = FALSE,
@@ -781,9 +911,10 @@ plotSurfaceComparison <- function(object,
       across = "variables"
     )
 
-  # order variables
-  plot_df$variables <- base::factor(plot_df$variables, levels = variables)
+  color_by <- color_by[color_by %in% variables]
 
+  plot_df$variables <-
+    base::factor(plot_df$variables, levels = color_by)
 
   # plot
   confuns::give_feedback(
@@ -831,8 +962,69 @@ plotSurfaceComparison <- function(object,
 
   }
 
+
+  if(base::isTRUE(outline)){
+
+    if(base::is.data.frame(outline_coords)){
+
+      outline_df <- outline_coords
+
+
+    } else {
+
+      outline_df <- coords_df
+
+    }
+
+    outline_width <- c(pt_size*outline_fct[1], pt_size*outline_fct[2])
+
+    if(base::isTRUE(use_scattermore)){
+
+      outline_add_on <-
+        list(
+          scattermore::geom_scattermore(
+            mapping = ggplot2::aes(x = x, y = y),
+            data = outline_df,
+            color = "black",
+            pointsize = outline_width[2]
+          ),
+          scattermore::geom_scattermore(
+            mapping = ggplot2::aes(x = x, y = y),
+            data = outline_df,
+            color = "white",
+            pointsize = outline_width[1]
+          )
+        )
+
+    } else {
+
+      outline_add_on <-
+        list(
+          geom_point_fixed(
+            mapping = ggplot2::aes(x = x, y = y),
+            data = outline_df,
+            color = "black",
+            size = outline_width[2]
+          ),
+          geom_point_fixed(
+            mapping = ggplot2::aes(x = x, y = y),
+            data = outline_df,
+            color = "white",
+            size = outline_width[1]
+          )
+        )
+
+    }
+
+  } else {
+
+    outline_add_on <- list()
+
+  }
+
   ggplot2::ggplot(data = plot_df) +
     hlpr_image_add_on(object, display_image = display_image) +
+    outline_add_on +
     point_add_on +
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
     ggplot2::theme_void() +
@@ -965,7 +1157,7 @@ plotSurfaceComparison2 <- function(coords_df,
 #'
 #' @description Plots the surface of the sample three times with different
 #' coloring to visualize how [`spatialAnnotationScreening()`] screens
-#' the sample depending on the input of arguments \code{binwidth}, \code{n_bins_circle},
+#' the sample depending on the input of arguments \code{binwidth}, \code{n_bins_dist},
 #' \code{n_bins_angle}.
 #'
 #' @inherit getSpatialAnnotation params
@@ -1002,7 +1194,7 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         id,
-                        distance,
+                        distance = distToEdge(object, id),
                         binwidth = recBinwidth(object),
                         n_bins_dist = NA_integer_,
                         color_by = c("dist", "bins_dist", "angle", "bins_angle"),
@@ -1031,6 +1223,9 @@ setMethod(
         verbose = verbose
     )
 
+    # allows unnamed elements to be added to all plots
+    ggpLayers <- c(ggpLayers, pseudo = list())
+
     p_list <-
       purrr::map(
         .x = color_by,
@@ -1045,10 +1240,27 @@ setMethod(
               verbose = FALSE
               )
 
+          if(stringr::str_detect(cb, pattern = "dist")){
+
+            labs_add_on <-
+              ggplot2::labs(
+                color = glue::glue("{cb} ({unit})")
+              )
+
+          } else {
+
+            labs_add_on <-
+              ggplot2::labs(
+                color = glue::glue("{cb} (°)")
+              )
+
+          }
+
           p_out <-
             plotSurface(object, color_by = cb, verbose = FALSE, ...) +
+            labs_add_on +
             ggpLayers[[cb]] + # add specific layers
-            ggpLayers[base::names(ggpLayers) == ""] # add general layers
+            ggpLayers[!base::names(ggpLayers) %in% c("dist", "bins_dist", "angle", "bins_angle")]  # add general layers
 
           return(p_out)
 

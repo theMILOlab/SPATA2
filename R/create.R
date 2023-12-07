@@ -452,6 +452,9 @@ create_model_df <- function(input,
                             model_subset = NULL,
                             model_remove = NULL,
                             model_add = NULL,
+                            noise_level = 0,
+                            noise = NULL,
+                            seed = 123,
                             verbose = TRUE){
 
   # if length > 1 it is assumed that input corresponds to a variable like 'var_order'
@@ -571,6 +574,34 @@ create_model_df <- function(input,
 
   }
 
+  # add noise if desired
+  if(noise_level != 0){
+
+    if(base::is.null(noise)){
+
+      set.seed(seed)
+
+      noise <- stats::runif(n = base::nrow(out_df), min = 0, max = 1)
+
+    }
+
+    out_df <-
+      dplyr::mutate(
+        .data = out_df,
+        dplyr::across(
+          .cols = dplyr::everything(),
+          .fns =
+            ~ add_noise_to_model(
+                model = .x,
+                random = {{noise}},
+                nl = {{noise_level}}
+            ) %>% scales::rescale(to = c(0,1))
+        )
+      )
+
+  }
+
+  # add ordering variable
   if(base::is.character(var_order)){
 
     out_df <-
@@ -582,6 +613,10 @@ create_model_df <- function(input,
   return(out_df)
 
 }
+
+
+
+
 
 #' @keywords internal
 create_spatial_trajectories_ui <- function(plot_height = "600px", breaks_add = NULL, ...){
@@ -4542,9 +4577,8 @@ createSpatialTrajectories <- function(object){
             shiny::reactiveValuesToList(traj_vals) %>%
             base::as.data.frame() %>%
             tibble::as_tibble() %>%
-            dplyr::select(x, y)
-
-          assign(x = "traj_vals", value = out, envir = .GlobalEnv)
+            dplyr::select(x, y) %>%
+            dplyr::mutate_all(.funs = base::as.numeric)
 
           if(base::nrow(out) >= 3){
 
@@ -4814,7 +4848,64 @@ createSpatialTrajectories <- function(object){
             case_false = "no_trajectory_highlighted"
           )
 
+          # convert back to original (pixel) unit
           object <- spata_object()
+
+          if(input$unit %in% validUnitsOfLengthSI()){
+
+            pxl_scale_fct <- getPixelScaleFactor(object, unit = input$unit)
+
+          } else {
+
+            pxl_scale_fct <- 1
+
+          }
+
+          coords_scale_fct <- getScaleFactor(object, fct_name = "coords")
+
+          projection <-
+            dplyr::mutate(
+              .data = proj_df()[,c("barcodes", "projection_length")],
+              projection_length = projection_length / {{pxl_scale_fct}} / {{coords_scale_fct}}
+            )
+
+          segment <-
+            dplyr::transmute(
+              .data = traj_df(),
+              x = x / {{pxl_scale_fct}},
+              y = y / {{pxl_scale_fct}},
+              x_orig = x / {{coords_scale_fct}},
+              y_orig = y / {{coords_scale_fct}}
+            )
+
+          if(containsTissueOutline(object)){
+
+            outline_df <- getTissueOutlineDf(object, by_section = TRUE)
+
+            lie_inside_tissue_outline <-
+              purrr::map_lgl(
+                .x = 1:base::nrow(segment),
+                .f = function(i){
+
+                  is_inside_plg(
+                    point = base::as.numeric(segment[i, c("x", "y")]),
+                    polygon_df = outline_df,
+                    strictly = FALSE
+                  )
+
+                }
+              )
+
+            if(base::any(!lie_inside_tissue_outline)){
+
+              confuns::give_feedback(
+                msg = "Parts of the trajectory do not lie inside the tissue outline.",
+                fdb.fn = "warning"
+              )
+
+            }
+
+          }
 
           spat_traj <-
             SpatialTrajectory(
@@ -4824,8 +4915,8 @@ createSpatialTrajectories <- function(object){
               width_unit = input$unit,
               sample = getSampleName(object),
               info = list(img_name = img_name()),
-              segment = traj_df(),
-              projection = proj_df()[,c("barcodes", "projection_length")]
+              segment = segment[,c("x_orig", "y_orig")],
+              projection = projection[,c("barcodes", "projection_length")]
             )
 
           object <-

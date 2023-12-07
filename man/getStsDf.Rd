@@ -6,23 +6,20 @@
 \usage{
 getStsDf(
   object,
-  id,
   variables,
-  binwidth = getCCD(object),
-  n_bins = NA_integer_,
-  methods_gs = NULL,
-  smooth_span = 0,
+  id = idST(object),
+  binwidth = recBinwidth(object),
+  unit = getDefaultUnit(object),
+  ro = c(0, 1),
+  bcs_exclude = NULL,
   format = "wide",
-  verbose = NULL,
+  verbose = FALSE,
   ...
 )
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
-
-\item{id}{Character value. Denotes the spatial trajectory
-of interest.}
 
 \item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
@@ -32,15 +29,12 @@ of interest.}
 \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
 }}
 
+\item{id}{Character value. Denotes the spatial trajectory
+of interest.}
+
 \item{binwidth}{Distance value. The width of the bins to which
 the barcode-spots are assigned. Defaults to the center-center
 distance: \code{binwidth = getCCD(object)}.}
-
-\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
-are binned into.}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

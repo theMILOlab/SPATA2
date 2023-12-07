@@ -16,3 +16,4 @@ An empty object of class \code{spata2}.
 \description{
 Initiate an empty \code{spata2} object
 }
+\keyword{internal}
