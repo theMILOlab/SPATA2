@@ -1351,7 +1351,9 @@ getSasDf <- function(object,
         dist_screened <-
           base::diff(c(extract_value(min_dist),extract_value(distance)))
 
-        span <- base::as.numeric(binwidth/dist_screened)
+        cf <- compute_correction_factor_sas(object, id = id, distance = distance, core = core)
+
+        span <- base::as.numeric(binwidth/dist_screened) / cf
 
         if(base::is.numeric(list(...)[["span"]])){
 

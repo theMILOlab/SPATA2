@@ -739,12 +739,14 @@ ggpLayerEncirclingSAS <- function(object,
                 if(i == 1){
 
                   ls <- line_size_core
+                  lt <- line_type[1]
                   alpha <- alpha_core
                   fill <- fill_core
 
                 } else {
 
                   ls <- line_size
+                  lt <- line_type[2]
                   alpha <- 0
                   fill <- NA
 
@@ -757,18 +759,28 @@ ggpLayerEncirclingSAS <- function(object,
                   fill = fill,
                   color = line_color,
                   size = ls,
-                  linetype = line_type[1]
+                  linetype = lt
                 )
 
               }
             )
+
+          if(base::length(id) == 1){
+
+            le <- utils::tail(expansions, 1)[[1]]
+
+            out_listx <-
+              c(out_listx,
+                ggplot2::coord_equal(xlim = base::range(le$x), ylim = base::range(le$y), expand = FALSE)
+              )
+
+          }
 
           return(out_listx)
 
         }
       ) %>%
       purrr::flatten()
-
 
   } else {
 
@@ -794,7 +806,7 @@ ggpLayerEncirclingSAS <- function(object,
               inc_outline = TRUE,
               verbose = verbose
             )
-assign("expansions", expansions, envir = .GlobalEnv)
+
           exp_df <-
             purrr::map_df(
               .x = expansions[base::names(expansions) != "Core"],
@@ -1333,6 +1345,7 @@ ggpLayerHorizonSAS <- function(object,
                                line_color = "black",
                                line_size = (line_size_core*0.75),
                                line_size_core = 1,
+                               line_type = "solid",
                                inc_outline = TRUE,
                                direction = "outwards",
                                verbose = NULL,
@@ -1353,6 +1366,7 @@ ggpLayerHorizonSAS <- function(object,
       line_color = line_color,
       line_size = line_size,
       line_size_core = line_size_core,
+      line_type = line_type,
       inc_outline = inc_outline
     )
 
@@ -3099,7 +3113,7 @@ setMethod(
                         line_color = "black",
                         line_size = 1,
                         line_type = "solid",
-                        outline_fct = c(1.75, 2.75),
+                        outline_fct = c(2.25, 2.75),
                         use_scattermore = FALSE,
                         transform = TRUE,
                         scale_fct = 1,

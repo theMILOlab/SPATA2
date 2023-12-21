@@ -1132,19 +1132,6 @@ plotSasHeatmap <- function(object,
 
   smooth <- TRUE
 
-  sas_input <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist,
-      object = object,
-      verbose = verbose
-    )
-
-  distance <- sas_input$distance
-  binwidth <- sas_input$binwidth
-  n_bins_dist <- sas_input$n_bins_dist
-
   # -----
 
   # 2. Data wrangling -------------------------------------------------------
