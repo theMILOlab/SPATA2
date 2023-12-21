@@ -62,7 +62,7 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
   if(base::is.null(mtr_name)){
 
-    stop("Please set an active matrix with `setActivenMatrix()`")
+    stop("Please set an active matrix with `setActiveMatrix()`")
 
   }
 
@@ -833,9 +833,6 @@ setMethod(
 
     }
 
-    ### old code - remove?
-    coords_df$sample <- object@samples
-
     coords_df <-
       dplyr::mutate(
         .data = coords_df,
@@ -938,6 +935,8 @@ setMethod(
 #' via `getCoordsDf()` is used. Else other data.frame of observations can be put in
 #' relation to the spatial annotation. Requires numeric variables named *x* and *y* in
 #' pixel units.
+#' @param core Logical value. If `FALSE`, data points that lie inside the core of the
+#' spatial annotation are removed.
 #' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
 #' if not empty and `coords_df` is `NULL`.
 #' @inherit argument_dummy params
@@ -964,6 +963,7 @@ getCoordsDfSA <- function(object,
                           id = idSA(object),
                           distance = distToEdge(object, id),
                           binwidth = recBinwidth(object),
+                          core = TRUE,
                           n_bins_dist = NA_integer_,
                           angle_span = c(0,360),
                           n_bins_angle = 1,
@@ -1279,6 +1279,12 @@ getCoordsDfSA <- function(object,
 
   }
 
+  if(!base::isTRUE(core)){
+
+    coords_df_sa <- dplyr::filter(coords_df_sa, rel_loc != "core")
+
+  }
+
   return(coords_df_sa)
 
 }
@@ -1310,6 +1316,10 @@ getCoordsDfST <- function(object,
 
   }
 
+  binwidth <- as_unit(binwidth, unit = dist_unit, object = object)
+
+  binwidth_num <- base::as.numeric(binwidth)
+
   projection_df <- getProjectionDf(object, id = id, width = width)
 
   # merge data.frames
@@ -1322,7 +1332,8 @@ getCoordsDfST <- function(object,
     dplyr::mutate(
       dist = projection_length * scale_fct,
       dist_unit = {{dist_unit}},
-      rel_loc = dplyr::if_else(base::is.na(dist), true = "outside", false = "inside")
+      rel_loc = dplyr::if_else(base::is.na(dist), true = "outside", false = "inside"),
+      bins_dist = make_bins(dist, binwidth = {{binwidth_num}}, neg = FALSE)
     )
 
   # how many bins
@@ -1336,7 +1347,6 @@ getCoordsDfST <- function(object,
 
   }
 
-  coords_df[["bins_dist"]] <- base::cut(coords_df[["dist"]], breaks = n_bins)
   coords_df[["bins_order"]] <- base::as.numeric(coords_df[["bins_dist"]])
 
   if(base::is.character(variables)){
@@ -1346,6 +1356,7 @@ getCoordsDfST <- function(object,
         object = object,
         spata_df = coords_df,
         variables = variables,
+        verbose = verbose,
         ...
       )
 
@@ -1933,13 +1944,15 @@ getExpressionMatrixNames <- function(object, ...){
 
   if(base::is.null(mtr_names) | base::identical(mtr_names, base::character(0))){
 
-    stop("Could not find any expression matrices in the provided spata-object.")
+    out <- character(0)
 
   } else {
 
-    return(mtr_names)
+    out <- mtr_names
 
   }
+
+  return(out)
 
 }
 

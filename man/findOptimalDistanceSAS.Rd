@@ -8,10 +8,13 @@ findOptimalDistanceSAS(
   object,
   id,
   variables,
-  core = TRUE,
-  binwidth = recBinwidth(object),
-  n_bins_angle = 12,
-  threshold = 0.25
+  core = FALSE,
+  start = recBinwidth(object) * 20,
+  max = distToEdge(object, id),
+  step = recBinwidth(object),
+  sign_var = "fdr",
+  sign_threshold = 0.05,
+  ...
 )
 }
 \arguments{
@@ -27,12 +30,7 @@ this argument must be explicitly specified to identify the target annotation.}
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
-
-\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
-(See details for more.)}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 This function suggests a value for the \code{distance}-parameter

@@ -15,6 +15,7 @@ plotSpatialTrajectories(
   method_gs = NULL,
   smooth = NULL,
   smooth_span = NULL,
+  width = NULL,
   pt_size = NULL,
   pt_alpha = 0.5,
   pt_alpha2 = 0.9,

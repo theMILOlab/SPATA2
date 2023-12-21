@@ -2525,6 +2525,130 @@ ggpLayerSampleMask <- function(...){
 }
 
 
+#' @title Obtain a trajectory data.frame
+#'
+#' @description Extracts a data.frame that contains information about barcode-spots
+#' needed for analysis related to \code{spatialTrajectoryScreening()}.
+#'
+#' @inherit argument_dummy params
+#' @inherit variables_num params
+#' @inherit getSpatialTrajectory params
+#' @param binwidth Distance value. The width of the bins to which
+#' the barcode-spots are assigned. Defaults to the center-center
+#' distance: \code{binwidth = getCCD(object)}.
+#'
+#' @return Data.frame. (See details for more.)
+#'
+#' @export
+#'
+
+getTrajectoryDf <- function(object,
+                            id,
+                            variables,
+                            binwidth = getCCD(object),
+                            n_bins = NA_integer_,
+                            method_gs = NULL,
+                            normalize = TRUE,
+                            summarize_with = FALSE,
+                            smooth_span = 0,
+                            format = "wide",
+                            verbose = NULL,
+                            ...){
+
+  deprecated(fn = TRUE, ...)
+
+  hlpr_assign_arguments(object)
+
+  binwidth <- as_pixel(input = binwidth, object = object, as_numeric = TRUE)
+
+  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
+
+  confuns::are_values(c("normalize"), mode = "logical")
+
+  if(base::is.character(summarize_with)){
+
+    check_one_of(
+      input = summarize_with,
+      against = c("mean", "median")
+    )
+
+  }
+
+  check_one_of(
+    input = format,
+    against = c("long", "wide")
+  )
+
+  trajectory <- getTrajectory(object, id = id)
+
+  if(base::length(normalize) == 1){
+
+    normalize <- base::rep(normalize, 2)
+
+  }
+
+  out <-
+    joinWithVariables(
+      object = object,
+      variables = variables,
+      method_gs = method_gs,
+      normalize = normalize[1],
+      smooth = FALSE,
+      verbose = verbose
+    ) %>%
+    dplyr::select(barcodes, dplyr::all_of(variables)) %>%
+    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes")
+
+  if(base::is.character(summarize_with)){
+
+    out <-
+      summarize_projection_df(
+        projection_df = out,
+        binwidth = binwidth,
+        n_bins = n_bins,
+        summarize_with = summarize_with
+      ) %>%
+      normalize_smrd_projection_df(normalize = normalize[2]) %>%
+      tibble::as_tibble()
+
+    if(smooth_span > 0){
+
+      traj_order <- out[["trajectory_order"]]
+
+      confuns::give_feedback(
+        msg = glue::glue("Smoothing with `span` = {smooth_span}."),
+        verbose = verbose
+      )
+
+      out <-
+        dplyr::mutate(
+          .data = out,
+          dplyr::across(
+            .cols = dplyr::all_of(variables),
+            .fns = function(var){
+
+              stats::loess(formula = var ~ traj_order, span = smooth_span) %>%
+                stats::predict() %>%
+                confuns::normalize()
+
+            }
+          )
+        )
+
+    }
+
+    if(format == "long"){
+
+      out <- shift_smrd_projection_df(out)
+
+    }
+
+  }
+
+  return(out)
+
+}
+
 
 # h -----------------------------------------------------------------------
 

@@ -37,10 +37,6 @@ is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
-specified. (See details for more.)}
-
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}

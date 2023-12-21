@@ -21,7 +21,7 @@ plotSurfaceComparison(
   na_rm = TRUE,
   outline = FALSE,
   outline_coords = NULL,
-  outline_fct = c(2, 3),
+  outline_fct = c(1.75, 2.75),
   use_scattermore = FALSE,
   sctm_pixels = c(1024, 1024),
   sctm_interpolate = FALSE,

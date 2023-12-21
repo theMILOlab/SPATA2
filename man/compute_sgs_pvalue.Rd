@@ -39,5 +39,4 @@ random_lds <-
 
  compute_sgs_pvalue(gradient, random = random_lds)
 
-
 }

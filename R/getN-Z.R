@@ -559,7 +559,7 @@ getProjectionDf <- function(object,
 
   if(base::is.null(width)){
 
-    width <- getTrajectoryWidth(object, id = id)
+    width <- getTrajectoryWidth(object, id = id, orig = FALSE)
 
   }
 
@@ -568,7 +568,7 @@ getProjectionDf <- function(object,
   projection_df <-
     project_on_trajectory(
       coords_df = getCoordsDf(object),
-      traj_df = getTrajectorySegmentDf(object, id = id),
+      traj_df = getTrajectorySegmentDf(object, id = id) ,
       width = width
     ) %>%
     dplyr::select(barcodes, projection_length)
@@ -587,10 +587,6 @@ getProjectionDf <- function(object,
     out <- projection_df
 
   }
-
-  coords_scale_fct <- getScaleFactor(object, fct_name = "coords", img_name = img_name)
-
-  out$projection_length <- out$projection_length * coords_scale_fct
 
   return(out)
 
@@ -3771,21 +3767,18 @@ setMethod(
   }
 )
 
-
-
-
 #' @export
 getTrajectory <- function(object, id){
 
-  out <- object@trajectories[[1]][[id]]
+  tobj <- object@trajectories[[1]][[id]]
 
   check_availability(
-    test = !base::is.null(out),
+    test = !base::is.null(tobj),
     ref_x = glue::glue("spatial trajectory '{id}'"),
     ref_fns = "createSpatialTrajectories()"
   )
 
-  return(out)
+  return(tobj)
 
 }
 
@@ -3810,132 +3803,6 @@ getTrajectoryIds <- function(object){
 }
 
 
-#' @title Obtain a trajectory data.frame
-#'
-#' @description Extracts a data.frame that contains information about barcode-spots
-#' needed for analysis related to \code{spatialTrajectoryScreening()}.
-#'
-#' @inherit argument_dummy params
-#' @inherit variables_num params
-#' @inherit getSpatialTrajectory params
-#' @param binwidth Distance value. The width of the bins to which
-#' the barcode-spots are assigned. Defaults to the center-center
-#' distance: \code{binwidth = getCCD(object)}.
-#'
-#' @return Data.frame. (See details for more.)
-#'
-#' @export
-#'
-
-getTrajectoryDf <- function(object,
-                            id,
-                            variables,
-                            binwidth = getCCD(object),
-                            n_bins = NA_integer_,
-                            method_gs = NULL,
-                            normalize = TRUE,
-                            summarize_with = FALSE,
-                            smooth_span = 0,
-                            format = "wide",
-                            verbose = NULL,
-                            ...){
-
-  hlpr_assign_arguments(object)
-
-  binwidth <- as_pixel(input = binwidth, object = object, as_numeric = TRUE)
-
-  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
-
-  confuns::are_values(c("normalize"), mode = "logical")
-
-  if(base::is.character(summarize_with)){
-
-    check_one_of(
-      input = summarize_with,
-      against = c("mean", "median")
-    )
-
-  }
-
-  check_one_of(
-    input = format,
-    against = c("long", "wide")
-  )
-
-  trajectory <- getTrajectory(object, id = id)
-
-  if(base::length(normalize) == 1){
-
-    normalize <- base::rep(normalize, 2)
-
-  }
-
-  out <-
-    joinWithVariables(
-      object = object,
-      variables = variables,
-      method_gs = method_gs,
-      normalize = normalize[1],
-      smooth = FALSE,
-      verbose = verbose
-    ) %>%
-    dplyr::select(barcodes, dplyr::all_of(variables)) %>%
-    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes")
-
-  if(base::is.character(summarize_with)){
-
-    out <-
-      summarize_projection_df(
-        projection_df = out,
-        binwidth = binwidth,
-        n_bins = n_bins,
-        summarize_with = summarize_with
-      ) %>%
-      normalize_smrd_projection_df(normalize = normalize[2]) %>%
-      tibble::as_tibble()
-
-    if(smooth_span > 0){
-
-      traj_order <- out[["trajectory_order"]]
-
-      confuns::give_feedback(
-        msg = glue::glue("Smoothing with `span` = {smooth_span}."),
-        verbose = verbose
-      )
-
-      out <-
-        dplyr::mutate(
-          .data = out,
-          dplyr::across(
-            .cols = dplyr::all_of(variables),
-            .fns = function(var){
-
-                stats::loess(formula = var ~ traj_order, span = smooth_span) %>%
-                stats::predict() %>%
-                confuns::normalize()
-
-            }
-          )
-        )
-
-    }
-
-    if(format == "long"){
-
-      out <- shift_smrd_projection_df(out)
-
-    }
-
-  }
-
-  return(out)
-
-}
-
-
-
-
-
 #' @title Obtain length of trajectory
 #'
 #' @description Computes and returns the length of a trajectory.
@@ -3952,11 +3819,30 @@ getTrajectoryLength <- function(object,
                                 round = FALSE,
                                 as_numeric = FALSE){
 
-  scale_fct <- getScaleFactor(object, fct_name = "coords")
+  csf <- getScaleFactor(object, fct_name = "coords")
 
   tobj <- getTrajectory(object, id = id)
 
-  dist <- base::max(tobj@projection$projection_length)*scale_fct
+  if(base::nrow(tobj@segment) == 2){
+
+    dist <-
+      compute_distance(
+        starting_pos = base::as.numeric(tobj@segment[1,])*csf,
+        final_pos = base::as.numeric(tobj@segment[2,]*csf)
+      )
+
+  } else {
+
+    dist <-
+      project_on_trajectory(
+        coords_df = getCoordsDf(object),
+        traj_df = dplyr::rename(tobj@segment*csf, x = x_orig, y = y_orig),
+        width = getTrajectoryWidth(object, id = id, unit = "px", orig = FALSE)
+      ) %>%
+      dplyr::pull(projection_length) %>%
+      base::max()
+
+  }
 
   out <-
     as_unit(
@@ -3991,13 +3877,13 @@ getTrajectorySegmentDf <- function(object,
 
   traj_obj <- getTrajectory(object, id)
 
-  scale_fct <- getScaleFactor(object, fct_name = "coords")
+  csf <- getScaleFactor(object, fct_name = "coords")
 
   out <-
     dplyr::mutate(
       .data = traj_obj@segment,
-      x = x_orig * scale_fct,
-      y = y_orig * scale_fct,
+      x = x_orig * csf,
+      y = y_orig * csf,
       trajectory = {{id}}
     )
 
@@ -4016,17 +3902,20 @@ getTrajectorySegmentDf <- function(object,
 #' @export
 #'
 #' @examples
-getTrajectoryWidth <- function(object, id = idST(object), unit = "px"){
+getTrajectoryWidth <- function(object, id = idST(object), unit = "px", orig = FALSE){
 
   traj <- getTrajectory(object, id = id)
 
   out <- stringr::str_c(traj@width, traj@width_unit)
 
-  if(unit != "px"){
+  if(traj@width_unit == "px" && !base::isTRUE(orig)){
 
-    out <- as_unit(out, unit = unit, object = object)
+    csf <- getScaleFactor(object, fct_name = "coords")
+    out <- extract_value(out)*csf
 
   }
+
+  out <- as_unit(out, unit = unit, object = object)
 
   return(out)
 

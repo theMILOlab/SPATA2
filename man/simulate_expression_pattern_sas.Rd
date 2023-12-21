@@ -12,13 +12,13 @@ simulate_expression_pattern_sas(
   core,
   binwidth = recBinwidth(object),
   distance = distToEdge(object, id),
+  angle_span = c(0, 360),
   noise_levels = seq(0, 100, length.out = 21),
   noise_types = c("ed", "ep", "fp", "cb"),
-  noise_pos_equal_fct = 0.2,
-  noise_pos_focal_fct = 0.2,
   range_sim = c(0, 1),
   range_random = base::range(range_sim),
   model_add = NULL,
+  model_remove = NULL,
   seed = 123,
   npref = "SE",
   nsep = ".",
@@ -75,6 +75,10 @@ is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
+\item{angle_span}{Numeric vector of length 2. Confines the area screened by
+an angle span relative to the center of the spatial annotation.
+(See details fore more.)}
+
 \item{noise_levels}{A vector of integers between 0-100 (inclusive). Indicate
 the respective levels of noise to be added to each simulation in percent.
 0 indicates no noise. 100 indicates only noise.}
@@ -88,6 +92,9 @@ outside of the area of interest.}
 containing a function that takes a numeric vector as input and returns a numeric
 vector with the same length as its input vector. Or a numeric vector with the
 same length as the input vector. Test models with \code{showModels()}.}
+
+\item{model_remove}{Character value. Used as a regex to remove models
+are not supposed to be included.}
 
 \item{seed}{Numeric value, given to \code{set.seed()}.}
 

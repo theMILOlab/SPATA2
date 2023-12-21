@@ -44,10 +44,6 @@ is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
-specified. (See details for more.)}
-
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
@@ -55,9 +51,6 @@ recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
-
-\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
-(See details for more.)}
 
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 

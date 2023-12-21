@@ -8,7 +8,8 @@ spatialTrajectoryScreening(
   object,
   id,
   variables,
-  binwidth = getCCD(object),
+  binwidth = recBinwidth(object),
+  width = NULL,
   unit = getDefaultUnit(object),
   bcs_exclude = character(0),
   sign_var = "fdr",
@@ -17,9 +18,11 @@ spatialTrajectoryScreening(
   model_add = NULL,
   model_subset = NULL,
   model_remove = NULL,
+  estimate_R2 = TRUE,
   n_random = 1000,
   seed = 123,
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
@@ -53,6 +56,8 @@ are not supposed to be included.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{n_bins}{Numeric value or vector of length 2. Specifies exactly how many bins are
 created. (See details for more.)}

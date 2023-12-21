@@ -68,7 +68,7 @@ setMethod(
                         pt_clrsp = NULL,
                         pt_size = NULL,
                         outline = FALSE,
-                        outline_fct = c(2.5,3.5),
+                        outline_fct = c(2.125,2.75),
                         clrp_adjust = NULL,
                         display_image = NULL,
                         img_alpha = 1,
@@ -95,61 +95,8 @@ setMethod(
 
     }
 
-    if(base::isTRUE(outline)){
-
-      coords_df <-
-        getCoordsDf(object) %>%
-        dplyr::filter(!barcodes %in% {{bcs_rm}})
-
-      outline_width <- c(pt_size*outline_fct[1], pt_size*outline_fct[2])
-
-      if(base::isTRUE(use_scattermore)){
-
-        outline_add_on <-
-          list(
-            scattermore::geom_scattermore(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = coords_df,
-              color = "black",
-              pointsize = outline_width[2]
-              ),
-            scattermore::geom_scattermore(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = coords_df,
-              color = "white",
-              pointsize = outline_width[1]
-              )
-          )
-
-      } else {
-
-        outline_add_on <-
-          list(
-            geom_point_fixed(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = coords_df,
-              color = "black",
-              size = outline_width[2]
-              ),
-            geom_point_fixed(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = coords_df,
-              color = "white",
-              size = outline_width[1]
-              )
-          )
-
-      }
-
-    } else {
-
-      outline_add_on <- list()
-
-    }
-
     main_plot <-
       main_plot +
-      outline_add_on +
       ggpLayerPoints(
         object = object,
         alpha_by = alpha_by,
@@ -166,6 +113,8 @@ setMethod(
         transform_with = transform_with,
         xrange = xrange,
         yrange = yrange,
+        outline = outline,
+        outline_fct = outline_fct,
         bcs_rm = bcs_rm,
         na_rm = na_rm,
         use_scattermore = use_scattermore,
@@ -205,7 +154,7 @@ setMethod(
                         sctm_interpolate = FALSE,
                         outline = FALSE,
                         outline_coords = NULL,
-                        outline_fct = c(2,3),
+                        outline_fct = c(1.75,2.75),
                         order_by = NULL,
                         order_desc = FALSE,
                         na_rm = TRUE,
@@ -261,7 +210,6 @@ setMethod(
     coords_add_on <- ggplot2::coord_equal()
     coords_add_on$default <- TRUE
 
-
     if(base::isTRUE(outline)){
 
       if(base::is.data.frame(outline_coords)){
@@ -275,45 +223,15 @@ setMethod(
 
       }
 
-      outline_width <- c(pt_size*outline_fct[1], pt_size*outline_fct[2])
-
-      if(base::isTRUE(use_scattermore)){
-
-        outline_add_on <-
-          list(
-            scattermore::geom_scattermore(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = outline_df,
-              color = "black",
-              pointsize = outline_width[2]
-            ),
-            scattermore::geom_scattermore(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = outline_df,
-              color = "white",
-              pointsize = outline_width[1]
-            )
-          )
-
-      } else {
-
-        outline_add_on <-
-          list(
-            geom_point_fixed(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = outline_df,
-              color = "black",
-              size = outline_width[2]
-            ),
-            geom_point_fixed(
-              mapping = ggplot2::aes(x = x, y = y),
-              data = outline_df,
-              color = "white",
-              size = outline_width[1]
-            )
-          )
-
-      }
+      outline_add_on <-
+        ggpLayerTissueOutline(
+          object = outline_df,
+          method = "points",
+          line_size = pt_size,
+          outline_fct = outline_fct,
+          use_scattermore = use_scattermore,
+          bcs_rm = base::character(0)
+        )
 
     } else {
 
@@ -821,7 +739,7 @@ plotSurfaceComparison <- function(object,
                                   na_rm = TRUE,
                                   outline = FALSE,
                                   outline_coords = NULL,
-                                  outline_fct = c(2,3),
+                                  outline_fct = c(1.75, 2.75),
                                   use_scattermore = FALSE,
                                   sctm_pixels = c(1024, 1024),
                                   sctm_interpolate = FALSE,
@@ -965,56 +883,15 @@ plotSurfaceComparison <- function(object,
 
   if(base::isTRUE(outline)){
 
-    if(base::is.data.frame(outline_coords)){
-
-      outline_df <- outline_coords
-
-
-    } else {
-
-      outline_df <- coords_df
-
-    }
-
-    outline_width <- c(pt_size*outline_fct[1], pt_size*outline_fct[2])
-
-    if(base::isTRUE(use_scattermore)){
-
-      outline_add_on <-
-        list(
-          scattermore::geom_scattermore(
-            mapping = ggplot2::aes(x = x, y = y),
-            data = outline_df,
-            color = "black",
-            pointsize = outline_width[2]
-          ),
-          scattermore::geom_scattermore(
-            mapping = ggplot2::aes(x = x, y = y),
-            data = outline_df,
-            color = "white",
-            pointsize = outline_width[1]
-          )
-        )
-
-    } else {
-
-      outline_add_on <-
-        list(
-          geom_point_fixed(
-            mapping = ggplot2::aes(x = x, y = y),
-            data = outline_df,
-            color = "black",
-            size = outline_width[2]
-          ),
-          geom_point_fixed(
-            mapping = ggplot2::aes(x = x, y = y),
-            data = outline_df,
-            color = "white",
-            size = outline_width[1]
-          )
-        )
-
-    }
+    outline_add_on <-
+      ggpLayerTissueOutline(
+        object = object,
+        method = "points",
+        line_size = pt_size,
+        outline_fct = outline_fct,
+        use_scattermore = use_scattermore,
+        bcs_rm = base::character(0)
+      )
 
   } else {
 
@@ -1023,8 +900,8 @@ plotSurfaceComparison <- function(object,
   }
 
   ggplot2::ggplot(data = plot_df) +
-    hlpr_image_add_on(object, display_image = display_image) +
     outline_add_on +
+    hlpr_image_add_on(object, display_image = display_image) +
     point_add_on +
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
     ggplot2::theme_void() +

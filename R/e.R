@@ -33,41 +33,25 @@ estimate_r2_for_sas_run <- function(object,
                                     binwidth,
                                     angle_span = c(0, 360),
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
-                                    n_sim = 50,
-                                    model_add = NULL,
-                                    model_subset = NULL,
-                                    model_remove = NULL,
+                                    n_sim = 25,
                                     verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  model_df <-
-    create_model_df(
-      input = 1:100, # only need model names
-      model_add = model_add,
-      model_subset = model_subset,
-      model_remove = model_remove,
-      verbose = FALSE
-    )
-
-  mnames <- base::names(model_df)
-
   simulations <-
     purrr::map(
-      .x = mnames,
+      .x = base::names(model_formulas_R2_est),
       .f = function(mname){
 
-        list(
-          id =
-            base::toupper(mname) %>%
-            stringr::str_remove_all(pattern = "[^A-Z]"),
-          n = n_sim,
-          model = mname
-        )
+        id <-
+          base::toupper(mname) %>%
+          stringr::str_remove_all(pattern = "[^A-Z]")
+
+        list(id = id, n = n_sim, model = mname)
 
       }
     ) %>%
-    purrr::set_names(nm = stringr::str_c("S", base::seq_along(mnames)))
+    purrr::set_names(nm = base::names(model_formulas_R2_est))
 
   sim_mtr <-
     simulate_expression_pattern_sas(
@@ -79,7 +63,7 @@ estimate_r2_for_sas_run <- function(object,
       distance = distance,
       noise_levels = noise_levels,
       noise_types = "ed",
-      model_add = model_add,
+      model_add = model_formulas_R2_est,
       seed = 123,
       verbose = FALSE
     )
@@ -91,6 +75,8 @@ estimate_r2_for_sas_run <- function(object,
   variables <- base::rownames(sim_mtr)
 
   unit <- getDefaultUnit(object)
+
+  gc()
 
   coords_df <-
     getCoordsDfSA(
@@ -127,7 +113,10 @@ estimate_r2_for_sas_run <- function(object,
   max_dist <- as_unit(distance, unit = unit, object = object)
   binwidth <- as_unit(binwidth, unit = unit, object = object)
   tot_dist <- max_dist - min_dist
-  span <- base::as.numeric(binwidth/tot_dist)
+
+  cf <- compute_correction_factor_sas(object, id = id, distance = distance, core = core)
+
+  span <- base::as.numeric(binwidth/tot_dist) / cf
 
   expr_est_pos <-
     compute_positions_expression_estimates(
@@ -176,22 +165,177 @@ estimate_r2_for_sas_run <- function(object,
       }
     ) %>%
     add_benchmarking_variables() %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(model_sim = confuns::str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"))
 
-  purrr::map_dbl(
-    .x = base::unique(sas_df$model_sim),
-    .f = function(ms){
+  r2_df <-
+    purrr::map_df(
+      .x = base::unique(sas_df$model_sim),
+      .f = function(ms){
 
-      so <-
-        dplyr::filter(sas_df, model_sim == {{ms}}) %>%
-        stats::lm(data = ., formula = noise_perc ~ tot_var) %>%
-        base::summary()
+        so <-
+          dplyr::filter(sas_df, model_sim == {{ms}}) %>%
+          stats::lm(data = ., formula = noise_perc ~ tot_var) %>%
+          base::summary()
 
-      so[["adj.r.squared"]]
+        tibble::tibble(
+          model = {{ms}},
+          r2 = so[["adj.r.squared"]]
+        )
 
-    }
-  ) %>%
-    base::mean()
+
+      }
+    )
+
+  out <- list(r2_df = r2_df, sas_df = sas_df)
+
+  return(out)
+
+}
+
+
+estimate_r2_for_sts_run <- function(object,
+                                    id,
+                                    binwidth,
+                                    width,
+                                    noise_levels = base::seq(from = 0, to = 100, length.out = 11),
+                                    n_sim = 20,
+                                    verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  simulations <-
+    purrr::map(
+      .x = base::names(model_formulas_R2_est),
+      .f = function(mname){
+
+        id <-
+          base::toupper(mname) %>%
+          stringr::str_remove_all(pattern = "[^A-Z]")
+
+        list(
+          id = id,
+          n = n_sim,
+          model = mname
+        )
+
+      }
+    ) %>%
+    purrr::set_names(nm = base::names(model_formulas_R2_est))
+
+  sim_mtr <-
+    simulate_expression_pattern_sts(
+      object = object,
+      id = id,
+      simulations = simulations,
+      binwidth = binwidth,
+      width = width,
+      noise_levels = noise_levels,
+      noise_types = "ed",
+      model_add = model_formulas_R2_est,
+      seed = 123,
+      verbose = T
+    )
+
+  object <-
+    addExpressionMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
+    setActiveMatrix(object = ., mtr_name = "simR2", verbose = FALSE)
+
+  variables <- base::rownames(sim_mtr)
+
+  unit <- getDefaultUnit(object)
+
+  coords_df <-
+    getCoordsDfST(
+      object = object,
+      id = id,
+      binwidth = binwidth,
+      width = width,
+      variables = variables,
+      dist_unit = unit,
+      verbose = FALSE
+    )
+
+  coords_df <- dplyr::filter(coords_df, rel_loc == "inside")
+
+  # max_dist does not depend on `core` option
+  min_dist <- as_unit(input = 0, unit = unit, object = object)
+  max_dist <- getTrajectoryLength(object, id = id, unit = unit)
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  tot_dist <- max_dist - min_dist
+  span <- base::as.numeric(binwidth/tot_dist)
+
+  expr_est_pos <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = max_dist,
+      amccd = binwidth
+    )
+
+  pb <- confuns::create_progress_bar(total = base::length(variables))
+
+  sgs_df <-
+    purrr::map_df(
+      .x = variables,
+      .f = function(var){
+
+        pb$tick()
+
+        # fit loess
+        coords_df[["x.var.x"]] <- coords_df[[var]]
+
+        loess_model <-
+          stats::loess(
+            formula = x.var.x ~ dist,
+            data = coords_df,
+            span = span,
+            family = "gaussian",
+            statistics = "none",
+            surface = "direct"
+          )
+
+        gradient <-
+          infer_gradient(
+            loess_model = loess_model,
+            expr_est_pos = expr_est_pos,
+            ro = c(0,1)
+          )
+
+        out <-
+          tibble::tibble(
+            variables = var,
+            tot_var = compute_total_variation(gradient)
+          )
+
+        return(out)
+
+      }
+    ) %>%
+    add_benchmarking_variables() %>%
+    dplyr::mutate(model_sim = confuns::str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"))
+
+  r2_df <-
+    purrr::map_df(
+      .x = base::unique(sgs_df$model_sim),
+      .f = function(ms){
+
+        so <-
+          dplyr::filter(sgs_df, model_sim == {{ms}}) %>%
+          stats::lm(data = ., formula = noise_perc ~ tot_var) %>%
+          base::summary()
+
+        tibble::tibble(
+          model = {{ms}},
+          r2 = so[["adj.r.squared"]]
+        )
+
+
+      }
+    )
+
+  out <- list(r2_df = r2_df, sas_df = sas_df)
+
+  return(out)
 
 }
 

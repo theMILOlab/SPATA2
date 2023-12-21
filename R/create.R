@@ -495,12 +495,27 @@ create_model_df <- function(input,
 
     models_add_named <- confuns::keep_named(input = model_add)
 
-    confuns::check_none_of(
-      input = base::names(models_add_named),
-      against = base::names(fns_input),
-      ref.input = "names of additional models",
-      ref.against = "names of known model to SPATA2"
-    )
+    overlapping_model_names <-
+      base::names(models_add_named)[base::names(models_add_named) %in% base::names(fns_input)]
+
+    n_omn <- base::length(overlapping_model_names)
+
+    if(n_omn >= 1){
+
+      omn_col <- confuns::scollapse(overlapping_model_names)
+
+      confuns::give_feedback(
+        msg = glue::glue("Overwriting model(s): {omn_col}"),
+        verbose = verbose
+      )
+
+      for(omn in overlapping_model_names){
+
+        fns_input[[omn]] <- models_add_named[[omn]]
+
+      }
+
+    }
 
     n_names <- base::names(models_add_named) %>% base::length()
     n_model <- base::length(models_add_named)

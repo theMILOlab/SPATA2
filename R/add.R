@@ -429,6 +429,7 @@ addExpressionMatrix <- function(object, expr_mtr, mtr_name, overwrite = FALSE, .
 
   confuns::check_none_of(
     input = mtr_name,
+    ref.against = "existing expression matrices",
     against = getExpressionMatrixNames(object),
     overwrite = overwrite
   )
@@ -1596,7 +1597,6 @@ addSpatialTrajectory <- function(object,
   deprecated(...)
 
   is_dist(input = width, error = TRUE)
-
   width_unit <- extract_unit(width)
 
   if(width_unit != "px"){
@@ -1609,6 +1609,7 @@ addSpatialTrajectory <- function(object,
 
   }
 
+  # create trajectory segment df
   if(!base::is.data.frame(traj_df)){
 
     if(!base::is.null(start)){
@@ -1651,28 +1652,14 @@ addSpatialTrajectory <- function(object,
 
   }
 
+  # interpolate curved trajectories
   if(base::nrow(traj_df) >= 3){
 
     traj_df <- interpolate_points_along_path(data = traj_df)
 
   }
 
-  # project on trajectory
-  coords_df <- getCoordsDf(object)
-
-  projection_df <-
-    project_on_trajectory(
-      coords_df = coords_df,
-      traj_df = traj_df,
-      width = width
-    ) %>%
-    dplyr::select(barcodes, projection_length)
-
-  # scale to orig scale
   scale_fct_coords <- getScaleFactor(object, fct_name = "coords")
-
-  projection_df$projection_length <-
-    projection_df$projection_length / scale_fct_coords
 
   traj_df <-
     dplyr::transmute(
@@ -1681,18 +1668,17 @@ addSpatialTrajectory <- function(object,
       y_orig = y / {{scale_fct_coords}}
     )
 
-  width <- width / scale_fct_coords
+  width <- width/scale_fct_coords
 
   # create object
   spat_traj <-
     SpatialTrajectory(
       comment = comment,
       id = id,
-      projection = projection_df,
       segment = traj_df,
       sample = object@samples,
       width = width,
-      width_unit = width_unit
+      width_unit = "px"
     )
 
   # set object

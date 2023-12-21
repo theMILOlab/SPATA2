@@ -9,6 +9,7 @@ getStsDf(
   variables,
   id = idST(object),
   binwidth = recBinwidth(object),
+  width = NULL,
   unit = getDefaultUnit(object),
   ro = c(0, 1),
   bcs_exclude = NULL,

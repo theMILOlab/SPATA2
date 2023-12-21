@@ -5,6 +5,7 @@
 \alias{ggpLayerTissueOutline,spata2-method}
 \alias{ggpLayerTissueOutline,HistoImaging-method}
 \alias{ggpLayerTissueOutline,HistoImage-method}
+\alias{ggpLayerTissueOutline,data.frame-method}
 \title{Add a hull that outlines the tissue}
 \usage{
 ggpLayerTissueOutline(object, ...)
@@ -19,6 +20,8 @@ ggpLayerTissueOutline(object, ...)
   line_color = "black",
   line_size = 1,
   line_type = "solid",
+  outline_fct = c(1.75, 2.75),
+  use_scattermore = FALSE,
   transform = TRUE,
   scale_fct = 1,
   expand_outline = recBinwidth(object, "px")/1.25,
@@ -36,8 +39,11 @@ ggpLayerTissueOutline(object, ...)
   line_size = 1,
   line_type = "solid",
   transform = TRUE,
+  outline_fct = c(1.75, 2.75),
+  use_scattermore = FALSE,
   scale_fct = 1,
   expand_outline = 0,
+  bcs_rm = character(0),
   ...
 )
 
@@ -52,6 +58,20 @@ ggpLayerTissueOutline(object, ...)
   transform = TRUE,
   smooth_with = "chaikin",
   scale_fct = 1,
+  expand_outline = 0,
+  ...
+)
+
+\S4method{ggpLayerTissueOutline}{data.frame}(
+  object,
+  method = "coords",
+  by_section = TRUE,
+  line_alpha = 0.9,
+  line_color = "black",
+  line_size = 1,
+  line_type = "solid",
+  outline_fct = c(1.75, 2.75),
+  use_scattermore = FALSE,
   expand_outline = 0,
   ...
 )
@@ -79,8 +99,16 @@ If \code{NULL}, the active histo image is chosen by default.}
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
+
 \item{expand_outline}{Distance measure with which to expand the outline. Must be
 provided in pixel units!}
+
+\item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
+to be removed prior to analysis or visualization by their barcode.}
 
 \item{smooth_with}{Character vaule. Sets the method with which to smooth
 the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.

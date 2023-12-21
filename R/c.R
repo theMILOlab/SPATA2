@@ -219,6 +219,34 @@ compute_corr <- function(gradient, model){
 
 }
 
+compute_correction_factor_sas <- function(object, id, distance, core){
+
+  orig_cdf <-
+    getCoordsDfSA(object, id = id, distance = distance, core = core, verbose = FALSE) %>%
+    dplyr::filter(rel_loc != "periphery")
+
+  sim_cdf <-
+    simulate_complete_coords_sa(object = object, id = id, distance = distance)
+
+  area_df <- getSpatAnnOutlineDf(object, id = id)[,c("x", "y")]
+  buffered_area_df <- buffer_area(area_df, buffer = as_unit(distance, unit = "px", object = object))
+
+  if(base::isFALSE(core)){
+
+    sim_cdf <-
+      identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = area_df, opt = "remove")
+
+  }
+
+  sim_cdf <-
+    identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_area_df, opt = "keep")
+
+  out <- base::nrow(orig_cdf) / base::nrow(sim_cdf)
+
+  return(out)
+
+}
+
 #' Compute Curve Irregularity
 #'
 #' Calculate the irregularity of a curve based on the total variation of its values.
@@ -428,8 +456,16 @@ compute_tau <- function(gradient, model){
 # compute total variation
 compute_total_variation <- function(gradient){
 
-  base::sum(base::abs(base::diff(gradient)))
+  lg <- base::length(gradient)
+  vf <- 1#base::floor(lg*0.125)
+  vl <- lg #base::ceiling(lg*0.875)
+
+  grad <- scales::rescale(x = gradient[vf:vl], to = c(0,1))
+
+  out <- base::sum(base::abs(base::diff(grad)))
   #base::sum(diff(gradient)^2)
+
+  return(out)
 
 }
 

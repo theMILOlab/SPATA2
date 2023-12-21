@@ -50,9 +50,6 @@ recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
 
-\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
-(See details for more.)}
-
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}

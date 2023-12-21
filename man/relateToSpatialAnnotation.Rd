@@ -44,9 +44,6 @@ and the rownumber.}
 are not \code{NA_integer_} but valid input as is documented in \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}}
 the output contains binning results.}
 
-\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
-(See details for more.)}
-
 \item{calc_dist_to}{Character. One of \emph{'border'} (the default), \emph{'center'} or
 \emph{'none'}. If \emph{'border'}, the distance of every observation to its closest point
 on the spatial annotation \strong{border} is calculated. If \emph{'center'} the distance

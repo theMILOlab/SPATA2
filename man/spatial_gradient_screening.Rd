@@ -15,6 +15,7 @@ spatial_gradient_screening(
   n_random = 1000,
   sign_var = "fdr",
   sign_threshold = 0.05,
+  skip_comp = FALSE,
   force_comp = FALSE,
   model_subset = NULL,
   model_add = NULL,

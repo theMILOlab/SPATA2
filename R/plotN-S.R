@@ -1379,7 +1379,7 @@ plotSasLineplot <- function(object,
                             border_linecolor = alpha("white", 0),
                             border_linesize = 1,
                             border_linetype = "solid",
-                            display_eval = TRUE,
+                            display_eval = FALSE,
                             pos_x = 0,
                             pos_y = 1,
                             ggpLayers = list(),
@@ -1505,8 +1505,7 @@ plotSasLineplot <- function(object,
       dplyr::mutate(
         label =
           stringr::str_c(
-            "TV: ", values_tot_var,
-            "\nRV: ", values_rel_var
+            "TV: ", values_tot_var
           ),
         x_pos = base::as.numeric(pos_x),
         y_pos = base::as.numeric(pos_y)
@@ -2682,9 +2681,8 @@ setMethod(
                         plot = TRUE,
                         ...){
 
-    getHistoImaging(object) %>%
       plotSpatialAnnotations(
-        object = .,
+        object = getHistoImaging(object),
         ids = ids,
         tags = tags,
         test = test,
@@ -2792,7 +2790,7 @@ setMethod(
             outline_add_on <-
               ggplot2::geom_sf(
                 data = spat_ann_sf,
-                size = line_size,
+                linewidth = line_size,
                 color = line_color,
                 linetype = line_type,
                 alpha = alpha,
@@ -2955,6 +2953,7 @@ plotSpatialTrajectories <- function(object,
                                     method_gs = NULL,
                                     smooth = NULL,
                                     smooth_span = NULL,
+                                    width = NULL,
                                     pt_size = NULL,
                                     pt_alpha = 0.5,
                                     pt_alpha2 = 0.9,
@@ -2986,7 +2985,7 @@ plotSpatialTrajectories <- function(object,
 
         traj_obj <- getSpatialTrajectory(object, id)
 
-        projection_df <- getProjectionDf(object, id = id)
+        projection_df <- getProjectionDf(object, id = id, width = width)
 
         background_df <-
           getCoordsDf(object = object) %>%

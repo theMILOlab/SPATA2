@@ -34,10 +34,6 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
-\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
-specified. (See details for more.)}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

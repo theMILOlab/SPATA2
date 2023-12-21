@@ -27,8 +27,8 @@ make_bins <- function(numeric_vector, binwidth, neg = FALSE) {
   numeric_vector <- base::abs(numeric_vector)
 
   # Calculate the minimum and maximum values of the numeric vector
-  min_value <- min(numeric_vector)
-  max_value <- max(numeric_vector)
+  min_value <- min(numeric_vector, na.rm = TRUE)
+  max_value <- max(numeric_vector, na.rm = TRUE)
 
   # Create a sequence of breaks (bin edges)
   breaks <- seq(min_value, max_value, by = binwidth)

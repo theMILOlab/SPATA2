@@ -7,6 +7,7 @@
 initiateSpataObject(
   count_mtr,
   coords_df,
+  sample_name,
   dir_img_ref = NULL,
   name_img_ref = NULL,
   spatial_method = "Undefined",

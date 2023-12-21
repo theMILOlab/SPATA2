@@ -493,40 +493,45 @@ whichSpaceRangerVersion <- function(dir){
 findOptimalDistanceSAS <- function(object,
                                    id,
                                    variables,
-                                   core = TRUE,
-                                   binwidth = recBinwidth(object),
-                                   n_bins_angle = 12,
-                                   threshold = 0.25){
+                                   core = FALSE,
+                                   start = recBinwidth(object)*20,
+                                   max = distToEdge(object, id),
+                                   step = recBinwidth(object),
+                                   sign_var = "fdr",
+                                   sign_threshold = 0.05,
+                                   ...){
 
 
-  dte <- distToEdge(object, id = id, unit = extract_unit(binwidth))
+  is_dist(start, error = TRUE)
+  is_dist(max, error = TRUE)
+  is_dist(step, error = TRUE)
 
-  # require 5 bins to identify all basic patterns
-  n_bins_start <- 5
-  dist_start <- binwidth*n_bins_start
+  step_unit <- extract_unit(step)
 
-  bw_unit <- extract_unit(binwidth)
+  step <- as_unit(step, unit = step_unit, object = object)
+  start <- as_unit(start, unit = step_unit, object = object)
+  max <- as_unit(max, unit = step_unit, object = object)
 
-  bwv <- extract_value(binwidth)
-  dsv <- extract_value(dist_start)
-  dtev <- extract_value(dte)
+  stepn <- as.numeric(step)
+  startn <- as.numeric(start)
+  maxn <- as.numeric(max)
 
-  n_reps <- base::ceiling(dtev/bwv)
+  n_reps <-
+    base::ceiling((maxn-startn)/stepn) %>%
+    base::as.numeric()
 
-  iterations <- 0:n_reps
+  iterations <- 0:(n_reps-1)
 
   pb <- confuns::create_progress_bar(base::length(iterations))
 
-  results_all <-
-    purrr::map_df(
+  out <-
+    purrr::map(
       .x = iterations,
       .f = function(i){
 
         pb$tick()
 
-        dist_test <- bwv * (n_bins_start+i)
-
-        dist_test <- stringr::str_c(dist_test, bw_unit)
+        dist_test <- start + step*i
 
         sas <-
           spatialAnnotationScreening(
@@ -534,33 +539,18 @@ findOptimalDistanceSAS <- function(object,
             variables = variables,
             id = id,
             distance = dist_test,
-            binwidth = binwidth,
+            binwidth = recBinwidth(object),
             core = core,
-            n_bins_angle = n_bins_angle,
-            verbose = FALSE
+            verbose = TRUE,
+            ...
           )
 
-        results <- sas@results
-        results$dist_test <- dist_test
+        gc()
 
-        return(results)
+        return(sas)
 
       }
     )
-
-  out <-
-    dplyr::group_by(results_all, variables, dist_test) %>%
-     dplyr::slice_min(order_by = mae, n = 1) %>%
-     dplyr::ungroup() %>%
-     dplyr::mutate(valid_fit = mae < {{threshold}}) %>%
-     dplyr::group_by(dist_test) %>%
-     dplyr::summarise(
-       n_valid_fits = base::sum(valid_fit),
-       dplyr::across(
-         .cols = c(corr, rmse, mae),
-         .fns = base::mean
-       )
-     )
 
   return(out)
 

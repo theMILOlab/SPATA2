@@ -746,13 +746,13 @@ model_formulas <-
 model_formulas_new <-
   list(
     # descending
-    descending_linearly = ~ model_descending(.x, dcl = 1, ro = c(0, 1)),
-    descending_gradually = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)),
-    descending_instantly = ~ model_descending(.x, dcl = 10, ro = c(0, 1)),
+    descending_linear = ~ model_descending(.x, dcl = 1, ro = c(0, 1)),
+    descending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)),
+    descending_instant = ~ model_descending(.x, dcl = 10, ro = c(0, 1)),
     # ascending
-    ascending_linearly = ~ model_ascending(.x, incl = 1, ro = c(0, 1)),
-    ascending_gradually = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)) %>% rev(),
-    ascending_lately = ~ model_descending(.x, dcl = 10, ro = c(0, 1)) %>% rev(),
+    ascending_linear = ~ model_ascending(.x, incl = 1, ro = c(0, 1)),
+    ascending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)) %>% rev(),
+    ascending_late = ~ model_descending(.x, dcl = 10, ro = c(0, 1)) %>% rev(),
     # peak
     peak_sharp = ~ model_peak(.x, dos = 25, ro  = c(0, 1)),
     peak_moderate = ~ model_peak(.x, dos = 50, ro = c(0, 1)),
@@ -763,6 +763,28 @@ model_formulas_new <-
     trough_gradual = ~ model_trough(.x, dos = 100, ro = c(0, 1))
   )
 
+#' @export
+model_formulas_R2_est <-
+  list(
+    # descending
+    descending_linear = ~ model_descending(.x, dcl = 1, ro = c(0, 1)),
+    descending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)),
+    descending_instant = ~ model_descending(.x, dcl = 10, ro = c(0, 1)),
+    # ascending
+    ascending_linear = ~ model_ascending(.x, incl = 1, ro = c(0, 1)),
+    ascending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)) %>% rev(),
+    ascending_late = ~ model_descending(.x, dcl = 10, ro = c(0, 1)) %>% rev(),
+    # peak
+    peak_sharp = ~ model_peak(.x, dos = 25, ro  = c(0, 1)),
+    peak_moderate = ~ model_peak(.x, dos = 50, ro = c(0, 1)),
+    peak_gradual = ~ model_peak(.x, dos = 100, ro = c(0, 1)),
+    # trough
+    trough_sharp = ~ model_trough(.x, dos = 25, ro  = c(0, 1)),
+    trough_moderate = ~ model_trough(.x, dos = 50, ro = c(0, 1)),
+    trough_gradual = ~ model_trough(.x, dos = 100, ro = c(0, 1))
+  )
+
+#model_formulas_R2_est <- model_formulas_R2_est[c(1:3, 7:9)]
 
 
 msg_scale_bar_bad_pos <-

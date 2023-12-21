@@ -51,10 +51,6 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
-\item{n_bins_dist}{Numeric value or vector of length 2. Specifies how many times the area is buffered with the value
-denoted in \code{binwidth}. Not required if \code{distance} and \code{binwidth} is
-specified. (See details for more.)}
-
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
@@ -101,76 +97,6 @@ A ggplot.
 \description{
 Plots gene expression changes against the distance
 to the spatial annotation using a heatmap.
-}
-\details{
-In conjunction with argument \code{id} which provides the
-ID of the spatial annotation of interest the arguments \code{distance},
-\code{binwidth}, \code{n_bins_dist}, \code{angle_span} and \code{n_bins_angle} can be used
-to specify the exact area that is screened as well as the resolution of the screening.
-
-\bold{How the algorithm works:} During the SAS-algorithm the data points are
-binned according to their localisation to the spatial annotation. Every bin's mean
-expression of a given gene is then aligned in an ascending order - mean expression
-of bin 1, mean expression of bin 2, ... up to the last bin, the bin with the
-data points that lie farest away from the spatial annotation. This allows to infer
-the gene expression changes in relation to the spatial annotation and
-to screen for genes whose expression changes resemble specific biological
-behaviors. E.g. linear ascending: gene expression increases linearly with
-the distance to the spatial annotation. E.g. immediate descending: gene expression
-is high in close proximity to the spatial annotation and declines logarithmically
-with the distance to the spatial annotation.
-
-\bold{How distance binning works:}
-To bin data points according to their localisation to the spatial annotation
-two of the following three parameters are required (the third one is calculated):
-
-\itemize{
-\item{\code{distance}: The distance from the border of the spatial annotation to
-the \emph{horizon} in the periphery up to which the screening is conducted.
-}
-\item{\code{binwidth}: The width of every bin.}
-\item{\code{n_bins_dist}: The number of bins that are created.}
-}
-
-These three parameters stand in the following relation to each other:
-
-\enumerate{
-\item{\code{n_bins_dist} = \code{distance} / \code{binwidth}}
-\item{\code{distance} = \code{n_bins_dist} * \code{binwidth}}
-\item{\code{binwidth} = \code{distance} / \code{n_bins_dist}}
-}
-
-Once the parameters are set and calculated the polygon that is used to
-define the borders of the spatial annotation is repeatedly expanded by the distance
-indicated by parameter \code{binwidth}. The number of times this expansion is
-repeated is equal to the parameter \code{n_bins_dist}. Every time the
-polygon is expanded, the newly enclosed data points are binned (grouped)
-and the bin is given a number that is equal to the number of the expansion.
-Thus, data points that are adjacent to the spatial annotation are binned into
-bin 1, data points that lie a distance of \code{binwidth} away are binned into
-bin 2, etc.
-
-Note that \code{\link[=plotSurfaceSAS]{plotSurfaceSAS()}} and/or \code{\link[=ggpLayerExpansionsSAS]{ggpLayerExpansionsSAS()}} allow to
-visually inspect if your input results in the desired screening.
-
-\bold{How the screening works:} For every numeric variable (e.g. genes) that
-is included in the screening process every bin's mean expression is calculated
-and then aligned in an ascending order - mean expression of distance bin 1,
-mean expression of distance bin 2, ... up to the last bin, namely the bin
-with the data points that lie farest away from the spatial annotation. This
-allows to infer the gene expression changes in relation to the spatial annotation and
-to screen for genes whose expression changes resemble specific biological
-behaviors. The gene expression change is fitted to every model that is included.
-(Use \code{showModels()} to visualize the predefined models of \code{SPATA2}).
-A gene-model-fit is evaluated twofold:
-
-\itemize{
-\item{Mean Absolute Error}: Add description.
-\item{Root Mean Squared Error}: Add description.
-\item{Pearson correlation}: The inferred expression changes is correlated
-with the model. (Correlation as well as the corresponding p-value depend
-on the number of bins!)
-}
 }
 \section{Distance measures}{
 

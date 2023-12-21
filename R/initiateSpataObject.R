@@ -38,6 +38,7 @@
 #'
 initiateSpataObject <- function(count_mtr,
                                 coords_df,
+                                sample_name,
                                 dir_img_ref = NULL,
                                 name_img_ref = NULL,
                                 spatial_method = "Undefined",
@@ -156,6 +157,7 @@ initiateSpataObject <- function(count_mtr,
   object <- setDefault(object, "pt_size" = 1)
 
   object <- setCountMatrix(object, count_mtr = count_mtr)
+  object <- setActiveMatrix(object, mtr_name = "counts")
 
   object <- setFeatureDf(object, feature_df = tibble::tibble(barcodes = barcodes_coords))
 

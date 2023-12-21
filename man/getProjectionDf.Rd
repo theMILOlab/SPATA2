@@ -4,7 +4,7 @@
 \alias{getProjectionDf}
 \title{Obtain trajectory projection}
 \usage{
-getProjectionDf(object, id, img_name = NULL, ...)
+getProjectionDf(object, id, width = NULL, img_name = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

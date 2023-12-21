@@ -41,9 +41,6 @@ recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}
 
-\item{n_bins_angle}{Numeric value. Number of bins that are created by angle.
-(See details for more.)}
-
 \item{use_outline}{Logical value. If \code{TRUE}, uses the outline variable
 set with \code{setOutlineVarName()} or if none is set DBSCAN to identify the
 outline of the tissue section or sections in case of multiple tissue sections

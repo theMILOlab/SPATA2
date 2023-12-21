@@ -23,7 +23,7 @@ identify_artefact_threshold <- function(numbers) {
   return(list(threshold = artifact_threshold, threshold_multiplier = threshold_multiplier))
 }
 
-identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
+identify_obs_in_polygon <- function(coords_df, polygon_df, strictly, opt = "keep"){
 
   confuns::check_data_frame(
     df = polygon_df,
@@ -43,11 +43,23 @@ identify_obs_in_polygon <- function(coords_df, polygon_df, strictly){
       pol.y = polygon_df[["y"]]
     )
 
-  valid_res <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
+  inside <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
 
-  coords_df_sub <- coords_df[res %in% valid_res, ]
+  if(opt == "keep"){
 
-  return(coords_df_sub)
+    coords_df <- coords_df[res %in% inside, ]
+
+  } else if(opt == "remove"){
+
+    coords_df <- coords_df[!res %in% inside, ]
+
+  } else {
+
+    coords_df[[opt]] <- res %in% inside
+
+  }
+
+  return(coords_df)
 
 }
 
@@ -1372,13 +1384,12 @@ include_tissue_outline <- function(input_df,
                                    buffer = 0,
                                    ...){
 
+  outline_var <- "section"
 
   # identify sections
   if(base::is.null(outline_df)){
 
     is_dist_pixel(input = ccd, error = TRUE)
-
-    outline_var <- "section"
 
     if(!outline_var %in% base::colnames(coords_df)){
 
@@ -1617,7 +1628,7 @@ infer_gradient <- function(loess_model,
 
   grad <- stats::predict(loess_model, data.frame(dist = expr_est_pos))
 
-  if(base::is.numeric(coef) && (coef != 0 & coef != Inf)){
+  if(FALSE){
 
     outliers <-
       grDevices::boxplot.stats(x = grad, coef = coef, do.conf = FALSE)[["out"]]
@@ -2464,6 +2475,40 @@ is_numeric_input <- function(input){
   (!"units" %in% base::class(input))
 
 }
+
+
+#' Check for Outliers in a Numeric Vector
+#'
+#' This function identifies outliers in a numeric vector `x`.
+#'
+#' @param x A numeric vector for which outliers need to be identified.
+#' @param ... Additional arguments passed to `boxplot.stats`.
+#'
+#' @return A logical vector of the same length as `x`, where `TRUE` indicates that
+#'  the corresponding element in `x` is an outlier.
+#'
+#' @details
+#' An element is considered an outlier if it falls outside the range as defined
+#' by `boxplot.stats` from the `grDevices` package. The function is useful
+#' for quickly flagging or filtering outliers in a dataset.
+#'
+#' @examples
+#' # Example vector
+#' data <- c(-10, 1, 2, 3, 4, 5, 100)
+#'
+#' # Check for outliers
+#' is_outlier(data)
+#'
+#' # Using the function to filter out outliers
+#' data[!is_outlier(data)]
+#'
+#' @export
+is_outlier <- function(x, ...) {
+
+  x %in% grDevices::boxplot.stats(x = x, ...)[["out"]]
+
+}
+
 
 #' @keywords internal
 is_percentage <- function(input, error = FALSE){

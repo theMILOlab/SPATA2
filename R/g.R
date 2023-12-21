@@ -794,7 +794,7 @@ ggpLayerEncirclingSAS <- function(object,
               inc_outline = TRUE,
               verbose = verbose
             )
-
+assign("expansions", expansions, envir = .GlobalEnv)
           exp_df <-
             purrr::map_df(
               .x = expansions[base::names(expansions) != "Core"],
@@ -1344,28 +1344,16 @@ ggpLayerHorizonSAS <- function(object,
 
   border_df <- getSpatAnnOutlineDf(object, id, inner = FALSE)
 
-  input <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      object = object,
-      verbose = verbose
-    )
-
-  distance <- input$distance
-  binwidth <- input$binwidth
-  n_bins_dist <- input$n_bins_dist
-
   out <-
     ggpLayerEncirclingSAS(
       object = object,
       id = id,
-      distance = input$distance,
-      binwidth = input$distance,
+      distance = distance,
+      binwidth = distance,
       line_color = line_color,
       line_size = line_size,
-      line_size_core = line_size_core
+      line_size_core = line_size_core,
+      inc_outline = inc_outline
     )
 
 }
@@ -1596,6 +1584,8 @@ setMethod(
                         method_gs = NULL,
                         xrange = NULL,
                         yrange = NULL,
+                        outline = FALSE,
+                        outline_fct = c(1.75,2.75),
                         unit = NULL,
                         breaks = NULL,
                         expand = TRUE,
@@ -1653,6 +1643,8 @@ setMethod(
       breaks = breaks,
       expand = expand,
       bcs_rm = bcs_rm,
+      outline = outline,
+      outline_fct = outline_fct,
       scale_fct = scale_fct,
       use_scattermore = use_scattermore,
       add_labs = add_labs,
@@ -1685,6 +1677,8 @@ setMethod(
                         breaks = NULL,
                         expand = TRUE,
                         bcs_rm = NULL,
+                        outline = FALSE,
+                        outline_fct = c(1.75,2.75),
                         na_rm = FALSE,
                         scale_fct = 1,
                         use_scattermore = FALSE,
@@ -1787,6 +1781,26 @@ setMethod(
 
     # assemble output
     out <- list()
+
+    # create outline
+    if(base::isTRUE(outline)){
+
+      out[["outline"]] <-
+        ggpLayerTissueOutline(
+          object = coords_df,
+          method = "points",
+          line_size = pt_size,
+          outline_fct = outline_fct,
+          use_scattermore = use_scattermore,
+          bcs_rm = base::character(0)
+        )
+
+    } else {
+
+      out[["outline"]] <- list()
+
+    }
+
 
     # use method for data.frame
     out[["spots"]] <-
@@ -2136,7 +2150,8 @@ ggpLayerSasEvaluation <- function(object,
       model_add = model_add,
       model_subset = model_subset,
       force_comp = TRUE,
-      verbose = FALSE
+      estimate_R2 = FALSE,
+      verbose = TRUE
     )
 
   sas_df <-
@@ -3084,6 +3099,8 @@ setMethod(
                         line_color = "black",
                         line_size = 1,
                         line_type = "solid",
+                        outline_fct = c(1.75, 2.75),
+                        use_scattermore = FALSE,
                         transform = TRUE,
                         scale_fct = 1,
                         expand_outline = recBinwidth(object, "px")/1.25,
@@ -3106,6 +3123,8 @@ setMethod(
         transform = transform,
         scale_fct = scale_fct,
         expand_outline = expand_outline,
+        outline_fct = outline_fct,
+        use_scattermore = use_scattermore,
         ...
       )
 
@@ -3129,77 +3148,19 @@ setMethod(
                         line_size = 1,
                         line_type = "solid",
                         transform = TRUE,
+                        outline_fct = c(1.75, 2.75),
+                        use_scattermore = FALSE,
                         scale_fct = 1,
                         expand_outline = 0,
+                        bcs_rm = character(0),
                         ...){
 
     confuns::check_one_of(
       input = method,
-      against = c("coords", "image")
+      against = c("coords", "image", "points")
     )
 
-    if(method == "coords"){
-
-      coords_df <-
-        getCoordsDf(object, img_name = img_name)
-
-      if(base::isFALSE(by_section)){
-
-        coords_df[["section"]] <- "all_spots"
-
-      } else {
-
-        if(!"section" %in% base::names(coords_df)){
-
-          rlang::warn(
-            message = "No section variable found. Consider running `identifySpatialOutliers()` for improved results.",
-            .frequency = "once",
-            .frequency_id = "no_section_variable"
-
-          )
-
-        }
-
-        coords_df[["section"]] <- "tissue_section_1"
-
-      }
-
-      coords_df <- dplyr::filter(coords_df, section != "artefact")
-
-      out <-
-        purrr::map(
-          .x = base::unique(coords_df[["section"]]),
-          .f = function(s){
-
-            outline <-
-              dplyr::filter(coords_df, section == {{s}}) %>%
-              dplyr::select(x, y) %>%
-              base::as.matrix() %>%
-              concaveman::concaveman(points = .) %>%
-              base::as.data.frame() %>%
-              magrittr::set_colnames(value = c("x", "y"))
-
-            if(expand_outline > 0){
-
-              outline <- buffer_area(outline, buffer = expand_outline)
-
-            }
-
-            outline[["section"]] <- s
-
-            ggplot2::geom_polygon(
-              data = outline,
-              mapping = ggplot2::aes(x = x, y = y, group = section),
-              alpha = line_alpha,
-              color = line_color,
-              fill = NA,
-              linetype = line_type
-            )
-
-          }
-        )
-
-    } else if(method == "image"){
+    if(method == "image"){
 
       out <-
         getHistoImage(
@@ -3215,6 +3176,28 @@ setMethod(
           line_size = line_size,
           line_type = line_type,
           transform = transform,
+          scale_fct = scale_fct,
+          expand_outline = expand_outline,
+          ...
+        )
+
+    } else {
+
+      coords_df <-
+        getCoordsDf(object) %>%
+        dplyr::filter(!barcodes %in% {{bcs_rm}})
+
+      out <-
+        ggpLayerTissueOutline(
+          object = coords_df,
+          method = method,
+          by_section = by_section,
+          line_alpha = line_alpha,
+          line_color = line_color,
+          line_size = line_size,
+          line_type = line_type,
+          outline_fct = outline_fct,
+          use_scattermore = use_scattermore,
           scale_fct = scale_fct,
           expand_outline = expand_outline,
           ...
@@ -3405,6 +3388,136 @@ setMethod(
 )
 
 
+#' @rdname ggpLayerTissueOutline
+#' @export
+setMethod(
+  f = "ggpLayerTissueOutline",
+  signature = "data.frame",
+  definition = function(object,
+                        method = "coords",
+                        by_section = TRUE,
+                        line_alpha = 0.9,
+                        line_color = "black",
+                        line_size = 1,
+                        line_type = "solid",
+                        outline_fct = c(1.75, 2.75),
+                        use_scattermore = FALSE,
+                        expand_outline = 0,
+                        ...){
+
+    confuns::check_one_of(
+      input = method,
+      against = c("coords", "points")
+    )
+
+    coords_df <- object
+
+    if(method == "coords"){
+
+      if(base::isFALSE(by_section)){
+
+        coords_df[["section"]] <- "all_spots"
+
+      } else {
+
+        if(!"section" %in% base::names(coords_df)){
+
+          rlang::warn(
+            message = "No section variable found. Consider running `identifySpatialOutliers()` for improved results.",
+            .frequency = "once",
+            .frequency_id = "no_section_variable"
+
+          )
+
+        }
+
+        coords_df[["section"]] <- "tissue_section_1"
+
+      }
+
+      coords_df <- dplyr::filter(coords_df, section != "artefact")
+
+      out <-
+        purrr::map(
+          .x = base::unique(coords_df[["section"]]),
+          .f = function(s){
+
+            outline <-
+              dplyr::filter(coords_df, section == {{s}}) %>%
+              dplyr::select(x, y) %>%
+              base::as.matrix() %>%
+              concaveman::concaveman(points = .) %>%
+              base::as.data.frame() %>%
+              magrittr::set_colnames(value = c("x", "y"))
+
+            if(expand_outline > 0){
+
+              outline <- buffer_area(outline, buffer = expand_outline)
+
+            }
+
+            outline[["section"]] <- s
+
+            ggplot2::geom_polygon(
+              data = outline,
+              mapping = ggplot2::aes(x = x, y = y, group = section),
+              alpha = line_alpha,
+              color = line_color,
+              fill = NA,
+              linetype = line_type
+            )
+
+          }
+        )
+
+    } else if(method == "points"){
+
+      outline_width <- c(line_size*outline_fct[1], line_size*outline_fct[2])
+
+      if(base::isTRUE(use_scattermore)){
+
+        out <-
+          list(
+            scattermore::geom_scattermore(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = ggplot2::alpha(line_color, line_alpha),
+              pointsize = outline_width[2]
+            ),
+            scattermore::geom_scattermore(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = "white",
+              pointsize = outline_width[1]
+            )
+          )
+
+      } else {
+
+        out <-
+          list(
+            geom_point_fixed(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = ggplot2::alpha(line_color, line_alpha),
+              size = outline_width[2]
+            ),
+            geom_point_fixed(
+              mapping = ggplot2::aes(x = x, y = y),
+              data = coords_df,
+              color = "white",
+              size = outline_width[1]
+            )
+          )
+
+      }
+
+    }
+
+    return(out)
+
+  }
+)
 
 
 #' @title Add trajectory layer

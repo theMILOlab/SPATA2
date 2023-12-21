@@ -4,7 +4,7 @@
 \alias{getTrajectoryWidth}
 \title{Title}
 \usage{
-getTrajectoryWidth(object, id = idST(object), unit = "px")
+getTrajectoryWidth(object, id = idST(object), unit = "px", orig = FALSE)
 }
 \arguments{
 \item{unit}{}
