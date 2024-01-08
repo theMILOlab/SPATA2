@@ -23,24 +23,80 @@ identify_artefact_threshold <- function(numbers) {
   return(list(threshold = artifact_threshold, threshold_multiplier = threshold_multiplier))
 }
 
-identify_obs_in_polygon <- function(coords_df, polygon_df, strictly, opt = "keep"){
+identify_zero_inflated_variables <- function(df,
+                                             variables,
+                                             coef = 1.5,
+                                             verbose = TRUE){
+
+  confuns::check_one_of(
+    input = variables,
+    against = base::colnames(df)
+  )
+
+  confuns::give_feedback(
+    msg = glue::glue("Identifying zero inflated variables."),
+    verbose = verbose
+  )
+
+  if(base::isTRUE(verbose)){
+
+    pb <- confuns::create_progress_bar(total = base::length(variables))
+
+  }
+
+  zero_inflated <-
+    purrr::map_lgl(
+      .x = variables,
+      .f = function(var){
+
+        if(base::isTRUE(verbose)){ pb$tick() }
+
+        outlier <- is_outlier(df[[var]], coef = coef)
+
+        x <- df[[var]][!outlier]
+
+        res <- base::all(x == 0)
+
+        return(res)
+
+      }
+    )
+
+  out <- variables[zero_inflated]
+
+  return(out)
+
+}
+
+identify_obs_in_polygon <- function(coords_df,
+                                    polygon_df,
+                                    strictly,
+                                    opt = "keep",
+                                    cvars = c("x", "y")){
+
+  var.class <-
+    purrr::map_chr(
+      .x = cvars,
+      .f = function(i){ return("numeric")}
+    ) %>%
+    purrr::set_names(nm = cvars)
 
   confuns::check_data_frame(
     df = polygon_df,
-    var.class = list(x = "numeric", y = "numeric")
+    var.class = var.class
   )
 
   confuns::check_data_frame(
     df = coords_df,
-    var.class = list(x = "numeric", y = "numeric")
+    var.class = var.class
   )
 
   res <-
     sp::point.in.polygon(
-      point.x = coords_df[["x"]],
-      point.y = coords_df[["y"]],
-      pol.x = polygon_df[["x"]],
-      pol.y = polygon_df[["y"]]
+      point.x = coords_df[[cvars[1]]],
+      point.y = coords_df[[cvars[2]]],
+      pol.x = polygon_df[[cvars[1]]],
+      pol.y = polygon_df[[cvars[2]]]
     )
 
   inside <- if(base::isTRUE(strictly)){ 1 } else { c(1,2,3) }
@@ -62,6 +118,7 @@ identify_obs_in_polygon <- function(coords_df, polygon_df, strictly, opt = "keep
   return(coords_df)
 
 }
+
 
 
 #' @title Quick access to IDs
@@ -1613,7 +1670,9 @@ increase_polygon_vertices <- function(polygon_df, avg_dist) {
   }
 
   # combine the original and interpolated vertices
-  new_polygon_df <- base::rbind(polygon_df, interpolated_df)
+  new_polygon_df <-
+    base::rbind(polygon_df, interpolated_df) %>%
+    tibble::as_tibble()
 
   return(new_polygon_df)
 
@@ -1627,46 +1686,6 @@ infer_gradient <- function(loess_model,
                            ro = c(0, 1)){
 
   grad <- stats::predict(loess_model, data.frame(dist = expr_est_pos))
-
-  if(FALSE){
-
-    outliers <-
-      grDevices::boxplot.stats(x = grad, coef = coef, do.conf = FALSE)[["out"]]
-
-    if(base::length(outliers) >= 1){
-
-      lp <- base::ceiling(base::length(grad)*0.1)
-
-      last_part <- base::seq_along(grad) %>% utils::tail(lp)
-
-      outlier_indices <- base::which(grad %in% outliers)
-
-      outlier_indices <- outlier_indices[outlier_indices %in% last_part]
-
-      if(base::length(outlier_indices) >= 1){
-
-        expr_est_pos2 <- expr_est_pos[-outlier_indices]
-        grad2 <- grad[-outlier_indices]
-
-        temp_df <- tibble::tibble(dist = expr_est_pos2, grad = grad2)
-
-        temp_grad <-
-          stats::loess(
-            formula = grad ~ dist,
-            data = temp_df,
-            span = 0.5,
-            statistics = "none",
-            surface = "direct"
-          ) %>%
-          stats::predict(., data.frame(dist = expr_est_pos))
-
-        grad[outlier_indices] <- temp_grad[outlier_indices]
-
-      }
-
-    }
-
-  }
 
   if(base::is.numeric(ro)){
 

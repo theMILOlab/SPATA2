@@ -441,6 +441,20 @@ compute_rmse <- function(gradient, model) {
 
 }
 
+
+
+compute_rscore <- function(x){
+
+  prel <- sum(abs(x$loess_model$residuals))/length(x$loess_model$residuals)
+
+  tv <- x$pval_df$tot_var/nrow(x$inf_df)
+
+  out <- prel*tv
+
+  return(out)
+
+}
+
 # compute kendalls tau
 compute_tau <- function(gradient, model){
 
@@ -468,6 +482,15 @@ compute_total_variation <- function(gradient){
   return(out)
 
 }
+
+compute_total_residuals <- function(loess_model){
+
+  loess_model$residuals %>%
+    base::abs() %>%
+    base::sum()
+
+}
+
 
 # compute relative variation
 compute_relative_variation <- function(gradient){

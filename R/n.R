@@ -133,7 +133,18 @@ nTrajectories <- function(object){
 }
 
 
+#' @keywords internal
+normalize_variables <- function(coords_df, variables){
 
+  dplyr::mutate(
+    .data = coords_df,
+    dplyr::across(
+      .cols = dplyr::all_of(variables),
+      .fns = confuns::normalize
+    )
+  )
+
+}
 
 #' @keywords internal
 normalize_smrd_projection_df <- function(smrd_projection_df, normalize = TRUE){

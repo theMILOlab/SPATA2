@@ -925,7 +925,9 @@ setProcessedMatrix <- function(object, proc_mtr, name, ...){
 # setS --------------------------------------------------------------------
 #' @title Set scale factors
 #'
-#' @description Sets scale factor values.
+#' @description Sets scale factor values for the reference image. Corresponding
+#' scale factors for additionally registered images (if there are any) are
+#' computed.
 #'
 #' @param fct_name Character value. Name of the scale factor.
 #' @param value Value to set.

@@ -4,7 +4,15 @@
 \alias{getSpatAnnBarcodes}
 \title{Obtain barcodes by image annotation tag}
 \usage{
-getSpatAnnBarcodes(object, ids = NULL, tags = NULL, test = "any")
+getSpatAnnBarcodes(
+  object,
+  ids = NULL,
+  tags = NULL,
+  test = "any",
+  class = NULL,
+  coords_df = getCoordsDf(object),
+  simplify = TRUE
+)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -21,9 +29,13 @@ selection. See section \emph{Selection of spatial annotations} for more informat
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of spatial annotations} for more information.}
+
+\item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
+to FALSE a list is returned.}
 }
 \value{
-Character vector.
+Character vector, if \code{simplify = TRUE}. Else a named list of
+character vectors.
 }
 \description{
 Extracts the barcodes that are covered by the extent of the

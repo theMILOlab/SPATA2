@@ -7,8 +7,8 @@
 \usage{
 getSasDf(
   object,
-  id,
-  distance = distToEdge(object, id),
+  ids,
+  distance = "dte",
   binwidth = recBinwidth(object),
   core = FALSE,
   angle_span = c(0, 360),
@@ -18,6 +18,7 @@ getSasDf(
   ro = c(0, 1),
   format = "wide",
   bcs_exclude = NULL,
+  outlier_rm = FALSE,
   verbose = FALSE,
   ...
 )
@@ -28,10 +29,10 @@ getSpatialAnnotationScreeningDf(...)
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening

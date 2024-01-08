@@ -6,14 +6,14 @@
 \usage{
 runAutoencoderDenoising(
   object,
-  activation,
-  bottleneck,
+  activation = "relu",
+  bottleneck = 56,
   mtr_name_output = "denoised",
   layers = c(128, 64, 32),
   dropout = 0.1,
   epochs = 20,
   display_plot = FALSE,
-  genes,
+  genes = NULL,
   set_as_active = FALSE,
   verbose = TRUE,
   of_sample = NA

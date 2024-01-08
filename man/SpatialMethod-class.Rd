@@ -12,13 +12,30 @@ such as \emph{Visium} or \emph{SlideSeq}.
 \section{Slots}{
 
 \describe{
-\item{\code{capture_area}}{list. List of length two. Provides the measures
-of the area in which identified entities are to be expected (in SI units).}
+\item{\code{amccd}}{character Represents the Average Minimal Center-to-Center Distance (AMCCD).
+This distance measure is calculated by identifying the nearest neighbor of each data point
+in 2D space, computing their euclidean distance and averaging all the distances computed
+that way. Therefore, the measure corresponds to the density of data points in the data set.
 
-\item{\code{fiducial_frame}}{list. List of length two, named \emph{x} and \emph{y}.
-Provides standardized measures of the sample image (in SI units).}
+With methods where data points are uniformly spaced with a fixed center-to-center distance,
+such as in the Visium platform, the AMCCD is equivalent to this fixed distance. For example,
+in the case of Visium, where the fixed distance is 100 µm, then the AMCCD is also 100 µm, and
+no additional computation is necessary.
 
-\item{\code{info}}{list. List of miscellaneous meta data for the method.}
+For \code{spata2} objects initialized through methods other than \code{initiateSpataObject()},
+such as \code{initiateSpataObjectMERFISH()}, the AMCCD is set (or) computed automatically.
+
+The value of this slot is a character to allow a unit suffix. (Should be a SI unit.)}
+
+\item{\code{capture_area}}{list
+A list of length two, with elements named \emph{x} and \emph{y}. Each element is a vector of length two.
+This slot specifies the coordinates of the opposite corners of a rectangular area.
+The \emph{x} element contains the x-coordinates and the \emph{y} element contains the y-coordinates.
+These coordinates define the area within which data points are expected to be captured.
+Coordinates must be specified in SI units (meters). The first value in each vector represents
+one corner of the rectangle, and the second value represents the diagonally opposite corner.}
+
+\item{\code{info}}{list. List of miscellaneous meta data about the method.}
 
 \item{\code{method_specific}}{list. List method specific data. Depending on the
 method the following slot names are reserved. See section \emph{Method specifics:}
@@ -27,7 +44,7 @@ for more information.}
 \item{\code{name}}{character. The name of the spatial method. (E.g. \emph{'Visium'})}
 
 \item{\code{observational_unit}}{character. Name with which to refer to
-the entity the method focuses on. (E.g. \emph{'barcode_spot'})}
+the data points the method focuses on. (E.g. \emph{'barcode_spot'})}
 
 \item{\code{unit}}{character. The SI to be used by default.}
 }}
@@ -43,6 +60,8 @@ For methods of type Visium (currently known \emph{VisiumSmall} and \emph{VisiumL
 \itemize{
 \item{\emph{ccd}:}{ Center to center distance as a spatial distance measure in SI units.}
 \item{\emph{diameter}:}{ Diameter of each spot in micrometer.}
+\item{\emph{fiducial_frame}:}{ List of length two, named \emph{x} and \emph{y}. Provides standardized
+measures of the fiducial frame(in SI units).}
 }
 
 For methods that of type \emph{SlideSeq} (currently known \emph{SlideSeqV1}):

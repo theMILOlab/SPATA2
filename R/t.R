@@ -334,16 +334,22 @@ theme_image <- function(bg_transparent = FALSE, ...){
 #' @description Miscellaneous `ggplot2` themes used throughout the package.
 #' @return gg theme
 #' @export
-theme_lineplot_gradient <- function(){
+theme_lineplot_gradient <- function(breaks_x, range_d){
 
   list(
-    ggplot2::theme_classic(),
+    ggplot2::theme_minimal(),
     ggplot2::theme(
-      axis.line.x = ggplot2::element_line(
-        arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed")
-      ),
-      strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(color = "black", size = 10)
+      axis.line.x = ggplot2::element_line(),
+      axis.line.y = ggplot2::element_line(),
+      panel.grid = ggplot2::element_line(color = ggplot2::alpha("lightgrey", 0.25)),
+      strip.background = ggplot2::element_blank()
+    ),
+    ggplot2::scale_x_continuous(breaks = breaks_x),
+    ggplot2::scale_y_continuous(breaks = base::seq(0 , 1, 0.2)),
+    ggplot2::coord_cartesian(
+      xlim = range_d*1.025,
+      ylim = c(-0.025,1.025),
+      expand = TRUE
     )
   )
 

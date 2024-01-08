@@ -20,7 +20,7 @@ initiateSpataObject(
 }
 \arguments{
 \item{count_mtr}{A count matrix. Column names are barcodes. Rownames are the
-feature (genes, proteins, metabolites etc.).}
+features (genes, proteins, metabolites etc.).}
 
 \item{coords_df}{Data.frame with a variable called \emph{barcodes} as well as the
 \emph{x_orig} and \emph{y_orig} or \emph{x} and \emph{y}.}
@@ -51,16 +51,29 @@ An object of class \code{spata2}.
 Initiates a \code{spata2} object using the basic inputs, a coordinates
 data.frame and a count matrix.
 }
-\details{
-If \code{dir_img_ref} is not specified, the function creates a \code{\link{PseudoHistoImage}}.
+\section{Experiments without background images}{
+
+As \code{SPATA2} has been developed with the Visium platform in mind, a lot of spatial
+information are stored in containers related to the images that come along
+with the experiment set up. If the experiment set up (or your data set) does not
+contain an image, the containers are created anyway with the @image slot being empty.
+
+If \code{dir_img_ref} is specified:
+This implies that your data set does not contain an image. The function
+creates a \code{\link{PseudoHistoImage}} as a container for some spatial information (
+especially for the scale factors) but it does not contain an actual image.
+
 Use \code{registerImage()} to register images later on.
 
-If \code{dir_img_ref} is specified, the function creates a regular \code{\link{HistoImage}}.
-Note that the x- and y-coordinates provided in the coordinates data.frame are
+If \code{dir_img_ref} is specified:
+This specifies the image to load and the function creates a regular \code{\link{HistoImage}}.
+Note that if the \code{coords_df} does not contain \emph{x_orig} and \emph{y_orig} variables,
+the \emph{x} and \emph{y} variables provided in the coordinates data.frame are
 considered to be the original coordinates and are forced into names \emph{x_orig}
-and \emph{y_orig}. Upon retrieval coordinates are scaled to image in use using the
-\emph{coordinates scale factor}. This defaults to 1 (but can be adjusted via argument
+and \emph{y_orig}. Upon retrieval coordinates are scaled to the image in use using the
+\emph{coordinates scale factor}. This factor defaults to 1 (but can be adjusted via argument
 \code{scale_factors} which defaults to \code{scale_factors = list(coords = 1)}). As the
 default is 1, the default expects the coordinates and the image to align
 perfectly.
 }
+

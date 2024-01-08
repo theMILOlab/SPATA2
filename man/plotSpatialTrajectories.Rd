@@ -21,6 +21,7 @@ plotSpatialTrajectories(
   pt_alpha2 = 0.9,
   pt_clr = NULL,
   pt_clrp = NULL,
+  clrp_adjust = NULL,
   pt_clrsp = NULL,
   sgmt_clr = NULL,
   sgmt_size = NULL,
@@ -31,6 +32,8 @@ plotSpatialTrajectories(
   arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
   nrow = NULL,
   ncol = NULL,
+  xrange = getCoordsRange(object)[["x"]],
+  yrange = getCoordsRange(object)[["y"]],
   verbose = NULL,
   of_sample = NA,
   ...
@@ -77,6 +80,11 @@ that fall into the trajectory's reach.}
 \item{pt_clrp}{The color palette to be used if the specified variable displayed by
 color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
 
+\item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
+color palette that is used to represent the groups. Names of the input vector must refer
+to the group and the respective named element denotes the color with which to
+represent the group.}
+
 \item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
@@ -95,6 +103,17 @@ uniformly expressed across all barcode-spots of the specified coordinates
 data.frame are discarded. If set to \emph{'keep'} they are kept.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
+
+\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
+specifies the x- and y-range to which the output image is cropped. E.g.
+\code{xrange = c(200, 500)} results in the image being cropped from
+x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
+ranges are taken.
+
+This argument works within the \code{SPATA2} distance framework.
+If values are specified in European units of length the input is
+immediately converted to pixel units. See info section \emph{Distance measures}
+for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -1916,7 +1916,6 @@ plotDeaGeneCount <- function(object,
                              clrp_adjust = NULL,
                              display_title = NULL,
                              sort_by_count = TRUE,
-                             of_sample = NA,
                              ...){
 
 
@@ -1934,7 +1933,7 @@ plotDeaGeneCount <- function(object,
       relevel = relevel,
       method_de = method_de,
       max_adj_pval = max_adj_pval,
-      of_sample = of_sample
+      min_lfc = 0.01
     )
 
   if(base::isTRUE(sort_by_count)){
@@ -2921,10 +2920,10 @@ plotDensityplot <- function(object,
 
 plotExprVsDistSA <- function(object,
                              variables,
-                             core = FALSE,
-                             id = idSA(object),
-                             distance = distToEdge(object, id = id),
+                             ids = idSA(object),
+                             distance = "dte",
                              binwidth = recBinwidth(object),
+                             core = FALSE,
                              pt_alpha = 0.1,
                              pt_color = "black",
                              pt_clrp = NULL,
@@ -2936,62 +2935,64 @@ plotExprVsDistSA <- function(object,
                              border_linecolor = "black",
                              border_linesize = 1,
                              border_linetype = "solid",
+                             ee_linealpha = 0,
+                             ee_linecolor = "black",
+                             ee_lineend = "point",
+                             ee_linesize = 1,
+                             ee_linetype = "solid",
                              se_fill = ggplot2::alpha("lightgrey", 0.5),
                              normalize = FALSE,
                              unit = getDefaultUnit(object),
                              ggpLayers = NULL,
+                             outlier_rm = FALSE,
                              ncol = NULL,
                              nrow = NULL,
                              ...){
 
   hlpr_assign_arguments(object)
-
-  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+  deprecated(...)
 
   if(base::isFALSE(core)){border_linealpha <- 0}
 
-  distance <- as_unit(distance, unit = unit, object = object)
+  variables <- base::unique(variables)
 
   coords_df_sa <-
-    purrr::map_df(
-      .x = id,
-      .f = function(idx){
-
-        getCoordsDfSA(
-          object = object,
-          id = idx,
-          distance = distance,
-          variables = variables,
-          dist_unit = unit
-        ) %>%
-          dplyr::filter(!rel_loc %in% {{rm_loc}}) %>%
-          tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values") %>%
-          dplyr::mutate(id = {{idx}})
-
-      }
+    getCoordsDfSA(
+      object = object,
+      ids = ids,
+      distance = distance,
+      variables = variables,
+      core = core,
+      periphery = FALSE,
+      dist_unit = unit,
+      verbose = FALSE
     ) %>%
-    dplyr::mutate(id = base::factor(id, levels = {{id}}))
+    normalize_variables(variables = variables) %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values")
 
   sas_df <-
-    purrr::map_df(
-      .x = id,
-      .f = function(idx){
-
-        getSasDf(
-          object = object,
-          id = idx,
-          distance = distance,
-          variables = variables,
-          unit = unit,
-          ro = NULL,
-          ...
-        ) %>%
-          tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values") %>%
-          dplyr::mutate(id = {{idx}})
-
-      }
+    getSasDf(
+      object = object,
+      ids = ids,
+      distance = distance,
+      binwidth = binwidth,
+      variables = variables,
+      unit = unit,
+      core = core,
+      outlier_rm = outlier_rm,
+      ro = NULL,
+      verbose = FALSE,
+      ...
     ) %>%
-    dplyr::mutate(id = base::factor(id, levels = {{id}}))
+    tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values")
+
+
+  # plot
+  breaks_x <-
+    base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
+    base::ceiling()
+
+  range_d <- base::range(sas_df$dist)
 
   if(base::length(id) > 1){
 
@@ -3005,7 +3006,6 @@ plotExprVsDistSA <- function(object,
         scale_color_add_on(variable = coords_df[["id"]], clrp = pt_clrp)
       )
 
-
   } else {
 
     point_add_on <-
@@ -3014,6 +3014,45 @@ plotExprVsDistSA <- function(object,
         color = pt_color,
         size = pt_size
       )
+
+  }
+
+  if(ee_linealpha != 0){
+
+    if(ee_lineend == "point"){
+
+      ee_lineend_add_on <-
+        ggplot2::geom_point(
+          data = sas_df,
+          mapping = ggplot2::aes(x = dist, y = values),
+          alpha = ee_linealpha,
+          color = ee_linecolor,
+          size = ee_linesize*1.75
+        )
+      ee_lineend <- "round"
+
+    } else {
+
+      ee_lineend_add_on <- NULL
+
+    }
+
+    ee_add_on <-
+      ggplot2::geom_segment(
+        data = sas_df,
+        mapping = ggplot2::aes(x = dist, xend = dist, y = 0, yend = values),
+        alpha = ee_linealpha,
+        color = ee_linecolor,
+        size = ee_linesize,
+        lineend = ee_lineend,
+        linetype = ee_linetype
+      )
+
+    ee_add_on <- list(ee_add_on, ee_lineend_add_on)
+
+  } else {
+
+    ee_add_on <- NULL
 
   }
 
@@ -3033,8 +3072,9 @@ plotExprVsDistSA <- function(object,
       linewidth = border_linesize,
       linetype = border_linetype
     ) +
+    ee_add_on +
     ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
-    theme_lineplot_gradient() +
+    theme_lineplot_gradient(breaks_x = breaks_x, range_d = range_d) +
     ggplot2::labs(
       x = stringr::str_c("Distance to Annotation [", unit, "]"),
       y = "Expression"
@@ -3086,6 +3126,15 @@ plotExprVsDistST <- function(object,
       format = "long"
     )
 
+  # plot
+  breaks_x <-
+    base::seq(from = 0 , to = base::max(sts_df$dist), length.out = 5) %>%
+    base::ceiling()
+
+  range_d <- base::range(sts_df$dist)
+
+  assign("sts_df", sts_df, envir = .GlobalEnv)
+
   ggplot2::ggplot(data = coords_df_st, mapping = ggplot2::aes(x = dist, y = values)) +
     ggpLayers +
     ggplot2::geom_point(
@@ -3100,7 +3149,7 @@ plotExprVsDistST <- function(object,
       linewidth = line_size
     ) +
     ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol) +
-    theme_lineplot_gradient() +
+    theme_lineplot_gradient(breaks_x = breaks_x, range_d = range_d) +
     ggplot2::labs(
       x = stringr::str_c("Distance along Trajectory [", unit, "]"),
       y = "Expression"

@@ -1068,3 +1068,67 @@ expand_image_side <- function(expand_with,
   return(out)
 
 }
+
+
+#' @title Expand Spatial Annotations
+#'
+#' @description Expands or shrinks the outer border of a spatial annotation.
+#'
+#' @param id Character value. The ID of the spatial annotation of interest.
+#' @param expand Distance measure with which to expand the border. Negative
+#' values shrink the outline.
+#' @param new_id Character value or `FALSE`. If character, the resulting
+#' spatial annotation is stored under a new ID.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`smoothSpatialAnnotation()`]
+#'
+#' @export
+#'
+expandSpatialAnnotation <- function(object,
+                                    id,
+                                    expand,
+                                    new_id = FALSE,
+                                    overwrite = FALSE){
+
+  if(base::is.character(new_id)){
+
+    confuns::check_none_of(
+      input = new_id,
+      against = getSpatAnnIds(object),
+      ref.against = "present spatial annotation IDs",
+      overwrite = TRUE
+    )
+
+  }
+
+  spat_ann <-
+    getSpatialAnnotation(object, id = id, add_image = FALSE)
+
+  outline_df <-
+    getSpatAnnOutlineDf(object, ids = id, outer = TRUE, inner = FALSE)
+
+  csf <- getScaleFactor(object, fct_name = "coords")
+
+  expand <- as_pixel(input = expand, object = object)
+
+  outer_df_new <-
+    dplyr::select(spat_ann@area$outer, x, y) %>%
+    buffer_area(df = ., buffer = expand) %>%
+    dplyr::mutate(x_orig = x / {{csf}}, y_orig = y / {{csf}}) %>%
+    dplyr::select(-x, -y)
+
+  spat_ann@area$outer <- outer_df_new
+
+  if(base::is.character(new_id)){
+
+    spat_ann@id <- new_id
+
+  }
+
+  object <- setSpatialAnnotation(object, spat_ann = spat_ann)
+
+  return(object)
+
+}

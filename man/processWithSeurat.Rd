@@ -53,6 +53,8 @@ data from the \code{spata2} object and is processed. Then the processed
 data is transferred back to the \code{spata2} object.
 }
 \details{
-By default this function computes a normalized, scaled data which
-is added to the processed matrices under the name \emph{scaled}.
+By default, the function adds the matrix of @slot \code{data} from
+the seurat assay to the \code{spata2} object under the name \emph{normalized} (if \code{NormalizeData} = TRUE)
+and the matrix of @slot \code{scaled.data} from the Seurat assay to the \code{spata2}
+object under the name \emph{scaled} (if \code{ScaleData = TRUE}).
 }

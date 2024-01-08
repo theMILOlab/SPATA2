@@ -61,8 +61,8 @@ Processing of the image output depending on argument \code{expand} happens after
 An object of class \code{SpatialAnnotation}.
 }
 \description{
-Extracts object of class \code{ImageAnnotaion} by
-its id.
+Extracts object of class \code{\link{SpatialAnnotation}} by
+it's ID.
 }
 \section{Expansion of cropped image sections}{
 

@@ -15,7 +15,6 @@ plotDeaGeneCount(
   clrp_adjust = NULL,
   display_title = NULL,
   sort_by_count = TRUE,
-  of_sample = NA,
   ...
 )
 }
@@ -53,9 +52,6 @@ groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
 
 \item{display_title}{Logical value. If set to TRUE an informative title is displayed.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

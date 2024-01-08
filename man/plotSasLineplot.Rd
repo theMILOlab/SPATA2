@@ -8,14 +8,15 @@
 plotSasLineplot(
   object,
   variables,
-  id = idSA(object),
-  distance = distToEdge(object, id),
+  ids = idSA(object),
+  distance = "dte",
   binwidth = recBinwidth(object),
   core = FALSE,
   angle_span = c(0, 360),
   n_bins_angle = 1,
   smooth_span = 0.2,
   smooth_se = TRUE,
+  display_facets = TRUE,
   unit = getSpatialMethod(object)@unit,
   clrp = NULL,
   clrp_adjust = NULL,
@@ -27,9 +28,16 @@ plotSasLineplot(
   border_linecolor = alpha("white", 0),
   border_linesize = 1,
   border_linetype = "solid",
+  ee_linealpha = 0,
+  ee_linecolor = "black",
+  ee_lineend = "point",
+  ee_linesize = 1,
+  ee_linetype = "solid",
   display_eval = FALSE,
+  eval_size = line_size * 2.5,
   pos_x = 0,
   pos_y = 1,
+  outlier_rm = FALSE,
   ggpLayers = list(),
   verbose = NULL,
   ...
@@ -81,10 +89,10 @@ objects of classes for which a method has been defined.}
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
@@ -104,6 +112,9 @@ an angle span relative to the center of the spatial annotation.
 Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
+
+\item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
+or feature are displayed via \code{ggplot2::facet_wrap()}}
 
 \item{unit}{Character value. The unit in which the distance
 to the spatial annotation is displayed on the x-axis.
@@ -148,6 +159,11 @@ Must have at least three columns:
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
+
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean

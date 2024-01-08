@@ -1170,6 +1170,83 @@ simulate_complete_coords_sa <- function(object, id, distance){
 }
 
 
+simulate_complete_coords_st <- function(object, id){
+
+  width <- getTrajectoryLength(object, id, unit = "px")
+  width <- width/2
+
+  if(containsMethod(object, method_name = "Visium")){
+
+    pixel_df <-
+      getPixelDf(object) %>%
+      dplyr::mutate(barcodes = pixel, x = width, y = height)
+
+    traj_df <- getTrajectorySegmentDf(object, id = id)
+
+    start_point <- base::as.numeric(traj_df[1, c("x", "y")])
+    end_point <- base::as.numeric(traj_df[2, c("x", "y")])
+
+    trajectory_vec <- end_point - start_point
+
+    # factor with which to compute the width vector
+    trajectory_magnitude <- base::sqrt((trajectory_vec[1])^2 + (trajectory_vec[2])^2)
+    trajectory_factor <- width / trajectory_magnitude
+
+    # orthogonal trajectory vector
+    orth_trajectory_vec <- (c(-trajectory_vec[2], trajectory_vec[1]) * trajectory_factor)
+
+    # Two dimensional part ----------------------------------------------------
+
+    # determine trajectory frame points 'tfps' making up the square that embraces
+    # the points
+    tfp1.1 <- start_point + orth_trajectory_vec
+    tfp1.2 <- start_point - orth_trajectory_vec
+    tfp2.1 <- end_point - orth_trajectory_vec
+    tfp2.2 <- end_point + orth_trajectory_vec
+
+    trajectory_frame <-
+      data.frame(
+        x = c(tfp1.1[1], tfp1.2[1], tfp2.1[1], tfp2.2[1]),
+        y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
+      )
+
+    sim_range <- getCaptureArea(object, unit = "px")
+
+    ccd <- recBinwidth(object, unit = "px")
+
+    coords_df <-
+      base::rbind(
+        tidyr::expand_grid(
+          x = seq(from = sim_range$x[1]-ccd, to = sim_range$y[2] + ccd, by = ccd*2),
+          y = seq(from = sim_range$y[1], to = sim_range$y[2], by = ccd),
+          group = "1"
+        ),
+        tidyr::expand_grid(
+          x = seq(from = sim_range$x[1], to = sim_range$x[2], by = ccd*2),
+          y = seq(from = sim_range$y[1], to = sim_range$y[2], by = ccd),
+          group = "2"
+        )
+      ) %>%
+      dplyr::mutate(
+        barcodes = str_c("barcode", dplyr::row_number()),
+        y = dplyr::if_else(group == "2", true = y-(ccd/2), false = y)
+      ) %>%
+      dplyr::select(barcodes, x, y) %>%
+      identify_obs_in_polygon(coords_df = ., polygon_df = trajectory_frame, strictly = T, opt = "inside") %>%
+      dplyr::mutate(
+        rel_loc = dplyr::if_else(inside, true = "inside", false = "outside")
+      )
+
+  } else {
+
+    stop("No method for this experiment set up exists.")
+
+  }
+
+  return(coords_df)
+
+}
+
 #' @title Expression pattern simulation
 #'
 #' @description Simulates expression pattern by modelling expression dependent
@@ -1968,6 +2045,7 @@ simulate_random_gradients <- function(coords_df,
                                       seed = 123,
                                       coef = Inf,
                                       range = c(0, 1),
+                                      fn = "runif",
                                       verbose = TRUE,
                                       ...){
 
@@ -1977,10 +2055,6 @@ simulate_random_gradients <- function(coords_df,
     msg = glue::glue("Simulating {n} random expression pattern."),
     verbose = verbose
   )
-
-  # distance density
-  dd <- stats::density(x = coords_df[["dist"]])
-  coords_df$dist.weights <- 1-stats::approx(dd$x, dd$y, xout = coords_df$dist)$y
 
   out_sim <-
     purrr::map(
@@ -1993,12 +2067,24 @@ simulate_random_gradients <- function(coords_df,
         base::set.seed(seed*i)
 
         # set random expression values for all data points
-        coords_df[["random_expr"]] <-
-          stats::runif(
-            n = base::nrow(coords_df),
-            min = base::min(range),
-            max = base::max(range)
-          )
+        if(fn == "runif"){
+
+          coords_df[["random_expr"]] <-
+            stats::runif(
+              n = base::nrow(coords_df),
+              min = base::min(range),
+              max = base::max(range)
+            )
+
+        } else if(fn == "rnorm"){
+
+          coords_df[["random_expr"]] <-
+            stats::rnorm(
+              n = base::nrow(coords_df)
+            ) %>% confuns::normalize()
+
+
+        }
 
         loess_model <-
           stats::loess(
@@ -2013,13 +2099,18 @@ simulate_random_gradients <- function(coords_df,
         gradient <-
           infer_gradient(loess_model, expr_est_pos = expr_est_pos, coef = coef, ro = range)
 
+        tot_var <- compute_total_variation(gradient)
+
+        norm_var <- tot_var/base::length(gradient)
+
         out_list <-
           list(
-            coords_df = coords_df[,c("x", "y", "random_expr", "dist")],
+            #coords_df = coords_df[,c("x", "y", "random_expr", "dist")],
             gradient = gradient,
-            loess_model = loess_model,
+            #loess_model = loess_model,
             seed = seed * i,
-            tot_var = compute_total_variation(gradient)
+            tot_var = tot_var,
+            norm_var = norm_var
           )
 
         return(out_list)
@@ -2238,8 +2329,9 @@ spatial_gradient_screening <- function(coords_df,
                                        cf = 1,
                                        min_dist = NULL,
                                        max_dist = NULL,
+                                       rm_zero_infl = TRUE,
                                        n_random = 1000,
-                                       sign_var = "fdr",
+                                       sign_var = "fdr_cor",
                                        sign_threshold = 0.05,
                                        skip_comp = FALSE,
                                        force_comp = FALSE,
@@ -2253,6 +2345,34 @@ spatial_gradient_screening <- function(coords_df,
   # Preparation -------------------------------------------------------------
 
   variables <- base::unique(variables)
+
+  coords_df <- normalize_variables(coords_df, variables = variables)
+
+  if(base::isTRUE(rm_zero_infl)){
+
+    zero_infl_vars <-
+      identify_zero_inflated_variables(
+        df = coords_df,
+        variables = variables,
+        verbose = verbose
+      )
+
+    nzi <- base::length(zero_infl_vars)
+
+    variables <- variables[!variables %in% zero_infl_vars]
+
+    coords_df <- dplyr::select(coords_df, -dplyr::all_of(zero_infl_vars))
+
+    confuns::give_feedback(
+      msg = glue::glue("Identified and removed {nzi} zero inflated variables."),
+      verbose = verbose
+    )
+
+  } else {
+
+    zero_infl_vars <- NULL
+
+  }
 
   # define the alpha parameter of the loess fitting as the percentage that the
   # binwidth represents of the distance (both must be of the same unit)
@@ -2284,17 +2404,16 @@ spatial_gradient_screening <- function(coords_df,
       span = span,
       expr_est_pos = expr_est_pos,
       amccd = binwidth,
-      coef = coef,
       n = n_random,
       seed = seed,
       verbose = verbose
     )
 
-  random_tv <-
+  random_tot_vars <-
     purrr::map_dbl(.x = random_gradients, .f = ~ .x$tot_var) %>%
     base::unname()
 
-  random_tv <- random_tv[!is_outlier(random_tv, coef = 1.5)]
+  robust_random_tot_vars <- random_tot_vars[!is_outlier(random_tot_vars, coef = 1.5)]
 
   model_names <- base::names(model_df)
   nm <- base::length(model_names)
@@ -2336,7 +2455,6 @@ spatial_gradient_screening <- function(coords_df,
         gradient <-
           infer_gradient(
             loess_model = loess_model,
-            coef = coef,
             expr_est_pos = expr_est_pos,
             ro = c(0,1)
             )
@@ -2352,15 +2470,18 @@ spatial_gradient_screening <- function(coords_df,
         observed_tv <- compute_total_variation(inf_df$inf_gradient)
         observed_rv <- compute_relative_variation(inf_df$inf_gradient)
 
+        norm_var <- observed_tv/base::length(expr_est_pos)
+
         p_value <-
-          base::sum(random_tv <= observed_tv) / base::length(random_tv)
+          base::sum(robust_random_tot_vars <= observed_tv) /
+          base::length(robust_random_tot_vars)
 
         pval_df <-
           tibble::tibble(
             variables = var,
             rel_var = observed_rv,
             tot_var = observed_tv,
-            norm_var = observed_tv/base::length(expr_est_pos),
+            norm_var = norm_var,
             p_value = p_value
           )
 
@@ -2374,7 +2495,8 @@ spatial_gradient_screening <- function(coords_df,
         out <-
           list(
             pval_df = pval_df,
-            inf_df = inf_df
+            inf_df = inf_df,
+            loess_model = loess_model
           )
 
         return(out)
@@ -2393,11 +2515,7 @@ spatial_gradient_screening <- function(coords_df,
 
   p_value_df <-
     purrr::map_df(.x = loess_list, .f = ~ .x$pval_df) %>%
-    dplyr::mutate(
-      p_value_corrected = p_value / cf,
-      fdr = stats::p.adjust(p = p_value, method = "fdr")
-      )
-
+    dplyr::mutate(fdr = stats::p.adjust(p = p_value, method = "fdr"))
 
   # significant variables
   significant_variables <-
@@ -2454,13 +2572,14 @@ spatial_gradient_screening <- function(coords_df,
 
   out <-
     list(
-      random_simulations = purrr::map(random_gradients, .f = ~ .x[c("lds", "tot_var")]),
+      random_simulations = random_gradients,
       variables = variables,
       models = model_df,
       loess_fits = purrr::map(.x = loess_list, .f = ~ .x$loess_model),
       pval = p_value_df,
       eval = evaluation_df,
-      span = span
+      span = span,
+      zero_infl_vars = zero_infl_vars
     )
 
   return(out)
@@ -2523,7 +2642,7 @@ spatialAnnotationScreening <- function(object,
                                        angle_span = c(0, 360),
                                        unit = getDefaultUnit(object),
                                        bcs_exclude = character(0),
-                                       sign_var = "fdr",
+                                       sign_var = "fdr_cor",
                                        sign_threshold = 0.05,
                                        force_comp = FALSE,
                                        skip_comp = FALSE,
@@ -2640,7 +2759,7 @@ spatialAnnotationScreening <- function(object,
   SAS_out <-
     SpatialAnnotationScreening(
       coords = dplyr::select(coords_df, -dplyr::all_of(variables)),
-      info = list(r2 = r2, random_simulations = sgs_out$random, distance = distance, coef = coef),
+      info = list(r2 = r2, random_simulations = sgs_out$random, distance = distance, coef = coef, zero_infl_vars = sgs_out$zero_infl_vars),
       models = sgs_out$models,
       significance = sgs_out$pval,
       results = sgs_out$eval,

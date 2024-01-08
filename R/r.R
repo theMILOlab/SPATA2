@@ -1467,35 +1467,34 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 #' @return An updates spata object.
 #' @export
 #'
-renameSpatAnn <- function(object, id, new_id){
+renameSpatAnn <- function(object, id, new_id, overwrite = FALSE){
 
   confuns::are_values(c("id", "new_id"), mode = "character")
 
-  check_image_annotation_ids(object, ids = id)
-
-  img_ann_ids <- getImageAnnotationIds(object)
+  spat_ann_ids <- getSpatAnnIds(object)
 
   confuns::check_none_of(
     input = new_id,
-    against = img_ann_ids,
-    ref.against = "spatial annotation IDs"
+    against = spat_ann_ids,
+    ref.against = "spatial annotation IDs",
+    overwrite = overwrite
   )
 
-  io <- getImageObject(object)
+  imaging <- getHistoImaging(object)
 
-  img_ann_names <- base::names(io@annotations)
+  img_ann_names <- base::names(imaging@annotations)
 
   img_ann_pos <- base::which(img_ann_names == id)
 
-  img_ann <- io@annotations[[id]]
+  img_ann <- imaging@annotations[[id]]
 
   img_ann@id <- new_id
 
-  io@annotations[[img_ann_pos]] <- img_ann
+  imaging@annotations[[img_ann_pos]] <- img_ann
 
-  base::names(io@annotations)[img_ann_pos] <- new_id
+  base::names(imaging@annotations)[img_ann_pos] <- new_id
 
-  object <- setImageObject(object, image_object = io)
+  object <- setHistoImaging(object, imaging = imaging)
 
   return(object)
 

@@ -4,6 +4,7 @@
 \alias{getSpatAnnOutlineDf}
 \alias{getSpatAnnOutlineDf,spata2-method}
 \alias{getSpatAnnOutlineDf,HistoImaging-method}
+\alias{getSpatAnnOutlineDf,SpatialAnnotation-method}
 \title{Obtain spatial annotation border data.frame}
 \usage{
 getSpatAnnOutlineDf(object, ...)
@@ -33,6 +34,8 @@ getSpatAnnOutlineDf(object, ...)
   sep = " & ",
   last = " & "
 )
+
+\S4method{getSpatAnnOutlineDf}{SpatialAnnotation}(object, add_tags = TRUE, sep = " & ", last = " & ", ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

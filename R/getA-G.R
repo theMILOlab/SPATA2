@@ -931,6 +931,8 @@ setMethod(
 #' @inherit spatialAnnotationScreening params
 #' @param dist_unit Character value. Unit in which the distance is computed.
 #' Defaults to *pixel*.
+#' @param core0 Logical value. If `TRUE`, *dist* valus of core data points are
+#' set to 0.
 #' @param coords_df Data.frame. If `NULL`, the default, the coordinates data.frame obtained
 #' via `getCoordsDf()` is used. Else other data.frame of observations can be put in
 #' relation to the spatial annotation. Requires numeric variables named *x* and *y* in
@@ -959,20 +961,121 @@ setMethod(
 #'  }
 #' @export
 #'
+
 getCoordsDfSA <- function(object,
-                          id = idSA(object),
-                          distance = distToEdge(object, id),
+                          ids = idSA(object),
+                          distance = "dte",
                           binwidth = recBinwidth(object),
                           core = TRUE,
-                          n_bins_dist = NA_integer_,
+                          core0 = FALSE,
+                          periphery = TRUE,
                           angle_span = c(0,360),
                           n_bins_angle = 1,
-                          dist_unit = "px",
+                          dist_unit = getDefaultUnit(object),
                           coords_df = NULL,
                           variables = NULL,
                           format = "wide",
                           verbose = NULL,
                           ...){
+
+
+  coords_df <-
+    purrr::map_df(
+      .x = ids,
+      .f = function(id){
+
+        if(distance == "dte"){
+
+          dist <- distToEdge(object, id = id, unit = dist_unit)
+
+        } else {
+
+          is_dist(input = distance, error = TRUE)
+
+          dist <- distance
+
+        }
+
+        get_coords_df_sa(
+          object = object,
+          id = id,
+          distance = dist,
+          binwidth = binwidth,
+          core = TRUE,
+          core0 = core0,
+          periphery = TRUE,
+          angle_span = angle_span,
+          n_bins_angle = n_bins_angle,
+          dist_unit = dist_unit,
+          coords_df = coords_df,
+          format = format,
+          verbose = FALSE
+          ) %>%
+          dplyr::mutate(id = {{id}})
+
+      }
+    ) %>%
+    dplyr::mutate(id = base::factor(id, levels = {{ids}}))
+
+  # filter by min dist -> min dist to closest border
+  if(base::length(ids) > 1){
+
+    coords_df <-
+      dplyr::group_by(coords_df, barcodes) %>%
+      dplyr::slice_min(dist, n = 1, with_ties = FALSE) %>%
+      dplyr::ungroup()
+
+  }
+
+  # remove core
+  if(!base::isTRUE(core)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "core")
+
+  }
+
+  # remove periphery
+  if(!base::isTRUE(periphery)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "periphery")
+
+  }
+
+  # add variables
+  if(base::is.character(variables)){
+
+    coords_df <-
+      joinWithVariables(
+        object = object,
+        spata_df = coords_df,
+        variables = variables,
+        verbose = verbose,
+        ...
+      )
+
+  }
+
+  return(coords_df)
+
+}
+
+#' @keywords internal
+get_coords_df_sa <- function(object,
+                             id = idSA(object),
+                             distance = distToEdge(object, id),
+                             binwidth = recBinwidth(object),
+                             core = TRUE,
+                             core0 = FALSE,
+                             periphery = TRUE,
+                             n_bins_dist = NA_integer_,
+                             angle_span = c(0,360),
+                             n_bins_angle = 1,
+                             dist_unit = "px",
+                             coords_df = getCoordsDf(object),
+                             variables = NULL,
+                             format = "wide",
+                             verbose = NULL,
+                             ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
@@ -1021,41 +1124,44 @@ getCoordsDfSA <- function(object,
   # increase number of vertices
   avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
 
-  outline_df <-
-    increase_polygon_vertices(
-      polygon = outline_df_orig[,c("x", "y")],
-      avg_dist = avg_dist/4
-    )
+  borders <- base::unique(outline_df_orig[["border"]])
 
-  # obtain obs inside polygon
-  if(external_coords){
+  coords_df <-
+    purrr::map_df(
+      .x = borders,
+      .f = function(b){
 
-    res <-
-      sp::point.in.polygon(
-        point.x = coords_df[["x"]],
-        point.y = coords_df[["y"]],
-        pol.x = outline_df_orig[["x"]],
-        pol.y = outline_df_orig[["y"]]
-      )
+        border_df <- dplyr::filter(outline_df_orig, border == {{b}})
 
-    spat_ann_bcs <- coords_df[res %in% c(1,2,3), ][["barcodes"]]
+        outline_df <-
+          increase_polygon_vertices(
+            polygon = border_df[,c("x", "y")],
+            avg_dist = avg_dist/4
+          )
 
-  } else {
+        # compute distance to closest vertex
+        nn_out <-
+          RANN::nn2(
+            data = base::as.matrix(outline_df),
+            query = base::as.matrix(coords_df[,c("x", "y")]),
+            searchtype = "priority",
+            k = 1
+          )
 
-    spat_ann_bcs <- spat_ann@misc$barcodes
+        coords_df$dist <- base::as.numeric(nn_out$nn.dists)
+        coords_df$border <- b
 
-  }
+        return(coords_df)
 
-  # compute distance to closest vertex
-  nn_out <-
-    RANN::nn2(
-      data = base::as.matrix(outline_df),
-      query = base::as.matrix(coords_df[,c("x", "y")]),
-      searchtype = "priority",
-      k = 1
-    )
+      }
+    ) %>%
+    dplyr::group_by(barcodes) %>%
+    dplyr::slice_min(dist, n = 1, with_ties = FALSE) %>%
+    dplyr::ungroup()
 
-  coords_df$dist <- base::as.numeric(nn_out$nn.dists)
+
+  # obtain obs inside bcs
+  spat_ann_bcs <- getSpatAnnBarcodes(object, ids = id, coords_df = coords_df)
 
   # if specified as SI unit, "think in SI units"
   if(base::is.character(dist_unit)){
@@ -1237,8 +1343,6 @@ getCoordsDfSA <- function(object,
 
   }
 
-  sas_df <-
-
   # relative location
   coords_df_sa <-
     dplyr::mutate(
@@ -1283,6 +1387,20 @@ getCoordsDfSA <- function(object,
 
     coords_df_sa <- dplyr::filter(coords_df_sa, rel_loc != "core")
 
+  } else if(base::isTRUE(core0)){
+
+    coords_df_sa <-
+      dplyr::mutate(
+        .data = coords_df_sa,
+        dist = dplyr::if_else(rel_loc == "core", true = 0, false = dist)
+      )
+
+  }
+
+  if(!base::isTRUE(periphery)){
+
+    coords_df_sa <- dplyr::filter(coords_df_sa, rel_loc != "periphery")
+
   }
 
   return(coords_df_sa)
@@ -1296,7 +1414,7 @@ getCoordsDfST <- function(object,
                           id = idST(object),
                           binwidth = recBinwidth(object),
                           n_bins = NA_integer_,
-                          width = NULL,
+                          width = getTrajectoryLength(object, id = id),
                           dist_unit = "px",
                           variables = NULL,
                           format = "wide",
@@ -1429,12 +1547,32 @@ getCoordsMtr <- function(object, img_name = NULL, orig = FALSE){
 #' @return A list of two vectors each of length 2.
 #' @export
 #'
-getCoordsRange <- function(object){
+getCoordsRange <- function(object, fct = NULL){
 
-  list(
-    x = getCoordsDf(object)$x %>% base::range(),
-    y = getCoordsDf(object)$y %>% base::range()
-  )
+  out <-
+    list(
+      x = getCoordsDf(object)$x %>% base::range(),
+      y = getCoordsDf(object)$y %>% base::range()
+    )
+
+  if(base::is.numeric(fct)){
+
+    out <-
+      purrr::map(
+        .x = out,
+        .f = function(vec){
+
+          vec[1] <- vec[1]*fct[1]
+          vec[2] <- vec[2]*fct[2]
+
+          return(vec)
+
+        }
+      )
+
+  }
+
+  return(out)
 
 }
 
@@ -2828,17 +2966,11 @@ getGroupingOptions <- function(object, ...){
 #'  getGroupNames(object = object, grouping_variable = "my_cluster")
 #'
 
-getGroupNames <- function(object, grouping_variable,...){
+getGroupNames <- function(object, grouping,...){
 
   deprecated(...)
 
-  check_object(object)
-
-  res_groups <-
-    getFeatureValues(
-      object = object,
-      features = grouping_variable
-    )
+  res_groups <- getFeatureDf(object)[[grouping]]
 
   if(base::is.factor(res_groups)){
 

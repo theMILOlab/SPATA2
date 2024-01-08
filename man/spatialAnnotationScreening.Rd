@@ -14,7 +14,7 @@ spatialAnnotationScreening(
   angle_span = c(0, 360),
   unit = getDefaultUnit(object),
   bcs_exclude = character(0),
-  sign_var = "fdr",
+  sign_var = "fdr_cor",
   sign_threshold = 0.05,
   force_comp = FALSE,
   skip_comp = FALSE,

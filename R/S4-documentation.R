@@ -87,17 +87,35 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 #' @description Abstracts the concept of spatial biology experiments
 #' such as \emph{Visium} or \emph{SlideSeq}.
 #'
-#' @slot capture_area list. List of length two. Provides the measures
-#' of the area in which identified entities are to be expected (in SI units).
-#' @slot fiducial_frame list. List of length two, named *x* and *y*.
-#' Provides standardized measures of the sample image (in SI units).
-#' @slot info list. List of miscellaneous meta data for the method.
+#' @slot amccd character Represents the Average Minimal Center-to-Center Distance (AMCCD).
+#' This distance measure is calculated by identifying the nearest neighbor of each data point
+#' in 2D space, computing their euclidean distance and averaging all the distances computed
+#' that way. Therefore, the measure corresponds to the density of data points in the data set.
+#'
+#' With methods where data points are uniformly spaced with a fixed center-to-center distance,
+#' such as in the Visium platform, the AMCCD is equivalent to this fixed distance. For example,
+#' in the case of Visium, where the fixed distance is 100 µm, then the AMCCD is also 100 µm, and
+#' no additional computation is necessary.
+#'
+#' For `spata2` objects initialized through methods other than `initiateSpataObject()`,
+#' such as `initiateSpataObjectMERFISH()`, the AMCCD is set (or) computed automatically.
+#'
+#' The value of this slot is a character to allow a unit suffix. (Should be a SI unit.)
+#
+#' @slot capture_area list
+#' A list of length two, with elements named *x* and *y*. Each element is a vector of length two.
+#' This slot specifies the coordinates of the opposite corners of a rectangular area.
+#' The *x* element contains the x-coordinates and the *y* element contains the y-coordinates.
+#' These coordinates define the area within which data points are expected to be captured.
+#' Coordinates must be specified in SI units (meters). The first value in each vector represents
+#' one corner of the rectangle, and the second value represents the diagonally opposite corner.
+#' @slot info list. List of miscellaneous meta data about the method.
 #' @slot method_specific list. List method specific data. Depending on the
 #' method the following slot names are reserved. See section *Method specifics:*
 #' for more information.
 #' @slot name character. The name of the spatial method. (E.g. *'Visium'*)
 #' @slot observational_unit character. Name with which to refer to
-#' the entity the method focuses on. (E.g. *'barcode_spot'*)
+#' the data points the method focuses on. (E.g. *'barcode_spot'*)
 #' @slot unit character. The SI to be used by default.
 #'
 #' @section Method specifics:
@@ -110,6 +128,8 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 #'  \itemize{
 #'   \item{*ccd*:}{ Center to center distance as a spatial distance measure in SI units.}
 #'   \item{*diameter*:}{ Diameter of each spot in micrometer.}
+#'   \item{*fiducial_frame*:}{ List of length two, named *x* and *y*. Provides standardized
+#'    measures of the fiducial frame(in SI units).}
 #'  }
 #'
 #' For methods that of type *SlideSeq* (currently known *SlideSeqV1*):
@@ -124,7 +144,6 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 SpatialMethod <- setClass(Class = "SpatialMethod",
                           slots = list(
                             capture_area = "list",
-                            fiducial_frame = "list",
                             info = "list",
                             method_specifics = "list",
                             name = "character",
@@ -192,11 +211,11 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @title The \code{HistoImage} - Class
 #'
 #' @description S4 class that contains an histology image and information and data
-#' about it. Usually live in slots @@image_reference and @@images_registered of `HistoImaging`
+#' about it. Usually live in slots @@image_reference and @@images_registered of [`HistoImaging`]
 #' objects.
 #'
-#' @slot active logical. If `TRUE`, it is the image used by default. Only one `HistoImage`
-#' in the `HistoImaging` object can be the active at a time.
+#' @slot active logical. If `TRUE`, it is the image used by default. Only one [`HistoImage`]
+#' in the [`HistoImaging`] object can be the active at a time.
 #' @slot aligned logical. If `TRUE`, indicates that the image was aligned to
 #' the reference image.
 #' @slot bg_color character. The color of the background.
@@ -218,24 +237,24 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #'  }
 #' @slot overlap numeric. Numeric vector of length two. Quantifies the overlap
 #' of the tissue outline of this image with the tissue outline of the reference image
-#' with a value between 0-1 before and after alignment via `alignImage()`.
+#' with a value between 0-1 before and after alignment via [`alignImage()`].
 #' @slot pixel_content factor. Named factor where names correspond to the
 #' pixels following the naming convention 'px_w1_h1' encoding the width and height value
 #' of the pixel from the original **not transformed** image. Values correspond to
 #' the content the pixel displays. See [identifyPixelContent()] for more information.
-#' @slot reference logical. `TRUE` if it is the `HistoImage` used as the reference
+#' @slot reference logical. `TRUE` if it is the [`HistoImage`] used as the reference
 #' with which other histology images are aligned.
 #' @slot sample character. The name of the tissue portion to which this image belongs.
 #' @slot scale_factors list. List of single numeric values serving as scale factors for
 #' multiple functionalities. Reserved slot names:
 #' \itemize{
-#'   \item{*coords*:} {Coordinate scale factor to be multiplied by the original x and y variables,
-#'   ensuring alignment with the image.}
-#'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It should have an
+#'   \item{*coords*:} {Coordinate scale factor to be multiplied by the original x and y variables (*x_orig*, *y_orig*) upon
+#'   extraction of the coordinatse data.frame (resulting in the *x* and *y* variables) ensuring alignment with the image.}
+#'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 #'   attribute called "unit" conforming to the format "SI-unit/px".}
 #' }
 #'
-#' @slot transformations list. List of transformations to apply while extracting
+#' @slot transformations list. List of transformations to apply upon extracting
 #' the image to ensure alignment with additional images. In case of default values
 #' no transformation is applied.
 #' \itemize{
@@ -276,11 +295,11 @@ HistoImage <- setClass(Class = "HistoImage",
 #' @description S4 class that represents a set of histological images from one
 #' tissue slide or several consecutive slides of one and the same tissue portion.
 #'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
+#' @slot annotations list. List of objects of class [`SpatialAnnotation`].
 #' @slot coordinates data.frame. Data.frame that stores information about identified
 #' or known entities located on the imaged tissue, such as cells or capture spots.
-#' @slot images list. List of objects of class `HistoImage`. Leaving
-#' @slot method SpatialMethod. Object of class `SpatialMethod`.
+#' @slot images list. List of objects of class [`HistoImage`].
+#' @slot method SpatialMethod. Object of class [`SpatialMethod`].
 #' @slot meta list. List for meta data regarding the imaged tissue portion.
 #' @slot misc list. A flexible list for miscellaneous input.
 #' @slot name_img_ref character. The name of the image that is used as a reference for aligning

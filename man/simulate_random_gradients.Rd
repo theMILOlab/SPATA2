@@ -13,6 +13,7 @@ simulate_random_gradients(
   seed = 123,
   coef = Inf,
   range = c(0, 1),
+  fn = "runif",
   verbose = TRUE,
   ...
 )

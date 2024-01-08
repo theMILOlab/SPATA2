@@ -20,7 +20,7 @@ ggpLayerTissueOutline(object, ...)
   line_color = "black",
   line_size = 1,
   line_type = "solid",
-  outline_fct = c(1.75, 2.75),
+  outline_fct = c(2.25, 2.75),
   use_scattermore = FALSE,
   transform = TRUE,
   scale_fct = 1,

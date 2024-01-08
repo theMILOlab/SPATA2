@@ -500,6 +500,34 @@ setMethod(
 )
 
 
+#' @keywords internal
+getPointSize <- function(object,
+                         xrange = getCoordsRange(object)$x,
+                         yrange = getCoordsRange(object)$y){
+
+  pt_size <- getDefault(object, arg = "pt_size")
+
+  mx_range <- base::max(c(base::diff(xrange), base::diff(yrange)))
+
+  if(containsImage(object)){
+
+    mx_dims <- base::max(getImageDims(object))
+
+  } else {
+
+    mx_dims <-
+      purrr::map_dbl(coords_df[,c("x", "y")], .f = base::max) %>%
+      base::max()
+
+  }
+
+  pt_size <- (mx_dims/mx_range)*pt_size
+
+  return(pt_size)
+
+
+}
+
 
 #' @rdname getCountMatrix
 #' @export
@@ -1279,8 +1307,8 @@ getSasBinAreas <- function(object,
 #'
 
 getSasDf <- function(object,
-                     id,
-                     distance = distToEdge(object, id),
+                     ids,
+                     distance = "dte",
                      binwidth = recBinwidth(object),
                      core = FALSE,
                      angle_span = c(0,360),
@@ -1290,128 +1318,109 @@ getSasDf <- function(object,
                      ro = c(0, 1),
                      format = "wide",
                      bcs_exclude = NULL,
+                     outlier_rm = FALSE,
                      verbose = FALSE,
                      ...){
 
   deprecated(...)
 
-  sas_df <-
-    purrr::map_df(
-      .x = id,
-      .f = function(idx){
-
-        rm_loc <- c("core", "periphery")[c(!core, TRUE)]
-
-        # ensure that both values are of the same unit
-        binwidth <- as_unit(binwidth, unit = unit, object = object)
-        distance <- as_unit(distance, unit = unit, object = object)
-
-        coords_df_sa <-
-          getCoordsDfSA(
-            object = object,
-            id = id,
-            distance = distance,
-            angle_span = angle_span,
-            n_bins_angle = n_bins_angle,
-            variables = variables,
-            dist_unit = unit, # ensure that distance is computed in correct unit
-            verbose = verbose
-          ) %>%
-          # removes (core and) periphery (periphery = outside of distance threshold)
-          dplyr::filter(!rel_loc %in% {{rm_loc}})
-
-        if(base::isTRUE(core)){
-
-          min_dist <-
-            base::min(coords_df_sa[["dist"]]) %>%
-            stringr::str_c(., unit)
-
-        } else {
-
-          min_dist <- stringr::str_c(0, unit)
-
-        }
-
-        expr_est_pos <-
-          compute_positions_expression_estimates(
-            min_dist = min_dist,
-            max_dist = distance,
-            amccd = binwidth
-          )
-
-        # prepare output
-        sas_df <-
-          tibble::tibble(
-            dist = expr_est_pos,
-            dist_unit = unit,
-            bins_order = 1:base::length(expr_est_pos), # keep for compatibility?
-            expr_est_idx = 1:base::length(expr_est_pos)
-          )
-
-        dist_screened <-
-          base::diff(c(extract_value(min_dist),extract_value(distance)))
-
-        cf <- compute_correction_factor_sas(object, id = id, distance = distance, core = core)
-
-        span <- base::as.numeric(binwidth/dist_screened) / cf
-
-        if(base::is.numeric(list(...)[["span"]])){
-
-          span <- list(...)[["span"]]
-
-        }
-
-        confuns::give_feedback(
-          msg = glue::glue("`span` = {span}"),
-          verbose = verbose
-        )
-
-        for(var in variables){
-
-          coords_df_sa[["var.x"]] <- coords_df_sa[[var]]
-
-          loess_model <-
-            stats::loess(
-              formula = var.x ~ dist,
-              data = coords_df_sa,
-              span = span,
-              family = "gaussian",
-              #statistics = "none",
-              surface = "direct",
-              degree = 1
-            )
-
-          sas_df[[var]] <-
-            infer_gradient(loess_model, expr_est_pos = expr_est_pos, ro = ro)
-
-        }
-
-        return(sas_df)
-
-      }
+  # ensure that both values are of the same unit
+  coords_df_sa <-
+    getCoordsDfSA(
+      object = object,
+      ids = ids,
+      distance = distance,
+      angle_span = angle_span,
+      n_bins_angle = n_bins_angle,
+      variables = variables,
+      dist_unit = unit, # ensure that distance is computed in correct unit
+      core = core,
+      periphery = FALSE,
+      verbose = verbose
     )
 
-  # average the expression of multiple ids
-  if(base::length(id) > 1){
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  distance <-
+    stringr::str_c(base::max(coords_df_sa$dist), unit) %>%
+    as_unit(input = ., unit = unit, object = object)
 
-    sas_df <-
-      dplyr::group_by(sas_df, dist_unit, dplyr::pick(dplyr::where(base::is.factor))) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::where(base::is.numeric), # summarize `dist`, too
-          .fns = base::mean
-        )
-      ) %>%
-      dplyr::ungroup() %>%
-      dplyr::mutate(
-        dplyr::across(
-          .cols = dplyr::all_of(variables),
-          .fns = ~ confuns::normalize(.x)
-        )
-      ) %>%
-      dplyr::select(dplyr::everything())
+  if(base::isTRUE(core)){
+
+    min_dist <-
+      base::min(coords_df_sa[["dist"]]) %>%
+      stringr::str_c(., unit)
+
+  } else {
+
+    min_dist <- stringr::str_c(0, unit)
 
   }
+
+  expr_est_pos <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = distance,
+      amccd = binwidth
+    )
+
+  # prepare output
+  sas_df <-
+    tibble::tibble(
+      dist = expr_est_pos,
+      dist_unit = unit,
+      bins_order = 1:base::length(expr_est_pos), # keep for compatibility?
+      expr_est_idx = 1:base::length(expr_est_pos)
+    )
+
+  dist_screened <-
+    base::diff(c(extract_value(min_dist),extract_value(distance)))
+
+  cf <- 1
+
+  span <- base::as.numeric(binwidth/dist_screened) / cf
+
+  if(base::is.numeric(list(...)[["span"]])){
+
+    span <- list(...)[["span"]]
+
+  }
+
+  confuns::give_feedback(
+    msg = glue::glue("`span` = {span}"),
+    verbose = verbose
+  )
+
+  for(var in variables){
+
+    coords_df_sa[["var.x"]] <- coords_df_sa[[var]]
+
+    if(base::isTRUE(outlier_rm)){
+
+      keep <- !is_outlier(coords_df_sa[["var.x"]])
+
+    } else {
+
+      keep <- 1:nrow(coords_df_sa)
+
+    }
+
+    loess_model <-
+      stats::loess(
+        formula = var.x ~ dist,
+        data = coords_df_sa[keep,],
+        span = span,
+        family = "gaussian",
+        #statistics = "none",
+        surface = "direct",
+        degree = 1
+      )
+
+    sas_df[[var]] <-
+      infer_gradient(loess_model, expr_est_pos = expr_est_pos, ro = ro)
+
+  }
+
+  sas_df <- dplyr::select(sas_df, expr_est_idx, dist, dist_unit, dplyr::everything(), bins_order)
 
   if(format == "long"){
 
@@ -1449,34 +1458,36 @@ getSasExpansion <- function(object,
                             binwidth = getCCD(object),
                             n_bins_dist = NA_integer_,
                             direction = "outwards",
-                            inc_outline = TRUE,
+                            inc_outline = TRUE, # rename to inc_tissue_edge?
                             verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  ias_input <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      object = object,
-      verbose = verbose
+  unit <- "px"
+  min_dist <- 0
+  max_dist <- as_pixel(distance, object = object)
+  binwidth <- as_pixel(binwidth, object = object)
+
+  expr_estimates <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = max_dist,
+      amccd = binwidth
     )
+
+  nee <- base::length(expr_estimates)
 
   area_df <- getSpatAnnOutlineDf(object, ids = id)
 
-  binwidth <- ias_input$binwidth
-  n_bins_dist <- base::max(ias_input$n_bins_dist)
+  ee_names <- stringr::str_c("ExprEst", 2:nee, sep = "_")
 
-  circle_names <- stringr::str_c("Circle", 1:n_bins_dist, sep = " ")
-
-  circles <-
+  ees <-
     purrr::set_names(
-      x = c((1:n_bins_dist)*binwidth),
-      nm = circle_names
+      x = expr_estimates[2:nee],
+      nm = ee_names
     )
 
-  binwidth_vec <- c("Core" = 0, circles)
+  ee_vec <- c("Core" = 0, ees)
 
   if(direction == "outwards"){
 
@@ -1484,10 +1495,10 @@ getSasExpansion <- function(object,
 
     expansions <-
       purrr::imap(
-        .x = binwidth_vec,
+        .x = ee_vec,
         .f = ~
           buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
-          dplyr::mutate(bins_circle = .y)
+          dplyr::mutate(ee = .y)
       )
 
     if(base::isTRUE(inc_outline)){
@@ -1527,6 +1538,97 @@ getSasExpansion <- function(object,
   }
 
   return(expansions)
+
+}
+
+
+getSasExprEst2D <- function(object,
+                            id,
+                            distance = distToEdge(object, id),
+                            binwidth = getCCD(object),
+                            n_bins_dist = NA_integer_,
+                            direction = "outwards",
+                            inc_outline = TRUE, # rename to inc_tissue_edge?
+                            verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  unit <- "px"
+  min_dist <- 0
+  max_dist <- as_pixel(distance, object = object)
+  binwidth <- as_pixel(binwidth, object = object)
+
+  expr_estimates <-
+    compute_positions_expression_estimates(
+      min_dist = min_dist,
+      max_dist = max_dist,
+      amccd = binwidth
+    )
+
+  nee <- base::length(expr_estimates)
+
+  area_df <- getSpatAnnOutlineDf(object, ids = id)
+
+  ee_names <- stringr::str_c("ExprEst", 2:nee, sep = "_")
+
+  ees <-
+    purrr::set_names(
+      x = expr_estimates[2:nee],
+      nm = ee_names
+    )
+
+  ee_vec <- c("Core" = 0, ees)
+
+  if(direction == "outwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    ccd <- getCCD(object, unit = "px")
+
+    ee_list <-
+      purrr::imap(
+        .x = ee_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
+          #increase_polygon_vertices(., avg_dist = ccd) %>%
+          dplyr::mutate(ee = .y, bins_circle = .y) # bins_circle for compatibility
+      )
+
+    if(base::isTRUE(inc_outline)){
+
+      ee_list <-
+        purrr::map(
+          .x = ee_list,
+          .f = ~ include_tissue_outline(
+            coords_df = getCoordsDf(object),
+            outline_df = getTissueOutlineDf(object),
+            input_df = .x,
+            spat_ann_center = getSpatAnnCenter(object, id = id),
+            remove = FALSE,
+            sas_circles = TRUE,
+            ccd = ccd,
+            buffer = ccd*0.5
+          )
+        ) %>%
+        purrr::discard(.p = base::is.null)
+
+    }
+
+  } else if(direction == "inwards"){
+
+    area_df <- dplyr::filter(area_df, border == "outer")
+
+    ee_list <-
+      purrr::imap(
+        .x = ee_vec,
+        .f = ~
+          buffer_area(df = area_df[c("x", "y")], buffer = -(.x)) %>%
+          dplyr::mutate(ee = .y, bins_circle = .y)
+      )
+
+  }
+
+  return(ee_list)
 
 }
 
@@ -1876,8 +1978,8 @@ setMethod(
 
           pixel_loc <-
             sp::point.in.polygon(
-              point.x = pixel_df[["x"]],
-              point.y = pixel_df[["y"]],
+              point.x = pixel_df[["width"]],
+              point.y = pixel_df[["height"]],
               pol.x = border_df[["x"]],
               pol.y = border_df[["y"]]
             )
@@ -1935,21 +2037,76 @@ setMethod(
 #'
 #' @inheritSection section_dummy Selection of image annotations with tags
 #'
-#' @return Character vector.
+#' @return Character vector, if `simplify = TRUE`. Else a named list of
+#' character vectors.
 #'
 #' @export
 #'
-getSpatAnnBarcodes <- function(object, ids = NULL, tags = NULL, test = "any"){
+getSpatAnnBarcodes <- function(object,
+                               ids = NULL,
+                               tags = NULL,
+                               test = "any",
+                               class = NULL,
+                               coords_df = getCoordsDf(object),
+                               simplify = TRUE){
 
-  getSpatialAnnotations(
-    object = object,
-    ids = ids,
-    tags = tags,
-    test = test
-  ) %>%
-    purrr::map(.f = ~ .x@misc[["barcodes"]]) %>%
-    purrr::flatten_chr() %>%
-    base::unique()
+
+
+  ids <- getSpatAnnIds(object, ids = ids, tags = tags, test = test, class = class)
+
+  out <-
+    purrr::map(
+      .x = ids,
+      .f = function(id){
+
+        outline_df <- getSpatAnnOutlineDf(object, ids = id)
+
+        outer_df <- dplyr::filter(outline_df, border == "outer")
+
+        coords_df_flt <-
+          identify_obs_in_polygon(
+            coords_df = coords_df,
+            polygon_df = outer_df,
+            cvars = c("x", "y"),
+            strictly = TRUE,
+            opt = "keep"
+          )
+
+        inner_borders <-
+          dplyr::filter(outline_df, stringr::str_detect(border, pattern = "^inner")) %>%
+          dplyr::pull(border) %>%
+          base::unique()
+
+        for(ib in inner_borders){
+
+          inner_df <- dplyr::filter(outline_df, border == {{ib}})
+
+          coords_df_flt <-
+            identify_obs_in_polygon(
+              coords_df = coords_df_flt,
+              polygon_df = inner_df,
+              cvars = c("x", "y"),
+              strictly = TRUE,
+              opt = "remove"
+            )
+
+        }
+
+        out <- coords_df_flt[["barcodes"]]
+
+      }
+    ) %>%
+    purrr::set_names(nm = ids)
+
+  if(base::isTRUE(simplify)){
+
+    out <-
+      purrr::flatten_chr(out) %>%
+      base::unname()
+
+  }
+
+  return(out)
 
 }
 
@@ -2551,7 +2708,7 @@ setMethod(
         class_sub <-
           purrr::keep(
             .x = spat_anns,
-            .f = function(sa){
+            .p = function(sa){
 
               base::any(
                 stringr::str_detect(
@@ -2737,36 +2894,7 @@ setMethod(
         .x = spat_anns,
         .f = function(spat_ann){
 
-          tag <-
-            scollapse(string = spat_ann@tags, sep = sep, last = last) %>%
-            base::as.character()
-
-          out <-
-            purrr::imap_dfr(
-              .x = spat_ann@area,
-              .f = function(area, name){
-
-                dplyr::mutate(
-                  .data = area,
-                  border = {{name}}
-                )
-
-              }
-            ) %>%
-            dplyr::mutate(
-              ids = spat_ann@id %>% base::factor()
-            ) %>%
-            tibble::as_tibble()
-
-          if(base::isTRUE(add_tags)){
-
-            out$tags <- tag
-
-            out$tags <- base::as.factor(out$tags)
-
-          }
-
-          return(out)
+          getSpatAnnOutlineDf(object = spat_ann, add_tags = add_tags, sep = sep, last = last)
 
         }
       ) %>%
@@ -2781,6 +2909,53 @@ setMethod(
     if(!base::isTRUE(inner)){
 
       out <- dplyr::filter(out, !stringr::str_detect(border, pattern = "inner"))
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getSpatAnnOutlineDf
+#' @export
+setMethod(
+  f = "getSpatAnnOutlineDf",
+  signature = "SpatialAnnotation",
+  definition = function(object,
+                        add_tags = TRUE,
+                        sep = " & ",
+                        last = " & ",
+                        ...){
+
+    spat_ann <- object
+
+    tag <-
+      scollapse(string = spat_ann@tags, sep = sep, last = last) %>%
+      base::as.character()
+
+    out <-
+      purrr::imap_dfr(
+        .x = spat_ann@area,
+        .f = function(area, name){
+
+          dplyr::mutate(
+            .data = area,
+            border = {{name}}
+          )
+
+        }
+      ) %>%
+      dplyr::mutate(
+        ids = spat_ann@id %>% base::factor()
+      ) %>%
+      tibble::as_tibble()
+
+    if(base::isTRUE(add_tags)){
+
+      out$tags <- tag
+
+      out$tags <- base::as.factor(out$tags)
 
     }
 
@@ -3031,8 +3206,8 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
 #' @title Obtain object of class \code{SpatialAnnotation}
 #'
-#' @description Extracts object of class \code{ImageAnnotaion} by
-#' its id.
+#' @description Extracts object of class [`SpatialAnnotation`] by
+#' it's ID.
 #'
 #' @param id Character value specifying the ID of the spatial annotation of interest.
 #' If there is only one spatial annotation in the object, the function

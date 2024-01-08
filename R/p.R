@@ -1076,6 +1076,25 @@ process_seurat_object <- function(seurat_object,
 
 }
 
+#' @keywords internal
+process_transform_with <- function(transform_with, var_names){
+
+  if(base::length(transform_with) == 1 &
+     !base::is.list(transform_with) &
+     !base::is.null(var_names)){
+
+    transform_with <-
+      purrr::map(
+        .x = base::seq_along(var_names),
+        .f = function(i){ return(transform_with) }
+      ) %>%
+      purrr::set_names(nm = var_names)
+
+  }
+
+  return(transform_with)
+
+}
 
 
 #' @title Process `spata2` object using `Seurat`
@@ -1088,8 +1107,10 @@ process_seurat_object <- function(seurat_object,
 #' @inherit process_seurat_object params
 #' @inherit argument_dummy params
 #'
-#' @details By default this function computes a normalized, scaled data which
-#' is added to the processed matrices under the name *scaled*.
+#' @details By default, the function adds the matrix of @@slot `data` from
+#' the seurat assay to the `spata2` object under the name *normalized* (if `NormalizeData` = TRUE)
+#' and the matrix of @@slot `scaled.data` from the Seurat assay to the `spata2`
+#' object under the name *scaled* (if `ScaleData = TRUE`).
 #'
 #' @inherit update_dummy return
 #'
@@ -1127,6 +1148,16 @@ processWithSeurat <- function(object,
       verbose = verbose
     )
 
+  if(!base::isFALSE(NormalizeData)){
+
+    object <-
+      setProcessedMatrix(
+        object = object,
+        proc_mtr = seurat_object@assays[["RNA"]]@data,
+        name = "normalized"
+      )
+
+  }
 
   if(!base::isFALSE(ScaleData)){
 
@@ -1275,6 +1306,8 @@ project_on_trajectory <- function(coords_df,
                                   ...){
 
   deprecated(...)
+
+  width <- width/2
 
   if(base::nrow(traj_df) == 2){
 

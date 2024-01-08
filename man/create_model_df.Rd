@@ -13,6 +13,7 @@ create_model_df(
   noise_level = 0,
   noise = NULL,
   seed = 123,
+  range = c(0, 1),
   verbose = TRUE
 )
 }

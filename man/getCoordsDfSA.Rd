@@ -7,13 +7,15 @@
 \usage{
 getCoordsDfSA(
   object,
-  id = idSA(object),
-  distance = distToEdge(object, id),
+  ids = idSA(object),
+  distance = "dte",
   binwidth = recBinwidth(object),
-  n_bins_dist = NA_integer_,
+  core = TRUE,
+  core0 = FALSE,
+  periphery = TRUE,
   angle_span = c(0, 360),
   n_bins_angle = 1,
-  dist_unit = "px",
+  dist_unit = getDefaultUnit(object),
   coords_df = NULL,
   variables = NULL,
   format = "wide",
@@ -26,7 +28,7 @@ getCoordsDfST(
   id = idST(object),
   binwidth = recBinwidth(object),
   n_bins = NA_integer_,
-  width = NULL,
+  width = getTrajectoryLength(object, id = id),
   dist_unit = "px",
   variables = NULL,
   format = "wide",
@@ -38,10 +40,10 @@ getCoordsDfST(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
@@ -52,6 +54,12 @@ tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+
+\item{core}{Logical value. If \code{FALSE}, data points that lie inside the core of the
+spatial annotation are removed.}
+
+\item{core0}{Logical value. If \code{TRUE}, \emph{dist} valus of core data points are
+set to 0.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
@@ -76,6 +84,11 @@ the computational progress will be printed.
 
 \item{...}{Additional arguments given to \code{\link[=joinWithVariables]{joinWithVariables()}}. Only used
 if not empty and \code{coords_df} is \code{NULL}.}
+
+\item{id}{Character value specifying the ID of the spatial annotation of interest.
+If there is only one spatial annotation in the object, the function
+will default to using it. However, if there are multiple annotations,
+this argument must be explicitly specified to identify the target annotation.}
 
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}

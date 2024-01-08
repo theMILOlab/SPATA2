@@ -84,14 +84,14 @@ runAutoencoderAssessment <- function(object,
 #' @export
 
 runAutoencoderDenoising <- function(object,
-                                    activation,
-                                    bottleneck,
+                                    activation = "relu",
+                                    bottleneck = 56,
                                     mtr_name_output = "denoised",
                                     layers = c(128, 64, 32),
                                     dropout = 0.1,
                                     epochs = 20,
                                     display_plot = FALSE,
-                                    genes,
+                                    genes = NULL,
                                     set_as_active = FALSE,
                                     verbose = TRUE,
                                     of_sample = NA){
@@ -128,13 +128,15 @@ runAutoencoderDenoising <- function(object,
   if(base::any(purrr::map_int(.x = list(bottleneck, activation), .f = base::length) > 1)){
 
     assessment_list <-
-      assessAutoencoderOptions2(expr_mtr = x_train,
-                                dropout = dropout,
-                                epochs = epochs,
-                                layers = layers,
-                                bottlenecks = bottleneck,
-                                activations = activation,
-                                verbose = FALSE)
+      assessAutoencoderOptions2(
+        expr_mtr = x_train,
+        dropout = dropout,
+        epochs = epochs,
+        layers = layers,
+        bottlenecks = bottleneck,
+        activations = activation,
+        verbose = FALSE
+      )
 
     assessment_df <- assessment_list$df
 
@@ -255,20 +257,13 @@ runAutoencoderDenoising <- function(object,
                                 expr_mtr = reconstructed_points,
                                 of_sample = of_sample)
 
-  object <- computeGeneMetaData(object,
-                                mtr_name = mtr_name_output,
-                                of_sample = of_sample)
-
   object <-
-    setActiveExpressionMatrix(object = object, mtr_name = mtr_name_output)
-
+    setActiveMatrix(object = object, mtr_name = mtr_name_output)
 
   confuns::give_feedback(
     msg = "Done.",
     verbose = verbose
   )
-
-
 
   return(object)
 
@@ -1303,6 +1298,16 @@ runDEA <- function(object,
     Seurat::CreateSeuratObject(
       counts = getCountMatrix(object)
       )
+
+  seurat_object <-
+    Seurat::NormalizeData(
+      object = seurat_object
+    )
+
+  seurat_object <-
+    Seurat::ScaleData(
+      object = seurat_object
+    )
 
   seurat_object <-
     Seurat::SCTransform(

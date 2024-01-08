@@ -455,6 +455,7 @@ create_model_df <- function(input,
                             noise_level = 0,
                             noise = NULL,
                             seed = 123,
+                            range = c(0, 1),
                             verbose = TRUE){
 
   # if length > 1 it is assumed that input corresponds to a variable like 'var_order'
@@ -615,6 +616,8 @@ create_model_df <- function(input,
       )
 
   }
+
+  out_df <- dplyr::mutate_all(out_df, .funs = ~ scales::rescale(.x, to = range))
 
   # add ordering variable
   if(base::is.character(var_order)){
@@ -2735,13 +2738,6 @@ createNumericAnnotations <- function(object,
   confuns::is_value(x = id, mode = "character")
   confuns::is_value(x = variable, mode = "character")
 
-  if(!base::is.list(transform_with) & !base::is.null(transform_with)){
-
-    transform_with <-
-      purrr::set_names(x = list(transform_with), nm = variable)
-
-  }
-
   # get variable
   coords_df <-
     getCoordsDf(object) %>%
@@ -2752,7 +2748,9 @@ createNumericAnnotations <- function(object,
       method_gs = method_gs,
       verbose = FALSE
     ) %>%
-    confuns::transform_df(transform.with = transform_with)
+    confuns::transform_df(
+      transform.with = process_transform_with(transform_with, var_names = variable)
+    )
 
   # apply threshold
   if(stringr::str_detect(threshold, pattern = "kmeans")){

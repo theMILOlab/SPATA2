@@ -4,7 +4,7 @@
 \alias{renameSpatAnn}
 \title{Rename spatial annotation ID}
 \usage{
-renameSpatAnn(object, id, new_id)
+renameSpatAnn(object, id, new_id, overwrite = FALSE)
 }
 \arguments{
 \item{id}{Character value. The current ID of the spatial annotation to be

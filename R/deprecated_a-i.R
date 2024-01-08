@@ -2494,6 +2494,31 @@ ggpLayerEncirclingGroups <- function(...){
 
 }
 
+
+#' @keywords internal
+#' @export
+ggpLayerEncirclingSAS <- function(object,
+                                  id,
+                                  distance = distToEdge(object, id),
+                                  n_bins_dist = NA_integer_,
+                                  binwidth = recBinwidth(object),
+                                  alpha_core = 0,
+                                  fill_core = NA,
+                                  line_color = "black",
+                                  line_size = (line_size_core * 0.75),
+                                  line_size_core = 1,
+                                  line_type = c("solid"),
+                                  inc_outline = TRUE,
+                                  direction = "outwards",
+                                  verbose = NULL,
+                                  ...){
+
+  deprecated(fn = TRUE, ...)
+
+  ggpLayerExprEstimatesSAS(...)
+
+}
+
 #' @keywords internal
 #' @export
 ggpLayerImageAnnotation <- function(...){

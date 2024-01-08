@@ -7,10 +7,10 @@
 plotExprVsDistSA(
   object,
   variables,
-  core = FALSE,
-  id = idSA(object),
-  distance = distToEdge(object, id = id),
+  ids = idSA(object),
+  distance = "dte",
   binwidth = recBinwidth(object),
+  core = FALSE,
   pt_alpha = 0.1,
   pt_color = "black",
   pt_clrp = NULL,
@@ -22,10 +22,16 @@ plotExprVsDistSA(
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "solid",
+  ee_linealpha = 0,
+  ee_linecolor = "black",
+  ee_lineend = "point",
+  ee_linesize = 1,
+  ee_linetype = "solid",
   se_fill = ggplot2::alpha("lightgrey", 0.5),
   normalize = FALSE,
   unit = getDefaultUnit(object),
   ggpLayers = NULL,
+  outlier_rm = FALSE,
   ncol = NULL,
   nrow = NULL,
   ...
@@ -38,10 +44,10 @@ objects of classes for which a method has been defined.}
 \item{variables}{Character vector. All numeric variables (meaning genes, gene-sets
 and numeric features) that are supposed to be plotted.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{distance}{A numeric vector of distances to the annotation's edge.}
 

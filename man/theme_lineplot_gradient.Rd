@@ -7,7 +7,7 @@
 \alias{theme_transparent}
 \title{ggplot2 themes}
 \usage{
-theme_lineplot_gradient()
+theme_lineplot_gradient(breaks_x, range_d)
 
 theme_ridgeplot_gradient(overlap = 0.5)
 

@@ -488,6 +488,7 @@ depr_info <-
       "getTrajectoryNames" = "getTrajectoryIds",
       "getTrajectoryObject" = "getTrajectory",
       "getTrajectoryScreeningDf" = "getStsDf",
+      "ggpLayerEncirclingSAS" = "ggpLayerExprEstimatesSAS",
       "ggpLayerImageAnnotation" = "ggpLayerImgAnnBorder",
       "ggpLayerImgAnnBorder" = "ggpLayerImgAnnOutline",
       "ggpLayerSampleMask" = "ggpLayerTissueOutline",
@@ -541,12 +542,18 @@ depr_info <-
       "bin_by_expansion" = list("bcsp_exclude" = "bcs_exclude"),
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
       "getCoordsDf" = list("type" = NA_character_),
+      "getCoordsDfSA" = list("id" = "ids"),
+      "getGroupNames" = list("grouping_variable" = "grouping"),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
+      "getSasDf" = list("id" = "ids"),
       "ggpLayerAxesSI" = list("expand" = NA_character_, "frame_by" = NA_character_, "xlim" = "xrange", "ylim" = "yrange"),
+      "ggpLayerExprEstimatesSAS" = list("id" = "ids"),
       "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
       "include_tissue_outline" = list("outline_var" = NA_character_),
+      "plotExprVsDist" = list("id" = "ids"),
       "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
       "plotImage" = list("frame_by" = NA_character_, "unit" = NA_character_),
+      "plotSasLineplot" = list("id" = "ids"),
       "plotSurface" = list(
         "bcsp_rm" = "bcs_rm",
         "complete" = NA_character_,
@@ -1035,8 +1042,12 @@ threshold_scattermore <- 100000
 VisiumSmall <-
   SpatialMethod(
     capture_area = list(x = c("0.75mm", "7.25mm"), y = c("0.75mm", "7.25mm")),
-    fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm")),
-    method_specifics = list(ccd = "100um", diameter = "55um"),
+    method_specifics =
+      list(
+        ccd = "100um",
+        diameter = "55um",
+        fiducial_frame = list(x = c("0mm", "8mm"), y = c("0mm", "8mm"))
+        ),
     name = "VisiumSmall",
     observational_unit = "spot",
     unit = "mm",
@@ -1047,8 +1058,12 @@ VisiumSmall <-
 VisiumLarge <-
   SpatialMethod(
     capture_area = list(x = c("0.75mm", "11.75mm"), y = c("0.75mm", "11.75mm")),
-    fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm")),
-    method_specifics = list(ccd = "100um", diameter = "55um"),
+    method_specifics =
+      list(
+        ccd = "100um",
+        diameter = "55um",
+        fiducial_frame = list(x = c("0mm", "12.5mm"), y = c("0mm", "12.5mm"))
+        ),
     name = "VisiumLarge",
     observational_unit = "spot",
     unit = "mm",

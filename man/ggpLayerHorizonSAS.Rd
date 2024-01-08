@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerHorizonSAS}
 \alias{ggpLayerHorizonSAS}
-\title{Add IAS area horizon}
+\title{Add SAS screening horizon}
 \usage{
 ggpLayerHorizonSAS(
   object,
@@ -15,6 +15,7 @@ ggpLayerHorizonSAS(
   line_color = "black",
   line_size = (line_size_core * 0.75),
   line_size_core = 1,
+  line_type = "solid",
   inc_outline = TRUE,
   direction = "outwards",
   verbose = NULL,
@@ -48,6 +49,9 @@ of the area expansion.}
 \item{line_size_core}{Numeric. The size with which to display the core outline
 of the spatial annotation.}
 
+\item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
+\emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
+
 \item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -64,28 +68,8 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Adds the last circular expansion used by the IAS-algorithm
+Adds the last expression estimate used by the SAS-algorithm
 of the area of  an spatial annotation to a surface plot in order to
-visualize the border between screened tissue and everything beyond that
-is not included in the screening.
-}
-\examples{
-
- object <- downloadSpataObject("313_T")
-
- object <-
-  setImageAnnotation(
-   object = object,
-   img_ann = image_annotations$`313_T`$necrotic_center
-   )
-
- plotSurface(object) +
-  ggpLayerHorizonSAS(
-   object = object,
-   id = "necrotic_center",
-   distance = "2.25mm",
-   binwidth = "112.5um"
-   )
-
-
+visualize the border between screened tissue (environment) and everything beyond that
+is not included in the screening (periphery).
 }

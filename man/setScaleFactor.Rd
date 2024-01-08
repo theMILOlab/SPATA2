@@ -30,5 +30,7 @@ The input \code{spata2} object containing the added or computed
 results.
 }
 \description{
-Sets scale factor values.
+Sets scale factor values for the reference image. Corresponding
+scale factors for additionally registered images (if there are any) are
+computed.
 }

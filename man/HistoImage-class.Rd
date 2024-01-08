@@ -7,14 +7,14 @@
 \title{The \code{HistoImage} - Class}
 \description{
 S4 class that contains an histology image and information and data
-about it. Usually live in slots @image_reference and @images_registered of \code{HistoImaging}
+about it. Usually live in slots @image_reference and @images_registered of \code{\link{HistoImaging}}
 objects.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{active}}{logical. If \code{TRUE}, it is the image used by default. Only one \code{HistoImage}
-in the \code{HistoImaging} object can be the active at a time.}
+\item{\code{active}}{logical. If \code{TRUE}, it is the image used by default. Only one \code{\link{HistoImage}}
+in the \code{\link{HistoImaging}} object can be the active at a time.}
 
 \item{\code{aligned}}{logical. If \code{TRUE}, indicates that the image was aligned to
 the reference image.}
@@ -44,14 +44,14 @@ outline the tissue section outlined.}
 
 \item{\code{overlap}}{numeric. Numeric vector of length two. Quantifies the overlap
 of the tissue outline of this image with the tissue outline of the reference image
-with a value between 0-1 before and after alignment via \code{alignImage()}.}
+with a value between 0-1 before and after alignment via \code{\link[=alignImage]{alignImage()}}.}
 
 \item{\code{pixel_content}}{factor. Named factor where names correspond to the
 pixels following the naming convention 'px_w1_h1' encoding the width and height value
 of the pixel from the original \strong{not transformed} image. Values correspond to
 the content the pixel displays. See \code{\link[=identifyPixelContent]{identifyPixelContent()}} for more information.}
 
-\item{\code{reference}}{logical. \code{TRUE} if it is the \code{HistoImage} used as the reference
+\item{\code{reference}}{logical. \code{TRUE} if it is the \code{\link{HistoImage}} used as the reference
 with which other histology images are aligned.}
 
 \item{\code{sample}}{character. The name of the tissue portion to which this image belongs.}
@@ -59,13 +59,13 @@ with which other histology images are aligned.}
 \item{\code{scale_factors}}{list. List of single numeric values serving as scale factors for
 multiple functionalities. Reserved slot names:
 \itemize{
-\item{\emph{coords}:} {Coordinate scale factor to be multiplied by the original x and y variables,
-ensuring alignment with the image.}
-\item{\emph{pixel}:} {Pixel scale factor used to convert pixel values into SI units. It should have an
+\item{\emph{coords}:} {Coordinate scale factor to be multiplied by the original x and y variables (\emph{x_orig}, \emph{y_orig}) upon
+extraction of the coordinatse data.frame (resulting in the \emph{x} and \emph{y} variables) ensuring alignment with the image.}
+\item{\emph{pixel}:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 attribute called "unit" conforming to the format "SI-unit/px".}
 }}
 
-\item{\code{transformations}}{list. List of transformations to apply while extracting
+\item{\code{transformations}}{list. List of transformations to apply upon extracting
 the image to ensure alignment with additional images. In case of default values
 no transformation is applied.
 \itemize{

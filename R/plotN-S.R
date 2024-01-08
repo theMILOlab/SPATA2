@@ -1158,7 +1158,7 @@ plotSasHeatmap <- function(object,
     tidyr::pivot_wider(
       data = sas_df,
       id_cols = variables,
-      names_from = bins_dist,
+      names_from = bins_order,
       values_from = "values"
     )
 
@@ -1289,6 +1289,8 @@ plotSasHeatmap <- function(object,
 
   }
 
+  assign("df_smooted", df_smoothed, envir = .GlobalEnv)
+
   ggplot2::ggplot(data = df_smoothed) +
     ggplot2::geom_tile(mapping = ggplot2::aes(x = dist, y = variables, fill = values)) +
     ggplot2::geom_vline(
@@ -1347,14 +1349,15 @@ plotSasHeatmap <- function(object,
 #'
 plotSasLineplot <- function(object,
                             variables,
-                            id = idSA(object),
-                            distance = distToEdge(object, id),
+                            ids = idSA(object),
+                            distance = "dte",
                             binwidth = recBinwidth(object),
                             core = FALSE,
                             angle_span = c(0,360),
                             n_bins_angle = 1,
                             smooth_span = 0.2,
                             smooth_se = TRUE,
+                            display_facets = TRUE,
                             unit = getSpatialMethod(object)@unit,
                             clrp = NULL,
                             clrp_adjust = NULL,
@@ -1366,9 +1369,16 @@ plotSasLineplot <- function(object,
                             border_linecolor = alpha("white", 0),
                             border_linesize = 1,
                             border_linetype = "solid",
+                            ee_linealpha = 0,
+                            ee_linecolor = "black",
+                            ee_lineend = "point",
+                            ee_linesize = 1,
+                            ee_linetype = "solid",
                             display_eval = FALSE,
+                            eval_size = line_size*2.5,
                             pos_x = 0,
                             pos_y = 1,
+                            outlier_rm = FALSE,
                             ggpLayers = list(),
                             verbose = NULL,
                             ...){
@@ -1382,13 +1392,10 @@ plotSasLineplot <- function(object,
 
   var_order <- variables
 
-  distance <- as_unit(distance, unit = unit, object = object)
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
-
   sas_df <-
     getSasDf(
       object = object,
-      id = id,
+      ids = ids,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
@@ -1396,25 +1403,40 @@ plotSasLineplot <- function(object,
       variables = variables,
       unit = unit,
       core = core,
+      outlier_rm = outlier_rm,
       format = "long",
       verbose = FALSE,
       ...
     )
 
+  distance <-
+    stringr::str_c(base::max(sas_df$dist), unit) %>%
+    as_unit(input = ., unit = unit, object = object)
+
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+
   # make plot add ons
   # facets
-  if(n_bins_angle > 1){
+  if(base::isTRUE(display_facets)){
 
-    facet_add_on <-
-      ggplot2::facet_grid(
-        cols = ggplot2::vars(variables),
-        rows = ggplot2::vars(bins_angle)
-      )
+    if(n_bins_angle > 1){
+
+      facet_add_on <-
+        ggplot2::facet_grid(
+          cols = ggplot2::vars(variables),
+          rows = ggplot2::vars(bins_angle)
+        )
+
+    } else {
+
+      facet_add_on <-
+        ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol)
+
+    }
 
   } else {
 
-    facet_add_on <-
-      ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol)
+    facet_add_on <- NULL
 
   }
 
@@ -1432,6 +1454,8 @@ plotSasLineplot <- function(object,
   breaks_x <-
     base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
     base::ceiling()
+
+  range_d <- base::range(sas_df$dist)
 
   if(base::is.character(line_color)){
 
@@ -1503,13 +1527,52 @@ plotSasLineplot <- function(object,
         data = text_df,
         mapping = ggplot2::aes(x = x_pos, y = y_pos, label = label),
         color = "black",
-        size = line_size*2.5,
+        size = eval_size,
         hjust = 0
       )
 
   } else {
 
     text_add_on <- NULL
+
+  }
+
+  if(ee_linealpha != 0){
+
+    if(ee_lineend == "point"){
+
+      ee_lineend_add_on <-
+        ggplot2::geom_point(
+          data = sas_df,
+          mapping = ggplot2::aes(x = dist, y = values),
+          alpha = ee_linealpha,
+          color = ee_linecolor,
+          size = ee_linesize*1.75
+        )
+      ee_lineend <- "round"
+
+    } else {
+
+      ee_lineend_add_on <- NULL
+
+    }
+
+    ee_add_on <-
+      ggplot2::geom_segment(
+        data = sas_df,
+        mapping = ggplot2::aes(x = dist, xend = dist, y = 0, yend = values),
+        alpha = ee_linealpha,
+        color = ee_linecolor,
+        size = ee_linesize,
+        lineend = ee_lineend,
+        linetype = ee_linetype
+      )
+
+    ee_add_on <- list(ee_add_on, ee_lineend_add_on)
+
+  } else {
+
+    ee_add_on <- NULL
 
   }
 
@@ -1525,25 +1588,11 @@ plotSasLineplot <- function(object,
       clrp = clrp,
       clrp.adjust = clrp_adjust
     ) +
-    ggplot2::scale_x_continuous(breaks = breaks_x) +
-    ggplot2::scale_y_continuous(
-      breaks = base::seq(0 , 1, 0.2),
-      labels = base::seq(0 , 1, 0.2),
-    ) +
-    ggplot2::coord_cartesian(
-      xlim = base::range(sas_df[["dist"]])*1.025,
-      ylim = c(-0.025,1.025),
-      expand = TRUE
-      ) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.line.x = ggplot2::element_line(),
-      axis.line.y = ggplot2::element_line(),
-      strip.background = ggplot2::element_blank()
-    ) +
+    ee_add_on +
+    theme_lineplot_gradient(breaks_x = breaks_x, range_d = range_d) +
     ggplot2::labs(
       x = glue::glue("Distance to Annotation [{unit}]"),
-      y = "Estimated Relative Expression"
+      y = "Estimated Expression"
     ) +
     legendNone()
 
@@ -2755,8 +2804,11 @@ setMethod(
 
           img_info <- spat_ann@image_info
 
-          limits_x <- c(img_info$xmin, img_info$xmax)
-          limits_y <- c(img_info$ymin_coords, img_info$ymax_coords)
+          sar <-
+            list(
+              x = c(spat_ann@image_info$xmin, spat_ann@image_info$xmax),
+              y = c(spat_ann@image_info$ymin, spat_ann@image_info$ymax)
+            )
 
           raster_add_on <- ggpLayerImage(object = spat_ann, rescale_axes = TRUE)
 
@@ -2842,6 +2894,10 @@ setMethod(
               labels = labels
             ) +
             scale_bar_add_on +
+            ggplot2::coord_sf(
+              xlim = sar$x,
+              ylim = sar$y
+            ) +
             ggplot2::labs(
               x = glue::glue("x-coordinates [{unit}]"),
               y = glue::glue("y-coordinates [{unit}]")
@@ -2946,6 +3002,7 @@ plotSpatialTrajectories <- function(object,
                                     pt_alpha2 = 0.9,
                                     pt_clr = NULL,
                                     pt_clrp = NULL,
+                                    clrp_adjust = NULL,
                                     pt_clrsp = NULL,
                                     sgmt_clr = NULL,
                                     sgmt_size = NULL,
@@ -2956,6 +3013,8 @@ plotSpatialTrajectories <- function(object,
                                     arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
                                     nrow = NULL,
                                     ncol = NULL,
+                                    xrange = getCoordsRange(object)[["x"]],
+                                    yrange = getCoordsRange(object)[["y"]],
                                     verbose = NULL,
                                     of_sample = NA,
                                     ...){
@@ -2970,16 +3029,9 @@ plotSpatialTrajectories <- function(object,
       .x = ids,
       .f = function(id){
 
-        traj_obj <- getSpatialTrajectory(object, id)
-
-        projection_df <- getProjectionDf(object, id = id, width = width)
-
         background_df <-
-          getCoordsDf(object = object) %>%
-          dplyr::mutate(
-            ids = {{id}},
-            in_traj = dplyr::if_else(barcodes %in% projection_df$barcodes, true = "yes", false = "no")
-          )
+          getCoordsDfST(object, id = id, width = width) %>%
+          dplyr::mutate(ids = {{id}})
 
         if(base::is.character(color_by)){
 
@@ -3030,13 +3082,30 @@ plotSpatialTrajectories <- function(object,
 
   }
 
+  # scale spot size to plot frame
+  mx_range <- base::max(c(base::diff(xrange), base::diff(yrange)))
+
+  if(containsImage(object)){
+
+    mx_dims <- base::max(getImageDims(object))
+
+  } else {
+
+    mx_dims <-
+      purrr::map_dbl(coords_df[,c("x", "y")], .f = base::max) %>%
+      base::max()
+
+  }
+
+  pt_size <- (mx_dims/mx_range)*pt_size
+
   params <- adjust_ggplot_params(params = list(color = pt_clr, size = pt_size))
 
   base_plot +
     geom_point_fixed(
       params,
       data = df,
-      mapping = ggplot2::aes(x = x, y = y, alpha = in_traj, color = .data[[color_by]])
+      mapping = ggplot2::aes(x = x, y = y, alpha = rel_loc, color = .data[[color_by]])
     ) +
     ggpLayerTrajectories(
       object = object,
@@ -3047,12 +3116,13 @@ plotSpatialTrajectories <- function(object,
     ) +
     facet_add_on +
     ggplot2::theme_void() +
-    ggplot2::scale_alpha_manual(values = c("yes" = pt_alpha2, "no" = pt_alpha), guide = "none") +
+    ggplot2::scale_alpha_manual(values = c("inside" = pt_alpha2, "outside" = pt_alpha), guide = "none") +
     scale_color_add_on(
       aes = "color",
       variable = pull_var(df, color_by),
       clrp = pt_clrp,
       clrsp = pt_clrsp,
+      clrp.adjust = clrp_adjust,
       ...
     ) +
     ggplot2::coord_equal()

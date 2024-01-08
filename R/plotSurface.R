@@ -154,7 +154,7 @@ setMethod(
                         sctm_interpolate = FALSE,
                         outline = FALSE,
                         outline_coords = NULL,
-                        outline_fct = c(1.75,2.75),
+                        outline_fct = c(2.125,2.75),
                         order_by = NULL,
                         order_desc = FALSE,
                         na_rm = TRUE,

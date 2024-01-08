@@ -200,7 +200,7 @@ add_noise_to_model <- function(model, random, nl){
 #'
 #'  object <- downloadPubExample("313_T")
 #'
-#'  pt_size <- getDefault(objet, "pt_size")
+#'  pt_size <- getDefault(object, "pt_size")
 #'
 #'  coords_df <- getCoordsDf(object)[, c("barcodes", "x", "y")]
 #'
@@ -1120,6 +1120,183 @@ addImageDir <- function(object,
   return(object)
 
 }
+
+
+
+
+#' @title Add Holes to Spatial Annotations
+#'
+#' @description These methods allow the addition of an inner border to spatial annotations, creating
+#' holes.
+#'
+#' @param id Character value. The ID of the spatial annotation to which the
+#' hole is added.
+#' @param new_id If character value, stores the resulting spatial annotatiton
+#' under the specified ID.
+#' @param border_df A data.frame that contains the x- and y- positions of
+#' the vertices of the polygon that corresponds to the borders of the
+#' whole. See details for input requirements.
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @details
+#' If used on a [`SpatialAnnotation`] directly, the variables of `border_df` should
+#' be called *x_orig* and *y_orig* and should be scaled correspondingly. If
+#' used with the [`spata2`] object, the variables can be called *x* and *y*, too.
+#' In that case, the function assumes that the coordinates are scaled to the
+#' image that is currently active and creates *x_orig* and *y_orig* accordingly.
+#'
+#' @seealso [`activeImage()`], [`SpatialAnnotation`]
+#'
+#' @export
+#'
+setGeneric(name = "addInnerBorder", def = function(object, ...){
+
+  standardGeneric(f = "addInnerBorder")
+
+})
+
+#' @rdname addInnerBorder
+#' @export
+setMethod(
+  f = "addInnerBorder",
+  signature = "spata2",
+  definition = function(object,
+                        id,
+                        border_df,
+                        new_id = FALSE,
+                        overwrite = FALSE,
+                        ...){
+
+    cnames <- base::colnames(border_df)
+
+    if(!base::all(c("x_orig", "y_orig") %in% cnames)){
+
+      csf <- getScaleFactor(object, fct_name = "coords")
+
+      confuns::check_data_frame(
+        df = border_df,
+        var.class = list(x = "numeric", y = "numeric")
+      )
+
+      border_df$x_orig <- border_df$x / csf
+      border_df$y_orig <- border_df$y / csf
+
+    }
+
+    spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+
+    spat_ann <- addInnerBorder(object = spat_ann, border_df = border_df)
+
+    if(base::is.character(new_id)){
+
+      confuns::check_none_of(
+        input = new_id,
+        against = getSpatAnnIds(object),
+        ref.input = "argument `new_id`",
+        ref.against = "present spatial annotation IDs",
+        overwrite = overwrite
+      )
+
+      spat_ann@id <- new_id
+
+    }
+
+    object <- setSpatialAnnotation(object, spat_ann = spat_ann)
+
+
+    return(object)
+
+  }
+)
+
+#' @rdname addInnerBorder
+#' @export
+setMethod(
+  f = "addInnerBorder",
+  signature = "SpatialAnnotation",
+  definition = function(object, border_df, ...){
+
+    confuns::check_data_frame(
+      df = border_df,
+      var.class = list(x_orig = "numeric", y_orig = "numeric")
+    )
+
+    outline_df <- getSpatAnnOutlineDf(object = object)
+
+    nb <- base::nrow(border_df)
+
+    # test if all inside outer border
+    n_inside <-
+      identify_obs_in_polygon(
+        coords_df = border_df,
+        polygon_df = dplyr::filter(outline_df, border == "outer"),
+        strictly = TRUE,
+        cvars = c("x_orig", "y_orig")
+      ) %>%
+      base::nrow()
+
+    valid <- nb == n_inside
+
+    if(!valid){
+
+      stop(
+        glue::glue(
+          "All vertices of the input must lie inside the outline of '{object@id}'."
+        )
+      )
+
+    }
+
+    # test if all inside outer border
+    inner_ids <-
+      dplyr::filter(outline_df, stringr::str_detect(border, pattern = "^inner")) %>%
+      dplyr::pull(border) %>%
+      base::unique()
+
+    if(base::length(inner_ids) >= 1){
+
+      for(ii in inner_ids){
+
+        # test if any inside outer border
+        n_inside <-
+          identify_obs_in_polygon(
+            coords_df = border_df,
+            polygon_df = dplyr::filter(outline_df, border == {{ii}}),
+            strictly = TRUE,
+            cvars = c("x_orig", "y_orig")
+          ) %>%
+          base::nrow()
+
+        valid <- n_inside == 0
+
+        if(!valid){
+
+          stop(
+            glue::glue(
+              "All vertices of the input must lie outside of any annotation hole."
+            )
+          )
+
+        }
+
+      }
+
+    }
+
+    # add to spat ann
+    index <- base::length(inner_ids) + 1
+    slot <- stringr::str_c("inner", index)
+
+    object@area[[slot]] <- border_df[,c("x_orig", "y_orig")]
+
+    return(object)
+
+  }
+)
+
+
 
 # addP --------------------------------------------------------------------
 

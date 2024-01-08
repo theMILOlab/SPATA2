@@ -26,7 +26,7 @@ edge of the covered area.
 
  object <- downloadPubExample("313_T")
 
- pt_size <- getDefault(objet, "pt_size")
+ pt_size <- getDefault(object, "pt_size")
 
  coords_df <- getCoordsDf(object)[, c("barcodes", "x", "y")]
 

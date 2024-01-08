@@ -15,8 +15,8 @@ ggpLayerGroupOutline(
   alpha = 0,
   bcsp_rm = character(0),
   outlier_rm = TRUE,
-  eps = (getCCD(object, "px") * 1.25),
-  minPts = 3,
+  eps = recDbscanEps(object),
+  minPts = recDbscanMinPts(object),
   concavity = NULL,
   expand_outline = getCCD(object, "px") * 1.1,
   ...
