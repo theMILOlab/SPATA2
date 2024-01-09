@@ -824,6 +824,99 @@ shift_smrd_projection_df <- function(smrd_projection_df,
 
 
 
+#' @title Shift the borders of a Spatial Annotation
+#'
+#' @description This function moves a spatial annotation
+#' either in the x or y direction, or both. It allows for selective shifting of
+#' outer and/or inner borders of the annotation.
+#'
+#' @param outer Logical; if TRUE, the outer border of the annotation is affected.
+#' @param inner Logical or numeric; if TRUE, all inner borders are affected.
+#' If a numeric value is provided, only the specified inner borders are affected.
+#' @param shift_x,shift_y Distance measure. The shift in the x- and/or y-direction. Negative
+#' values are also accepted.
+#'
+#' @inherit getSpatialAnnotation params
+#' @inherit expandSpatialAnnotation params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`expandSpatialAnnotation()`], [`smoothSpatialAnnotation()`], [`SpatialAnnotation`]
+#'
+#' @export
+
+shiftSpatialAnnotation <- function(object,
+                                   id,
+                                   outer = TRUE,
+                                   inner = TRUE,
+                                   shift_x = 0,
+                                   shift_y = 0,
+                                   new_id = FALSE,
+                                   overwrite = FALSE){
+
+  csf <- getScaleFactor(object, fct_name = "coords")
+
+  shift_x <- as_pixel(shift_x, object = object)/csf
+  shift_y <- as_pixel(shift_y, object = object)/csf
+
+  spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+
+  if(base::isTRUE(outer)){
+
+    spat_ann@area$outer$x_orig <- spat_ann@area$outer$x_orig + shift_x
+    spat_ann@area$outer$y_orig <- spat_ann@area$outer$y_orig + shift_y
+
+  }
+
+  if(base::isTRUE(inner) | base::is.numeric(inner)){
+
+    if(base::is.numeric(inner)){
+
+      borders <- stringr::str_c("inner", inner)
+
+    } else {
+
+      borders <-
+        base::names(spat_ann@area) %>%
+        stringr::str_subset(pattern = "^inner")
+
+    }
+
+    spat_ann@area[borders] <-
+      purrr::map(
+        .x = spat_ann@area[borders],
+        .f = function(plg){
+
+          plg$x_orig <- plg$x_orig + shift_x
+          plg$y_orig <- plt$y_orig + shift_y
+
+          return(plg)
+
+        }
+      )
+
+  }
+
+  if(base::is.character(new_id)){
+
+    confuns::check_none_of(
+      input = new_id,
+      against = getSpatAnnIds(object),
+      ref.against = "present spatial annotation IDs",
+      overwrite = overwrite
+    )
+
+    spat_ann@id <- new_id
+
+  }
+
+  object <- setSpatialAnnotation(object, spat_ann = spat_ann)
+
+  return(object)
+
+}
+
+
 
 # show --------------------------------------------------------------------
 
@@ -1291,7 +1384,7 @@ simulate_complete_coords_st <- function(object, id){
 #'
 
 simulate_expression_pattern_sas <- function(object,
-                                            id,
+                                            ids,
                                             simulations,
                                             core,
                                             binwidth = recBinwidth(object),
@@ -1316,10 +1409,12 @@ simulate_expression_pattern_sas <- function(object,
   coords_df <-
     getCoordsDfSA(
       object = object,
-      id = id,
+      ids = ids,
       binwidth = binwidth,
       distance = distance,
       angle_span = angle_span,
+      core = TRUE,
+      periphery = TRUE,
       verbose = verbose
     )
 
@@ -1411,7 +1506,7 @@ simulate_expression_pattern_sas <- function(object,
     base::nrow()
 
   confuns::give_feedback(
-    msg = glue::glue("Iterating over {n_sims} simulations for {ref} noise."),
+    msg = glue::glue("Creating data set of {n_sims} simulations for {ref} noise."),
     verbose = verbose
   )
 
@@ -1430,7 +1525,6 @@ simulate_expression_pattern_sas <- function(object,
   for(i in 1:base::nrow(loop_instructions)){
 
     ##### ----- 0. general prep
-    pb$tick()
 
     # assign instructions
     model_name <- loop_instructions$model[i]
@@ -1603,7 +1697,14 @@ simulate_expression_pattern_sas <- function(object,
 
     }
 
+    pb$tick()
+
   }
+
+  confuns::give_feedback(
+    msg = "Data simulated.",
+    verbose = verbose
+  )
 
   coords_df_sim <- coords_df_sim[base::names(coords_df_random)]
 
@@ -2045,6 +2146,7 @@ simulate_random_gradients <- function(coords_df,
                                       seed = 123,
                                       coef = Inf,
                                       range = c(0, 1),
+                                      control = SPATA2::sgs_loess_control,
                                       fn = "runif",
                                       verbose = TRUE,
                                       ...){
@@ -2083,7 +2185,6 @@ simulate_random_gradients <- function(coords_df,
               n = base::nrow(coords_df)
             ) %>% confuns::normalize()
 
-
         }
 
         loess_model <-
@@ -2091,13 +2192,11 @@ simulate_random_gradients <- function(coords_df,
             formula = random_expr ~ dist,
             data = coords_df,
             span = span,
-            family = "gaussian",
-            statistics = "none",
-            surface = "direct"
+            control = base::do.call(what = stats::loess.control, args = control)
           )
 
         gradient <-
-          infer_gradient(loess_model, expr_est_pos = expr_est_pos, coef = coef, ro = range)
+          stats::predict(loess_model, data.frame(dist = expr_est_pos))
 
         tot_var <- compute_total_variation(gradient)
 
@@ -2216,6 +2315,122 @@ simulate_spatial_niches <- function(coords_df,
 
 # smooth ------------------------------------------------------------------
 
+#' @title Smooth the Borders of a Spatial Annotation
+#'
+#' @description This function applies a smoothing algorithm to the borders of a
+#' [`SpatialAnnotation`] object. It can smooth both outer and inner borders using various methods.
+#'
+#' @param method The smoothing method to be applied. Options include "chaikin", "densify", "ksmooth", and "spline".
+#' @param outer Logical; if TRUE, the outer border of the annotation is smoothed.
+#' @param inner Logical or numeric; if TRUE, all inner borders are smoothed.
+#'              If a numeric value is provided, only the specified inner border is smoothed.
+#' @param ... Additional arguments passed to the smoothing function.
+#'
+#' @inherit shiftSpatialAnnotation params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`expandSpatialAnnotation()`], [`shiftSpatialAnnotation()`], [`SpatialAnnotation`]
+#'
+#' @export
+smoothSpatialAnnotation <- function(object,
+                                    id,
+                                    method,
+                                    outer = TRUE,
+                                    inner = TRUE,
+                                    new_id = FALSE,
+                                    overwrite = FALSE,
+                                    ...){
+
+  spat_ann <- getSpatialAnnotation(object, id = id)
+
+  if(base::isTRUE(outer)){
+
+    borders <- "outer"
+
+  } else {
+
+    borders <- base::character(0)
+
+  }
+
+  if(containsInnerBorders(spat_ann)){
+
+    if(base::is.numeric(inner)){
+
+      inner_borders <- stringr::str_c("inner", inner)
+
+    } else {
+
+      inner_border <- stringr::str_subset(base::names(spat_ann@area), "^inner")
+
+    }
+
+    borders <- c(borders, inner_borders)
+
+  }
+
+  spat_ann@area[borders] <-
+    purrr::map(
+      .x = spat_ann@area[borders],
+      .f = function(bdf){
+
+        mtr <-
+          dplyr::select(bdf, x = x_orig, y = y_orig) %>%
+          base::as.matrix()
+
+        if(method == "chaikin"){
+
+          mtr_smoothed <-
+            smoothr::smooth_chaikin(x = mtr_section, ...)
+
+        } else if(method == "densify"){
+
+          mtr_smoothed <-
+            smoothr::smooth_densify(x = mtr_section, ...)
+
+        } else if(method == "ksmooth"){
+
+          mtr_smoothed <-
+            smoothr::smooth_ksmooth(x = mtr_section, ...)
+
+        } else if(method == "spline"){
+
+          mtr_smoothed <-
+            smoothr::smooth_spline(x = mtr_section, ...)
+
+        }
+
+        out <-
+          base::as.data.frame(mtr_smoothed) %>%
+          magrittr::set_colnames(value = c("x_orig", "y_orig")) %>%
+          tibble::as_tibble()
+
+        return(out)
+
+      }
+    )
+
+
+  if(base::is.character(new_id)){
+
+    confuns::check_none_of(
+      input = new_id,
+      against = getSpatAnnIds(object),
+      ref.against = "present spatial annotation IDs",
+      overwrite = overwrite
+    )
+
+    spat_ann@id <- new_id
+
+  }
+
+  object <- setSpatialAnnotation(object, spat_ann = spat_ann)
+
+  return(object)
+
+}
+
 #' @title Smooth numeric variables spatially
 #'
 #' @description Uses a loess-fit model to smooth numeric variables spatially.
@@ -2295,6 +2510,7 @@ smoothSpatially <- function(coords_df,
 #' in the screening process.
 #' @param binwidth Units value of the same unit of the *dist* variable in
 #' `coords_df`.
+#' @param control A list given to `control` of [`stats::loess()`].
 #' @param n_random Number of random permutations for the significance testing of step 2.
 #' @param sign_var Either *p_value* or *fdr*. Defaults to *fdr*.
 #' @param sign_threshold The significance threshold. Defaults to 0.05.
@@ -2325,19 +2541,17 @@ smoothSpatially <- function(coords_df,
 spatial_gradient_screening <- function(coords_df,
                                        variables,
                                        binwidth,
-                                       weighted,
                                        cf = 1,
-                                       min_dist = NULL,
-                                       max_dist = NULL,
                                        rm_zero_infl = TRUE,
-                                       n_random = 1000,
-                                       sign_var = "fdr_cor",
+                                       n_random = 10000,
+                                       sign_var = "fdr",
                                        sign_threshold = 0.05,
                                        skip_comp = FALSE,
                                        force_comp = FALSE,
                                        model_subset = NULL,
                                        model_add = NULL,
                                        model_remove = NULL,
+                                       control = SPATA2::sgs_loess_control,
                                        seed = 123,
                                        verbose = TRUE){
 
@@ -2376,16 +2590,21 @@ spatial_gradient_screening <- function(coords_df,
 
   # define the alpha parameter of the loess fitting as the percentage that the
   # binwidth represents of the distance (both must be of the same unit)
-  total_dist <- base::diff(x = c(min_dist, max_dist))
+
+  total_dist <- compute_dist_screened(coords_df)
+
+  unit <- base::unique(coords_df[["dist_unit"]])
+
+  if(unit != "px"){
+
+    total_dist <-
+      units::set_units(x = total_dist, value = unit, mode = "standard")
+
+  }
 
   span <- base::as.numeric(binwidth/total_dist) / cf
 
-  expr_est_pos <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = max_dist,
-      amccd = binwidth
-    )
+  expr_est_pos <- compute_expression_estimates(coords_df)
 
   # create model data.frame for step 3
   model_df <-
@@ -2406,14 +2625,19 @@ spatial_gradient_screening <- function(coords_df,
       amccd = binwidth,
       n = n_random,
       seed = seed,
-      verbose = verbose
+      control = control,
+      verbose = verbose,
+      fn = "runif"
     )
 
   random_tot_vars <-
     purrr::map_dbl(.x = random_gradients, .f = ~ .x$tot_var) %>%
     base::unname()
 
-  robust_random_tot_vars <- random_tot_vars[!is_outlier(random_tot_vars, coef = 1.5)]
+  robust_random_tot_vars <-
+    random_tot_vars[!is_outlier(random_tot_vars, coef = 1.5)]
+
+  robust_n_random <- base::length(robust_random_tot_vars)
 
   model_names <- base::names(model_df)
   nm <- base::length(model_names)
@@ -2447,64 +2671,29 @@ spatial_gradient_screening <- function(coords_df,
             formula = x.var.x ~ dist,
             data = coords_df,
             span = span,
-            family = "gaussian",
-            statistics = "none",
-            surface = "direct"
+            control = base::do.call(what = loess.control, args = control)
           )
 
-        gradient <-
-          infer_gradient(
-            loess_model = loess_model,
-            expr_est_pos = expr_est_pos,
-            ro = c(0,1)
-            )
-
-        inf_df <-
-          tibble::tibble(
-            variables = var,
-            expr_est_idx = base::seq_along(expr_est_pos),
-            inf_gradient = gradient
-          )
-
-        # compute p-value
-        observed_tv <- compute_total_variation(inf_df$inf_gradient)
-        observed_rv <- compute_relative_variation(inf_df$inf_gradient)
-
-        norm_var <- observed_tv/base::length(expr_est_pos)
-
-        p_value <-
-          base::sum(robust_random_tot_vars <= observed_tv) /
-          base::length(robust_random_tot_vars)
-
-        pval_df <-
-          tibble::tibble(
-            variables = var,
-            rel_var = observed_rv,
-            tot_var = observed_tv,
-            norm_var = norm_var,
-            p_value = p_value
-          )
-
-        if(observed_tv == 0){
-
-          pval_df[,c("rel_var", "tot_var", "norm_var", "p_value")] <- NA_integer_
-
-        }
-
-        # assemble output
-        out <-
-          list(
-            pval_df = pval_df,
-            inf_df = inf_df,
-            loess_model = loess_model
-          )
-
-        return(out)
+        list(
+          loess_model = loess_model,
+          gradient = stats::predict(loess_model, data.frame(dist = expr_est_pos))
+        )
 
       }
-    ) %>%
-    purrr::set_names(variables)
+    ) %>% set_names(nm = variables)
 
+  gradient_df <-
+    purrr::map_dfc(.x = loess_list, .f = ~ .x$gradient) %>%
+    dplyr::mutate(
+      dist = {{expr_est_pos}},
+      expr_est_idx = dplyr::row_number()
+      ) %>%
+    dplyr::select(expr_est_idx, dist, dplyr::everything()) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(variables),
+      values_to = "values",
+      names_to = "variables"
+    )
 
   # Step 2: Test for significance -------------------------------------------
 
@@ -2514,8 +2703,17 @@ spatial_gradient_screening <- function(coords_df,
   )
 
   p_value_df <-
-    purrr::map_df(.x = loess_list, .f = ~ .x$pval_df) %>%
-    dplyr::mutate(fdr = stats::p.adjust(p = p_value, method = "fdr"))
+    dplyr::group_by(gradient_df, variables) %>%
+    dplyr::summarise(
+      rel_var = compute_relative_variation(values),
+      tot_var = compute_total_variation(values),
+      p_value = base::sum({{robust_random_tot_vars}} < tot_var) / {{robust_n_random}},
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      norm_var = tot_var / length(expr_est_pos),
+      fdr = stats::p.adjust(p = p_value, method = "fdr")
+    )
 
   # significant variables
   significant_variables <-
@@ -2551,14 +2749,13 @@ spatial_gradient_screening <- function(coords_df,
     )
 
     evaluation_df <-
-      purrr::map_df(.x = loess_list[variables_for_step3], .f = ~ .x$inf_df) %>%
-      dplyr::left_join(y = model_df, by = "expr_est_idx") %>%
-      tidyr::pivot_longer(cols = dplyr::all_of(model_names), names_to = "models", values_to = "values") %>%
+      dplyr::filter(gradient_df, variables %in% {{variables_for_step3}}) %>%
+      dplyr::left_join(x = ., y = model_df, by = "expr_est_idx") %>%
+      tidyr::pivot_longer(cols = dplyr::all_of(model_names), names_to = "models", values_to = "values_model") %>%
       dplyr::group_by(variables, models) %>%
       dplyr::summarise(
-        corr = compute_corr(gradient = inf_gradient, model = values),
-        mae = compute_mae(gradient = inf_gradient, model = values),
-        rmse = compute_rmse(gradient = inf_gradient, model = values),
+        mae = compute_mae(gradient = values, model = values_model),
+        rmse = compute_rmse(gradient = values, model = values_model),
         .groups = "drop"
       )
 
@@ -2634,15 +2831,15 @@ spatial_gradient_screening <- function(coords_df,
 #'
 
 spatialAnnotationScreening <- function(object,
-                                       id,
+                                       ids,
                                        variables,
                                        core,
+                                       distance = "dte",
                                        binwidth = recBinwidth(object),
-                                       distance = distToEdge(object, id),
                                        angle_span = c(0, 360),
                                        unit = getDefaultUnit(object),
                                        bcs_exclude = character(0),
-                                       sign_var = "fdr_cor",
+                                       sign_var = "fdr",
                                        sign_threshold = 0.05,
                                        force_comp = FALSE,
                                        skip_comp = FALSE,
@@ -2650,7 +2847,7 @@ spatialAnnotationScreening <- function(object,
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        estimate_R2 = TRUE,
-                                       n_random = 1000,
+                                       n_random = 10000,
                                        seed = 123,
                                        verbose = NULL,
                                        ...){
@@ -2667,7 +2864,7 @@ spatialAnnotationScreening <- function(object,
     r2 <-
       estimate_r2_for_sas_run(
         object = object,
-        id = id,
+        ids = ids,
         distance = distance,
         binwidth = binwidth,
         angle_span = angle_span,
@@ -2686,12 +2883,11 @@ spatialAnnotationScreening <- function(object,
 
   }
 
+  cf <-
+    compute_correction_factor_sas(object, ids = ids, distance = distance, core = core)
+
   # test input
   binwidth <- as_unit(binwidth, unit = unit, object = object)
-  distance <- as_unit(distance, unit = unit, object = object)
-
-  cf <-
-    compute_correction_factor_sas(object, id = id, distance = distance, core = core)
 
   # obtain coords data.frame
   confuns::give_feedback(
@@ -2699,24 +2895,23 @@ spatialAnnotationScreening <- function(object,
     verbose = verbose
   )
 
-  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
-
   coords_df <-
     getCoordsDfSA(
       object = object,
-      id = id,
+      ids = ids,
       distance = distance,
       angle_span = angle_span,
       variables = variables,
       dist_unit = unit,
+      core = core,
+      periphery = FALSE,
       verbose = verbose
     )
 
   variables <- variables[variables %in% base::names(coords_df)]
 
   coords_df_flt <-
-    dplyr::filter(coords_df, !rel_loc %in% {{rm_loc}}) %>%
-    dplyr::filter(!barcodes %in% {{bcs_exclude}})
+    dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
 
   # if core is FALSE min dist = 0 to start right from the border
   # and not with the first data point
@@ -2734,13 +2929,13 @@ spatialAnnotationScreening <- function(object,
 
   # max_dist does not depend on `core` option
   min_dist <- as_unit(min_dist, unit = unit, object = object)
-  max_dist <- as_unit(distance, unit = unit, object = object)
+  max_dist <-
+    stringr::str_c(base::max(coords_df$dist), unit) %>%
+    as_unit(input = ., unit = unit, object = object)
 
   sgs_out <-
     spatial_gradient_screening(
       coords_df = coords_df_flt,
-      min_dist = min_dist,
-      max_dist = max_dist,
       variables = variables,
       binwidth = binwidth,
       cf = cf,
@@ -2759,7 +2954,14 @@ spatialAnnotationScreening <- function(object,
   SAS_out <-
     SpatialAnnotationScreening(
       coords = dplyr::select(coords_df, -dplyr::all_of(variables)),
-      info = list(r2 = r2, random_simulations = sgs_out$random, distance = distance, coef = coef, zero_infl_vars = sgs_out$zero_infl_vars),
+      info =
+        list(
+          r2 = r2,
+          random_simulations = sgs_out$random,
+          distance = distance,
+          coef = coef,
+          zero_infl_vars = sgs_out$zero_infl_vars
+          ),
       models = sgs_out$models,
       significance = sgs_out$pval,
       results = sgs_out$eval,

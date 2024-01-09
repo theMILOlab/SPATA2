@@ -1354,7 +1354,6 @@ plotSasLineplot <- function(object,
                             binwidth = recBinwidth(object),
                             core = FALSE,
                             angle_span = c(0,360),
-                            n_bins_angle = 1,
                             smooth_span = 0.2,
                             smooth_se = TRUE,
                             display_facets = TRUE,
@@ -1399,7 +1398,6 @@ plotSasLineplot <- function(object,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
       variables = variables,
       unit = unit,
       core = core,
@@ -1419,20 +1417,8 @@ plotSasLineplot <- function(object,
   # facets
   if(base::isTRUE(display_facets)){
 
-    if(n_bins_angle > 1){
-
-      facet_add_on <-
-        ggplot2::facet_grid(
-          cols = ggplot2::vars(variables),
-          rows = ggplot2::vars(bins_angle)
-        )
-
-    } else {
-
-      facet_add_on <-
-        ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol)
-
-    }
+    facet_add_on <-
+      ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol)
 
   } else {
 

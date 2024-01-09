@@ -916,6 +916,44 @@ check_slot_version <- function(object){
 
 }
 
+#' @keywords internal
+compute_positions_expression_estimates <- function(min_dist, max_dist, amccd){
+
+  deprecated(fn = TRUE)
+
+  base::stopifnot(
+    base::identical(
+      x = extract_unit(min_dist),
+      y = extract_unit(max_dist)
+    )
+  )
+
+  unit_dist <- base::unique(extract_unit(max_dist))
+  unit_amccd <- extract_unit(amccd)
+
+  if(unit_dist != unit_amccd){
+
+    stop("Units of `amccd`, `min_dist` and `max_dist` do not match.")
+
+  }
+
+  # remove unit suffix and force numeric class
+  amccd_val <- extract_value(amccd)
+  min_dist_val <- extract_value(min_dist)
+  max_dist_val <- extract_value(max_dist)
+
+  dist_screened <- base::diff(x = c(min_dist_val, max_dist_val))
+
+  out <-
+    base::seq(
+      from = min_dist_val,
+      to = max_dist_val,
+      length.out = base::ceiling(dist_screened/amccd_val)
+    )
+
+  return(out)
+
+}
 
 #' @title Check availability of `HistologyImaging` object
 #'

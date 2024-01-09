@@ -27,17 +27,24 @@ si_dist_to_si_dist_fct <- function(from, to){
 
 
 estimate_r2_for_sas_run <- function(object,
-                                    id,
+                                    ids,
                                     distance,
                                     core,
                                     binwidth,
                                     angle_span = c(0, 360),
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 25,
+                                    control = SPATA2::sgs_loess_control,
                                     verbose = NULL){
 
   hlpr_assign_arguments(object)
 
+  unit <- getDefaultUnit(object)
+
+  binwidth <- as_unit(binwidth, unit = unit, object = object)
+
+
+  # step 1 data simulation
   simulations <-
     purrr::map(
       .x = base::names(model_formulas_R2_est),
@@ -56,7 +63,7 @@ estimate_r2_for_sas_run <- function(object,
   sim_mtr <-
     simulate_expression_pattern_sas(
       object = object,
-      id = id,
+      ids = ids,
       simulations = simulations,
       core = core,
       binwidth = binwidth,
@@ -65,7 +72,7 @@ estimate_r2_for_sas_run <- function(object,
       noise_types = "ed",
       model_add = model_formulas_R2_est,
       seed = 123,
-      verbose = FALSE
+      verbose = verbose
     )
 
   object <-
@@ -74,58 +81,53 @@ estimate_r2_for_sas_run <- function(object,
 
   variables <- base::rownames(sim_mtr)
 
-  unit <- getDefaultUnit(object)
-
   gc()
 
+  # step 2 screening
   coords_df <-
     getCoordsDfSA(
       object = object,
-      id = id,
+      ids = ids,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
       variables = variables,
       dist_unit = unit,
+      core = core,
+      periphery = FALSE,
       verbose = FALSE
     )
 
-  rm_loc <- c("core", "periphery")[c(!core, TRUE)]
+  tot_dist <- compute_dist_screened(coords_df)
 
-  coords_df <- dplyr::filter(coords_df, !rel_loc %in% {{rm_loc}})
+  if(unit != "px"){
 
-  # if core is FALSE min dist = 0 to start right from the border
-  # and not with the first data point
-  if(base::isTRUE(core)){
-
-    min_dist <-
-      base::min(coords_df[["dist"]]) %>%
-      stringr::str_c(., unit)
-
-  } else {
-
-    min_dist <- stringr::str_c(0, unit)
+    tot_dist <- units::set_units(tot_dist, value = unit, mode = "standard")
 
   }
 
-  # max_dist does not depend on `core` option
-  min_dist <- as_unit(min_dist, unit = unit, object = object)
-  max_dist <- as_unit(distance, unit = unit, object = object)
   binwidth <- as_unit(binwidth, unit = unit, object = object)
-  tot_dist <- max_dist - min_dist
 
-  cf <- compute_correction_factor_sas(object, id = id, distance = distance, core = core)
+  cf <-
+    compute_correction_factor_sas(
+      object = object,
+      id = ids,
+      distance = distance,
+      core = core
+      )
 
   span <- base::as.numeric(binwidth/tot_dist) / cf
 
-  expr_est_pos <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = max_dist,
-      amccd = binwidth
-    )
+  expr_est_pos <- compute_expression_estimates(coords_df)
 
-  pb <- confuns::create_progress_bar(total = base::length(variables))
+  nv <- base::length(variables)
+
+  confuns::give_feedback(
+    msg = glue::glue("Evaluating..."),
+    verbose = verbose
+  )
+
+  pb <- confuns::create_progress_bar(total = nv)
 
   sas_df <-
     purrr::map_df(
@@ -142,9 +144,7 @@ estimate_r2_for_sas_run <- function(object,
             formula = x.var.x ~ dist,
             data = coords_df,
             span = span,
-            family = "gaussian",
-            statistics = "none",
-            surface = "direct"
+            control = base::do.call(stats::loess.control, args = control)
           )
 
         gradient <-
@@ -168,6 +168,9 @@ estimate_r2_for_sas_run <- function(object,
     dplyr::ungroup() %>%
     dplyr::mutate(model_sim = confuns::str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"))
 
+  gc()
+
+  # step 3 compute R2
   r2_df <-
     purrr::map_df(
       .x = base::unique(sas_df$model_sim),
@@ -1070,7 +1073,7 @@ expand_image_side <- function(expand_with,
 }
 
 
-#' @title Expand Spatial Annotations
+#' @title Expand the borders of a Spatial Annotations
 #'
 #' @description Expands or shrinks the outer border of a spatial annotation.
 #'
@@ -1082,7 +1085,7 @@ expand_image_side <- function(expand_with,
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`smoothSpatialAnnotation()`]
+#' @seealso [`smoothSpatialAnnotation()`], [`shiftSpatialAnnotation()`], [`SpatialAnnotation`]
 #'
 #' @export
 #'

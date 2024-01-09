@@ -945,7 +945,7 @@ setMethod(
 #'
 #' @return Data.frame.
 #'
-#' @details The coordinates data.frame as returned by [`getCoordsDf()`] with five
+#' @details The coordinates data.frame as returned by [`getCoordsDf()`] with six
 #' additional variables:
 #'
 #' \itemize{
@@ -958,6 +958,8 @@ setMethod(
 #'  *'periphery'* if the data point lies outside of the boundaries of the spatial annotation but inside
 #'  the area denoted via `distance` and *outside*, if the data point lies beyond the screening area (it's
 #'  distance to the spatial annotation boundaries is bigger than the value denoted in `distance`).}
+#'  \item{*id*}{ Character. The ID of the spatial annotation the data points lies closes to. (only relevant
+#'  in case of `length(ids) > 1`)}
 #'  }
 #' @export
 #'

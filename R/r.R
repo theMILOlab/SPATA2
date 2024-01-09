@@ -1455,19 +1455,19 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 }
 
 
-#' @title Rename spatial annotation ID
+#' @title Rename a Spatial Annotation
 #'
-#' @description Renames spatial annotation created with \code{createImageAnnotations()}.
+#' @description Renames spatial annotation.
 #'
 #' @param id Character value. The current ID of the spatial annotation to be
 #' renamed.
 #' @param new_id Character value. The new ID of the spatial annotation.
 #' @param inherit argument_dummy params
 #'
-#' @return An updates spata object.
+#' @inherit argument_dummy params
 #' @export
 #'
-renameSpatAnn <- function(object, id, new_id, overwrite = FALSE){
+renameSpatialAnnotation <- function(object, id, new_id, overwrite = FALSE){
 
   confuns::are_values(c("id", "new_id"), mode = "character")
 
@@ -1500,6 +1500,14 @@ renameSpatAnn <- function(object, id, new_id, overwrite = FALSE){
 
 }
 
+#' @keywords internal
+renameSpatAnn <- function(...){
+
+  deprecated(fn = TRUE)
+
+  renameSpatialAnnotation(...)
+
+}
 
 #' @rdname renameGroups
 #' @export

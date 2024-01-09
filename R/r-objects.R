@@ -715,6 +715,9 @@ invalid_img_ann_tests <-
   "Invalid input for argument `test`. See details of `getImageAnnotationIds()`for more information."
 
 
+
+
+
 # m -----------------------------------------------------------------------
 
 #' @export
@@ -977,6 +980,14 @@ rtia_names <-
   base::sort()
 
 # s -----------------------------------------------------------------------
+
+#' @export
+sgs_loess_control <-
+  list(
+    surface = "interpolate",
+    statistics = "none",
+    cell = 0.2
+  )
 
 sgs_models <- confuns::lselect(model_formulas, dplyr::contains(c("asc", "desc")))
 

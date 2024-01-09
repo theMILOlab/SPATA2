@@ -13,7 +13,6 @@ plotSasLineplot(
   binwidth = recBinwidth(object),
   core = FALSE,
   angle_span = c(0, 360),
-  n_bins_angle = 1,
   smooth_span = 0.2,
   smooth_se = TRUE,
   display_facets = TRUE,
@@ -159,11 +158,6 @@ Must have at least three columns:
 \item{\emph{y} :}{ numeric. Position of cell on the y axis in pixel.},
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
-
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
 
 \item{method_gs}{Character value. The method according to which gene sets will
 be handled specified as a character of length one. This can be either 'mean

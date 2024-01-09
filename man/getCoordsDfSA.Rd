@@ -85,11 +85,6 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{\link[=joinWithVariables]{joinWithVariables()}}. Only used
 if not empty and \code{coords_df} is \code{NULL}.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
-
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}
 }
@@ -101,7 +96,7 @@ Adds the spatial relation to a spatial
 annotation to the coordinates data.frame. See details for more.
 }
 \details{
-The coordinates data.frame as returned by \code{\link[=getCoordsDf]{getCoordsDf()}} with five
+The coordinates data.frame as returned by \code{\link[=getCoordsDf]{getCoordsDf()}} with six
 additional variables:
 
 \itemize{
@@ -114,5 +109,7 @@ additional variables:
 \emph{'periphery'} if the data point lies outside of the boundaries of the spatial annotation but inside
 the area denoted via \code{distance} and \emph{outside}, if the data point lies beyond the screening area (it's
 distance to the spatial annotation boundaries is bigger than the value denoted in \code{distance}).}
+\item{\emph{id}}{ Character. The ID of the spatial annotation the data points lies closes to. (only relevant
+in case of \code{length(ids) > 1})}
 }
 }

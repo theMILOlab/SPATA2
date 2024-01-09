@@ -2536,7 +2536,7 @@ ggpLayerSpatAnnOutline <- function(object = "object",
                                    line_size = 1.5,
                                    line_type = "solid",
                                    use_colors = FALSE,
-                                   inner = FALSE,
+                                   inner = TRUE,
                                    ...){
 
   deprecated(...)

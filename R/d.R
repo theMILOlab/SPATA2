@@ -223,41 +223,27 @@ define_positions <- function(dist, binwidth){
 
 #' @return A numeric vector representing positions for expression estimates.
 #'
-compute_positions_expression_estimates <- function(min_dist, max_dist, amccd){
 
-  base::stopifnot(
-    base::identical(
-      x = extract_unit(min_dist),
-      y = extract_unit(max_dist)
-      )
-    )
-
-  unit_dist <- base::unique(extract_unit(max_dist))
-  unit_amccd <- extract_unit(amccd)
-
-  if(unit_dist != unit_amccd){
-
-    stop("Units of `amccd`, `min_dist` and `max_dist` do not match.")
-
-  }
-
-  # remove unit suffix and force numeric class
-  amccd_val <- extract_value(amccd)
-  min_dist_val <- extract_value(min_dist)
-  max_dist_val <- extract_value(max_dist)
-
-  dist_screened <- base::diff(x = c(min_dist_val, max_dist_val))
+compute_expression_estimates <- function(coords_df){
 
   out <-
-    base::seq(
-      from = min_dist_val,
-      to = max_dist_val,
-      length.out = base::ceiling(dist_screened/amccd_val)+1
-      )
+    dplyr::group_by(coords_df, bins_dist) %>%
+    dplyr::summarise(ee = base::mean(dist)) %>%
+    dplyr::pull(ee)
 
   return(out)
 
 }
+
+#' @keywords internal
+compute_dist_screened <- function(coords_df){
+
+    base::range(coords_df[["dist"]], na.rm = TRUE) %>%
+    base::diff()
+
+}
+
+
 
 # dis ---------------------------------------------------------------------
 

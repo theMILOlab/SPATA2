@@ -24,10 +24,11 @@ spatial annotation. \strong{Must} contain a slot named \emph{outer} which sets t
 of the spatial annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
 with numbers that correspond to inner polygons - holes within the annotation.
 
-Upon extraction via \code{getSpatAnnOutlineDf()} or extraction of the whole annotation
-via \code{getSpatialAnnotation()} and \code{getSpatialAnnotations()} the variables \emph{x} and \emph{y}
+Upon extraction via \code{\link[=getSpatAnnOutlineDf]{getSpatAnnOutlineDf()}} or extraction of the whole annotation
+via \code{\link[=getSpatialAnnotation]{getSpatialAnnotation()}} and \code{\link[=getSpatialAnnotations]{getSpatialAnnotations()}} the variables \emph{x} and \emph{y}
 are created by scaling \emph{x_orig} and \emph{y_orig} to the current resolution of the
-active image to ensure alignment.}
+active image to ensure alignment. This is achieved by using the \emph{coords} scale factor
+of the listslot @scale_factors of the \code{\link{HistoImage}} object of the active image.}
 
 \item{\code{id}}{character. String to identify the object in a list of multiple objects
 of the same class.}
@@ -35,13 +36,13 @@ of the same class.}
 \item{\code{image}}{A cropped version of an image that focuses solely on the area containing the
 annotation, along with an expansion margin. This slot is designed to remain
 empty until the annotation object is explicitly extracted or used, contributing to efficient
-data storage. Extraction through functions like \code{getSpatialAnnotation()} or
-\code{getSpatialAnnotation()} populates this slot with the cropped image. The parameters
+data storage. Extraction through functions like \code{\link[=getSpatialAnnotation]{getSpatialAnnotation()}} or
+\code{\link[=getSpatialAnnotation]{getSpatialAnnotation()}} populates this slot with the cropped image. The parameters
 used for cropping the image are stored in the \verb{@image_info} slot.}
 
 \item{\code{image_info}}{A list containing information related to the image stored in the @image slot.
 This information pertains to the cropped image obtained and set using functions like
-\code{getSpatialAnnotation()} or \code{getSpatialAnnotations()}. It serves as metadata
+\code{\link[=getSpatialAnnotation]{getSpatialAnnotation()}} or \code{\link[=getSpatialAnnotations]{getSpatialAnnotations()}}. It serves as metadata
 around the cropped image and may include parameters or details about the cropping process.}
 
 \item{\code{misc}}{list. A flexible list for miscellaneous input such as meta data
@@ -96,13 +97,14 @@ The following functions can be used to create spatial annotations:
 
 \itemize{
 \item{\code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}:}{ Based on polygon input.}
-\item{\code{\link[=barcodesToImageAnnotation]{barcodesToImageAnnotation()}}:}{ Based on the spatial extent of a
+\item{\code{\link[=barcodesToSpatialAnnotation]{barcodesToSpatialAnnotation()}}:}{Based on the spatial extent of a
 set of data points identified by the input barcodes.}
 \item{\code{\link[=createGroupAnnotations]{createGroupAnnotations()}}:}{ Based on the spatial extent of one or more
-groups of data points.}
+groups of data points. Uses \code{barcodesToSpatialAnnotation()}}
 \item{\code{\link[=createImageAnnotations]{createImageAnnotations()}}:}{ Based on interactive drawing
 on images.}
 \item{\code{\link[=createNumericAnnotations]{createNumericAnnotations()}}:}{ Based on the expression of numeric
-features such as gene expression, read counts, copy number alterations, etc.}
+features such as gene expression, read counts, copy number alterations, etc.
+Uses \code{\link[=barcodesToSpatialAnnotation]{barcodesToSpatialAnnotation()}}}
 }
 }

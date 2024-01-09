@@ -3062,6 +3062,7 @@ plotExprVsDistSA <- function(object,
     ggplot2::geom_line(
       data = sas_df,
       mapping = ggplot2::aes(x = dist, y = values),
+      alpha = line_alpha,
       color = line_color,
       linewidth = line_size
     ) +

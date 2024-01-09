@@ -7,7 +7,7 @@
 \usage{
 simulate_expression_pattern_sas(
   object,
-  id,
+  ids,
   simulations,
   core,
   binwidth = recBinwidth(object),
@@ -46,10 +46,10 @@ simulate_expression_pattern_sts(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{simulations}{A list of \emph{simulation lists}. A simulations list is a list
 that contains at least three slots that provide instructions for a set of

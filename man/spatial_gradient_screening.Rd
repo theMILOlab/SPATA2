@@ -10,8 +10,6 @@ spatial_gradient_screening(
   binwidth,
   weighted,
   cf = 1,
-  min_dist = NULL,
-  max_dist = NULL,
   rm_zero_infl = TRUE,
   n_random = 1000,
   sign_var = "fdr_cor",
@@ -21,6 +19,7 @@ spatial_gradient_screening(
   model_subset = NULL,
   model_add = NULL,
   model_remove = NULL,
+  control = SPATA2::sgs_loess_control,
   seed = 123,
   verbose = TRUE
 )
@@ -40,6 +39,8 @@ in the screening process.}
 \item{sign_var}{Either \emph{p_value} or \emph{fdr}. Defaults to \emph{fdr}.}
 
 \item{sign_threshold}{The significance threshold. Defaults to 0.05.}
+
+\item{control}{A list given to \code{control} of \code{\link[stats:loess]{stats::loess()}}.}
 
 \item{seed}{Numeric value. Sets the random seed.}
 

@@ -219,30 +219,79 @@ compute_corr <- function(gradient, model){
 
 }
 
-compute_correction_factor_sas <- function(object, id, distance, core){
+compute_correction_factor_sas <- function(object, ids, distance, core){
 
   orig_cdf <-
-    getCoordsDfSA(object, id = id, distance = distance, core = core, verbose = FALSE) %>%
-    dplyr::filter(rel_loc != "periphery")
+    getCoordsDfSA(
+      object = object,
+      ids = ids,
+      distance = distance,
+      core = core,
+      periphery = FALSE,
+      verbose = FALSE
+      )
 
-  sim_cdf <-
-    simulate_complete_coords_sa(object = object, id = id, distance = distance)
+  smrd_cdf <-
+    dplyr::group_by(orig_cdf, id) %>%
+    dplyr::summarise(md = base::max(dist, na.rm = TRUE))
 
-  area_df <- getSpatAnnOutlineDf(object, id = id)[,c("x", "y")]
-  buffered_area_df <- buffer_area(area_df, buffer = as_unit(distance, unit = "px", object = object))
+  unit <- base::unique(orig_cdf$dist_unit)
 
-  if(base::isFALSE(core)){
+  fct_df <-
+    purrr::map_df(
+      .x = base::levels(smrd_cdf$id),
+      .f = function(id){
 
-    sim_cdf <-
-      identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = area_df, opt = "remove")
+        distance <-
+          dplyr::filter(smrd_cdf, id == {{id}}) %>%
+          dplyr::pull(md) %>%
+          stringr::str_c(., unit)
 
-  }
+        buffer <-
+          as_unit(distance, unit = "px", object = object) %>%
+          base::as.numeric()
 
-  sim_cdf <-
-    identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_area_df, opt = "keep")
+        sim_cdf <-
+          simulate_complete_coords_sa(object = object, id = id, distance = distance)
 
-  out <- base::nrow(orig_cdf) / base::nrow(sim_cdf)
+        outline_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = TRUE)
 
+        outer_df <- getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)[,c("x", "y")]
+
+        buffered_outer_df <- buffer_area(outer_df, buffer = buffer)
+
+        if(base::isFALSE(core)){
+
+          sim_cdf <-
+            identify_obs_in_spat_ann(sim_cdf, strictly = TRUE, outline_df = outline_df, opt = "remove")
+
+        }
+
+        sim_cdf <-
+          identify_obs_in_polygon(sim_cdf, strictly = TRUE, polygon_df = buffered_outer_df, opt = "keep")
+
+        flt_orig_cdf <-
+          getCoordsDfSA(object, ids = id, distance = distance, core = core, periphery = FALSE)
+
+        fct <- base::nrow(flt_orig_cdf) / base::nrow(sim_cdf)
+
+        out_df <-
+          tibble::tibble(
+            fct = fct,
+            nav = base::nrow(flt_orig_cdf), # n available
+            nreq = base::nrow(sim_cdf) # n required
+          )
+
+        return(out_df)
+
+      }
+    )
+
+  nreq_max <- base::max(fct_df$nreq)
+
+  out <- stats::weighted.mean(x = fct_df$fct, w = fct_df$nreq/nreq_max)
+
+  # use
   return(out)
 
 }
@@ -983,6 +1032,65 @@ containsImageObject <- function(object){
   return(out)
 
 }
+
+
+#' @title Check for Inner Borders in a SpatialAnnotation Object
+#'
+#' @description Checks whether a `SpatialAnnotation` object contains any inner borders.
+#'
+#' @inherit getSpatialAnnotation params
+#' @inherit argument_dummy params
+#'
+#' @seealso [`SpatialAnnotation`]
+#'
+#' @return Logical value.
+#'
+#' @export
+#'
+setGeneric(name = "containsInnerBorders", def = function(object, ...){
+
+  standardGeneric(f = "containsInnerBorders")
+
+})
+
+#' @rdname containsInnerBorders
+#' @export
+setMethod(
+  f = "containsInnerBorders",
+  signature = "spata2",
+  definition = function(object, id, ...){
+
+    getSpatialAnnotation(objcet, id = id) %>%
+      containsInnerBorders()
+
+  }
+)
+
+#' @rdname containsInnerBorders
+#' @export
+setMethod(
+  f = "containsInnerBorders",
+  signature = "SpatialAnnotation",
+  definition = function(object, ...){
+
+    stringr::str_detect(base::names(object@area), pattern = "inner") %>%
+      base::any()
+
+  }
+)
+
+#' @rdname containsInnerBorders
+#' @export
+setMethod(
+  f = "containsInnerBorders",
+  signature = "data.frame",
+  definition = function(object, ...){
+
+    stringr::str_detect(object$border, pattern = "inner") %>%
+      base::any()
+
+  }
+)
 
 
 

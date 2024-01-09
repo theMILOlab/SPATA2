@@ -68,6 +68,44 @@ identify_zero_inflated_variables <- function(df,
 
 }
 
+
+#' @title Identify Observations Inside a Polygon
+#'
+#' @description This function determines whether points (observations) in a given data
+#' frame are located inside a specified polygon.
+#'
+#' @param coords_df A data frame containing the coordinates of the observations.
+#' Must contain columns specified in `cvars`.
+#' @param polygon_df A data frame containing the coordinates of the polygon's vertices.
+#' Must contain columns corresponding to those specified in `cvars`.
+#' @param outline_df A data.frame as returned by [`getSpatAnnOutlineDf()`].
+#' @param strictly A logical value indicating whether to consider only points strictly inside the polygon (`TRUE`)
+#' or to include points on the border (`FALSE`).
+#' @param opt A character string specifying the operation to perform on identified points.
+#' Options are "keep" (default), "remove", or any other string to create a new column in `coords_df`
+#' indicating whether each point is inside (`TRUE`) or outside (`FALSE`) the polygon.
+#' @param cvars A character vector specifying the variable names in `coords_df` and `polygon_df`
+#' that represent the x and y coordinates. Defaults to `c("x", "y")`.
+#'
+#' @return A modified version of `coords_df` based on the operation specified in `opt`.
+#'
+#' @details The function can be configured to strictly consider points within the polygon
+#' or to include points on the border. Additionally, the function allows for either keeping
+#' or removing the identified points, or marking them based on their position relative to the polygon.
+#'
+#' @examples
+#' # Example data frames
+#' coords_df <- data.frame(x = c(1, 2, 3), y = c(3, 2, 1))
+#' polygon_df <- data.frame(x = c(1, 2, 3, 1), y = c(1, 2, 3, 1))
+#'
+#' # Identify and keep points inside the polygon
+#' inside_points <- identify_obs_in_polygon(coords_df, polygon_df, strictly = TRUE)
+#'
+#' # Identify and remove points inside the polygon
+#' outside_points <- identify_obs_in_polygon(coords_df, polygon_df, strictly = TRUE, opt = "remove")
+#'
+#' @export
+#' @rdname identify_obs_in_polygon
 identify_obs_in_polygon <- function(coords_df,
                                     polygon_df,
                                     strictly,
@@ -119,6 +157,75 @@ identify_obs_in_polygon <- function(coords_df,
 
 }
 
+#' @rdname identify_obs_in_polygon
+#' @export
+identify_obs_in_spat_ann <- function(coords_df,
+                                     outline_df,
+                                     strictly,
+                                     opt = "keep",
+                                     cvars = c("x", "y")){
+
+  # identify "hole" obs
+  if(containsInnerBorders(outline_df)){
+
+    inner_bcs <-
+      purrr::map(
+        .x =
+          stringr::str_subset(outline_df$border, pattern = "inner") %>%
+          base::unique(),
+        .f = function(ib){
+
+          dplyr::filter(outline_df, border == {{ib}}) %>%
+            identify_obs_in_polygon(
+              coords_df = coords_df,
+              polygon_df = .,
+              strictly = strictly,
+              cvars = cvars,
+              opt = "keep"
+            ) %>%
+            dplyr::pull(barcodes)
+
+        }
+      ) %>%
+      purrr::flatten_chr()
+
+  } else {
+
+    inner_bcs <- base::character()
+
+  }
+
+
+  outer_df <- dplyr::filter(outline_df, border == "outer")
+
+  core_bcs <-
+    identify_obs_in_polygon(
+      coords_df = coords_df,
+      polygon_df = outer_df,
+      strictly = strictly,
+      opt = "keep"
+    ) %>%
+    dplyr::pull(barcodes)
+
+  core_bcs <- core_bcs[!core_bcs %in% inner_bcs]
+
+  if(opt == "keep"){
+
+    coords_df <- dplyr::filter(coords_df, barcodes %in% {{core_bcs}})
+
+  } else if(opt == "remove"){
+
+    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{core_bcs}})
+
+  } else {
+
+    coords_df[[opt]] <- coords_df$barcodes %in% core_bcs
+
+  }
+
+  return(coords_df)
+
+}
 
 
 #' @title Quick access to IDs
@@ -1682,8 +1789,8 @@ increase_polygon_vertices <- function(polygon_df, avg_dist) {
 
 infer_gradient <- function(loess_model,
                            expr_est_pos,
-                           coef = 0,
-                           ro = c(0, 1)){
+                           ro = c(0, 1),
+                           ...){
 
   grad <- stats::predict(loess_model, data.frame(dist = expr_est_pos))
 

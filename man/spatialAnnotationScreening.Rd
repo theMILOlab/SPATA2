@@ -6,15 +6,15 @@
 \usage{
 spatialAnnotationScreening(
   object,
-  id,
+  ids,
   variables,
   core,
+  distance = "dte",
   binwidth = recBinwidth(object),
-  distance = distToEdge(object, id),
   angle_span = c(0, 360),
   unit = getDefaultUnit(object),
   bcs_exclude = character(0),
-  sign_var = "fdr_cor",
+  sign_var = "fdr",
   sign_threshold = 0.05,
   force_comp = FALSE,
   skip_comp = FALSE,
@@ -32,24 +32,24 @@ spatialAnnotationScreening(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
-
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.

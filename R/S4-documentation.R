@@ -25,21 +25,22 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #' of the spatial annotation. **Can** contain multiple slots named *inner* (suffixed)
 #' with numbers that correspond to inner polygons - holes within the annotation.
 #'
-#' Upon extraction via `getSpatAnnOutlineDf()` or extraction of the whole annotation
-#' via `getSpatialAnnotation()` and `getSpatialAnnotations()` the variables *x* and *y*
+#' Upon extraction via [`getSpatAnnOutlineDf()`] or extraction of the whole annotation
+#' via [`getSpatialAnnotation()`] and [`getSpatialAnnotations()`] the variables *x* and *y*
 #' are created by scaling *x_orig* and *y_orig* to the current resolution of the
-#' active image to ensure alignment.
+#' active image to ensure alignment. This is achieved by using the *coords* scale factor
+#' of the listslot @@scale_factors of the [`HistoImage`] object of the active image.
 #' @slot id character. String to identify the object in a list of multiple objects
 #' of the same class.
 #' @slot image A cropped version of an image that focuses solely on the area containing the
 #' annotation, along with an expansion margin. This slot is designed to remain
 #' empty until the annotation object is explicitly extracted or used, contributing to efficient
-#' data storage. Extraction through functions like `getSpatialAnnotation()` or
-#' `getSpatialAnnotation()` populates this slot with the cropped image. The parameters
+#' data storage. Extraction through functions like [`getSpatialAnnotation()`] or
+#' [`getSpatialAnnotation()`] populates this slot with the cropped image. The parameters
 #' used for cropping the image are stored in the `@@image_info` slot.
 #' @slot image_info A list containing information related to the image stored in the @@image slot.
 #' This information pertains to the cropped image obtained and set using functions like
-#' `getSpatialAnnotation()` or `getSpatialAnnotations()`. It serves as metadata
+#' [`getSpatialAnnotation()`] or [`getSpatialAnnotations()`]. It serves as metadata
 #' around the cropped image and may include parameters or details about the cropping process.
 #' @slot misc list. A flexible list for miscellaneous input such as meta data
 #' or to implement new ideas..
@@ -56,14 +57,15 @@ base::attr(x = image_class, which = "package") <- "EBImage"
 #'
 #' \itemize{
 #'  \item{[`addSpatialAnnotation()`]:}{ Based on polygon input.}
-#'  \item{[`barcodesToImageAnnotation()`]:}{ Based on the spatial extent of a
+#'  \item{[`barcodesToSpatialAnnotation()`]:}{Based on the spatial extent of a
 #'  set of data points identified by the input barcodes.}
 #'  \item{[`createGroupAnnotations()`]:}{ Based on the spatial extent of one or more
-#'  groups of data points.}
+#'  groups of data points. Uses `barcodesToSpatialAnnotation()`}
 #'  \item{[`createImageAnnotations()`]:}{ Based on interactive drawing
 #'  on images.}
 #'  \item{[`createNumericAnnotations()`]:}{ Based on the expression of numeric
-#'  features such as gene expression, read counts, copy number alterations, etc.}
+#'  features such as gene expression, read counts, copy number alterations, etc.
+#'  Uses [`barcodesToSpatialAnnotation()`]}
 #'  }
 #'
 #' @inheritSection section_dummy Selection of spatial annotations

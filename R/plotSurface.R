@@ -246,7 +246,7 @@ setMethod(
       confuns::scale_color_add_on(
         clrp = pt_clrp,
         clrsp = pt_clrsp,
-        variable = dplyr::pull(coords_df, {{color_by}}),
+        variable = pull_var(coords_df, color_by),
         clrp.adjust = clrp_adjust,
         ...
       ) +

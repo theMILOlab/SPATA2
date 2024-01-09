@@ -58,11 +58,6 @@ objects of classes for which a method has been defined.}
 \item{grouping_variable}{Character value. The grouping variable of interest. Use
 \code{getGroupingOptions()} to obtain all valid input options.}
 
-\item{id}{Character value specifying the ID of the spatial annotation of interest.
-If there is only one spatial annotation in the object, the function
-will default to using it. However, if there are multiple annotations,
-this argument must be explicitly specified to identify the target annotation.}
-
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more

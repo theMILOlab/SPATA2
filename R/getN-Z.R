@@ -1324,7 +1324,6 @@ getSasDf <- function(object,
 
   deprecated(...)
 
-  # ensure that both values are of the same unit
   coords_df_sa <-
     getCoordsDfSA(
       object = object,
@@ -1333,11 +1332,14 @@ getSasDf <- function(object,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
       variables = variables,
-      dist_unit = unit, # ensure that distance is computed in correct unit
+      dist_unit = unit,
       core = core,
       periphery = FALSE,
       verbose = verbose
     )
+
+  cf <-
+    compute_correction_factor_sas(object, ids = ids, distance = distance, core = core)
 
   binwidth <- as_unit(binwidth, unit = unit, object = object)
   distance <-
@@ -1356,12 +1358,7 @@ getSasDf <- function(object,
 
   }
 
-  expr_est_pos <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = distance,
-      amccd = binwidth
-    )
+  expr_est_pos <- compute_expression_estimates(coords_df_sa)
 
   # prepare output
   sas_df <-
@@ -1374,8 +1371,6 @@ getSasDf <- function(object,
 
   dist_screened <-
     base::diff(c(extract_value(min_dist),extract_value(distance)))
-
-  cf <- 1
 
   span <- base::as.numeric(binwidth/dist_screened) / cf
 
@@ -1409,10 +1404,7 @@ getSasDf <- function(object,
         formula = var.x ~ dist,
         data = coords_df_sa[keep,],
         span = span,
-        family = "gaussian",
-        #statistics = "none",
-        surface = "direct",
-        degree = 1
+        control = base::do.call(what = stats::loess.control, args = sgs_loess_control)
       )
 
     sas_df[[var]] <-
