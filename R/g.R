@@ -695,7 +695,6 @@ ggpLayerExprEstimatesSAS <- function(object,
                                      incl_edge = TRUE,
                                      direction = "outwards",
                                      method = "normal",
-
                                      verbose = NULL,
                                      ...){
 
