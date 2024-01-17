@@ -21,7 +21,7 @@ spatial annotation is stored under a new ID.}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

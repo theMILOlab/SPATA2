@@ -9,7 +9,7 @@
 \usage{
 identifyTissueOutline(object, ...)
 
-\S4method{identifyTissueOutline}{spata2}(object, img_name = NULL, verbose = NULL)
+\S4method{identifyTissueOutline}{spata2}(object, img_name = NULL, use = "image", verbose = NULL)
 
 \S4method{identifyTissueOutline}{HistoImaging}(object, img_name = NULL, verbose = TRUE)
 
@@ -24,13 +24,18 @@ objects of classes for which a method has been defined.}
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
+\item{use}{Character value. Either \emph{'image'} (the default, which uses the
+results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}) or \emph{'coords'}. If
+\code{\link[=identifyPixelContent]{identifyPixelContent()}} does not provide satisfying results, set \code{use = coords}. This way, the tissue
+outline is created by using the coordinates data.frame.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

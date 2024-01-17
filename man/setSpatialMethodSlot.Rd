@@ -15,7 +15,7 @@ objects of classes for which a method has been defined.}
 \item{content}{Content to be set.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

@@ -27,7 +27,7 @@ object is exchanged for the counts matrix in the output assay.}
 \item{...}{Additional arguments given to \code{Seurat::SCTransform()}.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

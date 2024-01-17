@@ -17,7 +17,7 @@ objects of classes for which a method has been defined.}
 variable in the feature data.frame.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

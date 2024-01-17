@@ -302,14 +302,35 @@ add_dbscan_variable <- function(coords_df,
                                 y = "y",
                                 ...){
 
+  base::set.seed(123)
+
   outline_res <-
     dbscan::dbscan(
       x = base::as.matrix(coords_df[, c(x, y)]),
-      eps = eps ,
+      eps = eps,
       minPts = minPts
     )
 
   coords_df[[name]] <- base::as.character(outline_res[["cluster"]])
+
+  # sort by y
+  smrd_df <-
+    dplyr::filter(coords_df, !!rlang::sym(name) != "0") %>%
+    dplyr::group_by(!!rlang::sym(name)) %>%
+    dplyr::summarise(mean_y = base::mean(!!rlang::sym(y), na.rm = TRUE), .groups = "drop") %>%
+    dplyr::arrange(mean_y) %>%
+    dplyr::mutate(x.X.temp.new_index.X.x = dplyr::row_number() %>% base::as.character())
+
+  coords_df <-
+    dplyr::left_join(
+      x = coords_df,
+      y = smrd_df[c(name, "x.X.temp.new_index.X.x")],
+      by = name
+      ) %>%
+    dplyr::mutate(
+      {{name}} := dplyr::if_else(!!rlang::sym(name) == "0", true = "0", false = x.X.temp.new_index.X.x)
+    ) %>%
+    dplyr::select(-x.X.temp.new_index.X.x)
 
   return(coords_df)
 

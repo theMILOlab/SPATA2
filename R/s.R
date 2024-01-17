@@ -1270,10 +1270,6 @@ simulate_complete_coords_st <- function(object, id){
 
   if(containsMethod(object, method_name = "Visium")){
 
-    pixel_df <-
-      getPixelDf(object) %>%
-      dplyr::mutate(barcodes = pixel, x = width, y = height)
-
     traj_df <- getTrajectorySegmentDf(object, id = id)
 
     start_point <- base::as.numeric(traj_df[1, c("x", "y")])
@@ -1303,14 +1299,20 @@ simulate_complete_coords_st <- function(object, id){
         y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
       )
 
-    sim_range <- getCaptureArea(object, unit = "px")
+    ca <- getCaptureArea(object, unit = "px")
 
-    ccd <- recBinwidth(object, unit = "px")
+    sim_range <-
+      list(
+        x = base::range(trajectory_frame$x),
+        y = base::range(trajectory_frame$y)
+      )
+
+    ccd <- getCCD(object, unit = "px")
 
     coords_df <-
       base::rbind(
         tidyr::expand_grid(
-          x = seq(from = sim_range$x[1]-ccd, to = sim_range$y[2] + ccd, by = ccd*2),
+          x = seq(from = sim_range$x[1]-ccd, to = sim_range$x[2]+ccd, by = ccd*2),
           y = seq(from = sim_range$y[1], to = sim_range$y[2], by = ccd),
           group = "1"
         ),
@@ -1325,9 +1327,13 @@ simulate_complete_coords_st <- function(object, id){
         y = dplyr::if_else(group == "2", true = y-(ccd/2), false = y)
       ) %>%
       dplyr::select(barcodes, x, y) %>%
-      identify_obs_in_polygon(coords_df = ., polygon_df = trajectory_frame, strictly = T, opt = "inside") %>%
+      identify_obs_in_polygon(coords_df = ., polygon_df = trajectory_frame, strictly = TRUE, opt = "trajectory_frame") %>%
+      dplyr::filter(trajectory_frame) %>%
       dplyr::mutate(
-        rel_loc = dplyr::if_else(inside, true = "inside", false = "outside")
+        rel_loc = "inside",
+        capture_area =
+          dplyr::between(x, left = ca$x[1], right = ca$x[2]) &
+          dplyr::between(y, left = ca$y[1], right = ca$y[2])
       )
 
   } else {
@@ -1387,8 +1393,8 @@ simulate_expression_pattern_sas <- function(object,
                                             ids,
                                             simulations,
                                             core,
+                                            distance = "dte",
                                             binwidth = recBinwidth(object),
-                                            distance = distToEdge(object, id),
                                             angle_span = c(0, 360),
                                             noise_levels = seq(0,100, length.out = 21),
                                             noise_types = c("ed", "ep", "fp", "cb"),
@@ -1420,11 +1426,11 @@ simulate_expression_pattern_sas <- function(object,
 
   if(base::isFALSE(core)){
 
-    rm_loc <- c("core", "outside")
+    rm_loc <- c("core", "periphery")
 
   } else {
 
-    rm_loc <- "outside"
+    rm_loc <- "periphery"
 
   }
 
@@ -1458,7 +1464,6 @@ simulate_expression_pattern_sas <- function(object,
         .fns = ~ scales::rescale(x = .x, to = {{range_sim}})
       )
     )
-
 
   # prepare loops
   loop_instructions <-
@@ -2362,7 +2367,7 @@ smoothSpatialAnnotation <- function(object,
 
     } else {
 
-      inner_border <- stringr::str_subset(base::names(spat_ann@area), "^inner")
+      inner_borders <- stringr::str_subset(base::names(spat_ann@area), "^inner")
 
     }
 
@@ -2382,22 +2387,22 @@ smoothSpatialAnnotation <- function(object,
         if(method == "chaikin"){
 
           mtr_smoothed <-
-            smoothr::smooth_chaikin(x = mtr_section, ...)
+            smoothr::smooth_chaikin(x = mtr, ...)
 
         } else if(method == "densify"){
 
           mtr_smoothed <-
-            smoothr::smooth_densify(x = mtr_section, ...)
+            smoothr::smooth_densify(x = mtr, ...)
 
         } else if(method == "ksmooth"){
 
           mtr_smoothed <-
-            smoothr::smooth_ksmooth(x = mtr_section, ...)
+            smoothr::smooth_ksmooth(x = mtr, ...)
 
         } else if(method == "spline"){
 
           mtr_smoothed <-
-            smoothr::smooth_spline(x = mtr_section, ...)
+            smoothr::smooth_spline(x = mtr, ...)
 
         }
 
@@ -2634,10 +2639,15 @@ spatial_gradient_screening <- function(coords_df,
     purrr::map_dbl(.x = random_gradients, .f = ~ .x$tot_var) %>%
     base::unname()
 
-  robust_random_tot_vars <-
-    random_tot_vars[!is_outlier(random_tot_vars, coef = 1.5)]
+  if(FALSE){
 
-  robust_n_random <- base::length(robust_random_tot_vars)
+    robust_random_tot_vars <-
+      random_tot_vars[!is_outlier(random_tot_vars, coef = 1.5)]
+
+    robust_n_random <- base::length(robust_random_tot_vars)
+
+  }
+
 
   model_names <- base::names(model_df)
   nm <- base::length(model_names)
@@ -2671,7 +2681,7 @@ spatial_gradient_screening <- function(coords_df,
             formula = x.var.x ~ dist,
             data = coords_df,
             span = span,
-            control = base::do.call(what = loess.control, args = control)
+            control = base::do.call(what = stats::loess.control, args = control)
           )
 
         list(
@@ -2707,7 +2717,7 @@ spatial_gradient_screening <- function(coords_df,
     dplyr::summarise(
       rel_var = compute_relative_variation(values),
       tot_var = compute_total_variation(values),
-      p_value = base::sum({{robust_random_tot_vars}} < tot_var) / {{robust_n_random}},
+      p_value = base::sum({{random_tot_vars}} < tot_var) / {{n_random}},
       .groups = "drop"
     ) %>%
     dplyr::mutate(
@@ -2754,6 +2764,7 @@ spatial_gradient_screening <- function(coords_df,
       tidyr::pivot_longer(cols = dplyr::all_of(model_names), names_to = "models", values_to = "values_model") %>%
       dplyr::group_by(variables, models) %>%
       dplyr::summarise(
+        corr = compute_corr(gradient = values, model = values_model),
         mae = compute_mae(gradient = values, model = values_model),
         rmse = compute_rmse(gradient = values, model = values_model),
         .groups = "drop"
@@ -2847,7 +2858,9 @@ spatialAnnotationScreening <- function(object,
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        estimate_R2 = TRUE,
+                                       control = SPATA2::sgs_loess_control,
                                        n_random = 10000,
+                                       rm_zero_infl = FALSE,
                                        seed = 123,
                                        verbose = NULL,
                                        ...){
@@ -2900,6 +2913,7 @@ spatialAnnotationScreening <- function(object,
       object = object,
       ids = ids,
       distance = distance,
+      binwidth = binwidth,
       angle_span = angle_span,
       variables = variables,
       dist_unit = unit,
@@ -2912,26 +2926,6 @@ spatialAnnotationScreening <- function(object,
 
   coords_df_flt <-
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
-
-  # if core is FALSE min dist = 0 to start right from the border
-  # and not with the first data point
-  if(base::isTRUE(core)){
-
-    min_dist <-
-      base::min(coords_df[["dist"]]) %>%
-      stringr::str_c(., unit)
-
-  } else {
-
-    min_dist <- stringr::str_c(0, unit)
-
-  }
-
-  # max_dist does not depend on `core` option
-  min_dist <- as_unit(min_dist, unit = unit, object = object)
-  max_dist <-
-    stringr::str_c(base::max(coords_df$dist), unit) %>%
-    as_unit(input = ., unit = unit, object = object)
 
   sgs_out <-
     spatial_gradient_screening(
@@ -2947,8 +2941,10 @@ spatialAnnotationScreening <- function(object,
       model_subset = model_subset,
       model_remove = model_remove,
       n_random = n_random,
+      control = control,
       seed = seed,
-      verbose = verbose
+      verbose = verbose,
+      rm_zero_infl = rm_zero_infl
     )
 
   SAS_out <-
@@ -3033,7 +3029,7 @@ spatialTrajectoryScreening <- function(object,
                                        id,
                                        variables,
                                        binwidth = recBinwidth(object),
-                                       width = NULL,
+                                       width = getTrajectoryLength(object, id),
                                        unit = getDefaultUnit(object),
                                        bcs_exclude = character(0),
                                        sign_var = "fdr",
@@ -3043,7 +3039,8 @@ spatialTrajectoryScreening <- function(object,
                                        model_subset = NULL,
                                        model_remove = NULL,
                                        estimate_R2 = TRUE,
-                                       n_random = 1000,
+                                       rm_zero_infl = TRUE,
+                                       n_random = 10000,
                                        seed = 123,
                                        verbose = NULL,
                                        ...){
@@ -3093,17 +3090,15 @@ spatialTrajectoryScreening <- function(object,
       verbose = FALSE
     )
 
-  coords_df_flt <-  dplyr::filter(coords_df, rel_loc == "inside")
+  cf <- compute_correction_factor_sts(object, id = id, width = width)
 
-  min_dist <- base::min(coords_df[["dist"]], na.rm = TRUE)
-  max_dist <- base::max(coords_df[["dist"]], na.rm = TRUE)
+  print(cf)
 
   sgs_out <-
     spatial_gradient_screening(
-      coords_df = coords_df_flt,
-      min_dist = units::set_units(min_dist, value = unit, mode = "standard"),
-      max_dist = units::set_units(max_dist, value = unit, mode = "standard"),
+      coords_df = dplyr::filter(coords_df, rel_loc == "inside"),
       variables = variables,
+      cf = cf,
       binwidth = as_unit(binwidth, object = object, unit = unit),
       sign_var = sign_var,
       sign_threshold = sign_threshold,
@@ -3111,14 +3106,23 @@ spatialTrajectoryScreening <- function(object,
       model_add = model_add,
       model_subset = model_subset,
       model_remove = model_remove,
+      rm_zero_infl = rm_zero_infl,
+      control = SPATA2::sgs_loess_control,
       n_random = n_random,
       seed = seed
     )
 
   STS_out <-
     SpatialTrajectoryScreening(
-      coords = dplyr::select(coords_df, -dplyr::all_of(variables)),
-      info = list(r2 = r2, random_simulations = sgs_out$random),
+      coords = dplyr::select(coords_df, -dplyr::any_of(variables)),
+      info =
+        list(
+          r2 = r2,
+          random_simulations = sgs_out$random,
+          distance = distance,
+          coef = coef,
+          zero_infl_vars = sgs_out$zero_infl_vars
+        ),
       models = sgs_out$models,
       significance = sgs_out$pval,
       results = sgs_out$eval,
@@ -3293,19 +3297,6 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
         }
 
         return(spat_ann)
-
-      }
-    )
-
-  object@trajectories[[1]] <-
-    purrr::map(
-      .x = object@trajectories[[1]],
-      .f = function(traj){
-
-        traj@projection <-
-          dplyr::filter(traj@projection, barcodes %in% {{bcs_keep}})
-
-        return(traj)
 
       }
     )

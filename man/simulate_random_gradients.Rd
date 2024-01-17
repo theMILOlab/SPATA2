@@ -13,6 +13,7 @@ simulate_random_gradients(
   seed = 123,
   coef = Inf,
   range = c(0, 1),
+  control = SPATA2::sgs_loess_control,
   fn = "runif",
   verbose = TRUE,
   ...

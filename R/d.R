@@ -227,8 +227,9 @@ define_positions <- function(dist, binwidth){
 compute_expression_estimates <- function(coords_df){
 
   out <-
-    dplyr::group_by(coords_df, bins_dist) %>%
-    dplyr::summarise(ee = base::mean(dist)) %>%
+    dplyr::filter(coords_df, !base::is.na(bins_dist)) %>%
+    dplyr::group_by(bins_dist) %>%
+    dplyr::summarise(ee = base::mean(dist, na.rm = TRUE)) %>%
     dplyr::pull(ee)
 
   return(out)
@@ -238,8 +239,15 @@ compute_expression_estimates <- function(coords_df){
 #' @keywords internal
 compute_dist_screened <- function(coords_df){
 
+  unit <- base::unique(coords_df[["dist_unit"]])
+
+  out <-
     base::range(coords_df[["dist"]], na.rm = TRUE) %>%
-    base::diff()
+    base::diff() %>%
+    stringr::str_c(., unit) %>%
+    as_unit(input = ., unit = unit)
+
+  return(out)
 
 }
 
@@ -257,51 +265,16 @@ compute_dist_screened <- function(coords_df){
 #' @return An updated spata-object.
 #' @export
 
-discardExpressionMatrix <- function(object, mtr_name, of_sample = NA){
+discardExpressionMatrix <- function(...){
 
-  check_object(object)
+  deprecated(fn = TRUE, ...)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  all_mtr_names <- getExpressionMatrixNames(object, of_sample = of_sample)
-
-  confuns::check_one_of(
-    input = mtr_name,
-    against = all_mtr_names,
-    ref.input = "argument 'mtr_name'"
-  )
-
-  object <- addExpressionMatrix(object = object,
-                                expr_mtr = NULL,
-                                mtr_name = mtr_name,
-                                of_sample = of_sample)
-
-  confuns::give_feedback(
-    msg = glue::glue("Expression matrix '{mtr_name}' discarded.")
-  )
-
-  # feedback if discarded matrix was denoted as active matrix
-  if(mtr_name == getActiveMatrixName(object, of_sample = of_sample)){
-
-    base::warning(glue::glue("Expression matrix '{mtr_name}' was set as the active matrix. Make sure to denote a new one with 'setActiveExpressionMatrix()'"))
-
-  }
-
-  # feedback if no expression matrix left
-  remaining_mtr_names <- all_mtr_names[all_mtr_names != mtr_name]
-
-  if(base::is.null(remaining_mtr_names) | base::identical(remaining_mtr_names, base::character(0))){
-
-    base::warning("There are no expression matrices left in the provided spata-object. Make sure to add one with 'addExpressionMatrix()'.")
-
-  }
-
-  # delete neural network set ups
-  object@autoencoder$T275$nn_set_ups[[mtr_name]]  <- NULL
-
-  return(object)
+  removeProcessedMatrix(...)
 
 }
+
+
+
 
 
 

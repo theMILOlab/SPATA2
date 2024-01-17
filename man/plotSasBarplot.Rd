@@ -7,24 +7,21 @@
 \usage{
 plotSasBarplot(
   object,
-  grouping_variable,
+  grouping,
   id = idSA(object),
   distance = distToEdge(object, id),
-  binwidth = getCCD(object),
-  n_bins_dist = NA_integer_,
-  core = TRUE,
-  periphery = TRUE,
+  angle_span = c(0, 360),
+  binwidth = getCCD(object) * 2,
   unit = getDefaultUnit(object),
+  round = 2,
   clrp = NULL,
   clrp_adjust = NULL,
-  border_linealpha = 0,
-  border_linecolor = "black",
-  border_linesize = 1,
-  border_linetype = "dashed",
-  bar_width_fct = 1.1,
-  expand_x_fct = 1.05,
-  bcsp_exclude = NULL,
-  verbose = NULL
+  position = "fill",
+  bar_width = 0.9,
+  expand_x = c(0.025, 0),
+  expand_y = c(0.0125, 0),
+  verbose = NULL,
+  ...
 )
 
 plotSasBarplotSC(
@@ -55,14 +52,15 @@ plotSasBarplotSC(
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{grouping_variable}{Character value. The grouping variable of interest. Use
-\code{getGroupingOptions()} to obtain all valid input options.}
-
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+
+\item{angle_span}{Numeric vector of length 2. Confines the area screened by
+an angle span relative to the center of the spatial annotation.
+(See details fore more.)}
 
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
@@ -73,6 +71,9 @@ to the spatial annotation is displayed on the x-axis.
 
 If \code{FALSE}, plots the bin numbers instead.}
 
+\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
+of \code{base::round()}. Rounds transformed values before they are returned.}
+
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 input options.}
@@ -82,14 +83,15 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
-to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
-represents the border of the spatial annotation.}
+\item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Needed arguments that depend on the input/unit combination. If
+one of both is \emph{'px'}, argument \code{object} must be specified.}
 
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:
@@ -99,15 +101,12 @@ Must have at least three columns:
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
-\item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
-
-\item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
-of \code{base::round()}. Rounds transformed values before they are returned.}
-
 \item{display_border}{Logical value. If \code{TRUE}, displays a vertical line
 to highlight where the border of the spatial annotation runs.}
+
+\item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
+to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that
+represents the border of the spatial annotation.}
 
 \item{x_nth}{Numeric value. If the number of breaks/labels on the
 x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} is 1,

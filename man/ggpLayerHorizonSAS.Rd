@@ -8,16 +8,12 @@ ggpLayerHorizonSAS(
   object,
   id,
   distance = distToEdge(object, id),
-  binwidth = recBinwidth(object),
-  n_bins_dist = NA_integer_,
-  alpha_core = 0,
-  fill_core = NA,
+  line_alpha = 0.9,
   line_color = "black",
-  line_size = (line_size_core * 0.75),
-  line_size_core = 1,
+  line_size = 1.5,
   line_type = "solid",
-  inc_outline = TRUE,
-  direction = "outwards",
+  incl_edge = TRUE,
+  incr_vert = TRUE,
   verbose = NULL,
   ...
 )
@@ -32,22 +28,21 @@ is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. The size with which to display encircling lines
 of the area expansion.}
 
-\item{line_size_core}{Numeric. The size with which to display the core outline
-of the spatial annotation.}
-
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
-\item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
+\item{incl_edge}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
+
+\item{incr_vert}{Logical value. If \code{TRUE}, the number of vertices of the polygon
+to be plotted is increased by linear interpolation. This can lead to smoother
+visualization but also to increased runtime.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -63,8 +58,6 @@ they are supposed to be added to plots created with the \code{plotSurface*()}
 family.
 }
 \description{
-Adds the last expression estimate used by the SAS-algorithm
-of the area of  an spatial annotation to a surface plot in order to
-visualize the border between screened tissue (environment) and everything beyond that
-is not included in the screening (periphery).
+Visualizes the border between screened tissue (environment)
+and everything beyond that is not included in the screening (periphery).
 }

@@ -85,7 +85,7 @@ setMethod(
 
     main_plot <-
       ggplot2::ggplot() +
-      ggplot2::theme_void()
+      theme_void_custom()
 
     if(base::isTRUE(display_image)){
 
@@ -250,7 +250,7 @@ setMethod(
         clrp.adjust = clrp_adjust,
         ...
       ) +
-      ggplot2::theme_void() +
+      theme_void_custom() +
       ggplot2::theme(
         panel.grid = ggplot2::element_blank()
       ) +
@@ -400,7 +400,7 @@ plotSurfaceAverage <- function(object,
   ggplot2::ggplot(plot_df, mapping = mapping) +
     image_add_on +
     point_add_on +
-    ggplot2::theme_void() +
+    theme_void_custom() +
     ggplot2::facet_wrap(. ~ name) +
     scale_color_add_on(clrsp = pt_clrsp) +
     ggplot2::labs(color = NULL)
@@ -904,7 +904,7 @@ plotSurfaceComparison <- function(object,
     hlpr_image_add_on(object, display_image = display_image) +
     point_add_on +
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
-    ggplot2::theme_void() +
+    theme_void_custom() +
     ggplot2::coord_equal() +
     ggplot2::facet_wrap(facets = . ~ variables, ...) +
     ggplot2::labs(color = NULL)
@@ -1022,7 +1022,7 @@ plotSurfaceComparison2 <- function(coords_df,
     hlpr_image_add_on2(image) +
     point_add_on +
     confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
-    ggplot2::theme_void() +
+    theme_void_custom() +
     ggplot2::facet_wrap(facets = ~ variables, ...) +
     ggplot2::coord_equal() +
     ggplot2::labs(color = NULL)
@@ -1959,7 +1959,7 @@ plotSurfaceSC <- function(object,
       variable = df$cell_type
       ) +
     ggplot2::coord_equal() +
-    ggplot2::theme_void()
+    theme_void_custom()
 
   if(base::isTRUE(display_facets)){
 

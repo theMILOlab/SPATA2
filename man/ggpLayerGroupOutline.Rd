@@ -9,10 +9,15 @@ ggpLayerGroupOutline(
   grouping,
   groups_subset = NULL,
   plot_type = "surface",
+  line_alpha = 1,
   line_color = "black",
   line_size = 1,
   line_type = "solid",
   alpha = 0,
+  fill = NA,
+  incl_edge = FALSE,
+  merdge_edge = FALSE,
+  incr_vert = FALSE,
   bcsp_rm = character(0),
   outlier_rm = TRUE,
   eps = recDbscanEps(object),
@@ -33,12 +38,20 @@ are encircled.}
 \item{plot_type}{Character value. Either \emph{'surface', 'tsne'} or
 \emph{'umap'}.}
 
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
+
+\item{incl_edge}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
+
+\item{incr_vert}{Logical value. If \code{TRUE}, the number of vertices of the polygon
+to be plotted is increased by linear interpolation. This can lead to smoother
+visualization but also to increased runtime.}
 
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
 are removed before analysis or plotting. (Deprecated in favor of \code{bcs_rm}).}

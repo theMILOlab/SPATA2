@@ -8,15 +8,15 @@ ggpLayerExprEstimatesSAS(
   object,
   ids,
   distance = distToEdge(object, id),
-  n_bins_dist = NA_integer_,
   binwidth = recBinwidth(object),
+  core = FALSE,
   alpha_core = 0,
   fill_core = NA,
   line_alpha = 1,
   line_color = "black",
   line_size = (line_size_core * 0.75),
   line_size_core = 1,
-  inc_outline = TRUE,
+  incl_edge = TRUE,
   direction = "outwards",
   verbose = NULL,
   ...
@@ -51,7 +51,7 @@ of the area expansion.}
 \item{line_size_core}{Numeric. The size with which to display the core outline
 of the spatial annotation.}
 
-\item{inc_outline}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
+\item{incl_edge}{Logical. If \code{TRUE}, makes use of \code{SPATA2} automatic tissue outline algorithm.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

@@ -34,7 +34,7 @@ x- and y-coordinates work as key-variables if they are used combined.}
 current spata-object this argument must be set to TRUE in order to overwrite them.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

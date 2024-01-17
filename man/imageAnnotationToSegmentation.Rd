@@ -33,7 +33,7 @@ are located outside the area of the spatial annotation(s).}
 the same name.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

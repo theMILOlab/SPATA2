@@ -120,6 +120,14 @@ If \code{NULL}, the active histo image is chosen by default.}
 
 \item{img_names}{Character vector. The names of the \code{HistoImage}s of interest.}
 
+\item{incl_edge}{Logical value. If \code{TRUE}, the function includes the tissue edge
+(see \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}) in the visualization and removes the parts of
+the outline that transgress the tissues edge.}
+
+\item{incr_vert}{Logical value. If \code{TRUE}, the number of vertices of the polygon
+to be plotted is increased by linear interpolation. This can lead to smoother
+visualization but also to increased runtime.}
+
 \item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
 are not included in the output.}
 
@@ -193,6 +201,14 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}
+
+\item{rect_alpha}{The alpha transparency level of the rectangle's border}
+
+\item{rect_color}{The color of the rectangle's border.}
+
+\item{rect_linesize}{The size of the line used for the rectangle's border.}
+
+\item{rect_linetype}{The type of line used for the rectangle's border.}
 
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that

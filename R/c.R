@@ -23,6 +23,123 @@ center_polygon <- function(polygon, window_size) {
   return(polygon)
 }
 
+
+#' @title Center the Borders of a Spatial Annotation
+#'
+#' @description Shifts the borders of a spatial annotation in a way that
+#' it's center corresponds to the input of `c(center_x, center_y)`.
+#'
+#' @param center_x,center_y Distance measures. The new center of the
+#' spatial annotation.
+#'
+#' @inherit shiftSpatialAnnotation params return
+#' @inherit argument_dummy params
+#'
+#' @seealso [`expandSpatialAnnotation()`], [`shiftSpatialAnnotation()`],
+#' [`smoothSpatialAnnotation()`], [`SpatialAnnotation`]
+#'
+#' @export
+setGeneric(name = "centerSpatialAnnotation", def = function(object, ...){
+
+  standardGeneric(f = "centerSpatialAnnotation")
+
+})
+
+#' @rdname centerSpatialAnnotation
+#' @export
+setMethod(
+  f = "centerSpatialAnnotation",
+  signature = "spata2",
+  definition = function(object,
+                        id,
+                        center_x,
+                        center_y,
+                        new_id = FALSE,
+                        overwrite = FALSE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <-
+      centerSpatialAnnotation(
+        object = imaging,
+        id = id,
+        center_x = center_x,
+        center_y = center_y,
+        new_id = new_id,
+        overwrite = overwrite
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname centerSpatialAnnotation
+#' @export
+setMethod(
+  f = "centerSpatialAnnotation",
+  signature = "HistoImaging",
+  definition = function(object,
+                        id,
+                        center_x,
+                        center_y,
+                        new_id = FALSE,
+                        overwrite = FALSE){
+
+    csf <- getScaleFactor(object, fct_name = "coords")
+
+    cx <- as_pixel(center_x, object = object)/csf
+    cy <- as_pixel(center_y, object = object)/csf
+
+    spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+
+    spat_ann@area <-
+      purrr::map(
+        .x = spat_ann@area,
+        .f = function(area_df){
+
+          center_old <-
+            c(
+              x = base::mean(area_df$x_orig, na.rm = TRUE),
+              y = base::mean(area_df$y_orig, na.rm = TRUE)
+            )
+
+          center_diff <- c(cx, cy) - center_old
+
+          dplyr::mutate(
+            .data = area_df,
+            x_orig = x_orig + center_diff["x"],
+            y_orig = y_orig + center_diff["y"]
+          )
+
+        }
+      )
+
+    if(base::is.character(new_id)){
+
+      confuns::is_value(new_id, "character")
+
+      confuns::check_none_of(
+        input = new_id,
+        against = getSpatAnnIds(object),
+        ref.against = "present spatial annotations",
+        overwrite = overwrite
+      )
+
+      spat_ann@id <- new_id[1]
+
+    }
+
+    object@annotations[[spat_ann@id]] <- spat_ann
+
+    return(object)
+
+  }
+)
+
+
 #' @title Center tissue
 #'
 #' @description Computes the necessary translations in order to center
@@ -296,6 +413,25 @@ compute_correction_factor_sas <- function(object, ids, distance, core){
 
 }
 
+
+compute_correction_factor_sts <- function(object, id, width = getTrajectoryLength(object, id)){
+
+  coords_df <-
+    getCoordsDfST(object, id = id, width = width) %>%
+    dplyr::filter(rel_loc == "inside")
+
+  coords_df_sim <-
+    simulate_complete_coords_st(object, id = id)
+
+  out <- nrow(coords_df)/nrow(coords_df_sim)
+
+  # how can simulated coords_df be smaller than original one?
+  if(out > 1){ out <- 1}
+
+  return(out)
+
+}
+
 #' Compute Curve Irregularity
 #'
 #' Calculate the irregularity of a curve based on the total variation of its values.
@@ -401,8 +537,8 @@ compute_mae <- function(gradient, model){
 
 compute_overlap_polygon <- function(poly1, poly2){
 
-  a <- sf::st_polygon(base::list(base::as.matrix(poly1)))
-  b <- sf::st_polygon(base::list(base::as.matrix(poly2)))
+  a <- sf::st_polygon(base::list(base::as.matrix(poly1[,c("x", "y")])))
+  b <- sf::st_polygon(base::list(base::as.matrix(poly2[,c("x", "y")])))
 
   sf::st_intersection(x = a, y = b) %>%
     sf::st_area()
@@ -1034,7 +1170,7 @@ containsImageObject <- function(object){
 }
 
 
-#' @title Check for Inner Borders in a SpatialAnnotation Object
+#' @title Check for Inner Borders in a Spatial Annotation
 #'
 #' @description Checks whether a `SpatialAnnotation` object contains any inner borders.
 #'
@@ -1060,7 +1196,7 @@ setMethod(
   signature = "spata2",
   definition = function(object, id, ...){
 
-    getSpatialAnnotation(objcet, id = id) %>%
+    getSpatialAnnotation(object, id = id) %>%
       containsInnerBorders()
 
   }

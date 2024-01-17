@@ -22,7 +22,8 @@ getSpatialAnnotation(object, ...)
   id = idSA(object),
   add_image = TRUE,
   expand = 0,
-  square = FALSE
+  square = FALSE,
+  ...
 )
 }
 \arguments{

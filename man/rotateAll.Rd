@@ -5,7 +5,7 @@
 \alias{rotateImage}
 \alias{rotateCoordinates}
 \alias{rotateCoordsDf}
-\alias{rotateImageAnnotations}
+\alias{rotateSpatialAnnotations}
 \alias{rotateSpatialTrajectories}
 \title{Rotate image and coordinates}
 \usage{
@@ -17,7 +17,13 @@ rotateCoordinates(object, angle, clockwise = TRUE, verbose = NULL)
 
 rotateCoordsDf(object, angle, clockwise = TRUE, verbose = NULL)
 
-rotateImageAnnotations(object, angle, clockwise = TRUE, verbose = NULL)
+rotateSpatialAnnotations(
+  object,
+  angle,
+  ids = getSpatAnnIds(object),
+  clockwise = TRUE,
+  verbose = NULL
+)
 
 rotateSpatialTrajectories(object, angle, clockwise = TRUE, verbose = NULL)
 }
@@ -35,6 +41,11 @@ in clockwise direction. If \code{FALSE}, the other way round.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 }
 \description{
 The \verb{rotate*()} family rotates the current image
@@ -58,9 +69,10 @@ object content or to rotate single aspects.
 \item{\code{rotateCoordinates()}:}{ Rotates the coordinates data.frame, spatial annotations
 and spatial trajectories.}
 \item{\code{rotateCoordsDf()}:}{ Rotates the coordinates data.frame.}
-\item{\code{rotateImageAnnotations()}:}{ Rotates spatial annotations.}
+\item{\code{rotateSpatialAnnotations()}:}{ Rotates spatial annotations.}
 \item{\code{rotateSpatialTrajectories()}:}{ Rotates spatial trajectories.}
 }
-
-@seealso \code{\link[=flipAll]{flipAll()}}, \code{\link[=scaleAll]{scaleAll()}}
+}
+\seealso{
+\code{\link[=flipAll]{flipAll()}}, \code{\link[=scaleAll]{scaleAll()}}
 }

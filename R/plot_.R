@@ -269,3 +269,505 @@ plot_overview <- function(object,
     )
 
 }
+
+
+#' @keywords internal
+plot_sgs_barplot <- function(coords_df_sgs,
+                             grouping,
+                             round = 2,
+                             clrp = NULL,
+                             clrp_adjust = NULL,
+                             position = "fill",
+                             bar_width = bar_width,
+                             expand_x = c(0.025, 0),
+                             expand_y = c(0.0125, 0),
+                             verbose = NULL,
+                             ...){
+
+  breaks <-
+    base::levels(coords_df_sgs[["bins_dist"]]) %>%
+    reduce_vec(nth = 7)
+
+  labels <-
+    dplyr::filter(coords_df_sgs, bins_dist %in% {{breaks}}) %>%
+    dplyr::group_by(bins_dist) %>%
+    dplyr::summarise(dist_smrd = base::mean(dist, na.rm = TRUE)) %>%
+    dplyr::arrange(dist_smrd) %>%
+    dplyr::pull(dist_smrd) %>%
+    base::round(digits = round)
+
+  ggplot2::ggplot(coords_df_sgs) +
+    ggplot2::geom_bar(
+      mapping = ggplot2::aes(x = bins_dist, fill = .data[[grouping]]),
+      position = position,
+      width = bar_width
+    ) +
+    ggplot2::scale_x_discrete(breaks = breaks, labels = labels, expand = expand_x) +
+    ggplot2::scale_y_continuous(
+      breaks = c(0, 0.25, 0.5, 0.75, 1),
+      labels = stringr::str_c(c(0, 25, 50, 75, 100), "%"),
+      expand = expand_y
+    ) +
+    confuns::scale_color_add_on(
+      aes = "fill",
+      variable = coords_df_sgs[[grouping]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.ticks = ggplot2::element_line(),
+      axis.line.x = trajectory.line.x,
+      axis.line.y = ggplot2::element_line(),
+      panel.grid = ggplot2::element_blank()
+    )
+
+}
+
+
+#' @keywords internal
+plot_sgs_heatmap <- function(sgs_df,
+                             arrange_rows = "input",
+                             smooth_span = 0.3,
+                             multiplier = 10,
+                             clrsp = "inferno",
+                             .cols = dplyr::everything(),
+                             .f = NULL,
+                             verbose = NULL){
+
+  input_levels <- base::unique(sgs_df[["variables"]])
+
+  wide_df <-
+    tidyr::pivot_wider(
+      data = sgs_df,
+      id_cols = variables,
+      names_from = expr_est_idx,
+      values_from = "values"
+    )
+
+  # -----
+
+  # 4. Smooth rows ----------------------------------------------------------
+
+  base::stopifnot(smooth_span > 0)
+
+  mtr <- base::as.matrix(dplyr::select(.data = wide_df, -variables))
+  base::rownames(mtr) <- dplyr::pull(.data = wide_df, variables)
+
+  keep <- base::apply(mtr, MARGIN = 1,
+                      FUN = function(x){
+
+                        dplyr::n_distinct(x) != 1
+
+                      })
+
+  n_discarded <- base::sum(!keep)
+
+  if(n_discarded != 0){
+
+    discarded <- base::rownames(mtr)[!keep]
+
+    discarded_ref <- stringr::str_c(discarded, collapse = ', ')
+
+    mtr <- mtr[keep, ]
+
+    warning(glue::glue("Discarded {n_discarded} variables due to uniform expression. (Can not smooth uniform values.): '{discarded_ref}'"))
+
+  }
+
+  n_mtr_col <- ncol(mtr) * multiplier
+
+  mtr_smoothed <- matrix(0, nrow = nrow(mtr), ncol = n_mtr_col)
+
+  base::rownames(mtr_smoothed) <- base::rownames(mtr)
+  base::colnames(mtr_smoothed) <- stringr::str_c("V", 1:base::ncol(mtr_smoothed))
+
+  for(i in 1:base::nrow(mtr)){
+
+    x <- 1:base::ncol(mtr)
+
+    values <- base::as.numeric(mtr[i,])
+
+    y <- (values - base::min(values))/(base::max(values) - base::min(values))
+
+    model <- stats::loess(formula = y ~ x, span = smooth_span)
+
+    mtr_smoothed[i,] <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*multiplier))
+
+  }
+
+  # arrange rows
+  if(base::all(arrange_rows == "maxima") | base::all(arrange_rows == "minima")){
+
+    mtr_smoothed <-
+      confuns::arrange_rows(
+        df = base::as.data.frame(mtr_smoothed),
+        according.to = arrange_rows,
+        verbose = verbose
+      ) %>%
+      base::as.matrix()
+
+  } else if(arrange_rows == "input"){
+
+    mtr_smoothed <-
+      base::as.data.frame(mtr_smoothed) %>%
+      tibble::rownames_to_column(var = "vars") %>%
+      dplyr::mutate(vars = base::factor(x = vars, levels = input_levels)) %>%
+      tibble::as_tibble() %>%
+      dplyr::arrange(vars) %>%
+      base::as.data.frame() %>%
+      tibble::column_to_rownames(var = "vars") %>%
+      base::as.matrix()
+
+  }
+
+  # -----
+
+  # Plot heatmap ------------------------------------------------------------
+
+  sgs_levels <- base::colnames(mtr_smoothed)
+  var_levels <- base::rownames(mtr_smoothed) %>% base::rev()
+
+  df_smoothed <-
+    base::as.data.frame(mtr_smoothed) %>%
+    tibble::rownames_to_column(var = "variables") %>%
+    tibble::as_tibble() %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(sgs_levels),
+      values_to = "values",
+      names_to = "circle_order"
+    ) %>%
+    dplyr::mutate(
+      sgs_order = base::factor(x = circle_order, levels = sgs_levels),
+      variables = base::factor(x = variables, levels = var_levels),
+      sgs_ord_num = base::as.character(circle_order) %>% stringr::str_remove("^V") %>% base::as.numeric(),
+      dist = scales::rescale(x = sgs_ord_num, to = base::range(sgs_df$dist)),
+      sgs_part = "none"
+    )
+
+  if(!base::is.null(.f)){
+
+    df_smoothed$variables <-
+      confuns::vredefine_with(
+        df_smoothed$variables,
+        .cols = .cols,
+        .f = .f
+      )
+
+  }
+
+  if(base::min(sgs_df$dist) > 0){ border_linealpha <- 0 }
+
+  ggplot2::ggplot(data = df_smoothed) +
+    ggplot2::geom_tile(mapping = ggplot2::aes(x = dist, y = variables, fill = values)) +
+    ggplot2::coord_cartesian(expand = FALSE, xlim = df_smoothed$dist %>% range()) +
+    ggplot2::theme_classic() +
+    ggplot2::theme(
+      axis.ticks = ggplot2::element_blank(),
+      axis.line.y = ggplot2::element_blank(),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_blank()
+    ) +
+    scale_color_add_on(aes = "fill", clrsp = clrsp)
+
+
+}
+
+
+#' @keywords internal
+plot_sgs_lineplot <- function(sgs_df,
+                              smooth_span = 0.2,
+                              smooth_se = TRUE,
+                              display_facets = TRUE,
+                              display_eval = FALSE,
+                              eval_size = 2,
+                              unit = getSpatialMethod(object)@unit,
+                              clrp = NULL,
+                              clrp_adjust = NULL,
+                              line_color = NULL,
+                              line_size = 1.5,
+                              nrow = NULL,
+                              ncol = NULL,
+                              ggpLayers = list(),
+                              verbose = NULL,
+                              ...){
+
+  variables <- base::unique(sgs_df[["variables"]])
+
+  # make plot add ons
+  # facets
+  if(base::isTRUE(display_facets)){
+
+    facet_add_on <-
+      list(
+        ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol),
+        legendNone()
+      )
+
+
+  } else {
+
+    facet_add_on <- list(legendRight())
+
+  }
+
+  # plot
+  breaks_x <- waiver()
+
+  range_d <- base::range(sgs_df$dist)
+
+  if(base::is.character(line_color)){
+
+    clrp_adjust_add <-
+      purrr::set_names(
+        x = base::rep(line_color, base::length(variables)),
+        nm = variables
+      )
+
+    clrp_adjust <-
+      c(
+        clrp_adjust,
+        clrp_adjust_add[!base::names(clrp_adjust_add) %in% base::names(clrp_adjust)]
+      )
+
+  }
+
+  if(smooth_span == 0){
+
+    line_add_on <-
+      ggplot2::geom_line(
+        data = sgs_df,
+        mapping = ggplot2::aes(x = dist, y = values, color = variables),
+        linewidth = line_size
+      )
+
+
+  } else {
+
+    line_add_on <-
+      ggplot2::geom_smooth(
+        data = sgs_df,
+        mapping = ggplot2::aes(x = dist, y = values, color = variables),
+        span = smooth_span,
+        se = smooth_se,
+        linewidth = line_size,
+        method = "loess",
+        formula = y ~ x
+      )
+
+  }
+
+
+  if(!base::isFALSE(display_eval)){
+
+    if(!base::is.numeric(display_eval)){
+
+      pos_x <- base::min(sgs_df$dist)*0.1
+      pos_y <- 0.9
+
+    } else {
+
+      pos_x <- display_eval[1]
+      pos_y <- display_eval[2]
+
+    }
+
+    text_df <-
+      dplyr::group_by(sgs_df, variables) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of("values"),
+          .fns =
+            list(
+              tot_var = ~ compute_total_variation(.x) %>% base::round(digits = 2),
+              rel_var = ~ compute_relative_variation(.x) %>% base::round(digits = 2)
+            )
+        )
+      ) %>%
+      dplyr::mutate(
+        label =
+          stringr::str_c(
+            "TV: ", values_tot_var
+          ),
+        x_pos = base::as.numeric(pos_x),
+        y_pos = base::as.numeric(pos_y)
+      )
+
+    text_add_on <-
+      ggplot2::geom_text(
+        data = text_df,
+        mapping = ggplot2::aes(x = x_pos, y = y_pos, label = label),
+        color = "black",
+        size = eval_size,
+        hjust = 0
+      )
+
+  } else {
+
+    text_add_on <- NULL
+
+  }
+
+  ggplot2::ggplot(data = sgs_df, mapping = ggplot2::aes(x = dist, y = values)) +
+    ggpLayers +
+    line_add_on +
+    text_add_on +
+    scale_color_add_on(
+      variable = sgs_df[["variables"]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
+    theme_lineplot_gradient(range_d = range_d) +
+    facet_add_on
+
+}
+
+
+#' @keywords internal
+plot_sgs_ridgeplot <- function(sgs_df,
+                               smooth_span = 0.2,
+                               display_facets = TRUE,
+                               display_eval = FALSE,
+                               eval_size = 2,
+                               unit = getSpatialMethod(object)@unit,
+                               clrp = NULL,
+                               clrp_adjust = NULL,
+                               alpha = 1,
+                               fill = NULL,
+                               line_color = "black",
+                               line_size = 1.5,
+                               nrow = NULL,
+                               ncol = NULL,
+                               overlap = 0.5,
+                               strip_pos = "right",
+                               free_y = FALSE,
+                               ggpLayers = list(),
+                               verbose = NULL,
+                               ...){
+
+  base::stopifnot(smooth_span > 0)
+
+  variables <- base::unique(sgs_df[["variables"]])
+
+  breaks_x <- waiver()
+
+  range_d <- base::range(sgs_df$dist)
+
+  if(base::is.character(fill)){
+
+    clrp_adjust_add <-
+      purrr::set_names(
+        x = base::rep(fill, base::length(variables)),
+        nm = variables
+      )
+
+    clrp_adjust <-
+      c(
+        clrp_adjust,
+        clrp_adjust_add[!base::names(clrp_adjust_add) %in% base::names(clrp_adjust)]
+      )
+
+  }
+
+  if(!base::isFALSE(display_eval)){
+
+    if(!base::is.numeric(display_eval)){
+
+      pos_x <- base::min(sgs_df$dist)*0.1
+      pos_y <- 0.9
+
+    } else {
+
+      pos_x <- display_eval[1]
+      pos_y <- display_eval[2]
+
+    }
+
+    text_df <-
+      dplyr::group_by(sgs_df, variables) %>%
+      dplyr::summarise(
+        dplyr::across(
+          .cols = dplyr::all_of("values"),
+          .fns =
+            list(
+              tot_var = ~ compute_total_variation(.x) %>% base::round(digits = 2),
+              rel_var = ~ compute_relative_variation(.x) %>% base::round(digits = 2)
+            )
+        )
+      ) %>%
+      dplyr::mutate(
+        label =
+          stringr::str_c(
+            "TV: ", values_tot_var
+          ),
+        x_pos = base::as.numeric(pos_x),
+        y_pos = base::as.numeric(pos_y)
+      )
+
+    text_add_on <-
+      ggplot2::geom_text(
+        data = text_df,
+        mapping = ggplot2::aes(x = x_pos, y = y_pos, label = label),
+        color = "black",
+        size = eval_size,
+        hjust = 0
+      )
+
+  } else {
+
+    text_add_on <- NULL
+
+  }
+
+  # ridge add ons
+
+  facet_add_on <-
+    ggplot2::facet_wrap(
+      facets = . ~ variables,
+      ncol = 1,
+      strip.position = strip_pos,
+      scales = base::ifelse(test = base::isTRUE(free_y), yes = "free_y", no = "fixed")
+    )
+
+
+  line_add_on <-
+    ggplot2::geom_smooth(
+      data = sgs_df,
+      color = line_color,
+      linewidth = line_size,
+      span = smooth_span,
+      method = "loess",
+      formula = y ~ x,
+      se = FALSE
+    )
+
+  linefill_add_on <-
+    ggplot2::stat_smooth(
+      data = sgs_df,
+      mapping = ggplot2::aes(fill = variables),
+      geom = "area",
+      alpha = alpha,
+      linewidth = 0,
+      span = smooth_span,
+      method = "loess",
+      formula = y ~ x,
+      se = FALSE
+    )
+
+
+  # plot out
+  ggplot2::ggplot(data = sgs_df, mapping = ggplot2::aes(x = dist, y = values)) +
+    ggpLayers +
+    line_add_on +
+    linefill_add_on +
+    text_add_on +
+    facet_add_on +
+    scale_color_add_on(
+      aes = "fill",
+      variable = sgs_df[["variables"]],
+      clrp = clrp,
+      clrp.adjust = clrp_adjust
+    ) +
+    theme_ridgeplot_gradient(overlap = overlap)
+
+}

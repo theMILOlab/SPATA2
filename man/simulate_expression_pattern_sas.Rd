@@ -10,8 +10,8 @@ simulate_expression_pattern_sas(
   ids,
   simulations,
   core,
+  distance = "dte",
   binwidth = recBinwidth(object),
-  distance = distToEdge(object, id),
   angle_span = c(0, 360),
   noise_levels = seq(0, 100, length.out = 21),
   noise_types = c("ed", "ep", "fp", "cb"),
@@ -65,15 +65,15 @@ to simulate the expression.
 A simulation list can have an additional slot called \emph{noise_levels} which,
 if present, overwrites the input for \code{noise_levels} for the specific simulation.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
-
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.

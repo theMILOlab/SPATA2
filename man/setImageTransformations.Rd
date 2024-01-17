@@ -19,7 +19,7 @@ objects of classes for which a method has been defined.}
 If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

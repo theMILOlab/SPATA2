@@ -15,7 +15,7 @@ all tissue fragments are removed. If numeric or character indicates the
 fragments to be removed.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

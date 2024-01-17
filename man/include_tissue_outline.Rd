@@ -11,7 +11,7 @@ include_tissue_outline(
   spat_ann_center = NULL,
   sas_circles = FALSE,
   ccd = NULL,
-  remove = TRUE,
+  outside_rm = TRUE,
   inside_if = c(1, 2),
   opt = "concaveman",
   buffer = 0,
@@ -32,6 +32,8 @@ in order to plot them via \code{ggplot2::geom_path()}.}
 
 \item{opt}{Either \emph{'concaveman'}' or \emph{'chull'}. Defines with which function
 the tissue outline is computed.}
+
+\item{buffer}{Distance measure with which to buffer the tissue outline data.frame.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

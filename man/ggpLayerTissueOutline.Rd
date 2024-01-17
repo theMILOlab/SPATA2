@@ -114,7 +114,7 @@ to be removed prior to analysis or visualization by their barcode.}
 the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.
 If \emph{'none'}, no smoothing is conducted.}
 
-\item{inc_outline}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
+\item{incl_edge}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects
@@ -130,10 +130,10 @@ Adds a hull that outlines the tissue.
 object <- download("MCD_LMU")
 
 plotImage(object, unit = "mm") +
- ggpLayerTissueOutline(object, inc_outline = TRUE)
+ ggpLayerTissueOutline(object, incl_edge = TRUE)
 
 plotImage(object, unit = "mm") +
- ggpLayerTissueOutline(object, inc_outline = FALSE)
+ ggpLayerTissueOutline(object, incl_edge = FALSE)
 
 }
 \seealso{

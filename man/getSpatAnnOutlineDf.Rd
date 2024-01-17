@@ -17,6 +17,7 @@ getSpatAnnOutlineDf(object, ...)
   test = "any",
   outer = TRUE,
   inner = TRUE,
+  incl_edge = FALSE,
   add_tags = FALSE,
   sep = " & ",
   last = " & "
@@ -30,6 +31,7 @@ getSpatAnnOutlineDf(object, ...)
   test = "any",
   outer = TRUE,
   inner = TRUE,
+  incl_edge = FALSE,
   add_tags = FALSE,
   sep = " & ",
   last = " & "
@@ -60,6 +62,10 @@ is not included in the output.}
 
 \item{inner}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the inner borders of the image annotation
 are not included in the output.}
+
+\item{incl_edge}{Logical value. If \code{TRUE}, the function includes the tissue edge
+(see \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}) in the visualization and removes the parts of
+the outline that transgress the tissues edge.}
 }
 \value{
 A data.frame that contains variables \emph{id}, \emph{border},

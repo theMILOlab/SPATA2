@@ -15,6 +15,7 @@ createNumericAnnotations(
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
   force1 = FALSE,
+  fct_incr = 1,
   min_size = nBarcodes(object) * 0.01,
   concavity = 2,
   method_gs = NULL,
@@ -99,7 +100,7 @@ the computational progress will be printed.
 constructing the \code{SpatialAnnotation} object.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

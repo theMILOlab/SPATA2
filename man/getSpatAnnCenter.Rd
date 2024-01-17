@@ -3,9 +3,11 @@
 \name{getSpatAnnCenter}
 \alias{getSpatAnnCenter}
 \alias{getSpatAnnCenter,spata2-method}
+\alias{getSpatAnnCenter,HistoImaging-method}
 \alias{getSpatAnnCenter,SpatialAnnotation-method}
 \alias{getSpatAnnCenters}
 \alias{getSpatAnnCenters,spata2-method}
+\alias{getSpatAnnCenters,HistoImaging-method}
 \alias{getSpatAnnCenters,SpatialAnnotation-method}
 \title{Obtain center of an spatial annotation}
 \usage{
@@ -13,11 +15,15 @@ getSpatAnnCenter(object, ...)
 
 \S4method{getSpatAnnCenter}{spata2}(object, id)
 
+\S4method{getSpatAnnCenter}{HistoImaging}(object, id)
+
 \S4method{getSpatAnnCenter}{SpatialAnnotation}(object)
 
 getSpatAnnCenters(object, ...)
 
 \S4method{getSpatAnnCenters}{spata2}(object, id, outer = TRUE, inner = TRUE)
+
+\S4method{getSpatAnnCenters}{HistoImaging}(object, id, outer = TRUE, inner = TRUE)
 
 \S4method{getSpatAnnCenters}{SpatialAnnotation}(object, outer = TRUE, inner = TRUE)
 }

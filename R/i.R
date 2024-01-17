@@ -869,13 +869,16 @@ setMethod(
 
           } else {
 
-            df_ctype[["content_index"]] <-
-              dplyr::group_by(.data = df_ctype, content) %>%
-              dplyr::group_indices()
+            smrd_df <-
+              dplyr::group_by(df_ctype, content) %>%
+              dplyr::summarise(mean_height = base::mean(height, na.rm = TRUE), .groups = "drop") %>%
+              dplyr::arrange(mean_height) %>%
+              dplyr::mutate(content_index = dplyr::row_number()) %>%
+              dplyr::select(-mean_height)
 
             out <-
+              dplyr::left_join(x = df_ctype, y = smrd_df, by = "content") %>%
               dplyr::mutate(
-                .data = df_ctype,
                 content =
                   stringr::str_remove(content, pattern = "\\d*$") %>%
                   stringr::str_c(., content_index, sep = "_")
@@ -1206,6 +1209,15 @@ setMethod(
 
     coords_df$section <- base::factor(coords_df$section, levels = section_levels)
 
+    n_sections <- dplyr::n_distinct(sections)
+    n_fragments <- dplyr::n_distinct(fragments)
+    n_outliers <- base::sum(coords_df$section == "outlier")
+
+    confuns::give_feedback(
+      msg = glue::glue("Spatial outliers: {n_outliers}"),
+      verbose = verbose
+    )
+
     object <-
       addVarToCoords(
         object = object,
@@ -1226,6 +1238,11 @@ setMethod(
 #'
 #' @description Identifies the outline of each tissue section on the image
 #' as well as the outline of the whole tissue.
+#'
+#' @param use Character value. Either *'image'* (the default, which uses the
+#' results of [`identifyPixelContent()`]) or *'coords'*. If
+#' [`identifyPixelContent()`] does not provide satisfying results, set `use = coords`. This way, the tissue
+#' outline is created by using the coordinates data.frame.
 #'
 #' @inherit getPixelDf params
 #' @inherit argument_dummy params
@@ -1261,6 +1278,7 @@ setMethod(
   signature = "spata2",
   definition = function(object,
                         img_name = NULL,
+                        use = "image",
                         verbose = NULL){
 
     hlpr_assign_arguments(object)
@@ -1271,21 +1289,53 @@ setMethod(
     contains_only_pseudo <-
       base::length(img_names) == 1 && img_names == "pseudo"
 
-    if(contains_only_pseudo){
+    if(contains_only_pseudo | use == "coords"){
 
+      img_name <- img_names
+
+      # for complete tissue
       tissue_outline <-
-        getCoordsMtr(object, orig = TRUE) %>%
+        getCoordsMtr(object) %>%
         concaveman::concaveman(points = ., concavity = 2) %>%
         tibble::as_tibble() %>%
         magrittr::set_colnames(value = c("x", "y"))
 
-      pseudo_hist_img <- getHistoImage(object, img_name = "pseudo")
+      hist_img <- getHistoImage(object, img_name = img_name)
 
-      pseudo_hist_img@outline[["tissue_whole"]] <- tissue_outline
-      pseudo_hist_img@outline[["tissue_sections"]] <-
-        dplyr::mutate(tissue_outline, section = "tissue_section_1")
+      hist_img@outline[["tissue_whole"]] <- tissue_outline
 
-      object <- setHistoImage(object, hist_img = pseudo_hist_img)
+
+      # for possible sections
+      coords_df <-
+        getCoordsDf(object) %>%
+        add_dbscan_variable(
+          eps = as_pixel(input = recDbscanEps(object), object),
+          minPts = recDbscanMinPts(object),
+          name = "section"
+          ) %>%
+        dplyr::filter(section != "0") %>%
+        dplyr::mutate(section = stringr::str_c("tissue_section", section, sep = "_"))
+
+      hist_img@outline[["tissue_sections"]] <-
+        purrr::map_df(
+          .x = base::unique(coords_df[["section"]]),
+          .f = function(section){
+
+            dplyr::filter(coords_df, section == {{section}}) %>%
+              dplyr::select(barcodes, x, y) %>%
+              increase_n_data_points(fct = 10, cvars = c("x", "y")) %>%
+              dplyr::select(-barcodes, -n) %>%
+              base::as.matrix() %>%
+              concaveman::concaveman(concavity = 2) %>%
+              tibble::as_tibble() %>%
+              magrittr::set_colnames(value = c("x", "y")) %>%
+              dplyr::mutate(section = {{section}}) %>%
+              dplyr::select(section, x, y)
+
+          }
+        )
+
+      object <- setHistoImage(object, hist_img = hist_img)
 
     } else if(containsImage(object, img_name = img_name)){
 
@@ -1533,6 +1583,7 @@ imageAnnotationToSegmentation <- function(object,
 #' in order to plot them via `ggplot2::geom_path()`.
 #' @param opt Either *'concaveman'*' or *'chull'*. Defines with which function
 #' the tissue outline is computed.
+#' @param buffer Distance measure with which to buffer the tissue outline data.frame.
 #' @return Filtered input data.frame.
 #' @export
 #'
@@ -1542,12 +1593,13 @@ include_tissue_outline <- function(input_df,
                                    spat_ann_center = NULL,
                                    sas_circles = FALSE,
                                    ccd = NULL,
-                                   remove = TRUE,
+                                   outside_rm = TRUE,
                                    inside_if = c(1,2),
                                    opt = "concaveman",
                                    buffer = 0,
                                    ...){
 
+  deprecated(...)
   outline_var <- "section"
 
   # identify sections
@@ -1555,11 +1607,11 @@ include_tissue_outline <- function(input_df,
 
     is_dist_pixel(input = ccd, error = TRUE)
 
-    if(!outline_var %in% base::colnames(coords_df)){
+    if(!"section" %in% base::colnames(coords_df)){
 
       coords_df <- add_tissue_section_variable(coords_df, ccd = ccd, name = "section")
 
-      coords_df <- dplyr::filter(coords_df, outline != "0")
+      coords_df <- dplyr::filter(coords_df, section != "0")
 
     }
 
@@ -1630,7 +1682,7 @@ include_tissue_outline <- function(input_df,
           dplyr::mutate(
             .data = input_df,
             pos_rel = dplyr::if_else(obs_in_section %in% {{inside_if}}, true = "inside", false = "outside"),
-            tissue_section = {{section}}
+            section = {{section}}
           )
 
         if("inside" %in% out_df[["pos_rel"]]){
@@ -1679,7 +1731,7 @@ include_tissue_outline <- function(input_df,
 
           }
 
-          if(base::isTRUE(remove)){
+          if(base::isTRUE(outside_rm)){
 
             out_df <- dplyr::filter(out_df, pos_rel == "inside")
 
@@ -1705,13 +1757,14 @@ include_tissue_outline <- function(input_df,
     section_of_img_ann <-
       dplyr::group_by(.data = coords_df, barcodes) %>%
       dplyr::mutate(
-        dist = compute_distance(starting_pos = c(x,y), final_pos = spat_ann_center )
+        dist = compute_distance(starting_pos = c(x,y), final_pos = spat_ann_center)
       ) %>%
       dplyr::ungroup() %>%
       dplyr::filter(dist == base::min(dist)) %>%
-      dplyr::pull({{outline_var}})
+      dplyr::pull({{outline_var}}) %>%
+      base::as.character()
 
-    proc_df <- dplyr::filter(proc_df, tissue_section == {{section_of_img_ann}})
+    proc_df <- dplyr::filter(proc_df, section == {{section_of_img_ann}})
 
   } else {
 
@@ -1728,60 +1781,157 @@ include_tissue_outline <- function(input_df,
 
 }
 
-#' @seealso compute_avg_vertex_distance
 
-increase_polygon_vertices <- function(polygon_df, avg_dist) {
 
-  polygon_df <- base::as.data.frame(polygon_df)
+#' @title Increase the Number of Data Points in a Coordinate Data Frame
+#'
+#' @description This function artificially increases the number of data points in a given coordinate data frame.
+#' It generates additional points by adding random noise to the existing coordinates,
+#' ensuring the new points stay within the original range of the data.
+#'
+#' @param coords_df A data frame containing the original coordinates.
+#'                  Must include columns specified in `cvars`.
+#' @param fct A numeric factor indicating how many times the number of data points should be increased.
+#'            The function will round this number up to the nearest integer.
+#' @param cvars A character vector specifying the column names of the coordinates in `coords_df`.
+#'
+#' @return A data frame with the increased number of data points.
+#'
+#' @export
+increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 
-  # ensure the polygon is closed (first and last point are the same)
-  if(!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])){
+  confuns::is_value(fct, mode = "numeric")
+  fct <- base::ceiling(fct)
 
-    polygon_df <- base::rbind(polygon_df, polygon_df[1, ])
+  frame_orig <-
+    purrr::map(
+      .x = coords_df[,cvars],
+      .f = base::range
+    ) %>%
+    purrr::set_names(nm = cvars)
 
-  }
+  size <- base::nrow(coords_df)*fct
 
-  # initialize a new data frame to store interpolated vertices
-  interpolated_df <- data.frame(x = numeric(0), y = numeric(0))
+  dist <-
+    dplyr::select(coords_df, dplyr::all_of(cvars)) %>%
+    base::as.matrix() %>%
+    FNN::knn.dist(data = ., k = 1) %>%
+    base::mean()
 
-  # loop through each pair of consecutive vertices
-  for(i in 1:(base::nrow(polygon_df) - 1)){
+  noise <- stats::runif(n = size, min = dist*0.1, max = dist*0.5)
 
-    x1 <- polygon_df[i, "x"]
-    y1 <- polygon_df[i, "y"]
-    x2 <- polygon_df[i + 1, "x"]
-    y2 <- polygon_df[i + 1, "y"]
+  neg <- base::sample(c(TRUE, FALSE), size = size, replace = TRUE)
 
-    # calculate the distance between the consecutive vertices
-    dist_between_vertices <- base::sqrt((x2 - x1)^2 + (y2 - y1)^2)
+  noise[neg] <- noise[neg]*-1
 
-    # calculate the number of interpolated vertices needed
-    num_interpolated <- base::max(1, floor(dist_between_vertices / avg_dist))
+  new_df <-
+    tidyr::expand_grid(
+      barcodes = coords_df$barcodes,
+      n = 1:fct
+    ) %>%
+    dplyr::left_join(y = coords_df[,c("barcodes", cvars)], by = "barcodes") %>%
+    dplyr::mutate(
+      dplyr::across(
+        .cols = dplyr::any_of(x = cvars),
+        .fns = ~ .x + noise
+      )
+    )
 
-    # calculate the step size for interpolation
-    step_x <- (x2 - x1) / (num_interpolated + 1)
-    step_y <- (y2 - y1) / (num_interpolated + 1)
+  in_xrange <-
+    dplyr::between(
+      x = new_df[[cvars[1]]],
+      left = frame_orig[[cvars[1]]][1],
+      right = frame_orig[[cvars[1]]][2]
+    )
 
-    # add the original vertex to the interpolated data frame
-    interpolated_df <- base::rbind(interpolated_df, data.frame(x = x1, y = y1))
+  new_df <- new_df[in_xrange, ]
 
-    # interpolate new vertices between the consecutive vertices
-    for (j in 1:num_interpolated) {
+  in_yrange <-
+    dplyr::between(
+      x = new_df[[cvars[2]]],
+      left = frame_orig[[cvars[2]]][1],
+      right = frame_orig[[cvars[2]]][2]
+    )
 
-      new_x <- x1 + j * step_x
-      new_y <- y1 + j * step_y
+  new_df <- new_df[in_yrange, ]
 
-      interpolated_df <- base::rbind(interpolated_df, data.frame(x = new_x, y = new_y))
+  return(new_df)
+
+}
+
+
+#' @title Increase the Number of Vertices in a Polygon
+#'
+#' @description This function interpolates additional vertices in a polygon data frame to increase its vertex density.
+#' It ensures that the polygon remains closed and that the new vertices are evenly distributed.
+#'
+#' @param polygon_df A data frame representing the polygon, with columns for x and y coordinates.
+#' @param avg_dist The average distance between vertices after interpolation.
+#' @param skip Logical; if TRUE, the function skips the interpolation process and returns the original polygon.
+#'
+#' @return A data frame representing the polygon with increased vertex density.
+#'
+#' @examples
+#' denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
+#'
+#' @export
+increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
+
+  if(!base::isTRUE(skip)){
+
+    polygon_df <- base::as.data.frame(polygon_df)
+
+    # ensure the polygon is closed (first and last point are the same)
+    if(!base::identical(polygon_df[1, ], polygon_df[nrow(polygon_df), ])){
+
+      polygon_df <- base::rbind(polygon_df, polygon_df[1, ])
 
     }
+
+    # initialize a new data frame to store interpolated vertices
+    interpolated_df <- data.frame(x = numeric(0), y = numeric(0))
+
+    # loop through each pair of consecutive vertices
+    for(i in 1:(base::nrow(polygon_df) - 1)){
+
+      x1 <- polygon_df[i, "x"]
+      y1 <- polygon_df[i, "y"]
+      x2 <- polygon_df[i + 1, "x"]
+      y2 <- polygon_df[i + 1, "y"]
+
+      # calculate the distance between the consecutive vertices
+      dist_between_vertices <- base::sqrt((x2 - x1)^2 + (y2 - y1)^2)
+
+      # calculate the number of interpolated vertices needed
+      num_interpolated <- base::max(1, floor(dist_between_vertices / avg_dist))
+
+      # calculate the step size for interpolation
+      step_x <- (x2 - x1) / (num_interpolated + 1)
+      step_y <- (y2 - y1) / (num_interpolated + 1)
+
+      # add the original vertex to the interpolated data frame
+      interpolated_df <- base::rbind(interpolated_df, data.frame(x = x1, y = y1))
+
+      # interpolate new vertices between the consecutive vertices
+      for (j in 1:num_interpolated) {
+
+        new_x <- x1 + j * step_x
+        new_y <- y1 + j * step_y
+
+        interpolated_df <- base::rbind(interpolated_df, data.frame(x = new_x, y = new_y))
+
+      }
+    }
+
+    # combine the original and interpolated vertices
+    polygon_df <-
+      dplyr::add_row(polygon_df, interpolated_df) %>%
+      tibble::as_tibble()
+
   }
 
-  # combine the original and interpolated vertices
-  new_polygon_df <-
-    base::rbind(polygon_df, interpolated_df) %>%
-    tibble::as_tibble()
 
-  return(new_polygon_df)
+  return(polygon_df)
 
 }
 

@@ -667,131 +667,54 @@ plotRiverplot <- function(object,
 #' @export
 #'
 plotSasBarplot <- function(object,
-                           grouping_variable,
+                           grouping,
                            id = idSA(object),
                            distance = distToEdge(object, id),
-                           binwidth = getCCD(object),
-                           n_bins_dist = NA_integer_,
-                           core = TRUE,
-                           periphery = TRUE,
+                           angle_span = c(0, 360),
+                           binwidth = getCCD(object)*2,
                            unit = getDefaultUnit(object),
+                           round = 2,
                            clrp = NULL,
                            clrp_adjust = NULL,
-                           border_linealpha = 0,
-                           border_linecolor = "black",
-                           border_linesize = 1,
-                           border_linetype = "dashed",
-                           bar_width_fct = 1.1,
-                           expand_x_fct = 1.05,
-                           bcsp_exclude = NULL,
-                           verbose = NULL){
+                           position = "fill",
+                           bar_width = 0.9,
+                           expand_x = c(0.025, 0),
+                           expand_y = c(0.0125, 0),
+                           verbose = NULL,
+                           ...){
 
   hlpr_assign_arguments(object)
+  deprecated(...)
 
-  sas_input <-
-    check_sas_input(
-      binwidth = binwidth,
-      distance = distance,
-      n_bins_dist = n_bins_dist,
-      object = object,
-      verbose = TRUE
-    )
-
-  binwidth <- sas_input$binwidth
-  distance <- sas_input$distance
-  n_bins_dist <- sas_input$n_bins_dist
-
-  # extract data and filter
-  coords_df <-
+  coords_df_sas <-
     getCoordsDfSA(
       object = object,
-      id = id,
+      ids = id,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
-      variables = variables,
-      verbose = FALSE
+      core = FALSE,
+      periphery = FALSE
     )
 
-  if(base::isFALSE(core)){
-
-    coords_df <- dplyr::filter(coords_df, rel_loc != "Core")
-
-  }
-
-  if(base::isFALSE(periphery)){
-
-    coords_df <- dplyr::filter(coords_df, rel_loc != "Periphery")
-
-  }
-
-  if(base::is.character(bcs_exclude)){
-
-    coords_df <- dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
-
-  }
-
-  coords_df <-
-    dplyr::filter(coords_df, rel_loc != "Outside") %>%
-    dplyr::mutate(dist = extract_bin_dist_val(bins_dist))
-
-  # adjust unit
-
-  if(unit != "px"){
-
-    scale_fct <- getPixelScaleFactor(object, unit = unit)
-    coords_df[["dist"]] <- coords_df[["dist"]] * scale_fct
-
-  } else {
-
-    unit <- "px"
-
-  }
-
-  # plot
-  breaks_x <-
-    base::seq(from = 0 , to = base::max(coords_df$dist), length.out = 5) %>%
-    base::ceiling()
-
-  ggplot2::ggplot(data = coords_df) +
-    ggplot2::geom_bar(
-      data = coords_df,
-      mapping = ggplot2::aes(x = dist, fill = .data[[grouping_variable]]),
-      color = "black",
-      position = position,
-      width = base::max(coords_df$dist)/dplyr::n_distinct(coords_df$dist)*bar_width_fct
-    ) +
-    ggplot2::geom_vline(
-      xintercept = 0,
-      alpha = border_linealpha,
-      color = border_linecolor,
-      size = border_linesize,
-      linetype = border_linetype
-    ) +
-    scale_color_add_on(
-      aes = "fill",
-      variable = coords_df[[grouping_variable]],
+  p_out <-
+    plot_sgs_barplot(
+      coords_df_sgs,
+      grouping = grouping,
+      round = round,
       clrp = clrp,
-      clrp.adjust = clrp_adjust
-    ) +
-    ggplot2::scale_x_continuous(
-      breaks = breaks_x,
-      labels = breaks_x
-    ) +
-    ggplot2::scale_y_continuous(
-      breaks = c(0, 0.25, 0.5, 0.75, 1),
-      labels = c("0", "25", "50", "75", "100")
-    ) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      #axis.line.y = ggplot2::element_blank(),
-      #axis.text.y = ggplot2::element_blank(),
-      axis.line.x = ggplot2::element_line(arrow = ggplot2::arrow(length = ggplot2::unit(0.075, "inches"), type = "closed"))
-    ) +
+      clrp_adjust = clrp_adjust,
+      position = position,
+      bar_width = bar_width,
+      expand_x = expand_x,
+      expand_y = expand_y
+    )
+
+  p_out +
     ggplot2::labs(
-      x = glue::glue("Distance to Annotation '{unit}'"),
-      y = "Percentage [%]"
-      )
+      x = glue::glue("Distance to Annotation"),
+      y = c("fill" = "Percentage [%]", "count" = "Count")[position]
+    )
 
 }
 
@@ -1103,216 +1026,73 @@ plotSasEvaluation <- function(object,
 
 plotSasHeatmap <- function(object,
                            variables,
-                           id = idSA(object),
-                           distance = distToEdge(object, id),
+                           ids = idSA(object),
+                           distance = "dte",
                            binwidth = recBinwidth(object),
-                           n_bins_dist = NA_integer_,
-                           angle_span = c(0,360),
-                           unit = getSpatialMethod(object)@unit,
-                           arrange_rows = "input",
-                           method_gs = "mean",
-                           smooth_span = 0.4,
+                           core = FALSE,
+                           arrange_rows = "none",
+                           unit = getDefaultUnit(object),
+                           smooth_span = 0.3,
                            multiplier = 10,
-                           clrsp = "inferno",
-                           .cols = dplyr::everything(),
-                           .f = NULL,
+                           clrsp = NULL,
                            border_linealpha = 0.75,
                            border_linecolor = "black",
                            border_linesize = 1,
                            border_linetype = "dashed",
+                           .f = NULL,
+                           .cols = dplyr::everything(),
                            verbose = NULL,
                            ...){
 
   hlpr_assign_arguments(object)
-
-  # 1. Control --------------------------------------------------------------
-
-  # all checks
-  input_levels <- base::unique(variables)
-
-  smooth <- TRUE
-
-  # -----
-
-  # 2. Data wrangling -------------------------------------------------------
+  deprecated(...)
 
   sas_df <-
     getSasDf(
       object = object,
-      id = id,
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      n_bins_angle = 1,
-      angle_span = angle_span,
       variables = variables,
-      verbose = verbose
-    ) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::any_of(variables),
-      names_to = "variables",
-      values_to = "values"
+      ids = ids,
+      core = core,
+      distance = distance,
+      unit = unit,
+      format = "long"
     )
 
-  wide_df <-
-    tidyr::pivot_wider(
-      data = sas_df,
-      id_cols = variables,
-      names_from = bins_order,
-      values_from = "values"
-    )
-
-  # -----
-
-  # 4. Smooth rows ----------------------------------------------------------
-
-  mtr <- base::as.matrix(dplyr::select(.data = wide_df, -variables))
-  base::rownames(mtr) <- dplyr::pull(.data = wide_df, variables)
-
-  keep <- base::apply(mtr, MARGIN = 1,
-                      FUN = function(x){
-
-                        dplyr::n_distinct(x) != 1
-
-                      })
-
-  n_discarded <- base::sum(!keep)
-
-  if(base::isTRUE(smooth) && n_discarded != 0){
-
-    discarded <- base::rownames(mtr)[!keep]
-
-    discarded_ref <- stringr::str_c(discarded, collapse = ', ')
-
-    mtr <- mtr[keep, ]
-
-    base::warning(glue::glue("Discarded {n_discarded} variables due to uniform expression. (Can not smooth uniform values.): '{discarded_ref}'"))
-
-  }
-
-  mtr_smoothed <- matrix(0, nrow = nrow(mtr), ncol = ncol(mtr) * multiplier)
-
-  base::rownames(mtr_smoothed) <- base::rownames(mtr)
-  base::colnames(mtr_smoothed) <- stringr::str_c("V", 1:base::ncol(mtr_smoothed))
-
-  if(base::isTRUE(smooth)){
-
-    confuns::give_feedback(
-      msg = glue::glue("Smoothing values with smoothing span: {smooth_span}."),
+  p_out <-
+    plot_sgs_heatmap(
+      sgs_df = sas_df,
+      arrange_rows = arrange_rows,
+      smooth_span = smooth_span,
+      multiplier = multiplier,
+      clrsp = clrsp,
+      .cols = .cols,
+      .f = .f,
       verbose = verbose
     )
 
-    for(i in 1:base::nrow(mtr)){
+  if(base::isTRUE(core)){
 
-      x <- 1:base::ncol(mtr)
-
-      values <- base::as.numeric(mtr[i,])
-
-      y <- (values - base::min(values))/(base::max(values) - base::min(values))
-
-      model <- stats::loess(formula = y ~ x, span = smooth_span)
-
-      mtr_smoothed[i,] <- stats::predict(model, seq(1, base::max(x) , length.out = base::ncol(mtr)*multiplier))
-
-    }
-
-  }
-
-  # arrange rows
-  if(base::all(arrange_rows == "maxima") | base::all(arrange_rows == "minima")){
-
-    mtr_smoothed <-
-      confuns::arrange_rows(
-        df = base::as.data.frame(mtr_smoothed),
-        according.to = arrange_rows,
-        verbose = verbose
-      ) %>%
-      base::as.matrix()
-
-  } else if(arrange_rows == "input"){
-
-    mtr_smoothed <-
-      base::as.data.frame(mtr_smoothed) %>%
-      tibble::rownames_to_column(var = "vars") %>%
-      dplyr::mutate(vars = base::factor(x = vars, levels = input_levels)) %>%
-      tibble::as_tibble() %>%
-      dplyr::arrange(vars) %>%
-      base::as.data.frame() %>%
-      tibble::column_to_rownames(var = "vars") %>%
-      base::as.matrix()
-
-  }
-
-  # -----
-
-  # Plot heatmap ------------------------------------------------------------
-
-  sas_levels <- base::colnames(mtr_smoothed)
-  var_levels <- base::rownames(mtr_smoothed) %>% base::rev()
-
-  df_smoothed <-
-    base::as.data.frame(mtr_smoothed) %>%
-    tibble::rownames_to_column(var = "variables") %>%
-    tibble::as_tibble() %>%
-    tidyr::pivot_longer(
-      cols = dplyr::all_of(sas_levels),
-      values_to = "values",
-      names_to = "circle_order"
-    ) %>%
-    dplyr::mutate(
-      sas_order = base::factor(x = circle_order, levels = sas_levels),
-      variables = base::factor(x = variables, levels = var_levels),
-      sas_ord_num = base::as.character(circle_order) %>% stringr::str_remove("^V") %>% base::as.numeric(),
-      dist = scales::rescale(x = sas_ord_num, to = base::range(sas_df$dist)),
-      sas_part = "none"
-    )
-
-  if(!base::is.null(unit)){
-
-    scale_fct <- getPixelScaleFactor(object, unit = unit)
-    df_smoothed$dist <- df_smoothed$dist * scale_fct
+    border_add_on <-
+      ggplot2::geom_vline(
+        xintercept = 0,
+        alpha = border_linealpha,
+        color = border_linecolor,
+        linetype = border_linetype,
+        linewidth = border_linesize
+      )
 
   } else {
 
-    unit <- "px"
+    border_add_on <- list()
 
   }
 
-  if(!base::is.null(.f)){
-
-    df_smoothed$variables <-
-      confuns::vredefine_with(
-        df_smoothed$variables,
-        .cols = .cols,
-        .f = .f
-      )
-
-  }
-
-  assign("df_smooted", df_smoothed, envir = .GlobalEnv)
-
-  ggplot2::ggplot(data = df_smoothed) +
-    ggplot2::geom_tile(mapping = ggplot2::aes(x = dist, y = variables, fill = values)) +
-    ggplot2::geom_vline(
-      xintercept = 0,
-      alpha = border_linealpha,
-      color = border_linecolor,
-      size = border_linesize,
-      linetype = border_linetype
-    ) +
-    ggplot2::coord_cartesian(expand = FALSE) +
-    ggplot2::theme_classic() +
-    ggplot2::theme(
-      axis.ticks = ggplot2::element_blank(),
-      axis.line.y = ggplot2::element_blank(),
-      strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_blank()
-    ) +
+  p_out +
+    border_add_on +
     ggplot2::labs(
-      x = glue::glue("Distance to Annotation [{unit}]."),
-      y = NULL,
-      fill = "Expr.") +
-    scale_color_add_on(aes = "fill", clrsp = clrsp)
+      x = glue::glue("Distance [{unit}]"),
+      y = NULL
+    )
 
 }
 
@@ -1356,231 +1136,82 @@ plotSasLineplot <- function(object,
                             angle_span = c(0,360),
                             smooth_span = 0.2,
                             smooth_se = TRUE,
-                            display_facets = TRUE,
                             unit = getSpatialMethod(object)@unit,
                             clrp = NULL,
                             clrp_adjust = NULL,
                             line_color = NULL,
                             line_size = 1.5,
+                            display_facets = TRUE,
                             nrow = NULL,
                             ncol = NULL,
                             border_linealpha = 0.75,
                             border_linecolor = alpha("white", 0),
                             border_linesize = 1,
                             border_linetype = "solid",
-                            ee_linealpha = 0,
-                            ee_linecolor = "black",
-                            ee_lineend = "point",
-                            ee_linesize = 1,
-                            ee_linetype = "solid",
                             display_eval = FALSE,
                             eval_size = line_size*2.5,
-                            pos_x = 0,
-                            pos_y = 1,
-                            outlier_rm = FALSE,
                             ggpLayers = list(),
                             verbose = NULL,
                             ...){
 
-  deprecated(...)
 
   hlpr_assign_arguments(object)
-
-  # prepare sas df
-  variables <- base::unique(variables)
-
-  var_order <- variables
+  deprecated(...)
 
   sas_df <-
     getSasDf(
       object = object,
+      variables = variables,
       ids = ids,
       distance = distance,
       binwidth = binwidth,
-      angle_span = angle_span,
-      variables = variables,
       unit = unit,
       core = core,
-      outlier_rm = outlier_rm,
-      format = "long",
-      verbose = FALSE,
-      ...
+      angle_span = angle_span,
+      format = "long"
     )
 
-  distance <-
-    stringr::str_c(base::max(sas_df$dist), unit) %>%
-    as_unit(input = ., unit = unit, object = object)
-
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
-
-  # make plot add ons
-  # facets
-  if(base::isTRUE(display_facets)){
-
-    facet_add_on <-
-      ggplot2::facet_wrap(facets = . ~ variables, nrow = nrow, ncol = ncol)
-
-  } else {
-
-    facet_add_on <- NULL
-
-  }
-
-  # border
-  border_add_on <-
-    ggplot2::geom_vline(
-      xintercept = 0,
-      alpha = border_linealpha,
-      color = border_linecolor,
-      linewidth = border_linesize,
-      linetype = border_linetype
-    )
-
-  # plot
-  breaks_x <-
-    base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
-    base::ceiling()
-
-  range_d <- base::range(sas_df$dist)
-
-  if(base::is.character(line_color)){
-
-    clrp_adjust_add <-
-      purrr::set_names(
-        x = base::rep(line_color, base::length(variables)),
-        nm = variables
-      )
-
-    clrp_adjust <-
-      c(
-        clrp_adjust,
-        clrp_adjust_add[!base::names(clrp_adjust_add) %in% base::names(clrp_adjust)]
-      )
-
-  }
-
-  if(smooth_span == 0){
-
-    line_add_on <-
-      ggplot2::geom_line(
-        data = sas_df,
-        mapping = ggplot2::aes(x = dist, y = values, color = variables),
-        linewidth = line_size
-      )
-
-
-  } else {
-
-    line_add_on <-
-      ggplot2::geom_smooth(
-        data = sas_df,
-        mapping = ggplot2::aes(x = dist, y = values, color = variables),
-        span = smooth_span,
-        se = smooth_se,
-        linewidth = line_size,
-        method = "loess",
-        formula = y ~ x
-      )
-
-  }
-
-
-  if(base::isTRUE(display_eval)){
-
-    text_df <-
-      dplyr::group_by(sas_df, variables) %>%
-      dplyr::summarise(
-        dplyr::across(
-          .cols = dplyr::all_of("values"),
-          .fns =
-            list(
-              tot_var = ~ compute_total_variation(.x) %>% base::round(digits = 2),
-              rel_var = ~ compute_relative_variation(.x) %>% base::round(digits = 2)
-            )
-        )
-      ) %>%
-      dplyr::mutate(
-        label =
-          stringr::str_c(
-            "TV: ", values_tot_var
-          ),
-        x_pos = base::as.numeric(pos_x),
-        y_pos = base::as.numeric(pos_y)
-      )
-
-    text_add_on <-
-      ggplot2::geom_text(
-        data = text_df,
-        mapping = ggplot2::aes(x = x_pos, y = y_pos, label = label),
-        color = "black",
-        size = eval_size,
-        hjust = 0
-      )
-
-  } else {
-
-    text_add_on <- NULL
-
-  }
-
-  if(ee_linealpha != 0){
-
-    if(ee_lineend == "point"){
-
-      ee_lineend_add_on <-
-        ggplot2::geom_point(
-          data = sas_df,
-          mapping = ggplot2::aes(x = dist, y = values),
-          alpha = ee_linealpha,
-          color = ee_linecolor,
-          size = ee_linesize*1.75
-        )
-      ee_lineend <- "round"
-
-    } else {
-
-      ee_lineend_add_on <- NULL
-
-    }
-
-    ee_add_on <-
-      ggplot2::geom_segment(
-        data = sas_df,
-        mapping = ggplot2::aes(x = dist, xend = dist, y = 0, yend = values),
-        alpha = ee_linealpha,
-        color = ee_linecolor,
-        size = ee_linesize,
-        lineend = ee_lineend,
-        linetype = ee_linetype
-      )
-
-    ee_add_on <- list(ee_add_on, ee_lineend_add_on)
-
-  } else {
-
-    ee_add_on <- NULL
-
-  }
-
-
-  ggplot2::ggplot(data = sas_df, mapping = ggplot2::aes(x = dist, y = values)) +
-    ggpLayers +
-    line_add_on +
-    border_add_on +
-    text_add_on +
-    facet_add_on +
-    scale_color_add_on(
-      variable = sas_df[["variables"]],
+  p_out <-
+    plot_sgs_lineplot(
+      sgs_df = sas_df,
+      smooth_span = smooth_span,
+      smooth_se = smooth_se,
+      line_color = line_color,
+      line_size = line_size,
       clrp = clrp,
-      clrp.adjust = clrp_adjust
-    ) +
-    ee_add_on +
-    theme_lineplot_gradient(breaks_x = breaks_x, range_d = range_d) +
+      clrp_adjust = clrp_adjust,
+      display_facets = display_facets,
+      display_eval = display_eval,
+      eval_size = eval_size,
+      ggpLayers = ggpLayers,
+      ncol = ncol,
+      nrow = nrow,
+      verbose = verbose
+    )
+
+  if(base::isTRUE(core)){
+
+    border_add_on <-
+      ggplot2::geom_vline(
+        xintercept = 0,
+        alpha = border_linealpha,
+        color = border_linecolor,
+        linetype = border_linetype,
+        linewidth = border_linesize
+      )
+
+  } else {
+
+    border_add_on <- list()
+
+  }
+
+  p_out +
+    border_add_on +
     ggplot2::labs(
-      x = glue::glue("Distance to Annotation [{unit}]"),
-      y = "Estimated Expression"
-    ) +
-    legendNone()
+      x = glue::glue("Distance [{unit}]"),
+      y = NULL
+    )
 
 }
 
@@ -1970,7 +1601,7 @@ plotSasLineplotSC <- function(object,
 #' @title Plot SAS rideplot
 #'
 #' @description Plots gene expression changes against the distance to
-#' to the spatial annotation using the desing of ridgeplots.
+#' to the spatial annotation using the design of ridgeplots.
 #'
 #' @param scale Logical value. If `TRUE`, density of cell types is scaled
 #' to make them comparable. Else, the absolute values defined by count/`unit`^2
@@ -1991,20 +1622,19 @@ plotSasLineplotSC <- function(object,
 #'
 plotSasRidgeplot <- function(object,
                              variables,
-                             id = idSA(object),
+                             ids = idSA(object),
                              distance = distToEdge(object, id),
                              binwidth = recBinwidth(object),
-                             n_bins_dist = NA_integer_,
                              angle_span = c(0,360),
-                             core = TRUE,
+                             core = FALSE,
                              smooth_span = 0.3,
                              unit = getSpatialMethod(object)@unit,
+                             alpha = 1,
+                             fill = NULL,
                              clrp = NULL,
                              clrp_adjust = NULL,
                              line_color = "black",
                              line_size = 1.5,
-                             fill = NULL,
-                             alpha = 1,
                              border_linealpha = 0.75,
                              border_linecolor = "black",
                              border_linesize = 1,
@@ -2016,145 +1646,63 @@ plotSasRidgeplot <- function(object,
                              verbose = NULL,
                              ...){
 
-  deprecated(...)
   hlpr_assign_arguments(object)
-
-  # prepare sas df
-  variables <- base::unique(variables)
+  deprecated(...)
 
   sas_df <-
     getSasDf(
       object = object,
-      id = id,
-      distance = distance,
-      n_bins_dist,
-      binwidth = binwidth,
-      angle_span = angle_span,
       variables = variables,
+      ids = ids,
+      distance = distance,
+      binwidth = binwidth,
+      unit = unit,
       core = core,
-      verbose = FALSE
-    ) %>%
-    tidyr::pivot_longer(
-      cols = dplyr::all_of(variables),
-      names_to = "variables",
-      values_to = "values"
-    ) %>%
-    dplyr::mutate(variables = base::factor(variables, levels = {{variables}}))
-
-  if(unit != "px"){
-
-    scale_fct <- getPixelScaleFactor(object, unit = unit)
-    sas_df[["dist"]] <- sas_df[["dist"]] * scale_fct
-
-  } else {
-
-    unit <- "px"
-
-  }
-
-  # make plot add ons
-
-  # line and ridges
-  if(smooth_span <= 0){
-
-    stop("`smooth_span` must be bigger than 0.")
-
-  }
-
-  line_add_on <-
-    ggplot2::geom_smooth(
-      data = sas_df,
-      color = line_color,
-      size = line_size,
-      span = smooth_span,
-      method = "loess",
-      formula = y ~ x,
-      se = FALSE
+      angle_span = angle_span,
+      format = "long"
     )
 
-  linefill_add_on <-
-    ggplot2::stat_smooth(
-      data = sas_df,
-      mapping = ggplot2::aes(fill = variables),
-      geom = "area",
+  p_out <-
+    plot_sgs_ridgeplot(
+      sgs_df = sas_df,
+      smooth_span = smooth_span,
+      clrp = clrp,
+      clrp_adjust = clrp_adjust,
+      line_color = line_color,
+      line_size = line_size,
+      fill = fill,
       alpha = alpha,
-      size = 0,
-      span = smooth_span,
-      method = "loess",
-      formula = y ~ x,
-      se = FALSE
+      overlap = overlap,
+      strip_pos = strip_pos,
+      free_y = free_y,
+      ggpLayers = ggpLayers,
+      verbose = verbose
     )
 
-  # breaks
-  breaks_x <-
-    base::seq(from = 0 , to = base::max(sas_df$dist), length.out = 5) %>%
-    base::ceiling()
+  if(base::isTRUE(core)){
 
-  # clrp adjust
-  if(base::is.character(fill)){
-
-    cpa_new <-
-      base::rep(fill, base::length(variables)) %>%
-      purrr::set_names(nm = variables)
-
-    cpa_new <- cpa_new[!base::names(cpa_new) %in% base::names(clrp_adjust)]
-
-    clrp_adjust <- c(clrp_adjust, cpa_new)
-
-  } else {
-
-    clrp_adjust <-
-      confuns::color_vector(
-        clrp = clrp,
-        names = variables,
-        clrp.adjust = clrp_adjust
+    border_add_on <-
+      ggplot2::geom_vline(
+        xintercept = 0,
+        alpha = border_linealpha,
+        color = border_linecolor,
+        linetype = border_linetype,
+        linewidth = border_linesize
       )
 
+  } else {
+
+    border_add_on <- list()
+
   }
 
-  # plotting
-  ggplot2::ggplot(data = sas_df, mapping = ggplot2::aes(x = dist, y = values)) +
-    ggpLayers +
-    line_add_on +
-    linefill_add_on +
-    ggplot2::geom_vline(
-      xintercept = 0,
-      alpha = border_linealpha,
-      color = border_linecolor,
-      linewidth = border_linesize,
-      linetype = border_linetype
-    ) +
-    ggplot2::facet_wrap(
-      facets = . ~ variables,
-      ncol = 1,
-      strip.position = strip_pos,
-      scales = base::ifelse(test = base::isTRUE(free_y), yes = "free_y", no = "fixed")
-    ) +
-    scale_color_add_on(
-      aes = "fill",
-      variable = sas_df[["variables"]],
-      clrp = clrp,
-      clrp.adjust = clrp_adjust
-    ) +
-    ggplot2::scale_x_continuous(
-      breaks = breaks_x,
-      labels = base::as.character(breaks_x)
-    ) +
-    ggplot2::scale_y_continuous(
-      breaks = base::seq(0 , 1, 0.2),
-      labels = base::seq(0 , 1, 0.2),
-    ) +
-    ggplot2::coord_cartesian(
-      xlim = base::range(sas_df[["dist"]])*1.025,
-      ylim = c(-0.025, 1.025),
-      expand = FALSE
-    ) +
-    theme_ridgeplot_gradient(overlap = overlap) +
+  p_out +
+    border_add_on +
     ggplot2::labs(
-      x = glue::glue("Distance to Annotation [{unit}]"),
-      y = "Expression"
-    ) +
-    legendNone()
+      x = glue::glue("Distance [{unit}]"),
+      y = NULL
+    )
+
 
 }
 
@@ -3131,5 +2679,215 @@ plotStatisticsInteractive <- function(spata_df){
   spata_df <- dplyr::select(spata_df, -dplyr::all_of(x = c("sample", "barcodes")))
 
   confuns::plot_statistics_interactive(df = spata_df, 25)
+
+}
+
+
+
+
+
+
+
+
+#' @title Plot categorical trajectory dynamics
+#'
+#' @description Displays discrete variables along a trajectory.
+#'
+#' @inherit argument_dummy params
+#' @inherit plotSasLineplot params
+#' @inherit ggplot_dummy return
+#'
+#' @export
+plotStsBarplot <- function(object,
+                           grouping,
+                           id = idST(object),
+                           binwidth = getCCD(object)*2,
+                           unit = getDefaultUnit(object),
+                           round = 2,
+                           clrp = NULL,
+                           clrp_adjust = NULL,
+                           position = "fill",
+                           bar_width = 0.9,
+                           expand_x = c(0.025, 0),
+                           expand_y = c(0.0125, 0),
+                           verbose = NULL,
+                           ...){
+
+  hlpr_assign_arguments(object)
+
+  coords_df_sgs <-
+    getCoordsDfST(
+      object = object,
+      id = "horizontal_mid",
+      variables = grouping,
+      binwidth = binwidth,
+      outside = FALSE
+    )
+
+
+  p_out <-
+    plot_sgs_barplot(
+      coords_df_sgs = coords_df_sgs,
+      grouping = grouping,
+      round = round,
+      clrp = clrp,
+      clrp_adjust = clrp_adjust,
+      position = position,
+      bar_width = bar_width,
+      expand_x = expand_x,
+      expand_y = expand_y,
+      ...
+    )
+
+  p_out +
+    ggplot2::labs(
+      x = glue::glue("Distance along Trajectory [{unit}]"),
+      y = c("fill" = "Percentage [%]", "count" = "Count")[position]
+    )
+
+}
+
+#' @title Plot trajectory expression dynamic in heatmap
+#'
+#' @description Displays variable-expression values along a trajectory
+#' direction with a smoothed heatmap (from left to right).
+#'
+#' @inherit argument_dummy params
+#' @inherit check_trajectory params
+#' @param arrange_rows Alter the way the rows of the heatmap
+#' are displayed in order to highlight patterns. Currently either \emph{'maxima'},
+#' \emph{'minima'} or \emph{'input'}. If \emph{'input'}, variables are displayed
+#' in the same order as they are provided in the argument \code{variables}.
+#' @param multiplier Numeric value. For better visualization the transient pattern
+#' is smoothed with a loess fit. The total number of predicted values (via \code{stats::predict()})
+#' is the number of bins multiplied with the input for this argument.
+#' @inherit confuns::argument_dummy params
+#'
+#' @inherit ggplot_dummy return
+#'
+#' @export
+#'
+plotStsHeatmap <- function(object,
+                           variables,
+                           id = idST(object),
+                           width = getTrajectoryLength(object, id),
+                           arrange_rows = "none",
+                           unit = getDefaultUnit(object),
+                           smooth_span = 0.3,
+                           multiplier = 10,
+                           clrsp = NULL,
+                           .f = NULL,
+                           .cols = dplyr::everything(),
+                           verbose = NULL,
+                           ...){
+
+  hlpr_assign_arguments(object)
+  deprecated(...)
+
+  sts_df <-
+    getStsDf(
+      object = object,
+      variables = variables,
+      id = id,
+      width = width,
+      unit = unit,
+      format = "long"
+    )
+
+  p_out <-
+    plot_sgs_heatmap(
+      sgs_df = sts_df,
+      arrange_rows = arrange_rows,
+      smooth_span = smooth_span,
+      multiplier = multiplier,
+      clrsp = clrsp,
+      .cols = .cols,
+      .f = .f,
+      verbose = verbose
+    )
+
+  p_out +
+    ggplot2::labs(
+      x = glue::glue("Distance along Trajectory [{unit}]"),
+      y = NULL
+    )
+
+}
+
+
+
+#' @title Plot continuous trajectory dynamics
+#'
+#' @description Displays values along a trajectory direction with
+#' a smoothed lineplot or ridgeplot.
+#'
+#' @inherit argument_dummy params
+#' @param display_facets Logical. If set to TRUE sub plots for every specified gene, gene-set
+#' or feature are displayed via \code{ggplot2::facet_wrap()}
+#' @param ... Additional arguments given to \code{ggplot2::facet_wrap()} if argument
+#' \code{display_facets} is set to TRUE.
+#' @param line_size Numeric value. Specifies the thicknes of the lines with which
+#' the trajectory dynamics are displayed.
+#'
+#' @inherit ggplot_dummy return
+#'
+#' @export
+plotStsLineplot <- function(object,
+                            variables,
+                            id = idST(object),
+                            width = getTrajectoryLength(object, id),
+                            unit = getSpatialMethod(object)@unit,
+                            smooth_span = 0.2,
+                            smooth_se = TRUE,
+                            line_color = NULL,
+                            line_size = 1.5,
+                            clrp = NULL,
+                            clrp_adjust = NULL,
+                            display_facets = TRUE,
+                            display_eval = FALSE,
+                            eval_size = 4,
+                            ggpLayers = NULL,
+                            ncol = NULL,
+                            nrow = NULL,
+                            verbose = NULL,
+                            ...){
+
+  hlpr_assign_arguments(object)
+  deprecated(...)
+
+  sts_df <-
+    getStsDf(
+      object = object,
+      variables = variables,
+      id = id,
+      width = width,
+      unit = unit,
+      format = "long",
+      ...
+    )
+
+  p_out <-
+    plot_sgs_lineplot(
+      sgs_df = sts_df,
+      smooth_span = smooth_span,
+      smooth_se = smooth_se,
+      line_color = line_color,
+      line_size = line_size,
+      clrp = clrp,
+      clrp_adjust = clrp_adjust,
+      display_facets = display_facets,
+      display_eval = display_eval,
+      eval_size = eval_size,
+      ggpLayers = ggpLayers,
+      ncol = ncol,
+      nrow = nrow,
+      verbose = verbose
+    )
+
+  p_out +
+    ggplot2::labs(
+      x = glue::glue("Distance along Trajectory [{unit}]"),
+      y = "Estimated Expression"
+    )
 
 }

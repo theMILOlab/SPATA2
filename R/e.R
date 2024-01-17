@@ -91,12 +91,14 @@ estimate_r2_for_sas_run <- function(object,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
-      variables = variables,
       dist_unit = unit,
       core = core,
+      variables = variables,
       periphery = FALSE,
       verbose = FALSE
     )
+
+  variables <- variables[variables %in% base::names(coords_df)]
 
   tot_dist <- compute_dist_screened(coords_df)
 
@@ -129,13 +131,13 @@ estimate_r2_for_sas_run <- function(object,
 
   pb <- confuns::create_progress_bar(total = nv)
 
+
   sas_df <-
     purrr::map_df(
       .x = variables,
       .f = function(var){
 
         pb$tick()
-
         # fit loess
         coords_df[["x.var.x"]] <- coords_df[[var]]
 

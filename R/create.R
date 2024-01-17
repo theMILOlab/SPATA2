@@ -2721,6 +2721,7 @@ createNumericAnnotations <- function(object,
                                      eps = recDbscanEps(object),
                                      minPts = recDbscanMinPts(object),
                                      force1 = FALSE,
+                                     fct_incr = 1,
                                      min_size = nBarcodes(object)*0.01,
                                      concavity = 2,
                                      method_gs = NULL,
@@ -2754,6 +2755,8 @@ createNumericAnnotations <- function(object,
 
   # apply threshold
   if(stringr::str_detect(threshold, pattern = "kmeans")){
+
+    base::set.seed(123)
 
     coords_df[["km_out"]] <-
       stats::kmeans(x = coords_df[[variable]], centers = 2)[["cluster"]] %>%
@@ -2840,6 +2843,7 @@ createNumericAnnotations <- function(object,
       use_dbscan = use_dbscan,
       eps = eps,
       minPts = minPts,
+      fct_incr = fct_incr,
       min_size = min_size,
       force1 = force1,
       concavity = concavity,

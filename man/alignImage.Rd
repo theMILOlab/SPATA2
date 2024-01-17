@@ -118,7 +118,7 @@ values are simply set. E.g. if \code{angle = 90} the resulting saved transformat
 be to rotate the image with 90° regardless of the previous setting.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

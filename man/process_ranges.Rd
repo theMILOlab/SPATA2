@@ -10,7 +10,8 @@ process_ranges(
   expand = 0,
   persp = "ccs",
   object = NULL,
-  ranges = NULL
+  ranges = NULL,
+  opt = 1
 )
 }
 \arguments{

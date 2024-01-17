@@ -22,7 +22,8 @@ spatialAnnotationScreening(
   model_subset = NULL,
   model_remove = NULL,
   estimate_R2 = TRUE,
-  n_random = 1000,
+  control = SPATA2::sgs_loess_control,
+  n_random = 10000,
   seed = 123,
   verbose = NULL,
   ...

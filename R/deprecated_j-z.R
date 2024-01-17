@@ -1704,6 +1704,114 @@ plotSurfaceOld <- function(object,
 }
 
 
+#' @keywords internal
+plotTrajectoryBarplot <- function(object,
+                                  id,
+                                  grouping_variable,
+                                  binwidth = getCCD(object),
+                                  unit = getSpatialMethod(object)@unit,
+                                  round = 2,
+                                  clrp = NULL,
+                                  clrp_adjust = NULL,
+                                  display_trajectory_parts = NULL,
+                                  position = "fill",
+                                  scales = "free_x",
+                                  x_nth = 7L,
+                                  expand_x = c(0.025, 0),
+                                  expand_y = c(0.0125, 0),
+                                  verbose = NULL,
+                                  ...){
+
+  deprecated(fn = TRUE)
+  plotStsBarplot(...)
+
+}
+
+#' @keywords internal
+plotTrajectoryHeatmap <- function(object,
+                                  id,
+                                  variables,
+                                  binwidth = getCCD(object),
+                                  n_bins = NA_integer_,
+                                  arrange_rows = "none",
+                                  colors = NULL,
+                                  method_gs = NULL,
+                                  show_rownames = NULL,
+                                  show_colnames = NULL,
+                                  split_columns = NULL,
+                                  smooth_span = NULL,
+                                  multiplier = 10,
+                                  with_ggplot = TRUE,
+                                  display_trajectory_parts = FALSE,
+                                  display_parts_with = "lines",
+                                  line_alpha = 1,
+                                  line_color = "red",
+                                  line_size = 1,
+                                  line_type = "dashed",
+                                  clrsp = NULL,
+                                  .f = NULL,
+                                  .cols = dplyr::everything(),
+                                  summarize_with = "mean",
+                                  verbose = NULL,
+                                  ...){
+
+  deprecated(fn = TRUE)
+
+  plotStsHeatmap(...)
+
+}
+
+#' @title Plot continuous trajectory dynamics
+#'
+#' @description Displays values along a trajectory direction with
+#' a smoothed lineplot or ridgeplot.
+#'
+#' @inherit argument_dummy params
+#' @inherit average_genes params
+#' @inherit check_features params
+#' @inherit check_gene_sets params
+#' @inherit check_genes params
+#' @inherit check_method params
+#' @inherit check_sample params
+#' @inherit check_smooth params
+#' @inherit check_trajectory_binwidth params
+#'
+#' @param display_trajectory_parts Logical. If set to TRUE the returned plot
+#' visualizes the parts in which the trajectory has been partitioned while beeing
+#' drawn.
+#' @param display_facets Logical. If set to TRUE sub plots for every specified gene, gene-set
+#' or feature are displayed via \code{ggplot2::facet_wrap()}
+#' @param ... Additional arguments given to \code{ggplot2::facet_wrap()} if argument
+#' \code{display_facets} is set to TRUE.
+#' @param line_size Numeric value. Specifies the thicknes of the lines with which
+#' the trajectory dynamics are displayed.
+#'
+#' @inherit ggplot_family return
+#'
+#' @export
+plotTrajectoryLineplot <- function(object,
+                                   variables,
+                                   id = idST(object),
+                                   width = getTrajectoryLength(object, id),
+                                   binwidth = recBinwidth(object),
+                                   unit = getSpatialMethod(object)@unit,
+                                   smooth_span = 0.2,
+                                   smooth_se = TRUE,
+                                   line_color = NULL,
+                                   line_size = 1.5,
+                                   clrp = NULL,
+                                   clrp_adjust = NULL,
+                                   ggpLayers = NULL,
+                                   ncol = NULL,
+                                   nrow = NULL,
+                                   verbose = NULL,
+                                   ...){
+
+  deprecated(fn = TRUE, ...)
+
+  plotStsLineplot(...)
+
+}
 
 # r -----------------------------------------------------------------------
 

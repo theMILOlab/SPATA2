@@ -618,8 +618,8 @@ relateToSpatialAnnotation <- function(object,
     stop.if.false = TRUE
   )
 
-  img_ann_center <- getSpatAnnCenter(object, id = id)
-  img_ann_border <- getSpatAnnBorderDf(object, ids = id)
+  spat_ann_center <- getSpatAnnCenter(object, id = id)
+  spat_ann_border <- getSpatAnnBorderDf(object, ids = id)
 
   if(base::isTRUE(inc_outline)){
 
@@ -627,7 +627,7 @@ relateToSpatialAnnotation <- function(object,
       include_tissue_outline(
         coords_df = getCoordsDf(object),
         input_df = input_df,
-        img_ann_center = img_ann_center,
+        spat_ann_center = spat_ann_center,
         remove = TRUE
       )
 
@@ -637,7 +637,7 @@ relateToSpatialAnnotation <- function(object,
 
   }
 
-  img_ann_border[["bp_id"]] <- stringr::str_c("ID", 1:base::nrow(img_ann_border))
+  spat_ann_border[["bp_id"]] <- stringr::str_c("ID", 1:base::nrow(spat_ann_border))
 
   if(base::sum(base::is.na(c(distance, binwidth, n_bins_circle))) == 1){
 
@@ -652,7 +652,7 @@ relateToSpatialAnnotation <- function(object,
     out_df_bbe <-
       bin_by_expansion(
         coords_df = out_df,
-        area_df = img_ann_border,
+        area_df = spat_ann_border,
         binwidth = ias_input$binwidth,
         n_bins_circle = ias_input$n_bins_circle
       )
@@ -668,15 +668,15 @@ relateToSpatialAnnotation <- function(object,
   }
 
   # use bin_by_angle to bin border points as prefiltering
-  img_ann_border[["bins_circle"]] <- base::factor("none")
-  img_ann_border[["bins_order"]] <- NA_integer_
-  img_ann_border[["border"]] <- "none"
+  spat_ann_border[["bins_circle"]] <- base::factor("none")
+  spat_ann_border[["bins_order"]] <- NA_integer_
+  spat_ann_border[["border"]] <- "none"
 
   # use angle bins for prefiltering
   out_df_bba <-
     bin_by_angle(
       coords_df = out_df_bbe,
-      center = img_ann_center,
+      center = spat_ann_center,
       var_to_bin = input_id_var,
       n_bins_angle = n_bins_angle,
       verbose = FALSE
@@ -684,10 +684,10 @@ relateToSpatialAnnotation <- function(object,
 
   if(calc_dist_to == "border"){
 
-    img_ann_border_bba <-
+    spat_ann_border_bba <-
       bin_by_angle(
-        coords_df = img_ann_border,
-        center = img_ann_center,
+        coords_df = spat_ann_border,
+        center = spat_ann_center,
         var_to_bin = "bp_id",
         n_bins_angle = n_bins_angle,
         verbose = FALSE
@@ -696,7 +696,7 @@ relateToSpatialAnnotation <- function(object,
     dist_to_border <-
       # create empty data.frame with all input obs/border points combinations
       tidyr::expand_grid(
-        bp_id = base::unique(img_ann_border[["bp_id"]]),
+        bp_id = base::unique(spat_ann_border[["bp_id"]]),
         {{input_id_var}} := base::unique(input_df[[input_id_var]])
       ) %>%
       # merge required information
@@ -841,51 +841,6 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
       }
     )
-
-  return(object)
-
-}
-
-
-#' @title Remove spatial outliers
-#'
-#' @description Removes data points that were identified as spatial outliers
-#' and all their related data. If no spatial outliers exist, the input object
-#' is returned as is.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @seealso [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
-#'
-#' @export
-#'
-removeSpatialOutliers <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  containsSectionVariable(object, error = TRUE)
-
-  if(containsSpatialOutliers(object, fdb_fn = "message")){
-
-    barcodes_keep <-
-      getCoordsDf(object, as_is = TRUE) %>%
-      dplyr::filter(section != "outlier") %>%
-      dplyr::pull(barcodes)
-
-    n_rm <-
-      getCoordsDf(object, as_is = TRUE) %>%
-      dplyr::filter(section == "outlier") %>%
-      base::nrow()
-
-    confuns::give_feedback(
-      msg = glue::glue("Spatial outliers to remove: {n_rm}."),
-      verbose = verbose
-    )
-
-    object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
-
-  }
 
   return(object)
 
@@ -1101,6 +1056,30 @@ setMethod(
   }
 )
 
+
+#' @title Remove a processed matrix
+#'
+#' @description Removes a processed matrix from the `spata2` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+removeProcessedMatrix <- function(object, mtr_name){
+
+  confuns::is_value(mtr_name, mode = "character")
+
+  confuns::check_one_of(
+    input = mtr_name,
+    against = getProcessedMatrixNames(object)
+  )
+
+  object@data[[1]][[mtr_name]] <- NULL
+
+  return(object)
+
+}
+
 #' @title Remove spatial annotations
 #'
 #' @description Removes spatial annotations from the spata2 object.
@@ -1114,6 +1093,8 @@ setMethod(
 #' @export
 
 removeSpatialAnnotations <- function(object, ids){
+
+  containsSpatialAnnotations(object, error = TRUE)
 
   confuns::check_one_of(
     input = ids,
@@ -1132,6 +1113,49 @@ removeSpatialAnnotations <- function(object, ids){
 }
 
 
+#' @title Remove spatial outliers
+#'
+#' @description Removes data points that were identified as spatial outliers
+#' and all their related data. If no spatial outliers exist, the input object
+#' is returned as is.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @seealso [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
+#'
+#' @export
+#'
+removeSpatialOutliers <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  containsSectionVariable(object, error = TRUE)
+
+  if(containsSpatialOutliers(object, fdb_fn = "message")){
+
+    bcs_keep <-
+      getCoordsDf(object, as_is = TRUE) %>%
+      dplyr::filter(section != "outlier") %>%
+      dplyr::pull(barcodes)
+
+    n_rm <-
+      getCoordsDf(object, as_is = TRUE) %>%
+      dplyr::filter(section == "outlier") %>%
+      base::nrow()
+
+    confuns::give_feedback(
+      msg = glue::glue("Spatial outliers to remove: {n_rm}."),
+      verbose = verbose
+    )
+
+    object <- subsetByBarcodes(object, barcodes = bcs_keep, verbose = verbose)
+
+  }
+
+  return(object)
+
+}
 
 #' @title Remove data points from tissue fragments
 #'
@@ -1916,11 +1940,11 @@ rotate_sf = function(x) matrix(c(cos(x), sin(x), -sin(x), cos(x)), 2, 2)
 #'  \item{`rotateCoordinates()`:}{ Rotates the coordinates data.frame, spatial annotations
 #'  and spatial trajectories.}
 #'  \item{`rotateCoordsDf()`:}{ Rotates the coordinates data.frame.}
-#'  \item{`rotateImageAnnotations()`:}{ Rotates spatial annotations.}
+#'  \item{`rotateSpatialAnnotations()`:}{ Rotates spatial annotations.}
 #'  \item{`rotateSpatialTrajectories()`:}{ Rotates spatial trajectories.}
 #'  }
 #'
-#'  @seealso [`flipAll()`], [`scaleAll()`]
+#' @seealso [`flipAll()`], [`scaleAll()`]
 #'
 #' @export
 rotateAll <- function(object, angle, clockwise = TRUE){
@@ -2021,7 +2045,7 @@ rotateCoordinates <- function(object, angle, clockwise = TRUE, verbose = NULL){
     )
 
   object <-
-    rotateImageAnnotations(
+    rotateSpatialAnnotations(
       object = object,
       angle = angle,
       clockwise = clockwise,
@@ -2041,7 +2065,7 @@ rotateCoordsDf <- function(object,
 
   hlpr_assign_arguments(object)
 
-  coords_df <- getCoordsDf(object)
+  coords_df <- getCoordsDf(object, as_is = TRUE)
 
   coords_df_rotated <-
     rotate_coords_df(
@@ -2066,54 +2090,165 @@ rotateCoordsDf <- function(object,
 }
 
 
+#' @title Rotate Borders of a Spatial Annotation
+#'
+#' @description Rotates the outline of a spatial annotation to a specific
+#' degree.
+#'
+#' @inherit expandSpatialAnnotation params return
+#' @inherit rotate_coords_df params
+#'
+#' @seealso [`centerSpatialAnnotation()`], [`expandSpatialAnnotation()`], [`smoothSpatialAnnotation()`],
+#' [`shiftSpatialAnnotation()`]
+#'
+#' @export
+#'
+setGeneric(name = "rotateSpatialAnnotation", def = function(object, ...){
+
+  standardGeneric("rotateSpatialAnnotation")
+
+})
+
+#' @rdname rotateSpatialAnnotation
+#' @export
+setMethod(
+  f = "rotateSpatialAnnotation",
+  signature = "spata2",
+  definition = function(object,
+                        id,
+                        angle,
+                        clockwise = TRUE,
+                        new_id = FALSE,
+                        overwrite = FALSE){
+
+    imaging <- getHistoImaging(object)
+
+    imaging <-
+      rotateSpatialAnnotation(
+        object = imaging,
+        id = id,
+        angle = angle,
+        clockwise = clockwise,
+        new_id = new_id,
+        overwrite = overwrite
+      )
+
+    object <- setHistoImaging(object, imaging = imaging)
+
+    return(object)
+
+  }
+)
+
+#' @rdname rotateSpatialAnnotation
+#' @export
+setMethod(
+  f = "rotateSpatialAnnotation",
+  signature = "HistoImaging",
+  definition = function(object,
+                        id,
+                        angle,
+                        clockwise = TRUE,
+                        new_id = FALSE,
+                        overwrite = FALSE){
+
+    spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+
+    spat_ann@area <-
+      purrr::map(
+        .x = spat_ann@area,
+        .f = function(area_df){
+
+          center <-
+            purrr::map_dbl(area_df[,c("x_orig", "y_orig")], .f = base::mean) %>%
+            purrr::set_names(nm = c("x", "y"))
+
+          rotate_coords_df(
+            df = area_df,
+            angle = angle,
+            clockwise = clockwise,
+            center = center,
+            coord_vars = list(pair1 = c("x_orig", "y_orig"))
+          )
+
+        }
+      )
+
+
+    if(base::is.character(new_id)){
+
+      is_value(new_id, "character")
+
+      confuns::check_none_of(
+        input = new_id,
+        against = getSpatAnnIds(object),
+        ref.against = "present spatial annotations",
+        overwrite = overwrite
+      )
+
+      spat_ann@id <- new_id[1]
+
+    }
+
+    object@annotations[[spat_ann@id]] <- spat_ann
+
+
+    return(object)
+
+  }
+)
+
+
 #' @rdname rotateAll
 #' @export
-rotateImageAnnotations <- function(object,
-                                   angle,
-                                   clockwise = TRUE,
-                                   verbose = NULL){
+rotateSpatialAnnotations <- function(object,
+                                     angle,
+                                     ids = getSpatAnnIds(object),
+                                     clockwise = TRUE,
+                                     verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  if(nImageAnnotations(object) != 0){
+  if(nSpatialAnnotations(object) != 0){
 
-    img_anns <- getImageAnnotations(object, add_image = FALSE, add_barcodes = FALSE)
+    csf <- getScaleFactor(object, fct_name = "coords")
 
-    img_anns <-
+    spat_anns <-
+      getSpatialAnnotations(
+        object = object,
+        ids = ids,
+        add_image = FALSE,
+        add_barcodes = FALSE
+        )
+
+    spat_anns <-
       purrr::map(
-        .x = img_anns,
-        .f = function(img_ann){
+        .x = spat_anns,
+        .f = function(spat_ann){
 
-          img_ann@area <-
+          spat_ann@area <-
             purrr::map(
-              .x = img_ann@area,
+              .x = spat_ann@area,
               .f = ~
                  rotate_coords_df(
                   df = .x,
                   angle = angle,
-                  center = getImageCenter(object),
+                  coord_vars = list(pair1 = c("x_orig", "y_orig")),
+                  center = getImageCenter(object)/csf,
                   clockwise = clockwise,
                   verbose = FALSE
                 )
             )
 
-          img_ann@info$current_just$angle <-
-            process_angle_justification(
-              angle = img_ann@info$current_just$angle,
-              angle_just = angle,
-              clockwise = clockwise
-            )
-
-          return(img_ann)
+          return(spat_ann)
 
         }
       )
 
     object <-
-      setImageAnnotations(
+      setSpatialAnnotations(
         object = object,
-        img_anns = img_anns,
-        align = FALSE, # is already aligned
+        spat_anns = spat_anns,
         overwrite = TRUE
       )
 

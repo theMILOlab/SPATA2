@@ -11,8 +11,9 @@ getSasExpansion(
   binwidth = getCCD(object),
   n_bins_dist = NA_integer_,
   direction = "outwards",
-  inc_outline = TRUE,
-  verbose = NULL
+  incl_edge = TRUE,
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 List of data.frames.

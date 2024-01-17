@@ -334,7 +334,7 @@ theme_image <- function(bg_transparent = FALSE, ...){
 #' @description Miscellaneous `ggplot2` themes used throughout the package.
 #' @return gg theme
 #' @export
-theme_lineplot_gradient <- function(breaks_x, range_d){
+theme_lineplot_gradient <- function(breaks_x = ggplot2::waiver(), range_d){
 
   list(
     ggplot2::theme_minimal(),
@@ -409,6 +409,23 @@ theme_transparent <- function(){
     panel.grid.minor = ggplot2::element_blank(),
     legend.background = ggplot2::element_rect(fill = 'transparent'),
     legend.box.background = ggplot2::element_rect(fill = 'transparent')
+  )
+
+}
+
+
+theme_void_custom <- function(){
+
+  list(
+    ggplot2::theme_minimal(),
+    ggplot2::theme(
+      panel.background = ggplot2::element_blank(),
+      panel.grid = ggplot2::element_blank(),
+      axis.line = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(),
+      axis.title = ggplot2::element_blank()
+    )
   )
 
 }

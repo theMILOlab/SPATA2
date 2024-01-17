@@ -36,7 +36,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

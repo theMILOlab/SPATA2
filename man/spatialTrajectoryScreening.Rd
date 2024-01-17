@@ -9,7 +9,7 @@ spatialTrajectoryScreening(
   id,
   variables,
   binwidth = recBinwidth(object),
-  width = NULL,
+  width = getTrajectoryLength(object, id),
   unit = getDefaultUnit(object),
   bcs_exclude = character(0),
   sign_var = "fdr",
@@ -19,7 +19,8 @@ spatialTrajectoryScreening(
   model_subset = NULL,
   model_remove = NULL,
   estimate_R2 = TRUE,
-  n_random = 1000,
+  rm_zero_infl = TRUE,
+  n_random = 10000,
   seed = 123,
   verbose = NULL,
   ...

@@ -665,7 +665,7 @@ ggpLayerColorGroupScale <- function(object,
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
 #'
-#' @param inc_outline Logical. If `TRUE`, makes use of `SPATA2` automatic tissue outline algorithm.
+#' @param incl_edge Logical. If `TRUE`, makes use of `SPATA2` automatic tissue outline algorithm.
 #'
 #' @export
 #'
@@ -684,15 +684,15 @@ ggpLayerColorGroupScale <- function(object,
 ggpLayerExprEstimatesSAS <- function(object,
                                      ids,
                                      distance = distToEdge(object, id),
-                                     n_bins_dist = NA_integer_,
                                      binwidth = recBinwidth(object),
+                                     core = FALSE,
                                      alpha_core = 0,
                                      fill_core = NA,
                                      line_alpha = 1,
                                      line_color = "black",
                                      line_size = (line_size_core * 0.75),
                                      line_size_core = 1,
-                                     inc_outline = TRUE,
+                                     incl_edge = TRUE,
                                      direction = "outwards",
                                      verbose = NULL,
                                      ...){
@@ -700,139 +700,123 @@ ggpLayerExprEstimatesSAS <- function(object,
   deprecated(...)
   hlpr_assign_arguments(object)
 
-  if(base::length(ids) > 1){
+  if(base::isFALSE(incl_edge)){
 
-    stop("More than one ID is currently not supported.")
+    out_list <-
+      purrr::map(
+        .x = base::seq_along(ids),
+        .f = function(i){
+
+          id <- ids[i]
+
+          if(i > 1){ verbose <- FALSE }
+
+          expr_est_list <-
+            getSasExprEst2D(
+              object = object,
+              id = id,
+              distance = distance,
+              binwidth = binwidth,
+              core = core,
+              direction = direction,
+              incl_edge = FALSE,
+              verbose = verbose
+            )
+
+          out_listx <-
+            purrr::map(
+              .x = base::seq_along(expr_est_list),
+              .f = function(i){
+
+                area <- expr_est_list[[i]]
+
+                if(i == 1){
+
+                  ls <- line_size_core
+                  alpha <- alpha_core
+                  fill <- fill_core
+
+                } else {
+
+                  ls <- line_size
+                  alpha <- 0
+                  fill <- NA
+
+                }
+
+                ggplot2::geom_polygon(
+                  data = area,
+                  mapping = ggplot2::aes(x = x, y = y),
+                  alpha = alpha,
+                  fill = fill,
+                  color = line_color,
+                  size = ls
+                )
+
+              }
+            )
+
+          return(out_listx)
+
+        }
+      ) %>%
+      purrr::flatten()
+
 
   } else {
 
-    if(base::isFALSE(inc_outline)){
+    containsTissueOutline(object, error = TRUE)
 
-      out_list <-
-        purrr::map(
-          .x = base::seq_along(ids),
-          .f = function(i){
+    out_list <-
+      purrr::map(
+        .x = seq_along(ids),
+        .f = function(i){
 
-            id <- ids[i]
+          id <- ids[i]
 
-            if(i > 1){ verbose <- FALSE }
+          if(i > 1){ verbose <- FALSE}
 
-            expr_est_list <-
-              getSasExprEst2D(
-                object = object,
-                id = id,
-                distance = distance,
-                binwidth = binwidth,
-                direction = direction,
-                inc_outline = FALSE,
-                verbose = verbose
-              )
-
-            out_listx <-
-              purrr::map(
-                .x = base::seq_along(expr_est_list),
-                .f = function(i){
-
-                  area <- expr_est_list[[i]]
-
-                  if(i == 1){
-
-                    ls <- line_size_core
-                    alpha <- alpha_core
-                    fill <- fill_core
-
-                  } else {
-
-                    ls <- line_size
-                    alpha <- 0
-                    fill <- NA
-
-                  }
-
-                  ggplot2::geom_polygon(
-                    data = area,
-                    mapping = ggplot2::aes(x = x, y = y),
-                    alpha = alpha,
-                    fill = fill,
-                    color = line_color,
-                    size = ls
-                  )
-
-                }
-              )
-
-            return(out_listx)
-
-          }
-        ) %>%
-        purrr::flatten()
-
-
-    } else {
-
-      containsTissueOutline(object, error = TRUE)
-
-      out_list <-
-        purrr::map(
-          .x = seq_along(ids),
-          .f = function(i){
-
-            id <- ids[i]
-
-            if(i > 1){ verbose <- FALSE}
-
-            expr_est_list <-
-              getSasExprEst2D(
-                object = object,
-                id = id,
-                distance = distance,
-                binwidth = binwidth,
-                direction = direction,
-                inc_outline = TRUE,
-                verbose = verbose
-              )
-
-            exp_df <-
-              purrr::map_df(
-                .x = expr_est_list[base::names(expr_est_list) != "Core"],
-                .f = function(df){
-
-                  dplyr::mutate(
-                    .data = df,
-                    plot_group = stringr::str_c(bins_circle, pos_rel_group, sep = "_")
-                  ) %>%
-                    dplyr::filter(pos_rel == "inside")
-
-                }
-              )
-
-            list(
-              ggplot2::geom_polygon(
-                data = expr_est_list[["Core"]],
-                mapping = ggplot2::aes(x = x, y = y),
-                alpha = alpha_core,
-                color = line_color,
-                fill = fill_core,
-                size = line_size_core
-              ),
-              ggplot2::geom_path(
-                data = exp_df,
-                mapping = ggplot2::aes(x = x, y = y, group = plot_group),
-                size = line_size,
-                alpha = line_alpha,
-                color = line_color
-              )
+          expr_est_list <-
+            getSasExprEst2D(
+              object = object,
+              id = id,
+              distance = distance,
+              binwidth = binwidth,
+              direction = direction,
+              incl_edge = TRUE,
+              verbose = verbose
             )
 
-          }
-        )
+          exp_df <-
+            purrr::map_df(
+              .x = expr_est_list[base::names(expr_est_list) != "Core"],
+              .f = function(df){
 
-    }
+                dplyr::mutate(
+                  .data = df,
+                  plot_group = stringr::str_c(expansion, pos_rel_group, sep = "_")
+                ) %>%
+                  dplyr::filter(pos_rel == "inside")
+
+              }
+            )
+
+          list(
+            ggplot2::geom_path(
+              data = exp_df,
+              mapping = ggplot2::aes(x = x, y = y, group = plot_group),
+              size = line_size,
+              alpha = line_alpha,
+              color = line_color
+            )
+          )
+
+        }
+      )
 
   }
 
-
-
+  base::names(out_list) <- ids
 
   return(out_list)
 
@@ -846,25 +830,31 @@ ggpLayerScreeningDirectionSAS <- function(object,
                                           line_alpha = 1,
                                           line_color = "black",
                                           line_size = 1,
+                                          line_type = "solid",
+                                          nmx = 50,
+                                          seed = 123,
                                           verbose = NULL,
                                           ...){
 
   hlpr_assign_arguments(object)
   deprecated(...)
 
+  crange <- getCoordsRange(object, ...)
+
   coords_df_px <-
     getCoordsDfSA(object, ids = ids, distance = distance, dist_unit = "px", core0 = TRUE)
 
-  mean_min <-
-    dplyr::filter(coords_df_px, dist != 0) %>%
-    dplyr::pull(dist) %>%
-    base::min()
+  coords_df_px <-
+    dplyr::filter(
+      .data = coords_df_px,
+      dplyr::between(x, left = crange$x[1], right = crange$x[2]),
+      dplyr::between(y, left = crange$y[1], right = crange$y[2])
+    ) %>%
+    dplyr::mutate(dist = scales::rescale(dist, to = c(1,nmx)))
 
-  n_max <-
-    base::max(coords_df_px$dist) %>%
-    base::round(digits = 0)
+  base::set.seed(seed)
 
-  rn <- stats::rnorm(n = n_max, mean = mean_min/2, sd = 0.25)
+  rn <- stats::rnorm(n = 100, mean = 0.5, sd = 0.25)
 
   pb <- confuns::create_progress_bar(total = base::nrow(coords_df_px))
 
@@ -883,7 +873,7 @@ ggpLayerScreeningDirectionSAS <- function(object,
 
         n <- base::round(bc_df$dist, digits = 0)
 
-        base::set.seed(123)
+        base::set.seed(seed)
         rn_use <- base::sample(rn, size = n, replace = F)
 
         if(n > 0){
@@ -909,6 +899,7 @@ ggpLayerScreeningDirectionSAS <- function(object,
       mapping = ggplot2::aes(x = x, y = y),
       alpha = line_alpha,
       color = line_color,
+      linetype = line_type,
       linewidth = line_size
     )
 
@@ -1075,10 +1066,15 @@ ggpLayerGroupOutline <- function(object,
                                  grouping,
                                  groups_subset = NULL,
                                  plot_type = "surface",
+                                 line_alpha = 1,
                                  line_color = "black",
                                  line_size = 1,
                                  line_type = "solid",
                                  alpha = 0,
+                                 fill = NA,
+                                 incl_edge = FALSE,
+                                 merdge_edge = FALSE,
+                                 incr_vert = FALSE,
                                  bcsp_rm = character(0),
                                  outlier_rm = TRUE,
                                  eps = recDbscanEps(object),
@@ -1094,6 +1090,11 @@ ggpLayerGroupOutline <- function(object,
     against = c("surface", "coords", "tsne", "umap")
   )
 
+  confuns::check_one_of(
+    input = groups_subset,
+    against = getGroupNames(object, grouping = grouping)
+  )
+
   expand_outline <-
     as_pixel(expand_outline, object = object) %>%
     base::as.numeric()
@@ -1102,126 +1103,185 @@ ggpLayerGroupOutline <- function(object,
     as_pixel(eps, object = object) %>%
     base::as.numeric()
 
+  # for coordinates
   if(plot_type %in% c("coords", "surface")){
 
-    layer_df <-
-      getCoordsDf(object) %>%
-      dplyr::select(barcodes, x, y)
 
-  } else if(plot_type == "tsne"){
-
-    layer_df <-
-      getTsneDf(object) %>%
-      dplyr::select(barcodes, tsne1, tsne2)
-
-  } else if(plot_type == "umap"){
-
-    layer_df <-
-      getUmapDf(object) %>%
-      dplyr::select(barcodes, umap1, umap2)
-
-  }
-
-  layer_df <-
-    magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y")) %>%
-    dplyr::filter(!barcodes %in% {{bcsp_rm}})
-
-  layer_df <-
-    joinWithVariables(
-      object = object,
-      spata_df = layer_df,
-      variables = grouping,
-      verbose = FALSE
-    ) %>%
-    confuns::check_across_subset(
-      across = grouping,
-      across.subset = groups_subset
-    )
-
-  if(base::isTRUE(outlier_rm)){
-
-    layer_df <-
-      purrr::map_df(
-        .x = base::levels(layer_df[[grouping]]),
-        .f = function(group){
-
-          add_dbscan_variable(
-            coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
-            eps = eps,
-            minPts = minPts,
-            name = "group_outline"
-          ) %>%
-            dplyr::filter(group_outline != "0")
-
-        }
+    groups_df <-
+      getFeatureDf(object) %>%
+      confuns::check_across_subset(
+        across = grouping,
+        across.subset = groups_subset
       )
 
+    groups <- base::levels(groups_df[[grouping]])
+
+    for(g in groups){
+
+      if(containsSpatialAnnotations(object)){
+
+        object <- removeSpatialAnnotations(object, ids = getSpatAnnIds(object))
+
+      }
+
+      object <-
+        createGroupAnnotations(
+          object = object,
+          grouping = grouping,
+          group = g,
+          id = g,
+          tags = "x.X.temp.group.outline.X.x",
+          tags_expand = TRUE,
+          use_dbscan = outlier_rm,
+          eps = eps,
+          minPts = minPts,
+          concavity = concavity,
+          overwrite = TRUE,
+          verbose = FALSE
+        )
+
+    }
+
+    out <-
+      ggpLayerSpatAnnOutline(
+        object = object,
+        ids = getSpatAnnIds(object),
+        alpha = alpha,
+        fill = fill,
+        line_alpha = line_alpha,
+        line_color = line_color,
+        line_size = line_size,
+        use_colors = FALSE,
+        incl_edge = incl_edge,
+        merge_edge = merdge_edge,
+        incr_vert = incr_vert
+      )
+
+  # for dim red
   } else {
 
-    layer_df[["group_outline"]] <- "1"
+    if(plot_type == "tsne"){
 
-  }
+      incl_edge <- FALSE
 
-  layer_df <-
-    purrr::map_df(
-      .x = base::levels(layer_df[[grouping]]),
-      .f = function(group){
+      layer_df <-
+        getTsneDf(object) %>%
+        dplyr::select(barcodes, tsne1, tsne2)
 
-        group_df <- dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}})
+    } else if(plot_type == "umap"){
 
-        out <-
-          purrr::map(
-            .x = base::unique(group_df[["group_outline"]]),
-            .f = function(go){
+      incl_edge <- FALSE
 
-              avg_dist <- recBinwidth(object, unit = "px")
+      layer_df <-
+        getUmapDf(object) %>%
+        dplyr::select(barcodes, umap1, umap2)
 
-              df <-
-                dplyr::filter(group_df, group_outline == {{go}}) %>%
-                dplyr::select(x, y) %>%
-                base::as.matrix() %>%
-                concaveman::concaveman(concavity = 2) %>%
-                magrittr::set_colnames(value = c("x", "y")) %>%
-                increase_polygon_vertices(avg_dist = avg_dist/4)
+      layer_df <-
+        magrittr::set_colnames(layer_df, value = c("barcodes", "x", "y")) %>%
+        dplyr::filter(!barcodes %in% {{bcsp_rm}})
 
-              if(expand_outline != 0){
+      layer_df <-
+        joinWithVariables(
+          object = object,
+          spata_df = layer_df,
+          variables = grouping,
+          verbose = FALSE
+        ) %>%
+        confuns::check_across_subset(
+          across = grouping,
+          across.subset = groups_subset
+        )
 
-                df <-
-                  buffer_area(df, buffer = expand_outline, close_plg = TRUE)
+      if(base::isTRUE(outlier_rm)){
 
-              }
+        layer_df <-
+          purrr::map_df(
+            .x = base::levels(layer_df[[grouping]]),
+            .f = function(group){
 
-              df <-
-                dplyr::mutate(
-                  .data = df,
-                  !!rlang::sym(grouping) := {{group}},
-                  group_outline = {{go}}
-                )
-
-              return(df)
+              add_dbscan_variable(
+                coords_df = dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}}),
+                eps = eps,
+                minPts = minPts,
+                name = "group_outline"
+              ) %>%
+                dplyr::filter(group_outline != "0")
 
             }
           )
 
-        return(out)
+      } else {
+
+        layer_df[["group_outline"]] <- "1"
 
       }
-    ) %>%
-    dplyr::mutate(
-      final_group = stringr::str_c(!!rlang::sym(grouping), group_outline, sep = " ")
-    ) %>%
-    tibble::as_tibble()
 
-  out <-
-    ggplot2::geom_polygon(
-      data = layer_df,
-      mapping = ggplot2::aes(x = x, y = y, group = final_group),
-      alpha = alpha,
-      color = line_color,
-      linetype = line_type,
-      size = line_size,
-      ...
-    )
+      layer_df <-
+        purrr::map_df(
+          .x = base::levels(layer_df[[grouping]]),
+          .f = function(group){
+
+            group_df <- dplyr::filter(layer_df, !!rlang::sym(grouping) == {{group}})
+
+            out <-
+              purrr::map(
+                .x = base::unique(group_df[["group_outline"]]),
+                .f = function(go){
+
+                  avg_dist <- recBinwidth(object, unit = "px")
+
+                  df <-
+                    dplyr::filter(group_df, group_outline == {{go}}) %>%
+                    dplyr::select(x, y) %>%
+                    base::as.matrix() %>%
+                    concaveman::concaveman(concavity = 2) %>%
+                    magrittr::set_colnames(value = c("x", "y")) %>%
+                    increase_polygon_vertices(avg_dist = avg_dist/4)
+
+                  if(expand_outline != 0){
+
+                    df <-
+                      buffer_area(df, buffer = expand_outline, close_plg = TRUE)
+
+                  }
+
+                  df <-
+                    dplyr::mutate(
+                      .data = df,
+                      !!rlang::sym(grouping) := {{group}},
+                      group_outline = {{go}}
+                    )
+
+                  return(df)
+
+                }
+              )
+
+            return(out)
+
+          }
+        ) %>%
+        dplyr::mutate(
+          final_group = stringr::str_c(!!rlang::sym(grouping), group_outline, sep = " ")
+        ) %>%
+        tibble::as_tibble()
+
+      out <-
+        ggplot2::geom_polygon(
+          data = layer_df,
+          mapping = ggplot2::aes(x = x, y = y, group = final_group),
+          alpha = alpha,
+          color = line_color,
+          linetype = line_type,
+          size = line_size,
+          ...
+        )
+
+    }
+
+  }
+
+
 
   return(out)
 
@@ -1231,10 +1291,8 @@ ggpLayerGroupOutline <- function(object,
 
 #' @title Add SAS screening horizon
 #'
-#' @description Adds the last expression estimate used by the SAS-algorithm
-#' of the area of  an spatial annotation to a surface plot in order to
-#' visualize the border between screened tissue (environment) and everything beyond that
-#' is not included in the screening (periphery).
+#' @description Visualizes the border between screened tissue (environment)
+#' and everything beyond that is not included in the screening (periphery).
 #'
 #' @inherit spatialAnnotationScreening params
 #' @inherit ggpLayerExprEstimatesSAS params
@@ -1245,16 +1303,12 @@ ggpLayerGroupOutline <- function(object,
 ggpLayerHorizonSAS <- function(object,
                                id,
                                distance = distToEdge(object, id),
-                               binwidth = recBinwidth(object),
-                               n_bins_dist = NA_integer_,
-                               alpha_core = 0,
-                               fill_core = NA,
+                               line_alpha = 0.9,
                                line_color = "black",
-                               line_size = (line_size_core*0.75),
-                               line_size_core = 1,
+                               line_size = 1.5,
                                line_type = "solid",
-                               inc_outline = TRUE,
-                               direction = "outwards",
+                               incl_edge = TRUE,
+                               incr_vert = TRUE,
                                verbose = NULL,
                                ...){
 
@@ -1264,18 +1318,43 @@ ggpLayerHorizonSAS <- function(object,
 
   border_df <- getSpatAnnOutlineDf(object, id, inner = FALSE)
 
-  out <-
-    ggpLayerExprEstimatesSAS(
+  pdf <-
+    getExpansionsSA(
       object = object,
       id = id,
-      distance = distance,
-      binwidth = distance,
-      line_color = line_color,
-      line_size = line_size,
-      line_size_core = line_size_core,
-      line_type = line_type,
-      inc_outline = inc_outline
-    )
+      expand_to = c("horizon" = distance),
+      incr_vert = incr_vert,
+      incl_edge = incl_edge,
+      outside_rm = TRUE
+    )[[1]]
+
+  if(base::isTRUE(incl_edge)){
+
+    out <-
+      ggplot2::geom_path(
+        data = pdf,
+        mapping = ggplot2::aes(x = x, y = y, group = pos_rel_group),
+        alpha = line_alpha,
+        color = line_color,
+        linewidth = line_size,
+        linetype = line_type
+      )
+
+  } else {
+
+    out <-
+      ggplot2::geom_polygon(
+        data = pdf,
+        mapping = ggplot2::aes(x = x, y = y),
+        color = ggplot2::alpha(line_color, line_alpha),
+        fill = NA,
+        linewidth = line_size,
+        linetype = line_type
+      )
+
+  }
+
+  return(out)
 
 }
 
@@ -2514,6 +2593,9 @@ ggpLayerScaleBarSI <- function(object,
 #'
 #' @param inner Logical value. If `FALSE`, only outer borders of the annotation
 #' are displayed.
+#' @param merge_edge Logical value. If `incl_edge = TRUE` the outline of the
+#' tissue edge is used to replace the part of the annotation outline that was
+#' removed due to crossing the tissue edge.
 #' @param use_colors Logical value. If `TRUE`, the color aesthetic is used to display
 #' each outline in a different color while providing a legend.
 #'
@@ -2526,96 +2608,172 @@ ggpLayerScaleBarSI <- function(object,
 #'
 #' @export
 #'
-ggpLayerSpatAnnOutline <- function(object = "object",
+ggpLayerSpatAnnOutline <- function(object,
                                    ids = NULL,
                                    tags = NULL,
                                    test = "any",
                                    alpha = 0.5,
                                    fill = NA,
+                                   line_alpha = 0.9,
                                    line_color = "black",
-                                   line_size = 1.5,
+                                   line_size = 1,
                                    line_type = "solid",
                                    use_colors = FALSE,
                                    inner = TRUE,
+                                   incl_edge = FALSE,
+                                   merge_edge = FALSE,
+                                   incr_vert = FALSE,
+                                   expand_outline = getCCD(object, "px")*2,
                                    ...){
 
   deprecated(...)
-
-  if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
-
   hlpr_assign_arguments(object)
 
   containsSpatialAnnotations(object, error = T)
 
+  # which ids to plot
   ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
 
-  purrr::map(
-    .x = ids,
-    .f = function(id){
+  ccd <- getCCD(object, unit = "px")
 
-      img_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
+  out_list <-
+    purrr::map(
+      .x = ids,
+      .f = function(id){
 
-      if(!"inner1" %in% base::names(img_ann@area)){
+        if(base::isFALSE(inner) | !containsInnerBorders(object, id = id)){
 
-        inner <- FALSE
+          sa_outline_df <-
+            getSpatAnnOutlineDf(object, ids = id, outer = TRUE, inner = FALSE)
 
-      }
+          if(base::isTRUE(use_colors)){
 
-      if(base::isFALSE(inner)){
+            out <-
+              ggplot2::geom_polygon(
+                data = sa_outline_df,
+                size = line_size,
+                linetype = line_type,
+                alpha = alpha,
+                mapping = ggplot2::aes(x = x, y = y, color = ids, fill = ids),
+                ...
+              )
 
-        df <-
-          getSpatAnnOutlineDf(object, ids = id) %>%
-          dplyr::filter(border == "outer")
+          } else {
 
-        if(base::isTRUE(use_colors)){
 
-          out <-
-            ggplot2::geom_polygon(
-              data = df,
-              size = line_size,
-              linetype = line_type,
-              alpha = alpha,
-              fill = fill,
-              mapping = ggplot2::aes(x = x, y = y, color = ids),
-              ...
-            )
+            if(base::isTRUE(incl_edge)){
+
+              containsTissueOutline(object, error = TRUE)
+
+              tissue_outline_df <- getTissueOutlineDf(object, expand_outline = expand_outline)
+
+              df_edge_incl <-
+                increase_polygon_vertices(sa_outline_df, avg_dist = ccd/4, skip = !incr_vert) %>%
+                include_tissue_outline(
+                  input_df = .,
+                  outline_df = tissue_outline_df,
+                  coords_df = getCoordsDf(object),
+                  spat_ann_center = getSpatAnnCenter(object, id = id),
+                  outside_rm = TRUE,
+                  sas_circles = TRUE,
+                  ccd = ccd,
+                  buffer = ccd/2
+                )
+
+              out <- list()
+              out$fill <- list()
+              out$outline <- list()
+
+              out$outline$spat_ann <-
+                ggplot2::geom_path(
+                  data = df_edge_incl,
+                  mapping = ggplot2::aes(x = x, y = y, group = pos_rel_group),
+                  alpha = line_alpha,
+                  color = line_color,
+                  linewidth = line_size
+                )
+
+              if(base::isTRUE(merge_edge)){
+
+                tissue_outline_df_incl <-
+
+                  identify_obs_in_polygon(
+                    coords_df = tissue_outline_df,
+                    polygon_df = sa_outline_df,
+                    strictly = FALSE,
+                    opt = "keep"
+                  )
+
+                out$outline$edge <-
+                  ggplot2::geom_path(
+                    data = tissue_outline_df_incl,
+                    mapping = ggplot2::aes(x = x, y = y),
+                    alpha = line_alpha,
+                    color = line_color,
+                    linewidth = line_size
+                  )
+              }
+
+              if(!base::is.na(fill)){
+
+                pixel_df <-
+                  getPixelDf(object) %>%
+                  dplyr::rename(x = width, y = height) %>%
+                  identify_obs_in_polygon(polygon_df = sa_outline_df, strictly = TRUE, opt = "keep") %>%
+                  identify_obs_in_polygon(polygon_df = tissue_outline_df, strictly = TRUE, opt = "keep")
+
+                out[["fill"]] <-
+                  ggplot2::geom_raster(
+                    data = pixel_df,
+                    mapping = aes(x = x, y = y),
+                    alpha = alpha,
+                    fill = fill
+                  )
+
+              }
+
+
+            } else {
+
+              out <-
+                ggplot2::geom_polygon(
+                  data = sa_outline_df,
+                  size = line_size,
+                  color = line_color,
+                  linetype = line_type,
+                  alpha = alpha,
+                  fill = fill,
+                  mapping = ggplot2::aes(x = x, y = y),
+                  ...
+                )
+
+            }
+
+          }
+
+          return(out)
 
         } else {
 
-          out <-
-            ggplot2::geom_polygon(
-              data = df,
-              size = line_size,
-              color = line_color,
-              linetype = line_type,
-              alpha = alpha,
-              fill = fill,
-              mapping = ggplot2::aes(x = x, y = y),
-              ...
-            )
+          df <- getSpatAnnSf(object, id)
+
+          ggplot2::geom_sf(
+            data = df,
+            linewidth = line_size,
+            color = line_color,
+            linetype = line_type,
+            alpha = alpha,
+            fill = fill,
+            ...
+          )
 
         }
 
-
-
-      } else {
-
-        df <- getSpatAnnSf(object, id)
-
-        ggplot2::geom_sf(
-          data = df,
-          linewidth = line_size,
-          color = line_color,
-          linetype = line_type,
-          alpha = alpha,
-          fill = fill,
-          ...
-        )
-
       }
+    ) %>%
+    purrr::set_names(nm = ids)
 
-    }
-  )
+  return(out_list)
 
 }
 
@@ -2985,7 +3143,7 @@ ggpLayerThemeCoords <- function(unit = NULL){
 #' @inherit ggpLayer_dummy return
 #' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
 #'
-#' @param inc_outline Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
+#' @param incl_edge Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
 #'
 #' @seealso [`identifyPixelContent()`],[`identifyTissueOutline()`],[`identifySpatialOutliers()`]
 #'
@@ -2996,10 +3154,10 @@ ggpLayerThemeCoords <- function(unit = NULL){
 #' object <- download("MCD_LMU")
 #'
 #' plotImage(object, unit = "mm") +
-#'  ggpLayerTissueOutline(object, inc_outline = TRUE)
+#'  ggpLayerTissueOutline(object, incl_edge = TRUE)
 #'
 #' plotImage(object, unit = "mm") +
-#'  ggpLayerTissueOutline(object, inc_outline = FALSE)
+#'  ggpLayerTissueOutline(object, incl_edge = FALSE)
 #'
 
 setGeneric(name = "ggpLayerTissueOutline", def = function(object, ...){
@@ -3496,6 +3654,76 @@ ggpLayerTrajectories <- function(object = "object",
 
 }
 
+
+
+#' @title Create a Trajectory Frame Layer for ggplot
+#'
+#' @description This function generates a ggplot layer representing a trajectory
+#' frame based on a specified trajectory segment in a `spata2` object. It creates
+#' a rectangular frame around the trajectory segment, with customizable appearance.
+#'
+#' @param id The identifier of the trajectory segment within the `spata2` object.
+#' @param width Distance measure. The width of the trajectory frame, defaulting to
+#' the trajectory length.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggpLayer_dummy return
+#'
+#' @export
+ggpLayerTrajectoryFrame <- function(object,
+                                    id,
+                                    width = getTrajectoryLength(object, id),
+                                    rect_alpha = 1,
+                                    rect_color = "black",
+                                    rect_linesize = 1,
+                                    rect_linetype = "solid"){
+
+  width <- as_pixel(input = width, object = object)/2
+
+  traj_df <- getTrajectorySegmentDf(object, id = id)
+
+  start_point <- base::as.numeric(traj_df[1, c("x", "y")])
+  end_point <- base::as.numeric(traj_df[2, c("x", "y")])
+
+  trajectory_vec <- end_point - start_point
+
+  # factor with which to compute the width vector
+  trajectory_magnitude <- base::sqrt((trajectory_vec[1])^2 + (trajectory_vec[2])^2)
+  trajectory_factor <- width / trajectory_magnitude
+
+  # orthogonal trajectory vector
+  orth_trajectory_vec <- (c(-trajectory_vec[2], trajectory_vec[1]) * trajectory_factor)
+
+  # Two dimensional part ----------------------------------------------------
+
+  # determine trajectory frame points 'tfps' making up the square that embraces
+  # the points
+  tfp1.1 <- start_point + orth_trajectory_vec
+  tfp1.2 <- start_point - orth_trajectory_vec
+  tfp2.1 <- end_point - orth_trajectory_vec
+  tfp2.2 <- end_point + orth_trajectory_vec
+
+  trajectory_frame <-
+    tibble::tibble(
+      x = c(tfp1.1[1], tfp1.2[1], tfp2.1[1], tfp2.2[1]),
+      y = c(tfp1.1[2], tfp1.2[2], tfp2.1[2], tfp2.2[2])
+    )
+
+  out <-
+    list(
+      ggplot2::geom_polygon(
+        data = trajectory_frame,
+        mapping = ggplot2::aes(x = x, y = y),
+        fill = NA,
+        color = ggplot2::alpha(rect_color, rect_alpha),
+        linetype = rect_linetype,
+        linewidth = rect_linesize
+      )
+    )
+
+  return(out)
+
+}
 
 ggpLayerTrajectoryBins <- function(object,
                                    id,

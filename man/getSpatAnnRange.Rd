@@ -8,7 +8,7 @@
 \usage{
 getSpatAnnRange(object, ...)
 
-\S4method{getSpatAnnRange}{spata2}(object, id, scale_fct = 1)
+\S4method{getSpatAnnRange}{spata2}(object, id, expand = 0, scale_fct = 1, ...)
 
 \S4method{getSpatAnnRange}{HistoImaging}(object, id, scale_fct = 1)
 }
@@ -22,6 +22,12 @@ objects of classes for which a method has been defined.}
 If there is only one spatial annotation in the object, the function
 will default to using it. However, if there are multiple annotations,
 this argument must be explicitly specified to identify the target annotation.}
+
+\item{expand}{Specifies image expansion. An image that is cropped based on an image
+annotation centers around the image annotation. If \code{expand = 0}, the default, the dimensions of the image,
+that is width/x-axis and height/y-axis, are set to include only the image annotation area
+and nothing more. Using \code{expand}, the cropped image section can be adjusted. See section
+\emph{Expansion of cropped image sections} for more information.}
 }
 \value{
 List of length two. Named with \emph{x} and \emph{y}. Each slot

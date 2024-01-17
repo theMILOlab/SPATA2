@@ -5,17 +5,22 @@
 \title{Add outline of spatial annotations}
 \usage{
 ggpLayerSpatAnnOutline(
-  object = "object",
+  object,
   ids = NULL,
   tags = NULL,
   test = "any",
   alpha = 0.5,
   fill = NA,
+  line_alpha = 0.9,
   line_color = "black",
-  line_size = 1.5,
+  line_size = 1,
   line_type = "solid",
   use_colors = FALSE,
   inner = TRUE,
+  incl_edge = FALSE,
+  merge_edge = FALSE,
+  incr_vert = FALSE,
+  expand_outline = getCCD(object, "px") * 2,
   ...
 )
 }
@@ -35,6 +40,8 @@ selection. See section \emph{Selection of spatial annotations} for more informat
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
+\item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
+
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
@@ -47,6 +54,20 @@ each outline in a different color while providing a legend.}
 
 \item{inner}{Logical value. If \code{FALSE}, only outer borders of the annotation
 are displayed.}
+
+\item{incl_edge}{Logical value. If \code{TRUE}, the function includes the tissue edge
+(see \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}) in the visualization and removes the parts of
+the outline that transgress the tissues edge.}
+
+\item{merge_edge}{Logical value. If \code{incl_edge = TRUE} the outline of the
+tissue edge is used to replace the part of the annotation outline that was
+removed due to crossing the tissue edge.}
+
+\item{incr_vert}{Logical value. If \code{TRUE}, the number of vertices of the polygon
+to be plotted is increased by linear interpolation. This can lead to smoother
+visualization but also to increased runtime.}
+
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

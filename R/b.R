@@ -89,7 +89,9 @@ background_white <- function(image, percentile = 1){
 #'
 #' @inherit addSpatialAnnotation params return
 #' @inherit add_dbscan_variable params
+#' @inherit increase_n_data_points params
 #' @inherit argument_dummy params
+#'
 #'
 #' @inheritSection section_dummy Distance measures
 #'
@@ -189,7 +191,8 @@ barcodesToSpatialAnnotation <- function(object,
                                         use_dbscan = TRUE,
                                         eps = getCCD(object)*1.25,
                                         minPts = 3,
-                                        min_size = nBarcodes(object)*0.01,
+                                        min_size = nBarcodes(object)*0.005,
+                                        fct_incr = 20,
                                         force1 = FALSE,
                                         concavity = 2,
                                         overwrite = FALSE,
@@ -209,9 +212,9 @@ barcodesToSpatialAnnotation <- function(object,
   # need three spots to build polygon
   confuns::is_vec(barcodes, mode = "character", min.length = 3)
 
-  coords_df_proc <-
-    getCoordsDf(object) %>%
-    dplyr::filter(barcodes %in% {{barcodes}})
+  coords_df <- getCoordsDf(object)
+
+  coords_df_proc <- dplyr::filter(coords_df, barcodes %in% {{barcodes}})
 
   # use dbscan
   if(base::isTRUE(use_dbscan)){
@@ -263,12 +266,21 @@ barcodesToSpatialAnnotation <- function(object,
     overwrite = overwrite
   )
 
+  cvars <- c("x_orig", "y_orig")
+
   for(i in base::seq_along(areas_to_annotate)){
 
     area <- areas_to_annotate[i]
 
     df_concave <-
       dplyr::filter(coords_df_prepped, areas == {{area}})
+
+    if(fct_incr > 1){
+
+      df_concave <-
+        increase_n_data_points(df_concave, fct = fct_incr, cvars = cvars)
+
+    }
 
     # apply concaveman
     outline_df <-
@@ -278,7 +290,12 @@ barcodesToSpatialAnnotation <- function(object,
       base::as.matrix() %>%
       concaveman::concaveman(points = ., concavity = concavity) %>%
       tibble::as_tibble() %>%
-      magrittr::set_colnames(value = c("x_orig", "y_orig"))
+      magrittr::set_colnames(value = cvars)
+
+    base::rm(df_concave)
+    base::gc()
+
+    area <- list(outer = outline_df)
 
     if(base::isTRUE(tags_expand)){
 
@@ -291,28 +308,13 @@ barcodesToSpatialAnnotation <- function(object,
 
     }
 
-    # identify barcodes inside the polygon
-    coords_df <- getCoordsDf(object)
-
-    res <-
-      sp::point.in.polygon(
-        point.x = coords_df[["x_orig"]],
-        point.y = coords_df[["y_orig"]],
-        pol.x = outline_df[["x_orig"]],
-        pol.y = outline_df[["y_orig"]]
-      )
-
-    coords_df_sub <- coords_df[res %in% c(1,2), ]
-
-    barcodes <- coords_df_sub[["barcodes"]]
-
     # create spatial annotation
     object <-
       addSpatialAnnotation(
         object = object,
         id = stringr::str_c(id, i, sep = "_"),
         tags = tags_in,
-        area = list(outer = outline_df),
+        area = area,
         overwrite = overwrite,
         class = class,
         parameters = list(

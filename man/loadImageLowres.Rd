@@ -21,7 +21,7 @@ objects of classes for which a method has been defined.}
 \item{name}{Character value. Name of the image directory.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

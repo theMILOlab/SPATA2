@@ -16,7 +16,7 @@ of the \code{SpatialMethod} object as in \verb{@info[[slot]]}.}
 \item{content}{The content to set.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

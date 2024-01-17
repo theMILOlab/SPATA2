@@ -39,7 +39,7 @@ spatial annotation is stored under a new ID.}
 \item{...}{Additional arguments passed to the smoothing function.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

@@ -13,7 +13,8 @@ barcodesToSpatialAnnotation(
   use_dbscan = TRUE,
   eps = getCCD(object) * 1.25,
   minPts = 3,
-  min_size = nBarcodes(object) * 0.01,
+  min_size = nBarcodes(object) * 0.005,
+  fct_incr = 20,
   force1 = FALSE,
   concavity = 2,
   overwrite = FALSE,
@@ -69,7 +70,7 @@ the computational progress will be printed.
 constructing the \code{SpatialAnnotation} object.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

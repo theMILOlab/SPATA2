@@ -16,7 +16,7 @@ column names correspond to the barcode-spots.}
 which one can refer to it in subsequent functions.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

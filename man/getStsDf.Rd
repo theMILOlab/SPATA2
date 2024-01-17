@@ -14,6 +14,7 @@ getStsDf(
   ro = c(0, 1),
   bcs_exclude = NULL,
   format = "wide",
+  control = SPATA2::sgs_loess_control,
   verbose = FALSE,
   ...
 )

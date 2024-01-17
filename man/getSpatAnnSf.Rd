@@ -20,5 +20,5 @@ An object of class \code{POLYGON} from the \code{sf} package.
 }
 \description{
 Exracts an object as created by \code{sf::st_polygon()} that
-corresponds to the image annotation.
+corresponds to the spatial annotation.
 }

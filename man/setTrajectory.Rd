@@ -20,7 +20,7 @@ objects of classes for which a method has been defined.}
 \item{trajectories}{List of objects of class \code{Trajectory}.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

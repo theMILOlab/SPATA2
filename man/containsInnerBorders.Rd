@@ -5,7 +5,7 @@
 \alias{containsInnerBorders,spata2-method}
 \alias{containsInnerBorders,SpatialAnnotation-method}
 \alias{containsInnerBorders,data.frame-method}
-\title{Check for Inner Borders in a SpatialAnnotation Object}
+\title{Check for Inner Borders in a Spatial Annotation}
 \usage{
 containsInnerBorders(object, ...)
 

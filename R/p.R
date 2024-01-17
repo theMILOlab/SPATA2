@@ -737,7 +737,8 @@ process_ranges <- function(xrange = getImageRange(object)$x,
                            expand = 0,
                            persp = "ccs",
                            object = NULL,
-                           ranges = NULL){
+                           ranges = NULL,
+                           opt = 1){
 
   if(base::is.list(ranges)){
 
@@ -814,12 +815,24 @@ process_ranges <- function(xrange = getImageRange(object)$x,
       limits = c(0, img_ymax)
     )
 
-  out <- list(
-    xmin = xrange_out %>% base::min() %>% base::floor(),
-    xmax = xrange_out %>% base::max() %>% base::ceiling(),
-    ymin = yrange_out %>% base::min() %>% base::floor(),
-    ymax = yrange_out %>% base::max() %>% base::ceiling()
-  )
+  if(opt == 1){
+
+    out <- list(
+      xmin = xrange_out %>% base::min() %>% base::floor(),
+      xmax = xrange_out %>% base::max() %>% base::ceiling(),
+      ymin = yrange_out %>% base::min() %>% base::floor(),
+      ymax = yrange_out %>% base::max() %>% base::ceiling()
+    )
+
+  } else if(opt == 2){
+
+    out <-
+      list(
+        x = xrange_out,
+        y = yrange_out
+      )
+
+  }
 
   return(out)
 

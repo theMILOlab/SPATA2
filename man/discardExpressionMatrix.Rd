@@ -4,12 +4,7 @@
 \alias{discardExpressionMatrix}
 \title{Discard an expression matrix}
 \usage{
-discardExpressionMatrix(object, mtr_name, of_sample = NA)
-}
-\arguments{
-\item{object}{A valid spata-object.}
-
-\item{mtr_name}{Character value. The name of the matrix of interest.}
+discardExpressionMatrix(...)
 }
 \value{
 An updated spata-object.

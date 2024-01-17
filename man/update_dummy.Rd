@@ -7,7 +7,7 @@
 update_dummy()
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

@@ -19,7 +19,7 @@ runSeuratClustering(
 takes a list of arguments that is given to the equivalent function.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

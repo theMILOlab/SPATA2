@@ -8,20 +8,19 @@
 plotSasRidgeplot(
   object,
   variables,
-  id = idSA(object),
+  ids = idSA(object),
   distance = distToEdge(object, id),
   binwidth = recBinwidth(object),
-  n_bins_dist = NA_integer_,
   angle_span = c(0, 360),
-  core = TRUE,
+  core = FALSE,
   smooth_span = 0.3,
   unit = getSpatialMethod(object)@unit,
+  alpha = 1,
+  fill = NULL,
   clrp = NULL,
   clrp_adjust = NULL,
   line_color = "black",
   line_size = 1.5,
-  fill = NULL,
-  alpha = 1,
   border_linealpha = 0.75,
   border_linecolor = "black",
   border_linesize = 1,
@@ -75,6 +74,11 @@ objects of classes for which a method has been defined.}
 \item{variables}{Character vector. All numeric variables (meaning genes,
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
+
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
 
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
@@ -154,7 +158,7 @@ A ggplot.
 }
 \description{
 Plots gene expression changes against the distance to
-to the spatial annotation using the desing of ridgeplots.
+to the spatial annotation using the design of ridgeplots.
 }
 \section{Distance measures}{
 

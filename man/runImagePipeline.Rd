@@ -21,7 +21,7 @@ the computational progress will be printed.
 \item{...}{Arguments passed to \code{\link[=identifyPixelContent]{identifyPixelContent()}}.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

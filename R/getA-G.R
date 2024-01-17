@@ -980,21 +980,25 @@ getCoordsDfSA <- function(object,
                           verbose = NULL,
                           ...){
 
+  hlpr_assign_arguments(object)
+  deprecated(...)
 
   coords_df <-
     purrr::map_df(
       .x = ids,
       .f = function(id){
 
-        if(distance == "dte"){
+        if(is_dist(distance)){
+
+          dist <- distance
+
+        } else if(distance == "dte"){
 
           dist <- distToEdge(object, id = id, unit = dist_unit)
 
         } else {
 
-          is_dist(input = distance, error = TRUE)
-
-          dist <- distance
+          is_dist(distance, error = TRUE)
 
         }
 
@@ -1417,7 +1421,8 @@ getCoordsDfST <- function(object,
                           binwidth = recBinwidth(object),
                           n_bins = NA_integer_,
                           width = getTrajectoryLength(object, id = id),
-                          dist_unit = "px",
+                          dist_unit = getDefaultUnit(object),
+                          outside = TRUE,
                           variables = NULL,
                           format = "wide",
                           verbose = NULL,
@@ -1468,6 +1473,12 @@ getCoordsDfST <- function(object,
   }
 
   coords_df[["bins_order"]] <- base::as.numeric(coords_df[["bins_dist"]])
+
+  if(base::isFALSE(outside)){
+
+    coords_df <- dplyr::filter(coords_df, rel_loc != "outside")
+
+  }
 
   if(base::is.character(variables)){
 

@@ -38,7 +38,7 @@ the computational progress will be printed.
 the image from the active \code{HistoImage} is not unloaded.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

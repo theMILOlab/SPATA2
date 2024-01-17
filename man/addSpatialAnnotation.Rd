@@ -51,7 +51,7 @@ The scale of the two variables must correspond to the scale of the \emph{x_orig}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-The input \code{spata2} object containing the added or computed
+The input object containing the added or computed
 results.
 }
 \description{

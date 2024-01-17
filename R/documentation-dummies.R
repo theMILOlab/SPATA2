@@ -118,6 +118,14 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param img_names Character vector. The names of the `HistoImage`s of interest.
 #'
+#' @param incl_edge Logical value. If `TRUE`, the function includes the tissue edge
+#' (see [`identifyTissueOutline()`]) in the visualization and removes the parts of
+#' the outline that transgress the tissues edge.
+#'
+#' @param incr_vert Logical value. If `TRUE`, the number of vertices of the polygon
+#' to be plotted is increased by linear interpolation. This can lead to smoother
+#' visualization but also to increased runtime.
+#'
 #' @param inner Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If `FALSE`, the inner borders of the image annotation
 #' are not included in the output.
 #'
@@ -184,6 +192,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #' color is continuous. Run \code{validColorSpectra()} to see valid input.
 #' @param pt_size Numeric value. Specifies the size of all points.
 #'
+#' @param rect_alpha The alpha transparency level of the rectangle's border
+#' @param rect_color The color of the rectangle's border.
+#' @param rect_linesize The size of the line used for the rectangle's border.
+#' @param rect_linetype The type of line used for the rectangle's border.
 #' @param relevel Logical value. If set to TRUE the input order of \code{across_subset}
 #' determines the order in which the groups of interest are displayed. Groups that
 #' are not included are dropped which affects the colors with which they are displayed.
@@ -689,7 +701,7 @@ seurat_object_dummy <- function(seurat_object){}
 
 
 #' @title update
-#' @return The input `spata2` object containing the added or computed
+#' @return The input object containing the added or computed
 #' results.
 #' @keywords internal
 update_dummy <- function(){}

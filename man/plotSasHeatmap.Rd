@@ -7,23 +7,20 @@
 plotSasHeatmap(
   object,
   variables,
-  id = idSA(object),
-  distance = distToEdge(object, id),
-  binwidth = recBinwidth(object),
-  n_bins_dist = NA_integer_,
-  angle_span = c(0, 360),
-  unit = getSpatialMethod(object)@unit,
-  arrange_rows = "input",
-  method_gs = "mean",
-  smooth_span = 0.4,
+  ids = idSA(object),
+  distance = "dte",
+  core = FALSE,
+  arrange_rows = "none",
+  unit = getDefaultUnit(object),
+  smooth_span = 0.3,
   multiplier = 10,
-  clrsp = "inferno",
-  .cols = dplyr::everything(),
-  .f = NULL,
+  clrsp = NULL,
   border_linealpha = 0.75,
   border_linecolor = "black",
   border_linesize = 1,
   border_linetype = "dashed",
+  .f = NULL,
+  .cols = dplyr::everything(),
   verbose = NULL,
   ...
 )
@@ -36,40 +33,24 @@ objects of classes for which a method has been defined.}
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
+\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
+of the image annotations of interest. If numeric, the image annotations are picked by number.
+If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
+\code{test} is possible.}
+
 \item{distance}{Distance value. Specifies the distance from the border of the
 spatial annotation to the \emph{horizon} in the periphery up to which the screening
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
-
-\item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
-
 \item{unit}{Character value. The unit in which the distance
 to the spatial annotation is displayed on the x-axis.
 
 If \code{FALSE}, plots the bin numbers instead.}
 
-\item{arrange_rows}{Alter the way the rows of the heatmap
-are displayed in order to highlight patterns. Currently either \emph{'maxima'},
-\emph{'minima'} or \emph{'input'}. If \emph{'input'}, variables are displayed
-in the same order as they are provided in the argument \code{variables}.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
-
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{multiplier}{Numeric value. For better visualization the transient pattern
-is smoothed with a loess fit. The total number of predicted values (via \code{stats::predict()})
-is the number of bins multiplied with the input for this argument.}
 
 \item{clrsp}{Character value. Specifies the color spectrum to be used to represent
 continuous values of numeric variables. Run \code{validColorSpectra()} to obtain

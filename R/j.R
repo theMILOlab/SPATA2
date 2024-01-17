@@ -501,7 +501,7 @@ joinWithGeneSets <- function(object,
   }
 
   #feedback vectors
-  filter_gs <- 0.25
+  filter_gs <- 0.01
   ignored_gs <- glue::glue("\nIgnored gene-sets due to insufficient gene representation (less then {filter_gs*100}%) in expression matrix:")
   skipped_gs <- base::character()
 

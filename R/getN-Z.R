@@ -1331,6 +1331,7 @@ getSasDf <- function(object,
       distance = distance,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
+      binwidth = binwidth,
       variables = variables,
       dist_unit = unit,
       core = core,
@@ -1450,9 +1451,11 @@ getSasExpansion <- function(object,
                             binwidth = getCCD(object),
                             n_bins_dist = NA_integer_,
                             direction = "outwards",
-                            inc_outline = TRUE, # rename to inc_tissue_edge?
-                            verbose = NULL){
+                            incl_edge = TRUE, # rename to inc_tissue_edge?
+                            verbose = NULL,
+                            ...){
 
+  deprecated(...)
   hlpr_assign_arguments(object)
 
   unit <- "px"
@@ -1493,7 +1496,7 @@ getSasExpansion <- function(object,
           dplyr::mutate(ee = .y)
       )
 
-    if(base::isTRUE(inc_outline)){
+    if(base::isTRUE(incl_edge)){
 
       ccd <- getCCD(object, unit = "px")
 
@@ -1533,96 +1536,163 @@ getSasExpansion <- function(object,
 
 }
 
+getSasExprEst1D <- function(object,
+                            id = idSA(object),
+                            distance = distToEdge(object, id),
+                            binwidth = recBinwidth(object),
+                            core = FALSE,
+                            unit = "px"){
+
+  expr_estimates <-
+    getCoordsDfSA(
+      object = object,
+      id = id,
+      distance = distance,
+      dist_unit = unit,
+      core = core,
+      periphery = FALSE,
+      binwidth = binwidth
+    ) %>%
+    compute_expression_estimates()
+
+  expr_estimates <-
+    purrr::set_names(
+      x = expr_estimates,
+      nm = stringr::str_c("ExprEst", base::seq_along(expr_estimates))
+    )
+
+  return(expr_estimates)
+
+}
 
 getSasExprEst2D <- function(object,
                             id,
                             distance = distToEdge(object, id),
                             binwidth = getCCD(object),
-                            n_bins_dist = NA_integer_,
-                            direction = "outwards",
-                            inc_outline = TRUE, # rename to inc_tissue_edge?
-                            verbose = NULL){
+                            core = FALSE,
+                            add_core_outline = FALSE,
+                            add_horizon_outline = FALSE,
+                            incr_vert = FALSE,
+                            incl_edge = TRUE,
+                            verbose = NULL,
+                            ...){
 
+  deprecated(...)
   hlpr_assign_arguments(object)
 
-  unit <- "px"
-  min_dist <- 0
-  max_dist <- as_pixel(distance, object = object)
-  binwidth <- as_pixel(binwidth, object = object)
-
   expr_estimates <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = max_dist,
-      amccd = binwidth
+    getSasExprEst1D(
+      object = object,
+      id = id,
+      distance = distance,
+      binwidth = binwidth,
+      core = core,
+      unit = "px"
     )
 
-  nee <- base::length(expr_estimates)
-
-  area_df <- getSpatAnnOutlineDf(object, ids = id)
-
-  ee_names <- stringr::str_c("ExprEst", 2:nee, sep = "_")
-
-  ees <-
-    purrr::set_names(
-      x = expr_estimates[2:nee],
-      nm = ee_names
+  exp_list <-
+    getExpansionsSA(
+      object = object,
+      id = id,
+      expand_to = expr_estimates,
+      incr_vert = incr_vert,
+      incl_edge = incl_edge,
+      outside_rm = TRUE
     )
 
-  ee_vec <- c("Core" = 0, ees)
+  if(base::isTRUE(add_core_outline)){
 
-  if(direction == "outwards"){
-
-    area_df <- dplyr::filter(area_df, border == "outer")
-
-    ccd <- getCCD(object, unit = "px")
-
-    ee_list <-
-      purrr::imap(
-        .x = ee_vec,
-        .f = ~
-          buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
-          #increase_polygon_vertices(., avg_dist = ccd) %>%
-          dplyr::mutate(ee = .y, bins_circle = .y) # bins_circle for compatibility
-      )
-
-    if(base::isTRUE(inc_outline)){
-
-      ee_list <-
-        purrr::map(
-          .x = ee_list,
-          .f = ~ include_tissue_outline(
-            coords_df = getCoordsDf(object),
-            outline_df = getTissueOutlineDf(object),
-            input_df = .x,
-            spat_ann_center = getSpatAnnCenter(object, id = id),
-            remove = FALSE,
-            sas_circles = TRUE,
-            ccd = ccd,
-            buffer = ccd*0.5
-          )
-        ) %>%
-        purrr::discard(.p = base::is.null)
-
-    }
-
-  } else if(direction == "inwards"){
-
-    area_df <- dplyr::filter(area_df, border == "outer")
-
-    ee_list <-
-      purrr::imap(
-        .x = ee_vec,
-        .f = ~
-          buffer_area(df = area_df[c("x", "y")], buffer = -(.x)) %>%
-          dplyr::mutate(ee = .y, bins_circle = .y)
-      )
+    exp_list[["core"]] <-
+      getExpansionsSA(
+        object = object,
+        id = id,
+        expand_to = c("core" = 0),
+        incr_vert = incr_vert,
+        incl_edge = incl_edge,
+        outside_rm = TRUE
+      )[[1]]
 
   }
 
-  return(ee_list)
+  if(base::isTRUE(add_horizon_outline)){
+
+    exp_list[["horizon"]] <-
+      getExpansionsSA(
+        object = object,
+        id = id,
+        expand_to = c("horizon" = distance),
+        incr_vert = incr_vert,
+        incl_edge = incl_edge,
+        outside_rm = TRUE
+      )[[1]]
+
+  }
+
+  exp_list <-
+    confuns::lselect(
+      lst = exp_list,
+      dplyr::any_of(x = "core"),
+      dplyr::all_of(x = base::names(expr_estimates)),
+      dplyr::any_of(x = "horizon")
+    ) %>%
+    purrr::map(
+      .f = ~ dplyr::mutate(.x, type = stringr::str_extract(expansion, pattern = "[A-Za-z]*"))
+      )
+
+  return(exp_list)
 
 }
+
+
+getExpansionsSA <- function(object,
+                            id,
+                            expand_to,
+                            incr_vert = FALSE,
+                            incl_edge = FALSE,
+                            outside_rm = FALSE){
+
+  is_dist(expand_to, error = TRUE)
+
+  expand_to <- as_pixel(expand_to, object = object, add_attr = FALSE)
+
+  area_df <-
+    getSpatAnnOutlineDf(object, id = id, outer = TRUE, inner = FALSE)
+
+  ccd <- getCCD(object, unit = "px")
+
+  expansion_list <-
+    purrr::imap(
+      .x = expand_to,
+      .f = ~
+        buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
+        increase_polygon_vertices(., avg_dist = ccd/4, skip = !incr_vert) %>%
+        dplyr::mutate(expansion = .y)
+    )
+
+  if(base::isTRUE(incl_edge)){
+
+    expansion_list <-
+      purrr::map(
+        .x = expansion_list,
+        .f = ~ include_tissue_outline(
+          input_df = .x,
+          coords_df = getCoordsDf(object),
+          outline_df = getTissueOutlineDf(object),
+          spat_ann_center = getSpatAnnCenter(object, id = id),
+          outside_rm = outside_rm,
+          sas_circles = TRUE,
+          ccd = ccd,
+          buffer = ccd*0.5
+        )
+      ) %>%
+      purrr::discard(.p = base::is.null)
+
+  }
+
+  return(expansion_list)
+
+}
+
 
 #' @rdname getSasDf
 #' @export
@@ -2130,6 +2200,19 @@ setMethod(
   signature = "spata2",
   definition = function(object, id){
 
+    getHistoImaging(object) %>%
+      getSpatAnnCenter(object = ., id = id)
+
+  }
+)
+
+#' @rdname getSpatAnnCenter
+#' @export
+setMethod(
+  f = "getSpatAnnCenter",
+  signature = "HistoImaging",
+  definition = function(object, id){
+
     border_df <- getSpatAnnOutlineDf(object, ids = id, inner = FALSE)
 
     x <- base::mean(base::range(border_df$x))
@@ -2169,11 +2252,25 @@ setGeneric(name = "getSpatAnnCenters", def = function(object, ...){
 
 })
 
+
 #' @rdname getSpatAnnCenter
 #' @export
 setMethod(
   f = "getSpatAnnCenters",
   signature = "spata2",
+  definition = function(object, id, outer = TRUE, inner = TRUE){
+
+    getHistoImaging(object) %>%
+      getSpatAnnCenters(object = ., id = id, inner = inner, outer = outer)
+
+  }
+)
+
+#' @rdname getSpatAnnCenter
+#' @export
+setMethod(
+  f = "getSpatAnnCenters",
+  signature = "HistoImaging",
   definition = function(object, id, outer = TRUE, inner = TRUE){
 
     spat_ann <- getSpatialAnnotation(object, id = id, add_barcodes = FALSE, add_image = FALSE)
@@ -2833,6 +2930,7 @@ setMethod(
                         test = "any",
                         outer = TRUE,
                         inner = TRUE,
+                        incl_edge = FALSE,
                         add_tags = FALSE,
                         sep = " & ",
                         last = " & "){
@@ -2846,6 +2944,7 @@ setMethod(
         test = test,
         outer = outer,
         inner = inner,
+        incl_edge = incl_edge,
         add_tags = add_tags,
         sep = sep,
         last = last
@@ -2867,6 +2966,7 @@ setMethod(
                         test = "any",
                         outer = TRUE,
                         inner = TRUE,
+                        incl_edge = FALSE,
                         add_tags = FALSE,
                         sep = " & ",
                         last = " & "){
@@ -2886,7 +2986,12 @@ setMethod(
         .x = spat_anns,
         .f = function(spat_ann){
 
-          getSpatAnnOutlineDf(object = spat_ann, add_tags = add_tags, sep = sep, last = last)
+          getSpatAnnOutlineDf(
+            object = spat_ann,
+            add_tags = add_tags,
+            sep = sep,
+            last = last
+          )
 
         }
       ) %>%
@@ -2979,10 +3084,11 @@ setGeneric(name = "getSpatAnnRange", def = function(object, ...){
 setMethod(
   f = "getSpatAnnRange",
   signature = "spata2",
-  definition = function(object, id, scale_fct = 1){
+  definition = function(object, id, expand = 0, scale_fct = 1, ...){
 
     getHistoImaging(object) %>%
-      getSpatAnnRange(object = ., id = id, scale_fct = scale_fct)
+      getSpatAnnRange(object = ., id = id, scale_fct = scale_fct) %>%
+      process_ranges(ranges = ., expand = expand, opt = 2, persp = "ccs", object = object)
 
   }
 )
@@ -3016,7 +3122,7 @@ setMethod(
 #' @title Obtain simple feature
 #'
 #' @description Exracts an object as created by `sf::st_polygon()` that
-#' corresponds to the image annotation.
+#' corresponds to the spatial annotation.
 #'
 #' @inherit getSpatialAnnotation params
 #'
@@ -3255,7 +3361,8 @@ setMethod(
                         id = idSA(object),
                         add_image = TRUE,
                         expand = 0,
-                        square = FALSE){
+                        square = FALSE,
+                        ...){
 
     confuns::check_one_of(
       input = id,
@@ -3683,6 +3790,7 @@ getStsDf <- function(object,
                      ro = c(0, 1),
                      bcs_exclude = NULL,
                      format = "wide",
+                     control = SPATA2::sgs_loess_control,
                      verbose = FALSE,
                      ...){
 
@@ -3700,18 +3808,12 @@ getStsDf <- function(object,
       variables = variables,
       dist_unit = unit, # ensure that distance is computed in correct unit
       verbose = verbose
-    )
+    ) %>%
+    dplyr::filter(rel_loc == "inside")
 
-  min_dist <-
-    base::min(coords_df_st[["dist"]], na.rm = TRUE) %>%
-    stringr::str_c(., unit)
+  expr_est_pos <- compute_expression_estimates(coords_df_st)
 
-  expr_est_pos <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = distance,
-      amccd = binwidth
-    )
+  cf <- compute_correction_factor_sts(object, id = id, width = width)
 
   # prepare output
   sts_df <-
@@ -3722,10 +3824,9 @@ getStsDf <- function(object,
       expr_est_idx = 1:base::length(expr_est_pos)
     )
 
-  dist_screened <-
-    base::diff(c(extract_value(min_dist),extract_value(distance)))
+  dist_screened <- compute_dist_screened(coords_df_st)
 
-  span <- base::as.numeric(binwidth/dist_screened)
+  span <- base::as.numeric(binwidth/dist_screened) / cf
 
   for(var in variables){
 
@@ -3736,9 +3837,7 @@ getStsDf <- function(object,
         formula = var.x ~ dist,
         data = coords_df_st,
         span = span,
-        family = "gaussian",
-        statistics = "none",
-        surface = "direct"
+        control = base::do.call(what = stats::loess.control, args = control)
       )
 
     sts_df[[var]] <-
