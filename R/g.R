@@ -704,7 +704,6 @@ ggpLayerExprEstimatesSAS <- function(object,
   if(base::length(ids) > 1 | method == "2D"){
 
     out_list <-
-      list(
         ggpLayerScreeningDirectionSAS(
           object = object,
           ids = ids,
@@ -714,7 +713,6 @@ ggpLayerExprEstimatesSAS <- function(object,
           line_type = "solid",
           nmx = 50,
           seed = 123
-        )
       )
 
   } else {
@@ -836,7 +834,7 @@ ggpLayerExprEstimatesSAS <- function(object,
 
   }
 
-  base::names(out_list) <- ids
+  #base::names(out_list) <- ids
 
   return(out_list)
 
