@@ -9,6 +9,7 @@ plotSasHeatmap(
   variables,
   ids = idSA(object),
   distance = "dte",
+  binwidth = recBinwidth(object),
   core = FALSE,
   arrange_rows = "none",
   unit = getDefaultUnit(object),
@@ -43,6 +44,10 @@ spatial annotation to the \emph{horizon} in the periphery up to which the screen
 is conducted. (See details for more.) - See details of \code{?is_dist} for more
 information about distance values. Defaults to a distance that covers the whole
 tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+
+\item{binwidth}{Distance value. The width of the distance bins to which
+each data point is assigned. Defaults to our platform dependent
+recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
 \item{unit}{Character value. The unit in which the distance
 to the spatial annotation is displayed on the x-axis.

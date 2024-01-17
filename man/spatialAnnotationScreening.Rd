@@ -24,6 +24,7 @@ spatialAnnotationScreening(
   estimate_R2 = TRUE,
   control = SPATA2::sgs_loess_control,
   n_random = 10000,
+  rm_zero_infl = FALSE,
   seed = 123,
   verbose = NULL,
   ...

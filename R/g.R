@@ -694,125 +694,146 @@ ggpLayerExprEstimatesSAS <- function(object,
                                      line_size_core = 1,
                                      incl_edge = TRUE,
                                      direction = "outwards",
+                                     method = "normal",
+
                                      verbose = NULL,
                                      ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
 
-  if(base::isFALSE(incl_edge)){
+  if(base::length(ids) > 1 | method == "2D"){
 
     out_list <-
-      purrr::map(
-        .x = base::seq_along(ids),
-        .f = function(i){
-
-          id <- ids[i]
-
-          if(i > 1){ verbose <- FALSE }
-
-          expr_est_list <-
-            getSasExprEst2D(
-              object = object,
-              id = id,
-              distance = distance,
-              binwidth = binwidth,
-              core = core,
-              direction = direction,
-              incl_edge = FALSE,
-              verbose = verbose
-            )
-
-          out_listx <-
-            purrr::map(
-              .x = base::seq_along(expr_est_list),
-              .f = function(i){
-
-                area <- expr_est_list[[i]]
-
-                if(i == 1){
-
-                  ls <- line_size_core
-                  alpha <- alpha_core
-                  fill <- fill_core
-
-                } else {
-
-                  ls <- line_size
-                  alpha <- 0
-                  fill <- NA
-
-                }
-
-                ggplot2::geom_polygon(
-                  data = area,
-                  mapping = ggplot2::aes(x = x, y = y),
-                  alpha = alpha,
-                  fill = fill,
-                  color = line_color,
-                  size = ls
-                )
-
-              }
-            )
-
-          return(out_listx)
-
-        }
-      ) %>%
-      purrr::flatten()
-
+      list(
+        ggpLayerScreeningDirectionSAS(
+          object = object,
+          ids = ids,
+          distance = distance,
+          line_alpha = line_alpha,
+          line_size = line_size,
+          line_type = "solid",
+          nmx = 50,
+          seed = 123
+        )
+      )
 
   } else {
 
-    containsTissueOutline(object, error = TRUE)
+    if(base::isFALSE(incl_edge)){
 
-    out_list <-
-      purrr::map(
-        .x = seq_along(ids),
-        .f = function(i){
+      out_list <-
+        purrr::map(
+          .x = base::seq_along(ids),
+          .f = function(i){
 
-          id <- ids[i]
+            id <- ids[i]
 
-          if(i > 1){ verbose <- FALSE}
+            if(i > 1){ verbose <- FALSE }
 
-          expr_est_list <-
-            getSasExprEst2D(
-              object = object,
-              id = id,
-              distance = distance,
-              binwidth = binwidth,
-              direction = direction,
-              incl_edge = TRUE,
-              verbose = verbose
+            expr_est_list <-
+              getSasExprEst2D(
+                object = object,
+                id = id,
+                distance = distance,
+                binwidth = binwidth,
+                core = core,
+                direction = direction,
+                incl_edge = FALSE,
+                verbose = verbose
+              )
+
+            out_listx <-
+              purrr::map(
+                .x = base::seq_along(expr_est_list),
+                .f = function(i){
+
+                  area <- expr_est_list[[i]]
+
+                  if(i == 1){
+
+                    ls <- line_size_core
+                    alpha <- alpha_core
+                    fill <- fill_core
+
+                  } else {
+
+                    ls <- line_size
+                    alpha <- 0
+                    fill <- NA
+
+                  }
+
+                  ggplot2::geom_polygon(
+                    data = area,
+                    mapping = ggplot2::aes(x = x, y = y),
+                    alpha = alpha,
+                    fill = fill,
+                    color = line_color,
+                    size = ls
+                  )
+
+                }
+              )
+
+            return(out_listx)
+
+          }
+        ) %>%
+        purrr::flatten()
+
+
+    } else {
+
+      containsTissueOutline(object, error = TRUE)
+
+      out_list <-
+        purrr::map(
+          .x = seq_along(ids),
+          .f = function(i){
+
+            id <- ids[i]
+
+            if(i > 1){ verbose <- FALSE}
+
+            expr_est_list <-
+              getSasExprEst2D(
+                object = object,
+                id = id,
+                distance = distance,
+                binwidth = binwidth,
+                direction = direction,
+                incl_edge = TRUE,
+                verbose = verbose
+              )
+
+            exp_df <-
+              purrr::map_df(
+                .x = expr_est_list[base::names(expr_est_list) != "Core"],
+                .f = function(df){
+
+                  dplyr::mutate(
+                    .data = df,
+                    plot_group = stringr::str_c(expansion, pos_rel_group, sep = "_")
+                  ) %>%
+                    dplyr::filter(pos_rel == "inside")
+
+                }
+              )
+
+            list(
+              ggplot2::geom_path(
+                data = exp_df,
+                mapping = ggplot2::aes(x = x, y = y, group = plot_group),
+                size = line_size,
+                alpha = line_alpha,
+                color = line_color
+              )
             )
 
-          exp_df <-
-            purrr::map_df(
-              .x = expr_est_list[base::names(expr_est_list) != "Core"],
-              .f = function(df){
-
-                dplyr::mutate(
-                  .data = df,
-                  plot_group = stringr::str_c(expansion, pos_rel_group, sep = "_")
-                ) %>%
-                  dplyr::filter(pos_rel == "inside")
-
-              }
-            )
-
-          list(
-            ggplot2::geom_path(
-              data = exp_df,
-              mapping = ggplot2::aes(x = x, y = y, group = plot_group),
-              size = line_size,
-              alpha = line_alpha,
-              color = line_color
-            )
-          )
-
-        }
-      )
+          }
+        )
+    }
 
   }
 
@@ -823,7 +844,7 @@ ggpLayerExprEstimatesSAS <- function(object,
 }
 
 
-#' @keywords internal
+#' @export
 ggpLayerScreeningDirectionSAS <- function(object,
                                           ids,
                                           distance = "dte",

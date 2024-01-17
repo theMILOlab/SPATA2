@@ -15,28 +15,20 @@ plotSasLineplot(
   angle_span = c(0, 360),
   smooth_span = 0.2,
   smooth_se = TRUE,
-  display_facets = TRUE,
   unit = getSpatialMethod(object)@unit,
   clrp = NULL,
   clrp_adjust = NULL,
   line_color = NULL,
   line_size = 1.5,
+  display_facets = TRUE,
   nrow = NULL,
   ncol = NULL,
   border_linealpha = 0.75,
   border_linecolor = alpha("white", 0),
   border_linesize = 1,
   border_linetype = "solid",
-  ee_linealpha = 0,
-  ee_linecolor = "black",
-  ee_lineend = "point",
-  ee_linesize = 1,
-  ee_linetype = "solid",
   display_eval = FALSE,
   eval_size = line_size * 2.5,
-  pos_x = 0,
-  pos_y = 1,
-  outlier_rm = FALSE,
   ggpLayers = list(),
   verbose = NULL,
   ...
@@ -112,9 +104,6 @@ Given to argument \code{span} of \code{stats::loess()}.}
 
 \item{smooth_se}{Logical. If set to TRUE the confidence interval will be}
 
-\item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
-or feature are displayed via \code{ggplot2::facet_wrap()}}
-
 \item{unit}{Character value. The unit in which the distance
 to the spatial annotation is displayed on the x-axis.
 
@@ -133,6 +122,9 @@ represent the group.}
 
 \item{line_size}{Numeric value. Specifies the thicknes of the lines with which
 the trajectory dynamics are displayed.}
+
+\item{display_facets}{Logical. If set to TRUE sub plots for every specified gene, gene-set
+or feature are displayed via \code{ggplot2::facet_wrap()}}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
