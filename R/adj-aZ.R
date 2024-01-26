@@ -2175,7 +2175,7 @@ setMethod(
 
     count_mtr <-
       getFromSeurat(
-        return_value = methods::slot(assay, name = count_mtr_name),
+        return_value = assay[count_mtr_name],
         error_handling = "stop",
         error_ref = "count matrix"
       )
@@ -2188,7 +2188,7 @@ setMethod(
 
     scaled_mtr <-
       getFromSeurat(
-        return_value = methods::slot(assay, name = scaled_mtr_name),
+        return_value = assay[scaled_mtr_name],
         error_handling = "stop",
         error_ref = "scaled matrix",
         error_value = NULL
