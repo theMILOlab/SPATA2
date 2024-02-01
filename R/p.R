@@ -714,7 +714,8 @@ process_seurat_object <- function(seurat_object,
                  base::rownames(seurat_object@assays[[assay_name]])[base::grepl("^MT-", base::rownames(seurat_object@assays[[assay_name]]))],
                  c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1'))
 
-    feat_keep <- base::rownames(seurat_object@assays[[assay_name]][!(base::rownames(seurat_object@assays[[assay_name]]) %in% exclude), ])
+    seurat_genes <- base::rownames(seurat_object@assays[[assay_name]])
+    feat_keep <- seurat_genes[!seurat_genes %in% exclude]
 
     seurat_object <- base::subset(x = seurat_object, features = feat_keep)
 
