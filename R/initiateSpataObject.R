@@ -853,7 +853,7 @@ initiateSpataObject_10X <- function(directory_10X,
   # check input for sample and directory
   confuns::check_directories(directories = directory_10X, type = "folders")
 
-  confuns::are_values(c("directory_10X", "sample_name"), mode = "character")
+  #confuns::are_values(c("directory_10X", "sample_name"), mode = "character")
 
   if(sample_name %in% c("", "all")){
 
