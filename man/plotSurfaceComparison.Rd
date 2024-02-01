@@ -13,7 +13,7 @@ plotSurfaceComparison(
   normalize = NULL,
   smooth = FALSE,
   smooth_span = NULL,
-  pt_size = NULL,
+  pt_size = getPointSize(object, xrange, yrange),
   pt_alpha = NULL,
   pt_clrsp = NULL,
   display_image = NULL,
@@ -27,6 +27,8 @@ plotSurfaceComparison(
   sctm_interpolate = FALSE,
   order = TRUE,
   order_desc = FALSE,
+  xrange = getCoordsRange(object)$x,
+  yrange = getCoordsRange(object)$y,
   verbose = NULL,
   ...
 )

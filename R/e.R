@@ -41,7 +41,15 @@ estimate_r2_for_sas_run <- function(object,
 
   unit <- getDefaultUnit(object)
 
+
+  if(base::length(binwidth) == 1){
+
+    binwidth <- rep(binwidth, 2)
+
+  }
+
   binwidth <- as_unit(binwidth, unit = unit, object = object)
+
 
 
   # step 1 data simulation
@@ -66,7 +74,7 @@ estimate_r2_for_sas_run <- function(object,
       ids = ids,
       simulations = simulations,
       core = core,
-      binwidth = binwidth,
+      binwidth = binwidth[2],
       distance = distance,
       noise_levels = noise_levels,
       noise_types = "ed",
@@ -74,6 +82,8 @@ estimate_r2_for_sas_run <- function(object,
       seed = 123,
       verbose = verbose
     )
+
+  binwidth <- binwidth[1]
 
   object <-
     addExpressionMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%

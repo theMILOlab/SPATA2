@@ -701,19 +701,20 @@ ggpLayerExprEstimatesSAS <- function(object,
   deprecated(...)
   hlpr_assign_arguments(object)
 
-  if(base::length(ids) > 1 | method == "2D"){
+  if(length(ids) > 1 | method == "2D"){
 
     out_list <-
-        ggpLayerScreeningDirectionSAS(
-          object = object,
-          ids = ids,
-          distance = distance,
-          line_alpha = line_alpha,
-          line_size = line_size,
-          line_type = "solid",
-          nmx = 50,
-          seed = 123
+      ggpLayerScreeningDirectionSAS(
+        object = object,
+        ids = ids,
+        distance = distance,
+        line_alpha = line_alpha,
+        line_size = line_size,
+        line_type = "solid",
+        nmx = 50,
+        seed = 123
       )
+
 
   } else {
 
@@ -829,12 +830,13 @@ ggpLayerExprEstimatesSAS <- function(object,
             )
 
           }
-        )
+        ) %>%
+        purrr::set_names(nm = ids)
+
+
     }
 
   }
-
-  #base::names(out_list) <- ids
 
   return(out_list)
 
@@ -2369,9 +2371,9 @@ ggpLayerScaleBarSI <- function(object,
                                text_nudge_x = 0,
                                text_nudge_y = 0,
                                text_pos = NULL,
-                               text_size = 5,
-                               xrange = NULL,
-                               yrange = NULL,
+                               text_size = 10,
+                               xrange = getCoordsRange(object)$x,
+                               yrange = getCoordsRange(object)$y,
                                offset = c(0.8, 0.8),
                                theme_opt = "none"){
 

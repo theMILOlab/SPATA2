@@ -2201,7 +2201,8 @@ simulate_random_gradients <- function(coords_df,
           )
 
         gradient <-
-          stats::predict(loess_model, data.frame(dist = expr_est_pos))
+          stats::predict(loess_model, data.frame(dist = expr_est_pos)) %>%
+          confuns::normalize()
 
         tot_var <- compute_total_variation(gradient)
 
@@ -2648,7 +2649,6 @@ spatial_gradient_screening <- function(coords_df,
 
   }
 
-
   model_names <- base::names(model_df)
   nm <- base::length(model_names)
 
@@ -2684,9 +2684,13 @@ spatial_gradient_screening <- function(coords_df,
             control = base::do.call(what = stats::loess.control, args = control)
           )
 
+        gradient <-
+          stats::predict(loess_model, data.frame(dist = expr_est_pos)) %>%
+          confuns::normalize()
+
         list(
           loess_model = loess_model,
-          gradient = stats::predict(loess_model, data.frame(dist = expr_est_pos))
+          gradient = gradient
         )
 
       }
@@ -2761,7 +2765,11 @@ spatial_gradient_screening <- function(coords_df,
     evaluation_df <-
       dplyr::filter(gradient_df, variables %in% {{variables_for_step3}}) %>%
       dplyr::left_join(x = ., y = model_df, by = "expr_est_idx") %>%
-      tidyr::pivot_longer(cols = dplyr::all_of(model_names), names_to = "models", values_to = "values_model") %>%
+      tidyr::pivot_longer(
+        cols = dplyr::all_of(model_names),
+        names_to = "models",
+        values_to = "values_model"
+        ) %>%
       dplyr::group_by(variables, models) %>%
       dplyr::summarise(
         corr = compute_corr(gradient = values, model = values_model),
