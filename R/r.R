@@ -153,8 +153,8 @@ read_coords_visium <- function(dir_coords){
         exclude = (in_tissue != 1),
         exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
       ) %>%
-      dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres) %>%
-      dplyr::select(barcodes = barcode, x_orig, y_orig, exclude, exclude_reason)
+      dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col, exclude, exclude_reason)
 
   }
 
