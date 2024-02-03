@@ -378,7 +378,8 @@ runBayesSpaceClustering <- function(object,
 
   directory_10X <- object@information$initiation$input$directory_10X
 
-  if(base::is.character(directory_10X) & base::dir.exists(directory_10X)){
+  #if(base::is.character(directory_10X) & base::dir.exists(directory_10X)){
+  if(FALSE){
 
     confuns::give_feedback(
       msg = glue::glue("Reading from {directory_10X}."),
@@ -400,7 +401,7 @@ runBayesSpaceClustering <- function(object,
   } else {
 
     # use asSingleCellExperiment
-    sce <- asSingleCellExperiment(object, type = "BayesSpace")
+    sce <- asSingleCellExperiment(object)
 
   }
 
@@ -478,11 +479,7 @@ runBayesSpaceClustering <- function(object,
 
     logliks <- base::attr(bayes_space_out, "q.logliks")
 
-    optimal_cluster <-
-      akmedoids::elbow_point(
-        x = logliks$q,
-        y = logliks$loglik)$x %>%
-      base::round()
+    optimal_cluster <- find_elbow_point(logliks)
 
     confuns::give_feedback(
       msg = glue::glue("Calculated optimal input for `q`: {optimal_cluster}."),
@@ -1044,7 +1041,7 @@ runCnvAnalysis <- function(object,
     msg <- glue::glue("Saving infercnv-object under '{save_dir}'.")
 
     confuns::give_feedback(msg = msg, verbose = verbose)
-    
+
     if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
 
     base::saveRDS(infercnv_obj, file = save_dir)
@@ -1052,8 +1049,8 @@ runCnvAnalysis <- function(object,
   }
 
   confuns::give_feedback(msg = "Plotting results.", verbose = verbose)
-  
-  
+
+
   if(class(infercnv_obj)!="infercnv"){infercnv_obj <- infercnv_obj[[1]]}
 
 

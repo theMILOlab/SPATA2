@@ -38,3 +38,6 @@ specific_requests
 .gitignore
 docs
 gifs
+review
+debug
+necroti_anns.RDS
