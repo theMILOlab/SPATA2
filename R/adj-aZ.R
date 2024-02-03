@@ -1704,7 +1704,7 @@ asSeurat <- function(object,
     # adjust array justification for Seurat
     image_obj <-
       rotateImage(object = object, angle = 90) %>%
-      flipImage(axis = "y") %>%
+      flipImage(axis = "v") %>%
       getImageObject()
 
     platform <- getSpatialMethod(object)@name
