@@ -1715,7 +1715,7 @@ asSeurat <- function(object,
 
     } else {
 
-      warning(glue::glue("Platform '{platform}' is unknown to Seurat. Can not set image."))
+      warning(glue::glue("Platform '{platform}' is (still) unknown to Seurat. Can not set image."))
 
       img_obj_seurat <- NULL
 
@@ -2576,7 +2576,7 @@ setMethod(
 
 #' @title Transform `HistologyImage` to `VisiumV1`
 #'
-#' @description Transforms an `HistologyImage` obejct to an object of
+#' @description Transforms a `HistologyImage` object to an object of
 #' class `VisiumV1` from the `Seurat` package.
 #'
 #' @param object An object of class `HistologyImage`.
@@ -2599,9 +2599,9 @@ asVisiumV1 <- function(object, name = "slice1"){
     methods::new(
       Class = magrittr::set_attr(x = "VisiumV1", which = "package", value = "Seurat"),
       image = base::as.array(object@image),
-      scale.factors = object@misc$scale.factors,
+      scale.factors = object@misc$VisiumV1$scale.factors,
       coordinates = coords_df_seurat,
-      spot.radius = object@misc$spot.radius,
+      spot.radius = object@misc$VisiumV1$spot.radius,
       key = stringr::str_c(name, "_")
     )
 
