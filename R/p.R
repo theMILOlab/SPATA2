@@ -997,8 +997,6 @@ process_seurat_object <- function(seurat_object,
   # remove stress and mitochondrial genes
 
 
-
-
   # 2. Process seurat object ------------------------------------------------
 
   functions_to_call <- seurat_process_fns
