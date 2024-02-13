@@ -937,7 +937,6 @@ process_sce_bayes_space <- function(sce,
 process_seurat_object <- function(seurat_object,
                                   assay_name = NULL,
                                   calculate_rb_and_mt = TRUE,
-                                  remove_stress_and_mt = TRUE,
                                   SCTransform = FALSE,
                                   NormalizeData = TRUE,
                                   FindVariableFeatures = TRUE,
@@ -993,9 +992,6 @@ process_seurat_object <- function(seurat_object,
     seurat_object[["percent.RB"]] <- Seurat::PercentageFeatureSet(seurat_object, pattern = "^RPS")
 
   }
-
-  # remove stress and mitochondrial genes
-
 
   # 2. Process seurat object ------------------------------------------------
 
