@@ -2122,9 +2122,12 @@ setMethod(
     # transfer matrices
     assay <- object@assays[[assay_name]]
 
+    ## This causes problems in the latest Version of Seurat 
+    ## I changed the assay[count_mtr_name] into assay@counts to fix it!
+    
     count_mtr <-
       getFromSeurat(
-        return_value = assay[count_mtr_name],
+        return_value = assay@counts,
         error_handling = "stop",
         error_ref = "count matrix"
       )
@@ -2135,9 +2138,10 @@ setMethod(
         count_mtr = count_mtr[base::rowSums(base::as.matrix(count_mtr)) != 0, ]
         )
 
+    ## Here the same problem! It was changed to assay@scale.data
     scaled_mtr <-
       getFromSeurat(
-        return_value = assay[scaled_mtr_name],
+        return_value = assay@scale.data,
         error_handling = "stop",
         error_ref = "scaled matrix",
         error_value = NULL
