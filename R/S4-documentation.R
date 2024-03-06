@@ -309,7 +309,7 @@ HistoImage <- setClass(Class = "HistoImage",
 #' @slot sample character. String to identify the imaged tissue.
 #'
 #' @export
-HistoImaging <- setClass(Class = "HistoImaging",
+HistoImaging <- setClass(Class = "HistoImaging", # -> rename to SpatialData ??
                          slots = list(
                            annotations = "list",
                            coordinates = "data.frame",
@@ -905,50 +905,116 @@ default_instructions <- setClass(Class = "default_instructions",
 # dev ---------------------------------------------------------------------
 
 
+MEA <- setClass(Class = "MEA",
+                slots = list(
+
+                ))
+
+ScDeconv <- setClass(Class = "ScDeconv",
+                     slots = list(
+                       coords = "data.frame",
+                       mtr_counts = "Matrix"
+                     ))
 
 
 
-
-
+#' @title The `SPATA2` class
+#'
+#' @description A class to represent spatial transcriptomic and other -omic
+#' studies.
+#'
+#' @slot compatibility list. A list for miscellaneous short-term solutions, mainly
+#' to maintain compatibility.
+#' @slot coordinates list. A list of data.frames that contain coordinates for
+#' observations that are not equal to the observational unit of the method (e.g.
+#' single cell deconvolution for Visium, molecules for MERFISH).
+#' @slot fdata data.frame. A data.frame in which data variables of the obesrvations
+#' of the underlying spatial method are stored that are not molecule counts as stored
+#' in `Assay` objects within slot `@@omics`. (e.g. clustering, histological grouping,
+#' number of counts, etc.)
+#' @slot signatures list. A named list of character vectors. Each character vector
+#' corresponds to a signature represented by molecules that are known to work together
+#' in a way described by the name of the signature (e.g. HM_HYPOXIA: a signature
+#' of multiple genes known to be upregulated in case of hypoxic environments)
+#' @slot information list. A list for miscellaneous information around the object.
+#' @slot logfile data.frame. A data.frame of prompts used on the object that return
+#' the object (e.g. [`runBayesSpaceClustering()`]) including the argument input. Used to
+#' keep track of the analysis progress as well as aid for debugging.
+#' @slot meta list. A list of meta data regarding the object, the tissue, and the
+#' experimental desgin, etc.
+#' @slot method SpatialMethod. An object of class [`SpatialMethod`] that contains
+#' information around the spatial method to which the object corresponds.
+#' @slot omics list. A list of [`AssayData`] objects.
+#' @slot sample character. The name of the object.
+#' @slot spatial HistoImaging. An object of class [`HistoImaging`] storing multiple
+#' spatial information.
+#' @slot version list. The version of the object.
+#'
+#' @return
+#' @export
+#'
+#' @examples
 SPATA2 <- setClass(Class = "SPATA2",
                    slots = list(
-                     assays = "list",
-                     commands = "data.frame",
+                     assays = "list", # old data
                      compatibility = "list",
-                     coordinates = "data.frame",
-                     fdata = "data.frame",
-                     images = "HistoImaging",
-                     information = "list",
-                     meta = "list",
+                     dim_red = "list",  # eigenes DimRed object mit
+                     image = "HistoImaging",
+                     logfile = "data.frame",
+                     meta_obs = "data.frame",  # old fdata
+                     meta_info = "list",
                      method = "SpatialMethod",
+                     obj_info = "list",
                      sample = "character",
                      spatial = "list",
-                     gene_sets = "list",
                      version = "list"
                    ))
 
 
-Assay <- setClass(Class = "Assay",
-                  slots = list(
-                    mtr_counts = "Matrix",
-                    mtr_proc = "list",
-                    name = "character",
-                    stats = "data.frame"
-                  ))
+#' Assay Class
+#'
+#' A class to represent assay data, including analysis results, metrics, and
+#' statistical summaries. The `Assay` class encapsulates various components
+#' of assay data including raw and processed metrics, analytical results,
+#' and associated metadata like the assay name and omic type.
+#'
+#' @slot analysis List of analysis results where each element can represent
+#'  a different analysis aspect.
+#' @slot mtr_counts Matrix object storing raw counts metrics from the assay.
+#' @slot mtr_proc List of processed metrics, potentially including normalized
+#' values or transformed data.
+#' @slot name Character vector storing the name of the assay.
+#' @slot omic Character vector indicating the type of omics data (e.g., "transcriptomics", "proteomics").
+#' @slot stats Data frame of statistical summaries or results derived from the assay data.
+#'
+#' @export
+
+MolecularAssay <- setClass(Class = "MolecularAssay",
+                           slots = list(
+                             analysis = "list",
+                             meta_var = "data.frame", # variable meta data (= gene meta data)
+                             molecules = "data.frame",
+                             mtr_active = "character",
+                             mtr_counts = "Matrix",
+                             mtr_proc = "list",
+                             omic = "character", # transcriptomic, proteomic, metabolomics / RNA, proteins, metabolites
+                             signatures = "list"
+                           ))
 
 
-AssayRNA <- setClass(Class = "AssayRNA",
-                     contains = "Assay",
-                     slots = list(
-                       "cnv" = "list",
-                       "dea" = "list",
-                       "gsea" = "list"
-                     ))
+# e.g. analyis list for transcriptomic assay
 
-AssayProteom <- setClass(Class = "AssayProteom",
-                         contains = "Assay",
-                         slots = list()
-                         )
+analysis_list_transcriptomics <-
+  list(
+    cnv = "list",
+    dea = "list",
+    gsea = "list",
+    sparkx = "list"
+  )
+
+
+
+
 
 
 

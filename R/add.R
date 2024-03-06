@@ -1,6 +1,43 @@
 # add_ --------------------------------------------------------------------
 
 
+add_benchmarking_variables <- function(df){
+
+  dplyr::mutate(
+    .data = df,
+    noise_perc =
+      str_extract_after(variables, pattern = "\\.NP", match = "\\d*") %>%
+      base::as.numeric(),
+    noise_type_id =
+      str_extract_after(variables, pattern = "\\.NT", match = "[A-Z]*"),
+    noise_type =
+      dplyr::case_when(
+        noise_type_id == "ED" ~ "Equally Distributed",
+        noise_type_id == "EP" ~ "Equally Punctuated",
+        noise_type_id == "FP" ~ "Focally Punctuated",
+        noise_type_id == "CB" ~ "Combined",
+      ),
+    simul_model_id =
+      str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"),
+    simul_index = str_extract(variables, pattern = "\\d*$"),
+    model_sim = case_when(
+      simul_model_id == "LINDESC" ~ "linear_descending",
+      simul_model_id == "EARLYDESC" ~ "early_descending",
+      simul_model_id == "INSTDESC" ~ "instantly_descending",
+      simul_model_id == "GRADUALPEAK" ~ "gradual_peak",
+      simul_model_id == "MEDIUMPEAK" ~ "medium_peak",
+      simul_model_id == "SMALLPEAK" ~ "small_peak"
+    )
+  ) %>%
+    dplyr::select(dplyr::any_of(c("variables", "models", "model_sim")), dplyr::everything()) %>%
+    dplyr::mutate(
+      simul_model_id = factor(simul_model_id, levels = c("LINDESC", "EARLYDESC", "INSTDESC", "GRADUALPEAK", "MEDIUMPEAK", "SMALLPEAK")),
+      noise_type = factor(noise_type, levels = c("Equally Distributed", "Equally Punctuated", "Focally Punctuated", "Combined"))
+    )
+
+}
+
+
 #' Add Grid Variable to Coordinate Data Frame
 #'
 #' This function adds a grid variable to a data frame containing x and y coordinates.
