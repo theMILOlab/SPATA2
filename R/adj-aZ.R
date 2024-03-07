@@ -2121,13 +2121,10 @@ setMethod(
 
     # transfer matrices
     assay <- object@assays[[assay_name]]
-
-    ## This causes problems in the latest Version of Seurat 
-    ## I changed the assay[count_mtr_name] into assay@counts to fix it!
     
     count_mtr <-
       getFromSeurat(
-        return_value = assay@counts,
+        return_value = assay[count_mtr_name],
         error_handling = "stop",
         error_ref = "count matrix"
       )
@@ -2138,10 +2135,9 @@ setMethod(
         count_mtr = count_mtr[base::rowSums(base::as.matrix(count_mtr)) != 0, ]
         )
 
-    ## Here the same problem! It was changed to assay@scale.data
     scaled_mtr <-
       getFromSeurat(
-        return_value = assay@scale.data,
+        return_value = assay[scaled_mtr_name],
         error_handling = "stop",
         error_ref = "scaled matrix",
         error_value = NULL
@@ -2253,7 +2249,15 @@ setMethod(
 
     spata_object <- setInitiationInfo(spata_object)
 
-    spata_object <- setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+    if (!length(spata_object@data[[image_name]][["scaled"]]) == 0){
+
+        spata_object <- setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
+        
+    } else if (!length(spata_object@data[[image_name]][["counts"]]) == 0){
+
+        spata_object <- setActiveMatrix(spata_object, mtr_name = "counts", verbose = FALSE)
+        
+    }
 
     confuns::give_feedback(
       msg = "Done.",
