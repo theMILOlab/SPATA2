@@ -1893,7 +1893,7 @@ asSpatialTrajectory <- function(object, ...){
 
 setGeneric(name = "asSPATA2", def = function(object, ...){
 
-  standardGeneric(f = "asSPATA2")
+ standardGeneric(f = "asSPATA2")
 
 })
 
@@ -2249,11 +2249,12 @@ setMethod(
 
     spata_object <- setInitiationInfo(spata_object)
 
-    if (!length(spata_object@data[[image_name]][["scaled"]]) == 0){
+
+    if (!length(spata_object@data[[sample_name]][["scaled"]]) == 0){
 
         spata_object <- setActiveMatrix(spata_object, mtr_name = "scaled", verbose = FALSE)
         
-    } else if (!length(spata_object@data[[image_name]][["counts"]]) == 0){
+    } else if (!length(spata_object@data[[sample_name]][["counts"]]) == 0){
 
         spata_object <- setActiveMatrix(spata_object, mtr_name = "counts", verbose = FALSE)
         

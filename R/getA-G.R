@@ -19,7 +19,7 @@ getActiveMatrixName <- function(object, verbose = NULL, ...){
 
   if(base::is.null(mtr_name)){
 
-    stop("Please set an active matrix with `setActivenMatrix()`")
+    stop("Please set an active matrix with `setActiveMatrix()`")
 
   }
 
