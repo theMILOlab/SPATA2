@@ -2099,7 +2099,7 @@ setMethod(
 
     }
 
-    # transfer features
+    # transfer cell metadata
     feature_df <-
       tibble::rownames_to_column(object@meta.data, var = "barcodes") %>%
       tibble::as_tibble()
@@ -2112,6 +2112,11 @@ setMethod(
 
     spata_object <- setFeatureDf(spata_object, feature_df = feature_df)
 
+    # transfer gene metadata
+    if (!length(object[[assay_name]][[]])==0){
+      spata_object@gdata[[sample_name]] <- object[[assay_name]][[]]
+    }
+    
     # transfer matrices
     assay <- object@assays[[assay_name]]
 
