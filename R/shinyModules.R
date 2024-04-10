@@ -33,7 +33,6 @@ shinyModuleZoomingServer <- function(id = "m1",
                                      persp = "ccs",
                                      trigger_zoom_out = NULL,
                                      ...){
-
   shiny::moduleServer(
     id = id,
     module = function(input, output, session){

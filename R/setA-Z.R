@@ -1045,7 +1045,7 @@ setMethod(
   }
 )
 
-#' @rdname setSpatialAnnotaiton
+#' @rdname setSpatialAnnotation
 #' @export
 setGeneric(name = "setSpatialAnnotations", def = function(object, ...){
 

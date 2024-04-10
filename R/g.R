@@ -1174,7 +1174,8 @@ ggpLayerGroupOutline <- function(object,
         use_colors = FALSE,
         incl_edge = incl_edge,
         merge_edge = merdge_edge,
-        incr_vert = incr_vert
+        incr_vert = incr_vert,
+        expand_outline = expand_outline
       )
 
   # for dim red
@@ -2626,6 +2627,9 @@ ggpLayerScaleBarSI <- function(object,
 #' @note Adds two additional layers to set the scales for the color- and
 #' fill aesthetic of the plot.
 #'
+#' `expand_outline` only works if `inner` is FALSE (or the spatial annotation
+#' does not contain any inner borders).
+#'
 #' @export
 #'
 ggpLayerSpatAnnOutline <- function(object,
@@ -2643,7 +2647,7 @@ ggpLayerSpatAnnOutline <- function(object,
                                    incl_edge = FALSE,
                                    merge_edge = FALSE,
                                    incr_vert = FALSE,
-                                   expand_outline = getCCD(object, "px")*2,
+                                   expand_outline = 0,
                                    ...){
 
   deprecated(...)
@@ -2666,6 +2670,18 @@ ggpLayerSpatAnnOutline <- function(object,
           sa_outline_df <-
             getSpatAnnOutlineDf(object, ids = id, outer = TRUE, inner = FALSE)
 
+          if(is_dist(expand_outline)){
+
+            expand_outline <- as_pixel(expand_outline, object = object)
+
+            sa_outline_df <-
+              buffer_area(sa_outline_df[c("x", "y")], buffer = expand_outline)
+
+            sa_outline_df[["ids"]] <- id
+            sa_outline_df[["border"]] <- "outer"
+
+          }
+
           if(base::isTRUE(use_colors)){
 
             out <-
@@ -2680,12 +2696,11 @@ ggpLayerSpatAnnOutline <- function(object,
 
           } else {
 
-
             if(base::isTRUE(incl_edge)){
 
               containsTissueOutline(object, error = TRUE)
 
-              tissue_outline_df <- getTissueOutlineDf(object, expand_outline = expand_outline)
+              tissue_outline_df <- getTissueOutlineDf(object)
 
               df_edge_incl <-
                 increase_polygon_vertices(sa_outline_df, avg_dist = ccd/4, skip = !incr_vert) %>%
@@ -2716,7 +2731,6 @@ ggpLayerSpatAnnOutline <- function(object,
               if(base::isTRUE(merge_edge)){
 
                 tissue_outline_df_incl <-
-
                   identify_obs_in_polygon(
                     coords_df = tissue_outline_df,
                     polygon_df = sa_outline_df,

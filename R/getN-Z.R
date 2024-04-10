@@ -3023,6 +3023,7 @@ setMethod(
                         add_tags = TRUE,
                         sep = " & ",
                         last = " & ",
+                        expand_outline = NULL,
                         ...){
 
     spat_ann <- object
@@ -3924,8 +3925,6 @@ setMethod(
 #' @description Extracts the polygons necessary to outline the tissue.
 #'
 #' @inherit argument_dummy params
-#' @param remove Logical. If `TRUE`, none-outline spots are removed from
-#' the output.
 #' @param force Logical. If `TRUE`, forces computation.
 #'
 #' @return Output of `getCoordsDf()` filtered based on the *outline* variable.
@@ -3943,7 +3942,11 @@ setGeneric(name = "getTissueOutlineDf", def = function(object, ...){
 setMethod(
   f = "getTissueOutlineDf",
   signature = "spata2",
-  definition = function(object, img_name = NULL, by_section = TRUE, transform = TRUE, ...){
+  definition = function(object,
+                        img_name = NULL,
+                        by_section = TRUE,
+                        transform = TRUE,
+                        ...){
 
     getHistoImaging(object) %>%
       getTissueOutlineDf(
