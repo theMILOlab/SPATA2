@@ -859,7 +859,7 @@ ggpLayerScreeningDirectionSAS <- function(object,
   hlpr_assign_arguments(object)
   deprecated(...)
 
-  crange <- getCoordsRange(object, ...)
+  crange <- getCoordsRange(object)
 
   coords_df_px <-
     getCoordsDfSA(object, ids = ids, distance = distance, dist_unit = "px", core0 = TRUE)

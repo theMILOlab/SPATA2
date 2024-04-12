@@ -983,10 +983,18 @@ getCoordsDfSA <- function(object,
   hlpr_assign_arguments(object)
   deprecated(...)
 
+  pb <- confuns::create_progress_bar(total = base::length(ids))
+
   coords_df <-
     purrr::map_df(
       .x = ids,
       .f = function(id){
+
+        if(base::isTRUE(verbose)){
+
+          pb$tick()
+
+        }
 
         if(is_dist(distance)){
 
@@ -1197,24 +1205,45 @@ get_coords_df_sa <- function(object,
     -coords_df$dist[coords_df$barcodes %in% spat_ann_bcs]
 
   # bin pos dist
-  coords_df_pos <-
-    dplyr::filter(coords_df, dist >= 0) %>%
-    dplyr::mutate(bins_dist = make_bins(dist, binwidth = {{binwidth}}))
+  coords_df_pos <- dplyr::filter(coords_df, dist >= 0)
 
-  # bin neg dist
-  coords_df_neg <-
-    dplyr::filter(coords_df, dist < 0) %>%
-    dplyr::mutate(
-      bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE)
+  if(base::nrow(coords_df_pos) != 0){
+
+    coords_df_pos <-
+      dplyr::mutate(
+        .data = coords_df_pos,
+        bins_dist = make_bins(dist, binwidth = {{binwidth}})
       )
 
+    pos_levels <- base::levels(coords_df_pos$bins_dist)
+
+  } else {
+
+    pos_levels <- NULL
+
+  }
+
+  # bin neg dist
+  coords_df_neg <- dplyr::filter(coords_df, dist < 0)
+
+  if(base::nrow(coords_df_neg) != 0){
+
+    coords_df_neg <-
+      dplyr::mutate(
+        .data = coords_df_neg,
+        bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE)
+      )
+
+    neg_levels <- base::levels(coords_df_neg$bins_dist)
+
+  } else {
+
+    neg_levels <- NULL
+
+  }
+
   # merge
-  new_levels <-
-    c(
-      base::levels(coords_df_neg$bins_dist),
-      base::levels(coords_df_pos$bins_dist),
-      "periphery"
-    )
+  new_levels <- c(neg_levels, pos_levels, "periphery")
 
   coords_df_merged <-
     base::rbind(coords_df_neg, coords_df_pos) %>%

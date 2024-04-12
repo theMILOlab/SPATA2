@@ -1624,10 +1624,14 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 #'
 #' The scale of the two variables must correspond to the scale of the *x_orig* and
 #' *y_orig* variables of the coordinates data.frame.
-#' @param id Character value. The ID of the spatial annotation.
+#' @param id Character value. The ID of the spatial annotation. If `NULL`,
+#' the ID of the annotation is created by combining the string *'spat_ann'* with
+#' the index the new annotation has in the list of all annotations.
 #' @param tags A character vector of tags for the spatial annotation.
 #' @param ... Additional slot content given to `methods::new()` when
 #' constructing the `SpatialAnnotation` object.
+#'
+#'
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return

@@ -3,11 +3,14 @@
 \name{setSpatialAnnotation}
 \alias{setSpatialAnnotation}
 \alias{setSpatialAnnotation,spata2-method}
+\alias{setSpatialAnnotations}
 \title{Set spatial annotations}
 \usage{
 setSpatialAnnotation(object, ...)
 
 \S4method{setSpatialAnnotation}{spata2}(object, spat_ann, ...)
+
+setSpatialAnnotations(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,

@@ -46,7 +46,9 @@ with numbers that correspond to inner polygons - holes within the annotation.
 The scale of the two variables must correspond to the scale of the \emph{x_orig} and
 \emph{y_orig} variables of the coordinates data.frame.}
 
-\item{id}{Character value. The ID of the spatial annotation.}
+\item{id}{Character value. The ID of the spatial annotation. If \code{NULL},
+the ID of the annotation is created by combining the string \emph{'spat_ann'} with
+the index the new annotation has in the list of all annotations.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }

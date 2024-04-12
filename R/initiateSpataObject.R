@@ -3,17 +3,20 @@
 
 #' @title Initiate a `spata2` object
 #'
-#' @description Initiates a `spata2` object using the basic inputs, a coordinates
+#' @description Initiates a `spata2` object using the basic inputs: a coordinates
 #' data.frame and a count matrix.
 #'
 #' @param count_mtr A count matrix. Column names are barcodes. Rownames are the
 #' features (genes, proteins, metabolites etc.).
 #' @param coords_df Data.frame with a variable called *barcodes* as well as the
 #' *x_orig* and *y_orig* or *x* and *y*.
+#' @param img_ref The reference image. See details for more information on how or
+#' how not to include an image.
 #' @param dir_img_ref Character value or `NULL`. If character, the directory
 #' to the reference image.
 #' @param name_img_ref Character value or `NULL`. If character, the name of
-#' the reference image. Ignored if `dir_img_ref` is `NULL`.
+#' the reference image. Must not be `NULL` if `dir_img_ref` is specified.
+#' Ignored if `dir_img_ref` is `NULL`.
 #' @param spatial_method Character value or object of class [`SpatialMethod`].
 #' If character, one of `validSpatialMethods()`.
 #' @param meta,misc List of meta- and miscellaneous data for the [`HistoImaging`]
@@ -21,13 +24,33 @@
 #'
 #' @inherit argument_dummy params
 #'
+#' @details
+#'
+#' @section Initiating the object with an image:
+#' `SPATA2` allows to register multiple images with one object via file directories.
+#' This facilitates exchanging them during the analysis. This way they do not have
+#' to be loaded altogether in a `SPATA2` object, which saves storage space. By default,
+#' `SPATA2` takes a directory to the image you want to initiate your `SPATA2` object with,
+#' then loads the image and saves the directory, too. If the image does not
+#' exist in a file on your device but only in the global environment you can
+#' use `img_ref` directly. This way, no image directory is stored. In a scenario,
+#' where you want to register an additional image and use it for further analysis,
+#' you can not *unload* the image with which you initiated the object because it
+#' would be lost since there is not directory from which to retrieve it once
+#' you want to use it again. Therefore, we recommend to initiate the object
+#' with a file directory to the image and not with an image from the global
+#' environment.
+#'
+#' Lastly, if `img_ref` and `dir_img_ref` is specified the image is saved under
+#' this directory as a .png file and the image is registered normally.
+#'
 #' @section Experiments without background images:
 #' As `SPATA2` has been developed with the Visium platform in mind, a lot of spatial
 #' information are stored in containers related to the images that come along
 #' with the experiment set up. If the experiment set up (or your data set) does not
 #' contain an image, the containers are created anyway with the @@image slot being empty.
 #'
-#' If `dir_img_ref` is specified:
+#' If `dir_img_ref` is **not** specified:
 #' This implies that your data set does not contain an image. The function
 #' creates a [`PseudoHistoImage`] as a container for some spatial information (
 #' especially for the scale factors) but it does not contain an actual image.
@@ -39,11 +62,11 @@
 #' Note that if the `coords_df` does not contain *x_orig* and *y_orig* variables,
 #' the *x* and *y* variables provided in the coordinates data.frame are
 #' considered to be the original coordinates and are forced into names *x_orig*
-#' and *y_orig*. Upon retrieval coordinates are scaled to the image in use using the
+#' and *y_orig*. (Upon retrieval coordinates are scaled to the image in use using the
 #' *coordinates scale factor*. This factor defaults to 1 (but can be adjusted via argument
 #' `scale_factors` which defaults to `scale_factors = list(coords = 1)`). As the
 #' default is 1, the default expects the coordinates and the image to align
-#' perfectly.
+#' perfectly.)
 #'
 #' @return An object of class `spata2`.
 #' @export
@@ -51,6 +74,7 @@
 initiateSpataObject <- function(count_mtr,
                                 coords_df,
                                 sample_name,
+                                img_ref = NULL,
                                 dir_img_ref = NULL,
                                 name_img_ref = NULL,
                                 spatial_method = "Undefined",
@@ -115,35 +139,8 @@ initiateSpataObject <- function(count_mtr,
       spatial_method = spatial_method
     )
 
-  # imaging
-  if(base::is.character(dir_img_ref)){
-
-    confuns::is_value(name_img_ref, mode = "character")
-
-    hist_img_ref <-
-      createHistoImage(
-        active = TRUE,
-        dir = dir_img_ref,
-        img_name = name_img_ref,
-        reference = TRUE,
-        sample = sample_name,
-        scale_factors = scale_factors,
-        verbose = verbose
-      )
-
-    imaging <-
-      createHistoImaging(
-        sample = sample_name,
-        hist_img_ref = hist_img_ref,
-        active = name_img_ref,
-        unload = FALSE,
-        coordinates = coords_df,
-        meta = meta,
-        method = spatial_method,
-        misc = misc
-      )
-
-  } else if(base::is.null(dir_img_ref)) {
+  # imaging: create pseudohistoimage no image is available
+  if(base::is.null(dir_img_ref) & base::is.null(img_ref)) {
 
     confuns::give_feedback(
       msg = "`dir_img_ref` is NULL. Creating pseudo image container.",
@@ -163,6 +160,33 @@ initiateSpataObject <- function(count_mtr,
       )
 
     object <- setDefault(object, display_image = FALSE)
+
+    # else create histo image with a combination of dir_img_ref and img_ref
+  } else {
+
+    hist_img_ref <-
+      createHistoImage(
+        active = TRUE,
+        dir = dir_img_ref,
+        img = img_ref,
+        img_name = name_img_ref,
+        reference = TRUE,
+        sample = sample_name,
+        scale_factors = scale_factors,
+        verbose = verbose
+      )
+
+    imaging <-
+      createHistoImaging(
+        sample = sample_name,
+        hist_img_ref = hist_img_ref,
+        active = name_img_ref,
+        unload = FALSE,
+        coordinates = coords_df,
+        meta = meta,
+        method = spatial_method,
+        misc = misc
+      )
 
   }
 

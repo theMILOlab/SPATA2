@@ -16,6 +16,6 @@ slot @key.}
 An object of class \code{VisiumV1} from the \code{Seurat} package.
 }
 \description{
-Transforms an \code{HistologyImage} obejct to an object of
+Transforms a \code{HistologyImage} object to an object of
 class \code{VisiumV1} from the \code{Seurat} package.
 }

@@ -1007,9 +1007,11 @@ createGroupAnnotations <- function(object,
 
 #' @title Create an object of class `HistoImage`
 #'
-#' @description Official constructor function of the S4 class `HistoImage`.
+#' @description Official constructor function of the S4 class `HistoImage`. See
+#' details for different input options of `dir`and `image`.
 #'
 #' @param dir Character value. The directory from where to retrieve the image.
+#' @param img An image. Must be usable with `EBImage::as.Image()`.
 #' @param img_name Character value. The name of the `HistoImage` with which
 #' to refer to it via arguments `img_name` and `img_names`.
 #' @param sample Character value. The sample name to which the image belongs.
@@ -1023,34 +1025,125 @@ createGroupAnnotations <- function(object,
 #'
 #' @return An object of class `HistoImage`
 #'
+#' @details The `HistoImage` object stores the image as well as additional
+#' information regarding the image. Among other things, it can store a file
+#' directory. This, in turn, allows to conveniently use multiple images in
+#' a `SPATA2` object and in downstream analysis without having to store them
+#' all together in the object which can occupy a lot of unnecessary memory
+#' storage. The `HistoImage` can be created in three ways.
+#'
+#' First (recommended): The directory is specified via `dir` and `img` is `NULL`.
+#' In this case, the function reads the image from the directory and stores both
+#' in the `HistoImage` container. Since the directory is stored, too, the image
+#' can be conveniently unloaded and loaded in downstream analysis.
+#'
+#' Second: The image is provided via `img` and the directory `dir` is `NULL`.
+#' In this case, the function creates the `HistoImage` container and stores the
+#' image but since no directory is available, loading and unloading later on
+#' is not possible.
+#'
+#' Third: Both, `img` and `dir` is specified. In this case, the image is stored
+#' in the `HistoImage` container next to the directory and the directory is used
+#' to save the image on the device which allows loading and unloading later on.
+#'
 #' @seealso [`HistoImage-class`]
 #'
 #' @export
 #'
-createHistoImage <- function(dir,
-                             img_name,
+createHistoImage <- function(img_name,
                              sample,
+                             dir = NULL,
+                             img = NULL,
                              active = FALSE,
                              scale_factors = list(coords = 1),
                              reference = FALSE,
                              verbose = TRUE,
                              ...){
 
-  dir <- base::normalizePath(dir)
+  # create empty HistoImage
+  hist_img <- HistoImage()
+
+  if(base::is.null(dir) & base::is.null(img)){
+
+    stop("Either `dir` or `img` must be specified.")
+
+  } else if(base::is.character(dir) & base::is.null(img)){
+
+    hist_img@dir <- base::normalizePath(dir)
+    hist_img <- loadImage(object = hist_img, verbose = verbose)
+
+  } else if(!base::is.null(img)){
+
+    # test if `img` is valid
+    img_test <-
+      base::tryCatch({
+
+        EBImage::as.Image(img)
+
+      }, error = function(error){
+
+        list(problem = "error", msg = error)
+
+      }, warning = function(warning){
+
+        list(img = img, problem = "warning", msg = warning)
+
+      })
+
+    if(base::is.list(img_test)){
+
+      if(img_test$problem == "warning"){
+
+        warning(
+          glue::glue(
+            "Converting input for argument `img` to an EBImage gave a warning: '{img_test$msg}'"
+          )
+        )
+
+      } else if (img_test$problem == "error"){
+
+        stop(
+          glue::glue(
+            "Converting input for argument `img` to an EBImage resulted in an error: '{img_test$msg}'."
+          )
+        )
+
+      }
+
+    }
+
+    # if execution reaches this, img is valid
+    hist_img@image <- EBImage::as.Image(img)
+
+    # save if directory is specified
+    if(base::is.character(dir)){
+
+      confuns::give_feedback(
+        msg = glue::glue("Saving image under '{dir[1]}'."),
+        verbose = verbose
+      )
+
+      grDevices::png(filename = dir[1], width = base::dim(img)[1], height = base::dim(img)[2])
+      plot(img)
+      grDevices::dev.off()
+
+    } else {
+
+      warning("No directory was specified to store the image. Unloading won't be possible.")
+
+    }
+
+  }
+
 
   # set basic slots
-  hist_img <- HistoImage()
   hist_img@active <- active
   hist_img@aligned <- FALSE
-  hist_img@dir <- dir
   hist_img@name <- img_name
   hist_img@reference <- reference
   hist_img@sample <- sample
   hist_img@scale_factors <- scale_factors
   hist_img@transformations <- default_image_transformations
-
-  # load and set image
-  hist_img <- loadImage(object = hist_img, verbose = verbose)
 
   hist_img@image_info <-
     list(dims = base::dim(hist_img@image))

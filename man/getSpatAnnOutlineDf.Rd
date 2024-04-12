@@ -37,7 +37,14 @@ getSpatAnnOutlineDf(object, ...)
   last = " & "
 )
 
-\S4method{getSpatAnnOutlineDf}{SpatialAnnotation}(object, add_tags = TRUE, sep = " & ", last = " & ", ...)
+\S4method{getSpatAnnOutlineDf}{SpatialAnnotation}(
+  object,
+  add_tags = TRUE,
+  sep = " & ",
+  last = " & ",
+  expand_outline = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{spata2} or, in case of S4 generics,
@@ -66,6 +73,8 @@ are not included in the output.}
 \item{incl_edge}{Logical value. If \code{TRUE}, the function includes the tissue edge
 (see \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}) in the visualization and removes the parts of
 the outline that transgress the tissues edge.}
+
+\item{expand_outline}{Distance measure by which the outline of the area is expanded.}
 }
 \value{
 A data.frame that contains variables \emph{id}, \emph{border},

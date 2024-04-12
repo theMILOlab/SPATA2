@@ -8,6 +8,7 @@ initiateSpataObject(
   count_mtr,
   coords_df,
   sample_name,
+  img_ref = NULL,
   dir_img_ref = NULL,
   name_img_ref = NULL,
   spatial_method = "Undefined",
@@ -25,11 +26,15 @@ features (genes, proteins, metabolites etc.).}
 \item{coords_df}{Data.frame with a variable called \emph{barcodes} as well as the
 \emph{x_orig} and \emph{y_orig} or \emph{x} and \emph{y}.}
 
+\item{img_ref}{The reference image. See details for more information on how or
+how not to include an image.}
+
 \item{dir_img_ref}{Character value or \code{NULL}. If character, the directory
 to the reference image.}
 
 \item{name_img_ref}{Character value or \code{NULL}. If character, the name of
-the reference image. Ignored if \code{dir_img_ref} is \code{NULL}.}
+the reference image. Must not be \code{NULL} if \code{dir_img_ref} is specified.
+Ignored if \code{dir_img_ref} is \code{NULL}.}
 
 \item{spatial_method}{Character value or object of class \code{\link{SpatialMethod}}.
 If character, one of \code{validSpatialMethods()}.}
@@ -48,9 +53,29 @@ the computational progress will be printed.
 An object of class \code{spata2}.
 }
 \description{
-Initiates a \code{spata2} object using the basic inputs, a coordinates
+Initiates a \code{spata2} object using the basic inputs: a coordinates
 data.frame and a count matrix.
 }
+\section{Initiating the object with an image}{
+
+\code{SPATA2} allows to register multiple images with one object via file directories.
+This facilitates exchanging them during the analysis. This way they do not have
+to be loaded altogether in a \code{SPATA2} object, which saves storage space. By default,
+\code{SPATA2} takes a directory to the image you want to initiate your \code{SPATA2} object with,
+then loads the image and saves the directory, too. If the image does not
+exist in a file on your device but only in the global environment you can
+use \code{img_ref} directly. This way, no image directory is stored. In a scenario,
+where you want to register an additional image and use it for further analysis,
+you can not \emph{unload} the image with which you initiated the object because it
+would be lost since there is not directory from which to retrieve it once
+you want to use it again. Therefore, we recommend to initiate the object
+with a file directory to the image and not with an image from the global
+environment.
+
+Lastly, if \code{img_ref} and \code{dir_img_ref} is specified the image is saved under
+this directory as a .png file and the image is registered normally.
+}
+
 \section{Experiments without background images}{
 
 As \code{SPATA2} has been developed with the Visium platform in mind, a lot of spatial
@@ -58,7 +83,7 @@ information are stored in containers related to the images that come along
 with the experiment set up. If the experiment set up (or your data set) does not
 contain an image, the containers are created anyway with the @image slot being empty.
 
-If \code{dir_img_ref} is specified:
+If \code{dir_img_ref} is \strong{not} specified:
 This implies that your data set does not contain an image. The function
 creates a \code{\link{PseudoHistoImage}} as a container for some spatial information (
 especially for the scale factors) but it does not contain an actual image.
@@ -70,10 +95,10 @@ This specifies the image to load and the function creates a regular \code{\link{
 Note that if the \code{coords_df} does not contain \emph{x_orig} and \emph{y_orig} variables,
 the \emph{x} and \emph{y} variables provided in the coordinates data.frame are
 considered to be the original coordinates and are forced into names \emph{x_orig}
-and \emph{y_orig}. Upon retrieval coordinates are scaled to the image in use using the
+and \emph{y_orig}. (Upon retrieval coordinates are scaled to the image in use using the
 \emph{coordinates scale factor}. This factor defaults to 1 (but can be adjusted via argument
 \code{scale_factors} which defaults to \code{scale_factors = list(coords = 1)}). As the
 default is 1, the default expects the coordinates and the image to align
-perfectly.
+perfectly.)
 }
 

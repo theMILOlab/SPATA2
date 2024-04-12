@@ -96,7 +96,7 @@ it is calculated as a percentage of the width or height of the image, depending 
 If the value is greater than or equal to 1, it is taken as an absolute value.}
 
 \item{frgmt_threshold}{Numeric vector of length 2 specifying the range of the number of pixels
-an identified object must have to be considered a tissue fragment. Objects with a lower number
+an identified non-background-object in the image must have to be considered a tissue fragment. Objects with a lower number
 of pixels than the minimum threshold are considered artifacts, and objects with a higher number
 of pixels than the maximum threshold are considered tissue sections. If a threshold value is less than 1,
 it is calculated as a percentage of the total number of pixels in the image.

@@ -42,7 +42,9 @@ by which the data points are filtered. Valid input options are \emph{'kmeans_hig
 \emph{'kmeans_low'} and \emph{operator.value} combinations such as \emph{'>0.75'} or \emph{'<=0.5'}.
 See details for more.}
 
-\item{id}{Character value. The ID of the spatial annotation.}
+\item{id}{Character value. The ID of the spatial annotation. If \code{NULL},
+the ID of the annotation is created by combining the string \emph{'spat_ann'} with
+the index the new annotation has in the list of all annotations.}
 
 \item{tags}{A character vector of tags for the spatial annotation.}
 

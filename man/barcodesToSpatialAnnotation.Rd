@@ -30,7 +30,9 @@ objects of classes for which a method has been defined.}
 \item{barcodes}{Character vector. A vector of data points that cover histological
 areas that are supposed to annotated as spatial annotations.}
 
-\item{id}{Character value. The ID of the spatial annotation.}
+\item{id}{Character value. The ID of the spatial annotation. If \code{NULL},
+the ID of the annotation is created by combining the string \emph{'spat_ann'} with
+the index the new annotation has in the list of all annotations.}
 
 \item{tags}{A character vector of tags for the spatial annotation.}
 

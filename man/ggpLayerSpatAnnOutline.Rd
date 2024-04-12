@@ -20,7 +20,7 @@ ggpLayerSpatAnnOutline(
   incl_edge = FALSE,
   merge_edge = FALSE,
   incr_vert = FALSE,
-  expand_outline = getCCD(object, "px") * 2,
+  expand_outline = 0,
   ...
 )
 }
@@ -84,4 +84,7 @@ of spatial annotations.
 \note{
 Adds two additional layers to set the scales for the color- and
 fill aesthetic of the plot.
+
+\code{expand_outline} only works if \code{inner} is FALSE (or the spatial annotation
+does not contain any inner borders).
 }

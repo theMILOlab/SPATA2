@@ -15,9 +15,9 @@ ggpLayerScaleBarSI(
   text_nudge_x = 0,
   text_nudge_y = 0,
   text_pos = NULL,
-  text_size = 5,
-  xrange = NULL,
-  yrange = NULL,
+  text_size = 10,
+  xrange = getCoordsRange(object)$x,
+  yrange = getCoordsRange(object)$y,
   offset = c(0.8, 0.8),
   theme_opt = "none"
 )

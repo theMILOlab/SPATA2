@@ -8,7 +8,7 @@ processWithSeurat(
   object,
   NormalizeData = TRUE,
   FindVariableFeatures = TRUE,
-  ScaleData = TRUE,
+  ScaleData = FALSE,
   RunPCA = list(npcs = 30),
   FindNeighbors = list(dims = 1:30),
   FindClusters = TRUE,

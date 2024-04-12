@@ -35,9 +35,6 @@ objects of classes for which a method has been defined.}
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
-\item{remove}{Logical. If \code{TRUE}, none-outline spots are removed from
-the output.}
-
 \item{force}{Logical. If \code{TRUE}, forces computation.}
 }
 \value{

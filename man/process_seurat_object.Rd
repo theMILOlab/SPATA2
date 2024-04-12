@@ -8,7 +8,6 @@ process_seurat_object(
   seurat_object,
   assay_name = NULL,
   calculate_rb_and_mt = TRUE,
-  remove_stress_and_mt = TRUE,
   SCTransform = FALSE,
   NormalizeData = TRUE,
   FindVariableFeatures = TRUE,

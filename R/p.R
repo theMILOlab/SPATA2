@@ -1126,7 +1126,7 @@ process_transform_with <- function(transform_with, var_names){
 processWithSeurat <- function(object,
                               NormalizeData = TRUE,
                               FindVariableFeatures = TRUE,
-                              ScaleData = TRUE,
+                              ScaleData = FALSE,
                               RunPCA = list(npcs = 30),
                               FindNeighbors = list(dims = 1:30),
                               FindClusters = TRUE,
@@ -1160,9 +1160,11 @@ processWithSeurat <- function(object,
     object <-
       setProcessedMatrix(
         object = object,
-        proc_mtr = seurat_object@assays[["RNA"]]@data,
+        proc_mtr = Seurat::GetAssayData(seurat_object, layer = "data"),
         name = "normalized"
       )
+
+    object <- setActiveMatrix(object, mtr_name = "normalized")
 
   }
 
@@ -1172,7 +1174,7 @@ processWithSeurat <- function(object,
     object <-
       setProcessedMatrix(
         object = object,
-        proc_mtr = seurat_object@assays[["RNA"]]@scale.data,
+        proc_mtr = Seurat::GetAssayData(seurat_object, layer = "scaled"),
         name = "scaled"
       )
 
@@ -1185,7 +1187,7 @@ processWithSeurat <- function(object,
 
     # principal components
     pca_df <-
-      seurat_object@reductions$pca@cell.embeddings %>%
+      Seurat::Embeddings(seurat_object, reduction = "pca") %>%
       base::as.data.frame() %>%
       tibble::rownames_to_column(var = "barcodes") %>%
       tibble::as_tibble() %>%

@@ -5,9 +5,10 @@
 \title{Create an object of class \code{HistoImage}}
 \usage{
 createHistoImage(
-  dir,
   img_name,
   sample,
+  dir = NULL,
+  img = NULL,
   active = FALSE,
   scale_factors = list(coords = 1),
   reference = FALSE,
@@ -16,14 +17,16 @@ createHistoImage(
 )
 }
 \arguments{
-\item{dir}{Character value. The directory from where to retrieve the image.}
-
 \item{img_name}{Character value. The name of the \code{HistoImage} with which
 to refer to it via arguments \code{img_name} and \code{img_names}.}
 
 \item{sample}{Character value. The sample name to which the image belongs.
 Should be equal to slot @sample of the \code{HistoImaging} object in which
 the \code{HistoImage} is stored.}
+
+\item{dir}{Character value. The directory from where to retrieve the image.}
+
+\item{img}{An image. Must be usable with \code{EBImage::as.Image()}.}
 
 \item{scale_factors}{list. Sets slot @scale_factors,}
 
@@ -42,7 +45,30 @@ the computational progress will be printed.
 An object of class \code{HistoImage}
 }
 \description{
-Official constructor function of the S4 class \code{HistoImage}.
+Official constructor function of the S4 class \code{HistoImage}. See
+details for different input options of \code{dir}and \code{image}.
+}
+\details{
+The \code{HistoImage} object stores the image as well as additional
+information regarding the image. Among other things, it can store a file
+directory. This, in turn, allows to conveniently use multiple images in
+a \code{SPATA2} object and in downstream analysis without having to store them
+all together in the object which can occupy a lot of unnecessary memory
+storage. The \code{HistoImage} can be created in three ways.
+
+First (recommended): The directory is specified via \code{dir} and \code{img} is \code{NULL}.
+In this case, the function reads the image from the directory and stores both
+in the \code{HistoImage} container. Since the directory is stored, too, the image
+can be conveniently unloaded and loaded in downstream analysis.
+
+Second: The image is provided via \code{img} and the directory \code{dir} is \code{NULL}.
+In this case, the function creates the \code{HistoImage} container and stores the
+image but since no directory is available, loading and unloading later on
+is not possible.
+
+Third: Both, \code{img} and \code{dir} is specified. In this case, the image is stored
+in the \code{HistoImage} container next to the directory and the directory is used
+to save the image on the device which allows loading and unloading later on.
 }
 \seealso{
 \code{\linkS4class{HistoImage}}
