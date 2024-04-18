@@ -50,3 +50,4 @@ df_with_niche <- simulate_spatial_niches(df, origins = c("A", "B"), size = 5, vt
 }
 
 }
+\keyword{internal}

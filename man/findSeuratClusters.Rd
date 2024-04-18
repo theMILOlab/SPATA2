@@ -17,7 +17,8 @@ findSeuratClusters(
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest.}
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
 \item{FindVariableFeatures}{A named list of arguments given to \code{Seurat::FindVariableFeatures()}, TRUE or FALSE.}
 
@@ -27,7 +28,7 @@ findSeuratClusters(
 
 \item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
 
-\item{...}{Additional parameters given to \code{Seurat::CreateSeuratObject()}.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A tidy spata-data.frame containing the cluster variables.

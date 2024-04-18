@@ -10,8 +10,7 @@
 #' slot @@image might be empty. Use `loadImage()` in that case.
 #'
 #' \itemize{
-#'  \item{`getHistoImage()`:}{ Extracts object by name. If `img_name = NULL` the active `HistoImage` image is returned.}
-#'  \item{`getHistoImageActive()`:}{ Extracts the active `HistoImage` object.}
+#'  \item{`getHistoImage()`:}{ Extracts object by name. By default, the active `HistoImage` image is returned.}
 #'  \item{`getHistoImageRef()`:}{ Extracts the reference `HistoImage` object.}
 #'  }
 #'
@@ -30,8 +29,8 @@ setGeneric(name = "getHistoImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "getHistoImage",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, ...){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImaging(object) %>%
       getHistoImage(object = ., img_name = img_name, ...)
@@ -44,86 +43,20 @@ setMethod(
 setMethod(
   f = "getHistoImage",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object, img_name = activeImage(object), ...){
 
-    if(base::is.null(img_name)){
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object),
+      ref.input = "registered histology images"
+    )
 
-      out <- getHistoImageActive(object)
-
-    } else {
-
-      confuns::check_one_of(
-        input = img_name,
-        against = getImageNames(object),
-        ref.input = "registered histology images"
-      )
-
-      out <- object@images[[img_name]]
-
-    }
+    out <- object@images[[img_name]]
 
     return(out)
 
   }
 )
-
-#' @rdname getHistoImage
-#' @export
-setGeneric(name = "getHistoImageActive", def = function(object, ...){
-
-  standardGeneric(f = "getHistoImageActive")
-
-})
-
-#' @rdname getHistoImage
-#' @export
-setMethod(
-  f = "getHistoImageActive",
-  signature = "HistoImaging",
-  definition = function(object){
-
-    out <-
-      purrr::keep(
-        .x = object@images,
-        .p = function(hist_img){
-
-          if(base::length(hist_img@active) == 0){
-
-            warning(glue::glue("Slot @active of HistoImage {hist_img@name} is empty."))
-
-            out <- FALSE
-
-          } else if(base::length(hist_img@active) > 1){
-
-            warning(glue::glue("Length of slot @active of HistoImage {hist_img@name} is > 1."))
-
-            out <- hist_img@active[1]
-
-          } else {
-
-            out <- hist_img@active
-
-          }
-
-          return(out)
-
-        }
-      )
-
-    if(base::length(out) > 1){
-
-      warning("More than one active image. Picking first one.")
-
-    } else if(base::length(out) == 0){
-
-      stop("No active image. Please specify `img_name` or activate an HistoImage with `activateImage()`.")
-
-    }
-
-    out[[1]]
-
-  })
-
 
 #' @rdname getHistoImage
 #' @export
@@ -137,7 +70,7 @@ setGeneric(name = "getHistoImageRef", def = function(object, ...){
 #' @export
 setMethod(
   f = "getHistoImageRef",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, ...){
 
     getHistoImaging(object) %>%
@@ -176,9 +109,7 @@ setMethod(
 #'
 getHistoImaging <- function(object){
 
-  containsHistoImaging(object, error = TRUE)
-
-  object@images[[1]]
+  object@spatial
 
 }
 
@@ -214,9 +145,9 @@ setGeneric(name = "getImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         xrange = NULL,
                         yrange = NULL,
                         expand = 0,
@@ -253,7 +184,7 @@ setMethod(
   f = "getImage",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         xrange = NULL,
                         yrange = NULL,
                         expand = 0,
@@ -382,7 +313,7 @@ setGeneric(name = "getImageCenter", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageCenter",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
     getImageRange(object) %>%
@@ -396,7 +327,7 @@ setMethod(
 setMethod(
   f = "getImageCenter",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL){
+  definition = function(object, img_name = activeImage(object)){
 
     hi <- getHistoImage(object, img_name = img_name)
 
@@ -455,8 +386,8 @@ setGeneric(name = "getImageDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageDf",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, transform = TRUE, scale_fct = 1, ...){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), transform = TRUE, scale_fct = 1, ...){
 
     getImageDf(
       object = getHistoImaging(object),
@@ -473,7 +404,7 @@ setMethod(
 setMethod(
   f = "getImageDf",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, transform = TRUE, scale_fct = 1){
+  definition = function(object, img_name = activeImage(object), transform = TRUE, scale_fct = 1){
 
     getHistoImage(object, img_name = img_name) %>%
       getImageDf(object = ., transform = transform, scale_fct = scale_fct)
@@ -556,7 +487,7 @@ setMethod(
 #'
 #' \itemize{
 #'  \item{`getImageDims()`:}{ Extracts dimensions of the image, namely width, height and depth.}
-#'  \item{`getImageRange()`:} Extracts range of the image axis.
+#'  \item{`getImageRange()`:} Extracts range of the image x- and y-axis.
 #'  }
 #'
 #' @inherit argument_dummy params
@@ -586,8 +517,8 @@ setGeneric(name = "getImageDims", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageDims",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, ...){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), ...){
 
     deprecated(...)
 
@@ -602,7 +533,7 @@ setMethod(
 setMethod(
   f = "getImageDims",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImage(object, img_name = img_name) %>%
       getImageDims()
@@ -633,27 +564,9 @@ setMethod(
 #' @return Character value.
 #'
 #' @export
-getImageDir <- function(object, img_name = NULL){
+getImageDir <- function(object, img_name = activeImage(object)){
 
   getHistoImage(object, img_name = img_name)@dir
-
-}
-
-
-#' @title Obtain image origin
-#'
-#' @description Extracts the origin of the image that is currently set.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Either a directory or *Global.Env.* if it was read in from
-#' the global environment.
-#'
-getImageOrigin <- function(object){
-
-  io <- getImageObject(object)
-
-  io@image_info$origin
 
 }
 
@@ -670,8 +583,8 @@ setGeneric(name = "getImageRange", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageRange",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, ...){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), ...){
 
     deprecated(...)
 
@@ -686,7 +599,7 @@ setMethod(
 setMethod(
   f = "getImageRange",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL){
+  definition = function(object, img_name = activeImage(object)){
 
     getHistoImage(object, img_name = img_name) %>%
       getImageRange()
@@ -732,9 +645,9 @@ setGeneric(name = "getImageRaster", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageRaster",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         transform = TRUE,
                         xrange = NULL,
                         yrange = NULL,
@@ -818,8 +731,8 @@ setGeneric(name = "getImageTransformations", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageTransformations",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, ...){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImaging(object) %>%
       getImageTransformations(object = ., img_name = img_name)
@@ -832,7 +745,7 @@ setMethod(
 setMethod(
   f = "getImageTransformations",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImaging(object) %>%
       getImageTransformations(object = ., img_name = img_name)
@@ -845,7 +758,7 @@ setMethod(
 setMethod(
   f = "getImageTransformations",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, ...){
+  definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImage(object, img_name = img_name) %>%
       getImageTransformations()
@@ -889,7 +802,7 @@ setGeneric(name = "getImageNames", def = function(object, ...){
 #' @export
 setMethod(
   f = "getImageNames",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, ref = TRUE, ...){
 
     getHistoImaging(object) %>%
@@ -988,157 +901,216 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 }
 
 
-
-
-
-#' @title Obtain information about object initiation
-#'
-#' @description Information about the object's initiation is stored in
-#' a list of three slots:
-#'
-#' \itemize{
-#'  \item{\emph{init_fn}: Contains the name of the initation function as a character value.}
-#'  \item{\emph{input}: Contains a list of which every slot refers to the input of one argument with which the
-#'  initiation function has been called.}
-#'  \item{\emph{time}: Contains the time at which the object was initiated.}
-#'  }
-#'
-#'  \code{getInitiationInput()} returns only slot \emph{input}.
-#'
-#' @inherit check_object params
-#' @inherit argument_dummy params
-#'
-#' @details \code{initiateSpataObject_CountMtr()} and \code{initiateSpataObject_ExprMtr()} each require
-#' a matrix and a coordinate data.frame as input. These are not included in the output
-#' of this function but can be obtained via \code{getCoordsDf()} and \code{getCountMtr()} or \code{getExpressionMtr()}.
-#'
-#' @return A list. See description.
-#' @export
-
-getInitiationInfo <- function(object){
-
-  check_object(object)
-
-  info <- object@information$initiation
-
-  return(info)
-
-}
-
-#' @rdname getInitiationInfo
-#' @export
-getInitiationInput <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  info <- getInitiationInfo(object)
-
-  init_fn <- info$init_fn
-
-  confuns::give_feedback(
-    msg = glue::glue("Initiation function used: '{init_fn}()'."),
-    verbose = verbose,
-    with.time = FALSE
-  )
-
-  return(info$input)
-
-}
-
 # getM --------------------------------------------------------------------
 
-#' @title Obtain count and expression matrix
+#' @title Obtain a data matrix
 #'
-#' @inherit check_sample params
-#' @param mtr_name Character value. The name of the matrix of interest.
+#' @description Extracts data matrices from [`MolecularAssay`] objects.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return The matrix of the specified object. A list of all matrices
 #' in case of `getMatrices()`.
 #' @export
 
-getMatrix <- function(object, mtr_name = NULL, verbose = NULL, ...){
+getMatrix <- function(object,
+                      mtr_name = activeMatrix(object),
+                      assay_name = activeAssay(object),
+                      verbose = NULL,
+                      ...){
 
   deprecated(...)
 
   hlpr_assign_arguments(object)
 
-  if(base::is.null(mtr_name)){
+  check_matrix_name(object, mtr_name = mtr_name, assay_name = assay_name)
 
-    mtr_name <- getActiveMatrixName(object, verbose = verbose)
+  ma <- getAssay(object, assay_name = assay_name)
+
+  if(mtr_name == "counts"){
+
+    out <- ma@mtr_counts
+
+  } else {
+
+    out <- ma@mtr_proc[[mtr_name]]
 
   }
 
-  object@data[[1]][[mtr_name]]
+  return(out)
 
 }
 
 #' @rdname getMatrix
 #' @export
-getMatrices <- function(object){
+getMatrices <- function(object,
+                        assay_name = activeAssay(object),
+                        verbose = NULL,
+                        ...){
 
-  object@data[[1]]
+  deprecated(...)
+
+  hlpr_assign_arguments(object)
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  mtr_list <- list(counts = ma@mtr_counts)
+
+  for(mn in base::names(ma@mtr_proc)){
+
+    mtr_list[[mn]] <- ma@mtr_proc[[mn]]
+
+  }
+
+  return(mtr_list)
 
 }
 
 
-#' @rdname getExpressionMatrixNames
+#' @title Obtain matrix names
+#'
+#' @description Retrieves the names of matrices present in the specified assay of the provided object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A character vector containing the names of matrices.
+#'
+#' @seealso [`getMatrix()`]
+#'
 #' @export
-getMatrixNames <- function(object){
+getMatrixNames <- function(object, assay_name = activeAssay(object)){
 
-  base::names(object@data[[1]])
+  getMatrices(object, assay_name = assay_name) %>%
+    base::names()
 
 }
 
-#' @title Obtain model evaluation
-#'
-#' @description Extracts the data.frame that contains the variable-model-fit
-#' evaluation containing.
-#'
-#' @inherit object_dummy
-#'
-#' @return Data.frame.
-#'
-#' @keywords internal
 
-setGeneric(name = "getModelEvaluationDf", def = function(object, ...){
 
-  standardGeneric(f = "getModelEvaluationDf")
-
-})
-
-#' @rdname getModelEvaluationDf
+#' @title Obtain meta data.frame
+#'
+#' @description Retrieves the meta data frame from the provided object which
+#' contains feature variables that do not derive from the molecular count matrices.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return The meta data frame.
+#'
 #' @export
-setMethod(
-  f = "getModelEvaluationDf",
-  signature = "SpatialAnnotationScreening",
-  definition = function(object, smrd = TRUE){
+getMetaDf <- function(object){
 
-    if(base::isTRUE(smrd)){
+  object@meta_obs
 
-      out <- object@results_smrd
+}
 
-    } else {
+#' @title Obtain molecule names
+#'
+#' @description Retrieves the list of molecules present in the given object, optionally filtered by a specific signature.
+#'
+#' @inherit argument_dummy params
+#' @param signatures Character vector or `NULL`. If character, specifies the name of
+#' signatures to filter the molecules for.
+#' @param simplify Only relevant if `signatures` is not `NULL`. If `TRUE`, all molecule
+#' names are merged in to one character vector of unique molecule names. If `FALSE`,
+#' a named list of character vectors is returned (names correspond to signatures).
+#'
+#' @return A character vector or a named list of character vectors.
+#'
+#' @details This function retrieves the list of molecules from the provided object.
+#' If the `signatures` argument is provided, it filters the molecules based on the
+#' specified signatures. If 'signature' is `NULL`, it returns all molecules from the
+#' active assay in the object.
+#'
+#' @seealso [`getMatrix()`], [`getSignatures()`]
+#'
+#' @examples
+#' # Get all molecules from the object
+#' all_molecules <- getMolecules(object)
+#'
+#' # Get molecules associated with a specific signature
+#' signature_molecules <- getMolecules(object, signature = "signature_name")
+#'
+#' @export
+getMolecules <- function(object,
+                         signatures = NULL,
+                         simplify = TRUE,
+                         assay_name = activeAssay(object)){
 
-      out <- object@results
+  molecules <-
+    getMatrix(object, mtr_name = activeMatrix(object, assay_name), assay_name = assay_name) %>%
+    base::rownames()
+
+  if(base::is.character(signatures)){
+
+    all_signatures <- getSignatures(object, assay_name = assay_name)
+
+    confuns::check_one_of(
+      input = signatures,
+      against = base::names(all_signatures),
+      fdb.opt = 2,
+      ref.opt.2 = glue::glue("signatures of assay '{assay_name}'")
+    )
+
+    molecules <-
+      purrr::map(
+        .x = all_signatures[signatures],
+        .f = ~ .x[.x %in% molecules]
+      )
+
+    if(base::isTRUE(simplify)){
+
+      molecules <-
+        purrr::map(molecules, .f = ~ .x) %>%
+        purrr::flatten_chr()
 
     }
 
-    return(out)
-
   }
-)
 
-#' @rdname getModelEvaluationDf
+  return(molecules)
+
+}
+
+
+#' @title Obtain a list of molecules
+#'
+#' @description Retrieves a list of molecules sorted by molecular type as
+#'  present in the given object.
+#'
+#' @inherit argument_dummy params
+#' @param molecules A character vector specifying the subset of molecules to include in the output.
+#' By default, all molecules are included.
+#'
+#' @return A list containing the names of molecules categorized by type.
+#'
+#' @details This function categorizes molecules into different types based on the provided object.
+#' If the 'molecules' argument is provided as a character vector, the function returns only the
+#' specified molecules categorized by type. Otherwise, it returns all molecules categorized by type.
+#'
+#' @examples
+#' # Get molecular type list for all molecules in the object
+#' mol_types <- getMolTypeList(object)
+#'
+#' # Get molecular type list for specific molecules
+#' mol_types <- getMolTypeList(object, molecules = c("mol1", "mol2"))
+#'
 #' @export
-setMethod(
-  f = "getModelEvaluationDf",
-  signature = "SpatialTrajectoryScreening",
-  definition = function(object, ...){
+getMoleculeTypeList <- function(object, molecules = NULL){
 
-    out <- object@results
+  purrr::map(
+    .x = object@assays,
+    .f = function(ma){
 
-    return(out)
+      out <- base::rownames(ma@mtr_counts)
 
-  }
-)
+      if(base::is.character(molecules)){
 
+        out <- out[out %in% molecules]
+
+      }
+
+      return(out)
+
+    })
+
+}

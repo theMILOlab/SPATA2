@@ -2,19 +2,19 @@
 % Please edit documentation in R/a.R
 \name{alignImage}
 \alias{alignImage}
-\alias{alignImage,spata2-method}
+\alias{alignImage,SPATA2-method}
 \alias{alignImage,HistoImaging-method}
 \alias{alignImage,HistoImage-method}
 \alias{alignImageAuto}
 \alias{alignImageAuto,HistoImaging-method}
 \alias{alignImageInteractive}
-\alias{alignImageInteractive,spata2-method}
+\alias{alignImageInteractive,SPATA2-method}
 \alias{alignImageInteractive,HistoImaging-method}
 \title{Align histology images}
 \usage{
 alignImage(object, ...)
 
-\S4method{alignImage}{spata2}(
+\S4method{alignImage}{SPATA2}(
   object,
   img_name,
   opt = "set",
@@ -65,18 +65,21 @@ alignImageAuto(object, ...)
 
 alignImageInteractive(object, ...)
 
-\S4method{alignImageInteractive}{spata2}(object)
+\S4method{alignImageInteractive}{SPATA2}(object)
 
 \S4method{alignImageInteractive}{HistoImaging}(object, window_size = "800px")
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{img_name}{Character value. The name of the \code{HistoImage} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{opt}{Character value. Either \emph{'add'} or \emph{'set'}. Decides whether the
+input adjustments are added to the existing ones or set (replacing them).}
 
 \item{angle}{Numeric value ranging between 0-359. Determines if the image
 is supposed to be rotated in \strong{clockwise} direction.}
@@ -110,12 +113,6 @@ is interpreted as an absolute number of attempts. For instance, setting
 If \code{stop_at < 1}, the maximum number of consecutive iterations without any improvement
 allowed is calculated by the total number of translations possible times \code{stop_at}.
 See details for more.}
-
-\item{add}{Logical value. If \code{TRUE}, numeric values are added to the current values
-instead of replacing them. E.g. if \code{angle = 90} and the image is already rotated by
-90° the saved transformation would be to rotate the image with 180°. If \code{FALSE}, input
-values are simply set. E.g. if \code{angle = 90} the resulting saved transformation would
-be to rotate the image with 90° regardless of the previous setting.}
 }
 \value{
 The input object containing the added or computed
@@ -124,38 +121,4 @@ results.
 \description{
 Aligns an image with the reference image. See details for
 more information about the process.
-}
-\details{
-\code{alignImageAuto()} aligns the image specified in \code{name} with the reference
-image obtained from \code{getHistoImageRef()}.
-
-The alignment process consists of several steps:
-\enumerate{
-\item Scaling and translation: The outline of the tissue in the image to be aligned
-(referred to as the "tissue outline") is scaled to match the dimensions of
-the reference outline. It is then translated to ensure that its centroid aligns
-with the centroid of the reference outline.
-\item Flipping and rotation: The function iterates over all possible combinations of
-vertical and horizontal flipping, along with rotation angles between 0-359°.
-Each iteration evaluates the overlap between the tissue outline and the reference
-outline. The combination with the highest overlap is selected, and the tissue
-outline is transformed accordingly.
-\item Optimization: The overlap is further optimized through consecutive horizontal
-and vertical translations of the tissue outline. The outline is shifted horizontally
-by the value specified by the \code{step} argument. After each horizontal step, the
-outline is shifted vertically upwards by the \code{step} value. If there is no improvement
-in the overlap after a certain number of consecutive vertical shifts (controlled by
-\code{stop_at}), the outline is shifted downwards. This process continues until the
-maximum number of shifts without improvment is reached. Then, another step to the right
-is taken until the maximum number of shifts to the right is reached. The same procedure
-is conducted for shifts to the left. The optimized translation values are then
-applied to the tissue outline.
-\item Image transformations: All the spatial transformations required to produce the final
-aligned image are stored as a list obtained from \code{getImageTransformations()}. These
-transformations can be applied during data extraction or visualization if the \code{transform}
-argument is set to \code{TRUE} (the default behavior).
-}
-
-The resulting aligned image and the list of transformations are returned by the function
-for further use.
 }

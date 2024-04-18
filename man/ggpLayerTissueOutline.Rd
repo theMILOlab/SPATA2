@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerTissueOutline}
 \alias{ggpLayerTissueOutline}
-\alias{ggpLayerTissueOutline,spata2-method}
+\alias{ggpLayerTissueOutline,SPATA2-method}
 \alias{ggpLayerTissueOutline,HistoImaging-method}
 \alias{ggpLayerTissueOutline,HistoImage-method}
 \alias{ggpLayerTissueOutline,data.frame-method}
@@ -10,10 +10,10 @@
 \usage{
 ggpLayerTissueOutline(object, ...)
 
-\S4method{ggpLayerTissueOutline}{spata2}(
+\S4method{ggpLayerTissueOutline}{SPATA2}(
   object,
   method = "image",
-  img_name = NULL,
+  img_name = activeImage(object),
   by_section = TRUE,
   fragments = FALSE,
   line_alpha = 0.9,
@@ -31,7 +31,7 @@ ggpLayerTissueOutline(object, ...)
 \S4method{ggpLayerTissueOutline}{HistoImaging}(
   object,
   method = "image",
-  img_name = NULL,
+  img_name = activeImage(object),
   by_section = TRUE,
   fragments = FALSE,
   line_alpha = 0.9,
@@ -77,7 +77,7 @@ ggpLayerTissueOutline(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}}

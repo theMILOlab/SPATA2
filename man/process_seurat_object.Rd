@@ -23,6 +23,10 @@ process_seurat_object(
 \arguments{
 \item{seurat_object}{A valid seurat-object.}
 
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
 \item{SCTransform}{A named list of arguments given to \code{Seurat::SCTransform()}, TRUE or FALSE.}
 
 \item{NormalizeData}{A named list of arguments given to \code{Seurat::NormalizeData()}, TRUE or FALSE.}

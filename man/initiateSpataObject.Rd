@@ -2,15 +2,16 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject}
 \alias{initiateSpataObject}
-\title{Initiate a \code{spata2} object}
+\title{Initiate a \code{SPATA2} object}
 \usage{
 initiateSpataObject(
-  count_mtr,
-  coords_df,
   sample_name,
-  img_ref = NULL,
-  dir_img_ref = NULL,
-  name_img_ref = NULL,
+  count_mtr,
+  omic,
+  coords_df,
+  img = NULL,
+  img_dir = NULL,
+  img_name = "image1",
   spatial_method = "Undefined",
   meta = list(),
   misc = list(),
@@ -20,21 +21,27 @@ initiateSpataObject(
 )
 }
 \arguments{
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
+
 \item{count_mtr}{A count matrix. Column names are barcodes. Rownames are the
-features (genes, proteins, metabolites etc.).}
+molecular features (genes, proteins, metabolites etc.).}
+
+\item{omic}{The type of \code{\link{MolecularAssay}} in which the count matrix is placed.
+Should best describe the molecular type of the count matrix. E.g. transcriptomics,
+proteomics, metabolomics. Additionally, defines the assay name! See \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{coords_df}{Data.frame with a variable called \emph{barcodes} as well as the
 \emph{x_orig} and \emph{y_orig} or \emph{x} and \emph{y}.}
 
-\item{img_ref}{The reference image. See details for more information on how or
+\item{img}{The reference image. See details for more information on how or
 how not to include an image.}
 
-\item{dir_img_ref}{Character value or \code{NULL}. If character, the directory
-to the reference image.}
+\item{img_dir}{Character value or \code{NULL}. If character, the file directory
+to the reference image. See details for more information on how and why to include
+a file directory.}
 
-\item{name_img_ref}{Character value or \code{NULL}. If character, the name of
-the reference image. Must not be \code{NULL} if \code{dir_img_ref} is specified.
-Ignored if \code{dir_img_ref} is \code{NULL}.}
+\item{img_name}{Character value. The name of the reference image. Only
+required if at least \code{img} or \code{img_dir} is specified.}
 
 \item{spatial_method}{Character value or object of class \code{\link{SpatialMethod}}.
 If character, one of \code{validSpatialMethods()}.}
@@ -50,10 +57,10 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-An object of class \code{spata2}.
+An object of class \code{SPATA2}.
 }
 \description{
-Initiates a \code{spata2} object using the basic inputs: a coordinates
+Initiates a \code{SPATA2} object using the basic inputs: a coordinates
 data.frame and a count matrix.
 }
 \section{Initiating the object with an image}{
@@ -64,7 +71,7 @@ to be loaded altogether in a \code{SPATA2} object, which saves storage space. By
 \code{SPATA2} takes a directory to the image you want to initiate your \code{SPATA2} object with,
 then loads the image and saves the directory, too. If the image does not
 exist in a file on your device but only in the global environment you can
-use \code{img_ref} directly. This way, no image directory is stored. In a scenario,
+use \code{img} directly. This way, no image directory is stored. In a scenario,
 where you want to register an additional image and use it for further analysis,
 you can not \emph{unload} the image with which you initiated the object because it
 would be lost since there is not directory from which to retrieve it once
@@ -72,18 +79,18 @@ you want to use it again. Therefore, we recommend to initiate the object
 with a file directory to the image and not with an image from the global
 environment.
 
-Lastly, if \code{img_ref} and \code{dir_img_ref} is specified the image is saved under
+Lastly, if \code{img} and \code{img_dir} is specified the image is saved under
 this directory as a .png file and the image is registered normally.
 }
 
 \section{Experiments without background images}{
 
 As \code{SPATA2} has been developed with the Visium platform in mind, a lot of spatial
-information are stored in containers related to the images that come along
+information is stored in containers related to the images that come along
 with the experiment set up. If the experiment set up (or your data set) does not
 contain an image, the containers are created anyway with the @image slot being empty.
 
-If \code{dir_img_ref} is \strong{not} specified:
+If \code{img_dir} and/or \code{img} are \strong{not} specified:
 This implies that your data set does not contain an image. The function
 creates a \code{\link{PseudoHistoImage}} as a container for some spatial information (
 especially for the scale factors) but it does not contain an actual image.
@@ -95,10 +102,10 @@ This specifies the image to load and the function creates a regular \code{\link{
 Note that if the \code{coords_df} does not contain \emph{x_orig} and \emph{y_orig} variables,
 the \emph{x} and \emph{y} variables provided in the coordinates data.frame are
 considered to be the original coordinates and are forced into names \emph{x_orig}
-and \emph{y_orig}. (Upon retrieval coordinates are scaled to the image in use using the
-\emph{coordinates scale factor}. This factor defaults to 1 (but can be adjusted via argument
-\code{scale_factors} which defaults to \code{scale_factors = list(coords = 1)}). As the
+and \emph{y_orig}. Upon retrieval coordinates are scaled to the image in use using the
+\emph{coordinates scale factor}. This factor defaults to 1 but can be adjusted via argument
+\code{scale_factors} which defaults to \code{scale_factors = list(coords = 1)}. As the
 default is 1, the default expects the coordinates and the image to align
-perfectly.)
+perfectly.
 }
 

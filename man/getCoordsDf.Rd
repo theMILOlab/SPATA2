@@ -2,17 +2,23 @@
 % Please edit documentation in R/getA-G.R
 \name{getCoordsDf}
 \alias{getCoordsDf}
-\alias{getCoordsDf,spata2-method}
+\alias{getCoordsDf,SPATA2-method}
 \alias{getCoordsDf,HistoImaging-method}
 \title{Obtain coordinates}
 \usage{
 getCoordsDf(object, ...)
 
-\S4method{getCoordsDf}{spata2}(object, img_name = NULL, exclude = TRUE, as_is = FALSE, ...)
+\S4method{getCoordsDf}{SPATA2}(
+  object,
+  img_name = activeImage(object),
+  exclude = TRUE,
+  as_is = FALSE,
+  ...
+)
 
 \S4method{getCoordsDf}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   exclude = TRUE,
   scale = TRUE,
   wh = FALSE,
@@ -21,7 +27,7 @@ getCoordsDf(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -97,7 +97,11 @@ read_coords <- function(...){
 read_coords_merfish <- function(dir_coords){
 
   coords_df <-
-    readr::read_csv(file = dir_coords, show_col_types = FALSE, col_names = TRUE)  %>%
+    suppressMessages({
+
+      readr::read_csv(file = dir_coords, show_col_types = FALSE, col_names = TRUE)
+
+    }) %>%
     dplyr::mutate(
       barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_"),
       exclude = FALSE,
@@ -118,7 +122,11 @@ read_coords_merfish <- function(dir_coords){
 read_coords_slide_seq_v1 <- function(dir_coords){
 
   coords_df <-
-    readr::read_delim(file = dir_coords, show_col_types = FALSE) %>%
+    suppressMessages({
+
+      readr::read_delim(file = dir_coords, show_col_types = FALSE)
+
+    }) %>%
     magrittr::set_colnames(value = c("barcodes", "x_orig", "y_orig")) %>%
     dplyr::mutate(exclude = FALSE, exclude_reason = "") %>%
     tibble::as_tibble()
@@ -133,7 +141,11 @@ read_coords_visium <- function(dir_coords){
   if(stringr::str_detect(dir_coords, pattern = "tissue_positions_list.csv")){
 
     coords_df <-
-      readr::read_csv(file = dir_coords, col_names = FALSE, show_col_types = FALSE) %>%
+      suppressMessages({
+
+        readr::read_csv(file = dir_coords, col_names = FALSE, show_col_types = FALSE)
+
+      }) %>%
       tibble::as_tibble() %>%
       magrittr::set_colnames(value = c("barcodes", "tissue", "row", "col", "imagerow", "imagecol")) %>%
       dplyr::mutate(
@@ -357,7 +369,7 @@ setGeneric(name = "refImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "refImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
     getHistoImaging(object) %>%
@@ -408,7 +420,7 @@ setGeneric(name = "registerImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "registerImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         dir,
                         img_name,
@@ -565,18 +577,18 @@ setMethod(
 #'
 #' @export
 relateToSpatialAnnotation <- function(object,
-                                    id,
-                                    input_df,
-                                    input_id_var = NULL,
-                                    distance = NA_integer_,
-                                    binwidth = NA_integer_,
-                                    n_bins_circle = NA_integer_,
-                                    n_bins_angle = 12,
-                                    calc_dist_to = "border",
-                                    unit = "px",
-                                    inc_outline = TRUE,
-                                    verbose = NULL,
-                                    ...){
+                                      id,
+                                      input_df,
+                                      input_id_var = NULL,
+                                      distance = NA_integer_,
+                                      binwidth = NA_integer_,
+                                      n_bins_circle = NA_integer_,
+                                      n_bins_angle = 12,
+                                      calc_dist_to = "border",
+                                      unit = "px",
+                                      inc_outline = TRUE,
+                                      verbose = NULL,
+                                      ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
@@ -793,7 +805,7 @@ relevelGroups <- function(object, grouping_variable, new_levels){
     against = getFeatureNames(object, of_class = "factor")
   )
 
-  fdf <- getFeatureDf(object)
+  fdf <- getMetaDf(object)
 
   var <- fdf[[grouping_variable]]
 
@@ -818,38 +830,46 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
   fdf[[grouping_variable]] <- base::factor(x = var, levels = new_levels)
 
-  object <- setFeatureDf(object, fdf)
+  object <- setMetaDf(object, meta_df = meta_df)
 
-  object@dea[[1]][[grouping_variable]] <-
-    purrr::map(
-      .x = object@dea[[1]][[grouping_variable]],
-      .f = function(method_list){
+  for(assay_name in getAssayNames(object)){
 
-        method_list$data[[grouping_variable]] <-
-          base::factor(
-            x = method_list$data[[grouping_variable]],
-            levels = new_levels
-          )
+    ma <- getAssay(object, assay_name = assay_name)
 
-        if(!base::is.null(method_list[["hypeR_gsea"]])){
+    ma@analysis$dea[[grouping_variable]] <-
+      purrr::map(
+        .x = object@dea[[1]][[grouping_variable]],
+        .f = function(method_list){
 
-          method_list$hypeR_gsea <- method_list$hypeR_gsea[new_levels]
+          method_list$data[[grouping_variable]] <-
+            base::factor(
+              x = method_list$data[[grouping_variable]],
+              levels = new_levels
+            )
+
+          if(!base::is.null(method_list[["hypeR_gsea"]])){
+
+            method_list$hypeR_gsea <- method_list$hypeR_gsea[new_levels]
+
+          }
+
+          return(method_list)
 
         }
+      )
 
-        return(method_list)
+    object <- setAssay(object, assay = ma)
 
-      }
-    )
+  }
 
   return(object)
 
 }
 
 
-#' @title Remove genes from the `spata2` object
+#' @title Remove genes from the `SPATA2` object
 #'
-#' @description Functions that removes genes from the `spata2` object by removing
+#' @description Functions that removes genes from the `SPATA2` object by removing
 #' them from count matrix and all processed matrices of the assay.
 #'
 #'  \itemize{
@@ -873,32 +893,37 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 #'
 #' @export
 #'
-removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
+
+removeMolecules <- function(object,
+                            molecules,
+                            show_warnings = FALSE,
+                            ref = "molecule",
+                            verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  genes_rm <- genes
+  molecules_rm <- molecules
 
   # apply to count matrix
   count_mtr <- getCountMatrix(object)
 
-  genes_count <- base::rownames(count_mtr)
+  molecules_count <- base::rownames(count_mtr)
 
   if(base::isTRUE(show_warnings)){
 
     confuns::check_one_of(
-      input = genes_rm,
-      against = genes_count,
+      input = molecules_rm,
+      against = molecules_count,
       fdb.fn = "warning",
       fdb.opt = 2,
-      ref.opt.2 = "genes of count matrix"
+      ref.opt.2 = glue::glue("{ref} of count matrix")
     )
 
   }
 
-  genes_keep <- genes_count[!genes_count %in% genes_rm]
+  molecules_keep <- molecules_count[!molecules_count %in% molecules_rm]
 
-  count_mtr <- count_mtr[genes_keep, ]
+  count_mtr <- count_mtr[molecules_keep, ]
 
   object <- setCountMatrix(object, count_mtr = count_mtr)
 
@@ -911,23 +936,23 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
 
       mtr <- getProcessedMatrix(object, mtr_name = mn)
 
-      genes_mtr <- base::rownames(mtr)
+      molecules_mtr <- base::rownames(mtr)
 
       if(base::isTRUE(show_warnings)){
 
         confuns::check_one_of(
-          input = genes_rm,
-          against = genes_mtr,
+          input = molecules_rm,
+          against = molecules_mtr,
           fdb.fn = "warning",
           fdb.opt = 2,
-          ref.opt.2 = glue::glue("genes of matrix '{mn}'")
+          ref.opt.2 = glue::glue("{ref} of matrix '{mn}'")
         )
 
       }
 
-      genes_keep <- genes_mtr[!genes_mtr %in% genes_rm]
+      molecules_keep <- molecules_mtr[!molecules_mtr %in% molecules_rm]
 
-      mtr <- mtr[genes_keep, ]
+      mtr <- mtr[molecules_keep, ]
 
       object <- setProcessedMatrix(object, proc_mtr = mtr, name = mn)
 
@@ -936,7 +961,7 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Removed {base::length(genes_rm)} gene(s)."),
+    msg = glue::glue("Removed {base::length(molecules_rm)} {ref}(s)."),
     verbose = verbose
   )
 
@@ -944,7 +969,21 @@ removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
 
 }
 
-#' @rdname removeGenes
+#' @rdname removeMolecules
+#' @export
+removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
+
+  removeMolecules(
+    object = object,
+    molecules = genes,
+    show_warnings = show_warnings,
+    ref = "gene",
+    verbose = verbose
+    )
+
+}
+
+#' @rdname removeMolecules
 #' @export
 removeGenesStress <- function(object, verbose = NULL){
 
@@ -977,7 +1016,7 @@ removeGenesStress <- function(object, verbose = NULL){
 
 }
 
-#' @rdname removeGenes
+#' @rdname removeMolecules
 #' @export
 removeGenesZeroCounts <- function(object, verbose = NULL){
 
@@ -1013,7 +1052,7 @@ setGeneric(name = "removeImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "removeImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, img_name){
 
     imaging <- getHistoImaging(object)
@@ -1059,13 +1098,15 @@ setMethod(
 
 #' @title Remove a processed matrix
 #'
-#' @description Removes a processed matrix from the `spata2` object.
+#' @description Removes a processed matrix from the `SPATA2` object.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
-removeProcessedMatrix <- function(object, mtr_name){
+removeProcessedMatrix <- function(object,
+                                  mtr_name,
+                                  assay_name = activeAssay(object)){
 
   confuns::is_value(mtr_name, mode = "character")
 
@@ -1074,7 +1115,11 @@ removeProcessedMatrix <- function(object, mtr_name){
     against = getProcessedMatrixNames(object)
   )
 
-  object@data[[1]][[mtr_name]] <- NULL
+  ma <- getAssay(object, assay_name = assay_name)
+
+  ma@mtr_proc[[mtr_name]] <- NULL
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
@@ -1082,7 +1127,7 @@ removeProcessedMatrix <- function(object, mtr_name){
 
 #' @title Remove spatial annotations
 #'
-#' @description Removes spatial annotations from the spata2 object.
+#' @description Removes spatial annotations from the SPATA2 object.
 #'
 #' @param ids Character value. The IDs of the spatial annotations to
 #' remove.
@@ -1247,94 +1292,86 @@ removeTissueFragments <- function(object,
 #'
 #' @examples #Not run:
 #'
-#'  object <- renameFeatures(object, "seurat_clusters_new" = "seurat_clusters")
+#'  object <- renameFeatures(object, "clusters_new" = "clusters")
 #'
 
-renameFeatures <- function(object, ..., of_sample = NA){
+renameFeatures <- function(object, ...){
 
   check_object(object)
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   rename_input <- confuns::keep_named(c(...))
 
-  if("segmentation" %in% rename_input){
-
-    msg <- "Feature 'segmentation' must not be renamed."
-
-    confuns::give_feedback(
-      fdb.fn = "stop",
-      msg = msg,
-      with.time = FALSE
-    )
-
-  }
-
   confuns::check_one_of(
     input = rename_input,
-    against = getFeatureNames(object, of_sample = of_sample),
+    against = getFeatureNames(object),
     ref.input = "features to be renamed"
   )
 
   valid_rename_input <- rename_input
 
-  #assign("valid_rename_input", value = valid_rename_input, envir = .GlobalEnv)
-
   # rename feature df
   feature_df <-
-    getFeatureDf(object, of_sample = of_sample) %>%
+    getMetaDf(object) %>%
     dplyr::rename(!!! valid_rename_input)
 
-  # rename dea list
-  dea_list <- object@dea[[of_sample]]
+  for(assay_name in getAssayNames(object)){
 
-  dea_names <- base::names(dea_list)
+    ma <- getAssay(object, assay_name = assay_name)
 
-  if(!base::is.null(dea_names)){
+    # rename dea list
+    dea_list <- ma@analysis$dea
 
-    dea_names <- valid_rename_input[valid_rename_input %in% dea_names]
+    dea_names <- base::names(dea_list)
 
-    if(base::length(dea_names) >= 1){
+    if(!base::is.null(dea_names)){
 
-      for(dea_name in dea_names){
+      dea_names <- valid_rename_input[valid_rename_input %in% dea_names]
 
-        # rename list slots
-        new_name <- base::names(dea_names)[dea_names == dea_name]
+      if(base::length(dea_names) >= 1){
 
-        base::names(dea_list)[base::names(dea_list) == dea_name] <-
-          new_name
+        for(dea_name in dea_names){
 
-        # rename dea data.frames
-        dea_list[[new_name]] <-
-          purrr::map(
-            .x = dea_list[[new_name]],
-            .f = function(method){
+          # rename list slots
+          new_name <- base::names(dea_names)[dea_names == dea_name]
 
-              df <- method$data
+          base::names(dea_list)[base::names(dea_list) == dea_name] <-
+            new_name
 
-              base::names(df)[base::names(df) == dea_name] <- new_name
+          # rename dea data.frames
+          dea_list[[new_name]] <-
+            purrr::map(
+              .x = dea_list[[new_name]],
+              .f = function(method){
 
-              res_list <-
-                list(
-                  data = df,
-                  adjustments = method$adjustments,
-                  hypeR_gsea = method$hypeR_gsea
-                )
+                df <- method$data
 
-              return(res_list)
+                base::names(df)[base::names(df) == dea_name] <- new_name
 
-            }
-          )
+                res_list <-
+                  list(
+                    data = df,
+                    adjustments = method$adjustments,
+                    hypeR_gsea = method$hypeR_gsea
+                  )
+
+                return(res_list)
+
+              }
+            )
+
+        }
+
+        ma@analysis$dea <- dea_list
+
+        object <- setAssay(object, assay = ma)
 
       }
-
-      object@dea[[of_sample]] <- dea_list
 
     }
 
   }
 
-
-  object <- setFeatureDf(object, feature_df = feature_df, of_sample = of_sample)
+  object <- setMetaDf(object, meta_df = meta_df)
 
   return(object)
 
@@ -1372,15 +1409,6 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  grouping_variable <-
-    check_features(
-      object = object,
-      features = grouping_variable,
-      valid_classes = c("factor")
-    )
-
   rename_input <- confuns::keep_named(c(...))
 
   if(base::length(rename_input) == 0){
@@ -1394,7 +1422,7 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 
   }
 
-  feature_df <- getFeatureDf(object, of_sample = of_sample)
+  feature_df <- getMetaDf(object)
 
   valid_rename_input <-
     confuns::check_vector(
@@ -1436,43 +1464,48 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
   }
 
   # rename dea list
-  dea_list <- object@dea[[of_sample]][[grouping_variable]]
 
-  if(!base::is.null(dea_list)){
+  for(assay_name in getAssayNames(object)){
 
-    object@dea[[of_sample]][[grouping_variable]] <-
-      purrr::map(
-        .x = dea_list,
-        .f = function(method){
+    ma <- getAssay(object, assay_name = assay_name)
 
-          new_df <-
-            dplyr::mutate(
-              .data = method$data,
-              {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
-            )
+    if(!purrr::is_empty(ma@analysis$dea[[grouping_variable]])){
 
-          out <- list(data = new_df, adjustments = method$adjustments)
+      ma@analysis$dea[[grouping_variable]] <-
+        purrr::map(
+          .x = ma@analysis$dea[[grouping_variable]],
+          .f = function(method){
 
-          gsea <- method$hypeR_gsea
+            new_df <-
+              dplyr::mutate(
+                .data = method$data,
+                {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
+              )
 
-          if(base::is.list(gsea)){
+            out <- list(data = new_df, adjustments = method$adjustments)
 
-            gsea <- confuns::lrename(lst = gsea, !!!rename_input)
+            gsea <- method$hypeR_gsea
 
-            out$hypeR_gsea <- gsea
+            if(base::is.list(gsea)){
+
+              gsea <- confuns::lrename(lst = gsea, !!!rename_input)
+
+              out$hypeR_gsea <- gsea
+
+            }
+
+            return(out)
 
           }
+        )
 
-          return(out)
+    }
 
-        }
-      ) %>%
-      purrr::set_names(nm = base::names(dea_list))
-
+    object <- setAssay(object, assay = ma)
 
   }
 
-  object <- setFeatureDf(object, feature_df = renamed_feature_df, of_sample = of_sample)
+  object <- setMetaDf(object, meta_df = renamed_feature_df)
 
   return(object)
 
@@ -1535,71 +1568,9 @@ renameSpatAnn <- function(...){
 
 #' @rdname renameGroups
 #' @export
-renameSegments <- function(object, ..., of_sample = NA){
+renameSegments <- function(object, ...){
 
-  check_object(object)
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  rename_input <- confuns::keep_named(c(...))
-
-  if(base::length(rename_input) == 0){
-
-    msg <- renaming_hint
-
-    confuns::give_feedback(
-      msg = msg,
-      fdb.fn = "stop"
-    )
-
-  }
-
-  feature_df <- getFeatureDf(object, of_sample = of_sample)
-
-  valid_rename_input <-
-    confuns::check_vector(
-      input = base::unname(rename_input),
-      against = base::unique(feature_df[["segmentation"]]),
-      fdb.fn = "stop",
-      ref.input = "segments to rename",
-      ref.against = glue::glue("all segments. ({renaming_hint})")
-    )
-
-  rename_input <- rename_input[rename_input %in% valid_rename_input]
-
-  # rename feature df
-  renamed_feature_df <-
-    dplyr::mutate(
-      .data = feature_df,
-      segmentation = forcats::fct_recode(.f = segmentation, !!!rename_input)
-    )
-
-  # rename dea list
-  dea_list <- object@dea[[of_sample]][["segmentation"]]
-
-  if(!base::is.null(dea_list)){
-
-    object@dea[[of_sample]][["segmentation"]] <-
-      purrr::map(
-        .x = dea_list,
-        .f = function(method){
-
-          new_df <-
-            dplyr::mutate(
-              .data = method$data,
-              segmentation = forcats::fct_recode(.f = segmentation, !!!rename_input)
-            )
-
-          list(data = new_df, adjustments = method$adjustments)
-
-        }
-      ) %>%
-      purrr::set_names(nm = base::names(dea_list))
-
-  }
-
-  object <- setFeatureDf(object, feature_df = renamed_feature_df, of_sample = of_sample)
-
-  return(object)
+  renameGroups(object, ...)
 
 }
 
@@ -1626,7 +1597,7 @@ setGeneric(name = "resetImageTransformations", def = function(object, ...){
 #' @export
 setMethod(
   f = "resetImageTransformations",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, img_name, ...){
 
     imaging <- getHistoImaging(object)
@@ -1706,6 +1677,7 @@ resizingTextGrob <- function(...){
 rm_na <- function(x){ x[!base::is.na(x)] }
 
 
+#' @keywords internal
 round_range <- function(coords_range) {
 
   out <- c(0, 10^base::ceiling(base::log10(coords_range[2])))
@@ -1715,6 +1687,7 @@ round_range <- function(coords_range) {
 }
 
 
+#' @keywords internal
 # inspired by https://rdrr.io/github/ErasmusOIC/SMoLR/src/R/rotate.R
 # basic function
 rotate_coord <- function(x,
@@ -1922,7 +1895,7 @@ rotate_sf = function(x) matrix(c(cos(x), sin(x), -sin(x), cos(x)), 2, 2)
 #' **NOTE:** `rotateImage()` only rotates the image and lets everything else as
 #' is. Only use it if you want to rotate the image because it is not aligned with
 #' the spatial coordinates. If you want to rotate the image while maintaining
-#' alignment with the spatial aspects in the `spata2` object
+#' alignment with the spatial aspects in the `SPATA2` object
 #' use `rotateAll()`!
 #'
 #' @inherit flipAll params
@@ -1973,52 +1946,28 @@ rotateAll <- function(object, angle, clockwise = TRUE){
 #' @export
 rotateImage <- function(object,
                         angle,
+                        img_name = activeImage(object),
                         clockwise = TRUE,
-                        track = FALSE){
+                        ...){
 
-  base::stopifnot(angle > 0 & angle < 360)
+  base::stopifnot(angle > 1 & angle < 360)
 
-  if(!base::isTRUE(clockwise)){
+  if(base::isFALSE(clockwise)){
 
-    angle <- 360 - angle
+    angle <- base::abs(360-angle)
 
   }
 
-  io <- getImageObject(object)
-
-  image_dims <- getImageDims(object)
-
-  io@image <-
-    EBImage::rotate(
-      x = io@image,
+  object <-
+    alignImage(
+      object = object,
+      img_name = img_name,
+      opt = "add",
       angle = angle,
-      output.dim = image_dims[1:2],
-      bg.col = "white"
-      )
 
-  # save rotation
-  new_angle <- io@justification$angle + angle
+    )
 
-  if(new_angle > 360){
 
-    new_angle <- 360 - new_angle
-
-  }
-
-  if(base::isTRUE(track)){
-
-    if(new_angle == 360){ new_angle <- 0}
-
-    io@justification$angle <- new_angle
-
-  }
-
-  io@image_info$dim_stored <- base::dim(io@image)
-
-  # set image
-  object <- setImageObject(object, image_object = io)
-
-  return(object)
 
 }
 
@@ -2113,7 +2062,7 @@ setGeneric(name = "rotateSpatialAnnotation", def = function(object, ...){
 #' @export
 setMethod(
   f = "rotateSpatialAnnotation",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         id,
                         angle,

@@ -7,7 +7,8 @@
 runSeuratClustering(
   object,
   name = "seurat_clusters",
-  mtr_name = getActiveMatrixName(object),
+  mtr_name = activeMatrix(object),
+  assay_name = activeAssay(object),
   FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
   RunPCA = list(npcs = 60),
   FindNeighbors = list(dims = 1:30),

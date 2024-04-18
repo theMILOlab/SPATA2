@@ -13,7 +13,7 @@ renameGroups(
   of_sample = NA
 )
 
-renameSegments(object, ..., of_sample = NA)
+renameSegments(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

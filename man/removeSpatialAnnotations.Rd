@@ -7,7 +7,7 @@
 removeSpatialAnnotations(object, ids)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{ids}{Character value. The IDs of the spatial annotations to
@@ -18,5 +18,5 @@ The input object containing the added or computed
 results.
 }
 \description{
-Removes spatial annotations from the spata2 object.
+Removes spatial annotations from the SPATA2 object.
 }

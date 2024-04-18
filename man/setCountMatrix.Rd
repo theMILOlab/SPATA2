@@ -5,9 +5,9 @@
 \alias{setProcessedMatrix}
 \title{Set data matrices}
 \usage{
-setCountMatrix(object, count_mtr, ...)
+setCountMatrix(object, count_mtr, assay_name = activeAssay(object), ...)
 
-setProcessedMatrix(object, proc_mtr, name, ...)
+setProcessedMatrix(object, proc_mtr, name, assay_name, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

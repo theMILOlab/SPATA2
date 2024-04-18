@@ -2,18 +2,15 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatialMethod}
 \alias{getSpatialMethod}
-\alias{getSpatialMethod,spata2-method}
-\alias{getSpatialMethod,HistoImaging-method}
+\alias{getSpatialMethod,ANY-method}
 \title{Obtain spatial method}
 \usage{
 getSpatialMethod(object, ...)
 
-\S4method{getSpatialMethod}{spata2}(object)
-
-\S4method{getSpatialMethod}{HistoImaging}(object)
+\S4method{getSpatialMethod}{ANY}(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -2,18 +2,18 @@
 % Please edit documentation in R/contains.R
 \name{containsSpatialAnnotations}
 \alias{containsSpatialAnnotations}
-\alias{containsSpatialAnnotations,spata2-method}
+\alias{containsSpatialAnnotations,SPATA2-method}
 \alias{containsSpatialAnnotations,HistoImaging-method}
 \title{Check availability of spatial annotations}
 \usage{
 containsSpatialAnnotations(object, ...)
 
-\S4method{containsSpatialAnnotations}{spata2}(object, error = FALSE)
+\S4method{containsSpatialAnnotations}{SPATA2}(object, error = FALSE)
 
 \S4method{containsSpatialAnnotations}{HistoImaging}(object, error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -19,7 +19,7 @@ setGeneric(name = "getActive", def = function(object, ...){
 #' @export
 setMethod(
   f = "getActive",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, what){
 
     confuns::check_one_of(
@@ -43,110 +43,46 @@ setMethod(
   })
 
 
-#' @title Obtain name of currently active data matrix
+#' @title Obtain molecular assay
 #'
-#' @inherit check_sample params
+#' @description Retrieves an object of class [`MolecularAssay`] from the provided object.
 #'
-#' @return Character value.
+#' @inherit argument_dummy params
+#'
+#' @inheritParams containsAssay
+#'
+#' @return Assay data corresponding to the specified name.
+#'
+#' @details This function retrieves assay data from the provided object based on the specified assay name. It internally calls [`containsAssay()`] to ensure that the assay exists in the object.
+#'
+#' @seealso [`activeAssay()`]
+#'
 #' @export
+getAssay <- function(object,
+                     assay_name = activeAssay(object)){
 
-getActiveMatrixName <- function(object, verbose = NULL, ...){
+  containsAssay(object, assay_name)
 
-  deprecated(...)
-
-  check_object(object)
-
-  hlpr_assign_arguments(object)
-
-  mtr_name <- object@information$active_mtr
-
-  if(base::is.null(mtr_name)){
-
-    stop("Please set an active matrix with `setActiveMatrix()`")
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Using matrix '{mtr_name}'."),
-    verbose = verbose
-  )
-
-  return(mtr_name)
+  object@assays[[assay_name]]
 
 }
 
-#' @rdname getActiveMatrixName
+#' @title Obtain assay names
+#'
+#' @description Retrieves the names of assays present in the provided object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A character vector containing the names of assays.
+#'
+#' @seealso [`getAssay()`]
+#'
 #' @export
-getActiveExpressionMatrixName <- function(...){
+getAssayNames <- function(object){
 
-  deprecated(fn = TRUE)
-
-  getActiveMatrixName(...)
+  base::names(object@assays)
 
 }
-
-
-#' @title Obtain information about the optimal neural network set up
-#'
-#' @description Extracts the results from \code{assessAutoencoderOptions()}.
-#'
-#' @inherit check_object params
-#'
-#' @return A data.frame containing the total variance measured by \code{irlba::prcomp_irlba()} after each
-#' combination of activations/bottlenecks.
-#' @export
-
-getAutoencoderAssessment <- function(object, of_sample = NA){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  assessment <- object@autoencoder[[of_sample]]$assessment
-
-  test <- !(base::identical(assessment, list()) & base::is.null(assessment))
-  ref_x <- "autoencoder assessment information"
-  ref_fns <- "function runAutoencoderAssessment() first"
-
-  check_availability(
-    test = test,
-    ref_x = ref_x,
-    ref_fns = ref_fns
-  )
-
-  base::return(assessment)
-
-}
-
-#' @title Obtain information on neural network
-#'
-#' @description Returns the argument input that was chosen to construct the
-#' neural network that generated the matrix denoted in \code{mtr_name}.
-#'
-#' @inherit getExpressionMatrix params
-#'
-#' @return A named list.
-#' @export
-
-getAutoencoderSetUp <- function(object, mtr_name, of_sample = NA){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  nn_set_up <-
-    object@autoencoder[[of_sample]][["nn_set_ups"]][[mtr_name]]
-
-  if(base::is.null(nn_set_up)){
-
-    base::stop(glue::glue("Could not find any autoencoder information for matrix '{mtr_name}' of sample '{of_sample}'"))
-
-  }
-
-  base::return(nn_set_up)
-
-}
-
 
 
 # getB --------------------------------------------------------------------
@@ -172,7 +108,7 @@ setGeneric(name = "getBackgroundColor", def = function(object, ...){
 #' @export
 setMethod(
   f = "getBackgroundColor",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, img_name = NULL, default = "white", ...){
 
 
@@ -251,18 +187,15 @@ setMethod(
 getBarcodes <- function(object,
                         across = NULL,
                         across_subset = NULL,
-                        of_sample = NA,
                         simplify = TRUE){
 
   check_object(object)
-
-  of_sample <- check_sample(object, of_sample, of.length = 1)
 
   # if variable is specified
   if(!base::is.null(across)){
 
     res_df <-
-      getFeatureDf(object, of_sample) %>%
+      getMetaDf(object, of_sample) %>%
       confuns::check_across_subset(
         df = .,
         across = across,
@@ -297,7 +230,7 @@ getBarcodes <- function(object,
 
   } else {
 
-    res_barcodes <- object@information$barcodes
+    res_barcodes <- getMetaDf(object)$barcodes
 
   }
 
@@ -395,46 +328,6 @@ getBarcodesInPolygonList <- function(object, polygon_list, strictly = TRUE){
 }
 
 
-#' @title Obtain barcode spot distances
-#'
-#' @description Computes the distance from every barcode spot to every other
-#' barcode spot.
-#'
-#' @inherit argument_dummy params
-#'
-#' @details The output data.frame has a number of rows that is equal to
-#' \code{nBarcodes(object)^2}
-#'
-#' @return If \code{unit} is \emph{'pixel'} a numeric value that scales
-#' the center to center distance of barcode spots to the current image.
-#' Else an object of class \code{unit}.
-#' @export
-#'
-#'
-getBarcodeSpotDistance <- function(object,
-                                   unit = "pixel",
-                                   force = FALSE,
-                                   verbose = NULL,
-                                   ...){
-
-  dist_val <- object@information$bcsp_dist
-
-  if(base::is.null(dist_val) & base::isFALSE(force)){
-
-    dist_val <-
-      getBarcodeSpotDistances(object, verbose = verbose) %>%
-      dplyr::filter(bc_origin != bc_destination) %>%
-      dplyr::group_by(bc_origin) %>%
-      dplyr::filter(distance == base::min(distance)) %>%
-      dplyr::ungroup() %>%
-      dplyr::summarise(mean_dist = base::mean(distance)) %>%
-      dplyr::pull(mean_dist)
-
-  }
-
-  return(dist_val)
-
-}
 
 #' @title Obtain distances between barcodes
 #'
@@ -554,7 +447,7 @@ setGeneric(name = "getCCD", def = function(object, ...){
 #' @export
 setMethod(
   f = "getCCD",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         unit = NULL,
                         as_numeric = FALSE,
@@ -743,12 +636,15 @@ getCnvResults <- function(object, ...){
 
   check_object(object)
 
+  ma <- getAssay(object, assay_name = "transcriptomics")
 
-  res_list <- object@cnv[[1]]
+  res_list <- ma@analysis$cnv
 
-  check_availability(test = !base::identical(x = res_list, y = list()),
-                     ref_x = "CNV results",
-                     ref_fns = "function 'runCnvAnalysis()")
+  if(purrr::is_empty(res_list)){
+
+    stop("No CNV results in this object.")
+
+  }
 
   return(res_list)
 
@@ -796,9 +692,9 @@ setGeneric(name = "getCoordsDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "getCoordsDf",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         exclude = TRUE,
                         as_is = FALSE,
                         ...){
@@ -814,24 +710,16 @@ setMethod(
 
     # 2. Data wrangling -------------------------------------------------------
 
-    if(containsHistoImaging(object)){
+    imaging <- getHistoImaging(object)
 
-      imaging <- getHistoImaging(object)
-
-      coords_df <-
-        getCoordsDf(
-          object = imaging,
-          img_name = img_name,
-          exclude = exclude,
-          as_is = as_is,
-          ...
-        )
-
-    } else {
-
-      coords_df <- object@coordinates[[1]] %>% tibble::as_tibble()
-
-    }
+    coords_df <-
+      getCoordsDf(
+        object = imaging,
+        img_name = img_name,
+        exclude = exclude,
+        as_is = as_is,
+        ...
+      )
 
     coords_df <-
       dplyr::mutate(
@@ -855,13 +743,14 @@ setMethod(
   f = "getCoordsDf",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         exclude = TRUE,
                         scale = TRUE,
                         wh = FALSE,
                         as_is = FALSE,
                         ...){
 
+    # required for scaling
     hist_img <- getHistoImage(object, img_name = img_name)
 
     coords_df <- object@coordinates
@@ -1558,7 +1447,9 @@ getCoordsDfST <- function(object,
 #' @return A matrix.
 #' @export
 #'
-getCoordsMtr <- function(object, img_name = NULL, orig = FALSE){
+getCoordsMtr <- function(object,
+                         img_name = activeImage(object),
+                         orig = FALSE){
 
   coords_mtr <-
     getCoordsDf(object)[, c("barcodes", "x_orig", "y_orig")] %>%
@@ -1633,10 +1524,11 @@ getCountMatrix <- function(object, ...){
 
   deprecated(...)
 
-  barcodes <- getCoordsDf(object)
+  barcodes <- getBarcodes(object)
 
-  # adjusting control
-  count_mtr <- object@data[[1]][["counts"]]
+  ma <- getAssay(object, assay_name = "transcriptomics")
+
+  count_mtr <- ma@mtr_counts[, barcodes]
 
   if(base::is.null(count_mtr)){
 
@@ -1662,24 +1554,26 @@ getDeaGenes <- function(object,
                         n_highest_lfc = NULL,
                         n_lowest_pval = NULL,
                         flatten = TRUE,
-                        of_sample = NA){
+                        assay_name = activeAssay(object),
+                        ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
   check_object(object)
   check_method(method_de = method_de)
 
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
-
   across <- check_features(object, features = across, valid_classes = c("character", "factor"), max_length = 1)
 
   # 2. Extract and filter ---------------------------------------------------
 
-  de_result_list <- object@dea[[of_sample]][[across]][[method_de]]
+  ma <- getAssay(object, assay_name = assay_name)
+  de_result_list <- ma@analysis$dea[[across]][[method_de]]
 
   if(base::is.null(de_result_list)){
 
-    stop(glue::glue("No de-analysis results found across '{across}' computed via method '{method_de}'."))
+    stop(glue::glue("No DEA results found for '{across}' computed via method '{method_de}'."))
 
   }
 
@@ -1739,48 +1633,28 @@ getDeaLfcName <- function(object,
 
 }
 
-#' @title Obtain info on de-analysis storage
-#'
-#' @inherit check_object params
-#'
-#' @return A summarizing list.
 #' @export
-
-getDeaOverview <- function(object){
+getDeaOverview <- function(object, assay_name = activeAssay(object)){
 
   check_object(object)
 
-  all_results <-
-    purrr::map(.x = object@dea, .f = function(sample){
+  ma <- getAssay(object, assay_name = assay_name)
 
-      purrr::map(.x = sample, .f = ~ base::names(.x))
+  out <-
+    purrr::map(.x = ma@analysis$dea, .f = base::names)
 
-    })
-
-  if(base::length(getSampleNames(object)) == 1){
-
-    final_results <-
-      purrr::flatten(.x = all_results)
-
-  } else {
-
-    final_results <- all_results
-
-  }
-
-  return(final_results)
+  return(out)
 
 }
 
 
 
 
-#' @title Obtain de-analysis results
+#' @title Obtain DEA results
 #'
-#' @description A convenient way to extract the differential gene expression
+#' @description Extracts differential expression
 #' analysis results. Function \code{getDeaGenes()} is a wrapper around
 #' \code{getDeaResultsDf()} and returns only gene names in a character vector.
-#' See details for more.
 #'
 #' @inherit across_dummy params
 #' @inherit check_method params
@@ -1809,27 +1683,27 @@ getDeaResultsDf <- function(object,
                             min_lfc = NULL,
                             n_highest_lfc = NULL,
                             n_lowest_pval = NULL,
-                            of_sample = NA,
-                            stop_if_null = TRUE){
+                            stop_if_null = TRUE,
+                            assay_name = activeAssay(object),
+                            ...){
 
   # 1. Control --------------------------------------------------------------
 
   check_object(object)
   check_method(method_de = method_de)
 
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
-
   across <- check_features(object, features = across, valid_classes = c("character", "factor"), max_length = 1)
 
   # 2. Extract and filter ---------------------------------------------------
 
-  de_result_list <- object@dea[[of_sample]][[across]][[method_de]]
+  ma <- getAssay(object, assay_name = assay_name)
+  de_result_list <- ma@analysis$dea[[across]][[method_de]]
 
   if(base::is.null(de_result_list)){
 
     if(base::isTRUE(stop_if_null)){
 
-      stop(glue::glue("No de-analysis results found across '{across}' computed via method '{method_de}'."))
+      stop(glue::glue("No DEA results found across '{across}' computed via method '{method_de}'."))
 
     }
 
@@ -1871,33 +1745,7 @@ getDefault <- function(object, arg){
 
 }
 
-#' @rdname setDefaultGrouping
-#' @export
-getDefaultGrouping <- function(object, verbose = NULL, arg = "across"){
 
-  hlpr_assign_arguments(object)
-
-  g <- object@information$default_grouping
-
-  if(!base::is.character(g)){
-
-    if(base::is.character(arg)){
-
-      stop(glue::glue("Default grouping is not set. Set it with 'setDefaultGrouping()' or specify with argument '{arg}'."))
-
-    } else {
-
-      stop("Default grouping is not set. Set it with 'setDefaultGrouping()'.")
-
-    }
-
-  }
-
-  give_feedback(msg = glue::glue("Using default grouping: '{g}'"))
-
-  return(g)
-
-}
 
 
 
@@ -1913,60 +1761,13 @@ getDefaultInstructions <- function(object){
 
   check_object(object)
 
-  return(object@information$instructions$default)
+  return(object@obj_info$instructions$default)
 
 }
 
-#' @title Obtain dimensional reduction data
-#'
-#' @inherit check_method params
-#' @inherit check_sample params
-#' @param n_pcs Numeric value. Denotes the number of principal components to be included.
-#'
-#' @return A data.frame that contains the unique identifiers
-#' (keys): \emph{barcodes, sample} and:.
-#'
-#'  \itemize{
-#'   \item{ \code{getPcaDf()}: \emph{PC1, PC2, PC3, ...PCn}}
-#'   \item{ \code{getTsneDf()}: \emph{tsne1, tsne2}}
-#'   \item{ \code{getUmapDf()}: \emph{umap1, umap2}}
-#'   }
-#'
 
 
-#' @rdname setDefaultTrajectory
-#' @export
-getDefaultTrajectory <- function(object, ...){
 
-  deprecated(fn = TRUE)
-
-  t <- object@information$default_trajectory
-
-  x <- c(...)
-
-  if(!base::is.character(t)){
-
-    if(base::is.character(x)){
-
-      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()' or specify with argument `id`."))
-
-    } else {
-
-      stop("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()'.")
-
-    }
-
-  }
-
-  give_feedback(msg = glue::glue("Using default trajectory: '{t}'"))
-
-  return(t)
-
-}
-
-#' @rdname setDefaultTrajectory
-#' @export
-getDefaultTrajectoryId <- getDefaultTrajectory
 
 #' @title Obtain default unit
 #'
@@ -1990,7 +1791,9 @@ getDefaultUnit <- function(object){
 #' @title Obtain dim red data.frame
 getDimRedDf <- function(object,
                         method_dr = c("pca", "tsne", "umap"),
-                        of_sample = NA){
+                        ...){
+
+  deprecated(...)
 
   # 1. Control --------------------------------------------------------------
 
@@ -1998,15 +1801,12 @@ getDimRedDf <- function(object,
   check_object(object)
   check_method(method_dr = method_dr)
 
-  # adjusting check
-  of_sample <- check_sample(object, of_sample = of_sample, desired_length = 1)
-
   # -----
 
   # 2. Data extraction ------------------------------------------------------
 
   dim_red_df <-
-    object@dim_red[[of_sample]][[method_dr]] %>%
+    object@dim_red[[method_dr]] %>%
     tibble::as_tibble()
 
   # -----
@@ -2036,10 +1836,8 @@ getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_obj
 
   check_object(object)
 
-  check_to(object, to = to)
-
   directory_list <-
-    purrr::map(.x = to, .f = ~ object@information$instructions$directories[[.x]]) %>%
+    purrr::map(.x = to, .f = ~ object@obj_info$instructions$directories[[.x]]) %>%
     purrr::set_names(nm = to)
 
   if(base::length(directory_list) > 1){
@@ -2060,47 +1858,21 @@ getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_obj
 
 
 
-
 #' @rdname getMatrix
 #' @export
 getExpressionMatrix <- function(object,
-                                mtr_name = NULL,
+                                mtr_name = activeMatrix(object),
+                                assay_name = activeAssay(object),
                                 verbose = FALSE,
                                 ...){
 
   deprecated(...)
 
-  check_object(object)
+  check_matrix_name(object, mtr_name = mtr_name, assay_name = assay_name)
 
-  if(base::is.null(mtr_name)){
+  ma <- getAssay(object, assay_name = assay_name)
 
-    active_mtr <- getActiveMatrixName(object)
-
-    if(base::is.null(active_mtr) || !active_mtr %in% getExpressionMatrixNames(object)){
-
-      active_mtr <- base::ifelse(test = base::is.null(active_mtr), yes = "NULL", no = active_mtr)
-
-      stop(glue::glue("Did not find active expression matrix '{active_mtr}'. Don't know which matrix to return. Please specify `mtr_name`."))
-
-    }
-
-  } else {
-
-    if(!mtr_name %in% getExpressionMatrixNames(object)){
-
-      stop(glue::glue("Could not find expression matrix '{mtr_name}'."))
-
-    }
-
-    active_mtr <- mtr_name
-
-  }
-
-  confuns::give_feedback(msg = glue::glue("Using expression matrix '{active_mtr}'."), verbose = verbose)
-
-  expr_mtr <-
-    object@data[[1]][[active_mtr]] %>%
-    base::as.matrix()
+  expr_mtr <- ma@mtr_proc[[mtr_name]]
 
   return(expr_mtr)
 
@@ -2113,14 +1885,12 @@ getExpressionMatrix <- function(object,
 #' @return Character vector.
 #' @export
 
-getExpressionMatrixNames <- function(object, ...){
+getExpressionMatrixNames <- function(object, assay_name = activeAssay(object), ...){
 
   check_object(object)
 
-
-  mtr_names <-
-    object@data[[1]] %>% base::names() %>%
-    purrr::discard(.p = ~ .x == "counts")
+  ma <- getAssay(object, assay_name = assay_name)
+  mtr_names <- base::names(ma@mtr_proc)
 
   if(base::is.null(mtr_names) | base::identical(mtr_names, base::character(0))){
 
@@ -2140,39 +1910,12 @@ getExpressionMatrixNames <- function(object, ...){
 
 # getF --------------------------------------------------------------------
 
-#' @title Obtain feature data
-#'
-#' @inherit check_sample params
-#'
-#' @return The feature data data.frame of the specified object and sample(s).
-#' @export
-
-getFeatureDf <- function(object, ...){
-
-  deprecated(...)
-
-  check_object(object)
-
-  fdata <-
-    object@fdata[[1]] %>%
-    tibble::as_tibble()
-
-  if(base::is.null(fdata) | base::nrow(fdata) == 0){
-
-    stop("Could not find feature data.")
-
-  }
-
-  return(fdata)
-
-}
 
 #' @title Obtain feature names
 #'
-#' @description An easy way to obtain all features of interest along with their
-#' class.
+#' @description Extracts names of features **from the meta data.frame**.
 #'
-#' @param object A valid spata-object.
+#' @inherit argument_dummy params
 #' @param of_class Character vector. Specify the classes a feature must be of for
 #' it's name to be returned.
 #'
@@ -2181,12 +1924,12 @@ getFeatureDf <- function(object, ...){
 
 getFeatureNames <- function(object, of_class = NULL, ...){
 
-  deprecated(...)
+  deprecated( ...)
 
   check_object(object)
   confuns::is_vec(x = of_class, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
-  feature_df <- getFeatureDf(object = object)
+  feature_df <- getMetaDf(object = object)
 
   feature_names <- base::colnames(feature_df)
 
@@ -2205,127 +1948,6 @@ getFeatureNames <- function(object, of_class = NULL, ...){
 }
 
 
-#' @title Obtain unique categorical feature values
-#'
-#' @description Extracts the unique values of discrete features.
-#'
-#' @inherit check_sample params
-#' @inherit check_features params
-#'
-#' @return A vector or a named list according to the length of \code{features}.
-#' @export
-
-getFeatureValues <- function(object, features, of_sample = NA){
-
-  # 1. Control --------------------------------------------------------------
-
-  check_object(object)
-  features <- check_features(object, features, valid_classes = c("character", "factor"))
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
-
-  # -----
-
-  # 2. Main part ------------------------------------------------------------
-
-  if(base::length(features) == 1){
-
-    values <-
-      getFeatureDf(object, of_sample = of_sample) %>%
-      dplyr::pull(var = {{features}}) %>%
-      base::unique()
-
-    return(values)
-
-  } else {
-
-    values <-
-      purrr::map(.x = features,
-                 .f = function(f){
-                   res <-
-                     getFeatureDf(object, of_sample = of_sample) %>%
-                     dplyr::pull(var = {{f}}) %>%
-                     base::unique()
-
-                   return(res)
-
-                 }) %>%
-      magrittr::set_names(features)
-
-    return(values)
-  }
-
-
-}
-
-#' @title Obtain a feature variable
-#'
-#' @description Extracts the specified feature variables from the
-#' feature data.
-#'
-#' @inherit check_features params
-#' @inherit check_sample params
-#' @param return Character value. One of \emph{'vector', 'data.frame'} or
-#' \emph{'list'}. In order to return a vector the input of \code{features} must
-#' be of length one.
-#'
-#' @return A data.frame or a vector.
-#' @export
-
-getFeatureVariables <- function(object,
-                                features,
-                                return = "data.frame",
-                                unique = "deprecated",
-                                of_sample = NA){
-
-
-  # 1. Control --------------------------------------------------------------
-
-  check_object(object)
-  features <- check_features(object, features)
-
-  confuns::is_value(x = return, mode = "character")
-  confuns::check_one_of(input = return,
-                        against = c("data.frame", "vector"),
-                        ref.input = "return")
-
-  of_sample <- check_sample(object, of_sample)
-
-  # -----
-
-  # 2. Extracting -----------------------------------------------------------
-
-
-  if(base::length(features) == 1 && return == "vector"){
-
-    res <-
-      getFeatureDf(object, of_sample = of_sample) %>%
-      dplyr::pull(var = {{features}})
-
-  } else if(return == "data.frame"){
-
-    res <-
-      getFeatureDf(object, of_sample = of_sample) %>%
-      dplyr::select(barcodes, sample, dplyr::all_of(features)) %>%
-      tibble::as_tibble()
-
-  } else if(return == "list"){
-
-    res <-
-      purrr::map(.x = features,
-                 .f = function(f){
-
-                   getFeatureDf(object, of_sample) %>%
-                     dplyr::pull(var = {{f}})
-
-                 }) %>%
-      magrittr::set_names(value = features)
-
-  }
-
-  return(res)
-
-}
 
 
 #' @title Safe extraction
@@ -2371,69 +1993,6 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 
 # getG --------------------------------------------------------------------
 
-#' @title Obtain total number of gene counts
-#'
-#' @inherit check_sample params
-#' @param return Character value. One of \emph{'data.frame', 'tibble' or 'vector'}.
-#' Specifies the output class.
-#'
-#' @return Depends on input for argument \code{return}.
-#' @export
-#'
-
-getGeneCounts <- function(object, of_sample = NA, return = "tibble"){
-
-  check_object(object)
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
-
-  gene_counts <-
-    getCountMatrix(object, of_sample = of_sample) %>%
-    base::as.matrix() %>%
-    base::rowSums(na.rm = TRUE)
-
-  if(return %in% c("data.frame", "tibble")){
-
-    gene_counts <-
-      base::as.data.frame(gene_counts) %>%
-      tibble::rownames_to_column(var = "genes") %>%
-      magrittr::set_colnames(value = c("genes", "counts"))
-
-    if(return == "tibble"){
-
-      gene_counts <- tibble::as_tibble(x = gene_counts)
-
-    }
-
-  }
-
-  return(gene_counts)
-
-}
-
-#' @title Obtain feature names of the gene meta data
-#'
-#' @description Convenient way to obtain the column names of the output data.frame
-#' of \code{getGeneMetaDf()}.
-#'
-#' @inherit getGeneMetaData params
-
-getGeneFeatureNames <- function(object, mtr_name = NULL, of_sample = NA){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  gmdf <- getGeneMetaDf(object = object,
-                        mtr_name = mtr_name,
-                        of_sample = of_sample) %>%
-    dplyr::select(-genes)
-
-  gf_names <- base::colnames(gmdf)
-
-  return(gf_names)
-
-}
 
 #' @title Obtain gene meta data
 #'
@@ -2445,44 +2004,19 @@ getGeneFeatureNames <- function(object, mtr_name = NULL, of_sample = NA){
 #' @return A data.frame from \code{getMetaDataDf()} or a list from \code{getGeneMetaData()}.
 #' @export
 
-getGeneMetaData <- function(object, mtr_name = NULL, only_df = FALSE, ...){
+getGeneMetaData <- function(object, ...){
 
-  deprecated(...)
+  deprecated(fn = TRUE, ...)
 
-  check_object(object)
-
-  if(base::is.null(mtr_name)){
-
-    mtr_name <- getActiveMatrixName(object )
-
-  }
-
-  gdata <- object@gdata[[1]][[mtr_name]]
-
-  check_availability(
-    test = (base::is.list(gdata) & !base::identical(gdata, list())),
-    ref_x = glue::glue("gene meta data for expression matrix '{mtr_name}'.'"),
-    ref_fns = "computeGeneMetaData() or addGeneMetaData()"
-  )
-
-  if(base::isTRUE(only_df)){
-
-    return(gdata$df)
-
-  } else {
-
-    return(gdata)
-
-  }
+  getAssay(object, assay_name = "transcriptomics")@meta_var
 
 }
 
 #' @rdname getGeneMetaData
 #' @export
-getGeneMetaDf <- function(object, mtr_name = NULL){
+getGeneMetaDf <- function(object, ...){
 
-  getGeneMetaData(object = object, mtr_name = mtr_name, only_df = TRUE) %>%
-    tibble::as_tibble()
+  getAssay(object, assay_name = "transcriptomics")@meta_var
 
 }
 
@@ -2518,157 +2052,45 @@ getGenePosDf <- function(object, keep = FALSE){
 
 }
 
-#' @title Obtain gene names
-#'
-#' @description A convenient way to extract gene names.
-#'
-#' @inherit argument_dummy params
-#' @inherit check_object params
-#' @param of_gene_sets A character vector specifying the gene sets from which to
-#' return the gene names.
-#' @param similar_to Character value. If specified, n genes with the highest
-#' spatial correlation similarity to the specified gene are returned where n
-#' is equal to the input for argument \code{top_n}.
-#' @param top_n Numeric value. Denotes the number of genes to be returned if argument
-#' \code{similar_to} is specified.
-#'
-#' @details If neither \code{of_gene_sets} nor \code{similar_to} is specified all
-#' genes found in the active expression matrix are returned in a character vector.
-#'
-#' If \code{of_gene_sets} is specified a list named according to the input of
-#' \code{of_gene_sets} is returned in which each element is a character vector
-#' containing the names of genes the specific gene set is composed of. Is simplified
-#' to a vector if \code{simplify} is set to TRUE.
-#'
-#' If \code{of_gene_sets} is not specified but argument \code{similar_to} is
-#' a gene name a character vector of genes featuring the highest
-#' similarity to the specified gene is returned. The number of genes depends on
-#' the input of argument \code{top_n}.
-#'
-#' @return A list of character vectors or a single character vector.
-#'
-#' @export
 
+#' @rdname getMolecules
+#' @export
 getGenes <- function(object,
-                     of_gene_sets = NULL,
-                     similar_to = NULL,
-                     top_n = 25,
+                     signatures = NULL,
                      simplify = TRUE,
                      ...){
 
   deprecated(...)
 
-  # 1. Control --------------------------------------------------------------
-
-  # lazy check
-  check_object(object)
-
-  confuns::are_vectors(c("of_gene_sets", "similar_to"), mode = "character",
-                       skip.allow = TRUE, skip.val = NULL)
-
-  # adjusting check
-
-  # -----
-
-
-  # 2. Main part ------------------------------------------------------------
-
-  # -----
-
-  # 2.1 Return all existing genes if desired ----------
-
-  if(!base::is.null(of_gene_sets) && base::all(of_gene_sets == "all")){warning("change of_gene_sets to NULL")}
-
-  if(base::all(base::is.null(of_gene_sets), base::is.null(similar_to))){
-
-    mtr_name <- getActiveMatrixName(object, verbose = FALSE)
-
-    mtr <- getMatrix(object, mtr_name)
-
-    return(base::rownames(mtr))
-
-  }
-
-  # -----
-
-  # 2.2 Return a subset of genes ----------
-  if(!base::is.null(of_gene_sets)){
-
-    gene_set_df <- getGeneSetDf(object)
-
-    of_gene_sets <- check_gene_sets(object, gene_sets = of_gene_sets)
-    expr_mtr <- getMatrix(object = object, verbose = FALSE)
-
-    genes_list <-
-      purrr::map(.x = of_gene_sets, .f = function(i){
-
-        genes <-
-          dplyr::filter(gene_set_df, ont == i) %>%
-          dplyr::pull(gene)
-
-        genes_in_sample <-
-          genes[genes %in% base::rownames(expr_mtr)]
-
-        return(genes_in_sample)
-
-      }) %>%
-      purrr::set_names(nm = of_gene_sets)
-
-    # simplify output if specifed
-    if(base::isTRUE(simplify)){
-
-      res_genes <-
-        genes_list %>%
-        base::unname() %>%
-        base::unlist() %>%
-        base::unique()
-
-    } else {
-
-      res_genes <- genes_list
-
-    }
-
-  } else if(base::is.character(similar_to)){
-
-    dist_df <- getGeneDistDf(object)
-
-    confuns::is_value(x = top_n, mode = "numeric")
-
-    confuns::check_one_of(
-      input = similar_to,
-      against = base::unique(dist_df$gene2),
-      ref.input = "input for argument 'similar_to'"
-    )
-
-    res_genes <-
-      dplyr::filter(.data = dist_df, gene2 == {{similar_to}}) %>%
-      dplyr::slice_min(order_by = distance, n = top_n) %>%
-      dplyr::pull(var = "gene1") %>%
-      base::as.character()
-
-  }
-
-
-  return(res_genes)
-
-  # -----
+  getMolecules(object, signatures = signatures, simplify = simplify, assay_name = "transcriptomics")
 
 }
 
-#' @title Obtain gene set data.frame
+
+#' @title Obtain gene sets
+#'
+#' @description Extracts the gene sets (gene signatures) stored in the transcriptomic
+#' assay.
 #'
 #' @inherit check_object params
 #'
-#' @return A data.frame.
+#' @return Either a named list or a data.frame with variables *ont* and *gene*.
 #' @export
 
 getGeneSetDf <- function(object){
 
   check_object(object)
 
-  object@used_genesets %>%
-    tibble::as_tibble()
+  gsl <- getGeneSetList(object)
+
+  purrr::imap_dfr(
+    .x = gsl,
+    .f = function(genes, name){
+
+      tibble::tibble(ont = {{name}}, gene = {{genes}})
+
+    }
+  )
 
 }
 
@@ -2676,13 +2098,7 @@ getGeneSetDf <- function(object){
 #' @export
 getGeneSetList <- function(object){
 
-  getGeneSetDf(object) %>%
-    base::split(f = .["ont"]) %>%
-    purrr::map(.f = function(x){
-
-      x[,base::setdiff(base::names(x), "ont")][[1]]
-
-    })
+  getAssay(object, assay_name = "transcriptomics")@signatures
 
 }
 
@@ -2701,9 +2117,8 @@ getGeneSetOverview <- function(object){
   check_object(object)
 
   # main part
-  gene_sets_df <- dplyr::ungroup(object@used_genesets)
 
-  gene_sets <- object@used_genesets$ont
+  gene_sets <- getGeneSetList(object) %>% base::names()
 
   if(base::nrow(gene_sets_df) == 0){
 
@@ -2758,12 +2173,12 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
 
   # 2. Main part ------------------------------------------------------------
 
-  gene_sets_df <- object@used_genesets
+  gene_sets <- getGeneSetList(object) %>% base::names()
 
   # 2.1 Extract gene sets according to 'of_class' ----------
   if(base::length(of_class) == 1 && of_class == "all"){
 
-    res_list <- base::unique(gene_sets_df$ont)
+    res_list <- gene_sets
 
   } else {
 
@@ -2772,8 +2187,7 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
       base::lapply(X = of_class, FUN = function(i){
 
         subset <-
-          gene_sets_df$ont %>%
-          stringr::str_subset(pattern = stringr::str_c("^", i, sep = "")) %>%
+          stringr::str_subset(gene_sets, pattern = stringr::str_c("^", i, sep = "")) %>%
           base::unique()
 
         if(base::length(subset) == 0){
@@ -2813,12 +2227,13 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
   if(!base::is.null(index) && base::is.list(res_list)){
 
     res_list <-
-      base::lapply(X = res_list,
-                   FUN = function(i){
+      base::lapply(
+        X = res_list,
+        FUN = function(i){
 
-                     i[stringr::str_detect(string = i, pattern = index)]
+          i[stringr::str_detect(string = i, pattern = index)]
 
-                   })
+        })
 
   } else if(!base::is.null(index) && base::is.character(res_list)){
 
@@ -2830,7 +2245,7 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
   # -----
   if(base::is.null(res_list)){
 
-    stop("Did not find any gene-set.")
+    stop("Did not find any gene set.")
 
   } else {
 
@@ -2875,13 +2290,15 @@ getGeneSetsInteractive <- function(object){
 
           output$select_gene_sets <- shiny::renderUI({
 
-            shinyWidgets::pickerInput("select_gene_sets",
-                                      label = NULL ,
-                                      choices = getGeneSets(object),
-                                      selected = NULL,
-                                      options = list(`live-search` = TRUE),
-                                      inline = FALSE,
-                                      multiple = TRUE)
+            shinyWidgets::pickerInput(
+              "select_gene_sets",
+              label = NULL ,
+              choices = getGeneSets(object),
+              selected = NULL,
+              options = list(`live-search` = TRUE),
+              inline = FALSE,
+              multiple = TRUE
+            )
 
           })
 
@@ -2922,13 +2339,17 @@ getGenesInteractive <- function(object){
             shiny::HTML("<br><br><br>"),
 
             shiny::fluidRow(
-              shiny::column(width = 6,
-                            shiny::tags$h5(shiny::strong("Chosen genes:")),
-                            shiny::verbatimTextOutput("display_genes"),
-                            shiny::actionButton("return_genes", "Return genes")),
-              shiny::column(width = 6,
-                            shiny::tags$h5(shiny::strong("Choose genes:")),
-                            shiny::uiOutput("select_genes"))
+              shiny::column(
+                width = 6,
+                shiny::tags$h5(shiny::strong("Chosen genes:")),
+                shiny::verbatimTextOutput("display_genes"),
+                shiny::actionButton("return_genes", "Return genes")
+              ),
+              shiny::column(
+                width = 6,
+                shiny::tags$h5(shiny::strong("Choose genes:")),
+                shiny::uiOutput("select_genes")
+              )
             )
 
           )
@@ -2938,13 +2359,15 @@ getGenesInteractive <- function(object){
 
           output$select_genes <- shiny::renderUI({
 
-            shinyWidgets::pickerInput("select_genes",
-                                      label = NULL ,
-                                      choices = getGenes(object),
-                                      selected = NULL,
-                                      options = list(`live-search` = TRUE),
-                                      inline = FALSE,
-                                      multiple = TRUE)
+            shinyWidgets::pickerInput(
+              "select_genes",
+              label = NULL ,
+              choices = getGenes(object),
+              selected = NULL,
+              options = list(`live-search` = TRUE),
+              inline = FALSE,
+              multiple = TRUE
+            )
 
           })
 
@@ -2968,13 +2391,16 @@ getGenesInteractive <- function(object){
 
 }
 
-#' @title Obtain variable names that group the barcode spots
+#' @title Obtain variable names that group data points
+#'
+#' @description Extracts the names of the features of class *factor* which
+#' are valid input options for the arguments `grouping` and `across`.
 #'
 #' @inherit across_dummy params
 #' @inherit check_sample params
 #'
-#' @return Character vector of variables that assign
-#' data points to groups.
+#' @return Character vector.
+#'
 #' @export
 
 getGroupingOptions <- function(object, ...){
@@ -2992,6 +2418,8 @@ getGroupingOptions <- function(object, ...){
 
 
 #' @title Obtain group names a grouping variable contains
+#'
+#' @description Extracts the group names of a grouping variable.
 #'
 #' @inherit across_dummy params
 #' @inherit argument_dummy params
@@ -3012,7 +2440,12 @@ getGroupNames <- function(object, grouping,...){
 
   deprecated(...)
 
-  res_groups <- getFeatureDf(object)[[grouping]]
+  confuns::check_one_of(
+    input = grouping,
+    against = getGroupingOptions(object)
+  )
+
+  res_groups <- getMetaDf(object)[[grouping]]
 
   if(base::is.factor(res_groups)){
 
@@ -3049,13 +2482,11 @@ getGseaDf <- function(object,
                       n_gsets = Inf,
                       signif_var = "fdr",
                       signif_threshold = 1,
-                      stop_if_null = TRUE      ){
+                      stop_if_null = TRUE){
 
   check_object(object)
 
   hlpr_assign_arguments(object)
-
-  of_sample <- check_sample(object)
 
   df <-
     getGseaResults(
@@ -3106,11 +2537,11 @@ getGseaResults <- function(object,
                            across_subset = NULL,
                            method_de = NULL,
                            flatten = TRUE,
-                           stop_if_null = TRUE){
+                           stop_if_null = TRUE,
+                           assay_name = activeAssay(object)){
 
   check_object(object)
   hlpr_assign_arguments(object)
-  of_sample <- check_sample(object)
 
   confuns::is_value(x = across, mode = "character")
   confuns::check_one_of(
@@ -3118,7 +2549,8 @@ getGseaResults <- function(object,
     against = getGroupingOptions(object)
   )
 
-  out <- object@dea[[of_sample]][[across]][[method_de]][["hypeR_gsea"]]
+  ma <- getAssay(object, assay_name = assay_name)
+  out <- ma@analysis$dea[[across]][[method_de]][["hypeR_gsea"]]
 
   if(base::is.null(out) & base::isTRUE(stop_if_null)){
 

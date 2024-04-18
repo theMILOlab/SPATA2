@@ -8,9 +8,9 @@
 \usage{
 setPcaDf(object, pca_df, of_sample = "", fdb_fn = "stop")
 
-setTsneDf(object, tsne_df, of_sample = "")
+setTsneDf(object, tsne_df, ...)
 
-setUmapDf(object, umap_df, of_sample = "")
+setUmapDf(object, umap_df, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}

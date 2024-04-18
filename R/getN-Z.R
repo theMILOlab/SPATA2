@@ -3,14 +3,6 @@
 
 # getO --------------------------------------------------------------------
 
-#' @rdname setOutlineVarName
-#' @keywords internal
-getOutlineVarName <- function(object){
-
-  object@information$outline_var
-
-}
-
 
 
 
@@ -20,14 +12,17 @@ getOutlineVarName <- function(object){
 #' @export
 getPcaDf <- function(object,
                      n_pcs = 30,
-                     of_sample = NA){
+                     ...){
+
+  deprecated(...)
 
   confuns::is_value(x = n_pcs, mode = "numeric")
 
   pca_df <-
-    getDimRedDf(object = object,
-                of_sample = of_sample,
-                method_dr = "pca")
+    getDimRedDf(
+      object = object,
+      method_dr = "pca"
+    )
 
   subset_pcs <- stringr::str_c("PC", 1:n_pcs, sep = "")
 
@@ -42,7 +37,7 @@ getPcaDf <- function(object,
 #' @export
 getPcaMtr <- function(object,
                       n_pcs = 30,
-                      of_sample = NA){
+                      ...){
 
   confuns::is_value(x = n_pcs, mode = "numeric")
 
@@ -79,9 +74,9 @@ setGeneric(name = "getPixelDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "getPixelDf",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         colors = FALSE,
                         hex_code = FALSE,
                         content = FALSE,
@@ -113,7 +108,7 @@ setMethod(
   f = "getPixelDf",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         colors = FALSE,
                         hex_code = FALSE,
                         content =  FALSE,
@@ -368,10 +363,10 @@ setGeneric(name = "getPixelScaleFactor", def = function(object, ...){
 #' @export
 setMethod(
   f = "getPixelScaleFactor",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         unit,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         switch = FALSE,
                         add_attr = TRUE,
                         verbose = NULL,
@@ -402,7 +397,7 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object,
                         unit,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         switch = FALSE,
                         add_attr = TRUE,
                         verbose = NULL,
@@ -531,14 +526,17 @@ getPointSize <- function(object,
 
 #' @rdname getCountMatrix
 #' @export
-getProcessedMatrix <- function(object, mtr_name){
+getProcessedMatrix <- function(object,
+                               mtr_name = activeMatrix(object),
+                               assay_name = activeAssay(object)
+                               ){
 
   confuns::check_one_of(
     input = mtr_name,
     against = getProcessedMatrixNames(object)
   )
 
-  object@data[[1]][[mtr_name]]
+  getMatrices(object)[[mtr_name]]
 
 }
 
@@ -552,9 +550,11 @@ getProcessedMatrix <- function(object, mtr_name){
 #'
 #' @export
 #'
-getProcessedMatrixNames <- function(object){
+getProcessedMatrixNames <- function(object, assay_name = activeAssay(object)){
 
-  mtr_names <- base::names(object@data[[1]])
+  ma <- getAssay(object, assay_name = assay_name)
+
+  mtr_names <- base::names(ma@mtr_proc)
 
   mtr_names <- mtr_names[mtr_names != "counts"]
 
@@ -580,7 +580,7 @@ getProcessedMatrixNames <- function(object){
 getProjectionDf <- function(object,
                             id,
                             width = NULL,
-                            img_name = NULL,
+                            img_name = activeImage(object),
                             ...){
 
   traj_obj <- getTrajectory(object = object, id = id)
@@ -675,8 +675,7 @@ setMethod(
                         threshold_pval = 1,
                         model_subset = NULL,
                         model_remove = NULL,
-                        best_only = FALSE
-  ){
+                        best_only = FALSE){
 
     rdf <-
       filter_by_model(
@@ -855,9 +854,7 @@ getSampleAreaSize <- function(object, unit){
 
   coords_df <- getCoordsDf(object)
 
-  hull_pos <- grDevices::chull(x = coords_df$x, y = coords_df$y)
-
-  hull_coords <- coords_df[hull_pos, ]
+  hull_coords <- getTissueOutlineDf(object, img_name = refImage(object))
 
   pixel_df <- getPixelDf(object)
 
@@ -914,335 +911,17 @@ getSampleAreaSize <- function(object, unit){
 
 getSampleName <- function(object){
 
-  object@samples
+  object@sample
 
 }
 
 
-#' @title Calculate SAS bin area
-#'
-#' @description Computes the area covered by each distance bin of the SAS algorithm.
-#'
-#' @param use_outline Logical value. If `TRUE`, uses the outline variable
-#' set with `setOutlineVarName()` or if none is set DBSCAN to identify the
-#' outline of the tissue section or sections in case of multiple tissue sections
-#' on one Visium slide to only compute the area of circle bins that covers the
-#' tissue section.
-#'
-#' @inherit getSasDf params
-#'
-#' @details Approximates the area each circular bin covers
-#' by assigning each pixel to the circular bin it falls into.
-#' Afterwards the number of pixels per bin is multiplied
-#' with the area scale factor as is obtained by `getPixelScaleFactor(object, unit = unit)`
-#' where unit is the squared unit of input for argument `binwidth`. E.g.
-#' if `binwidth` = *'0.1mm'* then `unit` = *mm2*.
-#'
-#' @return Data.frame in which each observation corresponds to a circular bin.
-#'
-#'
-#' @export
-#'
-getSasBinAreas <- function(object,
-                           area_unit,
-                           id = idSA(object),
-                           distance = distToEdge(object, id),
-                           binwidth = recBinwidth(object),
-                           n_bins_dist = NA_integer_,
-                           angle_span = c(0, 360),
-                           n_bins_angle = 1,
-                           use_outline = TRUE,
-                           remove_circle_bins = "Outside",
-                           verbose = NULL){
 
-  hlpr_assign_arguments(object)
-
-  if(base::is.null(area_unit)){
-
-    area_unit <- stringr::str_c(extract_unit(binwidth), "2")
-
-  }
-
-  area_scale_fct <-
-    getPixelScaleFactor(object, unit = area_unit) %>%
-    base::as.numeric()
-
-  if(containsPseudoImage(object)){
-
-    stop("add pseudo logic")
-
-  } else {
-
-    coords_df <-
-      getPixelDf(object) %>%
-      dplyr::mutate(x = width, y = height)
-
-  }
-
-  if(base::isTRUE(use_outline)){
-
-    containsTissueOutline(object, error = TRUE)
-
-    coords_df <-
-      include_tissue_outline(
-        input_df = coords_df,
-        outline_df = getTissueOutlineDf(object),
-        spat_ann_center = getSpatAnnCenter(object, id)
-      )
-
-  }
-
-  {
-
-    input_list <-
-      check_sas_input(
-        distance = distance,
-        binwidth = binwidth,
-        n_bins_dist = n_bins_dist,
-        object = object,
-        verbose = verbose
-      )
-
-    distance <- input_list$distance
-    n_bins_dist <- input_list$n_bins_dist
-    binwidth  <- input_list$binwidth
-
-    angle_span <- c(from = angle_span[1], to = angle_span[2])
-    range_span <- base::range(angle_span)
-
-    if(angle_span[1] == angle_span[2]){
-
-      stop("Invalid input for argument `angle_span`. Must contain to different values.")
-
-    } else if(base::min(angle_span) < 0 | base::max(angle_span) > 360){
-
-      stop("Input for argument `angle_span` must range from 0 to 360.")
-
-    }
-
-
-    # obtain required data ----------------------------------------------------
-
-    spat_ann <- getSpatialAnnotation(object, id = id)
-
-    outline_df <- getSpatAnnOutlineDf(object, id = id)
-
-    pixel_pos <-
-      sp::point.in.polygon(
-        point.x = coords_df$x,
-        point.y = coords_df$y,
-        pol.x = outline_df$x,
-        pol.y = outline_df$y
-      )
-
-    spat_ann_pxl <- coords_df[pixel_pos %in% c(1,2),][["pixel"]]
-
-    # distance ----------------------------------------------------------------
-
-    # increase number of vertices
-    avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
-
-    outline_df <-
-      increase_polygon_vertices(
-        polygon = outline_df[,c("x", "y")],
-        avg_dist = avg_dist/4
-      )
-
-    # compute distance to closest vertex
-    nn_out <-
-      RANN::nn2(
-        data = base::as.matrix(outline_df),
-        query = base::as.matrix(coords_df[,c("x", "y")]),
-        k = 1
-      )
-
-    coords_df$dist <- base::as.numeric(nn_out$nn.dists)
-    coords_df$dist[coords_df$pixel %in% spat_ann_pxl] <-
-      -coords_df$dist[coords_df$pixel %in% spat_ann_pxl]
-
-    # bin pos dist
-    coords_df_pos <-
-      dplyr::filter(coords_df, dist >= 0) %>%
-      dplyr::mutate(bins_dist = make_bins(dist, binwidth = {{binwidth}}))
-
-    # bin neg dist
-    coords_df_neg <-
-      dplyr::filter(coords_df, dist < 0) %>%
-      dplyr::mutate(
-        bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE))
-
-    # merge
-    new_levels <-
-      c(
-        base::levels(coords_df_neg$bins_dist),
-        base::levels(coords_df_pos$bins_dist),
-        "Outside"
-      )
-
-    coords_df_merged <-
-      base::rbind(coords_df_neg, coords_df_pos) %>%
-      dplyr::mutate(
-        bins_dist = base::as.character(bins_dist),
-        bins_dist =
-          dplyr::case_when(
-            dist > {{distance}} ~ "Outside",
-            TRUE ~ bins_dist
-          ),
-        bins_dist = base::factor(bins_dist, levels = new_levels),
-        rel_loc = dplyr::if_else(dist < 0, true = "Core", false = "Periphery")
-      )
-
-    # angle -------------------------------------------------------------------
-
-    center <- getSpatAnnCenter(object, id = id)
-
-    from <- angle_span[1]
-    to <- angle_span[2]
-
-    confuns::give_feedback(
-      msg = glue::glue("Including area between {from}° and {to}°."),
-      verbose = verbose
-    )
-
-    prel_angle_df <-
-      dplyr::group_by(.data = coords_df_merged, pixel) %>%
-      dplyr::mutate(
-        angle = compute_angle_between_two_points(
-          p1 = c(x = x, y = y),
-          p2 = center
-        )
-      ) %>%
-      dplyr::ungroup()
-
-    # create angle bins
-    if(angle_span[["from"]] > angle_span[["to"]]){
-
-      range_vec <- c(
-        angle_span[["from"]]:360,
-        0:angle_span[["to"]]
-      )
-
-      nth <- base::floor(base::length(range_vec)/n_bins_angle)
-
-      bin_list <- base::vector(mode = "list", length = n_bins_angle)
-
-      for(i in 1:n_bins_angle){
-
-        if(i == 1){
-
-          sub <- 1:nth
-
-        } else {
-
-          sub <- ((nth*(i-1))+1):(nth*i)
-
-        }
-
-        bin_list[[i]] <- range_vec[sub]
-
-      }
-
-      if(base::any(base::is.na(bin_list[[n_bins_angle]]))){
-
-        bin_list[[(n_bins_angle)-1]] <-
-          c(bin_list[[(n_bins_angle-1)]], bin_list[[n_bins_angle]]) %>%
-          rm_na()
-
-        bin_list[[n_bins_angle]] <- NULL
-
-      }
-
-      all_vals <- purrr::flatten_dbl(bin_list)
-
-      bin_list[[n_bins_angle]] <-
-        c(bin_list[[n_bins_angle]], range_vec[!range_vec %in% all_vals])
-
-      prel_angle_bin_df <-
-        dplyr::ungroup(prel_angle_df) %>%
-        dplyr::filter(base::round(angle) %in% range_vec) %>%
-        dplyr::mutate(
-          angle_round = base::round(angle),
-          bins_angle = ""
-        )
-
-      bin_names <- base::character(n_bins_angle)
-
-      for(i in base::seq_along(bin_list)){
-
-        angles <- bin_list[[i]]
-
-        bin_names[i] <-
-          stringr::str_c(
-            "[", angles[1], ",", utils::tail(angles,1), "]"
-          )
-
-        prel_angle_bin_df[prel_angle_bin_df$angle_round %in% angles, "bins_angle"] <-
-          bin_names[i]
-
-      }
-
-      prel_angle_bin_df$angle_round <- NULL
-
-      prel_angle_bin_df$bins_angle <-
-        base::factor(
-          x = prel_angle_bin_df$bins_angle,
-          levels = bin_names
-        )
-
-    } else {
-
-      range_vec <- range_span[1]:range_span[2]
-
-      sub <-
-        base::seq(
-          from = 1,
-          to = base::length(range_vec),
-          length.out = n_bins_angle+1
-        ) %>%
-        base::round()
-
-      breaks <- range_vec[sub]
-
-      prel_angle_bin_df <-
-        dplyr::ungroup(prel_angle_df) %>%
-        dplyr::filter(base::round(angle) %in% range_vec) %>%
-        dplyr::mutate(
-          bins_angle = base::cut(x = base::abs(angle), breaks = breaks)
-        )
-
-    }
-
-    sas_df <- prel_angle_bin_df
-
-    # relative location
-    sas_df <-
-      dplyr::mutate(
-        .data = sas_df,
-        rel_loc = dplyr::case_when(
-          dist > {{distance}} ~ "Outside",
-          !base::round(angle) %in% range_vec ~ "Outside",
-          TRUE ~ rel_loc
-        )
-      )
-
-  }
-
-  area_df <-
-    dplyr::group_by(sas_df, bins_dist, bins_angle) %>%
-    dplyr::tally() %>%
-    dplyr::mutate(
-      area = n * area_scale_fct,
-      unit = {{area_unit}}
-    )
-
-  return(area_df)
-
-}
 
 #' @title Obtain spatial annotation screening data.frame
 #'
 #' @description Extracts a data.frame of inferred gradients of numeric
-#' variables as a fucntion of distance to spatial annotations.
+#' variables as a function of distance to spatial annotations.
 #'
 #' @inherit bin_by_expansion params
 #' @inherit bin_by_angle params
@@ -1694,17 +1373,6 @@ getExpansionsSA <- function(object,
 }
 
 
-#' @rdname getSasDf
-#' @export
-getSpatialAnnotationScreeningDf <- function(...){
-
-  deprecated(fn = TRUE)
-
-  getSasDf(...)
-
-}
-
-
 #' @title Obtain scale factors
 #'
 #' @description Extracts scale factors. See details for more.
@@ -1744,7 +1412,7 @@ setGeneric(name = "getScaleFactor", def = function(object, ...){
 setMethod(
   f = "getScaleFactor",
   signature = "ANY",
-  definition = function(object, fct_name, img_name = NULL){
+  definition = function(object, fct_name, img_name = activeImage(object)){
 
     getHistoImage(object, img_name = img_name) %>%
       getScaleFactor(object = ., fct_name = fct_name)
@@ -1772,7 +1440,7 @@ setMethod(
 #' @title Obtain segmentation variable names
 #'
 #' @description Extracts the names of the variables that have been created
-#' via \code{createSegmentation()}.
+#' via \code{createSpatialSegmentation()}.
 #'
 #' @inherit argument_dummy params
 #'
@@ -1781,7 +1449,7 @@ setMethod(
 #'
 getSegmentationNames <- function(object, fdb_fn = "message", ...){
 
-  out <- object@information$segmentation_variable_names
+  out <- object@obj_info$segmentation_variable_names
 
   if(!base::length(out) >= 1){
 
@@ -1800,56 +1468,74 @@ getSegmentationNames <- function(object, fdb_fn = "message", ...){
 
 }
 
-#' @rdname getSegmentationNames
+
+
+#' @title Get Signatures
+#'
+#' @description Retrieves the signatures present in the given object.
+#'
+#' @param object An object containing molecular data.
+#' @param assay_name The name of the assay containing the molecular data (default: active assay in the object).
+#'
+#' @return A list of character vectors.
+#'
+#' @details This function retrieves the signatures from the provided object. It returns a list of signatures associated with the specified assay in the object.
+#'
+#' @seealso Documentation of slot @@signatures in the [`MolecularAssay`]-class.
+#'
+#' @examples
+#' # Get signatures from the object
+#' signatures <- getSignatures(object)
+#'
 #' @export
-getSegmentationVariableNames <- getSegmentationNames
+getSignatures <- function(object, assay_name = activeAssay(object)){
 
-#' @title Obtain signature enrichment
+  getAssay(object, assay_name = assay_name)@signatures
+
+}
+
+
+#' @title Obtain a list of signatures
 #'
-#' @description Extracts the names of enriched gene sets by cluster signature.
+#' @description Retrieves a list of signatures sorted by molecular type as
+#' present in the given object.
 #'
-#' @inherit argument_dummy params
-#' @inherit getGseaResults params
-#' @inherit check_method params
+#' @param object An object containing signature data.
+#' @param signatures A character vector specifying the subset of signatures to include in the output (default: NULL).
 #'
-#' @return A named list of character vectors.
+#' @return A list containing the names of signatures categorized by assay type.
+#'
+#' @details This function categorizes signatures into different types based on the provided object.
+#' If the 'signatures' argument is provided as a character vector, the function returns only the specified
+#' signatures categorized by assay type. Otherwise, it returns all signatures categorized by type.
+#'
+#' @seealso Documentation of slot @@signatures in the [`MolecularAssay`]-class.
+#'
+#' @examples
+#' # Get signature type list for all signatures in the object
+#' signature_types <- getSignatureTypeList(object)
+#'
+#' # Get signature type list for specific signatures
+#' signature_types <- getSignatureTypeList(object, signatures = c("sig1", "sig2"))
+#'
 #' @export
-#'
+getSignatureTypeList <- function(object, signatures = NULL){
 
-getSignatureEnrichment <- function(object,
-                                   across = getDefaultGrouping(object, verbose = TRUE, "across"),
-                                   across_subset = NULL,
-                                   n_gsets = 10,
-                                   signif_var = "fdr",
-                                   signif_threshold = 0.05,
-                                   method_de = NULL){
+  purrr::map(
+    .x = object@assays,
+    .f = function(ma){
 
-  res <-
-    getGseaResults(
-      object = object,
-      across = across,
-      across_subset = across_subset,
-      method_de = method_de,
-      flatten = FALSE
-    )
+      out <- base::names(ma@signatures)
 
-  names_groups <- base::names(res)
+      if(base::is.character(signatures)){
 
-  out <-
-    purrr::map(.x = res, .f = function(hyp_obj){
+        out <- out[out %in% signatures]
 
-      hyp_obj$data %>%
-        tibble::as_tibble() %>%
-        dplyr::filter(!!rlang::sym(signif_var) <= {{signif_threshold}}) %>%
-        dplyr::arrange({{signif_var}}) %>%
-        dplyr::slice_head(n = n_gsets) %>%
-        dplyr:::pull(label) %>%
-        base::as.character()
+      }
 
-    }) %>%
-    purrr::set_names(names_groups)
+      return(out)
 
-  return(out)
+    })
 
 }
 
@@ -1880,9 +1566,13 @@ getSparkxGenes <- function(object, threshold_pval){
 
 #' @rdname runSparkx
 #' @export
-getSparkxResults <- function(object, test = TRUE){
+getSparkxResults <- function(object,
+                             assay_name = activeAssay(object),
+                             test = TRUE){
 
-  out <- object@spatial[[1]][["sparkx"]]
+  ma <- getAssay(object, assay_name = assay_name)
+
+  out <- ma@analysis[["sparkx"]]
 
   if(base::isTRUE(test)){
 
@@ -1940,7 +1630,7 @@ setGeneric(name = "getSpatAnnArea", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatAnnArea",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         ids = NULL,
                         unit = "mm2",
@@ -2197,7 +1887,7 @@ setGeneric(name = "getSpatAnnCenter", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatAnnCenter",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, id){
 
     getHistoImaging(object) %>%
@@ -2257,7 +1947,7 @@ setGeneric(name = "getSpatAnnCenters", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatAnnCenters",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, id, outer = TRUE, inner = TRUE){
 
     getHistoImaging(object) %>%
@@ -2345,341 +2035,12 @@ setMethod(
 )
 
 
-#' @title Obtain image annotation screening data.frame
+
+
+#' @title Obtain center data point
 #'
-#' @description Extracts a data.frame that contains information about barcode-spots
-#' needed for analysis related to \code{spatialAnnotationScreening()}.
-#'
-#' @inherit bin_by_expansion params
-#' @inherit bin_by_angle params
-#'
-#' @param normalize_by Character value or FALSE. If character, there are two options:
-#' \itemize{
-#'  \item{\code{normalize_by} = \emph{'sample'}:}{ Values are normalized across the whole sample.}
-#'  \item{\code{normalize_by} = \emph{'bins_angle'}:}{
-#'  Values are normalized within each angle bin. This only has an effect if \code{n_bins_angle}
-#'  is bigger than 1.
-#'  }
-#'  }
-#'
-#' @inherit getSpatAnnOutlineDf params
-#' @inherit spatialAnnotationScreening params
-#' @inherit joinWith params
-#'
-#' @return The final output depends on the input for \code{variables} and
-#'  \code{summarize_by}.
-#'
-#'  By default (both arguments are NULL) the returned data.frame contains
-#'  barcode-spots as observations/rows and variables that describe their position
-#'  to the image annotation denoted with \code{id}. This includes the variables
-#'  \emph{bins_circle}, \emph{bins_order}, \emph{angle}, \emph{bins_angle}. Their
-#'  content depends on the set up via the arguments \code{distance}, \code{binwidth}
-#'  and \code{n_bins_circle}.
-#'
-#' \bold{Coordinates data.frame vs. Inferred expression changes}:
-#'
-#' If argument \code{variables} is a character the denoted variables are
-#' joined to the data.frame via \code{joinWith()}. If the set of variables
-#' contains only numeric ones (genes, gene-sets and numeric features) the
-#' function argument \code{summarize_by} can be set up in three different ways:
-#'
-#' \itemize{
-#'  \item{\code{summarize_by} = \code{FALSE}:}{ Values are not summarized. The output
-#'  is a coordinates data.frame with each observation/row corresponding to
-#'  a barcode spots with additional information of its relation to the image
-#'  annotation denoted in \code{id}.}
-#'  \item{\code{summarize_by} = \emph{'bins_circle'}}{ Values of each variable
-#'  area summarized by each circular expansion of the polygon. This results
-#'  in data.frame with a column named \emph{bins_circle} containing the names of the bin
-#'  (\emph{Core, Circle 1, Circle 2, Circle 3, ..., Circle n, Outside}) and 1 column
-#'  per variable that contain the summarized expression value by circle bin. Visualization
-#'  of the concept can be obtained using \code{plotIasLineplot(..., facet_by = 'variables')}
-#'  }
-#'  \item{\code{summarize_by} = \emph{c('bins_circle', 'bins_angle'))}}{ Values of
-#'  each area are summarized by each circular expansion as well as by angle-bin.
-#'  Output data.frame is similar to \code{summarize_by} = \emph{'bins_circle'} apart
-#'  from having an extra column identifying the angle-bins. Adding \emph{'bins_circle'}
-#'  is only useful if \code{n_bins_circle} is bigger than 1. Visualization
-#'  of the concept can be obtained by using \code{plotIasLineplot(..., facet_by = 'bins_angle')}.
-#'  }}
-#'
-#' Normalization in case of \code{normalize_by} != \code{FALSE} happens after the
-#' summary step.
-#' @keywords internal
-get_spat_ann_helper <- function(object,
-                               id,
-                               distance = NA_integer_,
-                               n_bins_circle = NA_integer_,
-                               binwidth = getCCD(object),
-                               angle_span = c(0,360),
-                               n_bins_angle = 1,
-                               variables = NULL,
-                               method_gs = NULL,
-                               summarize_by = FALSE,
-                               summarize_with = "mean",
-                               normalize_by = "sample",
-                               normalize = FALSE,
-                               remove_circle_bins = FALSE,
-                               remove_angle_bins = FALSE,
-                               rename_angle_bins = FALSE,
-                               bcsp_exclude = NULL,
-                               drop = TRUE,
-                               verbose = NULL,
-                               ...){
-
-  deprecated(...)
-
-  hlpr_assign_arguments(object)
-
-  add_sd <- FALSE
-
-  input_list <-
-    check_sas_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_circle = n_bins_circle,
-      object = object,
-      verbose = verbose
-    )
-
-  distance <- input_list$distance
-  n_bins_circle <- input_list$n_bins_circle
-  binwidth  <- input_list$binwidth
-
-  max_circles <- base::max(n_bins_circle)
-  min_circles <- base::min(n_bins_circle)
-
-  img_ann <- getSpatialAnnotation(object = object, id = id, add_image = FALSE)
-
-  border_df <- getSpatAnnOutlineDf(object, ids = id, outer = TRUE, inner = TRUE)
-
-  img_ann_center <- getSpatAnnCenter(object, id = id)
-
-  coords_df <-
-    getCoordsDf(object) %>%
-    dplyr::select(barcodes, x, y)
-
-  if(base::length(drop) == 1){ drop <- base::rep(drop, 2)}
-
-  ias_df <-
-    bin_by_expansion(
-      coords_df = coords_df,
-      area_df = border_df,
-      binwidth = binwidth,
-      n_bins_circle = max_circles,
-      remove = remove_circle_bins,
-      bcsp_exclude = bcsp_exclude,
-      drop = drop[1]
-    ) %>%
-    bin_by_angle(
-      center = getSpatAnnCenters(object, id = id, outer = TRUE, inner = TRUE),
-      angle_span = angle_span,
-      n_bins_angle = n_bins_angle,
-      min_bins_circle = min_circles,
-      rename = rename_angle_bins,
-      remove = remove_angle_bins,
-      drop = drop[2],
-      verbose = verbose
-    )
-
-  # join with variables if desired
-  if(base::is.character(variables)){
-
-    var_df <-
-      joinWithVariables(
-        object = object,
-        spata_df = getSpataDf(object),
-        variables = variables,
-        smooth = FALSE,
-        normalize = normalize,
-        method_gs = method_gs,
-        verbose = verbose
-      )
-
-    ias_df_joined <-
-      dplyr::left_join(
-        x = ias_df,
-        y = var_df,
-        by = "barcodes"
-      )
-
-    # summarize if desired
-    if(base::is.character(summarize_by)){
-
-      groups <- base::character()
-
-      if(base::any(stringr::str_detect(summarize_by, "circle"))){
-
-        groups <- c(groups, "bins_circle")
-
-      }
-
-      if(base::any(stringr::str_detect(summarize_by, "angle"))){
-
-        groups <- c(groups, "bins_angle")
-
-      }
-
-      ref <- confuns::scollapse(string = groups)
-
-      if(base::length(groups) == 0){
-
-        stop("Invalid input for argument `summarize_by`. Must contains 'circle' and/or 'angle'.")
-
-      }
-
-      # keep var bins_order
-      groups <- c(groups, "bins_order")
-
-      ias_df1 <-
-        dplyr::group_by(
-          .data = ias_df_joined,
-          dplyr::across(.cols = dplyr::all_of(groups))
-        ) %>%
-        dplyr::summarise(
-          dplyr::across(
-            .cols = dplyr::any_of(variables),
-            .fns = summarize_formulas[[summarize_with]]
-          )
-        )
-
-      if(base::isTRUE(add_sd)){
-
-        ias_df2 <-
-          dplyr::group_by(
-            .data = ias_df_joined,
-            dplyr::across(.cols = dplyr::all_of(groups))
-          ) %>%
-          dplyr::summarise(
-            dplyr::across(
-              .cols = dplyr::any_of(variables),
-              .fns = list(sd = ~ stats::sd(.x, na.rm = TRUE))
-            )
-          ) %>% select(-bins_order)
-
-
-        # store ranges for normalization if required
-        if(base::is.character(normalize_by)){
-
-          original_ranges <-
-            purrr::map(
-              .x = variables,
-              .f = ~ base::range(ias_df_joined[[.x]])
-            ) %>%
-            purrr::set_names(
-              nm = variables
-            )
-
-        }
-
-        ias_df_out <-
-          dplyr::left_join(
-            x = ias_df1,
-            y = ias_df2,
-            by = "bins_circle"
-          )
-
-      } else {
-
-        ias_df_out <- ias_df1
-
-        ias_df_out
-
-      }
-
-    } else {
-
-      ias_df_out <- ias_df_joined
-
-    }
-
-    # normalize if desired
-    if(base::is.character(normalize_by)){
-
-      confuns::check_one_of(
-        input = normalize_by,
-        against = c("sample", "bins_angle"),
-        suggest = FALSE
-      )
-
-      if(normalize_by == "sample"){
-
-        # no grouping needed
-        groups <- base::character()
-
-        ref = ""
-
-      } else if(normalize_by == "bins_angle"){
-
-        groups <- "bins_angle"
-
-        ref <- " by 'bins_angle'"
-
-      }
-
-      confuns::give_feedback(
-        msg = glue::glue("Normalizing{ref}."),
-        verbose = verbose
-      )
-
-      ias_df_norm <-
-        dplyr::group_by(
-          .data = ias_df_out,
-          dplyr::across(.cols = dplyr::all_of(groups))
-        ) %>%
-        dplyr::mutate(
-          dplyr::across(
-            .cols = dplyr::any_of(variables),
-            .fns = ~ scales::rescale(x = .x, to = c(0,1))
-          )
-        )
-
-      if(base::isTRUE(add_sd)){
-
-        for(v in variables){
-
-          vcol <- stringr::str_c(v, "_sd")
-
-          ias_df_norm[[vcol]] <-
-            scales::rescale(
-              x = ias_df_norm[[vcol]],
-              from = original_ranges[[v]],
-              to = c(0, 1)
-            )
-
-        }
-
-      }
-
-      ias_df_out <- ias_df_norm
-
-    }
-
-  } else {
-
-    confuns::give_feedback(
-      msg = "No variables joined.",
-      verbose = verbose
-    )
-
-    ias_df_out <- ias_df
-
-  }
-
-  out <- dplyr::ungroup(ias_df_out)
-
-  return(out)
-
-}
-
-
-
-
-
-#' @title Obtain center barcode-spot
-#'
-#' @description Extracts the barcode spot that lies closest
-#' to the center of the image annotation.
+#' @description Extracts the barcode spot (data point) that lies closest
+#' to the center of the spatial annotation.
 #'
 #' @inherit getSpatialAnnotation params
 #'
@@ -2922,7 +2283,7 @@ setGeneric(name = "getSpatAnnOutlineDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatAnnOutlineDf",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         ids = NULL,
                         class = NULL,
@@ -3084,7 +2445,7 @@ setGeneric(name = "getSpatAnnRange", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatAnnRange",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, id, expand = 0, scale_fct = 1, ...){
 
     getHistoImaging(object) %>%
@@ -3130,7 +2491,7 @@ setMethod(
 #' @return An object of class `POLYGON` from the `sf` package.
 #' @export
 #'
-getSpatAnnSf <- function(object, id, img_name = NULL){
+getSpatAnnSf <- function(object, id, img_name = activeImage(object)){
 
   img_ann <-
     getSpatialAnnotation(
@@ -3173,7 +2534,7 @@ setGeneric(name = "getSpatAnnTags", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatAnnTags",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
     getHistoImaging(object) %>%
@@ -3254,7 +2615,7 @@ getSpataDf <- function(object, ...){
 #'
 getSpataDir <- function(object){
 
-  out <- object@information$instructions$directories$spata_object
+  out <- object@obj_info$instructions$directories$spata_object
 
   if(base::is.null(out)){
 
@@ -3332,7 +2693,7 @@ setGeneric(name = "getSpatialAnnotation", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatialAnnotation",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         id = idSA(object),
                         add_image = TRUE,
@@ -3498,7 +2859,7 @@ setGeneric(name = "getSpatialAnnotations", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatialAnnotations",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         ids = NULL,
                         class = NULL,
@@ -3601,10 +2962,10 @@ setGeneric(name = "getSpatialMethod", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatialMethod",
-  signature = "spata2",
+  signature = "ANY",
   definition = function(object){
 
-    x <- object@information$method
+    x <- object@method
 
     out <-
       transfer_slot_content(
@@ -3614,18 +2975,6 @@ setMethod(
       )
 
     return(out)
-
-  }
-)
-
-#' @rdname getSpatialMethod
-#' @export
-setMethod(
-  f = "getSpatialMethod",
-  signature = "HistoImaging",
-  definition = function(object){
-
-    object@method
 
   }
 )
@@ -3653,7 +3002,9 @@ getSpatialTrajectory <- function(object, id){
     against = getSpatialTrajectoryIds(object)
   )
 
-  out <- object@trajectories[[1]][[id]]
+  imaging <- getHistoImaging(object)
+
+  out <- imaging@trajectories[[id]]
 
   check_availability(
     test = !base::is.null(out),
@@ -3680,11 +3031,13 @@ getSpatialTrajectories <- function(object, ids = NULL){
         against = getSpatialTrajectoryIds(object)
       )
 
-      out <- object@trajectories[[1]][ids]
+      imaging <- getHistoImaging
+
+      out <- imaging@trajectories[ids]
 
     } else {
 
-      out <- object@trajectories[[1]]
+      out <- imaging@trajectories
 
     }
 
@@ -3711,9 +3064,11 @@ getSpatialTrajectories <- function(object, ids = NULL){
 #' @export
 getSpatialTrajectoryIds <- function(object){
 
+  imaging <- getHistoImaging(object)
+
   out <-
     purrr::keep(
-      .x = object@trajectories[[1]],
+      .x = imaging@trajectories,
       .p = ~ base::class(.x) == "SpatialTrajectory"
     ) %>%
     base::names()
@@ -3748,7 +3103,7 @@ setGeneric(name = "getSpotSize", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpotSize",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, ...){
 
     getHistoImaging(object) %>%
@@ -3892,7 +3247,7 @@ setGeneric(name = "getTissueOutlineCentroid", def = function(object, ...){
 setMethod(
   f = "getTissueOutlineCentroid",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, transform = TRUE,  ...){
+  definition = function(object, img_name = activeImage(object), transform = TRUE,  ...){
 
     getTissueOutlineDf(
       object = object,
@@ -3941,9 +3296,9 @@ setGeneric(name = "getTissueOutlineDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "getTissueOutlineDf",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         by_section = TRUE,
                         transform = TRUE,
                         ...){
@@ -3965,29 +3320,16 @@ setMethod(
   f = "getTissueOutlineDf",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         by_section = TRUE,
                         transform = TRUE){
 
-    if(base::is.null(img_name)){
-
-      out_df <-
-        getTissueOutlineDf(
-          object = getHistoImageActive(object),
-          by_section = by_section,
-          transform = transform
-        )
-
-    } else {
-
-      out_df <-
-        getTissueOutlineDf(
-          object = getHistoImage(object, img_name = img_name),
-          by_section = by_section,
-          transform = transform
-        )
-
-    }
+    out_df <-
+      getTissueOutlineDf(
+        object = getHistoImage(object, img_name = img_name),
+        by_section = by_section,
+        transform = transform
+      )
 
     return(out_df)
 
@@ -4041,7 +3383,9 @@ setMethod(
 #' @export
 getTrajectory <- function(object, id){
 
-  tobj <- object@trajectories[[1]][[id]]
+  imaging <- getHistoImaging(object)
+
+  tobj <- imaging@trajectories[[id]]
 
   check_availability(
     test = !base::is.null(tobj),
@@ -4069,7 +3413,9 @@ getTrajectoryIds <- function(object){
 
   check_object(object)
 
-  base::names(object@trajectories[[1]])
+  imaging <- getHistoImaging(object)
+
+  base::names(imaging@trajectories)
 
 }
 
@@ -4131,7 +3477,7 @@ getTrajectoryLength <- function(object,
 
 
 
-#' @title Obtain trjectory course
+#' @title Obtain trajectory course
 #'
 #' @description Extracts data.frame that contains the course
 #' of a spatial trajectory.
@@ -4141,7 +3487,7 @@ getTrajectoryLength <- function(object,
 #' @return Data.frame.
 #' @export
 getTrajectorySegmentDf <- function(object,
-                                   id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
+                                   id = idST(object),
                                    ...){
 
   deprecated(...)
@@ -4163,16 +3509,16 @@ getTrajectorySegmentDf <- function(object,
 }
 
 
-#' Title
+#' @title Obtain trajectory width
 #'
-#' @param object
-#' @param id
-#' @param unit
+#' @description Computes and extracts the default width of the trajectory.
 #'
-#' @return
+#' @inherit spatialTrajectoryScreening params
+#' @inherit argument_dummy params
+#'
+#' @return Distance value.
 #' @export
-#'
-#' @examples
+
 getTrajectoryWidth <- function(object, id = idST(object), unit = "px", orig = FALSE){
 
   traj <- getTrajectory(object, id = id)
@@ -4195,11 +3541,15 @@ getTrajectoryWidth <- function(object, id = idST(object), unit = "px", orig = FA
 
 #' @rdname getDimRedDf
 #' @export
-getTsneDf <- function(object, of_sample = NA){
+getTsneDf <- function(object, ...){
 
-  getDimRedDf(object = object,
-              of_sample = of_sample,
-              method_dr = "tsne")
+  deprecated(...)
+
+  getDimRedDf(
+    object = object,
+    of_sample = of_sample,
+    method_dr = "tsne"
+  )
 
 }
 
@@ -4208,11 +3558,15 @@ getTsneDf <- function(object, of_sample = NA){
 
 #' @rdname getDimRedDf
 #' @export
-getUmapDf <- function(object, of_sample = NA){
+getUmapDf <- function(object, ...){
 
-  getDimRedDf(object = object,
-              of_sample = of_sample,
-              method_dr = "umap")
+  deprecated(...)
+
+  getDimRedDf(
+    object = object,
+    of_sample = of_sample,
+    method_dr = "umap"
+  )
 
 }
 
@@ -4221,41 +3575,134 @@ getUmapDf <- function(object, of_sample = NA){
 
 # getV --------------------------------------------------------------------
 
-
-
 #' @title Obtain variable names
 #'
 #' @description Extracts a character vector of variable names that are currently
-#' known to the `spata2` object.
+#' known to the `SPATA2` object.
 #'
 #' @inherit argument_dummy params
+#' @param protected Logical value. If `TRUE`, variable names that are protected
+#' in `SPATA2` are returned, too, regardless of being in use or not.
 #'
 #' @return Character vector.
 #' @export
-getVariableNames <- function(object){
+getVariableNames <- function(object, protected = FALSE){
 
+  # coordinates
   cnames <- getCoordsDf(object) %>% base::colnames()
 
-  gnames <-
+  # molecules
+  mnames <-
     purrr::map(
-      .x = object@data[[1]],
-      .f = base::rownames
+      .x = object@assays,
+      .f = ~ base::rownames(.x@mtr_counts)
     ) %>%
     purrr::flatten_chr() %>%
     base::unique()
 
-  fnames <- getFeatureDf(object) %>% base::colnames()
+  # signatures
+  snames <-
+    purrr::map(
+      .x = object@assays,
+      .f = ~ base::names(.x@signatures)
+    ) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
 
-  gsnames <- getGeneSets(object)
+  # meta features
+  fnames <-
+    getMetaDf(object) %>%
+    dplyr::select(-barcodes, -sample) %>%
+    base::colnames()
 
-  out <- base::unique(c(cnames, gnames, gsnames, fnames), protected_variable_names)
+
+  out <- base::unique(c(cnames, mnames, snames, fnames))
+
+  if(base::isTRUE(protected)){
+
+    out <- c(out, protected_variable_names)
+
+  }
 
   return(out)
 
 }
 
+#' @title Get variable type list
+#'
+#' @description Retrieves a list of variable types present in the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#' @param variables A character vector specifying the subset of variables
+#' to include in the output. By default, all variables known to the
+#' object are returned in the output list.
+#'
+#' @return A list containing the names of variables categorized by type.
+#'
+#' @details This function categorizes variables into different types,
+#' including spatial coordinates, molecules, signatures, meta features,
+#' and additional information like barcodes and sample identifiers. If
+#' the 'variables' argument is provided as a character vector,
+#' the function returns only the specified variables categorized by type.
+#' Otherwise, it returns all variables categorized by type.
+#'
+#' @seealso `getCoordsDf()`, `getMetaDf()`
+#'
+#' @examples
+#' # Get variable type list for all variables in the object
+#' var_types <- getVarTypeList(object)
+#'
+#' # Get variable type list for specific variables
+#' var_types <- getVarTypeList(object, variables = c("var1", "var2"))
+#'
+#' @export
+getVarTypeList <- function(object, variables = NULL){
 
+  var_types <- list()
 
+  # coordinates
+  var_types$spatial <-
+    getCoordsDf(object) %>%
+    dplyr::select(-barcodes, -sample) %>%
+    base::colnames()
+
+  # molecules
+  var_types$molecules <-
+    purrr::map(
+      .x = object@assays,
+      .f = ~ base::rownames(.x@mtr_counts)
+    ) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+  # signatures
+  var_types$signatures <-
+    purrr::map(
+      .x = object@assays,
+      .f = ~ base::names(.x@signatures)
+    ) %>%
+    purrr::flatten_chr() %>%
+    base::unique()
+
+  # meta features
+  var_types$meta_features <-
+    getMetaDf(object) %>%
+    dplyr::select(-barcodes, -sample) %>%
+    base::colnames()
+
+  var_types$info <- c("barcodes", "sample")
+
+  if(base::is.character(variables)){
+
+    var_types <-
+      purrr::map(.x = var_types, .f = ~ .x[.x %in% variables]) %>%
+      purrr::discard(.p = purrr::is_empty)
+
+  }
+
+  return(var_types)
+
+}
 
 
 #' @title Obtain window size of padded image

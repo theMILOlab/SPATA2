@@ -18,17 +18,25 @@ nBarcodes <- function(object){
 
 #' @title Number of counts
 #' @export
-nCounts <- function(object, gene){
+nCounts <- function(object, molecule, assay_name = activeAssay(object), ...){
 
-  counts <- getCountMatrix(object)
+  deprecated(...)
 
-  out <- base::sum(counts[gene,])
+  counts <- getCountMatrix(object, assay_name = assay_name)
+
+  out <- base::sum(counts[molecule,])
 
   return(out)
 
 }
 
+#' @rdname nMolecules
+#' @export
+nGenes <- function(object){
 
+  nMolecules(object, assay_name = "transcriptomics")
+
+}
 
 #' @export
 nest_shifted_projection_df <- function(shifted_projection_df){
@@ -43,22 +51,95 @@ nest_shifted_projection_df <- function(shifted_projection_df){
 }
 
 
-#' @title Number of genes
+#' @title Number of molecules
 #'
-#' @description Returns the number of genes in the active matrix.
+#' @description Returns the number of genes in raw count matrix of the chosen
+#' assay.
 #'
 #' @inherit argument_dummy params
 #'
-#' @return Numeriv value.
+#' @return Numeric value.
 #'
 #' @export
-nGenes <- function(object, mtr_name = NULL){
+nMolecules <- function(object, assay_name = activeAssay(object)){
 
-  getExpressionMatrix(object, mtr_name = mtr_name, verbose = FALSE) %>%
-    base:::nrow()
+  getMatrix(object, mtr_name = "counts", assay_name = assay_name, verbose = FALSE) %>%
+    base::nrow()
 
 }
 
+
+
+
+#' @title Normalize raw counts
+#'
+#' @description Normalizes the count matrix of a molecular assay.
+#'
+#' @param method Character value. The normalization method. One of c(*'LogNormaize'*,
+#' *'CLR'*, *'RC'*).
+#' @param mtr_name_new Character value. The name under which the new processed matrix
+#' is stored in the `SPATA2` object.
+#' @param activate Logical. If `TRUE`, the created matrix is activated via `activateMatrix()`.
+#' @param ... Additional arguments given to [`Seurat::NormalizeData()`].
+#'
+#' @details The function creates a temporary `Seurat` object and calls [`Seurat::NormalizeData()`]
+#' with the corresponding method. Afterwards, the normalized matrix is extracted and
+#' stored in the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+normalizeCounts <- function(object,
+                            method = "LogNormalize",
+                            mtr_name_new = method,
+                            activate = TRUE,
+                            assay_name = activeAssay(object),
+                            overwrite = FALSE,
+                            verbose = NULL,
+                            ...){
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = method,
+    against = c("LogNormalize", "CLR", "RC")
+  )
+
+  confuns::check_none_of(
+    input = mtr_name_new,
+    against = getProcessedMatrixNames(object, assay_name = assay_name),
+    ref.input = "input for argument `mtr_name_new`",
+    ref.against = "processed matrices",
+    overwrite = overwrite
+  )
+
+  count_mtr <- getCountMatrix(object, assay_name = assay_name)
+
+  proc_mtr <-
+    Seurat::CreateSeuratObject(counts = count_mtr, assay = "X") %>%
+    Seurat::NormalizeData(object = ., normalization.method = method, verbose = verbose, assay = "X", ...) %>%
+    Seurat::GetAssayData(object = ., layer = "data")
+
+  object <-
+    setProcessedMatrix(
+      object = object,
+      proc_mtr = proc_mtr,
+      name = mtr_name_new,
+      assay_name = assay_name
+    )
+
+  if(base::isTRUE(activate)){
+
+    object <-
+      activateMatrix(object, mtr_name = mtr_name_new, assay_name = assay_name, verbose = verbose)
+
+  }
+
+  return(object)
+
+}
 
 #' @title Number of image annotations
 #'

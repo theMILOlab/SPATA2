@@ -1,16 +1,27 @@
 
+#' @title Check availability of an assay
+#'
+#' @description Checks if the provided object contains a specific assay.
+#'
+#' @inherit argument_dumym params
+#'
+#' @return TRUE if the assay is found in the object, FALSE otherwise.
+#'
+#' @seealso [`getAssayNames()`], [`MolecularAssay`]
+#'
+#' @export
+containsAssay <- function(object, assay_name, error = FALSE){
 
+  out <- assay_name %in% getAssayNames(object)
 
-#' @keywords internal
-contains_ccd <- function(object, error = FALSE){
+  if(base::isTRUE(error) & base::isFALSE(out)){
 
-  ccd <- getSpatialMethod(object)@method_specifics[["ccd"]]
-
-  out <- !purrr::is_empty(ccd)
-
-  if(base::isFALSE(out) & base::isTRUE(error)){
-
-    stop("No center to center distance found. Use `setCCD()` or `computeCCD()`.")
+    confuns::check_one_of(
+      input = assay_name,
+      against = getAssayNames(object),
+      fdb.opt = 2,
+      ref.opt.2 = "molecular assays"
+    )
 
   }
 
@@ -18,10 +29,11 @@ contains_ccd <- function(object, error = FALSE){
 
 }
 
+
 #' @title Check availability of center to center distance
 #'
 #' @description Checks if the object contains a center to center
-#' distance as obtained by `getCCD()`.
+#' distance as obtained by [`getCCD()`].
 #'
 #' @inherit argument_dummy params
 #'
@@ -38,16 +50,22 @@ setGeneric(name = "containsCCD", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsCCD",
-  signature = "spata2",
-  definition = contains_ccd
-)
+  signature = "ANY",
+  definition = function(object, error = FALSE){
 
-#' @rdname containsCCD
-#' @export
-setMethod(
-  f = "containsCCD",
-  signature = "HistoImaging",
-  definition = contains_ccd
+    ccd <- getSpatialMethod(object)@method_specifics[["ccd"]]
+
+    out <- !purrr::is_empty(ccd)
+
+    if(base::isFALSE(out) & base::isTRUE(error)){
+
+      stop("No center to center distance found. Use `setCCD()` or `computeCCD()`.")
+
+    }
+
+    return(out)
+
+  }
 )
 
 
@@ -90,6 +108,58 @@ setMethod(
   }
 )
 
+#' @title Check availability of miscellaneous content
+#'
+#' @description Logical tests that check if content exists in the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#'
+#' @export
+containsCNV <- function(object){
+
+  out <-
+    base::tryCatch({
+
+      ma <- getAssay(object, assay_name = "transcriptomics")
+
+      cnv <- ma@analysis$cnv
+
+      purrr::is_list(cnv) && !purrr::is_empty(cnv)
+
+    }, error = function(error){
+
+      FALSE
+
+    })
+
+  return(out)
+
+}
+
+
+#' @title Checks availability of `HistoImaging` object
+#'
+#' @description Tests if the input object contains an object
+#' of class `HistoImaging`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+#'
+containsHistoImaging <- function(object, error = FALSE){
+
+  out <-
+    !purrr::is_empty(object@spatial) &
+    methods::is(object@spatial, "HistoImaging")
+
+
+  return(out)
+
+}
+
 #' @title Check availability of an image
 #'
 #' @description Checks if the input object has an image in the
@@ -112,7 +182,7 @@ setGeneric(name = "containsImage", def = function(object, ...){
 setMethod(
   f = "containsImage",
   signature = "ANY",
-  definition = function(object, img_name = NULL, error = FALSE){
+  definition = function(object, img_name = activeImage(object), error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
       containsImage(object = ., error = error)
@@ -160,6 +230,66 @@ setMethod(
   }
 )
 
+
+#' @title Check for inner borders in a spatial annotation
+#'
+#' @description Checks whether a `SpatialAnnotation` object contains any inner borders.
+#'
+#' @inherit getSpatialAnnotation params
+#' @inherit argument_dummy params
+#'
+#' @seealso [`SpatialAnnotation`]
+#'
+#' @return Logical value.
+#'
+#' @export
+#'
+setGeneric(name = "containsInnerBorders", def = function(object, ...){
+
+  standardGeneric(f = "containsInnerBorders")
+
+})
+
+#' @rdname containsInnerBorders
+#' @export
+setMethod(
+  f = "containsInnerBorders",
+  signature = "SPATA2",
+  definition = function(object, id, ...){
+
+    getSpatialAnnotation(object, id = id) %>%
+      containsInnerBorders()
+
+  }
+)
+
+#' @rdname containsInnerBorders
+#' @export
+setMethod(
+  f = "containsInnerBorders",
+  signature = "SpatialAnnotation",
+  definition = function(object, ...){
+
+    stringr::str_detect(base::names(object@area), pattern = "inner") %>%
+      base::any()
+
+  }
+)
+
+#' @rdname containsInnerBorders
+#' @export
+setMethod(
+  f = "containsInnerBorders",
+  signature = "data.frame",
+  definition = function(object, ...){
+
+    stringr::str_detect(object$border, pattern = "inner") %>%
+      base::any()
+
+  }
+)
+
+
 #' @title Check availability of specific methods
 #'
 #' @description Tests if the input object is associated with
@@ -181,7 +311,7 @@ setGeneric(name = "containsMethod", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsMethod",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, method_name, error = FALSE){
 
     imaging <- getHistoImaging(object)
@@ -334,10 +464,10 @@ setGeneric(name = "containsScaleFactor", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsScaleFactor",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         fct_name,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         error = FALSE){
 
     imaging <- getHistoImaging(object)
@@ -359,7 +489,7 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object,
                         fct_name,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         error = FALSE){
 
     out <- !base::is.null(getScaleFactor(object, fct_name = fct_name, img_name = img_name))
@@ -521,7 +651,7 @@ setMethod(
 #' @title Check availability of tissue outline
 #'
 #' @description Tests if the object contains tissue outline
-#' as identified by `identifyTissueOutline()`.
+#' as identified by [`identifyTissueOutline()`].
 #'
 #' @inherit argument_dummy params
 #'
@@ -538,8 +668,8 @@ setGeneric(name = "containsTissueOutline", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsTissueOutline",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, error = FALSE){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
       containsTissueOutline(object = ., error = error)
@@ -552,7 +682,7 @@ setMethod(
 setMethod(
   f = "containsTissueOutline",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, error = FALSE){
+  definition = function(object, img_name = activeImage(object), error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
       containsTissueOutline(object = ., error = error)
@@ -565,7 +695,7 @@ setMethod(
 setMethod(
   f = "containsTissueOutline",
   signature = "HistoImage",
-  definition = function(object, img_name = NULL, error = FALSE){
+  definition = function(object, img_name = activeImage(object), error = FALSE){
 
     out <- !purrr::is_empty(object@outline)
 
@@ -602,7 +732,7 @@ setGeneric(name = "containsSpatialAnnotations", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsSpatialAnnotations",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, error = FALSE){
 
     getHistoImaging(object) %>%

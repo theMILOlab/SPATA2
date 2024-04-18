@@ -2,7 +2,6 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSasDf}
 \alias{getSasDf}
-\alias{getSpatialAnnotationScreeningDf}
 \title{Obtain spatial annotation screening data.frame}
 \usage{
 getSasDf(
@@ -22,11 +21,9 @@ getSasDf(
   verbose = FALSE,
   ...
 )
-
-getSpatialAnnotationScreeningDf(...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
@@ -66,7 +63,7 @@ Data.frame.
 }
 \description{
 Extracts a data.frame of inferred gradients of numeric
-variables as a fucntion of distance to spatial annotations.
+variables as a function of distance to spatial annotations.
 }
 \examples{
 

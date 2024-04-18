@@ -2,20 +2,25 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectXenium}
 \alias{initiateSpataObjectXenium}
-\title{Initiate \code{spata2} object from platform Xenium}
+\title{Initiate \code{SPATA2} object from platform Xenium}
 \usage{
-initiateSpataObjectXenium(directory_xenium, sample_name, verbose = TRUE)
+initiateSpataObjectXenium(sample_name, directory_xenium, verbose = TRUE)
 }
 \arguments{
-\item{sample_name}{Character value. Name of the sample.}
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
-\item{directory_visium}{Character value. Directory to a xenium folder. Should contain
+\item{directory_xenium}{Character value. Directory to a xenium folder. Should contain
 the subdirectory \emph{'.../cell_feature_matrix'} and the file \emph{'.../cells.csv.gz'}..}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
-An object of class \code{spata2}.
+An object of class \code{SPATA2}.
 }
 \description{
 Wrapper function around the necessary content to create a
-\code{spata2} object from standardized output of the Xenium platform.
+\code{SPATA2} object from standardized output of the Xenium platform.
 }

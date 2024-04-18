@@ -2,17 +2,19 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectMERFISH}
 \alias{initiateSpataObjectMERFISH}
-\title{Initiate a \code{spata2} object from platform MERFISH}
+\title{Initiate a \code{SPATA2} object from platform MERFISH}
 \usage{
 initiateSpataObjectMERFISH(
-  directory_merfish,
   sample_name,
+  directory_merfish,
   file_counts = NULL,
   file_cell_meta = NULL,
   verbose = TRUE
 )
 }
 \arguments{
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
+
 \item{directory_merfish}{Character value. Directory to a MERFISH folder
 that should contain a .csv file called \emph{cell_by_gene.csv} and a .csv file
 called \emph{cell_metadata.csv}. Deviating filenames can be specified using
@@ -32,18 +34,13 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-An object of class \code{spata2}.
+An object of class \code{SPATA2}.
 }
 \description{
 Wrapper function around the necessary content to create a
-\code{spata2} object from the standardized output of the MERFISH platform.
+\code{SPATA2} object from the standardized output of the MERFISH platform.
 }
 \details{
-MERFISH output does not come with an image. However, many spatial information such
-as coordinates, coordinate scale factors or spatial annotations are stored
-in class \code{\link{HistoImaging}} and \code{\link{HistoImage}}. The \code{spata2} object is equipped
-with a \code{HistoImaging} object that contains an empty \code{HistoImage} called \emph{pseudo}.
-
 MERFISH works in micron space. The coordinates of the cellular centroids are
 provided in unit um. Therefore no pixel scale factor must be computed or set
 to work with SI units.

@@ -8,12 +8,12 @@
 \usage{
 getScaleFactor(object, ...)
 
-\S4method{getScaleFactor}{ANY}(object, fct_name, img_name = NULL)
+\S4method{getScaleFactor}{ANY}(object, fct_name, img_name = activeImage(object))
 
 \S4method{getScaleFactor}{HistoImage}(object, fct_name)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

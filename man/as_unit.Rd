@@ -51,7 +51,7 @@ as_decimeter2(input, ...)
 \item{...}{Needed arguments that depend on the input/unit combination. If
 one of both is \emph{'px'}, argument \code{object} must be specified.}
 
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{unit}{Character value. Specifies the desired unit.}

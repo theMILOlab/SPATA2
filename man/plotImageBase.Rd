@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotImageBase}
 \alias{plotImageBase}
-\alias{plotImageBase,spata2-method}
+\alias{plotImageBase,SPATA2-method}
 \alias{plotImageBase,HistoImaging-method}
 \alias{plotImageBase,HistoImage-method}
 \alias{plotImageBase,Image-method}
@@ -10,11 +10,11 @@
 \usage{
 plotImageBase(object, ...)
 
-\S4method{plotImageBase}{spata2}(object, xrange = NULL, yrange = NULL, axes = FALSE, ...)
+\S4method{plotImageBase}{SPATA2}(object, xrange = NULL, yrange = NULL, axes = FALSE, ...)
 
 \S4method{plotImageBase}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   xrange = NULL,
   yrange = NULL,
   scale_fct = 1,
@@ -24,7 +24,7 @@ plotImageBase(object, ...)
 
 \S4method{plotImageBase}{HistoImage}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   xrange = NULL,
   yrange = NULL,
   scale_fct = 1,
@@ -42,7 +42,7 @@ plotImageBase(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

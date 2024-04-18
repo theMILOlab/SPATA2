@@ -16,7 +16,6 @@ runCnvAnalysis(
   cnv_prefix = "Chr",
   save_infercnv_object = TRUE,
   verbose = NULL,
-  of_sample = NA,
   CreateInfercnvObject = list(ref_group_names = "ref"),
   require_above_min_mean_expr_cutoff = list(min_mean_expr_cutoff = 0.1),
   require_above_min_cells_ref = list(min_cells_per_gene = 3),
@@ -38,7 +37,7 @@ runCnvAnalysis(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{ref_annotation}{A data.frame in which the row names refer to the barcodes of
@@ -48,7 +47,7 @@ and a column named \emph{sample} that refers to the reference group names.
 Defaults to the data.frame stored in slot \code{$annotation} of list \code{SPATA2::cnv_ref}.
 
 If you provide your own reference, make sure that barcodes of the reference
-input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+input do not overlap with barcodes of the \code{SPATA2} object. (e.g. by suffixing as
 exemplified in the default list \code{SPATA2::cnv_ref}.)}
 
 \item{ref_mtr}{The count matrix that is supposed to be used as the reference.
@@ -59,7 +58,7 @@ provided in argument \code{ref_annotation.}
 Defaults to the count matrix stored in slot \code{$mtr} of list \code{SPATA2::cnv_ref}.
 
 If you provide your own reference, make sure that barcodes of the reference
-input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+input do not overlap with barcodes of the \code{SPATA2} object. (e.g. by suffixing as
 exemplified in the default list \code{SPATA2::cnv_ref}.)}
 
 \item{ref_regions}{A data.frame that contains information about chromosome positions.
@@ -95,9 +94,6 @@ is stored in the folder denoted in argument \code{directory_cnv_folder} under
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{CreateInfercnvObject}{A list of arguments with which the function is supposed
 to be called. Make sure that your input does not conflict with downstream function
@@ -161,7 +157,7 @@ calls. Input for argument \code{infercnv_obj} and  must not be specified. Input 
 \code{out_dir} is taken from argument \code{directory_cnv_folder}.}
 }
 \value{
-An updated spata-object containg the results in the respective slot.
+An updated \code{SPATA2} object containg the results in the respective slot.
 }
 \description{
 This functions integrates large-scale copy number variations analysis
@@ -174,10 +170,10 @@ is composed of. Argument \code{directory_cnv_folder} should lead to an empty fol
 temporary files as well as the output heatmap and the infercnv-object are stored
 there without asking for permission which can lead to overwriting due to naming issues.
 
-Results (including a PCA) are stored in the slot @cnv of the spata-object
+Results (including a PCA) are stored in the slot @cnv of the \code{SPATA2} object
 which can be obtained via \code{getCnvResults()}. Additionally, the variables
 that store the copy-number-variations for each barcode-spot are added to
-the spata-object's feature data. The corresponding feature variables are named according
+the \code{SPATA2} object's feature data. The corresponding feature variables are named according
 to the chromosome's number and the prefix denoted with the argument \code{cnv_prefix.}
 
 Regarding the reference data:

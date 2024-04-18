@@ -35,14 +35,13 @@ plotSpatialTrajectories(
   xrange = getCoordsRange(object)[["x"]],
   yrange = getCoordsRange(object)[["y"]],
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 }
 \arguments{
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
@@ -119,9 +118,6 @@ for more information.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

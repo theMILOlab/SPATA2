@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectVisium}
 \alias{initiateSpataObjectVisium}
-\title{Initiate \code{spata2} object from platform Visium}
+\title{Initiate \code{SPATA2} object from platform Visium}
 \usage{
 initiateSpataObjectVisium(
   directory_visium,
@@ -17,7 +17,7 @@ initiateSpataObjectVisium(
 \item{directory_visium}{Character value. Directory to a visium folder. Should contain
 the subdirectory \emph{'.../spatial'}.}
 
-\item{sample_name}{Character value. Name of the sample.}
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
 \item{mtr}{The matrix to load. One of \code{c("filtered", "raw")}.}
 
@@ -39,11 +39,11 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-An object of class \code{spata2}.
+An object of class \code{SPATA2}.
 }
 \description{
 Wrapper function around the necessary content to create a
-\code{spata2} object from standardized output of the Visium platform.
+\code{SPATA2} object from standardized output of the Visium platform.
 }
 \seealso{
 \code{\link{createHistoImagingVisium}}

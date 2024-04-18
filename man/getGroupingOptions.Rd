@@ -2,7 +2,7 @@
 % Please edit documentation in R/getA-G.R
 \name{getGroupingOptions}
 \alias{getGroupingOptions}
-\title{Obtain variable names that group the barcode spots}
+\title{Obtain variable names that group data points}
 \usage{
 getGroupingOptions(object, ...)
 }
@@ -10,9 +10,9 @@ getGroupingOptions(object, ...)
 \item{object}{A valid spata-object.}
 }
 \value{
-Character vector of variables that assign
-data points to groups.
+Character vector.
 }
 \description{
-Obtain variable names that group the barcode spots
+Extracts the names of the features of class \emph{factor} which
+are valid input options for the arguments \code{grouping} and \code{across}.
 }

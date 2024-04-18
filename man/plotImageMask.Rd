@@ -2,26 +2,36 @@
 % Please edit documentation in R/plotH-M.R, R/plotN-S.R
 \name{plotImageMask}
 \alias{plotImageMask}
-\alias{plotImageMask,spata2-method}
+\alias{plotImageMask,SPATA2-method}
 \alias{plotImageMask,HistoImaging-method}
 \alias{plotImageMask,HistoImage-method}
 \alias{plotPixelContent}
-\alias{plotPixelContent,spata2-method}
+\alias{plotPixelContent,SPATA2-method}
 \alias{plotPixelContent,HistoImaging-method}
 \alias{plotPixelContent,HistoImage-method}
 \title{Plot pixel content}
 \usage{
 plotImageMask(object, ...)
 
-\S4method{plotImageMask}{spata2}(object, img_name = NULL, clr_fg = "black", clr_bg = "white")
+\S4method{plotImageMask}{SPATA2}(
+  object,
+  img_name = activeImage(object),
+  clr_fg = "black",
+  clr_bg = "white"
+)
 
-\S4method{plotImageMask}{HistoImaging}(object, img_name = NULL, clr_fg = "black", clr_bg = "white")
+\S4method{plotImageMask}{HistoImaging}(
+  object,
+  img_name = activeImage(object),
+  clr_fg = "black",
+  clr_bg = "white"
+)
 
 \S4method{plotImageMask}{HistoImage}(object, clr_fg = "black", clr_bg = "white")
 
 plotPixelContent(object, ...)
 
-\S4method{plotPixelContent}{spata2}(
+\S4method{plotPixelContent}{SPATA2}(
   object,
   img_name = NULL,
   clrp = "sifre",
@@ -57,7 +67,7 @@ plotPixelContent(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

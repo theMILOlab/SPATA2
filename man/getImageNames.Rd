@@ -2,18 +2,18 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageNames}
 \alias{getImageNames}
-\alias{getImageNames,spata2-method}
+\alias{getImageNames,SPATA2-method}
 \alias{getImageNames,HistoImaging-method}
 \title{Obtain names of registered \code{HistoImage} objects}
 \usage{
 getImageNames(object, ...)
 
-\S4method{getImageNames}{spata2}(object, ref = TRUE, ...)
+\S4method{getImageNames}{SPATA2}(object, ref = TRUE, ...)
 
 \S4method{getImageNames}{HistoImaging}(object, ref = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

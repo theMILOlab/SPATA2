@@ -2,21 +2,26 @@
 % Please edit documentation in R/i.R
 \name{identifyTissueOutline}
 \alias{identifyTissueOutline}
-\alias{identifyTissueOutline,spata2-method}
+\alias{identifyTissueOutline,SPATA2-method}
 \alias{identifyTissueOutline,HistoImaging-method}
 \alias{identifyTissueOutline,HistoImage-method}
 \title{Identify tissue outline}
 \usage{
 identifyTissueOutline(object, ...)
 
-\S4method{identifyTissueOutline}{spata2}(object, img_name = NULL, use = "image", verbose = NULL)
+\S4method{identifyTissueOutline}{SPATA2}(
+  object,
+  img_name = activeImage(object),
+  use = "image",
+  verbose = NULL
+)
 
-\S4method{identifyTissueOutline}{HistoImaging}(object, img_name = NULL, verbose = TRUE)
+\S4method{identifyTissueOutline}{HistoImaging}(object, img_name = activeImage(object), verbose = TRUE)
 
 \S4method{identifyTissueOutline}{HistoImage}(object, verbose = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -47,10 +52,10 @@ If \code{img_name} specifies multiple images, the function
 iterates over all of them.
 }
 \note{
-For \code{spata2} objects: If the \code{spata2} object contains a registered image
+For \code{SPATA2} objects: If the \code{SPATA2} object contains a registered image
 the results of \code{\link[=identifyPixelContent]{identifyPixelContent()}} is required.
 
-If the \code{spata2} object does not contain a registered image because the
+If the \code{SPATA2} object does not contain a registered image because the
 underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
 a workaround is applied and the tissue outline is identified by outlining all
 data points instead of outlining pixels that were identified as \emph{tissue pixels}.

@@ -2,18 +2,28 @@
 % Please edit documentation in R/contains.R
 \name{containsScaleFactor}
 \alias{containsScaleFactor}
-\alias{containsScaleFactor,spata2-method}
+\alias{containsScaleFactor,SPATA2-method}
 \alias{containsScaleFactor,HistoImaging-method}
 \title{Check availability of specific scale factors}
 \usage{
 containsScaleFactor(object, ...)
 
-\S4method{containsScaleFactor}{spata2}(object, fct_name, img_name = NULL, error = FALSE)
+\S4method{containsScaleFactor}{SPATA2}(
+  object,
+  fct_name,
+  img_name = activeImage(object),
+  error = FALSE
+)
 
-\S4method{containsScaleFactor}{HistoImaging}(object, fct_name, img_name = NULL, error = FALSE)
+\S4method{containsScaleFactor}{HistoImaging}(
+  object,
+  fct_name,
+  img_name = activeImage(object),
+  error = FALSE
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

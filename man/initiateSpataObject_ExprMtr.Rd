@@ -54,18 +54,18 @@ If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to ge
 of nearest neighbours to compute. (\code{nn} is deprecated.)}
 }
 \value{
-A \code{spata2} object.
+A \code{SPATA2} object.
 }
 \description{
 Default function for any spatial related experiment whoose output is
 an already processed expression/intensity matrix. See details for more information.
 }
 \details{
-After initiating the \code{spata2} object PCA is performed via \code{irlba::prcomp_irlba()} and clustering
+After initiating the \code{SPATA2} object PCA is performed via \code{irlba::prcomp_irlba()} and clustering
 is done via \code{RANN::nn2()}. (Use \code{addFeatures()} to add any clustering results of your own analysis.)
 Additional dimensional reduction is performed via \code{Rtsne::Rtsne()} and \code{umap::umap()}.
 
-Note that this function initiates a \code{spata2} object that does not contain a count-matrix! You can
+Note that this function initiates a \code{SPATA2} object that does not contain a count-matrix! You can
 add a count-matrix manually using \code{setCountmatrix()}. As long as there is none functions that
 need a count-matrix will throw an error telling you that no count matrix could be found.
 }

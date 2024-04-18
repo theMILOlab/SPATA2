@@ -2,13 +2,13 @@
 % Please edit documentation in R/plotSurface.R
 \name{plotSurfaceSAS}
 \alias{plotSurfaceSAS}
-\alias{plotSurfaceSAS,spata2-method}
+\alias{plotSurfaceSAS,SPATA2-method}
 \alias{plotSurfaceSAS,SpatialAnnotationScreening-method}
 \title{Plot screening area of SAS-algorithm}
 \usage{
 plotSurfaceSAS(object, ...)
 
-\S4method{plotSurfaceSAS}{spata2}(
+\S4method{plotSurfaceSAS}{SPATA2}(
   object,
   id,
   distance = distToEdge(object, id),
@@ -43,7 +43,7 @@ plotSurfaceSAS(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -8,15 +8,15 @@
 \alias{getUmapDf}
 \title{Obtain dim red data.frame}
 \usage{
-getDimRedDf(object, method_dr = c("pca", "tsne", "umap"), of_sample = NA)
+getDimRedDf(object, method_dr = c("pca", "tsne", "umap"), ...)
 
-getPcaDf(object, n_pcs = 30, of_sample = NA)
+getPcaDf(object, n_pcs = 30, ...)
 
-getPcaMtr(object, n_pcs = 30, of_sample = NA)
+getPcaMtr(object, n_pcs = 30, ...)
 
-getTsneDf(object, of_sample = NA)
+getTsneDf(object, ...)
 
-getUmapDf(object, of_sample = NA)
+getUmapDf(object, ...)
 }
 \description{
 Obtain dim red data.frame

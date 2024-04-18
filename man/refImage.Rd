@@ -2,18 +2,18 @@
 % Please edit documentation in R/r.R
 \name{refImage}
 \alias{refImage}
-\alias{refImage,spata2-method}
+\alias{refImage,SPATA2-method}
 \alias{refImage,HistoImaging-method}
 \title{Obtain name of reference content}
 \usage{
 refImage(object, ...)
 
-\S4method{refImage}{spata2}(object)
+\S4method{refImage}{SPATA2}(object)
 
 \S4method{refImage}{HistoImaging}(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

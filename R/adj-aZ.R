@@ -1,145 +1,42 @@
 
 # adjust ------------------------------------------------------------------
 
-#' @title Adjust default instructions
+
+#' @title Adjust Gene Set List
 #'
-#' @inherit check_object params
-#' @param to Character value. Denotes the platform for which a new storage
-#' directory is to be created. Must be either \emph{'cell_data_set', 'seurat_object'}
-#' or \emph{'spata_object'}.
-#' @param directory_new Character value. The new directory under which
-#' to store the object of interest. Overwrites the stored default directory.
-#' Use \code{getDefaultDirectory()} to obtain the current set up.
-#' @param combine_with_wd Character value or FALSE. If specified with a
-#' character value (default: \emph{'/'}) the input of \code{new_directory}
-#' is considered to be a relative directory and is combined with the
-#' current working directory (\code{base::getwd()}) separated with the character string
-#' specified. If set to FALSE the input of \code{new_directory}
-#' is taken as is.
+#' @description This function adjusts the gene set list (GSL) of a given object based on specified limits.
 #'
-#' @param ... Named arguments whoose default input you want to override.
+#' @param limits A numeric value representing the threshold percentage for gene set inclusion (default: 50).
 #'
-#' @return An updated spata object.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
-#' @keywords internal
 #'
+#' @details This function calculates the proportion of genes in each gene set relative to the total number
+#' of genes in the object. Gene sets with a proportion greater than or equal to the specified limit
+#' are retained, while others are removed.
+#'
+#' @seealso [`getGeneSetList()`], [`getGenes()`], [`getAssay()`], [`setAssay()`]
+#'
+#' @export
+adjustGeneSetList <- function(object, limits = 50){
 
-adjustDirectoryInstructions <- function(object, to, directory_new, combine_with_wd = FALSE){
+  gsl <- getGeneSetList(object)
+  genes <- getGenes(object)
 
-  check_object(object)
+  gsl_keep <-
+    purrr::keep(.x = gsl, .p = ~ base::sum(.x %in% genes) / base::length(.x) >= (50/100))
 
-  confuns::check_one_of(
-    input = to,
-    against = validDirectoryInstructionSlots(),
-    ref.input = "input for argument 'to'"
-  )
+  ma <- getAssay(object, assay_name = "transcriptomics")
 
-  if(base::is.character(combine_with_wd)){
+  ma@signatures <- gsl_keep
 
-    confuns::is_value(x = combine_with_wd, mode = "character")
-
-    directory_new <-
-      stringr::str_c(base::getwd(), combine_with_wd, directory_new, sep = "")
-
-    confuns::give_feedback(
-      msg = glue::glue("Combining specified directory to {to} with working directory.",
-                       to = stringr::str_replace_all(to, pattern = "_", replacement = "-")),
-      verbose = TRUE
-    )
-
-  }
-
-  object@information$instructions$directories[[to]] <-
-    directory_new
-
-  # give feedback
-  msg <-
-    glue::glue(
-      "Default directory to the corresponding {to} set to '{directory_new}'.",
-      to = stringr::str_replace(to, "_", "-")
-    )
-
-  confuns::give_feedback(
-    msg = msg,
-    verbose = TRUE
-  )
+  object <- setAssay(object, assay = assay)
 
   return(object)
 
 }
 
-
-#' @title Filter gene-set data.frame
-#'
-#' @description Checks the objects gene-set data.frame for gene-sets that
-#' are composed of genes that exist in the given expression matrix.
-#'
-#' @inherit check_object params
-#' @param limit Numeric value between 1 and 100. The minimum percentage of gene-set genes
-#' that have to exist in the given expression matrix in order for a gene set to stay in the
-#' gene-set data.frame.
-#'
-#' @return An updated spata-object and an informative message about how many
-#' gene-sets have been discarded and how many gene-sets remain.
-#'
-#' @details E.g.: Gene-set 'x' is composed of 30 genes. The expression matrix
-#' however contains only 15 of them. If argument \code{limit} is set to 75 gene-set 'x'
-#' is removed since the percentage of genes of which the given expression matrix
-#' contains information about is only 50.
-#'
-#' @keywords internal
-adjustGeneSetDf <- function(object, limit = 50){
-
-  # 1. Control --------------------------------------------------------------
-
-  check_object(object)
-  confuns::is_value(limit, mode = "numeric", ref = "limit")
-  if(!dplyr::between(limit, left = 1, right = 99)){
-
-    base::stop("Argument 'limit' needs to be a numeric value between 1 and 99.")
-
-  }
-
-  limit <- limit/100
-
-  # -----
-
-  # 2. Cleaning -------------------------------------------------------------
-
-  base::message(glue::glue("Calculating percentage of genes found in expression matrix for {dplyr::n_distinct(object@used_genesets$ont)} gene sets."))
-
-  all_genes <- getGenes(object, simplify = TRUE, in_sample = "all")
-
-  filtered_df <-
-    dplyr::group_by(.data = object@used_genesets, ont) %>%
-    dplyr::mutate(
-      gene_count = dplyr::n(),
-      gene_found = gene %in% all_genes,
-      n_found = base::sum(gene_found),
-      p_found = base::round(n_found/gene_count, digits = 2)
-    ) %>%
-    dplyr::filter(p_found > {{limit}}) %>%
-    dplyr::ungroup()
-
-  n_all_gs <-
-    getGeneSets(object) %>%
-    base::length()
-
-  n_remaining_gs <-
-    dplyr::pull(filtered_df, var = ont) %>%
-    base::unique() %>%
-    base::length()
-
-  n_removed_gs <- n_all_gs - n_remaining_gs
-
-  base::message(glue::glue("Removed {n_removed_gs} gene-sets. Number of remaining gene-sets: {n_remaining_gs} "))
-
-  object@used_genesets <-
-    dplyr::select(filtered_df, ont, gene)
-
-  return(object)
-
-}
 
 
 #' @keywords internal
@@ -296,338 +193,7 @@ adjustGseaDf <- function(df,
 
 # align -------------------------------------------------------------------
 
-#' @title Align image annotation
-#'
-#' @description Aligns an image annotation with the current image justification.
-#'
-#' @param img_ann An object of class `ImageAnnotation`.
-#' @param image_object An object of class `HistologyImaging` to which the image
-#' annotation is aligned.
-#'
-#' @details Information of the current justification of the image annotation
-#' is stored in slot @@info. This function aligns justification regarding
-#' horizontal and vertical flipping, scaling and rotation.
-#'
-#' @seealso Read documentation on `?ImageAnnotation` and `?HistologyImaging`
-#' for more information.
-#'
-#' @return Aligned input for `img_ann`.
-#' @export
-#'
-alignImageAnnotation <- function(img_ann, image_object){
 
-  io <- image_object
-
-  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
-
-  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
-
-  # scale
-  dim_spat_traj <- img_ann@info$current_dim[1:2]
-
-  scale_fct <- base::mean(dim_stored/dim_spat_traj)
-
-  if(base::length(scale_fct) != 1){
-
-    stop("Parent image of image annotation and current image of `SPATA2` object do not have the same axes ratio.")
-
-  }
-
-  if(scale_fct != 1){
-
-    img_ann@area <-
-      purrr::map(
-        .x = img_ann@area,
-        .f = ~ scale_coords_df(df = .x, scale_fct = scale_fct, verbose = FALSE)
-      )
-
-  }
-
-  img_ann@info$current_dim <- dim_stored
-
-
-  # flip horizontal
-  img_ann_flipped_h <- img_ann@info$current_just$flipped$horizontal
-  image_flipped_h <- io@justification$flipped$horizontal
-
-  if(img_ann_flipped_h != image_flipped_h){
-
-    img_ann@area <-
-      purrr::map(
-        .x = img_ann@area,
-        .f = ~ flip_coords_df(df = .x, axis = "horizontal", ranges = ranges, verbose = FALSE)
-      )
-
-    img_ann@info$current_just$flipped$horizontal <- image_flipped_h
-
-  }
-
-  # flip vertical
-  img_ann_flipped_v <- img_ann@info$current_just$flipped$vertical
-  image_flipped_v <- io@justification$flipped$vertical
-
-  if(img_ann_flipped_v != image_flipped_v){
-
-    img_ann@area <-
-      purrr::map(
-        .x = img_ann@area,
-        .f = ~ flip_coords_df(df = .x, axis = "vertical", ranges = ranges, verbose = FALSE)
-      )
-
-    img_ann@info$current_just$flipped$vertical <- image_flipped_v
-
-  }
-
-  # rotate
-  img_ann_angle <- img_ann@info$current_just$angle
-  image_angle <- io@justification$angle
-
-  angle_just <- image_angle - img_ann_angle
-
-  if(angle_just != 0){
-
-    if(image_angle < img_ann_angle){
-
-      img_ann@area <-
-        purrr::map(
-          .x = img_ann@area,
-          .f = ~
-            rotate_coords_df(
-              df = .x,
-              angle = angle_just,
-              ranges = ranges,
-              clockwise = FALSE,  # rotate dif. backwards
-              verbose = FALSE
-            )
-        )
-
-
-    } else if(image_angle > img_ann_angle) {
-
-      img_ann@area <-
-        purrr::map(
-          .x = img_ann@area,
-          .f = ~
-            rotate_coords_df(
-              df = .x,
-              angle = angle_just,
-              ranges = ranges,
-              clockwise = TRUE, # roate diff. forwards
-              verbose = FALSE
-            )
-        )
-
-    }
-
-    img_ann@info$current_just$angle <- image_angle
-
-  }
-
-  return(img_ann)
-
-}
-
-
-#' @rdname alignImageAnnotation
-#' @export
-
-alignSpatialTrajectory <- function(spat_traj, image_object){
-
-  io <- image_object
-
-  dim_stored <- io@image_info$dim_stored[1:2] # ensure that both of length two
-
-  ranges <- list(x = c(0, dim_stored[1]), y = c(0, dim_stored[2]))
-
-  # scale
-  dim_spat_traj <- spat_traj@info$current_dim[1:2]
-
-  scale_fct <- base::mean(dim_stored/dim_spat_traj)
-
-  if(base::length(scale_fct) != 1){
-
-    stop("Parent image of spatial trajectory and current image of `SPATA2` object do not have the same axes ratio.")
-
-  }
-
-  if(scale_fct != 1){
-
-    spat_traj@projection <-
-      scale_coords_df(
-        df = spat_traj@projection,
-        scale_fct = scale_fct,
-        verbose = FALSE
-      )
-
-    spat_traj@projection[["projection_length"]] <-
-      spat_traj@projection[["projection_length"]] * scale_fct[1]
-
-    spat_traj@segment <-
-      scale_coords_df(
-        df = spat_traj@segment,
-        scale_fct = scale_fct,
-        verbose = FALSE
-      )
-
-    spat_traj@width <- spat_traj@width * scale_fct[1]
-
-  }
-
-  spat_traj@info$current_dim <- dim_stored
-
-  # flip horizontal
-  spat_traj_flipped_h <- spat_traj@info$current_just$flipped$horizontal
-  image_flipped_h <- io@justification$flipped$horizontal
-
-  if(spat_traj_flipped_h != image_flipped_h){
-
-    spat_traj@projection <-
-      flip_coords_df(
-        df = spat_traj@projection,
-        axis = "horizontal",
-        ranges = ranges,
-        verbose = FALSE
-      )
-
-    spat_traj@segment <-
-      flip_coords_df(
-        df = spat_traj@segment,
-        axis = "horizontal",
-        ranges = ranges,
-        verbose = FALSE
-      )
-
-    spat_traj@info$current_just$flipped$horizontal <- image_flipped_h
-
-  }
-
-  # flip vertical
-  spat_traj_flipped_v <- spat_traj@info$current_just$flipped$vertical
-  image_flipped_v <- io@justification$flipped$vertical
-
-  if(spat_traj_flipped_v != image_flipped_v){
-
-    spat_traj@projection <-
-      flip_coords_df(
-        df = spat_traj@projection,
-        axis = "vertical",
-        ranges = ranges,
-        verbose = FALSE
-      )
-
-    spat_traj@segment <-
-      flip_coords_df(
-        df = spat_traj@segment,
-        axis = "vertical",
-        ranges = ranges,
-        verbose = FALSE
-      )
-
-    spat_traj@info$current_just$flipped$vertical <- image_flipped_v
-
-  }
-
-  # rotate
-  spat_traj_angle <- spat_traj@info$current_just$angle
-  image_angle <- io@justification$angle
-
-  angle_just <- image_angle - spat_traj_angle
-
-  if(angle_just != 0){
-
-    if(image_angle < spat_traj_angle){
-
-      spat_traj@projection <-
-        rotate_coords_df(
-          df = spat_traj@projection,
-          angle = angle_just,
-          ranges = ranges,
-          clockwise = FALSE,  # rotate dif. backwards
-          verbose = FALSE
-        )
-
-      spat_traj@segment <-
-        rotate_coords_df(
-          df = spat_traj@segment,
-          angle = angle_just,
-          ranges = ranges,
-          clockwise = FALSE,  # rotate dif. backwards
-          verbose = FALSE
-        )
-
-    } else if(image_angle > spat_traj_angle) {
-
-      spat_traj@projection <-
-        rotate_coords_df(
-          df = spat_traj@projection,
-          angle = angle_just,
-          ranges = ranges,
-          clockwise = TRUE, # roate diff. forwards
-          verbose = FALSE
-        )
-
-      spat_traj@segment <-
-        rotate_coords_df(
-          df = spat_traj@segment,
-          angle = angle_just,
-          ranges = ranges,
-          clockwise = TRUE, # roate diff. forwards
-          verbose = FALSE
-        )
-
-    }
-
-    spat_traj@info$current_just$angle <- image_angle
-
-  }
-
-  return(spat_traj)
-
-}
-
-#' @title Obtain a all barcode-spots distances
-#'
-#' @param scale_fct If character, *'lowres'* or *'hires'*. If numeric,
-#' value of length one. Determines the factor with which *imagecol* and
-#' *imagerow* of the original visium coordinates are scaled to x- and
-#' y-coordinates.
-#'
-#' @return A data.frame with all possible barcode-spot pairs
-#' and their distance to each other.
-#'
-#' @export
-#'
-all_bcsp_distances <- function(scale_fct = "lowres"){
-
-  if(base::is.character(scale_fct)){
-
-    scale_fct <- scale_factors[[scale_fct]]
-
-  } else if(base::is.numeric(scale_fct)){
-
-    scale_fct <- scale_fct[1]
-
-  }
-
-  coords_df <-
-    dplyr::mutate(
-      .data = visium_coords,
-      x = imagecol * scale_fct,
-      y = imagerow * scale_fct
-    )
-
-  bc_origin <- coords_df$barcodes
-  bc_destination <- coords_df$barcodes
-
-  distance_df <-
-    tidyr::expand_grid(bc_origin, bc_destination) %>%
-    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_origin = barcodes, xo = x, yo = y), by = "bc_origin") %>%
-    dplyr::left_join(x = ., y = dplyr::select(coords_df, bc_destination = barcodes, xd = x, yd = y), by = "bc_destination") %>%
-    dplyr::mutate(distance = base::sqrt((xd - xo)^2 + (yd - yo)^2))
-
-  return(distance_df)
-
-}
 
 
 # append ------------------------------------------------------------------
@@ -1155,131 +721,11 @@ as_decimeter2 <- function(input, ...){
 }
 
 
-#' @rdname runAutoencoderAssessment
-#' @export
-assessAutoencoderOptions <- function(expr_mtr,
-                                     activations,
-                                     bottlenecks,
-                                     layers = c(128, 64, 32),
-                                     dropout = 0.1,
-                                     epochs = 20,
-                                     verbose = TRUE){
-
-  # 1. Control --------------------------------------------------------------
-
-  confuns::check_one_of(input = activations, against = activation_fns)
-
-  confuns::are_values(c("dropout", "epochs"), mode = "numeric")
-
-  confuns::is_vec(x = layers, mode = "numeric", of.length = 3)
-  confuns::is_vec(x = bottlenecks, mode = "numeric")
-
-  # 2. Assess all combinations in for loop ----------------------------------
-
-  activations_list <-
-    base::vector(mode = "list", length = base::length(activations)) %>%
-    purrr::set_names(nm = activations)
-
-  for(a in base::seq_along(activations)){
-
-    activation <- activations[a]
-
-    bottlenecks_list <-
-      base::vector(mode = "list", length = base::length(bottlenecks)) %>%
-      purrr::set_names(nm = stringr::str_c("bn", bottlenecks, sep = "_"))
-
-    for(b in base::seq_along(bottlenecks)){
-
-      bottleneck <- bottlenecks[b]
-
-      base::message(Sys.time())
-      base::message(glue::glue("Assessing activation option {a}/{base::length(activations)}:'{activation}' and bottleneck option {b}/{base::length(bottlenecks)}: {bottleneck}"))
-
-      # Neural network ----------------------------------------------------------
-
-      input_layer <-
-        keras::layer_input(shape = c(base::ncol(expr_mtr)))
-
-      encoder <-
-        input_layer %>%
-        keras::layer_dense(units = layers[1], activation = activation) %>%
-        keras::layer_batch_normalization() %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[2], activation = activation) %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[3], activation = activation) %>%
-        keras::layer_dense(units = bottleneck)
-
-      decoder <-
-        encoder %>%
-        keras::layer_dense(units = layers[3], activation = activation) %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[2], activation = activation) %>%
-        keras::layer_dropout(rate = dropout) %>%
-        keras::layer_dense(units = layers[1], activation = activation) %>%
-        keras::layer_dense(units = c(ncol(expr_mtr)))
-
-      autoencoder_model <- keras::keras_model(inputs = input_layer, outputs = decoder)
-
-      autoencoder_model %>% keras::compile(
-        loss = 'mean_squared_error',
-        optimizer = 'adam',
-        metrics = c('accuracy')
-      )
-
-      history <-
-        autoencoder_model %>%
-        keras::fit(expr_mtr, expr_mtr, epochs = epochs, shuffle = TRUE,
-                   validation_data = list(expr_mtr, expr_mtr), verbose = verbose)
-
-      reconstructed_points <-
-        autoencoder_model %>%
-        keras::predict_on_batch(x = expr_mtr)
-
-      base::rownames(reconstructed_points) <- base::rownames(expr_mtr)
-      base::colnames(reconstructed_points) <- base::colnames(expr_mtr)
 
 
-      # PCA afterwards ----------------------------------------------------------
-
-      bottlenecks_list[[b]] <- irlba::prcomp_irlba(base::t(reconstructed_points), n = 30)
-
-    }
-
-    activations_list[[a]] <- bottlenecks_list
-
-  }
-
-  # 3. Summarize in data.frame ----------------------------------------------
-
-  res_df <-
-    purrr::imap_dfr(.x = activations_list, .f = function(.list, .name){
-
-      data.frame(
-        activation = .name,
-        bottleneck = stringr::str_remove(string = base::names(.list), pattern = "^bn_"),
-        total_var = purrr::map_dbl(.x = .list, .f = "totalvar")
-      )
-
-    }) %>% tibble::remove_rownames()
-
-  res_df$bottleneck <- base::factor(res_df$bottleneck, levels = base::unique(res_df$bottleneck))
-
-  pca_scaled <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = 30)
-
-  assessment_list <- list("df" = res_df,
-                          "set_up" = list("epochs" = epochs, "dropout" = dropout, "layers" = layers),
-                          "scaled_var" = pca_scaled$totalvar)
-
-  return(assessment_list)
-
-}
-
-
-
-#' @title Transform `spata2` object to \code{Giotto}
+#' @title Transform `SPATA2` object to \code{Giotto}
 #'
-#' @description Transforms an `spata2` object object to an object of class
+#' @description Transforms an `SPATA2` object object to an object of class
 #'  \code{Giotto}. See details for more information.
 #'
 #' @inherit asSPATA2 params
@@ -1363,7 +809,7 @@ asGiotto <- function(object,
     )
 
     cell_meta_data <-
-      getFeatureDf(object) %>%
+      getMetaDf(object) %>%
       tibble::column_to_rownames(var = "barcodes")
 
     if(base::is.character(transfer_features)){
@@ -1392,203 +838,7 @@ asGiotto <- function(object,
 
 }
 
-#' @title Convert to class \code{HistologyImage}
-#'
-#' @description Coverts objects of specific classes to objects
-#' of class \code{HistologyImage}.
-#'
-#' @param object Any object for which a method has been defined.
-#'
-#' @return An object of class \code{HistologyImage}.
-#' @export
-#'
-setGeneric(name = "asHistologyImage", def = function(object, ...){
 
-  standardGeneric(f = "asHistologyImage")
-
-})
-
-
-#' @rdname asHistologyImage
-#' @export
-setMethod(
-  f = "asHistologyImage",
-  signature = "VisiumV1",
-  definition = function(object, scale_with = "lowres"){
-
-    scale_fct <- object@scale.factors[[scale_with]]
-
-    coordinates <-
-      tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
-      dplyr::mutate(
-        dplyr::across(
-          .cols = dplyr::all_of(x = c("row", "col", "imagerow", "imagecol")),
-          .fns = base::as.numeric
-        )
-      ) %>%
-      dplyr::mutate(
-        x = imagecol * scale_fct,
-        y = imagerow * scale_fct
-      ) %>%
-      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
-      tibble::as_tibble()
-
-    image <-
-      EBImage::Image(object@image, colormode = "Color") %>%
-      EBImage::transpose() %>%
-      EBImage::flip()
-
-    # transfer VisiumV1 meta data
-    misc <- list()
-
-    misc$origin <- "VisiumV1"
-    misc$scale.factors <- object@scale.factors
-    misc$assay <- object@assay
-    misc$spot.radius <- object@spot.radius
-    misc$key <- object@key
-
-    new_object <-
-      createHistologyImage(
-        image = image,
-        misc = misc,
-        coordinates = coordinates
-      )
-
-    return(new_object)
-
-  }
-)
-
-
-#' @title Convert to class \code{HistologyImaging}
-#'
-#' @description Coverts objects of specific classes to objects
-#' of class \code{HistologyImaging}.
-#'
-#' @param object Any object for which a method has been defined.
-#'
-#' @return An object of class \code{HistologyImaging}.
-#' @export
-#'
-setGeneric(name = "asHistologyImaging", def = function(object, ...){
-
-  standardGeneric(f = "asHistologyImaging")
-
-})
-
-
-#' @rdname asHistologyImaging
-#' @export
-setMethod(
-  f = "asHistologyImaging",
-  signature = "VisiumV1",
-  definition = function(object, id, scale_with = "lowres", verbose = TRUE){
-
-    scale_fct <- object@scale.factors[[scale_with]]
-
-    coordinates <-
-      tibble::rownames_to_column(object@coordinates, var = "barcodes") %>%
-      dplyr::mutate(
-        dplyr::across(
-          .cols = dplyr::all_of(x = c("row", "col", "imagerow", "imagecol")),
-          .fns = base::as.numeric
-        )
-      ) %>%
-      dplyr::mutate(
-        x = imagecol * scale_fct,
-        y = imagerow * scale_fct,
-        col = base::as.integer(col),
-        row = base::as.integer(row)
-      ) %>%
-      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
-      tibble::as_tibble()
-
-    image <-
-      EBImage::Image(object@image, colormode = "Color") %>%
-      EBImage::transpose()
-
-    img_dim <- base::dim(image)
-
-    coordinates <-
-      flip_coords_df(
-        df = coordinates,
-        axis = "h",
-        ranges = list(y = c(ymin = 0, ymax = img_dim[2])),
-        verbose = FALSE
-      )
-
-    # transfer VisiumV1 meta data
-    VisiumV1 <-
-      list(
-        origin = "VisiumV1",
-        scale.factors = object@scale.factors,
-        assay = object@assay,
-        spot.radius = object@spot.radius,
-        key = object@key
-      )
-
-    new_object <-
-      createHistologyImaging(
-        image = image,
-        id = id,
-        coordinates = coordinates,
-        verbose = verbose,
-        VisiumV1 = VisiumV1 # given to @misc$VisiumV1
-      )
-
-    new_object@image_info$origin <-
-      magrittr::set_attr("VisiumV1", which = "unit", value = "Seurat")
-
-    return(new_object)
-
-  }
-)
-
-#' @rdname asHistologyImaging
-#' @export
-setMethod(
-  f = "asHistologyImaging",
-  signature = "AnnDataR6",
-  definition = function(object,
-                        id,
-                        library_id,
-                        spatial_key = "spatial",
-                        scale_with = "lowres",
-                        verbose = verbose){
-
-    scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
-
-    coords <- as.data.frame(object$obsm[[spatial_key]])
-    rownames(coords) <- object$obs_names
-    colnames(coords) <- c("imagerow", "imagecol")
-    coordinates <-
-      tibble::rownames_to_column(coords, var = "barcodes") %>%
-      dplyr::mutate(
-        x = imagecol * scale_fct,
-        y = imagerow * scale_fct
-      ) %>%
-      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
-      tibble::as_tibble()
-
-    image <-
-      EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
-        colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
-      EBImage::transpose()
-
-    img_dim <- dim(image)
-
-    new_object <-
-      createHistologyImaging(
-        image = image,
-        id = id,
-        coordinates = coordinates,
-        verbose = verbose,
-      )
-
-    return(new_object)
-
-  }
-)
 
 # asM-asS -----------------------------------------------------------------
 
@@ -1611,17 +861,6 @@ setMethod(
 #' @inherit argument_dummy params
 #' @inherit asGiotto params
 #'
-#' @details If you have used `initiateSpataObject_10X()`, chances are that you have
-#' already specified input for various processing functions. `asSeurat()`
-#' creates a `Seurat` object from scratch. It has to, because even though
-#' many processing steps are run with the Seurat object as background `SPATA2`
-#' does not net all its content and to keep `SPATA2` objects as small as
-#' possible not everything is transferred from the `Seurat` object.
-#'
-#' If `process = TRUE`, the input you've given to `initiateSpataObject_10X()` is taken to
-#' conduct the same processing. To check what you have defined as input, you
-#' can use the function `getInititationInfo()`.
-#'
 #' @return An object of class `Seurat`.
 #' @export
 #'
@@ -1633,110 +872,7 @@ asSeurat <- function(object,
                      image_name = "slice1",
                      verbose = NULL){
 
-  hlpr_assign_arguments(object)
-
-  # get data
-  count_mtr <- getCountMatrix(object)
-
-  if(base::isTRUE(transfer_features)){
-
-    meta_data <-
-      getFeatureDf(object) %>%
-      tibble::column_to_rownames(var = "barcodes") %>%
-      base::as.data.frame()
-
-  } else {
-
-    meta_data <- NULL
-
-  }
-
-  # init infor
-  initiated_with <- getInitiationInfo(object)[["input"]]
-
-  # create raw seurat object
-  seurat_object <-
-    Seurat::CreateSeuratObject(
-      counts = count_mtr,
-      project = getSampleName(object),
-      meta.data = meta_data,
-      assay = assay_name
-    )
-
-  if(base::isTRUE(process)){
-
-    process_seurat_object(
-      seurat_object = seurat_object,
-      assay_name = assay_name,
-      calculate_rb_and_mt = TRUE,
-      remove_stress_and_mt = TRUE,
-      SCTransform = initiated_with$SCTransform,
-      NormalizeData = initiated_with$NormalizeData,
-      FindVariableFeatures = initiated_with$FindVariableFeatures,
-      ScaleData = initiated_with$ScaleData,
-      RunPCA = initiated_with$RunPCA,
-      RunTSNE = initiated_with$RunTSNE,
-      RunUMAP = initiated_with$RunUMAP,
-      verbose = verbose
-    )
-
-  } else {
-
-    confuns::give_feedback(
-      msg = " `process` = FALSE. Returning raw Seurat object with count matrix.",
-      verbose = verbose
-    )
-
-  }
-
-  # set image
-  if(containsImageObject(object)){
-
-    # adjust array justification for Seurat
-    image_obj <-
-      rotateImage(object = object, angle = 90) %>%
-      flipImage(axis = "y") %>%
-      getImageObject()
-
-    platform <- getSpatialMethod(object)@name
-
-    if(platform == "Visium"){
-
-      img_obj_seurat <- asVisiumV1(object = image_obj, name = image_name)
-
-    } else {
-
-      warning(glue::glue("Platform '{platform}' is unknown to Seurat. Can not set image."))
-
-      img_obj_seurat <- NULL
-
-    }
-
-  } else {
-
-    img_obj_seurat <- NULL
-
-  }
-
-
-  if(!base::is.null(img_obj_seurat)){
-
-    seurat_object@images[[image_name]] <- img_obj_seurat
-
-  }
-
-  # give feedback and return
-  confuns::give_feedback(
-    msg = glue::glue("Assay name: {assay_name}. Image name: {image_name}."),
-    verbose = verbose
-  )
-
-  confuns::give_feedback(
-    msg = "Done.",
-    verbose = verbose
-  )
-
-  return(seurat_object)
+  stop("to do")
 
 }
 
@@ -1761,9 +897,9 @@ asSeurat <- function(object,
 #' @return An object of class `SingleCellExperiment`.
 #' @export
 
-asSingleCellExperiment <- function(object){
+asSingleCellExperiment <- function(object, assay_name = activeAssay(object)){
 
-  seurat <- Seurat::CreateSeuratObject(getCountMatrix(object))
+  seurat <- Seurat::CreateSeuratObject(getCountMatrix(object, assay_name = assay_name))
 
   seurat@meta.data <-
     dplyr::left_join(
@@ -1773,7 +909,7 @@ asSingleCellExperiment <- function(object){
     ) %>%
     dplyr::left_join(
       x = .,
-      y = getFeatureDf(object),
+      y = getMetaDf(object),
       by = "barcodes"
     ) %>%
     dplyr::mutate(spot = barcodes) %>%
@@ -1841,26 +977,11 @@ asSummarizedExperiment <- function(object, ...){
 
 
 
-#' @title Transform to `SpatialTrajectory`
-#'
-#' @description Transforms old spatial trajectory class to new one.
-#'
-#' @export
-asSpatialTrajectory <- function(object, ...){
 
-  SpatialTrajectory(
-    comment = object@comment,
-    id = object@name,
-    projection = object@compiled_trajectory_df,
-    sample = object@sample,
-    segment = object@segment_trajectory_df
-  )
 
-}
-
-#' @title Transform to `spata2` object object
+#' @title Transform to `SPATA2` object object
 #'
-#' @description Transforms input object to object of class `spata2` object.
+#' @description Transforms input object to object of class `SPATA2` object.
 #'
 #' @param object An object of either one of the following classes: \code{Seurat}, \code{SingleCellExperiment}, \code{AnnDataR6}
 #' @param sample_name A character string specifying the name of the sample
@@ -1880,7 +1001,7 @@ asSpatialTrajectory <- function(object, ...){
 #' @inherit object_dummy params
 #' @param ... Additional arguments given to \code{initiateSpataObject_CountMtr()}.
 #'
-#' @return An object of class `spata2` object.
+#' @return An object of class `SPATA2` object.
 #'
 #' @export
 
@@ -2116,7 +1237,7 @@ setMethod(
     if (!length(object[[assay_name]][[]])==0){
       spata_object@gdata[[sample_name]] <- object[[assay_name]][[]]
     }
-    
+
     # transfer matrices
     assay <- object@assays[[assay_name]]
 
@@ -2568,45 +1689,6 @@ setMethod(
 )
 
 
-# asV ---------------------------------------------------------------------
-
-
-
-#' @title Transform `HistologyImage` to `VisiumV1`
-#'
-#' @description Transforms a `HistologyImage` object to an object of
-#' class `VisiumV1` from the `Seurat` package.
-#'
-#' @param object An object of class `HistologyImage`.
-#' @param name Name of the `VisiumV1` object. Suffixed with *_* to fill
-#' slot @@key.
-#'
-#' @return An object of class `VisiumV1` from the `Seurat` package.
-#' @export
-#'
-asVisiumV1 <- function(object, name = "slice1"){
-
-  require(Seurat)
-
-  coords_df_seurat <-
-    dplyr::select(object@coordinates, -dplyr::any_of(c("x", "y", "sample"))) %>%
-    tibble::column_to_rownames(var = "barcodes") %>%
-    base::as.data.frame()
-
-  out <-
-    methods::new(
-      Class = magrittr::set_attr(x = "VisiumV1", which = "package", value = "Seurat"),
-      image = base::as.array(object@image),
-      scale.factors = object@misc$VisiumV1$scale.factors,
-      coordinates = coords_df_seurat,
-      spot.radius = object@misc$VisiumV1$spot.radius,
-      key = stringr::str_c(name, "_")
-    )
-
-  return(out)
-
-}
-
 
 
 # attach ------------------------------------------------------------------
@@ -2678,9 +1760,4 @@ attachUnit <- function(input){
 
 }
 
-
-#' @rdname attachUnit
-#' @keywords internal
-#' @export
-attach_uni <- attachUnit
 

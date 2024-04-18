@@ -13,7 +13,7 @@ containsPixelContent(object, ...)
 \S4method{containsPixelContent}{HistoImage}(object, error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

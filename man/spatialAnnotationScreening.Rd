@@ -24,14 +24,14 @@ spatialAnnotationScreening(
   estimate_R2 = TRUE,
   control = SPATA2::sgs_loess_control,
   n_random = 10000,
-  rm_zero_infl = FALSE,
+  rm_zero_infl = TRUE,
   seed = 123,
   verbose = NULL,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs

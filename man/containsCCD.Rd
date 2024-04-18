@@ -2,18 +2,15 @@
 % Please edit documentation in R/contains.R
 \name{containsCCD}
 \alias{containsCCD}
-\alias{containsCCD,spata2-method}
-\alias{containsCCD,HistoImaging-method}
+\alias{containsCCD,ANY-method}
 \title{Check availability of center to center distance}
 \usage{
 containsCCD(object, ...)
 
-\S4method{containsCCD}{spata2}(object, error = FALSE)
-
-\S4method{containsCCD}{HistoImaging}(object, error = FALSE)
+\S4method{containsCCD}{ANY}(object, error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -26,5 +23,5 @@ Logical value.
 }
 \description{
 Checks if the object contains a center to center
-distance as obtained by \code{getCCD()}.
+distance as obtained by \code{\link[=getCCD]{getCCD()}}.
 }

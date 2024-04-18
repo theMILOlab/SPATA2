@@ -2,15 +2,15 @@
 % Please edit documentation in R/getA-G.R
 \name{getActive}
 \alias{getActive}
-\alias{getActive,spata2-method}
+\alias{getActive,SPATA2-method}
 \title{Obtain name of active content}
 \usage{
 getActive(object, ...)
 
-\S4method{getActive}{spata2}(object, what)
+\S4method{getActive}{SPATA2}(object, what)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

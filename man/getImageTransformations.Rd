@@ -2,23 +2,23 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageTransformations}
 \alias{getImageTransformations}
-\alias{getImageTransformations,spata2-method}
+\alias{getImageTransformations,SPATA2-method}
 \alias{getImageTransformations,HistoImaging-method}
 \alias{getImageTransformations,HistoImage-method}
 \title{Obtain image transformation instructions}
 \usage{
 getImageTransformations(object, ...)
 
-\S4method{getImageTransformations}{spata2}(object, img_name = NULL, ...)
+\S4method{getImageTransformations}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageTransformations}{HistoImaging}(object, img_name = NULL, ...)
+\S4method{getImageTransformations}{HistoImaging}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageTransformations}{HistoImaging}(object, img_name = NULL, ...)
+\S4method{getImageTransformations}{HistoImaging}(object, img_name = activeImage(object), ...)
 
 \S4method{getImageTransformations}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

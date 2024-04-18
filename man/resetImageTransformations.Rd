@@ -2,21 +2,21 @@
 % Please edit documentation in R/r.R
 \name{resetImageTransformations}
 \alias{resetImageTransformations}
-\alias{resetImageTransformations,spata2-method}
+\alias{resetImageTransformations,SPATA2-method}
 \alias{resetImageTransformations,HistoImaging-method}
 \alias{resetImageTransformations,HistoImage-method}
 \title{Reset image transformations}
 \usage{
 resetImageTransformations(object, ...)
 
-\S4method{resetImageTransformations}{spata2}(object, img_name, ...)
+\S4method{resetImageTransformations}{SPATA2}(object, img_name, ...)
 
 \S4method{resetImageTransformations}{HistoImaging}(object, img_name, ...)
 
 \S4method{resetImageTransformations}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

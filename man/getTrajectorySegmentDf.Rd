@@ -2,16 +2,12 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTrajectorySegmentDf}
 \alias{getTrajectorySegmentDf}
-\title{Obtain trjectory course}
+\title{Obtain trajectory course}
 \usage{
-getTrajectorySegmentDf(
-  object,
-  id = getDefaultTrajectoryId(object, verbose = TRUE, "id"),
-  ...
-)
+getTrajectorySegmentDf(object, id = idST(object), ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

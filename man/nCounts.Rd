@@ -4,7 +4,7 @@
 \alias{nCounts}
 \title{Number of counts}
 \usage{
-nCounts(object, gene)
+nCounts(object, molecule, assay_name = activeAssay(object), ...)
 }
 \description{
 Number of counts

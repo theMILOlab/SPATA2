@@ -444,14 +444,12 @@ add_xy <- function(df, x = "x", y = "y"){
 #' @inherit check_object params
 #' @param set_up_list A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.
 #'
-#' @return A spata-object.
+#' @return A `SPATA2` object.
 
-addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
+addAutoencoderSetUp <- function(object, mtr_name, set_up_list, ...){
 
   check_object(object)
   confuns::is_list(set_up_list)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   # check hierarchically if list structures exist
 
@@ -465,40 +463,15 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, of_sample = NA){
 
 
 
-#' @title Add an expression matrix
-#'
-#' @description Adds an expression matrix to the object's data slot and
-#' makes it available for all SPATA-intern function. Use \code{setActiveExpressionMatrix()}
-#' to denote it as the default to use.
-#'
-#' @inherit check_sample params
-#' @param expr_mtr A matrix in which the rownames correspond to the gene names and the
-#' column names correspond to the barcode-spots.
-#' @param mtr_name A character value that denotes the name of the exprssion matrix with
-#' which one can refer to it in subsequent functions.
-#'
-#' @inherit update_dummy return
+#' @rdname addProcessedMatrix
 #' @export
-addExpressionMatrix <- function(object, expr_mtr, mtr_name, overwrite = FALSE, ...){
+addExpressionMatrix <- function(...){
 
-  deprecated(...)
+  deprecated(fn = TRUE)
 
-  confuns::is_value(x = mtr_name, mode = "character")
-
-  confuns::check_none_of(
-    input = mtr_name,
-    ref.against = "existing expression matrices",
-    against = getExpressionMatrixNames(object),
-    overwrite = overwrite
-  )
-
-  object@data[[1]][[mtr_name]] <- expr_mtr
-
-  return(object)
+  addProcessedMatrix(...)
 
 }
-
-
 
 
 
@@ -514,28 +487,20 @@ addExpressionMatrix <- function(object, expr_mtr, mtr_name, overwrite = FALSE, .
 
 
 
-#' @title Add a new feature
+#' @title Add features manually
 #'
-#' @description Adds new externally generated variables to the spata-object's feature data
-#' to make them available for all SPATA-intern functions.
+#' @description Adds new externally generated variables to the `SPATA2` object's meta data.
 #'
-#' @inherit check_sample params
-#' @param feature_df A data.frame that contains the key variables as well
-#' as the informative variables that are to be joined.
-#' @param feature_names Character vector or NULL. See details for more.
-#' @param key_variable Character value. Either \emph{'barcodes'} or \emph{'coordinates'}.
-#' If set to \emph{'coordinates'} the \code{feature_df}-input must contain numeric x- and
-#' y- variables.
-#'
-#' Key variables are variables in a data.frame that uniquely identify each observation -
-#' in this case each barcode-spot. In SPATA the barcode-variable is a key-variable on its own,
-#' x- and y-coordinates work as key-variables if they are used combined.
+#' @param feature_df A data.frame that contains a variable called *barcodes* or *x* and *y* as well
+#' as the variables that are to be joined.
+#' @param feature_names Character vector or `NULL`. Determines which feature variables
+#' to add. See details for more.
 #'
 #' @param overwrite Logical. If the specified feature names already exist in the
-#' current spata-object this argument must be set to TRUE in order to overwrite them.
+#' current `SPATA2` object this argument must be set to TRUE in order to overwrite them.
 #'
 #'
-#' @details If you are only interested in adding specific features to the spata-object
+#' @details If you are only interested in adding specific features to the `SPATA2` object
 #' you can specify those with the \code{feature_names}-argument. If no variables
 #' are specified this way all variables found in the input data.frame for argument
 #' \code{feature_df} are taken. (Apart from variables called \emph{barcodes, sample, x} and \emph{y}).
@@ -591,27 +556,33 @@ addFeatures <- function(object,
     ref.against = "gene set names - must be renamed before being added"
   )
 
-  feature_names <- confuns::check_vector(
-    input = feature_names,
-    against = base::colnames(feature_df),
-    verbose = TRUE,
-    ref.input = "specified feature names",
-    ref.against = "variables of provided feature data.frame")
+  feature_names <-
+    confuns::check_vector(
+      input = feature_names,
+      against = base::colnames(feature_df),
+      verbose = TRUE,
+      ref.input = "specified feature names",
+      ref.against = "variables of provided feature data.frame"
+    )
 
   if(key_variable  == "barcodes"){
 
-    confuns::check_data_frame(df = feature_df,
-                              var.class = list("barcodes" = "character"),
-                              ref = "feature_df")
+    confuns::check_data_frame(
+      df = feature_df,
+      var.class = list("barcodes" = "character"),
+      ref = "feature_df"
+    )
 
   } else if(key_variable == "coordinates"){
 
-    confuns::check_data_frame(df = feature_df,
-                              var.class = list(
-                                "x" = c("numeric", "integer", "double"),
-                                "y" = c("numeric", "integer", "double")
-                              ),
-                              ref = "feature_df")
+    confuns::check_data_frame(
+      df = feature_df,
+      var.class = list(
+        "x" = c("numeric", "integer", "double"),
+        "y" = c("numeric", "integer", "double")
+      ),
+      ref = "feature_df"
+    )
 
   }
 
@@ -649,13 +620,13 @@ addFeatures <- function(object,
     overwrite_features <- existing_fnames[existing_fnames %in% feature_names]
 
     fdata <-
-      getFeatureDf(object) %>%
+      getMetaDf(object) %>%
       dplyr::select(-dplyr::all_of(overwrite_features))
 
     #
   } else {
 
-    fdata <- getFeatureDf(object)
+    fdata <- getMetaDf(object)
 
   }
 
@@ -686,7 +657,7 @@ addFeatures <- function(object,
       not_found <- barcodes_obj[!barcodes_obj %in% barcodes_feature_df]
       n_not_found <- base::length(not_found)
 
-      if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
+      if(n_not_found == n_bc_obj){stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
       warning(glue::glue("Only {n_bc_feat} barcode-spots of {n_bc_obj} were found in 'feature_df'. Not found barcode-spots obtain NAs for all features to be joined."))
 
@@ -717,7 +688,7 @@ addFeatures <- function(object,
       not_found <- barcodes_obj[!barcodes_obj %in% barcodes_feature_df]
       n_not_found <- base::length(not_found)
 
-      if(n_not_found == n_bc_obj){base::stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
+      if(n_not_found == n_bc_obj){stop("Did not find any barcode-spots of the specified object in input for 'feature_df'.")}
 
       warning(glue::glue("Added features contain data for {n_bc_feat} barcodes. Spata object contains {n_bc_obj}. Missing barcodes get NAs as values."))
 
@@ -736,7 +707,7 @@ addFeatures <- function(object,
         by = "barcodes"
       )
 
-    object <- setFeatureDf(object = object, feature_df = new_feature_df)
+    object <- setMetaDf(object = object, meta_df = new_feature_df)
 
   }
 
@@ -749,192 +720,14 @@ addFeatures <- function(object,
 
 # addG --------------------------------------------------------------------
 
-#' @title Add new gene features
-#'
-#' @description This function allows to savely add features to the
-#' gene meta data.frame of an expression matrix of choice.
-#'
-#' @inherit addFeatures params
-#' @inherit argument_dummy params
-#' @inherit check_sample params
-#' @inherit getGeneMetaData params
-#'
-#' @param gene_df A data.frame that contains the variables specified by name
-#' in the argument \code{feature_names} and the key variable \emph{genes} by
-#' which the feature variables are joined to the already existing
-#' gene meta data.frame.
-#'
-#' @details If you are only interested in adding specific features to the spata-object
-#' you can specify those with the \code{feature_names}-argument. If no variables
-#' are specified this way all variables found in the input data.frame for argument
-#' \code{gene_df} are taken. (Apart from the key variable \emph{genes}).
-#'
-#' Eventually the new features are joined via \code{dplyr::left_join()} over the
-#' key-variables \emph{genes}. Additional steps secure
-#' the joining process.
-#'
-#' @inherit update_dummy return
-#' @export
-#'
-addGeneFeatures <- function(object,
-                            gene_df,
-                            feature_names = NULL,
-                            mtr_name = NULL,
-                            overwrite = FALSE,
-                            verbose = NULL,
-                            of_sample = NA){
-
-
-  # 1. Control --------------------------------------------------------------
-
-  hlpr_assign_arguments(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  gene_cnames <-
-    dplyr::select(gene_df, -genes) %>%
-    base::colnames()
-
-  if(base::is.null(feature_names)){
-
-    feature_names <- gene_cnames
-
-  } else {
-
-    var.class <-
-      purrr::map(.x = feature_names, .f = function(i){ return("any") }) %>%
-      purrr::set_names(feature_names)
-
-    confuns::check_data_frame(
-      df = gene_df,
-      var.class = c("genes" = "character", var.class)
-    )
-
-    gene_df <- dplyr::select(gene_df, dplyr::all_of(x = c("genes", feature_names)))
-
-  }
-
-  # get matrix name for feedback
-  if(base::is.null(mtr_name)){
-
-    mtr_name <- getActiveMatrixName(object, of_sample = of_sample)
-
-  }
-
-
-  # 2. Extract gene meta data.frame -----------------------------------------
-
-  gmdata <-
-    getGeneMetaData(object = object, mtr_name = mtr_name, of_sample = of_sample)
-
-  gmdf <- gmdata$df
-
-
-  # 3. Compare input and gene meta data.frame -------------------------------
-
-  # do features already exist?
-
-  gmdf_features <-
-    dplyr::select(gmdf, -genes) %>%
-    base::colnames()
-
-  ovlp <-
-    base::intersect(x = feature_names, y = gmdf_features)
-
-  if(base::length(ovlp) >= 1){
-
-    if(base::isTRUE(overwrite)){
-
-      gmdf <-
-        dplyr::select(gmdf, -dplyr::all_of(x = ovlp))
-
-    } else {
-
-      msg <-
-        glue::glue("{ref1} '{ref_features}' already {ref2} in gene meta data of matrix '{mtr_name}'. Set argument 'overwrite' to TRUE in order to overwrite them.",
-                   ref1 = confuns::adapt_reference(input = ovlp, sg = "Feature"),
-                   ref_features = glue::glue_collapse(x = ovlp, sep = "', '", last = "' and '"),
-                   ref2 = confuns::adapt_reference(input = ovlp, sg = "exists", pl = "exist")
-        )
-
-      confuns::give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
-
-    }
-
-  }
-
-  # make sure that no data of not existing genes is added
-  gmdf_genes <- gmdf$genes
-
-  gene_df_final <- dplyr::filter(gene_df, genes %in% {{gmdf_genes}})
-
-  # join features
-  confuns::give_feedback(
-    msg = glue::glue("Adding features to gene meta data of matrix '{mtr_name}'."),
-    verbose = verbose
-  )
-
-  gmdf_new <-
-    dplyr::left_join(
-      x = gmdf,
-      y = gene_df_final,
-      by = "genes"
-    )
-
-  #  4. Add new gene meta data.frame -----------------------------------------
-
-  gmdata$df <- gmdf_new
-
-  object <-
-    addGeneMetaData(
-      object = object,
-      meta_data_list = gmdata
-    )
-
-  # 5. Return results -------------------------------------------------------
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
-
-  return(object)
-
-}
-
-#' @title Add gene meta data to the object
-#'
-#' @description Safely adds the output of \code{computeGeneMetaData2()}
-#' to the spata-object.
-#'
-#' @inherit check_sample params
-#' @inherit set_dummy params return details
-#'
-#' @param meta_data_list Output list of \code{computeGeneMetaData2()}. An additional
-#' slot named \emph{mtr_name} needs to be added manually.
-#'
-#' @export
-
-addGeneMetaData <- function(object, of_sample = "", meta_data_list){
-
-  check_object(object)
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
-
-  mtr_name <- meta_data_list$mtr_name
-
-  object@gdata[[of_sample]][[mtr_name]] <- meta_data_list
-
-  base::return(object)
-
-}
 
 #' @title Add a new gene set
 #'
-#' @description Stores a new gene set in the spata-object.
+#' @description Stores a new gene set in the `SPATA2` object.
 #'
-#' @inherit check_object
+#' @inherit argument_dummy params
 #' @param class_name Character value. The class the gene set belongs to..
 #' @param gs_name Character value. The name of the new gene set.
-#' @param overwrite Logical. Overwrites existing gene sets with the same \code{class_name} -
-#' \code{gs_name} combination.
 #'
 #' @inherit check_genes params
 #'
@@ -957,7 +750,7 @@ addGeneSet <- function(object,
   # lazy control
   check_object(object)
 
-  # adjusting control
+  gsl <- getGeneSetList(object)
 
   if(base::isTRUE(check_genes)){
 
@@ -968,46 +761,42 @@ addGeneSet <- function(object,
 
   }
 
-  if(base::any(!base::sapply(X = list(class_name, gs_name, genes),
-                             FUN = base::is.character))){
+  if(base::any(!base::sapply(X = list(class_name, gs_name, genes), FUN = base::is.character))){
 
-    base::stop("Arguments 'class_name', 'gs_name' and 'genes' must be of class character.")
+    stop("Arguments 'class_name', 'gs_name' and 'genes' must be of class character.")
 
   }
 
   if(base::length(class_name) != 1 | base::length(gs_name) != 1){
 
-    base::stop("Arguments 'class_name' and 'gs_name' must be of length one.")
+    stop("Arguments 'class_name' and 'gs_name' must be of length one.")
 
   }
 
   if(stringr::str_detect(string = class_name, pattern = "_")){
 
-    base::stop("Invalid input for argument 'class_name'. Must not contain '_'.")
+    stop("Invalid input for argument 'class_name'. Must not contain '_'.")
 
   }
 
   name <- stringr::str_c(class_name, gs_name, sep = "_")
 
   # make sure not to overwrite if overwrite == FALSE
-  if(name %in% object@used_genesets$ont && base::isFALSE(overwrite)){
+  if(name %in% base::names(gsl) && base::isFALSE(overwrite)){
 
-    base::stop(stringr::str_c("Gene set '", name, "' already exists.",
+    stop(stringr::str_c("Gene set '", name, "' already exists.",
                               " Set argument 'overwrite' to TRUE in order to overwrite existing gene set."))
 
-  } else if(name %in% object@used_genesets$ont && base::isTRUE(overwrite)) {
+  } else if(name %in% base::names(gsl) && base::isTRUE(overwrite)) {
 
     object <- discardGeneSets(object, gs_names = name)
 
   }
 
-  # add gene set
-  object@used_genesets <-
-    dplyr::add_row(
-      .data = object@used_genesets,
-      ont = base::rep(name, base::length(genes)),
-      gene = genes
-    )
+  ma <- getAssay(object, "transcriptomics")
+  ma@signatures[[name]] <- genes
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
@@ -1035,9 +824,7 @@ addGeneSetsInteractive <- function(object){
         server = function(input, output, session){
 
           module_return <-
-            moduleAddGeneSetsServer(id = "add_gs",
-                                    object = object)
-
+            moduleAddGeneSetsServer(id = "add_gs", object = object)
 
           oe <- shiny::observeEvent(input$close_app, {
 
@@ -1066,7 +853,7 @@ addGeneSetsInteractive <- function(object){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @export
+#' @keywords internal
 #'
 setGeneric(name = "addHistoImage", def = function(object, hist_img, ...){
 
@@ -1091,16 +878,9 @@ setMethod(
 
     if(object@image_reference@name == hist_img@name){
 
-      stop("Name of input HistoImage is equal to name of current reference HistoImage.
+      stop(
+        "Name of input 'HistoImage' and the name of the current reference HistoImage are identical.
            Please use `setHistoImageRef()` to exchange the reference HistoImage."
-      )
-
-    }
-
-    if(getHistoImageActive(object)@name == hist_img@name){
-
-      stop("Name of input HistoImage is equal to name of currently active HistoImage.
-           Please use `setHistoImageActive()` to exchange the active HistoImage."
       )
 
     }
@@ -1115,70 +895,6 @@ setMethod(
 
 
 # addI --------------------------------------------------------------------
-
-#' @title Add individual image directories
-#'
-#' @description Adds specific image directories beyond *lowres*
-#' *highres* and *default* with a simple name.
-#'
-#' @param dir Character value. Directory to specific image. Should end
-#' with either *.png*, *.jpeg* or *.tiff*. (Capital endings work, too.)
-#' @param name Character value. Name with which to refer to this image.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @seealso [`getImageDirectories()`]
-#'
-#' @export
-addImageDir <- function(object,
-                        dir,
-                        name,
-                        check = TRUE,
-                        overwrite = FALSE,
-                        verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  io <- getHistoImaging(object)
-
-  confuns::check_none_of(
-    input = name,
-    against = base::names(io@dir_add),
-    ref.against = "additional image directory names",
-    overwrite = overwrite
-  )
-
-  confuns::check_none_of(
-    input = dir,
-    against = purrr::map_chr(io@dir_add, .f = ~ .x),
-    ref.against = "additional image directory names",
-    overwrite = overwrite
-  )
-
-  if(base::isTRUE(check)){
-
-    confuns::check_directories(dir, type = "files")
-
-  }
-
-  new_dir <- purrr::set_names(x = dir, nm = name)
-
-  io@dir_add <- c(io@dir_add, new_dir)
-
-  object <- setImageObject(object, image_object = io)
-
-  msg <- glue::glue("Added new directory named '{name}': {dir}")
-
-  confuns::give_feedback(
-    msg = msg,
-    verbose = verbose
-  )
-
-  return(object)
-
-}
-
 
 
 
@@ -1201,7 +917,7 @@ addImageDir <- function(object,
 #' @details
 #' If used on a [`SpatialAnnotation`] directly, the variables of `border_df` should
 #' be called *x_orig* and *y_orig* and should be scaled correspondingly. If
-#' used with the [`spata2`] object, the variables can be called *x* and *y*, too.
+#' used with the [`SPATA2`] object, the variables can be called *x* and *y*, too.
 #' In that case, the function assumes that the coordinates are scaled to the
 #' image that is currently active and creates *x_orig* and *y_orig* accordingly.
 #'
@@ -1219,7 +935,7 @@ setGeneric(name = "addInnerBorder", def = function(object, ...){
 #' @export
 setMethod(
   f = "addInnerBorder",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         id,
                         border_df,
@@ -1262,7 +978,6 @@ setMethod(
     }
 
     object <- setSpatialAnnotation(object, spat_ann = spat_ann)
-
 
     return(object)
 
@@ -1554,36 +1269,82 @@ addPolygonBase <- function(x,
 
 
 
+#' @title Add a processed matrix
+#'
+#' @description Adds a processed matrix to the chosen molecular assay of the object.
+#'
+#' @inherit argument_dummy params
+#' @param expr_mtr A matrix in which the rownames correspond to the feature names and the
+#' column names correspond to the barcodes.
+#' @param mtr_name A character value that denotes the name of the matrix with
+#' which one can refer to it in subsequent functions via `mtr_name`.
+#'
+#' @inherit update_dummy return
+#' @export
+addProcessedMatrix <- function(object,
+                               proc_mtr,
+                               mtr_name,
+                               assay_name = activeAssay(object),
+                               overwrite = FALSE,
+                               ...){
 
+  deprecated(...)
+
+  confuns::is_value(x = mtr_name, mode = "character")
+
+  confuns::check_none_of(
+    input = mtr_name,
+    ref.against = "existing matrices",
+    against = getMatrixNames(object),
+    overwrite = overwrite
+  )
+
+  ma <- getAssay(object)
+  ma@mtr_proc[[mtr_name]] <- proc_mtr
+
+  object <- setAssay(object, assay = ma)
+
+  return(object)
+
+}
 
 
 
 # addS --------------------------------------------------------------------
 
-#' @rdname getSegmentationNames
-#' @keywords internal
-addSegmentationVariable <- function(object, name, verbose = NULL, ...){
+
+#' @title Add Segmentation Variable
+#'
+#' @description This function adds a segmentation variable to the metadata of the given object.
+#'
+#' @param name A character string specifying the name of the segmentation variable to add.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy params
+#'
+#' @details This function checks if the provided segmentation variable name is not already used
+#' by a feature, gene, or gene set in the object. If the name is unique, it adds the segmentation variable
+#' to the object's metadata.
+#'
+#' @seealso [`getSegmentationNames()`], [`getFeatureNames()`], [`getMetaDf()`], [`setMetaDf()`]
+#'
+#' @export
+
+addSegmentationVariable <- function(object,
+                                    name,
+                                    verbose = NULL,
+                                    ...){
 
   hlpr_assign_arguments(object)
 
   confuns::is_value(x = name, mode = "character")
 
-  ann_names <-
-    getSegmentationNames(object, verbose = FALSE, fdb_fn = "message")
-
-  feature_names <-
-    getFeatureNames(object)
-
-  gene_names <- getGenes(object)
-
-  gs_names <- getGeneSets(object)
-
-  new <- !name %in% c(feature_names, gene_names, gs_names, c("x", "y"))
+  new <- !name %in% getVariableNames(object, protected = TRUE)
 
   if(base::isFALSE(new)){
 
     give_feedback(
-      msg = glue::glue("Name '{name}' is already used by a feature, gene or gene set.."),
+      msg = glue::glue("Name '{name}' is already in use or protected."),
       fdb.fn = "stop",
       with.time = FALSE,
       ...
@@ -1591,14 +1352,14 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
   }
 
-  object@information$segmentation_variable_names <-
-    c(object@information$segmentation_variable_names, name)
+  object@obj_info$segmentation_variable_names <-
+    c(object@obj_info$segmentation_variable_names, name)
 
-  fdata <- getFeatureDf(object)
+  mdata <- getMetaDf(object)
 
-  fdata[[name]] <- base::factor(x = "unnamed")
+  mdata[[name]] <- base::factor(x = "unnamed")
 
-  object <- setFeatureDf(object, feature_df = fdata)
+  object <- setMetaDf(object, meta_df = mdata)
 
   give_feedback(
     msg = glue::glue("Added segmentation variable '{name}'."),
@@ -1611,14 +1372,13 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 
 }
 
-
 #' @title Add an spatial annotation manually
 #'
 #' @description Adds spatial annotations using a polygon.
 #'
 #' @param area A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
 #' Observations correspond to the vertices of the polygons that are needed to represent the
-#' spatial annotation. **Must** contain a slot named *outer* which sets the outer border
+#' spatial annotation. **Must** contain exactly one slot named *outer* which sets the outer border
 #' of the spatial annotation. **Can** contain multiple slots named *inner* (suffixed)
 #' with numbers that correspond to inner polygons - holes within the annotation.
 #'
@@ -1629,9 +1389,7 @@ addSegmentationVariable <- function(object, name, verbose = NULL, ...){
 #' the index the new annotation has in the list of all annotations.
 #' @param tags A character vector of tags for the spatial annotation.
 #' @param ... Additional slot content given to `methods::new()` when
-#' constructing the `SpatialAnnotation` object.
-#'
-#'
+#' constructing the [`SpatialAnnotation`] object.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -1650,7 +1408,7 @@ setGeneric(name = "addSpatialAnnotation", def = function(object, ...){
 #' @export
 setMethod(
   f = "addSpatialAnnotation",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         tags,
                         area,
@@ -2047,39 +1805,6 @@ setMethod(
   }
 )
 
-addTrajectoryObject <- function(object,
-                                trajectory_name,
-                                trajectory_object,
-                                of_sample = NA){
-
-  # 1. Control --------------------------------------------------------------
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  confuns::is_value(x = trajectory_name, mode = "character")
-
-  base::stopifnot(methods::is(trajectory_object, class2 = "spatial_trajectory"))
-
-  if(trajectory_name %in% getTrajectoryNames(object, of_sample = of_sample)){
-
-    base::stop(glue::glue("Trajectory name '{trajectory_name}' is already taken."))
-
-  } else if(trajectory_name == ""){
-
-    base::stop("'' is not a valid trajectory name.")
-
-  }
-
-  # 2. Set trajectory object ------------------------------------------------
-
-  object@trajectories[[of_sample]][[trajectory_name]] <-
-    trajectory_object
-
-  return(object)
-
-}
 
 
 

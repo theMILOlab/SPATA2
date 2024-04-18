@@ -5,19 +5,29 @@
 \alias{getSparkxGenes}
 \alias{getSparkxResults}
 \alias{runSparkx}
-\title{Identify genes of interest with SPARKX}
+\title{Identify spatially significant features with SPARKX}
 \usage{
 getSparkxGeneDf(object, threshold_pval = 1, arrange_pval = TRUE)
 
 getSparkxGenes(object, threshold_pval)
 
-getSparkxResults(object, test = TRUE)
+getSparkxResults(object, assay_name = activeAssay(object), test = TRUE)
 
-runSparkx(object, numCores = 1, option = "mixture", verbose = NULL)
+runSparkx(
+  object,
+  assay_name = activeAssay(object),
+  numCores = 1,
+  option = "mixture",
+  verbose = NULL
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
@@ -28,12 +38,9 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 }
-\value{
-An updated spata object.
-}
 \description{
 A wrapper around the algorithm introduced by \emph{Zhu et al. 2021}
-to identify genes with spatial expression pattern with SPARK-X.
+to identify features with non-random spatial expression pattern with SPARK-X.
 }
 \author{
 Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables

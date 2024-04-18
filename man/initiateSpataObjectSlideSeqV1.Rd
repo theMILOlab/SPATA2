@@ -2,11 +2,11 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObjectSlideSeqV1}
 \alias{initiateSpataObjectSlideSeqV1}
-\title{Initiate a \code{spata2} object from platform SlideSeq}
+\title{Initiate a \code{SPATA2} object from platform SlideSeq}
 \usage{
 initiateSpataObjectSlideSeqV1(
-  directory_slide_seq,
   sample_name,
+  directory_slide_seq,
   file_counts = NULL,
   file_barcodes = NULL,
   file_genes = NULL,
@@ -15,6 +15,8 @@ initiateSpataObjectSlideSeqV1(
 )
 }
 \arguments{
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
+
 \item{directory_slide_seq}{Character value. Directory to a SlideSeq folder
 that contains a count matrix and bead locations.}
 
@@ -42,15 +44,9 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-An object of class \code{spata2}.
+An object of class \code{SPATA2}.
 }
 \description{
 Wrapper function around the necessary content to create a
-\code{spata2} object from the standardized output of the SlideSeq platform.
-}
-\details{
-SlideSeqV1 does not come with an image. However, many spatial information such
-as coordinates, coordinate scale factors or spatial annotations are stored
-in class \code{\link{HistoImaging}} and \code{\link{HistoImage}}. The \code{spata2} object is equipped
-with a \code{HistoImaging} object that contains an empty \code{HistoImage} called \emph{pseudo}.
+\code{SPATA2} object from the standardized output of the SlideSeq platform.
 }

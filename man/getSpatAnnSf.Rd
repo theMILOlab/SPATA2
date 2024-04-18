@@ -4,10 +4,10 @@
 \alias{getSpatAnnSf}
 \title{Obtain simple feature}
 \usage{
-getSpatAnnSf(object, id, img_name = NULL)
+getSpatAnnSf(object, id, img_name = activeImage(object))
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{id}{Character value specifying the ID of the spatial annotation of interest.

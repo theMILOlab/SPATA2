@@ -12,18 +12,19 @@ runGSEA(
   min_lfc = 0,
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
-  gene_set_list = NULL,
-  gene_set_names = NULL,
+  signatures = NULL,
   test = c("hypergeometric", "kstest"),
-  background = nGenes(object),
   absolute = FALSE,
+  background = NULL,
   power = 1,
-  pval = 1,
-  fdr = 1,
+  pval = 0.05,
+  fdr = 0.05,
   reduce = TRUE,
   quiet = TRUE,
   chr_to_fct = TRUE,
-  verbose = NULL
+  assay_name = activeAssay(object),
+  verbose = NULL,
+  ...
 )
 }
 \arguments{
@@ -44,20 +45,16 @@ with an average log fold change below that threshold are ignored.}
 
 \item{n_lowest_pval}{Numeric value. Affects the total number of genes that are kept. See details.}
 
-\item{gene_set_list}{A named list of character vectors. Names of slots correspond to the
-gene set names. The slot contains the genes of the gene sets.Holds priority over
-\code{gene_set_names}.}
-
-\item{gene_set_names}{Character vector of gene set names that are taken
-from the object's gene set data.frame.}
+\item{signatures}{Character vector of signature names that are taken
+from the assays stored signatures.}
 
 \item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
 \emph{none}. Specifies how input for \code{tags} is used to select image annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
-\item{background}{Size or character vector of background population genes}
-
 \item{absolute}{Takes max-min score rather than the max deviation from null (kstest only)}
+
+\item{background}{Size or character vector of background population genes}
 
 \item{power}{Exponent for weights (kstest only)}
 
@@ -67,18 +64,29 @@ See section \emph{Selection of spatial annotations} for more information.}
 
 \item{reduce}{Logical value. If set to TRUE (the default) the return value
 of \code{hypeR::hypeR()} is reduced to what is necessary for \code{SPATA2}s
-function to work. If FALSE, the complete objects are stored. This will
-grow the spata-objects size quickly!}
+function to work. If \code{FALSE}, the complete objects are stored. This will
+grow the \code{SPATA2} object's size quickly!}
 
 \item{quiet}{Use true to suppress logs and warnings}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Additional arguments given to \code{Seurat::FindAllMarkers()}}
+
+\item{gene_set_list}{A named list of character vectors. Names of slots correspond to the
+gene set names. The slot contains the genes of the gene sets.Holds priority over
+\code{gene_set_names}.}
 }
 \value{
-An updated spata-object.
+The input object containing the added or computed
+results.
 }
 \description{
 Computes gene set enrichment based on the results of
@@ -92,5 +100,5 @@ skipped.
 
 If gene sets are provided via \code{gene_set_list} argument \code{gene_set_names}
 is ignored. Else the latter determines the gene sets used which are then taken
-from the spata-objects gene set data.frame.
+from the \code{SPATA2} object's gene set data.frame.
 }

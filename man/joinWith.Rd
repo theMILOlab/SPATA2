@@ -5,7 +5,6 @@
 \alias{joinWithFeatures}
 \alias{joinWithGenes}
 \alias{joinWithGeneSets}
-\alias{joinWithVariables}
 \title{Join barcodes with additional variables}
 \usage{
 joinWith(
@@ -15,12 +14,11 @@ joinWith(
   gene_sets = NULL,
   method_gs = NULL,
   genes = NULL,
-  average_genes = NULL,
-  uniform_genes = NULL,
   smooth = FALSE,
   smooth_span = NULL,
   verbose = NULL,
-  normalize = NULL
+  normalize = NULL,
+  ...
 )
 
 joinWithFeatures(
@@ -29,7 +27,8 @@ joinWithFeatures(
   features,
   smooth = FALSE,
   smooth_span = 0.02,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 
 joinWithGenes(
@@ -41,7 +40,8 @@ joinWithGenes(
   smooth = FALSE,
   smooth_span = 0.02,
   normalize = TRUE,
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 
 joinWithGeneSets(
@@ -53,76 +53,11 @@ joinWithGeneSets(
   smooth_span = 0.02,
   normalize = TRUE,
   verbose = TRUE,
-  ignore = T
+  ignore = T,
+  ...
 )
-
-joinWithVariables(
-  object,
-  spata_df = getCoordsDf(object),
-  variables,
-  method_gs = "mean",
-  average_genes = FALSE,
-  uniform_genes = "discard",
-  smooth = FALSE,
-  smooth_span = 0.02,
-  normalize = TRUE,
-  verbose = TRUE
-)
-}
-\arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{features}{The features of interest specified as a character vector.}
-
-\item{gene_sets}{The gene sets of interest specified as a character vector.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
-
-\item{genes}{The genes of interest specified as a character vector.}
-
-\item{average_genes}{Logical. If set to TRUE the average expression of the
-specified genes is calculated and saved under one variable named 'mean_genes'.}
-
-\item{uniform_genes}{Character value. If set to \emph{'discard'} genes that are
-uniformly expressed across all barcode-spots of the specified coordinates
-data.frame are discarded. If set to \emph{'keep'} they are kept.}
-
-\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
-
-\item{variables}{Character vector. The variables of interest:
-
-\itemize{
-\item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
-\item{ \strong{Genes}: Must be in \code{getGenes()}}
-\item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
-}}
-}
-\value{
-The input data.frame of \code{spata_df} joined with all the
-specified genes, gene-sets and/or features by the key-variable \emph{barcodes}.
 }
 \description{
-Each member of the \code{joinWith()}-family takes a data.frame as
-input that contains at least the variables \emph{barcodes} and \emph{sample}.
-(Easily obtained with the \code{get*()}-family.) It extracts the specified
-variables and joins them over the barcode variable with the provided data.frame.
+These functions have been deprecated in favor of \code{\link[=joinWithVariables]{joinWithVariables()}}.
 }
-\details{
-Hint: Variables of the specified data.frame \code{spata_df} that have equal names as
-the specified features, genes and gene-sets are overwritten!
-}
+\keyword{internal}

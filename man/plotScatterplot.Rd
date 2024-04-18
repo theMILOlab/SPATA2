@@ -16,12 +16,11 @@ plotScatterplot(
   pt_clr = NULL,
   pt_size = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
@@ -47,9 +46,6 @@ Given to argument \code{span} of \code{stats::loess()}.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to \code{ggplot2::geom_smooth()}.}
 }

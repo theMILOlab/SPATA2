@@ -42,6 +42,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' Use \code{getGroupNames()} to obtain all valid input options.
 #'
+#' @param assay_name Only relevant if the `SPATA2` object contains more than
+#' one assay: Denotes the assay of interest. Defaults to the active assay,
+#' as set by [`activateAssay()`].
+#'
 #' @param bcsp_rm Character vector or `NULL.` If character, specifies barcode-spots that
 #' are removed before analysis or plotting. (Deprecated in favor of `bcs_rm`).
 #'
@@ -147,6 +151,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' number of minimum points required in the eps neighborhood for core points
 #' (including the point itself)
 #'
+#' @param mtr_name Character value. The name of the matrix of interest. Defaults
+#' to the active matrix of the assay, as denoted by [`activateMatrix()`].
+#'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
 #'
@@ -169,7 +176,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
-#' @param object An object of class `spata2` or, in case of S4 generics,
+#' @param object An object of class `SPATA2` or, in case of S4 generics,
 #' objects of classes for which a method has been defined.
 #'
 #' @param order Logical value. If `TRUE`, data points are ordered according

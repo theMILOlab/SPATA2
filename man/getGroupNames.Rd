@@ -7,7 +7,7 @@
 getGroupNames(object, grouping, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -16,7 +16,7 @@ objects of classes for which a method has been defined.}
 Character vector
 }
 \description{
-Obtain group names a grouping variable contains
+Extracts the group names of a grouping variable.
 }
 \examples{
 #Not run:

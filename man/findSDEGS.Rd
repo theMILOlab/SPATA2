@@ -19,7 +19,7 @@ findSDEGS(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{id}{Character value. The spatial annotation of interest.}
@@ -82,3 +82,4 @@ Zeng, H., Huang, J., Zhou, H. et al. Integrative in situ mapping of single-cell
 transcriptional states and tissue histopathology in a mouse model of Alzheimer's
 disease. Nat Neurosci 26, 430-446 (2023).
 }
+\keyword{internal}

@@ -1847,6 +1847,16 @@ resetImageJustification <- function(object){
 
 # s -----------------------------------------------------------------------
 
+#' @internal
+setDefaultGrouping <- function(object, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  activateGrouping(object, ...)
+
+}
+
+#' @internal
 setDenoisedMatrix <- function(object, denoised_mtr, ...){
 
   deprecated(fn = TRUE)
@@ -1858,7 +1868,7 @@ setDenoisedMatrix <- function(object, denoised_mtr, ...){
 }
 
 
-
+#' @internal
 setImage <- function(object, image, of_sample = ""){
 
   check_object(object)

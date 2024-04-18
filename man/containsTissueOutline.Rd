@@ -2,21 +2,21 @@
 % Please edit documentation in R/contains.R
 \name{containsTissueOutline}
 \alias{containsTissueOutline}
-\alias{containsTissueOutline,spata2-method}
+\alias{containsTissueOutline,SPATA2-method}
 \alias{containsTissueOutline,HistoImaging-method}
 \alias{containsTissueOutline,HistoImage-method}
 \title{Check availability of tissue outline}
 \usage{
 containsTissueOutline(object, ...)
 
-\S4method{containsTissueOutline}{spata2}(object, img_name = NULL, error = FALSE)
+\S4method{containsTissueOutline}{SPATA2}(object, img_name = activeImage(object), error = FALSE)
 
-\S4method{containsTissueOutline}{HistoImaging}(object, img_name = NULL, error = FALSE)
+\S4method{containsTissueOutline}{HistoImaging}(object, img_name = activeImage(object), error = FALSE)
 
-\S4method{containsTissueOutline}{HistoImage}(object, img_name = NULL, error = FALSE)
+\S4method{containsTissueOutline}{HistoImage}(object, img_name = activeImage(object), error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -32,5 +32,5 @@ Logical value.
 }
 \description{
 Tests if the object contains tissue outline
-as identified by \code{identifyTissueOutline()}.
+as identified by \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}.
 }

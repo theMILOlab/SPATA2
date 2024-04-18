@@ -2,18 +2,18 @@
 % Please edit documentation in R/setA-Z.R
 \name{setSpatialAnnotation}
 \alias{setSpatialAnnotation}
-\alias{setSpatialAnnotation,spata2-method}
+\alias{setSpatialAnnotation,SPATA2-method}
 \alias{setSpatialAnnotations}
 \title{Set spatial annotations}
 \usage{
 setSpatialAnnotation(object, ...)
 
-\S4method{setSpatialAnnotation}{spata2}(object, spat_ann, ...)
+\S4method{setSpatialAnnotation}{SPATA2}(object, spat_ann, ...)
 
 setSpatialAnnotations(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

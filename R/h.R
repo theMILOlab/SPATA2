@@ -49,55 +49,7 @@ hlpr_add_barcode_suffix <- function(input, sample_name){
 
 }
 
-#' @title Adds old coordinates
-#'
-#' @description Adds old coordinates of subsetted object to
-#' plot_df in \code{plotSurface()}.
-#'
-#' @inherit check_object params
-#' @param plot_df The plot_df.
-#' @param complete Logical.
-#'
-#' @export
-#' @keywords internal
-hlpr_add_old_coords <- function(object, plot_df, complete){
 
-  # currently deprecated!
-  if(FALSE){
-
-    old_coords_df <- object@information$old_coordinates
-
-    cnames <- base::colnames(plot_df)
-    variable <- cnames[!cnames %in% coords_df_vars]
-
-    res_df <-
-      dplyr::add_row(.data = plot_df,
-                     barcodes = old_coords_df$barcodes,
-                     sample = old_coords_df$sample,
-                     x = old_coords_df$x,
-                     y = old_coords_df$y)
-
-    variable_vec <- res_df[[variable]]
-
-    if(base::is.factor(variable_vec)){
-
-      variable_vec <- base::factor(x = variable_vec,
-                                   levels = c(base::levels(variable_vec), "subs.by.segment")
-                                   )
-
-      res_df[[variable]][base::is.na(res_df[[variable]])] <- "subs.by.segment"
-
-    }
-
-  } else {
-
-    res_df <- plot_df
-
-  }
-
-
- return(res_df)
-}
 
 
 #' @title Adjusts the size of discrete legend points

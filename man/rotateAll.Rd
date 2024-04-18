@@ -11,7 +11,13 @@
 \usage{
 rotateAll(object, angle, clockwise = TRUE)
 
-rotateImage(object, angle, clockwise = TRUE, track = FALSE)
+rotateImage(
+  object,
+  angle,
+  img_name = activeImage(object),
+  clockwise = TRUE,
+  ...
+)
 
 rotateCoordinates(object, angle, clockwise = TRUE, verbose = NULL)
 
@@ -28,7 +34,7 @@ rotateSpatialAnnotations(
 rotateSpatialTrajectories(object, angle, clockwise = TRUE, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{angle}{Numeric value. The angle by which the coordinates
@@ -36,6 +42,11 @@ are rotated. Should range from 1-359.}
 
 \item{clockwise}{Logical value. If \code{TRUE}, rotation is performed
 in clockwise direction. If \code{FALSE}, the other way round.}
+
+\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
+
+\item{...}{Additional arguments given to \code{give_feedback()}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -55,7 +66,7 @@ for more information.
 \strong{NOTE:} \code{rotateImage()} only rotates the image and lets everything else as
 is. Only use it if you want to rotate the image because it is not aligned with
 the spatial coordinates. If you want to rotate the image while maintaining
-alignment with the spatial aspects in the \code{spata2} object
+alignment with the spatial aspects in the \code{SPATA2} object
 use \code{rotateAll()}!
 }
 \details{

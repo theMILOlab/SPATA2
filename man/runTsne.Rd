@@ -25,7 +25,7 @@ spata-objects can store more than one sample.}
 }
 \value{
 \itemize{
-\item{\code{runTsne()}:}{ An updated spata-object containing the reduction variables in the tsne data.frame.}
+\item{\code{runTsne()}:}{ An updated \code{SPATA2} object containing the reduction variables in the tsne data.frame.}
 \item{\code{runTsne2()}:}{ The direct output-object of \code{Rtsne::Rtsne()}}
 }
 }

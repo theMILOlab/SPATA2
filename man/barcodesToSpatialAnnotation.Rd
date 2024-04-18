@@ -24,7 +24,7 @@ barcodesToSpatialAnnotation(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{barcodes}{Character vector. A vector of data points that cover histological
@@ -69,7 +69,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Additional slot content given to \code{methods::new()} when
-constructing the \code{SpatialAnnotation} object.}
+constructing the \code{\link{SpatialAnnotation}} object.}
 }
 \value{
 The input object containing the added or computed

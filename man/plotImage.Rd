@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotImage}
 \alias{plotImage}
-\alias{plotImage,spata2-method}
+\alias{plotImage,SPATA2-method}
 \alias{plotImage,HistoImaging-method}
 \alias{plotImage,HistoImage-method}
 \alias{plotImage,Image-method}
@@ -10,9 +10,9 @@
 \usage{
 plotImage(object, ...)
 
-\S4method{plotImage}{spata2}(
+\S4method{plotImage}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   outline = FALSE,
   by_section = TRUE,
   fragments = TRUE,
@@ -30,7 +30,7 @@ plotImage(object, ...)
 
 \S4method{plotImage}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   outline = FALSE,
   by_section = TRUE,
   fragments = TRUE,
@@ -67,7 +67,7 @@ plotImage(object, ...)
 \S4method{plotImage}{Image}(object, scale_fct = 1, img_alpha = 1, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggpLayerZoom()}.}

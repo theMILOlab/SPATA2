@@ -4,16 +4,13 @@
 \alias{renameFeatures}
 \title{Rename features}
 \usage{
-renameFeatures(object, ..., of_sample = NA)
+renameFeatures(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
 \item{...}{The features to be renamed specified according to the following
 syntax: \emph{'new_feature_name'} \code{=} \emph{'old_feature_name'}.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 An upated spata-object.
@@ -24,6 +21,6 @@ Allows to rename features stored inside the @fdata slot.
 \examples{
 #Not run:
 
- object <- renameFeatures(object, "seurat_clusters_new" = "seurat_clusters")
+ object <- renameFeatures(object, "clusters_new" = "clusters")
 
 }

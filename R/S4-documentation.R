@@ -257,7 +257,7 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' }
 #'
 #' @slot transformations list. List of transformations to apply upon extracting
-#' the image to ensure alignment with additional images. In case of default values
+#' the image to ensure alignment with additional images and spatial aspects. In case of default values
 #' no transformation is applied.
 #' \itemize{
 #'  \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
@@ -304,9 +304,11 @@ HistoImage <- setClass(Class = "HistoImage",
 #' @slot method SpatialMethod. Object of class [`SpatialMethod`].
 #' @slot meta list. List for meta data regarding the imaged tissue portion.
 #' @slot misc list. A flexible list for miscellaneous input.
+#' @slot name_imf_active character. The name of the image that is currently active.
 #' @slot name_img_ref character. The name of the image that is used as a reference for aligning
 #' every additional image in slot @@images_registered.
 #' @slot sample character. String to identify the imaged tissue.
+#' @slot trajectories list. A list of objects of class [`SpatialTrajectory`].
 #'
 #' @export
 HistoImaging <- setClass(Class = "HistoImaging", # -> rename to SpatialData ??
@@ -317,8 +319,10 @@ HistoImaging <- setClass(Class = "HistoImaging", # -> rename to SpatialData ??
                            method = "SpatialMethod",
                            meta = "list",
                            misc = "list",
+                           name_img_active = "character",
                            name_img_ref = "character",
                            sample = "character",
+                           trajectories = "list",
                            version = "list"
                          )
 )
@@ -804,6 +808,7 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
                              )
 )
 
+
 #' spatial_trajectory object
 #'
 #' @slot compiled_trajectory_df A data.frame containing the variables:
@@ -918,38 +923,25 @@ ScDeconv <- setClass(Class = "ScDeconv",
 
 
 
-#' @title The `SPATA2` class
+#' @title The \code{SPATA2} - class
 #'
-#' @description A class to represent spatial transcriptomic and other -omic
-#' studies.
+#' @descripiton This S4 class represents a spatial multiomics data object, containing various
+#' assays, compatibility information, dimensionality reduction results, histological
+#' images, log file data, metadata for observations, additional metadata information,
+#' spatial method details, object information, sample identifiers, spatial data, and versioning details.
 #'
-#' @slot compatibility list. A list for miscellaneous short-term solutions, mainly
-#' to maintain compatibility.
-#' @slot coordinates list. A list of data.frames that contain coordinates for
-#' observations that are not equal to the observational unit of the method (e.g.
-#' single cell deconvolution for Visium, molecules for MERFISH).
-#' @slot fdata data.frame. A data.frame in which data variables of the obesrvations
-#' of the underlying spatial method are stored that are not molecule counts as stored
-#' in `Assay` objects within slot `@@omics`. (e.g. clustering, histological grouping,
-#' number of counts, etc.)
-#' @slot signatures list. A named list of character vectors. Each character vector
-#' corresponds to a signature represented by molecules that are known to work together
-#' in a way described by the name of the signature (e.g. HM_HYPOXIA: a signature
-#' of multiple genes known to be upregulated in case of hypoxic environments)
-#' @slot information list. A list for miscellaneous information around the object.
-#' @slot logfile data.frame. A data.frame of prompts used on the object that return
-#' the object (e.g. [`runBayesSpaceClustering()`]) including the argument input. Used to
-#' keep track of the analysis progress as well as aid for debugging.
-#' @slot meta list. A list of meta data regarding the object, the tissue, and the
-#' experimental desgin, etc.
-#' @slot method SpatialMethod. An object of class [`SpatialMethod`] that contains
-#' information around the spatial method to which the object corresponds.
-#' @slot omics list. A list of [`AssayData`] objects.
-#' @slot sample character. The name of the object.
-#' @slot spatial HistoImaging. An object of class [`HistoImaging`] storing multiple
-#' spatial information.
-#' @slot version list. The version of the object.
-#'
+#' @slot assays A list of assays containing molecular data.
+#' @slot compatibility A list detailing compatibility information.
+#' @slot dim_red A list containing dimensionality reduction results.
+#' @slot images An object of class 'HistoImaging' representing histological images.
+#' @slot logfile A data frame containing log file data.
+#' @slot meta_obs A data frame containing metadata for observations.
+#' @slot meta_info A list providing additional metadata information.
+#' @slot method An object of class 'SpatialMethod' detailing the spatial method used.
+#' @slot obj_info A list containing additional object information.
+#' @slot sample A character vector of sample identifiers.
+#' @slot spatial A list containing spatial data.
+#' @slot version A list specifying versioning details.
 #' @return
 #' @export
 #'
@@ -958,43 +950,58 @@ SPATA2 <- setClass(Class = "SPATA2",
                    slots = list(
                      assays = "list", # old data
                      compatibility = "list",
-                     dim_red = "list",  # eigenes DimRed object mit
-                     image = "HistoImaging",
+                     data_add = "list",
+                     dim_red = "list",
                      logfile = "data.frame",
                      meta_obs = "data.frame",  # old fdata
                      meta_info = "list",
                      method = "SpatialMethod",
                      obj_info = "list",
                      sample = "character",
-                     spatial = "list",
+                     spatial = "HistoImaging",
                      version = "list"
                    ))
 
 
-#' Assay Class
+#' @title The \code{MolecularAssay} - class
 #'
-#' A class to represent assay data, including analysis results, metrics, and
-#' statistical summaries. The `Assay` class encapsulates various components
+#' @description A class to represent molecular assay data, including analysis results, metrics, and
+#' statistical summaries. The `MolecularAssay` class encapsulates various components
 #' of assay data including raw and processed metrics, analytical results,
 #' and associated metadata like the assay name and omic type.
 #'
+#' In further documentation the simpler term assay is used to refer to molecular
+#' assays.
+#'
+#' @slot active_mtr Character string indicating which matrix to extract and
+#' use by default.
 #' @slot analysis List of analysis results where each element can represent
 #'  a different analysis aspect.
-#' @slot mtr_counts Matrix object storing raw counts metrics from the assay.
+#' @slot mtr_counts Matrix object storing raw counts metrics from the assay. Rownames
+#' should corresponds to the molecule names. Colnames should correspond to the
+#' barcodes (IDs) of the observations to which the molecule counts were mapped.
 #' @slot mtr_proc List of processed metrics, potentially including normalized
 #' values or transformed data.
-#' @slot name Character vector storing the name of the assay.
-#' @slot omic Character vector indicating the type of omics data (e.g., "transcriptomics", "proteomics").
-#' @slot stats Data frame of statistical summaries or results derived from the assay data.
+#' @slot molecules Data.frame. Meta data for the molecules including, x- and y-coordinates
+#' in 2d space as well as summary statistics. Name (identifier) of each molecule is
+#' stored in variable *mol_id*.
+#' @slot omic Character value. A string that best characterizes the type of molecular data
+#' the assay carries (e.g., "transcriptomics", "proteomics").
+#' @slot signatures Named list of character vectors.
+#'
+#' Molecular signatures are sets of molecules (such as genes or proteins) that are
+#' associated with specific biological states, processes, or conditions. This slot stores the molecular
+#' signatures detected in the assay data. Each signature is represented as a vector in a named list, where
+#' the names corresponds to the signature the character values are the molecules
+#' of which the signature consists.
 #'
 #' @export
 
 MolecularAssay <- setClass(Class = "MolecularAssay",
                            slots = list(
+                             active_mtr = "character",
                              analysis = "list",
-                             meta_var = "data.frame", # variable meta data (= gene meta data)
                              molecules = "data.frame",
-                             mtr_active = "character",
                              mtr_counts = "Matrix",
                              mtr_proc = "list",
                              omic = "character", # transcriptomic, proteomic, metabolomics / RNA, proteins, metabolites

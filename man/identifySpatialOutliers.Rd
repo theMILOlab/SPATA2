@@ -2,16 +2,16 @@
 % Please edit documentation in R/i.R
 \name{identifySpatialOutliers}
 \alias{identifySpatialOutliers}
-\alias{identifySpatialOutliers,spata2-method}
+\alias{identifySpatialOutliers,SPATA2-method}
 \alias{identifySpatialOutliers,HistoImaging-method}
 \title{Identify spatial outliers}
 \usage{
 identifySpatialOutliers(object, ...)
 
-\S4method{identifySpatialOutliers}{spata2}(
+\S4method{identifySpatialOutliers}{SPATA2}(
   object,
   method,
-  img_name = NULL,
+  img_name = activeImage(object),
   buffer = NULL,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
@@ -22,7 +22,7 @@ identifySpatialOutliers(object, ...)
 \S4method{identifySpatialOutliers}{HistoImaging}(
   object,
   method = c("outline", "dbscan"),
-  img_name = NULL,
+  img_name = activeImage(object),
   buffer = NULL,
   eps = NULL,
   minPts = 3,
@@ -31,7 +31,7 @@ identifySpatialOutliers(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -4,309 +4,6 @@
 # plotT -------------------------------------------------------------------
 
 
-
-
-
-#' @title Plot STS evaluation per variable-model pair
-#'
-#' @description Plots inferred gene expression along a spatial trajectory
-#' against model values.
-#'
-#' @inherit spatialAnnotationScreening params
-#' @inherit plotScatterplot params
-#' @inherit argument_dummy params
-#' @inherit plot_screening_evaluation
-#' @param display_corr Logical. If TRUE, correlation values are added to the plots.
-#' @param corr_p_min Numeric value. Everything below is displayed as \emph{<corr_p_min}.
-#' @param corr_pos_x,corr_pos_y Numeric vector of length two. The position of
-#' the correlation text with x- and y-coordinates.
-#' @param corr_text_sep Character value used to separate correlation value and
-#' corresponding p-value.
-#' @param corr_text_size Numeric value. Size of text.
-#'
-#' @export
-#'
-plotTrajectoryEvaluation <- function(object,
-                                     id,
-                                     variables,
-                                     binwidth = getCCD(object),
-                                     n_bins_circle = NA_integer_,
-                                     model_subset = NULL,
-                                     model_remove = NULL,
-                                     model_add = NULL,
-                                     pt_alpha = 0.9,
-                                     pt_color = "black",
-                                     pt_size = 1,
-                                     line_alpha = 0.9,
-                                     line_color = "blue",
-                                     line_size = 1,
-                                     display_se = FALSE,
-                                     display_corr = FALSE,
-                                     corr_p_min = 5e-05,
-                                     corr_pos_x = NULL,
-                                     corr_pos_y = NULL,
-                                     corr_text_sep = "\n",
-                                     corr_text_size = 1,
-                                     force_grid = FALSE,
-                                     ncol = NULL,
-                                     nrow = NULL,
-                                     verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  sts_df <-
-    getStsDf(
-      object = object,
-      id = id,
-      variables = variables,
-      binwidth = binwidth,
-      normalize = TRUE
-    )
-
-  plot_screening_evaluation(
-    df = sts_df,
-    variables = variables,
-    var_order = "trajectory_order",
-    model_subset = model_subset,
-    model_remove = model_remove,
-    model_add = model_add,
-    pt_alpha = pt_alpha,
-    pt_color = pt_color,
-    pt_size = pt_size,
-    line_alpha = line_alpha,
-    line_size = line_size,
-    display_se = display_se,
-    display_corr = display_corr,
-    corr_p_min = corr_p_min,
-    corr_pos_x = corr_pos_x,
-    corr_pos_y = corr_pos_y,
-    corr_text_sep = corr_text_sep,
-    corr_text_size = corr_text_size,
-    ncol = ncol,
-    nrow = nrow,
-    force_grid = force_grid,
-    verbose = verbose
-  )
-
-}
-
-#' @title Plot trajectory model fitting
-#'
-#' @description Plots a trajectory lineplot in combination with models
-#' fitted to the course of the trajectory.
-#'
-#' @param area_alpha Numeric value. The alpha value for the area under the curve
-#' of the resiudals.
-#' @param linecolors,linetypes The colors and types of the three lines. First value stands for the
-#' values of the variable, second on for the models, third one for the residuals.
-#' @param display_residuals Logical value. If TRUE, the residuals curve is displayed.
-#'
-#' @inherit argument_dummy params
-#' @inherit getSpatialTrajectoryIds params
-#' @inherit add_models params
-#' @inherit variable_num params
-#'
-#' @inherit ggplot_dummy return
-#'
-#' @export
-#'
-plotTrajectoryLineplotFitted <- function(object,
-                                         id,
-                                         variables,
-                                         binwidth = getCCD(object),
-                                         n_bins = NA_integer_,
-                                         model_subset = NULL,
-                                         model_remove = NULL,
-                                         model_add = NULL,
-                                         method_gs = NULL,
-                                         smooth_span = 0,
-                                         lineorder = c(1,2,3),
-                                         linesizes = c(1,1,1),
-                                         linecolors = c("forestgreen", "blue4", "red3"),
-                                         linetypes = c("solid", "solid", "dotted"),
-                                         display_residuals = TRUE,
-                                         area_alpha = 0.25,
-                                         display_points = TRUE,
-                                         pt_alpha = 0.9,
-                                         pt_size = 1.5,
-                                         nrow = NULL,
-                                         ncol = NULL,
-                                         force_grid = FALSE,
-                                         verbose = NULL,
-                                         ...){
-
-  hlpr_assign_arguments(object)
-
-  lv <- base::length(variables)
-
-  if(lv > 1){
-
-    variable <- "Variables"
-
-  } else if(lv == 1) {
-
-    variable <- variables
-
-  }
-
-
-  plot_df <-
-    purrr::map_df(
-      .x = variables,
-      .f = function(v){
-
-        stdf <-
-          getStsDf(
-            object = object,
-            id = id,
-            variables = v,
-            method_gs = method_gs,
-            n_bins = n_bins,
-            binwidth = binwidth,
-            normalize = TRUE ,
-            verbose = FALSE,
-            format = "long",
-            smooth_span = smooth_span
-          ) %>%
-          dplyr::select(-dplyr::any_of("trajectory_part"))
-
-        out_df <-
-          add_models(
-            input_df = stdf,
-            var_order = "trajectory_order",
-            model_subset = model_subset,
-            model_remove = model_remove,
-            model_add = model_add,
-            verbose = FALSE
-          ) %>%
-          shift_for_plotting(var_order = "trajectory_order") %>%
-          dplyr::mutate(
-            origin = stringr::str_replace_all(string = origin, pattern = v, replacement = "Variables"),
-            origin = base::factor(origin, levels = c("Models", "Residuals", "Variables")[lineorder]),
-            models = base::factor(models),
-            variables = {{v}}
-          )
-
-        return(out_df)
-
-      }
-    )
-
-  if(!confuns::is_named(linecolors)){
-
-    linecolors <- purrr::set_names(x = linecolors[1:3], nm = c("Variables", "Models", "Residuals"))
-
-  }
-
-  if(!confuns::is_named(linesizes)){
-
-    linesizes <- purrr::set_names(x = linesizes[1:3], nm = c("Variables", "Models", "Residuals"))
-
-  }
-
-  if(!confuns::is_named(linetypes)){
-
-    linetypes <- purrr::set_names(x = linetypes[1:3], nm = c("Variables", "Models", "Residuals"))
-
-  }
-
-  if(base::isFALSE(display_residuals)){
-
-    plot_df <- dplyr::filter(plot_df, origin != "Residuals")
-
-    area_add_on <- NULL
-
-  } else {
-
-    area_add_on <-
-      list(
-        ggplot2::geom_area(
-          data = dplyr::filter(plot_df, origin == "Residuals"),
-          mapping = ggplot2::aes(fill = origin),
-          alpha = area_alpha
-        ),
-        ggplot2::scale_fill_manual(values = linecolors)
-      )
-
-  }
-
-  if(base::length(variables) > 1 | base::isTRUE(force_grid)){
-
-    facet_add_on <-
-      ggplot2::facet_grid(
-        rows = ggplot2::vars(variables),
-        cols = ggplot2::vars(models),
-        ...
-      )
-
-  } else {
-
-    facet_add_on <-
-      ggplot2::facet_wrap(
-        facets = . ~ models,
-        nrow = nrow,
-        ncol = ncol,
-        ...
-        )
-
-  }
-
-  if(base::is.na(n_bins)){
-
-    binwidth <- stringr::str_c(extract_value(binwidth), extract_unit(binwidth))
-
-  } else {
-
-    binwidth <-
-      (getTrajectoryLength(object, id = id, unit = "px") / n_bins) %>%
-      as_unit(input = ., unit = extract_unit(getCCD(object)), object = object)
-
-  }
-
-  if(base::isTRUE(display_points)){
-
-    point_add_on <-
-      ggplot2::geom_point(
-        mapping = ggplot2::aes(color = origin),
-        size = pt_size,
-        alpha = pt_alpha
-        )
-
-  } else {
-
-    point_add_on <- NULL
-
-  }
-
-
-  ggplot2::ggplot(
-    data = plot_df,
-    mapping = ggplot2::aes(x = trajectory_order, y = values)
-  ) +
-    area_add_on +
-    ggplot2::geom_line(
-      mapping = ggplot2::aes(linetype = origin, color = origin, size = origin)
-    ) +
-    point_add_on +
-    facet_add_on +
-    scale_color_add_on(
-      variable = plot_df[["origin"]],
-      clrp = "milo",
-      clrp.adjust = linecolors
-    ) +
-    ggplot2::scale_size_manual(values = linesizes, guide = "none") +
-    ggplot2::scale_linetype_manual(values = linetypes, guide = "none") +
-    ggplot2::theme_classic() +
-    ggplot2::labs(
-      x = glue::glue("Trajectory Bins ({binwidth})"),
-      y = "Inferred Expression"
-      ) +
-    ggplot2::theme_bw()
-
-}
-
-
-
 #' @rdname plotTrajectoryLineplot
 #' @export
 plotTrajectoryRidgeplot <- function(object,
@@ -771,32 +468,16 @@ plotVioBoxplot <- function(object,
                            method_gs = NULL,
                            normalize = NULL,
                            verbose = NULL,
-                           of_sample = NA,
                            ...){
 
   hlpr_assign_arguments(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
-
-  all_features <- getFeatureNames(object)
-  all_genes <- getGenes(object = object)
-  all_gene_sets <- getGeneSets(object)
-
   var_levels <- base::unique(variables)
-
-  variables <-
-    check_variables(
-      variables = c(variables, across),
-      all_features = all_features,
-      all_gene_sets = all_gene_sets,
-      all_genes = all_genes,
-      simplify = FALSE
-    )
 
   spata_df <-
     joinWithVariables(
       object = object,
-      spata_df = getSpataDf(object, of_sample),
+      spata_df = getSpataDf(object),
       variables = variables,
       method_gs = method_gs,
       smooth = FALSE,
@@ -861,32 +542,16 @@ plotViolinplot <- function(object,
                            method_gs = NULL,
                            normalize = NULL,
                            verbose = NULL,
-                           of_sample = NA,
                            ...){
 
   hlpr_assign_arguments(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
-
-  all_features <- getFeatureNames(object)
-  all_genes <- getGenes(object = object)
-  all_gene_sets <- getGeneSets(object)
-
   var_levels <- base::unique(variables)
-
-  variables <-
-    check_variables(
-      variables = c(variables, across),
-      all_features = all_features,
-      all_gene_sets = all_gene_sets,
-      all_genes = all_genes,
-      simplify = FALSE
-    )
 
   spata_df <-
     joinWithVariables(
       object = object,
-      spata_df = getSpataDf(object, of_sample),
+      spata_df = getSpataDf(object),
       variables = variables,
       method_gs = method_gs,
       smooth = FALSE,
@@ -1183,6 +848,8 @@ setMethod(
   signature = "SpatialTrajectoryScreening",
   definition = function(object,
                         ...){
+
+    # todo
 
 
   }

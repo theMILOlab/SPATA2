@@ -2,15 +2,15 @@
 % Please edit documentation in R/setA-Z.R
 \name{setSpatialMethod}
 \alias{setSpatialMethod}
-\alias{setSpatialMethod,spata2-method}
+\alias{setSpatialMethod,SPATA2-method}
 \title{Set spatial method}
 \usage{
 setSpatialMethod(object, ...)
 
-\S4method{setSpatialMethod}{spata2}(object, method, ...)
+\S4method{setSpatialMethod}{SPATA2}(object, method, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

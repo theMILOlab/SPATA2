@@ -4,16 +4,19 @@
 \alias{getVariableNames}
 \title{Obtain variable names}
 \usage{
-getVariableNames(object)
+getVariableNames(object, protected = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{protected}{Logical value. If \code{TRUE}, variable names that are protected
+in \code{SPATA2} are returned, too, regardless of being in use or not.}
 }
 \value{
 Character vector.
 }
 \description{
 Extracts a character vector of variable names that are currently
-known to the \code{spata2} object.
+known to the \code{SPATA2} object.
 }

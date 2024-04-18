@@ -2,18 +2,18 @@
 % Please edit documentation in R/add.R
 \name{addInnerBorder}
 \alias{addInnerBorder}
-\alias{addInnerBorder,spata2-method}
+\alias{addInnerBorder,SPATA2-method}
 \alias{addInnerBorder,SpatialAnnotation-method}
 \title{Add Holes to Spatial Annotations}
 \usage{
 addInnerBorder(object, ...)
 
-\S4method{addInnerBorder}{spata2}(object, id, border_df, new_id = FALSE, overwrite = FALSE, ...)
+\S4method{addInnerBorder}{SPATA2}(object, id, border_df, new_id = FALSE, overwrite = FALSE, ...)
 
 \S4method{addInnerBorder}{SpatialAnnotation}(object, border_df, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -41,7 +41,7 @@ holes.
 \details{
 If used on a \code{\link{SpatialAnnotation}} directly, the variables of \code{border_df} should
 be called \emph{x_orig} and \emph{y_orig} and should be scaled correspondingly. If
-used with the \code{\link{spata2}} object, the variables can be called \emph{x} and \emph{y}, too.
+used with the \code{\link{SPATA2}} object, the variables can be called \emph{x} and \emph{y}, too.
 In that case, the function assumes that the coordinates are scaled to the
 image that is currently active and creates \emph{x_orig} and \emph{y_orig} accordingly.
 }

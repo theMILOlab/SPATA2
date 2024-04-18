@@ -2,13 +2,20 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTrajectoryWidth}
 \alias{getTrajectoryWidth}
-\title{Title}
+\title{Obtain trajectory width}
 \usage{
 getTrajectoryWidth(object, id = idST(object), unit = "px", orig = FALSE)
 }
 \arguments{
-\item{unit}{}
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{id}{Character value. Denotes the spatial trajectory
+of interest.}
+}
+\value{
+Distance value.
 }
 \description{
-Title
+Computes and extracts the default width of the trajectory.
 }

@@ -49,7 +49,7 @@ setGeneric(name = "centerSpatialAnnotation", def = function(object, ...){
 #' @export
 setMethod(
   f = "centerSpatialAnnotation",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         id,
                         center_x,
@@ -432,26 +432,18 @@ compute_correction_factor_sts <- function(object, id, width = getTrajectoryLengt
 
 }
 
-#' Compute Curve Irregularity
-#'
-#' Calculate the irregularity of a curve based on the total variation of its values.
-#'
-#' @param curve A numeric vector representing a curve or sequence of values.
-#'
-#' @return A numeric value indicating the irregularity of the curve.
-#'
-#' @details This function computes the irregularity of a given curve by summing
-#' the absolute differences between adjacent values in the curve. A lower irregularity
-#' value suggests a smoother, less irregular curve, while a higher value indicates
-#' a more irregular pattern.
-#'
-#' @examples
-#' curve <- c(1, 2, 3, 2, 1)
-#' irregularity <- compute_curve_irregularity(curve)
-#'
-compute_curve_irregularity <- function(curve) {
+#' @keywords internal
+compute_dist_screened <- function(coords_df){
 
-  return(sum(abs(diff(curve)))/length(curve))
+  unit <- base::unique(coords_df[["dist_unit"]])
+
+  out <-
+    base::range(coords_df[["dist"]], na.rm = TRUE) %>%
+    base::diff() %>%
+    stringr::str_c(., unit) %>%
+    as_unit(input = ., unit = unit)
+
+  return(out)
 
 }
 
@@ -473,36 +465,36 @@ compute_distance <- function(starting_pos, final_pos){
 
 }
 
-
-#' @title Compute loess deviation score
+#' Compute Position-Based Expression Estimates
 #'
-#' @description Fits a loess model to a curve and quantifies its noisiness by
-#' averaging the absolute residuals of the curve to the fit.
+#' This function computes position-based expression estimates given the minimum
+#' and maximum distances and the average minimum center-to-center distance (AMCCD).
 #'
-#' @param y Expression gradient.
-#' @param span Given to `span` of `stats::loess()`.
+#' @param min_dist Minimum distance for estimation.
+#' @param max_dist Maximum distance for estimation.
+#' @param amccd Average Minimum Center-to-Center Distance (AMCCD).
 #'
-#' @return Numeric value.
-#' @export
+#' @return A numeric vector representing position-based expression estimates.
 #'
-compute_lds <- function(gradient, span = 0.5) {
+#' @note This function validates that the units of \code{amccd}, \code{min_dist},
+#' and \code{max_dist} match to ensure consistent unit measurements.
 
-  x <- 1:base::length(gradient)
-  y <- gradient
+#' @return A numeric vector representing positions for expression estimates.
+#'
 
-  # fit a loess curve
-  loess_fit <- stats::loess(y ~ x, span = span)
+compute_expression_estimates <- function(coords_df){
 
-  # predict values using the loess fit
-  predicted <- stats::predict(loess_fit, x)
+  out <-
+    dplyr::filter(coords_df, !base::is.na(bins_dist)) %>%
+    dplyr::group_by(bins_dist) %>%
+    dplyr::summarise(ee = base::mean(dist, na.rm = TRUE)) %>%
+    dplyr::pull(ee)
 
-  # calculate residuals
-  residuals <- base::abs(y - predicted)
-
-  # return the mean of the residuals as a measure of noisiness
-  return(base::mean(residuals))
+  return(out)
 
 }
+
+
 
 #' @title Compute scale factor of two images
 #'
@@ -553,56 +545,6 @@ compute_overlap_st_polygon <- function(st_poly1, st_poly2){
 }
 
 
-
-#' @title Compute p-value based on curve irregularity scores
-#'
-#' @description Compute p-value based on curve irregularity scores
-#'
-#' @param observed Numeric vector. The observed gradient.
-#' @param random A vector of randomly generated irregularity scores
-#' against which to compare the observed one.
-#'
-#' @return A numeric value ranging between 0-1 (inclusive).
-#' @export
-#'
-#'
-#' @examples
-#'
-#' random_lds <-
-#'    map_dbl(
-#'      .x = 1:1000,
-#'      .f = function(i){
-#'
-#'         set.seed(123*i)
-#'
-#'         rg <- runif(20, min = 0, max = 1)
-#'
-#'         compute_lds(rg)
-#'
-#'         })
-#'
-#'  gradient <- scales::rescale(1:20, to = c(0,1))
-#'
-#'  gradient_lds <- compute_lds(gradient)
-#'
-#'  compute_sgs_pvalue(gradient, random = random_lds)
-#'
-compute_sgs_pvalue <- function(gradient, random, span = 0.5){
-
-  observed_score <- compute_lds(gradient = gradient, span = span)
-
-  p_value <- base::sum(random <= observed_score) / base::length(random)
-
-  # sets 20 as the mininmum number of bins to not get punished
-  p_fct <- base::length(gradient) / 20
-
-  p_value <- p_value / p_fct
-
-  return(p_value)
-
-}
-
-
 # compute spearmans rho
 compute_rho <- function(gradient, model){
 
@@ -623,20 +565,6 @@ compute_rmse <- function(gradient, model) {
   rmse <- base::sqrt(mean_squared_error)
 
   return(rmse)
-
-}
-
-
-
-compute_rscore <- function(x){
-
-  prel <- sum(abs(x$loess_model$residuals))/length(x$loess_model$residuals)
-
-  tv <- x$pval_df$tot_var/nrow(x$inf_df)
-
-  out <- prel*tv
-
-  return(out)
 
 }
 
@@ -665,14 +593,6 @@ compute_total_variation <- function(gradient){
   #base::sum(diff(gradient)^2)
 
   return(out)
-
-}
-
-compute_total_residuals <- function(loess_model){
-
-  loess_model$residuals %>%
-    base::abs() %>%
-    base::sum()
 
 }
 
@@ -769,136 +689,6 @@ computeCnvByChrArm <- function(object,
 
 # computeG ----------------------------------------------------------------
 
-#' @title Compute gene summary statistics
-#'
-#' @description Calculates summary statistics of all genes (rows) of the provided
-#' expression matrix. The result is stored in a named list of three slots.
-#'
-#' \itemize{
-#'  \item{\emph{data}: A data.frame in which each observation refers to a gene and the
-#'  variables provide the respective information about the gene's expression properties}
-#'  \item{\emph{mtr_name}: A character value that denotes the name of the matrix used.}
-#'  \item{\emph{describe_args}: A list of additional arguments passed to \code{psych::describe()} via
-#'  ... .}
-#'  }
-#'
-#' @inherit argument_dummy params
-#' @inherit addExpressionMatrix params
-#' @inherit check_sample params
-#' @param ... Additional arguments given to \code{psych::describe()}
-#'
-#' @return Depends on the function used:
-#'
-#'  \itemize{
-#'   \item{\code{computeGeneMetaData()}: An updated spata-object.}
-#'   \item{\code{computeGeneMetaData2()}: The list referred to in the function's description without the slot \emph{mtr_name.}}
-#'   }
-#'
-#' @export
-
-computeGeneMetaData <- function(object, mtr_name = NULL, verbose = TRUE, ...){
-
-  check_object(object)
-
-  deprecated(...)
-
-  expr_mtr <- getExpressionMatrix(object = object, verbose = verbose)
-
-  if(base::is.null(mtr_name)){
-
-    mtr_name <- getActiveMatrixName(object)
-
-  }
-
-  meta_data <-
-    computeGeneMetaData2(
-      expr_mtr = expr_mtr,
-      verbose = verbose,
-      ...
-      )
-
-  object <-
-    addGeneMetaData(
-      object = object,
-      meta_data_list = c(meta_data, "mtr_name" = mtr_name)
-      )
-
-  return(object)
-
-}
-
-#' @rdname computeGeneMetaData
-#' @export
-computeGeneMetaData2 <- function(expr_mtr, verbose = TRUE, ...){
-
-  confuns::give_feedback(
-    msg = glue::glue("Calculating summary statistics for {base::nrow(expr_mtr)} genes."),
-    verbose = verbose
-  )
-
-  res_df <-
-    psych::describe(x = base::t(expr_mtr)) %>%
-    base::as.data.frame() %>%
-    dplyr::select(-vars) %>%
-    tibble::rownames_to_column(var = "genes")
-
-  res_list <- list("df" = res_df, "describe_args" = list(...))
-
-  return(res_list)
-
-}
-
-#' @keywords internal
-computeGeneNormality <- function(object, mtr_name = "scaled", verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  if(nBarcodes(object) >= 5000){
-
-    stop("Number of barcode-spots must be below 5000.")
-
-  }
-
-  gene_meta_df <- getGeneMetaDf(object, mtr_name = mtr_name)
-
-  mtr <- getMatrix(object, mtr_name = mtr_name, verbose = FALSE)
-
-  pb <- confuns::create_progress_bar(total = nGenes(object))
-
-  gene_normality <-
-    purrr::map(
-      .x = base::rownames(mtr),
-      .f = purrr::safely(.f = function(gene){
-
-        if(base::isTRUE(verbose)){
-
-          pb$tick()
-
-        }
-
-        out <- stats::shapiro.test(x = base::as.numeric(mtr[gene,]))
-
-        data.frame(
-          genes = gene,
-          sw = out$statistic
-        )
-
-      }, otherwise = NA)
-    ) %>%
-    purrr::set_names(nm = base::rownames(mtr))
-
-  gns <-
-    purrr::keep(.x = gene_normality, .p = ~ base::is.data.frame(.x$result)) %>%
-    purrr::map_df(.f = ~ .x$result) %>%
-    tibble::as_tibble()
-
-  gene_meta_df <- dplyr::left_join(x = gene_meta_df, y = gns, by = "genes")
-
-  object@gdata[[1]][[mtr_name]][["df"]] <- gene_meta_df
-
-  return(object)
-
-}
 
 
 
@@ -929,7 +719,7 @@ setGeneric(name = "computePixelScaleFactor", def = function(object, ...){
 #' @export
 setMethod(
   f = "computePixelScaleFactor",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, verbose = TRUE, ...){
 
     imaging <-
@@ -1056,8 +846,6 @@ concatenate_polypaths <- function(lst, axis){
 }
 
 
-
-
 # contain ----------------------------------------------------------------
 
 #' @keywords internal
@@ -1072,191 +860,7 @@ container <- function(...){
 }
 
 
-#' @title Check availability of miscellaneous content
-#'
-#' @description Logical tests that check if content exists in the `spata2` object.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Logical value.
-#'
-#' @export
-containsCNV <- function(object){
 
-  out <-
-    base::tryCatch({
-
-      cnv <- object@cnv[[1]]
-
-      purrr::is_list(cnv) && !purrr::is_empty(cnv)
-
-    }, error = function(error){
-
-      FALSE
-
-    })
-
-  return(out)
-
-}
-
-#' @rdname containsCNV
-#' @export
-containsHistologyImage <- function(object){
-
-  img <- object@images[[1]]
-
-  out <- methods::is(object = img, class2 = "HistologyImage")
-
-  return(out)
-
-}
-
-
-#' @title Checks availability of `HistoImaging` object
-#'
-#' @description Tests if the input object contains an object
-#' of class `HistoImaging`.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Logical value.
-#' @export
-#'
-containsHistoImaging <- function(object, error = FALSE){
-
-  out <-
-    methods::is(
-      object = object@images[[1]],
-      class2 = "HistoImaging"
-      )
-
-  if(base::isFALSE(out) & base::isTRUE(error)){
-
-    stop("Input object does not contain HistoImaging object.")
-
-  }
-
-  return(out)
-
-}
-
-
-
-
-
-#' @rdname containsHistologyImaging
-#' @export
-containsImageObject <- function(object){
-
-  if(!is.null(object@images[[1]])){
-
-    out <-
-      base::any(
-        purrr::map_lgl(
-          .x = validImageClasses(),
-          .f = ~ methods::is(object@images[[1]], class2 = .x)
-        )
-      )
-
-  } else {
-
-    out <- FALSE
-
-  }
-
-  return(out)
-
-}
-
-
-#' @title Check for Inner Borders in a Spatial Annotation
-#'
-#' @description Checks whether a `SpatialAnnotation` object contains any inner borders.
-#'
-#' @inherit getSpatialAnnotation params
-#' @inherit argument_dummy params
-#'
-#' @seealso [`SpatialAnnotation`]
-#'
-#' @return Logical value.
-#'
-#' @export
-#'
-setGeneric(name = "containsInnerBorders", def = function(object, ...){
-
-  standardGeneric(f = "containsInnerBorders")
-
-})
-
-#' @rdname containsInnerBorders
-#' @export
-setMethod(
-  f = "containsInnerBorders",
-  signature = "spata2",
-  definition = function(object, id, ...){
-
-    getSpatialAnnotation(object, id = id) %>%
-      containsInnerBorders()
-
-  }
-)
-
-#' @rdname containsInnerBorders
-#' @export
-setMethod(
-  f = "containsInnerBorders",
-  signature = "SpatialAnnotation",
-  definition = function(object, ...){
-
-    stringr::str_detect(base::names(object@area), pattern = "inner") %>%
-      base::any()
-
-  }
-)
-
-#' @rdname containsInnerBorders
-#' @export
-setMethod(
-  f = "containsInnerBorders",
-  signature = "data.frame",
-  definition = function(object, ...){
-
-    stringr::str_detect(object$border, pattern = "inner") %>%
-      base::any()
-
-  }
-)
-
-
-
-#' @title Check availability of pixel scale factor
-#'
-#' @description Checks if a pixel scale factor is present in the `SPATA2`
-#' object
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Logical value.
-#'
-#' @export
-containsPixelScaleFactor <- function(object){
-
-  pxl_scale_fct <- object@information$pxl_scale_fct
-
-  if(base::is.null(pxl_scale_fct)){
-
-    out <- FALSE
-
-  } else {
-
-    out <- TRUE
-
-  }
-
-  return(out)
-
-}
 
 
 

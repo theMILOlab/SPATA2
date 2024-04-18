@@ -3,7 +3,7 @@
 \name{plotDeaVolcano}
 \alias{plotDeaVolcano}
 \alias{plotDeaVolcano1v1}
-\title{Plot gene expression testing results}
+\title{Plot DEA results via volcano plots}
 \usage{
 plotDeaVolcano(
   object,
@@ -26,6 +26,7 @@ plotDeaVolcano(
   ncol = NULL,
   scales = "fixed",
   use_pseudolog = FALSE,
+  assay_name = activeAssay(object),
   ...
 )
 
@@ -48,11 +49,12 @@ plotDeaVolcano1v1(
   display_title = TRUE,
   title_size = 2,
   digits = 2,
+  assay_name = activeAssay(object),
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
@@ -109,6 +111,10 @@ are \emph{'up'} and/or \emph{'down'}.}
 
 \item{use_pseudolog}{Logical value. If TRUE, avglogFC is transformed with log10. Requires
 package \code{ggallin} to be installed.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

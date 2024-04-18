@@ -1,4 +1,107 @@
 
+#' @title Default assay
+#'
+#' @description Sets and extracts the active (default) assay. Only relevant if the
+#' `SPATA2` object contains more than one molecular assay.
+#'
+#' @inherit argument_dummy params
+#'
+#' @seealso [`MolecularAssay`]
+#'
+#' @return
+#' \code{activateAssay()}: Updated `SPATA2` object.
+#' \code{activeAssay()}: Character value. Name of the default assay.
+#'
+#' @export
+activateAssay <- function(object, assay_name, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = assay_name,
+    against = getAssayNames(object)
+  )
+
+  object@obj_info$active$assay <- assay_name
+
+  confuns::give_feedback(
+    msg = glue::glue("Active assay: '{assay_name}'."),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+#' @rdname activateAssay
+#' @export
+activeAssay <- function(object){
+
+  object@obj_info$active$assay
+
+}
+
+#' @title Default grouping
+#'
+#' @description Sets and extracts the active (default) grouping. Useful to save typing
+#' in functions that require a grouping variable as input. (Usually referred to
+#' via arguments \code{across} or `grouping` / \code{grouping_variable}).
+#'
+#' @param grouping Character value. The grouping variable that is
+#' supposed to be used by default within all functions that need one.
+#' @inherit argument_dummy params
+#'
+#' @return
+#' \code{activateGrouping()}: Updated `SPATA2` object.
+#' \code{activeGrouping()}: Character value. Name of the default grouping variable.
+#'
+#' @export
+activateGrouping <- function(object, grouping, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  confuns::check_one_of(
+    input = grouping[1],
+    against = getFeatureNames(object, of_class = "factor"),
+    fdb.opt = 2,
+    ref.opt.2 = "grouping variables"
+  )
+
+  object@obj_info$active$grouping <- grouping[1]
+
+  give_feedback(msg = glue::glue("Active grouping: '{grouping}'"), verbose = verbose)
+
+  return(object)
+
+}
+
+#' @rdname activateGrouping
+#' @export
+activeGrouping <- function(object, verbose = NULL, arg = "across"){
+
+  hlpr_assign_arguments(object)
+
+  g <- object@obj_info$active$grouping
+
+  if(!base::is.character(g)){
+
+    if(base::is.character(arg)){
+
+      stop(glue::glue("Default grouping is not set. Set it with 'activateGrouping()' or specify with argument '{arg}'."))
+
+    } else {
+
+      stop("Default grouping is not set. Set it with 'activateGrouping()'.")
+
+    }
+
+  }
+
+  give_feedback(msg = glue::glue("Using default grouping: '{g}'"))
+
+  return(g)
+
+}
 
 #' @title Obtain name of active content
 #'
@@ -22,10 +125,11 @@ setGeneric(name = "activeImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "activeImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
-    getActive(object, what = "image")
+    getHistoImaging(object) %>%
+      activeImage()
 
   }
 )
@@ -37,15 +141,15 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object){
 
-    getHistoImageActive(object)@name
+    object@name_img_active
 
   }
 )
 
-#' @title Activate `HistoImage`
+#' @title Activate an image
 #'
 #' @description Sets the active image of the input object which is
-#' then used by default in image dependent functions if argument `img_name = NULL`.
+#' then used by default in image dependent functions.
 #'
 #' @param unload Logical value. If `TRUE`, ensures that @@image slots of
 #' the inactive registered images are empty to prevent the input object
@@ -57,6 +161,8 @@ setMethod(
 #' @note `activateImageInt()` exists mainly for internal use. It works
 #' the same way `activateImage()` works but never unloads and is always
 #' silent.
+#'
+#' @seealso [`activeImage()`]
 #'
 #' @export
 #'
@@ -70,7 +176,7 @@ setGeneric(name = "activateImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "activateImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         img_name,
                         load = TRUE,
@@ -136,7 +242,19 @@ setMethod(
 
         if(base::isTRUE(unload)){
 
-          hist_img <- unloadImage(hist_img, verbose = verbose)
+          if(!purrr::is_empty(hist_img@dir)){
+
+            hist_img <- unloadImage(hist_img, verbose = verbose)
+
+          } else {
+
+            warning(
+              glue::glue(
+                "Image '{hist_img@name}' has been registered without a file directory. Can not unload."
+                )
+            )
+
+          }
 
         }
 
@@ -146,8 +264,10 @@ setMethod(
 
     }
 
+    object@name_img_active <- img_name
+
     confuns::give_feedback(
-      msg = glue::glue("Active HistoImage: '{img_name}'."),
+      msg = glue::glue("Active image: '{img_name}'."),
       verbose = verbose
     )
 
@@ -168,7 +288,7 @@ setGeneric(name = "activateImageInt", def = function(object, ...){
 #' @export
 setMethod(
   f = "activateImageInt",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, img_name, load = FALSE){
 
     if(!base::is.null(img_name)){
@@ -224,6 +344,56 @@ setMethod(
 
 
 
+
+#' @title Default matrix
+#'
+#' @description Sets and extracts the active (default) matrix of a [`MolecularAssay`].
+#'
+#' @inherit argument_dummy params
+#'
+#' @return
+#' \code{activateMatrix()}: Updated `SPATA2` object.
+#' \code{activeMatrix()}: Character value. Name of the currently active matrix in the respective assay.
+#'
+#' @seealso [`getMatrix()`]
+#'
+#' @export
+activateMatrix <- function(object, mtr_name, assay_name = activeAssay(object), verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  confuns::check_one_of(
+    input = mtr_name,
+    against = getMatrixNames(object, assay_name = assay_name)
+  )
+
+  ma@active_mtr <- mtr_name
+
+  object <- setAssay(object, assay = ma)
+
+  confuns::give_feedback(
+    msg = glue::glue("Active matrix in assay '{assay_name}': '{mtr_name}'"),
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+#' @rdname activateMatrix
+#' @export
+activeMatrix <- function(object, assay_name = activeAssay(object)){
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  ma@active_mtr
+
+}
+
+
+#' @keywords internal
 affineSliderInput <- function(inputId, value){
 
   shiny::sliderInput(
@@ -237,6 +407,7 @@ affineSliderInput <- function(inputId, value){
 
 }
 
+#' @keywords internal
 affineNumInput <- function(inputId, value){
 
   shiny::numericInput(
@@ -270,11 +441,8 @@ affineNumInput <- function(inputId, value){
 #' If `stop_at < 1`, the maximum number of consecutive iterations without any improvement
 #' allowed is calculated by the total number of translations possible times `stop_at`.
 #' See details for more.
-#' @param add Logical value. If `TRUE`, numeric values are added to the current values
-#' instead of replacing them. E.g. if `angle = 90` and the image is already rotated by
-#' 90° the saved transformation would be to rotate the image with 180°. If `FALSE`, input
-#' values are simply set. E.g. if `angle = 90` the resulting saved transformation would
-#' be to rotate the image with 90° regardless of the previous setting.
+#' @param opt Character value. Either *'add'* or *'set'*. Decides whether the
+#' input adjustments are added to the existing ones or set (replacing them).
 #' @param angle Numeric value ranging between 0-359. Determines if the image
 #' is supposed to be rotated in **clockwise** direction.
 #' @param flip_h,flip_v Logical values. Determine if the image is supposed
@@ -288,40 +456,6 @@ affineNumInput <- function(inputId, value){
 #' @inherit update_dummy return
 #'
 #' @details
-#' `alignImageAuto()` aligns the image specified in `name` with the reference
-#' image obtained from `getHistoImageRef()`.
-#'
-#' The alignment process consists of several steps:
-#'
-#' 1. Scaling and translation: The outline of the tissue in the image to be aligned
-#'    (referred to as the "tissue outline") is scaled to match the dimensions of
-#'    the reference outline. It is then translated to ensure that its centroid aligns
-#'    with the centroid of the reference outline.
-#'
-#' 2. Flipping and rotation: The function iterates over all possible combinations of
-#'    vertical and horizontal flipping, along with rotation angles between 0-359°.
-#'    Each iteration evaluates the overlap between the tissue outline and the reference
-#'    outline. The combination with the highest overlap is selected, and the tissue
-#'    outline is transformed accordingly.
-#'
-#' 3. Optimization: The overlap is further optimized through consecutive horizontal
-#'    and vertical translations of the tissue outline. The outline is shifted horizontally
-#'    by the value specified by the `step` argument. After each horizontal step, the
-#'    outline is shifted vertically upwards by the `step` value. If there is no improvement
-#'    in the overlap after a certain number of consecutive vertical shifts (controlled by
-#'    `stop_at`), the outline is shifted downwards. This process continues until the
-#'    maximum number of shifts without improvment is reached. Then, another step to the right
-#'    is taken until the maximum number of shifts to the right is reached. The same procedure
-#'    is conducted for shifts to the left. The optimized translation values are then
-#'    applied to the tissue outline.
-#'
-#' 4. Image transformations: All the spatial transformations required to produce the final
-#'    aligned image are stored as a list obtained from `getImageTransformations()`. These
-#'    transformations can be applied during data extraction or visualization if the `transform`
-#'    argument is set to `TRUE` (the default behavior).
-#'
-#' The resulting aligned image and the list of transformations are returned by the function
-#' for further use.
 #'
 #' @export
 
@@ -335,7 +469,7 @@ setGeneric(name = "alignImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "alignImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         img_name,
                         opt = "set",
@@ -1120,7 +1254,7 @@ setGeneric(name = "alignImageInteractive", def = function(object, ...){
 #' @export
 setMethod(
   f = "alignImageInteractive",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
     imaging <-

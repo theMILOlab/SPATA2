@@ -21,3 +21,4 @@ end point of the orthogonal vector.
 \description{
 Make orthogonal segments
 }
+\keyword{internal}

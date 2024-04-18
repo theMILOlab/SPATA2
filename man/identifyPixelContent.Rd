@@ -2,7 +2,7 @@
 % Please edit documentation in R/i.R
 \name{identifyPixelContent}
 \alias{identifyPixelContent}
-\alias{identifyPixelContent,spata2-method}
+\alias{identifyPixelContent,SPATA2-method}
 \alias{identifyPixelContent,HistoImaging-method}
 \alias{identifyPixelContent,HistoImage-method}
 \alias{identifyPixelContent,Image-method}
@@ -10,9 +10,9 @@
 \usage{
 identifyPixelContent(object, ...)
 
-\S4method{identifyPixelContent}{spata2}(
+\S4method{identifyPixelContent}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   percentile = 0,
   compactness_factor = 10,
   superpixel = 600,
@@ -24,7 +24,7 @@ identifyPixelContent(object, ...)
 
 \S4method{identifyPixelContent}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   percentile = 0,
   compactness_factor = 10,
   superpixel = 1000,
@@ -58,7 +58,7 @@ identifyPixelContent(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

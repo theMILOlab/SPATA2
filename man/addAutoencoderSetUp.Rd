@@ -4,7 +4,7 @@
 \alias{addAutoencoderSetUp}
 \title{Add the set up of a neural network}
 \usage{
-addAutoencoderSetUp(object, mtr_name, set_up_list, of_sample = NA)
+addAutoencoderSetUp(object, mtr_name, set_up_list, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -12,7 +12,7 @@ addAutoencoderSetUp(object, mtr_name, set_up_list, of_sample = NA)
 \item{set_up_list}{A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.}
 }
 \value{
-A spata-object.
+A \code{SPATA2} object.
 }
 \description{
 Add the set up of a neural network

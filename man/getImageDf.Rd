@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageDf}
 \alias{getImageDf}
-\alias{getImageDf,spata2-method}
+\alias{getImageDf,SPATA2-method}
 \alias{getImageDf,HistoImaging-method}
 \alias{getImageDf,HistoImage-method}
 \alias{getImageDf,SpatialAnnotation-method}
@@ -11,9 +11,20 @@
 \usage{
 getImageDf(object, ...)
 
-\S4method{getImageDf}{spata2}(object, img_name = NULL, transform = TRUE, scale_fct = 1, ...)
+\S4method{getImageDf}{SPATA2}(
+  object,
+  img_name = activeImage(object),
+  transform = TRUE,
+  scale_fct = 1,
+  ...
+)
 
-\S4method{getImageDf}{HistoImaging}(object, img_name = NULL, transform = TRUE, scale_fct = 1)
+\S4method{getImageDf}{HistoImaging}(
+  object,
+  img_name = activeImage(object),
+  transform = TRUE,
+  scale_fct = 1
+)
 
 \S4method{getImageDf}{HistoImage}(object, transform = TRUE, scale_fct = 1)
 
@@ -22,7 +33,7 @@ getImageDf(object, ...)
 \S4method{getImageDf}{Image}(object, scale_fct = 1)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

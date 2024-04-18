@@ -4,28 +4,45 @@
 \name{MolecularAssay-class}
 \alias{MolecularAssay-class}
 \alias{MolecularAssay}
-\title{Assay Class}
+\title{The \code{MolecularAssay} - class}
 \description{
-A class to represent assay data, including analysis results, metrics, and
-statistical summaries. The \code{Assay} class encapsulates various components
+A class to represent molecular assay data, including analysis results, metrics, and
+statistical summaries. The \code{MolecularAssay} class encapsulates various components
 of assay data including raw and processed metrics, analytical results,
 and associated metadata like the assay name and omic type.
+
+In further documentation the simpler term assay is used to refer to molecular
+assays.
 }
 \section{Slots}{
 
 \describe{
+\item{\code{active_mtr}}{Character string indicating which matrix to extract and
+use by default.}
+
 \item{\code{analysis}}{List of analysis results where each element can represent
 a different analysis aspect.}
 
-\item{\code{mtr_counts}}{Matrix object storing raw counts metrics from the assay.}
+\item{\code{mtr_counts}}{Matrix object storing raw counts metrics from the assay. Rownames
+should corresponds to the molecule names. Colnames should correspond to the
+barcodes (IDs) of the observations to which the molecule counts were mapped.}
 
 \item{\code{mtr_proc}}{List of processed metrics, potentially including normalized
 values or transformed data.}
 
-\item{\code{name}}{Character vector storing the name of the assay.}
+\item{\code{molecules}}{Data.frame. Meta data for the molecules including, x- and y-coordinates
+in 2d space as well as summary statistics. Name (identifier) of each molecule is
+stored in variable \emph{mol_id}.}
 
-\item{\code{omic}}{Character vector indicating the type of omics data (e.g., "transcriptomics", "proteomics").}
+\item{\code{omic}}{Character value. A string that best characterizes the type of molecular data
+the assay carries (e.g., "transcriptomics", "proteomics").}
 
-\item{\code{stats}}{Data frame of statistical summaries or results derived from the assay data.}
+\item{\code{signatures}}{Named list of character vectors.
+
+Molecular signatures are sets of molecules (such as genes or proteins) that are
+associated with specific biological states, processes, or conditions. This slot stores the molecular
+signatures detected in the assay data. Each signature is represented as a vector in a named list, where
+the names corresponds to the signature the character values are the molecules
+of which the signature consists.}
 }}
 

@@ -54,6 +54,10 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
 \item{bcsp_rm}{Character vector or \code{NULL.} If character, specifies barcode-spots that
 are removed before analysis or plotting. (Deprecated in favor of \code{bcs_rm}).}
 
@@ -149,6 +153,9 @@ calculated. Use \code{validPadjMethods()} to obtain all valid input options.}
 number of minimum points required in the eps neighborhood for core points
 (including the point itself)}
 
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}
 
@@ -173,7 +180,7 @@ Hint: Variables that are uniformly expressed can not be scaled and are discarded
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{order}{Logical value. If \code{TRUE}, data points are ordered according

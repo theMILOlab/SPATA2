@@ -2,13 +2,13 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatialAnnotations}
 \alias{getSpatialAnnotations}
-\alias{getSpatialAnnotations,spata2-method}
+\alias{getSpatialAnnotations,SPATA2-method}
 \alias{getSpatialAnnotations,HistoImaging-method}
 \title{Obtain list of \code{SpatialAnnotation}-objects}
 \usage{
 getSpatialAnnotations(object, ...)
 
-\S4method{getSpatialAnnotations}{spata2}(
+\S4method{getSpatialAnnotations}{SPATA2}(
   object,
   ids = NULL,
   class = NULL,
@@ -35,7 +35,7 @@ getSpatialAnnotations(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

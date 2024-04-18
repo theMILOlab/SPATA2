@@ -2,15 +2,14 @@
 % Please edit documentation in R/plotSurface.R
 \name{plotSurface}
 \alias{plotSurface}
-\alias{plotSurface,spata2-method}
+\alias{plotSurface,SPATA2-method}
 \alias{plotSurface,data.frame-method}
-\alias{plotSurface,SDEGS-method}
 \alias{plotSurfaceInteractive}
 \title{Plot the surface of the sample}
 \usage{
 plotSurface(object, ...)
 
-\S4method{plotSurface}{spata2}(
+\S4method{plotSurface}{SPATA2}(
   object,
   color_by = NULL,
   alpha_by = NULL,
@@ -60,17 +59,10 @@ plotSurface(object, ...)
   ...
 )
 
-\S4method{plotSurface}{SDEGS}(
-  object,
-  pt_clrp = "inferno",
-  clr_core = "tomato",
-  clr_control = "lightgrey"
-)
-
 plotSurfaceInteractive(object)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -167,10 +159,6 @@ variable is used to order the data points.}
 
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
-
-\item{clr_core, clr_control}{Colors with which to display data points that
-are part of the \emph{core} group (inside the spatial annotation) and the \emph{control}
-group (neither inside the annotation nor inside the distance intervals)}
 
 \item{outline_width}{Numeric vector of length 2, specifying the factor with which
 the \code{pt_size} is multiplied to create the white layer (first value) and the

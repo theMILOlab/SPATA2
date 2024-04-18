@@ -2,7 +2,8 @@
 % Please edit documentation in R/plotA-E.R
 \name{plotExprVsDistSA}
 \alias{plotExprVsDistSA}
-\title{Plot Expression as a Function of Distance to a Spatial Annotation}
+\alias{plotExprVsDistST}
+\title{Plot Expression as a function of distance to a spatial references}
 \usage{
 plotExprVsDistSA(
   object,
@@ -36,13 +37,32 @@ plotExprVsDistSA(
   nrow = NULL,
   ...
 )
+
+plotExprVsDistST(
+  object,
+  variables,
+  id = idST(object),
+  binwidth = recBinwidth(object),
+  width = NULL,
+  pt_alpha = 0.5,
+  pt_color = "black",
+  pt_clrp = NULL,
+  pt_size = 1.5,
+  line_alpha = 0.9,
+  line_color = "forestgreen",
+  line_size = 1,
+  unit = getDefaultUnit(object),
+  ggpLayers = NULL,
+  ncol = NULL,
+  nrow = NULL,
+  ...
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variables}{Character vector. All numeric variables (meaning genes, gene-sets
-and numeric features) that are supposed to be plotted.}
+\item{variables}{Character vector. All numeric variables hat are supposed to be plotted.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
 of the image annotations of interest. If numeric, the image annotations are picked by number.
@@ -80,6 +100,8 @@ Skim \code{ggpLayer*()}-functions for more options.}
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{id}{Character value. The ID of the spatial trajectory.}
 }
 \value{
 A ggplot.

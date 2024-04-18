@@ -23,3 +23,4 @@ correspond to the start- and end point of the crossing vector.
 Computes the start and enpoint of a vector that crosses an
 input vector orthogonally at its start point, end point or at its midth section.
 }
+\keyword{internal}

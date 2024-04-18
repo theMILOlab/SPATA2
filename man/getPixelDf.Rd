@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getPixelDf}
 \alias{getPixelDf}
-\alias{getPixelDf,spata2-method}
+\alias{getPixelDf,SPATA2-method}
 \alias{getPixelDf,HistoImaging-method}
 \alias{getPixelDf,HistoImage-method}
 \alias{getPixelDf,Image-method}
@@ -10,9 +10,9 @@
 \usage{
 getPixelDf(object, ...)
 
-\S4method{getPixelDf}{spata2}(
+\S4method{getPixelDf}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   colors = FALSE,
   hex_code = FALSE,
   content = FALSE,
@@ -24,7 +24,7 @@ getPixelDf(object, ...)
 
 \S4method{getPixelDf}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   colors = FALSE,
   hex_code = FALSE,
   content = FALSE,
@@ -52,14 +52,14 @@ getPixelDf(object, ...)
   colors = FALSE,
   hex_code = FALSE,
   use_greyscale = FALSE,
-  frgmt_threshold = c(5e-04, 0.01),
+  frgmt_threshold = c(0.0005, 0.01),
   eps = 1,
   minPts = 3,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

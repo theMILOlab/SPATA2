@@ -2,21 +2,31 @@
 % Please edit documentation in R/i.R
 \name{identifyBackgroundColor}
 \alias{identifyBackgroundColor}
-\alias{identifyBackgroundColor,spata2-method}
+\alias{identifyBackgroundColor,SPATA2-method}
 \alias{identifyBackgroundColor,HistoImaging-method}
 \alias{identifyBackgroundColor,HistoImage-method}
 \title{Identifies the background color}
 \usage{
 identifyBackgroundColor(object, ...)
 
-\S4method{identifyBackgroundColor}{spata2}(object, img_name = NULL, verbose = NULL, ...)
+\S4method{identifyBackgroundColor}{SPATA2}(
+  object,
+  img_name = activeImage(object),
+  verbose = NULL,
+  ...
+)
 
-\S4method{identifyBackgroundColor}{HistoImaging}(object, img_name = NULL, verbose = TRUE, ...)
+\S4method{identifyBackgroundColor}{HistoImaging}(
+  object,
+  img_name = activeImage(object),
+  verbose = TRUE,
+  ...
+)
 
 \S4method{identifyBackgroundColor}{HistoImage}(object, verbose = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

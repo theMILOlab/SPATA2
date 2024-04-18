@@ -170,7 +170,7 @@ check_color_to <- function(color_to,
                            max_length = NULL){
 
   if(!base::is.null(max_length)){
-    base::warning("max_length is deprecated. ")
+    warning("max_length is deprecated. ")
   }
 
   confuns::is_vec(color_to, "character", "color_to")
@@ -478,7 +478,7 @@ check_features <- function(object,
 
     not_found <- stringr::str_c(not_found, collapse = "', '")
 
-    base::warning(glue::glue("Did not find {n_not_found} {ref}: '{not_found}'"))
+    warning(glue::glue("Did not find {n_not_found} {ref}: '{not_found}'"))
 
     fnames <- fnames_found
 
@@ -512,7 +512,7 @@ check_features <- function(object,
 
       not_valid <- stringr::str_c(not_valid, collapse = "', '")
 
-      base::warning(glue::glue("Ignoring {ref1} that are not of class '{ref2}': '{not_valid}'"))
+      warning(glue::glue("Ignoring {ref1} that are not of class '{ref2}': '{not_valid}'"))
 
     }
 
@@ -526,7 +526,7 @@ check_features <- function(object,
 
   if(!base::is.null(max_length) && base::length(fnames) > max_length) {
 
-    base::warning(stringr::str_c("Reducing length of feature input to required length: ", max_length))
+    warning(stringr::str_c("Reducing length of feature input to required length: ", max_length))
     fnames <- fnames[1:max_length]
 
   }
@@ -643,7 +643,7 @@ check_genes <- function(object,
   if(!base::is.null(max_length) &&
      base::length(genes_found) > max_length){
 
-    base::warning(stringr::str_c("Reducing length of gene input to required length: ", max_length))
+    warning(stringr::str_c("Reducing length of gene input to required length: ", max_length))
 
     genes_found <- genes_found[1:max_length]
 
@@ -712,7 +712,7 @@ check_gene_sets <- function(object,
 
     not_found <- stringr::str_c(not_found, collapse = "', '")
 
-    base::warning(glue::glue("Did not find {n_not_found} {ref}: '{not_found}'"))
+    warning(glue::glue("Did not find {n_not_found} {ref}: '{not_found}'"))
 
   }
 
@@ -724,7 +724,7 @@ check_gene_sets <- function(object,
   if(!base::is.null(max_length) &&
      base::length(gene_sets_found) > max_length){
 
-    base::warning(stringr::str_c("Reducing length of gene set input to required length: ", max_length))
+    warning(stringr::str_c("Reducing length of gene set input to required length: ", max_length))
 
     gene_sets_found <- gene_sets_found[1:max_length]
 
@@ -910,6 +910,23 @@ check_image_annotation_tags <- function(object, tags = NULL, ...){
 
 
 # check_m -----------------------------------------------------------------
+
+#' @keywords internal
+check_matrix_name <- function(object, mtr_name, assay_name){
+
+  ma <- getAssay(object, assay_name = assay_name[1])
+
+  out <- mtr_name[1] %in% c("counts", base::names(ma@mtr_proc))
+
+  if(base::isFALSE(out)){
+
+    stop(glue::glue("There is no matrix named '{mtr_name}' in assay '{assay_name}'."))
+
+  }
+
+  return(out)
+
+}
 
 #' @title Check method input
 #'
@@ -1237,9 +1254,7 @@ check_new_variable_name <- function(object, new_name, overwrite = NULL){
 #' @keywords internal
 check_object <- function(object){
 
-  validation(object)
-
-  base::invisible(TRUE)
+  # to do
 
 }
 
@@ -1418,7 +1433,7 @@ check_sample <- function(object,
 
       ref <- base::ifelse(n_not_found > 1, "samples", "sample")
 
-      base::warning(glue::glue("Did not find {n_not_found} {ref}: {not_found}"))
+      warning(glue::glue("Did not find {n_not_found} {ref}: {not_found}"))
 
     }
 
@@ -1898,7 +1913,7 @@ check_variables <- function(variables,
 
     not_found_string <- stringr::str_c(not_found, collapse = "', '")
 
-    base::warning(stringr::str_c("Unknown or invalid input: '", not_found_string, "'" , sep = ""))
+    warning(stringr::str_c("Unknown or invalid input: '", not_found_string, "'" , sep = ""))
 
   }
 

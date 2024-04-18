@@ -631,7 +631,7 @@ ggpLayerColorGroupScale <- function(object,
   color_vec <-
     confuns::color_vector(
       clrp = clrp,
-      names = getGroupNames(object, grouping_variable = grouping),
+      names = getGroupNames(object, grouping = grouping),
       clrp.adjust = clrp_adjust
     )
 
@@ -1128,7 +1128,7 @@ ggpLayerGroupOutline <- function(object,
 
 
     groups_df <-
-      getFeatureDf(object) %>%
+      getMetaDf(object) %>%
       confuns::check_across_subset(
         across = grouping,
         across.subset = groups_subset
@@ -1409,9 +1409,9 @@ setGeneric(name = "ggpLayerImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "ggpLayerImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         transform = TRUE,
                         img_alpha = 1,
                         scale_fct = 1,
@@ -1436,7 +1436,7 @@ setMethod(
   f = "ggpLayerImage",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         transform = TRUE,
                         scale_fct = 1,
                         img_alpha = 1,
@@ -1587,7 +1587,7 @@ setGeneric(name = "ggpLayerPoints", def = function(object, ...){
 #' @export
 setMethod(
   f = "ggpLayerPoints",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         alpha_by = NULL,
                         color_by = NULL,
@@ -1602,7 +1602,6 @@ setMethod(
                         smooth_span = 0.2,
                         normalize = NULL,
                         transform_with = NULL,
-                        method_gs = NULL,
                         xrange = NULL,
                         yrange = NULL,
                         outline = FALSE,
@@ -1615,8 +1614,10 @@ setMethod(
                         add_labs = FALSE,
                         bcs_rm = NULL,
                         na_rm = FALSE,
-                        verbose = NULL){
+                        verbose = NULL,
+                        ...){
 
+    deprecated(...)
     hlpr_assign_arguments(object)
 
     # coords df
@@ -1638,7 +1639,6 @@ setMethod(
           smooth = smooth,
           smooth_span = smooth_span,
           normalize = normalize,
-          method_gs = method_gs,
           verbose = verbose
         ) %>%
         confuns::transform_df(
@@ -1651,7 +1651,7 @@ setMethod(
 
     ggpLayerPoints(
       object = imaging,
-      img_name = NULL,
+      img_name = activeImage(object),
       alpha_by = alpha_by,
       color_by = color_by,
       pt_alpha = pt_alpha,
@@ -1684,7 +1684,7 @@ setMethod(
   f = "ggpLayerPoints",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         alpha_by = NULL,
                         color_by = NULL,
                         pt_alpha = 0.9,
@@ -2140,7 +2140,7 @@ ggpLayerRect <- function(object = "object",
 
 
 
-
+#' @keywords internal
 ggpLayerSasEvaluation <- function(object,
                                   id,
                                   core,
@@ -3204,10 +3204,10 @@ setGeneric(name = "ggpLayerTissueOutline", def = function(object, ...){
 #' @export
 setMethod(
   f = "ggpLayerTissueOutline",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         method = "image",
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         by_section = TRUE,
                         fragments = FALSE,
                         line_alpha = 0.9,
@@ -3255,7 +3255,7 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object,
                         method = "image",
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         by_section = TRUE,
                         fragments = FALSE,
                         line_alpha = 0.9,
@@ -3759,6 +3759,7 @@ ggpLayerTrajectoryFrame <- function(object,
 
 }
 
+#' @keywords internal
 ggpLayerTrajectoryBins <- function(object,
                                    id,
                                    binwidth = getCCD(object, unit = "px"),
@@ -3928,6 +3929,7 @@ ggpLayerZoom <- function(object = NULL,
 
 # ggplot ------------------------------------------------------------------
 
+#' @keywords internal
 ggplot_polygon <- function(poly, lim, color = "black", size = 2){
 
   ggplot2::ggplot() +
@@ -3944,71 +3946,4 @@ ggplot_polygon <- function(poly, lim, color = "black", size = 2){
     )
 
 }
-
-# gr ----------------------------------------------------------------------
-
-#' @title Create input for `model_add`
-#'
-#' @description Generates appropriate input for argument `model_add`
-#' of functions related to Spatial Trajectory Screening (STS) or
-#' Image Annotation Screening (IAS). To screen for gradient cooexpression.
-#'
-#' @param id Character value. ID of the spatial trajectory or the spatial annotation
-#' of interest.
-#' @param distance,binwidth,n_bins_dist,n_bins The input given to the desired
-#' screening- or visualization functions.
-#' @inherit spatialAnnotationScreening params
-#' @inherit spatialTrajectoryScreening params
-#'
-#' @export
-#'
-gradientToModelIAS <- function(object,
-                               id,
-                               variables,
-                               distance = distToEdge(object, id),
-                               binwidth = recBinwidth(object),
-                               n_bins_dist = NA_integer_,
-                               include_area = FALSE,
-                               verbose = TRUE){
-
-  getIasDf(
-    object = object,
-    id = id,
-    distance = distance,
-    n_bins_dist = n_bins_dist,
-    binwidth = binwidth,
-    remove_circle_bins = !include_area,
-    variables = variables,
-    summarize_by = "bins_circle",
-    verbose = FALSE
-  ) %>%
-    dplyr::filter(bins_circle != "Outside") %>%
-    dplyr::select(dplyr::all_of(variables)) %>%
-    base::as.list()
-
-}
-
-#' @rdname gradientToModelIAS
-#' @export
-gradientToModelSTS <- function(object,
-                               id,
-                               variables,
-                               binwidth = getCCD(object, "px"),
-                               n_bins = NA_integer_,
-                               verbose = TRUE){
-
-  getStsDf(
-    object = object,
-    id = id,
-    n_bins = n_bins,
-    binwidth = binwidth,
-    variables = variables,
-    verbose = FALSE
-  ) %>%
-    dplyr::select(dplyr::all_of(variables)) %>%
-    base::as.list()
-
-}
-
-
 

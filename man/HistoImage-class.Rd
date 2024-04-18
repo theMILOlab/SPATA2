@@ -66,7 +66,7 @@ attribute called "unit" conforming to the format "SI-unit/px".}
 }}
 
 \item{\code{transformations}}{list. List of transformations to apply upon extracting
-the image to ensure alignment with additional images. In case of default values
+the image to ensure alignment with additional images and spatial aspects. In case of default values
 no transformation is applied.
 \itemize{
 \item{\emph{angle}:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees

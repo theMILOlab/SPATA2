@@ -7,15 +7,17 @@
 getFeatureNames(object, of_class = NULL, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{of_class}{Character vector. Specify the classes a feature must be of for
 it's name to be returned.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A named character vector of the variables in the feature data slot.
 }
 \description{
-An easy way to obtain all features of interest along with their
-class.
+Extracts names of features \strong{from the meta data.frame}.
 }

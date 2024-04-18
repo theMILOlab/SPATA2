@@ -2,7 +2,7 @@
 % Please edit documentation in R/initiateSpataObject.R
 \name{initiateSpataObject_CountMtr}
 \alias{initiateSpataObject_CountMtr}
-\title{Initiate a \code{spata2} object from a raw count matrix}
+\title{Initiate a \code{SPATA2} object from a raw count matrix}
 \usage{
 initiateSpataObject_CountMtr(
   coords_df,
@@ -67,16 +67,16 @@ for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 \item{...}{Additional parameters given to \code{Seurat::CreateSeuratObject()}.}
 }
 \value{
-A \code{spata2} object.
+A \code{SPATA2} object.
 }
 \description{
-Default function for any spatial related experiment whoose \code{spata2} objects are initiated with
+Default function for any spatial related experiment whoose \code{SPATA2} objects are initiated with
 a raw count matrix. See details for more information.
 }
 \details{
-The loading and preprocessing of the \code{spata2} object  currently relies on the Seurat-package. Before any pre processing function is applied
+The loading and preprocessing of the \code{SPATA2} object  currently relies on the Seurat-package. Before any pre processing function is applied
 mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-manipulate the way the \code{spata2} object is processed. For all of these arguments apply the following instructions:
+manipulate the way the \code{SPATA2} object is processed. For all of these arguments apply the following instructions:
 
 \itemize{
 \item{If set to FALSE the processing function is skipped.}
@@ -88,5 +88,5 @@ passed to every function as the first argument!!!.)}
 
 Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-is going to be empty.) Skipping functions might result in an incomplete \code{spata2} object.
+is going to be empty.) Skipping functions might result in an incomplete \code{SPATA2} object.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotA-E.R
 \name{plotDeaDotPlot}
 \alias{plotDeaDotPlot}
-\title{Plot differentially expressed genes}
+\title{Plot DEA results via dot plots}
 \usage{
 plotDeaDotPlot(
   object,
@@ -34,11 +34,12 @@ plotDeaDotPlot(
   arrange_genes = TRUE,
   reverse = TRUE,
   reverse_within = FALSE,
+  assay_name = activeAssay(object),
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
@@ -96,6 +97,10 @@ In case of plotting:
 Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 

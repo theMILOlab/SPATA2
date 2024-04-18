@@ -2,16 +2,16 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTissueOutlineDf}
 \alias{getTissueOutlineDf}
-\alias{getTissueOutlineDf,spata2-method}
+\alias{getTissueOutlineDf,SPATA2-method}
 \alias{getTissueOutlineDf,HistoImaging-method}
 \alias{getTissueOutlineDf,HistoImage-method}
 \title{Obtain outline barcode spots}
 \usage{
 getTissueOutlineDf(object, ...)
 
-\S4method{getTissueOutlineDf}{spata2}(
+\S4method{getTissueOutlineDf}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   by_section = TRUE,
   transform = TRUE,
   ...
@@ -19,7 +19,7 @@ getTissueOutlineDf(object, ...)
 
 \S4method{getTissueOutlineDf}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   by_section = TRUE,
   transform = TRUE
 )
@@ -27,7 +27,7 @@ getTissueOutlineDf(object, ...)
 \S4method{getTissueOutlineDf}{HistoImage}(object, by_section = TRUE, transform = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

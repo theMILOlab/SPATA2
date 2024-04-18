@@ -435,6 +435,7 @@ create_spatial_trajectories_descr <- list(
 current_spata_version <- list(major = 2, minor = 0, patch = 4)
 current_spata2_version <- list(major = 3, minor = 0, patch = 0)
 
+
 # d -----------------------------------------------------------------------
 
 #' @export
@@ -454,6 +455,7 @@ depr_info <-
       "add_outline_variable" = "add_tissue_section_variable",
       "addImageAnnotation" = "addSpatialAnnotation",
       "adjustdDefaultInstructions" = "setDefault",
+      "addExpressionMatrix" = "addProcessedMatrix",
       "assessTrajectoryTrends" = "spatialTrajectoryScreening",
       "assessTrajectoryTrendsCustomized" = "spatialTrajectoryScreening",
       "bin_by_area" = "bin_by_expansion",
@@ -463,6 +465,7 @@ depr_info <-
       "createTrajectories" = "createSpatialTrajectories",
       "createTrajectoryManually" = "addSpatialTrajectory",
       "flipCoords" = "flipCoordinates",
+      "getDefaultGrouping" = "activeGrouping",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
       "getImageAnnotationCenter" = "getImgAnnCenter",
@@ -470,7 +473,6 @@ depr_info <-
       "getImageAnnotationScreeningDf" = "getIasDf",
       "getImageAnnotationTags" = "getImgAnnTags",
       "getImageObject" = "getHistoImaging",
-
       "getImgAnnArea" = "getSpatAnnArea",
       "getImgAnnCenter" = "getSpatAnnCenter",
       "getImgAnnCenters" = "getSpatAnnCenters",
@@ -478,7 +480,6 @@ depr_info <-
       "getImgAnnRange" = "getSpatAnnRange",
       "getImgAnnOutlineDf" = "getSpatAnnOutlineDf",
       "getImgAnnTags" = "getSpatAnnTags",
-
       "getMethod" = "getSpatialMethod",
       "getMethodUnit" = "getSpatialMethod()@unit",
       "getMethodName" = "getSpatialMethod()@name",
@@ -496,8 +497,14 @@ depr_info <-
       "is_euol_dist" = "is_dist_euol",
       "is_dist_euol" = "is_dist_si",
       "is_pixel_dist" = "is_dist_pixel",
+      "joinWith" = "joinWithVariables",
+      "joinWithFeatures" = "joinWithVariables",
+      "joinWithGenes" = "joinWithVariables",
+      "joinWithGeneSets" = "joinWithVariables",
 
       "lastImageAnnotation" = "lastSpatialAnnotation",
+
+      "mapImageAnnotationTags" = "mapSpatialAnnotationTags",
 
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
 
@@ -514,7 +521,10 @@ depr_info <-
       "plotTrajectoryLineplot" = "plotStsLineplot",
       "runDeAnalysis" = "runDEA",
       "setActiveExpressionMatrix" = "setActiveMatrix",
+      "setActiveMatrx" = "activateMatrix",
       "setDefaultTrajectory" = "setDefaultTrajectoryId",
+      "setDefaultGrouping" = "activateGrouping",
+      "setFeatureDf" = "setMetaDf",
       "setImageObject" = "setHistoImaging",
       "subsetByBarcodes_CountMtr" = "subsetByBarcodes",
       "subsetByBarcodes_ExprMtr" = "subsetByBarcodes",
@@ -529,8 +539,10 @@ depr_info <-
       "transform_si_to_pixels" = "transform_area_si_to_pixels"
     ),
     args = list(
+      "average_genes" = NA_character_,
       "combine_with_wd" = "add_wd",
       "euol" = "unit",
+      "expr_mtr" = "proc_mtr",
       "discrete_feature" = "grouping_variable",
       "display_trajectory_parts" = NA_character_,
       "inc_outline" = "incl_edge",
@@ -541,11 +553,13 @@ depr_info <-
       "trajectory_name" = "id"
     ),
     args_spec = list(
+      "addProcessedMatrix" = list("expr_mtr" = "proc_mtr"),
       "addSpatialTrajectory" = list("segment_df" = "traj_df", "vertices" = NA_character_),
       "bin_by_expansion" = list("bcsp_exclude" = "bcs_exclude"),
       "exchangeImage" = list("image_dir" = "image", "resize" = "scale_fct"),
       "getCoordsDf" = list("type" = NA_character_),
       "getCoordsDfSA" = list("id" = "ids"),
+      "getGenes" = list("of_gene_sets" = "signatures"),
       "getGroupNames" = list("grouping_variable" = "grouping"),
       "getIasDf" = list("outer" = NA_character_, "inner" = NA_character_),
       "getSasDf" = list("id" = "ids"),
@@ -553,6 +567,7 @@ depr_info <-
       "ggpLayerExprEstimatesSAS" = list("id" = "ids"),
       "imageAnnotationScreening" = list("outer" = NA_character_, "inner" = NA_character_),
       "include_tissue_outline" = list("outline_var" = NA_character_, "remove" = "outside_rm"),
+      "nCounts" = list("gene" = "molecule"),
       "plotExprVsDist" = list("id" = "ids"),
       "plotIasRidgeplotSC" = list("color" = "fill_color", "alpha" = "fill_alpha"),
       "plotImage" = list("frame_by" = NA_character_, "unit" = NA_character_),
@@ -571,6 +586,8 @@ depr_info <-
       "plotTrajectoryLineplot" = list("linecolor" = "line_color", "linesize" = "line_size", "vlinealpha" = NA_character_, "vlinecolor" = NA_character_, "vlinesize" = NA_character_),
       "project_on_trajectory" = list("segment_df" = "traj_df"),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
+      "runGSEA" = list("gene_set_list" = NA_character_, "gene_sets" = "signatures"),
+      "setDefaultGrouping" = list("grouping_variable" = "grouping"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
       "setImageDirLowres" = list("dir_lowres" = "dir"),
       "transform_coords" = list("outline_df" = "coords_df")
@@ -840,13 +857,19 @@ protected_spatial_method_info_slots <- c("ccd")
 #' @export
 protected_variable_names <- c(
   "barcodes",
+  "col",
+  "exclude",
   "imagecol", "imagerow",
+  "outlier",
   "outline",
   "projection_length",
+  "row",
+  "sample",
   "section",
-  "trajectory_part",
   "x",
-  "y"
+  "y",
+  "x_orig",
+  "y_orig"
 )
 
 #' @title Pseudo `HistoImage`

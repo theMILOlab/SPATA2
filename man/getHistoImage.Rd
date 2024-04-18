@@ -2,33 +2,27 @@
 % Please edit documentation in R/getH-M.R
 \name{getHistoImage}
 \alias{getHistoImage}
-\alias{getHistoImage,spata2-method}
+\alias{getHistoImage,SPATA2-method}
 \alias{getHistoImage,HistoImaging-method}
-\alias{getHistoImageActive}
-\alias{getHistoImageActive,HistoImaging-method}
 \alias{getHistoImageRef}
-\alias{getHistoImageRef,spata2-method}
+\alias{getHistoImageRef,SPATA2-method}
 \alias{getHistoImageRef,HistoImaging-method}
 \title{Obtain object of class \code{HistoImage}}
 \usage{
 getHistoImage(object, ...)
 
-\S4method{getHistoImage}{spata2}(object, img_name = NULL, ...)
+\S4method{getHistoImage}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getHistoImage}{HistoImaging}(object, img_name = NULL, ...)
-
-getHistoImageActive(object, ...)
-
-\S4method{getHistoImageActive}{HistoImaging}(object)
+\S4method{getHistoImage}{HistoImaging}(object, img_name = activeImage(object), ...)
 
 getHistoImageRef(object, ...)
 
-\S4method{getHistoImageRef}{spata2}(object, ...)
+\S4method{getHistoImageRef}{SPATA2}(object, ...)
 
 \S4method{getHistoImageRef}{HistoImaging}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{}
@@ -41,8 +35,7 @@ Extracts the S4-containers of registered images. Note that
 slot @image might be empty. Use \code{loadImage()} in that case.
 
 \itemize{
-\item{\code{getHistoImage()}:}{ Extracts object by name. If \code{img_name = NULL} the active \code{HistoImage} image is returned.}
-\item{\code{getHistoImageActive()}:}{ Extracts the active \code{HistoImage} object.}
+\item{\code{getHistoImage()}:}{ Extracts object by name. By default, the active \code{HistoImage} image is returned.}
 \item{\code{getHistoImageRef()}:}{ Extracts the reference \code{HistoImage} object.}
 }
 }

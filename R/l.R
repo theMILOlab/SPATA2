@@ -159,90 +159,6 @@ load_adata_matrix_converter <- function(adata, mname, matrix, verbose){
 }
 
 
-#' @keywords internal
-loadCorrespondingCDS <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  directory_cds <- getDirectoryInstructions(object, to = "cell_data_set")
-
-  confuns::give_feedback(
-    msg = "Loading cell-data-set.",
-    verbose = verbose
-  )
-
-  cds <- base::readRDS(file = directory_cds)
-
-  confuns::give_feedback(
-    msg = "Done.",
-    verbose = verbose
-  )
-
-  base::return(cds)
-
-}
-
-#' @keywords internal
-loadCorrespondingSeuratObject <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  directory_seurat <- getDirectoryInstructions(object, to = "seurat_object")
-
-  confuns::give_feedback(
-    msg = "Loading seurat-object.",
-    verbose = verbose
-  )
-
-  seurat_object <- base::readRDS(file = directory_seurat)
-
-  confuns::give_feedback(
-    msg = "Done.",
-    verbose = verbose
-  )
-
-  base::return(seurat_object)
-
-}
-
-#' @title Original load gene set data.frame
-#'
-#' @description Not exported due to naming issues. Kept as it is used in several
-#' loading functions.
-#' @inherit argument_dummy params
-#' @inherit gene_set_path params
-#' @keywords internal
-loadGSDF <- function(gene_set_path = NULL, verbose = TRUE){
-
-  if(!base::is.null(gene_set_path)){
-
-    confuns::is_value(x = gene_set_path, mode = "character", ref = "gene_set_path")
-    confuns::check_directories(directories = gene_set_path, ref = "gene_set_path", type = "files")
-
-    confuns::give_feedback(msg = glue::glue("Reading in specified gene-set data.frame from directory '{gene_set_path}'."), verbose = verbose)
-
-    gene_set_df <- base::readRDS(file = gene_set_path)
-
-    if(!base::is.data.frame(gene_set_df)){
-
-      gene_set_df <- gsdf
-
-      confuns::give_feedback(msg = glue::glue("Input from directory '{gene_set_path}' is not a data.frame. Using SPATA's default gene set data.frame."))
-
-    }
-
-  } else {
-
-    confuns::give_feedback(msg = "Using SPATA's default gene set data.frame.", verbose = verbose)
-
-    gene_set_df <- gsdf
-
-  }
-
-  base::return(gene_set_df)
-
-}
-
 #' @title Load gene set data.frame
 #'
 #' @inherit argument_dummy params
@@ -279,7 +195,7 @@ setGeneric(name = "loadImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "loadImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, img_name, ...){
 
     imaging <- getHistoImaging(object)
@@ -343,7 +259,7 @@ setGeneric(name = "loadImages", def = function(object, ...){
 #' @export
 setMethod(
   f = "loadImages",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, verbose = TRUE, force = FALSE){
 
     imaging <- getHistoImaging(object)
@@ -419,7 +335,7 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
     type = "files")
 
   confuns::give_feedback(
-    msg = "Loading `spata2` object.",
+    msg = "Loading `SPATA2` object.",
     verbose = verbose
   )
 
@@ -430,19 +346,13 @@ loadSpataObject <- function(directory_spata, verbose = TRUE, update = TRUE){
     verbose = verbose
   )
 
-  if(!methods::is(spata_obj, "spata2")){
+  if(!methods::is(spata_obj, "SPATA2")){
 
-    warning("Loaded object is not of class 'spata2'!")
+    warning("Loaded object is not of class 'SPATA2'!")
 
   } else if(base::isTRUE(update)){
 
     spata_obj <- updateSpataObject(object = spata_obj)
-
-  }
-
-  if(base::is.null(spata_obj@information$method)){
-
-    spata_obj@information$method <- Visium
 
   }
 

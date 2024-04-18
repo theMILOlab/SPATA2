@@ -22,7 +22,7 @@ flipSpatialAnnotations(object, axis, verbose = NULL)
 flipSpatialTrajectories(object, axis, verbose = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{axis}{Character value. The axis around which the content is flipped.

@@ -3,175 +3,6 @@
 
 # save --------------------------------------------------------------------
 
-#' @rdname saveSpataObject
-#' @export
-saveCorrespondingCDS <- function(cds,
-                                 object,
-                                 directory_cds = NULL,
-                                 combine_with_wd = FALSE,
-                                 verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  confuns::is_value(directory_cds, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
-  if(base::is.character(directory_cds)){
-
-    object <-
-      adjustDirectoryInstructions(
-        object = object,
-        to = "cell_data_set",
-        directory_new = directory_cds,
-        combine_with_wd = combine_with_wd
-      )
-
-  } else {
-
-    directory_cds <- getDirectoryInstructions(object = object,
-                                              to = "cell_data_set")
-
-  }
-
-  if(base::is.character(directory_cds)){
-
-    confuns::give_feedback(
-      msg = glue::glue("Saving cell_data_set under '{directory_cds}'."),
-      verbose = verbose
-    )
-
-    base::tryCatch({
-
-      base::saveRDS(object = cds, file = directory_cds)
-
-
-    }, error = function(error){
-
-      base::warning(glue::glue("Attempting to save the cell-data-set under {directory_cds} resulted in the following error: {error} "))
-
-    })
-
-    confuns::give_feedback(
-      msg = "Done.",
-      verbose = verbose
-    )
-
-  } else {
-
-    base::warning("Could not save the cell-data-set.")
-
-  }
-
-  base::return(base::invisible(object))
-
-}
-
-#' @rdname saveSpataObject
-#' @export
-saveCorrespondingSeuratObject <- function(seurat_object,
-                                          object,
-                                          directory_seurat = NULL,
-                                          combine_with_wd = FALSE,
-                                          verbose = NULL){
-
-  hlpr_assign_arguments(object)
-  confuns::is_value(directory_seurat, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
-  if(base::is.character(directory_seurat)){
-
-    object <-
-      adjustDirectoryInstructions(
-        object = object,
-        to = "seurat_object",
-        directory_new = directory_seurat,
-        combine_with_wd = combine_with_wd
-      )
-
-  } else {
-
-    directory_seurat <- getDirectoryInstructions(object = object,
-                                                 to = "seurat_object")
-
-  }
-
-  if(base::is.character(directory_seurat)){
-
-    confuns::give_feedback(
-      msg = glue::glue("Saving seurat-object under '{directory_seurat}'."),
-      verbose = verbose
-    )
-
-    base::tryCatch({
-
-      base::saveRDS(object = seurat_object, file = directory_seurat)
-
-
-    }, error = function(error){
-
-      base::warning(glue::glue("Attempting to save the seurat-object under {directory_seurat} resulted in the following error: {error} "))
-
-    })
-
-    confuns::give_feedback(
-      msg = "Done.",
-      verbose = verbose
-    )
-
-  } else {
-
-    base::warning("Could not save the seurat-object.")
-
-  }
-
-  base::return(base::invisible(object))
-
-}
-
-#' @title Save a gene set data.frame
-#'
-#' @description Extracts the gene-set data.frame and saves it as a .RDS-file.
-#'
-#' @inherit check_object params
-#' @param directory Character value.
-#'
-#' @return An invisible TRUE if saved successfully or an informative error message.
-#' @export
-#'
-
-saveGeneSetDf <- function(object, directory){
-
-  check_object(object)
-
-  gene_set_df <- getGeneSetDf(object)
-
-  if(base::nrow(gene_set_df) == 0){
-
-    base::stop("The objects's gene-set data.frame is empty.")
-
-  } else {
-
-    base::saveRDS(object = gene_set_df, file = directory)
-
-    if(base::file.exists(directory)){
-
-      file_name <- stringr::str_c("~/", file_name, ".RDS", sep = "")
-      base::message(glue::glue("Gene set data.frame has been saved as '{file_name}'."))
-      base::return(base::invisible(TRUE))
-
-    } else {
-
-      base::stop("Could not save the gene-set data.frame. Unknown error.")
-
-    }
-
-  }
-
-}
-
-
-
-
-
-
 #' @title Save corresponding objects
 #'
 #' @description Family of functions to save corresponding objects of different analysis
@@ -344,6 +175,7 @@ scale_coords_df <- function(df,
 
 }
 
+#' @keywords internal
 scale_image <- function(image, scale_fct){
 
   if(scale_fct != 1){
@@ -364,9 +196,6 @@ scale_image <- function(image, scale_fct){
   return(out)
 
 }
-
-
-
 
 
 #' @keywords internal
@@ -396,227 +225,6 @@ scale_nuclei_df <- function(object,
 
 
 }
-
-
-#' @title Scale image and coordinates
-#'
-#' @description The `scale*()` family scales the current image
-#' or coordinates of spatial aspects or everything. See details
-#' for more information.
-#'
-#' **NOTE:** `scaleImage()` only rescales the image and lets everything else as
-#' is. Only use it if the image is to big in resolution and thus not aligned with
-#' the spatial coordinates. If you want to minimize the resolution of the image
-#' while maintaining alignment with the spatial aspects in the `spata2` object
-#' use `scaleAll()`!
-#'
-#' @inherit flipAll params
-#' @inherit scale_coords_df params
-#' @inherit argument_dummy params
-#' @inherit update_dummy params
-#'
-#' @details The `scale*()` functions can be used to scale the complete `SPATA2`
-#' object content or to scale single aspects.
-#'
-#' \itemize{
-#'  \item{`scaleAll()`:}{ Scales image as well as every single spatial aspect.
-#'  **Always tracks the justification.**}
-#'  \item{`scaleImage()`:}{ Scales the image.}
-#'  \item{`scaleCoordinates()`:}{ Scales the coordinates data.frame, image annotations
-#'  and spatial trajectories.}
-#'  \item{`scaleCoordsDf()`:}{ Scales the coordinates data.frame.}
-#'  \item{`scaleImageAnnotations()`:}{ Scales image annotations.}
-#'  \item{`scaleSpatialTrajectories()`:}{ Scales spatial trajectories.}
-#'  }
-#'
-#' @seealso [`flipAll()`], [`rotateAll()`]
-#'
-#' @export
-
-scaleAll <- function(object, scale_fct){
-
-  object <- scaleImage(object, scale_fct = scale_fct)
-
-  object <- scaleCoordinates(object, scale_fct = scale_fct, verbose = FALSE)
-
-  return(object)
-
-}
-
-
-#' @rdname scaleAll
-#' @export
-scaleImage <- function(object, scale_fct){
-
-  io <- getImageObject(object)
-
-  width <- io@image_info$dim_stored[1] * scale_fct
-  height <- io@image_info$dim_stored[2] * scale_fct
-
-  io@image <- EBImage::resize(x = io@image, w = width, h = height)
-
-  io@image_info$dim_stored <- base::dim(io@image)
-  io@image_info$img_scale_fct * io@image_info$img_scale_fct * scale_fct
-
-  object <- setImageObject(object, image_object = io)
-
-  object@information$pxl_scale_fct <-
-    object@information$pxl_scale_fct / scale_fct
-
-  return(object)
-
-}
-
-#' @rdname scaleAll
-#' @export
-scaleCoordinates <- function(object, scale_fct, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  object <-
-    scaleCoordsDf(
-      object = object,
-      scale_fct = scale_fct,
-      verbose = verbose
-    )
-
-  object <-
-    scaleImageAnnotations(
-      object = object,
-      scale_fct = scale_fct,
-      verbose = verbose
-    )
-
-  object <-
-    scaleSpatialTrajectories(
-      object = object,
-      scale_fct = scale_fct,
-      verbose = verbose
-    )
-
-  return(object)
-
-}
-
-#' @rdname scaleAll
-#' @export
-scaleCoordsDf <- function(object, scale_fct, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  confuns::give_feedback(
-    msg = "Scaling coordinate data.frame.",
-    verbose = verbose
-  )
-
-  coords_df <- getCoordsDf(object)
-
-  coords_df_new <-
-    scale_coords_df(
-      df = coords_df,
-      scale_fct = scale_fct,
-      verbose = FALSE
-    )
-
-  object <- setCoordsDf(object, coords_df = coords_df_new)
-
-  return(object)
-
-}
-
-#' @rdname scaleAll
-#' @export
-scaleImageAnnotations <- function(object, scale_fct, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  if(nImageAnnotations(object) >= 1){
-
-    confuns::give_feedback(
-      msg = "Scaling image annotations.",
-      verbose = verbose
-    )
-
-  }
-
-  io <- getImageObject(object)
-
-  io@annotations <-
-    purrr::map(
-      .x = io@annotations,
-      .f = function(img_ann){
-
-        img_ann@area <-
-          purrr::map(
-            .x = img_ann@area,
-            .f = ~ scale_coords_df(df = .x, scale_fct = scale_fct)
-          )
-
-        img_ann@info$current_dim <- img_ann@info$current_dim * scale_fct
-
-        return(img_ann)
-
-      }
-    )
-
-  object <- setImageObject(object, image_object = io)
-
-  return(object)
-
-}
-
-
-#' @rdname scaleAll
-#' @export
-scaleSpatialTrajectories <- function(object, scale_fct, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  if(nSpatialTrajectories(object) >= 1){
-
-    confuns::give_feedback(
-      msg = "Scaling spatial trajectories.",
-      verbose = verbose
-    )
-
-  }
-
-  object@trajectories[[1]] <-
-    purrr::map(
-      .x = object@trajectories[[1]],
-      .f = function(traj){
-
-        traj@projection <-
-          scale_coords_df(df = traj@projection, scale_fct = scale_fct)
-
-        traj@segment <-
-          scale_coords_df(df = traj@segment, scale_fct = scale_fct)
-
-        scale_fct <- base::unique(scale_fct)
-
-        if(base::length(scale_fct) != 1){
-
-          warning(glue::glue("Can not scale projection length with scale factor of length 2."))
-
-        } else {
-
-          traj@projection[["projection_length"]] <-
-            traj@projection[["projection_length"]] * scale_fct
-
-        }
-
-        return(traj)
-
-      }
-    )
-
-  return(object)
-
-}
-
-
-
-
 
 
 
@@ -649,7 +257,7 @@ setSpataDir <- function(object, dir, add_wd = FALSE, ...){
 
   }
 
-  object@information$instructions$directories$spata_object <- dir
+  object@obj_info$instructions$directories$spata_object <- dir
 
   return(object)
 
@@ -1208,6 +816,7 @@ showModels <- function(input = 100,
 # sim ---------------------------------------------------------------------
 
 
+#' @keywords internal
 simulate_complete_coords_sa <- function(object, id, distance){
 
   if(containsMethod(object, method_name = "Visium")){
@@ -1265,6 +874,7 @@ simulate_complete_coords_sa <- function(object, id, distance){
 }
 
 
+#' @keywords internal
 simulate_complete_coords_st <- function(object, id){
 
   width <- getTrajectoryLength(object, id, unit = "px")
@@ -1738,60 +1348,6 @@ simulate_expression_pattern_sas <- function(object,
 }
 
 
-simulate_random_expression <- function(object,
-                                       n_total,
-                                       range_sim = c(0,1),
-                                       seed = 123,
-                                       naming = "SE.RANDOM.{i}",
-                                       verbose = TRUE){
-
-  coords_df <- getCoordsDf(object)
-
-  n_total <- base::ceiling(n_total)
-  pb <- confuns::create_progress_bar(total = n_total)
-
-  all_names <- base::vector("character", length = n_total)
-
-  rmin <- base::min(range_sim)
-  rmax <- base::max(range_sim)
-
-  confuns::give_feedback(
-    msg = glue::glue("Simulating {n_total} random expressions."),
-    verbose = verbose
-  )
-
-  for(i in 1:n_total){
-
-    pb$tick()
-
-    new_name <-
-      glue::glue(naming) %>%
-      base::as.character()
-
-    all_names[i] <- new_name
-
-    base::set.seed((seed*i))
-
-    coords_df[[new_name]] <-
-      stats::runif(n = base::nrow(coords_df), min = rmin, max = rmax)
-
-  }
-
-  all_names <- base::unique(all_names)
-
-  mtr_out <-
-    dplyr::select(coords_df, barcodes, dplyr::all_of(all_names)) %>%
-    tibble::column_to_rownames("barcodes") %>%
-    dplyr::select(dplyr::where(base::is.numeric)) %>%
-    base::as.matrix() %>%
-    base::t() %>%
-    Matrix::Matrix(sparse = TRUE)
-
-  return(mtr_out)
-
-
-}
-
 #' @rdname simulate_expression_pattern_sas
 #' @export
 simulate_expression_pattern_sts <- function(object,
@@ -2114,6 +1670,65 @@ simulate_expression_pattern_sts <- function(object,
 }
 
 
+#' @rdname simulate_expression_pattern_sas
+#' @export
+simulate_random_expression <- function(object,
+                                       n_total,
+                                       range_sim = c(0,1),
+                                       seed = 123,
+                                       naming = "SE.RANDOM.{i}",
+                                       verbose = TRUE){
+
+  coords_df <- getCoordsDf(object)
+
+  n_total <- base::ceiling(n_total)
+  pb <- confuns::create_progress_bar(total = n_total)
+
+  all_names <- base::vector("character", length = n_total)
+
+  rmin <- base::min(range_sim)
+  rmax <- base::max(range_sim)
+
+  confuns::give_feedback(
+    msg = glue::glue("Simulating {n_total} random expressions."),
+    verbose = verbose
+  )
+
+  for(i in 1:n_total){
+
+    pb$tick()
+
+    new_name <-
+      glue::glue(naming) %>%
+      base::as.character()
+
+    all_names[i] <- new_name
+
+    base::set.seed((seed*i))
+
+    coords_df[[new_name]] <-
+      stats::runif(n = base::nrow(coords_df), min = rmin, max = rmax)
+
+  }
+
+  all_names <- base::unique(all_names)
+
+  mtr_out <-
+    dplyr::select(coords_df, barcodes, dplyr::all_of(all_names)) %>%
+    tibble::column_to_rownames("barcodes") %>%
+    dplyr::select(dplyr::where(base::is.numeric)) %>%
+    base::as.matrix() %>%
+    base::t() %>%
+    Matrix::Matrix(sparse = TRUE)
+
+  return(mtr_out)
+
+
+}
+
+
+
+
 #' Simulate Random Gradients
 #'
 #' This function simulates random expression patterns, computes gradients, and calculates
@@ -2257,8 +1872,7 @@ simulate_random_gradients <- function(coords_df,
 #' df_with_niche <- simulate_spatial_niches(df, origins = c("A", "B"), size = 5, vt = "value")
 #' }
 #'
-#' @export
-
+#' @keywords internal
 simulate_spatial_niches <- function(coords_df,
                                     origins,
                                     size,
@@ -2450,7 +2064,6 @@ smoothSpatialAnnotation <- function(object,
 #' input data.frame that are to be smoothed.
 #'
 #' @return The input data.frame containing the smoothed variables.
-#' @export
 #' @keywords internal
 smoothSpatially <- function(coords_df,
                             variables,
@@ -2870,7 +2483,7 @@ spatialAnnotationScreening <- function(object,
                                        estimate_R2 = TRUE,
                                        control = SPATA2::sgs_loess_control,
                                        n_random = 10000,
-                                       rm_zero_infl = FALSE,
+                                       rm_zero_infl = TRUE,
                                        seed = 123,
                                        verbose = NULL,
                                        ...){
@@ -3004,35 +2617,6 @@ spatialAnnotationScreening <- function(object,
 #' with \code{?ImageAnnotationScreening} for more information.
 #'
 #' @seealso [`createSpatialTrajectories()`]
-#'
-#' @details
-#'
-#' \bold{How the algorithm works:} All barcode-spots that fall into the scope
-#' of the trajectory are projected on the trajectory's course. These projection
-#' values indicate if a barcode-spot is rather located at the beginning or at
-#' the end of the trajectory. Barcode-spots are binned by their projection values.
-#'
-#' How many bins area created depends on the input for argument \code{binwidth}
-#' or \code{n_bins} as well as on the length of trajectory. As the length of
-#' the trajectory is fixed only one argument of the latter two must be provided.
-#' The other one is calculated based on the equation shown below.
-#'
-#' \code{n_bins} = \emph{length_of_trajectory} / \code{binwidth}
-#'
-#' \code{binwidth} = \emph{length_of_trajectory} / \code{n_bins}
-#'
-#' and for every numeric variable included the mean-expression of each bin is calculated.
-#' As the bins can be aligned in an ascending order (ascending in relation to the
-#' directory of the trajectory), so can the bin-wise mean expression of each variable.
-#' Doing so results in \emph{inferred expression changes along the trajectory}.
-#' Use \code{plotTrajectoryLineplot()} to visualize this concept.
-#'
-#' The inferred expression changes are fitted against predefined models to find
-#' variables whose expression e.g. increases, decreases or peaks over the course
-#' of the trajectory. Use \code{showModels()} to visualize the inbuilt models.
-#'
-#' How good a model fits is evaluated by pearson correlation and the area under
-#' the curve of the gene-model-residuals.
 #'
 #' @export
 spatialTrajectoryScreening <- function(object,
@@ -3181,12 +2765,7 @@ splitHorizontally <- function(..., split_widths = NULL, align = "left", cellWidt
 # str ---------------------------------------------------------------------
 
 
-
-
-
-
-
-
+#' @keywords internal
 stretch_image <- function(image,
                           axis,
                           fct,
@@ -3267,7 +2846,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
   # feature df
   object <-
-    getFeatureDf(object) %>%
+    getMetaDf(object) %>%
     dplyr::filter(barcodes %in% {{bcs_keep}}) %>%
     dplyr::mutate(
       dplyr::across(
@@ -3275,7 +2854,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
         .fns = base::droplevels
       )
     ) %>%
-    setFeatureDf(object = object, feature_df = .)
+    setMetaDf(object = object, meta_df = .)
 
   # data matrices
   object@data[[1]] <-
@@ -3292,6 +2871,13 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
         return(mtr)
 
       })
+
+  for(assay_name in getAssayNames(object)){
+
+    ma <- getAssay(object, assay_name = assay_name)
+
+
+  }
 
   # miscellaneous
   object@images[[1]]@annotations <-
@@ -3358,8 +2944,8 @@ subsetByGenes <- function(object, genes, verbose = NULL){
         }
     )
 
-  object@information$subset$genes <-
-    c(genes, object@information$subset$genes) %>%
+  object@obj_info$subset$genes <-
+    c(genes, object@obj_info$subset$genes) %>%
     base::unique()
 
   return(object)

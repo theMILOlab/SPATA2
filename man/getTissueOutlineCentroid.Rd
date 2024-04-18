@@ -8,12 +8,17 @@
 \usage{
 getTissueOutlineCentroid(object, ...)
 
-\S4method{getTissueOutlineCentroid}{HistoImaging}(object, img_name = NULL, transform = TRUE, ...)
+\S4method{getTissueOutlineCentroid}{HistoImaging}(
+  object,
+  img_name = activeImage(object),
+  transform = TRUE,
+  ...
+)
 
 \S4method{getTissueOutlineCentroid}{HistoImage}(object, transform = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

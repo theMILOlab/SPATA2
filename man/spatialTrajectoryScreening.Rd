@@ -27,7 +27,7 @@ spatialTrajectoryScreening(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{id}{Character value. Denotes the spatial trajectory
@@ -73,34 +73,6 @@ with \code{?ImageAnnotationScreening} for more information.
 \description{
 Screens the sample for numeric variables that follow specific expression
 changes along the course of the spatial trajectory.
-}
-\details{
-\bold{How the algorithm works:} All barcode-spots that fall into the scope
-of the trajectory are projected on the trajectory's course. These projection
-values indicate if a barcode-spot is rather located at the beginning or at
-the end of the trajectory. Barcode-spots are binned by their projection values.
-
-How many bins area created depends on the input for argument \code{binwidth}
-or \code{n_bins} as well as on the length of trajectory. As the length of
-the trajectory is fixed only one argument of the latter two must be provided.
-The other one is calculated based on the equation shown below.
-
-\code{n_bins} = \emph{length_of_trajectory} / \code{binwidth}
-
-\code{binwidth} = \emph{length_of_trajectory} / \code{n_bins}
-
-and for every numeric variable included the mean-expression of each bin is calculated.
-As the bins can be aligned in an ascending order (ascending in relation to the
-directory of the trajectory), so can the bin-wise mean expression of each variable.
-Doing so results in \emph{inferred expression changes along the trajectory}.
-Use \code{plotTrajectoryLineplot()} to visualize this concept.
-
-The inferred expression changes are fitted against predefined models to find
-variables whose expression e.g. increases, decreases or peaks over the course
-of the trajectory. Use \code{showModels()} to visualize the inbuilt models.
-
-How good a model fits is evaluated by pearson correlation and the area under
-the curve of the gene-model-residuals.
 }
 \seealso{
 \code{\link[=createSpatialTrajectories]{createSpatialTrajectories()}}

@@ -2,16 +2,16 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageRaster}
 \alias{getImageRaster}
-\alias{getImageRaster,spata2-method}
+\alias{getImageRaster,SPATA2-method}
 \alias{getImageRaster,HistoImage-method}
 \alias{getImageRasterInfo}
 \title{Obtain image raster-(information)}
 \usage{
 getImageRaster(object, ...)
 
-\S4method{getImageRaster}{spata2}(
+\S4method{getImageRaster}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   transform = TRUE,
   xrange = NULL,
   yrange = NULL,
@@ -23,7 +23,7 @@ getImageRaster(object, ...)
 getImageRasterInfo(object, xrange = NULL, yrange = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

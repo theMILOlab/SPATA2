@@ -17,7 +17,8 @@ addGeneSet(
 addGeneSetsInteractive(object)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{class_name}{Character value. The class the gene set belongs to..}
 
@@ -25,15 +26,14 @@ addGeneSetsInteractive(object)
 
 \item{genes}{The genes of interest specified as a character vector.}
 
-\item{overwrite}{Logical. Overwrites existing gene sets with the same \code{class_name} -
-\code{gs_name} combination.}
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
 The input object containing the added or computed
 results.
 }
 \description{
-Stores a new gene set in the spata-object.
+Stores a new gene set in the \code{SPATA2} object.
 }
 \details{
 Combines \code{class_name} and \code{gs_name} to the final gene set name.

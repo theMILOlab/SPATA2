@@ -2,33 +2,33 @@
 % Please edit documentation in R/getH-M.R
 \name{getImageDims}
 \alias{getImageDims}
-\alias{getImageDims,spata2-method}
+\alias{getImageDims,SPATA2-method}
 \alias{getImageDims,HistoImaging-method}
 \alias{getImageDims,HistoImage-method}
 \alias{getImageRange}
-\alias{getImageRange,spata2-method}
+\alias{getImageRange,SPATA2-method}
 \alias{getImageRange,HistoImaging-method}
 \alias{getImageRange,HistoImage-method}
 \title{Obtain image dimensions/ranges}
 \usage{
 getImageDims(object, ...)
 
-\S4method{getImageDims}{spata2}(object, img_name = NULL, ...)
+\S4method{getImageDims}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageDims}{HistoImaging}(object, img_name = NULL, ...)
+\S4method{getImageDims}{HistoImaging}(object, img_name = activeImage(object), ...)
 
 \S4method{getImageDims}{HistoImage}(object, ...)
 
 getImageRange(object, ...)
 
-\S4method{getImageRange}{spata2}(object, img_name = NULL, ...)
+\S4method{getImageRange}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageRange}{HistoImaging}(object, img_name = NULL)
+\S4method{getImageRange}{HistoImaging}(object, img_name = activeImage(object))
 
 \S4method{getImageRange}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -50,7 +50,7 @@ Extracts information regarding the image.
 
 \itemize{
 \item{\code{getImageDims()}:}{ Extracts dimensions of the image, namely width, height and depth.}
-\item{\code{getImageRange()}:} Extracts range of the image axis.
+\item{\code{getImageRange()}:} Extracts range of the image x- and y-axis.
 }
 }
 \details{

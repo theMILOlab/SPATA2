@@ -24,28 +24,7 @@ hlpr_scatterplot(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
 \item{color_to}{Named list.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
-
-\item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
 }
 \value{
 A named list. Slot \emph{data} contains a data.frame as input for \code{data} of \code{ggplot2::ggplot()} and

@@ -2,14 +2,14 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerPoints}
 \alias{ggpLayerPoints}
-\alias{ggpLayerPoints,spata2-method}
+\alias{ggpLayerPoints,SPATA2-method}
 \alias{ggpLayerPoints,HistoImaging-method}
 \alias{ggpLayerPoints,data.frame-method}
 \title{Adds data points to the surface plot}
 \usage{
 ggpLayerPoints(object, ...)
 
-\S4method{ggpLayerPoints}{spata2}(
+\S4method{ggpLayerPoints}{SPATA2}(
   object,
   alpha_by = NULL,
   color_by = NULL,
@@ -24,7 +24,6 @@ ggpLayerPoints(object, ...)
   smooth_span = 0.2,
   normalize = NULL,
   transform_with = NULL,
-  method_gs = NULL,
   xrange = NULL,
   yrange = NULL,
   outline = FALSE,
@@ -37,12 +36,13 @@ ggpLayerPoints(object, ...)
   add_labs = FALSE,
   bcs_rm = NULL,
   na_rm = FALSE,
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 
 \S4method{ggpLayerPoints}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   alpha_by = NULL,
   color_by = NULL,
   pt_alpha = 0.9,
@@ -80,7 +80,7 @@ ggpLayerPoints(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -126,10 +126,6 @@ In case of plotting:
 Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
 specifies the x- and y-range to which the output image is cropped. E.g.

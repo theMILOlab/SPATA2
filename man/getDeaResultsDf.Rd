@@ -3,7 +3,7 @@
 \name{getDeaGenes}
 \alias{getDeaGenes}
 \alias{getDeaResultsDf}
-\title{Obtain de-analysis results}
+\title{Obtain DEA results}
 \usage{
 getDeaGenes(
   object,
@@ -15,7 +15,8 @@ getDeaGenes(
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
   flatten = TRUE,
-  of_sample = NA
+  assay_name = activeAssay(object),
+  ...
 )
 
 getDeaResultsDf(
@@ -28,8 +29,9 @@ getDeaResultsDf(
   min_lfc = NULL,
   n_highest_lfc = NULL,
   n_lowest_pval = NULL,
-  of_sample = NA,
-  stop_if_null = TRUE
+  stop_if_null = TRUE,
+  assay_name = activeAssay(object),
+  ...
 )
 }
 \arguments{
@@ -63,9 +65,6 @@ with an average log fold change below that threshold are ignored.}
 
 \item{n_lowest_pval}{Numeric value. Affects the total number of genes that are kept. See details.}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
-
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
@@ -83,10 +82,9 @@ equal to the input for argument \code{across}.
 }
 }
 \description{
-A convenient way to extract the differential gene expression
+Extracts differential expression
 analysis results. Function \code{getDeaGenes()} is a wrapper around
 \code{getDeaResultsDf()} and returns only gene names in a character vector.
-See details for more.
 }
 \details{
 The de-data.frame is processed such that the following steps are performed for every experimental

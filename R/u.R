@@ -4,6 +4,8 @@
 #' @description Removes the image from slot @@image of a `HistoImage`.
 #' Useful for efficient data storing.
 #'
+#' Not to be confused with [`removeImage()`]!
+#'
 #' @param img_name Character value. The name of the image to unload.
 #' @param active. Logical value. If `FALSE`, the default,
 #' the image from the active `HistoImage` is not unloaded.

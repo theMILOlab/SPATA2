@@ -2,21 +2,21 @@
 % Please edit documentation in R/getA-G.R
 \name{getBackgroundColor}
 \alias{getBackgroundColor}
-\alias{getBackgroundColor,spata2-method}
+\alias{getBackgroundColor,SPATA2-method}
 \alias{getBackgroundColor,HistoImaging-method}
 \alias{getBackgroundColor,HistoImage-method}
 \title{Obtain background color}
 \usage{
 getBackgroundColor(object, ...)
 
-\S4method{getBackgroundColor}{spata2}(object, img_name = NULL, default = "white", ...)
+\S4method{getBackgroundColor}{SPATA2}(object, img_name = NULL, default = "white", ...)
 
 \S4method{getBackgroundColor}{HistoImaging}(object, img_name = NULL, default = "white", ...)
 
 \S4method{getBackgroundColor}{HistoImage}(object, default = "white")
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

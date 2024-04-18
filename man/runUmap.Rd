@@ -5,9 +5,9 @@
 \alias{runUmap2}
 \title{Run UMAP-Analysis}
 \usage{
-runUmap(object, n_pcs = 20, of_sample = NA, ...)
+runUmap(object, n_pcs = 20, ...)
 
-runUmap2(object, n_pcs = 20, of_sample = NA, ...)
+runUmap2(object, n_pcs = 20, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -15,14 +15,11 @@ runUmap2(object, n_pcs = 20, of_sample = NA, ...)
 \item{n_pcs}{Numeric value. Denotes the number of principal components used. Must be
 smaller or equal to the number of principal components the pca data.frame contains.}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
-
 \item{...}{Additional arguments given to \code{umap::umap()}.}
 }
 \value{
 \itemize{
-\item{\code{runUmap()}:}{ An updated spata-object containing the reduction variables in the umap data.frame.}
+\item{\code{runUmap()}:}{ An updated \code{SPATA2} object containing the reduction variables in the umap data.frame.}
 \item{\code{runUmap2()}:}{ The direct output-object of \code{umap::umap()}}
 }
 }

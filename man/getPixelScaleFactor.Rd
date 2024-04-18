@@ -2,17 +2,17 @@
 % Please edit documentation in R/getN-Z.R
 \name{getPixelScaleFactor}
 \alias{getPixelScaleFactor}
-\alias{getPixelScaleFactor,spata2-method}
+\alias{getPixelScaleFactor,SPATA2-method}
 \alias{getPixelScaleFactor,HistoImaging-method}
 \alias{getPixelScaleFactor,HistoImage-method}
 \title{Obtain scale factor for pixel to SI conversion}
 \usage{
 getPixelScaleFactor(object, ...)
 
-\S4method{getPixelScaleFactor}{spata2}(
+\S4method{getPixelScaleFactor}{SPATA2}(
   object,
   unit,
-  img_name = NULL,
+  img_name = activeImage(object),
   switch = FALSE,
   add_attr = TRUE,
   verbose = NULL,
@@ -22,7 +22,7 @@ getPixelScaleFactor(object, ...)
 \S4method{getPixelScaleFactor}{HistoImaging}(
   object,
   unit,
-  img_name = NULL,
+  img_name = activeImage(object),
   switch = FALSE,
   add_attr = TRUE,
   verbose = NULL,
@@ -39,7 +39,7 @@ getPixelScaleFactor(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

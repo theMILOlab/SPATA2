@@ -2,16 +2,16 @@
 % Please edit documentation in R/getH-M.R
 \name{getImage}
 \alias{getImage}
-\alias{getImage,spata2-method}
+\alias{getImage,SPATA2-method}
 \alias{getImage,HistoImaging-method}
 \alias{getImage,HistoImage-method}
 \title{Obtain \code{Image} object}
 \usage{
 getImage(object, ...)
 
-\S4method{getImage}{spata2}(
+\S4method{getImage}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   xrange = NULL,
   yrange = NULL,
   expand = 0,
@@ -22,7 +22,7 @@ getImage(object, ...)
 
 \S4method{getImage}{HistoImaging}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   xrange = NULL,
   yrange = NULL,
   expand = 0,
@@ -42,7 +42,7 @@ getImage(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

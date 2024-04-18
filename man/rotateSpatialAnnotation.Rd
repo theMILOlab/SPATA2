@@ -2,13 +2,13 @@
 % Please edit documentation in R/r.R
 \name{rotateSpatialAnnotation}
 \alias{rotateSpatialAnnotation}
-\alias{rotateSpatialAnnotation,spata2-method}
+\alias{rotateSpatialAnnotation,SPATA2-method}
 \alias{rotateSpatialAnnotation,HistoImaging-method}
 \title{Rotate Borders of a Spatial Annotation}
 \usage{
 rotateSpatialAnnotation(object, ...)
 
-\S4method{rotateSpatialAnnotation}{spata2}(
+\S4method{rotateSpatialAnnotation}{SPATA2}(
   object,
   id,
   angle,
@@ -27,7 +27,7 @@ rotateSpatialAnnotation(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{give_feedback()}.}

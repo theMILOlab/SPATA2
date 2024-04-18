@@ -55,7 +55,6 @@ plotDensityplot(
   method_gs = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -73,7 +72,6 @@ plotHistogram(
   method_gs = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -122,7 +120,6 @@ plotVioBoxplot(
   method_gs = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 
@@ -152,20 +149,19 @@ plotViolinplot(
   method_gs = NULL,
   normalize = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variables}{Character vector. The variables of interest:
+\item{variables}{Character vector. The numeric variables of interest. Must be inside:
 
 \itemize{
-\item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
-\item{ \strong{Genes}: Must be in \code{getGenes()}}
-\item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
+\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
+\item{ \strong{Genes} Must be in \code{getGenes()}}
+\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
 }}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.

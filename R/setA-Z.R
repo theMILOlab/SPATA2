@@ -16,7 +16,7 @@ setActiveMatrix <- function(object, mtr_name, verbose = NULL){
     suggest = TRUE
   )
 
-  object@information$active_mtr <- mtr_name
+  object@obj_info$active_mtr <- mtr_name
 
   confuns::give_feedback(
     msg = glue::glue("Active matrix set to {mtr_name}."),
@@ -28,47 +28,12 @@ setActiveMatrix <- function(object, mtr_name, verbose = NULL){
 }
 
 
-#' @title Denote the default expression matrix
-#'
-#' @inherit check_object params
-#' @param name Character value. The name of the matrix that is to be set as
-#' the active expression matrix.
-#'
-#' @inherit update_dummy return
 #' @export
-
 setActiveExpressionMatrix <- function(...){
 
   deprecated(fn = TRUE)
 
-  object <- setActiveMatrix(...)
-
-  return(object)
-
-}
-
-#' @title Set results of autoencoder assessment
-#'
-#' @inherit check_object params
-#' @param assessment_list Named list with slots \code{$df} and \code{$set_up}.
-#'
-#' @return A spata-object.
-
-setAutoencoderAssessment <- function(object, assessment_list, of_sample = ""){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  confuns::check_data_frame(
-    df = assessment_list$df,
-    var.class = list("activation" = c("character", "factor"),
-                     "bottleneck" = c("character", "factor"),
-                     "total_var" = c("numeric", "integer", "double")),
-    ref = "assessment_list$df"
-  )
-
-  object@autoencoder[[of_sample]][["assessment"]] <- assessment_list
+  object <- activateMatrix(...)
 
   return(object)
 
@@ -77,6 +42,14 @@ setAutoencoderAssessment <- function(object, assessment_list, of_sample = ""){
 
 
 
+
+setAssay <- function(object, assay){
+
+  object@assays[[assay@omic]] <- assay
+
+  return(object)
+
+}
 
 
 
@@ -94,7 +67,7 @@ setBarcodes <- function(object, barcodes){
 
   confuns::is_vec(x = barcodes, mode = "character")
 
-  object@information$barcodes <- barcodes
+  object@obj_info$barcodes <- barcodes
 
   return(object)
 
@@ -190,9 +163,11 @@ setCnvResults <- function(object, cnv_list, ...){
 
   deprecated(...)
 
-  check_object(object)
+  ma <- getAssay(object, assay_name = "transcriptomics")
 
-  object@cnv[[1]] <- cnv_list
+  ma@analysis$cnv <- cnv_list
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
@@ -216,20 +191,14 @@ setGeneric(name = "setCoordsDf", def = function(object, ...){
 #' @export
 setMethod(
   f = "setCoordsDf",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, coords_df, force = FALSE){
 
-    if(containsHistoImaging(object)){
+    imaging <- getHistoImaging(object)
 
-      imaging <- getHistoImaging(object)
+    imaging <- setCoordsDf(imaging, coords_df = coords_df, force = force)
 
-      imaging <- setCoordsDf(imaging, coords_df = coords_df, force = force)
-
-      object <- setHistoImaging(object, imaging = imaging)
-
-    }
-
-    object@coordinates[[1]] <- coords_df
+    object <- setHistoImaging(object, imaging = imaging)
 
     return(object)
 
@@ -305,11 +274,15 @@ setMethod(
 #'
 #' @export
 
-setCountMatrix <- function(object, count_mtr, ...){
+setCountMatrix <- function(object, count_mtr, assay_name = activeAssay(object), ...){
 
   deprecated(...)
 
-  object@data[[1]][["counts"]] <- count_mtr
+  ma <- getAssay(object, assay_name = assay_name)
+
+  ma@mtr_counts <- count_mtr
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
@@ -318,20 +291,18 @@ setCountMatrix <- function(object, count_mtr, ...){
 # setD --------------------------------------------------------------------
 
 #' @export
-setDeaResultsDf <- function(object, dea_results, grouping_variable, method_de, ...){
+setDeaResultsDf <- function(object,
+                            dea_results,
+                            grouping_variable,
+                            method_de,
+                            assay_name,
+                            ...){
 
   confuns::check_one_of(
     input = grouping_variable,
     against = getGroupingOptions(object)
   )
 
-  if(base::length(object@dea) == 0){
-
-    object@dea <-
-      base::vector(mode = "list", length = 1) %>%
-      purrr::set_names(nm = object@samples)
-
-  }
 
   if("cluster" %in% base::colnames(dea_results)){
 
@@ -344,12 +315,17 @@ setDeaResultsDf <- function(object, dea_results, grouping_variable, method_de, .
   }
 
   # set data.frame
-  object@dea[[1]][[grouping_variable]][[method_de]][["data"]] <-
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  ma@analysis$dea[[grouping_variable]][[method_de]][["data"]] <-
     tibble::remove_rownames(.data = dea_results) %>%
     dplyr::rename(!!rlang::sym(grouping_variable) := {{grouping_name}}) %>%
     tibble::as_tibble()
 
-  object@dea[[1]][[grouping_variable]][[method_de]][["adjustments"]] <- list(...)
+  ma@analysis$dea[[grouping_variable]][[method_de]][["adjustments"]] <- list(...)
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
@@ -361,7 +337,7 @@ setDeaResultsDf <- function(object, dea_results, grouping_variable, method_de, .
 #' @description Sets object specific default for recurring arguments
 #' such as `pt_alpha`, `pt_clrp`, `verbose`.
 #'
-#' @param ... Named arguments whoose default input you want to override.
+#' @param ... Named arguments whose default input you want to override.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
@@ -394,7 +370,7 @@ setDefault <- function(object, ...){
 
   }
 
-  object@information$instructions$default <- dflt_instr
+  object@obj_info$instructions$default <- dflt_instr
 
   return(object)
 
@@ -402,37 +378,7 @@ setDefault <- function(object, ...){
 }
 
 
-#' @title Default grouping
-#'
-#' @description Sets and extracts the default grouping. Useful to save typing
-#' in functions that require a grouping variable as input. (Usually referred to
-#' via arguments \code{across} or \code{grouping_variable}).
-#'
-#' @param grouping_variable Character value. The grouping variable that is
-#' used by default within all functions that need one.
-#'
-#' @return \code{setDefaultGrouping()}: Updated spata object. \code{getDefaultGrouping()}: Character value. Name
-#' of the default grouping variable.
-#' @export
-#'
-setDefaultGrouping <- function(object, grouping_variable, verbose = NULL){
 
-  hlpr_assign_arguments(object)
-
-  is_value(x = grouping_variable, mode = "character")
-
-  check_one_of(
-    input = grouping_variable,
-    against = getFeatureNames(object, of_class = "factor")
-  )
-
-  object@information$default_grouping <- grouping_variable
-
-  give_feedback(msg = glue::glue("Default grouping: '{grouping_variable}'"), verbose = verbose)
-
-  return(object)
-
-}
 
 
 #' @title Set default instructions
@@ -449,7 +395,7 @@ setDefaultInstructions <- function(object, ...){
 
   x <- list(...)
 
-  object@information$instructions$default <-
+  object@obj_info$instructions$default <-
     default_instructions_object
 
   return(object)
@@ -457,51 +403,11 @@ setDefaultInstructions <- function(object, ...){
 }
 
 
-#' @title Default trajectory ID
-#'
-#' @description Sets and extracts the default trajectory id. Useful to save typing
-#' in functions that require a trajectory name as input.
-#'
-#' @param id Character value.
-#'
-#' @return \code{setDefaultTrajectory()}: Updated spata object. \code{getDefaultTrajectory()}: Character value. Id
-#' of the default trajectory.
-#' @export
-#'
-setDefaultTrajectory <- function(object, id, verbose = NULL){
-
-  deprecated(fn = TRUE)
-
-  hlpr_assign_arguments(object)
-
-  is_value(x = id, mode = "character")
-
-  check_one_of(
-    input = id,
-    against = getTrajectoryIds(object)
-  )
-
-  object@information$default_trajectory <- id
-
-  give_feedback(msg = glue::glue("Default trajectory: '{id}'"), verbose = verbose)
-
-  return(object)
-
-}
-
-#' @rdname setDefaultTrajectory
-#' @export
-setDefaultTrajectoryId <- setDefaultTrajectory
-
-
-
-
-
 #' @rdname setDefaultInstructions
 #' @export
 setDirectoryInstructions <- function(object){
 
-  object@information$instructions$directories <-
+  object@obj_info$instructions$directories <-
     list(
       "cell_data_set" = "not defined",
       "seurat_object" = "not defined",
@@ -519,31 +425,27 @@ setDirectoryInstructions <- function(object){
 
 # setF --------------------------------------------------------------------
 
-#' @title Set feature data.frame
+
+setFeatureDf <- function(...){
+
+  deprecated(fn = TRUE)
+
+  setMetaDf(...)
+
+}
+
+#' @title Set meta data.frame
 #'
-#' @inherit check_feature_df params
-#' @inherit check_sample params
+#' @description Sets the meta data.frame.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return set_dummy return details
 #' @export
+#'
+setMetaDf <- function(object, meta_df){
 
-setFeatureDf <- function(object, feature_df, of_sample = ""){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
-
-  confuns::check_data_frame(
-    df = feature_df,
-    var.class = list("barcodes" = "character"),
-    ref = "feature_df"
-  )
-
-  feature_df <-
-    dplyr::mutate(.data = feature_df, sample = {{of_sample}}) %>%
-    dplyr::select(barcodes, sample, dplyr::everything())
-
-  object@fdata[[of_sample]] <- feature_df
+  object@meta_obs <- meta_df
 
   return(object)
 
@@ -552,30 +454,6 @@ setFeatureDf <- function(object, feature_df, of_sample = ""){
 
 # setG --------------------------------------------------------------------
 
-
-#' @title Set the gene-set data.frame
-#'
-#' @inherit check_object params
-#' @param gene_set_df A data.frame containing the gene names in
-#' variable \emph{gene} and the gene set name in variable \emph{ont}.
-#'
-#' @inherit set_dummy return details
-
-setGeneSetDf <- function(object, gene_set_df){
-
-  check_object(object)
-
-  confuns::check_data_frame(
-    df = gene_set_df,
-    var.class = list("ont" = "character", "gene" = "character"),
-    ref = "gene_set_df"
-  )
-
-  object@used_genesets <- gene_set_df
-
-  return(object)
-
-}
 
 
 # setH --------------------------------------------------------------------
@@ -602,7 +480,7 @@ setGeneric(name = "setHistoImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "setHistoImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, hist_img, ...){
 
     imaging <- getHistoImaging(object)
@@ -683,14 +561,14 @@ setMethod(
 #' @description Sets the image container class `HistoImaging`
 #' in the corresponding slot of the `spata2` object.
 #'
-#' @param imaging An object of class `HistoImaging`.
+#' @param imaging An object of class [`HistoImaging`].
 #' @inherit argument_dummy
 #'
 #' @export
 
 setHistoImaging <- function(object, imaging){
 
-  object@images[[1]] <- imaging
+  object@spatial <- imaging
 
   return(object)
 
@@ -785,7 +663,7 @@ setInitiationInfo <- function(object, additional_input = list()){
     time = base::Sys.time()
   )
 
-  object@information$initiation <- initiation_list
+  object@obj_info$initiation <- initiation_list
 
   return(object)
 
@@ -797,32 +675,7 @@ setInitiationInfo <- function(object, additional_input = list()){
 
 # setO --------------------------------------------------------------------
 
-#' @title Set outline variable name
-#'
-#' @description Sets the name of the variable in the feature data.frame
-#' that contains grouping of the barcode-spots according to the number
-#' of coherent tissue sections on the capture frame. (E.g. if two brain slices
-#' of a mouse were imaged and permeabilized on the same visium slide).
-#' @param name Name of the variable that contains the outline. Must be a factor
-#' variable in the feature data.frame.
-#' @inherit argument_dummy params
-#'
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setOutlineVarName <- function(object, name){
 
-  confuns::check_one_of(
-    input = name,
-    against = getFeatureNames(object, of_class = "factor")
-  )
-
-  object@information$outline_var <- name
-
-  return(object)
-
-}
 
 
 
@@ -878,31 +731,7 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 
   }
 
-  object@dim_red[[of_sample]][["pca"]] <- pca_df
-
-  return(object)
-
-}
-
-
-#' @title Set pixel scale factor
-#'
-#' @description Sets pixel scale factor.
-#'
-#' @param pxl_scale_fct Numeric value with an attribute named
-#' *unit* with the unit dist_si/px.
-#' @inherit argument_dummy params
-#'
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setPixelScaleFactor <- function(object, pxl_scale_fct = NULL, verbose = NULL){
-
-
-
-
-
+  object@dim_red[["pca"]] <- pca_df
 
   return(object)
 
@@ -912,17 +741,22 @@ setPixelScaleFactor <- function(object, pxl_scale_fct = NULL, verbose = NULL){
 
 #' @rdname setCountMatrix
 #' @export
-setProcessedMatrix <- function(object, proc_mtr, name, ...){
+setProcessedMatrix <- function(object, proc_mtr, name, assay_name, ...){
 
   confuns::is_value(x = name, mode = "character")
 
-  object@data[[1]][[name]] <- proc_mtr
+  ma <- getAssay(object, assay_name = assay_name)
+
+  ma@mtr_proc[[name]] <- proc_mtr
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
 }
 
 # setS --------------------------------------------------------------------
+
 #' @title Set scale factors
 #'
 #' @description Sets scale factor values for the reference image. Corresponding
@@ -946,7 +780,7 @@ setGeneric(name = "setScaleFactor", def = function(object, ...){
 #' @export
 setMethod(
   f = "setScaleFactor",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, fct_name, value){
 
     imaging <- getHistoImaging(object)
@@ -1031,7 +865,7 @@ setGeneric(name = "setSpatialAnnotation", def = function(object, ...){
 #' @export
 setMethod(
   f = "setSpatialAnnotation",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, spat_ann, ...){
 
     imaging <- getHistoImaging(object)
@@ -1057,7 +891,7 @@ setGeneric(name = "setSpatialAnnotations", def = function(object, ...){
 #' @export
 setMethod(
   f = "setSpatialAnnotations",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, spat_anns, ...){
 
     for(sa in spat_anns){
@@ -1092,12 +926,12 @@ setGeneric(name = "setSpatialMethod", def = function(object, ...){
 #' @export
 setMethod(
   f = "setSpatialMethod",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, method, ...){
 
     base::stopifnot(methods::is(method, class2 = "SpatialMethod"))
 
-    object@information$method <- method
+    object@obj_info$method <- method
 
     if(containsHistoImaging(object)){
 
@@ -1180,58 +1014,6 @@ setSpatialMethodInfo <- function(object, slot, content){
 # setT --------------------------------------------------------------------
 
 
-#' @title Set tissue outline
-#'
-#' @description Sets tissue outline by calling `identifyTissueSections()`
-#' and `identifyTissueOutline()`.
-#'
-#' @inherit argument_dummy params
-#' @inherit getTissueOutlineDf examples
-#'
-#' @return `spata2` object with additional variables in coordinates data.frame.
-#'
-#' \itemize{
-#'  \item{*section* :}{ character. The identified tissue section. 0 means probable artefact spot.}
-#'  \item{*outline* :}{logical. `TRUE` if identified as a spot that lies on the edge of the tissue.}
-#' }
-#'
-#' @keywords internal
-#'
-setTissueOutline <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  sm <- getSpatialMethod(object)
-
-  if(sm@name == "Visium"){
-
-    confuns::give_feedback(
-      msg = "Computing tissue outline.",
-      verbose = TRUE
-    )
-
-    object <- identifyTissueSections(object)
-    object <- identifyTissueOutline(object)
-
-    object@information$tissue_outline_set <- TRUE
-
-    confuns::give_feedback(
-      msg = "Tissue outline set.",
-      verbose = TRUE
-    )
-
-  } else {
-
-    confuns::give_feedback(
-      msg = "No tissue outline set. Spatial method is not Visium.",
-      verbose = verbose
-    )
-
-  }
-
-  return(object)
-
-}
 
 #' @title Set trajectories
 #'
@@ -1257,14 +1039,19 @@ setTrajectory <- function(object, trajectory, overwrite = FALSE){
       overwrite = overwrite
     )
 
-    object@trajectories[[1]][[trajectory@id]] <- trajectory
+    imaging <- getHistoImaging(object)
 
+    imaging@trajectories[[trajectory@id]] <- trajectory
 
   } else {
 
-    object@trajectories[[1]][[trajectory@id]] <- trajectory
+    imaging <- getHistoImaging(object)
+
+    imaging@trajectories[[trajectory@id]] <- trajectory
 
   }
+
+  object <- setHistoImaging(object, imaging = imaging)
 
   return(object)
 
@@ -1294,11 +1081,10 @@ setTrajectories <- function(object, trajectories, overwrite = FALSE){
 
 #' @rdname setPcaDf
 #' @export
-setTsneDf <- function(object, tsne_df, of_sample = ""){
+setTsneDf <- function(object, tsne_df, ...){
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   if(base::identical(tsne_df, base::data.frame())){
 
@@ -1318,12 +1104,12 @@ setTsneDf <- function(object, tsne_df, of_sample = ""){
     )
 
     tsne_df <-
-      dplyr::mutate(.data = tsne_df, sample = {{of_sample}}) %>%
-      dplyr::select(barcodes, sample, dplyr::everything())
+      dplyr::mutate(.data = tsne_df) %>%
+      dplyr::select(barcodes, dplyr::everything())
 
   }
 
-  object@dim_red[[of_sample]][["tsne"]] <- tsne_df
+  object@dim_red[["tsne"]] <- tsne_df
 
   return(object)
 
@@ -1334,11 +1120,9 @@ setTsneDf <- function(object, tsne_df, of_sample = ""){
 
 #' @rdname setPcaDf
 #' @export
-setUmapDf <- function(object, umap_df, of_sample = ""){
+setUmapDf <- function(object, umap_df, ...){
 
   check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   if(base::identical(umap_df, base::data.frame())){
 
@@ -1358,12 +1142,12 @@ setUmapDf <- function(object, umap_df, of_sample = ""){
     )
 
     umap_df <-
-      dplyr::mutate(.data = umap_df, sample = {{of_sample}}) %>%
-      dplyr::select(barcodes, sample, dplyr::everything())
+      dplyr::mutate(.data = umap_df) %>%
+      dplyr::select(barcodes, dplyr::everything())
 
   }
 
-  object@dim_red[[of_sample]][["umap"]] <- umap_df
+  object@dim_red[["umap"]] <- umap_df
 
   return(object)
 

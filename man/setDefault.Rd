@@ -7,10 +7,10 @@
 setDefault(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Named arguments whoose default input you want to override.}
+\item{...}{Named arguments whose default input you want to override.}
 }
 \value{
 The input object containing the added or computed

@@ -12,24 +12,24 @@ createSpatialSegmentation(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 }
 \description{
-Gives access to an interactive user interface where barcode-spots
+Gives access to an interactive userinterface where data points
 can be interactively annotated.
 }
 \details{
 Segmentation variables are grouping variables that are stored in
-the feature data.frame of the \code{SPATA2} object (such as clustering variables).
+the meta data.frame of the \code{SPATA2} object (such as clustering variables).
 They differ from clustering variables in so far as that they are not the result
 of unsupervised cluster algorithms but from group assignment the researcher
 conducts him/herself (e.g. histological classification).
 
 Therefore, all segmentation variables can be extracted via \code{getFeatureNames()}
 as they are part of those. To specifically extract variables that were created
-with \code{createSpatialSegmentation()} use \code{getSegmentationVariableNames()}. To remove
-annotations you no longer need use \code{discardSegmentationVariable()}.
+with \code{createSpatialSegmentation()} use \code{getSegmentationNames()}. To remove
+annotations you no longer need use \code{removeFeatures()}.
 }
 \note{
 The interface allows to zoom in on the sample. This is useful if your
@@ -37,6 +37,6 @@ The interface allows to zoom in on the sample. This is useful if your
 barcode spots based on the histology. As these images are displayed by pixels
 the resolution decreases the more you zoom in. Many experiments (such as
 the Visium output) contain high resolution images. You can use the function
-\code{exchangeImage()} to read in images of higher resolution for a better
+\code{\link[=registerImage]{registerImage()}} to register images of higher resolution for a better
 histological classification.
 }

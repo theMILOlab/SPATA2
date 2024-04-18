@@ -11,7 +11,7 @@ runDEA(
   method_de = NULL,
   verbose = NULL,
   base = 2,
-  variable.features.n = 3000,
+  assay_name = activeAssay(object),
   ...
 )
 

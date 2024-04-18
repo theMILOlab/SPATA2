@@ -3,7 +3,7 @@
 \name{getGeneSetDf}
 \alias{getGeneSetDf}
 \alias{getGeneSetList}
-\title{Obtain gene set data.frame}
+\title{Obtain gene sets}
 \usage{
 getGeneSetDf(object)
 
@@ -13,8 +13,9 @@ getGeneSetList(object)
 \item{object}{A valid spata-object.}
 }
 \value{
-A data.frame.
+Either a named list or a data.frame with variables \emph{ont} and \emph{gene}.
 }
 \description{
-Obtain gene set data.frame
+Extracts the gene sets (gene signatures) stored in the transcriptomic
+assay.
 }

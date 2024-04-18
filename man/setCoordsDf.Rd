@@ -2,13 +2,13 @@
 % Please edit documentation in R/setA-Z.R
 \name{setCoordsDf}
 \alias{setCoordsDf}
-\alias{setCoordsDf,spata2-method}
+\alias{setCoordsDf,SPATA2-method}
 \alias{setCoordsDf,HistoImaging-method}
 \title{Set the coordinates}
 \usage{
 setCoordsDf(object, ...)
 
-\S4method{setCoordsDf}{spata2}(object, coords_df, force = FALSE)
+\S4method{setCoordsDf}{SPATA2}(object, coords_df, force = FALSE)
 
 \S4method{setCoordsDf}{HistoImaging}(object, coords_df, force = FALSE)
 }

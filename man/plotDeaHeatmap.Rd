@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotA-E.R
 \name{plotDeaHeatmap}
 \alias{plotDeaHeatmap}
-\title{Plot differentially expressed genes}
+\title{Plot DEA results via dot heatmaps}
 \usage{
 plotDeaHeatmap(
   object,
@@ -20,12 +20,11 @@ plotDeaHeatmap(
   clrp = NULL,
   colors = NULL,
   verbose = NULL,
-  of_sample = NA,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
@@ -84,16 +83,13 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
-
 \item{...}{Additional arguments given to \code{pheatmap::pheatmap()}.}
 }
 \value{
 A heatmap of class 'pheatmap'.
 }
 \description{
-Visualizes the expression of genes across subgroups in a heatmap. It either takes the results
+Visualizes DEA results across subgroups in a heatmap. It either takes the results
 from previously conducted de-analysis or uses the expression information of specific genes to plot a heatmap.
 }
 \details{

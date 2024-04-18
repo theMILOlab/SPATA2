@@ -1,7 +1,7 @@
 
 
 
-# deprecate?
+#' @keywords internal
 padd_image <- function(image, bg_value = 1){
 
   img_dim <- base::dim(image)
@@ -218,43 +218,6 @@ pixel_df_to_image <- function(pxl_df){
 
 # print -------------------------------------------------------------------
 
-#' @title Print autoencoder summary
-#'
-#' @description Prints a human readable summary about the set up of the last neural network that
-#' was constructed to generate a denoised expression matrix.
-#'
-#' @inherit check_sample params
-#'
-#' @inherit print_family return
-#' @export
-
-printAutoencoderSummary <- function(object, mtr_name = "denoised", of_sample = ""){
-
-  check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  info_list <- object@information$autoencoder[[of_sample]][["nn_set_ups"]]
-
-  info_list <- getAutoencoderSetUp(object = object, of_sample = of_sample, mtr_name = mtr_name)
-
-  if(base::is.null(info_list)){
-
-    base::stop("Could not find any information. It seems as if function 'runAutoEncoderDenoising()' has not been run yet.")
-
-  }
-
-  feedback <- glue::glue("{introduction}: \n\nActivation function: {activation}\nBottleneck neurons: {bn}\nDropout: {do}\nEpochs: {epochs}\nLayers: {layers}",
-                         introduction = glue::glue("The neural network that generated matrix '{mtr_name}' was constructed with the following adjustments"),
-                         activation = info_list$activation,
-                         bn = info_list$bottleneck,
-                         do = info_list$dropout,
-                         epochs = info_list$epochs,
-                         layers = glue::glue_collapse(x = info_list$layers, sep = ", ", last = " and "))
-
-  base::return(feedback)
-
-}
 
 #' @title Print overview of all conducted de-analysis
 #'
@@ -349,32 +312,20 @@ printDefaultInstructions <- function(object){
 
 printGeneSetOverview <- function(object){
 
-  # lazy check
-  check_object(object)
+  gene_sets <-
+    getSignatures(object, assay_name = "transcriptomics") %>%
+    base::names()
 
-  # main part
-  gene_sets_df <- dplyr::ungroup(object@used_genesets)
+  gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
 
-  gene_sets <- object@used_genesets$ont
+  dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
+    dplyr::select(-gene) %>%
+    dplyr::distinct() %>%
+    dplyr::pull(gs_type) %>%
+    base::table() %>%
+    base::as.data.frame() %>%
+    magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
 
-  if(base::nrow(gene_sets_df) == 0){
-
-    base::message("Gene-set data.frame is empty.")
-    base::return(data.frame())
-
-  } else {
-
-    gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
-
-    dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
-      dplyr::select(-gene) %>%
-      dplyr::distinct() %>%
-      dplyr::pull(gs_type) %>%
-      base::table() %>%
-      base::as.data.frame() %>%
-      magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
-
-  }
 
 }
 
@@ -432,7 +383,7 @@ process_axis <- function(axis){
 
 }
 
-
+#' @keywords internal
 process_coords_df_sa <- function(coords_df,
                                  variables,
                                  core = TRUE,
@@ -500,7 +451,7 @@ process_coords_df_sa <- function(coords_df,
 
 }
 
-
+#' @keywords internal
 process_coords_df_sa2 <- function(coords_df,
                                  variables,
                                  binwidth,
@@ -581,11 +532,11 @@ process_coords_df_sa2 <- function(coords_df,
 
 }
 
+
 #' @title Process expand input
 #' @return Returns always a list of length two. Two slots named h (height)
 #' and x (width).
 #'
-#' @section Expand: this is a new section.
 #'
 #' @export
 #' @keywords internal
@@ -1104,180 +1055,10 @@ process_transform_with <- function(transform_with, var_names){
 }
 
 
-#' @title Process `spata2` object using `Seurat`
-#'
-#' @description A wrapper around the most essential processing functions
-#' of the `Seurat` package. A temporary `Seurat` object is created using the
-#' data from the `spata2` object and is processed. Then the processed
-#' data is transferred back to the `spata2` object.
-#'
-#' @inherit process_seurat_object params
-#' @inherit argument_dummy params
-#'
-#' @details By default, the function adds the matrix of @@slot `data` from
-#' the seurat assay to the `spata2` object under the name *normalized* (if `NormalizeData` = TRUE)
-#' and the matrix of @@slot `scaled.data` from the Seurat assay to the `spata2`
-#' object under the name *scaled* (if `ScaleData = TRUE`).
-#'
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-processWithSeurat <- function(object,
-                              NormalizeData = TRUE,
-                              FindVariableFeatures = TRUE,
-                              ScaleData = FALSE,
-                              RunPCA = list(npcs = 30),
-                              FindNeighbors = list(dims = 1:30),
-                              FindClusters = TRUE,
-                              overwrite = FALSE,
-                              verbose = TRUE){
-
-  seurat_object <-
-    Seurat::CreateSeuratObject(
-      counts = getCountMatrix(object),
-      assay = "RNA"
-    )
-
-  seurat_object <-
-    process_seurat_object(
-      seurat_object = seurat_object,
-      calculate_rb_and_mt = TRUE,
-      SCTransform = FALSE,
-      NormalizeData = NormalizeData,
-      FindVariableFeatures = FindVariableFeatures,
-      ScaleData = ScaleData,
-      RunPCA = RunPCA,
-      FindNeighbors = FindNeighbors,
-      FindClusters = FindClusters,
-      RunTSNE = FALSE,
-      RunUMAP = FALSE,
-      verbose = verbose
-    )
-
-  if(!base::isFALSE(NormalizeData)){
-
-    object <-
-      setProcessedMatrix(
-        object = object,
-        proc_mtr = Seurat::GetAssayData(seurat_object, layer = "data"),
-        name = "normalized"
-      )
-
-    object <- setActiveMatrix(object, mtr_name = "normalized")
-
-  }
-
-  if(!base::isFALSE(ScaleData)){
-
-    # scaled matrix
-    object <-
-      setProcessedMatrix(
-        object = object,
-        proc_mtr = Seurat::GetAssayData(seurat_object, layer = "scaled"),
-        name = "scaled"
-      )
-
-    object <- setActiveMatrix(object, mtr_name = "scaled")
-
-  }
 
 
-  if(!base::isFALSE(RunPCA)){
-
-    # principal components
-    pca_df <-
-      Seurat::Embeddings(seurat_object, reduction = "pca") %>%
-      base::as.data.frame() %>%
-      tibble::rownames_to_column(var = "barcodes") %>%
-      tibble::as_tibble() %>%
-      dplyr::rename_with(.fn = ~ stringr::str_remove(.x, pattern = "_"))
-
-    object <- setPcaDf(object, pca_df = pca_df)
-
-  }
-
-  if(!base::isFALSE(FindClusters)){
-
-    # clusters and
-    meta_df <-
-      tibble::rownames_to_column(.data = seurat_object@meta.data, "barcodes")
-
-    if(base::isFALSE(overwrite)){
-
-      meta_df <-
-        dplyr::select(
-          .data = meta_df,
-          barcodes,
-          dplyr::everything(),
-          -dplyr::any_of(x = getFeatureNames(object))
-        )
-
-    }
-
-    if(base::ncol(meta_df) > 1){
-
-      object <-
-        addFeatures(object = object, feature_df = meta_df, overwrite = TRUE)
-
-    }
-
-  }
-
-  return(object)
-
-}
 
 
-#' @title Apply SCTransform
-#'
-#' @description Runs the pipeline suggested by [`Seurat::SCTransform()`] and
-#' extracts a matrix fromt he resulting assay object.
-#'
-#' @param slot The slot of the output assay in the `Seurat` object from where to
-#' take the matrix. Defaults to *data*.
-#' @param name The name under which to store the matrix.
-#' @param exchange_counts Logical. If `TRUE`, the counts matrix of the `spata2`
-#' object is exchanged for the counts matrix in the output assay.
-#' @param ... Additional arguments given to `Seurat::SCTransform()`.
-#'
-#' @inherit update_dummy return
-#' @inherit argument_dummy params
-#'
-#' @export
-#'
-processWithSCT <- function(object,
-                           slot = "data",
-                           name = "sct_data",
-                           exchange_counts = FALSE,
-                           ...){
-
-  seurat_object <-
-    Seurat::CreateSeuratObject(counts = getCountMatrix(object)) %>%
-    Seurat::SCTransform(object = ., assay = "RNA", new.assay.name = "SCT", ...)
-
-  if(base::isTRUE(exchange_counts)){
-
-    object <-
-      setCountMatrix(
-        object = object,
-        count_mtr = seurat_object[["SCT"]]@counts
-      )
-
-  }
-
-  object <-
-    setProcessedMatrix(
-      object = object,
-      proc_mtr = methods::slot(object = seurat_object[["SCT"]], name = slot),
-      name = name
-    )
-
-  object <- setActiveMatrix(object, mtr_name = name)
-
-  return(object)
-
-}
 
 # project -----------------------------------------------------------------
 

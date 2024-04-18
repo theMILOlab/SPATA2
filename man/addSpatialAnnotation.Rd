@@ -2,13 +2,13 @@
 % Please edit documentation in R/add.R
 \name{addSpatialAnnotation}
 \alias{addSpatialAnnotation}
-\alias{addSpatialAnnotation,spata2-method}
+\alias{addSpatialAnnotation,SPATA2-method}
 \alias{addSpatialAnnotation,HistoImaging-method}
 \title{Add an spatial annotation manually}
 \usage{
 addSpatialAnnotation(object, ...)
 
-\S4method{addSpatialAnnotation}{spata2}(
+\S4method{addSpatialAnnotation}{SPATA2}(
   object,
   tags,
   area,
@@ -29,17 +29,17 @@ addSpatialAnnotation(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional slot content given to \code{methods::new()} when
-constructing the \code{SpatialAnnotation} object.}
+constructing the \code{\link{SpatialAnnotation}} object.}
 
 \item{tags}{A character vector of tags for the spatial annotation.}
 
 \item{area}{A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
 Observations correspond to the vertices of the polygons that are needed to represent the
-spatial annotation. \strong{Must} contain a slot named \emph{outer} which sets the outer border
+spatial annotation. \strong{Must} contain exactly one slot named \emph{outer} which sets the outer border
 of the spatial annotation. \strong{Can} contain multiple slots named \emph{inner} (suffixed)
 with numbers that correspond to inner polygons - holes within the annotation.
 

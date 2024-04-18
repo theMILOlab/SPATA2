@@ -2,13 +2,13 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotSpatialAnnotations}
 \alias{plotSpatialAnnotations}
-\alias{plotSpatialAnnotations,spata2-method}
+\alias{plotSpatialAnnotations,SPATA2-method}
 \alias{plotSpatialAnnotations,HistoImaging-method}
 \title{Plot spatial annotations}
 \usage{
 plotSpatialAnnotations(object, ...)
 
-\S4method{plotSpatialAnnotations}{spata2}(
+\S4method{plotSpatialAnnotations}{SPATA2}(
   object,
   ids = NULL,
   tags = NULL,
@@ -63,7 +63,7 @@ plotSpatialAnnotations(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggpLayerScaleBarSI()} if input for

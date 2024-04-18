@@ -2,10 +2,13 @@
 % Please edit documentation in R/plotSurface.R
 \name{plotSurfaceComparison}
 \alias{plotSurfaceComparison}
-\alias{plotSurfaceComparison2}
+\alias{plotSurfaceComparison,SPATA2-method}
+\alias{plotSurfaceComparison,data.frame-method}
 \title{Plot several surface plots colored by numeric variables}
 \usage{
-plotSurfaceComparison(
+plotSurfaceComparison(object, ...)
+
+\S4method{plotSurfaceComparison}{SPATA2}(
   object,
   color_by,
   alpha_by = FALSE,
@@ -33,8 +36,8 @@ plotSurfaceComparison(
   ...
 )
 
-plotSurfaceComparison2(
-  coords_df,
+\S4method{plotSurfaceComparison}{data.frame}(
+  object,
   color_by,
   alpha_by = FALSE,
   pt_alpha = 0.9,
@@ -53,6 +56,8 @@ plotSurfaceComparison2(
 )
 }
 \arguments{
+\item{...}{Additional arguments given to \code{ggplot2::facet_wrap()}.}
+
 \item{alpha_by}{Here, logical value. If TRUE, alpha of points is scaled
 to gene expression values in addition to the color of points.}
 
@@ -75,8 +80,6 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
-
-\item{...}{Additional arguments given to \code{ggplot2::facet_wrap()}.}
 
 \item{image}{An image of class \emph{Image} to be displayed in the background.
 Easily accessible via \code{SPATA::image()}.}

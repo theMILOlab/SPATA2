@@ -41,37 +41,11 @@ validAlluvialTypes <- function(){
 
 validation <- function(x){
 
-  if(!is(object = x, class2 = "spata2")){
-    stop("Input not of class 'spata2'.")
-  }
-
-  object <- x
-
-  if(!base::identical(object@version, current_spata2_version)){
-
-    if(base::exists(x = "x.updating.spata.object.x", envir = .GlobalEnv) &&
-       base::isTRUE(base::get("x.updating.spata.object.x"))
-    ){
-
-      base::invisible(TRUE)
-
-    } else {
-
-      base::warning(
-        glue::glue(
-          "Provided spata2-object is of version {version_string(object@version)}. ",
-          "Latest version is {version_string(current_spata2_version)}. ",
-          "Make sure to use 'updateSpataObject()' to ensure the objects integrity."
-        )
-      )
-
-    }
-
-  }
+  TRUE
 
 }
 
-
+#' @keywords internal
 validate_only_one_arg_specified <- function(input){
 
   arg_names <- base:::names(input)

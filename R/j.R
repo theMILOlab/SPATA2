@@ -6,29 +6,7 @@
 
 #' @title Join barcodes with additional variables
 #'
-#' @description Each member of the \code{joinWith()}-family takes a data.frame as
-#' input that contains at least the variables \emph{barcodes} and \emph{sample}.
-#' (Easily obtained with the \code{get*()}-family.) It extracts the specified
-#' variables and joins them over the barcode variable with the provided data.frame.
-#'
-#' @inherit argument_dummy params
-#' @inherit check_features params
-#' @inherit check_gene_sets params
-#' @inherit check_genes params
-#' @inherit check_smooth params
-#' @inherit check_method params
-#' @inherit check_uniform_genes params
-#' @inherit check_variables params
-#' @inherit gene_set_path params
-#' @inherit normalize params
-#' @param average_genes Logical. If set to TRUE the average expression of the
-#' specified genes is calculated and saved under one variable named 'mean_genes'.
-#'
-#' @details Hint: Variables of the specified data.frame \code{spata_df} that have equal names as
-#' the specified features, genes and gene-sets are overwritten!
-#'
-#' @return The input data.frame of \code{spata_df} joined with all the
-#' specified genes, gene-sets and/or features by the key-variable \emph{barcodes}.
+#' @description These functions have been deprecated in favor of [`joinWithVariables()`].
 #'
 #' @export
 
@@ -38,74 +16,28 @@ joinWith <- function(object,
                      gene_sets = NULL,
                      method_gs = NULL,
                      genes = NULL,
-                     average_genes = NULL,
-                     uniform_genes = NULL,
                      smooth = FALSE,
                      smooth_span = NULL,
                      verbose = NULL,
-                     normalize = NULL){
+                     normalize = NULL,
+                     ...){
 
-# 1. Control --------------------------------------------------------------
+  deprecated(fn = TRUE, ...)
 
-  hlpr_assign_arguments(object)
-
-  check_uniform_genes(uniform_genes)
-  check_smooth(df = spata_df, smooth = smooth, smooth_span = smooth_span)
-
-  confuns::check_data_frame(
-    df = spata_df,
-    var.class = list(
-      "barcodes" = "character"
-      ),
-    ref = "spata_df")
-
-  input_list <-
-    list(
-      "gene_sets" = gene_sets,
-      "genes" = genes,
-      "features" = features
-    )
-
-  input_list <- purrr::discard(input_list, .p = base::is.null)
-
-  if(base::is.character(input_list[["gene_sets"]])){
-
-    input_list$gene_sets <- check_gene_sets(object, input_list$gene_sets)
-
-  }
-
-  if(base::is.character(input_list[["genes"]])){
-
-    input_list$genes <- check_genes(object, input_list$genes)
-
-  }
-
-  if(base::is.character(input_list[["features"]])){
-
-    input_list$features <- check_features(object, input_list$features)
-
-  }
-
-  # -----
-
-  output_df <-
-    joinWithVariables(
-      object = object,
-      spata_df = spata_df,
-      variables = input_list,
-      method_gs = method_gs,
-      average_genes = average_genes,
-      uniform_genes = uniform_genes,
-      smooth = smooth,
-      smooth_span = smooth_span,
-      verbose = verbose,
-      normalize = normalize
-    )
-
-  return(output_df)
+  joinWithVariables(
+    object = object,
+    spata_df = spata_df,
+    variables = c(features, genes, gene_sets),
+    smooth = smooth,
+    smooth_span = smooth_span,
+    normalize = normalize,
+    verbose = verbose,
+    ...
+  )
 
 }
 
+#' @keywords internal
 #' @rdname joinWith
 #' @export
 joinWithFeatures <- function(object,
@@ -113,85 +45,25 @@ joinWithFeatures <- function(object,
                              features,
                              smooth = FALSE,
                              smooth_span = 0.02,
-                             verbose = TRUE){
+                             verbose = TRUE,
+                             ...){
 
-  # 1. Control --------------------------------------------------------------
+  deprecated(fn = TRUE, ...)
 
-  # lazy check
-
-  check_object(object)
-  check_spata_df(spata_df)
-  check_smooth(df = spata_df, smooth = smooth, smooth_span = smooth_span)
-
-  # adjusting check
-  features <- check_features(object, features = features)
-
-  msg <-
-    glue::glue(
-      "Joining{smooth_ref}{base::length(features)} {feature_ref}.",
-      feature_ref = confuns::adapt_reference(features, sg = "feature"),
-      smooth_ref = base::ifelse(test = base::isTRUE(smooth), yes = " and smoothing ", no = " " )
-      )
-
-  confuns::give_feedback(
-    msg = msg,
+  joinWithVariables(
+    object = object,
+    spata_df = spata_df,
+    variables = features,
+    smooth = smooth,
+    smooth_span = smooth_span,
+    normalize = normalize,
     verbose = verbose
   )
-
-  # overwrite check
-  discard <- features[features %in% base::colnames(spata_df)]
-  n_discard <- base::length(discard)
-
-  if(n_discard > 0){
-
-    msg <-
-      glue::glue(
-        "Overwriting {n_discard} feature-{var_ref}.",
-        var_ref = base::ifelse(n_discard == 1, "variable", "variables")
-        )
-
-    confuns::give_feedback(msg = msg, verbose = verbose)
-
-    spata_df <- dplyr::select(.data = spata_df, -dplyr::all_of(discard))
-
-  }
-
-  # -----
-
-  # 2. Join data ------------------------------------------------------------
-
-  fdata <-
-    getFeatureDf(object) %>%
-    dplyr::select(dplyr::all_of(x = c("barcodes", features)))
-
-  joined_df <-
-    dplyr::left_join(x = spata_df, y = fdata, by = "barcodes")
-
-  # -----
-
-  # 3. Smooth if specified -------------------------------------------------
-
-  if(base::isTRUE(smooth)){
-
-    joined_df <-
-      purrr::imap_dfr(.x = joined_df,
-                      .f = hlpr_smooth,
-                      coords_df = joined_df,
-                      smooth_span = smooth_span,
-                      aspect = "feature",
-                      subset = features)
-
-  }
-
-  confuns::give_feedback(msg = "Done.", verbose = verbose)
-
-  # -----
-
-  return(joined_df)
 
 }
 
 
+#' @keywords internal
 #' @rdname joinWith
 #' @export
 joinWithGenes <- function(object,
@@ -202,241 +74,25 @@ joinWithGenes <- function(object,
                           smooth = FALSE,
                           smooth_span = 0.02,
                           normalize = TRUE,
-                          verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  # 1. Control --------------------------------------------------------------
-
-  # lazy check
-
-  check_object(object)
-  check_spata_df(spata_df)
-  check_smooth(df = spata_df, smooth = smooth, smooth_span = smooth_span)
-  check_uniform_genes(uniform_genes)
-
-  # adjusting check
-
-  mtr_name <- getActiveMatrixName(object, verbose = verbose)
-
-  rna_assay <-
-    getMatrix(object, mtr_name = mtr_name) %>%
-    base::as.matrix()
-
-  genes <- check_genes(object, genes = genes, rna_assay = rna_assay)
-
-  # -----
-
-  barcodes <- spata_df$barcodes
-  rna_assay <- base::as.matrix(rna_assay[genes, barcodes])
-
-  # 2. Discard uniformly expressed genes ------------------------------------
-
-  n_genes <- base::length(genes)
-
-  n_bcsp <- base::nrow(spata_df)
-  sample <- spata_df$sample %>% base::unique()
-
-  total_n_bcsp <- getCoordsDf(object) %>% base::nrow()
-
-  if(uniform_genes == "discard" & n_bcsp != total_n_bcsp){
-
-    if(base::isTRUE(verbose)){
-
-      msg <-
-        glue::glue(
-          "Checking {n_genes} {ref} for uniform expression across all barcode-spots.",
-          ref = confuns::adapt_reference(input = genes, sg = "gene")
-          )
-
-      confuns::give_feedback(msg = msg, verbose = verbose)
-
-      pb <-
-        progress::progress_bar$new(
-          format = "Progress: [:bar] :percent eta: :eta",
-          total = n_genes, clear = FALSE, width = 100)
-
-    } else {
-
-      pb <- NULL
-
-    }
-
-    if(n_genes == 1){
-
-      uniformly_expressed <- hlpr_one_distinct(x = 1, base::t(rna_assay), pb = NULL, verbose = FALSE)
-
-    } else {
-
-      uniformly_expressed <-
-        purrr::map_lgl(
-          .x = 1:n_genes,
-          .f = hlpr_one_distinct,
-          rna_assay = rna_assay,
-          pb = pb,
-          verbose = verbose
-        )
-
-    }
-
-    n_uniformly_expressed <- base::sum(uniformly_expressed)
-
-    if(n_uniformly_expressed >= 1){
-
-      genes <- genes[!uniformly_expressed]
-      n_genes <- base::length(genes)
-
-      confuns::give_feedback(
-        msg = glue::glue("Discarded {n_uniformly_expressed} genes."),
-        verbose = verbose
-      )
-
-      if(n_genes < 1){
-
-        base::stop("All genes have been discarded due to uniform expression.")
-
-      }
-
-    } else if(base::isTRUE(verbose)){
-
-      confuns::give_feedback(msg = "No uniformly expressed genes found.")
-
-    }
-
-  }
-
-  # -----
-
-
-  # 3. Extract genes and join values with spata_df -------------------------
-
-  ref <- base::ifelse(n_genes == 1, "gene", "genes")
-
-  if(n_genes > 1 && average_genes){
-
-    if(base::isTRUE(verbose) && base::isTRUE(smooth)){
-
-      confuns::give_feedback(msg = glue::glue("Averaging, joining and smoothing {n_genes} {ref}."))
-
-    } else if(base::isTRUE(verbose)){
-
-      confuns::give_feedback(msg = glue::glue("Averaging and joining {n_genes} {ref}."))
-
-    }
-
-    rna_assay <- base::colMeans(rna_assay[genes, barcodes])
-    col_names <- "mean_genes"
-    n_genes <- "averaged"
-
-  } else if(n_genes > 1){
-
-    if(base::isTRUE(verbose) && base::isTRUE(smooth)){
-
-      confuns::give_feedback(
-        msg = glue::glue("Joining and smoothing {n_genes} {ref}."),
-        verbose = verbose
-        )
-
-    } else if(base::isTRUE(verbose)){
-
-      confuns::give_feedback(
-        msg = glue::glue("Joining {n_genes} {ref}."),
-        verbose = verbose
-        )
-
-    }
-
-    rna_assay <- base::t(rna_assay[genes, barcodes])
-    col_names <- genes
-
-  } else if(n_genes == 1){
-
-    if(base::isTRUE(average_genes)){
-
-      col_names <- "mean_genes"
-      n_genes <- "averaged"
-
-    } else {
-
-      col_names <- genes
-
-    }
-
-  }
-
-  # convert results to data frame with appropriate column names
-  gene_vls <-
-    base::as.data.frame(rna_assay, row.names = NULL) %>%
-    magrittr::set_colnames(value = col_names) %>%
-    dplyr::mutate(barcodes = spata_df$barcodes)
-
-
-  # overwrite check
-  discard <- col_names[col_names %in% base::colnames(spata_df)]
-  n_discard <- base::length(discard)
-
-  if(n_discard > 0){
-
-    ref <- base::ifelse(n_discard == 1, "variable", "variables")
-
-    confuns::give_feedback(msg = glue::glue("Overwriting {n_discard} gene-{ref}."))
-
-    spata_df <- dplyr::select(.data = spata_df, -dplyr::all_of(discard))
-
-  }
-
-  # join both
-  joined_df <-
-    dplyr::left_join(x = spata_df, y = gene_vls, by = "barcodes")
-
-
-  # -----
-
-  # 4. Smooth and normalize if specified ------------------------------------
-
-  if(base::isTRUE(smooth)){
-
-    if(base::isTRUE(verbose)){
-
-      pb <- progress::progress_bar$new(
-        format = "Progress: [:bar] :percent eta: :eta",
-        total = base::ncol(joined_df), clear = FALSE, width = 100)
-
-    } else {
-
-      pb <- NULL
-
-    }
-
-    joined_df <-
-      purrr::imap_dfr(.x = joined_df,
-                      .f = hlpr_smooth,
-                      coords_df = joined_df,
-                      smooth_span = smooth_span,
-                      aspect = "gene",
-                      subset = col_names,
-                      pb = pb)
-
-
-  }
-
-  if(base::isTRUE(normalize)){
-
-    joined_df <-
-      purrr::imap_dfr(.x = joined_df,
-                      .f = hlpr_normalize_imap,
-                      aspect = "Gene",
-                      subset = col_names
-      )
-
-  }
-
-  # -----
-
-  return(joined_df)
+                          verbose = NULL,
+                          ...){
+
+  deprecated(fn = TRUE, ...)
+
+  joinWithVariables(
+    object = object,
+    spata_df = spata_df,
+    variables = genes,
+    smooth = smooth,
+    smooth_span = smooth_span,
+    normalize = normalize,
+    uniform_variables = uniform_variables,
+    verbose = verbose
+  )
 
 }
 
+#' @keywords internal
 #' @rdname joinWith
 #' @export
 joinWithGeneSets <- function(object,
@@ -447,242 +103,20 @@ joinWithGeneSets <- function(object,
                              smooth_span = 0.02,
                              normalize = TRUE,
                              verbose = TRUE,
-                             ignore = T){
+                             ignore = T,
+                             ...){
 
-  # 1. Control --------------------------------------------------------------
+  deprecated(fn = TRUE, ...)
 
-  # lazy check
-
-  check_object(object)
-  check_spata_df(spata_df)
-  check_smooth(df = spata_df, smooth = smooth, smooth_span = smooth_span)
-  check_method(method_gs = method_gs)
-
-  # adjusting check
-  gene_sets <- check_gene_sets(object, gene_sets = gene_sets)
-
-  # overwrite check
-  discard <- gene_sets[gene_sets %in% base::colnames(spata_df)]
-  n_discard <- base::length(discard)
-
-  if(n_discard > 0){
-
-    ref <- base::ifelse(n_discard == 1, "variable", "variables")
-
-    confuns::give_feedback(msg = glue::glue("Overwriting {n_discard} gene-set-{ref}."))
-    spata_df <- dplyr::select(.data = spata_df, -dplyr::all_of(discard))
-
-  }
-  # -----
-
-  # 2. Extract gene set data and join with spata_df ------------------------
-
-  mtr_name <- getActiveMatrixName(object, verbose = verbose)
-
-  rna_assay <- getMatrix(object, mtr_name = mtr_name)
-
-  gene_set_df <- getGeneSetDf(object = object)
-  joined_df <- spata_df
-
-  if(base::isTRUE(smooth)){
-
-    spata_df <- base::as.data.frame(spata_df)
-
-    base::rownames(spata_df) <- spata_df$barcodes
-
-    x <- dplyr::pull(spata_df, var = x)
-    y <- dplyr::pull(spata_df, var = y)
-    smooth_ref <- " and smoothing "
-
-  } else {
-
-    smooth_ref <- " "
-
-  }
-
-  #feedback vectors
-  filter_gs <- 0.01
-  ignored_gs <- glue::glue("\nIgnored gene-sets due to insufficient gene representation (less then {filter_gs*100}%) in expression matrix:")
-  skipped_gs <- base::character()
-
-  num_gs <- base::length(gene_sets)
-
-  ref <- confuns::adapt_reference(input = gene_sets, sg = "gene-set")
-
-  msg <- glue::glue("Calculating{smooth_ref}expression score for {base::length(gene_sets)} {ref} according to method '{method_gs}'.")
-
-  confuns::give_feedback(msg = msg, verbose = verbose)
-
-  if(base::isTRUE(verbose)){
-
-    pb <- progress::progress_bar$new(
-      format = "Progress: [:bar] :percent eta: :eta",
-      total = num_gs, clear = FALSE, width = 100)
-
-  }
-
-  for(i in base::seq_along(gene_sets)){
-
-    if(base::isTRUE(verbose)){pb$tick()}
-
-    gs <- gene_sets[i]
-
-    # get genes of gene set
-    gs_df <- dplyr::filter(gene_set_df, ont %in% gene_sets[i])
-
-    n_genes <- base::nrow(gs_df)
-
-    # get genes found in expression matrix
-    genes <-
-      dplyr::filter(gs_df, gene %in% base::rownames(rna_assay)) %>%
-      dplyr::pull(gene)
-
-    n_found_genes <- base::length(genes)
-
-    not_found <- gs_df$gene[!gs_df$gene %in% base::rownames(rna_assay)]
-
-    ref <- confuns::adapt_reference(input = not_found, sg = "gene")
-    ref2 <- confuns::scollapse(not_found)
-
-    confuns::give_feedback(
-      msg = glue::glue("Of gene set {gs} did not find {ref} {ref2} in assay."),
-      verbose = FALSE
+  joinWithVariables(
+    object = object,
+    spata_df = spata_df,
+    variables = gene_sets,
+    smooth = smooth,
+    smooth_span = smooth_span,
+    normalize = normalize,
+    verbose = verbose
     )
-
-    # calculate percentage of genes found
-    p_found_genes <- base::round(n_found_genes/n_genes, digits = 2)
-
-    # make sure that percentage is equal to or higher than the threshold
-    if(TRUE){
-
-      if(p_found_genes >= filter_gs){
-
-        # apply specified method to handle gene sets
-
-        if(base::length(genes) == 1){
-
-          gs <- gene_sets[i]
-
-          warning(glue::glue("Only one gene ('{genes}') found of gene set '{gs}'."))
-
-          geneset_vls <-
-            base::tryCatch({
-
-              base::as.matrix(rna_assay[genes, ]) %>%
-                base::as.data.frame() %>%
-                magrittr::set_colnames(value = gene_sets[i]) %>%
-                tibble::rownames_to_column(var = "barcodes")
-
-            }, error = function(error){
-
-              warning(glue::glue("Error at {gene_sets[i]}: {error}"))
-
-              base::data.frame(barcodes = colnames(rna_assay))
-
-            })
-
-        } else if(method_gs == "mean"){
-
-          geneset_vls <-
-            base::tryCatch({
-
-              base::as.matrix(rna_assay[genes, ]) %>%
-                base::colMeans() %>%
-                base::as.data.frame() %>%
-                magrittr::set_colnames(value = gene_sets[i]) %>%
-                tibble::rownames_to_column(var = "barcodes")
-
-            }, error = function(error){
-
-              warning(glue::glue("Error at {gene_sets[i]}: {error}"))
-
-              base::data.frame(barcodes = colnames(rna_assay))
-
-            })
-
-        } else if(method_gs %in% c("gsva", "ssgsea", "zscore", "plage")) {
-
-          geneset_vls <-
-            GSVA::gsva(
-              expr = base::as.matrix(rna_assay[genes,]),
-              gset.idx.list = gene_set_df,
-              mx.diff = 1,
-              parallel.sz = 2,
-              method = method_gs,
-              verbose = FALSE
-            ) %>%
-            base::t() %>%
-            as.data.frame() %>%
-            magrittr::set_colnames(value = gene_sets[i]) %>%
-            tibble::rownames_to_column(var = "barcodes")
-
-        }
-
-        # smoothing
-        if(base::isTRUE(smooth)){
-
-          variable <- dplyr::pull(.data = geneset_vls, var = gene_sets[i])
-
-          x <- spata_df[geneset_vls$barcodes, ][["x"]]
-          y <- spata_df[geneset_vls$barcodes, ][["y"]]
-
-          model <- stats::loess(formula = variable ~ x*y, span = smooth_span/10)
-
-          geneset_vls[, gene_sets[i]] <- stats::predict(model)
-
-        }
-
-        # gradually add gene-set columns to joined_df
-        joined_df <-
-          dplyr::left_join(x = joined_df, y = geneset_vls, by = "barcodes")
-
-      }
-
-    } else {
-
-      skipped_gs <- base::append(x = skipped_gs, values = gene_sets[i])
-
-      ignored_gs <-
-        base::append(x = ignored_gs,
-                     values = glue::glue("\n- '{gene_sets[i]}'. Percentage of genes found: {p_found_genes}"))
-
-    }
-
-  }
-
-
-  # -----
-
-
-  # 3. Normalize if specified -----------------------------------------------
-
-  if(base::isTRUE(normalize)){
-
-    gene_sets <- gene_sets[gene_sets %in% base::colnames(joined_df)]
-
-    assign("joined_df", joined_df, envir = .GlobalEnv)
-
-    # normalize
-    joined_df <-
-      purrr::imap_dfr(.x = joined_df,
-                    .f = hlpr_normalize_imap,
-                    aspect = "Gene set",
-                    subset = gene_sets)
-
-  }
-
-  if(base::length(ignored_gs) > 1){
-
-    base::message("Warning:")
-    base::append(x = ignored_gs,
-                 values = "\n(Run 'adjustGeneSetDf()' in order to avoid this warning message.)") %>%
-    base::writeLines()
-
-  }
-
-  # -----
-
-  return(joined_df)
 
 }
 
@@ -722,8 +156,8 @@ joinWithPca <- function(object,
 
   check_spata_df(spata_df = spata_df)
 
-  pca_df <- getPcaDf(object = object,
-                     n_pcs = n_pcs) %>%
+  pca_df <-
+    getPcaDf(object = object, n_pcs = n_pcs) %>%
     dplyr::select(-dplyr::any_of("sample"))
 
   cnames_pca <-
@@ -849,87 +283,199 @@ joinWithUmap <- function(object,
 
 
 
-#' @rdname joinWith
+
+#' @title Join data with variables
+#'
+#' @description Joins data.frames of the `SPATA2` objects observations with additional
+#' variables, such as molecular data, signatures, and meta features.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data frame containing spatial data joined with additional variables.
+#'
+#' @details This function joins spatial data from `spata_df` with additional variables specified in 'variables'.
+#' It retrieves molecular data, signatures, and meta features from the provided object and adds them to the spatial data frame.
+#' Additionally, it can perform smoothing and normalization on numeric variables if desired. The 'uniform' parameter determines
+#' how variables with uniform values are handled.
+#'
+#' @seealso [`getVarTypeList()`], [`getMolTypeList()`], [`getSignatureTypeList()`], [`getMetaDf()`]
+#'
+#' @note This function replaces the old `joinWith()`, `joinWithGenes()`, `joinWithFeatures()` functions!
+#'
+#' @examples
+#' # Join spatial data with molecular and/or meta features
+#'
+#' coords_df <- getCoordsDf(object)
+#'
+#' joined_data <- joinWithVariables(object, spata_df = coords_df, variables = c("GFAP", "HM_HYXPOXIA"))
+#'
 #' @export
 joinWithVariables <- function(object,
-                              spata_df = getCoordsDf(object),
                               variables,
-                              method_gs = "mean",
-                              average_genes = FALSE,
-                              uniform_genes = "discard",
-                              smooth = FALSE,
-                              smooth_span = 0.02,
-                              normalize = TRUE,
-                              verbose = TRUE){
+                              spata_df = getCoordsDf(object),
+                              smooth = NULL,
+                              smooth_span = NULL,
+                              normalize = NULL,
+                              uniform_variables = "discard",
+                              verbose = NULL,
+                              ...){
 
-  if(base::is.list(x = variables)){
+  deprecated(...)
+  hlpr_assign_arguments(object)
 
-    stopifnot(base::any(c("features", "genes", "gene_sets") %in% base::names(variables)))
+  # prepare
+  variables <- variables[!variables %in% c("barcodes", "sample")]
+  variables <- base::unique(variables)
+  spata_df <- dplyr::select(spata_df, -dplyr::any_of(variables))
 
-  } else {
+  # stratify variables
+  var_types <- getVarTypeList(object, variables = variables)
 
-    variable_list <-
-      list(
-        "features" = base::character(),
-        "genes" = base::character(),
-        "gene_sets" = base::character()
-      )
+  # add molecules
+  if(!purrr::is_empty(var_types$molecules)){
 
-    variable_list[["features"]] <- variables[variables %in% getFeatureNames(object)]
-    variable_list[["genes"]] <- variables[variables %in% getGenes(object)]
-    variable_list[["gene_sets"]] <- variables[variables %in% getGeneSets(object)]
+    molecule_list <- getMoleculeTypeList(object, molecules = var_types$molecules)
 
-    variables <- purrr::discard(.x = variable_list, .p = ~ base::length(.x) == 0)
+    for(assay_name in base::names(molecule_list)){
+
+      molecules <- molecule_list[[assay_name]]
+
+      mtr <-
+        getMatrix(
+          object = object,
+          mtr_name = activeMatrix(object, assay_name = assay_name),
+          assay_name = assay_name
+        )
+
+      if(base::length(molecules) == 1){
+
+        mol_df <-
+          base::as.matrix(mtr[molecules, spata_df$barcodes]) %>%
+          base::as.data.frame() %>%
+          magrittr::set_colnames(value = molecules) %>%
+          tibble::rownames_to_column(var = "barcodes") %>%
+          tibble::as_tibble() %>%
+          dplyr::select(barcodes, dplyr::all_of(molecules))
+
+        spata_df <- dplyr::left_join(x = spata_df, y = mol_df, by = "barcodes")
+
+      } else {
+
+        mol_df <-
+          base::as.matrix(mtr[molecules, spata_df$barcodes]) %>%
+          base::t() %>%
+          base::as.data.frame() %>%
+          tibble::rownames_to_column(var = "barcodes") %>%
+          tibble::as_tibble() %>%
+          dplyr::select(barcodes, dplyr::all_of(molecules))
+
+        spata_df <- dplyr::left_join(x = spata_df, y = mol_df, by = "barcodes")
+
+      }
+
+    }
+
+  }
+
+  # add signatures
+  if(!purrr::is_empty(var_types$signatures)){
+
+    signatures <- getSignatureTypeList(object, signatures = var_types$signatures)
+
+    for(assay_name in base::names(signatures)){
+
+      mtr <-
+        getMatrix(
+          object = object,
+          mtr_name = activeMatrix(object, assay_name = assay_name),
+          assay_name = assay_name
+        )
+
+      for(signature in signatures[[assay_name]]){
+
+        mols_signature <- getMolecules(object, signature = signature, assay_name = assay_name)
+
+        sign_df <-
+          base::as.matrix(mtr[mols_signature, spata_df$barcodes]) %>%
+          base::colMeans() %>%
+          base::as.data.frame() %>%
+          magrittr::set_colnames(value = signature) %>%
+          tibble::rownames_to_column(var = "barcodes")
+
+        spata_df <- dplyr::left_join(x = spata_df, y = sign_df, by = "barcodes")
+
+      }
+
+    }
 
   }
 
 
-  if("features" %in% base::names(variables)){
+  # add meta features
+  if(!purrr::is_empty(var_types$meta_features)){
 
-    spata_df <-
-      joinWithFeatures(
-        object = object,
-        features = variables$features,
-        spata_df = spata_df,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        verbose = verbose
-      )
+    meta_df <-
+      getMetaDf(object) %>%
+      dplyr::select(barcodes, -sample, dplyr::all_of(var_types$meta_features))
+
+    spata_df <- dplyr::left_join(x = spata_df, y = meta_df, by = "barcodes")
 
   }
 
-  if("genes" %in% base::names(variables)){
 
-    spata_df <-
-      joinWithGenes(
-        object = object,
-        spata_df = spata_df,
-        genes = variables$genes,
-        average_genes = average_genes,
-        uniform_genes = uniform_genes,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        normalize = normalize,
-        verbose = verbose
-      )
+  # remove variables with uniform values
+  if(uniform_variables == "discard"){
+
+    remove <-
+      purrr::map_lgl(spata_df, .f = ~ base::is.numeric(.x) & dplyr::n_distinct(.x) == 1) %>%
+      base::unname()
+
+    spata_df <- spata_df[, !remove]
 
   }
 
-  if("gene_sets" %in% base::names(variables)){
+
+  # smooth if desired
+  if(base::isTRUE(smooth)){
+
+    numeric_vars <-
+      dplyr::select(spata_df, dplyr::where(base::is.numeric) & dplyr::any_of(variables)) %>%
+      base::colnames()
+
+    x <- spata_df$x
+    y <- spata_df$y
+
+    for(nv_name in numeric_vars){
+
+      num_var <- spata_df[[nv_name]]
+
+      num_var[base::is.na(num_var) | base::is.infinite(num_var)] <- base::min(num_var)
+
+      spata_df[[nv_name]] <-
+        stats::loess(formula = num_var ~ x + y, span = smooth_span/10) %>%
+        stats::predict()
+    }
+
+  }
+
+  # normalize / scale if desired
+  if(base::isTRUE(normalize)){
 
     spata_df <-
-      joinWithGeneSets(
-        object = object,
-        spata_df = spata_df,
-        gene_sets = variables$gene_sets,
-        method_gs = method_gs,
-        smooth = smooth,
-        smooth_span = smooth_span,
-        normalize = normalize,
-        verbose = verbose
+      dplyr::mutate(
+        .data = spata_df,
+        dplyr::across(
+          .cols = dplyr::any_of(variables) & dplyr::where(base::is.numeric),
+          .fns = confuns::normalize
+          )
       )
+
   }
 
   return(spata_df)
 
 }
+
+
+
+

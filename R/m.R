@@ -178,6 +178,8 @@ makeContent.resizingTextGrob <- function(x) {
 #' correspond to the start- and end point of the crossing vector.
 #' @export
 #'
+#' @keywords internal
+#'
 make_orthogonal_segment <- function(sp, ep, out_length, inters_loc = "m"){
 
   x <- sp[1]
@@ -225,7 +227,7 @@ make_orthogonal_segment <- function(sp, ep, out_length, inters_loc = "m"){
 #' @return A list of two slots named *sp* and *ep*. Both contain
 #' numeric vectors of length two that correspond to the start and
 #' end point of the orthogonal vector.
-#'
+#' @keywords internal
 make_orthogonal_segments <- function(sp, ep, binwidth, out_length) {
 
   x <- sp[1]
@@ -328,7 +330,7 @@ make_scattermore_add_on <- function(mapping,
 
 }
 
-
+#' @keywords internal
 make_sf_polygon <- function(poly){
 
   sf::st_polygon(base::list(base::as.matrix(poly)))
@@ -340,9 +342,9 @@ make_sf_polygon <- function(poly){
 
 #' @title Image annotation and barcode intersection
 #'
-#' @description Creates a data.frame that maps the tags of image annotations
+#' @description Creates a data.frame that maps the tags of spatial annotations
 #' to the barcodes that were covered by the spatial extent of the respective
-#' image annotation.
+#' spatial annotation.
 #'
 #' @inherit argument_dummy params
 #' @param merge Logical value. If TRUE, the results are merged in a single variable.
@@ -357,32 +359,32 @@ make_sf_polygon <- function(poly){
 #' @return A data.frame.
 #' @export
 #'
-mapImageAnnotationTags <- function(object,
-                                   ids = NULL,
-                                   tags = NULL,
-                                   merge = TRUE,
-                                   merge_name = "img_annotations",
-                                   merge_missing = "none",
-                                   merge_sep = "_",
-                                   merge_drop = FALSE){
+mapSpatialAnnotationTags <- function(object,
+                                     ids = NULL,
+                                     tags = NULL,
+                                     merge = TRUE,
+                                     merge_name = "spat_annotations",
+                                     merge_missing = "none",
+                                     merge_sep = "_",
+                                     merge_drop = FALSE){
 
-  img_annotations <-O
-  getImageAnnotations(
-    object = object,
-    ids = ids,
-    tags = tags,
-    add_image = FALSE,
-    add_barcodes = TRUE
-  )
+  img_annotations <-
+    getSpatialAnnotations(
+      object = object,
+      ids = ids,
+      tags = tags,
+      add_image = FALSE,
+      add_barcodes = TRUE
+    )
 
-  img_ann_tags <- getImageAnnotationTags(object)
+  img_ann_tags <- getSpatialAnnotationTags(object)
 
   spata_df <- getSpataDf(object)
 
   for(img_ann_tag in img_ann_tags){
 
     barcodes <-
-      getImageAnnotationBarcodes(
+      getSpatialAnnotationBarcodes(
         object = object,
         tags = img_ann_tag,
         test = "any"
@@ -432,6 +434,15 @@ mapImageAnnotationTags <- function(object,
 
 }
 
+#' @rdname mapSpatialAnnotationTags
+#' @export
+mapImageAnnotationTags <- function(...){
+
+  deprecated(fn = TRUE)
+
+  mapSpatialAnnotationTags(...)
+
+}
 
 
 # merge -------------------------------------------------------------------
@@ -473,7 +484,7 @@ mergeGroups <- function(object,
   sample_name <- getSampleNames(object)[1]
 
   object <-
-    getFeatureDf(object) %>%
+    getMetaDf(object) %>%
     lump_groups(
       grouping.variable = grouping_variable,
       grouping.variable.new = grouping_variable_new,
@@ -482,10 +493,9 @@ mergeGroups <- function(object,
       lump.to = new_group,
       verbose = verbose
     ) %>%
-    setFeatureDf(
+    setMetaDf(
       object = object,
-      feature_df = .,
-      of_sample = of_sample
+      meta_df = .
     )
 
   if(!base::is.character(grouping_variable_new)){
@@ -623,7 +633,7 @@ mergeSpatialAnnotations <- function(object,
 #'
 mergeTissueSections <- function(object, ...){
 
-  base::stopifnot(tissueSectionsIdentfied(object))
+  containsTissueOutline(object)
 
   merge_input <- purrr::keep(.x = list(...), .p = base::is.numeric)
 
@@ -1574,7 +1584,7 @@ moduleSurfacePlotServer <- function(id,
       fdata <- shiny::reactive({
 
         fdata <-
-          getFeatureDf(object = object)[, c("barcodes", current$feature)]
+          getMetaDf(object = object)[, c("barcodes", current$feature)]
 
         return(fdata)
 
@@ -1996,6 +2006,7 @@ moduleSurfacePlotServer <- function(id,
 
 
 # mS ----------------------------------------------------------------------
+
 #' @keywords internal
 mSwitch <- function(inputId, label = NULL, status = "success", width = "80%", app = "annotateImage", helper = TRUE, hslot = inputId, ...){
 

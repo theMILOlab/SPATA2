@@ -4,13 +4,7 @@
 \alias{getBarcodes}
 \title{Obtain specific barcodes}
 \usage{
-getBarcodes(
-  object,
-  across = NULL,
-  across_subset = NULL,
-  of_sample = NA,
-  simplify = TRUE
-)
+getBarcodes(object, across = NULL, across_subset = NULL, simplify = TRUE)
 }
 \arguments{
 \item{object}{A valid spata-object.}
@@ -28,9 +22,6 @@ with a \emph{'-'}. (Saves writing if there are more groups you are interested in
 than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 Named character vector or list.

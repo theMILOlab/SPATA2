@@ -2,7 +2,7 @@
 % Please edit documentation in R/add.R
 \name{addFeatures}
 \alias{addFeatures}
-\title{Add a new feature}
+\title{Add features manually}
 \usage{
 addFeatures(
   object,
@@ -15,34 +15,24 @@ addFeatures(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{feature_df}{A data.frame that contains a variable called \emph{barcodes} or \emph{x} and \emph{y} as well
+as the variables that are to be joined.}
 
-\item{feature_df}{A data.frame that contains the key variables as well
-as the informative variables that are to be joined.}
-
-\item{feature_names}{Character vector or NULL. See details for more.}
-
-\item{key_variable}{Character value. Either \emph{'barcodes'} or \emph{'coordinates'}.
-If set to \emph{'coordinates'} the \code{feature_df}-input must contain numeric x- and
-y- variables.
-
-Key variables are variables in a data.frame that uniquely identify each observation -
-in this case each barcode-spot. In SPATA the barcode-variable is a key-variable on its own,
-x- and y-coordinates work as key-variables if they are used combined.}
+\item{feature_names}{Character vector or \code{NULL}. Determines which feature variables
+to add. See details for more.}
 
 \item{overwrite}{Logical. If the specified feature names already exist in the
-current spata-object this argument must be set to TRUE in order to overwrite them.}
+current \code{SPATA2} object this argument must be set to TRUE in order to overwrite them.}
 }
 \value{
 The input object containing the added or computed
 results.
 }
 \description{
-Adds new externally generated variables to the spata-object's feature data
-to make them available for all SPATA-intern functions.
+Adds new externally generated variables to the \code{SPATA2} object's meta data.
 }
 \details{
-If you are only interested in adding specific features to the spata-object
+If you are only interested in adding specific features to the \code{SPATA2} object
 you can specify those with the \code{feature_names}-argument. If no variables
 are specified this way all variables found in the input data.frame for argument
 \code{feature_df} are taken. (Apart from variables called \emph{barcodes, sample, x} and \emph{y}).

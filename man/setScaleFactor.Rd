@@ -2,21 +2,21 @@
 % Please edit documentation in R/setA-Z.R
 \name{setScaleFactor}
 \alias{setScaleFactor}
-\alias{setScaleFactor,spata2-method}
+\alias{setScaleFactor,SPATA2-method}
 \alias{setScaleFactor,HistoImaging-method}
 \alias{setScaleFactor,HistoImage-method}
 \title{Set scale factors}
 \usage{
 setScaleFactor(object, ...)
 
-\S4method{setScaleFactor}{spata2}(object, fct_name, value)
+\S4method{setScaleFactor}{SPATA2}(object, fct_name, value)
 
 \S4method{setScaleFactor}{HistoImaging}(object, fct_name, value)
 
 \S4method{setScaleFactor}{HistoImage}(object, fct_name, value)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

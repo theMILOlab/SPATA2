@@ -48,7 +48,7 @@
 #' @seealso \code{\link{compute_positions_expression_estimates}}
 
 #'
-#' @export
+#' @internal
 
 obtain_inferred_gradient <- function(coords_df,
                                      variable,

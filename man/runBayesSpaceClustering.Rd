@@ -27,7 +27,7 @@ runBayesSpaceClustering(
   beta = 0.01,
   save.chain = FALSE,
   chain.fname = NULL,
-  prefix = "",
+  prefix = "B",
   return_model = TRUE,
   empty_remove = FALSE,
   overwrite = FALSE,
@@ -39,7 +39,7 @@ runBayesSpaceClustering(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{name}{Character value. The name the cluster variable has in
@@ -123,7 +123,8 @@ of output clusters with input value. If \code{FALSE}, the optimal number
 of clusters is chosen for \code{q} determined by the elbow point of \code{BayesSpace::qTune()}.}
 }
 \value{
-An updated \code{SPATA2} object.
+The input object containing the added or computed
+results.
 }
 \description{
 A wrapper around the BayesSpace clustering pipeline introduced

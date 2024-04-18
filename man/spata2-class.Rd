@@ -4,50 +4,35 @@
 \name{SPATA2-class}
 \alias{SPATA2-class}
 \alias{SPATA2}
-\title{The \code{SPATA2} class}
+\title{The \code{SPATA2} - class}
 \description{
-A class to represent spatial transcriptomic and other -omic
-studies.
+The \code{SPATA2} - class
 }
 \section{Slots}{
 
 \describe{
-\item{\code{compatibility}}{list. A list for miscellaneous short-term solutions, mainly
-to maintain compatibility.}
+\item{\code{assays}}{A list of assays containing molecular data.}
 
-\item{\code{coordinates}}{list. A list of data.frames that contain coordinates for
-observations that are not equal to the observational unit of the method (e.g.
-single cell deconvolution for Visium, molecules for MERFISH).}
+\item{\code{compatibility}}{A list detailing compatibility information.}
 
-\item{\code{fdata}}{data.frame. A data.frame in which data variables of the obesrvations
-of the underlying spatial method are stored that are not molecule counts as stored
-in \code{Assay} objects within slot \verb{@omics}. (e.g. clustering, histological grouping,
-number of counts, etc.)}
+\item{\code{dim_red}}{A list containing dimensionality reduction results.}
 
-\item{\code{signatures}}{list. A named list of character vectors. Each character vector
-corresponds to a signature represented by molecules that are known to work together
-in a way described by the name of the signature (e.g. HM_HYPOXIA: a signature
-of multiple genes known to be upregulated in case of hypoxic environments)}
+\item{\code{images}}{An object of class 'HistoImaging' representing histological images.}
 
-\item{\code{information}}{list. A list for miscellaneous information around the object.}
+\item{\code{logfile}}{A data frame containing log file data.}
 
-\item{\code{logfile}}{data.frame. A data.frame of prompts used on the object that return
-the object (e.g. \code{\link[=runBayesSpaceClustering]{runBayesSpaceClustering()}}) including the argument input. Used to
-keep track of the analysis progress as well as aid for debugging.}
+\item{\code{meta_obs}}{A data frame containing metadata for observations.}
 
-\item{\code{meta}}{list. A list of meta data regarding the object, the tissue, and the
-experimental desgin, etc.}
+\item{\code{meta_info}}{A list providing additional metadata information.}
 
-\item{\code{method}}{SpatialMethod. An object of class \code{\link{SpatialMethod}} that contains
-information around the spatial method to which the object corresponds.}
+\item{\code{method}}{An object of class 'SpatialMethod' detailing the spatial method used.}
 
-\item{\code{omics}}{list. A list of \code{\link{AssayData}} objects.}
+\item{\code{obj_info}}{A list containing additional object information.}
 
-\item{\code{sample}}{character. The name of the object.}
+\item{\code{sample}}{A character vector of sample identifiers.}
 
-\item{\code{spatial}}{HistoImaging. An object of class \code{\link{HistoImaging}} storing multiple
-spatial information.}
+\item{\code{spatial}}{A list containing spatial data.}
 
-\item{\code{version}}{list. The version of the object.}
+\item{\code{version}}{A list specifying versioning details.}
 }}
 

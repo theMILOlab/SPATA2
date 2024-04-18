@@ -7,7 +7,7 @@
 removeTissueFragments(object, fragments = NULL, fdb_fn = "message")
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{fragments}{Numeric vector, character vector or \code{NULL}. If \code{NULL},

@@ -5,271 +5,6 @@
 
 # runA --------------------------------------------------------------------
 
-#' @title Assessment of Neural Network Set Up
-#'
-#' @description Assesses different neural network set ups regarding
-#' the activation function and the number of bottleneck neurons.
-#'
-#' @inherit check_object params
-#' @param expr_mtr The expression matrix that is to be used as input for the neural network.
-#' @param activations Character vector. Denotes the activation functions to be assessed.
-#' @param bottlenecks Numeric vector. Denotes the different numbers of bottleneck neurons to be assessed.
-#' @inherit runAutoencoderDenoising params
-#'
-#' @return
-#'
-#' \itemize{
-#' \item{\code{runAutoencoderAssessment()}: The spata object containing the list that holds the total variance measured by \code{irlba::prcomp_irlba()} after each
-#' combination of activations/bottlenecks as well as the additional set up.}
-#' \item{\code{assessAutoencoderOptions()}:
-#' The list that holds the total variance measured by \code{irlba::prcomp_irlba()} after each combination
-#' of activations/bottlenecks as well as the additional set up.}
-#' }
-#'
-#' @export
-
-runAutoencoderAssessment <- function(object,
-                                     activations,
-                                     bottlenecks,
-                                     layers = c(128, 64, 32),
-                                     dropout = 0.1,
-                                     epochs = 20,
-                                     verbose = TRUE){
-
-  check_object(object)
-
-  assessment_list <-
-    assessAutoencoderOptions(expr_mtr = getExpressionMatrix(object, of_sample = "", mtr_name = "scaled"),
-                             activations = activations,
-                             bottlenecks = bottlenecks,
-                             layers = layers,
-                             dropout = dropout,
-                             epochs = epochs,
-                             verbose = verbose)
-
-  object <- setAutoencoderAssessment(object = object, assessment_list = assessment_list)
-
-  return(object)
-
-}
-
-
-
-
-#' @title Denoise expression matrix
-#'
-#' @description This function constructs and uses a neural network to denoise
-#' expression levels spatially.
-#'
-#' @inherit check_object params
-#' @param layers Numeric vector of length 3. Denotes the number of neurons in the three hidden layers.
-#'  (default = c(128, 64, 32))
-#' @param bottleneck Numeric value. Denotes the number of bottleneck neurons.
-#' @param mtr_name_output Character value. Denotes the name under which the denoised matrix is stored
-#' in the data slot.
-#' @param dropout Numeric value. Denotes the dropout. (defaults to 0.1)
-#' @param activation Character value. Denotes the activation function. (defaults to \emph{'relu'})
-#' @param epochs Numeric value. Denotes the epochs of the neural network. (defaults to 20)
-#' @param display_plot Logical. If set to TRUE a scatter plot of the result is displayed in the viewer pane.
-#' See documentation for \code{plotAutoencoderResults()} for more information.
-#' @param genes Character vector of length two. Denotes the genes to be used for the validation plot.
-#' @param set_as_active Logical. If set to TRUE the denoised matrix is set as the active matrix via
-#' \code{setActiveExpressionMatrix()}.
-#'
-#' @return A spata-object containing the denoised expression matrix in slot @@data$denoised. This matrix
-#' is then denoted as the active matrix.
-#'
-#' @importFrom Seurat ScaleData
-#'
-#' @export
-
-runAutoencoderDenoising <- function(object,
-                                    activation = "relu",
-                                    bottleneck = 56,
-                                    mtr_name_output = "denoised",
-                                    layers = c(128, 64, 32),
-                                    dropout = 0.1,
-                                    epochs = 20,
-                                    display_plot = FALSE,
-                                    genes = NULL,
-                                    set_as_active = FALSE,
-                                    verbose = TRUE,
-                                    of_sample = NA){
-
-  # 1. Control --------------------------------------------------------------
-
-  confuns::give_feedback(
-    msg = base::message("Checking input for validity."),
-    verbose = verbose
-  )
-
-  check_object(object)
-
-  confuns::are_values(c("dropout", "epochs"), mode = "numeric")
-  confuns::are_vectors(c("activation"), mode = "character")
-  confuns::are_values(c("display_plot", "set_as_active", "verbose"), mode = "logical")
-
-  confuns::is_vec(x = layers, mode = "numeric", of.length = 3)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
-
-  if(base::isTRUE(display_plot)){
-
-    # check validation genes
-    val_genes <- check_genes(object, genes = genes, max_length = 2, of.length = 2)
-
-    base::stopifnot(base::length(val_genes) == 2)
-
-  }
-
-  x_train <- getExpressionMatrix(object, mtr_name = "scaled" , of_sample = of_sample)
-
-  # assess optimum if any of the two inputs are vectors
-  if(base::any(purrr::map_int(.x = list(bottleneck, activation), .f = base::length) > 1)){
-
-    assessment_list <-
-      assessAutoencoderOptions2(
-        expr_mtr = x_train,
-        dropout = dropout,
-        epochs = epochs,
-        layers = layers,
-        bottlenecks = bottleneck,
-        activations = activation,
-        verbose = FALSE
-      )
-
-    assessment_df <- assessment_list$df
-
-    max_df <- dplyr::filter(assessment_df, total_var == base::max(total_var))
-
-    activation <- max_df$activation[1]
-    bottleneck <- base::as.character(max_df$bottleneck[1]) %>% base::as.numeric()
-
-    msg <- glue::glue("Assessment done. Running autoencoder with: \nActivation function: '{activation}'\nBottleneck neurons: {bottleneck} ")
-
-    confuns::give_feedback(
-      msg = msg,
-      verbose = verbose
-    )
-
-  } else {
-
-    assessment_list <- base::tryCatch({
-
-      getAutoencoderAssessment(object, of_sample = of_sample)
-
-    }, error = function(error){
-
-      return(list())
-
-    })
-
-  }
-
-  # -----
-
-  # 2. Create network --------------------------------------------------------
-
-  input_layer <-
-    keras::layer_input(shape = c(ncol(x_train)))
-
-  encoder <-
-    input_layer %>%
-    keras::layer_dense(units = layers[1], activation = activation) %>%
-    keras::layer_batch_normalization() %>%
-    keras::layer_dropout(rate = dropout) %>%
-    keras::layer_dense(units = layers[2], activation = activation) %>%
-    keras::layer_dropout(rate = dropout) %>%
-    keras::layer_dense(units = layers[3], activation = activation) %>%
-    keras::layer_dense(units = bottleneck)
-
-  decoder <-
-    encoder %>%
-    keras::layer_dense(units = layers[3], activation = activation) %>%
-    keras::layer_dropout(rate = dropout) %>%
-    keras::layer_dense(units = layers[2], activation = activation) %>%
-    keras::layer_dropout(rate = dropout) %>%
-    keras::layer_dense(units = layers[1], activation = activation) %>%
-    keras::layer_dense(units = c(ncol(x_train)))
-
-  autoencoder_model <- keras::keras_model(inputs = input_layer, outputs = decoder)
-
-  autoencoder_model %>% keras::compile(
-    loss = 'mean_squared_error',
-    optimizer = 'adam',
-    metrics = c('accuracy')
-  )
-
-  history <-
-    autoencoder_model %>%
-    keras::fit(x_train, x_train, epochs = epochs, shuffle = TRUE,
-               validation_data = list(x_train, x_train), verbose = verbose)
-
-  reconstructed_points <-
-    autoencoder_model %>%
-    keras::predict_on_batch(x = x_train)
-
-  base::rownames(reconstructed_points) <- base::rownames(x_train)
-  base::colnames(reconstructed_points) <- base::colnames(x_train)
-
-  if(base::isTRUE(display_plot)){
-
-    plot_df <-
-      base::rbind(
-        data.frame(base::t(reconstructed_points[val_genes, ]), type = "Denoised"),
-        data.frame(base::t(x_train[val_genes, ]), type = "Scaled")
-      ) %>%
-      dplyr::mutate(type = base::factor(x = type, levels = c("Scaled", "Denoised")))
-
-    val_plot <-
-      ggplot2::ggplot(data = plot_df, ggplot2::aes(x = .data[[val_genes[1]]], y = .data[[val_genes[2]]], color = type)) +
-      ggplot2::geom_point(alpha = 0.75) +
-      ggplot2::geom_smooth(method = "lm", formula = y ~ x) +
-      ggplot2::facet_wrap(. ~ type, scales = "free") +
-      ggplot2::theme_classic() +
-      ggplot2::theme(
-        strip.background = ggplot2::element_blank(),
-        legend.position = "none"
-      ) +
-      scale_color_add_on(variable = "discrete", clrp = "milo")
-
-    plot(val_plot)
-
-  }
-
-  # 3. Return updated object ------------------------------------------------
-
-  set_up <- list("activation" = activation,
-                 "bottleneck" = bottleneck,
-                 "dropout" = dropout,
-                 "epochs" = epochs,
-                 "input_mtr" = "scaled",
-                 "output_mtr" = mtr_name_output,
-                 "layers" = layers)
-
-  object <- addAutoencoderSetUp(object = object,
-                                mtr_name = mtr_name_output,
-                                set_up_list = set_up,
-                                of_sample = of_sample)
-
-  object <- addExpressionMatrix(object = object,
-                                mtr_name = mtr_name_output,
-                                expr_mtr = reconstructed_points,
-                                of_sample = of_sample)
-
-  object <-
-    setActiveMatrix(object = object, mtr_name = mtr_name_output)
-
-  confuns::give_feedback(
-    msg = "Done.",
-    verbose = verbose
-  )
-
-  return(object)
-
-}
-
-
 # runB --------------------------------------------------------------------
 
 #' @title Clustering with BayesSpace
@@ -303,6 +38,7 @@ runAutoencoderDenoising <- function(object,
 #' `sce`, `q` are specified within the function.
 #'
 #' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @details This function is a wrapper around \code{readVisium()},
 #' \code{spatialPreprocess()}, \code{qTune()} and \code{spatialCluster()}
@@ -314,8 +50,6 @@ runAutoencoderDenoising <- function(object,
 #'  Spatial transcriptomics at subspot resolution with BayesSpace.
 #'  Nat Biotechnol. 2021 Nov;39(11):1375-1384. doi: 10.1038/s41587-021-00935-2.
 #'  Epub 2021 Jun 3. PMID: 34083791; PMCID: PMC8763026.
-#'
-#' @return An updated \code{SPATA2} object.
 #'
 #' @export
 #'
@@ -345,7 +79,7 @@ runBayesSpaceClustering <- function(object,
                                     save.chain = FALSE,
                                     chain.fname = NULL,
                                     # miscellaneous
-                                    prefix = "",
+                                    prefix = "B",
                                     return_model = TRUE,
                                     empty_remove = FALSE,
                                     overwrite = FALSE,
@@ -522,7 +256,7 @@ runBayesSpaceClustering <- function(object,
 
   }
 
-  object <- SPATA2::addFeatures(object, feature_df = cluster_df, overwrite = overwrite)
+  object <- addFeatures(object, feature_df = cluster_df, overwrite = overwrite)
 
   return(object)
 
@@ -548,7 +282,7 @@ runBayesSpaceClustering <- function(object,
 #' Defaults to the data.frame stored in slot \code{$annotation} of list \code{SPATA2::cnv_ref}.
 #'
 #' If you provide your own reference, make sure that barcodes of the reference
-#' input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+#' input do not overlap with barcodes of the `SPATA2` object. (e.g. by suffixing as
 #' exemplified in the default list \code{SPATA2::cnv_ref}.)
 #'
 #' @param ref_mtr The count matrix that is supposed to be used as the reference.
@@ -559,7 +293,7 @@ runBayesSpaceClustering <- function(object,
 #' Defaults to the count matrix stored in slot \code{$mtr} of list \code{SPATA2::cnv_ref}.
 #'
 #' If you provide your own reference, make sure that barcodes of the reference
-#' input do not overlap with barcodes of the spata-object. (e.g. by suffixing as
+#' input do not overlap with barcodes of the `SPATA2` object. (e.g. by suffixing as
 #' exemplified in the default list \code{SPATA2::cnv_ref}.)
 #'
 #' @param ref_regions A data.frame that contains information about chromosome positions.
@@ -641,10 +375,10 @@ runBayesSpaceClustering <- function(object,
 #' temporary files as well as the output heatmap and the infercnv-object are stored
 #' there without asking for permission which can lead to overwriting due to naming issues.
 #'
-#' Results (including a PCA) are stored in the slot @@cnv of the spata-object
+#' Results (including a PCA) are stored in the slot @@cnv of the `SPATA2` object
 #' which can be obtained via \code{getCnvResults()}. Additionally, the variables
 #' that store the copy-number-variations for each barcode-spot are added to
-#' the spata-object's feature data. The corresponding feature variables are named according
+#' the `SPATA2` object's feature data. The corresponding feature variables are named according
 #' to the chromosome's number and the prefix denoted with the argument \code{cnv_prefix.}
 #'
 #' Regarding the reference data:
@@ -655,7 +389,7 @@ runBayesSpaceClustering <- function(object,
 #' Check out the content of list \code{SPATA2::cnv_ref} and make sure that your own
 #' reference input is of similiar structure regarding column names, rownames, etc.
 #'
-#' @return An updated spata-object containg the results in the respective slot.
+#' @return An updated `SPATA2` object containg the results in the respective slot.
 #' @export
 #'
 
@@ -670,7 +404,6 @@ runCnvAnalysis <- function(object,
                            cnv_prefix = "Chr",
                            save_infercnv_object = TRUE,
                            verbose = NULL,
-                           of_sample = NA,
                            CreateInfercnvObject = list(ref_group_names = "ref"),
                            require_above_min_mean_expr_cutoff = list(min_mean_expr_cutoff = 0.1),
                            require_above_min_cells_ref = list(min_cells_per_gene = 3),
@@ -686,13 +419,13 @@ runCnvAnalysis <- function(object,
                            remove_outliers_norm = list(),
                            define_signif_tumor_subclusters = list(p_val = 0.05, hclust_method = "ward.D2", cluster_by_groups = TRUE, partition_method = "qnorm"),
                            plot_cnv = list(k_obs_groups = 5, cluster_by_groups = TRUE, output_filename = "infercnv.outliers_removed", color_safe_pal = FALSE,
-                                           x.range = "auto", x.center = 1, output_format = "pdf", title = "Outliers Removed")
-){
+                                           x.range = "auto", x.center = 1, output_format = "pdf", title = "Outliers Removed")){
 
   # 1. Control --------------------------------------------------------------
 
   hlpr_assign_arguments(object)
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.lenght = 1)
+
+  containsAssay(object, assay_name = "transcriptomics", error = TRUE)
 
   confuns::are_values(c("save_infercnv_object"), mode = "logical")
 
@@ -720,10 +453,10 @@ runCnvAnalysis <- function(object,
   # 2. Data extraction ------------------------------------------------------
 
   # preparing object derived data
-  count_mtr <- getCountMatrix(object = object, of_sample = of_sample)
+  count_mtr <- getCountMatrix(object = object, assay_name = "transcriptomics")
 
   obj_anno <-
-    getFeatureDf(object = object, of_sample = of_sample) %>%
+    getMetaDf(object = object) %>%
     dplyr::select(barcodes, sample) %>%
     tibble::column_to_rownames(var = "barcodes")
 
@@ -888,7 +621,6 @@ runCnvAnalysis <- function(object,
       v.fail = infercnv_obj
     )
 
-
   confuns::give_feedback(msg = "Conducting anscombe and logarithmic transformation.", verbose = verbose)
 
   infercnv_obj <-
@@ -923,7 +655,6 @@ runCnvAnalysis <- function(object,
       default = list("infercnv_obj" = infercnv_obj, "threshold" = threshold),
       v.fail = infercnv_obj
     )
-
 
   confuns::give_feedback(msg = "Smoothing by chromosome.", verbose = verbose)
 
@@ -1133,7 +864,7 @@ runCnvAnalysis <- function(object,
     tibble::as_tibble()
 
   # add results to spata object
-  confuns::give_feedback(msg = "Adding results to the spata-object's feature data.", verbose = verbose)
+  confuns::give_feedback(msg = "Adding results to the `SPATA2` object's feature data.", verbose = verbose)
 
   # feature variables
   object <-
@@ -1284,39 +1015,24 @@ runDEA <- function(object,
                    method_de = NULL,
                    verbose = NULL,
                    base = 2,
-                   variable.features.n = 3000,
+                   assay_name = activeAssay(object),
                    ...){
 
   hlpr_assign_arguments(object)
 
   purrr::walk(.x = method_de, .f = ~ check_method(method_de = .x))
 
-  valid_across <- check_features(object = object, valid_classes = c("factor"), features = across)
+  valid_across <- check_features(object, features = across, valid_classes = "factor")
 
   # prepare seurat object
-  seurat_object <-
-    Seurat::CreateSeuratObject(
-      counts = getCountMatrix(object)
-      )
+  seurat_object <- Seurat::CreateSeuratObject(counts = getCountMatrix(object, assay_name = assay_name))
 
-  seurat_object <-
-    Seurat::NormalizeData(
-      object = seurat_object
-    )
+  seurat_object <- Seurat::NormalizeData(object = seurat_object)
 
-  seurat_object <-
-    Seurat::ScaleData(
-      object = seurat_object
-    )
-
-  seurat_object <-
-    Seurat::SCTransform(
-      object = seurat_object,
-      variable.features.n = variable.features.n
-      )
+  seurat_object <- Seurat::ScaleData(object = seurat_object)
 
   seurat_object@meta.data <-
-    getFeatureDf(object) %>%
+    getMetaDf(object) %>%
     tibble::column_to_rownames(var = "barcodes") %>%
     base::as.data.frame()
 
@@ -1376,7 +1092,7 @@ runDEA <- function(object,
               dea_results = dea_results,
               across = across,
               method_de = method_de,
-              variable.features.n = variable.features.n,
+              assay_name = assay_name,
               ...
             )
 
@@ -1386,7 +1102,7 @@ runDEA <- function(object,
 
         error = function(error){
 
-          base::message(glue::glue("Skipping de-analysis on across-input '{across}' with method '{method}' as it resulted in the following error message: {error}"))
+          base::message(glue::glue("Skipping DEA on across-input '{across}' with method '{method}' as it resulted in the following error message: {error}"))
 
           return(object)
 
@@ -1432,12 +1148,14 @@ runDeAnalysis <- function(...){
 #' @param gene_set_list A named list of character vectors. Names of slots correspond to the
 #' gene set names. The slot contains the genes of the gene sets.Holds priority over
 #' \code{gene_set_names}.
-#' @param gene_set_names Character vector of gene set names that are taken
-#' from the object's gene set data.frame.
+#' @param signatures Character vector of signature names that are taken
+#' from the assays stored signatures.
 #' @param reduce Logical value. If set to TRUE (the default) the return value
 #' of \code{hypeR::hypeR()} is reduced to what is necessary for \code{SPATA2}s
-#' function to work. If FALSE, the complete objects are stored. This will
-#' grow the spata-objects size quickly!
+#' function to work. If `FALSE`, the complete objects are stored. This will
+#' grow the `SPATA2` object's size quickly!
+#'
+#' @inherit update_dummy return
 #'
 #' @details Computes gene set enrichment analysis using \code{hypeR::hypeR()}.
 #' It does so by iterating about all possible combinations of \code{across} and
@@ -1446,9 +1164,7 @@ runDeAnalysis <- function(...){
 #'
 #' If gene sets are provided via \code{gene_set_list} argument \code{gene_set_names}
 #' is ignored. Else the latter determines the gene sets used which are then taken
-#' from the spata-objects gene set data.frame.
-#'
-#' @return An updated spata-object.
+#' from the `SPATA2` object's gene set data.frame.
 #'
 #' @export
 #'
@@ -1460,182 +1176,184 @@ runGSEA <- function(object,
                     min_lfc = 0,
                     n_highest_lfc = NULL,
                     n_lowest_pval = NULL,
-                    gene_set_list = NULL,
-                    gene_set_names = NULL,
+                    signatures = NULL,
                     test = c("hypergeometric", "kstest"),
-                    background = nGenes(object),
                     absolute = FALSE,
+                    background = NULL,
                     power = 1,
-                    pval = 1,
-                    fdr = 1,
+                    pval = 0.05,
+                    fdr = 0.05,
                     reduce = TRUE,
                     quiet = TRUE,
                     chr_to_fct = TRUE,
-                    verbose = NULL){
+                    assay_name = activeAssay(object),
+                    verbose = NULL,
+                    ...){
 
-    check_object(object)
-    hlpr_assign_arguments(object)
+  hlpr_assign_arguments(object)
 
-    dea_overview <- getDeaOverview(object)
+  deprecated(...)
 
-    across <- base::unique(across)
+  if(!base::is.numeric(background)){
 
-    check_one_of(
-      input = across,
-      against = base::names(dea_overview),
+    background <- nMolecules(object)
+
+  } else {
+
+    background <- background[1]
+
+  }
+
+  dea_overview <- getDeaOverview(object)
+
+  across <- base::unique(across)
+
+  check_one_of(
+    input = across,
+    against = base::names(dea_overview),
+    fdb.opt = 2,
+    ref.opt.2 = "grouping options across which DEA has been computed"
+  )
+
+  methods_de <- base::unique(methods_de)
+
+  check_one_of(
+    input = methods_de,
+    against = validDeAnalysisMethods()
+  )
+
+  ma <- getAssay(object, assay_name = assay_name)
+
+  # prepare gene set list
+  signature_list <- getSignatures(object, assay_name = assay_name)
+
+  if(base::is.character(signatures)){
+
+    confuns::check_one_of(
+      input = signatures,
+      against = base::names(signature_list),
       fdb.opt = 2,
-      ref.opt.2 = "grouping options across which DEA has been computed"
+      ref.opt.2 = "known signatures in assay '{assay_name}'"
     )
 
-    methods_de <- base::unique(methods_de)
+    signature_list <- signature_list[signatures]
 
-    check_one_of(
-      input = methods_de,
-      against = validDeAnalysisMethods()
-    )
+  }
 
-    # prepare gene set list
-    if(base::is.list(gene_set_list) && confuns::is_named(gene_set_list)){
+  for(across_value in across){
 
-      give_feedback(msg = "Using input gene set list.", verbose = verbose)
+    for(method_de in methods_de){
 
-    } else {
-
-      if(base::is.character(gene_set_names)){
-
-        give_feedback(msg = "Using subset of default gene set list.", verbose = verbose)
-
-        check_one_of(
-          input = gene_set_names,
-          against = getGeneSets(object)
+      dea_df <-
+        getDeaResultsDf(
+          object = object,
+          across = across_value,
+          method_de = method_de,
+          max_adj_pval = max_adj_pval,
+          min_lfc = min_lfc,
+          n_highest_lfc = n_highest_lfc,
+          n_lowest_pval = n_lowest_pval
         )
 
-      } else {
+      if(!base::is.null(dea_df)){
 
-        give_feedback(msg = "Using default gene set list.", verbose = verbose)
+        group_names <- getGroupNames(object, grouping = across_value)
 
-        gene_set_names <- getGeneSets(object)
+        n_groups <- base::length(group_names)
 
-      }
-
-      gene_set_list <- getGeneSetList(object)
-
-      gene_set_list <- gene_set_list[gene_set_names]
-
-    }
-
-    for(across_value in across){
-
-      for(method_de in methods_de){
-
-        dea_df <-
-          getDeaResultsDf(
-            object = object,
-            across = across_value,
-            method_de = method_de,
-            max_adj_pval = max_adj_pval,
-            min_lfc = min_lfc,
-            n_highest_lfc = n_highest_lfc,
-            n_lowest_pval = n_lowest_pval
+        msg <-
+          glue::glue(
+            "Calculating enrichment of signatures across '{across_value}' (n = {n_groups}). ",
+            "Based on results of method '{method_de}'."
           )
 
-        if(!base::is.null(dea_df)){
+        give_feedback(msg = msg, verbose = verbose)
 
-          group_names <- getGroupNames(object, grouping_variable = across_value)
+        ma@analysis$dea[[across_value]][[method_de]][["hypeR_gsea"]] <-
+          purrr::map2(
+            .x = group_names,
+            .y = base::seq_along(group_names),
+            .f = function(group, index){
 
-          n_groups <- base::length(group_names)
+              signature <-
+                dplyr::filter(dea_df, !!rlang::sym(across_value) == {{group}}) %>%
+                dplyr::pull(var = "gene")
 
-          msg <-
-            glue::glue(
-              "Calculating enrichment of signatures across '{across_value}' (n = {n_groups}). ",
-              "Based on results of method '{method_de}'."
-            )
+              give_feedback(
+                msg = glue::glue("Working on group: '{group}' ({index}/{n_groups})"),
+                verbose = verbose
+              )
 
-          give_feedback(msg = msg, verbose = verbose)
+              out <-
+                base::tryCatch({
 
-          object@dea[[1]][[across_value]][[method_de]][["hypeR_gsea"]] <-
-            purrr::map2(
-              .x = group_names,
-              .y = base::seq_along(group_names),
-              .f = function(group, index){
+                  hypeR::hypeR(
+                    signature = signature,
+                    genesets = signature_list,
+                    test = test,
+                    background = background,
+                    power = power,
+                    absolute = absolute,
+                    fdr = fdr,
+                    pval = pval,
+                    quiet = quiet
+                  )
 
-                signature <-
-                  dplyr::filter(dea_df, !!rlang::sym(across_value) == {{group}}) %>%
-                  dplyr::pull(var = "gene")
+                }, error = function(error){
 
-                give_feedback(
-                  msg = glue::glue("Working on group: '{group}' ({index}/{n_groups})"),
-                  verbose = verbose
-                )
+                  msg <-
+                    glue::glue(
+                      "Computing enrichment for group '{group}' resulted in an error: {error}."
+                    ) %>%
+                    base::as.character()
 
-                out <-
-                  base::tryCatch({
+                })
 
-                    hypeR::hypeR(
-                      signature = signature,
-                      genesets = gene_set_list,
-                      test = test,
-                      background = background,
-                      power = power,
-                      absolute = absolute,
-                      fdr = fdr,
-                      pval = pval,
-                      quiet = quiet
-                    )
+              if(base::is.character(out)){
 
-                  }, error = function(error){
+                give_feedback(msg = out, fdb.fn = "warning")
 
-                    msg <-
-                      glue::glue(
-                        "Computing enrichment for group '{group}' resulted in an error: {error}."
-                      ) %>%
-                      base::as.character()
+                out <- NA
 
-                  })
+              } else {
 
-                if(base::is.character(out)){
+                if(base::isTRUE(reduce)){
 
-                  give_feedback(msg = out, fdb.fn = "warning")
-
-                  out <- NA
-
-                } else {
-
-                  if(base::isTRUE(reduce)){
-
-                    out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
-
-                  }
-
-                  out$data <-
-                    dplyr::mutate(
-                      .data = out$data,
-                      overlap_perc = overlap/geneset,
-                      label = base::as.factor(label)
-                    )
+                  out <- confuns::lselect(lst = base::as.list(out), any_of(c("args", "info")), data)
 
                 }
 
-                return(out)
+                out$data <-
+                  dplyr::mutate(
+                    .data = out$data,
+                    overlap_perc = overlap/geneset,
+                    label = base::as.factor(label)
+                  )
 
               }
-            ) %>%
-            purrr::set_names(nm = group_names) %>%
-            purrr::discard(.p = ~ base::any(base::is.na(.x)))
 
-        } else {
+              return(out)
 
-          give_feedback(msg = "GSEA results already present.", verbose = verbose)
+            }
+          ) %>%
+          purrr::set_names(nm = group_names) %>%
+          purrr::discard(.p = ~ base::any(base::is.na(.x)))
 
-        }
+      } else {
+
+        give_feedback(msg = "GSEA results already present.", verbose = verbose)
 
       }
 
     }
 
-    give_feedback(msg = "Done.", verbose = verbose)
+  }
 
-    return(object)
+  object <- setAssay(object, assay = ma)
+
+  give_feedback(msg = "Done.", verbose = verbose)
+
+  return(object)
 
   }
 
@@ -1662,7 +1380,7 @@ runGSEA <- function(object,
 #' @export
 
 runImagePipeline <- function(object,
-                             img_name = NULL,
+                             img_name = activeImage(object),
                              verbose = TRUE,
                              ...){
 
@@ -1760,28 +1478,40 @@ runKmeansClustering <- function(object,
 #' @return
 #'
 #'  \itemize{
-#'   \item{\code{runPca()}:}{ An updated spata-object containing the reduction variables in the pca data.frame.}
+#'   \item{\code{runPca()}:}{ An updated `SPATA2` object containing the reduction variables in the pca data.frame.}
 #'   \item{\code{runPca2()}:}{ The direct output-object of \code{irlba::prcomp_irlba()}}.
 #'   }
 #'
 #' @export
 
-runPca <- function(object, n_pcs = 30, mtr_name = NULL, ...){
+runPca <- function(object,
+                   n_pcs = 30,
+                   mtr_name = activeMatrix(object),
+                   assay_name = activeAssay(object),
+                   ...){
 
   check_object(object)
 
-  s <- object@samples
+  sample <- getSampleName(object)
 
-  pca_res <- runPca2(object = object,
-                     n_pcs = n_pcs,
-                     mtr_name = mtr_name,
-                     ...)
+  pca_res <-
+    runPca2(
+      object = object,
+      n_pcs = n_pcs,
+      mtr_name = mtr_name,
+      ...
+    )
 
-  expr_mtr <- getExpressionMatrix(object, mtr_name = mtr_name)
+  expr_mtr <-
+    getExpressionMatrix(
+      object = object,
+      mtr_name = mtr_name,
+      assay_name = assay_name
+      )
 
   pca_df <-
     base::as.data.frame(x = pca_res[["x"]]) %>%
-    dplyr::mutate(barcodes = base::colnames(expr_mtr), sample = {{s}}) %>%
+    dplyr::mutate(barcodes = base::colnames(expr_mtr), sample = {{sample}}) %>%
     dplyr::select(barcodes, sample, dplyr::everything())
 
   object <- setPcaDf(object = object, pca_df = pca_df)
@@ -1851,7 +1581,7 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 #'
 #' @inheritSection section_dummy Distance measures
 #'
-#' @export
+#' @keywords internal
 #'
 runSDEA <- function(object,
                     interval,
@@ -1932,6 +1662,7 @@ runSDEA <- function(object,
 
 }
 
+
 #' @title Clustering with Seurat
 #'
 #' @description A wrapper around the Seurat clustering pipeline suggested by
@@ -1953,7 +1684,8 @@ runSDEA <- function(object,
 #'
 runSeuratClustering <- function(object,
                                 name = "seurat_clusters",
-                                mtr_name = getActiveMatrixName(object),
+                                mtr_name = activeMatrix(object),
+                                assay_name = activeAssay(object),
                                 FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
                                 RunPCA = list(npcs = 60),
                                 FindNeighbors = list(dims = 1:30),
@@ -1969,6 +1701,7 @@ runSeuratClustering <- function(object,
     findSeuratClusters(
       object = object,
       mtr_name = mtr_name,
+      assay_name = assay_name,
       FindVariableFeatures = FindVariableFeatures,
       RunPCA = RunPCA,
       FindNeighbors = FindNeighbors,
@@ -1982,22 +1715,26 @@ runSeuratClustering <- function(object,
 
 }
 
-#' @title Identify genes of interest with SPARKX
+#' @title Identify spatially significant features with SPARKX
 #'
 #' @description A wrapper around the algorithm introduced by \emph{Zhu et al. 2021}
-#' to identify genes with spatial expression pattern with SPARK-X.
+#' to identify features with non-random spatial expression pattern with SPARK-X.
 #'
 #' @inherit SPARK::sparkx params
 #' @inherit argument_dummy params
+#' @inherit updat_dummy return
 #'
 #' @author Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables
 #'  scalable and robust detection of spatial expression patterns for large spatial
 #'  transcriptomic studies. Genome Biol 22, 184 (2021). https://doi.org/10.1186/s13059-021-02404-0
 #'
-#' @return An updated spata object.
 #' @export
 #'
-runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
+runSparkx <- function(object,
+                      assay_name = activeAssay(object),
+                      numCores = 1,
+                      option = "mixture",
+                      verbose = NULL){
 
   hlpr_assign_arguments(object)
 
@@ -2015,7 +1752,11 @@ runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
       verbose = verbose
     )
 
-  object@spatial[[object@samples]][["sparkx"]] <- sparkx_out
+  ma <- getAssay(object, assay_name = assay_name)
+
+  ma@analysis[["sparkx"]] <- sparkx_out
+
+  object <- setAssay(object, assay = ma)
 
   return(object)
 
@@ -2038,7 +1779,7 @@ runSparkx <- function(object, numCores = 1, option = "mixture", verbose = NULL){
 #' @return
 #'
 #'  \itemize{
-#'   \item{\code{runTsne()}:}{ An updated spata-object containing the reduction variables in the tsne data.frame.}
+#'   \item{\code{runTsne()}:}{ An updated `SPATA2` object containing the reduction variables in the tsne data.frame.}
 #'   \item{\code{runTsne2()}:}{ The direct output-object of \code{Rtsne::Rtsne()}}
 #'   }
 #'
@@ -2060,10 +1801,12 @@ runTsne <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, ..
   pca_mtr <- getPcaMtr(object = object, of_sample = of_sample, n_pcs = n_pcs)
 
   tsne_df <-
-    base::data.frame(barcodes = base::rownames(pca_mtr),
-                     sample = of_sample,
-                     tsne1 = tsne_res$Y[,1],
-                     tsne2 = tsne_res$Y[,2])
+    base::data.frame(
+      barcodes = base::rownames(pca_mtr),
+      sample = of_sample,
+      tsne1 = tsne_res$Y[,1],
+      tsne2 = tsne_res$Y[,2]
+    )
 
   object <- setTsneDf(object = object, tsne_df = tsne_df, of_sample = of_sample)
 
@@ -2101,24 +1844,20 @@ runTsne2 <- function(object, n_pcs = 20, tsne_perplexity = 30, of_sample = NA, .
 #' @return
 #'
 #'  \itemize{
-#'   \item{\code{runUmap()}:}{ An updated spata-object containing the reduction variables in the umap data.frame.}
+#'   \item{\code{runUmap()}:}{ An updated `SPATA2` object containing the reduction variables in the umap data.frame.}
 #'   \item{\code{runUmap2()}:}{ The direct output-object of \code{umap::umap()}}
 #'   }
 #'
 #' @export
 
-runUmap <- function(object, n_pcs = 20, of_sample = NA, ...){
+runUmap <- function(object, n_pcs = 20, ...){
 
   check_object(object)
 
-  of_sample <-
-    check_sample(object = object, of_sample = of_sample, of.length = 1)
-
   umap_res <-
-    runUmap2(object = object, of_sample = of_sample, n_pcs = n_pcs, ...)
+    runUmap2(object = object, n_pcs = n_pcs, ...)
 
-  pca_mtr <-
-    getPcaMtr(object = object, of_sample = of_sample)
+  pca_mtr <- getPcaMtr(object = object)
 
   umap_df <-
     base::data.frame(
@@ -2128,7 +1867,7 @@ runUmap <- function(object, n_pcs = 20, of_sample = NA, ...){
       umap2 = umap_res$layout[,2]
     )
 
-  object <- setUmapDf(object = object, umap_df = umap_df, of_sample = of_sample)
+  object <- setUmapDf(object = object, umap_df = umap_df)
 
   return(object)
 
@@ -2136,13 +1875,14 @@ runUmap <- function(object, n_pcs = 20, of_sample = NA, ...){
 
 #' @rdname runUmap
 #' @export
-runUmap2 <- function(object, n_pcs = 20, of_sample = NA, ...){
+runUmap2 <- function(object, n_pcs = 20, ...){
+
+  deprecated(...)
 
   check_object(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
-  pca_mtr <- getPcaMtr(object = object, of_sample = of_sample)
+  pca_mtr <- getPcaMtr(object = object)
 
   umap_res <- umap::umap(d = pca_mtr, ...)
 

@@ -4,23 +4,48 @@
 \alias{getExpressionMatrix}
 \alias{getMatrix}
 \alias{getMatrices}
-\title{Obtain count and expression matrix}
+\title{Obtain a data matrix}
 \usage{
-getExpressionMatrix(object, mtr_name = NULL, verbose = FALSE, ...)
+getExpressionMatrix(
+  object,
+  mtr_name = activeMatrix(object),
+  assay_name = activeAssay(object),
+  verbose = FALSE,
+  ...
+)
 
-getMatrix(object, mtr_name = NULL, verbose = NULL, ...)
+getMatrix(
+  object,
+  mtr_name = activeMatrix(object),
+  assay_name = activeAssay(object),
+  verbose = NULL,
+  ...
+)
 
-getMatrices(object)
+getMatrices(object, assay_name = activeAssay(object), verbose = NULL, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest.}
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 The matrix of the specified object. A list of all matrices
 in case of \code{getMatrices()}.
 }
 \description{
-Obtain count and expression matrix
+Extracts data matrices from \code{\link{MolecularAssay}} objects.
 }

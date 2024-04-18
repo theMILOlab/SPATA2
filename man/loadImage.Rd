@@ -2,17 +2,17 @@
 % Please edit documentation in R/l.R
 \name{loadImage}
 \alias{loadImage}
-\alias{loadImage,spata2-method}
+\alias{loadImage,SPATA2-method}
 \alias{loadImage,HistoImaging-method}
 \alias{loadImage,HistoImage-method}
 \alias{loadImages}
-\alias{loadImages,spata2-method}
+\alias{loadImages,SPATA2-method}
 \alias{loadImages,HistoImaging-method}
 \title{Load image}
 \usage{
 loadImage(object, ...)
 
-\S4method{loadImage}{spata2}(object, img_name, ...)
+\S4method{loadImage}{SPATA2}(object, img_name, ...)
 
 \S4method{loadImage}{HistoImaging}(object, img_name, verbose = TRUE)
 
@@ -20,12 +20,12 @@ loadImage(object, ...)
 
 loadImages(object, ...)
 
-\S4method{loadImages}{spata2}(object, verbose = TRUE, force = FALSE)
+\S4method{loadImages}{SPATA2}(object, verbose = TRUE, force = FALSE)
 
 \S4method{loadImages}{HistoImaging}(object, verbose = TRUE, force = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

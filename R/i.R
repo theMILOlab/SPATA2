@@ -23,6 +23,7 @@ identify_artefact_threshold <- function(numbers) {
   return(list(threshold = artifact_threshold, threshold_multiplier = threshold_multiplier))
 }
 
+
 identify_zero_inflated_variables <- function(df,
                                              variables,
                                              coef = 1.5,
@@ -341,8 +342,8 @@ setGeneric(name = "identifyBackgroundColor", def = function(object, ...){
 #' @export
 setMethod(
   f = "identifyBackgroundColor",
-  signature = "spata2",
-  definition = function(object, img_name = NULL, verbose = NULL, ...){
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), verbose = NULL, ...){
 
     hlpr_assign_arguments(object)
 
@@ -362,7 +363,7 @@ setMethod(
 setMethod(
   f = "identifyBackgroundColor",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, verbose = TRUE, ...){
+  definition = function(object, img_name = activeImage(object), verbose = TRUE, ...){
 
     if(base::is.null(img_name)){
 
@@ -490,9 +491,9 @@ setGeneric(name = "identifyPixelContent", def = function(object, ...){
 #' @export
 setMethod(
   f = "identifyPixelContent",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 600,
@@ -535,7 +536,7 @@ setMethod(
   f = "identifyPixelContent",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         percentile = 0,
                         compactness_factor = 10,
                         superpixel = 1000,
@@ -1002,10 +1003,10 @@ setGeneric(name = "identifySpatialOutliers", def = function(object, ...){
 #' @export
 setMethod(
   f = "identifySpatialOutliers",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
                         method,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         buffer = NULL,
                         eps = recDbscanEps(object),
                         minPts = recDbscanMinPts(object),
@@ -1040,7 +1041,7 @@ setMethod(
   signature = "HistoImaging",
   definition = function(object,
                         method = c("outline", "dbscan"),
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         buffer = NULL,
                         eps = NULL,
                         minPts = 3,
@@ -1252,10 +1253,10 @@ setMethod(
 #' @details If `img_name` specifies multiple images, the function
 #' iterates over all of them.
 #'
-#' @note For `spata2` objects: If the `spata2` object contains a registered image
+#' @note For `SPATA2` objects: If the `SPATA2` object contains a registered image
 #' the results of [`identifyPixelContent()`] is required.
 #'
-#' If the `spata2` object does not contain a registered image because the
+#' If the `SPATA2` object does not contain a registered image because the
 #' underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
 #' a workaround is applied and the tissue outline is identified by outlining all
 #' data points instead of outlining pixels that were identified as *tissue pixels*.
@@ -1275,9 +1276,9 @@ setGeneric(name = "identifyTissueOutline", def = function(object, ...){
 #' @export
 setMethod(
   f = "identifyTissueOutline",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         use = "image",
                         verbose = NULL){
 
@@ -1361,7 +1362,7 @@ setMethod(
 setMethod(
   f = "identifyTissueOutline",
   signature = "HistoImaging",
-  definition = function(object, img_name = NULL, verbose = TRUE){
+  definition = function(object, img_name = activeImage(object), verbose = TRUE){
 
     if(base::is.null(img_name)){
 
@@ -1540,8 +1541,8 @@ imageAnnotationToSegmentation <- function(object,
 
   bcsp_inside <- getSpatAnnBarcodes(object, ids = ids)
 
-  fdata <-
-    getFeatureDf(object) %>%
+  mdata <-
+    getMetaDf(object) %>%
     dplyr::mutate(
       {{segmentation_name}} := dplyr::case_when(
         condition = barcodes %in% {{bcsp_inside}} ~ {{inside}},
@@ -1553,7 +1554,7 @@ imageAnnotationToSegmentation <- function(object,
       )
     )
 
-  object <- setFeatureDf(object, feature_df = fdata)
+  object <- setMetaDf(object, meta_df = mdata)
 
   return(object)
 
@@ -1936,7 +1937,7 @@ increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 }
 
 
-
+#' @keywords internal
 infer_gradient <- function(loess_model,
                            expr_est_pos,
                            ro = c(0, 1),
@@ -1955,230 +1956,7 @@ infer_gradient <- function(loess_model,
 
 }
 
-
-#' @title Count cells depending on distance to spatial annotation
-#'
-#' @description Integration of single cell deconvolution and SPATA2s spatial annotations.
-#'
-#' @param as_models Adjusts the output to a list that is a valid input for
-#' `models_add`-argument of `spatialAnnotationScreening()`.
-#'
-#' @inherit spatialAnnotationScreening params
-#' @inherit getSasDf params
-#' @inherit argument_dummy params
-#'
-#' @return Data.frame as is returned by `getSasDf()` with cell types as variables.
-#' @export
-#'
-inferSingleCellGradient <- function(object,
-                                    sc_input,
-                                    id,
-                                    calculate = "density",
-                                    distance = NA_integer_,
-                                    n_bins_dist = NA_integer_,
-                                    binwidth = getCCD(object),
-                                    angle_span = c(0, 360),
-                                    n_bins_angle = 1,
-                                    remove_circle_bins = "Outside",
-                                    normalize = TRUE,
-                                    area_unit = NULL,
-                                    format = "wide",
-                                    as_models = FALSE){
-
-  confuns::check_data_frame(
-    df = sc_input,
-    var.class = list(x = "numeric", y = "numeric")
-  )
-
-  if(!"cell_type" %in% base::colnames(sc_input)){
-
-    stop("Data.frame for argument `sc_input` must contain a variable named 'cell_type'.")
-
-  } else if(!base::class(sc_input[["cell_type"]]) %in% c("character", "factor")){
-
-    stop("Variable 'cell_type' must be of class character or factor.")
-
-  }
-
-  sc_input[["cell_id"]] <- stringr::str_c("cell_", 1:base::nrow(sc_input))
-
-  ias_input <-
-    check_ias_input(
-      distance = distance,
-      binwidth = binwidth,
-      n_bins_dist = n_bins_dist,
-      object = object
-    )
-
-  all_cell_types <- base::unique(sc_input[["cell_type"]])
-
-  bins <- stringr::str_c("Circle ", ias_input$n_bins_dist)
-
-  if(base::all(base::isTRUE(remove_circle_bins))){
-
-    remove_circle_bins <- c("Core", "Outside")
-
-  }
-
-  if(!"Core" %in% remove_circle_bins){
-
-    bins <- c("Core", bins)
-
-  }
-
-  if(!"Outside" %in% remove_circle_bins){
-
-    bins <- c(bins, "Outside")
-
-  }
-
-  all_bins_df <-
-    tibble::tibble(bins_dist = base::factor(bins, levels = bins)) %>%
-    dplyr::mutate()
-
-  if(base::is.null(area_unit)){
-
-    area_unit <- getSpatialMethod(object)@unit
-
-    area_unit <- stringr::str_c(area_unit, "2")
-
-  }
-
-  outline_var <- getOutlineVarName(object)
-
-  if(base::is.character(outline_var)){
-
-    coords_df <- getCoordsDf(object, features = outline_var)
-
-  } else {
-
-    coords_df <- getCoordsDf(object)
-
-  }
-
-  out_df <-
-    purrr::map_df(
-      .x = id,
-      .f = function(idx){
-
-        ref_area_df <-
-          getSasBinAreas(
-            object = object,
-            id = idx,
-            binwidth = binwidth,
-            n_bins_dist = n_bins_dist,
-            distance = distance,
-            remove_circle_bins = remove_circle_bins,
-            angle_span = angle_span,
-            n_bins_angle = n_bins_angle,
-            verbose = FALSE,
-            area_unit = area_unit,
-            use_outline = TRUE
-          )
-
-        sc_input_proc <-
-          include_tissue_outline(
-            coords_df = coords_df,
-            input_df = sc_input,
-            outline_var = outline_var,
-            spat_ann_center = getSpatAnnCenter(object, id = idx),
-            ccd = getCCD(object, unit = "px")
-          ) %>%
-          bin_by_expansion(
-            coords_df = .,
-            area_df = getSpatAnnOutlineDf(object, ids = idx),
-            binwidth = ias_input$binwidth,
-            n_bins_dist = ias_input$n_bins_dist,
-            remove = remove_circle_bins
-          ) %>%
-          bin_by_angle(
-            coords_df = .,
-            center = getSpatAnnCenter(object, id = idx),
-            n_bins_angle = n_bins_angle,
-            angle_span = angle_span,
-            var_to_bin = "cell_id",
-            verbose = FALSE
-          )
-
-        out <-
-          dplyr::group_by(sc_input_proc, bins_dist, bins_order, bins_angle, cell_type) %>%
-          dplyr::summarise(cell_type_count = dplyr::n()) %>%
-          dplyr::ungroup() %>%
-          dplyr::group_by(bins_dist, bins_order, bins_angle) %>%
-          dplyr::mutate(cell_count = base::sum(cell_type_count)) %>%
-          dplyr::left_join(x = ref_area_df, y = ., by = c("bins_dist", "bins_angle", "bins_order")) %>%
-          dplyr::ungroup() %>%
-          dplyr::mutate(
-            density = cell_type_count / area,
-            percentage = cell_type_count / area
-          ) %>%
-          tidyr::pivot_wider(
-            id_cols = c("bins_dist", "bins_order", "bins_angle"),
-            names_from = "cell_type",
-            values_from = {{calculate}}
-          ) %>%
-          dplyr::mutate(
-            dplyr::across(
-              .cols = dplyr::all_of(all_cell_types),
-              .fns = ~ tidyr::replace_na(data = .x, replace = 0)
-            )
-          ) %>%
-          dplyr::select(-dplyr::any_of("NA"))
-
-        return(out)
-
-      }
-    ) %>%
-    dplyr::group_by(bins_dist, bins_order, bins_angle) %>%
-    dplyr::summarize(
-      dplyr::across(
-        .cols = dplyr::all_of(all_cell_types),
-        .fns = ~ base::mean(.x, na.rm = T)
-      )
-    ) %>% dplyr::ungroup()
-
-  if(base::isTRUE(normalize) | base::isTRUE(as_models)){
-
-    out_df <-
-      dplyr::mutate(
-        .data = out_df,
-        dplyr::across(
-          .cols = dplyr::all_of(all_cell_types),
-          .fns = ~
-            tidyr::replace_na(data = .x, replace = 0) %>%
-            confuns::normalize()
-        )
-      )
-
-  }
-
-  if(base::isTRUE(as_models)){
-
-    out_df <-
-      dplyr::select(out_df, dplyr::all_of(all_cell_types)) %>%
-      base::as.list()
-
-  } else {
-
-    if(format == "long"){
-
-      out_df <-
-        tidyr::pivot_longer(
-          data = out_df,
-          cols = dplyr::all_of(all_cell_types),
-          values_to = {{calculate}},
-          names_to = "cell_type"
-        )
-
-    }
-
-  }
-
-  return(out_df)
-
-}
-
-
+#' @keywords internal
 initiate_plot <- function(xlim = c(1, 600), ylim = c(1,600), main = "") {
 
   plot(0, 0, type = "n", xlim = xlim, ylim = ylim, xlab = "x", ylab = "y", main = main, asp = 1)
@@ -2415,7 +2193,6 @@ is_area <- function(input, error = FALSE){
 
 #' @rdname is_area
 #' @export
-
 is_area_pixel <- function(input, error = FALSE){
 
   if(base::is.character(input) | is_numeric_input(input)){
@@ -2949,7 +2726,7 @@ isNumericVariable <- function(object, variable){
 
 # isS ---------------------------------------------------------------------
 
-#' @export
+#' @keywords internal
 isSpatialTrajectory <- function(object){
 
   class_test <-

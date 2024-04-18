@@ -2,18 +2,18 @@
 % Please edit documentation in R/setA-Z.R
 \name{setHistoImage}
 \alias{setHistoImage}
-\alias{setHistoImage,spata2-method}
+\alias{setHistoImage,SPATA2-method}
 \alias{setHistoImage,HistoImaging-method}
 \title{Set \code{HistoImage}}
 \usage{
 setHistoImage(object, ...)
 
-\S4method{setHistoImage}{spata2}(object, hist_img, ...)
+\S4method{setHistoImage}{SPATA2}(object, hist_img, ...)
 
 \S4method{setHistoImage}{HistoImaging}(object, hist_img, ...)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

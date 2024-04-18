@@ -2,16 +2,16 @@
 % Please edit documentation in R/r.R
 \name{registerImage}
 \alias{registerImage}
-\alias{registerImage,spata2-method}
+\alias{registerImage,SPATA2-method}
 \alias{registerImage,HistoImaging-method}
 \alias{removeImage}
-\alias{removeImage,spata2-method}
+\alias{removeImage,SPATA2-method}
 \alias{removeImage,HistoImaging-method}
 \title{Register or remove images}
 \usage{
 registerImage(object, ...)
 
-\S4method{registerImage}{spata2}(
+\S4method{registerImage}{SPATA2}(
   object,
   dir,
   img_name,
@@ -31,12 +31,12 @@ registerImage(object, ...)
 
 removeImage(object, ...)
 
-\S4method{removeImage}{spata2}(object, img_name)
+\S4method{removeImage}{SPATA2}(object, img_name)
 
 \S4method{removeImage}{HistoImaging}(object, img_name)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

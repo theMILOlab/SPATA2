@@ -25,9 +25,13 @@ or known entities located on the imaged tissue, such as cells or capture spots.}
 
 \item{\code{misc}}{list. A flexible list for miscellaneous input.}
 
+\item{\code{name_imf_active}}{character. The name of the image that is currently active.}
+
 \item{\code{name_img_ref}}{character. The name of the image that is used as a reference for aligning
 every additional image in slot @images_registered.}
 
 \item{\code{sample}}{character. String to identify the imaged tissue.}
+
+\item{\code{trajectories}}{list. A list of objects of class \code{\link{SpatialTrajectory}}.}
 }}
 

@@ -2,13 +2,13 @@
 % Please edit documentation in R/a.R
 \name{activeImage}
 \alias{activeImage}
-\alias{activeImage,spata2-method}
+\alias{activeImage,SPATA2-method}
 \alias{activeImage,HistoImaging-method}
 \title{Obtain name of active content}
 \usage{
 activeImage(object, ...)
 
-\S4method{activeImage}{spata2}(object)
+\S4method{activeImage}{SPATA2}(object)
 
 \S4method{activeImage}{HistoImaging}(object)
 }

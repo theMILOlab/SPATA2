@@ -5,7 +5,7 @@
 \alias{asSPATA2,giotto-method}
 \alias{asSPATA2,Seurat-method}
 \alias{asSPATA2,AnnDataR6-method}
-\title{Transform to \code{spata2} object object}
+\title{Transform to \code{SPATA2} object object}
 \usage{
 asSPATA2(object, ...)
 
@@ -66,6 +66,10 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
 \item{transfer_dim_red}{A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
 tSNE) from the input object to the output object.}
 
@@ -76,8 +80,8 @@ tSNE) from the input object to the output object.}
 \item{normalized_mtr_name}{A character string specifying the name of the normalized matrix (anndata only currently)}
 }
 \value{
-An object of class \code{spata2} object.
+An object of class \code{SPATA2} object.
 }
 \description{
-Transforms input object to object of class \code{spata2} object.
+Transforms input object to object of class \code{SPATA2} object.
 }

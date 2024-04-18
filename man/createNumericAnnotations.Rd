@@ -26,7 +26,7 @@ createNumericAnnotations(
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{variable}{Character value. The numeric variable of interest. Must be inside:
@@ -99,7 +99,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Additional slot content given to \code{methods::new()} when
-constructing the \code{SpatialAnnotation} object.}
+constructing the \code{\link{SpatialAnnotation}} object.}
 }
 \value{
 The input object containing the added or computed
@@ -125,7 +125,7 @@ is conducted depends on \code{threshold}.}
 of \code{use_dbscan} and \code{force1} arguments.}
 \item{Outlining:}{ Each group of data points is subject to the concaveman algorithm, resulting in
 the creation of an outlining polygon.}
-\item{Image annotation:}{ The generated concave polygons serve as the foundation for crafting spatial annotations.}
+\item{Spatial annotation:}{ The generated concave polygons serve as the foundation for crafting spatial annotations.}
 }
 
 In-depth Explanation:
@@ -149,13 +149,13 @@ detects multiple dense clusters, they can be merged into a single group
 if \code{force1} is also set to \code{TRUE}.
 
 It is essential to note that bypassing the DBSCAN step may lead to the inclusion
-of individual data points dispersed across the sample. This results in an image
+of individual data points dispersed across the sample. This results in a spatial
 annotation that essentially spans the entirety of the sample, lacking the
 segregation of specific variable expressions. Similarly, enabling \code{force1}
 might unify multiple segregated areas, present on both sides of the sample, into one
-group and subsequently, one image annotation encompassing the whole sample.
+group and subsequently, one spatial annotation encompassing the whole sample.
 Consider to allow the creation of multiple spatial annotations (suffixed with an index)
-and merging them afterwards via \code{mergeSpatialAnnotations()} if they are too
+and merging them afterwards via \code{\link[=mergeSpatialAnnotations]{mergeSpatialAnnotations()}} if they are too
 close together.
 
 Lastly, the remaining data points are fed into the concaveman algorithm on a
@@ -208,10 +208,10 @@ to specify the input in pixel you have to use input option 1. In pixel.
 
  object <- downloadSpataObject("275_T")
 
- # create an image annotation based on the segragated area of
+ # create an image annotation based on the segregated area of
  # high expression in hypoxia signatures
  object <-
-   createNUmericAnnotations(
+   createNumericAnnotations(
      object = object,
      variable = "HM_HYPOXIA",
      threshold = "kmeans_high",
@@ -226,5 +226,5 @@ to specify the input in pixel you have to use input option 1. In pixel.
 
 }
 \seealso{
-\code{\link[=recDbscanEps]{recDbscanEps()}}, \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
+\code{\link[dbscan:dbscan]{dbscan::dbscan()}}, \code{\link[=recDbscanEps]{recDbscanEps()}}, \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}, \code{\link[concaveman:concaveman]{concaveman::concaveman()}}
 }

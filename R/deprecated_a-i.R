@@ -1808,6 +1808,176 @@ flipCoords <- function(...){
 
 # g -----------------------------------------------------------------------
 
+
+#' @title Obtain name of currently active data matrix
+#'
+#' @inherit check_sample params
+#'
+#' @return Character value.
+#' @export
+
+getActiveMatrixName <- function(object, ...){
+
+  deprecated(fn = TRUE)
+
+  activeMatrix(object, ...)
+
+}
+
+#' @rdname getActiveMatrixName
+#' @export
+getActiveExpressionMatrixName <- function(...){
+
+  deprecated(fn = TRUE)
+
+  getActiveMatrixName(...)
+
+}
+
+
+
+
+#' @title Obtain barcode spot distances
+#'
+#' @description Computes the distance from every barcode spot to every other
+#' barcode spot.
+#'
+#' @inherit argument_dummy params
+#'
+#' @details The output data.frame has a number of rows that is equal to
+#' \code{nBarcodes(object)^2}
+#'
+#' @return If \code{unit} is \emph{'pixel'} a numeric value that scales
+#' the center to center distance of barcode spots to the current image.
+#' Else an object of class \code{unit}.
+#' @export
+#'
+#'
+getBarcodeSpotDistance <- function(object,
+                                   unit = "pixel",
+                                   force = FALSE,
+                                   verbose = NULL,
+                                   ...){
+
+  deprecated(fn = TRUE)
+
+  dist_val <- object@obj_info$bcsp_dist
+
+  if(base::is.null(dist_val) & base::isFALSE(force)){
+
+    dist_val <-
+      getBarcodeSpotDistances(object, verbose = verbose) %>%
+      dplyr::filter(bc_origin != bc_destination) %>%
+      dplyr::group_by(bc_origin) %>%
+      dplyr::filter(distance == base::min(distance)) %>%
+      dplyr::ungroup() %>%
+      dplyr::summarise(mean_dist = base::mean(distance)) %>%
+      dplyr::pull(mean_dist)
+
+  }
+
+  return(dist_val)
+
+}
+
+#' @keywords internal
+getDefaultGrouping <- function(object, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  activeGrouping(object, ...)
+
+}
+
+#' @keywords internal
+getFeatureDf <- function(...){
+
+  deprecated(fn=TRUE, )
+
+  getMetaDf(...)
+
+}
+
+
+#' @keywords internal
+
+getFeatureValues <- function(object, features, ...){
+
+  deprecated(fn = TRUE)
+
+  # 1. Control --------------------------------------------------------------
+
+  check_object(object)
+  features <- check_features(object, features, valid_classes = c("character", "factor"))
+
+  # -----
+
+  # 2. Main part ------------------------------------------------------------
+
+  if(base::length(features) == 1){
+
+    values <-
+      getMetaDf(object) %>%
+      dplyr::pull(var = {{features}}) %>%
+      base::unique()
+
+    return(values)
+
+  } else {
+
+    values <-
+      purrr::map(.x = features,
+                 .f = function(f){
+                   res <-
+                     getMetaDf(object) %>%
+                     dplyr::pull(var = {{f}}) %>%
+                     base::unique()
+
+                   return(res)
+
+                 }) %>%
+      magrittr::set_names(features)
+
+    return(values)
+  }
+
+
+}
+
+
+#' @keywords internal
+#' @export
+
+getGeneCounts <- function(object, return = "tibble", ...){
+
+  deprecated(fn = TRUE, ...)
+
+  check_object(object)
+
+  gene_counts <-
+    getCountMatrix(object) %>%
+    base::as.matrix() %>%
+    base::rowSums(na.rm = TRUE)
+
+  if(return %in% c("data.frame", "tibble")){
+
+    gene_counts <-
+      base::as.data.frame(gene_counts) %>%
+      tibble::rownames_to_column(var = "genes") %>%
+      magrittr::set_colnames(value = c("genes", "counts"))
+
+    if(return == "tibble"){
+
+      gene_counts <- tibble::as_tibble(x = gene_counts)
+
+    }
+
+  }
+
+  return(gene_counts)
+
+}
+
 #' @title Obtain IAS results (data.frame)
 #'
 #' @description Extracts (and filters) the summarized IAS results in form
@@ -2712,6 +2882,40 @@ getTrajectoryDf <- function(object,
 
 }
 
+
+#' @rdname setDefaultTrajectory
+#' @export
+getDefaultTrajectory <- function(object, ...){
+
+  deprecated(fn = TRUE)
+
+  t <- object@obj_info$default_trajectory
+
+  x <- c(...)
+
+  if(!base::is.character(t)){
+
+    if(base::is.character(x)){
+
+      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()' or specify with argument `id`."))
+
+    } else {
+
+      stop("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()'.")
+
+    }
+
+  }
+
+  give_feedback(msg = glue::glue("Using default trajectory: '{t}'"))
+
+  return(t)
+
+}
+
+#' @rdname setDefaultTrajectory
+#' @export
+getDefaultTrajectoryId <- getDefaultTrajectory
 
 # h -----------------------------------------------------------------------
 

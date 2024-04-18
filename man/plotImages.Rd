@@ -2,15 +2,15 @@
 % Please edit documentation in R/plotH-M.R
 \name{plotImages}
 \alias{plotImages}
-\alias{plotImages,spata2-method}
+\alias{plotImages,SPATA2-method}
 \alias{plotImages,HistoImaging-method}
 \title{Plot histology images (ggplot2)}
 \usage{
 plotImages(object, ...)
 
-\S4method{plotImages}{spata2}(
+\S4method{plotImages}{SPATA2}(
   object,
-  img_names = NULL,
+  img_names = getImageNames(object),
   by_section = TRUE,
   outline = FALSE,
   outline_ref = FALSE,
@@ -54,7 +54,7 @@ plotImages(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additionel arguments given to \code{plotImage()}.}

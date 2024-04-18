@@ -5,14 +5,14 @@
 \alias{getGeneMetaDf}
 \title{Obtain gene meta data}
 \usage{
-getGeneMetaData(object, mtr_name = NULL, only_df = FALSE, ...)
+getGeneMetaData(object, ...)
 
-getGeneMetaDf(object, mtr_name = NULL)
+getGeneMetaDf(object, ...)
 }
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest.}
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{only_df}{Logical. If set to TRUE only the data.frame is returned.
 If set to FALSE (the default) the whole list is returned.}

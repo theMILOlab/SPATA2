@@ -7,13 +7,24 @@
 \usage{
 getCountMatrix(object, ...)
 
-getProcessedMatrix(object, mtr_name)
+getProcessedMatrix(
+  object,
+  mtr_name = activeMatrix(object),
+  assay_name = activeAssay(object)
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
 A matrix with rownames corresponding to the features and

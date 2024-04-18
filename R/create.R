@@ -1265,7 +1265,7 @@ createHistoImaging <- function(sample,
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Active image: {active}."),
+    msg = glue::glue("Active image: '{active}'."),
     verbose = verbose
   )
 
@@ -1365,6 +1365,7 @@ createHistoImagingMERFISH <- function(dir,
       meta = meta,
       method = spatial_methods[["MERFISH"]],
       misc = misc,
+      name_img_active = "pseudo",
       name_img_ref = "pseudo",
       sample = sample,
       version = current_spata2_version
@@ -1425,6 +1426,7 @@ createHistoImagingSlideSeqV1 <- function(dir,
       meta = meta,
       method = SlideSeqV1,
       misc = misc,
+      name_img_active = "pseudo",
       name_img_ref = "pseudo",
       sample = sample,
       version = current_spata2_version
@@ -1605,6 +1607,7 @@ createHistoImagingXenium <- function(dir,
       meta = meta,
       method = spatial_methods[["Xenium"]],
       misc = misc,
+      name_img_active = "pseudo",
       name_img_ref = "pseudo",
       sample = sample,
       version = current_spata2_version
@@ -2738,7 +2741,7 @@ createImageAnnotations <- function(object, ...){
 #'   of \code{use_dbscan} and \code{force1} arguments.}
 #'   \item{Outlining:}{ Each group of data points is subject to the concaveman algorithm, resulting in
 #'   the creation of an outlining polygon.}
-#'   \item{Image annotation:}{ The generated concave polygons serve as the foundation for crafting spatial annotations.}
+#'   \item{Spatial annotation:}{ The generated concave polygons serve as the foundation for crafting spatial annotations.}
 #' }
 #'
 #' In-depth Explanation:
@@ -2762,13 +2765,13 @@ createImageAnnotations <- function(object, ...){
 #' if \code{force1} is also set to \code{TRUE}.
 #'
 #' It is essential to note that bypassing the DBSCAN step may lead to the inclusion
-#' of individual data points dispersed across the sample. This results in an image
+#' of individual data points dispersed across the sample. This results in a spatial
 #' annotation that essentially spans the entirety of the sample, lacking the
 #' segregation of specific variable expressions. Similarly, enabling \code{force1}
 #' might unify multiple segregated areas, present on both sides of the sample, into one
-#' group and subsequently, one image annotation encompassing the whole sample.
+#' group and subsequently, one spatial annotation encompassing the whole sample.
 #' Consider to allow the creation of multiple spatial annotations (suffixed with an index)
-#' and merging them afterwards via `mergeSpatialAnnotations()` if they are too
+#' and merging them afterwards via [`mergeSpatialAnnotations()`] if they are too
 #' close together.
 #'
 #' Lastly, the remaining data points are fed into the concaveman algorithm on a
@@ -2778,7 +2781,7 @@ createImageAnnotations <- function(object, ...){
 #' integrated into \code{addSpatialAnnotation()} along with the unsuffixed \code{id} and
 #' \code{tags} input arguments. The ID is suffixed with an index for each group.
 #'
-#' @seealso [`recDbscanEps()`], [`recDbscanMinPts()`]
+#' @seealso [`dbscan::dbscan()`], [`recDbscanEps()`], [`recDbscanMinPts()`], [`concaveman::concaveman()`]
 #'
 #' @examples
 #'
@@ -2786,10 +2789,10 @@ createImageAnnotations <- function(object, ...){
 #'
 #'  object <- downloadSpataObject("275_T")
 #'
-#'  # create an image annotation based on the segragated area of
+#'  # create an image annotation based on the segregated area of
 #'  # high expression in hypoxia signatures
 #'  object <-
-#'    createNUmericAnnotations(
+#'    createNumericAnnotations(
 #'      object = object,
 #'      variable = "HM_HYPOXIA",
 #'      threshold = "kmeans_high",
@@ -2956,29 +2959,29 @@ createNumericAnnotations <- function(object,
 
 #' @title Interactive sample segmentation
 #'
-#' @description Gives access to an interactive user interface where barcode-spots
+#' @description Gives access to an interactive userinterface where data points
 #' can be interactively annotated.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy params
 #'
 #' @details Segmentation variables are grouping variables that are stored in
-#' the feature data.frame of the `SPATA2` object (such as clustering variables).
+#' the meta data.frame of the `SPATA2` object (such as clustering variables).
 #' They differ from clustering variables in so far as that they are not the result
 #' of unsupervised cluster algorithms but from group assignment the researcher
 #' conducts him/herself (e.g. histological classification).
 #'
 #' Therefore, all segmentation variables can be extracted via \code{getFeatureNames()}
 #' as they are part of those. To specifically extract variables that were created
-#' with \code{createSpatialSegmentation()} use \code{getSegmentationVariableNames()}. To remove
-#' annotations you no longer need use \code{discardSegmentationVariable()}.
+#' with \code{createSpatialSegmentation()} use \code{getSegmentationNames()}. To remove
+#' annotations you no longer need use \code{removeFeatures()}.
 #'
 #' @note The interface allows to zoom in on the sample. This is useful if your
 #' `SPATA2` object contains an HE-image as background and you want to classify
 #' barcode spots based on the histology. As these images are displayed by pixels
 #' the resolution decreases the more you zoom in. Many experiments (such as
 #' the Visium output) contain high resolution images. You can use the function
-#' \code{exchangeImage()} to read in images of higher resolution for a better
+#' [`registerImage()`] to register images of higher resolution for a better
 #' histological classification.
 #'
 #'
@@ -3791,7 +3794,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           segm_vars <- shiny::reactive({
 
-            getSegmentationVariableNames(
+            getSegmentationNames(
               object = spata_object(),
               verbose = FALSE
             )
@@ -4214,15 +4217,15 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             vname <- input$segm_var_name
 
             object <- spata_object()
-            fdata <- getFeatureDf(object)
+            mdata <- getMetaDf(object)
 
-            base::levels(fdata[[vname]]) <-
-              c(base::levels(fdata[[vname]]), new_group_name) %>%
+            base::levels(mdata[[vname]]) <-
+              c(base::levels(mdata[[vname]]), new_group_name) %>%
               base::unique()
 
-            fdata[[vname]][fdata$barcodes %in% encircled_bcsp] <- new_group_name
+            mdata[[vname]][mdata$barcodes %in% encircled_bcsp] <- new_group_name
 
-            object <- setFeatureDf(object, feature_df = fdata)
+            object <- setFeatureDf(object, feature_df = mdata)
 
             spata_object(object)
 
@@ -4250,7 +4253,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
             csv <- current_segm_var()
             sv <- segm_vars()
 
-            getFeatureDf(object = spata_object()) %>%
+            getMetaDf(object = spata_object()) %>%
               dplyr::select(barcodes, dplyr::all_of(sv)) %>%
               dplyr::select(barcodes, {{csv}}, dplyr::everything())
 
@@ -4258,7 +4261,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
           output$segm_var_table <- DT::renderDataTable({
 
-            getFeatureDf(object = spata_object()) %>%
+            getMetaDf(object = spata_object()) %>%
               dplyr::select(barcodes, dplyr::all_of(x = getSegmentationNames(object)))
 
           }, options = list(scrollX = TRUE))

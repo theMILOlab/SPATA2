@@ -2,12 +2,9 @@
 % Please edit documentation in R/adj-aZ.R
 \name{attachUnit}
 \alias{attachUnit}
-\alias{attach_uni}
 \title{Attach unit to distance}
 \usage{
 attachUnit(input)
-
-attach_uni(input)
 }
 \arguments{
 \item{input}{Character or numeric vector. Elements must match the

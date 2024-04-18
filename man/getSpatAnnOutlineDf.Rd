@@ -2,14 +2,14 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatAnnOutlineDf}
 \alias{getSpatAnnOutlineDf}
-\alias{getSpatAnnOutlineDf,spata2-method}
+\alias{getSpatAnnOutlineDf,SPATA2-method}
 \alias{getSpatAnnOutlineDf,HistoImaging-method}
 \alias{getSpatAnnOutlineDf,SpatialAnnotation-method}
 \title{Obtain spatial annotation border data.frame}
 \usage{
 getSpatAnnOutlineDf(object, ...)
 
-\S4method{getSpatAnnOutlineDf}{spata2}(
+\S4method{getSpatAnnOutlineDf}{SPATA2}(
   object,
   ids = NULL,
   class = NULL,
@@ -47,7 +47,7 @@ getSpatAnnOutlineDf(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

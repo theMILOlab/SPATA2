@@ -10,7 +10,7 @@ setImageAnnotation(object, img_ann, align = TRUE, overwrite = FALSE)
 setImageAnnotations(object, img_anns, align = TRUE, overwrite = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{img_ann}{An object of class \code{ImageAnnotation}.}

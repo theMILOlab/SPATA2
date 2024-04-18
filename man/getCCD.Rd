@@ -2,18 +2,18 @@
 % Please edit documentation in R/getA-G.R
 \name{getCCD}
 \alias{getCCD}
-\alias{getCCD,spata2-method}
+\alias{getCCD,SPATA2-method}
 \alias{getCCD,HistoImaging-method}
 \title{Obtain center to center distance}
 \usage{
 getCCD(object, ...)
 
-\S4method{getCCD}{spata2}(object, unit = NULL, as_numeric = FALSE, round = FALSE)
+\S4method{getCCD}{SPATA2}(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 
 \S4method{getCCD}{HistoImaging}(object, unit = NULL, as_numeric = FALSE, round = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

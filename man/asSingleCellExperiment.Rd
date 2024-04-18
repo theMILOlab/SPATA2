@@ -4,11 +4,15 @@
 \alias{asSingleCellExperiment}
 \title{Transform to \code{SingleCellExperiment}}
 \usage{
-asSingleCellExperiment(object)
+asSingleCellExperiment(object, assay_name = activeAssay(object))
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
 \item{...}{The features to be renamed specified according to
 the following syntax: 'new_feature_name' = 'old_feature_name'. This applies

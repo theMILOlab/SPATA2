@@ -19,34 +19,17 @@ plotHistogram <- function(object,
                           method_gs = NULL,
                           normalize = NULL,
                           verbose = NULL,
-                          of_sample = NA,
                           ...){
 
   hlpr_assign_arguments(object)
 
-  of_sample <- check_sample(object = object, of_sample = of_sample, desired_length = 1)
-
-  all_features <- getFeatureNames(object)
-  all_genes <- getGenes(object = object)
-  all_gene_sets <- getGeneSets(object)
-
   var_levels <- base::unique(variables)
-
-  variables <-
-    check_variables(
-      variables = c(variables, across),
-      all_features = all_features,
-      all_gene_sets = all_gene_sets,
-      all_genes = all_genes,
-      simplify = FALSE
-    )
 
   spata_df <-
     joinWithVariables(
       object = object,
-      spata_df = getSpataDf(object, of_sample),
+      spata_df = getSpataDf(object),
       variables = variables,
-      method_gs = method_gs,
       smooth = FALSE,
       normalize = normalize
     ) %>%
@@ -102,9 +85,9 @@ setGeneric(name = "plotImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "plotImage",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         outline = FALSE,
                         by_section = TRUE,
                         fragments = TRUE,
@@ -148,7 +131,7 @@ setMethod(
   f = "plotImage",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         outline = FALSE,
                         by_section = TRUE,
                         fragments = TRUE,
@@ -305,7 +288,7 @@ setGeneric(name = "plotImageBase", def = function(object, ...){
 #' @export
 setMethod(
   f = "plotImageBase",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, xrange = NULL, yrange = NULL, axes = FALSE, ...){
 
     img <- getImageRaster(object, xrange = xrange, yrange = yrange)
@@ -366,7 +349,7 @@ setMethod(
   f = "plotImageBase",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         xrange = NULL,
                         yrange = NULL,
                         scale_fct = 1,
@@ -391,7 +374,7 @@ setMethod(
   f = "plotImageBase",
   signature = "HistoImage",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         xrange = NULL,
                         yrange = NULL,
                         scale_fct = 1,
@@ -518,9 +501,9 @@ setGeneric(name = "plotImageMask", def = function(object, ...){
 #' @export
 setMethod(
   f = "plotImageMask",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         clr_fg = "black",
                         clr_bg = "white"){
 
@@ -536,7 +519,7 @@ setMethod(
   f = "plotImageMask",
   signature = "HistoImaging",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         clr_fg = "black",
                         clr_bg = "white"){
 
@@ -607,9 +590,9 @@ setGeneric(name = "plotImages", def = function(object, ...){
 #' @export
 setMethod(
   f = "plotImages",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object,
-                        img_names = NULL,
+                        img_names = getImageNames(object),
                         by_section = TRUE,
                         outline = FALSE,
                         outline_ref = FALSE,

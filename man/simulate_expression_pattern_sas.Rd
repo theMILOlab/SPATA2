@@ -3,6 +3,7 @@
 \name{simulate_expression_pattern_sas}
 \alias{simulate_expression_pattern_sas}
 \alias{simulate_expression_pattern_sts}
+\alias{simulate_random_expression}
 \title{Expression pattern simulation}
 \usage{
 simulate_expression_pattern_sas(
@@ -41,9 +42,18 @@ simulate_expression_pattern_sts(
   nsep = ".",
   verbose = TRUE
 )
+
+simulate_random_expression(
+  object,
+  n_total,
+  range_sim = c(0, 1),
+  seed = 123,
+  naming = "SE.RANDOM.{i}",
+  verbose = TRUE
+)
 }
 \arguments{
-\item{object}{An object of class \code{spata2} or, in case of S4 generics,
+\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{ids}{Character vector or \code{NULL}. If character, specifies the IDs

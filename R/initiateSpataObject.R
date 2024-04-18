@@ -1,30 +1,33 @@
 
 
 
-#' @title Initiate a `spata2` object
+#' @title Initiate a `SPATA2` object
 #'
-#' @description Initiates a `spata2` object using the basic inputs: a coordinates
+#' @description Initiates a `SPATA2` object using the basic inputs: a coordinates
 #' data.frame and a count matrix.
 #'
+#'
+#' @param sample_name Character value. The name with which to identify the `SPATA2` object.
 #' @param count_mtr A count matrix. Column names are barcodes. Rownames are the
-#' features (genes, proteins, metabolites etc.).
+#' molecular features (genes, proteins, metabolites etc.).
+#' @param omic The type of [`MolecularAssay`] in which the count matrix is placed.
+#' Should best describe the molecular type of the count matrix. E.g. transcriptomics,
+#' proteomics, metabolomics. Additionally, defines the assay name! See [`activateAssay()`].
 #' @param coords_df Data.frame with a variable called *barcodes* as well as the
 #' *x_orig* and *y_orig* or *x* and *y*.
-#' @param img_ref The reference image. See details for more information on how or
+#' @param img The reference image. See details for more information on how or
 #' how not to include an image.
-#' @param dir_img_ref Character value or `NULL`. If character, the directory
-#' to the reference image.
-#' @param name_img_ref Character value or `NULL`. If character, the name of
-#' the reference image. Must not be `NULL` if `dir_img_ref` is specified.
-#' Ignored if `dir_img_ref` is `NULL`.
+#' @param img_dir Character value or `NULL`. If character, the file directory
+#' to the reference image. See details for more information on how and why to include
+#' a file directory.
+#' @param img_name Character value. The name of the reference image. Only
+#' required if at least `img` or `img_dir` is specified.
 #' @param spatial_method Character value or object of class [`SpatialMethod`].
 #' If character, one of `validSpatialMethods()`.
 #' @param meta,misc List of meta- and miscellaneous data for the [`HistoImaging`]
 #' object.
 #'
 #' @inherit argument_dummy params
-#'
-#' @details
 #'
 #' @section Initiating the object with an image:
 #' `SPATA2` allows to register multiple images with one object via file directories.
@@ -33,7 +36,7 @@
 #' `SPATA2` takes a directory to the image you want to initiate your `SPATA2` object with,
 #' then loads the image and saves the directory, too. If the image does not
 #' exist in a file on your device but only in the global environment you can
-#' use `img_ref` directly. This way, no image directory is stored. In a scenario,
+#' use `img` directly. This way, no image directory is stored. In a scenario,
 #' where you want to register an additional image and use it for further analysis,
 #' you can not *unload* the image with which you initiated the object because it
 #' would be lost since there is not directory from which to retrieve it once
@@ -41,16 +44,16 @@
 #' with a file directory to the image and not with an image from the global
 #' environment.
 #'
-#' Lastly, if `img_ref` and `dir_img_ref` is specified the image is saved under
+#' Lastly, if `img` and `img_dir` is specified the image is saved under
 #' this directory as a .png file and the image is registered normally.
 #'
 #' @section Experiments without background images:
 #' As `SPATA2` has been developed with the Visium platform in mind, a lot of spatial
-#' information are stored in containers related to the images that come along
+#' information is stored in containers related to the images that come along
 #' with the experiment set up. If the experiment set up (or your data set) does not
 #' contain an image, the containers are created anyway with the @@image slot being empty.
 #'
-#' If `dir_img_ref` is **not** specified:
+#' If `img_dir` and/or `img` are **not** specified:
 #' This implies that your data set does not contain an image. The function
 #' creates a [`PseudoHistoImage`] as a container for some spatial information (
 #' especially for the scale factors) but it does not contain an actual image.
@@ -62,21 +65,22 @@
 #' Note that if the `coords_df` does not contain *x_orig* and *y_orig* variables,
 #' the *x* and *y* variables provided in the coordinates data.frame are
 #' considered to be the original coordinates and are forced into names *x_orig*
-#' and *y_orig*. (Upon retrieval coordinates are scaled to the image in use using the
-#' *coordinates scale factor*. This factor defaults to 1 (but can be adjusted via argument
-#' `scale_factors` which defaults to `scale_factors = list(coords = 1)`). As the
+#' and *y_orig*. Upon retrieval coordinates are scaled to the image in use using the
+#' *coordinates scale factor*. This factor defaults to 1 but can be adjusted via argument
+#' `scale_factors` which defaults to `scale_factors = list(coords = 1)`. As the
 #' default is 1, the default expects the coordinates and the image to align
-#' perfectly.)
+#' perfectly.
 #'
-#' @return An object of class `spata2`.
+#' @return An object of class `SPATA2`.
 #' @export
 #'
-initiateSpataObject <- function(count_mtr,
+initiateSpataObject <- function(sample_name,
+                                count_mtr,
+                                omic,
                                 coords_df,
-                                sample_name,
-                                img_ref = NULL,
-                                dir_img_ref = NULL,
-                                name_img_ref = NULL,
+                                img = NULL,
+                                img_dir = NULL,
+                                img_name = "image1",
                                 spatial_method = "Undefined",
                                 meta = list(),
                                 misc = list(),
@@ -132,18 +136,18 @@ initiateSpataObject <- function(count_mtr,
 
   }
 
-  # create spata2 object
+  # initiate SPATA2 object
   object <-
-    initiateSpataObject_Empty(
+    initiateSpataObjectEmpty(
       sample_name = sample_name,
-      spatial_method = spatial_method
+      method = spatial_method
     )
 
-  # imaging: create pseudohistoimage no image is available
+  # imaging: create pseudohistoimage if no image is available
   if(base::is.null(dir_img_ref) & base::is.null(img_ref)) {
 
     confuns::give_feedback(
-      msg = "`dir_img_ref` is NULL. Creating pseudo image container.",
+      msg = "`dir_img_ref` and `img_ref` are NULL. Creating pseudo image container.",
       verbose = verbose
     )
 
@@ -167,9 +171,9 @@ initiateSpataObject <- function(count_mtr,
     hist_img_ref <-
       createHistoImage(
         active = TRUE,
-        dir = dir_img_ref,
-        img = img_ref,
-        img_name = name_img_ref,
+        dir = img_dir,
+        img = img,
+        img_name = img_name,
         reference = TRUE,
         sample = sample_name,
         scale_factors = scale_factors,
@@ -180,7 +184,7 @@ initiateSpataObject <- function(count_mtr,
       createHistoImaging(
         sample = sample_name,
         hist_img_ref = hist_img_ref,
-        active = name_img_ref,
+        active = img_name,
         unload = FALSE,
         coordinates = coords_df,
         meta = meta,
@@ -192,11 +196,35 @@ initiateSpataObject <- function(count_mtr,
 
   object <- setDefault(object, "pt_size" = 1)
 
-  object <- setCountMatrix(object, count_mtr = count_mtr)
-  object <- setActiveMatrix(object, mtr_name = "counts")
+  # molecular assay
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      omic = omic
+    )
 
-  object <- setFeatureDf(object, feature_df = tibble::tibble(barcodes = barcodes_coords))
+  if(!omic %in% base::names(signatures)){
 
+    confuns::give_feedback(
+      msg = glue::glue("SPATA2 does not have signatures stored for omic '{omic}'. Set yourself with `setSignatures()`."),
+      verbose = verbose
+    )
+
+  } else {
+
+    ma@signatures <- signatures[[omic]]
+
+  }
+
+  object <- setAssay(object, assa = ma)
+  object <- activateAssay(object, assay_name = omic, verbose = verbose)
+  object <- activateMatrix(object, mtr_name = "counts")
+
+  # meta data.frame
+  meta_df <- tibble::tibble(barcodes = barcodes_coords, sample = {{sample_name}})
+  object <- setMetaDf(object, meta_df = meta_df)
+
+  # spatial data
   object <- setHistoImaging(object, imaging = imaging)
 
   return(object)
@@ -204,68 +232,21 @@ initiateSpataObject <- function(count_mtr,
 }
 
 
-
-#' @title Initiate an empty `spata2` object
-#'
-#' @inherit initiateSpataObject_ExprMtr params
-#'
-#' @return An empty object of class `spata2`.
-#'
 #' @keywords internal
-#'
-#' @export
-#'
+initiateSpataObjectEmpty <- function(sample_name, method, verbose = TRUE){
 
-initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
+  object <- SPATA2::SPATA2()
 
-  confuns::give_feedback(
-    msg = "Setting up new `spata2` object.",
-    verbose = TRUE
-    )
-
-  # check input
-  confuns::is_value(sample_name,  mode = "character")
-
-  # create object
-  class_string <- "spata2"
-
-  base::attr(class_string, which = "package") <- "SPATA2"
-
-  object <- methods::new(Class = class_string, samples = sample_name)
-
-  # set basic slots
-
-  if(base::is.character(spatial_method)){
-
-    confuns::check_one_of(
-      input = spatial_method,
-      against = validSpatialMethods()
-    )
-
-    object@information$method <- spatial_methods[[spatial_method]]
-
-  } else {
-
-    object@information$method <- spatial_method
-
-  }
+  object@method <- method
+  object@sample <- sample_name
+  object@version <- current_spata2_version
 
   object <- setDefaultInstructions(object)
 
-  # empty slots
-  empty_list <- purrr::set_names(x = list(list()), nm = sample_name)
-
-  object@autoencoder <- empty_list
-  object@cnv <- empty_list
-  object@data <- empty_list
-  object@dea <- empty_list
-  object@images <- empty_list
-  object@spatial <- empty_list
-  object@trajectories <- empty_list
-  object@used_genesets <- SPATA2::gsdf
-
-  # set version
-  object@version <- current_spata2_version
+  confuns::give_feedback(
+    msg = glue::glue("Initiating SPATA2 object of spatial method: `{method@name}`"),
+    verbose = verbose
+  )
 
   return(object)
 
@@ -273,10 +254,10 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 
 
 
-#' @title Initiate a `spata2` object from platform MERFISH
+#' @title Initiate a `SPATA2` object from platform MERFISH
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `spata2` object from the standardized output of the MERFISH platform.
+#' `SPATA2` object from the standardized output of the MERFISH platform.
 #'
 #' @param directory_merfish Character value. Directory to a MERFISH folder
 #' that should contain a .csv file called *cell_by_gene.csv* and a .csv file
@@ -289,26 +270,29 @@ initiateSpataObject_Empty <- function(sample_name, spatial_method = "Visium"){
 #' the filename of the .csv file that contains cell meta data, in particular,
 #' spatial location via the variables *center_x* and *center_y*.
 #'
+#' @inherit initiateSpataObject params return
 #' @inherit argument_dummy params
 #'
-#' @return An object of class `spata2`.
 #'
-#' @details MERFISH output does not come with an image. However, many spatial information such
-#' as coordinates, coordinate scale factors or spatial annotations are stored
-#' in class [`HistoImaging`] and [`HistoImage`]. The `spata2` object is equipped
-#' with a `HistoImaging` object that contains an empty `HistoImage` called *pseudo*.
-#'
-#' MERFISH works in micron space. The coordinates of the cellular centroids are
+#' @details MERFISH works in micron space. The coordinates of the cellular centroids are
 #' provided in unit um. Therefore no pixel scale factor must be computed or set
 #' to work with SI units.
 #'
 #' @export
 
-initiateSpataObjectMERFISH <- function(directory_merfish,
-                                       sample_name,
+initiateSpataObjectMERFISH <- function(sample_name,
+                                       directory_merfish,
                                        file_counts = NULL,
                                        file_cell_meta = NULL,
                                        verbose = TRUE){
+
+  # create SPATA2
+  object <-
+    initiateSpataObjectEmpty(
+      sample_name = sample_name,
+      method = spatial_methods$MERFISH,
+      verbose = verbose
+    )
 
   directory_merfish <- base::normalizePath(directory_merfish)
 
@@ -352,7 +336,11 @@ initiateSpataObjectMERFISH <- function(directory_merfish,
   if(stringr::str_detect(string = file_counts, pattern = "\\.csv$")){
 
     count_mtr <-
-      readr::read_csv(file = file_counts, show_col_types = FALSE) %>%
+      suppressMessages({
+
+        readr::read_csv(file = file_counts, show_col_types = FALSE)
+
+      }) %>%
       dplyr::mutate(barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_")) %>%
       dplyr::select(-dplyr::matches("^\\.")) %>%
       tibble::column_to_rownames("barcodes") %>%
@@ -361,36 +349,47 @@ initiateSpataObjectMERFISH <- function(directory_merfish,
       base::t() %>%
       Matrix::Matrix()
 
-  } # more options ?
+  } else {
 
-  # create histo imaging
+    # more options ?
+    stop("Invalid input for `file_counts`.")
+
+  }
+
+  # spatial data
   imaging <-
     createHistoImagingMERFISH(
       dir = directory_merfish,
       sample = sample_name
     )
 
-  # create spata2
-  object <-
-    initiateSpataObject_Empty(
-      sample_name = sample_name,
-      spatial_method = imaging@method@name
-    )
-
-  # set required content
-  object <- setCountMatrix(object, count_mtr = count_mtr)
-  object <- setActiveMatrix(object, mtr_name = "counts")
-
-  object <-
-    setFeatureDf(
-      object = object,
-      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
-    )
-
   object <- setHistoImaging(object, imaging = imaging)
 
-  # set active content
 
+  # molecular assay
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      omic = "transcriptomics",
+      signatures = signatures$transcriptomics
+    )
+
+  object <- setAssay(object, assay = ma)
+  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateMatrix(object, mtr_name = "counts")
+
+  object <- setAssay(object, assay = ma)
+
+  # meta
+  meta_df <-
+    tibble::tibble(
+      barcodes = getCoordsDf(object)$barcodes,
+      sample = {{sample_name}}
+      )
+
+  object <- setMetaDf(object, meta_df = meta_df)
+
+  # set active content
   object <-
     setDefault(
       object = object,
@@ -399,11 +398,7 @@ initiateSpataObjectMERFISH <- function(directory_merfish,
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
     )
 
-  object <- setInitiationInfo(object)
-
-  # set spatial information
-
-  # MERFISH works in micron space
+  # MERFISH works in micron space -> pixel scale factor = 1
   pxl_scale_fct <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
   object <- setScaleFactor(object, fct_name = "pixel", value = pxl_scale_fct)
 
@@ -424,10 +419,10 @@ initiateSpataObjectMERFISH <- function(directory_merfish,
 }
 
 
-#' @title Initiate a `spata2` object from platform SlideSeq
+#' @title Initiate a `SPATA2` object from platform SlideSeq
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `spata2` object from the standardized output of the SlideSeq platform.
+#' `SPATA2` object from the standardized output of the SlideSeq platform.
 #'
 #' @param directory_slide_seq Character value. Directory to a SlideSeq folder
 #' that contains a count matrix and bead locations.
@@ -447,23 +442,25 @@ initiateSpataObjectMERFISH <- function(directory_merfish,
 #' for a file ending with *MatchedBeadLocation.csv*.
 #'
 #' @inherit argument_dummy params
-#'
-#' @return An object of class `spata2`.
-#'
-#' @details SlideSeqV1 does not come with an image. However, many spatial information such
-#' as coordinates, coordinate scale factors or spatial annotations are stored
-#' in class [`HistoImaging`] and [`HistoImage`]. The `spata2` object is equipped
-#' with a `HistoImaging` object that contains an empty `HistoImage` called *pseudo*.
+#' @inherit initiateSpataObject params return
 #'
 #' @export
 
-initiateSpataObjectSlideSeqV1 <- function(directory_slide_seq,
-                                          sample_name,
+initiateSpataObjectSlideSeqV1 <- function(sample_name,
+                                          directory_slide_seq,
                                           file_counts = NULL,
                                           file_barcodes = NULL,
                                           file_genes = NULL,
                                           file_coords = NULL,
                                           verbose = TRUE){
+
+  # create SPATA2
+  object <-
+    initiateSpataObjectEmpty(
+      sample_name = sample_name,
+      method = spatial_methods$SlideSeqV1,
+      verbose = verbose
+    )
 
   confuns::give_feedback(
     msg = glue::glue("Reading from directory {directory_slide_seq}."),
@@ -601,29 +598,30 @@ initiateSpataObjectSlideSeqV1 <- function(directory_slide_seq,
       sample = sample_name
     )
 
-  # create spata2
-  object <-
-    initiateSpataObject_Empty(
-      sample_name = sample_name,
-      spatial_method = imaging@method@name
-    )
-
-  # set required content
-  object <- setCountMatrix(object, count_mtr = count_mtr)
-
-  object <-
-    setFeatureDf(
-      object = object,
-      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
-    )
-
   object <- setHistoImaging(object, imaging = imaging)
 
+  # molecular assay
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      omic = "transcriptomics",
+      signatures = signatures$transcriptomics
+    )
+
+  object <- setAssay(object, assay = ma)
+  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateMatrix(object, mtr_name = "counts")
+
+  # meta df
+  meta_df <-
+    tibble::tibble(
+      barcodes = getCoordsDf(imaging)$barcodes,
+      sample = {{sample_name}}
+      )
+
+  object <- setMetaDf(object = object, meta_df = meta_df)
+
   # set active content
-  object <- setActiveMatrix(object, mtr_name = "counts")
-
-  object <- setInitiationInfo(object)
-
   object <-
     setDefault(
       object = object,
@@ -636,21 +634,20 @@ initiateSpataObjectSlideSeqV1 <- function(directory_slide_seq,
 
 }
 
-#' @title Initiate `spata2` object from platform Visium
+#' @title Initiate `SPATA2` object from platform Visium
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `spata2` object from standardized output of the Visium platform.
+#' `SPATA2` object from standardized output of the Visium platform.
 #'
 #' @param directory_visium Character value. Directory to a visium folder. Should contain
 #' the subdirectory *'.../spatial'*.
-#' @param sample_name Character value. Name of the sample.
 #' @param mtr The matrix to load. One of `c("filtered", "raw")`.
 #'
+#' @inherit initiateSpataObject params return
 #' @inherit createHistoImagingVisium params
 #'
 #' @seealso [`createHistoImagingVisium`]
 #'
-#' @return An object of class `spata2`.
 #' @export
 #'
 initiateSpataObjectVisium <- function(directory_visium,
@@ -714,28 +711,39 @@ initiateSpataObjectVisium <- function(directory_visium,
       verbose = verbose
     )
 
-  # create spata2 object
+  # create SPATA2 object
   object <-
-    initiateSpataObject_Empty(
+    initiateSpataObjectEmpty(
       sample_name = sample_name,
-      spatial_method = imaging@method@name
+      method = imaging@method, # depends on input
+      verbose = verbose
     )
 
   # set required content
-  object <- setCountMatrix(object, count_mtr = count_mtr)
 
-  object <-
-    setFeatureDf(
-      object = object,
-      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
+  # molecular assay
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      omic = "transcriptomics",
+      signatures = signatures$transcriptomics
     )
 
+  object <- setAssay(object, assay = ma)
+  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateMatrix(object, mtr_name = "counts")
+
+  # meta
+  meta_df <-
+    tibble::tibble(
+      barcodes = getCoordsDf(imaging)$barcodes,
+      sample = {{sample_name}}
+      )
+
+  object <- setMetaDf(object, meta_df = meta_df)
+
+  # spatial data
   object <- setHistoImaging(object, imaging = imaging)
-
-  # set active content
-  object <- setActiveMatrix(object, mtr_name = "counts")
-
-  object <- setInitiationInfo(object)
 
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object))
@@ -745,22 +753,40 @@ initiateSpataObjectVisium <- function(directory_visium,
 }
 
 
-#' @title Initiate `spata2` object from platform Xenium
+#' @title Initiate `SPATA2` object from platform Xenium
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `spata2` object from standardized output of the Xenium platform.
+#' `SPATA2` object from standardized output of the Xenium platform.
 #'
-#' @param directory_visium Character value. Directory to a xenium folder. Should contain
+#' @param directory_xenium Character value. Directory to a xenium folder. Should contain
 #' the subdirectory *'.../cell_feature_matrix'* and the file *'.../cells.csv.gz'*..
-#' @param sample_name Character value. Name of the sample.
+#' @inherit initiateSpataObject params return
 #'
-#' @return An object of class `spata2`.
 #' @export
 #'
-initiateSpataObjectXenium <- function(directory_xenium,
-                                      sample_name,
+initiateSpataObjectXenium <- function(sample_name,
+                                      directory_xenium,
                                       verbose = TRUE){
 
+  # create SPATA2 object
+  object <-
+    initiateSpataObjectEmpty(
+      sample_name = sample_name,
+      method = spatial_methods$Xenium,
+      verbose = verbose
+    )
+
+
+  # spatial data
+  imaging <-
+    createHistoImagingXenium(
+      dir = directory_xenium,
+      sample = sample_name
+    )
+
+  object <- setHistoImaging(object, imaging = imaging)
+
+  # read count matrix
   mtr_path <- base::file.path(directory_xenium, "cell_feature_matrix/")
 
   confuns::give_feedback(
@@ -768,7 +794,6 @@ initiateSpataObjectXenium <- function(directory_xenium,
     verbose = verbose
   )
 
-  # read count matrix
   count_mtr <-
     base::suppressMessages({
 
@@ -776,35 +801,26 @@ initiateSpataObjectXenium <- function(directory_xenium,
 
     })
 
-  # create imaging
-  imaging <-
-    createHistoImagingXenium(
-      dir = directory_xenium,
-      sample = sample_name
+  # molecular assay
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      omic = "transcriptomics",
+      signatures = signatures$transcriptomics
     )
 
-  # create spata2 object
-  object <-
-    initiateSpataObject_Empty(
-      sample_name = sample_name,
-      spatial_method = imaging@method@name
+  object <- setAssay(object, assay = ma)
+  object <- activateAssay(object, assay_name = "transcriptomics")
+  object <- activateMatrix(object, mtr_name = "counts")
+
+  # meta
+  meta_df <-
+    tibble::tibble(
+      barcodes = getCoordsDf(imaging)$barcodes,
+      sample = {{sample_name}}
     )
 
-  # set required content
-  object <- setCountMatrix(object, count_mtr = count_mtr)
-
-  object <-
-    setFeatureDf(
-      object = object,
-      feature_df = tibble::tibble(barcodes = getCoordsDf(imaging)$barcodes)
-    )
-
-  object <- setHistoImaging(object, imaging = imaging)
-
-  # set active content
-  object <- setActiveMatrix(object, mtr_name = "counts")
-
-  object <- setInitiationInfo(object)
+  object <- setMetaDf(object, meta_df = meta_df)
 
   # Xenium works in micron space
   pxl_scale_fct <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
@@ -829,9 +845,9 @@ initiateSpataObjectXenium <- function(directory_xenium,
 
 # deprecated --------------------------------------------------------------
 
-#' @title Initiate a `spata2` object from a raw count matrix
+#' @title Initiate a `SPATA2` object from a raw count matrix
 #'
-#' @description Default function for any spatial related experiment whoose `spata2` objects are initiated with
+#' @description Default function for any spatial related experiment whoose `SPATA2` objects are initiated with
 #' a raw count matrix. See details for more information.
 #'
 #' @param count_mtr A numeric matrix to be used as the count matrix. Rownames must
@@ -839,9 +855,9 @@ initiateSpataObjectXenium <- function(directory_xenium,
 #' @inherit initiateSpataObject_ExprMtr params return
 #' @inherit transformSpataToSeurat params
 #'
-#' @details The loading and preprocessing of the `spata2` object  currently relies on the Seurat-package. Before any pre processing function is applied
+#' @details The loading and preprocessing of the `SPATA2` object  currently relies on the Seurat-package. Before any pre processing function is applied
 #' mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-#' manipulate the way the `spata2` object is processed. For all of these arguments apply the following instructions:
+#' manipulate the way the `SPATA2` object is processed. For all of these arguments apply the following instructions:
 #'
 #' \itemize{
 #'   \item{If set to FALSE the processing function is skipped.}
@@ -853,7 +869,7 @@ initiateSpataObjectXenium <- function(directory_xenium,
 #'
 #' Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 #' will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-#' is going to be empty.) Skipping functions might result in an incomplete `spata2` object.
+#' is going to be empty.) Skipping functions might result in an incomplete `SPATA2` object.
 #'
 #' @export
 
@@ -1025,7 +1041,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
 
         }, error = function(error){
 
-          warning(glue::glue("Attempt to save `spata2` object under '{directory_spata}' failed with the following error message: {error}"))
+          warning(glue::glue("Attempt to save `SPATA2` object under '{directory_spata}' failed with the following error message: {error}"))
 
           spata_object
 
@@ -1053,13 +1069,13 @@ initiateSpataObject_CountMtr <- function(coords_df,
 
 }
 
-#' @title Initiate a `spata2` object from example data sets
+#' @title Initiate a `SPATA2` object from example data sets
 #'
 #' @description Creates and returns an object of class spata
 #' from the example data sets provided by the package \emph{SeuratData}.
 #' See details for more.
 #'
-#' @param data_set Character value. The data-set from which to create the `spata2` object.
+#' @param data_set Character value. The data-set from which to create the `SPATA2` object.
 #' Currently only \emph{'stxBrain'} is available. Additional datat sets will be added
 #' shortly.
 #' @param type Given to argument \code{type} of funciton \code{SeuratData::LoadData()}.
@@ -1193,9 +1209,9 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 
   # -----
 
-  # 4. Create `spata2` object --------------------------------------------------
+  # 4. Create `SPATA2` object --------------------------------------------------
 
-  confuns::give_feedback(msg = "Initiating `spata2` object.", verbose = verbose)
+  confuns::give_feedback(msg = "Initiating `SPATA2` object.", verbose = verbose)
 
   spata_object <-
     transformSeuratToSpata(
@@ -1248,15 +1264,15 @@ initiateSpataObject_Examples <- function(data_set = "stxBrain",
 #' @param k,nn Numeric value. Given to argument \code{k} of function \code{RANN::nn2()}: Determines to maximum number
 #' of nearest neighbours to compute. (\code{nn} is deprecated.)
 #'
-#' @details After initiating the `spata2` object PCA is performed via \code{irlba::prcomp_irlba()} and clustering
+#' @details After initiating the `SPATA2` object PCA is performed via \code{irlba::prcomp_irlba()} and clustering
 #' is done via \code{RANN::nn2()}. (Use \code{addFeatures()} to add any clustering results of your own analysis.)
 #' Additional dimensional reduction is performed via \code{Rtsne::Rtsne()} and \code{umap::umap()}.
 #'
-#' Note that this function initiates a `spata2` object that does not contain a count-matrix! You can
+#' Note that this function initiates a `SPATA2` object that does not contain a count-matrix! You can
 #' add a count-matrix manually using \code{setCountmatrix()}. As long as there is none functions that
 #' need a count-matrix will throw an error telling you that no count matrix could be found.
 #'
-#' @return A `spata2` object.
+#' @return A `SPATA2` object.
 #'
 #' @export
 
@@ -1509,7 +1525,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
       }, error = function(error){
 
-        warning(glue::glue("Attempt to save `spata2` object under '{directory_spata}' failed with the following error message: {error}"))
+        warning(glue::glue("Attempt to save `SPATA2` object under '{directory_spata}' failed with the following error message: {error}"))
 
         spata_object
 
@@ -1545,7 +1561,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 
 }
 
-#' @title Initiate a `spata2` object from 10X Visium
+#' @title Initiate a `SPATA2` object from 10X Visium
 #'
 #' @description Creates, saves and returns an object of class spata
 #' from 10X Visium results. See details for more information.
@@ -1571,9 +1587,9 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #' @inherit gene_set_path params
 #' @inherit process_seurat_object params
 #'
-#' @details The loading and preprocessing of the `spata2` object  currently relies on the Seurat-package. Before any pre processing function is applied
+#' @details The loading and preprocessing of the `SPATA2` object  currently relies on the Seurat-package. Before any pre processing function is applied
 #' mitochondrial and stress genes are discarded. For more advanced users the arguments above starting with a capital letter allow to
-#' manipulate the way the `spata2` object is processed. For all of these arguments apply the following instructions:
+#' manipulate the way the `SPATA2` object is processed. For all of these arguments apply the following instructions:
 #'
 #' \itemize{
 #'   \item{If set to FALSE the processing function is skipped.}
@@ -1585,10 +1601,10 @@ initiateSpataObject_ExprMtr <- function(coords_df,
 #'
 #' Note that certain listed functions require previous functions! E.g. if \code{RunPCA} is set to FALSE \code{RunTSNE()}
 #' will result in an error. (\code{base::tryCatch()} will prevent the function from crashing but the respective slot
-#' is going to be empty.) Skipping functions might result in an incomplete `spata2` object. Use \code{validateSpataObject()} after
+#' is going to be empty.) Skipping functions might result in an incomplete `SPATA2` object. Use \code{validateSpataObject()} after
 #' initiating it in order to see which slots are valid and which are not.
 #'
-#' @return A `spata2` object.
+#' @return A `SPATA2` object.
 #'
 #' @importFrom Seurat ScaleData
 #'
@@ -1762,9 +1778,9 @@ initiateSpataObject_10X <- function(directory_10X,
   # -----
 
 
-  # 5. Create `spata2` object --------------------------------------------------
+  # 5. Create `SPATA2` object --------------------------------------------------
 
-  confuns::give_feedback(msg = "Initiating `spata2` object.", verbose = verbose)
+  confuns::give_feedback(msg = "Initiating `SPATA2` object.", verbose = verbose)
 
   spata_object <- asSPATA2(object = processed_seurat_object, sample_name = sample_name, spatial_method = "Visium")
 
@@ -1882,7 +1898,7 @@ initiateSpataObject_10X <- function(directory_10X,
 
       }, error = function(error){
 
-        warning(glue::glue("Attempt to save `spata2` object under '{directory_spata}' failed with the following error message: {error}"))
+        warning(glue::glue("Attempt to save `SPATA2` object under '{directory_spata}' failed with the following error message: {error}"))
 
         spata_object
 
@@ -1891,7 +1907,7 @@ initiateSpataObject_10X <- function(directory_10X,
   } else {
 
     confuns::give_feedback(
-      msg = "No directory specified. Skip saving `spata2` object.",
+      msg = "No directory specified. Skip saving `SPATA2` object.",
       verbose = verbose
     )
 
