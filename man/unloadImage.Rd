@@ -3,26 +3,26 @@
 \name{unloadImage}
 \alias{unloadImage}
 \alias{unloadImage,HistoImage-method}
-\alias{unloadImage,HistoImaging-method}
+\alias{unloadImage,SpatialData-method}
 \alias{unloadImages}
 \alias{unloadImages,spata2-method}
-\alias{unloadImages,HistoImaging-method}
+\alias{unloadImages,SpatialData-method}
 \title{Empty image slot}
 \usage{
 unloadImage(object, ...)
 
 \S4method{unloadImage}{HistoImage}(object, verbose = TRUE, ...)
 
-\S4method{unloadImage}{HistoImaging}(object, img_name, verbose = TRUE, ...)
+\S4method{unloadImage}{SpatialData}(object, img_name, verbose = TRUE, ...)
 
 unloadImages(object, ...)
 
 \S4method{unloadImages}{spata2}(object, active = FALSE, verbose = TRUE)
 
-\S4method{unloadImages}{HistoImaging}(object, active = FALSE, verbose = TRUE)
+\S4method{unloadImages}{SpatialData}(object, active = FALSE, verbose = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -3,7 +3,7 @@
 \name{getImage}
 \alias{getImage}
 \alias{getImage,SPATA2-method}
-\alias{getImage,HistoImaging-method}
+\alias{getImage,SpatialData-method}
 \alias{getImage,HistoImage-method}
 \title{Obtain \code{Image} object}
 \usage{
@@ -20,7 +20,7 @@ getImage(object, ...)
   ...
 )
 
-\S4method{getImage}{HistoImaging}(
+\S4method{getImage}{SpatialData}(
   object,
   img_name = activeImage(object),
   xrange = NULL,
@@ -42,7 +42,7 @@ getImage(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -75,5 +75,5 @@ Extracts the image as an object of class \code{Image}
 as specified in the package \code{EBImage}.
 }
 \seealso{
-\code{\link[=getHistoImage]{getHistoImage()}},\code{\link[=getHistoImaging]{getHistoImaging()}}
+\code{\link[=getHistoImage]{getHistoImage()}},\code{\link[=getSpatialData]{getSpatialData()}}
 }

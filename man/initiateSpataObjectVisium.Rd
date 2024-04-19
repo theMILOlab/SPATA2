@@ -5,8 +5,8 @@
 \title{Initiate \code{SPATA2} object from platform Visium}
 \usage{
 initiateSpataObjectVisium(
-  directory_visium,
   sample_name,
+  directory_visium,
   mtr = "filtered",
   img_active = "lowres",
   img_ref = "lowres",
@@ -14,19 +14,18 @@ initiateSpataObjectVisium(
 )
 }
 \arguments{
+\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
+
 \item{directory_visium}{Character value. Directory to a visium folder. Should contain
 the subdirectory \emph{'.../spatial'}.}
-
-\item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
 \item{mtr}{The matrix to load. One of \code{c("filtered", "raw")}.}
 
 \item{img_ref, img_active}{Character values specifying which of the images to register and how to register
-them. See details of \code{\link{HistoImaging}} for more information about the definitions
+them. Click \code{\link[=concept_images]{here}} for more information about the definitions
 of the reference image and the active image. Setting both arguments to the same
 value results in the function to register the specified image as the active
-as well as the reference image. Additional images can be registered later on
-at any time using the funciton \code{\link[=registerImage]{registerImage()}}. Valid input options depend
+as well as the reference image. Valid input options depend
 on the platform used:
 
 \itemize{
@@ -46,5 +45,5 @@ Wrapper function around the necessary content to create a
 \code{SPATA2} object from standardized output of the Visium platform.
 }
 \seealso{
-\code{\link{createHistoImagingVisium}}
+\code{\link[=createSpatialDataVisium]{createSpatialDataVisium()}}
 }

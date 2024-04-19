@@ -3,7 +3,7 @@
 \name{getTissueOutlineDf}
 \alias{getTissueOutlineDf}
 \alias{getTissueOutlineDf,SPATA2-method}
-\alias{getTissueOutlineDf,HistoImaging-method}
+\alias{getTissueOutlineDf,SpatialData-method}
 \alias{getTissueOutlineDf,HistoImage-method}
 \title{Obtain outline barcode spots}
 \usage{
@@ -17,7 +17,7 @@ getTissueOutlineDf(object, ...)
   ...
 )
 
-\S4method{getTissueOutlineDf}{HistoImaging}(
+\S4method{getTissueOutlineDf}{SpatialData}(
   object,
   img_name = activeImage(object),
   by_section = TRUE,
@@ -27,7 +27,7 @@ getTissueOutlineDf(object, ...)
 \S4method{getTissueOutlineDf}{HistoImage}(object, by_section = TRUE, transform = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

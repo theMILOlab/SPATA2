@@ -4112,7 +4112,7 @@ plotFourStates <- function(object,
 
 }
 
-#' @keyowrds internal
+#' @keywords internal
 plotFourStates2 <- function(data,
                             states,
                             color_by = NULL,
@@ -6725,45 +6725,8 @@ transformSeuratToSpata <- function(seurat_object,
 }
 
 
-#'
-#' @description Takes the count matrix of your spata-object and creates a
-#' cell_data_set-object with it. See details for more information on how to use
-#' the arguments.
-#'
-#'
-#' @inherit argument_dummy params
-#' @inherit check_object params
-#' @inherit check_monocle_input params details
-#' @param estimate_size_factors_args A list of arguments given to \code{monocle3::estimate_size_factors()}.
-#' @param preprocess_cds_args A list of arguments given to \code{monocle3::preprocess_cds()}.
-#' @param reduce_dimension_args A list of arguments given to \code{monocle3::reduce_dimension()}.
-#' @param cluster_cells_args A list of arguments given to \code{monocle3::cluster_cells()}.
-#' @param learn_graph_args A list of arguments given to \code{monocle3::learn_graph()}.
-#' @param order_cells_args A list of arguments given to \code{monocle3::order_cells()}.
-#' @param save_cds_file Character value or NULL. A file-directory (that does not already exists) under which created cell_data_set-object
-#' is saved. Should end with \emph{'.RDS'}.
-#'
-#' @details \code{compileCellDataSet()} is a convenient wrapper around all pre processing functions
-#' monocle3 provides to handle it's core object - the cell_data_set - after it's initiation. Apart from \code{object}
-#' and \code{of_sample} arguments this function has two argument families.
-#'
-#' Handling \code{*_method}-arguments:
-#'
-#' Monocle3 allows to use different methods for dimensional-reduction or clustering which depend
-#' on each other. These arguments take a character vector of all valid inputs. \code{transformSpataToCDS()} iterates
-#' over all valid combinations and returns the cell_data_set with the computed information inside.
-#'
-#' Handling monocle-function-arguments:
-#'
-#' These arguments take named lists of arguments that are given to the respective function. The \code{_method}-arguments
-#' as well as the argument \code{cds} are automatically defined and must not be included in the given lists!!! Empty lists - the default -
-#' result in running the function with it's default parameters.
-#'
-#' The spata-objects feature data (@@fdata) is passed to the cell_data_set for it's slot \code{cell_meta_data}.
-#'
-#' @return A monocle3::cell_data_set object.
+#' @title Deprecated.
 #' @keywords internal
-#' @export
 
 transformSpataToCDS <- function(object,
                                 preprocess_method = "PCA",

@@ -3,11 +3,11 @@
 \name{getImageDims}
 \alias{getImageDims}
 \alias{getImageDims,SPATA2-method}
-\alias{getImageDims,HistoImaging-method}
+\alias{getImageDims,SpatialData-method}
 \alias{getImageDims,HistoImage-method}
 \alias{getImageRange}
 \alias{getImageRange,SPATA2-method}
-\alias{getImageRange,HistoImaging-method}
+\alias{getImageRange,SpatialData-method}
 \alias{getImageRange,HistoImage-method}
 \title{Obtain image dimensions/ranges}
 \usage{
@@ -15,7 +15,7 @@ getImageDims(object, ...)
 
 \S4method{getImageDims}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageDims}{HistoImaging}(object, img_name = activeImage(object), ...)
+\S4method{getImageDims}{SpatialData}(object, img_name = activeImage(object), ...)
 
 \S4method{getImageDims}{HistoImage}(object, ...)
 
@@ -23,12 +23,12 @@ getImageRange(object, ...)
 
 \S4method{getImageRange}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageRange}{HistoImaging}(object, img_name = activeImage(object))
+\S4method{getImageRange}{SpatialData}(object, img_name = activeImage(object))
 
 \S4method{getImageRange}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

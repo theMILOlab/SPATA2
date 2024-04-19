@@ -3,7 +3,7 @@
 \name{containsScaleFactor}
 \alias{containsScaleFactor}
 \alias{containsScaleFactor,SPATA2-method}
-\alias{containsScaleFactor,HistoImaging-method}
+\alias{containsScaleFactor,SpatialData-method}
 \title{Check availability of specific scale factors}
 \usage{
 containsScaleFactor(object, ...)
@@ -15,7 +15,7 @@ containsScaleFactor(object, ...)
   error = FALSE
 )
 
-\S4method{containsScaleFactor}{HistoImaging}(
+\S4method{containsScaleFactor}{SpatialData}(
   object,
   fct_name,
   img_name = activeImage(object),
@@ -23,7 +23,7 @@ containsScaleFactor(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

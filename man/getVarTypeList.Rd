@@ -7,7 +7,7 @@
 getVarTypeList(object, variables = NULL)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{variables}{A character vector specifying the subset of variables

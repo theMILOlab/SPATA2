@@ -3,14 +3,14 @@
 \name{activeImage}
 \alias{activeImage}
 \alias{activeImage,SPATA2-method}
-\alias{activeImage,HistoImaging-method}
+\alias{activeImage,SpatialData-method}
 \title{Obtain name of active content}
 \usage{
 activeImage(object, ...)
 
 \S4method{activeImage}{SPATA2}(object)
 
-\S4method{activeImage}{HistoImaging}(object)
+\S4method{activeImage}{SpatialData}(object)
 }
 \arguments{
 \item{object}{An object that contains activated aspects such as

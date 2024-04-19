@@ -3,17 +3,17 @@
 \name{containsSpatialAnnotations}
 \alias{containsSpatialAnnotations}
 \alias{containsSpatialAnnotations,SPATA2-method}
-\alias{containsSpatialAnnotations,HistoImaging-method}
+\alias{containsSpatialAnnotations,SpatialData-method}
 \title{Check availability of spatial annotations}
 \usage{
 containsSpatialAnnotations(object, ...)
 
 \S4method{containsSpatialAnnotations}{SPATA2}(object, error = FALSE)
 
-\S4method{containsSpatialAnnotations}{HistoImaging}(object, error = FALSE)
+\S4method{containsSpatialAnnotations}{SpatialData}(object, error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

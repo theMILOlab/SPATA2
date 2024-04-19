@@ -3,7 +3,7 @@
 \name{getImageTransformations}
 \alias{getImageTransformations}
 \alias{getImageTransformations,SPATA2-method}
-\alias{getImageTransformations,HistoImaging-method}
+\alias{getImageTransformations,SpatialData-method}
 \alias{getImageTransformations,HistoImage-method}
 \title{Obtain image transformation instructions}
 \usage{
@@ -11,14 +11,14 @@ getImageTransformations(object, ...)
 
 \S4method{getImageTransformations}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageTransformations}{HistoImaging}(object, img_name = activeImage(object), ...)
+\S4method{getImageTransformations}{SpatialData}(object, img_name = activeImage(object), ...)
 
-\S4method{getImageTransformations}{HistoImaging}(object, img_name = activeImage(object), ...)
+\S4method{getImageTransformations}{SpatialData}(object, img_name = activeImage(object), ...)
 
 \S4method{getImageTransformations}{HistoImage}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -30,16 +30,19 @@ If \code{NULL}, the active histo image is chosen by default.}
 A list with the following structure:
 \itemize{
 \item{\emph{angle}:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
-b y which the image needs to be rotated in \strong{clockwise} direction. Defaults to 0.}
-\item{\emph{flip}:}{ List of two logical values named \emph{horizontal} and \emph{vertical}. Both default to \code{FALSE}}
-\item{\emph{scale}:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
+b y which the image needs to be rotated in \strong{clockwise} direction. }
+\item{\emph{flip}:}{ List of two logical values named \emph{horizontal} and \emph{vertical} indicating
+whether the image is to be flipped along the respective axis.}
+\item{\emph{stretch}:}{ List of two numeric values named \emph{horizontal} and \emph{vertical} indicating
+whether (or how much) the image is to be stretched along the respective axis.}
 \item{\emph{translate}:}{ Vector of two numeric values named \emph{horizontal} and \emph{vertical}. Indicate
 the number of pixels the image needs to be translated. Positive values shift the image
 \strong{downwards} or to the right, respectively. Negative values shift the image \strong{upwards}
-or to the left, respectively. Both default to 0.}
+or to the left, respectively. }
 }
 }
 \description{
-Extracts a list that contains information regarding required
-image transformations to ensure alignment.
+Extracts a list of instructions for required
+image transformations to ensure alignment of the image with
+the \code{\link[=concept_images]{reference image}}.
 }

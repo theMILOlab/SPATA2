@@ -6,6 +6,17 @@
 \usage{
 containsAssay(object, assay_name, error = FALSE)
 }
+\arguments{
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
+\item{error}{Logical. If \code{TRUE} and the input is invalid the
+function throws an error.}
+}
 \value{
 TRUE if the assay is found in the object, FALSE otherwise.
 }

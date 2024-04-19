@@ -180,7 +180,7 @@ Hint: Variables that are uniformly expressed can not be scaled and are discarded
 
 \item{linesize}{Numeric value. The size of the line(s) plotted.}
 
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{order}{Logical value. If \code{TRUE}, data points are ordered according

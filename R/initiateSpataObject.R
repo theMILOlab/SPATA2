@@ -24,7 +24,7 @@
 #' required if at least `img` or `img_dir` is specified.
 #' @param spatial_method Character value or object of class [`SpatialMethod`].
 #' If character, one of `validSpatialMethods()`.
-#' @param meta,misc List of meta- and miscellaneous data for the [`HistoImaging`]
+#' @param meta,misc List of meta- and miscellaneous data for the [`SpatialData`]
 #' object.
 #'
 #' @inherit argument_dummy params
@@ -82,9 +82,7 @@ initiateSpataObject <- function(sample_name,
                                 img_dir = NULL,
                                 img_name = "image1",
                                 spatial_method = "Undefined",
-                                meta = list(),
-                                misc = list(),
-                                scale_factors = list(coords = 1),
+                                scale_factors = list(),
                                 verbose = TRUE,
                                 ...){
 
@@ -143,30 +141,38 @@ initiateSpataObject <- function(sample_name,
       method = spatial_method
     )
 
-  # imaging: create pseudohistoimage if no image is available
-  if(base::is.null(dir_img_ref) & base::is.null(img_ref)) {
+  # sp_data: create pseudohistoimage if no image is available
+  if(base::is.null(img_dir) & base::is.null(img)) {
 
     confuns::give_feedback(
-      msg = "`dir_img_ref` and `img_ref` are NULL. Creating pseudo image container.",
+      msg = "`img_dir` and `img` are NULL. No images registered.",
       verbose = verbose
     )
 
-    imaging <-
-      HistoImaging(
+    sp_data <-
+      SpatialData(
         coordinates = coords_df,
-        images = list(pseudo = PseudoHistoImage),
         meta = meta,
         method = spatial_method,
-        misc = misc,
-        name_img_ref = "pseudo",
         sample = sample_name,
         version = current_spata2_version
       )
 
     object <- setDefault(object, display_image = FALSE)
 
-    # else create histo image with a combination of dir_img_ref and img_ref
+    # else create histo image with a combination of img_dir and img
   } else {
+
+    if(base::is.null(scale_factors$image)){
+
+      confuns::give_feedback(
+        msg = "No scale factor for image provided. Default to 1.",
+        verbose = verbose
+      )
+
+      scale_factors$image <- 1
+
+    }
 
     hist_img_ref <-
       createHistoImage(
@@ -180,16 +186,14 @@ initiateSpataObject <- function(sample_name,
         verbose = verbose
       )
 
-    imaging <-
-      createHistoImaging(
+    sp_data <-
+      createSpatialData(
         sample = sample_name,
         hist_img_ref = hist_img_ref,
         active = img_name,
         unload = FALSE,
         coordinates = coords_df,
-        meta = meta,
-        method = spatial_method,
-        misc = misc
+        method = spatial_method
       )
 
   }
@@ -225,7 +229,7 @@ initiateSpataObject <- function(sample_name,
   object <- setMetaDf(object, meta_df = meta_df)
 
   # spatial data
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   return(object)
 
@@ -357,13 +361,13 @@ initiateSpataObjectMERFISH <- function(sample_name,
   }
 
   # spatial data
-  imaging <-
-    createHistoImagingMERFISH(
+  sp_data <-
+    createSpatialDataMERFISH(
       dir = directory_merfish,
       sample = sample_name
     )
 
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
 
   # molecular assay
@@ -397,10 +401,6 @@ initiateSpataObjectMERFISH <- function(sample_name,
       pt_size = 1, # many obs of small size
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
     )
-
-  # MERFISH works in micron space -> pixel scale factor = 1
-  pxl_scale_fct <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
-  object <- setScaleFactor(object, fct_name = "pixel", value = pxl_scale_fct)
 
   object <-
     setCaptureArea(
@@ -591,14 +591,14 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 
   }
 
-  # create histo imaging
-  imaging <-
-    createHistoImagingSlideSeqV1(
+  # create histo sp_data
+  sp_data <-
+    createSpatialDataSlideSeqV1(
       dir = directory_slide_seq,
       sample = sample_name
     )
 
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   # molecular assay
   ma <-
@@ -615,7 +615,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
   # meta df
   meta_df <-
     tibble::tibble(
-      barcodes = getCoordsDf(imaging)$barcodes,
+      barcodes = getCoordsDf(sp_data)$barcodes,
       sample = {{sample_name}}
       )
 
@@ -644,20 +644,25 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @param mtr The matrix to load. One of `c("filtered", "raw")`.
 #'
 #' @inherit initiateSpataObject params return
-#' @inherit createHistoImagingVisium params
+#' @inherit createSpatialDataVisium params
 #'
-#' @seealso [`createHistoImagingVisium`]
+#' @seealso [`createSpatialDataVisium()`]
 #'
 #' @export
 #'
-initiateSpataObjectVisium <- function(directory_visium,
-                                      sample_name,
+initiateSpataObjectVisium <- function(sample_name,
+                                      directory_visium,
                                       mtr = "filtered",
                                       img_active = "lowres",
                                       img_ref = "lowres",
                                       verbose = TRUE){
 
   isDirVisium(dir = directory_visium, error = TRUE)
+
+  confuns::give_feedback(
+    msg = "Initiating SPATA2 object for platform: 'Visium'",
+    verbose = verbose
+  )
 
   # validate and process input directory
   dir <- base::normalizePath(directory_visium)
@@ -702,8 +707,8 @@ initiateSpataObjectVisium <- function(directory_visium,
   count_mtr <- Seurat::Read10X_h5(filename = mtr_path)
 
   # load images
-  imaging <-
-    createHistoImagingVisium(
+  sp_data <-
+    createSpatialDataVisium(
       dir = dir,
       sample = sample_name,
       img_ref = img_ref,
@@ -715,8 +720,8 @@ initiateSpataObjectVisium <- function(directory_visium,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = imaging@method, # depends on input
-      verbose = verbose
+      method = sp_data@method, # depends on input
+      verbose = FALSE
     )
 
   # set required content
@@ -736,14 +741,14 @@ initiateSpataObjectVisium <- function(directory_visium,
   # meta
   meta_df <-
     tibble::tibble(
-      barcodes = getCoordsDf(imaging)$barcodes,
+      barcodes = getCoordsDf(sp_data)$barcodes,
       sample = {{sample_name}}
       )
 
   object <- setMetaDf(object, meta_df = meta_df)
 
   # spatial data
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object))
@@ -778,13 +783,13 @@ initiateSpataObjectXenium <- function(sample_name,
 
 
   # spatial data
-  imaging <-
-    createHistoImagingXenium(
+  sp_data <-
+    createSpatialDataXenium(
       dir = directory_xenium,
       sample = sample_name
     )
 
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   # read count matrix
   mtr_path <- base::file.path(directory_xenium, "cell_feature_matrix/")
@@ -816,7 +821,7 @@ initiateSpataObjectXenium <- function(sample_name,
   # meta
   meta_df <-
     tibble::tibble(
-      barcodes = getCoordsDf(imaging)$barcodes,
+      barcodes = getCoordsDf(sp_data)$barcodes,
       sample = {{sample_name}}
     )
 
@@ -974,7 +979,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
     } else if(!base::is.null(image)) {
 
       image_object <-
-        createHistologyImaging(
+        createHistologysp_data(
           image = image,
           image_class = image_class,
           coordinates = coords_df
@@ -985,7 +990,7 @@ initiateSpataObject_CountMtr <- function(coords_df,
     } else {
 
       confuns::give_feedback(
-        msg = "Neither object of class `HistologyImaging` nor image provivded. Slot @images remains empty.",
+        msg = "Neither object of class `Histologysp_data` nor image provivded. Slot @images remains empty.",
         verbose = verbose
       )
 
@@ -1416,7 +1421,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   } else if(!base::is.null(image)) {
 
     image_object <-
-      createHistologyImaging(
+      createHistologysp_data(
         image = image,
         image_class = image_class,
         coordinates = coords_df
@@ -1427,7 +1432,7 @@ initiateSpataObject_ExprMtr <- function(coords_df,
   } else {
 
     confuns::give_feedback(
-      msg = "Neither object of class `HistologyImaging` nor image provivded. Slot @images remains empty.",
+      msg = "Neither object of class `Histologysp_data` nor image provivded. Slot @images remains empty.",
       verbose = verbose
     )
 

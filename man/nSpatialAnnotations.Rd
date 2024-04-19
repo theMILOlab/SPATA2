@@ -3,17 +3,17 @@
 \name{nSpatialAnnotations}
 \alias{nSpatialAnnotations}
 \alias{nSpatialAnnotations,spata2-method}
-\alias{nSpatialAnnotations,HistoImaging-method}
+\alias{nSpatialAnnotations,SpatialData-method}
 \title{Number of image annotations}
 \usage{
 nSpatialAnnotations(object, ...)
 
 \S4method{nSpatialAnnotations}{spata2}(object)
 
-\S4method{nSpatialAnnotations}{HistoImaging}(object)
+\S4method{nSpatialAnnotations}{SpatialData}(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

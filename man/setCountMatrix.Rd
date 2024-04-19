@@ -10,35 +10,38 @@ setCountMatrix(object, count_mtr, assay_name = activeAssay(object), ...)
 setProcessedMatrix(object, proc_mtr, name, assay_name, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{count_mtr}{The count matrix with rownames corresponding to the feature names
 and the column names corresponding to the barcodes.}
 
+\item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
+one assay: Denotes the assay of interest. Defaults to the active assay,
+as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
+
 \item{proc_mtr}{The processed matrix with rownames corresponding to the feature names
 and the column names corresponding to the barcodes.}
 
-\item{name}{Character value. The name with which to refer to the processed matrix.}
+\item{name}{Character value. The name with which to refer to the processed matrix later
+on.}
 }
 \value{
-A spata object containing the set input.
+The input object containing the added or computed
+results.
 }
 \description{
 Functions to set data matrices of different assays.
-}
-\details{
-All \code{set*()}-functions offer a save way to set certain
-slots of your spata-object. They do check the input for validity but
-effectively overwrite everything that is occupying the slot to be set -
-use with caution.
 }
 \note{
 \code{SPATA2} in general distinguishes between two types of data matrices.
 There are \emph{count matrices} containing the raw counts, and \emph{processed matrices}
 that contain processed expression data obtained via single or subsequent processing
 steps such as log normalization, scaling, denoising etc. Count matrices are always
-stored in slot @mtr_counts in their \code{\link{Assay}} object and do not need a name. Processed
-matrices are stored in a list stored in slot @mtr_proc of the \code{\link{Assay}} object
+stored in slot @mtr_counts in their \code{\link{MolecularAssay}} object and do not need a name. Processed
+matrices are stored in a list stored in slot @mtr_proc of the \code{\link{MolecularAssay}} object
 and therefore need further naming. Their name should correspond to the method
 with which they were processed. E.g. \emph{log_norm} if it was created by log normalizing
 the counts. Or \emph{scaled} if it was created by subsequent \emph{scaling} of the \emph{log_norm}

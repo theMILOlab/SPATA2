@@ -2,10 +2,13 @@
 % Please edit documentation in R/getA-G.R, R/getH-M.R
 \name{getGenes}
 \alias{getGenes}
+\alias{getGenesInteractive}
 \alias{getMolecules}
 \title{Obtain molecule names}
 \usage{
 getGenes(object, signatures = NULL, simplify = TRUE, ...)
+
+getGenesInteractive(object)
 
 getMolecules(
   object,
@@ -15,7 +18,7 @@ getMolecules(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{signatures}{Character vector or \code{NULL}. If character, specifies the name of

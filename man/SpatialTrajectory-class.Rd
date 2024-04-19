@@ -38,7 +38,7 @@ projection of each barcode spot onto the trajectory.}
 
 \item{\code{sample}}{character. The sample name.}
 
-\item{\code{segment}}{data.frame. Contains the course of the trajetory in
+\item{\code{segment}}{data.frame. Contains the course of the trajectory in
 form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}}
 
 \item{\code{width}}{numeric. The width of the rectangle that was spanned along

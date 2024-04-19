@@ -4,45 +4,19 @@
 
 # setA --------------------------------------------------------------------
 
-#' @rdname setActiveExpressionMatrix
+
+
+
+
+#' @title Set molecular assay
+#'
+#' @description Function to set a [`MolecularAssay`] object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
 #' @export
-setActiveMatrix <- function(object, mtr_name, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  confuns::check_one_of(
-    input = mtr_name,
-    against = base::names(object@data[[1]]),
-    suggest = TRUE
-  )
-
-  object@obj_info$active_mtr <- mtr_name
-
-  confuns::give_feedback(
-    msg = glue::glue("Active matrix set to {mtr_name}."),
-    verbose = verbose
-  )
-
-  return(object)
-
-}
-
-
-#' @export
-setActiveExpressionMatrix <- function(...){
-
-  deprecated(fn = TRUE)
-
-  object <- activateMatrix(...)
-
-  return(object)
-
-}
-
-
-
-
-
+#'
 setAssay <- function(object, assay){
 
   object@assays[[assay@omic]] <- assay
@@ -194,11 +168,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, coords_df, force = FALSE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- setCoordsDf(imaging, coords_df = coords_df, force = force)
+    sp_data <- setCoordsDf(sp_data, coords_df = coords_df, force = force)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -209,7 +183,7 @@ setMethod(
 #' @export
 setMethod(
   f = "setCoordsDf",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, coords_df, force = FALSE){
 
     confuns::check_data_frame(
@@ -252,21 +226,22 @@ setMethod(
 #'
 #' @description Functions to set data matrices of different assays.
 #'
-#' @inherit check_sample params
 #' @param count_mtr The count matrix with rownames corresponding to the feature names
 #' and the column names corresponding to the barcodes.
 #' @param proc_mtr The processed matrix with rownames corresponding to the feature names
 #' and the column names corresponding to the barcodes.
-#' @param name Character value. The name with which to refer to the processed matrix.
+#' @param name Character value. The name with which to refer to the processed matrix later
+#' on.
 #'
-#' @inherit set_dummy details return
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
 #'
 #' @note \code{SPATA2} in general distinguishes between two types of data matrices.
 #' There are *count matrices* containing the raw counts, and *processed matrices*
 #' that contain processed expression data obtained via single or subsequent processing
 #' steps such as log normalization, scaling, denoising etc. Count matrices are always
-#' stored in slot @@mtr_counts in their [`Assay`] object and do not need a name. Processed
-#' matrices are stored in a list stored in slot @@mtr_proc of the [`Assay`] object
+#' stored in slot @@mtr_counts in their [`MolecularAssay`] object and do not need a name. Processed
+#' matrices are stored in a list stored in slot @@mtr_proc of the [`MolecularAssay`] object
 #' and therefore need further naming. Their name should correspond to the method
 #' with which they were processed. E.g. *log_norm* if it was created by log normalizing
 #' the counts. Or *scaled* if it was created by subsequent *scaling* of the *log_norm*
@@ -483,11 +458,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, hist_img, ...){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- setHistoImage(imaging, hist_img = hist_img)
+    sp_data <- setHistoImage(sp_data, hist_img = hist_img)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -498,7 +473,7 @@ setMethod(
 #' @export
 setMethod(
   f = "setHistoImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, hist_img, ...){
 
     object@images[[hist_img@name]] <- hist_img
@@ -531,7 +506,7 @@ setGeneric(name = "setImageTransformations", def = function(object, ...){
 #' @export
 setMethod(
   f = "setImageTransformations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name, transformations, ...){
 
     confuns::check_one_of(
@@ -556,31 +531,31 @@ setMethod(
 
 
 
-#' @title Set `HistoImaging`
+#' @title Set `SpatialData`
 #'
-#' @description Sets the image container class `HistoImaging`
-#' in the corresponding slot of the `spata2` object.
+#' @description Sets the image container class `SpatialData`
+#' in the corresponding slot of the `SPATA2` object.
 #'
-#' @param imaging An object of class [`HistoImaging`].
+#' @param sp_data An object of class [`SpatialData`].
 #' @inherit argument_dummy
 #'
 #' @export
 
-setHistoImaging <- function(object, imaging){
+setSpatialData <- function(object, sp_data){
 
-  object@spatial <- imaging
+  object@spatial <- sp_data
 
   return(object)
 
 }
 
-#' @rdname setHistoImaging
+#' @rdname setSpatialData
 #' @export
 setImageObject <- function(object, image_object, ...){
 
   deprecated(fn = TRUE, ...)
 
-  object <- setHistoImaging(object = object, imaging = image_object)
+  object <- setSpatialData(object = object, sp_data = image_object)
 
   return(object)
 
@@ -759,14 +734,19 @@ setProcessedMatrix <- function(object, proc_mtr, name, assay_name, ...){
 
 #' @title Set scale factors
 #'
-#' @description Sets scale factor values for the reference image. Corresponding
-#' scale factors for additionally registered images (if there are any) are
-#' computed.
+#' @description Sets scale factor values.
 #'
 #' @param fct_name Character value. Name of the scale factor.
 #' @param value Value to set.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
+#' @details For S4 methods other than for [`HistoImage`]: Sets scale factors
+#' **for the reference image**. Corresponding scale factors for additionally
+#' registered images (if there are any) are computed.
+#'
+#' If there are no images registered, the scale factor is set in the corresponding list
+#' slot of @@scale_factors of the `SpatialData` object.
 #'
 #' @export
 #'
@@ -783,11 +763,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, fct_name, value){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- setScaleFactor(imaging, fct_name = fct_name, value = value)
+    sp_data <- setScaleFactor(sp_data, fct_name = fct_name, value = value)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -798,28 +778,36 @@ setMethod(
 #' @export
 setMethod(
   f = "setScaleFactor",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, fct_name, value){
 
-    ref_img <- getHistoImageRef(object)
+    if(containsHistoImages(object)){
 
-    ref_img <- setScaleFactor(ref_img, fct_name = fct_name, value = value)
+      ref_img <- getHistoImageRef(object)
 
-    object <- setHistoImage(object, hist_img = ref_img)
+      ref_img <- setScaleFactor(ref_img, fct_name = fct_name, value = value)
 
-    # set in all other images
-    # (no images if only pseudo image exists)
-    for(img_name in getImageNames(object, ref = FALSE)){
+      object <- setHistoImage(object, hist_img = ref_img)
 
-      hist_img <- getHistoImage(object, img_name = img_name)
+      # set in all other images
+      # (no images if only pseudo image exists)
+      for(img_name in getImageNames(object, ref = FALSE)){
 
-      sf <-
-        base::max(ref_img@image_info$dims)/
-        base::max(hist_img@image_info$dims)
+        hist_img <- getHistoImage(object, img_name = img_name)
 
-      hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+        sf <-
+          base::max(ref_img@image_info$dims)/
+          base::max(hist_img@image_info$dims)
 
-      object <- setHistoImage(object, hist_img = hist_img)
+        hist_img <- setScaleFactor(hist_img, fct_name = "pixel", value = pxl_scale_fct*sf)
+
+        object <- setHistoImage(object, hist_img = hist_img)
+
+      }
+
+    } else {
+
+      object@scale_factors[[fct_name]] <- value
 
     }
 
@@ -868,11 +856,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, spat_ann, ...){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging@annotations[[spat_ann@id]] <- spat_ann
+    sp_data@annotations[[spat_ann@id]] <- spat_ann
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -887,7 +875,7 @@ setGeneric(name = "setSpatialAnnotations", def = function(object, ...){
 
 })
 
-#' @rdname setSpatialAnnotaiton
+#' @rdname setSpatialAnnotation
 #' @export
 setMethod(
   f = "setSpatialAnnotations",
@@ -933,13 +921,13 @@ setMethod(
 
     object@obj_info$method <- method
 
-    if(containsHistoImaging(object)){
+    if(containsSpatialData(object)){
 
-      imaging <- getHistoImaging(object)
+      sp_data <- getSpatialData(object)
 
-      imaging@method <- method
+      sp_data@method <- method
 
-      object <- setHistoImaging(object, imaging = imaging)
+      object <- setSpatialData(object, sp_data = sp_data)
 
     }
 
@@ -1039,19 +1027,19 @@ setTrajectory <- function(object, trajectory, overwrite = FALSE){
       overwrite = overwrite
     )
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging@trajectories[[trajectory@id]] <- trajectory
+    sp_data@trajectories[[trajectory@id]] <- trajectory
 
   } else {
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging@trajectories[[trajectory@id]] <- trajectory
+    sp_data@trajectories[[trajectory@id]] <- trajectory
 
   }
 
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   return(object)
 

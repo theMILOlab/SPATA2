@@ -7,14 +7,13 @@
 \title{The \code{HistoImage} - Class}
 \description{
 S4 class that contains an histology image and information and data
-about it. Usually live in slots @image_reference and @images_registered of \code{\link{HistoImaging}}
-objects.
+about it. Usually live in slot @images of \code{\link{SpatialData}} objects.
 }
 \section{Slots}{
 
 \describe{
 \item{\code{active}}{logical. If \code{TRUE}, it is the image used by default. Only one \code{\link{HistoImage}}
-in the \code{\link{HistoImaging}} object can be the active at a time.}
+in the \code{\link{SpatialData}} object can be the active at a time.}
 
 \item{\code{aligned}}{logical. If \code{TRUE}, indicates that the image was aligned to
 the reference image.}
@@ -63,7 +62,8 @@ multiple functionalities. Reserved slot names:
 extraction of the coordinatse data.frame (resulting in the \emph{x} and \emph{y} variables) ensuring alignment with the image.}
 \item{\emph{pixel}:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 attribute called "unit" conforming to the format "SI-unit/px".}
-}}
+}
+See \code{\link[=concept_scale_factors]{scale factors}} for more information.}
 
 \item{\code{transformations}}{list. List of transformations to apply upon extracting
 the image to ensure alignment with additional images and spatial aspects. In case of default values

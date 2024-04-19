@@ -347,11 +347,11 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- identifyBackgroundColor(imaging, img_name = img_name, verbose = verbose)
+    sp_data <- identifyBackgroundColor(sp_data, img_name = img_name, verbose = verbose)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -362,7 +362,7 @@ setMethod(
 #' @export
 setMethod(
   f = "identifyBackgroundColor",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), verbose = TRUE, ...){
 
     if(base::is.null(img_name)){
@@ -508,11 +508,11 @@ setMethod(
 
     }
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       identifyPixelContent(
-        object = imaging,
+        object = sp_data,
         img_name = img_name,
         percentile = percentile,
         compactness_factor = compactness_factor,
@@ -523,7 +523,7 @@ setMethod(
         verbose = verbose
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -534,7 +534,7 @@ setMethod(
 #' @export
 setMethod(
   f = "identifyPixelContent",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         percentile = 0,
@@ -1015,8 +1015,8 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    imaging <-
-      getHistoImaging(object) %>%
+    sp_data <-
+      getSpatialData(object) %>%
       identifySpatialOutliers(
         object = .,
         method = method,
@@ -1027,7 +1027,7 @@ setMethod(
         verbose = verbose
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -1038,7 +1038,7 @@ setMethod(
 #' @export
 setMethod(
   f = "identifySpatialOutliers",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         method = c("outline", "dbscan"),
                         img_name = activeImage(object),
@@ -1340,11 +1340,11 @@ setMethod(
 
     } else if(containsImage(object, img_name = img_name)){
 
-      imaging <- getHistoImaging(object)
+      sp_data <- getSpatialData(object)
 
-      imaging <- identifyTissueOutline(imaging, img_name = img_name)
+      sp_data <- identifyTissueOutline(sp_data, img_name = img_name)
 
-      object <- setHistoImaging(object, imaging = imaging)
+      object <- setSpatialData(object, sp_data = sp_data)
 
     } else {
 
@@ -1361,7 +1361,7 @@ setMethod(
 #' @export
 setMethod(
   f = "identifyTissueOutline",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), verbose = TRUE){
 
     if(base::is.null(img_name)){

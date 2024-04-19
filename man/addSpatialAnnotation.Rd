@@ -3,7 +3,7 @@
 \name{addSpatialAnnotation}
 \alias{addSpatialAnnotation}
 \alias{addSpatialAnnotation,SPATA2-method}
-\alias{addSpatialAnnotation,HistoImaging-method}
+\alias{addSpatialAnnotation,SpatialData-method}
 \title{Add an spatial annotation manually}
 \usage{
 addSpatialAnnotation(object, ...)
@@ -18,7 +18,7 @@ addSpatialAnnotation(object, ...)
   ...
 )
 
-\S4method{addSpatialAnnotation}{HistoImaging}(
+\S4method{addSpatialAnnotation}{SpatialData}(
   object,
   tags,
   area,
@@ -29,7 +29,7 @@ addSpatialAnnotation(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional slot content given to \code{methods::new()} when

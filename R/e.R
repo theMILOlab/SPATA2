@@ -416,7 +416,7 @@ setGeneric(name = "exclude", def = function(object, ...){
 #' @export
 setMethod(
   f = "exclude",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, barcodes, reason){
 
     object@coordinates <-
@@ -454,11 +454,11 @@ setMethod(
   signature = "spata2",
   definition = function(object){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- excludeSpatialOutliers(imaging)
+    sp_data <- excludeSpatialOutliers(sp_data)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -469,7 +469,7 @@ setMethod(
 #' @export
 setMethod(
   f = "excludeSpatialOutliers",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object){
 
     containsSpatialOutliers(object, error = TRUE)
@@ -497,7 +497,7 @@ setGeneric(name = "excludeTissueFragments", def = function(object, ...){
 #' @export
 setMethod(
   f = "excludeTissueFragments",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, fragments = "all"){
 
     containsSpatialOutliers(object, error = TRUE)

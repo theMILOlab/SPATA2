@@ -6,33 +6,5 @@
 \alias{HistologyImage}
 \title{The \code{HistologyImage} - Class}
 \description{
-S4 class that represents histology images.
+Deprecated in favor of \code{HistoImage}.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{annotations}}{list. List of objects of class \code{ImageAnnotation}.}
-
-\item{\code{dir_default}}{character. The default directory that is used to load
-the image if slot @image is empty. Or a string linking to the default slot
-('highres' or 'lowres').}
-
-\item{\code{dir_highres}}{character. Directory to the high resolution version of the image.}
-
-\item{\code{dir_lowres}}{character. Directory to the low resolution version of the image.}
-
-\item{\code{grid}}{data.frame. A data.frame that contains at least a variable
-named \emph{x} and a variable named \emph{y} representing a grid.}
-
-\item{\code{id}}{character. String to identify the object in a list of multiple objects
-of the same class. Usually refers to the sample name of the \code{SPATA2} object.}
-
-\item{\code{image}}{Image.}
-
-\item{\code{info}}{list. A flexible list that is supposed to store miscellaneous
-information around the image.}
-
-\item{\code{misc}}{list. A flexible list for miscellaneous input.}
-}}
-
-\keyword{internal}

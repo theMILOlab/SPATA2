@@ -16,7 +16,7 @@ getImageDirHighres(object, fdb_fn = "warning", check = FALSE, ...)
 getImageDirLowres(object, fdb_fn = "warning", check = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{check}{Logical value. If \code{TRUE}, it is checked if the file actually exists.}

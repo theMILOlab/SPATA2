@@ -4,19 +4,8 @@
 \name{dim_red-class}
 \alias{dim_red-class}
 \alias{dim_red}
-\title{dim_red object}
-\value{
-S4 object
-}
+\title{The \code{dim_red}- Class}
 \description{
-dim_red object
+Deprecated.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{UMAP}}{A data.frame containing the variables \emph{'barcdoes', 'sample', 'umap1', 'umap2'}}
-
-\item{\code{TSNE}}{A data.frame containing the variables \emph{'barcodes', 'smaple', 'tsne1', 'tsne2'}}
-}}
-
 \keyword{internal}

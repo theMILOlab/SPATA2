@@ -31,7 +31,7 @@ setMethod(
     if(what == "image"){
 
       x <-
-        getHistoImaging(object) %>%
+        getSpatialData(object) %>%
         getHistoImageActive(object = .)
 
       out <- x@name
@@ -112,7 +112,7 @@ setMethod(
   definition = function(object, img_name = NULL, default = "white", ...){
 
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getBackgroundColor(object = ., img_name = img_name, default = default)
 
   }
@@ -122,7 +122,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getBackgroundColor",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = NULL, default = "white", ...){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -487,7 +487,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getCCD",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         unit = NULL,
                         as_numeric = FALSE,
@@ -710,11 +710,11 @@ setMethod(
 
     # 2. Data wrangling -------------------------------------------------------
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
     coords_df <-
       getCoordsDf(
-        object = imaging,
+        object = sp_data,
         img_name = img_name,
         exclude = exclude,
         as_is = as_is,
@@ -741,7 +741,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getCoordsDf",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         exclude = TRUE,
@@ -749,9 +749,6 @@ setMethod(
                         wh = FALSE,
                         as_is = FALSE,
                         ...){
-
-    # required for scaling
-    hist_img <- getHistoImage(object, img_name = img_name)
 
     coords_df <- object@coordinates
 
@@ -771,21 +768,34 @@ setMethod(
 
       if(base::isTRUE(scale)){
 
-        coords_scale_fct <- getScaleFactor(hist_img, fct_name = "coords")
+        if(containsHistoImages(object)){
 
-        if(base::is.null(coords_scale_fct)){
+          img_scale_fct <-
+            getScaleFactor(object, fct_name = "image")
 
-          coords_scale_fct <- 1
+          if(base::is.null(img_scale_fct)){
+
+            img_scale_fct <- 1
+
+          }
+
+          coords_df <-
+            dplyr::mutate(
+              .data = coords_df,
+              x = x_orig * img_scale_fct,
+              y = y_orig * img_scale_fct
+            )
+
+        } else {
+
+          coords_df <-
+            dplyr::mutate(
+              .data = coords_df,
+              x = x_orig * 1,
+              y = y_orig * 1
+            )
 
         }
-
-        coords_df <-
-          dplyr::mutate(
-            .data = coords_df,
-            x = x_orig * coords_scale_fct,
-            y = y_orig * coords_scale_fct,
-            sample = object@sample
-          )
 
       }
 
@@ -794,6 +804,8 @@ setMethod(
         coords_df <- add_wh(coords_df, height = getImageRange(hist_img)$y)
 
       }
+
+      coords_df$sample <- object@sample
 
       out <-
         dplyr::select(
@@ -850,6 +862,7 @@ setMethod(
 #'  \item{*id*}{ Character. The ID of the spatial annotation the data points lies closes to. (only relevant
 #'  in case of `length(ids) > 1`)}
 #'  }
+#'
 #' @export
 #'
 
@@ -1459,7 +1472,7 @@ getCoordsMtr <- function(object,
 
   if(base::isFALSE(orig)){
 
-    scale_fct <- getScaleFactor(object, img_name = img_name, fct_name = "coords")
+    scale_fct <- getScaleFactor(object, img_name = img_name, fct_name = "image")
 
     coords_mtr[, "x"] <- coords_mtr[, "x"] * scale_fct
     coords_mtr[, "y"] <- coords_mtr[, "y"] * scale_fct
@@ -2323,7 +2336,7 @@ getGeneSetsInteractive <- function(object){
 }
 
 
-#' @rdname getGenes
+#' @rdname getMolecules
 #' @export
 getGenesInteractive <- function(object){
 

@@ -3,7 +3,7 @@
 \name{ggpLayerImage}
 \alias{ggpLayerImage}
 \alias{ggpLayerImage,SPATA2-method}
-\alias{ggpLayerImage,HistoImaging-method}
+\alias{ggpLayerImage,SpatialData-method}
 \alias{ggpLayerImage,HistoImage-method}
 \alias{ggpLayerImage,SpatialAnnotation-method}
 \alias{ggpLayerImage,Image-method}
@@ -21,7 +21,7 @@ ggpLayerImage(object, ...)
   ...
 )
 
-\S4method{ggpLayerImage}{HistoImaging}(
+\S4method{ggpLayerImage}{SpatialData}(
   object,
   img_name = activeImage(object),
   transform = TRUE,
@@ -39,7 +39,7 @@ ggpLayerImage(object, ...)
 \S4method{ggpLayerImage}{data.frame}(object, fill_by, img_alpha = 1)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

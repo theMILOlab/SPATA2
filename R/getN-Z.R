@@ -85,7 +85,7 @@ setMethod(
                         yrange = NULL,
                         scale_fct = 1){
 
-    getHistoImaging(object = object) %>%
+    getSpatialData(object = object) %>%
       getPixelDf(
         object = .,
         img_name = img_name,
@@ -106,7 +106,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getPixelDf",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         colors = FALSE,
@@ -375,7 +375,7 @@ setMethod(
     hlpr_assign_arguments(object)
 
     pxl_scale_fct <-
-      getHistoImaging(object) %>%
+      getSpatialData(object) %>%
       getPixelScaleFactor(
         object = .,
         unit = unit,
@@ -394,7 +394,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getPixelScaleFactor",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         unit,
                         img_name = activeImage(object),
@@ -403,14 +403,38 @@ setMethod(
                         verbose = NULL,
                         ...){
 
-    getHistoImage(object, img_name = img_name) %>%
-      getPixelScaleFactor(
-        object = .,
-        unit = unit,
-        switch = switch,
-        add_attr = add_attr,
-        verbose = verbose
-      )
+    if(containsHistoImages(object)){
+
+      out <-
+        getHistoImage(object, img_name = img_name) %>%
+        getPixelScaleFactor(
+          object = .,
+          unit = unit,
+          switch = switch,
+          add_attr = add_attr,
+          verbose = verbose
+        )
+
+    } else {
+
+      out <- getScaleFactor(object, fct_name = "pixel")
+
+      if(!purrr::is_empty(out)){
+
+        out <-
+          process_pixel_scale_factor(
+            pxl_scale_fct = out,
+            unit = unit,
+            switch = switch,
+            add_attr = add_attr,
+            verbose = verbose
+          )
+
+      }
+
+    }
+
+    return(out)
 
   }
 )
@@ -428,71 +452,26 @@ setMethod(
                         ...){
 
     # get and check pixel scale factor
-    pxl_scale_fct <-
-      getScaleFactor(
-        object = object,
-        fct_name = "pixel"
-      )
+    out <- getScaleFactor(object = object, fct_name = "pixel")
 
-    if(base::is.null(pxl_scale_fct)){
+    if(!purrr::is_empty(out)){
 
-      stop(glue::glue("No pixel scale factor exists for image {object@name}."))
-
-    }
-
-    square <- unit %in% validUnitsOfAreaSI()
-
-    # extract required_unit as scale factor is stored/computed with distance values
-    # (equal to unit if square == FALSE)
-    required_unit <- stringr::str_extract(unit, pattern = "[a-z]*")
-
-    # scale factors are stored with unit/px unit
-    # extracts unit
-    unit_per_px <-
-      confuns::str_extract_before(
-        string = base::attr(pxl_scale_fct, which = "unit"),
-        pattern = "\\/"
-      )
-
-    pxl_scale_fct <-
-      units::set_units(x = pxl_scale_fct, value = unit_per_px, mode = "standard") %>%
-      units::set_units(x = ., value = required_unit, mode = "standard")
-
-    # adjust for areas if needed
-    if(base::isTRUE(square)){
-
-      pxl_scale_fct <- pxl_scale_fct^2
+      out <-
+        process_pixel_scale_factor(
+          pxl_scale_fct = out,
+          unit = unit,
+          switch = switch,
+          add_attr = add_attr,
+          verbose = verbose
+        )
 
     }
 
-    # if argument switch is TRUE provide scale factor as px/euol
-    if(base::isTRUE(switch)){
-
-      pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
-
-      pxl_scale_fct <- 1/pxl_scale_fct
-
-      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c("px/", unit, sep = "")
-
-    } else {
-
-      pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
-
-      base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(unit, "/px", sep = "")
-
-    }
-
-    # remove attribute if needed
-    if(!base::isTRUE(add_attr)){
-
-      base::attr(pxl_scale_fct, which = "unit") <- NULL
-
-    }
-
-    return(pxl_scale_fct)
+    return(out)
 
   }
 )
+
 
 
 #' @keywords internal
@@ -928,7 +907,7 @@ getSampleName <- function(object){
 #'
 #' @inherit getSpatAnnOutlineDf params
 #' @inherit spatialAnnotationScreening params
-#' @inherit joinWith params
+#' @inherit joinWithVariables params
 #'
 #' @return Data.frame.
 #'
@@ -1388,15 +1367,16 @@ getExpansionsSA <- function(object,
 #' reserved:
 #'
 #' \itemize{
-#'  \item{*coords*:}{ The coordinate scale factor used to create variables *x* and *y* from
+#'  \item{*image*:}{ The image scale factor used to create variables *x* and *y* from
 #'  variables *x_orig* and *y_orig* in the coordinates data.frame and the outline data.frames
 #'  of the spatial annotations and the tissue. The scale factor depends on the deviation in
 #'  resolution from the original image - based on which the coordinates data.frame
-#'  was created - and the image picked in `img_name` which defaults to to the active
-#'  image. If the active image is the original image, this scale factor is 1.}
+#'  was created - and the image picked in `img_name`.}
 #'  \item{*pixel*:}{ The pixel scale factor is used to convert pixel values into SI units.
 #'   It should have an attribute called "unit" conforming to the format "SI-unit/px}
 #'  }
+#'
+#'  Find more information \code{\link[=concept_scale_factors]{here}}.
 #'
 #' @export
 #'
@@ -1411,10 +1391,27 @@ setGeneric(name = "getScaleFactor", def = function(object, ...){
 #' @export
 setMethod(
   f = "getScaleFactor",
-  signature = "ANY",
+  signature = "SPATA2",
   definition = function(object, fct_name, img_name = activeImage(object)){
 
-    getHistoImage(object, img_name = img_name) %>%
+    # temp workaround
+    if(fct_name == "coords"){
+
+      # which function is checked
+      fn_name <-
+        rlang::caller_call() %>%
+        rlang::call_name()
+
+      # in which function is it used
+      calling_fn <- rlang::caller_call(n = 2)
+
+      fct_name <- "image"
+
+      warning(glue::glue("Using fct_name = coords in fn: {calling_fn}"))
+
+    }
+
+    getSpatialData(object) %>%
       getScaleFactor(object = ., fct_name = fct_name)
 
   }
@@ -1424,10 +1421,65 @@ setMethod(
 #' @export
 setMethod(
   f = "getScaleFactor",
+  signature = "SpatialData",
+  definition = function(object, fct_name, img_name = activeImage(object)){
+
+    # temp workaround
+    if(fct_name == "coords"){
+
+      # which function is checked
+      fn_name <-
+        rlang::caller_call() %>%
+        rlang::call_name()
+
+      # in which function is it used
+      calling_fn <- rlang::caller_call(n = 2)
+
+      fct_name <- "image"
+
+      warning(glue::glue("Using fct_name = coords in fn: {calling_fn}"))
+
+    }
+
+    if(containsHistoImages(object)){
+
+      out <-
+        getHistoImage(object, img_name = img_name) %>%
+        getScaleFactor(object = ., fct_name = fct_name)
+
+    } else {
+
+      # no image
+      out <- object@scale_factors[[fct_name]]
+
+      if(purrr::is_empty(out)){
+
+        warning(glue::glue("No '{fct_name}' scale factor in this object."))
+
+      }
+
+    }
+
+    return(out)
+
+  }
+)
+
+
+#' @rdname getScaleFactor
+#' @export
+setMethod(
+  f = "getScaleFactor",
   signature = "HistoImage",
   definition = function(object, fct_name){
 
     out <- object@scale_factors[[fct_name]]
+
+    if(purrr::is_empty(out)){
+
+      warning(glue::glue("No '{fct_name}' scale factor in this object."))
+
+    }
 
     return(out)
 
@@ -1642,7 +1694,7 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnArea(
         object = .,
         ids = ids,
@@ -1661,7 +1713,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnArea",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         ids = NULL,
                         unit = "mm2",
@@ -1780,14 +1832,14 @@ setMethod(
   }
 )
 
-#' @title Obtain barcodes by image annotation tag
+#' @title Obtain barcodes by spatial annotations
 #'
 #' @description Extracts the barcodes that are covered by the extent of the
 #' annotated structures of interest.
 #'
 #' @inherit argument_dummy params
 #'
-#' @inheritSection section_dummy Selection of image annotations with tags
+#' @inheritSection section_dummy Selection of spatial annotations
 #'
 #' @return Character vector, if `simplify = TRUE`. Else a named list of
 #' character vectors.
@@ -1890,7 +1942,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, id){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnCenter(object = ., id = id)
 
   }
@@ -1900,7 +1952,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnCenter",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, id){
 
     border_df <- getSpatAnnOutlineDf(object, ids = id, inner = FALSE)
@@ -1950,7 +2002,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, id, outer = TRUE, inner = TRUE){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnCenters(object = ., id = id, inner = inner, outer = outer)
 
   }
@@ -1960,7 +2012,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnCenters",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, id, outer = TRUE, inner = TRUE){
 
     spat_ann <- getSpatialAnnotation(object, id = id, add_barcodes = FALSE, add_image = FALSE)
@@ -2105,7 +2157,7 @@ setMethod(
                         test = "any",
                         class = NULL){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnIds(
         object = .,
         ids = ids,
@@ -2122,7 +2174,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnIds",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         ids = NULL,
                         tags = NULL,
@@ -2296,7 +2348,7 @@ setMethod(
                         sep = " & ",
                         last = " & "){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnOutlineDf(
         object = .,
         ids = ids,
@@ -2319,7 +2371,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnOutlineDf",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         ids = NULL,
                         class = NULL,
@@ -2448,7 +2500,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, id, expand = 0, scale_fct = 1, ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnRange(object = ., id = id, scale_fct = scale_fct) %>%
       process_ranges(ranges = ., expand = expand, opt = 2, persp = "ccs", object = object)
 
@@ -2459,7 +2511,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnRange",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, id, scale_fct = 1){
 
     confuns::check_one_of(
@@ -2537,7 +2589,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatAnnTags()
 
   }
@@ -2547,7 +2599,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatAnnTags",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object){
 
     if(nSpatialAnnotations(object) >= 1){
@@ -2703,7 +2755,7 @@ setMethod(
 
     deprecated(...)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatialAnnotation(
         object = .,
         id = id,
@@ -2718,7 +2770,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatialAnnotation",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         id = idSA(object),
                         add_image = TRUE,
@@ -2735,7 +2787,7 @@ setMethod(
     spat_ann <- object@annotations[[id]]
 
     # scale coordinates
-    scale_fct <- getScaleFactor(object, fct_name = "coords")
+    scale_fct <- getScaleFactor(object, fct_name = "image")
 
     spat_ann@area <-
       purrr::map(
@@ -2873,7 +2925,7 @@ setMethod(
 
     deprecated(...)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpatialAnnotations(
         object = .,
         ids = ids,
@@ -2893,7 +2945,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpatialAnnotations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         ids = NULL,
                         class = NULL,
@@ -3002,9 +3054,9 @@ getSpatialTrajectory <- function(object, id){
     against = getSpatialTrajectoryIds(object)
   )
 
-  imaging <- getHistoImaging(object)
+  sp_data <- getSpatialData(object)
 
-  out <- imaging@trajectories[[id]]
+  out <- sp_data@trajectories[[id]]
 
   check_availability(
     test = !base::is.null(out),
@@ -3031,13 +3083,13 @@ getSpatialTrajectories <- function(object, ids = NULL){
         against = getSpatialTrajectoryIds(object)
       )
 
-      imaging <- getHistoImaging
+      sp_data <- getSpatialData
 
-      out <- imaging@trajectories[ids]
+      out <- sp_data@trajectories[ids]
 
     } else {
 
-      out <- imaging@trajectories
+      out <- sp_data@trajectories
 
     }
 
@@ -3064,11 +3116,11 @@ getSpatialTrajectories <- function(object, ids = NULL){
 #' @export
 getSpatialTrajectoryIds <- function(object){
 
-  imaging <- getHistoImaging(object)
+  sp_data <- getSpatialData(object)
 
   out <-
     purrr::keep(
-      .x = imaging@trajectories,
+      .x = sp_data@trajectories,
       .p = ~ base::class(.x) == "SpatialTrajectory"
     ) %>%
     base::names()
@@ -3106,7 +3158,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getSpotSize()
 
   }
@@ -3116,7 +3168,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getSpotSize",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, ...){
 
     object@method@method_specifics[["spot_size"]]
@@ -3246,7 +3298,7 @@ setGeneric(name = "getTissueOutlineCentroid", def = function(object, ...){
 #' @export
 setMethod(
   f = "getTissueOutlineCentroid",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), transform = TRUE,  ...){
 
     getTissueOutlineDf(
@@ -3303,7 +3355,7 @@ setMethod(
                         transform = TRUE,
                         ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getTissueOutlineDf(
         object = .,
         img_name = img_name,
@@ -3318,7 +3370,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getTissueOutlineDf",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         by_section = TRUE,
@@ -3383,9 +3435,9 @@ setMethod(
 #' @export
 getTrajectory <- function(object, id){
 
-  imaging <- getHistoImaging(object)
+  sp_data <- getSpatialData(object)
 
-  tobj <- imaging@trajectories[[id]]
+  tobj <- sp_data@trajectories[[id]]
 
   check_availability(
     test = !base::is.null(tobj),
@@ -3413,9 +3465,9 @@ getTrajectoryIds <- function(object){
 
   check_object(object)
 
-  imaging <- getHistoImaging(object)
+  sp_data <- getSpatialData(object)
 
-  base::names(imaging@trajectories)
+  base::names(sp_data@trajectories)
 
 }
 
@@ -3436,7 +3488,7 @@ getTrajectoryLength <- function(object,
                                 round = FALSE,
                                 as_numeric = FALSE){
 
-  csf <- getScaleFactor(object, fct_name = "coords")
+  csf <- getScaleFactor(object, fct_name = "image")
 
   tobj <- getTrajectory(object, id = id)
 
@@ -3494,7 +3546,7 @@ getTrajectorySegmentDf <- function(object,
 
   traj_obj <- getTrajectory(object, id)
 
-  csf <- getScaleFactor(object, fct_name = "coords")
+  csf <- getScaleFactor(object, fct_name = "image")
 
   out <-
     dplyr::mutate(
@@ -3527,7 +3579,7 @@ getTrajectoryWidth <- function(object, id = idST(object), unit = "px", orig = FA
 
   if(traj@width_unit == "px" && !base::isTRUE(orig)){
 
-    csf <- getScaleFactor(object, fct_name = "coords")
+    csf <- getScaleFactor(object, fct_name = "image")
     out <- extract_value(out)*csf
 
   }

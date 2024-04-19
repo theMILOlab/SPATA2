@@ -154,6 +154,46 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
                             version = "list"
                           ))
 
+
+#' @title The \code{SpatialData} - Class
+#'
+#' @description S4 class that represents a set of histological images from one
+#' tissue slide or several consecutive slides of one and the same tissue portion.
+#'
+#' @slot annotations list. List of objects of class [`SpatialAnnotation`].
+#' @slot coordinates data.frame. Data.frame that stores information about identified
+#' or known entities located on the imaged tissue, such as cells or capture spots.
+#' @slot images list. List of objects of class [`HistoImage`].
+#' @slot method SpatialMethod. Object of class [`SpatialMethod`].
+#' @slot meta list. List for meta data regarding the imaged tissue portion.
+#' @slot misc list. A flexible list for miscellaneous input.
+#' @slot name_img_active character. The name of the image that is currently active.
+#' @slot name_img_ref character. The name of the image that is used as a reference for aligning
+#' every additional image in slot @@images_registered.
+#' @slot sample character. String to identify the imaged tissue.
+#' @slot scale_factors list. A list of scale factors. Only required if slot @@images does not contain any image.
+#' See \code{\link[=concept_scale_factors]{scale factors}} for more information.
+#' @slot trajectories list. A list of objects of class [`SpatialTrajectory`].
+#'
+#' @export
+SpatialData <- setClass(Class = "SpatialData", # -> rename to SpatialData ??
+                        slots = list(
+                          annotations = "list",
+                          coordinates = "data.frame",
+                          images = "list",
+                          method = "SpatialMethod",
+                          meta = "list",
+                          misc = "list",
+                          name_img_active = "character",
+                          name_img_ref = "character",
+                          sample = "character",
+                          scale_factors = "list",
+                          trajectories = "list",
+                          version = "list"
+                        )
+)
+
+
 #' @title The \code{Trajectory} - Class
 #'
 #' @description S4 class that represents trajectories
@@ -181,6 +221,74 @@ Trajectory <- setClass(Class = "Trajectory",
                          width = "numeric"
                        ))
 
+
+
+
+# D -----------------------------------------------------------------------
+
+#' default instructions
+#' @export
+#' @keywords internal
+default_instructions <- setClass(Class = "default_instructions",
+                                 slots = c(
+                                   average_genes = "logical",
+                                   binwidth = "numeric",
+                                   clrp = "character",
+                                   clrsp = "character",
+                                   colors = "character",
+                                   complete = "logical",
+                                   concavity = "numeric",
+                                   display_facets = "logical",
+                                   display_image = "logical",
+                                   display_labels = "logical",
+                                   display_legend = "logical",
+                                   display_points = "logical",
+                                   display_residuals = "logical",
+                                   display_trajectory_parts = "logical",
+                                   display_title = "logical",
+                                   expand_outline = "numeric",
+                                   max_adj_pval = "numeric",
+                                   method_aggl = "character",
+                                   method_dist = "character",
+                                   method_de = "character",
+                                   method_dr = "character",
+                                   method_hclust = "character",
+                                   method_ovl = "character",
+                                   method_padj = "character",
+                                   method_gs = "character",
+                                   min_lfc = "numeric",
+                                   n_highest_lfc = "numeric",
+                                   n_lowest_pval = "numeric",
+                                   n_pcs = "numeric",
+                                   normalize = "logical",
+                                   position = "character",
+                                   pt_alpha = "numeric",
+                                   pt_clr = "character",
+                                   pt_clrp = "character",
+                                   pt_clrsp = "character",
+                                   pt_fill = "character",
+                                   pt_shape = "numeric",
+                                   pt_size = "numeric",
+                                   pt_size_fixed = "logical",
+                                   relevel = "logical",
+                                   scales = "character",
+                                   sgmt_clr = "character",
+                                   sgmt_size = "numeric",
+                                   show_colnames = "logical",
+                                   show_rownames = "logical",
+                                   smooth = "logical",
+                                   smooth_clr = "character",
+                                   smooth_method = "character",
+                                   smooth_se = "logical",
+                                   smooth_span = "numeric",
+                                   uniform_genes = "character",
+                                   use_scattermore = "logical",
+                                   verbose = "logical")
+)
+
+
+
+# G -----------------------------------------------------------------------
 
 
 #' @title The `GroupAnnotation` - Class
@@ -213,11 +321,10 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @title The \code{HistoImage} - Class
 #'
 #' @description S4 class that contains an histology image and information and data
-#' about it. Usually live in slots @@image_reference and @@images_registered of [`HistoImaging`]
-#' objects.
+#' about it. Usually live in slot @@images of [`SpatialData`] objects.
 #'
 #' @slot active logical. If `TRUE`, it is the image used by default. Only one [`HistoImage`]
-#' in the [`HistoImaging`] object can be the active at a time.
+#' in the [`SpatialData`] object can be the active at a time.
 #' @slot aligned logical. If `TRUE`, indicates that the image was aligned to
 #' the reference image.
 #' @slot bg_color character. The color of the background.
@@ -255,7 +362,7 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 #'   attribute called "unit" conforming to the format "SI-unit/px".}
 #' }
-#'
+#' See \code{\link[=concept_scale_factors]{scale factors}} for more information.
 #' @slot transformations list. List of transformations to apply upon extracting
 #' the image to ensure alignment with additional images and spatial aspects. In case of default values
 #' no transformation is applied.
@@ -292,45 +399,8 @@ HistoImage <- setClass(Class = "HistoImage",
                        )
 )
 
-#' @title The \code{HistoImaging} - Class
-#'
-#' @description S4 class that represents a set of histological images from one
-#' tissue slide or several consecutive slides of one and the same tissue portion.
-#'
-#' @slot annotations list. List of objects of class [`SpatialAnnotation`].
-#' @slot coordinates data.frame. Data.frame that stores information about identified
-#' or known entities located on the imaged tissue, such as cells or capture spots.
-#' @slot images list. List of objects of class [`HistoImage`].
-#' @slot method SpatialMethod. Object of class [`SpatialMethod`].
-#' @slot meta list. List for meta data regarding the imaged tissue portion.
-#' @slot misc list. A flexible list for miscellaneous input.
-#' @slot name_imf_active character. The name of the image that is currently active.
-#' @slot name_img_ref character. The name of the image that is used as a reference for aligning
-#' every additional image in slot @@images_registered.
-#' @slot sample character. String to identify the imaged tissue.
-#' @slot trajectories list. A list of objects of class [`SpatialTrajectory`].
-#'
-#' @export
-HistoImaging <- setClass(Class = "HistoImaging", # -> rename to SpatialData ??
-                         slots = list(
-                           annotations = "list",
-                           coordinates = "data.frame",
-                           images = "list",
-                           method = "SpatialMethod",
-                           meta = "list",
-                           misc = "list",
-                           name_img_active = "character",
-                           name_img_ref = "character",
-                           sample = "character",
-                           trajectories = "list",
-                           version = "list"
-                         )
-)
-
 
 # I -----------------------------------------------------------------------
-
-
 
 #' @title The \code{ImageAnnotation} - Class
 #'
@@ -352,6 +422,54 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
                               parent_name = "character"
                             ),
                             contains = "SpatialAnnotation")
+
+
+# M -----------------------------------------------------------------------
+
+#' @title The \code{MolecularAssay} - class
+#'
+#' @description A class to represent molecular assay data, including analysis results, metrics, and
+#' statistical summaries. The `MolecularAssay` class encapsulates various components
+#' of assay data including raw and processed metrics, analytical results,
+#' and associated metadata like the assay name and omic type.
+#'
+#' In further documentation the simpler term assay is used to refer to molecular
+#' assays.
+#'
+#' @slot active_mtr Character string indicating which matrix to extract and
+#' use by default.
+#' @slot analysis List of analysis results where each element can represent
+#'  a different analysis aspect.
+#' @slot mtr_counts Matrix object storing raw counts metrics from the assay. Rownames
+#' should corresponds to the molecule names. Colnames should correspond to the
+#' barcodes (IDs) of the observations to which the molecule counts were mapped.
+#' @slot mtr_proc List of processed metrics, potentially including normalized
+#' values or transformed data.
+#' @slot molecules Data.frame. Meta data for the molecules including, x- and y-coordinates
+#' in 2d space as well as summary statistics. Name (identifier) of each molecule is
+#' stored in variable *mol_id*.
+#' @slot omic Character value. A string that best characterizes the type of molecular data
+#' the assay carries (e.g., "transcriptomics", "proteomics").
+#' @slot signatures Named list of character vectors.
+#'
+#' Molecular signatures are sets of molecules (such as genes or proteins) that are
+#' associated with specific biological states, processes, or conditions. This slot stores the molecular
+#' signatures detected in the assay data. Each signature is represented as a vector in a named list, where
+#' the names corresponds to the signature the character values are the molecules
+#' of which the signature consists.
+#'
+#' @export
+
+MolecularAssay <- setClass(Class = "MolecularAssay",
+                           slots = list(
+                             active_mtr = "character",
+                             analysis = "list",
+                             molecules = "data.frame",
+                             mtr_counts = "Matrix",
+                             mtr_proc = "list",
+                             omic = "character",
+                             signatures = "list"
+                           ))
 
 # N -----------------------------------------------------------------------
 
@@ -422,74 +540,61 @@ SDEGS <- methods::setClass(Class = "SDEGS",
                            ))
 
 
-#' @title The `spata2`- Class
+#' @title The \code{SPATA2} - class
 #'
-#' @slot autoencoder A list in which the results of neural network denoising is stored.
+#' @description This S4 class represents a spatial multiomics data object, containing various
+#' assays, compatibility information, dimensionality reduction results, histological
+#' images, log file data, metadata for observations, additional metadata information,
+#' spatial method details, object information, sample identifiers, spatial data, and versioning details.
 #'
-#' @slot coordinates A data.frame containing information about every barcode-spot. Must contain the variables:
+#' @slot assays A named list of [`MolecularAssay`] objects containing molecular data. Names
+#' correspond to slot @@omic of the respective omic.
+#' @slot compatibility A list for compatibility information and data.
+#' @slot data_add A list for additional data that has not yet a fixed slot in
+#' `SPATA2` architecture.
+#' @slot dim_red A list containing dimensionality reduction results.
+#' @slot logfile A data frame containing log file data.
+#' @slot meta_obs A data frame containing metadata for the observations. This comprises all
+#' data variables that are not found in the molecular assays including cluster and grouping variables,
+#' summary statistics, etc.
+#' @slot meta_sample A list providing additional information about the tissue and the tissue donor.
+#' @slot method An object of class 'SpatialMethod' detailing the spatial method used.
+#' @slot obj_info A list containing object information such as default instructions and
+#' directories.
+#' @slot sample A character value. The name of the sample and the `SPATA2` object.
+#' @slot spatial An object of class [`SpatialData`] storing coordinates of the observations,
+#' images, required transformations for alignment, scale factors, [`SpatialAnnotation`] objects,
+#' [`SpatialTrajectory`] objects, etc.
+#' @slot version A list specifying versioning details.
 #'
-#'  \describe{
-#'   \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-#'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
-#'   \item{\emph{x}}{Numeric. The x-coordinates of every barcode.}
-#'   \item{\emph{y}}{Numeric. The y-coordinates of every barcode.}
-#'  }
+#' @name SPATA2-class
+#' @rdname SPATA2
+#' @exportClass SPATA2
 #'
-#' @slot data See documentation for S4-object 'data'
-#' @slot dea A list in which every slot is named according to a discrete feature for which differential gene expression
-#' analysis has been conducted (via \code{runDEA()}). Every slot contains a data.frame (output of \code{Seurat::FindAllMarkers()}).
-#' @slot dim_red See documentation for S4-object 'dim_red'
-#' @slot fdata A data.frame containing the additionally computed features. Must contain the variables:
-#'  \describe{
-#'   \item{\emph{barcodes}}{Character. The barcode-sequences (+ the sample belonging) of every barcode spot.}
-#'   \item{\emph{sample}}{Character. The sample belonging of every barcode-spot.}
-#'  }
-#'
-#' @slot images A list that contains an object of class `HistoImaging` which contains
-#' information and data regarding images.
-#' @slot samples Character value. Contains the sample names.
-#' @slot scvelo Currently not in use.
-#' @slot trajectories A list named according to the samples the object contains. Each slot in
-#' that list contains another list of all 'spatial_trajectory'-objects created for that sample.
-#'
-#' @slot used_genesets A data.frame containing the defined gene-sets. Must contain the variables:
-#'
-#' \describe{
-#'  \item{\emph{ont}}{Character. The gene-set name.}
-#'  \item{\emph{gene}}{Character. The belonging genes.}
-#'  }
-#'
-#' @slot version A list of four slots denoting the version of SPATA under which the object has been
-#' created.
-#'
-#' @slot compatibility A list of miscellaneous information that mainly ensures compatibility between different
-#' platforms.
-#'
-#' @return S4 object
 #' @export
+#'
+SPATA2 <- setClass(Class = "SPATA2",
+                   slots = list(
+                     assays = "list",
+                     compatibility = "list",
+                     data_add = "list",
+                     dim_red = "list",
+                     logfile = "data.frame",
+                     meta_obs = "data.frame",
+                     meta_sample = "list",
+                     method = "SpatialMethod",
+                     obj_info = "list",
+                     sample = "character",
+                     spatial = "SpatialData",
+                     version = "list"
+                   ))
 
-spata2 <- setClass("spata2",
-                   slots = c(autoencoder = "list",
-                             cnv = "list",
-                             compatibility = "list",
-                             coordinates ="list", #coordinates: bc, x, y, sample
-                             data = "list",
-                             dea = "list",
-                             dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
-                             fdata = "list", #fdata : bc, ...
-                             gdata = "list",
-                             images = "list",
-                             information = "list",
-                             samples = "character",
-                             spatial = "list",
-                             scvelo = "list",
-                             trajectories = "list",
-                             used_genesets = "data.frame",
-                             version = "list"
-                             )
-)
 
 # SpatialAnnotation - other S4 classes inherit from it. Is listed on top under 0
+
+# SpatialData - other S4 classes depend on it. Is listed on top under 0
+
+
 
 # SpatialMethod - other S4 classes inherit from it. Is listed on top under 0
 
@@ -519,7 +624,7 @@ spata2 <- setClass("spata2",
 #' @slot projection data.frame. Data.frame that contains the length of the
 #' projection of each barcode spot onto the trajectory.
 #' @slot sample character. The sample name.
-#' @slot segment data.frame. Contains the course of the trajetory in
+#' @slot segment data.frame. Contains the course of the trajectory in
 #' form of a data.frame with the variables \emph{x, y, xend} and \emph{yend.}
 #' @slot width numeric. The width of the rectangle that was spanned along
 #' the trajectory. (Length of the rectangle corresponds to the length of
@@ -668,14 +773,12 @@ Visium <- setClass(Class = "Visium",
 # Deprecated --------------------------------------------------------------
 
 
-#' data_counts object
+#' @title The `data_counts`- Class
 #'
-#' @slot counts A sparse matrix containing the original counts.
-#' @slot norm_exp A processed expression matrix. Rownames must be the gene-names.
-#' Column names must be the barcodes.
+#' @description Deprecated.
 #'
-#' @return S4 object
 #' @export
+#'
 #' @keywords internal
 
 data_counts <- setClass("data_counts",
@@ -683,13 +786,12 @@ data_counts <- setClass("data_counts",
                                            norm_exp  = "matrix"))
 
 
-#' dim_red object
+#' @title The `dim_red`- Class
 #'
-#' @slot UMAP A data.frame containing the variables \emph{'barcdoes', 'sample', 'umap1', 'umap2'}
-#' @slot TSNE A data.frame containing the variables \emph{'barcodes', 'smaple', 'tsne1', 'tsne2'}
+#' @description Deprecated.
 #'
-#' @return S4 object
 #' @export
+#'
 #' @keywords internal
 dim_red <- setClass("dim_red",
                              slots = c(UMAP =  "data.frame",
@@ -698,23 +800,8 @@ dim_red <- setClass("dim_red",
 
 #' @title The \code{HistologyImage} - Class
 #'
-#' @description S4 class that represents histology images.
+#' @description Deprecated in favor of `HistoImage`.
 #'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot dir_default character. The default directory that is used to load
-#' the image if slot @@image is empty. Or a string linking to the default slot
-#' ('highres' or 'lowres').
-#' @slot dir_highres character. Directory to the high resolution version of the image.
-#' @slot dir_lowres character. Directory to the low resolution version of the image.
-#' @slot grid data.frame. A data.frame that contains at least a variable
-#' named \emph{x} and a variable named \emph{y} representing a grid.
-#' @slot id character. String to identify the object in a list of multiple objects
-#' of the same class. Usually refers to the sample name of the \code{SPATA2} object.
-#' @slot image Image.
-#' @slot info list. A flexible list that is supposed to store miscellaneous
-#' information around the image.
-#' @slot misc list. A flexible list for miscellaneous input.
-#' @keywords internal
 #' @export
 HistologyImage <- setClass(Class = "HistologyImage",
                            slots = list(
@@ -732,64 +819,11 @@ HistologyImage <- setClass(Class = "HistologyImage",
 
 #' @title The \code{HistologyImaging} - Class
 #'
-#' @description S4 class that represents a set of histological images from one
-#' and the same tissue slide.
-#'
-#' @slot annotations list. List of objects of class \code{ImageAnnotation}.
-#' @slot coordinates data.frame. A data.frame of observational units that underlie
-#' the image in case of spatially resolved multi-omic studies. Should contain at least
-#' the  two variables: *x*, *y* and a variable that identifies the observational
-#' units (e.g. *barcodes*).
-#' @slot dir_add list. Named list of directories that contain different versions
-#' of tissue images. Can be arbitrarily expanded for convenient exchanging via
-#' `loadImage()`.
-#' @slot dir_default character. Directory that leads to the default image for save
-#' exchanging via `loadDefaultImage()`.
-#' @slot dir_highres character. Directory that leads to a high resolution version of the image
-#' for save exchanging via `loadHighresImage()`.
-#' @slot dir_lowres character. Directory that leads to a low resolution version of the image
-#' for save exchanging via `loadLowresImage()`.
-#' @slot grid list. That contains information about spatial grids.
-#' @slot id character. String to identify the imaged tissue.
-#' @slot image Image. Should be compatible with the `EBImage` package.
-#' @slot image_info list. Stores meta data and miscellaneous information regarding the
-#' image that is currently stored in slot @@image. Slots that should always exist:
-#' \itemize{
-#'  \item{*origin*:}{ Character string. Either the directory from where the current image was read
-#'  in or a substitute of the object name that was used from the global environment.}
-#'  \item{*dim_input*:}{ The dimensions with which the image was given to argument `image` of
-#'  `createHistologyImaging()` or `exchangeImage()`.}
-#'  \item{*dim_stored*:}{ The dimensions with which the image is currently stored.}
-#'  \item{*img_scale_fct*:}{ The scale factor input that was used to resize the current image within
-#'  `createHistologyImaging()` or `exchangeImage()` before setting it. If 1, *dim_stored* and *dim_input*
-#'  should be identical. See argument `scale_fct` of `exchangeImage()` for more details on its interpretation.}
-#'   \item{*pxl_scale_fct*:}{ Numeric value that gives the side length of one pixel an SI unit that is stated
-#'   in an attribute called *unit* as nSI-units/px.}
-#'  }
-#' @slot justification list. List of two slots that track justification changes. See corresponding
-#' section below the slot descriptions for more information.
-#' \itemize{
-#'  \item{*angle*:}{ Numeric value that ranges from 0-359.}
-#'  \item{*flipped*:}{ List of two logical values named *horizontal* and *vertical*.}
-#'  }
-#' @slot meta list. List for meta data regarding the tissue.
-#' @slot misc list. A flexible list for miscellaneous input.
-#'
-#' @section Requirements:
-#' The `HistologyImaging` framework assumes that all read in images have the same
-#' axes-ratio.
-#'
-#' @section Tracking changes in image justification:
-#' The histology image that is used while creating the object is considered the
-#' default image. By default, the framework assumes that all related images (high resolution,
-#' low resolution, fluorescent images, RAMAN spectroscopy etc.) have the same justification
-#' in terms of angle rotation and axes-flipping. Flipping an image in the `SPATA2` object via
-#'  `flipImage()` or rotating images via `rotateImage()` changes their justification in space.
-#' These changes in justification are tracked (if `track` is not set to `FALSE`) and applied
-#' whenever an image is exchanged via `exchangeImage()` (if `adjust` is not set to `FALSE`).
-#' This ensures consistent image exchanges using the different directories.
+#' @description Deprecated in favor of `SpatialData`.
 #'
 #' @export
+#'
+#' @keywords internal
 HistologyImaging <- setClass(Class = "HistologyImaging",
                              slots = list(
                                annotations = "list",
@@ -809,29 +843,66 @@ HistologyImaging <- setClass(Class = "HistologyImaging",
 )
 
 
-#' spatial_trajectory object
+#' @title The \code{HistoImaging} - Class
 #'
-#' @slot compiled_trajectory_df A data.frame containing the variables:
+#' @description Deprecated in favor of `SpatialData`.
 #'
-#' \describe{
-#'  \item{\emph{barcodes}}{Character. The barcode-spots' sequences.}
-#'  \item{\emph{sample}}{Character. The barcode-spots' sample belonging.}
-#'  \item{\emph{x,y}}{Numeric. The barcode-spots' spatial coordinates.}
-#'  \item{\emph{projection_length}}{Numeric. The distance between the barcode-spots'
-#'   projection onto the trajectory-vector and the start of the trajectory.}
-#'  \item{\emph{trajectory_part}}{Character. The part of the trajectory.}
-#'  }
-#'
-#'
-#' @slot segment_trajectory_df A data.frame containing the numeric variables
-#' \emph{x, y, xend, yend} that denote the start and the end of every trajectory
-#' part.
-#' @slot comment Character value. The comment written down before saving the trajectory.
-#' @slot name Character value. The trajectory's name.
-#' @slot sample Character value. The sample the trajectory belongs to.
-#'
-#' @return S4 object
 #' @export
+#'
+#' @keywords internal
+HistoImaging <- setClass(Class = "HistoImaging",
+                        slots = list(
+                          annotations = "list",
+                          coordinates = "data.frame",
+                          images = "list",
+                          method = "SpatialMethod",
+                          meta = "list",
+                          misc = "list",
+                          name_img_active = "character",
+                          name_img_ref = "character",
+                          sample = "character",
+                          trajectories = "list",
+                          version = "list"
+                        )
+)
+
+
+
+#' @title The `spata2`- Class
+#'
+#' @description Deprecated in favor of `SPATA2`.
+#'
+#' @export
+#'
+#' @keywords internal
+
+spata2 <- setClass("spata2",
+                   slots = c(autoencoder = "list",
+                             cnv = "list",
+                             compatibility = "list",
+                             coordinates ="list", #coordinates: bc, x, y, sample
+                             data = "list",
+                             dea = "list",
+                             dim_red = "list", #PCA, UMAP, TSNE: bc, umap1, umap2, sample
+                             fdata = "list", #fdata : bc, ...
+                             gdata = "list",
+                             images = "list",
+                             information = "list",
+                             samples = "character",
+                             spatial = "list",
+                             scvelo = "list",
+                             trajectories = "list",
+                             used_genesets = "data.frame",
+                             version = "list"
+                   )
+)
+
+#' @title The `spatial_trajectory`- Class
+#'
+#' @description Deprecatd in favor of `SpatialTrajectory`.
+#'
+#' @export
+#'
 #' @keywords internal
 
 spatial_trajectory <- setClass("spatial_trajectory",
@@ -843,181 +914,14 @@ spatial_trajectory <- setClass("spatial_trajectory",
                                           sample = "character"))
 
 
-#' default instructions
-#' @export
-#' @keywords internal
-default_instructions <- setClass(Class = "default_instructions",
-                                          slots = c(
-                                            average_genes = "logical",
-                                            binwidth = "numeric",
-                                            clrp = "character",
-                                            clrsp = "character",
-                                            colors = "character",
-                                            complete = "logical",
-                                            concavity = "numeric",
-                                            display_facets = "logical",
-                                            display_image = "logical",
-                                            display_labels = "logical",
-                                            display_legend = "logical",
-                                            display_points = "logical",
-                                            display_residuals = "logical",
-                                            display_trajectory_parts = "logical",
-                                            display_title = "logical",
-                                            expand_outline = "numeric",
-                                            max_adj_pval = "numeric",
-                                            method_aggl = "character",
-                                            method_dist = "character",
-                                            method_de = "character",
-                                            method_dr = "character",
-                                            method_hclust = "character",
-                                            method_ovl = "character",
-                                            method_padj = "character",
-                                            method_gs = "character",
-                                            min_lfc = "numeric",
-                                            n_highest_lfc = "numeric",
-                                            n_lowest_pval = "numeric",
-                                            n_pcs = "numeric",
-                                            normalize = "logical",
-                                            position = "character",
-                                            pt_alpha = "numeric",
-                                            pt_clr = "character",
-                                            pt_clrp = "character",
-                                            pt_clrsp = "character",
-                                            pt_fill = "character",
-                                            pt_shape = "numeric",
-                                            pt_size = "numeric",
-                                            pt_size_fixed = "logical",
-                                            relevel = "logical",
-                                            scales = "character",
-                                            sgmt_clr = "character",
-                                            sgmt_size = "numeric",
-                                            show_colnames = "logical",
-                                            show_rownames = "logical",
-                                            smooth = "logical",
-                                            smooth_clr = "character",
-                                            smooth_method = "character",
-                                            smooth_se = "logical",
-                                            smooth_span = "numeric",
-                                            uniform_genes = "character",
-                                            use_scattermore = "logical",
-                                            verbose = "logical")
-)
 
 
 
 
 
-# dev ---------------------------------------------------------------------
-
-
-MEA <- setClass(Class = "MEA",
-                slots = list(
-
-                ))
-
-ScDeconv <- setClass(Class = "ScDeconv",
-                     slots = list(
-                       coords = "data.frame",
-                       mtr_counts = "Matrix"
-                     ))
 
 
 
-#' @title The \code{SPATA2} - class
-#'
-#' @descripiton This S4 class represents a spatial multiomics data object, containing various
-#' assays, compatibility information, dimensionality reduction results, histological
-#' images, log file data, metadata for observations, additional metadata information,
-#' spatial method details, object information, sample identifiers, spatial data, and versioning details.
-#'
-#' @slot assays A list of assays containing molecular data.
-#' @slot compatibility A list detailing compatibility information.
-#' @slot dim_red A list containing dimensionality reduction results.
-#' @slot images An object of class 'HistoImaging' representing histological images.
-#' @slot logfile A data frame containing log file data.
-#' @slot meta_obs A data frame containing metadata for observations.
-#' @slot meta_info A list providing additional metadata information.
-#' @slot method An object of class 'SpatialMethod' detailing the spatial method used.
-#' @slot obj_info A list containing additional object information.
-#' @slot sample A character vector of sample identifiers.
-#' @slot spatial A list containing spatial data.
-#' @slot version A list specifying versioning details.
-#' @return
-#' @export
-#'
-#' @examples
-SPATA2 <- setClass(Class = "SPATA2",
-                   slots = list(
-                     assays = "list", # old data
-                     compatibility = "list",
-                     data_add = "list",
-                     dim_red = "list",
-                     logfile = "data.frame",
-                     meta_obs = "data.frame",  # old fdata
-                     meta_info = "list",
-                     method = "SpatialMethod",
-                     obj_info = "list",
-                     sample = "character",
-                     spatial = "HistoImaging",
-                     version = "list"
-                   ))
-
-
-#' @title The \code{MolecularAssay} - class
-#'
-#' @description A class to represent molecular assay data, including analysis results, metrics, and
-#' statistical summaries. The `MolecularAssay` class encapsulates various components
-#' of assay data including raw and processed metrics, analytical results,
-#' and associated metadata like the assay name and omic type.
-#'
-#' In further documentation the simpler term assay is used to refer to molecular
-#' assays.
-#'
-#' @slot active_mtr Character string indicating which matrix to extract and
-#' use by default.
-#' @slot analysis List of analysis results where each element can represent
-#'  a different analysis aspect.
-#' @slot mtr_counts Matrix object storing raw counts metrics from the assay. Rownames
-#' should corresponds to the molecule names. Colnames should correspond to the
-#' barcodes (IDs) of the observations to which the molecule counts were mapped.
-#' @slot mtr_proc List of processed metrics, potentially including normalized
-#' values or transformed data.
-#' @slot molecules Data.frame. Meta data for the molecules including, x- and y-coordinates
-#' in 2d space as well as summary statistics. Name (identifier) of each molecule is
-#' stored in variable *mol_id*.
-#' @slot omic Character value. A string that best characterizes the type of molecular data
-#' the assay carries (e.g., "transcriptomics", "proteomics").
-#' @slot signatures Named list of character vectors.
-#'
-#' Molecular signatures are sets of molecules (such as genes or proteins) that are
-#' associated with specific biological states, processes, or conditions. This slot stores the molecular
-#' signatures detected in the assay data. Each signature is represented as a vector in a named list, where
-#' the names corresponds to the signature the character values are the molecules
-#' of which the signature consists.
-#'
-#' @export
-
-MolecularAssay <- setClass(Class = "MolecularAssay",
-                           slots = list(
-                             active_mtr = "character",
-                             analysis = "list",
-                             molecules = "data.frame",
-                             mtr_counts = "Matrix",
-                             mtr_proc = "list",
-                             omic = "character", # transcriptomic, proteomic, metabolomics / RNA, proteins, metabolites
-                             signatures = "list"
-                           ))
-
-
-# e.g. analyis list for transcriptomic assay
-
-analysis_list_transcriptomics <-
-  list(
-    cnv = "list",
-    dea = "list",
-    gsea = "list",
-    sparkx = "list"
-  )
 
 
 

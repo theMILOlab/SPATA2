@@ -7,7 +7,7 @@
 containsVersion(object, check_not_empty = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{check_not_empty}{Logical value. If \code{TRUE}, tests additionally if

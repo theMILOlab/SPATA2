@@ -4,6 +4,7 @@
 \alias{setSpatialAnnotation}
 \alias{setSpatialAnnotation,SPATA2-method}
 \alias{setSpatialAnnotations}
+\alias{setSpatialAnnotations,SPATA2-method}
 \title{Set spatial annotations}
 \usage{
 setSpatialAnnotation(object, ...)
@@ -11,9 +12,11 @@ setSpatialAnnotation(object, ...)
 \S4method{setSpatialAnnotation}{SPATA2}(object, spat_ann, ...)
 
 setSpatialAnnotations(object, ...)
+
+\S4method{setSpatialAnnotations}{SPATA2}(object, spat_anns, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

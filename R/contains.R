@@ -3,7 +3,7 @@
 #'
 #' @description Checks if the provided object contains a specific assay.
 #'
-#' @inherit argument_dumym params
+#' @inherit argument_dummy params
 #'
 #' @return TRUE if the assay is found in the object, FALSE otherwise.
 #'
@@ -139,26 +139,59 @@ containsCNV <- function(object){
 }
 
 
-#' @title Checks availability of `HistoImaging` object
+#' @title Check availability of image containers
 #'
-#' @description Tests if the input object contains an object
-#' of class `HistoImaging`.
+#' @description Checks if the input object contains any [`HistoImage`] objects.
+#'
+#' Note to confuse with [`containsImage()`].
 #'
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
-#' @export
 #'
-containsHistoImaging <- function(object, error = FALSE){
+#' @export
+setGeneric(name = "containsHistoImages", def = function(object, ...){
 
-  out <-
-    !purrr::is_empty(object@spatial) &
-    methods::is(object@spatial, "HistoImaging")
+  standardGeneric(f = "containsHistoImages")
+
+})
+
+#' @rdname containsHistoImages
+#' @export
+setMethod(
+  f = "containsHistoImages",
+  signature = "SPATA2",
+  definition = function(object, error = FALSE, ...){
+
+    getSpatialData(object) %>%
+      containsHistoImages(object, error = error)
+
+  }
+)
+
+#' @rdname containsHistoImages
+#' @export
+setMethod(
+  f = "containsHistoImages",
+  signature = "SpatialData",
+  definition = function(object, error = FALSE, ...){
+
+    out <-
+      purrr::map_lgl(.x = object@images, .f = ~ methods::is(.x, class2 = "HistoImage")) %>%
+      base::any()
+
+    if(base::isFALSE(out) & base::isTRUE(error)){
+
+      stop("This objects of class `HistoImage` found.")
+
+    }
+
+    return(out)
+
+  }
+)
 
 
-  return(out)
-
-}
 
 #' @title Check availability of an image
 #'
@@ -184,8 +217,17 @@ setMethod(
   signature = "ANY",
   definition = function(object, img_name = activeImage(object), error = FALSE){
 
-    getHistoImage(object, img_name = img_name) %>%
-      containsImage(object = ., error = error)
+    out <- containsHistoImages(object, error = error)
+
+    if(base::isTRUE(out)){
+
+      out <-
+        getHistoImage(object, img_name = img_name) %>%
+        containsImage(object = ., error = error)
+
+    }
+
+    return(out)
 
   }
 )
@@ -314,10 +356,10 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, method_name, error = FALSE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
     containsMethod(
-      object = imaging,
+      object = sp_data,
       method_name = method_name,
       error = error
     )
@@ -329,7 +371,7 @@ setMethod(
 #' @export
 setMethod(
   f = "containsMethod",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, method_name, error = FALSE){
 
     test <-
@@ -375,7 +417,7 @@ setGeneric(name = "containsPixelContent", def = function(object, ...){
 #' @export
 setMethod(
   f = "containsPixelContent",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name, error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -470,10 +512,10 @@ setMethod(
                         img_name = activeImage(object),
                         error = FALSE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
     containsScaleFactor(
-      object = imaging,
+      object = sp_data,
       fct_name = fct_name,
       img_name = img_name,
       error = error
@@ -486,7 +528,7 @@ setMethod(
 #' @export
 setMethod(
   f = "containsScaleFactor",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         fct_name,
                         img_name = activeImage(object),
@@ -555,6 +597,27 @@ setMethod(
 
   }
 )
+
+#' @title Checks availability of `SpatialData` object
+#'
+#' @description Tests if the input object contains an object
+#' of class `SpatialData`.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Logical value.
+#' @export
+#'
+containsSpatialData <- function(object, error = FALSE){
+
+  out <-
+    !purrr::is_empty(object@spatial) &
+    methods::is(object@spatial, "SpatialData")
+
+
+  return(out)
+
+}
 
 #' @title Check if spatial outliers exist
 #'
@@ -681,7 +744,7 @@ setMethod(
 #' @export
 setMethod(
   f = "containsTissueOutline",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -735,7 +798,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, error = FALSE){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       containsSpatialAnnotations(object = ., error = error)
 
   }
@@ -745,7 +808,7 @@ setMethod(
 #' @export
 setMethod(
   f = "containsSpatialAnnotations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, error = FALSE){
 
     ids <- getSpatAnnIds(object)

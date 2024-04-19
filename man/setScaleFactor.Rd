@@ -3,7 +3,7 @@
 \name{setScaleFactor}
 \alias{setScaleFactor}
 \alias{setScaleFactor,SPATA2-method}
-\alias{setScaleFactor,HistoImaging-method}
+\alias{setScaleFactor,SpatialData-method}
 \alias{setScaleFactor,HistoImage-method}
 \title{Set scale factors}
 \usage{
@@ -11,12 +11,12 @@ setScaleFactor(object, ...)
 
 \S4method{setScaleFactor}{SPATA2}(object, fct_name, value)
 
-\S4method{setScaleFactor}{HistoImaging}(object, fct_name, value)
+\S4method{setScaleFactor}{SpatialData}(object, fct_name, value)
 
 \S4method{setScaleFactor}{HistoImage}(object, fct_name, value)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -30,7 +30,13 @@ The input object containing the added or computed
 results.
 }
 \description{
-Sets scale factor values for the reference image. Corresponding
-scale factors for additionally registered images (if there are any) are
-computed.
+Sets scale factor values.
+}
+\details{
+For S4 methods other than for \code{\link{HistoImage}}: Sets scale factors
+\strong{for the reference image}. Corresponding scale factors for additionally
+registered images (if there are any) are computed.
+
+If there are no images registered, the scale factor is set in the corresponding list
+slot of @scale_factors of the \code{SpatialData} object.
 }

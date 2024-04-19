@@ -1847,7 +1847,30 @@ resetImageJustification <- function(object){
 
 # s -----------------------------------------------------------------------
 
-#' @internal
+#' @title Deprecated
+#' @export
+setActiveExpressionMatrix <- function(...){
+
+  deprecated(fn = TRUE)
+
+  object <- activateMatrix(...)
+
+  return(object)
+
+}
+
+
+#' @title Deprecated
+#' @export
+setActiveMatrix <- function(object, mtr_name, verbose = NULL){
+
+  deprecated(fn = TRUE)
+
+  activateMatrix(object, mtr_name = mtr_name)
+
+}
+
+#' @keywords internal
 setDefaultGrouping <- function(object, ...){
 
   deprecated(fn = TRUE, ...)
@@ -1856,7 +1879,7 @@ setDefaultGrouping <- function(object, ...){
 
 }
 
-#' @internal
+#' @keywords internal
 setDenoisedMatrix <- function(object, denoised_mtr, ...){
 
   deprecated(fn = TRUE)
@@ -1868,7 +1891,7 @@ setDenoisedMatrix <- function(object, denoised_mtr, ...){
 }
 
 
-#' @internal
+#' @keywords internal
 setImage <- function(object, image, of_sample = ""){
 
   check_object(object)

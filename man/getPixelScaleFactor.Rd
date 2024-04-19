@@ -3,7 +3,7 @@
 \name{getPixelScaleFactor}
 \alias{getPixelScaleFactor}
 \alias{getPixelScaleFactor,SPATA2-method}
-\alias{getPixelScaleFactor,HistoImaging-method}
+\alias{getPixelScaleFactor,SpatialData-method}
 \alias{getPixelScaleFactor,HistoImage-method}
 \title{Obtain scale factor for pixel to SI conversion}
 \usage{
@@ -19,7 +19,7 @@ getPixelScaleFactor(object, ...)
   ...
 )
 
-\S4method{getPixelScaleFactor}{HistoImaging}(
+\S4method{getPixelScaleFactor}{SpatialData}(
   object,
   unit,
   img_name = activeImage(object),
@@ -39,7 +39,7 @@ getPixelScaleFactor(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

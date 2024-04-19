@@ -3,7 +3,7 @@
 \name{plotImageBase}
 \alias{plotImageBase}
 \alias{plotImageBase,SPATA2-method}
-\alias{plotImageBase,HistoImaging-method}
+\alias{plotImageBase,SpatialData-method}
 \alias{plotImageBase,HistoImage-method}
 \alias{plotImageBase,Image-method}
 \title{Plot histology image}
@@ -12,7 +12,7 @@ plotImageBase(object, ...)
 
 \S4method{plotImageBase}{SPATA2}(object, xrange = NULL, yrange = NULL, axes = FALSE, ...)
 
-\S4method{plotImageBase}{HistoImaging}(
+\S4method{plotImageBase}{SpatialData}(
   object,
   img_name = activeImage(object),
   xrange = NULL,
@@ -42,7 +42,7 @@ plotImageBase(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

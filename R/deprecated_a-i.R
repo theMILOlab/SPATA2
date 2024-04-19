@@ -2374,7 +2374,6 @@ getImageInfo <- function(object){
 }
 
 
-#' @rdname getHistoImaging
 #' @keywords internal
 #' @export
 getImageObject <- function(object){

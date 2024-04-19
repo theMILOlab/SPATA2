@@ -1015,11 +1015,11 @@ createGroupAnnotations <- function(object,
 #' @param img_name Character value. The name of the `HistoImage` with which
 #' to refer to it via arguments `img_name` and `img_names`.
 #' @param sample Character value. The sample name to which the image belongs.
-#' Should be equal to slot @@sample of the `HistoImaging` object in which
+#' Should be equal to slot @@sample of the `SpatialData` object in which
 #' the `HistoImage` is stored.
 #' @param reference Logical value. If `TRUE`, the `HistoImage` is
 #' treated as the reference image for all other registered images in
-#' the `HistoImaging` object.
+#' the `SpatialData` object.
 #' @param scale_factors list. Sets slot @@scale_factors,
 #' @inherit argument_dummy params
 #'
@@ -1055,7 +1055,7 @@ createHistoImage <- function(img_name,
                              dir = NULL,
                              img = NULL,
                              active = FALSE,
-                             scale_factors = list(coords = 1),
+                             scale_factors = list(),
                              reference = FALSE,
                              verbose = TRUE,
                              ...){
@@ -1154,9 +1154,9 @@ createHistoImage <- function(img_name,
 }
 
 
-#' @title Create an object of class `HistoImaging`
+#' @title Create an object of class `SpatialData`
 #'
-#' @description Official constructor function of the S4 class `HistoImaging`.
+#' @description Official constructor function of the S4 class [`SpatialData`].
 #' Functions suffixed by the platform name are wrappers written for their
 #' standardized output folder.
 #'
@@ -1173,8 +1173,6 @@ createHistoImage <- function(img_name,
 #' Coordinates should align with the tissue outline of the reference `HistoImage` after being
 #' multiplied withe its coordinate scale factor in slot @@scale_factors$coords.
 #' @param dir The directory to the output folder of the platform.
-#' @param empty_image_slots Logical value. If `TRUE`, content of slot @@image
-#' of all `HistoImage` objects is emptied except for the active one.
 #' @param file_coords Character value or `NULL`. If character, specifies the filename
 #' **within** the directory `dir` that leads to the coordinates .csv file. If `NULL`
 #' the expected filename is tried:
@@ -1186,16 +1184,15 @@ createHistoImage <- function(img_name,
 #'   \item{*Xenium*:}{ File named *'cells.csv.gz'*.}
 #'   }
 #'
-#' @param hist_img_ref The `HistoImaging` serving as the reference image.
+#' @param hist_img_ref The `SpatialData` serving as the \code{\link[=concept_images]{reference image}}.
 #' Should be created with `createHistoImage()`.
-#' @param hist_imgs List of additional `HistoImaging` objects for slot @@images.
+#' @param hist_imgs List of additional `HistoImage` objects for slot @@images.
 #' @param img_ref,img_active
 #' Character values specifying which of the images to register and how to register
-#' them. See details of [`HistoImaging`] for more information about the definitions
+#' them. Click \code{\link[=concept_images]{here}} for more information about the definitions
 #' of the reference image and the active image. Setting both arguments to the same
 #' value results in the function to register the specified image as the active
-#' as well as the reference image. Additional images can be registered later on
-#' at any time using the funciton [`registerImage()`]. Valid input options depend
+#' as well as the reference image. Valid input options depend
 #' on the platform used:
 #'
 #' \itemize{
@@ -1208,31 +1205,33 @@ createHistoImage <- function(img_name,
 #'
 #' @inherit argument_dummy params
 #'
-#' @seealso [`createHistoImage()`], [`registerHistoImage()`]
+#' @seealso [`registerImage()`] to register images afterwards.
 #'
-#' @return An object of class `HistoImaging`
+#' @return An object of class `SpatialData`
 #' @export
 #'
-createHistoImaging <- function(sample,
-                               hist_img_ref = NULL,
-                               hist_imgs = list(),
-                               active = NULL,
-                               unload = TRUE,
-                               coordinates = tibble::tibble(),
-                               meta = list(),
-                               method = SpatialMethod(),
-                               misc = list(),
-                               verbose = TRUE,
-                               ...){
+createSpatialData <- function(sample,
+                              hist_img_ref = NULL,
+                              hist_imgs = list(),
+                              active = NULL,
+                              unload = TRUE,
+                              coordinates = tibble::tibble(),
+                              meta = list(),
+                              method = SpatialMethod(),
+                              scale_factors = list(),
+                              misc = list(),
+                              verbose = TRUE,
+                              ...){
 
   confuns::is_value(x = sample, mode = "character")
 
   # basic
-  object <- HistoImaging()
+  object <- SpatialData()
   object@sample <- sample
   object@meta <- meta
   object@method <- method
   object@misc <- misc
+  object@scale_factors <- scale_factors
   object@version <- current_spata2_version
 
   # set registered images
@@ -1308,9 +1307,9 @@ createHistoImaging <- function(sample,
 
 }
 
-#' @rdname createHistoImaging
+#' @rdname createSpatialData
 #' @export
-createHistoImagingMERFISH <- function(dir,
+createSpatialDataMERFISH <- function(dir,
                                       sample,
                                       file_coords = NULL,
                                       meta = list(),
@@ -1357,28 +1356,27 @@ createHistoImagingMERFISH <- function(dir,
 
   coords_df <- read_coords_merfish(dir_coords = file_coords)
 
-  # create pseudo image
-  imaging <-
-    HistoImaging(
+  psf <- magrittr::set_attr(1, which = "unit", value = "um/px")
+
+  sp_data <-
+    SpatialData(
       coordinates = coords_df,
-      images = list(pseudo = PseudoHistoImage),
       meta = meta,
       method = spatial_methods[["MERFISH"]],
       misc = misc,
-      name_img_active = "pseudo",
-      name_img_ref = "pseudo",
       sample = sample,
+      scale_factors = list(pixel = psf),
       version = current_spata2_version
     )
 
-  return(imaging)
+  return(sp_data)
 
 }
 
 
-#' @rdname createHistoImaging
+#' @rdname createSpatialData
 #' @export
-createHistoImagingSlideSeqV1 <- function(dir,
+createSpatialDataSlideSeqV1 <- function(dir,
                                          sample,
                                          file_coords = NULL,
                                          meta = list(),
@@ -1419,10 +1417,9 @@ createHistoImagingSlideSeqV1 <- function(dir,
   coords_df <-  read_coords_slide_seq_v1(dir_coords = file_coords)
 
   # create pseudo image
-  imaging <-
-    HistoImaging(
+  sp_data <-
+    SpatialData(
       coordinates = coords_df,
-      images = list(pseudo = PseudoHistoImage),
       meta = meta,
       method = SlideSeqV1,
       misc = misc,
@@ -1432,14 +1429,14 @@ createHistoImagingSlideSeqV1 <- function(dir,
       version = current_spata2_version
     )
 
-  return(imaging)
+  return(sp_data)
 
 }
 
 
-#' @rdname createHistoImaging
+#' @rdname createSpatialData
 #' @export
-createHistoImagingVisium <- function(dir,
+createSpatialDataVisium <- function(dir,
                                      sample,
                                      img_ref = "lowres",
                                      img_active = "lowres",
@@ -1532,7 +1529,7 @@ createHistoImagingVisium <- function(dir,
         img_name ="hires",
         scale_factors =
           list(
-            coords = scale_factors$tissue_hires_scalef
+            image = scale_factors$tissue_hires_scalef
           ),
         reference = img_ref == "hires",
         verbose = verbose
@@ -1549,7 +1546,7 @@ createHistoImagingVisium <- function(dir,
         img_name ="lowres",
         scale_factors =
           list(
-            coords = scale_factors$tissue_lowres_scalef
+            image = scale_factors$tissue_lowres_scalef
           ),
         reference = img_ref == "lowres",
         verbose = verbose
@@ -1568,7 +1565,7 @@ createHistoImagingVisium <- function(dir,
 
   # create output
   object <-
-    createHistoImaging(
+    createSpatialData(
       sample = sample,
       hist_img_ref = img_list[[img_ref]],
       hist_imgs = img_list[req_images[req_images != img_ref]],
@@ -1588,9 +1585,9 @@ createHistoImagingVisium <- function(dir,
 }
 
 
-#' @rdname createHistoImaging
+#' @rdname createSpatialData
 #' @export
-createHistoImagingXenium <- function(dir,
+createSpatialDataXenium <- function(dir,
                                      sample,
                                      meta = list(),
                                      misc = list()){
@@ -1600,20 +1597,20 @@ createHistoImagingXenium <- function(dir,
   coords_df <- read_coords_xenium(dir_coords = file_coords)
 
   # create pseudo image
-  imaging <-
-    HistoImaging(
+  psf <- magrittr::set_attr(x = 1, which = "unit", value = "um/px")
+
+  sp_data <-
+    SpatialData(
       coordinates = coords_df,
-      images = list(pseudo = PseudoHistoImage),
       meta = meta,
       method = spatial_methods[["Xenium"]],
       misc = misc,
-      name_img_active = "pseudo",
-      name_img_ref = "pseudo",
+      scale_factors = list(pixel = psf),
       sample = sample,
       version = current_spata2_version
     )
 
-  return(imaging)
+  return(sp_data)
 
 }
 
@@ -2024,7 +2021,7 @@ createImageAnnotations <- function(object, ...){
 
           coords_scale_fct <- shiny::reactive({
 
-            getScaleFactor(object, fct_name = "coords", img_name = img_name())
+            getScaleFactor(object, fct_name = "image", img_name = img_name())
 
           })
 
@@ -4974,7 +4971,7 @@ createSpatialTrajectories <- function(object){
 
           }
 
-          coords_scale_fct <- getScaleFactor(object, fct_name = "coords")
+          coords_scale_fct <- getScaleFactor(object, fct_name = "image")
 
           projection <-
             dplyr::mutate(

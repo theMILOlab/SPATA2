@@ -57,11 +57,11 @@ setMethod(
                         new_id = FALSE,
                         overwrite = FALSE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       centerSpatialAnnotation(
-        object = imaging,
+        object = sp_data,
         id = id,
         center_x = center_x,
         center_y = center_y,
@@ -69,7 +69,7 @@ setMethod(
         overwrite = overwrite
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -80,7 +80,7 @@ setMethod(
 #' @export
 setMethod(
   f = "centerSpatialAnnotation",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         id,
                         center_x,
@@ -88,7 +88,7 @@ setMethod(
                         new_id = FALSE,
                         overwrite = FALSE){
 
-    csf <- getScaleFactor(object, fct_name = "coords")
+    csf <- getScaleFactor(object, fct_name = "image")
 
     cx <- as_pixel(center_x, object = object)/csf
     cy <- as_pixel(center_y, object = object)/csf
@@ -722,11 +722,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, verbose = TRUE, ...){
 
-    imaging <-
-      getHistoImaging(object) %>%
+    sp_data <-
+      getSpatialData(object) %>%
       computePixelScaleFactor(.)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -737,7 +737,7 @@ setMethod(
 #' @export
 setMethod(
   f = "computePixelScaleFactor",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, verbose = TRUE, ...){
 
     containsCCD(object, error = TRUE)
@@ -753,7 +753,7 @@ setMethod(
       getScaleFactor(
         object = object,
         img_name = object@name_img_ref,
-        fct_name = "coords"
+        fct_name = "image"
       )
 
     coords_df <-

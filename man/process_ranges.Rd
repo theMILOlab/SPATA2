@@ -32,7 +32,7 @@ Image expansion for more information.}
 \item{persp}{Determines the perspective of the output. Thus, if \emph{image}, it will flip
 the values of \code{yrange}. If \emph{'ccs'}, the values of \code{yrange} are not flipped.}
 
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 }
 \value{

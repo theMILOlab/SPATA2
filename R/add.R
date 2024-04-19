@@ -865,7 +865,7 @@ setGeneric(name = "addHistoImage", def = function(object, hist_img, ...){
 #' @export
 setMethod(
   f = "addHistoImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, hist_img, overwrite = FALSE){
 
     confuns::check_none_of(
@@ -947,7 +947,7 @@ setMethod(
 
     if(!base::all(c("x_orig", "y_orig") %in% cnames)){
 
-      csf <- getScaleFactor(object, fct_name = "coords")
+      csf <- getScaleFactor(object, fct_name = "image")
 
       confuns::check_data_frame(
         df = border_df,
@@ -1417,11 +1417,11 @@ setMethod(
                         class = "SpatialAnnotation",
                         ...){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       addSpatialAnnotation(
-        object = imaging,
+        object = sp_data,
         tags = tags,
         area = area,
         id = id,
@@ -1430,7 +1430,7 @@ setMethod(
         ...
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -1441,7 +1441,7 @@ setMethod(
 #' @export
 setMethod(
   f = "addSpatialAnnotation",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition =  function(object,
                          tags,
                          area,
@@ -1541,7 +1541,7 @@ setMethod(
     # add barcodes if not provided via ...
     if(base::is.null(spat_ann@misc$barcodes)){
 
-      scale_fct <- getScaleFactor(object, fct_name = "coords")
+      scale_fct <- getScaleFactor(object, fct_name = "image")
 
       outline <- spat_ann@area$outer
       outline$x <- outline$x_orig * scale_fct
@@ -1656,7 +1656,7 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  scale_fct_coords <- getScaleFactor(object, fct_name = "coords")
+  scale_fct_coords <- getScaleFactor(object, fct_name = "image")
 
   traj_df <-
     dplyr::transmute(
@@ -1836,7 +1836,7 @@ setGeneric(name = "addVarToCoords", def = function(object, ...){
 #' @export
 setMethod(
   f = "addVarToCoords",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, var_df, vars, overwrite = FALSE){
 
     # prevent/allow overwriting

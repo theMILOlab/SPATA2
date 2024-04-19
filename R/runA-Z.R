@@ -1722,7 +1722,7 @@ runSeuratClustering <- function(object,
 #'
 #' @inherit SPARK::sparkx params
 #' @inherit argument_dummy params
-#' @inherit updat_dummy return
+#' @inherit update_dummy return
 #'
 #' @author Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables
 #'  scalable and robust detection of spatial expression patterns for large spatial

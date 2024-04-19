@@ -2,13 +2,13 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTissueOutlineCentroid}
 \alias{getTissueOutlineCentroid}
-\alias{getTissueOutlineCentroid,HistoImaging-method}
+\alias{getTissueOutlineCentroid,SpatialData-method}
 \alias{getTissueOutlineCentroid,HistoImage-method}
 \title{Obtain tissue outline centroid}
 \usage{
 getTissueOutlineCentroid(object, ...)
 
-\S4method{getTissueOutlineCentroid}{HistoImaging}(
+\S4method{getTissueOutlineCentroid}{SpatialData}(
   object,
   img_name = activeImage(object),
   transform = TRUE,
@@ -18,7 +18,7 @@ getTissueOutlineCentroid(object, ...)
 \S4method{getTissueOutlineCentroid}{HistoImage}(object, transform = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

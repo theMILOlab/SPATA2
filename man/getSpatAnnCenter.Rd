@@ -3,11 +3,11 @@
 \name{getSpatAnnCenter}
 \alias{getSpatAnnCenter}
 \alias{getSpatAnnCenter,SPATA2-method}
-\alias{getSpatAnnCenter,HistoImaging-method}
+\alias{getSpatAnnCenter,SpatialData-method}
 \alias{getSpatAnnCenter,SpatialAnnotation-method}
 \alias{getSpatAnnCenters}
 \alias{getSpatAnnCenters,SPATA2-method}
-\alias{getSpatAnnCenters,HistoImaging-method}
+\alias{getSpatAnnCenters,SpatialData-method}
 \alias{getSpatAnnCenters,SpatialAnnotation-method}
 \title{Obtain center of an spatial annotation}
 \usage{
@@ -15,7 +15,7 @@ getSpatAnnCenter(object, ...)
 
 \S4method{getSpatAnnCenter}{SPATA2}(object, id)
 
-\S4method{getSpatAnnCenter}{HistoImaging}(object, id)
+\S4method{getSpatAnnCenter}{SpatialData}(object, id)
 
 \S4method{getSpatAnnCenter}{SpatialAnnotation}(object)
 
@@ -23,12 +23,12 @@ getSpatAnnCenters(object, ...)
 
 \S4method{getSpatAnnCenters}{SPATA2}(object, id, outer = TRUE, inner = TRUE)
 
-\S4method{getSpatAnnCenters}{HistoImaging}(object, id, outer = TRUE, inner = TRUE)
+\S4method{getSpatAnnCenters}{SpatialData}(object, id, outer = TRUE, inner = TRUE)
 
 \S4method{getSpatAnnCenters}{SpatialAnnotation}(object, outer = TRUE, inner = TRUE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

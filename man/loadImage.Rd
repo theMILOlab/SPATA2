@@ -3,18 +3,18 @@
 \name{loadImage}
 \alias{loadImage}
 \alias{loadImage,SPATA2-method}
-\alias{loadImage,HistoImaging-method}
+\alias{loadImage,SpatialData-method}
 \alias{loadImage,HistoImage-method}
 \alias{loadImages}
 \alias{loadImages,SPATA2-method}
-\alias{loadImages,HistoImaging-method}
+\alias{loadImages,SpatialData-method}
 \title{Load image}
 \usage{
 loadImage(object, ...)
 
 \S4method{loadImage}{SPATA2}(object, img_name, ...)
 
-\S4method{loadImage}{HistoImaging}(object, img_name, verbose = TRUE)
+\S4method{loadImage}{SpatialData}(object, img_name, verbose = TRUE)
 
 \S4method{loadImage}{HistoImage}(object, verbose = TRUE)
 
@@ -22,10 +22,10 @@ loadImages(object, ...)
 
 \S4method{loadImages}{SPATA2}(object, verbose = TRUE, force = FALSE)
 
-\S4method{loadImages}{HistoImaging}(object, verbose = TRUE, force = FALSE)
+\S4method{loadImages}{SpatialData}(object, verbose = TRUE, force = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

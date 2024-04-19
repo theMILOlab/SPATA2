@@ -7,7 +7,7 @@
 adjustGeneSetList(object, limits = 50)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{limits}{A numeric value representing the threshold percentage for gene set inclusion (default: 50).}

@@ -3,14 +3,14 @@
 \name{getSpatAnnIds}
 \alias{getSpatAnnIds}
 \alias{getSpatAnnIds,ANY-method}
-\alias{getSpatAnnIds,HistoImaging-method}
+\alias{getSpatAnnIds,SpatialData-method}
 \title{Obtain IDs of spatial annotations}
 \usage{
 getSpatAnnIds(object, ...)
 
 \S4method{getSpatAnnIds}{ANY}(object, ids = NULL, tags = NULL, test = "any", class = NULL)
 
-\S4method{getSpatAnnIds}{HistoImaging}(
+\S4method{getSpatAnnIds}{SpatialData}(
   object,
   ids = NULL,
   tags = NULL,
@@ -20,7 +20,7 @@ getSpatAnnIds(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

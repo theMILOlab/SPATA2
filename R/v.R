@@ -168,14 +168,6 @@ validHierarchicalClusterMethods <- function(){
 
 #' @rdname validActivationFunctions
 #' @export
-validImageClasses <- function(){
-
-  "HistologyImaging"
-
-}
-
-#' @rdname validActivationFunctions
-#' @export
 validModelNames <- function(){
 
   base::names(model_formulas)

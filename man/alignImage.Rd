@@ -3,13 +3,13 @@
 \name{alignImage}
 \alias{alignImage}
 \alias{alignImage,SPATA2-method}
-\alias{alignImage,HistoImaging-method}
+\alias{alignImage,SpatialData-method}
 \alias{alignImage,HistoImage-method}
 \alias{alignImageAuto}
-\alias{alignImageAuto,HistoImaging-method}
+\alias{alignImageAuto,SpatialData-method}
 \alias{alignImageInteractive}
 \alias{alignImageInteractive,SPATA2-method}
-\alias{alignImageInteractive,HistoImaging-method}
+\alias{alignImageInteractive,SpatialData-method}
 \title{Align histology images}
 \usage{
 alignImage(object, ...)
@@ -27,7 +27,7 @@ alignImage(object, ...)
   transl_v = NULL
 )
 
-\S4method{alignImage}{HistoImaging}(
+\S4method{alignImage}{SpatialData}(
   object,
   img_name,
   opt = "set",
@@ -54,7 +54,7 @@ alignImage(object, ...)
 
 alignImageAuto(object, ...)
 
-\S4method{alignImageAuto}{HistoImaging}(
+\S4method{alignImageAuto}{SpatialData}(
   object,
   img_name,
   step = 0.01,
@@ -67,10 +67,10 @@ alignImageInteractive(object, ...)
 
 \S4method{alignImageInteractive}{SPATA2}(object)
 
-\S4method{alignImageInteractive}{HistoImaging}(object, window_size = "800px")
+\S4method{alignImageInteractive}{SpatialData}(object, window_size = "800px")
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -121,4 +121,12 @@ results.
 \description{
 Aligns an image with the reference image. See details for
 more information about the process.
+}
+\details{
+The transformations required to align image X with the reference
+image are stored as \emph{instructions} in the \code{\link{HistoImage}} container of the
+respective image. More precisely, in slot @transformations. The image itself
+remains as is after being \code{\link[=loadImage]{loaded}}. The transformations
+are applied upon extraction of the image. Use \code{\link[=getImageTransformations]{getImageTransformations()}} to
+otbain the instructions currently stored.
 }

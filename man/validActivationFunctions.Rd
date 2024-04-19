@@ -12,7 +12,6 @@
 \alias{validDirectoryInstructionSlots}
 \alias{validDistanceMethods}
 \alias{validHierarchicalClusterMethods}
-\alias{validImageClasses}
 \alias{validModelNames}
 \alias{validPatternRecognitionMethods}
 \alias{validPadjMethods}
@@ -49,8 +48,6 @@ validDirectoryInstructionSlots()
 validDistanceMethods()
 
 validHierarchicalClusterMethods()
-
-validImageClasses()
 
 validModelNames()
 

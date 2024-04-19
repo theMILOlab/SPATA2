@@ -6,32 +6,6 @@
 \alias{HistoImaging}
 \title{The \code{HistoImaging} - Class}
 \description{
-S4 class that represents a set of histological images from one
-tissue slide or several consecutive slides of one and the same tissue portion.
+Deprecated in favor of \code{SpatialData}.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{annotations}}{list. List of objects of class \code{\link{SpatialAnnotation}}.}
-
-\item{\code{coordinates}}{data.frame. Data.frame that stores information about identified
-or known entities located on the imaged tissue, such as cells or capture spots.}
-
-\item{\code{images}}{list. List of objects of class \code{\link{HistoImage}}.}
-
-\item{\code{method}}{SpatialMethod. Object of class \code{\link{SpatialMethod}}.}
-
-\item{\code{meta}}{list. List for meta data regarding the imaged tissue portion.}
-
-\item{\code{misc}}{list. A flexible list for miscellaneous input.}
-
-\item{\code{name_imf_active}}{character. The name of the image that is currently active.}
-
-\item{\code{name_img_ref}}{character. The name of the image that is used as a reference for aligning
-every additional image in slot @images_registered.}
-
-\item{\code{sample}}{character. String to identify the imaged tissue.}
-
-\item{\code{trajectories}}{list. A list of objects of class \code{\link{SpatialTrajectory}}.}
-}}
-
+\keyword{internal}

@@ -128,7 +128,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       activeImage()
 
   }
@@ -138,7 +138,7 @@ setMethod(
 #' @export
 setMethod(
   f = "activeImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object){
 
     object@name_img_active
@@ -184,18 +184,18 @@ setMethod(
                         verbose = TRUE,
                         ...){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       activateImage(
-        object = imaging,
+        object = sp_data,
         img_name = img_name,
         load = load,
         unload = unload,
         verbose = verbose
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -206,7 +206,7 @@ setMethod(
 #' @export
 setMethod(
   f = "activateImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name,
                         load = TRUE,
@@ -317,7 +317,7 @@ setMethod(
 #' @export
 setMethod(
   f = "activateImageInt",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name, load = FALSE){
 
     if(!base::is.null(img_name)){
@@ -455,7 +455,12 @@ affineNumInput <- function(inputId, value){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @details
+#' @details The transformations required to align image X with the reference
+#' image are stored as *instructions* in the [`HistoImage`] container of the
+#' respective image. More precisely, in slot @@transformations. The image itself
+#' remains as is after being \code{\link[=loadImage]{loaded}}. The transformations
+#' are applied upon extraction of the image. Use [`getImageTransformations()`] to
+#' otbain the instructions currently stored.
 #'
 #' @export
 
@@ -481,11 +486,11 @@ setMethod(
                         transl_h = NULL,
                         transl_v = NULL){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       alignImage(
-        object = imaging,
+        object = sp_data,
         img_name = img_name,
         opt = opt,
         angle = angle,
@@ -497,7 +502,7 @@ setMethod(
         transl_v = transl_v
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -508,7 +513,7 @@ setMethod(
 #' @export
 setMethod(
   f = "alignImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name,
                         opt = "set",
@@ -710,7 +715,7 @@ setGeneric(name = "alignImageAuto", def = function(object, ...){
 #' @export
 setMethod(
   f = "alignImageAuto",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name,
                         step = 0.01,
@@ -1257,11 +1262,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object){
 
-    imaging <-
-      getHistoImaging(object) %>%
+    sp_data <-
+      getSpatialData(object) %>%
       alignImageInteractive(.)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -1273,7 +1278,7 @@ setMethod(
 #' @export
 setMethod(
   f = "alignImageInteractive",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, window_size = "800px"){
 
     shiny::runApp(

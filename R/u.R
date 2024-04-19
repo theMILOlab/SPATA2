@@ -48,7 +48,7 @@ setMethod(
 #' @export
 setMethod(
   f = "unloadImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name, verbose = TRUE, ...){
 
     confuns::check_one_of(
@@ -82,11 +82,11 @@ setMethod(
   signature = "spata2",
   definition = function(object, active = FALSE, verbose = TRUE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- unloadImages(imaging, active = active, verbose = verbose)
+    sp_data <- unloadImages(sp_data, active = active, verbose = verbose)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -97,7 +97,7 @@ setMethod(
 #' @export
 setMethod(
   f = "unloadImages",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, active = FALSE, verbose = TRUE){
 
     hist_img_names <- getImageNames(object)
@@ -977,17 +977,17 @@ updateSpataObject <- function(object,
 
         if(!dir.exists(dir_visium)){
 
-          warning(glue::glue("Can not find '{dir_visium}'. Please use `createHistoImagingVisium()` and `setHistoImaging()` manually."))
+          warning(glue::glue("Can not find '{dir_visium}'. Please use `createSpatialDataVisium()` and `setSpatialData()` manually."))
 
         } else {
 
           confuns::give_feedback(
-            msg = "Updating to HistoImaging.",
+            msg = "Updating to SpatialData.",
             verbose = TRUE
           )
 
-          imaging <-
-            createHistoImagingVisium(
+          sp_data <-
+            createSpatialDataVisium(
               dir = dir_visium,
               sample = getSampleName(object),
               img_ref = "hires",
@@ -997,12 +997,12 @@ updateSpataObject <- function(object,
 
           image_dims <-
             purrr::map(
-              .x = imaging@images,
+              .x = sp_data@images,
               .f = ~ .x@image_info$dims
             )
 
           # update image annotations
-          imaging@annotations <-
+          sp_data@annotations <-
             purrr::map(
               .x = object@images[[1]]@annotations,
               .f = function(img_ann){
@@ -1053,11 +1053,11 @@ updateSpataObject <- function(object,
             )
 
           # allow downgrading
-          imaging@misc$HistologyImaging <- object@images[[1]]
-          imaging@misc$HistologyImaging@image <- empty_image
-          imaging@misc$old_version <- object@version
+          sp_data@misc$HistologyImaging <- object@images[[1]]
+          sp_data@misc$HistologyImaging@image <- empty_image
+          sp_data@misc$old_version <- object@version
 
-          object <- setHistoImaging(object, imaging = imaging)
+          object <- setSpatialData(object, sp_data = sp_data)
 
         }
 
@@ -1067,7 +1067,7 @@ updateSpataObject <- function(object,
           glue::glue(
             "Can not find a visium directory in spata2 object.",
             "Picking currently set image as active and as reference image.",
-            "Please use `createHistoImaging()/createHistoImagingVisium()` and `setHistoImaging()` manually.")
+            "Please use `createSpatialData()/createSpatialDataVisium()` and `setSpatialData()` manually.")
         )
 
       }

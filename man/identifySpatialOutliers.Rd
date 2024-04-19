@@ -3,7 +3,7 @@
 \name{identifySpatialOutliers}
 \alias{identifySpatialOutliers}
 \alias{identifySpatialOutliers,SPATA2-method}
-\alias{identifySpatialOutliers,HistoImaging-method}
+\alias{identifySpatialOutliers,SpatialData-method}
 \title{Identify spatial outliers}
 \usage{
 identifySpatialOutliers(object, ...)
@@ -19,7 +19,7 @@ identifySpatialOutliers(object, ...)
   verbose = NULL
 )
 
-\S4method{identifySpatialOutliers}{HistoImaging}(
+\S4method{identifySpatialOutliers}{SpatialData}(
   object,
   method = c("outline", "dbscan"),
   img_name = activeImage(object),
@@ -31,7 +31,7 @@ identifySpatialOutliers(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

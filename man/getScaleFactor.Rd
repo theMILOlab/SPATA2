@@ -2,18 +2,21 @@
 % Please edit documentation in R/getN-Z.R
 \name{getScaleFactor}
 \alias{getScaleFactor}
-\alias{getScaleFactor,ANY-method}
+\alias{getScaleFactor,SPATA2-method}
+\alias{getScaleFactor,SpatialData-method}
 \alias{getScaleFactor,HistoImage-method}
 \title{Obtain scale factors}
 \usage{
 getScaleFactor(object, ...)
 
-\S4method{getScaleFactor}{ANY}(object, fct_name, img_name = activeImage(object))
+\S4method{getScaleFactor}{SPATA2}(object, fct_name, img_name = activeImage(object))
+
+\S4method{getScaleFactor}{SpatialData}(object, fct_name, img_name = activeImage(object))
 
 \S4method{getScaleFactor}{HistoImage}(object, fct_name)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
@@ -35,13 +38,14 @@ As it is a list it can be flexibly expanded. The following scale factor slots ar
 reserved:
 
 \itemize{
-\item{\emph{coords}:}{ The coordinate scale factor used to create variables \emph{x} and \emph{y} from
+\item{\emph{image}:}{ The image scale factor used to create variables \emph{x} and \emph{y} from
 variables \emph{x_orig} and \emph{y_orig} in the coordinates data.frame and the outline data.frames
 of the spatial annotations and the tissue. The scale factor depends on the deviation in
 resolution from the original image - based on which the coordinates data.frame
-was created - and the image picked in \code{img_name} which defaults to to the active
-image. If the active image is the original image, this scale factor is 1.}
+was created - and the image picked in \code{img_name}.}
 \item{\emph{pixel}:}{ The pixel scale factor is used to convert pixel values into SI units.
 It should have an attribute called "unit" conforming to the format "SI-unit/px}
 }
+
+Find more information \code{\link[=concept_scale_factors]{here}}.
 }

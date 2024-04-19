@@ -3,7 +3,7 @@
 \name{identifyBackgroundColor}
 \alias{identifyBackgroundColor}
 \alias{identifyBackgroundColor,SPATA2-method}
-\alias{identifyBackgroundColor,HistoImaging-method}
+\alias{identifyBackgroundColor,SpatialData-method}
 \alias{identifyBackgroundColor,HistoImage-method}
 \title{Identifies the background color}
 \usage{
@@ -16,7 +16,7 @@ identifyBackgroundColor(object, ...)
   ...
 )
 
-\S4method{identifyBackgroundColor}{HistoImaging}(
+\S4method{identifyBackgroundColor}{SpatialData}(
   object,
   img_name = activeImage(object),
   verbose = TRUE,
@@ -26,7 +26,7 @@ identifyBackgroundColor(object, ...)
 \S4method{identifyBackgroundColor}{HistoImage}(object, verbose = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

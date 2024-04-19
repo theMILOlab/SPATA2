@@ -315,7 +315,7 @@ setMethod(
                         type = FALSE,
                         clrp_adjust = NULL){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       plotPixelContent(
         object = .,
         img_name = img_name,
@@ -334,7 +334,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotPixelContent",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = NULL,
                         clrp = "sifre",
@@ -651,7 +651,7 @@ plotSasBarplot <- function(object,
 #'
 #' @inherit spatialAnnotationScreening params details
 #' @inherit plotSasLineplot params
-#' @inherit plotTrajectoryHeatmap params
+#' @inherit plotStsHeatmap params
 #' @inherit ggplot_dummy return
 #' @inherit argument_dummy params
 #'
@@ -1187,7 +1187,7 @@ setMethod(
                         ...){
 
       plotSpatialAnnotations(
-        object = getHistoImaging(object),
+        object = getSpatialData(object),
         ids = ids,
         tags = tags,
         test = test,
@@ -1220,7 +1220,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotSpatialAnnotations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         ids = NULL,
                         tags = NULL,

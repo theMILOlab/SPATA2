@@ -4,20 +4,8 @@
 \name{data_counts-class}
 \alias{data_counts-class}
 \alias{data_counts}
-\title{data_counts object}
-\value{
-S4 object
-}
+\title{The \code{data_counts}- Class}
 \description{
-data_counts object
+Deprecated.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{counts}}{A sparse matrix containing the original counts.}
-
-\item{\code{norm_exp}}{A processed expression matrix. Rownames must be the gene-names.
-Column names must be the barcodes.}
-}}
-
 \keyword{internal}

@@ -10,7 +10,7 @@ createHistoImage(
   dir = NULL,
   img = NULL,
   active = FALSE,
-  scale_factors = list(coords = 1),
+  scale_factors = list(),
   reference = FALSE,
   verbose = TRUE,
   ...
@@ -21,7 +21,7 @@ createHistoImage(
 to refer to it via arguments \code{img_name} and \code{img_names}.}
 
 \item{sample}{Character value. The sample name to which the image belongs.
-Should be equal to slot @sample of the \code{HistoImaging} object in which
+Should be equal to slot @sample of the \code{SpatialData} object in which
 the \code{HistoImage} is stored.}
 
 \item{dir}{Character value. The directory from where to retrieve the image.}
@@ -32,7 +32,7 @@ the \code{HistoImage} is stored.}
 
 \item{reference}{Logical value. If \code{TRUE}, the \code{HistoImage} is
 treated as the reference image for all other registered images in
-the \code{HistoImaging} object.}
+the \code{SpatialData} object.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

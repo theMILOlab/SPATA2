@@ -22,7 +22,7 @@ inferSingleCellGradient(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
@@ -33,11 +33,10 @@ Must have at least three columns:
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
-\item{distance}{Distance value. Specifies the distance from the border of the
-spatial annotation to the \emph{horizon} in the periphery up to which the screening
-is conducted. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values. Defaults to a distance that covers the whole
-tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+the distance from the border of the spatial annotation to the \emph{horizon} in
+the periphery up to which the screening is conducted. (See details for more.)
+Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent

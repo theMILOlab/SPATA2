@@ -3,7 +3,7 @@
 \name{identifyPixelContent}
 \alias{identifyPixelContent}
 \alias{identifyPixelContent,SPATA2-method}
-\alias{identifyPixelContent,HistoImaging-method}
+\alias{identifyPixelContent,SpatialData-method}
 \alias{identifyPixelContent,HistoImage-method}
 \alias{identifyPixelContent,Image-method}
 \title{Identify pixel content}
@@ -22,7 +22,7 @@ identifyPixelContent(object, ...)
   verbose = TRUE
 )
 
-\S4method{identifyPixelContent}{HistoImaging}(
+\S4method{identifyPixelContent}{SpatialData}(
   object,
   img_name = activeImage(object),
   percentile = 0,
@@ -58,7 +58,7 @@ identifyPixelContent(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

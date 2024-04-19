@@ -3,17 +3,17 @@
 \name{containsMethod}
 \alias{containsMethod}
 \alias{containsMethod,SPATA2-method}
-\alias{containsMethod,HistoImaging-method}
+\alias{containsMethod,SpatialData-method}
 \title{Check availability of specific methods}
 \usage{
 containsMethod(object, ...)
 
 \S4method{containsMethod}{SPATA2}(object, method_name, error = FALSE)
 
-\S4method{containsMethod}{HistoImaging}(object, method_name, error = FALSE)
+\S4method{containsMethod}{SpatialData}(object, method_name, error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

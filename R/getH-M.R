@@ -32,7 +32,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, img_name = activeImage(object), ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getHistoImage(object = ., img_name = img_name, ...)
 
   }
@@ -42,7 +42,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getHistoImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), ...){
 
     confuns::check_one_of(
@@ -73,7 +73,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getHistoImageRef()
 
   }
@@ -83,7 +83,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getHistoImageRef",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, ...){
 
     object@images[[object@name_img_ref]]
@@ -91,23 +91,23 @@ setMethod(
   }
 )
 
-#' @title Obtain object of class \code{HistoImaging}
+#' @title Obtain object of class \code{SpatialData}
 #'
 #' @description Extracts the S4-object used as a container for
 #' images.
 #'
 #' @inherit argument_dummy params
 #'
-#' @return Object of class \code{HistoImaging}.
+#' @return Object of class \code{SpatialData}.
 #'
 #' @note `getImageObject()` is deprecated as of version v3.0.0 in favor
-#' of `getHistoImaging()`.
+#' of `getSpatialData()`.
 #'
 #' @seealso [`getImage()`],[`getHistoImage()`]
 #'
 #' @export
 #'
-getHistoImaging <- function(object){
+getSpatialData <- function(object){
 
   object@spatial
 
@@ -131,7 +131,7 @@ getHistoImaging <- function(object){
 #'
 #' @return Object of class `Image`.
 #'
-#' @seealso [`getHistoImage()`],[`getHistoImaging()`]
+#' @seealso [`getHistoImage()`],[`getSpatialData()`]
 #'
 #' @export
 
@@ -162,7 +162,7 @@ setMethod(
     feedback_range_input(xrange = xrange, yrange = yrange)
 
     out <-
-      getHistoImaging(object) %>%
+      getSpatialData(object) %>%
       getImage(
         object = .,
         img_name = img_name,
@@ -182,7 +182,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         xrange = NULL,
@@ -326,7 +326,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageCenter",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object)){
 
     hi <- getHistoImage(object, img_name = img_name)
@@ -390,7 +390,7 @@ setMethod(
   definition = function(object, img_name = activeImage(object), transform = TRUE, scale_fct = 1, ...){
 
     getImageDf(
-      object = getHistoImaging(object),
+      object = getSpatialData(object),
       img_name = img_name,
       transform = transform,
       scale_fct = scale_fct
@@ -403,7 +403,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageDf",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), transform = TRUE, scale_fct = 1){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -522,7 +522,7 @@ setMethod(
 
     deprecated(...)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getImageDims(object = ., img_name = img_name)
 
   }
@@ -532,7 +532,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageDims",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -588,7 +588,7 @@ setMethod(
 
     deprecated(...)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getImageRange(object = ., img_name = img_name)
 
   }
@@ -598,7 +598,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageRange",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object)){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -703,21 +703,24 @@ getImageRasterInfo <- function(object, xrange = NULL, yrange = NULL){
 
 #' @title Obtain image transformation instructions
 #'
-#' @description Extracts a list that contains information regarding required
-#' image transformations to ensure alignment.
+#' @description Extracts a list of instructions for required
+#' image transformations to ensure alignment of the image with
+#' the \code{\link[=concept_images]{reference image}}.
 #'
 #' @inherit argument_dummy params
 #'
 #' @return A list with the following structure:
 #'  \itemize{
 #'   \item{*angle*:}{ Numeric value that ranges from 0-359. Indicates the angle in degrees
-#'  b y which the image needs to be rotated in **clockwise** direction. Defaults to 0.}
-#'   \item{*flip*:}{ List of two logical values named *horizontal* and *vertical*. Both default to `FALSE`}
-#'   \item{*scale*:}{ Numeric value that ranges from 0.01-1. Defaults to 1.}
+#'  b y which the image needs to be rotated in **clockwise** direction. }
+#'   \item{*flip*:}{ List of two logical values named *horizontal* and *vertical* indicating
+#'   whether the image is to be flipped along the respective axis.}
+#'   \item{*stretch*:}{ List of two numeric values named *horizontal* and *vertical* indicating
+#'   whether (or how much) the image is to be stretched along the respective axis.}
 #'   \item{*translate*:}{ Vector of two numeric values named *horizontal* and *vertical*. Indicate
 #'   the number of pixels the image needs to be translated. Positive values shift the image
 #'   **downwards** or to the right, respectively. Negative values shift the image **upwards**
-#'   or to the left, respectively. Both default to 0.}
+#'   or to the left, respectively. }
 #'  }
 #' @export
 
@@ -734,7 +737,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, img_name = activeImage(object), ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getImageTransformations(object = ., img_name = img_name)
 
   }
@@ -744,10 +747,10 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageTransformations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getImageTransformations(object = ., img_name = img_name)
 
   }
@@ -757,7 +760,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageTransformations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), ...){
 
     getHistoImage(object, img_name = img_name) %>%
@@ -805,7 +808,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, ref = TRUE, ...){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       getImageNames(object, ref = ref)
 
   }
@@ -815,7 +818,7 @@ setMethod(
 #' @export
 setMethod(
   f = "getImageNames",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, ref = TRUE, ...){
 
     out <-

@@ -2,15 +2,15 @@
 % Please edit documentation in R/add.R
 \name{addHistoImage}
 \alias{addHistoImage}
-\alias{addHistoImage,HistoImaging-method}
+\alias{addHistoImage,SpatialData-method}
 \title{Add object of class \code{HistoImage}}
 \usage{
 addHistoImage(object, hist_img, ...)
 
-\S4method{addHistoImage}{HistoImaging}(object, hist_img, overwrite = FALSE)
+\S4method{addHistoImage}{SpatialData}(object, hist_img, overwrite = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{hist_img}{An object of class \code{HistoImage} created with \code{createHistoImage()}.}

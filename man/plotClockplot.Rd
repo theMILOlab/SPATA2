@@ -51,11 +51,10 @@ plotClockplot(object, ...)
 \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
 }}
 
-\item{distance}{Distance value. Specifies the distance from the border of the
-spatial annotation to the \emph{horizon} in the periphery up to which the screening
-is conducted. (See details for more.) - See details of \code{?is_dist} for more
-information about distance values. Defaults to a distance that covers the whole
-tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+the distance from the border of the spatial annotation to the \emph{horizon} in
+the periphery up to which the screening is conducted. (See details for more.)
+Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
 
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent

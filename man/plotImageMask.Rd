@@ -3,11 +3,11 @@
 \name{plotImageMask}
 \alias{plotImageMask}
 \alias{plotImageMask,SPATA2-method}
-\alias{plotImageMask,HistoImaging-method}
+\alias{plotImageMask,SpatialData-method}
 \alias{plotImageMask,HistoImage-method}
 \alias{plotPixelContent}
 \alias{plotPixelContent,SPATA2-method}
-\alias{plotPixelContent,HistoImaging-method}
+\alias{plotPixelContent,SpatialData-method}
 \alias{plotPixelContent,HistoImage-method}
 \title{Plot pixel content}
 \usage{
@@ -20,7 +20,7 @@ plotImageMask(object, ...)
   clr_bg = "white"
 )
 
-\S4method{plotImageMask}{HistoImaging}(
+\S4method{plotImageMask}{SpatialData}(
   object,
   img_name = activeImage(object),
   clr_fg = "black",
@@ -43,7 +43,7 @@ plotPixelContent(object, ...)
   clrp_adjust = NULL
 )
 
-\S4method{plotPixelContent}{HistoImaging}(
+\S4method{plotPixelContent}{SpatialData}(
   object,
   img_name = NULL,
   clrp = "sifre",
@@ -67,7 +67,7 @@ plotPixelContent(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

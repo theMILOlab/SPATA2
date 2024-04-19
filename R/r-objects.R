@@ -467,6 +467,7 @@ depr_info <-
       "flipCoords" = "flipCoordinates",
       "getDefaultGrouping" = "activeGrouping",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
+      "getHistoImaging" = "getSpatialData",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
       "getImageAnnotationCenter" = "getImgAnnCenter",
       "getImageAnnotationIds" = "getImgAnnIds",

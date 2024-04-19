@@ -875,6 +875,68 @@ process_sce_bayes_space <- function(sce,
 }
 
 
+#' @keywords internal
+process_pixel_scale_factor <- function(pxl_scale_fct,
+                                       unit,
+                                       switch = FALSE,
+                                       add_attr = FALSE,
+                                       verbose = TRUE,
+                                       ...){
+
+  square <- unit %in% validUnitsOfAreaSI()
+
+  # extract required_unit as scale factor is stored/computed with distance values
+  # (equal to unit if square == FALSE)
+  required_unit <- stringr::str_extract(unit, pattern = "[a-z]*")
+
+  # scale factors are stored with unit/px unit
+  # extracts unit
+  unit_per_px <-
+    confuns::str_extract_before(
+      string = base::attr(pxl_scale_fct, which = "unit"),
+      pattern = "\\/"
+    )
+
+  pxl_scale_fct <-
+    units::set_units(x = pxl_scale_fct, value = unit_per_px, mode = "standard") %>%
+    units::set_units(x = ., value = required_unit, mode = "standard")
+
+  # adjust for areas if needed
+  if(base::isTRUE(square)){
+
+    pxl_scale_fct <- pxl_scale_fct^2
+
+  }
+
+  # if argument switch is TRUE provide scale factor as px/SI
+  if(base::isTRUE(switch)){
+
+    pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
+
+    pxl_scale_fct <- 1/pxl_scale_fct
+
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c("px/", unit, sep = "")
+
+  } else {
+
+    pxl_scale_fct <- base::as.numeric(pxl_scale_fct)
+
+    base::attr(pxl_scale_fct, which = "unit") <- stringr::str_c(unit, "/px", sep = "")
+
+  }
+
+  # remove attribute if needed
+  if(!base::isTRUE(add_attr)){
+
+    base::attr(pxl_scale_fct, which = "unit") <- NULL
+
+  }
+
+  return(pxl_scale_fct)
+
+}
+
+
 #' @title Wrapper around Seurat processing functions
 #'
 #' @inherit argument_dummy params

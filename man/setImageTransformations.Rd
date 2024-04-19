@@ -2,15 +2,15 @@
 % Please edit documentation in R/setA-Z.R
 \name{setImageTransformations}
 \alias{setImageTransformations}
-\alias{setImageTransformations,HistoImaging-method}
+\alias{setImageTransformations,SpatialData-method}
 \title{Set image transformation instructions}
 \usage{
 setImageTransformations(object, ...)
 
-\S4method{setImageTransformations}{HistoImaging}(object, img_name, transformations, ...)
+\S4method{setImageTransformations}{SpatialData}(object, img_name, transformations, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

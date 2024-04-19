@@ -2,18 +2,18 @@
 % Please edit documentation in R/contains.R
 \name{containsPixelContent}
 \alias{containsPixelContent}
-\alias{containsPixelContent,HistoImaging-method}
+\alias{containsPixelContent,SpatialData-method}
 \alias{containsPixelContent,HistoImage-method}
 \title{Check availability pixel content}
 \usage{
 containsPixelContent(object, ...)
 
-\S4method{containsPixelContent}{HistoImaging}(object, img_name, error = FALSE)
+\S4method{containsPixelContent}{SpatialData}(object, img_name, error = FALSE)
 
 \S4method{containsPixelContent}{HistoImage}(object, error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -71,3 +71,4 @@ refer to the \code{compute_positions_expression_estimates} function.
 
 \code{\link{compute_positions_expression_estimates}}
 }
+\keyword{internal}

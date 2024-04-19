@@ -2,30 +2,30 @@
 % Please edit documentation in R/e.R
 \name{exclude}
 \alias{exclude}
-\alias{exclude,HistoImaging-method}
+\alias{exclude,SpatialData-method}
 \alias{excludeSpatialOutliers}
 \alias{excludeSpatialOutliers,spata2-method}
-\alias{excludeSpatialOutliers,HistoImaging-method}
+\alias{excludeSpatialOutliers,SpatialData-method}
 \alias{excludeTissueFragments}
-\alias{excludeTissueFragments,HistoImaging-method}
+\alias{excludeTissueFragments,SpatialData-method}
 \title{Exclude data points}
 \usage{
 exclude(object, ...)
 
-\S4method{exclude}{HistoImaging}(object, barcodes, reason)
+\S4method{exclude}{SpatialData}(object, barcodes, reason)
 
 excludeSpatialOutliers(object, ...)
 
 \S4method{excludeSpatialOutliers}{spata2}(object)
 
-\S4method{excludeSpatialOutliers}{HistoImaging}(object)
+\S4method{excludeSpatialOutliers}{SpatialData}(object)
 
 excludeTissueFragments(object, ...)
 
-\S4method{excludeTissueFragments}{HistoImaging}(object, fragments = "all")
+\S4method{excludeTissueFragments}{SpatialData}(object, fragments = "all")
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

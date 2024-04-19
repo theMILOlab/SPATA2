@@ -3,7 +3,7 @@
 \name{getCoordsDf}
 \alias{getCoordsDf}
 \alias{getCoordsDf,SPATA2-method}
-\alias{getCoordsDf,HistoImaging-method}
+\alias{getCoordsDf,SpatialData-method}
 \title{Obtain coordinates}
 \usage{
 getCoordsDf(object, ...)
@@ -16,7 +16,7 @@ getCoordsDf(object, ...)
   ...
 )
 
-\S4method{getCoordsDf}{HistoImaging}(
+\S4method{getCoordsDf}{SpatialData}(
   object,
   img_name = activeImage(object),
   exclude = TRUE,
@@ -27,7 +27,7 @@ getCoordsDf(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

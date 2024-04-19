@@ -3,26 +3,26 @@
 \name{getHistoImage}
 \alias{getHistoImage}
 \alias{getHistoImage,SPATA2-method}
-\alias{getHistoImage,HistoImaging-method}
+\alias{getHistoImage,SpatialData-method}
 \alias{getHistoImageRef}
 \alias{getHistoImageRef,SPATA2-method}
-\alias{getHistoImageRef,HistoImaging-method}
+\alias{getHistoImageRef,SpatialData-method}
 \title{Obtain object of class \code{HistoImage}}
 \usage{
 getHistoImage(object, ...)
 
 \S4method{getHistoImage}{SPATA2}(object, img_name = activeImage(object), ...)
 
-\S4method{getHistoImage}{HistoImaging}(object, img_name = activeImage(object), ...)
+\S4method{getHistoImage}{SpatialData}(object, img_name = activeImage(object), ...)
 
 getHistoImageRef(object, ...)
 
 \S4method{getHistoImageRef}{SPATA2}(object, ...)
 
-\S4method{getHistoImageRef}{HistoImaging}(object, ...)
+\S4method{getHistoImageRef}{SpatialData}(object, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{}

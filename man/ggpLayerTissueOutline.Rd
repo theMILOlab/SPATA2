@@ -3,7 +3,7 @@
 \name{ggpLayerTissueOutline}
 \alias{ggpLayerTissueOutline}
 \alias{ggpLayerTissueOutline,SPATA2-method}
-\alias{ggpLayerTissueOutline,HistoImaging-method}
+\alias{ggpLayerTissueOutline,SpatialData-method}
 \alias{ggpLayerTissueOutline,HistoImage-method}
 \alias{ggpLayerTissueOutline,data.frame-method}
 \title{Add a hull that outlines the tissue}
@@ -28,7 +28,7 @@ ggpLayerTissueOutline(object, ...)
   ...
 )
 
-\S4method{ggpLayerTissueOutline}{HistoImaging}(
+\S4method{ggpLayerTissueOutline}{SpatialData}(
   object,
   method = "image",
   img_name = activeImage(object),
@@ -77,7 +77,7 @@ ggpLayerTissueOutline(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}}

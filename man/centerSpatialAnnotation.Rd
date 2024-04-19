@@ -3,7 +3,7 @@
 \name{centerSpatialAnnotation}
 \alias{centerSpatialAnnotation}
 \alias{centerSpatialAnnotation,SPATA2-method}
-\alias{centerSpatialAnnotation,HistoImaging-method}
+\alias{centerSpatialAnnotation,SpatialData-method}
 \title{Center the Borders of a Spatial Annotation}
 \usage{
 centerSpatialAnnotation(object, ...)
@@ -17,7 +17,7 @@ centerSpatialAnnotation(object, ...)
   overwrite = FALSE
 )
 
-\S4method{centerSpatialAnnotation}{HistoImaging}(
+\S4method{centerSpatialAnnotation}{SpatialData}(
   object,
   id,
   center_x,
@@ -27,7 +27,7 @@ centerSpatialAnnotation(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

@@ -1418,7 +1418,7 @@ setMethod(
                         ...){
 
     # use method for Image
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       ggpLayerImage(
         object = .,
         img_name = img_name,
@@ -1434,7 +1434,7 @@ setMethod(
 #' @export
 setMethod(
   f = "ggpLayerImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         transform = TRUE,
@@ -1621,8 +1621,8 @@ setMethod(
     hlpr_assign_arguments(object)
 
     # coords df
-    imaging <- getHistoImaging(object)
-    coords_df <- getCoordsDf(imaging)
+    sp_data <- getSpatialData(object)
+    coords_df <- getCoordsDf(sp_data)
 
     # join variables from SPATA2 object
     vars <- base::unique(c(alpha_by, color_by))
@@ -1645,12 +1645,12 @@ setMethod(
           transform.with = process_transform_with(transform_with, var_names = vars)
           )
 
-      imaging <- addVarToCoords(imaging, var_df = var_df, vars = vars)
+      sp_data <- addVarToCoords(sp_data, var_df = var_df, vars = vars)
 
     }
 
     ggpLayerPoints(
-      object = imaging,
+      object = sp_data,
       img_name = activeImage(object),
       alpha_by = alpha_by,
       color_by = color_by,
@@ -1682,7 +1682,7 @@ setMethod(
 #' @export
 setMethod(
   f = "ggpLayerPoints",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         alpha_by = NULL,
@@ -3224,7 +3224,7 @@ setMethod(
     hlpr_assign_arguments(object)
 
     out <-
-      getHistoImaging(object) %>%
+      getSpatialData(object) %>%
       ggpLayerTissueOutline(
         object = .,
         method = method,
@@ -3252,7 +3252,7 @@ setMethod(
 #' @export
 setMethod(
   f = "ggpLayerTissueOutline",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         method = "image",
                         img_name = activeImage(object),

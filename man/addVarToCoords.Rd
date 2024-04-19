@@ -2,15 +2,15 @@
 % Please edit documentation in R/add.R
 \name{addVarToCoords}
 \alias{addVarToCoords}
-\alias{addVarToCoords,HistoImaging-method}
+\alias{addVarToCoords,SpatialData-method}
 \title{Add variable to coordinates data.frame}
 \usage{
 addVarToCoords(object, ...)
 
-\S4method{addVarToCoords}{HistoImaging}(object, var_df, vars, overwrite = FALSE)
+\S4method{addVarToCoords}{SpatialData}(object, var_df, vars, overwrite = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

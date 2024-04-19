@@ -3,17 +3,17 @@
 \name{computePixelScaleFactor}
 \alias{computePixelScaleFactor}
 \alias{computePixelScaleFactor,SPATA2-method}
-\alias{computePixelScaleFactor,HistoImaging-method}
+\alias{computePixelScaleFactor,SpatialData-method}
 \title{Compute pixel scale factor}
 \usage{
 computePixelScaleFactor(object, ...)
 
 \S4method{computePixelScaleFactor}{SPATA2}(object, verbose = TRUE, ...)
 
-\S4method{computePixelScaleFactor}{HistoImaging}(object, verbose = TRUE, ...)
+\S4method{computePixelScaleFactor}{SpatialData}(object, verbose = TRUE, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

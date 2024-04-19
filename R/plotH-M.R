@@ -104,7 +104,7 @@ setMethod(
 
     deprecated(...)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       plotImage(
         object = .,
         img_name = img_name,
@@ -129,7 +129,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         outline = FALSE,
@@ -347,7 +347,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotImageBase",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         xrange = NULL,
@@ -507,7 +507,7 @@ setMethod(
                         clr_fg = "black",
                         clr_bg = "white"){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       plotImageMask(object = ., img_name = img_name, clr_fg = clr_fg, clr_bg = clr_bg)
 
   }
@@ -517,7 +517,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotImageMask",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
                         clr_fg = "black",
@@ -613,7 +613,7 @@ setMethod(
 
     hlpr_assign_arguments(object)
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       plotImages(
         object = .,
         img_names = img_names,
@@ -644,7 +644,7 @@ setMethod(
 #' @export
 setMethod(
   f = "plotImages",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         img_names = NULL,
                         ncol = NULL,

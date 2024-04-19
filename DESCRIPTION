@@ -68,6 +68,7 @@ Collate:
     'b.R'
     'c.R'
     'check.R'
+    'concept-documentation.R'
     'contains.R'
     'create.R'
     'd.R'

@@ -3,17 +3,17 @@
 \name{getSpatAnnRange}
 \alias{getSpatAnnRange}
 \alias{getSpatAnnRange,SPATA2-method}
-\alias{getSpatAnnRange,HistoImaging-method}
+\alias{getSpatAnnRange,SpatialData-method}
 \title{Obtain spatial annotations range}
 \usage{
 getSpatAnnRange(object, ...)
 
 \S4method{getSpatAnnRange}{SPATA2}(object, id, expand = 0, scale_fct = 1, ...)
 
-\S4method{getSpatAnnRange}{HistoImaging}(object, id, scale_fct = 1)
+\S4method{getSpatAnnRange}{SpatialData}(object, id, scale_fct = 1)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

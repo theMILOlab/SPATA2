@@ -3,10 +3,10 @@
 \name{activateImage}
 \alias{activateImage}
 \alias{activateImage,SPATA2-method}
-\alias{activateImage,HistoImaging-method}
+\alias{activateImage,SpatialData-method}
 \alias{activateImageInt}
 \alias{activateImageInt,SPATA2-method}
-\alias{activateImageInt,HistoImaging-method}
+\alias{activateImageInt,SpatialData-method}
 \title{Activate an image}
 \usage{
 activateImage(object, ...)
@@ -20,7 +20,7 @@ activateImage(object, ...)
   ...
 )
 
-\S4method{activateImage}{HistoImaging}(
+\S4method{activateImage}{SpatialData}(
   object,
   img_name,
   load = TRUE,
@@ -33,10 +33,10 @@ activateImageInt(object, ...)
 
 \S4method{activateImageInt}{SPATA2}(object, img_name, load = FALSE)
 
-\S4method{activateImageInt}{HistoImaging}(object, img_name, load = FALSE)
+\S4method{activateImageInt}{SpatialData}(object, img_name, load = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

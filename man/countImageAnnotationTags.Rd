@@ -7,7 +7,7 @@
 countImageAnnotationTags(object, tags = NULL, collapse = " & ")
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{tags}{Character vector or list or NULL. If character vector only image

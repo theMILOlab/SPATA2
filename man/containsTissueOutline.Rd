@@ -3,7 +3,7 @@
 \name{containsTissueOutline}
 \alias{containsTissueOutline}
 \alias{containsTissueOutline,SPATA2-method}
-\alias{containsTissueOutline,HistoImaging-method}
+\alias{containsTissueOutline,SpatialData-method}
 \alias{containsTissueOutline,HistoImage-method}
 \title{Check availability of tissue outline}
 \usage{
@@ -11,12 +11,12 @@ containsTissueOutline(object, ...)
 
 \S4method{containsTissueOutline}{SPATA2}(object, img_name = activeImage(object), error = FALSE)
 
-\S4method{containsTissueOutline}{HistoImaging}(object, img_name = activeImage(object), error = FALSE)
+\S4method{containsTissueOutline}{SpatialData}(object, img_name = activeImage(object), error = FALSE)
 
 \S4method{containsTissueOutline}{HistoImage}(object, img_name = activeImage(object), error = FALSE)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

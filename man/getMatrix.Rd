@@ -25,7 +25,7 @@ getMatrix(
 getMatrices(object, assay_name = activeAssay(object), verbose = NULL, ...)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{mtr_name}{Character value. The name of the matrix of interest. Defaults

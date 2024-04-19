@@ -3,7 +3,7 @@
 \name{getImageCenter}
 \alias{getImageCenter}
 \alias{getImageCenter,SPATA2-method}
-\alias{getImageCenter,HistoImaging-method}
+\alias{getImageCenter,SpatialData-method}
 \alias{getImageCenter,HistoImage-method}
 \title{Obtain image center}
 \usage{
@@ -11,12 +11,12 @@ getImageCenter(object, ...)
 
 \S4method{getImageCenter}{SPATA2}(object)
 
-\S4method{getImageCenter}{HistoImaging}(object, img_name = activeImage(object))
+\S4method{getImageCenter}{SpatialData}(object, img_name = activeImage(object))
 
 \S4method{getImageCenter}{HistoImage}(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

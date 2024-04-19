@@ -198,11 +198,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, img_name, ...){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- loadImage(imaging, img_name = img_name)
+    sp_data <- loadImage(sp_data, img_name = img_name)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -213,7 +213,7 @@ setMethod(
 #' @export
 setMethod(
   f = "loadImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name, verbose = TRUE){
 
     hist_img <- getHistoImage(object, img_name = img_name)
@@ -262,11 +262,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, verbose = TRUE, force = FALSE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- loadImages(imaging, verbose = verbose, force = force)
+    sp_data <- loadImages(sp_data, verbose = verbose, force = force)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -277,7 +277,7 @@ setMethod(
 #' @export
 setMethod(
   f = "loadImages",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, verbose = TRUE, force = FALSE){
 
     img_names <- getImageNames(object)

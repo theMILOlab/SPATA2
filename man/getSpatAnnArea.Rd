@@ -3,7 +3,7 @@
 \name{getSpatAnnArea}
 \alias{getSpatAnnArea}
 \alias{getSpatAnnArea,SPATA2-method}
-\alias{getSpatAnnArea,HistoImaging-method}
+\alias{getSpatAnnArea,SpatialData-method}
 \title{Obtain area of spatial annotation}
 \usage{
 getSpatAnnArea(object, ...)
@@ -19,7 +19,7 @@ getSpatAnnArea(object, ...)
   ...
 )
 
-\S4method{getSpatAnnArea}{HistoImaging}(
+\S4method{getSpatAnnArea}{SpatialData}(
   object,
   ids = NULL,
   unit = "mm2",
@@ -31,7 +31,7 @@ getSpatAnnArea(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

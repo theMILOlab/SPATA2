@@ -163,7 +163,7 @@ setMethod(
   signature = "spata2",
   definition = function(object){
 
-    getHistoImaging(object) %>% nSpatialAnnotations()
+    getSpatialData(object) %>% nSpatialAnnotations()
 
   }
 )
@@ -172,7 +172,7 @@ setMethod(
 #' @export
 setMethod(
   f = "nSpatialAnnotations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object){
 
     base::length(object@annotations)

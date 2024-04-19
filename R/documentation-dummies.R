@@ -176,7 +176,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param linesize Numeric value. The size of the line(s) plotted.
 #'
-#' @param object An object of class `SPATA2` or, in case of S4 generics,
+#' @param object An object of class [`SPATA2`] or, in case of S4 generics,
 #' objects of classes for which a method has been defined.
 #'
 #' @param order Logical value. If `TRUE`, data points are ordered according
@@ -488,74 +488,15 @@ sample_name <- function(sample_name){}
 #'
 #' @section Area measures:
 #'
-#' Several functions in `SPATA2` have arguments that take *area input*.
-#' To specifically refer to an area the unit must be specified. There are
-#' three ways to create valid input for these arguments.
+#' The vignette on area measures in SPATA2 has been replaced.
+#' Click \code{\link[=concept_area_measure]{here}} to read it.
 #'
-#' **1. In pixel:**
-#'
-#' There are two valid input options to specify an area in pixel:
-#'
-#' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
-#'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
-#'  }
-#'
-#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
-#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
-#'  number of pixels is meant.
-#'
-#' **2. According to the Systeme international d`unites (SI):**
-#'
-#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
-#'  requires the input to be a character as the unit must be provided as suffix.
-#'  Between the numeric value and the unit must be no empty space! Valid suffixes
-#'  can be obtained using the function `validUnitsOfAreaSI()`.
-#'
-#'  **3. As vectors of class `unit`:**
-#'
-#' Behind the scenes `SPATA2` works with the `units` package. Input
-#' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
-#' Note that *pixel* is not a valid unit in the `units` package. If you want
-#' to specify the input in pixel you have to use input option 1. In pixel.
 #'
 #'
 #' @section Distance measures:
 #'
-#' Several functions in `SPATA2` have arguments that take *distance input*.
-#' To specifically refer to a distance the unit must be specified. There are
-#' three ways to create valid input for these arguments.
-#'
-#' **1. In pixel:**
-#'
-#' There are two valid input options to specify the distance in pixel:
-#'
-#' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
-#'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
-#'  }
-#'
-#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
-#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
-#'  number of pixels is meant.
-#'
-#' **2. According to the Systeme international d`unites (SI):**
-#'
-#'  Specifying distances in SI units e.g. `arg_input = c('2mm', '4mm')` etc.
-#'  requires the input to be a character as the unit must be provided as suffix.
-#'  Between the numeric value and the unit must be no empty space! Valid suffixes
-#'  can be obtained using the function `validUnitsOfLengthSI()`.
-#'
-#'  **3. As vectors of class `unit`:**
-#'
-#' Behind the scenes `SPATA2` works with the `units` package. Input
-#' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm')`
-#' Note that *pixel* is not a valid unit in the `units` package. If you want
-#' to specify the input in pixel you have to use input option 1. In pixel.
+#' The vignette on distance measures in SPATA2 has been replaced. Click
+#' \code{\link[=concept_distance_measure]{here}} to read it.
 #'
 #' @section Expansion of cropped image sections:
 #'
@@ -610,33 +551,6 @@ sample_name <- function(sample_name){}
 #'
 #' If you prefer to view your image in the regular orientation, you can use the `flipAll()` function on your object,
 #' specifying `axis = "horizontal"`, to reverse this effect.
-#'
-#' @section Selection of image annotations with tags:
-#'
-#' Input for argument \code{tags} specifies the tags of interest.
-#' Argument \code{test} decides about how the specified tags are used to select
-#' the image annotations of interest. There are multiple options:
-#'
-#' 1. Argument \code{test} set to \emph{'any'} or \emph{1}: To be included, an image annotation
-#' must be tagged with at least one of the input tags.
-#'
-#' 2. Argument \code{test} set to \emph{'all'} or \emph{2}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can contain tags that are not specified.
-#'
-#' 3. Argument \code{test} set to \emph{'identical'} or \emph{3}: To be included, an image annotation
-#' must be tagged with all of the input tags. Can not be tagged with anything else.
-#'
-#' 4. Argument `test` set to *not_identical* or *4*: To be included, an image
-#' annotation must **not** be tagged with the combination of input tags.
-#'
-#' 5. Argument `test` set to *'none'* or *5*: To be included, an image annotation
-#' must **not** contain any of the input tags.
-#'
-#' Note that the filtering process happens after the filtering by input for argument
-#' \code{ids}. You can first select a group of image annotations by naming their IDs
-#' and then select among them via tags and test. If `ids` is `NULL`, you select
-#' among all image annotations via tags and test. And if `tags` is also `NULL`,
-#' the function uses all image annoations.
 #'
 #' @section Selection of spatial annotations:
 #'

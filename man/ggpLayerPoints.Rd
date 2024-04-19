@@ -3,7 +3,7 @@
 \name{ggpLayerPoints}
 \alias{ggpLayerPoints}
 \alias{ggpLayerPoints,SPATA2-method}
-\alias{ggpLayerPoints,HistoImaging-method}
+\alias{ggpLayerPoints,SpatialData-method}
 \alias{ggpLayerPoints,data.frame-method}
 \title{Adds data points to the surface plot}
 \usage{
@@ -40,7 +40,7 @@ ggpLayerPoints(object, ...)
   ...
 )
 
-\S4method{ggpLayerPoints}{HistoImaging}(
+\S4method{ggpLayerPoints}{SpatialData}(
   object,
   img_name = activeImage(object),
   alpha_by = NULL,
@@ -80,7 +80,7 @@ ggpLayerPoints(object, ...)
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

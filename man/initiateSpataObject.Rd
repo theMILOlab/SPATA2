@@ -13,9 +13,7 @@ initiateSpataObject(
   img_dir = NULL,
   img_name = "image1",
   spatial_method = "Undefined",
-  meta = list(),
-  misc = list(),
-  scale_factors = list(coords = 1),
+  scale_factors = list(),
   verbose = TRUE,
   ...
 )
@@ -46,15 +44,15 @@ required if at least \code{img} or \code{img_dir} is specified.}
 \item{spatial_method}{Character value or object of class \code{\link{SpatialMethod}}.
 If character, one of \code{validSpatialMethods()}.}
 
-\item{meta, misc}{List of meta- and miscellaneous data for the \code{\link{HistoImaging}}
-object.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{meta, misc}{List of meta- and miscellaneous data for the \code{\link{SpatialData}}
+object.}
 }
 \value{
 An object of class \code{SPATA2}.

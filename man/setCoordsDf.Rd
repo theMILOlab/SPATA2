@@ -3,14 +3,14 @@
 \name{setCoordsDf}
 \alias{setCoordsDf}
 \alias{setCoordsDf,SPATA2-method}
-\alias{setCoordsDf,HistoImaging-method}
+\alias{setCoordsDf,SpatialData-method}
 \title{Set the coordinates}
 \usage{
 setCoordsDf(object, ...)
 
 \S4method{setCoordsDf}{SPATA2}(object, coords_df, force = FALSE)
 
-\S4method{setCoordsDf}{HistoImaging}(object, coords_df, force = FALSE)
+\S4method{setCoordsDf}{SpatialData}(object, coords_df, force = FALSE)
 }
 \arguments{
 \item{object}{A valid spata-object.}

@@ -3,17 +3,17 @@
 \name{getSpatAnnTags}
 \alias{getSpatAnnTags}
 \alias{getSpatAnnTags,SPATA2-method}
-\alias{getSpatAnnTags,HistoImaging-method}
+\alias{getSpatAnnTags,SpatialData-method}
 \title{Obtain spatial annotation tags}
 \usage{
 getSpatAnnTags(object, ...)
 
 \S4method{getSpatAnnTags}{SPATA2}(object)
 
-\S4method{getSpatAnnTags}{HistoImaging}(object)
+\S4method{getSpatAnnTags}{SpatialData}(object)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}

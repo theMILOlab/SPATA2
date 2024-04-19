@@ -22,7 +22,7 @@ runSparkx(
 )
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
@@ -37,6 +37,10 @@ See section \emph{Selection of spatial annotations} for more information.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+}
+\value{
+The input object containing the added or computed
+results.
 }
 \description{
 A wrapper around the algorithm introduced by \emph{Zhu et al. 2021}

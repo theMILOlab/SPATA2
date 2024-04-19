@@ -3,7 +3,7 @@
 \name{getImageDf}
 \alias{getImageDf}
 \alias{getImageDf,SPATA2-method}
-\alias{getImageDf,HistoImaging-method}
+\alias{getImageDf,SpatialData-method}
 \alias{getImageDf,HistoImage-method}
 \alias{getImageDf,SpatialAnnotation-method}
 \alias{getImageDf,Image-method}
@@ -19,7 +19,7 @@ getImageDf(object, ...)
   ...
 )
 
-\S4method{getImageDf}{HistoImaging}(
+\S4method{getImageDf}{SpatialData}(
   object,
   img_name = activeImage(object),
   transform = TRUE,
@@ -33,7 +33,7 @@ getImageDf(object, ...)
 \S4method{getImageDf}{Image}(object, scale_fct = 1)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2} or, in case of S4 generics,
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
