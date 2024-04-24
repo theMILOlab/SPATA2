@@ -63,7 +63,7 @@ runBayesSpaceClustering <- function(object,
                                     assay.type = "logcounts",
                                     BSPARAM = BiocSingular::ExactParam(),
                                     # given to qTune()
-                                    qs = 3:10,
+                                    qs = 3:15,
                                     burn.in = c(100, 1000),
                                     nrep = c(1000, 50000),
                                     # given to spatialCluster()
@@ -83,7 +83,7 @@ runBayesSpaceClustering <- function(object,
                                     return_model = TRUE,
                                     empty_remove = FALSE,
                                     overwrite = FALSE,
-                                    assign_sce = NULL,
+                                    assign_sce = FALSE,
                                     assign_envir = .GlobalEnv,
                                     seed = 123,
                                     verbose = NULL,
@@ -92,6 +92,8 @@ runBayesSpaceClustering <- function(object,
   deprecated(...)
 
   hlpr_assign_arguments(object)
+
+  containsMethod(object, method_name = "Visium", error = TRUE)
 
   confuns::is_vec(x = burn.in, mode = "numeric", of.length = 2)
   confuns::is_vec(x = nrep, mode = "numeric", of.length = 2)
@@ -106,7 +108,7 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  sce <- asSingleCellExperiment(object)
+  sce <- asSingleCellExperiment(object, bayes_space = TRUE)
 
   if(FALSE){
 
@@ -192,6 +194,10 @@ runBayesSpaceClustering <- function(object,
       msg = glue::glue("Calculated optimal input for `q`: {optimal_cluster}."),
       verbose = verbose
     )
+
+    ma <- getAssay(object, assay_name = "transcriptomics")
+    ma@analysis$bayes_space <- list(logliks = logliks)
+    object <- setAssay(object, assay = ma)
 
   } else {
 
@@ -960,8 +966,7 @@ runCnvAnalysis <- function(object,
   object <-
     setCnvResults(
       object = object,
-      cnv_list = cnv_res,
-      of_sample = of_sample
+      cnv_list = cnv_res
     )
 
   object <- computeCnvByChrArm(object, overwrite = TRUE)

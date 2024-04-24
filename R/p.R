@@ -213,9 +213,6 @@ pixel_df_to_image <- function(pxl_df){
 
 
 
-
-
-
 # print -------------------------------------------------------------------
 
 
@@ -1118,7 +1115,40 @@ process_transform_with <- function(transform_with, var_names){
 
 
 
+#' @title Run image processing pipeline
+#'
+#' @description A wrapper around the image processing functions:
+#'
+#' \itemize{
+#'  \item{[`identifyPixelContent()`]}{}
+#'  \item{[`identifyTissueOutline()`]}{}
+#'  \item{[`identifyBackgroundColor()`]}
+#'  }
+#'
+#' @param ... Arguments passed to [`identifyPixelContent()`].
+#'
+#' @inherit identifyPixelContent params
+#' @inherit argument_dummy params
+#'
+#' @inherit update_dummy return
+#'
+#' @export
+processImage <- function(object,
+                         img_name = activeImage(object),
+                         verbose = NULL,
+                         ...){
 
+  hlpr_assign_arguments(object)
+
+  object <- identifyPixelContent(object, img_name = img_name, verbose = verbose, ...)
+
+  object <- identifyTissueOutline(object, img_name = img_name, verbose = verbose)
+
+  object <- identifyBackgroundColor(object, img_name = img_name, verbose = verbose)
+
+  return(object)
+
+}
 
 
 

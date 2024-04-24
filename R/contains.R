@@ -732,7 +732,10 @@ setGeneric(name = "containsTissueOutline", def = function(object, ...){
 setMethod(
   f = "containsTissueOutline",
   signature = "SPATA2",
-  definition = function(object, img_name = activeImage(object), error = FALSE){
+  definition = function(object,
+                        method = NULL,
+                        img_name = activeImage(object),
+                        error = FALSE){
 
     getHistoImage(object, img_name = img_name) %>%
       containsTissueOutline(object = ., error = error)
@@ -745,10 +748,57 @@ setMethod(
 setMethod(
   f = "containsTissueOutline",
   signature = "SpatialData",
-  definition = function(object, img_name = activeImage(object), error = FALSE){
+  definition = function(object, method = NULL,  img_name = activeImage(object), error = FALSE){
 
-    getHistoImage(object, img_name = img_name) %>%
-      containsTissueOutline(object = ., error = error)
+    if(base::is.null(method)){
+
+      if(!containsHistoImages(object)){
+
+        out <- !purrr::is_empty(object@outline)
+
+      } else {
+
+        out <-
+          getHistoImage(object, img_name = img_name) %>%
+          containsTissueOutline(object = ., error = error)
+
+        if(base::isFALSE(out)){
+
+          out <- !purrr::is_empty(object@outline)
+
+        }
+
+      }
+
+    } else {
+
+      if(method == "obs"){
+
+        out <- !purrr::is_empty(object@outline)
+
+        if(base::isFALSE(out) & base::isTRUE(error)){
+
+          stop("No tissue outline found for method 'obs' in this object.")
+
+        }
+
+      } else {
+
+        out <-
+          getHistoImage(object, img_name = img_name) %>%
+          containsTissueOutline(object = ., error = error)
+
+      }
+
+    }
+
+    if(base::is.null(method) & base::isFALSE(out) & base::isTRUE(error)){
+
+      stop("No tissue outline found in this object.")
+
+    }
+
+    return(out)
 
   }
 )

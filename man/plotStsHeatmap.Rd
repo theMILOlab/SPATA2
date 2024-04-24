@@ -24,13 +24,8 @@ plotStsHeatmap(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variables}{Character vector. Specifies the variables
-of interest. If set to NULL all valid variables of the input data.frame are
-considered (as long as the total number does not exceeds the limit).
-
-If there are more variables you are interested in than they are variables
-you are not interested in specify those that you are not interested in prefixed
-with an \emph{'-'}. Variables prefixed that way are discarded and the remaining are kept.}
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
 
 \item{arrange_rows}{Alter the way the rows of the heatmap
 are displayed in order to highlight patterns. Currently either \emph{'maxima'},

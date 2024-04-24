@@ -30,6 +30,9 @@ plotStsLineplot(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 

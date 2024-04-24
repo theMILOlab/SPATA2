@@ -20,6 +20,9 @@ joinWithVariables(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
@@ -40,7 +43,7 @@ the computational progress will be printed.
 A data frame containing spatial data joined with additional variables.
 }
 \description{
-Joins data.frames of the \code{SPATA2} objects observations with additional
+Joins data.frames of the \code{SPATA2} objects \link[=concept_observations]{observations} with additional
 variables, such as molecular data, signatures, and meta features.
 }
 \details{

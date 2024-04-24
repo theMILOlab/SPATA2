@@ -29,13 +29,8 @@ objects of classes for which a method has been defined.}
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}
 
-\item{variables}{Character vector. The variables of interest:
-
-\itemize{
-\item{ \strong{Gene sets}: Must be in \code{getGeneSets()}}
-\item{ \strong{Genes}: Must be in \code{getGenes()}}
-\item{ \strong{Features}: Must be numeric ones of \code{getFeatureNames()}}
-}}
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
 
 \item{whole_sample}{Logical. If TRUE, normalization of the values used
 takes place in the light of the complete sample.}

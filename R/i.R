@@ -1237,30 +1237,25 @@ setMethod(
 
 #' @title Identify tissue outline
 #'
-#' @description Identifies the outline of each tissue section on the image
-#' as well as the outline of the whole tissue.
+#' @description Identifies the spatial boundaries of the tissue. Using `method`,
+#' the origin of the outline can be determined. See the vignette
+#' on \link[=concept_tissue_outline]{tissue outlines} in SPATA2 for more information.
 #'
-#' @param use Character value. Either *'image'* (the default, which uses the
-#' results of [`identifyPixelContent()`]) or *'coords'*. If
-#' [`identifyPixelContent()`] does not provide satisfying results, set `use = coords`. This way, the tissue
-#' outline is created by using the coordinates data.frame.
+#' @param method Character value. Defines the origin based on which the outline
+#' is computed. Either *'image'* or *'obs'*.
 #'
 #' @inherit getPixelDf params
 #' @inherit argument_dummy params
 #' @inherit dbscan::dbscan params
 #' @inherit update_dummy return
 #'
-#' @details If `img_name` specifies multiple images, the function
-#' iterates over all of them.
-#'
-#' @note For `SPATA2` objects: If the `SPATA2` object contains a registered image
-#' the results of [`identifyPixelContent()`] is required.
-#'
-#' If the `SPATA2` object does not contain a registered image because the
-#' underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
-#' a workaround is applied and the tissue outline is identified by outlining all
-#' data points instead of outlining pixels that were identified as *tissue pixels*.
-#'
+#' @details In case of `method = image` the object must contain an image named as
+#' indicated by the input of argument `img_name`. Furthermore, the results
+#' of [`identifyPixelContent()`] for that image are required. If `img_name` specifies
+#' multiple images, the function iterates over all of them. Since results of both methods
+#' are stored in different locations, the object can contain results of both methods.
+#' When extracting the tissue outline via [`getTissueOutlineDf()`] or [`ggpLayerTissueOutline()`]
+#' use argument `method` to decide on which results to use.#'
 #' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
 #'
 #' @export
@@ -1278,79 +1273,23 @@ setMethod(
   f = "identifyTissueOutline",
   signature = "SPATA2",
   definition = function(object,
+                        method,
                         img_name = activeImage(object),
-                        use = "image",
                         verbose = NULL){
 
     hlpr_assign_arguments(object)
 
-    # does the object relies on a pseudo image
-    img_names <- getImageNames(object)
+    sp_data <- getSpatialData(object)
 
-    contains_only_pseudo <-
-      base::length(img_names) == 1 && img_names == "pseudo"
-
-    if(contains_only_pseudo | use == "coords"){
-
-      img_name <- img_names
-
-      # for complete tissue
-      tissue_outline <-
-        getCoordsMtr(object) %>%
-        concaveman::concaveman(points = ., concavity = 2) %>%
-        tibble::as_tibble() %>%
-        magrittr::set_colnames(value = c("x", "y"))
-
-      hist_img <- getHistoImage(object, img_name = img_name)
-
-      hist_img@outline[["tissue_whole"]] <- tissue_outline
-
-
-      # for possible sections
-      coords_df <-
-        getCoordsDf(object) %>%
-        add_dbscan_variable(
-          eps = as_pixel(input = recDbscanEps(object), object),
-          minPts = recDbscanMinPts(object),
-          name = "section"
-          ) %>%
-        dplyr::filter(section != "0") %>%
-        dplyr::mutate(section = stringr::str_c("tissue_section", section, sep = "_"))
-
-      hist_img@outline[["tissue_sections"]] <-
-        purrr::map_df(
-          .x = base::unique(coords_df[["section"]]),
-          .f = function(section){
-
-            dplyr::filter(coords_df, section == {{section}}) %>%
-              dplyr::select(barcodes, x, y) %>%
-              increase_n_data_points(fct = 10, cvars = c("x", "y")) %>%
-              dplyr::select(-barcodes, -n) %>%
-              base::as.matrix() %>%
-              concaveman::concaveman(concavity = 2) %>%
-              tibble::as_tibble() %>%
-              magrittr::set_colnames(value = c("x", "y")) %>%
-              dplyr::mutate(section = {{section}}) %>%
-              dplyr::select(section, x, y)
-
-          }
+    sp_data <-
+      identifyTissueOutline(
+        object = sp_data,
+        method = method,
+        img_name = img_name,
+        verbose = verbose
         )
 
-      object <- setHistoImage(object, hist_img = hist_img)
-
-    } else if(containsImage(object, img_name = img_name)){
-
-      sp_data <- getSpatialData(object)
-
-      sp_data <- identifyTissueOutline(sp_data, img_name = img_name)
-
-      object <- setSpatialData(object, sp_data = sp_data)
-
-    } else {
-
-      stop("Object does neither contain an image nor a pseudo image.")
-
-    }
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -1362,31 +1301,83 @@ setMethod(
 setMethod(
   f = "identifyTissueOutline",
   signature = "SpatialData",
-  definition = function(object, img_name = activeImage(object), verbose = TRUE){
-
-    if(base::is.null(img_name)){
-
-      img_name <- activeImage(object)
-
-    }
+  definition = function(object,
+                        method,
+                        img_name = activeImage(object),
+                        verbose = TRUE){
 
     confuns::check_one_of(
-      input = img_name,
-      against = getImageNames(object)
+      input = method,
+      against = c("image", "obs")
     )
 
-    purrr::walk(
-      .x = img_name,
-      .f = ~ containsPixelContent(object, img_name = .x, error = TRUE)
-    )
+    # sets outline of slot @outline in the respective HistoImage
+    if(method == "image"){
 
-    for(i in base::seq_along(img_name)){
+      if(base::is.null(img_name)){
 
-      hist_img <- getHistoImage(object, img_name = img_name[i])
+        img_name <- activeImage(object)
 
-      hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose)
+      }
 
-      object <- setHistoImage(object, hist_img = hist_img)
+      confuns::check_one_of(
+        input = img_name,
+        against = getImageNames(object)
+      )
+
+      purrr::walk(
+        .x = img_name,
+        .f = ~ containsPixelContent(object, img_name = .x, error = TRUE)
+      )
+
+      for(i in base::seq_along(img_name)){
+
+        hist_img <- getHistoImage(object, img_name = img_name[i])
+
+        hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose)
+
+        object <- setHistoImage(object, hist_img = hist_img)
+
+      }
+
+      # sets slot @outline of SpatialData object
+    } else if(method == "obs"){
+
+      # for complete tissue
+      object@outline[["tissue_whole"]] <-
+        getCoordsMtr(object, orig = TRUE) %>%
+        concaveman::concaveman(points = ., concavity = 2) %>%
+        tibble::as_tibble() %>%
+        magrittr::set_colnames(value = c("x_orig", "y_orig"))
+
+      # for possible sections
+      coords_df <-
+        getCoordsDf(object) %>%
+        add_dbscan_variable(
+          eps = as_pixel(input = recDbscanEps(object), object),
+          minPts = recDbscanMinPts(object),
+          name = "section"
+        ) %>%
+        dplyr::filter(section != "0") %>%
+        dplyr::mutate(section = stringr::str_c("tissue_section", section, sep = "_"))
+
+      object@outline[["tissue_sections"]] <-
+        purrr::map_df(
+          .x = base::unique(coords_df[["section"]]),
+          .f = function(section){
+
+            dplyr::filter(coords_df, section == {{section}}) %>%
+              dplyr::select(x = x_orig, y = y_orig) %>%
+              #increase_n_data_points(fct = 10, cvars = c("x", "y")) %>%
+              base::as.matrix() %>%
+              concaveman::concaveman(concavity = 2) %>%
+              tibble::as_tibble() %>%
+              magrittr::set_colnames(value = c("x_orig", "y_orig")) %>%
+              dplyr::mutate(section = {{section}}) %>%
+              dplyr::select(section, x_orig, y_orig)
+
+          }
+        )
 
     }
 

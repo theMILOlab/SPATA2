@@ -35,6 +35,9 @@ plotTrajectoryLineplotFitted(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}
 

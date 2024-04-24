@@ -3284,7 +3284,7 @@ getStsDf <- function(object,
 #' @description Extracts the centroid of the polygon used to outline
 #' the whole tissue.
 #'
-#' @inherit argument_dummy params
+#' @inherit getTissueOutlineDf params
 #'
 #' @return Numeric vector of length two.
 #' @export
@@ -3299,10 +3299,15 @@ setGeneric(name = "getTissueOutlineCentroid", def = function(object, ...){
 setMethod(
   f = "getTissueOutlineCentroid",
   signature = "SpatialData",
-  definition = function(object, img_name = activeImage(object), transform = TRUE,  ...){
+  definition = function(object,
+                        method = NULL,
+                        img_name = activeImage(object),
+                        transform = TRUE,
+                        ...){
 
     getTissueOutlineDf(
       object = object,
+      method = method,
       img_name = img_name,
       transform = transform,
       by_section = FALSE
@@ -3327,14 +3332,23 @@ setMethod(
 
   })
 
-#' @title Obtain outline barcode spots
+#' @title Obtain tissue outline
 #'
-#' @description Extracts the polygons necessary to outline the tissue.
+#' @description Extracts the polygons necessary to outline the tissue. See
+#' vignette about \link[=concept_tissue_outline]{tissue outline} for more
+#' information.
 #'
+#' @param method Character value. Either *'obs'* or *'image'*. Decides whether
+#' the tissue outline computed based on the \link[=concept_observations]{observations}
+#' or the image is used. If `method = NULL`, the function checks first if any [`HistoImage`]
+#' is registered. If so, the outline from the image specified with `img_name` is returned.
+#' If there are no images, the outline computed with `identifyTissueOutline(..., method = 'obs')`
+#' is returned.
 #' @inherit argument_dummy params
-#' @param force Logical. If `TRUE`, forces computation.
 #'
-#' @return Output of `getCoordsDf()` filtered based on the *outline* variable.
+#' @return Data.frame of vertices with x- and y-coordinates. If `by_section = TRUE`,
+#' the data.frame contains an additional variable which indicates the tissue section
+#' which the polygon to which the vertex belongs outlines.
 #'
 #' @export
 #'
@@ -3350,6 +3364,7 @@ setMethod(
   f = "getTissueOutlineDf",
   signature = "SPATA2",
   definition = function(object,
+                        method = NULL,
                         img_name = activeImage(object),
                         by_section = TRUE,
                         transform = TRUE,
@@ -3358,6 +3373,7 @@ setMethod(
     getSpatialData(object) %>%
       getTissueOutlineDf(
         object = .,
+        method = NULL,
         img_name = img_name,
         by_section = by_section,
         transform = transform
@@ -3372,16 +3388,48 @@ setMethod(
   f = "getTissueOutlineDf",
   signature = "SpatialData",
   definition = function(object,
+                        method = NULL,
                         img_name = activeImage(object),
                         by_section = TRUE,
                         transform = TRUE){
 
-    out_df <-
-      getTissueOutlineDf(
-        object = getHistoImage(object, img_name = img_name),
-        by_section = by_section,
-        transform = transform
-      )
+    if(base::is.null(method)){
+
+      if(containsTissueOutline(object, method = "image", img_name = img_name)){
+
+        method <- "image"
+
+      } else if(containsTissueOutline(object, method = "obs")){
+
+        method = "obs"
+
+      } else {
+
+        stop("No tissue outlien found in this object.")
+
+      }
+
+    }
+
+
+    if(method == "image"){
+
+      out_df <-
+        getHistoImage(object, img_name = img_name) %>%
+        getTissueOutlineDf(by_section = by_section, transform = transform)
+
+    } else {
+
+      slot <- base::ifelse(base::isTRUE(by_section), "tissue_section", "tissue_whole")
+
+      out_df <-
+        dplyr::mutate(
+          .data = object@outline[[slot]],
+          x = x_orig,
+          y = y_orig
+        )
+
+    }
 
     return(out_df)
 
@@ -3393,7 +3441,9 @@ setMethod(
 setMethod(
   f = "getTissueOutlineDf",
   signature = "HistoImage",
-  definition = function(object, by_section = TRUE, transform = TRUE){
+  definition = function(object,
+                        by_section = TRUE,
+                        transform = TRUE){
 
     if(purrr::is_empty(object@outline)){
 
@@ -3451,10 +3501,10 @@ getTrajectory <- function(object, id){
 
 
 
-#' @title Obtain trajectory ids
+#' @title Obtain trajectory IDs
 #'
-#' @description Extracts the ids of all objects of class \code{Trajectory}
-#' in the SPATA2 object.
+#' @description Extracts the ids of all objects of class [`SpatialTrajectory`]
+#' in the [`SPATA2`] object.
 #'
 #' @inherit argument_dummy params
 #'

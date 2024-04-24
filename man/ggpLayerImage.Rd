@@ -44,8 +44,13 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

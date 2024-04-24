@@ -10,6 +10,7 @@ getTissueOutlineCentroid(object, ...)
 
 \S4method{getTissueOutlineCentroid}{SpatialData}(
   object,
+  method = NULL,
   img_name = activeImage(object),
   transform = TRUE,
   ...
@@ -23,8 +24,20 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{method}{Character value. Either \emph{'obs'} or \emph{'image'}. Decides whether
+the tissue outline computed based on the \link[=concept_observations]{observations}
+or the image is used. If \code{method = NULL}, the function checks first if any \code{\link{HistoImage}}
+is registered. If so, the outline from the image specified with \code{img_name} is returned.
+If there are no images, the outline computed with \code{identifyTissueOutline(..., method = 'obs')}
+is returned.}
+
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
 }
 \value{
 Numeric vector of length two.

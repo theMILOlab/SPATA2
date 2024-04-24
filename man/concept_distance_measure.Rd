@@ -4,9 +4,6 @@
 \alias{concept_distance_measure}
 \title{Distance measures}
 \description{
-This document provides an overview of how distance measures and
-SI units are utilized in SPATA2.
-
 Several functions in SPATA2 have arguments that take \emph{distance input}.
 To specifically refer to a distance the unit must be specified. There are
 three ways to create valid input for these arguments.

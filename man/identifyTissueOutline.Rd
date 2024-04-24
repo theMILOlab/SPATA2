@@ -11,12 +11,17 @@ identifyTissueOutline(object, ...)
 
 \S4method{identifyTissueOutline}{SPATA2}(
   object,
+  method,
   img_name = activeImage(object),
-  use = "image",
   verbose = NULL
 )
 
-\S4method{identifyTissueOutline}{SpatialData}(object, img_name = activeImage(object), verbose = TRUE)
+\S4method{identifyTissueOutline}{SpatialData}(
+  object,
+  method,
+  img_name = activeImage(object),
+  verbose = TRUE
+)
 
 \S4method{identifyTissueOutline}{HistoImage}(object, verbose = TRUE)
 }
@@ -26,13 +31,11 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{method}{Character value. Defines the origin based on which the outline
+is computed. Either \emph{'image'} or \emph{'obs'}.}
 
-\item{use}{Character value. Either \emph{'image'} (the default, which uses the
-results of \code{\link[=identifyPixelContent]{identifyPixelContent()}}) or \emph{'coords'}. If
-\code{\link[=identifyPixelContent]{identifyPixelContent()}} does not provide satisfying results, set \code{use = coords}. This way, the tissue
-outline is created by using the coordinates data.frame.}
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
+If \code{NULL}, the active histo image is chosen by default.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -44,21 +47,18 @@ The input object containing the added or computed
 results.
 }
 \description{
-Identifies the outline of each tissue section on the image
-as well as the outline of the whole tissue.
+Identifies the spatial boundaries of the tissue. Using \code{method},
+the origin of the outline can be determined. See the vignette
+on \link[=concept_tissue_outline]{tissue outlines} in SPATA2 for more information.
 }
 \details{
-If \code{img_name} specifies multiple images, the function
-iterates over all of them.
-}
-\note{
-For \code{SPATA2} objects: If the \code{SPATA2} object contains a registered image
-the results of \code{\link[=identifyPixelContent]{identifyPixelContent()}} is required.
-
-If the \code{SPATA2} object does not contain a registered image because the
-underlying spatial method does not come with an image (e.g. MERFISH, SlideSeq)
-a workaround is applied and the tissue outline is identified by outlining all
-data points instead of outlining pixels that were identified as \emph{tissue pixels}.
+In case of \code{method = image} the object must contain an image named as
+indicated by the input of argument \code{img_name}. Furthermore, the results
+of \code{\link[=identifyPixelContent]{identifyPixelContent()}} for that image are required. If \code{img_name} specifies
+multiple images, the function iterates over all of them. Since results of both methods
+are stored in different locations, the object can contain results of both methods.
+When extracting the tissue outline via \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} or \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
+use argument \code{method} to decide on which results to use.#'
 }
 \seealso{
 \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}

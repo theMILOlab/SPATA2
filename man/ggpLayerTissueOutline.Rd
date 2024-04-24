@@ -87,8 +87,12 @@ the outline is computed based on the coordinate position of the plotted data poi
 (cells, spots etc.). If \emph{'image'}, the outline is plotted solely based on
 the image analysis results.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
+the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
+simply outlines everything with one single polygon.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
@@ -103,6 +107,11 @@ If \code{NULL}, the active histo image is chosen by default.}
 \code{scattermore::geom_scattermore()} which allows quick plotting of several
 thousand data points. If the number of data points plotted is bigger than
 10.000 it is used anyway.}
+
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
 
 \item{expand_outline}{Distance measure with which to expand the outline. Must be
 provided in pixel units!}

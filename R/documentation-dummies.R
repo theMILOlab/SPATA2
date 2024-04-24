@@ -52,6 +52,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param bcs_rm Character vector or `NULL`. If character, specifies the observations
 #' to be removed prior to analysis or visualization by their barcode.
 #'
+#' @param by_section Logical value. If `TRUE`, the outline is used which acknowledges
+#' the potential for multiple tissue sections. If `FALSE`, the outline is used which
+#' simply outlines everything with one single polygon.
+#'
 #' @param clrp Character value. Specifies the color palette to be used to represent
 #' groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
 #' input options.
@@ -117,10 +121,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #' If `NULL`, all image annotations are included - subsequent selection with `tags` and
 #' `test` is possible.
 #'
-#' @param img_name Character value. The name of the `HistoImage` of interest.
+#' @param img_name Character value. The name of the [`HistoImage`] of interest.
 #' If `NULL`, the active histo image is chosen by default.
 #'
-#' @param img_names Character vector. The names of the `HistoImage`s of interest.
+#' @param img_names Character vector. The names of the [`HistoImage`]s of interest.
 #'
 #' @param incl_edge Logical value. If `TRUE`, the function includes the tissue edge
 #' (see [`identifyTissueOutline()`]) in the visualization and removes the parts of
@@ -262,12 +266,17 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters
 #' given to `ggplot2::geom_text()` that control the appearance of text of the plot.
 #'
+#' @param transform Logical value. Ignored if no images exist in the object. If `TRUE`,
+#' spatial transformation instructions saved during image alignment of
+#' the image `img_name` are applied. Only relevant if there is an image and [`alignImage()`] has
+#' been used.
+#'
 #' @param transform_with List or `NULL.` If list, can be used to transform continuous variables before usage.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
 #' E.g if the variable of interest is *GFAP* gene expression, the following would work:
 #'
 #' \itemize{
-#'  \item{Single function:}{ `transform_with = list(GFAP = log10)`},
+#'  \item{Single function:}{ `transform_with = log10`},
 #'  \item{Multiple functions:}{ `transform_with = list(GFAP = list(log10, log2)`}
 #' }
 #'
@@ -280,6 +289,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' `scattermore::geom_scattermore()` which allows quick plotting of several
 #' thousand data points. If the number of data points plotted is bigger than
 #' 10.000 it is used anyway.
+#'
+#' @param variables Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+#' of interest.
 #'
 #' @param verbose Logical. If set to TRUE informative messages regarding
 #' the computational progress will be printed.
@@ -298,22 +310,16 @@ across_dummy <- function(across, across_subset, relevel){}
 #' every label is kept. If 2, every second label is kept. If 3, every
 #' third label is kept. And so on.
 #'
-#' @param xrange,yrange Vector of length two or \code{NULL}. If not \code{NULL},
-#' specifies the x- and y-range to which the output image is cropped. E.g.
-#' \code{xrange = c(200, 500)} results in the image being cropped from
-#' x-coordinate 200px up to x-coordinate 500px. If `NULL`, the original image
-#' ranges are taken.
-#'
-#' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in European units of length the input is
-#' immediately converted to pixel units. See info section *Distance measures*
-#' for more information.
-#'
+#' @param xrange,yrange \link[=concept_distance_measure]{Distance vector} of length
+#' two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+#' the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+#' the two dimensional space being cropped from x-coordinate 200px up to
+#' x-coordinate 500px. If `NULL`, the original range is used.
 #'
 #' @param ... Used to absorb deprecated arguments or functions.
 #'
 #' @keywords internal
-argument_dummy <- function(clrp, clrsp, display_points, display_facets, scales, ncol, nrow, verbose){}
+argument_dummy <- function(){}
 
 
 

@@ -63,7 +63,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
 \item{percentile}{Numeric value between 0 and 100 (inclusive) specifying the percentile

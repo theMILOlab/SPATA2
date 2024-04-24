@@ -771,7 +771,7 @@ setMethod(
         if(containsHistoImages(object)){
 
           img_scale_fct <-
-            getScaleFactor(object, fct_name = "image")
+            getScaleFactor(object, fct_name = "image", img_name = img_name)
 
           if(base::is.null(img_scale_fct)){
 
@@ -779,21 +779,13 @@ setMethod(
 
           }
 
-          coords_df <-
-            dplyr::mutate(
-              .data = coords_df,
-              x = x_orig * img_scale_fct,
-              y = y_orig * img_scale_fct
-            )
+          coords_df$x <- coords_df$x_orig * img_scale_fct
+          coords_df$y <- coords_df$y_orig * img_scale_fct
 
         } else {
 
-          coords_df <-
-            dplyr::mutate(
-              .data = coords_df,
-              x = x_orig * 1,
-              y = y_orig * 1
-            )
+          coords_df$x <- coords_df$x_orig
+          coords_df$y <- coords_df$y_orig
 
         }
 
@@ -1456,6 +1448,12 @@ getCoordsDfST <- function(object,
 #' @param orig Logical value. If `TRUE`, the coordinates are not scaled to any
 #' image.
 #' @inherit argument_dummy params
+#'
+#' @details In contrast to [`getCoordsDf()`], column names of the output matrix
+#' are always named *x* and *y*, regardless of whether they correspond to the
+#' original x- and y-coordiantes (*x_orig*, *y_orig*) or if they are scaled
+#' to the image specified with `img_name`. The input for argument `orig`
+#' decides!
 #'
 #' @return A matrix.
 #' @export

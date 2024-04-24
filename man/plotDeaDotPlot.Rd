@@ -89,7 +89,7 @@ Names of the list slots refer to the variable. The content of the slot refers to
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
 
 \itemize{
-\item{Single function:}{ \code{transform_with = list(GFAP = log10)}},
+\item{Single function:}{ \code{transform_with = log10}},
 \item{Multiple functions:}{ \verb{transform_with = list(GFAP = list(log10, log2)}}
 }
 

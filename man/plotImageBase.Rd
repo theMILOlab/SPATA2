@@ -47,18 +47,13 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
-
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 }
 \value{

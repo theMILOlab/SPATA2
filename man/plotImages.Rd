@@ -62,11 +62,20 @@ objects of classes for which a method has been defined.}
 \item{img_names}{Character vector or \code{NULL}. If character, specifies the images
 by name. If \code{NULL}, all images are plotted.}
 
+\item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
+the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
+simply outlines everything with one single polygon.}
+
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 

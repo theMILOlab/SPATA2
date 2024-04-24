@@ -286,7 +286,7 @@ joinWithUmap <- function(object,
 
 #' @title Join data with variables
 #'
-#' @description Joins data.frames of the `SPATA2` objects observations with additional
+#' @description Joins data.frames of the `SPATA2` objects \link[=concept_observations]{observations} with additional
 #' variables, such as molecular data, signatures, and meta features.
 #'
 #' @inherit argument_dummy params

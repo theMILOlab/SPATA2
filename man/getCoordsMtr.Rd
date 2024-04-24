@@ -23,3 +23,10 @@ A matrix.
 Wraps the coordinates in a matrix with column names \emph{x} and \emph{y}
 and rownames that correspond to the barcodes.
 }
+\details{
+In contrast to \code{\link[=getCoordsDf]{getCoordsDf()}}, column names of the output matrix
+are always named \emph{x} and \emph{y}, regardless of whether they correspond to the
+original x- and y-coordiantes (\emph{x_orig}, \emph{y_orig}) or if they are scaled
+to the image specified with \code{img_name}. The input for argument \code{orig}
+decides!
+}

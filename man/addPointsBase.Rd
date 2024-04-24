@@ -53,16 +53,11 @@ represent the group.}
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 }
 \value{
 Plots right into the plotting window.

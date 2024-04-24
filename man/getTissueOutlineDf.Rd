@@ -5,12 +5,13 @@
 \alias{getTissueOutlineDf,SPATA2-method}
 \alias{getTissueOutlineDf,SpatialData-method}
 \alias{getTissueOutlineDf,HistoImage-method}
-\title{Obtain outline barcode spots}
+\title{Obtain tissue outline}
 \usage{
 getTissueOutlineDf(object, ...)
 
 \S4method{getTissueOutlineDf}{SPATA2}(
   object,
+  method = NULL,
   img_name = activeImage(object),
   by_section = TRUE,
   transform = TRUE,
@@ -19,6 +20,7 @@ getTissueOutlineDf(object, ...)
 
 \S4method{getTissueOutlineDf}{SpatialData}(
   object,
+  method = NULL,
   img_name = activeImage(object),
   by_section = TRUE,
   transform = TRUE
@@ -32,14 +34,32 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{method}{Character value. Either \emph{'obs'} or \emph{'image'}. Decides whether
+the tissue outline computed based on the \link[=concept_observations]{observations}
+or the image is used. If \code{method = NULL}, the function checks first if any \code{\link{HistoImage}}
+is registered. If so, the outline from the image specified with \code{img_name} is returned.
+If there are no images, the outline computed with \code{identifyTissueOutline(..., method = 'obs')}
+is returned.}
+
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
-\item{force}{Logical. If \code{TRUE}, forces computation.}
+\item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
+the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
+simply outlines everything with one single polygon.}
+
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
 }
 \value{
-Output of \code{getCoordsDf()} filtered based on the \emph{outline} variable.
+Data.frame of vertices with x- and y-coordinates. If \code{by_section = TRUE},
+the data.frame contains an additional variable which indicates the tissue section
+which the polygon to which the vertex belongs outlines.
 }
 \description{
-Extracts the polygons necessary to outline the tissue.
+Extracts the polygons necessary to outline the tissue. See
+vignette about \link[=concept_tissue_outline]{tissue outline} for more
+information.
 }

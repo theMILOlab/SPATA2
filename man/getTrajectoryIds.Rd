@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTrajectoryIds}
 \alias{getTrajectoryIds}
-\title{Obtain trajectory ids}
+\title{Obtain trajectory IDs}
 \usage{
 getTrajectoryIds(object)
 }
@@ -14,6 +14,6 @@ objects of classes for which a method has been defined.}
 Character vector.
 }
 \description{
-Extracts the ids of all objects of class \code{Trajectory}
-in the SPATA2 object.
+Extracts the ids of all objects of class \code{\link{SpatialTrajectory}}
+in the \code{\link{SPATA2}} object.
 }

@@ -4,44 +4,55 @@
 \alias{concept_scale_factors}
 \title{Scale Factors}
 \description{
-This document provides an overview of how scale factors are utilized
-in SPATA2.
-
 With scale factors we refer to numeric values that are used to multiply the original
-x- and y-coordinates of the object's observations with in order to align them
+x- and y-coordinates of the object's observations with, in order to align them
 with an image or to bring them into a coordinates system measured in SI units (or both).
 
 Both, S4 class \code{\link{SpatialData}} and \code{\link{HistoImage}} contain a slot named @scale_factors.
-In both cases it is a named list. As outlined below, scale factors are primarily
-used to ensure alignment between the image and the coordinates. Therefore,
-if @slot images of the \code{SpatialData} object contains at least one
-\code{HistoImage}, @slot scale_factors in \code{SpatialData} is not required and will be empty.
+In both cases it is a named list. If the \code{SPATA2} object contains images, coordinates
+of data points or spatial reference features are automatically aligned with the resolution
+of the image that is in use, the \code{\link[=concept_images]{active image}}. The required
+\emph{image scale factor} lives in the @scale_factors slot of the \code{\link{HistoImage}} object which
+serves as the container of the respective image.
 
-There are scenarios in which scale factors are required despite the absence
-of images, therefore the slot exists in the \code{SpatialData} class.
+Furthermore, SPATA2 allows to work with SI units. To transform coordinates from
+pixel units to SI units as \emph{pixel scale factor} is required. Primarily, these
+scale factors live in the @scale_factors slot of each registered \code{\link{HistoImage}}, too.
+If the \code{\link{SPATA2}} object does not contain images, a pixel scale factor can be stored
+in slot @scale_factors of the \code{\link{SpatialData}} object.
+
+(Generally speaking, whenever scale factors are required the system checks whether
+there is an image to which anything must be scaled. If so, the scale factors are
+taken from the @scale_factors slot of the \code{HistoImage} object. If not, the scale factors
+are looked up in the @scale_factors slot of the \code{SpatialData} object.)
 }
 \section{Image alignment - scale factor \emph{image}}{
 
-In case of spatial methods with an image in the background of the observations the
-x- and y-coordinates of these observations must be aligned to the image resolution
-of the respective image. \code{\link{SPATA2}} objects allow to store multiple images simultaneously and
+\code{\link{SPATA2}} objects allow to store multiple images simultaneously and
 as they might differ in resolutions, different scale factors are required to scale
 the coordinates of the observations appropriately, such that image and coordinates
 align perfectly. This is what happens in the background when you extract or plot
-the observations in the light of the resolution of image \emph{lowres_image} (assuming
-that you have an image stored in your object hat is named that way):
+the observations in the light of the resolution of a fictional example image \emph{lowres_image}.
 
-\code{coords_df <- getCoordsDf(object)}
+First, the original data.frame is obtained.
+\code{coords_df <- getCoordsDf(object, as_is = TRUE)}
 
+Second, the image scale factor of image 'lowres_image' is extracted.
 \code{csf <- getScaleFactor(object, img_name = "lowres_image", fct_name = "image")}
 
+Third, the variables are transformed to x and y.
 \code{coords_df$x <- coords_df$x_orig * csf}
 
 \code{coords_df$y <- coords_df$y_orig * csf}
 
+The same process is applied to any sort of spatial data upon extraction, e.g.
+\code{\link[=getSpatAnnOutlineDf]{getSpatAnnOutlineDf()}}.
+
 If the object does \strong{not} contain an image, e.g. for \code{\link{MERFISH}} or \code{\link{Xenium}},
 there are no images and thus slot @images of the \code{SpatialData} object is empty.
 Furthermore, since there is nothing to align, there is no \emph{image} scale factor.
+In that case \emph{x} and \emph{y} variables of the data.frame will be equal
+to \emph{x_orig} and \emph{y_orig}.
 }
 
 \section{SI units - scale factor \emph{pixel}}{

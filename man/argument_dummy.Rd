@@ -4,42 +4,9 @@
 \alias{argument_dummy}
 \title{Argument dummy}
 \usage{
-argument_dummy(
-  clrp,
-  clrsp,
-  display_points,
-  display_facets,
-  scales,
-  ncol,
-  nrow,
-  verbose
-)
+argument_dummy()
 }
 \arguments{
-\item{clrp}{Character value. Specifies the color palette to be used to represent
-groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
-input options.}
-
-\item{clrsp}{Character value. Specifies the color spectrum to be used to represent
-continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
-valid input options.}
-
-\item{display_points}{Logical value. If set to TRUE points are used additionally
-to display the results.}
-
-\item{display_facets}{Logical value. If set to TRUE the plot is split via
-\code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
-
-\item{scales, ncol, nrow}{Affects the way the subplots
-are displayed.}
-
-\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
 Use \code{getGroupingOptions()} to obtain all variable names that group the
@@ -64,10 +31,22 @@ are removed before analysis or plotting. (Deprecated in favor of \code{bcs_rm}).
 \item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
 to be removed prior to analysis or visualization by their barcode.}
 
+\item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
+the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
+simply outlines everything with one single polygon.}
+
+\item{clrp}{Character value. Specifies the color palette to be used to represent
+groups of discrete variables. Run \code{validColorPalettes()} to obtain valid
+input options.}
+
 \item{clrp_adjust}{Named character vector or NULL. If character, it adjusts the
 color palette that is used to represent the groups. Names of the input vector must refer
 to the group and the respective named element denotes the color with which to
 represent the group.}
+
+\item{clrsp}{Character value. Specifies the color spectrum to be used to represent
+continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
+valid input options.}
 
 \item{concavity}{Numeric value. Given to argument \code{concavity} of
 \code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
@@ -79,6 +58,12 @@ requirements.}
 
 \item{discrete_feature}{Character value. Specifies the name of the grouping variable
 of interest. Use \code{getGroupingOptions()} to obtain all valid input options.}
+
+\item{display_facets}{Logical value. If set to TRUE the plot is split via
+\code{ggplot2::facet_wrap()} such that each variable gets it's own subplot.}
+
+\item{display_points}{Logical value. If set to TRUE points are used additionally
+to display the results.}
 
 \item{display_ribbon}{Logical value. If TRUE, a ribbon is displayed around
 the main line of the plot visualizing uncertainty using standard deviation.}
@@ -119,10 +104,10 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
-\item{img_names}{Character vector. The names of the \code{HistoImage}s of interest.}
+\item{img_names}{Character vector. The names of the \code{\link{HistoImage}}s of interest.}
 
 \item{incl_edge}{Logical value. If \code{TRUE}, the function includes the tissue edge
 (see \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}) in the visualization and removes the parts of
@@ -168,6 +153,8 @@ The first \code{n_gsets} are included starting with the one with the lowest sign
 \item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
 
 Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
+
+\item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
@@ -229,6 +216,9 @@ Must have at least three columns:
 \item{\emph{cell_type} :}{ factor Cell type of the cell.}
 }}
 
+\item{scales, ncol, nrow}{Affects the way the subplots
+are displayed.}
+
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
 the point size must be adjusted with the argument \code{pt_size}.}
@@ -276,12 +266,17 @@ See section \emph{Selection of spatial annotations} for more information.}
 \item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters
 given to \code{ggplot2::geom_text()} that control the appearance of text of the plot.}
 
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
+
 \item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
 
 \itemize{
-\item{Single function:}{ \code{transform_with = list(GFAP = log10)}},
+\item{Single function:}{ \code{transform_with = log10}},
 \item{Multiple functions:}{ \verb{transform_with = list(GFAP = list(log10, log2)}}
 }
 
@@ -295,6 +290,14 @@ respective \code{<aes>_trans} argument.}
 thousand data points. If the number of data points plotted is bigger than
 10.000 it is used anyway.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
 \item{vline_alpha, vline_color, vline_size, vline_type}{Parameters given to
 \code{ggplot2::geom_vline()} that control the appearance of vertical lines
 of the plot.}
@@ -307,16 +310,11 @@ x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} i
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 }

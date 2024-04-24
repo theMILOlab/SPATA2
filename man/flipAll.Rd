@@ -33,7 +33,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 }
 \description{

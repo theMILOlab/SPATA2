@@ -9,9 +9,19 @@
 \usage{
 containsTissueOutline(object, ...)
 
-\S4method{containsTissueOutline}{SPATA2}(object, img_name = activeImage(object), error = FALSE)
+\S4method{containsTissueOutline}{SPATA2}(
+  object,
+  method = NULL,
+  img_name = activeImage(object),
+  error = FALSE
+)
 
-\S4method{containsTissueOutline}{SpatialData}(object, img_name = activeImage(object), error = FALSE)
+\S4method{containsTissueOutline}{SpatialData}(
+  object,
+  method = NULL,
+  img_name = activeImage(object),
+  error = FALSE
+)
 
 \S4method{containsTissueOutline}{HistoImage}(object, img_name = activeImage(object), error = FALSE)
 }
@@ -21,7 +31,7 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the

@@ -4,7 +4,11 @@
 \alias{asSingleCellExperiment}
 \title{Transform to \code{SingleCellExperiment}}
 \usage{
-asSingleCellExperiment(object, assay_name = activeAssay(object))
+asSingleCellExperiment(
+  object,
+  assay_name = activeAssay(object),
+  bayes_space = FALSE
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -13,6 +17,9 @@ objects of classes for which a method has been defined.}
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
+\item{bayes_space}{Logical. If \code{TRUE}, the function creates an object
+fitted to the requirements for the BayesSpace pipeline.}
 
 \item{...}{The features to be renamed specified according to
 the following syntax: 'new_feature_name' = 'old_feature_name'. This applies

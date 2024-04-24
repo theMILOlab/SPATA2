@@ -65,6 +65,9 @@ plotTrajectoryRidgeplot(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
 \item{binwidth}{Numeric value. Denotes the binwidth with which to sort all
 relevant barcode spots into groups that are then aligned with respect to the
 chosen trajectory's direction.#'}

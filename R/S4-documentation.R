@@ -89,21 +89,6 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 #' @description Abstracts the concept of spatial biology experiments
 #' such as \emph{Visium} or \emph{SlideSeq}.
 #'
-#' @slot amccd character Represents the Average Minimal Center-to-Center Distance (AMCCD).
-#' This distance measure is calculated by identifying the nearest neighbor of each data point
-#' in 2D space, computing their euclidean distance and averaging all the distances computed
-#' that way. Therefore, the measure corresponds to the density of data points in the data set.
-#'
-#' With methods where data points are uniformly spaced with a fixed center-to-center distance,
-#' such as in the Visium platform, the AMCCD is equivalent to this fixed distance. For example,
-#' in the case of Visium, where the fixed distance is 100 µm, then the AMCCD is also 100 µm, and
-#' no additional computation is necessary.
-#'
-#' For `spata2` objects initialized through methods other than `initiateSpataObject()`,
-#' such as `initiateSpataObjectMERFISH()`, the AMCCD is set (or) computed automatically.
-#'
-#' The value of this slot is a character to allow a unit suffix. (Should be a SI unit.)
-#
 #' @slot capture_area list
 #' A list of length two, with elements named *x* and *y*. Each element is a vector of length two.
 #' This slot specifies the coordinates of the opposite corners of a rectangular area.
@@ -157,8 +142,11 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 
 #' @title The \code{SpatialData} - Class
 #'
-#' @description S4 class that represents a set of histological images from one
-#' tissue slide or several consecutive slides of one and the same tissue portion.
+#' @description S4 class that represents spatial data. This includes the spatial
+#' positions of \emph{\link[=concept_observations]{observations}}, a set of histological images from one
+#' tissue slide or several consecutive slides of one and the same tissue portion as well
+#' as additional spatial aspects such as \emph{\link[=concept_spatial_annotations]{spatial annotations}}
+#' or \emph{\link[=concept_spatial_trajectories]{spatial trajectories}}.
 #'
 #' @slot annotations list. List of objects of class [`SpatialAnnotation`].
 #' @slot coordinates data.frame. Data.frame that stores information about identified
@@ -170,13 +158,23 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' @slot name_img_active character. The name of the image that is currently active.
 #' @slot name_img_ref character. The name of the image that is used as a reference for aligning
 #' every additional image in slot @@images_registered.
+#' @slot outline list. List of two data.frames in which each row corresponds to
+#' a vertice of the polygon required to outline all \link[=concept_observations]{observations}.
+#'
+#' \itemize{
+#'  \item{*tissue_whole*:}{ Data.frame of two variables *x_orig* and *y_orig*.}
+#'  \item{*tissue_sections*:} {Data.frame of two variables *x_orig*, *y_orig* and *section* to
+#'  outline the tissue section outlined.}
+#'  }
+#'
+#' See the vignette about \code{\link[=concept_tissue_outline]{tissue outline}} for more information.
 #' @slot sample character. String to identify the imaged tissue.
 #' @slot scale_factors list. A list of scale factors. Only required if slot @@images does not contain any image.
 #' See \code{\link[=concept_scale_factors]{scale factors}} for more information.
 #' @slot trajectories list. A list of objects of class [`SpatialTrajectory`].
 #'
 #' @export
-SpatialData <- setClass(Class = "SpatialData", # -> rename to SpatialData ??
+SpatialData <- setClass(Class = "SpatialData",
                         slots = list(
                           annotations = "list",
                           coordinates = "data.frame",
@@ -186,6 +184,7 @@ SpatialData <- setClass(Class = "SpatialData", # -> rename to SpatialData ??
                           misc = "list",
                           name_img_active = "character",
                           name_img_ref = "character",
+                          outline = "list",
                           sample = "character",
                           scale_factors = "list",
                           trajectories = "list",
@@ -339,11 +338,14 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @slot outline list. List of two data.frames in which each row corresponds to
 #' a vertice of the polygon required to outline the whole tissue identified on
 #' the image or single contiguous tissue sections.
+#'
 #' \itemize{
-#'  \item{*tissue_whole*:}{ Data.frame of two variables *x* and *y*.}
-#'  \item{*tissue_sections*:} {Data.frame of two variables *x*, *y* and *section* to
+#'  \item{*tissue_whole*:}{ Data.frame of two variables *x_orig* and *y_orig*.}
+#'  \item{*tissue_sections*:} {Data.frame of two variables *x_orig*, *y_orig* and *section* to
 #'  outline the tissue section outlined.}
 #'  }
+#'
+#' See the vignette about \code{\link[=concept_tissue_outline]{tissue outline}} for more information.
 #' @slot overlap numeric. Numeric vector of length two. Quantifies the overlap
 #' of the tissue outline of this image with the tissue outline of the reference image
 #' with a value between 0-1 before and after alignment via [`alignImage()`].
@@ -355,10 +357,10 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' with which other histology images are aligned.
 #' @slot sample character. The name of the tissue portion to which this image belongs.
 #' @slot scale_factors list. List of single numeric values serving as scale factors for
-#' multiple functionalities. Reserved slot names:
+#' multiple purposes Reserved slot names:
 #' \itemize{
 #'   \item{*coords*:} {Coordinate scale factor to be multiplied by the original x and y variables (*x_orig*, *y_orig*) upon
-#'   extraction of the coordinatse data.frame (resulting in the *x* and *y* variables) ensuring alignment with the image.}
+#'   extraction of the coordinates data.frame (resulting in the *x* and *y* variables) ensuring alignment with the image.}
 #'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 #'   attribute called "unit" conforming to the format "SI-unit/px".}
 #' }
@@ -440,6 +442,7 @@ ImageAnnotation <- setClass(Class = "ImageAnnotation",
 #' use by default.
 #' @slot analysis List of analysis results where each element can represent
 #'  a different analysis aspect.
+#' @slot meta_var Data.frame of meta data for the molecules.
 #' @slot mtr_counts Matrix object storing raw counts metrics from the assay. Rownames
 #' should corresponds to the molecule names. Colnames should correspond to the
 #' barcodes (IDs) of the observations to which the molecule counts were mapped.
@@ -464,6 +467,7 @@ MolecularAssay <- setClass(Class = "MolecularAssay",
                            slots = list(
                              active_mtr = "character",
                              analysis = "list",
+                             meta_var = "data.frame",
                              molecules = "data.frame",
                              mtr_counts = "Matrix",
                              mtr_proc = "list",

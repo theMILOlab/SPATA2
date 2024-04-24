@@ -23,13 +23,8 @@ getStsDf(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variables}{Character vector. The numeric variables of interest. Must be inside:
-
-\itemize{
-\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-\item{ \strong{Genes} Must be in \code{getGenes()}}
-\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-}}
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
 
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}

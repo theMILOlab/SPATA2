@@ -118,7 +118,7 @@ Names of the list slots refer to the variable. The content of the slot refers to
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
 
 \itemize{
-\item{Single function:}{ \code{transform_with = list(GFAP = log10)}},
+\item{Single function:}{ \code{transform_with = log10}},
 \item{Multiple functions:}{ \verb{transform_with = list(GFAP = list(log10, log2)}}
 }
 
@@ -127,16 +127,11 @@ Useful if you want to apply more than one transformation on variables mapped to
 plotting aesthetics. Input for \code{transform_with} is applied before the
 respective \code{<aes>_trans} argument.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{unit}{The desired unit. Defaults to the unit
 in which the original size of the image of the spatial method is
@@ -177,7 +172,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
 \item{spot_alpha, spot_size, spot_clr}{Parameters to set the aesthetics

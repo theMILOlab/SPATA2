@@ -37,6 +37,9 @@ If there is only one spatial annotation in the object, the function
 will default to using it. However, if there are multiple annotations,
 this argument must be explicitly specified to identify the target annotation.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
 \item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
 the periphery up to which the screening is conducted. (See details for more.)

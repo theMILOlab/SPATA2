@@ -114,7 +114,7 @@ Names of the list slots refer to the variable. The content of the slot refers to
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
 
 \itemize{
-\item{Single function:}{ \code{transform_with = list(GFAP = log10)}},
+\item{Single function:}{ \code{transform_with = log10}},
 \item{Multiple functions:}{ \verb{transform_with = list(GFAP = list(log10, log2)}}
 }
 
@@ -131,16 +131,11 @@ thousand data points. If the number of data points plotted is bigger than
 \item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
 to be removed prior to analysis or visualization by their barcode.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

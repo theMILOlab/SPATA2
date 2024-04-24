@@ -882,6 +882,8 @@ asSeurat <- function(object,
 #' @description Transforms an `SPATA2` object to an object of class
 #' `SingleCellExperiment`. See details for more information.
 #'
+#' @param bayes_space Logical. If `TRUE`, the function creates an object
+#' fitted to the requirements for the BayesSpace pipeline.
 #' @inherit argument_dummy params
 #' @param ... The features to be renamed specified according to
 #' the following syntax: 'new_feature_name' = 'old_feature_name'. This applies
@@ -897,25 +899,75 @@ asSeurat <- function(object,
 #' @return An object of class `SingleCellExperiment`.
 #' @export
 
-asSingleCellExperiment <- function(object, assay_name = activeAssay(object)){
+asSingleCellExperiment <- function(object,
+                                   assay_name = activeAssay(object),
+                                   bayes_space = FALSE){
 
-  seurat <- Seurat::CreateSeuratObject(getCountMatrix(object, assay_name = assay_name))
+  require(SingleCellExperiment)
 
-  seurat@meta.data <-
-    dplyr::left_join(
-      x = tibble::rownames_to_column(seurat@meta.data, var = "barcodes"),
-      y = getCoordsDf(object),
-      by = "barcodes"
-    ) %>%
-    dplyr::left_join(
-      x = .,
-      y = getMetaDf(object),
-      by = "barcodes"
-    ) %>%
-    dplyr::mutate(spot = barcodes) %>%
-    tibble::column_to_rownames(var = "barcodes")
+  if(base::isTRUE(bayes_space)){
 
-  sce <- Seurat::as.SingleCellExperiment(seurat)
+    count_mtr <- getCountMatrix(object)
+
+    keep <- Matrix::colSums(count_mtr, na.rm = TRUE) > 0
+
+    colD <-
+      getCoordsDf(object) %>%
+      dplyr::transmute(
+        spot = barcodes,
+        in_tissue = 1L,
+        row = row,
+        col = col,
+        imagerow = y_orig,
+        imagecol = x_orig
+      ) %>%
+      base::as.data.frame()
+
+    base::rownames(colD) <- colD$barcodes
+
+    colD <-  S4Vectors::DataFrame(colD)
+
+    rowD <-
+      S4Vectors::DataFrame(
+        gene_id = "ID",
+        gene_name = base::rownames(count_mtr),
+        row.names = base::row.names(count_mtr)
+        )
+
+    sce <-
+      SingleCellExperiment(
+        assays = list(counts = count_mtr),
+        colData = colD,
+        rowData = rowD
+      )
+
+    sce <- sce[ ,keep]
+
+    sce@metadata$BayesSpace.data <- list()
+    sce@metadata$BayesSpace.data$platform <- "Visium"
+    sce@metadata$BayesSpace.data$is.enhanced <- FALSE
+
+  } else {
+
+    seurat <- Seurat::CreateSeuratObject(getCountMatrix(object, assay_name = assay_name))
+
+    seurat@meta.data <-
+      dplyr::left_join(
+        x = tibble::rownames_to_column(seurat@meta.data, var = "barcodes"),
+        y = getCoordsDf(object),
+        by = "barcodes"
+      ) %>%
+      dplyr::left_join(
+        x = .,
+        y = getMetaDf(object),
+        by = "barcodes"
+      ) %>%
+      dplyr::mutate(spot = barcodes) %>%
+      tibble::column_to_rownames(var = "barcodes")
+
+    sce <- Seurat::as.SingleCellExperiment(seurat)
+
+  }
 
   return(sce)
 

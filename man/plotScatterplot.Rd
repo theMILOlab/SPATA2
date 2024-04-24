@@ -23,6 +23,9 @@ plotScatterplot(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
+of interest.}
+
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 
 \item{smooth_clr}{Character value. The color with which to display the smoothed

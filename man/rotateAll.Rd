@@ -43,7 +43,7 @@ are rotated. Should range from 1-359.}
 \item{clockwise}{Logical value. If \code{TRUE}, rotation is performed
 in clockwise direction. If \code{FALSE}, the other way round.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
 \item{...}{Additional arguments given to \code{give_feedback()}.}

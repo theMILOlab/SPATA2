@@ -12,21 +12,6 @@ such as \emph{Visium} or \emph{SlideSeq}.
 \section{Slots}{
 
 \describe{
-\item{\code{amccd}}{character Represents the Average Minimal Center-to-Center Distance (AMCCD).
-This distance measure is calculated by identifying the nearest neighbor of each data point
-in 2D space, computing their euclidean distance and averaging all the distances computed
-that way. Therefore, the measure corresponds to the density of data points in the data set.
-
-With methods where data points are uniformly spaced with a fixed center-to-center distance,
-such as in the Visium platform, the AMCCD is equivalent to this fixed distance. For example,
-in the case of Visium, where the fixed distance is 100 µm, then the AMCCD is also 100 µm, and
-no additional computation is necessary.
-
-For \code{spata2} objects initialized through methods other than \code{initiateSpataObject()},
-such as \code{initiateSpataObjectMERFISH()}, the AMCCD is set (or) computed automatically.
-
-The value of this slot is a character to allow a unit suffix. (Should be a SI unit.)}
-
 \item{\code{capture_area}}{list
 A list of length two, with elements named \emph{x} and \emph{y}. Each element is a vector of length two.
 This slot specifies the coordinates of the opposite corners of a rectangular area.

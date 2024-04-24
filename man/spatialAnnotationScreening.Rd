@@ -83,7 +83,7 @@ with \code{?SpatialAnnotationScreening} for more information.
 }
 \description{
 Screens the sample for numeric variables that stand
-in meaningful, spatial relation to annotated structures/areas.
+in meaningful, spatial relation to annotated structures/areas, \link[=concept_spatial_annotation]{spatial annotations}.
 For a detailed explanation on how to define the parameters \code{distance},
 \code{n_bins_dist}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
 see details section.

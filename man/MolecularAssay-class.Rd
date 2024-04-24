@@ -23,6 +23,8 @@ use by default.}
 \item{\code{analysis}}{List of analysis results where each element can represent
 a different analysis aspect.}
 
+\item{\code{meta_var}}{Data.frame of meta data for the molecules.}
+
 \item{\code{mtr_counts}}{Matrix object storing raw counts metrics from the assay. Rownames
 should corresponds to the molecule names. Colnames should correspond to the
 barcodes (IDs) of the observations to which the molecule counts were mapped.}

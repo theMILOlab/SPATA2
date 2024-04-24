@@ -72,8 +72,12 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggpLayerZoom()}.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
+
+\item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
+the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
+simply outlines everything with one single polygon.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
@@ -84,16 +88,16 @@ If \code{NULL}, the active histo image is chosen by default.}
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
-\item{xrange, yrange}{Vector of length two or \code{NULL}. If not \code{NULL},
-specifies the x- and y-range to which the output image is cropped. E.g.
-\code{xrange = c(200, 500)} results in the image being cropped from
-x-coordinate 200px up to x-coordinate 500px. If \code{NULL}, the original image
-ranges are taken.
+\item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
+spatial transformation instructions saved during image alignment of
+the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
+been used.}
 
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in European units of length the input is
-immediately converted to pixel units. See info section \emph{Distance measures}
-for more information.}
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{unit}{Character value. Units of x- and y-axes. Defaults
 to \emph{'px'}.}

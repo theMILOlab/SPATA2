@@ -35,11 +35,14 @@ regarding the image. Protected slots are:
 \item{\code{outline}}{list. List of two data.frames in which each row corresponds to
 a vertice of the polygon required to outline the whole tissue identified on
 the image or single contiguous tissue sections.
+
 \itemize{
-\item{\emph{tissue_whole}:}{ Data.frame of two variables \emph{x} and \emph{y}.}
-\item{\emph{tissue_sections}:} {Data.frame of two variables \emph{x}, \emph{y} and \emph{section} to
+\item{\emph{tissue_whole}:}{ Data.frame of two variables \emph{x_orig} and \emph{y_orig}.}
+\item{\emph{tissue_sections}:} {Data.frame of two variables \emph{x_orig}, \emph{y_orig} and \emph{section} to
 outline the tissue section outlined.}
-}}
+}
+
+See the vignette about \code{\link[=concept_tissue_outline]{tissue outline}} for more information.}
 
 \item{\code{overlap}}{numeric. Numeric vector of length two. Quantifies the overlap
 of the tissue outline of this image with the tissue outline of the reference image
@@ -56,10 +59,10 @@ with which other histology images are aligned.}
 \item{\code{sample}}{character. The name of the tissue portion to which this image belongs.}
 
 \item{\code{scale_factors}}{list. List of single numeric values serving as scale factors for
-multiple functionalities. Reserved slot names:
+multiple purposes Reserved slot names:
 \itemize{
 \item{\emph{coords}:} {Coordinate scale factor to be multiplied by the original x and y variables (\emph{x_orig}, \emph{y_orig}) upon
-extraction of the coordinatse data.frame (resulting in the \emph{x} and \emph{y} variables) ensuring alignment with the image.}
+extraction of the coordinates data.frame (resulting in the \emph{x} and \emph{y} variables) ensuring alignment with the image.}
 \item{\emph{pixel}:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 attribute called "unit" conforming to the format "SI-unit/px".}
 }

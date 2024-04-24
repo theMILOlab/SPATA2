@@ -4,9 +4,6 @@
 \alias{concept_area_measure}
 \title{Area measures}
 \description{
-This document provides an overview of how area measures and
-SI units are utilized in SPATA2.
-
 Several functions in \code{SPATA2} have arguments that take \emph{area input}.
 To specifically refer to an area the unit must be specified. There are
 three ways to create valid input for these arguments.

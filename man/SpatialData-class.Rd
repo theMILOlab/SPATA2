@@ -6,8 +6,11 @@
 \alias{SpatialData}
 \title{The \code{SpatialData} - Class}
 \description{
-S4 class that represents a set of histological images from one
-tissue slide or several consecutive slides of one and the same tissue portion.
+S4 class that represents spatial data. This includes the spatial
+positions of \emph{\link[=concept_observations]{observations}}, a set of histological images from one
+tissue slide or several consecutive slides of one and the same tissue portion as well
+as additional spatial aspects such as \emph{\link[=concept_spatial_annotations]{spatial annotations}}
+or \emph{\link[=concept_spatial_trajectories]{spatial trajectories}}.
 }
 \section{Slots}{
 
@@ -29,6 +32,17 @@ or known entities located on the imaged tissue, such as cells or capture spots.}
 
 \item{\code{name_img_ref}}{character. The name of the image that is used as a reference for aligning
 every additional image in slot @images_registered.}
+
+\item{\code{outline}}{list. List of two data.frames in which each row corresponds to
+a vertice of the polygon required to outline all \link[=concept_observations]{observations}.
+
+\itemize{
+\item{\emph{tissue_whole}:}{ Data.frame of two variables \emph{x_orig} and \emph{y_orig}.}
+\item{\emph{tissue_sections}:} {Data.frame of two variables \emph{x_orig}, \emph{y_orig} and \emph{section} to
+outline the tissue section outlined.}
+}
+
+See the vignette about \code{\link[=concept_tissue_outline]{tissue outline}} for more information.}
 
 \item{\code{sample}}{character. String to identify the imaged tissue.}
 

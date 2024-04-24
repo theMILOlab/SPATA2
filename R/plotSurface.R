@@ -625,13 +625,13 @@ setMethod(
     hlpr_assign_arguments(object)
 
     coords_df <- getCoordsDf(object)
+    variables <- base::unique(color_by)
 
     joined_df <-
       joinWithVariables(
         object = object,
         spata_df = coords_df,
         variables = variables,
-        average_genes = FALSE,
         method_gs = method_gs,
         smooth = smooth,
         smooth_span = smooth_span,

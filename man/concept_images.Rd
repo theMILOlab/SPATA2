@@ -4,8 +4,6 @@
 \alias{concept_images}
 \title{Images}
 \description{
-This document elaborates on image handling in SPATA2.
-
 The \code{\link{SPATA2}} object allows for the storage of multiple images by registering
 them one by one with \code{\link[=registerImage]{registerImage()}}. For each registered image, a container
 object of class \code{\link{HistoImage}} is created, storing the image and/or the file

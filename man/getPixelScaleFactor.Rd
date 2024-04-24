@@ -47,7 +47,7 @@ objects of classes for which a method has been defined.}
 \item{unit}{Character value. The SI-unit of interest.
 Determines the reference unit for the pixel size.}
 
-\item{img_name}{Character value. The name of the \code{HistoImage} of interest.
+\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
 If \code{NULL}, the active histo image is chosen by default.}
 
 \item{switch}{Logical value. If \code{TRUE}, the unit of the output is switched.
