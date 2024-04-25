@@ -53,8 +53,9 @@ the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
 the two dimensional space being cropped from x-coordinate 200px up to
 x-coordinate 500px. If \code{NULL}, the original range is used.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
 A plot that is immediately plotted.

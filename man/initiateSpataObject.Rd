@@ -12,8 +12,8 @@ initiateSpataObject(
   img = NULL,
   img_dir = NULL,
   img_name = "image1",
-  spatial_method = "Undefined",
   scale_factors = list(),
+  spatial_method = "Undefined",
   verbose = TRUE,
   ...
 )
@@ -41,6 +41,11 @@ a file directory.}
 \item{img_name}{Character value. The name of the reference image. Only
 required if at least \code{img} or \code{img_dir} is specified.}
 
+\item{scale_factors}{A list of \link[=concept_scale_factors]{scale_factors}
+set in slot @scale_factors of the \code{\link{HistoImage}} object (if the \code{SPATA2} object is initiated
+with an image, see details) or slot @scale_factors of the \code{\link{SpatialData}} object, if
+no image is provided.}
+
 \item{spatial_method}{Character value or object of class \code{\link{SpatialMethod}}.
 If character, one of \code{validSpatialMethods()}.}
 
@@ -58,7 +63,7 @@ object.}
 An object of class \code{SPATA2}.
 }
 \description{
-Initiates a \code{SPATA2} object using the basic inputs: a coordinates
+Initiates a \code{\link{SPATA2}} object using the basic inputs: a coordinates
 data.frame and a count matrix.
 }
 \section{Initiating the object with an image}{

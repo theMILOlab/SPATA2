@@ -31,8 +31,9 @@ is registered. If so, the outline from the image specified with \code{img_name} 
 If there are no images, the outline computed with \code{identifyTissueOutline(..., method = 'obs')}
 is returned.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
 spatial transformation instructions saved during image alignment of

@@ -3160,14 +3160,11 @@ ggpLayerThemeCoords <- function(unit = NULL){
 }
 
 
-#' @title Add a hull that outlines the tissue
+#' @title Add a hull outlining the tissue
 #'
 #' @description Adds a hull that outlines the tissue.
 #'
-#' @param method Character value. One of `c("coords", "image")`. If *'coords'*,
-#' the outline is computed based on the coordinate position of the plotted data points
-#' (cells, spots etc.). If *'image'*, the outline is plotted solely based on
-#' the image analysis results.
+#' @inherit getTissueOutlineDf params
 #' @param smooth_with Character vaule. Sets the method with which to smooth
 #' the tissue outline polygon. One of `c("chaikin", "densify", "ksmooth", "spline", "none")`.
 #' If *'none'*, no smoothing is conducted.
@@ -3175,7 +3172,8 @@ ggpLayerThemeCoords <- function(unit = NULL){
 #' provided in pixel units!
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
-#' @param ... Additional arguments given to `ggforce::geom_mark_hull()`
+#' @param ... Additional arguments given to [`smoothr::smooth()`] depending on
+#' the input for `smooth_with`.
 #'
 #' @param incl_edge Logical. If `TRUE`, include tissue section outline. See examples of [`getTissueOutlineDf()`].
 #'
@@ -3206,7 +3204,7 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "SPATA2",
   definition = function(object,
-                        method = "image",
+                        method = NULL,
                         img_name = activeImage(object),
                         by_section = TRUE,
                         fragments = FALSE,
@@ -3214,9 +3212,8 @@ setMethod(
                         line_color = "black",
                         line_size = 1,
                         line_type = "solid",
-                        outline_fct = c(2.25, 2.75),
-                        use_scattermore = FALSE,
                         transform = TRUE,
+                        smooth_with = "none",
                         scale_fct = 1,
                         expand_outline = recBinwidth(object, "px")/1.25,
                         ...){
@@ -3237,9 +3234,9 @@ setMethod(
         line_type = line_type,
         transform = transform,
         scale_fct = scale_fct,
+        smooth_with = smooth_with,
         expand_outline = expand_outline,
         outline_fct = outline_fct,
-        use_scattermore = use_scattermore,
         ...
       )
 
@@ -3254,7 +3251,7 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "SpatialData",
   definition = function(object,
-                        method = "image",
+                        method = NULL,
                         img_name = activeImage(object),
                         by_section = TRUE,
                         fragments = FALSE,
@@ -3263,19 +3260,39 @@ setMethod(
                         line_size = 1,
                         line_type = "solid",
                         transform = TRUE,
-                        outline_fct = c(1.75, 2.75),
-                        use_scattermore = FALSE,
+                        smooth_with = "none",
                         scale_fct = 1,
                         expand_outline = 0,
-                        bcs_rm = character(0),
                         ...){
 
-    confuns::check_one_of(
-      input = method,
-      against = c("coords", "image", "points")
-    )
+    expand_outline <-
+      as_pixel(expand_outline, object = object, add_attr = FALSE)
+
+    if(base::is.null(method)){
+
+      if(containsHistoImages(object)){
+
+        method <- "image"
+
+      } else {
+
+        method <- "obs"
+
+      }
+
+    } else {
+
+      confuns::check_one_of(
+        input = method,
+        against = c("obs", "image")
+      )
+
+    }
+
 
     if(method == "image"){
+
+      containsTissueOutline(object, method = "image", error = TRUE)
 
       out <-
         getHistoImage(
@@ -3292,31 +3309,70 @@ setMethod(
           line_type = line_type,
           transform = transform,
           scale_fct = scale_fct,
+          smooth_with = smooth_with,
           expand_outline = expand_outline,
           ...
         )
 
-    } else {
+    } else if(method == "obs") {
 
-      coords_df <-
-        getCoordsDf(object) %>%
-        dplyr::filter(!barcodes %in% {{bcs_rm}})
+      containsTissueOutline(object, method = "obs", error = TRUE)
+
+      outline_df <-
+        getTissueOutlineDf(object, by_section = by_section, method = "obs")  %>%
+        dplyr::mutate(
+          dplyr::across(
+            .cols = dplyr::where(fn = base::is.numeric),
+            .fns = ~ .x * scale_fct
+          )
+        ) %>%
+        process_outline_df(smooth_with = smooth_with, expand_outline = expand_outline, ...)
+
+      if(!by_section){ outline_df$section <- "tissue_section_1"}
+
+      if(base::isFALSE(fragments)){
+
+        outline_df <- dplyr::filter(outline_df, !stringr::str_detect(section, "tissue_fragment"))
+
+      } else if(base::is.character(fragments)){
+
+        line_color_fragments <- fragments[1]
+
+      } else {
+
+        line_color_fragmetns <- line_color
+
+      }
 
       out <-
-        ggpLayerTissueOutline(
-          object = coords_df,
-          method = method,
-          by_section = by_section,
-          line_alpha = line_alpha,
-          line_color = line_color,
-          line_size = line_size,
-          line_type = line_type,
-          outline_fct = outline_fct,
-          use_scattermore = use_scattermore,
-          scale_fct = scale_fct,
-          expand_outline = expand_outline,
-          ...
-        )
+        purrr::map(
+          .x = base::unique(outline_df$section),
+          .f = function(s){
+
+            outline <- dplyr::filter(outline_df, section == {{s}})
+
+            if(stringr::str_detect(s, pattern = "fragment")){
+
+              lc <- line_color_fragments
+
+            } else {
+
+              lc <- line_color
+
+            }
+
+            ggplot2::geom_polygon(
+              data = outline,
+              mapping = ggplot2::aes(x = x, y = y, group = section),
+              alpha = line_alpha,
+              color = lc,
+              fill = NA,
+              linetype = line_type
+            )
+
+          }
+        ) %>%
+        purrr::set_names(nm = base::unique(outline_df$section))
 
     }
 
@@ -3368,59 +3424,12 @@ setMethod(
     }
 
     df <-
-      purrr::map_df(
-        .x = base::unique(df[["section"]]),
-        .f = function(s){
-
-          mtr_section <-
-            dplyr::filter(df, section == {{s}}) %>%
-            dplyr::select(x, y) %>%
-            base::as.matrix()
-
-          if(smooth_with == "chaikin"){
-
-            mtr_smoothed <-
-              smoothr::smooth_chaikin(x = mtr_section)
-
-          } else if(smooth_with == "densify"){
-
-            mtr_smoothed <-
-              smoothr::smooth_densify(x = mtr_section)
-
-          } else if(smooth_with == "ksmooth"){
-
-            mtr_smoothed <-
-              smoothr::smooth_ksmooth(x = mtr_section)
-
-          } else if(smooth_with == "spline"){
-
-            mtr_smoothed <-
-              smoothr::smooth_spline(x = mtr_section)
-
-          } else if(smooth_with == "none"){
-
-            mtr_smoothed <- mtr_section
-
-          }
-
-          out <-
-            base::as.data.frame(mtr_smoothed) %>%
-            magrittr::set_colnames(value = c("x", "y"))
-
-          expand_outline <- as_pixel(expand_outline, object = object)
-
-          if(expand_outline > 0){
-
-            out <- buffer_area(out, buffer = expand_outline)
-
-          }
-
-          out[["section"]] <- s
-
-          return(out)
-
-        }
-      )
+      process_outline_df(
+        df = df,
+        smooth_with = smooth_with,
+        expand_outline = expand_outline,
+        ...
+        )
 
     # no effect if by_section = TRUE/FALSE
     if(base::isFALSE(fragments)){
@@ -3456,8 +3465,7 @@ setMethod(
             color = line_color,
             fill = NA,
             size = line_size,
-            linetype = line_type,
-            ...
+            linetype = line_type
           )
         )
 
@@ -3490,8 +3498,7 @@ setMethod(
               color = color,
               fill = NA,
               size = line_size,
-              linetype = line_type,
-              ...
+              linetype = line_type
             )
 
           }

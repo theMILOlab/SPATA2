@@ -45,6 +45,8 @@ setMethod(
   signature = "SpatialData",
   definition = function(object, img_name = activeImage(object), ...){
 
+    containsHistoImages(object, error = TRUE)
+
     confuns::check_one_of(
       input = img_name,
       against = getImageNames(object),
@@ -157,7 +159,7 @@ setMethod(
 
     deprecated(...)
 
-    containsPseudoImage(object, error = TRUE)
+    containsHistoImages(object, error = TRUE)
 
     feedback_range_input(xrange = xrange, yrange = yrange)
 

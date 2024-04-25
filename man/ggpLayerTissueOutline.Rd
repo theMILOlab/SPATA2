@@ -6,13 +6,13 @@
 \alias{ggpLayerTissueOutline,SpatialData-method}
 \alias{ggpLayerTissueOutline,HistoImage-method}
 \alias{ggpLayerTissueOutline,data.frame-method}
-\title{Add a hull that outlines the tissue}
+\title{Add a hull outlining the tissue}
 \usage{
 ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{SPATA2}(
   object,
-  method = "image",
+  method = NULL,
   img_name = activeImage(object),
   by_section = TRUE,
   fragments = FALSE,
@@ -20,9 +20,8 @@ ggpLayerTissueOutline(object, ...)
   line_color = "black",
   line_size = 1,
   line_type = "solid",
-  outline_fct = c(2.25, 2.75),
-  use_scattermore = FALSE,
   transform = TRUE,
+  smooth_with = "none",
   scale_fct = 1,
   expand_outline = recBinwidth(object, "px")/1.25,
   ...
@@ -30,7 +29,7 @@ ggpLayerTissueOutline(object, ...)
 
 \S4method{ggpLayerTissueOutline}{SpatialData}(
   object,
-  method = "image",
+  method = NULL,
   img_name = activeImage(object),
   by_section = TRUE,
   fragments = FALSE,
@@ -39,11 +38,9 @@ ggpLayerTissueOutline(object, ...)
   line_size = 1,
   line_type = "solid",
   transform = TRUE,
-  outline_fct = c(1.75, 2.75),
-  use_scattermore = FALSE,
+  smooth_with = "none",
   scale_fct = 1,
   expand_outline = 0,
-  bcs_rm = character(0),
   ...
 )
 
@@ -80,15 +77,19 @@ ggpLayerTissueOutline(object, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}}
+\item{...}{Additional arguments given to \code{\link[smoothr:smooth]{smoothr::smooth()}} depending on
+the input for \code{smooth_with}.}
 
-\item{method}{Character value. One of \code{c("coords", "image")}. If \emph{'coords'},
-the outline is computed based on the coordinate position of the plotted data points
-(cells, spots etc.). If \emph{'image'}, the outline is plotted solely based on
-the image analysis results.}
+\item{method}{Character value. Either \emph{'obs'} or \emph{'image'}. Decides whether
+the tissue outline computed based on the \link[=concept_observations]{observations}
+or the image is used. If \code{method = NULL}, the function checks first if any \code{\link{HistoImage}}
+is registered. If so, the outline from the image specified with \code{img_name} is returned.
+If there are no images, the outline computed with \code{identifyTissueOutline(..., method = 'obs')}
+is returned.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
 the potential for multiple tissue sections. If \code{FALSE}, the outline is used which
@@ -103,25 +104,22 @@ simply outlines everything with one single polygon.}
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
 
-\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
-\code{scattermore::geom_scattermore()} which allows quick plotting of several
-thousand data points. If the number of data points plotted is bigger than
-10.000 it is used anyway.}
-
 \item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
 spatial transformation instructions saved during image alignment of
 the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
 been used.}
 
-\item{expand_outline}{Distance measure with which to expand the outline. Must be
-provided in pixel units!}
-
-\item{bcs_rm}{Character vector or \code{NULL}. If character, specifies the observations
-to be removed prior to analysis or visualization by their barcode.}
-
 \item{smooth_with}{Character vaule. Sets the method with which to smooth
 the tissue outline polygon. One of \code{c("chaikin", "densify", "ksmooth", "spline", "none")}.
 If \emph{'none'}, no smoothing is conducted.}
+
+\item{expand_outline}{Distance measure with which to expand the outline. Must be
+provided in pixel units!}
+
+\item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
+\code{scattermore::geom_scattermore()} which allows quick plotting of several
+thousand data points. If the number of data points plotted is bigger than
+10.000 it is used anyway.}
 
 \item{incl_edge}{Logical. If \code{TRUE}, include tissue section outline. See examples of \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}.}
 }

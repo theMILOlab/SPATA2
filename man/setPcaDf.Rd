@@ -6,7 +6,7 @@
 \alias{setUmapDf}
 \title{Set dimensional reductions data.frames}
 \usage{
-setPcaDf(object, pca_df, of_sample = "", fdb_fn = "stop")
+setPcaDf(object, pca_df, fdb_fn = "stop")
 
 setTsneDf(object, tsne_df, ...)
 
@@ -18,9 +18,6 @@ setUmapDf(object, umap_df, ...)
 \item{pca_df, tsne_df, umap_df}{The data.frame composed of the variables
 \emph{barcodes}, \emph{sample} and the variables containing the barcode-
 spot embedding.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
 }
 \value{
 A spata object containing the set input.

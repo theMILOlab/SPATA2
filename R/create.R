@@ -1129,7 +1129,7 @@ createHistoImage <- function(img_name,
 
     } else {
 
-      warning("No directory was specified to store the image. Unloading won't be possible.")
+      warning("No directory was specified to store the image. Unloading won't be possible. Set with `setImageDir()`.")
 
     }
 

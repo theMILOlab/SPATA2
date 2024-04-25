@@ -3405,12 +3405,11 @@ setMethod(
 
       } else {
 
-        stop("No tissue outlien found in this object.")
+        stop("No tissue outline found in this object.")
 
       }
 
     }
-
 
     if(method == "image"){
 

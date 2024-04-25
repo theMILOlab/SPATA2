@@ -164,7 +164,7 @@ setMethod(
   definition = function(object, error = FALSE, ...){
 
     getSpatialData(object) %>%
-      containsHistoImages(object, error = error)
+      containsHistoImages(object = ., error = error)
 
   }
 )
@@ -182,7 +182,7 @@ setMethod(
 
     if(base::isFALSE(out) & base::isTRUE(error)){
 
-      stop("This objects of class `HistoImage` found.")
+      stop("No images found in this object.")
 
     }
 
@@ -737,8 +737,13 @@ setMethod(
                         img_name = activeImage(object),
                         error = FALSE){
 
-    getHistoImage(object, img_name = img_name) %>%
-      containsTissueOutline(object = ., error = error)
+    getSpatialData(object) %>%
+      containsTissueOutline(
+        object = .,
+        img_name = img_name,
+        method = method,
+        error = error
+        )
 
   }
 )
@@ -748,7 +753,10 @@ setMethod(
 setMethod(
   f = "containsTissueOutline",
   signature = "SpatialData",
-  definition = function(object, method = NULL,  img_name = activeImage(object), error = FALSE){
+  definition = function(object,
+                        method = NULL,
+                        img_name = activeImage(object),
+                        error = FALSE){
 
     if(base::is.null(method)){
 
@@ -784,9 +792,23 @@ setMethod(
 
       } else {
 
-        out <-
-          getHistoImage(object, img_name = img_name) %>%
-          containsTissueOutline(object = ., error = error)
+        if(containsHistoImages(object)){
+
+          out <-
+            getHistoImage(object, img_name = img_name) %>%
+            containsTissueOutline(object = ., error = error)
+
+        } else {
+
+          out <- FALSE
+
+          if(base::isTRUE(error)){
+
+            stop("There are no images in this object. Choose different method for tissue outline.")
+
+          }
+
+        }
 
       }
 

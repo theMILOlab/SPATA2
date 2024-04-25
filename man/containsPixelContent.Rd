@@ -18,8 +18,9 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the
 function throws an error.}

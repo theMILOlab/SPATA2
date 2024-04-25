@@ -33,8 +33,9 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \description{
 The \verb{flip*()} family mirror inverts the current image

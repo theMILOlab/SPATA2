@@ -3,7 +3,7 @@
 
 #' @title Initiate a `SPATA2` object
 #'
-#' @description Initiates a `SPATA2` object using the basic inputs: a coordinates
+#' @description Initiates a [`SPATA2`] object using the basic inputs: a coordinates
 #' data.frame and a count matrix.
 #'
 #'
@@ -26,6 +26,10 @@
 #' If character, one of `validSpatialMethods()`.
 #' @param meta,misc List of meta- and miscellaneous data for the [`SpatialData`]
 #' object.
+#' @param scale_factors A list of \link[=concept_scale_factors]{scale_factors}
+#' set in slot @@scale_factors of the [`HistoImage`] object (if the `SPATA2` object is initiated
+#' with an image, see details) or slot @@scale_factors of the [`SpatialData`] object, if
+#' no image is provided.
 #'
 #' @inherit argument_dummy params
 #'
@@ -57,8 +61,8 @@ initiateSpataObject <- function(sample_name,
                                 img = NULL,
                                 img_dir = NULL,
                                 img_name = "image1",
-                                spatial_method = "Undefined",
                                 scale_factors = list(),
+                                spatial_method = "Undefined",
                                 verbose = TRUE,
                                 ...){
 
@@ -131,6 +135,7 @@ initiateSpataObject <- function(sample_name,
         meta = meta,
         method = spatial_method,
         sample = sample_name,
+        scale_factors = scale_factors,
         version = current_spata2_version
       )
 

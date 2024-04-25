@@ -121,10 +121,11 @@ across_dummy <- function(across, across_subset, relevel){}
 #' If `NULL`, all image annotations are included - subsequent selection with `tags` and
 #' `test` is possible.
 #'
-#' @param img_name Character value. The name of the [`HistoImage`] of interest.
-#' If `NULL`, the active histo image is chosen by default.
+#' @param img_name Character value. The name of the image of interest.
+#' If `NULL`, the active histo image is chosen by default. Either way, must
+#' be one of [`getImageNames()`].
 #'
-#' @param img_names Character vector. The names of the [`HistoImage`]s of interest.
+#' @param img_names Character vector. The names of the images of interest.
 #'
 #' @param incl_edge Logical value. If `TRUE`, the function includes the tissue edge
 #' (see [`identifyTissueOutline()`]) in the visualization and removes the parts of

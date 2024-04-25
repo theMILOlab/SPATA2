@@ -787,6 +787,67 @@ process_ranges <- function(xrange = getImageRange(object)$x,
 }
 
 #' @keywords internal
+process_outline_df <- function(df,
+                               smooth_with,
+                               expand_outline = 0, # numeric!
+                               ...
+                               ){
+
+  purrr::map_df(
+    .x = base::unique(df[["section"]]),
+    .f = function(s){
+
+      mtr_section <-
+        dplyr::filter(df, section == {{s}}) %>%
+        dplyr::select(x, y) %>%
+        base::as.matrix()
+
+      if(smooth_with == "chaikin"){
+
+        mtr_smoothed <-
+          smoothr::smooth_chaikin(x = mtr_section, ...)
+
+      } else if(smooth_with == "densify"){
+
+        mtr_smoothed <-
+          smoothr::smooth_densify(x = mtr_section, ...)
+
+      } else if(smooth_with == "ksmooth"){
+
+        mtr_smoothed <-
+          smoothr::smooth_ksmooth(x = mtr_section, ...)
+
+      } else if(smooth_with == "spline"){
+
+        mtr_smoothed <-
+          smoothr::smooth_spline(x = mtr_section, ...)
+
+      } else if(smooth_with == "none"){
+
+        mtr_smoothed <- mtr_section
+
+      }
+
+      out <-
+        base::as.data.frame(mtr_smoothed) %>%
+        magrittr::set_colnames(value = c("x", "y"))
+
+      if(expand_outline > 0){
+
+        out <- buffer_area(out, buffer = expand_outline)
+
+      }
+
+      out[["section"]] <- s
+
+      return(out)
+
+    }
+  )
+
+}
+
+#' @keywords internal
 process_sce_bayes_space <- function(sce,
                                     spatialPreprocess = list(),
                                     qTune = list(qs = 3:7),
@@ -1139,6 +1200,8 @@ processImage <- function(object,
                          ...){
 
   hlpr_assign_arguments(object)
+
+  containsHistoImages(object, error = TRUE)
 
   object <- identifyPixelContent(object, img_name = img_name, verbose = verbose, ...)
 

@@ -739,40 +739,6 @@ SpatialTrajectoryScreening <- setClass(Class = "SpatialTrajectoryScreening",
 
 
 
-# V -----------------------------------------------------------------------
-
-
-#' @title The \code{Visium} - Class
-#'
-#' @description Abstracts the concept of 10X Visium spatial biology experiments.
-#'
-#' @slot capture_area list. List of length two. Provides
-#' standardized measures of the active region where tissue can
-#' be placed on a Visium slide.
-#' @slot ccd character. The center to center distance
-#' of the barcoded spots provided in a valid `SPATA2` spatial measure.
-#' @slot fiducial_frame list. List of length two. Provides
-#' standardized measures of spots help the sample microscopist see where
-#' to place tissue and are also used by Space Ranger to determine
-#' where the capture area is in an image.
-#' @slot info list. List of miscellaneous meta data for the method.
-#' @slot name character. The name of the spatial method.
-#' @slot observational_unit character. Single word that describes
-#' the observational unit of the experiment.
-#'
-#' @inheritSection section_dummy Distance measures
-#'
-#' @export
-Visium <- setClass(Class = "Visium",
-                   contains = "SpatialMethod",
-                   slots = list(
-                     capture_area = "list",
-                     ccd = "character",
-                     fiducial_frame = "list"
-                   )
-)
-
-
 
 # Deprecated --------------------------------------------------------------
 

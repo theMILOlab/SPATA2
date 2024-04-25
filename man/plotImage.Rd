@@ -72,8 +72,9 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Additional arguments given to \code{ggpLayerZoom()}.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{by_section}{Logical value. If \code{TRUE}, the outline is used which acknowledges
 the potential for multiple tissue sections. If \code{FALSE}, the outline is used which

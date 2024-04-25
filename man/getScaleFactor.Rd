@@ -23,8 +23,9 @@ objects of classes for which a method has been defined.}
 
 \item{fct_name}{Character value. Name of the scale factor.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \value{
 Single value whose properties depend on \code{fct_name}.

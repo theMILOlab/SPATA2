@@ -545,11 +545,7 @@ setMethod(
                         frgmt_threshold = c(0.001, 0.05),
                         verbose = TRUE){
 
-    if(base::is.null(img_name)){
-
-      img_name <- activeImage(object)
-
-    }
+    containsHistoImages(object, error = TRUE)
 
     confuns::check_one_of(
       input = img_name,
@@ -1255,7 +1251,8 @@ setMethod(
 #' multiple images, the function iterates over all of them. Since results of both methods
 #' are stored in different locations, the object can contain results of both methods.
 #' When extracting the tissue outline via [`getTissueOutlineDf()`] or [`ggpLayerTissueOutline()`]
-#' use argument `method` to decide on which results to use.#'
+#' use argument `method` to decide on which results to use.
+#'
 #' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`]
 #'
 #' @export
@@ -1361,7 +1358,7 @@ setMethod(
         dplyr::filter(section != "0") %>%
         dplyr::mutate(section = stringr::str_c("tissue_section", section, sep = "_"))
 
-      object@outline[["tissue_sections"]] <-
+      object@outline[["tissue_section"]] <-
         purrr::map_df(
           .x = base::unique(coords_df[["section"]]),
           .f = function(section){

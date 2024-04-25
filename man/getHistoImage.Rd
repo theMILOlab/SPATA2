@@ -27,8 +27,9 @@ objects of classes for which a method has been defined.}
 
 \item{...}{}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 }
 \description{
 Extracts the S4-containers of registered images. Note that

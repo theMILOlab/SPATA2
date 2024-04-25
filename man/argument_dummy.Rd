@@ -104,10 +104,11 @@ of the image annotations of interest. If numeric, the image annotations are pick
 If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
 \code{test} is possible.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
-\item{img_names}{Character vector. The names of the \code{\link{HistoImage}}s of interest.}
+\item{img_names}{Character vector. The names of the images of interest.}
 
 \item{incl_edge}{Logical value. If \code{TRUE}, the function includes the tissue edge
 (see \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}) in the visualization and removes the parts of

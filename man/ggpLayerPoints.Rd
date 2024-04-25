@@ -172,8 +172,9 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{spot_alpha, spot_size, spot_clr}{Parameters to set the aesthetics
 alpha, size, and color of the spots. Arguments \code{alpha_by} and \code{color_by}

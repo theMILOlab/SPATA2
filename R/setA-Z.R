@@ -677,11 +677,9 @@ setInitiationInfo <- function(object, additional_input = list()){
 #' @export
 #'
 
-setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
+setPcaDf <- function(object, pca_df, fdb_fn = "stop"){
 
   check_object(object)
-
-  of_sample <- check_sample(object = object, of_sample = of_sample, of.length = 1)
 
   if(base::identical(pca_df, base::data.frame())){
 
@@ -701,7 +699,7 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
     )
 
     pca_df <-
-      dplyr::mutate(.data = pca_df, sample = {{of_sample}}) %>%
+      dplyr::mutate(.data = pca_df, sample = getSampleName(object)) %>%
       dplyr::select(barcodes, sample, dplyr::everything())
 
   }
@@ -716,7 +714,7 @@ setPcaDf <- function(object, pca_df, of_sample = "", fdb_fn = "stop"){
 
 #' @rdname setCountMatrix
 #' @export
-setProcessedMatrix <- function(object, proc_mtr, name, assay_name, ...){
+setProcessedMatrix <- function(object, proc_mtr, name, assay_name = activeAssay(object), ...){
 
   confuns::is_value(x = name, mode = "character")
 

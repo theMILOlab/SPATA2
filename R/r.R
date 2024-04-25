@@ -1004,6 +1004,8 @@ removeGenesStress <- function(object, verbose = NULL){
       c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1')
     )
 
+  genes_rm <- genes_rm[genes_rm %in% base::rownames(count_mtr)]
+
   object <-
     removeGenes(
       object = object,

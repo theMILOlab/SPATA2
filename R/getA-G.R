@@ -61,7 +61,7 @@ setMethod(
 getAssay <- function(object,
                      assay_name = activeAssay(object)){
 
-  containsAssay(object, assay_name)
+  containsAssay(object, assay_name = assay_name, error = TRUE)
 
   object@assays[[assay_name]]
 

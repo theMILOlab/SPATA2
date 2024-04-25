@@ -34,8 +34,9 @@ objects of classes for which a method has been defined.}
 \item{method}{Character value. Defines the origin based on which the outline
 is computed. Either \emph{'image'} or \emph{'obs'}.}
 
-\item{img_name}{Character value. The name of the \code{\link{HistoImage}} of interest.
-If \code{NULL}, the active histo image is chosen by default.}
+\item{img_name}{Character value. The name of the image of interest.
+If \code{NULL}, the active histo image is chosen by default. Either way, must
+be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -58,7 +59,7 @@ of \code{\link[=identifyPixelContent]{identifyPixelContent()}} for that image ar
 multiple images, the function iterates over all of them. Since results of both methods
 are stored in different locations, the object can contain results of both methods.
 When extracting the tissue outline via \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}} or \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
-use argument \code{method} to decide on which results to use.#'
+use argument \code{method} to decide on which results to use.
 }
 \seealso{
 \code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}
