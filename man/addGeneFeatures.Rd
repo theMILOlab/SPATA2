@@ -29,8 +29,7 @@ to add. See details for more.}
 \item{mtr_name}{Character value. The name of the matrix of interest. Defaults
 to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
-\item{overwrite}{Logical. If the specified feature names already exist in the
-current \code{SPATA2} object this argument must be set to TRUE in order to overwrite them.}
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

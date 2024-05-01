@@ -22,6 +22,8 @@ objects of classes for which a method has been defined.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{spat_ann}{An object of class \code{\link{SpatialAnnotation}}.}
+
+\item{spat_anns}{A list of objects of class \code{\link{SpatialAnnotation}}.}
 }
 \description{
 Sets spatial annotations in the correct slot. Expects a

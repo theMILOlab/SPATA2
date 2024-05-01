@@ -1521,36 +1521,47 @@ getCoordsRange <- function(object, fct = NULL){
 }
 
 
-#' @title Obtain data matrices
+#' @title Obtain raw counts
 #'
-#' @description Extracts count or processed data matrices.
+#' @description Extracts the unprocessed raw count matrix.
 #'
 #' @inherit argument_dummy params
 #'
-#' @return A matrix with rownames corresponding to the features and
-#'  column names corresponding to the barcodes.
+#' @return A matrix of unprocessed molecular counts with rownames corresponding
+#' to the features and column names corresponding to the barcodes.
 #'
 #' @export
-getCountMatrix <- function(object, ...){
 
-  deprecated(...)
+setGeneric(name = "getCountMatrix", def = function(object, ...){
 
-  barcodes <- getBarcodes(object)
+  standardGeneric(f = "getCountMatrix")
 
-  ma <- getAssay(object, assay_name = "transcriptomics")
+})
 
-  count_mtr <- ma@mtr_counts[, barcodes]
+#' @rdname getCountMatrix
+#' @export
+setMethod(
+  f = "getCountMatrix",
+  signature = "SPATA2",
+  definition = function(object, assay_name = activeAssay(object), ...){
 
-  if(base::is.null(count_mtr)){
-
-    stop(glue::glue("Did not find count matrix in provided spata-object."))
+    getAssay(object, assay_name = assay_name) %>%
+      getCountMatrix(object = .)
 
   }
+)
 
-  return(count_mtr)
+#' @rdname getCountMatrix
+#' @export
+setMethod(
+  f = "getCountMatrix",
+  signature = "MolecularAssay",
+  definition = function(object, ...){
 
-}
+     getMatrix(object, mtr_name = "counts")
 
+  }
+)
 
 # getD --------------------------------------------------------------------
 
@@ -1869,25 +1880,7 @@ getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_obj
 
 
 
-#' @rdname getMatrix
-#' @export
-getExpressionMatrix <- function(object,
-                                mtr_name = activeMatrix(object),
-                                assay_name = activeAssay(object),
-                                verbose = FALSE,
-                                ...){
 
-  deprecated(...)
-
-  check_matrix_name(object, mtr_name = mtr_name, assay_name = assay_name)
-
-  ma <- getAssay(object, assay_name = assay_name)
-
-  expr_mtr <- ma@mtr_proc[[mtr_name]]
-
-  return(expr_mtr)
-
-}
 
 #' @title Obtain names of stored expression matrices
 #'

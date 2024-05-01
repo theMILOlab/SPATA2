@@ -487,22 +487,21 @@ addExpressionMatrix <- function(...){
 
 
 
-#' @title Add features manually
+#' @title Add meta features
 #'
-#' @description Adds new externally generated variables to the `SPATA2` object's meta data.
+#' @description Adds new externally generated \link[=concept_variables]{features}
+#' to the `SPATA2` object's meta data.
 #'
-#' @param feature_df A data.frame that contains a variable called *barcodes* or *x* and *y* as well
+#' @param feature_df A data.frame that contains a variable called *barcodes* as well
 #' as the variables that are to be joined.
 #' @param feature_names Character vector or `NULL`. Determines which feature variables
 #' to add. See details for more.
 #'
-#' @param overwrite Logical. If the specified feature names already exist in the
-#' current `SPATA2` object this argument must be set to TRUE in order to overwrite them.
-#'
+#' @inherit argument_dummy params
 #'
 #' @details If you are only interested in adding specific features to the `SPATA2` object
 #' you can specify those with the \code{feature_names}-argument. If no variables
-#' are specified this way all variables found in the input data.frame for argument
+#' are specified this way all variables found in `feature_df` for argument
 #' \code{feature_df} are taken. (Apart from variables called \emph{barcodes, sample, x} and \emph{y}).
 #'
 #' Eventually the new features are joined via \code{dplyr::left_join()} over the
@@ -511,16 +510,6 @@ addExpressionMatrix <- function(...){
 #'
 #' @inherit update_dummy return
 #' @export
-#' @examples #Not run:
-#'
-#' mncl_clusters <- findMonocleClusters(object = spata_obj)
-#'
-#' spata_obj <- addFeatures(object = spata_obj,
-#'                          feature_names = NULL, # add all variables...
-#'                          feature_df = mncl_clusters # ... from the data.frame 'mncl_clusters'
-#'                          )
-#'
-#' getGroupingOptions(object = spata_obj)
 
 addFeatures <- function(object,
                         feature_df,
@@ -1070,6 +1059,117 @@ setMethod(
 )
 
 
+
+# addM --------------------------------------------------------------------
+
+#' @title Add a molecular assay
+#'
+#' @description Creates and adds an object of class [`MolecularAssay`]
+#' to the [`SPATA2`] object.
+#'
+#' @param active_mtr Character value. The name of the matrix chosen as
+#' the \link[=concept_active]{active} matrix. If `mtr_proc` is an empty
+#' list, this value defaults to *'counts'*
+#'
+#' @param mtr_proc A list of processed matrices set in slot @@mtr_proc.
+#' @param ... Gives access to set remaining slots of the [`MolecularAssay`]
+#' object.
+#'
+#' @inherit initiateSpataObject params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+addMolecularAssay <- function(object,
+                              omic,
+                              active_mtr = NULL,
+                              count_mtr = Matrix::Matrix(),
+                              mtr_proc = list(),
+                              overwrite = FALSE,
+                              ...){
+
+  # check validity
+  confuns::check_none_of(
+    input = omic,
+    against = getAssayNames(object),
+    ref.against = "existing assays",
+    overwrite = overwrite
+  )
+
+  # check validity
+  if(!purrr::is_empty(mtr_proc)){
+
+    confuns::is_named(input = mtr_proc)
+    mtr_proc <- confuns::discard_unnamed(input = mtr_proc)
+
+    for(i in base::seq_along(mtr_proc)){
+
+      if(!base::is.matrix(mtr_proc[[i]])){
+
+        list_slot <- base::names(mtr_proc)[i]
+
+        stop(glue::glue("Slot '{list_slot}' of `mtr_proc` does not contain a matrix."))
+
+      }
+
+    }
+
+  }
+
+  if(base::is.null(active_mtr)){
+
+    active_mtr <- "counts"
+
+  } else {
+
+    confuns::check_one_of(
+      input = active_mtr,
+      against = c("counts", base::names(mtr_proc))
+    )
+
+  }
+
+  ma <-
+    MolecularAssay(
+      mtr_counts = count_mtr,
+      mtr_proc = mtr_proc,
+      omic = omic,
+      ...
+    )
+
+  object <- setAssay(object, assay = ma)
+
+  if(base::isTRUE(activate)){
+
+    object <-
+      activateAssay(
+        object = object,
+        assay_name = omic,
+        verbose = verbose
+      )
+
+  }
+
+  if(purrr::is_empty(active_mtr)){
+
+    warning("No active matrix specified. Define with `activateMatrix()`.")
+
+  } else {
+
+    object <-
+      activateMatrix(
+        object = object,
+        mtr_name = active_mtr,
+        assay_name = omic,
+        verbose = verbose
+      )
+
+  }
+
+  return(object)
+
+}
 
 # addP --------------------------------------------------------------------
 

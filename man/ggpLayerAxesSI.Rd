@@ -9,7 +9,7 @@ ggpLayerAxesSI(
   unit = getSpatialMethod(object)@unit,
   which = c("x", "y"),
   breaks = NULL,
-  add_labs = FALSE,
+  add_labs = TRUE,
   round = 2,
   xrange = NULL,
   yrange = NULL,
@@ -143,19 +143,6 @@ to specify the input in pixel you have to use input option 1. In pixel.
  plotSurface(object, color_by = "FN1") +
   ggpLayerThemeCoords() +
   ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
-
-
- # ----- for gradient plots
-
- plotSurface(object, color_by = "FN1") +
-  ggpLayerHorizonSAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
-
- # no axis specification
- plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
-
- # with axis specification, make sure to set which = "x" as y is used for expression!
- plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1") +
-  ggpLayerAxesSI(object, unit = "mm", breaks = str_c(c(0.5, 1, 1.5, 2), "mm"), which = "x")
 
 
 }

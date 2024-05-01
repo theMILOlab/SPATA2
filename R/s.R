@@ -58,7 +58,7 @@ saveSpataObject <- function(object,
   if(base::is.character(directory_spata) & directory_spata != "not defined"){
 
     confuns::give_feedback(
-      msg = glue::glue("Saving spata-object under '{directory_spata}'."),
+      msg = glue::glue("Saving SPATA2 object under '{directory_spata}'."),
       verbose = verbose
     )
 
@@ -543,7 +543,7 @@ setMethod(f = "show", signature = "spata2", definition = function(object){
   samples <- stringr::str_c( getSampleNames(object), collapse = "', '")
   sample_ref <- base::ifelse(num_samples > 1, "samples", "sample")
 
-  dims <- dim(object@data[[object@samples[1]]]$counts)
+  dims <- dim(object@data[[object@sample[1]]]$counts)
 
   base::print(glue::glue("Spata2 object with {dims[2]} observations and {dims[1]} variables \nContains {num_samples} {sample_ref} named '{samples}'"))
 
@@ -2489,6 +2489,12 @@ spatialAnnotationScreening <- function(object,
 
   hlpr_assign_arguments(object)
 
+  # obtain coords data.frame
+  confuns::give_feedback(
+    msg = "Starting spatial annotation screening.",
+    verbose = verbose
+  )
+
   if(base::isTRUE(estimate_R2)){
 
     confuns::give_feedback(
@@ -2523,12 +2529,6 @@ spatialAnnotationScreening <- function(object,
 
   # test input
   binwidth <- as_unit(binwidth, unit = unit, object = object)
-
-  # obtain coords data.frame
-  confuns::give_feedback(
-    msg = "Starting spatial annotation screening.",
-    verbose = verbose
-  )
 
   coords_df <-
     getCoordsDfSA(
@@ -2583,7 +2583,7 @@ spatialAnnotationScreening <- function(object,
       models = sgs_out$models,
       significance = sgs_out$pval,
       results = sgs_out$eval,
-      sample = object@samples
+      sample = object@sample
     )
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -2719,7 +2719,7 @@ spatialTrajectoryScreening <- function(object,
       models = sgs_out$models,
       significance = sgs_out$pval,
       results = sgs_out$eval,
-      sample = object@samples
+      sample = object@sample
     )
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
@@ -2855,46 +2855,31 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
     ) %>%
     setMetaDf(object = object, meta_df = .)
 
-  # data matrices
-  object@data[[1]] <-
-    purrr::map(
-      .x = object@data[[1]],
-      .f = function(mtr){
-
-        if(base::is.matrix(mtr) | is(mtr, class2 = "Matrix")){
-
-          mtr <- mtr[, bcs_keep]
-
-        }
-
-        return(mtr)
-
-      })
-
+  # assays
   for(assay_name in getAssayNames(object)){
 
     ma <- getAssay(object, assay_name = assay_name)
 
+    ma@mtr_counts <- ma@mtr_counts[, bcs_keep]
+
+    for(nm in base::names(ma@mtr_proc)){
+
+      ma@mtr_proc[[nm]] <- ma@mtr_proc[[nm]][, bcs_keep]
+
+    }
+
+    if(containsCNV(object) & ma@omic == "transcriptomics"){
+
+      ma@analysis$cnv$cnv_mtr <-
+        ma@analysis$cnv$cnv_mtr[, bcs_keep]
+
+    }
+
+    object <- setAssay(object, assay = ma)
 
   }
 
-  # miscellaneous
-  object@images[[1]]@annotations <-
-    purrr::map(
-      .x = object@images[[1]]@annotations,
-      .f = function(spat_ann){
 
-        if(base::is.character(spat_ann@misc[["barcodes"]])){
-
-          spat_ann@misc[["barcodes"]] <-
-            spat_ann@misc[["barcodes"]][spat_ann@misc[["barcodes"]] %in% bcs_keep]
-
-        }
-
-        return(spat_ann)
-
-      }
-    )
 
   n_bcsp <- nBarcodes(object)
 

@@ -63,7 +63,7 @@ nest_shifted_projection_df <- function(shifted_projection_df){
 #' @export
 nMolecules <- function(object, assay_name = activeAssay(object)){
 
-  getMatrix(object, mtr_name = "counts", assay_name = assay_name, verbose = FALSE) %>%
+  getMatrix(object, mtr_name = "counts", assay_name = assay_name) %>%
     base::nrow()
 
 }
@@ -160,7 +160,7 @@ setGeneric(name = "nSpatialAnnotations", def = function(object, ...){
 #' @export
 setMethod(
   f = "nSpatialAnnotations",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
     getSpatialData(object) %>% nSpatialAnnotations()

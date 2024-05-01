@@ -26,6 +26,45 @@ setGeneric(name = "unloadImage", def = function(object, ...){
 #' @export
 setMethod(
   f = "unloadImage",
+  signature = "SPATA2",
+  definition = function(object, img_name = activeImage(object), verbose = NULL, ...){
+
+    sp_data <- getSpatialData(object)
+    sp_data <- unloadImage(sp_data, img_name = img_name, verbose = verbose)
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    return(object)
+
+  }
+)
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImage",
+  signature = "SpatialData",
+  definition = function(object, img_name, verbose = TRUE, ...){
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- unloadImage(hist_img, verbose = verbose)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+#' @rdname unloadImage
+#' @export
+setMethod(
+  f = "unloadImage",
   signature = "HistoImage",
   definition = function(object, verbose = TRUE, ...){
 
@@ -43,29 +82,6 @@ setMethod(
     return(object)
 
   })
-
-#' @rdname unloadImage
-#' @export
-setMethod(
-  f = "unloadImage",
-  signature = "SpatialData",
-  definition = function(object, img_name, verbose = TRUE, ...){
-
-    confuns::check_one_of(
-      input = name,
-      against = getImageNames(object)
-    )
-
-    hist_img <- getHistoImage(object, img_name = img_name)
-
-    hist_img <- unloadImage(hist_img, verbose = verbose)
-
-    object <- setHistoImage(object, hist_img = hist_img)
-
-    return(object)
-
-  }
-)
 
 #' @rdname unloadImage
 #' @export

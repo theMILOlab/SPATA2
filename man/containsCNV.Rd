@@ -4,11 +4,14 @@
 \alias{containsCNV}
 \title{Check availability of miscellaneous content}
 \usage{
-containsCNV(object)
+containsCNV(object, error = FALSE)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{error}{Logical. If \code{TRUE} and the input is invalid the
+function throws an error.}
 }
 \value{
 Logical value.

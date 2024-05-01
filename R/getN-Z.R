@@ -502,24 +502,6 @@ getPointSize <- function(object,
 
 }
 
-
-#' @rdname getCountMatrix
-#' @export
-getProcessedMatrix <- function(object,
-                               mtr_name = activeMatrix(object),
-                               assay_name = activeAssay(object)
-                               ){
-
-  confuns::check_one_of(
-    input = mtr_name,
-    against = getProcessedMatrixNames(object)
-  )
-
-  getMatrices(object)[[mtr_name]]
-
-}
-
-
 #' @title Obtain names of processed matrices
 #'
 #' @description Extract names of processed matrices.
@@ -527,19 +509,43 @@ getProcessedMatrix <- function(object,
 #' @inherit argument_dummy params
 #' @inherit get_names_dummy return
 #'
+#' @return Character vector.
+#'
+#' @seealso [`getMatrix()`]
+#'
 #' @export
 #'
-getProcessedMatrixNames <- function(object, assay_name = activeAssay(object)){
 
-  ma <- getAssay(object, assay_name = assay_name)
+setGeneric(name = "getProcessedMatrixNames", def = function(object, ...){
 
-  mtr_names <- base::names(ma@mtr_proc)
+  standardGeneric(f = "getProcessedMatrixNames")
 
-  mtr_names <- mtr_names[mtr_names != "counts"]
+})
 
-  return(mtr_names)
+#' @rdname getProcessedMatrixNames
+#' @export
+setMethod(
+  f = "getProcessedMatrixNames",
+  signature = "SPATA2",
+  definition = function(object, assay_name = activeAssay(object), ...){
 
-}
+    getAssay(object, assay_name = assay_name) %>%
+      getProcessedMatrixNames(object = .)
+
+  }
+)
+
+#' @rdname getProcessedMatrixNames
+#' @export
+setMethod(
+  f = "getProcessedMatrixNames",
+  signature = "MolecularAssay",
+  definition = function(object, ...){
+
+    base::names(object@mtr_proc)
+
+  }
+)
 
 
 #' @title Obtain trajectory projection

@@ -1,4 +1,29 @@
 
+#' @title Active / Inactive
+#'
+#' @description SPATA2 aims to facilitate vertical integration of multiple
+#' data modalities. Therefore, the [`SPATA2`] object allows to store multiple
+#' aspects of data at the same time. To know what to extract by default, the
+#' concept *active* and *inactive* has been integrated.
+#'
+#' For instance, multiple images can be \link[=registerImage()]{registered}.
+#' Which image to use can always be specified using the argument `img_name`. By
+#' default, the functions will pick the image that was denoted as the active image
+#' by the function [`activateImage()`]. Which image is currently active can
+#' be checked with [`activeImage()`].
+#'
+#' This concept applies to every other aspect, like \link[=MolecularAssays]{assays}
+#' and data matrices. It only becomes relevant if the `SPATA2` object contains
+#' more than one aspect.
+#'
+#' @seealso [`activeAssay()`], [`activeImage()`], [`activeMatrix()`]
+#'
+#' @name concept_active
+#' @aliases concept_active
+#'
+#' @keywords internal
+NULL
+
 
 #' @title Area measures
 #'
@@ -416,7 +441,7 @@ NULL
 #'  objects. E.g. *GFAP*, *VEGFA*, *LDH*}
 #'  \item{*signature*:}{ Specific scores or mean expression based on other numeric (mainly
 #'  molecular) data variables. E.g. gene signatures like *HM_HYPOXIA* or cell cycling scores.}
-#'  \item{*miscellaneous*:}{ Numeric variables that do not fit in any of the descriptions above
+#'  \item{*meta*:}{ Numeric variables that do not fit in any of the descriptions above
 #'  and often correspond to meta data. E.g. the number of molecule counts per observation.}
 #'  }
 #'
@@ -430,8 +455,8 @@ NULL
 #' \itemize{
 #'  \item{*cluster*:}{ Results of clustering algorithms. E.g. [`runBayesSpaceClustering()`]}
 #'  \item{*segmentation*:}{ Results of manual, spatial segmentation via [`createSpatialSegmentation()`]}
-#'  \item{*miscellaneous*:}{ Numeric variables that do not fit in any of the descriptions above.
-#'  E.g. tissue section assignment by [`identifySpatialOutliers()`].}
+#'  \item{*meta*:}{ Categorical variables that do not fit in any of the descriptions above.
+#'  E.g. group assignment by [`identifySpatialOutliers()`].}
 #'  }
 #'
 #' Grouping variables are stored as factors in the meta data.frame of slot @@meta_obs.

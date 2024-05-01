@@ -7,7 +7,13 @@
 \usage{
 setCountMatrix(object, count_mtr, assay_name = activeAssay(object), ...)
 
-setProcessedMatrix(object, proc_mtr, name, assay_name, ...)
+setProcessedMatrix(
+  object,
+  proc_mtr,
+  name,
+  assay_name = activeAssay(object),
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

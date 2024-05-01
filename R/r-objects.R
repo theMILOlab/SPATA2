@@ -467,6 +467,7 @@ depr_info <-
       "flipCoords" = "flipCoordinates",
       "getDefaultGrouping" = "activeGrouping",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
+      "getExpressionMatrix" = "getMatrix",
       "getHistoImaging" = "getSpatialData",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
       "getImageAnnotationCenter" = "getImgAnnCenter",
@@ -484,6 +485,7 @@ depr_info <-
       "getMethod" = "getSpatialMethod",
       "getMethodUnit" = "getSpatialMethod()@unit",
       "getMethodName" = "getSpatialMethod()@name",
+      "getProcessedMatrix" = "getMatrix",
       "getPubExample" = "downloadPubExample",
       "getSampleNames" = "getSampleName",
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
@@ -520,6 +522,7 @@ depr_info <-
       "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
       "plotTrajectoryHeatmap" = "plotStsHeatmap",
       "plotTrajectoryLineplot" = "plotStsLineplot",
+      "runCnvAnalysis" = "runCNV",
       "runDeAnalysis" = "runDEA",
       "setActiveExpressionMatrix" = "setActiveMatrix",
       "setActiveMatrx" = "activateMatrix",
@@ -816,6 +819,13 @@ model_formulas_R2_est <-
   )
 
 #model_formulas_R2_est <- model_formulas_R2_est[c(1:3, 7:9)]
+
+molecule_names <-
+  list(
+    metabolomics = "metabolites",
+    proteomics = "proteins",
+    transcriptomics = "rna"
+  )
 
 
 msg_scale_bar_bad_pos <-

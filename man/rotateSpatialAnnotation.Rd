@@ -3,7 +3,7 @@
 \name{rotateSpatialAnnotation}
 \alias{rotateSpatialAnnotation}
 \alias{rotateSpatialAnnotation,SPATA2-method}
-\alias{rotateSpatialAnnotation,HistoImaging-method}
+\alias{rotateSpatialAnnotation,SpatialData-method}
 \title{Rotate Borders of a Spatial Annotation}
 \usage{
 rotateSpatialAnnotation(object, ...)
@@ -17,7 +17,7 @@ rotateSpatialAnnotation(object, ...)
   overwrite = FALSE
 )
 
-\S4method{rotateSpatialAnnotation}{HistoImaging}(
+\S4method{rotateSpatialAnnotation}{SpatialData}(
   object,
   id,
   angle,

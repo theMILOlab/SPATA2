@@ -2,7 +2,7 @@
 % Please edit documentation in R/add.R
 \name{addFeatures}
 \alias{addFeatures}
-\title{Add features manually}
+\title{Add meta features}
 \usage{
 addFeatures(
   object,
@@ -15,41 +15,39 @@ addFeatures(
 )
 }
 \arguments{
-\item{feature_df}{A data.frame that contains a variable called \emph{barcodes} or \emph{x} and \emph{y} as well
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{feature_df}{A data.frame that contains a variable called \emph{barcodes} as well
 as the variables that are to be joined.}
 
 \item{feature_names}{Character vector or \code{NULL}. Determines which feature variables
 to add. See details for more.}
 
-\item{overwrite}{Logical. If the specified feature names already exist in the
-current \code{SPATA2} object this argument must be set to TRUE in order to overwrite them.}
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 The input object containing the added or computed
 results.
 }
 \description{
-Adds new externally generated variables to the \code{SPATA2} object's meta data.
+Adds new externally generated \link[=concept_variables]{features}
+to the \code{SPATA2} object's meta data.
 }
 \details{
 If you are only interested in adding specific features to the \code{SPATA2} object
 you can specify those with the \code{feature_names}-argument. If no variables
-are specified this way all variables found in the input data.frame for argument
+are specified this way all variables found in \code{feature_df} for argument
 \code{feature_df} are taken. (Apart from variables called \emph{barcodes, sample, x} and \emph{y}).
 
 Eventually the new features are joined via \code{dplyr::left_join()} over the
 key-variables \emph{barcodes} or \emph{x} and \emph{y}. Additional steps secure
 the joining process.
-}
-\examples{
-#Not run:
-
-mncl_clusters <- findMonocleClusters(object = spata_obj)
-
-spata_obj <- addFeatures(object = spata_obj,
-                         feature_names = NULL, # add all variables...
-                         feature_df = mncl_clusters # ... from the data.frame 'mncl_clusters'
-                         )
-
-getGroupingOptions(object = spata_obj)
 }

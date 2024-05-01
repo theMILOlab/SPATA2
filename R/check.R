@@ -1260,7 +1260,26 @@ check_object <- function(object){
 
 # check_p -----------------------------------------------------------------
 
+#' @keywords internal
+check_packages <- function(pkgs, fdb_fn = "stop"){
 
+  pkgs_exist <- purrr::map_lgl(pkgs, .f = ~ require(.x, character.only = TRUE, quietly = TRUE))
+
+  pkgs_missing <- pkgs[!pkgs_exist]
+
+  if(base::length(pkgs_missing) >= 1){
+
+    ref <- confuns::scollapse(string = pkgs_missing)
+
+    msg <- glue::glue("The following packages are required but not installed: '{ref}'")
+
+    confuns::give_feedback(msg = msg, fdb.fn = fdb_fn, with.time = FALSE)
+
+  }
+
+  base::invisible(TRUE)
+
+}
 
 
 #' @title Check pattern input

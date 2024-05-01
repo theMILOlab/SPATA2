@@ -542,6 +542,12 @@ as_unit <- function(input,
 
         out[i] <- input_values[i]
 
+        if(base::is.numeric(round) & base::is.numeric(out)){
+
+          out <- base::round(x = out, digits = round)
+
+        }
+
       } else if(is_dist_si(input[i]) & unit == "px"){ # converts si to pixel
 
         out[i] <-

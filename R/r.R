@@ -305,6 +305,61 @@ recDbscanMinPts <- function(object){
 }
 
 
+#' @title Rename the object
+#'
+#' @description Renames the [`SPATA2`] object.
+#'
+#' @param sample_name Character value. The new sample name.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details Sets slot @@sample of all S4 classes within the `SPATA2` object
+#' to the new name.
+#'
+#' @export
+renameSpataObject <- function(object, sample_name){
+
+  confuns::is_value(sample_name, mode = "character")
+
+  # SPATA2
+  object@sample <- sample_name
+
+  mdf <- getMetaDf(object)
+  mdf$sample <- sample_name
+  object <- setMetaDf(object, meta_df = mdf)
+
+  # Spatial Data
+  sp_data <- getSpatialData(object)
+  sp_data@sample <- sample_name
+
+  coords_df <- getCoordsDf(sp_data, as_is = TRUE)
+  coords_df$sample <- sample_name
+  sp_data <- setCoordsDf(sp_data, coords_df = coords_df)
+
+  sp_data@annotations <-
+    purrr::map(
+      .x = sp_data@annotations,
+      .f = function(sp_ann){ sp_ann@sample <- sample_name; return(sp_ann)}
+    )
+
+  sp_data@images <-
+    purrr::map(
+      .x = sp_data@images,
+      .f = function(hist_img){ hist_img@sample <- sample_name; return(hist_img)}
+    )
+
+  sp_data@trajectories <-
+    purrr::map(
+      .x = sp_data@trajectories,
+      .f = function(sp_traj){ sp_traj@sample <- sample_name; return(sp_traj)}
+    )
+
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  return(object)
+
+}
+
 #' @title Reduces vector length
 #'
 #' @description Reduces length of vectors by keeping every `nth` element.
@@ -372,7 +427,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object){
 
-    getHistoImaging(object) %>%
+    getSpatialData(object) %>%
       refImage()
 
   }
@@ -382,7 +437,7 @@ setMethod(
 #' @export
 setMethod(
   f = "refImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object){
 
     object@name_img_ref
@@ -428,11 +483,11 @@ setMethod(
                         process = FALSE,
                         verbose = TRUE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       registerImage(
-        object = imaging,
+        object = sp_data,
         dir = dir,
         img_name = img_name,
         unload = unload,
@@ -440,7 +495,7 @@ setMethod(
         verbose = verbose
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -451,7 +506,7 @@ setMethod(
 #' @export
 setMethod(
   f = "registerImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         dir,
                         img_name,
@@ -517,7 +572,7 @@ setMethod(
         }
       )
 
-    # add to HistoImaging
+    # add to SpatialData
     object@images[[img_name]] <- hist_img
 
     return(object)
@@ -867,15 +922,55 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 }
 
 
-#' @title Remove genes from the `SPATA2` object
+#' @title Remove meta features
 #'
-#' @description Functions that removes genes from the `SPATA2` object by removing
-#' them from count matrix and all processed matrices of the assay.
+#' @description Remove meta \link[=concept_variables]{features} from the
+#' `SPATA2` object.
+#'
+#' @inherit argument_dummy
+#' @param feature_names Character vector. Names of the meta features to remove.
+#'
+#' @inherit update_dummy return
+#'
+#' @seealso [`removeMolecules()`], [`getMetaFeatureNames()`]
+#' @export
+#'
+removeMetaFeatures <- function(object, feature_names){
+
+  confuns::check_one_of(
+    input = feature_names,
+    against = getFeatureNames(object)
+  )
+
+  feature_names <- feature_names[!feature_names %in% c("barcodes", "sample")]
+
+  mdf <-
+    getMetaDf(object) %>%
+    dplyr::select(-dplyr::any_of(feature_names))
+
+  object <- setMetaDf(object, meta_df = mdf)
+
+  return(object)
+
+}
+
+#' @title Remove molecules from the `SPATA2` object
+#'
+#' @description Functions that removes molecules from the `SPATA2` object by removing
+#' them from count matrix and all processed matrices of the respective \link[MolecularAssay]{assay}.
+#'
+#'  \itemize{
+#'   \item{`removeMolecules()`:}{ Removes user specified molecules}
+#'   \item{`removeMoleculesZeroCounts()`:}{ Removes molecules that do not have a single count
+#'   across all observations.}
+#'   }
+#'
+#' Wrappers for transriptomic assay:
 #'
 #'  \itemize{
 #'   \item{`removeGenes()`:}{ Removes user specified genes.}
 #'   \item{`removeGenesZeroCounts()`:}{ Removes genes that do not have a single count
-#'   across all data points.}
+#'   across all observations.}
 #'   \item{`removeGenesStress()`:}{ Removes mitochondrial and stress related genes.}
 #'   }
 #'
@@ -928,13 +1023,13 @@ removeMolecules <- function(object,
   object <- setCountMatrix(object, count_mtr = count_mtr)
 
   # apply to other matrices
-  mtr_names <- getProcessedMatrixNames(object)
+  mtr_names <- getMatrixNames(object, only_proc = TRUE)
 
   if(base::length(mtr_names) >= 1){
 
     for(mn in mtr_names){
 
-      mtr <- getProcessedMatrix(object, mtr_name = mn)
+      mtr <- getMatrix(object, mtr_name = mn)
 
       molecules_mtr <- base::rownames(mtr)
 
@@ -1057,11 +1152,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, img_name){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- removeImage(imaging, img_name = img_name)
+    sp_data <- removeImage(sp_data, img_name = img_name)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -1072,7 +1167,7 @@ setMethod(
 #' @export
 setMethod(
   f = "removeImage",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name){
 
     confuns::check_one_of(
@@ -1114,7 +1209,7 @@ removeProcessedMatrix <- function(object,
 
   confuns::check_one_of(
     input = mtr_name,
-    against = getProcessedMatrixNames(object)
+    against = getMatrixNames(object)
   )
 
   ma <- getAssay(object, assay_name = assay_name)
@@ -1148,12 +1243,12 @@ removeSpatialAnnotations <- function(object, ids){
     against = getSpatAnnIds(object)
   )
 
-  imaging <- getHistoImaging(object)
+  sp_data <- getSpatialData(object)
 
-  imaging@annotations <-
-    imaging@annotations[!base::names(imaging@annotations) %in% ids]
+  sp_data@annotations <-
+    sp_data@annotations[!base::names(sp_data@annotations) %in% ids]
 
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   return(object)
 
@@ -1539,21 +1634,21 @@ renameSpatialAnnotation <- function(object, id, new_id, overwrite = FALSE){
     overwrite = overwrite
   )
 
-  imaging <- getHistoImaging(object)
+  sp_data <- getSpatialData(object)
 
-  img_ann_names <- base::names(imaging@annotations)
+  img_ann_names <- base::names(sp_data@annotations)
 
   img_ann_pos <- base::which(img_ann_names == id)
 
-  img_ann <- imaging@annotations[[id]]
+  img_ann <- sp_data@annotations[[id]]
 
   img_ann@id <- new_id
 
-  imaging@annotations[[img_ann_pos]] <- img_ann
+  sp_data@annotations[[img_ann_pos]] <- img_ann
 
-  base::names(imaging@annotations)[img_ann_pos] <- new_id
+  base::names(sp_data@annotations)[img_ann_pos] <- new_id
 
-  object <- setHistoImaging(object, imaging = imaging)
+  object <- setSpatialData(object, sp_data = sp_data)
 
   return(object)
 
@@ -1602,11 +1697,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object, img_name, ...){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <- resetImageTransformations(imaging, img_name = img_name)
+    sp_data <- resetImageTransformations(sp_data, img_name = img_name)
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -1618,7 +1713,7 @@ setMethod(
 #' @export
 setMethod(
   f = "resetImageTransformations",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object, img_name, ...){
 
     hist_img <- getHistoImage(object, img_name = img_name)
@@ -2072,11 +2167,11 @@ setMethod(
                         new_id = FALSE,
                         overwrite = FALSE){
 
-    imaging <- getHistoImaging(object)
+    sp_data <- getSpatialData(object)
 
-    imaging <-
+    sp_data <-
       rotateSpatialAnnotation(
-        object = imaging,
+        object = sp_data,
         id = id,
         angle = angle,
         clockwise = clockwise,
@@ -2084,7 +2179,7 @@ setMethod(
         overwrite = overwrite
       )
 
-    object <- setHistoImaging(object, imaging = imaging)
+    object <- setSpatialData(object, sp_data = sp_data)
 
     return(object)
 
@@ -2095,7 +2190,7 @@ setMethod(
 #' @export
 setMethod(
   f = "rotateSpatialAnnotation",
-  signature = "HistoImaging",
+  signature = "SpatialData",
   definition = function(object,
                         id,
                         angle,

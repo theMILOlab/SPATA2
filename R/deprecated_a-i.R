@@ -1889,6 +1889,18 @@ getDefaultGrouping <- function(object, ...){
 
 }
 
+
+#' @rdname getMatrix
+#' @export
+getExpressionMatrix <- function(object,
+                                ...){
+
+  deprecated(fn = TRUE, ...)
+
+  getMatrix(object = object, ...)
+
+}
+
 #' @keywords internal
 getFeatureDf <- function(...){
 
@@ -1977,6 +1989,20 @@ getGeneCounts <- function(object, return = "tibble", ...){
   return(gene_counts)
 
 }
+
+
+
+#' @export
+#' @keywords internal
+getProcessedMatrix <- function(object,
+                               ...){
+
+  deprecated(fn = TRUE, ...)
+
+  getMatrix(object, ...)
+
+}
+
 
 #' @title Obtain IAS results (data.frame)
 #'

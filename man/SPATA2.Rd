@@ -26,8 +26,8 @@ correspond to slot @omic of the respective omic.}
 
 \item{\code{logfile}}{A data frame containing log file data.}
 
-\item{\code{meta_obs}}{A data frame containing metadata for the observations. This comprises all
-data variables that are not found in the molecular assays including cluster and grouping variables,
+\item{\code{meta_obs}}{A data frame containing metadata for the \link[=concept_observations]{observations}. This comprises all
+\link[=concept_variables]{variables} that are \strong{not} found in the molecular assays including cluster and grouping variables,
 summary statistics, etc.}
 
 \item{\code{meta_sample}}{A list providing additional information about the tissue and the tissue donor.}

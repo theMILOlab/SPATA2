@@ -316,7 +316,7 @@ joinWithVariables <- function(object,
                               smooth = NULL,
                               smooth_span = NULL,
                               normalize = NULL,
-                              uniform_variables = "discard",
+                              uniform_variables = "keep",
                               verbose = NULL,
                               ...){
 
@@ -466,7 +466,14 @@ joinWithVariables <- function(object,
         .data = spata_df,
         dplyr::across(
           .cols = dplyr::any_of(variables) & dplyr::where(base::is.numeric),
-          .fns = confuns::normalize
+          .fns = function(x){
+
+            mnx <- base::min(x, na.rm = TRUE)
+            mxx <- base::max(x, na.rm = TRUE)
+
+            (x - mnx)/(mxx - mnx)
+
+          }
           )
       )
 

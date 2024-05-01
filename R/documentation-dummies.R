@@ -636,39 +636,22 @@ update_dummy <- function(){}
 
 #' @title variable
 #'
-#' @param variable The variable of interest.
+#' @param variable Character value. The name \link[=concept_variables]{variable} of interest.
 #'
-#'  \itemize{
-#'   \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-#'   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-#'   \item{ \strong{Feature} as a single character value. Must be in \code{getFeatureNames()}}
-#'   }
 #' @keywords internal
 variable <- function(variable){}
 
 
 #' @title variable_num
 #'
-#' @param variable Character value. The numeric variable of interest. Must be inside:
-#'
-#' \itemize{
-#'   \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} Must be in \code{getGenes()}}
-#'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-#'   }
+#' @param variable Character value. The name of the numeric \link[=concept_variables]{variable} of interest.
 #' @keywords internal
 variable_num <- function(variable){}
 
 #' @title variables_num
 #'
-#' @param variables Character vector. The numeric variables of interest. Must be inside:
+#' @param variables Character vector. The name of the numeric \link[=concept_variables]{variables} of interest.
 #'
-#' \itemize{
-#'   \item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} Must be in \code{getGenes()}}
-#'   \item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-#'   }
 #' @keywords internal
 variables_num <- function(variables){}
 

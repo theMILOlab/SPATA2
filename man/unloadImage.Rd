@@ -2,8 +2,9 @@
 % Please edit documentation in R/u.R
 \name{unloadImage}
 \alias{unloadImage}
-\alias{unloadImage,HistoImage-method}
+\alias{unloadImage,SPATA2-method}
 \alias{unloadImage,SpatialData-method}
+\alias{unloadImage,HistoImage-method}
 \alias{unloadImages}
 \alias{unloadImages,spata2-method}
 \alias{unloadImages,SpatialData-method}
@@ -11,9 +12,11 @@
 \usage{
 unloadImage(object, ...)
 
-\S4method{unloadImage}{HistoImage}(object, verbose = TRUE, ...)
+\S4method{unloadImage}{SPATA2}(object, img_name = activeImage(object), verbose = NULL, ...)
 
 \S4method{unloadImage}{SpatialData}(object, img_name, verbose = TRUE, ...)
+
+\S4method{unloadImage}{HistoImage}(object, verbose = TRUE, ...)
 
 unloadImages(object, ...)
 
@@ -27,12 +30,12 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
+\item{img_name}{Character value. The name of the image to unload.}
+
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{img_name}{Character value. The name of the image to unload.}
 
 \item{active.}{Logical value. If \code{FALSE}, the default,
 the image from the active \code{HistoImage} is not unloaded.}

@@ -117,7 +117,7 @@ setMethod(
 #' @return Logical value.
 #'
 #' @export
-containsCNV <- function(object){
+containsCNV <- function(object, error = FALSE){
 
   out <-
     base::tryCatch({
@@ -133,6 +133,12 @@ containsCNV <- function(object){
       FALSE
 
     })
+
+  if(base::isFALSE(out) & base::isTRUE(error)){
+
+    stop("No CNV results found in this object. Use `runCNV()`.")
+
+  }
 
   return(out)
 

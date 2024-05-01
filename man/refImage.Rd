@@ -3,14 +3,14 @@
 \name{refImage}
 \alias{refImage}
 \alias{refImage,SPATA2-method}
-\alias{refImage,HistoImaging-method}
+\alias{refImage,SpatialData-method}
 \title{Obtain name of reference content}
 \usage{
 refImage(object, ...)
 
 \S4method{refImage}{SPATA2}(object)
 
-\S4method{refImage}{HistoImaging}(object)
+\S4method{refImage}{SpatialData}(object)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

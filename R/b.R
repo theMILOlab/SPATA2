@@ -79,6 +79,9 @@ background_white <- function(image, percentile = 1){
 #' areas that are supposed to annotated as spatial annotations.
 #' @param use_dbscan Logical value. If `TRUE`, the DBSCAN algorithm is used to identify
 #' spatial clusters and outliers before the outline of the spatial annotation is drawn.
+#' @param inner_borders Logical value. If `TRUE`, the algorithm checks whether the
+#' annotation requires inner borders and sets them accordingly. If `FALSE`, only
+#' an outer border is created.
 #' @param min_size Numeric value. The minimum number of data points a dbscan cluster
 #' must have in order not to be discarded as a spatial outlier.
 #' @param force1 Logical value. If `TRUE`, spatial sub groups identified by DBSCAN
@@ -189,6 +192,7 @@ barcodesToSpatialAnnotation <- function(object,
                                         tags = NULL,
                                         tags_expand = TRUE,
                                         use_dbscan = TRUE,
+                                        inner_borders = TRUE,
                                         eps = getCCD(object)*1.25,
                                         minPts = 3,
                                         min_size = nBarcodes(object)*0.005,
@@ -272,13 +276,17 @@ barcodesToSpatialAnnotation <- function(object,
 
     area <- areas_to_annotate[i]
 
-    df_concave <-
+    df_area <-
       dplyr::filter(coords_df_prepped, areas == {{area}})
 
     if(fct_incr > 1){
 
-      df_concave <-
-        increase_n_data_points(df_concave, fct = fct_incr, cvars = cvars)
+      df_concave_use <-
+        increase_n_data_points(df_area, fct = fct_incr, cvars = cvars)
+
+    } else {
+
+      df_concave_use <- df_area
 
     }
 
@@ -286,16 +294,67 @@ barcodesToSpatialAnnotation <- function(object,
     outline_df <-
       # use original x_orig and y_orig variables!
       # are scaled to x and y during extraction
-      dplyr::select(df_concave, x_orig, y_orig) %>%
+      dplyr::select(df_concave_use, x_orig, y_orig) %>%
       base::as.matrix() %>%
       concaveman::concaveman(points = ., concavity = concavity) %>%
       tibble::as_tibble() %>%
       magrittr::set_colnames(value = cvars)
 
-    base::rm(df_concave)
+    base::rm(df_concave_use)
     base::gc()
 
     area <- list(outer = outline_df)
+
+    # add inner borders
+    if(base::isTRUE(inner_borders)){
+
+      coords_df_inner <-
+        identify_obs_in_polygon(
+          coords_df = coords_df,
+          polygon_df = outline_df,
+          strictly = TRUE,
+          cvars = c("x_orig", "y_orig"),
+          opt = "keep"
+        ) %>%
+        dplyr::filter(!barcodes %in% df_area$barcodes)
+
+      if(base::nrow(coords_df_inner) > 1){
+
+        coords_df_inner <-
+          add_dbscan_variable(coords_df = coords_df_inner, eps = eps, minPts = minPts) %>%
+          dplyr::filter(dbscan != "0")
+
+        holes <- base::unique(coords_df_inner$dbscan)
+
+        for(h in base::seq_along(holes)){
+
+          hole <- holes[h]
+
+          df_hole <-
+            dplyr::filter(coords_df_inner, dbscan == {{hole}})
+
+          if(fct_incr > 1){
+
+            df_hole <-
+              increase_n_data_points(df_hole, fct = fct_incr, cvars = cvars)
+
+          }
+
+          area[[stringr::str_c("inner", h)]] <-
+            dplyr::select(df_hole, x_orig, y_orig) %>%
+            base::as.matrix() %>%
+            concaveman::concaveman(points = ., concavity = concavity) %>%
+            base::as.data.frame() %>%
+            magrittr::set_colnames(value = c("x_orig", "y_orig")) %>%
+            tibble::as_tibble()
+
+          rm(df_hole)
+
+        }
+
+      }
+
+    }
 
     if(base::isTRUE(tags_expand)){
 
@@ -323,9 +382,10 @@ barcodesToSpatialAnnotation <- function(object,
           minPts = minPts,
           min_size = min_size,
           force1 = force1,
-          concavity = concavity
+          concavity = concavity,
+          inner_borders = inner_borders
         ),
-        misc = list(barcodes = barcodes),
+        misc = list(barcodes = df_area$barcodes, variable = variable),
         ...
       )
 

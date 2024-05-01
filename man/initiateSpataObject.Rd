@@ -21,12 +21,12 @@ initiateSpataObject(
 \arguments{
 \item{sample_name}{Character value. The name with which to identify the \code{SPATA2} object.}
 
-\item{count_mtr}{A count matrix. Column names are barcodes. Rownames are the
-molecular features (genes, proteins, metabolites etc.).}
+\item{count_mtr}{A count matrix. Column names correspond to the barcodes of the \link[=concept_observations]{observations}.
+Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).}
 
-\item{omic}{The type of \code{\link{MolecularAssay}} in which the count matrix is placed.
-Should best describe the molecular type of the count matrix. E.g. transcriptomics,
-proteomics, metabolomics. Additionally, defines the assay name! See \code{\link[=activateAssay]{activateAssay()}}.}
+\item{omic}{Character value. Should best describe the molecular type of the count matrix.
+E.g. \emph{'transcriptomics'}, \emph{'proteomics'}, \emph{'metabolomics'}. Additionally, defines the
+\link[=MolecularAssay]{assay} name, that is created with the count matrix.}
 
 \item{coords_df}{Data.frame with a variable called \emph{barcodes} as well as the
 \emph{x_orig} and \emph{y_orig} or \emph{x} and \emph{y}.}

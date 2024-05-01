@@ -3,7 +3,7 @@
 \name{resetImageTransformations}
 \alias{resetImageTransformations}
 \alias{resetImageTransformations,SPATA2-method}
-\alias{resetImageTransformations,HistoImaging-method}
+\alias{resetImageTransformations,SpatialData-method}
 \alias{resetImageTransformations,HistoImage-method}
 \title{Reset image transformations}
 \usage{
@@ -11,7 +11,7 @@ resetImageTransformations(object, ...)
 
 \S4method{resetImageTransformations}{SPATA2}(object, img_name, ...)
 
-\S4method{resetImageTransformations}{HistoImaging}(object, img_name, ...)
+\S4method{resetImageTransformations}{SpatialData}(object, img_name, ...)
 
 \S4method{resetImageTransformations}{HistoImage}(object, ...)
 }

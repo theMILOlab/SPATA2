@@ -835,6 +835,7 @@ setMethod(
 #' adjustments.
 #'
 #' @param spat_ann An object of class [`SpatialAnnotation`].
+#' @param spat_anns A list of objects of class [`SpatialAnnotation`].
 #' @inherit argument_dummy params
 #'
 #' @note [`GroupAnnotation`], [`NumericAnnotation`], [`ImageAnnotation`] are

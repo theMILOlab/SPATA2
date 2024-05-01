@@ -11,7 +11,7 @@ joinWithVariables(
   smooth = NULL,
   smooth_span = NULL,
   normalize = NULL,
-  uniform_variables = "discard",
+  uniform_variables = "keep",
   verbose = NULL,
   ...
 )

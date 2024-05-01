@@ -2,13 +2,13 @@
 % Please edit documentation in R/n.R
 \name{nSpatialAnnotations}
 \alias{nSpatialAnnotations}
-\alias{nSpatialAnnotations,spata2-method}
+\alias{nSpatialAnnotations,SPATA2-method}
 \alias{nSpatialAnnotations,SpatialData-method}
 \title{Number of image annotations}
 \usage{
 nSpatialAnnotations(object, ...)
 
-\S4method{nSpatialAnnotations}{spata2}(object)
+\S4method{nSpatialAnnotations}{SPATA2}(object)
 
 \S4method{nSpatialAnnotations}{SpatialData}(object)
 }

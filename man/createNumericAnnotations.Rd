@@ -12,6 +12,7 @@ createNumericAnnotations(
   tags = NULL,
   tags_expand = TRUE,
   use_dbscan = TRUE,
+  inner_borders = TRUE,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
   force1 = FALSE,
@@ -29,13 +30,7 @@ createNumericAnnotations(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variable}{Character value. The numeric variable of interest. Must be inside:
-
-\itemize{
-\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-\item{ \strong{Genes} Must be in \code{getGenes()}}
-\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-}}
+\item{variable}{Character value. The name of the numeric \link[=concept_variables]{variable} of interest.}
 
 \item{threshold}{Character value. Determines the method and/or the threshold
 by which the data points are filtered. Valid input options are \emph{'kmeans_high'},
@@ -54,6 +49,10 @@ the \code{threshold} and \emph{'createGroupAnnotations'}.}
 
 \item{use_dbscan}{Logical value. If \code{TRUE}, the DBSCAN algorithm is used to identify
 spatial clusters and outliers before the outline of the spatial annotation is drawn.}
+
+\item{inner_borders}{Logical value. If \code{TRUE}, the algorithm checks whether the
+annotation requires inner borders and sets them accordingly. If \code{FALSE}, only
+an outer border is created.}
 
 \item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
 the size (radius) of the epsilon neighborhood.}

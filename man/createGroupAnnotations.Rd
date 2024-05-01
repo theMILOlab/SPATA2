@@ -12,6 +12,7 @@ createGroupAnnotations(
   tags = NULL,
   tags_expand = TRUE,
   use_dbscan = TRUE,
+  inner_borders = TRUE,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
   min_size = nBarcodes(object) * 0.01,
@@ -42,6 +43,10 @@ the \code{group} and \emph{'createGroupAnnotations'}.}
 
 \item{use_dbscan}{Logical value. If \code{TRUE}, the DBSCAN algorithm is used to identify
 spatial clusters and outliers before the outline of the spatial annotation is drawn.}
+
+\item{inner_borders}{Logical value. If \code{TRUE}, the algorithm checks whether the
+annotation requires inner borders and sets them accordingly. If \code{FALSE}, only
+an outer border is created.}
 
 \item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
 the size (radius) of the epsilon neighborhood.}

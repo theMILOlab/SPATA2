@@ -3,10 +3,10 @@
 \name{registerImage}
 \alias{registerImage}
 \alias{registerImage,SPATA2-method}
-\alias{registerImage,HistoImaging-method}
+\alias{registerImage,SpatialData-method}
 \alias{removeImage}
 \alias{removeImage,SPATA2-method}
-\alias{removeImage,HistoImaging-method}
+\alias{removeImage,SpatialData-method}
 \title{Register or remove images}
 \usage{
 registerImage(object, ...)
@@ -20,7 +20,7 @@ registerImage(object, ...)
   verbose = TRUE
 )
 
-\S4method{registerImage}{HistoImaging}(
+\S4method{registerImage}{SpatialData}(
   object,
   dir,
   img_name,
@@ -33,7 +33,7 @@ removeImage(object, ...)
 
 \S4method{removeImage}{SPATA2}(object, img_name)
 
-\S4method{removeImage}{HistoImaging}(object, img_name)
+\S4method{removeImage}{SpatialData}(object, img_name)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

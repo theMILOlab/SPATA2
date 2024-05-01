@@ -448,7 +448,267 @@ mapImageAnnotationTags <- function(...){
 # merge -------------------------------------------------------------------
 
 
+#' @keywords internal
+merge_cnv_bins <- function(chr, start_pos, end_pos, ref_bins, verbose = TRUE){
 
+  pb <- confuns::create_progress_bar(total = length(chr))
+
+  bins <- purrr::map_chr(.x = 1:length(chr), .f = function(i) {
+
+    if(base::isTRUE(verbose)){ pb$tick() }
+
+    out <-
+      dplyr::filter(ref_bins, Chr == {chr[i]}) %>%
+      dplyr::filter(start <= start_pos[i]) %>%
+      utils::tail(1) %>%
+      dplyr::pull(bin)
+
+    if(is.null(out)){
+
+      out <- "NA"
+
+    }
+    return(out)
+
+  })
+
+  return(bins)
+
+}
+
+#' @title Merge polygons
+#' This function merges intersecting polygons by inserting the sub-polygon into
+#' the main polygon where they intersect.
+#'
+#' @param main_poly The main polygon(s) as a data frame.
+#' @param sub_poly The sub-polygon(s) as a data frame.
+#' @param cvars A character vector specifying the column names of the x and y coordinates in the main and sub-polygons.
+#' @param col_rm Logical indicating whether to remove additional columns added during processing.
+#'
+#' @details
+#' The function iterates through each vertex of the sub-polygon and checks if it
+#' lies within the main polygon using `sp::point.in.polygon`.It then identifies
+#' the segments of the main polygon where the sub-polygon intersects and inserts
+#' the sub-polygon accordingly. Finally, it adjusts the direction of the
+#' sub-polygon if necessary and removes any extra columns if specified.
+#'
+#' @return A data frame representing the merged polygons.
+#'
+#' @examples
+#' main_poly <- data.frame(x = c(0, 1, 1, 0), y = c(0, 0, 1, 1))
+#' sub_poly <- data.frame(x = c(0.5, 1.5, 1.5, 0.5), y = c(0.5, 0.5, 1.5, 1.5))
+#' merge_intersecting_polygon(main_poly, sub_poly)
+#'
+#' @export
+merge_intersecting_polygons <- function(main_poly,
+                                        sub_poly,
+                                        cvars = c("x_orig", "y_orig"),
+                                        col_rm = TRUE){
+
+  # check for intersection
+  res <-
+    sp::point.in.polygon(
+      point.x = sub_poly[[cvars[1]]],
+      point.y = sub_poly[[cvars[2]]],
+      pol.x = main_poly[[cvars[1]]],
+      pol.y = main_poly[[cvars[2]]]
+    )
+
+  if(base::length(res[res == 1]) <= 2 | base::length(res[res == 0]) <= 2){
+
+    stop("Polygons do not intersect.")
+
+  }
+
+  orig_names <- base::names(main_poly)
+
+  for(n in orig_names){
+
+    if(!n %in% base::names(sub_poly)){
+
+      sub_poly[[n]] <- NA
+
+    }
+
+  }
+
+  main_poly <-
+    dplyr::mutate(.data = main_poly, idx = dplyr::row_number() )
+
+  sub_poly <-
+    dplyr::mutate(.data = sub_poly, idx = dplyr::row_number(), rel_pos = "na")
+
+  cvars <- c("x_orig", "y_orig")
+
+  prev_pos <- "na" # NA at the beginning
+  nth_idx_inside <- 0
+  nth_segm_inside <- 0
+
+  for(i in 1:base::nrow(sub_poly)){
+
+    res <-
+      sp::point.in.polygon(
+        point.x = sub_poly[[cvars[1]]][i],
+        point.y = sub_poly[[cvars[2]]][i],
+        pol.x = main_poly[[cvars[1]]],
+        pol.y = main_poly[[cvars[2]]]
+      )
+
+    if(res == 1){
+
+      if(prev_pos == "outside" | prev_pos == "na"){
+
+        nth_idx_inside <- 0 # reset
+        nth_segm_inside <- nth_segm_inside + 1 # next segm inside
+
+      }
+
+      nth_idx_inside <- nth_idx_inside + 1
+
+      # if first idx inside mark as starter
+      if(nth_idx_inside == 1){
+
+        sub_poly$rel_pos[i] <- stringr::str_c("ins_", nth_segm_inside, "_start")
+
+      } else {
+
+        sub_poly$rel_pos[i] <- stringr::str_c("ins_", nth_segm_inside)
+
+      }
+
+      prev_pos <- "inside"
+
+    } else {
+
+      # if first vertex outside (prev_pos == "inside") mark
+      # previous vertex as last inside of previous segm
+      if(prev_pos == "inside"){
+
+        sub_poly$rel_pos[(i-1)] <- stringr::str_c("ins_", nth_segm_inside, "_end")
+
+      }
+
+      sub_poly$rel_pos[i] <- "outside"
+
+      prev_pos <- "outside"
+
+    }
+
+  }
+
+
+  sub_poly_flt <-
+    dplyr::filter(sub_poly, rel_pos != "outside") %>%
+    dplyr::mutate(segm = stringr::str_extract(rel_pos, pattern = "ins_[0-9]*"))
+
+  segments <- base::unique(sub_poly_flt$segm)
+
+  for(segm in segments){
+
+    sub_poly_idx <- dplyr::filter(sub_poly_flt, segm == {{segm}})
+
+    if(base::any(stringr::str_detect(sub_poly_idx$rel_pos, "start")) &
+       base::any(stringr::str_detect(sub_poly_idx$rel_pos, "end"))){
+
+      ## get closest neighbors
+
+      # get closes main vertex to start vertex
+      start_pos_mtr <-
+        dplyr::filter(sub_poly_idx, stringr::str_detect(rel_pos, "start$")) %>%
+        dplyr::select(dplyr::all_of(cvars)) %>%
+        base::as.matrix()
+
+      nn_out_start <-
+        RANN::nn2(
+          data = start_pos_mtr,
+          query = base::as.matrix(main_poly[,cvars]),
+          searchtype = "priority",
+          k = 1
+        )
+
+      # msn = main neighbor start
+      mns <-
+        base::which(nn_out_start$nn.dists == base::min(nn_out_start$nn.dists))
+
+      mns_idx <- main_poly$idx[mns]
+
+      # get closes main vertex to end vertex
+      end_pos_mtr <-
+        dplyr::filter(sub_poly_idx, stringr::str_detect(rel_pos, "end$")) %>%
+        dplyr::select(dplyr::all_of(cvars)) %>%
+        base::as.matrix()
+
+      nn_out_end <-
+        RANN::nn2(
+          data = end_pos_mtr,
+          query = base::as.matrix(main_poly[,cvars]),
+          searchtype = "priority",
+          k = 1
+        )
+
+      # mne = main neighbor end
+      mne <-
+        base::which(nn_out_end$nn.dists == base::min(nn_out_end$nn.dists))
+
+      mne_idx <- main_poly$idx[mne]
+
+      # what to remove
+      indices_all <- main_poly[["idx"]]
+
+      indices_forwards <- main_poly[mns:mne, ][["idx"]]
+      indices_backwords <- indices_all[!indices_all %in% c(mns_idx, mne_idx, indices_forwards)]
+
+      if(base::length(indices_forwards) < base::length(indices_backwords)){
+
+        rm <- "forwards"
+
+        indices_rm <- indices_forwards[!indices_forwards %in% c(mns_idx, mne_idx)]
+
+        main_poly <- dplyr::filter(main_poly, !idx %in% {{indices_rm}})
+
+        idx_insert <- base::which(main_poly$idx == mns_idx)
+
+      } else {
+
+        rm <- "backwords"
+
+        indices_rm <- indices_backwords[!indices_backwords %in% c(mns_idx, mne_idx)]
+
+        main_poly <- dplyr::filter(main_poly, !idx %in% {{indices_rm}})
+
+        idx_insert <- base::which(main_poly$idx == mne_idx)
+
+      }
+
+      ## identify the "direction" of main polygon and adjust the direction of the sub poly
+      if((mns > mne) & (rm == "forwards") | (mns < mne) & rm == "backwards"){
+
+        sub_poly_idx <- sub_poly_idx[base::nrow(sub_poly_idx):1,]
+
+      }
+
+      # merge
+      main_poly <-
+        dplyr::add_row(
+          .data = main_poly,
+          sub_poly_idx[base::names(main_poly)],
+          .after = {{idx_insert}}
+        ) %>%
+        dplyr::mutate(idx = dplyr::row_number())
+
+    }
+
+  }
+
+  if(base::isTRUE(col_rm)){
+
+    main_poly <- main_poly[,orig_names]
+
+  }
+
+  return(main_poly)
+
+}
 
 
 #' @title Lump groups together

@@ -11,8 +11,8 @@ discardGeneFeatures(object, feature_names, mtr_name = NULL)
 
 \item{feature_names}{Character vector. Specifies the gene features to be discarded.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
-to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+\item{mtr_name}{Character value. The name of the matrix to extract. If
+\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
 }
 \value{
 An updated spata-object.

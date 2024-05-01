@@ -17,8 +17,8 @@ findSeuratClusters(
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
-to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+\item{mtr_name}{Character value. The name of the matrix to extract. If
+\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
 
 \item{FindVariableFeatures}{A named list of arguments given to \code{Seurat::FindVariableFeatures()}, TRUE or FALSE.}
 

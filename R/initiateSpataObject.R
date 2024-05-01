@@ -6,13 +6,12 @@
 #' @description Initiates a [`SPATA2`] object using the basic inputs: a coordinates
 #' data.frame and a count matrix.
 #'
-#'
 #' @param sample_name Character value. The name with which to identify the `SPATA2` object.
-#' @param count_mtr A count matrix. Column names are barcodes. Rownames are the
-#' molecular features (genes, proteins, metabolites etc.).
-#' @param omic The type of [`MolecularAssay`] in which the count matrix is placed.
-#' Should best describe the molecular type of the count matrix. E.g. transcriptomics,
-#' proteomics, metabolomics. Additionally, defines the assay name! See [`activateAssay()`].
+#' @param count_mtr A count matrix. Column names correspond to the barcodes of the \link[=concept_observations]{observations}.
+#' Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).
+#' @param omic Character value. Should best describe the molecular type of the count matrix.
+#' E.g. *'transcriptomics'*, *'proteomics'*, *'metabolomics'*. Additionally, defines the
+#' \link[=MolecularAssay]{assay} name, that is created with the count matrix.
 #' @param coords_df Data.frame with a variable called *barcodes* as well as the
 #' *x_orig* and *y_orig* or *x* and *y*.
 #' @param img The reference image. See details for more information on how or

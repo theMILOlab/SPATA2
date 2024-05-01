@@ -20,8 +20,8 @@ runPca2(object, n_pcs = 30, mtr_name = NULL, ...)
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components to be computed.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
-to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+\item{mtr_name}{Character value. The name of the matrix to extract. If
+\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest. Defaults to the active assay,

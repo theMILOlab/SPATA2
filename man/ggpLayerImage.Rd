@@ -25,8 +25,8 @@ ggpLayerImage(object, ...)
   object,
   img_name = activeImage(object),
   transform = TRUE,
-  scale_fct = 1,
   img_alpha = 1,
+  scale_fct = 1,
   ...
 )
 

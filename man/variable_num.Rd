@@ -7,13 +7,7 @@
 variable_num(variable)
 }
 \arguments{
-\item{variable}{Character value. The numeric variable of interest. Must be inside:
-
-\itemize{
-\item{ \strong{Gene sets} Must be in \code{getGeneSets()}}
-\item{ \strong{Genes} Must be in \code{getGenes()}}
-\item{ \strong{Features} Must be in \code{getFeatureNames(..., of_class = "numeric")}}
-}}
+\item{variable}{Character value. The name of the numeric \link[=concept_variables]{variable} of interest.}
 }
 \description{
 variable_num

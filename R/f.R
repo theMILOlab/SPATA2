@@ -829,36 +829,28 @@ flipCoordsDf <- function(object, axis, verbose = FALSE){
 
   hlpr_assign_arguments(object)
 
-  if(!containsImage(object)){
+  confuns::give_feedback(
+    msg = "Flipping coordinates data.frame.",
+    verbose = verbose
+  )
 
-    warning("Can not flip coordinates data.frame without an image.")
+  axis <- process_axis(axis)
 
-  } else {
+  coords_df <- getCoordsDf(object, as_is = TRUE)
+  isf <- getScaleFactor(object, fct_name = "image")
 
-    confuns::give_feedback(
-      msg = "Flipping coordinates data.frame.",
-      verbose = verbose
+  coords_df <-
+    flip_coords_df(
+      df = coords_df,
+      axis = axis,
+      ranges =
+        purrr::map(
+          .x = getImageRange(object),
+          .f = function(ir){ ir[2] <- ir[2]/isf; return(ir) }
+        )
     )
 
-    axis <- process_axis(axis)
-
-    coords_df <- getCoordsDf(object, as_is = TRUE)
-    csf <- getScaleFactor(object, fct_name = "coords")
-
-    coords_df <-
-      flip_coords_df(
-        df = coords_df,
-        axis = axis,
-        ranges =
-          purrr::map(
-            .x = getImageRange(object),
-            .f = function(ir){ ir[2] <- ir[2]/csf; return(ir) }
-          )
-      )
-
-    object <- setCoordsDf(object, coords_df = coords_df, force = TRUE)
-
-  }
+  object <- setCoordsDf(object, coords_df = coords_df, force = TRUE)
 
   return(object)
 
@@ -923,7 +915,7 @@ flipSpatialAnnotations <- function(object, axis, verbose = NULL){
 
       # img annotations
       spat_anns <- getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE)
-      csf <- getScaleFactor(object, fct_name = "coords")
+      isf <- getScaleFactor(object, fct_name = "image")
 
       spat_anns <-
         purrr::map(
@@ -940,7 +932,7 @@ flipSpatialAnnotations <- function(object, axis, verbose = NULL){
                     ranges =
                       purrr::map(
                         .x = getImageRange(object),
-                        .f = function(ir){ ir[2] <- ir[2]/csf; return(ir) }
+                        .f = function(ir){ ir[2] <- ir[2]/isf; return(ir) }
                       ),
                     verbose = FALSE
                   )
@@ -951,7 +943,7 @@ flipSpatialAnnotations <- function(object, axis, verbose = NULL){
           }
         )
 
-      object <- setSpatialAnnotations(object, spat_anns = spat_anns, align = FALSE, overwrite = TRUE)
+      object <- setSpatialAnnotations(object, spat_anns = spat_anns, overwrite = TRUE)
 
     }
 
@@ -980,11 +972,12 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
 
     axis <- process_axis(axis)
 
-    csf <- getScaleFactor(object, fct_name = "coords")
+    isf <- getScaleFactor(object, fct_name = "image")
+
     img_ranges <-
       purrr::map(
         .x = getImageRange(object),
-        .f = function(ir){ ir[2] <- ir[2]/csf; return(ir) }
+        .f = function(ir){ ir[2] <- ir[2]/isf; return(ir) }
       )
 
     if(nSpatialTrajectories(object) != 0){

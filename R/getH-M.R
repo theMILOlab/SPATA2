@@ -910,85 +910,196 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 #' @title Obtain a data matrix
 #'
-#' @description Extracts data matrices from [`MolecularAssay`] objects.
+#' @description Extracts matrices of molecular data.
 #'
+#' @param mtr_name Character value. The name of the matrix to extract. If
+#' `NULL`, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.
 #' @inherit argument_dummy params
 #'
-#' @return The matrix of the specified object. A list of all matrices
-#' in case of `getMatrices()`.
+#' @return A matrix with rownames corresponding to the features and
+#' column names corresponding to the barcodes. Or a named list of such in
+#' case of `getMatrices()`.
+#'
+#' @seealso [`getMatrixNames()`], [`getProcessedMatrixNames()`]
+#'
 #' @export
 
-getMatrix <- function(object,
-                      mtr_name = activeMatrix(object),
-                      assay_name = activeAssay(object),
-                      verbose = NULL,
-                      ...){
+setGeneric(name = "getMatrix", def = function(object, mtr_name, ...){
 
-  deprecated(...)
+  standardGeneric(f = "getMatrix")
 
-  hlpr_assign_arguments(object)
-
-  check_matrix_name(object, mtr_name = mtr_name, assay_name = assay_name)
-
-  ma <- getAssay(object, assay_name = assay_name)
-
-  if(mtr_name == "counts"){
-
-    out <- ma@mtr_counts
-
-  } else {
-
-    out <- ma@mtr_proc[[mtr_name]]
-
-  }
-
-  return(out)
-
-}
+})
 
 #' @rdname getMatrix
 #' @export
-getMatrices <- function(object,
-                        assay_name = activeAssay(object),
-                        verbose = NULL,
-                        ...){
+setMethod(
+  f = "getMatrix",
+  signature = "SPATA2",
+  definition = function(object,
+                        mtr_name = NULL,
+                        assay_name = activeAssay(object)){
 
-  deprecated(...)
+    if(!base::is.character(mtr_name)){
 
-  hlpr_assign_arguments(object)
+      mtr_name <- activeMatrix(object, assay_name = assay_name)
 
-  ma <- getAssay(object, assay_name = assay_name)
+    }
 
-  mtr_list <- list(counts = ma@mtr_counts)
+    check_matrix_name(object, mtr_name = mtr_name, assay_name = assay_name)
 
-  for(mn in base::names(ma@mtr_proc)){
+    out <-
+      getAssay(object, assay_name = assay_name) %>%
+      getMatrix(object = ., mtr_name = mtr_name)
 
-    mtr_list[[mn]] <- ma@mtr_proc[[mn]]
+    return(out)
 
   }
+)
 
-  return(mtr_list)
+#' @rdname getMatrix
+#' @export
+setMethod(
+  f = "getMatrix",
+  signature = "MolecularAssay",
+  definition = function(object,
+                        mtr_name = NULL){
 
-}
+    if(!base::is.character(mtr_name)){
+
+      mtr_name <- object@active_mtr
+
+    }
+
+    if(mtr_name == "counts"){
+
+      out <- object@mtr_counts
+
+    } else {
+
+      out <- object@mtr_proc[[mtr_name]]
+
+    }
+
+    if(base::nrow(out) == 0){
+
+      warning(glue::glue("Number of rows in matrix 'mtr_name' is 0."))
+
+    }
+
+    if(base::ncol(out) == 0){
+
+      warning(glue::glue("Number of columns in matrix 'mtr_name' is 0."))
+
+    }
+
+    return(out)
+
+  }
+)
+
+#' @rdname getMatrix
+#' @export
+setGeneric(name = "getMatrices", def = function(object, ...){
+
+  standardGeneric(f = "getMatrices")
+
+})
+
+#' @rdname getMatrix
+#' @export
+setMethod(
+  f = "getMatrices",
+  signature = "SPATA2",
+  definition = function(object,
+                        assay_name = activeAssay(object),
+                        ...){
+
+    getAssay(object, assay_name = assay_name) %>%
+      getMatrices(object = .)
+
+  }
+)
+
+#' @rdname getMatrix
+#' @export
+setMethod(
+  f = "getMatrices",
+  signature = "MolecularAssay",
+  definition = function(object, ...){
+
+    deprecated(...)
+
+    mtr_names <- getMatrixNames(object)
+
+    mtr_list <- list()
+
+    for(mn in mtr_names){
+
+      mtr_list[[mn]] <- getMatrix(object, mtr_name = mn)
+
+    }
+
+    return(mtr_list)
+
+  }
+)
 
 
 #' @title Obtain matrix names
 #'
-#' @description Retrieves the names of matrices present in the specified assay of the provided object.
+#' @description Retrieves the names of matrices present in the specified or provided \link[=MolecularAssay]{assay}.
 #'
 #' @inherit argument_dummy params
+#' @param only_proc Logical. If `TRUE`, only the names of the processed
+#' matrices in slot @@mtr_proc are returned.
 #'
 #' @return A character vector containing the names of matrices.
 #'
 #' @seealso [`getMatrix()`]
 #'
 #' @export
-getMatrixNames <- function(object, assay_name = activeAssay(object)){
 
-  getMatrices(object, assay_name = assay_name) %>%
-    base::names()
+setGeneric(name = "getMatrixNames", def = function(object, ...){
 
-}
+  standardGeneric(f = "getMatrixNames")
+
+})
+
+#' @rdname getMatrixNames
+#' @export
+setMethod(
+  f = "getMatrixNames",
+  signature = "SPATA2",
+  definition = function(object,
+                        assay_name = activeAssay(object),
+                        only_proc = FALSE,
+                        ...){
+
+    getAssay(object, assay_name = assay_name) %>%
+      getMatrixNames(object = ., only_proc = only_proc)
+
+  }
+)
+
+#' @rdname getMatrixNames
+#' @export
+setMethod(
+  f = "getMatrixNames",
+  signature = "MolecularAssay",
+  definition = function(object, only_proc = FALSE, ...){
+
+    out <- c(base::names(object@mtr_proc))
+
+    if(base::isFALSE(only_proc)){
+
+      out <- c("counts", out)
+
+    }
+
+    return(out)
+
+  }
+)
 
 
 

@@ -272,14 +272,225 @@ runBayesSpaceClustering <- function(object,
 
 # runC --------------------------------------------------------------------
 
+
+
+#' @title Compute chromosomal instability
+#'
+#' @description Computes **c**hromosomal **in**stability scores based on copy number
+#' variation results according to *Drews et al., 2022*. Requires the results
+#' of [`runCNV()`]. See details for more.
+#'
+#' @param bin_size The size used for the chromosomal binning. Defaults 1.000.000
+#' base pairs.
+#' @param window_k Given to [`window.k`] of [`imputeTS::na_ma`].
+#' @param noise Numeric value. Sets the level of noise to add.
+#' @param gene_pos_df Data.frame defining the positions of genes on the chromosomes.
+#' @param chrom_regions_df Data.frame defining the chromosomal regions.
+#' @param coverage_model A formula.
+#'
+#' @inherit argument_dummy params
+#'
+#' @note Requires the packages `CINSignatureQuantification` and `imputeTS` to be installed.
+#'
+#' @details Adds a total of 18 new numeric variables to the meta data.frame.
+#'
+#' \itemize{
+#'   \item{*CX1*, *CX2*, *CX3*, ..., *CX17*:}{ Chromosomal instability scores as described in the paper
+#'   referenced below.}
+#'   \item{*ploidy*:}{ Quantification of abnormal ploidy.}
+#'   }
+#'
+#' Adding these variables is forced! Existing variable with equal names will be overwritten!
+#'
+#' @references Drews, R.M., Hernando, B., Tarabichi, M. et al.
+#' A pan-cancer compendium of chromosomal instability. Nature 606, 976–983 (2022).
+#' https://doi.org/10.1038/s41586-022-04789-9
+#'
+#' @export
+runCIN <- function(object,
+                   bin_size = 1000000,
+                   window_k = 10,
+                   noise = 0.035,
+                   gene_pos_df = SPATA2::gene_pos_df,
+                   chrom_regions_df = SPATA2::cnv_regions_df,
+                   coverage_model = SPATA2::coverage_model,
+                   verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  check_packages(pkgs = c("CINSignatureQuantification", "imputeTS"))
+
+  containsCNV(object, error = TRUE)
+
+  object <-
+    activateAssay(object, assay_name = "transcriptomics", verbose = FALSE)
+
+  # SPATAwrappers -> Create.ref.bins()
+
+  confuns::give_feedback(
+    msg = "Creating reference bins.",
+    verbose = verbose
+  )
+
+  ref_bins <-
+    purrr::map_df(
+      .x = 1:nrow(chrom_regions_df),
+      .f = function(i){
+
+        dat <-
+          SPATAwrappers::hlpr_bins(
+            Chr = rownames(chrom_regions_df)[i],
+            start = chrom_regions_df$Start[i],
+            end = chrom_regions_df$End[i],
+            bin.size = bin_size
+          )
+
+        dat$Chr = chrom_regions_df$Chrom[i]
+        dat$Chr.arm = rownames(chrom_regions_df)[i]
+
+        return(dat)
+
+      }) %>%
+    tibble::as_tibble()
+
+  # SPATAwrappers -> runCNV.Coverage(object)
+
+  confuns::give_feedback(
+    msg = "Computing CNV coverage.",
+    verbose = verbose
+  )
+
+  cnv_genes <-
+    dplyr::mutate(gene_pos_df, chrom = chromosome_name) %>%
+    dplyr::filter(chrom %in% unique(ref_bins$Chr)) %>%
+    dplyr::mutate(
+      bins =
+        merge_cnv_bins(
+          chr = .$chrom,
+          start_pos = .$start_position,
+          end_pos = .$end_position,
+          ref_bins = ref_bins,
+          verbose = verbose
+        )
+    )
+
+  coverage <-
+    dplyr::count(cnv_genes, bins) %>%
+    dplyr::rename(`:=`("bin", bins))
+
+  ref_bins_cov <- dplyr::left_join(x = ref_bins, y = coverage, by = "bin")
+  ref_bins_cov$n[is.na(ref_bins_cov$n)] = 0
+  ref_bins_cov$xaxis <- 1:nrow(ref_bins_cov)
+  ref_bins_cov$Arm <- "q"
+  ref_bins_cov[ref_bins_cov$Chr.arm %>% str_detect(., patter = "p"),]$Arm <- "p"
+
+  # SPATAwrappers -> runCNV.Normalization()
+  mat <- SPATA2::getCnvResults(object)[["cnv_mtr"]]
+  sample <- getSampleName(object)
+
+  confuns::give_feedback(
+    msg = "Merging data to reference bins.",
+    verbose = verbose
+  )
+
+  data.cnv <-
+    reshape2::melt(mat) %>%
+    dplyr::rename(`:=`("hgnc_symbol", Var1)) %>%
+    dplyr::rename(`:=`("barcodes", Var2)) %>%
+    dplyr::left_join(x = ., y = cnv_genes, by = "hgnc_symbol") %>%
+    dplyr::filter(!is.na(bins))
+
+  confuns::give_feedback(
+    msg = "Summarizing bins.",
+    verbose = verbose
+  )
+
+  data.cnv <-
+    dplyr::group_by(data.cnv, barcodes, bins) %>%
+    dplyr::summarise(CNV = mean(value, na.rm = TRUE), CNV.var = var(value, na.rm = TRUE))
+
+  if(!base::is.null(coverage_model)) {
+
+    data.cnv <-
+      dplyr::mutate(
+        .data = data.cnv,
+        CNV = stats::predict(coverage_model,  data.frame(InferCNV.val = CNV))
+      )
+
+  }
+
+  data.cnv$CNV.var[is.na(data.cnv$CNV.var)] <- 0
+
+  confuns::give_feedback(
+    msg = "Adding noise.",
+    verbose = verbose
+  )
+
+  CNV.mat <- matrix(NA, nrow = nrow(ref_bins), ncol = ncol(mat))
+
+  colnames(CNV.mat) <- colnames(mat)
+  rownames(CNV.mat) <- ref_bins$bin
+
+  data <-
+    reshape2::melt(CNV.mat) %>% dplyr::rename(`:=`("bins", Var1)) %>%
+    dplyr::rename(`:=`("barcodes", Var2)) %>%
+    dplyr::left_join(., data.cnv, by = c("bins", "barcodes")) %>%
+    dplyr::mutate(
+      impute = imputeTS::na_ma(CNV, k = window_k, weighting = "simple"),
+      impute.var = imputeTS::na_ma(CNV.var, k = window_k, weighting = "simple"),
+      noise = seq(from = 1 - noise, to = 1 + noise, length.out = nrow(.)) %>% base::sample(),
+      CNV.out.noise = c(impute + noise + impute.var) %>%
+        scales::rescale(c(min(data.cnv$CNV), max(data.cnv$CNV)))
+    ) %>%
+    reshape2::acast(data = ., formula = bins ~  barcodes, value.var = "CNV.out.noise") %>%
+    reshape2::melt(data = .) %>%
+    dplyr::rename("bin" := Var1)
+
+  data <-
+    dplyr::left_join(x = data, y = ref_bins_cov, by="bin") %>%
+    dplyr::select(Chr, start, end, value, Var2)
+
+  base::names(data) <- c("chromosome", "start", "end", "segVal", "sample")
+  data$sample <- base::as.character(data$sample)
+
+  gc()
+
+  # quantify instability
+
+  confuns::give_feedback(
+    msg = "Computing chromosomal instability. (This can take time.)",
+    verbose = verbose
+  )
+
+  instability <-
+    CINSignatureQuantification::quantifyCNSignatures(data, build = "hg38")
+
+  cin_scores <-
+    base::as.data.frame(instability@activities$scaledAct3) %>%
+    tibble::rownames_to_column(var = "barcodes") %>%
+    tibble::as_tibble()
+
+  object <- addFeatures(object, feature_df = cin_scores, overwrite = TRUE)
+
+  ploidy_score <-
+    base::as.data.frame(instability@samplefeatData) %>%
+    tibble::rownames_to_column(var = "barcodes") %>%
+    tibble::as_tibble() %>%
+    dplyr::select(barcodes, ploidy)
+
+  object <- addFeatures(object, feature_df = ploidy_score, overwrite = TRUE)
+
+  return(object)
+
+}
+
 #' @title Identify large-scale chromosomal copy number variations
 #'
 #' @description This functions integrates large-scale copy number variations analysis
-#' using the inferncnv-package. For more detailed information about infercnv works
+#' using the `inferncnv` package. For more detailed information about infercnv works
 #' visit \emph{https://github.com/broadinstitute/inferCNV/wiki}.
 #'
 #' @inherit argument_dummy params
-#' @inherit check_sample params
 #'
 #' @param ref_annotation A data.frame in which the row names refer to the barcodes of
 #' the reference matrix provided in argument \code{ref_mtr} and
@@ -395,37 +606,39 @@ runBayesSpaceClustering <- function(object,
 #' Check out the content of list \code{SPATA2::cnv_ref} and make sure that your own
 #' reference input is of similiar structure regarding column names, rownames, etc.
 #'
+#' @note `runCnvAnalysis()` has been deprecated in favor of `runCNV()`.
+#'
 #' @return An updated `SPATA2` object containg the results in the respective slot.
 #' @export
 #'
 
-runCnvAnalysis <- function(object,
-                           ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
-                           ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
-                           ref_regions = cnv_ref[["regions"]], # chromosome positions
-                           gene_pos_df = SPATA2::gene_pos_df,
-                           directory_cnv_folder = "data-development/cnv-results", # output folder
-                           directory_regions_df = NA, # deprecated (chromosome positions)
-                           n_pcs = 30,
-                           cnv_prefix = "Chr",
-                           save_infercnv_object = TRUE,
-                           verbose = NULL,
-                           CreateInfercnvObject = list(ref_group_names = "ref"),
-                           require_above_min_mean_expr_cutoff = list(min_mean_expr_cutoff = 0.1),
-                           require_above_min_cells_ref = list(min_cells_per_gene = 3),
-                           normalize_counts_by_seq_depth = list(),
-                           anscombe_transform = list(),
-                           log2xplus1 = list(),
-                           apply_max_threshold_bounds = list(),
-                           smooth_by_chromosome = list(window_length = 101, smooth_ends = TRUE),
-                           center_cell_expr_across_chromosome = list(method = "median"),
-                           subtract_ref_expr_from_obs = list(inv_log = TRUE),
-                           invert_log2 = list(),
-                           clear_noise_via_ref_mean_sd = list(sd_amplifier = 1.5),
-                           remove_outliers_norm = list(),
-                           define_signif_tumor_subclusters = list(p_val = 0.05, hclust_method = "ward.D2", cluster_by_groups = TRUE, partition_method = "qnorm"),
-                           plot_cnv = list(k_obs_groups = 5, cluster_by_groups = TRUE, output_filename = "infercnv.outliers_removed", color_safe_pal = FALSE,
-                                           x.range = "auto", x.center = 1, output_format = "pdf", title = "Outliers Removed")){
+runCNV <- function(object,
+                   ref_annotation = cnv_ref[["annotation"]], # data.frame denoting reference data as reference
+                   ref_mtr = cnv_ref[["mtr"]], # reference data set of healthy tissue
+                   ref_regions = cnv_ref[["regions"]], # chromosome positions
+                   gene_pos_df = SPATA2::gene_pos_df,
+                   directory_cnv_folder = "data-development/cnv-results", # output folder
+                   directory_regions_df = NA, # deprecated (chromosome positions)
+                   n_pcs = 30,
+                   cnv_prefix = "Chr",
+                   save_infercnv_object = TRUE,
+                   verbose = NULL,
+                   CreateInfercnvObject = list(ref_group_names = "ref"),
+                   require_above_min_mean_expr_cutoff = list(min_mean_expr_cutoff = 0.1),
+                   require_above_min_cells_ref = list(min_cells_per_gene = 3),
+                   normalize_counts_by_seq_depth = list(),
+                   anscombe_transform = list(),
+                   log2xplus1 = list(),
+                   apply_max_threshold_bounds = list(),
+                   smooth_by_chromosome = list(window_length = 101, smooth_ends = TRUE),
+                   center_cell_expr_across_chromosome = list(method = "median"),
+                   subtract_ref_expr_from_obs = list(inv_log = TRUE),
+                   invert_log2 = list(),
+                   clear_noise_via_ref_mean_sd = list(sd_amplifier = 1.5),
+                   remove_outliers_norm = list(),
+                   define_signif_tumor_subclusters = list(p_val = 0.05, hclust_method = "ward.D2", cluster_by_groups = TRUE, partition_method = "qnorm"),
+                   plot_cnv = list(k_obs_groups = 5, cluster_by_groups = TRUE, output_filename = "infercnv.outliers_removed", color_safe_pal = FALSE,
+                                   x.range = "auto", x.center = 1, output_format = "pdf", title = "Outliers Removed")){
 
   # 1. Control --------------------------------------------------------------
 
@@ -979,6 +1192,15 @@ runCnvAnalysis <- function(object,
 
 }
 
+#' @rdname runCNV
+#' @export
+runCnvAnalysis <- function(object, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  runCNV(object = object, ...)
+
+}
 
 
 # runD --------------------------------------------------------------------

@@ -5,7 +5,7 @@
 \alias{removeGenes}
 \alias{removeGenesStress}
 \alias{removeGenesZeroCounts}
-\title{Remove genes from the \code{SPATA2} object}
+\title{Remove molecules from the \code{SPATA2} object}
 \usage{
 removeMolecules(
   object,
@@ -41,13 +41,21 @@ The input object containing the added or computed
 results.
 }
 \description{
-Functions that removes genes from the \code{SPATA2} object by removing
-them from count matrix and all processed matrices of the assay.
+Functions that removes molecules from the \code{SPATA2} object by removing
+them from count matrix and all processed matrices of the respective \link[MolecularAssay]{assay}.
+
+\itemize{
+\item{\code{removeMolecules()}:}{ Removes user specified molecules}
+\item{\code{removeMoleculesZeroCounts()}:}{ Removes molecules that do not have a single count
+across all observations.}
+}
+
+Wrappers for transriptomic assay:
 
 \itemize{
 \item{\code{removeGenes()}:}{ Removes user specified genes.}
 \item{\code{removeGenesZeroCounts()}:}{ Removes genes that do not have a single count
-across all data points.}
+across all observations.}
 \item{\code{removeGenesStress()}:}{ Removes mitochondrial and stress related genes.}
 }
 }

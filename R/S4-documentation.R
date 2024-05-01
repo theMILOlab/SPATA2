@@ -558,8 +558,8 @@ SDEGS <- methods::setClass(Class = "SDEGS",
 #' `SPATA2` architecture.
 #' @slot dim_red A list containing dimensionality reduction results.
 #' @slot logfile A data frame containing log file data.
-#' @slot meta_obs A data frame containing metadata for the observations. This comprises all
-#' data variables that are not found in the molecular assays including cluster and grouping variables,
+#' @slot meta_obs A data frame containing metadata for the \link[=concept_observations]{observations}. This comprises all
+#' \link[=concept_variables]{variables} that are **not** found in the molecular assays including cluster and grouping variables,
 #' summary statistics, etc.
 #' @slot meta_sample A list providing additional information about the tissue and the tissue donor.
 #' @slot method An object of class 'SpatialMethod' detailing the spatial method used.

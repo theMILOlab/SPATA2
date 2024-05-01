@@ -610,6 +610,43 @@ compute_relative_variation <- function(gradient){
 # computeC ----------------------------------------------------------------
 
 
+#' @title Compute chromosomal damage
+#'
+#' @description Estimates the degree of chromosomal damage of each \link[=concept_observations]{observation}
+#' by computing the variance of copy number variations across chromosomes 1-22.
+#'
+#' (Requires the results of [`runCNV()`]).
+#'
+#' @param chr_vars Character vector. Names of the meta features that contain the
+#' copy number variation scores for each chromosome.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+computeChromosomalDamage <- function(object, chr_vars = stringr::str_c("Chr", 1:22)){
+
+  containsCNV(object, error = TRUE)
+
+  chr_df <-
+    getMetaDf(object) %>%
+    dplyr::select(barcodes, dplyr::all_of(chr_vars)) %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(chr_vars), names_to = "chr", values_to = "cnv_val")
+
+  new_feat <-
+    dplyr::group_by(chr_df, barcodes) %>%
+    dplyr::summarize(
+      chrom_damage = stats::var(x = cnv_val, na.rm = T)
+    )
+
+  new_feat$chrom_damage[is.na(new_feat$chrom_damage)] <- base::mean(new_feat$chrom_damage, na.rm = TRUE)
+
+  object <- addFeatures(object, feature_df = new_feat, overwrite = TRUE)
+
+  return(object)
+
+}
+
 #' @title Compute CNV by chromosome arm
 #'
 #' @description Extension to \code{runCnvAnalysis()}. Uses the results
@@ -688,6 +725,72 @@ computeCnvByChrArm <- function(object,
 
 
 # computeG ----------------------------------------------------------------
+
+
+
+# computeM ----------------------------------------------------------------
+
+
+#' @title Compute meta features for molecular data
+#'
+#' @description This function computes meta features for molecular data observation wise.
+#' Meta features include the number of counts and the number of distinct molecules observed per barcode.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details This function computes meta features such as the number of counts
+#' and the number of distinct molecules per observation. The computed meta
+#' features are added to the input object via [`addFeatures()`].
+#'
+computeMetaFeatures <- function(object,
+                                assay_name = activeAssay(object),
+                                overwrite = FALSE){
+
+  count_mtr <- getCountMatrix(object, assay_name = assay_name)
+
+  mname <- molecule_names[[assay_name]]
+
+  if(base::is.null(mname)){
+
+    mname <- assay_name
+
+  }
+
+  name1 <- stringr::str_c("n_counts_", mname)
+  name2 <- stringr::str_c("n_distinct_", mname)
+
+  confuns::check_none_of(
+    input = c(name1, name2),
+    against = getFeatureNames(object),
+    ref.input = "variables to compute",
+    ref.against = "meta feature names",
+    overwrite = overwrite
+  )
+
+  # n_counts
+  count_df <-
+    Matrix::colSums(count_mtr, na.rm = TRUE) %>%
+    base::as.data.frame() %>%
+    tibble::rownames_to_column(var = "barcodes") %>%
+    magrittr::set_colnames(value = c("barcodes", name1)) %>%
+    tibble::as_tibble()
+
+  object <- addFeatures(object, feature_df = count_df, overwrite = TRUE)
+
+  # n_distinct_molecules
+  molecule_df <-
+    base::apply(X = count_mtr, MARGIN = 2, FUN = function(col){ base::sum(col != 0)}) %>%
+    base::as.data.frame() %>%
+    tibble::rownames_to_column(var = "barcodes") %>%
+    magrittr::set_colnames(value = c("barcodes", name2)) %>%
+    tibble::as_tibble()
+
+  object <- addFeatures(object, feature_df = molecule_df, overwrite = TRUE)
+
+  return(object)
+
+}
 
 
 

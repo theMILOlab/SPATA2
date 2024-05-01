@@ -240,24 +240,11 @@ ggpLayerAxesClean <- function(..., object = NULL){
 #'   ggpLayerAxesSI(object, unit = "mm", breaks = list(x = my_breaks, y = str_c(2:5, "mm")), add_labs = TRUE)
 #'
 #'
-#'  # ----- for gradient plots
-#'
-#'  plotSurface(object, color_by = "FN1") +
-#'   ggpLayerHorizonSAS(object, id = "necrotic_center", distance = "2.25mm", binwidth = "112.5um")
-#'
-#'  # no axis specification
-#'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1")
-#'
-#'  # with axis specification, make sure to set which = "x" as y is used for expression!
-#'  plotIasLineplot(object, id = "necrotic_center", distance = "2.25mm", variables = "FN1") +
-#'   ggpLayerAxesSI(object, unit = "mm", breaks = str_c(c(0.5, 1, 1.5, 2), "mm"), which = "x")
-#'
-#'
 ggpLayerAxesSI <- function(object,
                            unit = getSpatialMethod(object)@unit,
                            which = c("x", "y"),
                            breaks = NULL,
-                           add_labs = FALSE,
+                           add_labs = TRUE,
                            round = 2,
                            xrange = NULL,
                            yrange = NULL,
@@ -366,7 +353,7 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
-    if(containsImage(object)){
+    if(containsHistoImages(object)){
 
       pxl_df <- getPixelDf(object)
 
@@ -425,7 +412,7 @@ ggpLayerAxesSI <- function(object,
 
   } else {
 
-    if(containsImage(object)){
+    if(containsHistoImages(object)){
 
       pxl_df <- getPixelDf(object)
 
@@ -1438,8 +1425,8 @@ setMethod(
   definition = function(object,
                         img_name = activeImage(object),
                         transform = TRUE,
-                        scale_fct = 1,
                         img_alpha = 1,
+                        scale_fct = 1,
                         ...){
 
     image <- getImage(object, img_name = img_name, transform = transform)
@@ -1550,7 +1537,6 @@ setMethod(
   signature = "data.frame",
   definition = function(object, fill_by, img_alpha = 1){
 
-    # flip to display in x- and y-space
     ggplot2::geom_raster(
       data = object,
       mapping = ggplot2::aes(x = width, y = height, fill = .data[[fill_by]]),
@@ -3215,6 +3201,7 @@ setMethod(
                         transform = TRUE,
                         smooth_with = "none",
                         scale_fct = 1,
+                        outline_fct = c(1.75, 2.75),
                         expand_outline = recBinwidth(object, "px")/1.25,
                         ...){
 
@@ -3262,6 +3249,7 @@ setMethod(
                         transform = TRUE,
                         smooth_with = "none",
                         scale_fct = 1,
+                        outline_fct = c(1.75, 2.75),
                         expand_outline = 0,
                         ...){
 
@@ -3284,7 +3272,7 @@ setMethod(
 
       confuns::check_one_of(
         input = method,
-        against = c("obs", "image")
+        against = c("obs", "image", "points")
       )
 
     }
@@ -3373,6 +3361,24 @@ setMethod(
           }
         ) %>%
         purrr::set_names(nm = base::unique(outline_df$section))
+
+    } else if(method == "points"){
+
+      coords_df <- getCoordsDf(object)
+
+      out <-
+        ggpLayerTissueOutline(
+          object = coords_df,
+          method = method,
+          by_section = by_section,
+          fragments = fragments,
+          line_alpha = line_alpha,
+          line_color = line_color,
+          line_size = line_size,
+          line_type = line_type,
+          outline_fct = outline_fct,
+          ...
+        )
 
     }
 
@@ -3879,15 +3885,20 @@ ggpLayerZoom <- function(object = NULL,
 
     base::stopifnot(base::length(xrange) == 2)
 
+    scale_layer_x <-
+      ggplot2::scale_x_continuous(
+        breaks = base::seq(xrange[1], xrange[2], length.out = n_breaks[1]),
+        expand = expand_x,
+        labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
+      )
+
+    scale_layer_x$default <- TRUE
+
     layers <-
       c(
         layers,
         list(
-          ggplot2::scale_x_continuous(
-            breaks = base::seq(xrange[1], xrange[2], length.out = n_breaks[1]),
-            expand = expand_x,
-            labels = ~ as_unit(input = .x, unit = xunit, object = object, round = round)
-          ),
+          scale_layer_x,
           ggplot2::labs(x = glue::glue("x-coordinates [{xunit}]"))
         )
       )
@@ -3904,22 +3915,32 @@ ggpLayerZoom <- function(object = NULL,
 
     base::stopifnot(base::length(yrange) == 2)
 
+    scale_layer_y <-
+      ggplot2::scale_y_continuous(
+        breaks = base::seq(yrange[1], yrange[2], length.out = n_breaks[2]),
+        expand = expand_y,
+        labels = ~ as_unit(input = .x, unit = yunit, object = object, round = round)
+      )
+
+    scale_layer_y$default <- TRUE
+
     layers <-
       c(
         layers,
         list(
-          ggplot2::scale_y_continuous(
-            breaks = base::seq(yrange[1], yrange[2], length.out = n_breaks[2]),
-            expand = expand_y,
-            labels = ~ as_unit(input = .x, unit = yunit, object = object, round = round)
-          ),
+          scale_layer_y,
           ggplot2::labs(y = glue::glue("y-coordinates [{yunit}]"))
         )
       )
 
   }
 
-  layers <- c(layers, ggplot2::coord_fixed(xlim = xrange, ylim = yrange, expand = FALSE))
+  coord_layer <-
+    ggplot2::coord_fixed(xlim = xrange, ylim = yrange, expand = FALSE)
+
+  coord_layer$default <- TRUE
+
+  layers <- c(layers, coord_layer)
 
   return(layers)
 

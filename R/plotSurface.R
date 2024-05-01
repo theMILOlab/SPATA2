@@ -636,7 +636,8 @@ setMethod(
         smooth = smooth,
         smooth_span = smooth_span,
         normalize = normalize,
-        verbose = verbose
+        verbose = verbose,
+        ...
       )
 
     variables <- base::unname(base::unlist(variables))

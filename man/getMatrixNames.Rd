@@ -2,23 +2,39 @@
 % Please edit documentation in R/getH-M.R
 \name{getMatrixNames}
 \alias{getMatrixNames}
+\alias{getMatrixNames,SPATA2-method}
+\alias{getMatrixNames,MolecularAssay-method}
 \title{Obtain matrix names}
 \usage{
-getMatrixNames(object, assay_name = activeAssay(object))
+getMatrixNames(object, ...)
+
+\S4method{getMatrixNames}{SPATA2}(
+  object,
+  assay_name = activeAssay(object),
+  only_proc = FALSE,
+  ...
+)
+
+\S4method{getMatrixNames}{MolecularAssay}(object, only_proc = FALSE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{...}{Used to absorb deprecated arguments or functions.}
+
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
+
+\item{only_proc}{Logical. If \code{TRUE}, only the names of the processed
+matrices in slot @mtr_proc are returned.}
 }
 \value{
 A character vector containing the names of matrices.
 }
 \description{
-Retrieves the names of matrices present in the specified assay of the provided object.
+Retrieves the names of matrices present in the specified or provided \link[=MolecularAssay]{assay}.
 }
 \seealso{
 \code{\link[=getMatrix]{getMatrix()}}

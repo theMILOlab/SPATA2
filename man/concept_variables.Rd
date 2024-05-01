@@ -40,7 +40,7 @@ observation. Stored in the count and processed matrices of the \code{\link{Molec
 objects. E.g. \emph{GFAP}, \emph{VEGFA}, \emph{LDH}}
 \item{\emph{signature}:}{ Specific scores or mean expression based on other numeric (mainly
 molecular) data variables. E.g. gene signatures like \emph{HM_HYPOXIA} or cell cycling scores.}
-\item{\emph{miscellaneous}:}{ Numeric variables that do not fit in any of the descriptions above
+\item{\emph{meta}:}{ Numeric variables that do not fit in any of the descriptions above
 and often correspond to meta data. E.g. the number of molecule counts per observation.}
 }
 }
@@ -56,8 +56,8 @@ conceptually subdivided.
 \itemize{
 \item{\emph{cluster}:}{ Results of clustering algorithms. E.g. \code{\link[=runBayesSpaceClustering]{runBayesSpaceClustering()}}}
 \item{\emph{segmentation}:}{ Results of manual, spatial segmentation via \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}}
-\item{\emph{miscellaneous}:}{ Numeric variables that do not fit in any of the descriptions above.
-E.g. tissue section assignment by \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}.}
+\item{\emph{meta}:}{ Categorical variables that do not fit in any of the descriptions above.
+E.g. group assignment by \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}.}
 }
 
 Grouping variables are stored as factors in the meta data.frame of slot @meta_obs.
