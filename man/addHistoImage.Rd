@@ -25,6 +25,6 @@ results.
 }
 \description{
 Adds objects of class \code{HistoImage} to list of
-registered histology images. Should only be used within \code{registerHistoImage()}.
+registered histology images. Should only be used within \code{\link[=registerHistoImage]{registerHistoImage()}}.
 }
 \keyword{internal}

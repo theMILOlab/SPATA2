@@ -412,7 +412,7 @@ barcodesToSpatialAnnotation <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

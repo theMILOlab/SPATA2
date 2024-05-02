@@ -2,20 +2,15 @@
 % Please edit documentation in R/setA-Z.R
 \name{setSpatialData}
 \alias{setSpatialData}
-\alias{setImageObject}
 \title{Set \code{SpatialData}}
 \usage{
 setSpatialData(object, sp_data)
-
-setImageObject(object, image_object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
 \item{sp_data}{An object of class \code{\link{SpatialData}}.}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \description{
 Sets the image container class \code{SpatialData}

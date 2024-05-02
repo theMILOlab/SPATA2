@@ -199,62 +199,6 @@ discardExpressionMatrix <- function(...){
 
 
 
-
-
-
-
-#' @title Discard features
-#'
-#' @description Discards the features of choice.
-#'
-#' @inherit check_sample params
-#' @param feature_names Character vector. Specifies the features to be discarded.
-#'
-#' @return An updated spata-object.
-#' @export
-
-removeFeatures <- function(object, feature_names, ...){
-
-  check_object(object)
-
-  confuns::check_one_of(
-    input = feature_names,
-    against = getFeatureNames(object)
-  )
-
-  mdf <- getMetaDf(object = object)
-
-  for(feature in feature_names){
-
-    mdf[[feature]] <- NULL
-
-    object@assays <-
-      purrr::map(
-        .x = object@assays,
-        .f = function(ma){
-
-          ma@analysis$dea[[feature]] <- NULL
-          ma@analysis$gsea[[feature]] <- NULL
-
-          return(ma)
-
-        }
-      )
-
-    svn <- object@obj_info$segmentation_variable_names
-    svn <- svn[svn != feature]
-    object@obj_info$segmentation_variable_names <- svn
-
-  }
-
-  object <- setMetaDf(object, meta_df = mdf)
-
-  return(object)
-
-}
-
-
-
 #' @title Distance to cover the whole tissue
 #'
 #' @description Computes the distance from the center of a spatial annotation

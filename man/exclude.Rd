@@ -4,7 +4,7 @@
 \alias{exclude}
 \alias{exclude,SpatialData-method}
 \alias{excludeSpatialOutliers}
-\alias{excludeSpatialOutliers,spata2-method}
+\alias{excludeSpatialOutliers,SPATA2-method}
 \alias{excludeSpatialOutliers,SpatialData-method}
 \alias{excludeTissueFragments}
 \alias{excludeTissueFragments,SpatialData-method}
@@ -16,7 +16,7 @@ exclude(object, ...)
 
 excludeSpatialOutliers(object, ...)
 
-\S4method{excludeSpatialOutliers}{spata2}(object)
+\S4method{excludeSpatialOutliers}{SPATA2}(object)
 
 \S4method{excludeSpatialOutliers}{SpatialData}(object)
 

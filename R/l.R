@@ -204,7 +204,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -268,7 +268,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )

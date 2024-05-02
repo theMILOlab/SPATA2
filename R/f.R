@@ -807,7 +807,7 @@ flipAll <- function(object, axis, verbose = FALSE){
 
   object <- flipCoordinates(object, axis = axis, verbose = verbose)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -819,7 +819,7 @@ flipCoordinates <- function(object, axis, verbose = FALSE){
   object <- flipSpatialAnnotations(object, axis = axis, verbose = verbose)
   object <- flipSpatialTrajectories(object, axis = axis, verbose = verbose)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -852,7 +852,7 @@ flipCoordsDf <- function(object, axis, verbose = FALSE){
 
   object <- setCoordsDf(object, coords_df = coords_df, force = TRUE)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -888,7 +888,7 @@ flipImage <- function(object, axis, img_name = NULL, verbose = FALSE){
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -949,7 +949,7 @@ flipSpatialAnnotations <- function(object, axis, verbose = NULL){
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1008,7 +1008,7 @@ flipSpatialTrajectories <- function(object, axis, verbose = NULL){
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

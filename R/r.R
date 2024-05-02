@@ -356,7 +356,7 @@ renameSpataObject <- function(object, sample_name){
 
   object <- setSpatialData(object, sp_data = sp_data)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -497,7 +497,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -917,7 +917,7 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -950,7 +950,7 @@ removeMetaFeatures <- function(object, feature_names){
 
   object <- setMetaDf(object, meta_df = mdf)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1060,7 +1060,7 @@ removeMolecules <- function(object,
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1109,7 +1109,7 @@ removeGenesStress <- function(object, verbose = NULL){
       verbose = verbose
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1132,7 +1132,7 @@ removeGenesZeroCounts <- function(object, verbose = NULL){
       verbose = verbose
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1158,7 +1158,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -1193,6 +1193,56 @@ setMethod(
 )
 
 
+#' @title Remove features
+#'
+#' @description Removes features from the meta feature data.frame.
+#'
+#' @inherit check_sample params
+#' @param feature_names Character vector. Specifies the meta features to be removed.
+#'
+#' @inherit update_dummy return
+#' @export
+
+removeMetaFeatures <- function(object, feature_names, ...){
+
+  check_object(object)
+
+  confuns::check_one_of(
+    input = feature_names,
+    against = getFeatureNames(object)
+  )
+
+  mdf <- getMetaDf(object = object)
+
+  for(feature in feature_names){
+
+    mdf[[feature]] <- NULL
+
+    object@assays <-
+      purrr::map(
+        .x = object@assays,
+        .f = function(ma){
+
+          ma@analysis$dea[[feature]] <- NULL
+          ma@analysis$gsea[[feature]] <- NULL
+
+          return(ma)
+
+        }
+      )
+
+    svn <- object@obj_info$segmentation_variable_names
+    svn <- svn[svn != feature]
+    object@obj_info$segmentation_variable_names <- svn
+
+  }
+
+  object <- setMetaDf(object, meta_df = mdf)
+
+  returnSpataObject(object)
+
+}
+
 #' @title Remove a processed matrix
 #'
 #' @description Removes a processed matrix from the `SPATA2` object.
@@ -1218,7 +1268,7 @@ removeProcessedMatrix <- function(object,
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1250,7 +1300,7 @@ removeSpatialAnnotations <- function(object, ids){
 
   object <- setSpatialData(object, sp_data = sp_data)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1295,7 +1345,7 @@ removeSpatialOutliers <- function(object, verbose = NULL){
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1368,7 +1418,7 @@ removeTissueFragments <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 
 }
@@ -1389,10 +1439,10 @@ removeTissueFragments <- function(object,
 #'
 #' @examples #Not run:
 #'
-#'  object <- renameFeatures(object, "clusters_new" = "clusters")
+#'  object <- renameMetaFeatures(object, "clusters_new" = "clusters")
 #'
 
-renameFeatures <- function(object, ...){
+renameMetaFeatures <- function(object, ...){
 
   check_object(object)
 
@@ -1470,7 +1520,7 @@ renameFeatures <- function(object, ...){
 
   object <- setMetaDf(object, meta_df = meta_df)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1500,7 +1550,11 @@ renameFeatures <- function(object, ...){
 #'
 #'
 
-renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_sample = NA){
+renameGroups <- function(object,
+                         grouping_variable,
+                         ...,
+                         keep_levels = NULL,
+                         of_sample = NA){
 
   deprecated(...)
 
@@ -1604,7 +1658,7 @@ renameGroups <- function(object, grouping_variable, ..., keep_levels = NULL, of_
 
   object <- setMetaDf(object, meta_df = renamed_feature_df)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1650,7 +1704,7 @@ renameSpatialAnnotation <- function(object, id, new_id, overwrite = FALSE){
 
   object <- setSpatialData(object, sp_data = sp_data)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1703,7 +1757,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -1765,6 +1819,76 @@ resizingSegmentsGrob <- function(...){
 resizingTextGrob <- function(...){
 
   grid::grobTree(tg = grid::textGrob(...), cl = "resizingTextGrob")
+
+}
+
+
+#' @keywords internal
+returnSpataObject <- function(object){
+
+  if(methods::is(object, class2 = "SPATA2")){
+
+    ce <- rlang::caller_env()
+
+    fn <- rlang::caller_fn()
+
+    fn_frame <- base::sys.parent()
+    init_call <- base::sys.call(which = fn_frame)
+
+    fn_name <- base::as.character(init_call)[1]
+
+    # workaround to get names of S4 generics
+    if(fn_name == ".local"){
+
+      sc <- base::sys.calls()
+      fn_name <- base::as.character(sc)[1]
+      fn_name <- confuns::str_extract_before(fn_name, pattern = "\\(")
+
+    }
+
+    # extract the arguments provided in the call expression
+    provided_args <- base::as.list(init_call)[-1]  # exclude the function name
+
+    # capture formal arguments of the function
+    formal_args <-
+      base::formals(fun = fn) %>%
+      base::as.list()
+
+    # match provided arguments with formal arguments
+    args_input <- base::vector("list", length = length(formal_args))
+    base::names(args_input) <- base::names(formal_args)
+
+    for(arg_name in base::names(formal_args)) {
+
+      if(arg_name %in% base::names(provided_args)) {
+
+        args_input[[arg_name]] <- provided_args[[arg_name]]
+
+      } else {
+
+        args_input[[arg_name]] <- formal_args[[arg_name]]
+
+      }
+
+    }
+
+    new_logfile_entry <-
+      tibble::tibble(
+        fn_name = fn_name,
+        date_time = base::Sys.time(),
+        pkg_version = version_string()
+      )
+
+    lf_df <- getLogfileDf(object)
+
+    lf_df_new <- dplyr::add_row(lf_df, new_logfile_entry)
+    lf_df_new[["args_input"]][[base::nrow(lf_df_new)]] <- args_input
+
+    object <- setLogfileDf(object, lf_df = lf_df_new)
+
+  }
+
+  return(object)
 
 }
 
@@ -2035,7 +2159,7 @@ rotateAll <- function(object, angle, clockwise = TRUE){
       verbose = FALSE
       )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2098,7 +2222,7 @@ rotateCoordinates <- function(object, angle, clockwise = TRUE, verbose = NULL){
       verbose = verbose
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2131,7 +2255,7 @@ rotateCoordsDf <- function(object,
 
   object <- setCoordsDf(object, coords_df = coords_df_final)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2181,7 +2305,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -2307,7 +2431,7 @@ rotateSpatialAnnotations <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2365,7 +2489,7 @@ rotateSpatialTrajectories <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

@@ -137,7 +137,7 @@ normalizeCounts <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

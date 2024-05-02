@@ -455,7 +455,7 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, ...){
 
   object@autoencoder[[of_sample]][["nn_set_ups"]][[mtr_name]] <- set_up_list
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -700,7 +700,7 @@ addFeatures <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -787,7 +787,7 @@ addGeneSet <- function(object,
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -836,7 +836,7 @@ addGeneSetsInteractive <- function(object){
 #' @title Add object of class `HistoImage`
 #'
 #' @description Adds objects of class `HistoImage` to list of
-#' registered histology images. Should only be used within `registerHistoImage()`.
+#' registered histology images. Should only be used within [`registerHistoImage()`].
 #'
 #' @param hist_img An object of class `HistoImage` created with `createHistoImage()`.
 #' @inherit argument_dummy params
@@ -968,7 +968,7 @@ setMethod(
 
     object <- setSpatialAnnotation(object, spat_ann = spat_ann)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -1167,7 +1167,7 @@ addMolecularAssay <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1404,7 +1404,7 @@ addProcessedMatrix <- function(object,
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1468,7 +1468,7 @@ addSegmentationVariable <- function(object,
     ...
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1532,7 +1532,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -1786,7 +1786,7 @@ addSpatialTrajectory <- function(object,
       overwrite = overwrite
       )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

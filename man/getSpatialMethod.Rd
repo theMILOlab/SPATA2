@@ -2,12 +2,15 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatialMethod}
 \alias{getSpatialMethod}
-\alias{getSpatialMethod,ANY-method}
+\alias{getSpatialMethod,SPATA2-method}
+\alias{getSpatialMethod,SpatialData-method}
 \title{Obtain spatial method}
 \usage{
 getSpatialMethod(object, ...)
 
-\S4method{getSpatialMethod}{ANY}(object)
+\S4method{getSpatialMethod}{SPATA2}(object)
+
+\S4method{getSpatialMethod}{SpatialData}(object)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

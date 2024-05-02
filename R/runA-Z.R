@@ -264,7 +264,7 @@ runBayesSpaceClustering <- function(object,
 
   object <- addFeatures(object, feature_df = cluster_df, overwrite = overwrite)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -480,7 +480,7 @@ runCIN <- function(object,
 
   object <- addFeatures(object, feature_df = ploidy_score, overwrite = TRUE)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1188,7 +1188,7 @@ runCNV <- function(object,
 
   confuns::give_feedback(msg = "Done.", verbose = verbose)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1331,7 +1331,7 @@ runDEA <- function(object,
 
           base::message(glue::glue("Skipping DEA on across-input '{across}' with method '{method}' as it resulted in the following error message: {error}"))
 
-          return(object)
+          returnSpataObject(object)
 
         }
         )
@@ -1341,7 +1341,7 @@ runDEA <- function(object,
   }
 
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1353,7 +1353,7 @@ runDeAnalysis <- function(...){
 
   object <- runDEA(...)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1580,46 +1580,12 @@ runGSEA <- function(object,
 
   give_feedback(msg = "Done.", verbose = verbose)
 
-  return(object)
+  returnSpataObject(object)
 
   }
 
 
 # runI --------------------------------------------------------------------
-
-#' @title Run image processing pipeline
-#'
-#' @description A wrapper around the image processing functions:
-#'
-#' \itemize{
-#'  \item{[`identifyPixelContent()`]}{}
-#'  \item{[`identifyTissueOutline()`]}{}
-#'  \item{[`identifyBackgroundColor()`]}
-#'  }
-#'
-#' @param ... Arguments passed to [`identifyPixelContent()`].
-#'
-#' @inherit identifyPixelContent params
-#' @inherit argument_dummy params
-#'
-#' @inherit update_dummy return
-#'
-#' @export
-
-runImagePipeline <- function(object,
-                             img_name = activeImage(object),
-                             verbose = TRUE,
-                             ...){
-
-  object <- identifyPixelContent(object, img_name = img_name, verbose = verbose, ...)
-
-  object <- identifyTissueOutline(object, img_name = img_name, verbose = verbose)
-
-  object <- identifyBackgroundColor(object, img_name = img_name, verbose = verbose)
-
-  return(object)
-
-}
 
 
 
@@ -1686,7 +1652,7 @@ runKmeansClustering <- function(object,
 
   object <- addFeatures(object, feature_df = cluster_df, overwrite = overwrite)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1743,7 +1709,7 @@ runPca <- function(object,
 
   object <- setPcaDf(object = object, pca_df = pca_df)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1885,7 +1851,7 @@ runSDEA <- function(object,
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1938,7 +1904,7 @@ runSeuratClustering <- function(object,
 
   object <- addFeatures(object, feature_df = cluster_df)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1985,7 +1951,7 @@ runSparkx <- function(object,
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2096,7 +2062,7 @@ runUmap <- function(object, n_pcs = 20, ...){
 
   object <- setUmapDf(object = object, umap_df = umap_df)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

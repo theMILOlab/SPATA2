@@ -769,7 +769,7 @@ mergeGroups <- function(object,
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -863,7 +863,7 @@ mergeSpatialAnnotations <- function(object,
       overwrite = overwrite
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -931,7 +931,7 @@ mergeTissueSections <- function(object, ...){
 
   object <- setCoordsDf(object, coords_df = coords_df)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

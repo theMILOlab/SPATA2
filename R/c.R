@@ -71,7 +71,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -643,7 +643,7 @@ computeChromosomalDamage <- function(object, chr_vars = stringr::str_c("Chr", 1:
 
   object <- addFeatures(object, feature_df = new_feat, overwrite = TRUE)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -718,7 +718,7 @@ computeCnvByChrArm <- function(object,
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -788,7 +788,7 @@ computeMetaFeatures <- function(object,
 
   object <- addFeatures(object, feature_df = molecule_df, overwrite = TRUE)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -831,7 +831,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )

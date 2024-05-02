@@ -173,6 +173,36 @@ NULL
 #' @keywords internal
 NULL
 
+
+#' @title Logfile (Logfile Data)
+#' @description In the context of SPATA2, the term *logfile* refers to a record of
+#' events and actions performed during the execution of functions related to [`SPATA2`]
+#' objects. The logfile serves as a historical log, capturing details such as the
+#' function name, timestamp of execution, and package version used.
+#'
+#' The logfile is represented as a data.frame where each row corresponds to a log
+#' entry, and each column contains specific information about the execution event.
+#' Below is an itemized description of the variables in the logfile data.frame:
+#'
+#' \itemize{
+#'   \item \code{fn_name}: The name of the function that was executed.
+#'   \item \code{date_time}: The timestamp indicating when the function was executed.
+#'   \item \code{pkg_version}: The version of the SPATA2 package used during execution.
+#'   \item \code{args_input}: A list containing the arguments provided to the function,
+#'          including both explicitly specified values and default values overridden by the user.
+#' }
+#'
+#' The logfile is stored in slot @@logfile of the object.
+#'
+#' @seealso [`returnSpataObject()`], [`getLogfileDf()`], [`setLogfileDf()`]
+#'
+#' @name concept_logfile
+#' @aliases concept_logfile
+#'
+#' @keywords internal
+NULL
+
+
 #' @title Observations (Data points)
 #' @description In the context of SPATA2, the term *observations* refers to the
 #' data points or entities for which spatial information (x- and y-coordinates)

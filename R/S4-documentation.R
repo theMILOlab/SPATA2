@@ -557,12 +557,14 @@ SDEGS <- methods::setClass(Class = "SDEGS",
 #' @slot data_add A list for additional data that has not yet a fixed slot in
 #' `SPATA2` architecture.
 #' @slot dim_red A list containing dimensionality reduction results.
-#' @slot logfile A data frame containing log file data.
+#' @slot logfile A data frame containing \link[=concept_logfile]{logfile data}.
 #' @slot meta_obs A data frame containing metadata for the \link[=concept_observations]{observations}. This comprises all
 #' \link[=concept_variables]{variables} that are **not** found in the molecular assays including cluster and grouping variables,
 #' summary statistics, etc.
 #' @slot meta_sample A list providing additional information about the tissue and the tissue donor.
-#' @slot method An object of class 'SpatialMethod' detailing the spatial method used.
+#' @slot platform A character value. The name of the platform used (e.g. VisiumSmall, VisiumLarge, MERFISH, Xenium).
+#' Should be equal to the name of the [`SpatialMethod`] class of slot @@method in the [`SpatialData`] object
+#' in slot @@spatial of the `SPATA2` object.
 #' @slot obj_info A list containing object information such as default instructions and
 #' directories.
 #' @slot sample A character value. The name of the sample and the `SPATA2` object.
@@ -586,7 +588,7 @@ SPATA2 <- setClass(Class = "SPATA2",
                      logfile = "data.frame",
                      meta_obs = "data.frame",
                      meta_sample = "list",
-                     method = "SpatialMethod",
+                     platform = "character",
                      obj_info = "list",
                      sample = "character",
                      spatial = "SpatialData",

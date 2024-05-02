@@ -93,27 +93,6 @@ setMethod(
   }
 )
 
-#' @title Obtain object of class \code{SpatialData}
-#'
-#' @description Extracts the S4-object used as a container for
-#' images.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Object of class \code{SpatialData}.
-#'
-#' @note `getImageObject()` is deprecated as of version v3.0.0 in favor
-#' of `getSpatialData()`.
-#'
-#' @seealso [`getImage()`],[`getHistoImage()`]
-#'
-#' @export
-#'
-getSpatialData <- function(object){
-
-  object@spatial
-
-}
 
 # getI --------------------------------------------------------------------
 
@@ -905,6 +884,33 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 
 }
 
+
+
+# getL --------------------------------------------------------------------
+
+#' @title Obtain object logfile
+#'
+#' @description Extracts the logfile which stores information on the progress
+#' made with the provided [`SPATA2`] object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A data.frame with variables *fn_name*, *date_time*, *args_input*, *pkg_version*.
+#' @export
+#'
+getLogfileDf <- function(object, with_set = FALSE){
+
+  lf_df <- object@logfile
+
+  if(base::isFALSE(with_set)){
+
+    lf_df <- dplyr::filter(lf_df, !stringr::str_detect(fn_name, pattern = "set[A-Z]"))
+
+  }
+
+  return(lf_df)
+
+}
 
 # getM --------------------------------------------------------------------
 

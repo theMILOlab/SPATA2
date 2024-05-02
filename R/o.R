@@ -46,7 +46,6 @@
 #' refer to the \code{compute_positions_expression_estimates} function.
 #'
 #' @seealso \code{\link{compute_positions_expression_estimates}}
-
 #'
 #' @keywords internal
 

@@ -1209,7 +1209,7 @@ processImage <- function(object,
 
   object <- identifyBackgroundColor(object, img_name = img_name, verbose = verbose)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

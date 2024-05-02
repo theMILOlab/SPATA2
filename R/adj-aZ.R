@@ -33,7 +33,7 @@ adjustGeneSetList <- function(object, limits = 50){
 
   object <- setAssay(object, assay = assay)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

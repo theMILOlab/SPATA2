@@ -228,40 +228,7 @@ scale_nuclei_df <- function(object,
 
 
 
-#' @title Set SPATA2 directory
-#'
-#' @description Sets a directory under which the `SPATA2` object is
-#' always stored using the function `saveSpataObject()`.
-#'
-#' @param dir Character value. The directory under which to store the
-#' `SPATA2` object.
-#' @param add_wd Logical value. If `TRUE`, the working directory is added to
-#' the directory separated by *'/'*.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setSpataDir <- function(object, dir, add_wd = FALSE, ...){
 
-  deprecated(...)
-
-  confuns::is_value(x = dir, mode = "character")
-
-  if(base::isTRUE(add_wd)){
-
-    wd_string <- base::getwd()
-
-    dir <- stringr::str_c(wd_string, "/", dir)
-
-  }
-
-  object@obj_info$instructions$directories$spata_object <- dir
-
-  return(object)
-
-}
 
 
 
@@ -520,7 +487,7 @@ shiftSpatialAnnotation <- function(object,
 
   object <- setSpatialAnnotation(object, spat_ann = spat_ann)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2049,7 +2016,7 @@ smoothSpatialAnnotation <- function(object,
 
   object <- setSpatialAnnotation(object, spat_ann = spat_ann)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2888,7 +2855,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -2920,10 +2887,7 @@ subsetByGenes <- function(object, genes, verbose = NULL){
       .x = object@data[[1]],
       .f = function(mtr){
 
-
-
         mtr[genes, ]
-
 
         }
     )
@@ -2932,7 +2896,7 @@ subsetByGenes <- function(object, genes, verbose = NULL){
     c(genes, object@obj_info$subset$genes) %>%
     base::unique()
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

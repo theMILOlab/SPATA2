@@ -24,7 +24,7 @@ correspond to slot @omic of the respective omic.}
 
 \item{\code{dim_red}}{A list containing dimensionality reduction results.}
 
-\item{\code{logfile}}{A data frame containing log file data.}
+\item{\code{logfile}}{A data frame containing \link[=concept_logfile]{logfile data}.}
 
 \item{\code{meta_obs}}{A data frame containing metadata for the \link[=concept_observations]{observations}. This comprises all
 \link[=concept_variables]{variables} that are \strong{not} found in the molecular assays including cluster and grouping variables,
@@ -32,7 +32,9 @@ summary statistics, etc.}
 
 \item{\code{meta_sample}}{A list providing additional information about the tissue and the tissue donor.}
 
-\item{\code{method}}{An object of class 'SpatialMethod' detailing the spatial method used.}
+\item{\code{platform}}{A character value. The name of the platform used (e.g. VisiumSmall, VisiumLarge, MERFISH, Xenium).
+Should be equal to the name of the \code{\link{SpatialMethod}} class of slot @method in the \code{\link{SpatialData}} object
+in slot @spatial of the \code{SPATA2} object.}
 
 \item{\code{obj_info}}{A list containing object information such as default instructions and
 directories.}

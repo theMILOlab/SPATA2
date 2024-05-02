@@ -21,7 +21,7 @@ setAssay <- function(object, assay){
 
   object@assays[[assay@omic]] <- assay
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -43,7 +43,7 @@ setBarcodes <- function(object, barcodes){
 
   object@obj_info$barcodes <- barcodes
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -91,7 +91,7 @@ setCaptureArea <- function(object, x = NULL, y = NULL){
 
   object <- setSpatialMethod(object, method = sm)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -118,7 +118,7 @@ setCCD <- function(object, ccd){
 
   object <- setSpatialMethod(object, method = method)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -143,7 +143,7 @@ setCnvResults <- function(object, cnv_list, ...){
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -174,7 +174,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -216,7 +216,7 @@ setMethod(
 
     }
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -259,7 +259,7 @@ setCountMatrix <- function(object, count_mtr, assay_name = activeAssay(object), 
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -302,7 +302,7 @@ setDeaResultsDf <- function(object,
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -347,7 +347,7 @@ setDefault <- function(object, ...){
 
   object@obj_info$instructions$default <- dflt_instr
 
-  return(object)
+  returnSpataObject(object)
 
 
 }
@@ -373,7 +373,7 @@ setDefaultInstructions <- function(object, ...){
   object@obj_info$instructions$default <-
     default_instructions_object
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -389,7 +389,7 @@ setDirectoryInstructions <- function(object){
       "spata_object" = "not defined"
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -422,7 +422,7 @@ setMetaDf <- function(object, meta_df){
 
   object@meta_obs <- meta_df
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -464,7 +464,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -529,59 +529,13 @@ setMethod(
 
 # setH --------------------------------------------------------------------
 
-
-
-#' @title Set `SpatialData`
-#'
-#' @description Sets the image container class `SpatialData`
-#' in the corresponding slot of the `SPATA2` object.
-#'
-#' @param sp_data An object of class [`SpatialData`].
-#' @inherit argument_dummy
-#'
-#' @export
-
-setSpatialData <- function(object, sp_data){
-
-  object@spatial <- sp_data
-
-  return(object)
-
-}
-
-#' @rdname setSpatialData
+#' @keywords internal
 #' @export
 setImageObject <- function(object, image_object, ...){
 
   deprecated(fn = TRUE, ...)
 
   object <- setSpatialData(object = object, sp_data = image_object)
-
-  return(object)
-
-}
-
-#' @title Set image origin
-#'
-#' @description Sets the origin info of the current image.
-#'
-#' @param origin Character value. Directory or name of the object
-#' from the global environment.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setImageOrigin <- function(object, origin){
-
-  confuns::is_value(x = origin, mode = "character")
-
-  io <- getImageObject(object)
-
-  io@image_info$origin <- origin
-
-  object <- setImageObject(object, image_object = io)
 
   return(object)
 
@@ -596,6 +550,7 @@ setImageOrigin <- function(object, origin){
 #' ... of the calling function.
 #'
 #' @inherit set_dummy return details
+#' @keywords internal
 
 setInitiationInfo <- function(object, additional_input = list()){
 
@@ -645,6 +600,25 @@ setInitiationInfo <- function(object, additional_input = list()){
 }
 
 
+# setL --------------------------------------------------------------------
+
+
+#' @title Set logfile data.frame
+#'
+#' @inherit argument_dummy
+#' @param lf_df The \link[=concept_logfile]{logfile data.frame}.
+#'
+#' @inherit set_dummy return details
+#'
+#' @export
+setLogfileDf <- function(object, lf_df){
+
+  object@logfile <- lf_df
+
+  # dont use returnSpataObject
+  return(object)
+
+}
 
 # setN --------------------------------------------------------------------
 
@@ -706,7 +680,7 @@ setPcaDf <- function(object, pca_df, fdb_fn = "stop"){
 
   object@dim_red[["pca"]] <- pca_df
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -724,7 +698,7 @@ setProcessedMatrix <- function(object, proc_mtr, name, assay_name = activeAssay(
 
   object <- setAssay(object, assay = ma)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -767,7 +741,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -828,6 +802,42 @@ setMethod(
   }
 )
 
+
+#' @title Set SPATA2 directory
+#'
+#' @description Sets a directory under which the `SPATA2` object is
+#' always stored using the function `saveSpataObject()`.
+#'
+#' @param dir Character value. The directory under which to store the
+#' `SPATA2` object.
+#' @param add_wd Logical value. If `TRUE`, the working directory is added to
+#' the directory separated by *'/'*.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+setSpataDir <- function(object, dir, add_wd = FALSE, ...){
+
+  deprecated(...)
+
+  confuns::is_value(x = dir, mode = "character")
+
+  if(base::isTRUE(add_wd)){
+
+    wd_string <- base::getwd()
+
+    dir <- stringr::str_c(wd_string, "/", dir)
+
+  }
+
+  object@obj_info$instructions$directories$spata_object <- dir
+
+  returnSpataObject(object)
+
+}
+
 #' @title Set spatial annotations
 #'
 #' @description Sets spatial annotations in the correct slot. Expects a
@@ -861,7 +871,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -887,10 +897,28 @@ setMethod(
 
     }
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
+
+#' @title Set `SpatialData`
+#'
+#' @description Sets the image container class `SpatialData`
+#' in the corresponding slot of the `SPATA2` object.
+#'
+#' @param sp_data An object of class [`SpatialData`].
+#' @inherit argument_dummy
+#'
+#' @export
+
+setSpatialData <- function(object, sp_data){
+
+  object@spatial <- sp_data
+
+  returnSpataObject(object)
+
+}
 
 #' @title Set spatial method
 #'
@@ -930,7 +958,7 @@ setMethod(
 
     }
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -957,7 +985,7 @@ setSpatialMethodSlot <- function(object, slot, content){
 
   object <- setSpatialMethod(object, method)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -993,7 +1021,7 @@ setSpatialMethodInfo <- function(object, slot, content){
 
   object <- setSpatialMethod(object, method)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1040,7 +1068,7 @@ setTrajectory <- function(object, trajectory, overwrite = FALSE){
 
   object <- setSpatialData(object, sp_data = sp_data)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1061,7 +1089,7 @@ setTrajectories <- function(object, trajectories, overwrite = FALSE){
 
   }
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1098,7 +1126,7 @@ setTsneDf <- function(object, tsne_df, ...){
 
   object@dim_red[["tsne"]] <- tsne_df
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -1136,7 +1164,7 @@ setUmapDf <- function(object, umap_df, ...){
 
   object@dim_red[["umap"]] <- umap_df
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

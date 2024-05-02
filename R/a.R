@@ -29,7 +29,7 @@ activateAssay <- function(object, assay_name, verbose = NULL){
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -71,7 +71,7 @@ activateGrouping <- function(object, grouping, verbose = NULL){
 
   give_feedback(msg = glue::glue("Active grouping: '{grouping}'"), verbose = verbose)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -197,7 +197,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -308,7 +308,7 @@ setMethod(
 
     }
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -378,7 +378,7 @@ activateMatrix <- function(object, mtr_name, assay_name = activeAssay(object), v
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -504,7 +504,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -1268,7 +1268,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )

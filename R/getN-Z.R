@@ -2996,6 +2996,28 @@ setMethod(
 
 
 
+#' @title Obtain object of class \code{SpatialData}
+#'
+#' @description Extracts the S4-object used as a container for
+#' images.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Object of class \code{SpatialData}.
+#'
+#' @note `getImageObject()` is deprecated as of version v3.0.0 in favor
+#' of `getSpatialData()`.
+#'
+#' @seealso [`getImage()`],[`getHistoImage()`]
+#'
+#' @export
+#'
+getSpatialData <- function(object){
+
+  object@spatial
+
+}
+
 #' @title Obtain spatial method
 #'
 #' @description Extracts an S4 object of class `SpatialMethod` that contains
@@ -3020,19 +3042,23 @@ setGeneric(name = "getSpatialMethod", def = function(object, ...){
 #' @export
 setMethod(
   f = "getSpatialMethod",
-  signature = "ANY",
+  signature = "SPATA2",
   definition = function(object){
 
-    x <- object@method
+    getSpatialData(object) %>%
+      getSpatialMethod()
 
-    out <-
-      transfer_slot_content(
-        recipient = SpatialMethod(),
-        donor = x,
-        verbose = FALSE
-      )
+  }
+)
 
-    return(out)
+#' @rdname getSpatialMethod
+#' @export
+setMethod(
+  f = "getSpatialMethod",
+  signature = "SpatialData",
+  definition = function(object){
+
+    object@method
 
   }
 )

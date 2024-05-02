@@ -95,7 +95,7 @@ setGeneric(name = "unloadImages", def = function(object, ...){
 #' @export
 setMethod(
   f = "unloadImages",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object, active = FALSE, verbose = TRUE){
 
     sp_data <- getSpatialData(object)
@@ -1122,7 +1122,7 @@ updateSpataObject <- function(object,
 
   base::rm("x.updating.spata.object.x", envir = .GlobalEnv)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

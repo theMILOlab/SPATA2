@@ -983,23 +983,26 @@ createGroupAnnotations <- function(object,
 
   }
 
-  barcodesToSpatialAnnotation(
-    object = object,
-    barcodes = barcodes,
-    id = id,
-    tags = tags,
-    tags_expand = FALSE,
-    force1 = force1,
-    concavity = concavity,
-    eps = eps,
-    minPts = minPts,
-    min_size = min_size,
-    overwrite = overwrite,
-    grouping = grouping, # pass on to addSpatialAnnotation()
-    group = group, # ...
-    class = "GroupAnnotation",
-    verbose = verbose
-  )
+  object <-
+    barcodesToSpatialAnnotation(
+      object = object,
+      barcodes = barcodes,
+      id = id,
+      tags = tags,
+      tags_expand = FALSE,
+      force1 = force1,
+      concavity = concavity,
+      eps = eps,
+      minPts = minPts,
+      min_size = min_size,
+      overwrite = overwrite,
+      grouping = grouping, # pass on to addSpatialAnnotation()
+      group = group, # ...
+      class = "GroupAnnotation",
+      verbose = verbose
+    )
+
+  returnSpataObject(object)
 
 }
 
@@ -1424,8 +1427,6 @@ createSpatialDataSlideSeqV1 <- function(dir,
       meta = meta,
       method = SlideSeqV1,
       misc = misc,
-      name_img_active = "pseudo",
-      name_img_ref = "pseudo",
       sample = sample,
       version = current_spata2_version
     )
@@ -1638,7 +1639,7 @@ createSpatialDataXenium <- function(dir,
 #'
 createImageAnnotations <- function(object, ...){
 
-  new_object <-
+  object <-
     shiny::runApp(
       shiny::shinyApp(
         ui = create_image_annotations_ui(...),
@@ -2697,6 +2698,8 @@ createImageAnnotations <- function(object, ...){
       )
     )
 
+  returnSpataObject(object)
+
 }
 
 
@@ -2949,7 +2952,7 @@ createNumericAnnotations <- function(object,
       verbose = verbose
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

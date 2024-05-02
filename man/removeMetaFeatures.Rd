@@ -4,13 +4,17 @@
 \alias{removeMetaFeatures}
 \title{Remove meta features}
 \usage{
-removeMetaFeatures(object, feature_names)
+removeMetaFeatures(object, feature_names, ...)
+
+removeMetaFeatures(object, feature_names, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{feature_names}{Character vector. Names of the meta features to remove.}
+\item{feature_names}{Character vector. Specifies the meta features to be removed.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 The input object containing the added or computed
@@ -19,6 +23,8 @@ results.
 \description{
 Remove meta \link[=concept_variables]{features} from the
 \code{SPATA2} object.
+
+Removes features from the meta feature data.frame.
 }
 \seealso{
 \code{\link[=removeMolecules]{removeMolecules()}}, \code{\link[=getMetaFeatureNames]{getMetaFeatureNames()}}

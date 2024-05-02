@@ -117,7 +117,7 @@ initiateSpataObject <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = spatial_method
+      platform = spatial_method@name
     )
 
   # sp_data: create pseudohistoimage if no image is available
@@ -211,28 +211,36 @@ initiateSpataObject <- function(sample_name,
   # spatial data
   object <- setSpatialData(object, sp_data = sp_data)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
 
 #' @keywords internal
-initiateSpataObjectEmpty <- function(sample_name, method, verbose = TRUE){
+initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
   object <- SPATA2::SPATA2()
 
-  object@method <- method
+  object@logfile <-
+    tibble::tibble(
+      fn_name = character(0),
+      date_time = Sys.Date(),
+      args_input = list(),
+      pkg_version = character(0)
+      )
+
+  object@platform <- platform
   object@sample <- sample_name
   object@version <- current_spata2_version
 
   object <- setDefaultInstructions(object)
 
   confuns::give_feedback(
-    msg = glue::glue("Initiating SPATA2 object of spatial method: `{method@name}`"),
+    msg = glue::glue("Initiating SPATA2 object of spatial platform: `{platform}`"),
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -274,7 +282,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = spatial_methods$MERFISH,
+      platform = "MERFISH",
       verbose = verbose
     )
 
@@ -394,7 +402,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
     verbose = verbose
   )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -438,7 +446,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = spatial_methods$SlideSeqV1,
+      method = "SlideSeqV1",
       verbose = verbose
     )
 
@@ -610,7 +618,7 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
       use_scattermore = TRUE
     )
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -700,7 +708,7 @@ initiateSpataObjectVisium <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = sp_data@method, # depends on input
+      platform = sp_data@method@name, # depends on input
       verbose = FALSE
     )
 
@@ -733,7 +741,7 @@ initiateSpataObjectVisium <- function(sample_name,
   # set default
   object <- setDefault(object, pt_size = getSpotSize(object))
 
-  return(object)
+  returnSpataObject(object)
 
 }
 
@@ -757,7 +765,7 @@ initiateSpataObjectXenium <- function(sample_name,
   object <-
     initiateSpataObjectEmpty(
       sample_name = sample_name,
-      method = spatial_methods$Xenium,
+      method = "Xenium",
       verbose = verbose
     )
 
@@ -823,7 +831,7 @@ initiateSpataObjectXenium <- function(sample_name,
   # set default
   object <- setDefault(object, display_image = FALSE, pt_size = 0.5)
 
-  return(object)
+  returnSpataObject(object)
 
 }
 

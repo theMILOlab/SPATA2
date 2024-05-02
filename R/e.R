@@ -451,7 +451,7 @@ setGeneric(name = "excludeSpatialOutliers", def = function(object, ...){
 #' @export
 setMethod(
   f = "excludeSpatialOutliers",
-  signature = "spata2",
+  signature = "SPATA2",
   definition = function(object){
 
     sp_data <- getSpatialData(object)
@@ -460,7 +460,7 @@ setMethod(
 
     object <- setSpatialData(object, sp_data = sp_data)
 
-    return(object)
+    returnSpataObject(object)
 
   }
 )
@@ -898,6 +898,6 @@ expandSpatialAnnotation <- function(object,
 
   object <- setSpatialAnnotation(object, spat_ann = spat_ann)
 
-  return(object)
+  returnSpataObject(object)
 
 }

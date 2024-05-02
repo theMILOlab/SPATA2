@@ -6,7 +6,7 @@
 \alias{unloadImage,SpatialData-method}
 \alias{unloadImage,HistoImage-method}
 \alias{unloadImages}
-\alias{unloadImages,spata2-method}
+\alias{unloadImages,SPATA2-method}
 \alias{unloadImages,SpatialData-method}
 \title{Empty image slot}
 \usage{
@@ -20,7 +20,7 @@ unloadImage(object, ...)
 
 unloadImages(object, ...)
 
-\S4method{unloadImages}{spata2}(object, active = FALSE, verbose = TRUE)
+\S4method{unloadImages}{SPATA2}(object, active = FALSE, verbose = TRUE)
 
 \S4method{unloadImages}{SpatialData}(object, active = FALSE, verbose = TRUE)
 }
