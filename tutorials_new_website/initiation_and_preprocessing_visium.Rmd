@@ -1,0 +1,177 @@
+---
+title: "Initiation & Processing: Visium"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, message = FALSE, class.source = "code-chunk", out.width = "50%", rows.print = 6, warning = FALSE, cache = FALSE, fig.show = "hold")
+
+if(TRUE){
+
+  object <- readRDS(file = "data/object_UKF269T_raw.RDS")  
+  
+}
+
+
+```
+
+This vignette exemplifies the initiation and preprocessing of `SPATA2` objects using the Visium platform. 
+
+# 1. Initiation 
+
+To initiate a `SPATA2` object directly from the Visium output use the function `initiateSpataObjectVisium()`. It works for both slide types, those with a capture area of 7mm x 7mm (referred to as *VisiumSmall* in SPATA2) and of 11mm x 11mm (referred to as *VisiumLarge* in SPATA2). This example vignette uses data from a 7mm x 7mm. You can download the folder [here](https://drive.google.com/drive/folders/15K58GOAhxHrehpS-OQ7qAGKNzns5VaKE?usp=sharing). 
+
+```{r echo = T, eval = F}
+
+library(SPATA2)
+
+# replace 'my/path/to' with the required directory
+# the provided directory should end with /outs,
+# leading directly to the output folder
+
+object <- 
+  initiateSpataObjectVisium(
+    sample_name = "UKF269T", 
+    directory_visium = "my/path/to/outs" 
+  )
+
+```
+
+# 2. Image processing 
+
+(Beta; still in progress since it does not work as well on images with fluent tisse background transition.)
+
+Image processing is not required. However, it facilitates the integration of histological features as displayed by the histology image, the Visium platform allows to integrate. The goal of image processing is to identify the precise spatial 
+outline of the histology slide. The function `processImage()` is a wrapper around `identifyPixelContent()` and `identifyTissueOutline(..., method = "image")`. Please refer to the documentation of either function to obtain more information.
+
+```{r echo = T, eval = F}
+
+object <- processImage(object)
+
+```
+
+The results of `identifyPixelContent()` can be plotted with `plotImageMask()` and `plotPixelContent()`.
+
+```{r fig.cap = "Fig.1 Image processing results."}
+
+plotImageMask(object)
+
+plotPixelContent(object)
+
+```
+
+The results of `identifyTissueOutline(..., method = "image")` are best visualized by setting `outline = TRUE` with the `plotImage()` function. 
+
+```{r fig.cap = "Fig.2 Tissue outline identification results."}
+
+plotImage(object)
+
+plotImage(object, outline = TRUE, line_size = 1.5)
+
+```
+
+# 3. Spatial processing
+
+With spatial processing we particularly refer to the identification of spatial outliers - observations that are part of the data set but lie too far away from the contiguous tissue section to be considered part of the data set that is of actual interest. In case of the Visium platform they are usually artefacts. The function `identifyTissueOutline(..., method = "dbscan")` uses the DBSCAN algorithm to identify potential spatial outliers. The results are stored in a variable called *section* which actually contains information to which tissue section each observation was assigned. 
+
+```{r fig.cap = "Fig.3 Spatial outlier identifcation and removal."}
+
+object <- identifySpatialOutliers(object, method = "dbscan")
+
+plot_with_outliers <- plotSurface(object, color_by = "section", clrp_adjust = c("outlier" = "blue"))
+
+object <- removeSpatialOutliers(object)
+
+plot_without_outliers <- plotSurface(object, color_by = "section")
+
+# print plots
+plot_with_outliers
+plot_without_outliers
+
+```
+
+Note, `identifySpatialOutliers()` can also identify outliers based on the tissue outline identified with `identifyTissueOutline(..., method = "image")`. Also both methods, *image* and *dbscan* can be combined. Refer to the documentation of the function for more information. 
+
+# 4. Data processing
+
+First you might want to remove certain genes from the count matrix. 
+
+```{r}
+
+nGenes(object)
+
+# removes stress genes
+object <- removeGenesStress(object)
+
+# removes genes that were not detected in any of the observations
+object <- removeGenesZeroCounts(object)
+
+nGenes(object)
+
+```
+
+The `SPATA2` object is initiated with a raw count matrix. For almost all downstream analysis steps it is recommended to use processes matrices. The first step is usually log-normalization. To create a normalized matrix use `normalizeCounts()`. It uses `Seurat::NormalizeData()` in the background. The input options for `method` correspond to the options in this function from the Seurat package. 
+
+```{r fig.cap = "Fig.4 Data normalization."}
+
+# obtain matrix names prior to normalization
+getMatrixNames(object)
+
+plot_before <- 
+  plotSurface(object, color_by = "MAG") + labs(color = "MAG\n(Counts)")
+
+# create log normalized matrix
+object <- normalizeCounts(object, method = "LogNormalize", overwrite = T)
+
+# obtain matrix names after normalization
+getMatrixNames(object)
+
+plot_afterwards <- 
+  plotSurface(object, color_by = "MAG") + labs(color = "MAG\n(logNorm)")
+
+# print plots
+plot_before
+plot_afterwards
+
+```
+
+By default, the normalized matrix is activated and thus used by default in downstream analysis. See `?activateMatrix` for more information. Furthermore, you might want to compute meta data for the observations - in case of Visium for the barcoded spots. 
+
+```{r fig.cap = "Fig.5 Computed meta data examples."}
+
+object <- computeMetaFeatures(object, overwrite = TRUE)
+
+plotSurface(object, color_by = "n_counts_rna")
+plotSurface(object, color_by = "n_distinct_rna")
+
+```
+
+# 5. Spatially variable genes
+
+Since spatial transcriptomics is all about spatial pattern of gene expression you might want to identify genes with a spatial pattern that is non-random. We recommend the prefiltering for these kind of genes, for instance, in our SPATA2 intern Spatial Annotation Screening algorithm. Spatially variable genes can, for instance, be identified using the wrapper around SPARKX (Zhu et al., 2021).
+
+```{r echo = T, eval = F}
+
+# results are stored inside the SPATA2 object
+object <- runSparkx(object)
+
+# get top 10 genes with a p-value < 0.05
+getSparkxGenes(object, threshold_pval = 0.05)[1:10]
+
+```
+
+```{r}
+
+getSparkxGenes(object, threshold_pval = 0.05)[1:10]
+
+```
+
+

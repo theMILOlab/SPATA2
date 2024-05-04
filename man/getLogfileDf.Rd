@@ -12,6 +12,7 @@ objects of classes for which a method has been defined.}
 }
 \value{
 A data.frame with variables \emph{fn_name}, \emph{date_time}, \emph{args_input}, \emph{pkg_version}.
+See the vignette on the \link[=concept_logfile]{logfile} for more information.
 }
 \description{
 Extracts the logfile which stores information on the progress

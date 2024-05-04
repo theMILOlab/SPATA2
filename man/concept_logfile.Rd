@@ -24,6 +24,6 @@ including both explicitly specified values and default values overridden by the 
 The logfile is stored in slot @logfile of the object.
 }
 \seealso{
-\code{\link[=returnSpataObject]{returnSpataObject()}}, \code{\link[=getLogfileDf]{getLogfileDf()}}, \code{\link[=setLogfileDf]{setLogfileDf()}}
+\code{\link[=getLogfileDf]{getLogfileDf()}}, \code{\link[=setLogfileDf]{setLogfileDf()}}
 }
 \keyword{internal}

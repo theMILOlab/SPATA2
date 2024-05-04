@@ -260,8 +260,8 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param tags Character vector or `NULL`. If character, the tags for the image annotation
 #' selection. See section *Selection of spatial annotations* for more information.
 #'
-#' @param test Character value. One of *any*. *all*, *identical*, *not_identical* and
-#' *none*. Specifies how input for `tags` is used to select image annotations.
+#' @param test Character value. One of *c('any'. 'all', 'identical', 'not_identical', 'none')*.
+#' Specifies how input for `tags` is used to select spatial annotations.
 #' See section *Selection of spatial annotations* for more information.
 #'
 #' @param text_alpha,text_color,text_nudge_x,text_nudge_y,text_size,text_type Parameters

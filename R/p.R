@@ -1205,7 +1205,7 @@ processImage <- function(object,
 
   object <- identifyPixelContent(object, img_name = img_name, verbose = verbose, ...)
 
-  object <- identifyTissueOutline(object, img_name = img_name, verbose = verbose)
+  object <- identifyTissueOutline(object, method = "image", img_name = img_name, verbose = verbose)
 
   object <- identifyBackgroundColor(object, img_name = img_name, verbose = verbose)
 

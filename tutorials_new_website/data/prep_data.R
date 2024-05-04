@@ -1,13 +1,20 @@
 
 
-obj_old <- readRDS("review/data/object_T313.RDS")
+obj_old <- readRDS("E:/Lab/Manuscripts/SPATA_Kueckelhaus_et_al_2022/data/processed/269_T.RDS")
 
-obj_old <- readSpataObject("313_T")
+cnv_res <- obj_old@cnv[[1]]
+
+obj_old <- readSpataObject("275_T")
+cnv_res <- getCnvResults(obj_old)
+
+meta_df <- obj_old@meta_obs
+
+meta_df <- left_join(meta_df, y = bayes_space_df[[1]][,c("barcodes", "bayes_space")], by = "barcodes")
 
 object <-
   initiateSpataObjectVisium(
-    sample_name = "T313",
-    directory_visium = visium_output_dir("313_T_P")
+    sample_name = "UKF275T",
+    directory_visium = visium_output_dir("275_T_P")
   )
 
 object <- identifyTissueOutline(object, method = "obs")
@@ -16,6 +23,15 @@ object <- removeSpatialOutliers(object)
 object <- removeGenesStress(object)
 object <- removeGenesZeroCounts(object)
 
+object <- setCnvResults(object, cnv_list = cnv_res)
+
+object <- processImage(object, img_name = "lowres")
+
+object <- addFeatures(object, feature_df = meta_df)
+
+object_t313 <- saveSpataObject(object_t313, "tutorials_new_website/data/object_UKF313T.RDS")
+
+
 getLogfileDf(object)
 
 test_fn <- function(object, x = 3, y = 44, z = SPATA2::cnv_ref, list_in = 33, df_in = 22){
@@ -23,6 +39,7 @@ test_fn <- function(object, x = 3, y = 44, z = SPATA2::cnv_ref, list_in = 33, df
   returnObject(object)
 
 }
+
 
 
 

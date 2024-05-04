@@ -306,7 +306,7 @@ setMethod(
   f = "plotPixelContent",
   signature = "SPATA2",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         clrp = "sifre",
                         clr_bg = "white",
                         clr_fragments = "red",
@@ -336,7 +336,7 @@ setMethod(
   f = "plotPixelContent",
   signature = "SpatialData",
   definition = function(object,
-                        img_name = NULL,
+                        img_name = activeImage(object),
                         clrp = "sifre",
                         clr_bg = "white",
                         clr_fragments = "red",
@@ -843,10 +843,7 @@ plotSasLineplot <- function(object,
 
   p_out +
     border_add_on +
-    ggplot2::labs(
-      x = glue::glue("Distance [{unit}]"),
-      y = NULL
-    )
+    ggplot2::labs( x = glue::glue("Distance [{unit}]"))
 
 }
 
@@ -1335,8 +1332,8 @@ setMethod(
                 object = object,
                 sb_dist = sb_dist,
                 xrange = c(img_info$xmin, img_info$xmax),
-                yrange = c(img_info$ymin_coords, img_info$ymax_coords)
-                #...
+                yrange = c(img_info$ymin_coords, img_info$ymax_coords),
+                ...
               )
 
           } else {

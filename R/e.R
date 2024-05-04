@@ -41,7 +41,6 @@ estimate_r2_for_sas_run <- function(object,
 
   unit <- getDefaultUnit(object)
 
-
   if(base::length(binwidth) == 1){
 
     binwidth <- rep(binwidth, 2)
@@ -86,8 +85,8 @@ estimate_r2_for_sas_run <- function(object,
   binwidth <- binwidth[1]
 
   object <-
-    addExpressionMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
-    setActiveMatrix(object = ., mtr_name = "simR2", verbose = FALSE)
+    addProcessedMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
+    activateMatrix(object, mtr_name = "simR2")
 
   variables <- base::rownames(sim_mtr)
 

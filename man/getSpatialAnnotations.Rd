@@ -52,8 +52,8 @@ of spatial annotations to consider. Must be a combination of \emph{c('Group', 'I
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
 
-\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
-\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+\item{test}{Character value. One of \emph{c('any'. 'all', 'identical', 'not_identical', 'none')}.
+Specifies how input for \code{tags} is used to select spatial annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
 \item{add_image}{Logical. If TRUE, the area of the histology image that

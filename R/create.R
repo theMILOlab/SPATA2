@@ -966,9 +966,9 @@ createGroupAnnotations <- function(object,
                                    verbose = NULL){
 
   barcodes <-
-    joinWith(
+    joinWithVariables(
       object = object,
-      features = grouping,
+      variables = grouping,
       verbose = FALSE
     ) %>%
     confuns::check_across_subset(

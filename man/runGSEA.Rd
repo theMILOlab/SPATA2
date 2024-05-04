@@ -48,8 +48,8 @@ with an average log fold change below that threshold are ignored.}
 \item{signatures}{Character vector of signature names that are taken
 from the assays stored signatures.}
 
-\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
-\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+\item{test}{Character value. One of \emph{c('any'. 'all', 'identical', 'not_identical', 'none')}.
+Specifies how input for \code{tags} is used to select spatial annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
 \item{absolute}{Takes max-min score rather than the max deviation from null (kstest only)}

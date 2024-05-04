@@ -1626,16 +1626,19 @@ getSparkxGenes <- function(object, threshold_pval){
 #' @export
 getSparkxResults <- function(object,
                              assay_name = activeAssay(object),
-                             test = TRUE){
+                             error = TRUE,
+                             ...){
+
+  deprecated(...)
 
   ma <- getAssay(object, assay_name = assay_name)
 
   out <- ma@analysis[["sparkx"]]
 
-  if(base::isTRUE(test)){
+  if(base::isTRUE(error)){
 
     check_availability(
-      test = base::is.list(out),
+      test = base::is.list(out) & !purrr::is_empty(out),
       ref_x = "SPARK-X results",
       ref_fns = "`runSPARKX()`"
     )

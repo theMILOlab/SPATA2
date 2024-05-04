@@ -896,19 +896,12 @@ getImageSectionsByBarcode <- function(object, barcodes = NULL, expand = 0, verbo
 #' @inherit argument_dummy params
 #'
 #' @return A data.frame with variables *fn_name*, *date_time*, *args_input*, *pkg_version*.
+#' See the vignette on the \link[=concept_logfile]{logfile} for more information.
 #' @export
 #'
-getLogfileDf <- function(object, with_set = FALSE){
+getLogfileDf <- function(object ){
 
-  lf_df <- object@logfile
-
-  if(base::isFALSE(with_set)){
-
-    lf_df <- dplyr::filter(lf_df, !stringr::str_detect(fn_name, pattern = "set[A-Z]"))
-
-  }
-
-  return(lf_df)
+  object@logfile
 
 }
 

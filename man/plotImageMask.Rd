@@ -33,7 +33,7 @@ plotPixelContent(object, ...)
 
 \S4method{plotPixelContent}{SPATA2}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   clrp = "sifre",
   clr_bg = "white",
   clr_fragments = "red",
@@ -45,7 +45,7 @@ plotPixelContent(object, ...)
 
 \S4method{plotPixelContent}{SpatialData}(
   object,
-  img_name = NULL,
+  img_name = activeImage(object),
   clrp = "sifre",
   clr_bg = "white",
   clr_fragments = "red",

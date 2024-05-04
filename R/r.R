@@ -1828,63 +1828,70 @@ returnSpataObject <- function(object){
 
   if(methods::is(object, class2 = "SPATA2")){
 
-    ce <- rlang::caller_env()
+    sc <- base::sys.calls()
 
-    fn <- rlang::caller_fn()
+    if(test_save_in_logfile(sc)){
 
-    fn_frame <- base::sys.parent()
-    init_call <- base::sys.call(which = fn_frame)
+      ce <- rlang::caller_env()
 
-    fn_name <- base::as.character(init_call)[1]
+      fn <- rlang::caller_fn()
 
-    # workaround to get names of S4 generics
-    if(fn_name == ".local"){
+      fn_frame <- base::sys.parent()
+      init_call <- base::sys.call(which = fn_frame)
 
-      sc <- base::sys.calls()
-      fn_name <- base::as.character(sc)[1]
-      fn_name <- confuns::str_extract_before(fn_name, pattern = "\\(")
+      fn_name <- base::as.character(init_call)[1]
 
-    }
+      # workaround to get names of S4 generics
+      if(fn_name == ".local"){
 
-    # extract the arguments provided in the call expression
-    provided_args <- base::as.list(init_call)[-1]  # exclude the function name
-
-    # capture formal arguments of the function
-    formal_args <-
-      base::formals(fun = fn) %>%
-      base::as.list()
-
-    # match provided arguments with formal arguments
-    args_input <- base::vector("list", length = length(formal_args))
-    base::names(args_input) <- base::names(formal_args)
-
-    for(arg_name in base::names(formal_args)) {
-
-      if(arg_name %in% base::names(provided_args)) {
-
-        args_input[[arg_name]] <- provided_args[[arg_name]]
-
-      } else {
-
-        args_input[[arg_name]] <- formal_args[[arg_name]]
+        fn_name <- base::as.character(sc)[1]
+        fn_name <- confuns::str_extract_before(fn_name, pattern = "\\(")
 
       }
 
+      assign(str_c("sc_fn_", fn_name), value = sc, envir = .GlobalEnv)
+
+      # extract the arguments provided in the call expression
+      provided_args <- base::as.list(init_call)[-1]  # exclude the function name
+
+      # capture formal arguments of the function
+      formal_args <-
+        base::formals(fun = fn) %>%
+        base::as.list()
+
+      # match provided arguments with formal arguments
+      args_input <- base::vector("list", length = length(formal_args))
+      base::names(args_input) <- base::names(formal_args)
+
+      for(arg_name in base::names(formal_args)) {
+
+        if(arg_name %in% base::names(provided_args)) {
+
+          args_input[[arg_name]] <- provided_args[[arg_name]]
+
+        } else {
+
+          args_input[[arg_name]] <- formal_args[[arg_name]]
+
+        }
+
+      }
+
+      new_logfile_entry <-
+        tibble::tibble(
+          fn_name = fn_name,
+          date_time = base::Sys.time(),
+          pkg_version = version_string()
+        )
+
+      lf_df <- getLogfileDf(object)
+
+      lf_df_new <- dplyr::add_row(lf_df, new_logfile_entry)
+      lf_df_new[["args_input"]][[base::nrow(lf_df_new)]] <- args_input
+
+      object <- setLogfileDf(object, lf_df = lf_df_new)
+
     }
-
-    new_logfile_entry <-
-      tibble::tibble(
-        fn_name = fn_name,
-        date_time = base::Sys.time(),
-        pkg_version = version_string()
-      )
-
-    lf_df <- getLogfileDf(object)
-
-    lf_df_new <- dplyr::add_row(lf_df, new_logfile_entry)
-    lf_df_new[["args_input"]][[base::nrow(lf_df_new)]] <- args_input
-
-    object <- setLogfileDf(object, lf_df = lf_df_new)
 
   }
 

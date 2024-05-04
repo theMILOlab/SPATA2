@@ -2504,17 +2504,25 @@ spatialAnnotationScreening <- function(object,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
-      variables = variables,
       dist_unit = unit,
       core = core,
       periphery = FALSE,
       verbose = verbose
     )
 
-  variables <- variables[variables %in% base::names(coords_df)]
-
   coords_df_flt <-
     dplyr::filter(coords_df, !barcodes %in% {{bcs_exclude}})
+
+  coords_df_flt <-
+    joinWithVariables(
+      object = object,
+      variables = variables,
+      spata_df = coords_df_flt,
+      normalize = FALSE,
+      uniform_variables = "discard"
+    )
+
+  variables <- variables[variables %in% base::names(coords_df_flt)]
 
   sgs_out <-
     spatial_gradient_screening(
@@ -2536,9 +2544,22 @@ spatialAnnotationScreening <- function(object,
       rm_zero_infl = rm_zero_infl
     )
 
+  coords_df_recreate <-
+    getCoordsDfSA(
+      object = object,
+      ids = ids,
+      distance = distance,
+      binwidth = binwidth,
+      angle_span = angle_span,
+      dist_unit = unit,
+      core = TRUE, # to include in visualization
+      core0 = !core,
+      verbose = FALSE
+    )
+
   SAS_out <-
     SpatialAnnotationScreening(
-      coords = dplyr::select(coords_df, -dplyr::all_of(variables)),
+      coords = coords_df_recreate,
       info =
         list(
           r2 = r2,
@@ -2837,8 +2858,11 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
     if(containsCNV(object) & ma@omic == "transcriptomics"){
 
+      bcs_keep_cnv <-
+        bcs_keep[bcs_keep %in% base::colnames(ma@analysis$cnv$cnv_mtr)]
+
       ma@analysis$cnv$cnv_mtr <-
-        ma@analysis$cnv$cnv_mtr[, bcs_keep]
+        ma@analysis$cnv$cnv_mtr[, bcs_keep_cnv]
 
     }
 

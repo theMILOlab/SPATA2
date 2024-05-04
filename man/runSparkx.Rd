@@ -11,7 +11,7 @@ getSparkxGeneDf(object, threshold_pval = 1, arrange_pval = TRUE)
 
 getSparkxGenes(object, threshold_pval)
 
-getSparkxResults(object, assay_name = activeAssay(object), test = TRUE)
+getSparkxResults(object, assay_name = activeAssay(object), error = TRUE, ...)
 
 runSparkx(
   object,
@@ -29,9 +29,10 @@ objects of classes for which a method has been defined.}
 one assay: Denotes the assay of interest. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 
-\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
-\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
-See section \emph{Selection of spatial annotations} for more information.}
+\item{error}{Logical. If \code{TRUE} and the input is invalid the
+function throws an error.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

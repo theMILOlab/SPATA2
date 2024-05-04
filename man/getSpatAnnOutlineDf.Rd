@@ -60,8 +60,8 @@ If \code{NULL}, all image annotations are included - subsequent selection with \
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
 
-\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
-\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+\item{test}{Character value. One of \emph{c('any'. 'all', 'identical', 'not_identical', 'none')}.
+Specifies how input for \code{tags} is used to select spatial annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
 \item{outer}{Logical value. Only applies if an image annotation contains a secondary image annotation within its own area. If \code{FALSE}, the outer border of the image annotation

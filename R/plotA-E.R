@@ -330,7 +330,7 @@ plotCnvHeatmap <- function(object,
     cnv_df <-
       dplyr::left_join(
         x = cnv_df,
-        y = getFeatureDf(object) %>% dplyr::select(barcodes, !!rlang::sym(across)),
+        y = getMetaDf(object) %>% dplyr::select(barcodes, !!rlang::sym(across)),
         by = "barcodes"
       ) %>%
       dplyr::arrange(!!rlang::sym(across))
@@ -922,7 +922,7 @@ plotCnvLineplot <- function(object,
     cnv_df <-
       dplyr::left_join(
         x = cnv_df,
-        y = getFeatureDf(object) %>% dplyr::select(barcodes, !!rlang::sym(across)),
+        y = getMetaDf(object) %>% dplyr::select(barcodes, !!rlang::sym(across)),
         by = "barcodes"
       ) %>%
       dplyr::arrange(!!rlang::sym(across))

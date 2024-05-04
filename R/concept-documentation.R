@@ -194,7 +194,7 @@ NULL
 #'
 #' The logfile is stored in slot @@logfile of the object.
 #'
-#' @seealso [`returnSpataObject()`], [`getLogfileDf()`], [`setLogfileDf()`]
+#' @seealso [`getLogfileDf()`], [`setLogfileDf()`]
 #'
 #' @name concept_logfile
 #' @aliases concept_logfile

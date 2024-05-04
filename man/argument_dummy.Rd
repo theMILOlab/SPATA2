@@ -260,8 +260,8 @@ the experiment. Must be one of \code{validSpatialMethods()}. Defaults to \emph{'
 \item{tags}{Character vector or \code{NULL}. If character, the tags for the image annotation
 selection. See section \emph{Selection of spatial annotations} for more information.}
 
-\item{test}{Character value. One of \emph{any}. \emph{all}, \emph{identical}, \emph{not_identical} and
-\emph{none}. Specifies how input for \code{tags} is used to select image annotations.
+\item{test}{Character value. One of \emph{c('any'. 'all', 'identical', 'not_identical', 'none')}.
+Specifies how input for \code{tags} is used to select spatial annotations.
 See section \emph{Selection of spatial annotations} for more information.}
 
 \item{text_alpha, text_color, text_nudge_x, text_nudge_y, text_size, text_type}{Parameters

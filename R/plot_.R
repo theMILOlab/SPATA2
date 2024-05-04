@@ -664,7 +664,8 @@ plot_sgs_heatmap <- function(sgs_df,
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_blank()
     ) +
-    scale_color_add_on(aes = "fill", clrsp = clrsp)
+    scale_color_add_on(aes = "fill", clrsp = clrsp) +
+    ggplot2::labs(color = "Est. Expr.")
 
 
 }
@@ -814,7 +815,8 @@ plot_sgs_lineplot <- function(sgs_df,
       clrp.adjust = clrp_adjust
     ) +
     theme_lineplot_gradient(range_d = range_d) +
-    facet_add_on
+    facet_add_on +
+    ggplot2::labs(y = "Estimeated Expression")
 
 }
 

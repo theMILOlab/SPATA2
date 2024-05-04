@@ -879,6 +879,15 @@ getCoordsDfSA <- function(object,
 
   pb <- confuns::create_progress_bar(total = base::length(ids))
 
+  if(base::length(ids) > 1){
+
+    confuns::give_feedback(
+      msg = "Relating observations to multiple spatial annotations. This can take a few moments.",
+      verbose = verbose
+    )
+
+  }
+
   coords_df <-
     purrr::map_df(
       .x = ids,

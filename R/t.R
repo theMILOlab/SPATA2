@@ -252,6 +252,53 @@ test_sas_input <- function(object,
 
 
 #' @keywords internal
+test_save_in_logfile <- function(sc){
+
+  # if the number of environments returned by sys.calls() is bigger than 2
+  # the function using returnSpataObject() was called within another function
+  # which is the one that is supposed to appear in the logfile
+
+  # S4 generics are an exception
+  # this loop removes "intermediate frames on the call stack that result from method
+  # dispatching
+  sc <-
+    purrr::discard(
+      .x = sc,
+      .p = function(x){
+
+        fn_name <- base::attributes(x)[["srcref"]]
+
+        if(base::is.null(fn_name)){
+
+          if(stringr::str_detect(base::as.character(x)[1], pattern = "\\.local")){
+
+            out <- TRUE
+
+          } else {
+
+            # dont discard, is not S4 generic
+            out <- FALSE
+
+          }
+
+        } else {
+
+          out <- stringr::str_detect(base::as.character(fn_name)[1], pattern = "(standardGeneric\\(|\\.local)")
+
+        }
+
+        return(out)
+
+      }
+    )
+
+  out <- base::length(sc) <= 2
+
+  return(out)
+
+}
+
+#' @keywords internal
 textInputWrapper <- function(inputId,
                              label = NULL,
                              width = "80%",
