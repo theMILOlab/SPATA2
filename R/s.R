@@ -517,8 +517,9 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   cat("Contains", length(assay), ifelse(length(assay) > 1, "Assays:", "Assay:"), assay, "\n")
   cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
   if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {
-    cat("Metadata:", setdiff(colnames(getMetaDf(object)), "barcodes"), "\n")
-  }  
+    cat("Metadata:", paste(setdiff(colnames(getMetaDf(object)), "barcodes"), 
+      collapse=", "), "\n")
+  }
   if (length(getSpatialAnnotations(object)) > 0) {
     cat("Spatial Annotations:", paste(names(getSpatialAnnotations(object)), 
       collapse=", "), "\n")
