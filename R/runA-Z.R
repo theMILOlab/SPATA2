@@ -1685,8 +1685,6 @@ runPca <- function(object,
 
   check_object(object)
 
-  sample <- getSampleName(object)
-
   pca_res <-
     runPca2(
       object = object,
@@ -1704,8 +1702,8 @@ runPca <- function(object,
 
   pca_df <-
     base::as.data.frame(x = pca_res[["x"]]) %>%
-    dplyr::mutate(barcodes = base::colnames(expr_mtr), sample = {{sample}}) %>%
-    dplyr::select(barcodes, sample, dplyr::everything())
+    dplyr::mutate(barcodes = base::colnames(expr_mtr)) %>%
+    dplyr::select(barcodes, dplyr::everything())
 
   object <- setPcaDf(object = object, pca_df = pca_df)
 

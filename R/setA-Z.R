@@ -673,8 +673,8 @@ setPcaDf <- function(object, pca_df, fdb_fn = "stop"){
     )
 
     pca_df <-
-      dplyr::mutate(.data = pca_df, sample = getSampleName(object)) %>%
-      dplyr::select(barcodes, sample, dplyr::everything())
+      dplyr::mutate(.data = pca_df) %>%
+      dplyr::select(barcodes, dplyr::everything())
 
   }
 

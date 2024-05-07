@@ -3683,7 +3683,6 @@ getTsneDf <- function(object, ...){
 
   getDimRedDf(
     object = object,
-    of_sample = of_sample,
     method_dr = "tsne"
   )
 
@@ -3700,7 +3699,6 @@ getUmapDf <- function(object, ...){
 
   getDimRedDf(
     object = object,
-    of_sample = of_sample,
     method_dr = "umap"
   )
 

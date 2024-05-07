@@ -2938,6 +2938,7 @@ createNumericAnnotations <- function(object,
       id = id,
       tags = tags,
       tags_expand = FALSE,
+      inner_borders = inner_borders,
       use_dbscan = use_dbscan,
       eps = eps,
       minPts = minPts,
@@ -2961,7 +2962,7 @@ createNumericAnnotations <- function(object,
 
 #' @title Interactive sample segmentation
 #'
-#' @description Gives access to an interactive userinterface where data points
+#' @description Gives access to an interactive user interface where data points
 #' can be interactively annotated.
 #'
 #' @inherit argument_dummy params

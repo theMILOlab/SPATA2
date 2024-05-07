@@ -290,11 +290,13 @@ recDbscanEps <- function(object){
 #' @export
 recDbscanMinPts <- function(object){
 
-  if(containsCCD(object)){
+  if(containsMethod(object, method = "Visium")){
 
-    out <- 3
+    out <- 4
 
   } else {
+
+    warning("Recommendation might be suboptimal.")
 
     out <- 12
 
@@ -1848,8 +1850,6 @@ returnSpataObject <- function(object){
         fn_name <- confuns::str_extract_before(fn_name, pattern = "\\(")
 
       }
-
-      assign(str_c("sc_fn_", fn_name), value = sc, envir = .GlobalEnv)
 
       # extract the arguments provided in the call expression
       provided_args <- base::as.list(init_call)[-1]  # exclude the function name

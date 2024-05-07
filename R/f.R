@@ -636,7 +636,7 @@ findSeuratClusters <- function(object,
     Seurat::CreateSeuratObject(count = getCountMatrix(object = object))
 
   seurat_object@assays$RNA@scale.data <-
-    getExpressionMatrix(object = object, mtr_name = mtr_name, verbose = TRUE)
+    getMatrix(object = object, mtr_name = mtr_name, verbose = TRUE)
 
   seurat_object <-
     confuns::call_flexibly(
