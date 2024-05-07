@@ -296,7 +296,7 @@ validEuropeanUnitsOfLength <- function(name = T){
 # ve ----------------------------------------------------------------------
 
 #' @keywords internal
-version_string <- function(v = SPATA2::current_spata2_version){
+version_string <- function(v = current_spata2_version){
 
   stringr::str_c(v$major, v$minor, v$patch, sep = ".")
 

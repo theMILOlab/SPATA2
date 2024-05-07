@@ -219,7 +219,7 @@ initiateSpataObject <- function(sample_name,
 #' @keywords internal
 initiateSpataObjectEmpty <- function(sample_name, platform, verbose = TRUE){
 
-  object <- SPATA2::SPATA2()
+  object <- SPATA2()
 
   object@logfile <-
     tibble::tibble(

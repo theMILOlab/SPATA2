@@ -504,59 +504,40 @@ setMethod(f = "show", signature = "ANY", definition = function(object){
 })
 
 #' @export
-setMethod(f = "show", signature = "spata2", definition = function(object){
+setMethod(f = "show", signature = "SPATA2", definition = function(object){
 
-  num_samples <- base::length(getSampleNames(object))
-  samples <- stringr::str_c( getSampleNames(object), collapse = "', '")
-  sample_ref <- base::ifelse(num_samples > 1, "samples", "sample")
+  num_samples <- length(object@sample)
+  assay <- getAssayNames(object)
+  dims <- dim(getMatrix(object = object,
+                        mtr_name = activeMatrix(object),
+                        assay_name = activeAssay(object)
+                        ))
 
-  dims <- dim(object@data[[object@sample[1]]]$counts)
-
-  base::print(glue::glue("Spata2 object with {dims[2]} observations and {dims[1]} variables \nContains {num_samples} {sample_ref} named '{samples}'"))
-
+  cat("SPATA2 object of size:", dims[2], "x", dims[1], "(observations x variables)\n")
+  cat("Contains", length(assay), ifelse(length(assay) > 1, "Assays:", "Assay:"), assay, "\n")
+  cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
+  if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {
+    cat("Metadata:", paste(setdiff(colnames(getMetaDf(object)), "barcodes"), 
+      collapse=", "), "\n")
+  }
+  if (length(getSpatialAnnotations(object)) > 0) {
+    cat("Spatial Annotations:", paste(names(getSpatialAnnotations(object)), 
+      collapse=", "), "\n")
+  }
+  if (length(getSpatialTrajectories(object)) > 0) {
+    cat("Spatial Trajectories:", paste(names(getSpatialTrajectories(object)), 
+      collapse=", "), "\n")
+  }
 })
 
 #' @export
-setMethod(f = "show", signature = "ImageAnnotation", definition = function(object){
-
-  map(
-    .x = slotNames(object),
-    .f = ~head(slot(object, .x))
-  ) %>%
-    setNames(slotNames(object))
-
-
-  n_bcsp <- base::length(object@misc[["barcodes"]])
-
-  n_vert <- base::nrow(object@area)
-
+setMethod(f = "show", signature = "SpatialAnnotation", definition = function(object){
+  
   tags <- confuns::scollapse(object@tags, sep = ", ", last = ", ")
-
-
-  writeLines(
-    glue::glue(
-      "An object of class 'ImageAnnotation' named '{object@id}'. Tags: {tags}."
-    )
-  )
-
+  
+  writeLines(glue::glue("An object of class '{class(object)}' with id = '{object@id}'. \n Tags: {tags}."))
+  
 })
-
-#' @export
-setMethod(f = "show", signature = "SpatialAnnotationScreening", definition = function(object){
-
-
-  writeLines(
-    glue::glue(
-      "An object of class 'SpatialAnnotationScreening'."
-    )
-  )
-
-})
-
-
-
-
-
 
 #' @title Show color palettes and spectra
 #'
