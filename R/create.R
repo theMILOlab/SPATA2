@@ -4230,7 +4230,7 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 
             mdata[[vname]][mdata$barcodes %in% encircled_bcsp] <- new_group_name
 
-            object <- setFeatureDf(object, feature_df = mdata)
+            object <- setMetaDf(object, meta_df = mdata)
 
             spata_object(object)
 

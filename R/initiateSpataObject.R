@@ -202,7 +202,7 @@ initiateSpataObject <- function(sample_name,
 
   object <- setAssay(object, assa = ma)
   object <- activateAssay(object, assay_name = omic, verbose = verbose)
-  object <- activateMatrix(object, mtr_name = "counts")
+  object <- activateMatrix(object, mtr_name = "counts", verbose = FALSE)
 
   # meta data.frame
   meta_df <- tibble::tibble(barcodes = barcodes_coords, sample = {{sample_name}})

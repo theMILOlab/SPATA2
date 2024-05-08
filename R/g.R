@@ -1553,6 +1553,8 @@ setMethod(
 #' @description Adds the data points (beads, cells, spots, etc.) of the object
 #' to the plot.
 #'
+#' @param ... Additional arguments given to `scale_color_add_on()`.
+#'
 #' @param spot_alpha,spot_size,spot_clr Parameters to set the aesthetics
 #' alpha, size, and color of the spots. Arguments `alpha_by` and `color_by`
 #' are prioritized.
@@ -1657,7 +1659,8 @@ setMethod(
       scale_fct = scale_fct,
       use_scattermore = use_scattermore,
       add_labs = add_labs,
-      na_rm = na_rm
+      na_rm = na_rm,
+      ...
     )
 
   }
@@ -1691,7 +1694,8 @@ setMethod(
                         na_rm = FALSE,
                         scale_fct = 1,
                         use_scattermore = FALSE,
-                        add_labs = FALSE){
+                        add_labs = FALSE,
+                        ...){
 
     coords_df <- getCoordsDf(object)
 
@@ -1857,7 +1861,8 @@ setMethod(
           variable = coords_df[[color_by]],
           clrp = clrp,
           clrp.adjust = clrp_adjust,
-          clrsp = clrsp
+          clrsp = clrsp,
+          ...
         )
 
     }

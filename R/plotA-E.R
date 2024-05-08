@@ -144,8 +144,8 @@ plotBoxplot <- function(object,
   spata_df <-
     joinWithVariables(
       object = object,
-      spata_df = getSpataDf(object, of_sample),
-      variables = variables,
+      spata_df = getSpataDf(object),
+      variables = c(variables, across),
       method_gs = method_gs,
       smooth = FALSE,
       normalize = normalize

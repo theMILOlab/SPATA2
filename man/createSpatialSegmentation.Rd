@@ -16,7 +16,7 @@ createSpatialSegmentation(
 objects of classes for which a method has been defined.}
 }
 \description{
-Gives access to an interactive userinterface where data points
+Gives access to an interactive user interface where data points
 can be interactively annotated.
 }
 \details{

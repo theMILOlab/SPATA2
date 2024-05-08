@@ -19,6 +19,8 @@
 #'  on the setup with which [`spatialAnnotationScreening()`] was run.}
 #'  }
 #'
+#' @param ... Additional arguments given to `scale_color_add_on()`.
+#'
 #' @param outline Logical, indicating whether to add an outline to the points.
 #'   If `TRUE`, an outline will be added around the points to enhance visibility.
 #'   Default is FALSE.
@@ -59,7 +61,6 @@ setMethod(
   definition = function(object,
                         color_by = NULL,
                         alpha_by = NULL,
-                        method_gs = NULL,
                         smooth = FALSE,
                         smooth_span = 0.2,
                         pt_alpha = NULL,
@@ -109,7 +110,6 @@ setMethod(
         clrp_adjust = clrp_adjust,
         smooth = smooth,
         smooth_span = smooth_span,
-        method_gs = method_gs,
         transform_with = transform_with,
         xrange = xrange,
         yrange = yrange,
