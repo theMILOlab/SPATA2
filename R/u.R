@@ -258,6 +258,16 @@ update_spata2v2_to_spata2v3 <- function(object, method){
 
   }
 
+  # add dea/gsea results
+  if(!purrr:is_empty(obj_old@dea)){
+
+    ma <- getAssay(object)
+    ma@analysis$dea <- obj_old@dea[[1]]
+
+    object <- setAssay(object, assay = assay)
+
+  }
+
   # add spatial annotations
   if(!purrr::is_empty(obj_old@images)){
 
