@@ -366,12 +366,15 @@ setDefault <- function(object, ...){
 #'
 #' @export
 
-setDefaultInstructions <- function(object, ...){
+setDefaultInstructions <- function(object, instructions = NULL){
 
-  x <- list(...)
+  if(base::is.null(instructions)){
 
-  object@obj_info$instructions$default <-
-    default_instructions_object
+    instructions <- default_instructions_object
+
+  }
+
+  object@obj_info$instructions$default <- instructions
 
   returnSpataObject(object)
 

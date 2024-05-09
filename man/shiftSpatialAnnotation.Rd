@@ -38,8 +38,7 @@ spatial annotation is stored under a new ID.}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 This function moves a spatial annotation

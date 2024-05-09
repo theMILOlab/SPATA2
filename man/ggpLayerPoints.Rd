@@ -63,7 +63,8 @@ ggpLayerPoints(object, ...)
   na_rm = FALSE,
   scale_fct = 1,
   use_scattermore = FALSE,
-  add_labs = FALSE
+  add_labs = FALSE,
+  ...
 )
 
 \S4method{ggpLayerPoints}{data.frame}(
@@ -83,7 +84,7 @@ ggpLayerPoints(object, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{scale_color_add_on()}.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

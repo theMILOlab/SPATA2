@@ -14,8 +14,7 @@ objects of classes for which a method has been defined.}
 variable in the feature data.frame.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets the name of the variable in the feature data.frame

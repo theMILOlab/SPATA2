@@ -21,8 +21,7 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 This function computes meta features for molecular data observation wise.

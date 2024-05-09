@@ -13,8 +13,7 @@ objects of classes for which a method has been defined.}
 \item{...}{Named arguments whose default input you want to override.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets object specific default for recurring arguments

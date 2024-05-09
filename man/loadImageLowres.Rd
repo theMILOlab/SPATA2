@@ -21,8 +21,7 @@ objects of classes for which a method has been defined.}
 \item{name}{Character value. Name of the image directory.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Wrapper around the required \verb{getImageDir*()} function and

@@ -41,8 +41,7 @@ the computational progress will be printed.
 the image from the active \code{HistoImage} is not unloaded.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Removes the image from slot @image of a \code{HistoImage}.

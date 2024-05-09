@@ -77,8 +77,7 @@ the computational progress will be printed.
 constructing the \code{\link{SpatialAnnotation}} object.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Creates spatial annotations from a list of barcodes from

@@ -123,8 +123,7 @@ of output clusters with input value. If \code{FALSE}, the optimal number
 of clusters is chosen for \code{q} determined by the elbow point of \code{BayesSpace::qTune()}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 A wrapper around the BayesSpace clustering pipeline introduced

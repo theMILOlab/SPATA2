@@ -43,8 +43,7 @@ the computational progress will be printed.
 the image slot is not empty.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Loads the image based on the directory stored in slot @dir

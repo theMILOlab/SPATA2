@@ -15,6 +15,7 @@ updateS4(object, ...)
 
 \S4method{updateS4}{spata2}(
   object,
+  method,
   sample_name = NULL,
   chr_to_fct = TRUE,
   n_pcs = 30,

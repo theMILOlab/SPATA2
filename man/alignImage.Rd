@@ -116,8 +116,7 @@ allowed is calculated by the total number of translations possible times \code{s
 See details for more.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Aligns an image with the reference image. See details for

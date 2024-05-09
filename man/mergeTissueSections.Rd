@@ -14,8 +14,7 @@ objects of classes for which a method has been defined.}
 to be merged.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Merges tissue sections that have been mistakenly identified

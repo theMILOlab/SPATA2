@@ -43,8 +43,7 @@ trajectory is assumed to have a curve.}
 sets additional vertices along the trajectory.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Functions to add spatial trajectories to the \code{spata2}

@@ -72,7 +72,7 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{scale_color_add_on()}.}
 }
 \value{
 A ggplot.

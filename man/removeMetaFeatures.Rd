@@ -17,8 +17,7 @@ objects of classes for which a method has been defined.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Remove meta \link[=concept_variables]{features} from the

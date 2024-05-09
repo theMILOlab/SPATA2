@@ -44,8 +44,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Identifies the spatial boundaries of the tissue. Using \code{method},

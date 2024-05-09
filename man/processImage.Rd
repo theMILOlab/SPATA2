@@ -22,8 +22,7 @@ the computational progress will be printed.
 \item{...}{Arguments passed to \code{\link[=identifyPixelContent]{identifyPixelContent()}}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 A wrapper around the image processing functions:

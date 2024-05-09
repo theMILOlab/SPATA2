@@ -15,8 +15,7 @@ objects of classes for which a method has been defined.}
 \item{content}{Content to be set.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets content of slot in the \code{SpatialMethod} object. Use with

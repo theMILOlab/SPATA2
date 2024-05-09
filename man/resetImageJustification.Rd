@@ -11,8 +11,7 @@ resetImageJustification(object)
 objects of classes for which a method has been defined.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Resets slot @justification of the \code{HistologyImaging} object.

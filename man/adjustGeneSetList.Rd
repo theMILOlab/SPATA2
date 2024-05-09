@@ -13,8 +13,7 @@ objects of classes for which a method has been defined.}
 \item{limits}{A numeric value representing the threshold percentage for gene set inclusion (default: 50).}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 This function adjusts the gene set list (GSL) of a given object based on specified limits.

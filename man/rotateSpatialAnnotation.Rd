@@ -46,8 +46,7 @@ spatial annotation is stored under a new ID.}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Rotates the outline of a spatial annotation to a specific

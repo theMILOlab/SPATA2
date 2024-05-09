@@ -20,8 +20,7 @@ objects of classes for which a method has been defined.}
 \item{trajectories}{List of objects of class \code{Trajectory}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets trajectories in the correct slot.

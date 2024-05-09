@@ -39,8 +39,7 @@ spatial annotation is stored under a new ID.}
 \item{...}{Additional arguments passed to the smoothing function.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 This function applies a smoothing algorithm to the borders of a

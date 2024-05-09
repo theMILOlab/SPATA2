@@ -13,7 +13,6 @@ plotSurface(object, ...)
   object,
   color_by = NULL,
   alpha_by = NULL,
-  method_gs = NULL,
   smooth = FALSE,
   smooth_span = 0.2,
   pt_alpha = NULL,
@@ -65,7 +64,7 @@ plotSurfaceInteractive(object)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{...}{Additional arguments given to \code{scale_color_add_on()}.}
 
 \item{color_by}{The variable to be displayed by color:
 
@@ -75,10 +74,6 @@ objects of classes for which a method has been defined.}
 expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
 \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
 }}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
 
 \item{smooth}{Logical. If TRUE, a loess fit is used to smooth the values.}
 

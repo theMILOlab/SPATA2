@@ -40,8 +40,7 @@ to obtain all valid input options.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 This function conducts differential expression analysis (\emph{DEA})

@@ -85,8 +85,7 @@ gene set names. The slot contains the genes of the gene sets.Holds priority over
 \code{gene_set_names}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Computes gene set enrichment based on the results of

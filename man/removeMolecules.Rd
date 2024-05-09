@@ -37,8 +37,7 @@ the computational progress will be printed.
 \item{genes}{Character vector. Names of genes to remove.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Functions that removes molecules from the \code{SPATA2} object by removing

@@ -13,8 +13,7 @@ objects of classes for which a method has been defined.}
 \item{sample_name}{Character value. The new sample name.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Renames the \code{\link{SPATA2}} object.

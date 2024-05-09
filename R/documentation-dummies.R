@@ -629,8 +629,7 @@ seurat_object_dummy <- function(seurat_object){}
 
 
 #' @title update
-#' @return The input object containing the added or computed
-#' results.
+#' @return The updated input object, containing the added, removed or computed results.
 #' @keywords internal
 update_dummy <- function(){}
 

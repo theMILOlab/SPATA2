@@ -37,8 +37,7 @@ Rownames correspond to the names of the molecular features (genes, proteins, met
 object.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Creates and adds an object of class \code{\link{MolecularAssay}}

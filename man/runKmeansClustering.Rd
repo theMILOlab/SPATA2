@@ -37,8 +37,7 @@ the clustering.}
 \item{...}{Additional arguments given to \code{\link[stats:kmeans]{stats::kmeans()}}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 A wrapper around the Kmeans clustering algorithm. Iterates over all

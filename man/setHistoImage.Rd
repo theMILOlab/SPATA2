@@ -21,8 +21,7 @@ objects of classes for which a method has been defined.}
 \item{hist_img}{An object of class \code{HistoImage}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets object of class \code{HistoImage}.

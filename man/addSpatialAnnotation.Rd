@@ -53,8 +53,7 @@ the index the new annotation has in the list of all annotations.}
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Adds spatial annotations using a polygon.

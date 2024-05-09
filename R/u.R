@@ -166,31 +166,218 @@ setMethod(
 
 
 # update ------------------------------------------------------------------
-#' @title Update spata-object from SPATA to SPATA2
+
+update_spata2v2_to_spata2v3 <- function(object, method){
+
+  obj_old <- object
+
+  confuns::check_one_of(
+    input = method,
+    against = base::names(spatial_methods)
+  )
+
+  # basic initiation
+  coords_df <-
+    obj_old@images[[1]]@coordinates %>%
+    dplyr::select(barcodes, x, y, dplyr::any_of(c("imagerow", "imagecol", "row", "col")))
+
+  if(!purrr::is_empty(obj_old@images)){
+
+    image <- obj_old@images[[1]]@image
+    annotations <- obj_old@images[[1]]@annotations
+
+  } else {
+
+    image <- NULL
+    annotations <- NULL
+
+  }
+
+  count_mtr <- obj_old@data[[1]]$counts
+
+  sample_name <- obj_old@samples[1]
+
+  object <-
+    initiateSpataObject(
+      sample_name = sample_name,
+      count_mtr = count_mtr,
+      coords_df = coords_df,
+      omic = "transcriptomics",
+      img = image,
+      img_name = "image1",
+      scale_factors = list(image = 1),
+      spatial_method = spatial_methods[[method]]
+    )
+
+  object <- flipImage(object, axis = "h", img_name = "image1")
+
+  # add data matrices
+  matrices <- obj_old@data[[1]]
+  matrices <- matrices[base::names(matrices) != "counts"]
+
+  for(n in base::names(matrices)){
+
+    valid_matrix <-
+      base::tryCatch({
+
+        base::as.matrix(matrices[[n]])
+
+        TRUE
+
+      }, error = function(error){
+
+        FALSE
+
+      })
+
+    if(valid_matrix){
+
+      object <-
+        addProcessedMatrix(object, proc_mtr = matrices[[n]], mtr_name = n)
+
+    } else {
+
+      warning(glue::glue("Value '{n}' in slott @data of old object is not a valid matrix and will not be transferred."))
+
+    }
+
+  }
+
+  mtr_name <- base::is.character(obj_old@information$active_mtr)
+
+  if(base::is.character(mtr_name) &
+     mtr_name %in% getMatrixNames(object)){
+
+    object <- activateMatrix(object, mtr_name = mtr_name)
+
+  } else {
+
+    mtr_name <- getMatrixNames(object) %>% utils::tail(1)
+
+    object <- activateMatrix(object, mtr_name = mtr_name)
+
+  }
+
+  # add spatial annotations
+  if(!purrr::is_empty(obj_old@images)){
+
+    for(ann in annotations){
+
+      # transforming from spata2v2 to spata2v3: x- and y- --> x_orig, y_orig (no scaling)
+      area <-
+        purrr::map(ann@area, .f = ~ dplyr::transmute(.x, x_orig = x, y_orig = y))
+
+      object <-
+        addSpatialAnnotation(
+          object = object,
+          tags = ann@tags,
+          id = ann@id,
+          area = area,
+          class = "ImageAnnotation",
+          parent_name = "image1",
+          overwrite = TRUE
+        )
+
+    }
+
+  }
+
+  # add spatial trajectories
+  trajectories <- obj_old@trajectories[[1]]
+
+  if(!purrr::is_empty(trajectories)){
+
+    for(traj_old in trajectories){
+
+
+      # transforming from spata2v2 to spata2v3: x- and y- --> x_orig, y_orig (no scaling)
+      traj_old@projection <- traj_old@projection[,c("barcodes", "projection_length")]
+
+      if(base::nrow(traj_old@segment) > 1){
+
+        warning(
+          glue::glue("Multiple segment trajectories are deprecated. Using first segment of trajectory '{traj_old@id}'.")
+        )
+
+      }
+
+      segm_df_old <- traj_old@segment
+
+      traj_old@segment <-
+        tibble::tibble(
+          x = base::as.numeric(segm_df_old[1, c("x", "xend")]),
+          y = base::as.numeric(segm_df_old[1, c("y", "yend")])
+        )
+
+      object <- setTrajectory(object, trajectory = traj_old, overwrite = TRUE)
+
+    }
+
+  }
+
+  # add pixel scale factor
+  psf <- obj_old@information$pxl_scale_fct
+  if(base::is.numeric(psf)){
+
+    object <- setScaleFactor(object, fct_name = "pixel", value = psf)
+
+    confuns::give_feedback(
+      msg = "Transferred pixel scale factor.",
+      verbose = verbose
+    )
+
+  } else {
+
+    warning("No pixel scale factor found. Compute with `computePixelScaleFactor()`.")
+
+  }
+
+  # dim red
+  object@dim_red <- obj_old@dim_red[[1]]
+
+  # features
+  fdata <- obj_old@fdata[[1]]
+  object <- addFeatures(object, feature_df = fdata, overwrite = TRUE)
+
+  # cnv results
+  if(!purrr::is_empty(obj_old@cnv)){
+
+    object <- setCnvResults(object, cnv_list = obj_old@cnv[[1]])
+
+  }
+
+  confuns::give_feedback(
+    msg = "Default for `pt_size` is 1. Might be suboptimal. Optimize default with `setDefault()`.",
+    verbose = verbose
+  )
+
+  return(object)
+
+}
+
+
+
+#' @title Update `SPATA2` object
 #'
-#' @description A convenient function that takes the spata-object you
-#' have initiated with the package SPATA and adjusts it's architecture
-#' to the new version. All features remain.
+#' @description Updates the [`SPATA2`] object to the newest version of the package.
 #'
 #' @inherit runPca params
 #' @inherit argument_dummy params
 #'
-#' @param object A spata-object that has been created within the package SPATA.
-#' @param sample_name Character value. Denotes the sample name. Must be one of
-#' \code{getSampleNames()}.
+#' @param method Character value. The name of the spatial method (platform) from
+#' which the data derives. Should be one of `base::names(spatial_methods)`.
+#'
 #' @param chr_to_fct Logical. SPATA2 recommends to store grouping variables as factors
 #' in the slot @@fdata. If set to TRUE, character variables (apart from \emph{barcodes, sample, segmentation})
 #' of the old obejct's feature data are converted to factors.
 #'
-#' @details Apart from transferring the data and the progress from the old object
-#' to the new one principal component analysis (PCA) is run via the function \code{runPca()} and
-#' gene meta data is compuated via \code{computeGeneMetaData()}.
+#' @inherit update_dummy return
 #'
-#' @return An updated spata-object.
 #' @export
 #'
 
 updateSpataObject <- function(object,
+                              method,
                               sample_name = NULL,
                               chr_to_fct = TRUE,
                               n_pcs = 30,
@@ -964,139 +1151,20 @@ updateSpataObject <- function(object,
 
   if(object@version$major == 2){
 
-    # spatial method
-    coords_df <- getCoordsDf(object)
+    confuns::check_one_of(
+      input = method,
+      against = base::names(spatial_methods)
+    )
 
-    if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$barcode)){
+    object <- update_spata2v2_to_spata2v3(object, method = method)
 
-      method_name <- "VisiumSmall"
-
-    } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$barcode)) {
-
-      method_name <- "VisiumLarge"
-
-    } else {
-
-      method_name <- "Undefined"
-
-    }
-
-    object@information$method <- spatial_methods[[method_name]]
-
-    # create histo imaging
-    if(base::length(object@images) >= 1 &&
-       methods::is(object@images[[1]], class2 = "HistologyImaging")){
-
-      dir_visium <- getInitiationInput(object, verbose = FALSE)$directory_10X
-
-      if(base::is.character(dir_visium)){
-
-        if(!dir.exists(dir_visium)){
-
-          warning(glue::glue("Can not find '{dir_visium}'. Please use `createSpatialDataVisium()` and `setSpatialData()` manually."))
-
-        } else {
-
-          confuns::give_feedback(
-            msg = "Updating to SpatialData.",
-            verbose = TRUE
-          )
-
-          sp_data <-
-            createSpatialDataVisium(
-              dir = dir_visium,
-              sample = getSampleName(object),
-              img_ref = "hires",
-              img_active = "lowres",
-              verbose = TRUE
-            )
-
-          image_dims <-
-            purrr::map(
-              .x = sp_data@images,
-              .f = ~ .x@image_info$dims
-            )
-
-          # update image annotations
-          sp_data@annotations <-
-            purrr::map(
-              .x = object@images[[1]]@annotations,
-              .f = function(img_ann){
-
-                # update the object
-                img_ann <- updateS4(img_ann)
-
-                # try to identify the parent image
-                parent_name <- img_ann@info$parent_name
-
-                if(base::is.null(parent_name)){
-
-                  dims <- img_ann@info$current_dim
-
-                  if(base::is.null(dims)){
-
-                    parent_name <- "lowres"
-
-                  } else {
-
-                    for(i in base::seq_along(image_dims)){
-
-                      if(dims[1] == image_dims[[i]][1] & dims[2] == image_dims[[i]][2]){
-
-                        parent_name <- base::names(image_dims)[i]
-
-                        break()
-
-                      }
-
-                    }
-
-                  }
-
-                  if(base::is.null(parent_name)){
-
-                    parent_name <- "lowres"
-
-                  }
-
-                  img_ann@info$parent_name <- parent_name
-
-                }
-
-                return(img_ann)
-
-              }
-            )
-
-          # allow downgrading
-          sp_data@misc$HistologyImaging <- object@images[[1]]
-          sp_data@misc$HistologyImaging@image <- empty_image
-          sp_data@misc$old_version <- object@version
-
-          object <- setSpatialData(object, sp_data = sp_data)
-
-        }
-
-      } else {
-
-        warning(
-          glue::glue(
-            "Can not find a visium directory in spata2 object.",
-            "Picking currently set image as active and as reference image.",
-            "Please use `createSpatialData()/createSpatialDataVisium()` and `setSpatialData()` manually.")
-        )
-
-      }
-
-    }
-
-    object@version <- current_spata2_version
+    object@version <- list(major = 3, minor = 0, patch = 0)
 
   }
 
   # default adjustment ------------------------------------------------------
 
-  old_default <- object@information$instructions$default
+  old_default <- getDefaultInstructions(object)
 
   new_default <-
     transfer_slot_content(
@@ -1105,13 +1173,11 @@ updateSpataObject <- function(object,
       verbose = FALSE
     )
 
-  object@information$instructions$default <- new_default
+  object <- setDefaultInstructions(object, instructions = new_default)
 
   # Return updated object ---------------------------------------------------
 
   object@version <- current_spata2_version
-
-  object <- setDefaultInstructions(object)
 
   version <- version_string(object@version)
 

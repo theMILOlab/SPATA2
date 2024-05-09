@@ -19,8 +19,7 @@ the directory separated by \emph{'/'}.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets a directory under which the \code{SPATA2} object is

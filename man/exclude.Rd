@@ -35,8 +35,7 @@ objects of classes for which a method has been defined.}
 \item{reason}{Character value. The reasoning for exclusion.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Excludes data points from further integration in analysis

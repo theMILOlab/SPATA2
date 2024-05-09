@@ -34,8 +34,7 @@ to obtain all valid input options.}
 \item{fc_name, base}{Given to corresponding arguments of \code{Seurat::FindAllMarkers()}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 This function makes use of \code{Seurat::FindAllMarkers()} to compute

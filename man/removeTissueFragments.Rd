@@ -15,8 +15,7 @@ all tissue fragments are removed. If numeric or character indicates the
 fragments to be removed.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Removes data points that fall on tissue fragments as

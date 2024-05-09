@@ -27,8 +27,7 @@ object is exchanged for the counts matrix in the output assay.}
 \item{...}{Additional arguments given to \code{Seurat::SCTransform()}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Runs the pipeline suggested by \code{\link[Seurat:SCTransform]{Seurat::SCTransform()}} and

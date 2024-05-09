@@ -2,10 +2,11 @@
 % Please edit documentation in R/u.R
 \name{updateSpataObject}
 \alias{updateSpataObject}
-\title{Update spata-object from SPATA to SPATA2}
+\title{Update \code{SPATA2} object}
 \usage{
 updateSpataObject(
   object,
+  method,
   sample_name = NULL,
   chr_to_fct = TRUE,
   n_pcs = 30,
@@ -13,10 +14,10 @@ updateSpataObject(
 )
 }
 \arguments{
-\item{object}{A spata-object that has been created within the package SPATA.}
+\item{object}{A valid spata-object.}
 
-\item{sample_name}{Character value. Denotes the sample name. Must be one of
-\code{getSampleNames()}.}
+\item{method}{Character value. The name of the spatial method (platform) from
+which the data derives. Should be one of \code{base::names(spatial_methods)}.}
 
 \item{chr_to_fct}{Logical. SPATA2 recommends to store grouping variables as factors
 in the slot @fdata. If set to TRUE, character variables (apart from \emph{barcodes, sample, segmentation})
@@ -30,15 +31,8 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-An updated spata-object.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
-A convenient function that takes the spata-object you
-have initiated with the package SPATA and adjusts it's architecture
-to the new version. All features remain.
-}
-\details{
-Apart from transferring the data and the progress from the old object
-to the new one principal component analysis (PCA) is run via the function \code{runPca()} and
-gene meta data is compuated via \code{computeGeneMetaData()}.
+Updates the \code{\link{SPATA2}} object to the newest version of the package.
 }

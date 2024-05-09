@@ -18,8 +18,7 @@ one assay: Denotes the assay of interest. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Removes a processed matrix from the \code{SPATA2} object.

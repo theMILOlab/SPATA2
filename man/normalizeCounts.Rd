@@ -41,8 +41,7 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{\link[Seurat:NormalizeData]{Seurat::NormalizeData()}}.}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Normalizes the count matrix of a molecular assay.

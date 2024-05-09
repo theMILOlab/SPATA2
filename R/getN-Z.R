@@ -3109,6 +3109,8 @@ getSpatialTrajectory <- function(object, id){
 #' @export
 getSpatialTrajectories <- function(object, ids = NULL){
 
+  sp_data <- getSpatialData(object)
+
   if(nSpatialTrajectories(object) != 0){
 
     if(base::is.character(ids)){
@@ -3117,8 +3119,6 @@ getSpatialTrajectories <- function(object, ids = NULL){
         input = ids,
         against = getSpatialTrajectoryIds(object)
       )
-
-      sp_data <- getSpatialData
 
       out <- sp_data@trajectories[ids]
 

@@ -18,8 +18,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-The input object containing the added or computed
-results.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Removes genes from the data set. This affects count- and expression matrices
