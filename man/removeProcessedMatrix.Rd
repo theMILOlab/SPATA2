@@ -23,3 +23,7 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Removes a processed matrix from the \code{SPATA2} object.
 }
+\note{
+If the removed matrix was the active matrix the new active matrix
+is defined as the last element of \code{\link[=getMatrixNames]{getMatrixNames()}}.
+}

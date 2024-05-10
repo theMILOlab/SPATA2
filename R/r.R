@@ -1252,6 +1252,9 @@ removeMetaFeatures <- function(object, feature_names, ...){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
+#' @note If the removed matrix was the active matrix the new active matrix
+#' is defined as the last element of [`getMatrixNames()`].
+#'
 #' @export
 removeProcessedMatrix <- function(object,
                                   mtr_name,
@@ -1269,6 +1272,16 @@ removeProcessedMatrix <- function(object,
   ma@mtr_proc[[mtr_name]] <- NULL
 
   object <- setAssay(object, assay = ma)
+
+  if(mtr_name == activeMatrix(object, assay_name)){
+
+    new_active_mtr <- getMatrixNames(object) %>% utils::tail(1)
+
+    object <- activateMatrix(object, mtr_name = new_active_mtr, verbose = FALSE)
+
+    warning(glue::glue("Matrix '{mtr_name}' was the active matrix. New active matrix: '{new_active_mtr}'"))
+
+  }
 
   returnSpataObject(object)
 

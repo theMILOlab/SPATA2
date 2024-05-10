@@ -264,7 +264,7 @@ update_spata2v2_to_spata2v3 <- function(object, method){
     ma <- getAssay(object)
     ma@analysis$dea <- obj_old@dea[[1]]
 
-    object <- setAssay(object, assay = assay)
+    object <- setAssay(object, assay = ma)
 
   }
 
