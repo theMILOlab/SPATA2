@@ -167,7 +167,7 @@ setMethod(
 
 # update ------------------------------------------------------------------
 
-update_spata2v2_to_spata2v3 <- function(object, method){
+update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
   obj_old <- object
 
@@ -315,8 +315,8 @@ update_spata2v2_to_spata2v3 <- function(object, method){
 
       traj_old@segment <-
         tibble::tibble(
-          x = base::as.numeric(segm_df_old[1, c("x", "xend")]),
-          y = base::as.numeric(segm_df_old[1, c("y", "yend")])
+          x_orig = base::as.numeric(segm_df_old[1, c("x", "xend")]),
+          y_orig = base::as.numeric(segm_df_old[1, c("y", "yend")])
         )
 
       object <- setTrajectory(object, trajectory = traj_old, overwrite = TRUE)
