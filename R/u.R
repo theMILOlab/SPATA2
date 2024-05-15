@@ -167,6 +167,11 @@ setMethod(
 
 # update ------------------------------------------------------------------
 
+#' @title doc
+#'
+#' @return object
+#' @export
+#'
 update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
   obj_old <- object
