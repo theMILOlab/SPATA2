@@ -1472,7 +1472,7 @@ renameMetaFeatures <- function(object, ...){
   valid_rename_input <- rename_input
 
   # rename feature df
-  feature_df <-
+  meta_df <-
     getMetaDf(object) %>%
     dplyr::rename(!!! valid_rename_input)
 

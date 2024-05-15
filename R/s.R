@@ -517,26 +517,26 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
   cat("Contains", length(assay), ifelse(length(assay) > 1, "Assays:", "Assay:"), assay, "\n")
   cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
   if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {
-    cat("Metadata:", paste(setdiff(colnames(getMetaDf(object)), "barcodes"), 
+    cat("Metadata:", paste(setdiff(colnames(getMetaDf(object)), "barcodes"),
       collapse=", "), "\n")
   }
   if (length(getSpatialAnnotations(object)) > 0) {
-    cat("Spatial Annotations:", paste(names(getSpatialAnnotations(object)), 
+    cat("Spatial Annotations:", paste(names(getSpatialAnnotations(object)),
       collapse=", "), "\n")
   }
   if (length(getSpatialTrajectories(object)) > 0) {
-    cat("Spatial Trajectories:", paste(names(getSpatialTrajectories(object)), 
+    cat("Spatial Trajectories:", paste(names(getSpatialTrajectories(object)),
       collapse=", "), "\n")
   }
 })
 
 #' @export
 setMethod(f = "show", signature = "SpatialAnnotation", definition = function(object){
-  
+
   tags <- confuns::scollapse(object@tags, sep = ", ", last = ", ")
-  
+
   writeLines(glue::glue("An object of class '{class(object)}' with id = '{object@id}'. \n Tags: {tags}."))
-  
+
 })
 
 #' @title Show color palettes and spectra
@@ -764,6 +764,7 @@ showModels <- function(input = 100,
 # sim ---------------------------------------------------------------------
 
 
+#' @export
 #' @keywords internal
 simulate_complete_coords_sa <- function(object, id, distance){
 
@@ -821,7 +822,7 @@ simulate_complete_coords_sa <- function(object, id, distance){
 
 }
 
-
+#' @export
 #' @keywords internal
 simulate_complete_coords_st <- function(object, id){
 

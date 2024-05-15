@@ -147,15 +147,6 @@ check_binwidth_n_bins <- function(n_bins = NULL, binwidth = NULL, object = NULL)
 #' Returns a list with one slot named \emph{features}, \emph{genes} or \emph{gene_sets}
 #' containing the respective found/valid input of \code{color_to}.
 #'
-#' @param color_by The variable to be displayed by color:
-#'
-#'  \itemize{
-#'   \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-#'   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-#'   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
-#'   }
-#'
 #' @param all_features The valid features specified as a character vector.
 #' @param all_genes The valid genes specified as a character vector.
 #' @param all_gene_sets The valid gene sets specified as a character vector.

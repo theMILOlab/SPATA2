@@ -69,6 +69,9 @@ across_dummy <- function(across, across_subset, relevel){}
 #' continuous values of numeric variables. Run \code{validColorSpectra()} to obtain
 #' valid input options.
 #'
+#' @param color_by Character value. The \link[=concept_variable]{variables} by which
+#' to color the data points.
+#'
 #' @param concavity Numeric value. Given to argument `concavity` of
 #' [`concaveman::concaveman()`]. Determines the relative measure of concavity.
 #' 1 results in a relatively detailed shape, Infinity results in a convex hull.

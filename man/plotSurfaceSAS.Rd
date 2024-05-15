@@ -62,6 +62,9 @@ Defaults to a distance that covers the whole tissue using \code{\link[=distToEdg
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
+\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+to color the data points.}
+
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.
 (See details fore more.)}

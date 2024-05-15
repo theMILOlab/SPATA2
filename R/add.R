@@ -1773,7 +1773,7 @@ addSpatialTrajectory <- function(object,
       comment = comment,
       id = id,
       segment = traj_df,
-      sample = object@samples,
+      sample = getSampleName(object),
       width = width,
       width_unit = "px"
     )

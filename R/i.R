@@ -1925,6 +1925,7 @@ increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 }
 
 
+#' @export
 #' @keywords internal
 infer_gradient <- function(loess_model,
                            expr_est_pos,

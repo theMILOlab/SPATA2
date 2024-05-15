@@ -72,6 +72,9 @@ gene sets is created.}
 that determines which genes are included. If NULL, genes are taken according
 to the threshold input for average log fold change and adjusted p-value.}
 
+\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+to color the data points.}
+
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_size}{Numeric value. Specifies the size of all points.}

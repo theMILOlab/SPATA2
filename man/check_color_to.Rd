@@ -14,15 +14,6 @@ check_color_to(
 )
 }
 \arguments{
-\item{color_by}{The variable to be displayed by color:
-
-\itemize{
-\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
-}}
-
 \item{all_features}{The valid features specified as a character vector.}
 
 \item{all_gene_sets}{The valid gene sets specified as a character vector.}

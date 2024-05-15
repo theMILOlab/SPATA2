@@ -36,14 +36,8 @@ plotSurfaceBase(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{color_by}{The variable to be displayed by color:
-
-\itemize{
-\item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-\item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-\item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames()}}
-}}
+\item{color_by}{Character value. The \link[=concept_variable]{variables} by which
+to color the data points.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 

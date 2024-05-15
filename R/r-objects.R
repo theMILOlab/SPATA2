@@ -1141,7 +1141,7 @@ spatial_methods <-
   list(
     "MERFISH" = MERFISH,
     "SlideSeqV1" = SlideSeqV1,
-    "Undefined" = SpatialMethod(name = "Undefined", version = current_spata2_version),
+    "Undefined" = SpatialMethod(name = "Undefined", version = current_spata2_version, unit = "px"),
     "VisiumSmall" = VisiumSmall,
     "VisiumLarge" = VisiumLarge,
     "Xenium" = Xenium

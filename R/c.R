@@ -336,6 +336,8 @@ compute_corr <- function(gradient, model){
 
 }
 
+#' @keywords internal
+#' @export
 compute_correction_factor_sas <- function(object, ids, distance, core){
 
   orig_cdf <-
@@ -413,7 +415,8 @@ compute_correction_factor_sas <- function(object, ids, distance, core){
 
 }
 
-
+#' @keywords internal
+#' @export
 compute_correction_factor_sts <- function(object, id, width = getTrajectoryLength(object, id)){
 
   coords_df <-
@@ -480,6 +483,8 @@ compute_distance <- function(starting_pos, final_pos){
 #' and \code{max_dist} match to ensure consistent unit measurements.
 
 #' @return A numeric vector representing positions for expression estimates.
+#'
+#' @export
 #'
 
 compute_expression_estimates <- function(coords_df){

@@ -179,17 +179,62 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
   # basic initiation
   coords_df <-
     obj_old@images[[1]]@coordinates %>%
-    dplyr::select(barcodes, x, y, dplyr::any_of(c("imagerow", "imagecol", "row", "col")))
+    dplyr::select(barcodes, dplyr::any_of(c("x_orig", "y_orig", "imagerow", "imagecol", "row", "col", "x", "y")))
+
+  # might be overwritten downstream
+  img_name <- "image1"
+  scale_factors <- list(image = 1)
 
   if(!purrr::is_empty(obj_old@images)){
 
-    image <- obj_old@images[[1]]@image
-    annotations <- obj_old@images[[1]]@annotations
+    io <- obj_old@images[[1]]
+
+    annotations <- io@annotations
+
+    if(base::class(io) == "HistoImaging"){
+
+      if(!purrr::is_empty(io@images)){
+
+        active_img <-
+          purrr::keep(io@images, .p = ~ .x@active) %>%
+          base::names()
+
+        if(base::length(active_img) >= 1){
+
+          img_name <- active_img[1]
+          img_cont <- io@images[[img_name]]
+
+          image <- img_cont@image
+
+          scale_factors <- img_cont@scale_factors
+          scale_factors$image <- scale_factors$coords
+          scale_factors$coords <- NULL
+
+        } else {
+
+          image <- NULL
+
+        }
+
+      } else {
+
+        image <- NULL
+
+      }
+
+    } else {
+
+      annotations <- obj_old@images[[1]]@annotations
+
+      image <- obj_old@images[[1]]@image
+
+    }
 
   } else {
 
-    image <- NULL
     annotations <- NULL
+
+    image <- NULL
 
   }
 
@@ -201,15 +246,15 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
     initiateSpataObject(
       sample_name = sample_name,
       count_mtr = count_mtr,
-      coords_df = coords_df,
+      coords_df = coords_df[coords_df$barcodes %in% base::colnames(count_mtr),],
       omic = "transcriptomics",
       img = image,
-      img_name = "image1",
-      scale_factors = list(image = 1),
+      img_name = img_name,
+      scale_factors = scale_factors,
       spatial_method = spatial_methods[[method]]
     )
 
-  object <- flipImage(object, axis = "h", img_name = "image1")
+  object <- flipImage(object, axis = "h", img_name = img_name)
 
   # add data matrices
   matrices <- obj_old@data[[1]]
@@ -274,8 +319,15 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
     for(ann in annotations){
 
       # transforming from spata2v2 to spata2v3: x- and y- --> x_orig, y_orig (no scaling)
-      area <-
-        purrr::map(ann@area, .f = ~ dplyr::transmute(.x, x_orig = x, y_orig = y))
+
+      area <- ann@area
+
+      if(!base::any(c("x_orig", "y_orig") %in% base::names(ann@area$outer))){
+
+        area <-
+          purrr::map(area, .f = ~ dplyr::transmute(.x, x_orig = x, y_orig = y))
+
+      }
 
       object <-
         addSpatialAnnotation(
@@ -284,7 +336,7 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
           id = ann@id,
           area = area,
           class = "ImageAnnotation",
-          parent_name = "image1",
+          parent_name = img_name,
           overwrite = TRUE
         )
 
@@ -299,9 +351,8 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
     for(traj_old in trajectories){
 
-
       # transforming from spata2v2 to spata2v3: x- and y- --> x_orig, y_orig (no scaling)
-      traj_old@projection <- traj_old@projection[,c("barcodes", "projection_length")]
+      traj_old@projection <- base::data.frame()
 
       if(base::nrow(traj_old@segment) > 1){
 
@@ -313,11 +364,15 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
       segm_df_old <- traj_old@segment
 
-      traj_old@segment <-
-        tibble::tibble(
-          x_orig = base::as.numeric(segm_df_old[1, c("x", "xend")]),
-          y_orig = base::as.numeric(segm_df_old[1, c("y", "yend")])
-        )
+      if(!base::any(c("x_orig", "y_orig") %in% base::names(segm_df_old))){
+
+        traj_old@segment <-
+          tibble::tibble(
+            x_orig = base::as.numeric(segm_df_old[1, c("x", "xend")]),
+            y_orig = base::as.numeric(segm_df_old[1, c("y", "yend")])
+          )
+
+      }
 
       object <- setTrajectory(object, trajectory = traj_old, overwrite = TRUE)
 
@@ -356,10 +411,16 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
   }
 
-  confuns::give_feedback(
-    msg = "Default for `pt_size` is 1. Might be suboptimal. Optimize default with `setDefault()`.",
-    verbose = verbose
-  )
+  object@obj_info$instructions <- obj_old@information$instructions
+
+  if(getDefault(object, arg = "pt_size") == 1){
+
+    confuns::give_feedback(
+      msg = "Default for `pt_size` is 1. Might be suboptimal. Optimize default with `setDefault()`.",
+      verbose = verbose
+    )
+
+  }
 
   return(object)
 

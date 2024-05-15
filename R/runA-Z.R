@@ -2051,9 +2051,8 @@ runUmap <- function(object, n_pcs = 20, ...){
   pca_mtr <- getPcaMtr(object = object)
 
   umap_df <-
-    base::data.frame(
+    tibble::tibble(
       barcodes = base::rownames(pca_mtr),
-      sample = of_sample,
       umap1 = umap_res$layout[,1],
       umap2 = umap_res$layout[,2]
     )
@@ -2071,7 +2070,6 @@ runUmap2 <- function(object, n_pcs = 20, ...){
   deprecated(...)
 
   check_object(object)
-
 
   pca_mtr <- getPcaMtr(object = object)
 

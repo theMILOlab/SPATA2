@@ -114,7 +114,7 @@ setCCD <- function(object, ccd){
 
   method <- getSpatialMethod(object)
 
-  method@info[["ccd"]] <- ccd[1]
+  method@method_specifics[["ccd"]] <- ccd[1]
 
   object <- setSpatialMethod(object, method = method)
 

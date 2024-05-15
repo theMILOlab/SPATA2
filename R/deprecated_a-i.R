@@ -1901,6 +1901,7 @@ getExpressionMatrix <- function(object,
 
 }
 
+#' @export
 #' @keywords internal
 getFeatureDf <- function(...){
 

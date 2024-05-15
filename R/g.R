@@ -770,8 +770,6 @@ ggpLayerExprEstimatesSAS <- function(object,
 
     } else {
 
-      containsTissueOutline(object, error = TRUE)
-
       out_list <-
         purrr::map(
           .x = seq_along(ids),

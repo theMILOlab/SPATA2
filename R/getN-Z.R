@@ -3454,13 +3454,27 @@ setMethod(
 
     } else {
 
-      slot <- base::ifelse(base::isTRUE(by_section), "tissue_section", "tissue_whole")
+      slot <-
+        base::ifelse(base::isTRUE(by_section), "tissue_section", "tissue_whole")
+
+      # if the object contains an image but the "obs" tissue outline is
+      # extracted, it must be scaled to the image resolution
+      if(containsHistoImages(object)){
+
+        csf <- getScaleFactor(object, fct_name = "image")
+
+      } else {
+
+        csf <- 1
+
+      }
+
 
       out_df <-
         dplyr::mutate(
           .data = object@outline[[slot]],
-          x = x_orig,
-          y = y_orig
+          x = x_orig * {{csf}},
+          y = y_orig * {{csf}}
         )
 
     }
