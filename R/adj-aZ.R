@@ -1438,7 +1438,6 @@ setMethod(
   }
 )
 
-#' @importFrom anndata AnnDataR6
 #' @rdname asSPATA2
 #' @export
 setMethod(
@@ -1455,7 +1454,7 @@ setMethod(
                         verbose = TRUE){
 
     if (!requireNamespace("anndata", quietly = TRUE)) {
-      stop("Package 'anndata' is required but not installed.")
+      stop("Package 'anndata' is required but not installed. Please see https://cran.r-project.org/web/packages/anndata/index.html.")
     }
 
     # check anndata object
