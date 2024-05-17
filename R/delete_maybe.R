@@ -1514,50 +1514,60 @@ setMethod(
 
 #' @rdname asHistologyImaging
 #' @export
-setMethod(
-  f = "asHistologyImaging",
-  signature = "AnnDataR6",
-  definition = function(object,
-                        id,
-                        library_id,
-                        spatial_key = "spatial",
-                        scale_with = "lowres",
-                        verbose = verbose){
-
-    scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
-
-    coords <- as.data.frame(object$obsm[[spatial_key]])
-    rownames(coords) <- object$obs_names
-    colnames(coords) <- c("imagerow", "imagecol")
-    coordinates <-
-      tibble::rownames_to_column(coords, var = "barcodes") %>%
-      dplyr::mutate(
-        x = imagecol * scale_fct,
-        y = imagerow * scale_fct
-      ) %>%
-      dplyr::select(barcodes, x, y, dplyr::everything()) %>%
-      tibble::as_tibble()
-
-    image <-
-      EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
-                     colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
-      EBImage::transpose()
-
-    img_dim <- dim(image)
-
-    new_object <-
-      createHistologyImaging(
-        image = image,
-        id = id,
-        coordinates = coordinates,
-        verbose = verbose,
-      )
-
-    return(new_object)
-
-  }
-)
-
+if (requireNamespace("anndata", quietly = TRUE)) {
+  
+  # Register AnnDataR6 class
+  setOldClass("AnnDataR6")
+  
+  setMethod(
+    f = "asHistologyImaging",
+    signature = "AnnDataR6",
+    definition = function(object,
+                          id,
+                          library_id,
+                          spatial_key = "spatial",
+                          scale_with = "lowres",
+                          verbose = verbose){
+  
+      scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
+  
+      coords <- as.data.frame(object$obsm[[spatial_key]])
+      rownames(coords) <- object$obs_names
+      colnames(coords) <- c("imagerow", "imagecol")
+      coordinates <-
+        tibble::rownames_to_column(coords, var = "barcodes") %>%
+        dplyr::mutate(
+          x = imagecol * scale_fct,
+          y = imagerow * scale_fct
+        ) %>%
+        dplyr::select(barcodes, x, y, dplyr::everything()) %>%
+        tibble::as_tibble()
+  
+      image <-
+        EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
+                       colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
+        EBImage::transpose()
+  
+      img_dim <- dim(image)
+  
+      new_object <-
+        createHistologyImaging(
+          image = image,
+          id = id,
+          coordinates = coordinates,
+          verbose = verbose,
+        )
+  
+      return(new_object)
+  
+    }
+  )
+  
+} else {
+  
+  message("Package 'anndata' is required but not installed. Please see https://cran.r-project.org/web/packages/anndata/index.html.")
+  
+}
 
 #' @title Transform to `SpatialTrajectory`
 #'
