@@ -57,6 +57,8 @@ Imports:
     viridis,
     umap,
     units
+Suggests:
+    anndata
 Collate: 
     'Geoms.R'
     'S4-documentation.R'
