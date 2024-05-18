@@ -22,9 +22,9 @@ getSpatAnnArea(object, ...)
 \S4method{getSpatAnnArea}{SpatialData}(
   object,
   ids = NULL,
-  unit = "mm2",
   tags = NULL,
   test = "any",
+  unit = "mm2",
   as_numeric = TRUE,
   verbose = NULL,
   ...
