@@ -1838,7 +1838,8 @@ getDimRedDf <- function(object,
 
   dim_red_df <-
     object@dim_red[[method_dr]] %>%
-    tibble::as_tibble()
+    tibble::as_tibble() %>%
+    dplyr::mutate(sample = getSampleName(object))
 
   # -----
 

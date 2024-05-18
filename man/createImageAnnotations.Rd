@@ -23,5 +23,5 @@ used to create a \code{\link{SpatialAnnotation}} of subclass \code{\link{ImageAn
 Not to confuse with \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
 }
 \seealso{
-\code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}
+\code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}, \code{\link[=mergeWithTissueOutline]{mergeWithTissueOutline()}}
 }

@@ -819,16 +819,20 @@ setMethod(
 
 
 
-#' @title Obtain sample area size
+#' @title Obtain tissue area size
 #'
-#' @description Computes and extracts the area size of the tissue sample.
+#' @description Computes and extracts the size of the area covered by the tissue.
 #'
+#' @inherit getTissueOutlineDf params details
 #' @param unit Character value. Output unit. Must be one of `validUnitsOfArea()`.
 #'
 #' @return Single value. Numeric if `unit` is *px*. Else value of class `unit`.
 #' @export
 #'
-getSampleAreaSize <- function(object, unit){
+getTissueArea <- function(object,
+                          unit,
+                          method = NULL,
+                          img_name = activeImage(object)){
 
   confuns::is_value(x = unit, mode = "character")
 
@@ -839,14 +843,14 @@ getSampleAreaSize <- function(object, unit){
 
   coords_df <- getCoordsDf(object)
 
-  hull_coords <- getTissueOutlineDf(object, img_name = refImage(object))
+  hull_coords <- getTissueOutlineDf(object, img_name = img_name, method = method)
 
   pixel_df <- getPixelDf(object)
 
   pixel_loc <-
     sp::point.in.polygon(
-      point.x = pixel_df[["x"]],
-      point.y = pixel_df[["y"]],
+      point.x = pixel_df[["width"]],
+      point.y = pixel_df[["height"]],
       pol.x = hull_coords[["x"]],
       pol.y = hull_coords[["y"]]
     )
@@ -875,8 +879,6 @@ getSampleAreaSize <- function(object, unit){
     out <- units::set_units(x = out_val, value = unit, mode = "standard")
 
   }
-
-
 
   return(out)
 
@@ -1725,9 +1727,9 @@ setMethod(
   signature = "SpatialData",
   definition = function(object,
                         ids = NULL,
-                        unit = "mm2",
                         tags = NULL,
                         test = "any",
+                        unit = "mm2",
                         as_numeric = TRUE,
                         verbose = NULL,
                         ...){
@@ -1789,12 +1791,14 @@ setMethod(
 
           border_df <- getSpatAnnOutlineDf(object, ids = id)
 
+          outer_df <- dplyr::filter(border_df, border == "outer")
+
           pixel_loc <-
             sp::point.in.polygon(
               point.x = pixel_df[["width"]],
               point.y = pixel_df[["height"]],
-              pol.x = border_df[["x"]],
-              pol.y = border_df[["y"]]
+              pol.x = outer_df[["x"]],
+              pol.y = outer_df[["y"]]
             )
 
           pixel_inside <- pixel_df[pixel_loc != 0, ]
@@ -1811,8 +1815,8 @@ setMethod(
 
               pixel_loc <-
                 sp::point.in.polygon(
-                  point.x = pixel_inside[["x"]],
-                  point.y = pixel_inside[["y"]],
+                  point.x = pixel_inside[["width"]],
+                  point.y = pixel_inside[["height"]],
                   pol.x = hole_df[["x"]],
                   pol.y = hole_df[["y"]]
                 )
@@ -3374,11 +3378,11 @@ setMethod(
 #' information.
 #'
 #' @param method Character value. Either *'obs'* or *'image'*. Decides whether
-#' the tissue outline computed based on the \link[=concept_observations]{observations}
+#' the tissue outline used based on the \link[=concept_observations]{observations}
 #' or the image is used. If `method = NULL`, the function checks first if any [`HistoImage`]
 #' is registered. If so, the outline from the image specified with `img_name` is returned.
 #' If there are no images, the outline computed with `identifyTissueOutline(..., method = 'obs')`
-#' is returned.
+#' is used.
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame of vertices with x- and y-coordinates. If `by_section = TRUE`,
@@ -3408,7 +3412,7 @@ setMethod(
     getSpatialData(object) %>%
       getTissueOutlineDf(
         object = .,
-        method = NULL,
+        method = method,
         img_name = img_name,
         by_section = by_section,
         transform = transform
@@ -3461,20 +3465,19 @@ setMethod(
       # extracted, it must be scaled to the image resolution
       if(containsHistoImages(object)){
 
-        csf <- getScaleFactor(object, fct_name = "image")
+        isf <- getScaleFactor(object, fct_name = "image")
 
       } else {
 
-        csf <- 1
+        isf <- 1
 
       }
-
 
       out_df <-
         dplyr::mutate(
           .data = object@outline[[slot]],
-          x = x_orig * {{csf}},
-          y = y_orig * {{csf}}
+          x = x_orig * {{isf}},
+          y = y_orig * {{isf}}
         )
 
     }
@@ -3524,6 +3527,13 @@ setMethod(
         )
 
     }
+
+    isf <- object@scale_factors$image
+
+    if(base::is.null(isf)){ isf <- 1}
+
+    df$x_orig <- df$x / isf
+    df$y_orig <- df$y / isf
 
     return(df)
 

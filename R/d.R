@@ -248,46 +248,53 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 
 # download ----------------------------------------------------------------
 
-
-#' @title Download data from the publication
+#' @title Download data from publications
 #'
-#' @description Downloads processed data from uses cases of *Kueckelhaus et al., 2024*
-#' in form of `spata2` objects.
+#' @description Downloads processed data as used in publications revolving
+#' around SPATA2. See details for valid input options.
 #'
-#' @param name Name of the data set. Must be in `validPubExamples()`.
-#' @inherit argument_dummy params
+#' @param pub Character value. The publication of interest.
+#' @param id Character value. The id of the data object of interest.
 #'
-#' @return The respective data set.
+#' @return Depends argument input.
+#'
+#' @details The following data can be downloaded.
+#'
+#' From *Kueckelhaus et al., 2024* with `pub = 'kueckelhaus_et_al_2024'`.
+#'
+#' \itemize{
+#'  \item{id = 'UKF313T'}{An object of class `SPATA2` containing human glioblastoma Visium data.}
+#'  \item{id = 'UKF269T'}{An object of class `SPATA2` containing human glioblastoma Visium data.}
+#'  \item{id = 'UKF265C'}{An object of class `SPATA2` containing human neocortex Visium data.}
+#'  \item{id = 'MCI_LMU'}{An object of class `SPATA2` containing injured mouse cortex Visium data.}
+#'  }
+#'
+#' @examples
+#'
+#'   # download the processed SPATA2 object from sample UKF313T from Kueckelhaus et al., 2024.
+#'  objectT313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", what = "UKF313T")
+#'
 #' @export
 #'
-downloadPubExample <- function(name, verbose = TRUE){
+downloadFromPublication <- function(pub, id, raw = FALSE){
 
   confuns::check_one_of(
-    input = name,
-    against = base::names(pub_dropbox_links)
+    input = pub,
+    against = base::names(download_links)
   )
 
-  confuns::give_feedback(
-    msg = glue::glue("Downloading example '{name}'."),
-    verbose = verbose
+  confuns::check_one_of(
+    input = id,
+    against = base::names(download_links[[pub]])
   )
 
-  download_dir <- pub_dropbox_links[[name]]
+  link <- download_links[[pub]][[id]][["link"]]
 
-  downloaded_object <-
-    base::url(download_dir) %>%
-    base::readRDS()
-
-  downloaded_object <- updateSpataObject(downloaded_object, verbose = verbose)
-
-  confuns::give_feedback(
-    msg = glue::glue("Done."),
-    verbose = TRUE
-  )
-
-  return(downloaded_object)
+  # add code to downlaod
+  # create `download_links`
 
 }
+
 
 #' @title Download raw Visium output
 #' @inherit SPATAData::downloadRawData title description params return examples

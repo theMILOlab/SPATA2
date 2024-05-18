@@ -393,8 +393,8 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <-
     setCaptureArea(
       object = object,
-      x = getCoordsRange(object)$x %>% round_range() %>% as_millimeter(object = object),
-      y = getCoordsRange(object)$y %>% round_range() %>% as_millimeter(object = object)
+      x = getCoordsRange(object)$x %>% round_range() %>% as_millimeter(input = ., object = object),
+      y = getCoordsRange(object)$y %>% round_range() %>% as_millimeter(input = ., object = object)
     )
 
   confuns::give_feedback(
