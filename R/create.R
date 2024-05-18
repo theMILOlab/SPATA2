@@ -1634,7 +1634,7 @@ createSpatialDataXenium <- function(dir,
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`addSpatialAnnotation()`]
+#' @seealso [`addSpatialAnnotation()`], [`mergeWithTissueOutline()`]
 #'
 #' @export
 #'

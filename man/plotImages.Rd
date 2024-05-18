@@ -74,8 +74,8 @@ simply outlines everything with one single polygon.}
 
 \item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
 spatial transformation instructions saved during image alignment of
-the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
-been used.}
+the image \code{img_name} are applied. Only relevant if there are any images registered
+in the \code{SPATA2} object.}
 
 \item{nrow, ncol}{Numeric values or NULL. Used to arrange multiple plots.}
 

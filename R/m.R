@@ -538,8 +538,6 @@ merge_intersecting_polygons <- function(main_poly,
   sub_poly <-
     dplyr::mutate(.data = sub_poly, idx = dplyr::row_number(), rel_pos = "na")
 
-  cvars <- c("x_orig", "y_orig")
-
   prev_pos <- "na" # NA at the beginning
   nth_idx_inside <- 0
   nth_segm_inside <- 0
@@ -867,6 +865,55 @@ mergeSpatialAnnotations <- function(object,
 
 }
 
+
+
+#' @title Integrate tissue outline in spatial annotation
+#'
+#' @description Ensures that the outline of a spatial annotaiton does not
+#' transgresses the outline of the tissue.
+#'
+#' @inherit argument_dummy params
+#' @param id Character value. The ID of the spatial annotation whose outline
+#' is supposed to be cut at the tissue edge.
+#' @param new_id If character, gives the resulting spatial annotation a new
+#' id. If `NULL`, the spatial annotaiton is effectively overwritten.
+#'
+#' @inherit update_dummy return
+#' @export
+mergeWithTissueOutline <- function(object,
+                                   id,
+                                   new_id = NULL){
+
+  spat_ann <- getSpatialAnnotation(object, add_image = FALSE, id = id)
+
+  main_poly <- spat_ann@area$outer
+
+  sub_poly <- getTissueOutlineDf(object, by_section = TRUE)
+
+  sub_poly <- sub_poly[sub_poly$section == whichTissueSection(object, id = id), ]
+
+  main_poly_new <-
+    merge_intersecting_polygons(
+      main_poly = main_poly,
+      sub_poly = sub_poly,
+      cvars = c("x_orig", "y_orig")
+    )
+
+  spat_ann@area$outer <- main_poly_new
+
+  spat_ann@area <- purrr::map(spat_ann@area, .f = ~ .x[,c("x_orig", "y_orig")])
+
+  if(base::is.character(new_id)){
+
+    spat_ann@id <- new_id
+
+  }
+
+  object <- setSpatialAnnotation(object, spat_ann = spat_ann)
+
+  returnSpataObject(object)
+
+}
 
 #' @title Merge tissue sections
 #'

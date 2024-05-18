@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotA-E.R
 \name{plotDeaHeatmap}
 \alias{plotDeaHeatmap}
-\title{Plot DEA results via dot heatmaps}
+\title{Plot DEA results via heatmaps}
 \usage{
 plotDeaHeatmap(
   object,
@@ -16,7 +16,7 @@ plotDeaHeatmap(
   n_lowest_pval = NULL,
   breaks = NULL,
   genes = NULL,
-  n_bcsp = NULL,
+  n_bcs = NULL,
   clrp = NULL,
   colors = NULL,
   verbose = NULL,
@@ -63,11 +63,11 @@ with an average log fold change below that threshold are ignored.}
 numeric vector is specified it is taken as input. If a function is specified the expression matrix is
 passed to it as the first argument and the length of \code{colors} as the second argument.}
 
-\item{genes}{Character vector or NULL. If you want to display specific genes irrespective of de-anaylsis results you
+\item{genes}{Character vector or NULL. If you want to display specific genes irrespective of DEA results you
 can specifiy them in \code{genes}. If \code{genes} is specified that way arguments referring to de-anylsis results are
 ignored and only the genes specified are taken and displayed.}
 
-\item{n_bcsp}{The number of barcode-spots belonging to each cluster you want to
+\item{n_bcs}{The number of barcodes (observations) belonging to each cluster you want to
 include in the matrix. Should be lower than the total number of barcode-spots of every cluster
 and can be deployed in order to keep the heatmap clear and aesthetically pleasing.
 
@@ -90,7 +90,7 @@ A heatmap of class 'pheatmap'.
 }
 \description{
 Visualizes DEA results across subgroups in a heatmap. It either takes the results
-from previously conducted de-analysis or uses the expression information of specific genes to plot a heatmap.
+from previously conducted DEA or uses specified genes to plot a heatmap.
 }
 \details{
 The de-data.frame is processed such that the following steps are performed for every experimental
@@ -107,4 +107,7 @@ group.
 }
 \item{Arranges the genes according to the highest \emph{avg_logFC}-values}
 }
+}
+\seealso{
+\code{\link[=runDEA]{runDEA()}}
 }

@@ -923,7 +923,7 @@ getLogfileDf <- function(object ){
 #'
 #' @export
 
-setGeneric(name = "getMatrix", def = function(object, mtr_name, ...){
+setGeneric(name = "getMatrix", def = function(object, mtr_name = NULL, ...){
 
   standardGeneric(f = "getMatrix")
 

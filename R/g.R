@@ -2748,7 +2748,7 @@ ggpLayerSpatAnnOutline <- function(object,
                 out[["fill"]] <-
                   ggplot2::geom_raster(
                     data = pixel_df,
-                    mapping = aes(x = x, y = y),
+                    mapping = ggplot2::aes(x = x, y = y),
                     alpha = alpha,
                     fill = fill
                   )
@@ -3847,15 +3847,11 @@ ggpLayerTrajectoryBins <- function(object,
 #' @description Sets the limits on the x- and y-axis of a ggplot based on
 #' manual input.
 #'
+#' @param unit Character value. Overwrites the unit of the x- and y-axis. (If `NULL`,
+#' the defalt, the unit for the respective axis is taken from `xrange` and `yrange` input.)
+#'
 #' @inherit argument_dummy params
 #' @inherit ggpLayer_dummy return
-#' @param xrange,yrange Vector of length two. Specifies the x- and y-range
-#' of zooming. E.g. \code{xrange = c(200, 500)} results in the plot
-#' being cropped from x-coordinate 200px up to x-coordinate 500px.
-#'
-#' This argument works within the \code{SPATA2} distance framework.
-#' If values are specified in SI units of length the input is
-#' immediately converted to pixel units.
 #' @param expand_x,expand_y Given to `expand` of `ggplot2::scale_x/y_continuous()`.
 #'
 #' See details and examples of \code{?is_dist} and \code{?as_unit} for more information.
@@ -3867,8 +3863,8 @@ ggpLayerZoom <- function(object = NULL,
                          expand_x = c(0,0),
                          expand_y = c(0,0),
                          round = 2,
-                         n_breaks = 5
-                         ){
+                         n_breaks = 5,
+                         unit = NULL){
 
   if(base::length(n_breaks) == 1){
 
@@ -3880,7 +3876,15 @@ ggpLayerZoom <- function(object = NULL,
 
   if(!base::is.null(xrange)){
 
-    xunit <- extract_unit(input = xrange)[1]
+    if(base::is.null(unit)){
+
+      xunit <- extract_unit(input = xrange)[1]
+
+    } else {
+
+      xunit <- unit
+
+    }
 
     xrange <-
       as_pixel(input = xrange, object = object, as_numeric = TRUE) %>%
@@ -3910,7 +3914,15 @@ ggpLayerZoom <- function(object = NULL,
 
   if(!base::is.null(yrange)){
 
-    yunit <- extract_unit(input = yrange)[1]
+    if(base::is.null(unit)){
+
+      yunit <- extract_unit(input = yrange)[1]
+
+    } else {
+
+      yunit <- unit
+
+    }
 
     yrange <-
       as_pixel(input = yrange, object = object, as_numeric = TRUE) %>%

@@ -272,8 +272,8 @@ across_dummy <- function(across, across_subset, relevel){}
 #'
 #' @param transform Logical value. Ignored if no images exist in the object. If `TRUE`,
 #' spatial transformation instructions saved during image alignment of
-#' the image `img_name` are applied. Only relevant if there is an image and [`alignImage()`] has
-#' been used.
+#' the image `img_name` are applied. Only relevant if there are any images registered
+#' in the `SPATA2` object.
 #'
 #' @param transform_with List or `NULL.` If list, can be used to transform continuous variables before usage.
 #' Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

@@ -126,7 +126,7 @@ plotBoxplot <- function(object,
                         nrow = NULL,
                         ncol = NULL,
                         display_points = FALSE,
-                        n_bcsp = NULL,
+                        n_bcs = NULL,
                         pt_alpha = NULL,
                         pt_clr = NULL,
                         pt_size = NULL,
@@ -170,7 +170,7 @@ plotBoxplot <- function(object,
     display.points = display_points,
     pt.alpha = pt_alpha,
     pt.color = pt_clr,
-    pt.num = n_bcsp,
+    pt.num = n_bcs,
     pt.shape = pt_shape,
     pt.size = pt_size,
     clrp = clrp,
@@ -183,6 +183,231 @@ plotBoxplot <- function(object,
 
 # plotC -------------------------------------------------------------------
 
+# to do
+plotCnvDotplot <- function(object,
+                           across = NULL,
+                           across_subset = NULL,
+                           arm_subset = c("p", "q"),
+                           chrom_subset = 1:22,
+                           chrom_separate = 1:22,
+                           chrom_arm_subset = NULL,
+                           smooth_span = 0.08,
+                           line_alpha = 0.9,
+                           line_color = "blue",
+                           line_size = 1,
+                           vline_alpha = 0.75,
+                           vline_color = "black",
+                           vline_size = 0.5,
+                           vline_type = "dashed",
+                           summarize_with = "mean",
+                           nrow = NULL,
+                           ncol = NULL,
+                           breaks_y = c(0.9, 0.95, 1, 1.05, 1.1),
+                           labels_y = breaks_y,
+                           limits_y = base::range(breaks_y),
+                           expand_y = ggplot2::waiver(),
+                           verbose = TRUE,
+                           ...){
+
+  hlpr_assign_arguments(object)
+
+  # extract and prepare data ------------------------------------------------
+
+  cnv_df <- getCnvGenesDf(object)
+
+  confuns::give_feedback(
+    msg = "Extracting and merging CNV data. This might take a few seconds.",
+    verbose = verbose
+  )
+
+  # join grouping if needed
+  if(base::is.character(across)){
+
+    cnv_df <-
+      dplyr::left_join(
+        x = cnv_df,
+        y = getMetaDf(object) %>% dplyr::select(barcodes, !!rlang::sym(across)),
+        by = "barcodes"
+      ) %>%
+      dplyr::arrange(!!rlang::sym(across))
+
+  }
+
+  # subsetting
+  if(base::is.numeric(chrom_subset)){
+
+    chrom_subset <- base::as.character(chrom_subset)
+
+  }
+
+  cnv_df <-
+    confuns::check_across_subset(
+      df = cnv_df,
+      across = across,
+      across.subset = across_subset,
+      relevel = relevel
+    ) %>%
+    # (check_across_subset() works for all factor variables)
+    confuns::check_across_subset(
+      across = "chrom",
+      across.subset = chrom_subset,
+      relevel = FALSE
+    ) %>%
+    confuns::check_across_subset(
+      across = "arm",
+      across.subset = arm_subset,
+      relevel = FALSE
+    ) %>%
+    confuns::check_across_subset(
+      acros = "chrom_arm",
+      across.subset = chrom_arm_subset,
+      relevel = FALSE
+    )
+
+  # order genes and barcodes
+  gene_order <-
+    dplyr::distinct(cnv_df, genes, chrom_arm, start_position) %>%
+    dplyr::group_by(chrom_arm) %>%
+    # order by chromosome-arm 1p -> 22q
+    # within every chromosome-arm by start_position
+    dplyr::arrange(start_position, .by_group = TRUE) %>%
+    dplyr::pull(genes) %>%
+    base::unique()
+
+  # summarize cnv results
+
+  new_name <- stringr::str_c("values", summarize_with, sep = "_")
+
+  smrd_cnv_df <-
+    dplyr::group_by(cnv_df, chrom, chrom_arm, arm, genes) %>%
+    {
+      if(base::is.character(across)){
+
+        dplyr::group_by(.data = ., !!rlang::sym(across), .add = TRUE)
+
+      } else {
+
+        .
+
+      }
+
+    } %>%
+    dplyr::summarise(
+      dplyr::across(
+        .cols = values,
+        .fns = summarize_formulas[c(summarize_with, "sd")]
+      )
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      genes = base::factor(genes, levels = gene_order),
+      gene_pos = base::as.numeric(genes)
+    ) %>%
+    dplyr::rename(values = !!rlang::sym(new_name))
+
+
+  # assemble plot -----------------------------------------------------------
+
+  if(base::is.character(across)){
+
+    facet_add_on <-
+      ggplot2::facet_wrap(
+        facets = stringr::str_c(". ~ ", across) %>% stats::as.formula(),
+        nrow = nrow,
+        ncol = ncol
+      )
+
+  } else {
+
+    facet_add_on <- NULL
+
+  }
+
+  # create separating lines
+  if(!base::is.null(chrom_separate) | !base::isFALSE(chrom_separate)){
+
+    if(base::is.numeric(chrom_separate)){
+
+      chrom_separate <- base::as.character(chrom_separate)
+
+    }
+
+    all_chroms <- base::unique(smrd_cnv_df[["chrom_arm"]])
+
+    first <- base::as.character(all_chroms[1])
+    last <- base::as.character(utils::tail(all_chroms, 1))
+
+    vline_df <-
+      dplyr::distinct(smrd_cnv_df, gene_pos, chrom, arm) %>%
+      dplyr::group_by(chrom) %>%
+      dplyr::filter(
+        gene_pos == base::max(gene_pos) &
+          !chrom %in% c(first, last)
+      ) %>%
+      dplyr::rename(xintercept = gene_pos)
+
+    vline_add_on <-
+      ggplot2::geom_vline(
+        data = vline_df,
+        mapping = ggplot2::aes(xintercept = xintercept),
+        alpha = vline_alpha,
+        color = vline_color,
+        size = vline_size,
+        linetype = vline_type
+      )
+
+  } else {
+
+    vline_add_on <- NULL
+
+
+  }
+
+  # compute breaks
+  x_axis <-
+    dplyr::distinct(smrd_cnv_df, chrom, gene_pos, values) %>%
+    dplyr::group_by(chrom) %>%
+    dplyr::summarise(breaks = base::mean(gene_pos)) %>%
+    dplyr::rename(labels = chrom)
+
+  confuns::give_feedback(
+    msg = "Done.",
+    verbose = verbose
+  )
+
+  ggplot2::ggplot(
+    data = smrd_cnv_df,
+    mapping = ggplot2::aes(
+      x = gene_pos,
+      y = values
+    )
+  ) +
+    ggplot2::geom_smooth(
+      formula = y ~ x,
+      method = "loess",
+      span = smooth_span,
+      alpha = line_alpha,
+      color = line_color,
+      size = line_size,
+      linetype = "solid",
+      se = FALSE
+    ) +
+    vline_add_on +
+    ggplot2::scale_x_continuous(
+      breaks = x_axis[["breaks"]],
+      labels = base::as.character(x_axis[["labels"]])
+    ) +
+    ggplot2::scale_y_continuous(
+      breaks = breaks_y,
+      labels = base::as.character(breaks_y),
+      limits = limits_y,
+      expand = expand_y
+    ) +
+    ggplot2::theme_classic() +
+    ggplot2::labs(x = "Chromosomes", y = NULL) +
+    facet_add_on
+
+}
 
 #' @title Plot CNV Heatmap
 #'
@@ -1325,16 +1550,15 @@ plotDeaDotPlot <- function(object,
 
 }
 
-#' @title Plot DEA results via dot heatmaps
+#' @title Plot DEA results via heatmaps
 #'
 #' @description Visualizes DEA results across subgroups in a heatmap. It either takes the results
-#' from previously conducted de-analysis or uses the expression information of specific genes to plot a heatmap.
+#' from previously conducted DEA or uses specified genes to plot a heatmap.
 #'
 #' @inherit across_dummy params
 #' @inherit argument_dummy params
-#' @inherit check_sample params
 #' @inherit getDeaResultsDf params details
-#' @param n_bcsp The number of barcode-spots belonging to each cluster you want to
+#' @param n_bcs The number of barcodes (observations) belonging to each cluster you want to
 #' include in the matrix. Should be lower than the total number of barcode-spots of every cluster
 #' and can be deployed in order to keep the heatmap clear and aesthetically pleasing.
 #'
@@ -1343,11 +1567,13 @@ plotDeaDotPlot <- function(object,
 #' @param breaks Denotes the colorspectrum breaks. If set to NULL the breaks are set automatically. If a
 #' numeric vector is specified it is taken as input. If a function is specified the expression matrix is
 #' passed to it as the first argument and the length of \code{colors} as the second argument.
-#' @param genes Character vector or NULL. If you want to display specific genes irrespective of de-anaylsis results you
+#' @param genes Character vector or NULL. If you want to display specific genes irrespective of DEA results you
 #' can specifiy them in \code{genes}. If \code{genes} is specified that way arguments referring to de-anylsis results are
 #' ignored and only the genes specified are taken and displayed.
 
 #' @param ... Additional arguments given to \code{pheatmap::pheatmap()}.
+#'
+#' @seealso [`runDEA()`]
 #'
 #' @return A heatmap of class 'pheatmap'.
 #' @export
@@ -1363,27 +1589,23 @@ plotDeaHeatmap <- function(object,
                            n_lowest_pval = NULL,
                            breaks = NULL,
                            genes = NULL,
-                           n_bcsp = NULL,
+                           n_bcs = NULL,
                            clrp = NULL,
                            colors = NULL,
                            verbose = NULL,
                            ...){
 
-  confuns::make_available(...)
+  deprecated(...)
+  hlpr_assign_arguments(object)
 
   # 1. Control --------------------------------------------------------------
 
   #lazy check
-  hlpr_assign_arguments(object)
 
   confuns::are_values("clrp", mode = "character")
 
   confuns::is_vec(x = across_subset, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
-  # adjusting check
-  across <- check_features(object, features = across, valid_classes = c("character", "factor"), max_length = 1)
-
-  # ------
 
   # 2. Data extraction and pipeline -----------------------------------------
 
@@ -1392,7 +1614,7 @@ plotDeaHeatmap <- function(object,
 
     genes <- check_genes(object, genes = genes)
 
-    if(base::isTRUE(verbose)){"Argument 'genes' has been specified. Ignoring de-related arguments."}
+    if(base::isTRUE(verbose)){"Argument 'genes' has been specified. Ignoring DEA related arguments."}
 
     de_df <- NULL
 
@@ -1419,18 +1641,18 @@ plotDeaHeatmap <- function(object,
 
 
   # data.frame that provides barcode-spots and cluster belonging
-  if(base::is.null(n_bcsp)){
+  if(base::is.null(n_bcs)){
 
-    n_bcsp <- base::round(base::length(genes) / base::length(unique_groups), digits = 0)
+    n_bcs <- base::round(base::length(genes) / base::length(unique_groups), digits = 0)
 
   } else {
 
-    confuns::is_value(x = n_bcsp, mode = "numeric")
+    confuns::is_value(x = n_bcs, mode = "numeric")
 
   }
 
   barcodes_df <-
-    joinWithFeatures(object, spata_df = getSpataDf(object), features = across, verbose = FALSE) %>%
+    joinWithVariables(object, spata_df = getSpataDf(object), variables = across, verbose = FALSE) %>%
     confuns::check_across_subset(
       df = .,
       across = across,
@@ -1438,7 +1660,7 @@ plotDeaHeatmap <- function(object,
       relevel = FALSE # no need to relevel (if 'relevel' == TRUE 'unique_groups' is already releveled)
     ) %>%
     dplyr::group_by(!!rlang::sym(across)) %>%
-    dplyr::slice_sample(n = n_bcsp)
+    dplyr::slice_sample(n = n_bcs)
 
   # make sure that each group is represented by it's specific color in case 'across' is a factor
   if(base::is.factor(unique_groups)){
@@ -1522,8 +1744,7 @@ plotDeaHeatmap <- function(object,
     verbose = verbose
   )
 
-  expr_mtr <-
-    getExpressionMatrix(object)[genes, barcodes_df$barcodes]
+  expr_mtr <- getMatrix(object)[genes, barcodes_df$barcodes]
 
   if(base::is.null(breaks)){
 
@@ -1541,19 +1762,20 @@ plotDeaHeatmap <- function(object,
 
   }
 
-  pheatmap::pheatmap(mat = expr_mtr,
-                     scale = "row",
-                     breaks = breaks_input,
-                     annotation_col = annotation_col,
-                     cluster_cols = FALSE,
-                     cluster_rows = FALSE,
-                     show_colnames = FALSE,
-                     color = colors,
-                     annotation_names_col = FALSE,
-                     annotation_colors = annotation_colors,
-                     gaps_row = gaps_row,
-                     gaps_col = gaps_col,
-                     ...
+  pheatmap::pheatmap(
+    mat = expr_mtr,
+    scale = "row",
+    breaks = breaks_input,
+    annotation_col = annotation_col,
+    cluster_cols = FALSE,
+    cluster_rows = FALSE,
+    show_colnames = FALSE,
+    color = colors,
+    annotation_names_col = FALSE,
+    annotation_colors = annotation_colors,
+    gaps_row = gaps_row,
+    gaps_col = gaps_col,
+    ...
   )
 
 }

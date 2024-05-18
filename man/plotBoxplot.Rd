@@ -28,7 +28,7 @@ plotBoxplot(
   nrow = NULL,
   ncol = NULL,
   display_points = FALSE,
-  n_bcsp = NULL,
+  n_bcs = NULL,
   pt_alpha = NULL,
   pt_clr = NULL,
   pt_size = NULL,
@@ -213,9 +213,6 @@ input lowers the position.}
 \item{display_points}{Logical value. If set to TRUE points are used additionally
 to display the results.}
 
-\item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
-can be set to prevent overplotting.}
-
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
 \item{pt_clr}{Character value. Specifies the color of all points.}
@@ -240,6 +237,9 @@ spata-objects can store more than one sample.}
 
 \item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
 function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
+
+\item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
+can be set to prevent overplotting.}
 }
 \value{
 Returns a ggplot-object that can be additionally customized according

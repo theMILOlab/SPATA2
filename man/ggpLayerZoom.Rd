@@ -11,24 +11,26 @@ ggpLayerZoom(
   expand_x = c(0, 0),
   expand_y = c(0, 0),
   round = 2,
-  n_breaks = 5
+  n_breaks = 5,
+  unit = NULL
 )
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{xrange, yrange}{Vector of length two. Specifies the x- and y-range
-of zooming. E.g. \code{xrange = c(200, 500)} results in the plot
-being cropped from x-coordinate 200px up to x-coordinate 500px.
-
-This argument works within the \code{SPATA2} distance framework.
-If values are specified in SI units of length the input is
-immediately converted to pixel units.}
+\item{xrange, yrange}{\link[=concept_distance_measure]{Distance vector} of length
+two or \code{NULL}. If not \code{NULL}, specifies the x- and y-range to which
+the spatial output is cropped. E.g. \code{xrange = c(200, 500)} results in
+the two dimensional space being cropped from x-coordinate 200px up to
+x-coordinate 500px. If \code{NULL}, the original range is used.}
 
 \item{expand_x, expand_y}{Given to \code{expand} of \code{ggplot2::scale_x/y_continuous()}.
 
 See details and examples of \code{?is_dist} and \code{?as_unit} for more information.}
+
+\item{unit}{Character value. Overwrites the unit of the x- and y-axis. (If \code{NULL},
+the defalt, the unit for the respective axis is taken from \code{xrange} and \code{yrange} input.)}
 }
 \value{
 \code{ggpLayer*()}-functions return lists of \code{ggproto} objects

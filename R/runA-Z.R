@@ -1685,20 +1685,11 @@ runPca <- function(object,
 
   check_object(object)
 
-  pca_res <-
-    runPca2(
-      object = object,
-      n_pcs = n_pcs,
-      mtr_name = mtr_name,
-      ...
-    )
-
   expr_mtr <-
-    getExpressionMatrix(
-      object = object,
-      mtr_name = mtr_name,
-      assay_name = assay_name
-      )
+    getMatrix(object, mtr_name = mtr_name, assay_name = assay_name) %>%
+    base::as.matrix()
+
+  pca_res <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = n_pcs, ...)
 
   pca_df <-
     base::as.data.frame(x = pca_res[["x"]]) %>%
@@ -1717,7 +1708,7 @@ runPca2 <- function(object, n_pcs = 30, mtr_name = NULL, ...){
 
   check_object(object)
 
-  expr_mtr <- getExpressionMatrix(object, mtr_name = mtr_name)
+  expr_mtr <- getMatrix(object, mtr_name = mtr_name)
 
   pca_res <- irlba::prcomp_irlba(x = base::t(expr_mtr), n = n_pcs, ...)
 

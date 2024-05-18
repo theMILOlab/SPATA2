@@ -469,23 +469,7 @@ hlpr_join_with_color_by <- function(object, df, color_by = NULL, variables = NUL
 
   if(base::length(variables) >= 1){
 
-    for(var in variables){
-
-      if(isGene(object, var)){
-
-        df <- joinWith(object, spata_df = df, genes = var, ...)
-
-      } else if(isGeneSet(object, var)){
-
-        df <- joinWith(object, spata_df = df, gene_set = var, ...)
-
-      } else if(isFeature(object, var)) {
-
-        df <- joinWith(object, spata_df = df, features = var, ...)
-
-      }
-
-    }
+    df <- joinWithVariables(object, variables = variables, spata_df = df, ...)
 
   }
 

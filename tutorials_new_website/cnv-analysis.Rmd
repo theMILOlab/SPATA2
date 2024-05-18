@@ -1,0 +1,267 @@
+---
+title: "Copy Number Variations (CNV)"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, echo = TRUE, eval = TRUE, class.source = "code-chunk", out.width = "100%")
+```
+
+## 1. Prerequisites
+
+None.
+
+## 2. Introduction
+
+InferCNV is used to identify large-scale chromosomal copy number alterations in single cell RNA-Seq data including gains or deletions of chromosomes or large segments of such. Several publications have leveraged this technique. ([Patel et al., 2014](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4123637/),
+[Tirosh et al., 2016](https://pubmed.ncbi.nlm.nih.gov/27124452/), [Venteicher et al., 2017](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5519096/)
+)
+
+Note: We are currently encountering problems with the function `infercnv:::plot_cnv()`. It does not prevent the copy number variation analysis. Sometimes, however, the heatmap is not plotted. Checkout your R console for hints in how far the function did not work properly. We are working on a solution for that. If you encounter warnings raised from `runCNV`()` [let us know](https://github.com/theMILOlab/SPATA2/issues).
+
+```{r eval = F, echo = T}
+
+# load package
+library(tidyverse)
+library(SPATA2)
+library(SPATAData)
+
+object_t269 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", id = "UKF269T")
+
+# only histology
+plotSurface(object, = object_t269, pt_alpha = 0)
+
+# histological grouping
+plotSurface(object = object_t269, color_by = "histology")
+
+```
+
+```{r echo = F, eval = T}
+
+devtools::load_all()
+library(tidyverse)
+
+object_t269 <- loadSpataObject("data/object_UKF269T.RDS")
+
+# load spatial segmentations
+data("spatial_segmentations")
+
+# add a grouping variable based on histology to the object
+object_t269 <- 
+  addFeatures(
+    object = object_t269, 
+    feature_df = spatial_segmentations[["UKF269T"]], 
+    overwrite = TRUE
+  )
+
+
+```
+
+```{r echo = F, fig.show = "hold", out.width = "50%", fig.cap = "Fig.1 The example sample raw and colored by histological classification."}
+
+# only histology
+plotSurface(object = object_t269, pt_alpha = 0)
+
+# histological grouping
+plotSurface(object = object_t269, color_by = "histology", pt_clrp = "npg")
+
+```
+
+**SPATA2** implements the package [`infercnv`](https://github.com/broadinstitute/inferCNV/wiki) published and maintained by Broadinstitute and allows to integrate this technique in your workflow of analyzing spatial trancsriptomic data derived from malignancies. 
+
+## 3. Running CNV-Analysis
+
+As with all other functions prefixed with `run*()` the function `runCNV()` is a wrapper around all necessary functions needed to conduct copy-number-variation-analysis. The results needed for subsequent analysis steps are stored in the specified `spata2` object (slot: @cnv). The infercnv-object is stored in the folder specified in the argument `directory_cnv_folder`. 
+
+```{r echo = T, eval = F}
+
+object_t269 <-
+  runCNV(
+    object = object_t269,
+    directory_cnv_folder = "data-gbm269/cnv-results", # example directory
+    cnv_prefix = "Chr"
+    )
+
+```
+
+If your desired set up deviates from the default you can reach any function of the `inferncnv` pipeline by entering it's name as an argument and specify it's input as a list of arguments with which you want it to be called. 
+
+```{r eval = F, echo = T}
+
+# change input
+object_t269 <- 
+  runCNV(
+    object = object_t269
+    directory_cnv_folder = "data-gbm269/cnv-results", 
+    clear_noise_via_ref_mean_sd = list(sd_amplifier = 2)
+    )
+
+```
+
+Copy number variation analysis requires reference data. This includes a count matrix from healthy tissue, an annotation file as well as a data.frame that contains information about the chromosome positions. We provide reference data in the list `SPATA2::cnv_ref`.  
+
+```{r cnv-ref}
+
+names(cnv_ref)
+
+summary(cnv_ref)
+
+```
+ `runCNV()` defaults to the content of this list. The documentation of `runCNV()` contains a detailed description of the requirements each reference input must meet in order for the function to work.
+ 
+```{r echo = F, eval = F}
+
+# example on how to use the functions arguments if you want to specify the reference (ref_*)
+runCNV(
+  object = object_t269,
+  directory_cnv_folder = "data-gmb275/cnv-results", # example directory to 
+  ref_annotation = cnv_ref$annotation, 
+  ref_mtr = cnv_ref$mtr, 
+  ref_regions = cnv_ref$regions
+)
+
+```
+
+
+## 4. CNV-Results
+
+The results are stored in a list inside the `spata2` object. This list can be obtained via `getCnvResults()`. 
+
+```{r }
+
+cnv_results <- getCnvResults(object_t269)
+
+names(cnv_results)
+
+```
+
+
+## 5. Visualization 
+
+### 5.1 Heatmap
+
+The gains and losses of chromosomal segments can be displayed via `plotCnvHeatmap()`. If you want to visualize the results across certain groups to identify subclones make use of the `across`-argument. 
+
+```{r fig.cap = "Fig.3 CNV-Heatmap with meta data displayes chromosomal alterations across histological classification."}
+
+plotCnvHeatmap(object = object_t269, across = "histology", clrp = "npg")
+
+```
+
+### 5.2 Lineplot
+
+An additional option to visualize the results provides `plotCnvLineplot()`.
+
+```{r fig.cap = "Fig.4 CNV-Lineplot displays chromosomal changes across histological classification."}
+
+plotCnvLineplot(
+  object = object_t269,
+  across = "histology", 
+  n_bins_bcsp = 1000,
+  n_bins_genes = 1000,
+  nrow = 3
+)
+
+```
+
+### 5.3 Dotplot
+
+An additional option to visualize the results provides `plotCnvDotplot()`.
+
+```{r fig.cap = "Fig.5 CNV-Dotplot displays chromosomal changes across histological classification."}
+
+plotCnvLineplot(
+  object = object_t269,
+  across = "histology", 
+  n_bins_bcsp = 1000,
+  n_bins_genes = 1000,
+  nrow = 3
+)
+
+```
+
+### 5.4 Surface
+
+The numeric values by which the copy number variations of each chromosome are represented are immediately transferred to the `spata2` object's feature data and are thus accessible for all functions that work with numeric variables. The character string specified in argument `cnv_prefix` combined with the chromosomes number determines the name by which you can refer to these feature variables.  
+
+```{r getCnvFeatureNames}
+
+# cnv feature names
+getCnvFeatureNames(object = object_t269) %>% head()
+
+# are part of all feature names
+getFeatureNames(object = object_t269) %>% head()
+
+```
+
+Use `plotSurface()` to visualize chromosomal alterations directly on the histology.
+
+```{r fig.show = "hold", out.width = "50%", fig.cap = "Fig.6 Surface plots display chromosomal alterations directory on the histology."}
+
+plotSurface(
+  object = object_t269, 
+  color_by = "Chr7", 
+  pt_clrsp = "Reds"
+)
+
+plotSurface(
+  object = object_t269, 
+  color_by = "Chr10", 
+  pt_clrsp = "Oslo" 
+)
+
+```
+
+### 5.5 Gradients
+
+As showcased in our corresponding vignette about [spatial trajectories](spata-v2-spatial-trajectories.html) gradients
+of numeric variables can be displayed. Chromosomal alterations are numeric variables. 
+
+```{r fig.show = "hold", out.width = "50%", fig.cap = "Fig.7 Gradients of Chromosomal alterations along a trajectory in space."}
+
+object_t269 <- 
+    setTrajectory(
+      object = object_t269, 
+      trajectory = spatial_trajectories[["UKF269T"]][["horizontal_mid"]], 
+      overwrite = TRUE
+    )
+
+plotSpatialTrajectories(
+  object = object_t269, 
+  ids = "horizontal_mid", 
+  color_by = "Chr7", 
+  pt_clrsp = "Reds 3"
+)
+
+plotSpatialTrajectories(
+  object = object_t269, 
+  ids = "horizontal_mid", 
+  color_by = "Chr10", 
+  pt_clrsp = "Oslo"
+)
+
+plotStsLineplot(
+  object = object_t269, 
+  id = "horizontal_mid", 
+  variables = "Chr7" 
+)
+
+plotStsLineplot(
+  object = object_t269, 
+  id = "horizontal_mid", 
+  variables = "Chr10", 
+  line_color = "blue" 
+)
+
+```
+(Note that trajectory lineplots always rescale variables to 0-1 or to low-high.)
+
+
+
+

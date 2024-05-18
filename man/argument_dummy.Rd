@@ -272,8 +272,8 @@ given to \code{ggplot2::geom_text()} that control the appearance of text of the 
 
 \item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
 spatial transformation instructions saved during image alignment of
-the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
-been used.}
+the image \code{img_name} are applied. Only relevant if there are any images registered
+in the \code{SPATA2} object.}
 
 \item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.

@@ -44,8 +44,8 @@ be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{transform}{Logical value. Ignored if no images exist in the object. If \code{TRUE},
 spatial transformation instructions saved during image alignment of
-the image \code{img_name} are applied. Only relevant if there is an image and \code{\link[=alignImage]{alignImage()}} has
-been used.}
+the image \code{img_name} are applied. Only relevant if there are any images registered
+in the \code{SPATA2} object.}
 
 \item{rescale_axes}{Logical value. If \code{TRUE}, rescales the pixel positions
 (height/width) to the position in the original image.

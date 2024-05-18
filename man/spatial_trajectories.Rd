@@ -7,7 +7,7 @@
 objects - available via the \code{SPATAData} package. Names of the list slots
 correspond to the sample names in variable  \emph{sample} of \code{SPATAData::source_df}.}
 \format{
-An object of class \code{list} of length 2.
+An object of class \code{list} of length 1.
 }
 \usage{
 spatial_trajectories

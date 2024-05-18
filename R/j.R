@@ -475,11 +475,12 @@ joinWithVariables <- function(object,
 
       num_var <- spata_df[[nv_name]]
 
-      num_var[base::is.na(num_var) | base::is.infinite(num_var)] <- base::min(num_var)
+      num_var[base::is.na(num_var) | base::is.infinite(num_var)] <- base::min(num_var, na.rm = TRUE)
 
       spata_df[[nv_name]] <-
         stats::loess(formula = num_var ~ x + y, span = smooth_span/10) %>%
         stats::predict()
+
     }
 
   }

@@ -12,7 +12,7 @@
 \usage{
 getExpressionMatrix(object, ...)
 
-getMatrix(object, mtr_name, ...)
+getMatrix(object, mtr_name = NULL, ...)
 
 \S4method{getMatrix}{SPATA2}(object, mtr_name = NULL, assay_name = activeAssay(object))
 

@@ -774,7 +774,7 @@ setMethod(
 
         out <-
           getHistoImage(object, img_name = img_name) %>%
-          containsTissueOutline(object = ., error = error)
+          containsTissueOutline(object = ., error = FALSE)
 
         if(base::isFALSE(out)){
 
