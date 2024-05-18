@@ -4,7 +4,7 @@
 \alias{downloadFromPublication}
 \title{Download data from publications}
 \usage{
-downloadFromPublication(pub, id)
+downloadFromPublication(pub, id, raw = FALSE)
 }
 \arguments{
 \item{pub}{Character value. The publication of interest.}
