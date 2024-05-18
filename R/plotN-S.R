@@ -1344,8 +1344,6 @@ setMethod(
 
           coords_df <- getCoordsDf(object)
 
-          quick_assign(scale_bar_add_on)
-
           plot_out <-
             ggplot2::ggplot() +
             ggplot2::theme_bw() +
