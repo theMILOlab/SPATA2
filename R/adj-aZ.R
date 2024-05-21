@@ -1751,7 +1751,7 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 
 } else {
   
-  message("Package 'anndata' is required but not installed. Please see https://cran.r-project.org/web/packages/anndata/index.html.")
+  message("R Package 'anndata' is required for compatibility with h5ad files, but not installed.")
 
 }
 

@@ -1921,19 +1921,18 @@ getExpressionMatrixNames <- function(object, assay_name = activeAssay(object), .
 }
 
 
-
 # getF --------------------------------------------------------------------
 
 
-#' @title Obtain feature names
+#' @title Obtain metadata column names
 #'
-#' @description Extracts names of features **from the meta data.frame**.
+#' @description Extracts names of entries **from the meta data.frame**.
 #'
 #' @inherit argument_dummy params
-#' @param of_class Character vector. Specify the classes a feature must be of for
-#' it's name to be returned.
+#' @param of_class Character vector. Specify the class(es) a metadata entry must be of for
+#' its name to be returned.
 #'
-#' @return A named character vector of the variables in the feature data slot.
+#' @return A named character vector of the variables in the metadata slot (excluding 'sample').
 #' @export
 
 getFeatureNames <- function(object, of_class = NULL, ...){
@@ -1960,8 +1959,6 @@ getFeatureNames <- function(object, of_class = NULL, ...){
   return(feature_names[!feature_names %in% c("barcodes", "sample")])
 
 }
-
-
 
 
 #' @title Safe extraction
