@@ -390,13 +390,6 @@ initiateSpataObjectMERFISH <- function(sample_name,
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
     )
 
-  object <-
-    setCaptureArea(
-      object = object,
-      x = getCoordsRange(object)$x %>% round_range() %>% as_millimeter(input = ., object = object),
-      y = getCoordsRange(object)$y %>% round_range() %>% as_millimeter(input = ., object = object)
-    )
-
   confuns::give_feedback(
     msg = "Estimated field of view range based on cell coordinates. Specify with `setCaptureaArea()`.",
     verbose = verbose
