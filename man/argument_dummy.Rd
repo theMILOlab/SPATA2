@@ -92,8 +92,11 @@ and nothing more. Using \code{expand}, the cropped image section can be adjusted
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 
+\item{grouping}{Character value. The grouping variable of interest. Use
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
+
 \item{grouping_variable}{Character value. The grouping variable of interest. Use
-\code{getGroupingOptions()} to obtain all valid input options.}
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}

@@ -1683,7 +1683,7 @@ setMethod(
 #'
 addSpatialTrajectory <- function(object,
                                  id,
-                                 width,
+                                 width = NULL,
                                  traj_df = NULL,
                                  start = NULL,
                                  end = NULL,
@@ -1692,19 +1692,6 @@ addSpatialTrajectory <- function(object,
                                  ...){
 
   deprecated(...)
-
-  is_dist(input = width, error = TRUE)
-  width_unit <- extract_unit(width)
-
-  if(width_unit != "px"){
-
-    width <- as_pixel(input = width, object = object, add_attr = FALSE)
-
-  } else {
-
-    width <- extract_value(input = width)
-
-  }
 
   # create trajectory segment df
   if(!base::is.data.frame(traj_df)){
@@ -1756,16 +1743,41 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  scale_fct_coords <- getScaleFactor(object, fct_name = "image")
+  isf <- getScaleFactor(object, fct_name = "image")
+
+  if(base::is.null(width)){
+
+    width <-
+      compute_distance(
+        starting_pos = base::as.numeric(traj_df[1 ,c("x", "y")]),
+        final_pos = base::as.numeric(traj_df[2, c("x", "y")])
+      )
+
+  } else {
+
+    is_dist(input = width, error = TRUE)
+    width_unit <- extract_unit(width)
+
+    if(width_unit != "px"){
+
+      width <- as_pixel(input = width, object = object, add_attr = FALSE)
+
+    } else {
+
+      width <- extract_value(input = width)
+
+    }
+
+  }
 
   traj_df <-
     dplyr::transmute(
       .data = traj_df,
-      x_orig = x / {{scale_fct_coords}},
-      y_orig = y / {{scale_fct_coords}}
+      x_orig = x / {{isf}},
+      y_orig = y / {{isf}}
     )
 
-  width <- width/scale_fct_coords
+  width <- width/isf
 
   # create object
   spat_traj <-

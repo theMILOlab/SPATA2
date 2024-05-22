@@ -12,15 +12,21 @@ identifyTissueOutline(object, ...)
 \S4method{identifyTissueOutline}{SPATA2}(
   object,
   method,
+  minPts = recDbscanMinPts(object),
+  eps = recDbscanEps(object),
   img_name = activeImage(object),
-  verbose = NULL
+  verbose = NULL,
+  ...
 )
 
 \S4method{identifyTissueOutline}{SpatialData}(
   object,
   method,
   img_name = activeImage(object),
-  verbose = TRUE
+  minPts = recDbscanMinPts(object),
+  eps = recDbscanEps(object),
+  verbose = TRUE,
+  ...
 )
 
 \S4method{identifyTissueOutline}{HistoImage}(object, verbose = TRUE)
@@ -33,6 +39,13 @@ objects of classes for which a method has been defined.}
 
 \item{method}{Character value. Defines the origin based on which the outline
 is computed. Either \emph{'image'} or \emph{'obs'}.}
+
+\item{minPts}{Numeric value. Given to \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines the
+number of minimum points required in the eps neighborhood for core points
+(including the point itself)}
+
+\item{eps}{Distance measure. Given to \code{eps} of \code{\link[dbscan:dbscan]{dbscan::dbscan()}}. Determines
+the size (radius) of the epsilon neighborhood.}
 
 \item{img_name}{Character value. The name of the image of interest.
 If \code{NULL}, the active histo image is chosen by default. Either way, must

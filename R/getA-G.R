@@ -87,7 +87,6 @@ getAssayNames <- function(object){
 
 # getB --------------------------------------------------------------------
 
-
 #' @title Obtain background color
 #'
 #' @description Extracts results of [`identifyBackgroundColor()`].
@@ -386,6 +385,7 @@ getBarcodeSpotDistances <- function(object,
   return(distance_df)
 
 }
+
 
 
 
@@ -1420,6 +1420,7 @@ getCoordsDfST <- function(object,
         spata_df = coords_df,
         variables = variables,
         verbose = verbose,
+        smooth = FALSE,
         ...
       )
 
@@ -2256,16 +2257,7 @@ getGeneSets <- function(object, of_class = "all", index = NULL, simplify = TRUE)
 
   }
 
-  # -----
-  if(base::is.null(res_list)){
-
-    stop("Did not find any gene set.")
-
-  } else {
-
-    return(res_list)
-
-  }
+  return(res_list)
 
 }
 
@@ -2408,10 +2400,11 @@ getGenesInteractive <- function(object){
 #' @title Obtain variable names that group data points
 #'
 #' @description Extracts the names of the features of class *factor* which
-#' are valid input options for the arguments `grouping` and `across`.
+#' are valid input options for the arguments `grouping`, `grouping_variable`,
+#' and `across`.
 #'
-#' @inherit across_dummy params
-#' @inherit check_sample params
+#'
+#' @inherit argument_dummy params
 #'
 #' @return Character vector.
 #'
@@ -2490,7 +2483,7 @@ getGroupNames <- function(object, grouping,...){
 #' @export
 #'
 getGseaDf <- function(object,
-                      across = getDefaultGrouping(object, verbose = TRUE, "across"),
+                      across,
                       across_subset = NULL ,
                       method_de = NULL,
                       n_gsets = Inf,
@@ -2501,6 +2494,9 @@ getGseaDf <- function(object,
   check_object(object)
 
   hlpr_assign_arguments(object)
+
+  mdf <- getMetaDf(object)
+  across_levels <- base::levels(mdf[[across]])
 
   df <-
     getGseaResults(
@@ -2519,7 +2515,7 @@ getGseaDf <- function(object,
 
       }
     ) %>%
-    dplyr::mutate({{across}} := base::factor(x = !!rlang::sym(across))) %>%
+    dplyr::mutate({{across}} := base::factor(x = !!rlang::sym(across), levels = across_levels)) %>%
     dplyr::select({{across}}, dplyr::everything()) %>%
     dplyr::filter(!!rlang::sym(signif_var) <= {{signif_threshold}}) %>%
     dplyr::group_by(!!rlang::sym(across)) %>%

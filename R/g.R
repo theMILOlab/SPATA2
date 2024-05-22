@@ -3677,7 +3677,7 @@ ggpLayerTrajectories <- function(object = "object",
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
-  scale_fct <- getScaleFactor(object, fct_name = "coords")
+  scale_fct <- getScaleFactor(object, fct_name = "image")
 
   segment_df <-
     purrr::map(

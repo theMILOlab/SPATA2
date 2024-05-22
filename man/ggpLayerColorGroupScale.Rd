@@ -19,6 +19,9 @@ ggpLayerColorGroupScale(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{grouping}{Character value. The grouping variable of interest. Use
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
+
 \item{clrp, clrp_adjust}{The colorpalette and adjustment used to visualize the grouping.}
 
 \item{low}{The color against which to plot.}

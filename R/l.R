@@ -18,7 +18,7 @@ lastSpatialAnnotation <- function(object){
 
   ios <-
     getSpatialAnnotations(object, add_image = FALSE) %>%
-    purrr::keep(.p = ~ stringr::str_detect(string = .x@id, pattern = "^img_ann_\\d*$"))
+    purrr::keep(.p = ~ stringr::str_detect(string = .x@id, pattern = "^spat_ann_\\d*$"))
 
   if(base::length(ios) == 0){
 

@@ -2655,8 +2655,6 @@ spatialTrajectoryScreening <- function(object,
 
   cf <- compute_correction_factor_sts(object, id = id, width = width)
 
-  print(cf)
-
   sgs_out <-
     spatial_gradient_screening(
       coords_df = dplyr::filter(coords_df, rel_loc == "inside"),

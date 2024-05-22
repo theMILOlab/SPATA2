@@ -549,6 +549,24 @@ compute_overlap_st_polygon <- function(st_poly1, st_poly2){
 
 }
 
+compute_pairwise_distances <- function(df) {
+
+  coordinates <- df[,c("barcodes", "x", "y")]
+
+  distance_matrix <-
+    stats::dist(x = coordinates[,c("x", "y")]) %>%
+    base::as.matrix()
+
+  result <-
+    S4Vectors::expand.grid(
+      barcodes1 = coordinates$barcodes,
+      barcodes2 = coordinates$barcodes
+    )
+
+  result$dist <- base::as.vector(distance_matrix)
+
+  return(result)
+}
 
 # compute spearmans rho
 compute_rho <- function(gradient, model){

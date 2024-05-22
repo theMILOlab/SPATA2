@@ -1530,9 +1530,9 @@ getSegmentationNames <- function(object, fdb_fn = "message", ...){
 
 
 
-#' @title Get Signatures
+#' @title Obtain molecular signatures
 #'
-#' @description Retrieves the signatures present in the given object.
+#' @description Retrieves the signatures present in the [`SPATA2`] object.
 #'
 #' @param object An object containing molecular data.
 #' @param assay_name The name of the assay containing the molecular data (default: active assay in the object).
@@ -1548,9 +1548,27 @@ getSegmentationNames <- function(object, fdb_fn = "message", ...){
 #' signatures <- getSignatures(object)
 #'
 #' @export
-getSignatures <- function(object, assay_name = activeAssay(object)){
+getSignatures <- function(object,
+                          assay_name = activeAssay(object),
+                          class = NULL){
 
-  getAssay(object, assay_name = assay_name)@signatures
+  signatures <- getAssay(object, assay_name = assay_name)@signatures
+
+  if(base::is.character(class)){
+
+    class_inp <-
+      stringr::str_c(class, collapse = "|") %>%
+      stringr::str_c("^(",. ,")")
+
+    signature_names <- base::names(signatures)
+
+    signature_sub <- stringr::str_subset(signature_names, pattern = class_inp)
+
+    signatures <- signatures[signature_sub]
+
+  }
+
+  return(signatures)
 
 }
 

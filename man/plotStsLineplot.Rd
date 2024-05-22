@@ -2,6 +2,7 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotStsLineplot}
 \alias{plotStsLineplot}
+\alias{plotStsRidgeplot}
 \title{Plot continuous trajectory dynamics}
 \usage{
 plotStsLineplot(
@@ -17,6 +18,27 @@ plotStsLineplot(
   clrp = NULL,
   clrp_adjust = NULL,
   display_facets = TRUE,
+  display_eval = FALSE,
+  eval_size = 4,
+  ggpLayers = NULL,
+  ncol = NULL,
+  nrow = NULL,
+  verbose = NULL,
+  ...
+)
+
+plotStsRidgeplot(
+  object,
+  variables,
+  id = idST(object),
+  width = getTrajectoryLength(object, id),
+  unit = getSpatialMethod(object)@unit,
+  smooth_span = 0.2,
+  smooth_se = TRUE,
+  line_color = NULL,
+  line_size = 1.5,
+  clrp = NULL,
+  clrp_adjust = NULL,
   display_eval = FALSE,
   eval_size = 4,
   ggpLayers = NULL,

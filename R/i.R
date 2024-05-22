@@ -1271,8 +1271,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object,
                         method,
+                        minPts = recDbscanMinPts(object),
+                        eps = recDbscanEps(object),
                         img_name = activeImage(object),
-                        verbose = NULL){
+                        verbose = NULL,
+                        ...){
 
     hlpr_assign_arguments(object)
 
@@ -1282,8 +1285,11 @@ setMethod(
       identifyTissueOutline(
         object = sp_data,
         method = method,
+        minPts = minPts,
+        eps = eps,
         img_name = img_name,
-        verbose = verbose
+        verbose = verbose,
+        ...
         )
 
     object <- setSpatialData(object, sp_data = sp_data)
@@ -1301,7 +1307,10 @@ setMethod(
   definition = function(object,
                         method,
                         img_name = activeImage(object),
-                        verbose = TRUE){
+                        minPts = recDbscanMinPts(object),
+                        eps = recDbscanEps(object),
+                        verbose = TRUE,
+                        ...){
 
     confuns::check_one_of(
       input = method,
@@ -1331,7 +1340,7 @@ setMethod(
 
         hist_img <- getHistoImage(object, img_name = img_name[i])
 
-        hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose)
+        hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose, ...)
 
         object <- setHistoImage(object, hist_img = hist_img)
 
@@ -1339,6 +1348,9 @@ setMethod(
 
       # sets slot @outline of SpatialData object
     } else if(method == "obs"){
+
+      minPts <- as_pixel(minPts, object = object)
+      eps = as_pixel(eps, object = object)
 
       # for complete tissue
       object@outline[["tissue_whole"]] <-
@@ -1351,8 +1363,8 @@ setMethod(
       coords_df <-
         getCoordsDf(object) %>%
         add_dbscan_variable(
-          eps = as_pixel(input = recDbscanEps(object), object),
-          minPts = recDbscanMinPts(object),
+          eps = eps,
+          minPts = minPts,
           name = "section"
         ) %>%
         dplyr::filter(section != "0") %>%

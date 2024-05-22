@@ -308,6 +308,17 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
   }
 
+  ma <- getAssay(object)
+
+  ma@signatures <-
+    obj_old@used_genesets %>%
+    base::split(f = .["ont"]) %>%
+    purrr::map(.f = function(x){
+
+      x[,base::setdiff(base::names(x), "ont")][[1]]
+
+    })
+
   # add dea/gsea results
   if(!purrr::is_empty(obj_old@dea)){
 

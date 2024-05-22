@@ -199,6 +199,109 @@ discardExpressionMatrix <- function(...){
 
 
 
+#' @title Dissolve Groups in a SPATA2 Object
+#'
+#' @description This function dissolves specified groups in a [`SPATA2`] object by merging them into
+#' the closest neighboring groups based on the pairwise distances
+#' between \link[=concept_observations]{observations}.
+#'
+#' @inherit argument_dummy params
+#' @param groups_dissolve A character vector specifying the names of the groups to be dissolved.
+#' @param grouping_new A character string specifying the name for the new grouping variable.
+#' If `NULL`, the original grouping variable will be updated. Default is `NULL`!
+#'
+#' @inherit update_dummy return
+#'
+#' @details This function performs the following steps:
+#' 1. Retrieves the metadata data frame from the [`SPATA2`] object.
+#' 2. Checks if the specified grouping and groups to dissolve exist in the object.
+#' 3. Computes the pairwise distances between all observations.
+#' 4. Identifies the closest neighboring groups for the observations in the groups to be dissolved.
+#' 5. Updates the grouping variable with the new group assignments.
+#' 6. If `grouping_new` is provided, a new grouping variable is created; otherwise, the original grouping variable is updated.
+#'
+#' @examples
+#' \dontrun{
+#'   # Assuming `spata_obj` is a SPATA2 object with grouping variable 'clusters'
+#'   spata_obj <- dissolveGroups(
+#'     object = spata_obj,
+#'     grouping = 'clusters',
+#'     groups_dissolve = c('cluster1', 'cluster2'),
+#'     grouping_new = 'new_clusters'
+#'   )
+#' }
+
+#' @export
+dissolveGroups <- function(object,
+                           grouping,
+                           groups_dissolve,
+                           grouping_new = NULL){
+
+  confuns::check_one_of(
+    input = grouping,
+    against = getGroupingOptions(object)
+  )
+
+  confuns::check_one_of(
+    input = groups_dissolve,
+    against = getGroupNames(object, grouping = grouping)
+  )
+
+  mdf <- getMetaDf(object)
+
+  mdf$X_grouping1 <- mdf[[grouping]]
+  mdf$X_grouping2 <- mdf[[grouping]]
+
+  replacement_df <-
+    getCoordsDf(object) %>%
+    compute_pairwise_distances() %>%
+    dplyr::left_join(y = mdf[,c("barcodes", "X_grouping1")], by = c("barcodes1" = "barcodes")) %>%
+    dplyr::left_join(y = mdf[,c("barcodes", "X_grouping2")], by = c("barcodes2" = "barcodes")) %>%
+    dplyr::filter(X_grouping1 %in% {{groups_dissolve}} & !X_grouping2 %in% {{groups_dissolve}}) %>%
+    dplyr::group_by(barcodes1) %>%
+    dplyr::slice_min(dist, n = 1, with_ties = FALSE) %>%
+    dplyr::select(barcodes = barcodes1, X_grouping2)
+
+  mdf$X_grouping1 <- NULL
+  mdf$X_grouping2 <- NULL
+
+  old_levels <- base::levels(mdf[[grouping]])
+  new_levels <- old_levels[!old_levels %in% groups_dissolve]
+
+  mdf_new <-
+    dplyr::left_join(x = mdf, y = replacement_df, by = "barcodes") %>%
+    dplyr::mutate(
+      {{grouping}} := base::as.character(!!rlang::sym(grouping)),
+      {{grouping}} :=
+        dplyr::if_else(
+          condition = !!rlang::sym(grouping) %in% {{groups_dissolve}},
+          true = X_grouping2,
+          false = !!rlang::sym(grouping)
+        ),
+      {{grouping}} := base::factor(!!rlang::sym(grouping), levels = new_levels)
+    ) %>%
+    dplyr::select(barcodes, {{grouping}})
+
+  if(base::is.character(grouping_new)){
+
+    mdf_new[[grouping_new]] <- mdf_new[[grouping]]
+    mdf_new[[grouping]] <- NULL
+
+  }
+
+  object <- addFeatures(object, feature_df = mdf_new, overwrite = TRUE)
+
+  returnSpataObject(object)
+
+}
+
+
+
+
+
+
+
+
 #' @title Distance to cover the whole tissue
 #'
 #' @description Computes the distance from the center of a spatial annotation

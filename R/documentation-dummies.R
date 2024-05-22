@@ -109,8 +109,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
 #'
+#' @param grouping Character value. The grouping variable of interest. Use
+#' [`getGroupingOptions()`] to obtain all valid input options.
 #' @param grouping_variable Character value. The grouping variable of interest. Use
-#' `getGroupingOptions()` to obtain all valid input options.
+#' [`getGroupingOptions()`] to obtain all valid input options.
 #'
 #' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
 #' the dendrogom is cut.

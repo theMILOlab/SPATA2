@@ -4,7 +4,6 @@
 \alias{asSPATA2}
 \alias{asSPATA2,giotto-method}
 \alias{asSPATA2,Seurat-method}
-\alias{asSPATA2,AnnDataR6-method}
 \title{Transform to \code{SPATA2} object object}
 \usage{
 asSPATA2(object, ...)
@@ -30,18 +29,6 @@ asSPATA2(object, ...)
   transfer_dim_red = TRUE,
   count_mtr_name = "counts",
   scaled_mtr_name = "scale.data",
-  verbose = TRUE
-)
-
-\S4method{asSPATA2}{AnnDataR6}(
-  object,
-  sample_name,
-  count_mtr_name = "counts",
-  normalized_mtr_name = "normalized",
-  scaled_mtr_name = "scaled",
-  transfer_meta_data = TRUE,
-  transfer_dim_red = TRUE,
-  image_name = NULL,
   verbose = TRUE
 )
 }

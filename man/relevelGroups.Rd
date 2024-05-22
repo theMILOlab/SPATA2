@@ -11,7 +11,7 @@ relevelGroups(object, grouping_variable, new_levels)
 objects of classes for which a method has been defined.}
 
 \item{grouping_variable}{Character value. The grouping variable of interest. Use
-\code{getGroupingOptions()} to obtain all valid input options.}
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
 \item{new_levels}{Character vector of group names in the order in which
 the new ordering is supposed to be stored. Must contain all groups of the

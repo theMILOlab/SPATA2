@@ -7,12 +7,16 @@
 getGroupingOptions(object, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Character vector.
 }
 \description{
 Extracts the names of the features of class \emph{factor} which
-are valid input options for the arguments \code{grouping} and \code{across}.
+are valid input options for the arguments \code{grouping}, \code{grouping_variable},
+and \code{across}.
 }

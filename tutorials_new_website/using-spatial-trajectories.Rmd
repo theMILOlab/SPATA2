@@ -1,0 +1,430 @@
+---
+title: "Spatial Trajectory Screening"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    code_folding: show
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, echo = TRUE, eval = TRUE, class.source = "code-chunk", out.width = "100%", fig.show = "hold")
+
+devtools::load_all()
+library(tidyverse)
+
+object_t269 <- loadSpataObject("data/T269.RDS")
+
+```
+
+
+## 1. Prerequisites 
+
+Make sure to be familiar with the following vignettes:
+
+- [Creating Spatial Trajectories](creating-spatial-trajectories.html)
+
+## 2. Introduction 
+
+Spatial trajectory screening (STS) fits inferred expression changes of genes to predefined models to screen for genes that follow biologically relevant dynamics along a spatial trajectory. This tutorial gives on overview about the most important functions. 
+
+Throughout the tutorial we are using the same example sample that we used in the tutorial on [spatial trajectories]() - the glioblastoma sample T269. 
+
+As an example we are using a spatial transcriptomic sample of a central nervous system malignancy that features three different, adjacent histological areas: Tumor, a transition zone as well as infiltrated cortex.
+
+```{r echo = T, eval = F, out.width = "50%", fig.cap = "Fig.1 Example sample T296."}
+
+library(SPATA2)
+library(SPATAData)
+library(tidyverse)
+
+object_t269 <- downloadSpataObject(sample_name = "269_T")
+
+# load example image annotations
+data("image_annotations")
+
+object_t269 <- 
+  setImageAnnotations(
+    object = object_t269, 
+    img_anns = image_annotations[["269_T"]],
+    overwrite = TRUE
+  )
+
+# plot results
+plotImageGgplot(object = object_t269) + 
+  ggpLayerFrameByCoords(object = object_t269) +
+  ggpLayerThemeCoords()
+
+plotImageAnnotations(
+  object = object_t269,
+  tags = "hist_example", 
+  square = TRUE,
+  expand = 0.5, 
+  encircle = FALSE, 
+  nrow = 2, 
+  display_caption = FALSE
+)
+
+```
+
+```{r echo = F, eval = T, out.width = "50%", fig.cap = "Fig.1 Example sample T269."}
+
+data("image_annotations")
+
+object_t269 <- 
+  setImageAnnotations(
+    object = object_t269, 
+    img_anns = image_annotations[["269_T"]], 
+    overwrite = TRUE
+  )
+
+plotImageGgplot(object = object_t269) + 
+  theme_void() + 
+  ggpLayerFrameByCoords(object = object_t269) +
+  ggpLayerThemeCoords()
+
+plotImageAnnotations(
+  object = object_t269,
+  tags = "hist_example", 
+  square = TRUE,
+  expand = 0.5, 
+  encircle = FALSE, 
+  nrow = 2, 
+  display_caption = FALSE
+)
+
+```
+
+The trajectory stays the same, too. 
+
+```{r fig.cap = "Fig.2 Example spatial trajectory."}
+
+# adds the trajectory that is stored in `spatial_trajectories[["269_T"]][["horizontal_mid"]]`
+object_t269 <- 
+    addSpatialTrajectory(
+    object = object_t269,
+    id = "horizontal_mid",
+    start = c("1.5mm", "3.5mm") ,
+    end = c("6.5mm", "3.5mm") ,
+    width = "2mm",
+    overwrite = TRUE
+  )
+
+plotSpatialTrajectories(
+  object = object_t269, 
+  ids = "horizontal_mid",
+  color_by = "MBP"
+)
+
+```
+
+## 3. Run the algorithm
+
+The function to use is called `spatialTrajectoryScreening()`. The parameter `variables` takes the numeric variables that are supposed to be included in the screening process. Usually it’s gene names. Spatial trajectory screening, however, is not restricted to genes as virtually every numeric variable (e.g. *nCount_Genes*, *nCount_Features*, *gene sets*, etc.) can be fitted to spatially meaningful models, too. Therefore, the argument for the input is simply called variables.
+
+Here, we are using the genes that were already identified as spatially variable by `SPARKX`. The goal is to further analyze which of the genes are expressed in a meaningful way along the trajectory. 
+
+```{r eval = F, echo = T}
+
+# this is a wrapper around SPARK::sparkx()
+object_t269 <- runSparkx(object = object_t269)
+
+spark_df <- getSparkxGeneDf(object = object_t269, threshold_pval = 0.01)
+
+# extract genes with a sparkx pvalue of 0.01 or lower
+sparkx_genes <- spark_df[["genes"]]
+
+# show results
+spark_df
+
+# show results (> 10 000 genes detected as spatially variable with a p-value of < 0.01)
+str(sparkx_genes)
+
+```
+
+```{r eval = T, echo = F}
+
+spark_df <- getSparkxGeneDf(object = object_t269, threshold_pval = 0.01)
+
+# extract genes with a sparkx pvalue of 0.01 or lower
+sparkx_genes <- spark_df[["genes"]]
+
+# show results
+spark_df
+
+# show results (> 10 000 genes detected as spatially variable with a p-value of < 0.01)
+str(sparkx_genes)
+
+```
+
+Once you've decided on the input you can run the algorithm. 
+
+```{r eval = F, echo = T}
+
+# catchphrases to subset the models that are of interest (use showModels() to check) 
+model_subset <- c("sharp_peak", "abrupt_ascending", "abrupt_descending") 
+
+STS_T269 <- 
+  spatialTrajectoryScreening(
+    object = object_t269, 
+    id = "horizontal_mid", # ID of the spatial trajectory
+    variables = sparkx_genes, # the variables/genes to scree 
+    model_subset = model_subset 
+  )
+
+```
+
+```{r eval = T, echo = F}
+
+model_subset <- c("sharp_peak", "abrupt_ascending", "abrupt_descending")
+
+STS_T269 <- readRDS(file = "data/STS_T269.RDS")
+
+```
+
+**Note**: The output of `spatialTrajectoryScreening()` is **not** saved in the `spata2` object but returned in a separate S4 object of class `SpatialTrajectoryScreening`. Do **not** overwrite the `spata2` object by writing `object_t269 <- spatialTrajectoryScreening(object = object_t269, id = "horizontal_mid", ...)`.
+
+## 4. Results
+
+### 4.1 Visualization
+
+To get an overview of the screening as well as a first visualization of the results use `plotOverview()`. It sorts genes by their best model-fit and plots the evaluation score against the p-value for every model. 
+
+```{r fig.cap = "Fig.4 Overview of the screening results."}
+
+plotOverview(
+  object = STS_T269,
+  label_vars = 4, # label top 4 variables/genes per model
+  label_size = 3
+)
+
+```
+
+
+```{r out.width = "100%", fig.dim = c(9,6), fig.cap = "Fig.5 Surface plots of screening results."}
+
+traj_layer <- 
+  ggpLayerTrajectories(
+    object = object_t269, 
+    ids = "horizontal_mid", 
+    size = 2.5
+    )
+
+# abrupt descending
+plotSurfaceComparison(
+  object = object_t269, 
+  color_by = c("EGFR", "DDR1")
+) + 
+  traj_layer + 
+  labs(subtitle = "a) Abrupt descending")
+
+# sharp peak
+plotSurfaceComparison(
+  object = object_t269, 
+  color_by = c("CNTN2", "SLC31A2")
+) + 
+  traj_layer + 
+  labs(subtitle = "b) Sharp peak")
+
+# abrupt ascending
+plotSurfaceComparison(
+  object = object_t269, 
+  color_by = c("BEX4", "KIF1A")
+) + 
+  traj_layer + 
+  labs(subtitle = "c) Abrupt ascending")
+
+```
+The inferred gene expression can be visualized with `plotTrajectoryLineplot()`.
+
+```{r fig.cap = "Fig.6 Trajectory lineplots of inferred expression changes."}
+
+plotTrajectoryLineplot(
+  object = object_t269, 
+  id = "horizontal_mid", 
+  variables = c("EGFR", "DDR1", "CNTN2", "SLC31A2", "BEX4", "KIF1A"), 
+  clrp = "sifre",
+  nrow = 2
+)
+
+```
+
+The used models can always be visualized with `showModels()`. 
+
+```{r fig.dim = c(9,3), fig.cap = "Fig.7 The models that were screened for."}
+
+showModels(model_subset = model_subset)
+
+```
+
+### 4.2 Extract results 
+
+Results can be extracted as data.frames with `getResultsDf()` or as a character vector of variable/gene names with `getResultsVec()`. 
+
+```{r}
+
+res_df <- 
+  getResultsDf(object = STS_T269) %>% 
+  head(200)
+
+res_df
+
+```
+
+```{r fig.dim = c(9,3), fig.cap = "Fig.8 Surface plots of screening results."}
+
+# top 3 peaking genes
+peaking_genes <- 
+  getResultsVec(
+    object = STS_T269, 
+    threshold_eval = 0.5,
+    threshold_pval = 0.05,
+    model_subset = "sharp_peak"
+  ) %>% 
+  head(3)
+
+plotSurfaceComparison(
+  object = object_t269, 
+  color_by = peaking_genes
+)
+
+```
+
+## 5. The S4 `SpatialTrajectoryScreening` class
+
+Spatial trajectory screening results are provided in an S4 object of class `SpatialTrajectoryScreening`. Use `?SpatialTrajectoryScreening` to read the description. 
+Note that **S**patialTrajectoryScreening is the class name. **s**patialTrajectoryScreening() is the function that runs the algorithm.  
+
+```{r IAS_s4}
+
+class(STS_T269)
+
+slotNames(STS_T269)
+
+```
+
+
+## 5. Visualization with spatial trajectories
+
+Spatial trajectories indicate a direction, in case of *horizontal_mid* it indicates the direction from left to right or from tumor to infiltrated cortex. This can be used to infer and visualize gene expression changes in space. 
+
+### 5.1 Numeric variables
+
+The four genes *EGFR*, *MBP*, *SNAP25* and *BCL9* serve as an example. They first three are marker genes detected by [DEA](spata-v2-dea.html) based on the histological grouping. 
+
+```{r fig.cap = "Fig.4 Surface plots with trajectory course."}
+
+genes <- c("EGFR", "MBP", "SNAP25", "BCL9")
+
+gene_colors <- color_vector(clrp = "npg", names = genes)
+
+gene_colors
+
+trajectory <- 
+  ggpLayerTrajectories(
+    object = object_t269, 
+    ids = "horizontal_mid",
+    size = 1
+    )
+
+tissue_outline <- ggpLayerTissueOutline(object = object_t269)
+
+plist <- 
+  imap(
+    .x = gene_colors, 
+    .f = function(color, gene){
+      
+      plotSurface(object_t269, color_by = gene, display_image = F) + 
+        scale_color_gradient(low = alpha("white", 0), high = color) + 
+        tissue_outline + 
+        trajectory
+      
+    })
+
+wrap_plots(plist, ncol = 2)
+
+  
+
+```
+
+The inferred expression changes along the trajectory can be plotted via line plots...
+
+```{r fig.cap = "Fig.5 Inferred gene expression along the trajectory with line plots."}
+
+plotTrajectoryLineplot(
+  object = object_t269, 
+  id = "horizontal_mid",
+  variables = genes, 
+  smooth_se = TRUE, 
+  clrp_adjust = gene_colors
+) 
+
+```
+
+... or ridgeplots.
+
+```{r fig.cap = "Fig.6 Inferred gene expression along trajectory with ridgeplots."}
+
+plotTraje(
+  object = object_t269,
+  id = "horizontal_mid",
+  variables = genes, 
+  clrp_adjust = gene_colors
+) + legendNone()
+
+```
+
+### 5.2 Grouping variables
+
+The changes of grouping variables along the trajectory can not be displayed with line plots but with 
+bar plots 
+
+```{r out.width = "50%", fig.cap = "Fig.7 Visualizing grouping variables."}
+
+# surface
+hist_plot_surface <-
+  plotSurface(
+    object = object_t269,
+    color_by = "histology",
+    pt_clrp = "npg"
+    )
+
+seurat_plot_surface <- 
+  plotSurface(
+    object = object_t269,
+    color_by = "seurat_clusters",
+    pt_clrp = "lo"
+  )
+
+# bar plots
+hist_barplot <- 
+  plotStsBarplot(
+    object = object_t269,
+    id = "horizontal_mid",
+    grouping_variable = "histology",
+    clrp = "npg"
+  )
+
+seurat_barplot <- 
+  plotStsBarplot(
+    object = object_t269,
+    id = "horizontal_mid",
+    grouping_variable = "seurat_clusters",
+    clrp = "lo"
+  )
+
+# plot results
+hist_plot_surface + trajectory
+
+hist_barplot
+
+seurat_plot_surface + trajectory 
+
+seurat_barplot
+
+```
+

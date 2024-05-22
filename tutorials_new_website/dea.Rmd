@@ -23,7 +23,7 @@ devtools::load_all()
 library(tidyverse)
 
 # load object
-object_t269 <- loadSpataObject("data/T269.RDS")
+object_t269 <- loadSpataObject("data/object_UKF269T.RDS")
 
 ```
 
