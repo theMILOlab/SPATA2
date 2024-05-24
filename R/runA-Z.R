@@ -1920,7 +1920,12 @@ runSparkx <- function(object,
 
   hlpr_assign_arguments(object)
 
-  coords_mtr <- getCoordsMtr(object)
+  coords_mtr <- if (object@platform == 'MERFISH') {
+    getCoordsMtr(object, orig = TRUE)
+  } else {
+    getCoordsMtr(object)
+  }
+  
   count_mtr <- getCountMatrix(object)
 
   barcodes <- base::colnames(count_mtr)

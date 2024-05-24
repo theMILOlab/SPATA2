@@ -2647,7 +2647,7 @@ ggpLayerSpatAnnOutline <- function(object,
   # which ids to plot
   ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
 
-  ccd <- getCCD(object, unit = "px")
+  #ccd <- getCCD(object, unit = "px")
 
   out_list <-
     purrr::map(
