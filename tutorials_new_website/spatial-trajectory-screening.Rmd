@@ -4,7 +4,6 @@ output:
   html_document:
     theme: flatly
     df_print: paged
-    code_folding: show
     css: "markdown-styles.css"
     toc: true
     toc_depth: 3
@@ -19,7 +18,9 @@ library(tidyverse)
 
 object_t269 <- loadSpataObject("data/object_UKF269T.RDS")
 
-STS_UKF269T <- readRDS(file = "data/STS_UKF269T.RDS")
+object_t269 <- setDefault(object_t269, display_image = F)
+
+sts_out <- readRDS(file = "data/sts_out.RDS")
 
 ```
 
@@ -32,7 +33,7 @@ Make sure to be familiar with the following vignettes:
 
 ## 2. Introduction 
 
-Spatial trajectory screening (STS) fits inferred expression changes of genes or other numeric variables to predefined models and screen for genes that follow non-random biologically relevant dynamics along a spatial trajectory. This tutorial gives on overview about the most important functions. Throughout the tutorial we are using the same example sample that we used in the tutorial on [creating spatial trajectories](creating-spatial-trajectories.html) - the glioblastoma sample UKF269T. 
+Spatial Trajectory Screening (STS) pursues the hypothesis that specific genes - or other numeric features for that matter - display non-random expression patterns in relation to spatial reference features, such as spatial trajectories. STS utilizes these reference features to incorporate the integration of potential biological forces in the identification of spatially variable genes, such as the direction of tumorous infiltration. This allows for a supervised, hypothesis-driven screening for spatial patterns, which, unlike differential expression analysis (DEA), acknowledges the continuous nature of gene expression and avoids the limitations of group-based testing. The algorithm is wrapped up in the function `spatialTrajectoryScreening()`. See the vignette on [creating spatial trajectories](creating-spatial-trajectories.html) and [using spatial trajectories](using-spatial-trajectories.html) for more information. Throughout the tutorial we are using the same example sample that we used in the tutorial on [creating spatial trajectories](creating-spatial-trajectories.html) - the glioblastoma sample UKF269T. 
 
 ```{r eval = F}
 
@@ -67,39 +68,35 @@ plotSpatialTrajectories(
 
 ```{r echo = F, eval = T, out.width = "50%", fig.cap = "Fig.1 Example sample T269."}
 
+# name of the trajectory
+id <- "horizontal_mid"
+
 # show image 
 plotImage(object_t269)
 
 # created with code in the tutorial 'Create Spatial Trajectories'
 plotSpatialTrajectories(
   object = object_t269, 
-  ids = "horizontal_mid", 
+  ids = id, 
   color_by = "histology"
 )
 
 ```
 
-The trajectory stays the same, too. 
-
 ## 3. Run the algorithm
 
-The function to use is called `spatialTrajectoryScreening()`. The parameter `variables` takes the numeric variables that are supposed to be included in the screening process. Since all sorts of numeric variables can be included in the screening, the argument for the input is simply called `variables`. Here, we are using the genes that were already identified as spatially variable by `SPARKX`. The goal is to further analyze which of the genes are expressed in a meaningful way along the trajectory. 
+The function to use is called `spatialTrajectoryScreening()`. The parameter `variables` takes the numeric variables that are supposed to be included in the screening process. Since all sorts of numeric variables can be included in the screening, the argument for the input is simply called `variables`. Here, we are using the genes that were already identified as spatially variable by `SPARKX`. The goal is to further analyze which of the genes are expressed in a non-random and biologically meaningful way along the trajectory. 
 
 ```{r eval = F, echo = T}
 
 # this is a wrapper around SPARK::sparkx()
 object_t269 <- runSparkx(object = object_t269)
 
+# keep genes with a sparkx pvalue of 0.01 or lower
 spark_df <- getSparkxGeneDf(object = object_t269, threshold_pval = 0.01)
-
-# extract genes with a sparkx pvalue of 0.01 or lower
-sparkx_genes <- spark_df[["genes"]]
 
 # show results
 spark_df
-
-# show results (> 10 000 genes detected as spatially variable with a p-value of < 0.01)
-str(sparkx_genes)
 
 ```
 
@@ -107,69 +104,131 @@ str(sparkx_genes)
 
 spark_df <- getSparkxGeneDf(object = object_t269, threshold_pval = 0.01)
 
-# extract genes with a sparkx pvalue of 0.01 or lower
-sparkx_genes <- spark_df[["genes"]]
-
 # show results
 spark_df
 
-# show results (> 10 000 genes detected as spatially variable with a p-value of < 0.01)
-str(sparkx_genes)
-
 ```
 
-Once you've decided on the input you can run the algorithm. 
 
 ```{r eval = F, echo = T}
 
-# catchphrases to subset the models that are of interest (use showModels() to check) 
+# `getSparkxGenes()` would work, too
+input_genes <- spark_df[["genes"]]
 
 # define start and end positions of the trajectory directly
 object_t269 <- 
   addSpatialTrajectory(
     object = object_t269,
-    id = "horizontal_mid",
+    id = id,
     start = c("1.5mm", "4mm"),
     end = c("6.5mm", "4mm"),
     overwrite = TRUE
   )
 
-# note: the results are NOT stored in the SPATA2 object but separately
-STS_UKF269T <- 
+trajectory_add_on <- 
+  ggpLayerTrajectories(object = object_t269, ids = "horizontal_mid")
+
+# note: the results are NOT stored in the SPATA2 object but in a separate object
+sts_out <- 
   spatialTrajectoryScreening(
     object = object_t269, 
-    id = "horizontal_mid", # ID of the spatial trajectory
-    variables = sparkx_genes # the variables/genes to scree 
+    id = id, # ID of the spatial trajectory
+    variables = input_genes # the variables/genes to include in the screening 
   )
+
+class(sts_out)
 
 ```
 
-**Note**: The output of `spatialTrajectoryScreening()` is **not** saved in the `SPATA2` object but returned in a separate S4 object of class `SpatialTrajectoryScreening`. Do **not** overwrite the `SPATA2` object by writing `object_t269 <- spatialTrajectoryScreening(object = object_t269, id = "horizontal_mid", ...)`.
+**Note**: The output of `spatialTrajectoryScreening()` is **not** saved in the `SPATA2` object but returned in a separate S4 object of class `SpatialTrajectoryScreening`. Do **not** overwrite the `SPATA2` object by writing `object_t269 <- spatialTrajectoryScreening(object = object_t269, id = id, ...)`.
 
 ## 4. Results
 
-### 4.1 Random and Non-random 
+The first step of the screening identifies pattern that are unlikely due to random gene expression. The second step fits the non-random gene expression pattern to predefined models which guides in interpretation and screening for specific gene expression pattern. 
 
-Slot @significance provides information about the degree of noisiness of the inferred gradient for each variable included in the screening. The p-value provides a measure of how likely it is to obtain the same or lower total variation scores under complete randomness. We recommend to use the adjusted p-values from column *fdr* (False Discovery Rate).
+### 4.1 Non-random gene expression 
+
+Slot @significance contains a data.frame with one row for each screened variable which provides information regarding the degree of randomness the inferred pattern contains as quantified by the total variation (tot_var). The p-value gives the probability to obtain such a total variation under complete randomness and indicates the degree of significance. Column *fdr* contains the adjusted p-value according to the False Discovery Rate.
 
 ```{r}
 
 sign_df <- 
-  STS_UKF269T@significance %>% 
+  sts_out@significance %>% 
   filter(fdr < 0.05)
 
+# show significance data.frame
 sign_df
+
+# extract variables names
+non_random <- 
+  slice_min(sts_out@significance, p_value, n = 4, with_ties = F) %>% 
+  pull(variables)
+
+random <- 
+  slice_max(sts_out@significance, p_value, n = 4, with_ties = F) %>% 
+  pull(variables)
+
+```
+
+Compare Figures 2 and 3 showing examples for non-random gene expression gradients and Figures 5 and 6 showing examples for random pattern in terms of the inferred expression gradients along the trajectory. 
+
+```{r fig.cap = "Fig.3 Surface plots of genes identified as non-random.", fig.dim = c(6,2)}
+
+plotSurfaceComparison(
+  object = object_t269,
+  color_by = non_random,
+  pt_clrsp = "Reds 3",
+  outline = T,
+  nrow = 1
+  ) + 
+  trajectory_add_on
+
+```
+
+```{r fig.cap = "Fig.4 Lineplots of genes identified as non-random.", fig.dim = c(6,3)}
+
+plotStsLineplot(object_t269, variables = non_random, id = id, line_color = "red", nrow = 1) + 
+  geom_point(color = "black", size = 1)
+
+```
+
+```{r fig.cap = "Fig.5 Surface plots of genes identified as random.", fig.dim = c(6,2)}
+
+plotSurfaceComparison(
+  object = object_t269,
+  color_by = random,
+  pt_clrsp = "BuPu",
+  outline = T, 
+  nrow = 1
+  ) + 
+  trajectory_add_on
+
+```
+
+```{r fig.cap = "Fig.6 Lineplots of genes identified as random.", fig.dim = c(6,3)}
+
+plotStsLineplot(object_t269, variables = random, id = id, line_color = "blue", nrow = 1) + 
+  geom_point(color = "black", size = 1) 
 
 ```
 
 ### 4.2 Model fits 
 
-Slot @results contains the results from the model fitting. Each row corresponds to a variable ~ model fit. The code chunk below filters the results for the best fit per variable. 
+The second step uses predefined models and fits them to the inferred gradients of the pattern identified as non-random in the previous step. Fig. 4 shows the default models used by SPATA2. They can be extended by the user for specific querries with the argument `model_add`. 
+
+```{r fig.cap = "Fig.4 The predefined default models used by SPATA2."}
+
+showModels(nrow = 4) + 
+  labs(x = "Distance along Trajectory [%]")
+
+```
+
+Slot @results contains the model fitting results. It is a data.frame where each row corresponds to a variable ~ model pair. The columns mae (mean absolute error) and rmse (root mean squared error) indicate the quality of the fit. The lower the value the better.
 
 ```{r}
 
 best_fits <- 
-  STS_UKF269T@results %>% 
+  sts_out@results %>% 
   filter(variables %in% sign_df[["variables"]]) %>% 
   group_by(variables) %>% 
   slice_min(mae, n = 1)
@@ -177,18 +236,21 @@ best_fits <-
 best_fits
 
 ```
+
 The following code chunk extracts the genes that followed each model best. 
 
-```{r out.width = "100%", fig.cap = "Example genes that best fit each model with surface- and with lineplots."}
+```{r}
 
 best_fits_by_model <- 
   group_by(best_fits, models) %>% 
-  slice_min(mae, n = 1)
+  slice_min(mae, n = 1) %>% 
+  filter(rmse < 0.2) # threshold suggestions for root mean squared error
 
 best_fits_by_model
 
-trajectory_add_on <- 
-  ggpLayerTrajectories(object = object_t269, ids = "horizontal_mid")
+```
+
+```{r out.width = "100%", fig.cap = "Fig.7 Surface plots of example genes that best fit each model.", fig.dim = c(6,3)}
 
 plotSurfaceComparison(
   object = object_t269, 
@@ -197,46 +259,21 @@ plotSurfaceComparison(
   display_image = FALSE, 
   pt_clrsp = "Reds 3", 
   nrow = 2
-) + 
+  ) + 
   trajectory_add_on
+
+```
+
+```{r out.width = "100%", fig.cap = "Fig.8 Lineplots of example genes that best fit each model.", fig.dim = c(6,3)}
 
 plotStsLineplot(
   object = object_t269, 
   variables = best_fits_by_model[["variables"]], 
-  id = "horizontal_mid", 
+  id = id, 
   line_color = "red", 
   nrow = 2
 )
 
 ```
-On the other hand, genes with expression pattern that were identified as random when using the spatial trajectory as a reference. 
-
-```{r out.width = "100%", fig.cap = "Negative examples from the screening with no discernible pattern along the trajectory."}
-
-random_genes <- 
-  STS_UKF269T@significance %>% 
-  slice_max(fdr, n = 10) %>% 
-  pull(variables)
-
-plotSurfaceComparison(
-  object = object_t269, 
-  color_by = random_genes, 
-  outline = TRUE, 
-  display_image = FALSE, 
-  pt_clrsp = "BuPu", 
-  nrow = 2
-) + 
-  trajectory_add_on
-
-plotStsLineplot(
-  object = object_t269, 
-  variables = random_genes, 
-  id = "horizontal_mid", 
-  line_color = "blue", 
-  nrow = 2
-)
-
-```
-
 
 

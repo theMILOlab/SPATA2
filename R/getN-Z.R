@@ -1420,7 +1420,7 @@ setMethod(
     }
 
     getSpatialData(object) %>%
-      getScaleFactor(object = ., fct_name = fct_name)
+      getScaleFactor(object = ., fct_name = fct_name, img_name = img_name)
 
   }
 )

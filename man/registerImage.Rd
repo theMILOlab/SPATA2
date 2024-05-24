@@ -17,6 +17,7 @@ registerImage(object, ...)
   img_name,
   unload = TRUE,
   process = FALSE,
+  overwrite = FALSE,
   verbose = TRUE
 )
 
@@ -26,6 +27,7 @@ registerImage(object, ...)
   img_name,
   unload = FALSE,
   process = FALSE,
+  overwrite = FALSE,
   verbose = TRUE
 )
 
@@ -45,6 +47,8 @@ objects of classes for which a method has been defined.}
 
 \item{img_name}{Character value. The image to remove. Must neither be
 the active nor the reference image.}
+
+\item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

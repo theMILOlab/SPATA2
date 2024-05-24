@@ -32,7 +32,7 @@ objects of classes for which a method has been defined.}
 E.g. \emph{'pixel'} or \emph{'coords'}.}
 
 \item{img_name}{Character value. The name of the image of interest.
-If \code{NULL}, the active histo image is chosen by default. Either way, must
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{error}{Logical. If \code{TRUE} and the input is invalid the

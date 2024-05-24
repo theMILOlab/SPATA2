@@ -483,6 +483,7 @@ setMethod(
                         img_name,
                         unload = TRUE,
                         process = FALSE,
+                        overwrite = FALSE,
                         verbose = TRUE){
 
     sp_data <- getSpatialData(object)
@@ -494,6 +495,7 @@ setMethod(
         img_name = img_name,
         unload = unload,
         process = process,
+        overwrite = overwrite,
         verbose = verbose
       )
 
@@ -514,12 +516,14 @@ setMethod(
                         img_name,
                         unload = FALSE,
                         process = FALSE,
+                        overwrite = FALSE,
                         verbose = TRUE){
 
     confuns::check_none_of(
       input = img_name,
       against = getImageNames(object),
-      ref.against = "registered HistoImages"
+      ref.against = "registered HistoImages",
+      overwrite = overwrite
     )
 
     hist_img <-
@@ -561,7 +565,7 @@ setMethod(
         .x = hist_img_ref@scale_factors,
         .f = function(fct, name){
 
-          if(name == "coords"){
+          if(name == "image"){
 
             fct / img_scale_fct
 

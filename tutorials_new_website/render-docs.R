@@ -13,6 +13,8 @@ rmarkdown::render("tutorials_new_website/dea.Rmd")
 
 rmarkdown::render("tutorials_new_website/gsea.Rmd")
 
+rmarkdown::render("tutorials_new_website/image-handling.Rmd")
+
 rmarkdown::render("tutorials_new_website/initiation-and-preprocessing-visium.Rmd")
 
 rmarkdown::render("tutorials_new_website/spatial-annotation-screening.Rmd")

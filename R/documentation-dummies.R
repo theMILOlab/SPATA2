@@ -127,7 +127,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #' `test` is possible.
 #'
 #' @param img_name Character value. The name of the image of interest.
-#' If `NULL`, the active histo image is chosen by default. Either way, must
+#' If `NULL`, the \link[=concept_active]{active} image is chosen by default. Either way, must
 #' be one of [`getImageNames()`].
 #'
 #' @param img_names Character vector. The names of the images of interest.
