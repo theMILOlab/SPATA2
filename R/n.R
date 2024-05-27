@@ -91,9 +91,11 @@ nMolecules <- function(object, assay_name = activeAssay(object)){
 #'
 #' @export
 #'
+
 normalizeCounts <- function(object,
                             method = "LogNormalize",
                             mtr_name_new = method,
+                            sct_clip_range = c(-sqrt(x = ncol(x = umi)/30), sqrt(x = ncol(x = umi)/30)), # default clip range for SCTransform
                             activate = TRUE,
                             assay_name = activeAssay(object),
                             overwrite = FALSE,
@@ -104,7 +106,7 @@ normalizeCounts <- function(object,
 
   confuns::check_one_of(
     input = method,
-    against = c("LogNormalize", "CLR", "RC")
+    against = c("LogNormalize", "CLR", "RC", "SCT"), # SCT for MERFISH/Xenium
   )
 
   confuns::check_none_of(
@@ -117,10 +119,21 @@ normalizeCounts <- function(object,
 
   count_mtr <- getCountMatrix(object, assay_name = assay_name)
 
-  proc_mtr <-
-    Seurat::CreateSeuratObject(counts = count_mtr, assay = "X") %>%
-    Seurat::NormalizeData(object = ., normalization.method = method, verbose = verbose, assay = "X", ...) %>%
-    Seurat::GetAssayData(object = ., layer = "data")
+  if (method == "SCT") {
+
+    proc_mtr <-
+      Seurat::CreateSeuratObject(counts = count_mtr, assay = "X") %>%
+      Seurat::SCTransform(object = ., verbose = verbose, assay = "X", clip.range = sct_clip_range, ...) %>%
+      Seurat::GetAssayData(object = ., layer = "data")
+
+  } else {
+
+    proc_mtr <-
+      Seurat::CreateSeuratObject(counts = count_mtr, assay = "X") %>%
+      Seurat::NormalizeData(object = ., normalization.method = method, verbose = verbose, assay = "X", ...) %>%
+      Seurat::GetAssayData(object = ., layer = "data")
+
+  }
 
   object <-
     setProcessedMatrix(

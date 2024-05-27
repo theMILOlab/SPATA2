@@ -512,8 +512,9 @@ setMethod(f = "show", signature = "SPATA2", definition = function(object){
                         mtr_name = activeMatrix(object),
                         assay_name = activeAssay(object)
                         ))
+  n_obs <- nrow(getCoordsDf(object)) # in case no matrix available
 
-  cat("SPATA2 object of size:", dims[2], "x", dims[1], "(observations x variables)\n")
+  cat("SPATA2 object of size:", n_obs, "x", dims[1], "(observations x variables)\n")
   cat("Contains", length(assay), ifelse(length(assay) > 1, "Assays:", "Assay:"), assay, "\n")
   cat("Active Assay:", activeAssay(object), ", Active Matrix:", activeMatrix(object), "\n")
   if (length(setdiff(colnames(getMetaDf(object)), "barcodes")) > 0) {

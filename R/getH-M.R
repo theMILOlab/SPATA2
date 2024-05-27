@@ -1182,6 +1182,8 @@ getMolecules <- function(object,
 
   }
 
+  molecules <- molecules[molecules != "cell"]
+
   return(molecules)
 
 }
@@ -1223,6 +1225,8 @@ getMoleculeTypeList <- function(object, molecules = NULL){
         out <- out[out %in% molecules]
 
       }
+
+      out <- out[out != "cell"]
 
       return(out)
 

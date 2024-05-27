@@ -1449,28 +1449,67 @@ setMethod(
 
     }
 
-    if(containsHistoImages(object)){
+    if(fct_name == "image"){ # default for image scale factor
 
-      out <-
-        getHistoImage(object, img_name = img_name) %>%
-        getScaleFactor(object = ., fct_name = fct_name)
+      if(containsHistoImages(object)){
 
-    } else {
+        out <-
+          getHistoImage(object, img_name = img_name) %>%
+          getScaleFactor(object = ., fct_name = fct_name)
 
-      # no image
-      out <- object@scale_factors[[fct_name]]
+      } else {
 
-      if(purrr::is_empty(out)){
-
-        warning(glue::glue("No '{fct_name}' scale factor in this object."))
+        out <- 1
 
       }
 
-    }
+    } else if(fct_name == "pixel"){ # default for pixel scale factor
+
+        if(containsHistoImages(object)){
+
+          out <-
+            getHistoImage(object, img_name = img_name) %>%
+            getScaleFactor(object = ., fct_name = fct_name)
+
+        } else {
+
+          out <- object@scale_factors[["pixel"]]
+
+          if(purrr::is_empty(out)){
+
+            warning(glue::glue("No '{fct_name}' scale factor in this object."))
+
+          }
+
+        }
+
+    } else { # default if not image or pixel scale factor
+      
+          if(containsHistoImages(object)){
+
+            out <-
+              getHistoImage(object, img_name = img_name) %>%
+              getScaleFactor(object = ., fct_name = fct_name)
+
+          } else {
+
+            # no image
+            out <- object@scale_factors[[fct_name]]
+
+            if(purrr::is_empty(out)){
+
+              warning(glue::glue("No '{fct_name}' scale factor in this object."))
+
+            }
+
+          }
+      
+      }
 
     return(out)
 
   }
+
 )
 
 
@@ -2761,7 +2800,7 @@ setMethod(
   signature = "SPATA2",
   definition = function(object,
                         id = idSA(object),
-                        add_image = TRUE,
+                        add_image = containsHistoImages(object),
                         expand = 0,
                         square = FALSE,
                         ...){
