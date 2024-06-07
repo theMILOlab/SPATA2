@@ -337,6 +337,7 @@ add_dbscan_variable <- function(coords_df,
                                 name = "dbscan",
                                 x = "x",
                                 y = "y",
+                                min_cluster_size = 1,
                                 ...){
 
   base::set.seed(123)
@@ -364,10 +365,20 @@ add_dbscan_variable <- function(coords_df,
       y = smrd_df[c(name, "x.X.temp.new_index.X.x")],
       by = name
       ) %>%
+    dplyr::group_by(x.X.temp.new_index.X.x) %>%
+    dplyr::mutate(
+      x.X.temp.count.X.x = dplyr::n(),
+      x.X.temp.new_index.X.x = dplyr::if_else(
+        x.X.temp.count.X.x >= {{min_cluster_size}},
+        true = x.X.temp.new_index.X.x,
+        false = "0"
+        )
+      ) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(
       {{name}} := dplyr::if_else(!!rlang::sym(name) == "0", true = "0", false = x.X.temp.new_index.X.x)
     ) %>%
-    dplyr::select(-x.X.temp.new_index.X.x)
+    dplyr::select(-x.X.temp.new_index.X.x, -x.X.temp.count.X.x)
 
   return(coords_df)
 

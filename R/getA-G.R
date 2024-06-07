@@ -966,6 +966,7 @@ getCoordsDfSA <- function(object,
         object = object,
         spata_df = coords_df,
         variables = variables,
+        smooth = FALSE,
         verbose = verbose,
         ...
       )
@@ -1293,6 +1294,20 @@ get_coords_df_sa <- function(object,
         base::factor(levels = c("core", "environment", "periphery"))
     )
 
+  if(!base::isTRUE(core)){
+
+    coords_df_sa <- dplyr::filter(coords_df_sa, rel_loc != "core")
+
+  } else if(base::isTRUE(core0)){
+
+    coords_df_sa <-
+      dplyr::mutate(
+        .data = coords_df_sa,
+        dist = dplyr::if_else(rel_loc == "core", true = 0, false = dist)
+      )
+
+  }
+
   if(!external_coords && !base::is.null(variables)){
 
     coords_df_sa <-
@@ -1301,6 +1316,7 @@ get_coords_df_sa <- function(object,
         spata_df = coords_df_sa,
         variables = variables,
         verbose = verbose,
+        smooth = FALSE,
         ...
         )
 
@@ -1318,20 +1334,6 @@ get_coords_df_sa <- function(object,
         dplyr::mutate(variables = base::factor(variables, levels = {{var_order}}))
 
     }
-
-  }
-
-  if(!base::isTRUE(core)){
-
-    coords_df_sa <- dplyr::filter(coords_df_sa, rel_loc != "core")
-
-  } else if(base::isTRUE(core0)){
-
-    coords_df_sa <-
-      dplyr::mutate(
-        .data = coords_df_sa,
-        dist = dplyr::if_else(rel_loc == "core", true = 0, false = dist)
-      )
 
   }
 

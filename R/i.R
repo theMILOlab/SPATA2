@@ -923,6 +923,8 @@ setMethod(
 #' *'any'*, spots are labeled as outliers if at least one method identifies them
 #' as outliers. If *'all'*, spots are labeled as outliers if both methods identify
 #' them as outliers.
+#' @param min_section Numeric value. The minimum number of observations a spatial cluster must
+#' contain such that the whole cluster is identified as a contiguous tissue section.
 #'
 #' @inherit argument_dummy params
 #' @inherit dbscan::dbscan params
@@ -1006,6 +1008,7 @@ setMethod(
                         buffer = NULL,
                         eps = recDbscanEps(object),
                         minPts = recDbscanMinPts(object),
+                        min_section = nBarcodes(object)*0.05,
                         test = "any",
                         verbose = NULL){
 
@@ -1019,6 +1022,7 @@ setMethod(
         img_name = img_name,
         eps = eps,
         minPts = minPts,
+        min_section = min_section,
         test = test,
         verbose = verbose
       )
@@ -1041,6 +1045,7 @@ setMethod(
                         buffer = NULL,
                         eps = NULL,
                         minPts = 3,
+                        min_section = 1,
                         test = "any",
                         verbose = TRUE){
 
@@ -1083,7 +1088,8 @@ setMethod(
           coords_df = coords_df,
           eps = eps,
           minPts = minPts,
-          name = "section_dbscan"
+          name = "section_dbscan",
+          min_cluster_size = min_section
         )
 
     }

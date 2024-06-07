@@ -15,6 +15,7 @@ identifySpatialOutliers(object, ...)
   buffer = NULL,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
+  min_section = nBarcodes(object) * 0.05,
   test = "any",
   verbose = NULL
 )
@@ -26,6 +27,7 @@ identifySpatialOutliers(object, ...)
   buffer = NULL,
   eps = NULL,
   minPts = 3,
+  min_section = 1,
   test = "any",
   verbose = TRUE
 )
@@ -47,6 +49,9 @@ that lie on the edge of the outline and are mistakenly removed.}
 
 \item{eps, minPts}{Given to the corresponding arguments of
 \code{\link[dbscan:dbscan]{dbscan::dbscan()}} if \code{method} contains \emph{'dbscan'}.}
+
+\item{min_section}{Numeric value. The minimum number of observations a spatial cluster must
+contain such that the whole cluster is identified as a contiguous tissue section.}
 
 \item{test}{Character value. Only required if \code{method = c('dbscan', 'outline')}. If
 \emph{'any'}, spots are labeled as outliers if at least one method identifies them

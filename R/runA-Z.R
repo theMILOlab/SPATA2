@@ -108,7 +108,7 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  sce <- asSingleCellExperiment(object, bayes_space = TRUE)
+  sce <- asSingleCellExperiment(object)
 
   if(FALSE){
 
@@ -171,12 +171,12 @@ runBayesSpaceClustering <- function(object,
       BSPARAM = BSPARAM
     )
 
-  confuns::give_feedback(
-    msg = "Running BayesSpace::qTune().",
-    verbose = verbose
-  )
-
   if(base::length(qs) >= 2){
+
+    confuns::give_feedback(
+      msg = "Running BayesSpace::qTune().",
+      verbose = verbose
+    )
 
     bayes_space_out <-
       BayesSpace::qTune(

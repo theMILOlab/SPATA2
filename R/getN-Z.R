@@ -1006,7 +1006,13 @@ getSasDf <- function(object,
     )
 
   cf <-
-    compute_correction_factor_sas(object, ids = ids, distance = distance, core = core)
+    compute_correction_factor_sas(
+      object = object,
+      ids = ids,
+      distance = distance,
+      core = core,
+      coords_df_sa = coords_df_sa
+      )
 
   binwidth <- as_unit(binwidth, unit = unit, object = object)
   distance <-
@@ -1040,12 +1046,6 @@ getSasDf <- function(object,
     base::diff(c(extract_value(min_dist),extract_value(distance)))
 
   span <- base::as.numeric(binwidth/dist_screened) / cf
-
-  if(base::is.numeric(list(...)[["span"]])){
-
-    span <- list(...)[["span"]]
-
-  }
 
   confuns::give_feedback(
     msg = glue::glue("`span` = {span}"),
@@ -1298,7 +1298,7 @@ getSasExprEst2D <- function(object,
     confuns::lselect(
       lst = exp_list,
       dplyr::any_of(x = "core"),
-      dplyr::all_of(x = base::names(expr_estimates)),
+      dplyr::any_of(x = base::names(expr_estimates)),
       dplyr::any_of(x = "horizon")
     ) %>%
     purrr::map(

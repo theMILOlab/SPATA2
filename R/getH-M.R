@@ -1114,7 +1114,9 @@ setMethod(
 #' @export
 getMetaDf <- function(object){
 
-  object@meta_obs
+  object@meta_obs %>%
+    dplyr::mutate(sample = object@sample) %>%
+    dplyr::select(barcodes, sample, dplyr::everything())
 
 }
 

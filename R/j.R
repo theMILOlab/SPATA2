@@ -313,15 +313,15 @@ joinWithUmap <- function(object,
 joinWithVariables <- function(object,
                               variables,
                               spata_df = getCoordsDf(object),
-                              smooth = NULL,
+                              smooth = FALSE,
                               smooth_span = NULL,
                               normalize = NULL,
                               uniform_variables = "keep",
                               verbose = NULL,
                               ...){
 
-  deprecated(...)
   hlpr_assign_arguments(object)
+  deprecated(...)
 
   # prepare
   variables <- variables[!variables %in% c("barcodes", "sample")]
@@ -463,6 +463,11 @@ joinWithVariables <- function(object,
 
   # smooth if desired
   if(base::isTRUE(smooth)){
+
+    confuns::give_feedback(
+      msg = "Smoothing numeric variables.",
+      verbose = TRUE
+    )
 
     numeric_vars <-
       dplyr::select(spata_df, dplyr::where(base::is.numeric) & dplyr::any_of(variables)) %>%

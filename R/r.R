@@ -335,8 +335,13 @@ renameSpataObject <- function(object, sample_name){
   sp_data@sample <- sample_name
 
   coords_df <- getCoordsDf(sp_data, as_is = TRUE)
-  coords_df$sample <- sample_name
-  sp_data <- setCoordsDf(sp_data, coords_df = coords_df)
+
+  if("sample" %in% base::names(coords_df)){
+
+    coords_df$sample <- sample_name
+    sp_data <- setCoordsDf(sp_data, coords_df = coords_df)
+
+  }
 
   sp_data@annotations <-
     purrr::map(
@@ -866,9 +871,9 @@ relevelGroups <- function(object, grouping_variable, new_levels){
     against = getFeatureNames(object, of_class = "factor")
   )
 
-  fdf <- getMetaDf(object)
+  meta_df <- getMetaDf(object)
 
-  var <- fdf[[grouping_variable]]
+  var <- meta_df[[grouping_variable]]
 
   # dont extract levels to drop unused levels silently
   groups <- base::unique(var) %>% base::as.character()
@@ -889,7 +894,7 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
   }
 
-  fdf[[grouping_variable]] <- base::factor(x = var, levels = new_levels)
+  meta_df[[grouping_variable]] <- base::factor(x = var, levels = new_levels)
 
   object <- setMetaDf(object, meta_df = meta_df)
 
@@ -899,7 +904,7 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
     ma@analysis$dea[[grouping_variable]] <-
       purrr::map(
-        .x = object@dea[[1]][[grouping_variable]],
+        .x = ma@analysis$dea[[grouping_variable]],
         .f = function(method_list){
 
           method_list$data[[grouping_variable]] <-
