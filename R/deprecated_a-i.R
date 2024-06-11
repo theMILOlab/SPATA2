@@ -1790,6 +1790,13 @@ examineTrajectoryAssessment <- function(atdf,
 
 }
 
+#' @export
+exchangeImage <- function(...){
+
+  stop("'exchangeImage()' has been deprecated. Please use `activateImage()`, `loadImage()` or  `registerImage()`
+        depending on what you want to do.")
+
+}
 
 
 # f -----------------------------------------------------------------------

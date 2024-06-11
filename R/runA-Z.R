@@ -108,7 +108,7 @@ runBayesSpaceClustering <- function(object,
     overwrite = overwrite
   )
 
-  sce <- asSingleCellExperiment(object)
+  sce <- asSingleCellExperiment(object, bayes_space = T)
 
   if(FALSE){
 

@@ -174,8 +174,9 @@ loadGeneSetDf <- loadGSDF
 
 #' @title Load image
 #'
-#' @description Loads the image based on the directory stored in slot @@dir
-#' of the `HistoImage` object.
+#' @description Reads the image based on the directory stored in slot @@dir
+#' of the `HistoImage` object. This makes the image availble quicker but
+#' increases the size of the object.
 #'
 #' @param force Logical value. If `TRUE`, image is loaded even if
 #' the image slot is not empty.
