@@ -862,7 +862,7 @@ setMethod(
 #'
 #' @export
 #'
-plotLoglik <- function(object, show_elbow = TRUE){
+plotLoglik <- function(object, elbow = TRUE){
 
   ma <- getAssay(object, assay_name = "transcriptomics")
 
@@ -874,7 +874,7 @@ plotLoglik <- function(object, show_elbow = TRUE){
 
   }
 
-  if(base::is.array(elbow)){
+  if(base::isTRUE(elbow)){
 
     elbow_add_on <- ggplot2::geom_vline(xintercept = find_elbow_point(df))
 

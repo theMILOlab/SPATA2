@@ -933,6 +933,56 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 }
 
 
+#' @title Remove observations with no counts
+#'
+#' @description Identifies and removes observations with no molecule counts
+#' from the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+removeObsNoCounts <- function(object,
+                              assay_name = activeAssay(object),
+                              verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  barcodes <- getBarcodes(object)
+
+  count_mtr <-
+    getCountMatrix(object, assay_name = assay_name) %>%
+    base::as.matrix()
+
+  no_counts <- base::colSums(count_mtr, na.rm = TRUE)
+
+  keep <- base::names(no_counts[no_counts!=0])
+
+  if(base::length(keep) == base::ncol(count_mtr)){
+
+    confuns::give_feedback(
+      msg = "No observations with no counts.",
+      verbose = verbose
+    )
+
+  } else {
+
+    n <- (base::ncol(count_mtr))-(base::length(keep))
+
+    confuns::give_feedback(
+      msg = glue::glue("Removing {n} observation(s)."),
+      verbose = verbose
+    )
+
+    object <- subsetByBarcodes(object, barcodes = keep)
+
+  }
+
+  returnSpataObject(object)
+
+}
+
+
 #' @title Remove meta features
 #'
 #' @description Remove meta \link[=concept_variables]{features} from the

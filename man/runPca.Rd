@@ -16,12 +16,13 @@ runPca(
 runPca2(object, n_pcs = 30, mtr_name = NULL, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components to be computed.}
 
-\item{mtr_name}{Character value. The name of the matrix to extract. If
-\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
+\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
+to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest. Defaults to the active assay,
@@ -32,7 +33,7 @@ as set by \code{\link[=activateAssay]{activateAssay()}}.}
 \value{
 \itemize{
 \item{\code{runPca()}:}{ An updated \code{SPATA2} object containing the reduction variables in the pca data.frame.}
-\item{\code{runPca2()}:}{ The direct output-object of \code{irlba::prcomp_irlba()}}.
+\item{\code{runPca2()}:}{ The direct output object of \code{irlba::prcomp_irlba()}}.
 }
 }
 \description{

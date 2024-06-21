@@ -12,7 +12,7 @@ identifySpatialOutliers(object, ...)
   object,
   method,
   img_name = activeImage(object),
-  buffer = NULL,
+  buffer = 0,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
   min_section = nBarcodes(object) * 0.05,
@@ -24,7 +24,7 @@ identifySpatialOutliers(object, ...)
   object,
   method = c("outline", "dbscan"),
   img_name = activeImage(object),
-  buffer = NULL,
+  buffer = 0,
   eps = NULL,
   minPts = 3,
   min_section = 1,
@@ -83,21 +83,24 @@ object's coordinates data.frame.
 
 This function identifies spatial outliers using a combination of two methods:
 
-Method \emph{outline}:
-The \emph{outline} method involves the image based tissue outline from the
+Method \emph{image}:
+The \emph{image} method involves the image based tissue outline from the
 \code{identifyTissueOutline()} function. This function has created polygons that
 outline the tissue or tissue sections identified in the image. For each data point,
 the function checks which polygon it falls within and assigns it to the corresponding
 group. If an observation does not fall within any of the tissue polygons, it is
-considered a spatial outlier. As this method requires image processing steps, it does not
-work for platforms that do not provide images of the analyzed tissue such as
-\emph{MERFISH} or \emph{SlideSeq}.
+considered a spatial outlier. This method requires an image in the \code{SPATA2} object.
+
+(This method is particularly useful if your sample contains artefact spots that
+falsely obtained some reads. This might happen, for instance, if fluid transgresses
+the border of the tissue carrying mRNA transcripts to adjacent spots that are
+actually not covered by the tissue.)
 
 Method \emph{dbscan}:
 The \emph{dbscan} method applies the DBSCAN algorithm to the data points. Please
 refer to the documentation of \code{dbscan::dbscan()} for a more detailed explanation.
 The \code{eps} and \code{minPts} arguments are passed directly to the
-corresponding arguments of the DBSCAN function.Data points that are not assigned
+corresponding arguments of the DBSCAN function. Data points that are not assigned
 to any spatial cluster, indicated by being assigned to cluster 0, are considered
 spatial outliers.
 
@@ -111,7 +114,7 @@ defaults to these recommendations using \code{\link[=recDbscanEps]{recDbscanEps(
 by default. This can, of course, be overwritten manually by the user by
 specifying the parameters otherwise!
 
-If \code{method = c('outline', 'dbscan')}, both algorithms are applied. Whether a
+If \code{method = c('image', 'dbscan')}, both algorithms are applied. Whether a
 data point is considered a spatial outlier depends on the \code{test} argument:
 
 \itemize{
@@ -121,8 +124,8 @@ either of the two tests classifies it as an outlier.
 only if both tests classify it as an outlier.
 }
 
-If \code{method = 'outline'} or \code{method = 'dbscan'} only one of the two
-methods is applied. Note that for \code{method = 'outline'} the results from the
+If \code{method = 'image'} or \code{method = 'dbscan'} only one of the two
+methods is applied. Note that for \code{method = 'image'} the results from the
 image processing pipeline must be available.
 
 The results can be visualized using \code{plotSurface(object, color_by = "section")}.

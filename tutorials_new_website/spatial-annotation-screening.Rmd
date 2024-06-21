@@ -29,8 +29,7 @@ This vignette exemplifies how to use Spatial Annotation Screening in SPATA2. It 
 library(SPATA2)
 library(tidyverse)
 
-# exchange my/path/to with your directory
-object_t313 <- loadSpataObject("my/path/to/object_UKF313T.RDS")
+object_t313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", id = "UKF313T")
 
 ```
 

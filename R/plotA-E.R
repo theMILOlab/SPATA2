@@ -49,7 +49,7 @@ plotBarchart <- function(object,
   spata_df <-
     joinWithVariables(
       object = object,
-      spata_df = getSpataDf(object, of_sample),
+      spata_df = getSpataDf(object),
       variables = features,
       smooth = FALSE
     ) %>%
@@ -2425,7 +2425,7 @@ plotDensityplot <- function(object,
   spata_df <-
     joinWithVariables(
       object = object,
-      spata_df = getSpataDf(object, of_sample),
+      spata_df = getSpataDf(object),
       variables = variables,
       smooth = FALSE,
       normalize = normalize

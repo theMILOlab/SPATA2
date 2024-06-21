@@ -843,7 +843,7 @@ plotSasLineplot <- function(object,
 
   p_out +
     border_add_on +
-    ggplot2::labs( x = glue::glue("Distance [{unit}]"))
+    ggplot2::labs(x = glue::glue("Distance [{unit}]"))
 
 }
 

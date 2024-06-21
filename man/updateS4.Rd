@@ -15,11 +15,11 @@ updateS4(object, ...)
 
 \S4method{updateS4}{spata2}(
   object,
-  method,
+  method = NULL,
   sample_name = NULL,
-  chr_to_fct = TRUE,
   n_pcs = 30,
-  verbose = TRUE
+  verbose = TRUE,
+  ....
 )
 }
 \arguments{

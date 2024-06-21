@@ -1663,16 +1663,16 @@ runKmeansClustering <- function(object,
 #' @description Takes the expression matrix of choice and passes it to
 #' \code{irlba::prcomp_irlba()}.
 #'
-#' @inherit check_sample params
-#' @inherit getExpressionMatrix params
 #' @param n_pcs Numeric value. Denotes the number of principal components to be computed.
 #' @param ... Additional arguments given to \code{irlba::prcomp_irlba()}.
+#'
+#' @inherit argument_dummy params
 #'
 #' @return
 #'
 #'  \itemize{
 #'   \item{\code{runPca()}:}{ An updated `SPATA2` object containing the reduction variables in the pca data.frame.}
-#'   \item{\code{runPca2()}:}{ The direct output-object of \code{irlba::prcomp_irlba()}}.
+#'   \item{\code{runPca2()}:}{ The direct output object of \code{irlba::prcomp_irlba()}}.
 #'   }
 #'
 #' @export
@@ -1868,30 +1868,85 @@ runSeuratClustering <- function(object,
                                 name = "seurat_clusters",
                                 mtr_name = activeMatrix(object),
                                 assay_name = activeAssay(object),
+                                NormalizeData = list(),
+                                ScaleData = list(),
                                 FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
                                 RunPCA = list(npcs = 60),
                                 FindNeighbors = list(dims = 1:30),
-                                FindClusters = list(resolution = 0.8)){
+                                FindClusters = list(resolution = 0.8),
+                                prefix = "S",
+                                overwrite = FALSE){
 
   confuns::check_none_of(
     input = name,
     against = getFeatureNames(object),
     ref.against = "feature names",
+    overwrite = overwrite
   )
 
+  seurat_object <-
+    Seurat::CreateSeuratObject(count = getCountMatrix(object = object))
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "NormalizeData",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "ScaleData",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "FindVariableFeatures",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "RunPCA",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "FindNeighbors",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "FindClusters",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object)
+    )
+
+  nc <- dplyr::n_distinct(seurat_object@meta.data[["seurat_clusters"]])
+
+
   cluster_df <-
-    findSeuratClusters(
-      object = object,
-      mtr_name = mtr_name,
-      assay_name = assay_name,
-      FindVariableFeatures = FindVariableFeatures,
-      RunPCA = RunPCA,
-      FindNeighbors = FindNeighbors,
-      FindClusters = FindClusters
+    seurat_object@meta.data %>%
+    tibble::rownames_to_column(var = "barcodes") %>%
+    dplyr::mutate(
+      seurat_clusters = stringr::str_c(prefix, seurat_clusters),
+      seurat_clusters = base::factor(seurat_clusters, levels = stringr::str_c(prefix, 0:(nc-1)))
     ) %>%
     dplyr::select(barcodes, !!rlang::sym(name) := seurat_clusters)
 
-  object <- addFeatures(object, feature_df = cluster_df)
+  object <- addFeatures(object, feature_df = cluster_df, overwrite = TRUE)
 
   returnSpataObject(object)
 

@@ -360,11 +360,11 @@ hlpr_image_add_on <- function(object, display_image, ...){
 
     image_add_on <- NULL
 
-    warning("`display_image` = TRUE but `spata2` object does not contain an image.")
+    warning("`display_image` = TRUE but `SPATA2` object does not contain an image.")
 
   } else if(base::isTRUE(display_image)){
 
-    sample_image <- getImage(object)
+    sample_image <- getImage(object) %>% EBImage::flip()
 
     if("Image" %in% base::class(sample_image)){
 
@@ -390,8 +390,6 @@ hlpr_image_add_on <- function(object, display_image, ...){
         )
 
     } else {
-
-      base::warning(glue::glue("Content of slot 'image' for sample '{of_sample}' must be of class 'Image' not of class '{base::class(sample_image)}'."))
 
       image_add_on <- list()
 

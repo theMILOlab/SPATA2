@@ -816,7 +816,7 @@ plot_sgs_lineplot <- function(sgs_df,
     ) +
     theme_lineplot_gradient(range_d = range_d) +
     facet_add_on +
-    ggplot2::labs(y = "Estimeated Expression")
+    ggplot2::labs(y = "Estimated Expression")
 
 }
 

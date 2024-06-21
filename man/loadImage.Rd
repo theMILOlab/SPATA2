@@ -46,8 +46,9 @@ the image slot is not empty.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Loads the image based on the directory stored in slot @dir
-of the \code{HistoImage} object.
+Reads the image based on the directory stored in slot @dir
+of the \code{HistoImage} object. This makes the image availble quicker but
+increases the size of the object.
 }
 \seealso{
 \code{\link[=unloadImage]{unloadImage()}},\code{\link[=unloadImages]{unloadImages()}}

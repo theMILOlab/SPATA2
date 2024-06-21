@@ -172,19 +172,40 @@ setMethod(
 #' @return object
 #' @export
 #'
-update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
+update_spata2v2_to_spata2v3 <- function(object, method = NULL, verbose = TRUE){
 
   obj_old <- object
 
-  confuns::check_one_of(
-    input = method,
-    against = base::names(spatial_methods)
-  )
-
-  # basic initiation
   coords_df <-
     obj_old@images[[1]]@coordinates %>%
     dplyr::select(barcodes, dplyr::any_of(c("x_orig", "y_orig", "imagerow", "imagecol", "row", "col", "x", "y")))
+
+  if(base::is.null(method)){
+
+    if(base::any(coords_df$barcodes %in% visium_spots$VisiumSmall$barcode)){
+
+      method <- "VisiumSmall"
+
+    } else if(base::any(coords_df$barcodes %in% visium_spots$VisiumLarge$barcode)){
+
+      method <- "VisiumLarge"
+
+    } else {
+
+      stop("Barcodes could not be mapped to VisiumSmall or VisiumLarge. Please specify argument `method`.")
+
+    }
+
+  } else {
+
+    confuns::check_one_of(
+      input = method,
+      against = base::names(spatial_methods)
+    )
+
+  }
+
+  # basic initiation
 
   # might be overwritten downstream
   img_name <- "image1"
@@ -446,30 +467,33 @@ update_spata2v2_to_spata2v3 <- function(object, method, verbose = TRUE){
 
 #' @title Update `SPATA2` object
 #'
-#' @description Updates the [`SPATA2`] object to the newest version of the package.
+#' @description Updates the input object to the newest version of the package.
 #'
-#' @inherit runPca params
 #' @inherit argument_dummy params
+#' @inherit runPca params
+#' @param sample_name Character value. The name of the input object.
 #'
-#' @param method Character value. The name of the spatial method (platform) from
-#' which the data derives. Should be one of `base::names(spatial_methods)`.
-#'
-#' @param chr_to_fct Logical. SPATA2 recommends to store grouping variables as factors
-#' in the slot @@fdata. If set to TRUE, character variables (apart from \emph{barcodes, sample, segmentation})
-#' of the old obejct's feature data are converted to factors.
+#' @param method Character value or `NULL`. If `NULL`, the functions tests whether
+#' the barcodes of the input object can be mapped to either of the VisiumSmall or VisiumLarge
+#' platform. If this does not succeed you must specify the argument. In that case it
+#' should be one of `base::names(spatial_methods)`.
 #'
 #' @inherit update_dummy return
+#'
+#' @note `n_pcs` and `sample_name` only are if the input object derives from
+#' the old `SPATA` (not `SPATA2`) package!
 #'
 #' @export
 #'
 
 updateSpataObject <- function(object,
-                              method,
+                              method = NULL,
                               sample_name = NULL,
-                              chr_to_fct = TRUE,
                               n_pcs = 30,
-                              verbose = TRUE){
+                              verbose = TRUE,
+                              ....){
 
+  chr_to_fct <- TRUE
 
   base::assign(x = "x.updating.spata.object.x", value = TRUE, envir = .GlobalEnv)
 

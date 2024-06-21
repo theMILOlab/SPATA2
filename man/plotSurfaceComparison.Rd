@@ -13,7 +13,7 @@ plotSurfaceComparison(object, ...)
   color_by,
   alpha_by = FALSE,
   method_gs = NULL,
-  normalize = NULL,
+  normalize = TRUE,
   smooth = FALSE,
   smooth_span = NULL,
   pt_size = getPointSize(object, xrange, yrange),

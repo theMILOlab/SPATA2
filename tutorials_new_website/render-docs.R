@@ -23,4 +23,6 @@ rmarkdown::render("tutorials_new_website/spatial-trajectory-screening.Rmd")
 
 rmarkdown::render("tutorials_new_website/spatial-measures.Rmd")
 
+rmarkdown::render("tutorials_new_website/surface-plotting.Rmd")
+
 rmarkdown::render("tutorials_new_website/using-spatial-annotations.Rmd")
