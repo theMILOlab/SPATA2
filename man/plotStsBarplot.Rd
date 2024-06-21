@@ -25,6 +25,9 @@ plotStsBarplot(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
+\item{grouping}{Character value. The grouping variable of interest. Use
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
+
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
 recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}

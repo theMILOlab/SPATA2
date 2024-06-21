@@ -109,8 +109,10 @@ across_dummy <- function(across, across_subset, relevel){}
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
 #'
+#' @param grouping Character value. The grouping variable of interest. Use
+#' [`getGroupingOptions()`] to obtain all valid input options.
 #' @param grouping_variable Character value. The grouping variable of interest. Use
-#' `getGroupingOptions()` to obtain all valid input options.
+#' [`getGroupingOptions()`] to obtain all valid input options.
 #'
 #' @param h Numeric value or vector or NULL (see details for more). Denotes the height at which
 #' the dendrogom is cut.
@@ -125,7 +127,7 @@ across_dummy <- function(across, across_subset, relevel){}
 #' `test` is possible.
 #'
 #' @param img_name Character value. The name of the image of interest.
-#' If `NULL`, the active histo image is chosen by default. Either way, must
+#' If `NULL`, the \link[=concept_active]{active} image is chosen by default. Either way, must
 #' be one of [`getImageNames()`].
 #'
 #' @param img_names Character vector. The names of the images of interest.
@@ -467,13 +469,6 @@ pb_dummy <- function(pb){}
 #' @keywords internal
 plot_type_dummy <- function(plot_type){}
 
-
-#' @title de_df
-#' @param dea_df A data.frame containing information about differentially expressed genes.
-#' This includes the numeric variables \emph{p_val, avg_logFC, p_val_adj} and the character
-#' variables \emph{cluster, gene}.
-#' @keywords internal
-pheatmap <- function(de_df){}
 
 
 #' @title print

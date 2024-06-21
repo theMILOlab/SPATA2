@@ -31,7 +31,7 @@ objects of classes for which a method has been defined.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{img_name}{Character value. The name of the image of interest.
-If \code{NULL}, the active histo image is chosen by default. Either way, must
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -46,8 +46,9 @@ the image slot is not empty.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Loads the image based on the directory stored in slot @dir
-of the \code{HistoImage} object.
+Reads the image based on the directory stored in slot @dir
+of the \code{HistoImage} object. This makes the image availble quicker but
+increases the size of the object.
 }
 \seealso{
 \code{\link[=unloadImage]{unloadImage()}},\code{\link[=unloadImages]{unloadImages()}}

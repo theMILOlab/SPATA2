@@ -843,7 +843,7 @@ plotSasLineplot <- function(object,
 
   p_out +
     border_add_on +
-    ggplot2::labs( x = glue::glue("Distance [{unit}]"))
+    ggplot2::labs(x = glue::glue("Distance [{unit}]"))
 
 }
 
@@ -1516,7 +1516,7 @@ plotSpatialTrajectories <- function(object,
       clrp.adjust = clrp_adjust,
       ...
     ) +
-    ggplot2::coord_equal()
+    ggplot2::coord_equal(xlim = xrange, ylim = yrange)
 
 }
 
@@ -1733,6 +1733,66 @@ plotStsLineplot <- function(object,
       clrp = clrp,
       clrp_adjust = clrp_adjust,
       display_facets = display_facets,
+      display_eval = display_eval,
+      eval_size = eval_size,
+      ggpLayers = ggpLayers,
+      ncol = ncol,
+      nrow = nrow,
+      verbose = verbose
+    )
+
+  p_out +
+    ggplot2::labs(
+      x = glue::glue("Distance along Trajectory [{unit}]"),
+      y = "Estimated Expression"
+    )
+
+}
+
+#' @rdname plotStsLineplot
+#' @export
+plotStsRidgeplot <- function(object,
+                            variables,
+                            id = idST(object),
+                            width = getTrajectoryLength(object, id),
+                            unit = getSpatialMethod(object)@unit,
+                            smooth_span = 0.2,
+                            smooth_se = TRUE,
+                            line_color = NULL,
+                            line_size = 1.5,
+                            clrp = NULL,
+                            clrp_adjust = NULL,
+                            display_eval = FALSE,
+                            eval_size = 4,
+                            ggpLayers = NULL,
+                            ncol = NULL,
+                            nrow = NULL,
+                            verbose = NULL,
+                            ...){
+
+  hlpr_assign_arguments(object)
+  deprecated(...)
+
+  sts_df <-
+    getStsDf(
+      object = object,
+      variables = variables,
+      id = id,
+      width = width,
+      unit = unit,
+      format = "long",
+      ...
+    )
+
+  p_out <-
+    plot_sgs_ridgeplot(
+      sgs_df = sts_df,
+      smooth_span = smooth_span,
+      smooth_se = smooth_se,
+      line_color = line_color,
+      line_size = line_size,
+      clrp = clrp,
+      clrp_adjust = clrp_adjust,
       display_eval = display_eval,
       eval_size = eval_size,
       ggpLayers = ggpLayers,

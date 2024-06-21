@@ -1,0 +1,159 @@
+---
+title: "Gene Set Enrichment Analysis"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, echo = TRUE, eval = TRUE, class.source = "code-chunk", out.width = "100%", fig.show = "hold")
+
+devtools::load_all()
+library(tidyverse)
+
+object_t269 <- loadSpataobject_t269("data/object_t269_UKF269T.RDS")
+
+```
+
+## 1. Prerequisites 
+
+- [Differential Expression Analysis](dea.html)
+- [Molecular Signatures](molecular-signatures.html)
+
+## 2. Introduction
+
+For a deeper into the results of the DEA one can look for gene sets that are enriched in the proposed clustering or created based on histology. `SPATA2` implements the [`hypeR`](https://github.com/montilab/hypeR) package which uses hypergeometric testing for enriched gene sets.
+
+```{r eval = F}
+
+library(SPATA2)
+library(SPATAData)
+library(tidyverse)
+
+# download sample UKF269T
+object_t269 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", id = "UKF269T")
+
+# add the grouping variables if you created object_t269 yourself from raw data 
+data("spatial_segmentations")
+
+object_t269 <- 
+  addFeatures(
+    object_t269 = object_t269, 
+    feature_df = spatial_segmentations$UKF269T, 
+    overwrite = TRUE
+  )
+
+# histology only
+plotSurface(object_t269 = object_t269, pt_alpha = 0)
+
+# colored by clustering
+plotSurface(object_t269 = object_t269, color_by = "histology")
+
+```
+
+```{r echo = F, out.width = "50%", fig.cap = "Fig.1 Shared Nearest Neighbour clustering will be analyzed with GSEA."}
+
+# histology only
+plotSurface(object_t269 = object_t269, pt_alpha = 0)
+
+# colored by clustering
+plotSurface(object_t269 = object_t269, color_by = "histology")
+
+```
+
+## 3. Running Gene Set Enrichment Analysis (GSEA)
+
+The function `runGSEA()` conducts the computation. It requires the results from `runDEA()` which conducts the differential expressiona nalysis. By default, the function uses all gene sets that are saved in the `SPATA2` object_t269. If there are gene sets that you don’t want to test against you can provide a subsetted list of gene sets. The default `SPATA2` object_t269 contains a variety of gene sets of multiple classes (Hallmark, Biocarta, etc.) marked with a corresponding prefix like *HM* or *BC*. 
+
+```{r}
+
+gs_list <- getGeneSetList(object_t269)
+
+length(gs_list)
+
+```
+
+For the sake of clarity, this example only uses Biocarta (BC) and Hallmark (HM) gene sets.
+
+```{r}
+
+# subset gene sets that start with HM or BC
+sub_vec <- str_detect(names(gs_list), pattern = "^HM|^BC")
+
+gs_list_sub <- gs_list[sub_vec]
+
+length(gs_list_sub)
+
+set.seed(1)
+sample(gs_list_sub, size = 3)
+
+```
+
+Use argument `signatures` if you want to run GSEA only on a subset of gene sets. Keep it empty if you want to test against all gene sets stored in the `SPATA2` object_t269. This example only uses Hallmark gene sets. 
+
+```{r}
+
+object_t269 <- 
+  runGSEA(
+    object_t269 = object_t269,
+    across = "histology",
+    signatures = names(gs_list_sub)
+    )
+
+```
+
+## 4. Extracting results
+
+The results can be manually extracted via the following functions. `getGseaResults()` extracts a list of `hypeR` object_t269s - on for each group. `getGseaResultsDf()` extracts a data.frame that results from merging the data of all `hypeR` object_t269s together. The group belonging of each gene set is saved in the variable/column that is named according to the grouping variable - here *histology*.
+
+```{r}
+
+getGseaDf(
+  object_t269 = object_t269, 
+  across = "histology",
+  method_de = "wilcox", 
+  n_gsets = 3 # extract top 20 most significant gene sets
+) 
+
+```
+
+
+## 5. Plotting results
+Gene set enrichment results can be visualized via dot plots. This can be either done by group with `by_group = TRUE` or merged for all groups. Figure 2 visualizes the enrichment for cluster 0 and 5 highlighting the hypoxia associated activity in this area.
+
+```{r fig.dim = c(9, 9), fig.cap = "Fig.2 Dot plot to display GSEA results by group."}
+
+plotGseaDotPlot(
+  object_t269 = object_t269,
+  across = "histology",
+  across_subset = c("tumor", "infiltrated"),
+  n_gsets = 10,
+  by_group = TRUE, 
+  transform_with = list(fdr = log10),
+  nrow = 2
+)
+
+```
+
+Using `by_group = FALSE`, the results are merged to one plot. 
+
+```{r fig.cap = "Fig.3 Merged GSEA dot plot."}
+
+plotGseaDotPlot(
+  object_t269 = object_t269,
+  across = "histology",
+  color_by = "histology",
+  n_gsets = 7,
+  pt_alpha = 0.8,
+  transform_with = list(fdr = log10),
+  by_group = FALSE # merge in one plot
+) 
+
+```
+

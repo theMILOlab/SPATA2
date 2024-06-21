@@ -1,0 +1,128 @@
+---
+title: "Spatial Trajectories"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    code_folding: show
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, echo = TRUE, eval = TRUE, class.source = "code-chunk", out.width = "50%", fig.show = "hold")
+
+devtools::load_all()
+library(tidyverse)
+library(patchwork)
+
+object_t269 <- loadSpataObject("data/object_UKF269T.RDS")
+
+```
+
+## 1. Prerequisites
+
+None. 
+
+## 2. Introduction 
+
+With spatial trajectory analysis `SPATA2` introduces a new approach to find, analyze and visualize differently expressed genes and gene-sets in a spatial context. While the classic differential gene expression analyzes differences between experimental groups as a whole it neglects changes of expression levels that can only be seen while maintaining the spatial dimensions. Spatial trajectories allow to answer questions that include such a spatial component. E.g.: 
+
+1. In how far do expression levels change the more we move towards a region of interest? 
+2. Which genes follow the same pattern along these paths? 
+
+The spatial trajectory tools provided in `SPATA2` enable new ways of visualization as well as new possibilities to screen for genes. 
+
+As an example we are using a spatial transcriptomic sample of a central nervous system malignancy that features three different, adjacent histological areas: Tumor, a transition zone as well as infiltrated cortex.
+
+```{r eval = F}
+
+library(SPATA2)
+library(SPATAData)
+library(tidyverse)
+
+# download sample UKF269T
+object_t269 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", id = "UKF269T")
+
+# add the grouping variables if you created object_t269 yourself from raw data 
+data("spatial_segmentations")
+
+object_t269 <- 
+  addFeatures(
+    object_t269 = object_t269, 
+    feature_df = spatial_segmentations$UKF269T, 
+    overwrite = TRUE
+  )
+
+# histology only
+plotSurface(object_t269, pt_alpha = 0)
+
+# colored by histological classification
+plotSurface(object_t269, color_by = "histology")
+
+```
+
+```{r echo = F, eval = T, out.width = "50%", fig.cap = "Fig.1 Example sample T269."}
+
+# histology only
+plotSurface(object_t269, pt_alpha = 0)
+
+# colored by histological classification
+plotSurface(object_t269, color_by = "histology")
+
+```
+
+## 3. Creating spatial trajectories
+
+Spatial trajectories can be added to the `SPATA2` object via two functions, namely `createSpatialTrajectories()` and `addSpatialTrajectory()`. The animation below shows the interface of `createSpatialTrajectories()`. To draw a trajectory double click on the surface plot to mark the trajectory's starting point and then double click again to mark the endpoint. The result should look somewhat like the trajectory drawn in Fig.2.
+
+```{r eval = F}
+
+object_t269 <- createSpatialTrajectories(object = object_t269)
+
+```
+
+```{r echo = F, out.width = "100%", fig.cap = "Fig.2 Interface of createSpatialTrajectories() with a drawn trajectory."}
+
+knitr::include_graphics("gifs/create_spatial_trajectories_t269.gif", error = FALSE)
+
+```
+
+If you are satisfied with the course of the trajectory determine the width of the trajectory's scope **on the left** and click on highlight. note that the width parameter can always be adjusted afterwards. Then enter a valid ID with which you want to name the trajectory and click on 'Save Trajectory'. Make sure to click on 'Close Application' when you want to return in order to save the results in the returned `SPATA2` object. 
+
+Instead of drawing the spatial trajectory you can add it directly by explicitly naming its course via start- and endpoint using the function `addSpatialTrajectory()`.
+
+```{r echo = T, eval = T}
+
+# define start and end positions of the trajectory directly
+object_t269 <- 
+  addSpatialTrajectory(
+    object = object_t269,
+    id = "horizontal_mid",
+    start = c("1.5mm", "4mm"),
+    end = c("6.5mm", "4mm"),
+    overwrite = TRUE
+  )
+
+```
+
+```{r fig.cap = "Fig.2 Visualization of spatial trajectories on the surface plot."}
+
+# created interactively
+plotSpatialTrajectories(
+  object = object_t269, 
+  ids = "crossing_transition", 
+  color_by = "histology"
+)
+
+# created with code 
+plotSpatialTrajectories(
+  object = object_t269, 
+  ids = "horizontal_mid", 
+  color_by = "histology"
+)
+
+```
+

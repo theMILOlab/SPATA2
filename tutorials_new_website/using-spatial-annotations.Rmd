@@ -210,7 +210,7 @@ plotSurface(coords_df2, color_by = "rel_loc", clrp_adjust = sas_areas) +
 
 Another aspect to consider is the `core` parameter. Depending on whether it is set to `core = TRUE` or `core = FALSE` the inside of the annotation is included in the gradient. It depends on the circumstances and your hypothesis whether it makes sense to include the core or not. In case of the necrotic areas we decided to set `core = FALSE` since we were particularly interested in the reaction of the surrounding of the necrotic areas. In other cases `core = TRUE` is suitable: 
 
-```{r fig.cap = "Fig.8 An example where the inclusion of the core makes sense.", fig.dim = c(9,9)}
+```{r fig.cap = "Fig.8 An example where the inclusion of the core makes sense.", fig.dim = c(6,6)}
 
 object_t275 <- 
   createNumericAnnotations(
@@ -243,11 +243,12 @@ plotSurfaceComparison(object_t275, color_by = signatures, pt_clrsp = "red", norm
   hypoxic_outline + 
   horizon_layer + 
   # use SI axes
-  ggpLayerAxesSI(object_t275, unit = "mm", breaks = str_c(c(2, 4, 6), "mm"))
+  ggpLayerAxesSI(object_t275, unit = "mm", breaks = str_c(c(2, 4, 6), "mm")) + 
+  legendLeft()
 
 plotSasLineplot(
   object = object_t275,
-  variables = rev(signatures), 
+  variables = signatures, 
   distance = "1.5mm", 
   core = TRUE, 
   line_color = "red", 

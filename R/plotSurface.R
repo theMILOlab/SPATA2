@@ -598,7 +598,7 @@ setMethod(
                         color_by,
                         alpha_by = FALSE,
                         method_gs = NULL,
-                        normalize = NULL,
+                        normalize = TRUE,
                         smooth = FALSE,
                         smooth_span = NULL,
                         pt_size = getPointSize(object, xrange, yrange),
@@ -744,9 +744,20 @@ setMethod(
 
     }
 
+    if(base::isTRUE(display_image)){
+
+      image_add_on <-
+        ggpLayerImage(object)
+
+    } else {
+
+      image_add_on <- NULL
+
+    }
+
     ggplot2::ggplot(data = plot_df) +
-      outline_add_on +
       hlpr_image_add_on(object, display_image = display_image) +
+      outline_add_on +
       point_add_on +
       confuns::scale_color_add_on(variable = plot_df$values, clrsp = pt_clrsp) +
       theme_void_custom() +

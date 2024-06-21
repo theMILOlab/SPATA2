@@ -6,22 +6,23 @@
 \usage{
 updateSpataObject(
   object,
-  method,
+  method = NULL,
   sample_name = NULL,
-  chr_to_fct = TRUE,
   n_pcs = 30,
-  verbose = TRUE
+  verbose = TRUE,
+  ....
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{method}{Character value. The name of the spatial method (platform) from
-which the data derives. Should be one of \code{base::names(spatial_methods)}.}
+\item{method}{Character value or \code{NULL}. If \code{NULL}, the functions tests whether
+the barcodes of the input object can be mapped to either of the VisiumSmall or VisiumLarge
+platform. If this does not succeed you must specify the argument. In that case it
+should be one of \code{base::names(spatial_methods)}.}
 
-\item{chr_to_fct}{Logical. SPATA2 recommends to store grouping variables as factors
-in the slot @fdata. If set to TRUE, character variables (apart from \emph{barcodes, sample, segmentation})
-of the old obejct's feature data are converted to factors.}
+\item{sample_name}{Character value. The name of the input object.}
 
 \item{n_pcs}{Numeric value. Denotes the number of principal components to be computed.}
 
@@ -29,10 +30,16 @@ of the old obejct's feature data are converted to factors.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{....}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Updates the \code{\link{SPATA2}} object to the newest version of the package.
+Updates the input object to the newest version of the package.
+}
+\note{
+\code{n_pcs} and \code{sample_name} only are if the input object derives from
+the old \code{SPATA} (not \code{SPATA2}) package!
 }

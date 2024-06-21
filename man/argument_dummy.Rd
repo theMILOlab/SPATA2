@@ -92,8 +92,11 @@ and nothing more. Using \code{expand}, the cropped image section can be adjusted
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 
+\item{grouping}{Character value. The grouping variable of interest. Use
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
+
 \item{grouping_variable}{Character value. The grouping variable of interest. Use
-\code{getGroupingOptions()} to obtain all valid input options.}
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
 \item{h}{Numeric value or vector or NULL (see details for more). Denotes the height at which
 the dendrogom is cut.}
@@ -108,7 +111,7 @@ If \code{NULL}, all image annotations are included - subsequent selection with \
 \code{test} is possible.}
 
 \item{img_name}{Character value. The name of the image of interest.
-If \code{NULL}, the active histo image is chosen by default. Either way, must
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{img_names}{Character vector. The names of the images of interest.}

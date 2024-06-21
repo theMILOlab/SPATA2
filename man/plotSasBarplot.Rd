@@ -107,6 +107,9 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{grouping}{Character value. The grouping variable of interest. Use
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
+
 \item{expand_x, expand_y}{Given to argument \code{expand} of \code{ggplot2:scale_x/y_continuous()}.}
 
 \item{...}{Needed arguments that depend on the input/unit combination. If

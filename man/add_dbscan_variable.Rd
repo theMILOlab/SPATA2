@@ -12,6 +12,7 @@ add_dbscan_variable(
   name = "dbscan",
   x = "x",
   y = "y",
+  min_cluster_size = 1,
   ...
 )
 

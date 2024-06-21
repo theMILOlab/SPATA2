@@ -1,0 +1,267 @@
+---
+title: "Surface Plotting"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, message = FALSE, class.source = "code-chunk", out.width = "50%", rows.print = 6, warning = FALSE, cache = FALSE, fig.show = "hold")
+
+devtools::load_all()
+library(tidyverse)
+
+if(TRUE){
+  
+  object_t313 <- readRDS(file = "data/object_UKF313T.RDS")    
+  
+}
+
+```
+
+## 1. Prerequisites
+
+None.
+
+## 2. Introduction
+
+Surface plotting allows to visualize the barcode-spot's information with a spatial dimension. Behind the scenes they are scatterplots whereby the x-aesthetic and y-aesthetic of the plot is mapped to the respective coordinate-variable. `SPATA2` offers a variety of functions and options to visualize expression of genes or other variables on the surface of the tissue sample.  
+
+```{r echo = T, eval = F}
+
+library(SPATA2)
+library(SPATAData)
+library(tidyverse)
+
+object_t313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", id = "UKF313T")
+
+object_t313 <- setDefault(object_t313, display_image = FALSE)
+
+plotImage(object_t313)
+
+```
+
+## 3. Basic surface plots one by one
+
+The most important function to visualize gene expression on top of the slide is `plotSurface()`. It comes with a variety of options for the plotting of both, continuous and categorical data.
+
+### 3.1 Categorical data
+
+Categorical data includes usually grouping of spots via [clustering](clustering.html) or [spatial manual annotation](spatial-segementation.html). 
+
+```{r}
+
+plotSurface(
+  object = object_t313, 
+  color_by = "bayes_space", 
+  pt_clrp = "uc"
+)
+
+plotSurface(
+  object = object_t313, 
+  color_by = "histology", 
+  pt_clrp = "npg"
+)
+
+```
+
+Using `pt_clrp` you can adjust the color palette used to display the groups. The following are predefined 
+within SPATA2 and can be used by referring to them by name. Inspect them via `showColorPalettes()`. To adjust single colors of groups use the `clrp_adjust` argument. 
+
+```{r}
+
+plotSurface(
+  object = object_t313, 
+  color_by = "bayes_space", 
+  pt_clrp = "jama", 
+  clrp_adjust = c("B4" = "black") # for single adjustments
+)
+
+plotSurface(
+  object = object_t313, 
+  color_by = "histology", 
+  pt_clrp = "npg", 
+  clrp_adjust = c("necrosis" = "black", "vivid" = "forestgreen") # ... or for multiple/all
+)
+
+```
+
+You can use the `ggpLayerGroupOutline()` function to highlight the spatial extent of groups from the same or from other grouping variables. Note, that `ggpLayerGroupOutline()` outlines observations of one and the same group. Use `ggpLayerSpatAnnOutline()` to outline [spatial annotations](using-spatial-annotations.html).
+
+```{r}
+
+# creates ggproto objects that can be added via `+`
+necrosis_outline <- 
+  ggpLayerGroupOutline(
+    object = object_t313, 
+    grouping = "histology",
+    groups_subset = "necrosis", 
+    line_size = 1.5
+  ) 
+
+cluster_outline <- 
+  ggpLayerGroupOutline(
+    object = object_t313, 
+    grouping = "bayes_space",
+    groups_subset = c("B4", "B5"), 
+    line_size = 1.5
+  ) 
+
+# plot with additional layers
+plotSurface(
+  object = object_t313, 
+  color_by = "bayes_space", 
+  pt_clrp = "uc"
+) + 
+  cluster_outline + 
+  labs(subtitle = "Cluster Outline")
+
+
+plotSurface(
+  object = object_t313, 
+  color_by = "bayes_space", 
+  pt_clrp = "uc"
+) + 
+  necrosis_outline + 
+  labs(subtitle = "Necrosis Outline")
+
+
+```
+
+### 3.2 Continuous data on the surface
+
+Continuous data, such as gene expression, gene set expression, RNA-count etc. Albeit *viridis* spectra are a commonly used you might want to try different ones. The color spectra implemented in `SPATA2` can be obtained via `validColorSpectra()` and inspected via `showColorSpectra()`.
+
+```{r}
+
+plotSurface(
+  object = object_t313,
+  color_by = "HM_HYPOXIA", 
+  pt_clrsp = "inferno" 
+)  
+
+plotSurface(
+  object = object_t313,
+  color_by = "HM_HYPOXIA",
+  alpha_by = "HM_HYPOXIA", # use alpha, too 
+  pt_clrsp = "inferno", 
+  display_image = TRUE
+) 
+
+
+```
+
+#### 3.2.1 Variable transformation
+
+The plot below does not look insightful due to the distribution of the plotted variable. The argument `transform_with` allows to perform mathematical transformation before plotting if needed. As *nCount_Spatial* is not normally distributed you might want to transform it to better visualize important information. 
+
+```{r}
+
+plotSurface(
+  object = object_t313, 
+  color_by = "nCount_Spatial", 
+  pt_clrsp = "plasma" 
+) 
+
+plotDensityplot(object = object_t313, variables = "nCount_Spatial")
+
+```
+
+```{r}
+
+
+plotSurface(
+  object = object_t313, 
+  color_by = "nCount_Spatial", 
+  pt_clrsp = "plasma", 
+  transform_with = log10 # provide the function
+) + 
+  labs(color = "Counts (log10)", subtitle = "No Outline")
+
+plotSurface(
+  object = object_t313, 
+  color_by = "nCount_Spatial", 
+  pt_clrsp = "plasma", 
+  transform_with = list(nCount_Spatial = log10) # or a named list with a function to apply
+) + 
+  labs(color = "Counts (log10)", subtitle = "Necrosis Outline") +
+  necrosis_outline
+
+```
+
+
+#### 3.2.2 Tissue outline
+
+Color spectra that plot against white require to outline the tissue. Use `ggpLayerTissueOutline()` for that matter. 
+
+```{r}
+
+# obtain computed tissue outline layer to plot against white 
+tissue_outline <- 
+  ggpLayerTissueOutline(object = object_t313, line_color = "grey")
+
+plotSurface(
+  object = object_t313, 
+  color_by = "VEGFA", 
+  pt_clrsp = "Greens 3"
+) + tissue_outline
+
+plotSurface(
+  object = object_t313,
+  color_by = "VEGFA",
+  pt_clrsp = "Greens 3", 
+  outline = TRUE # black with black/white points in the background
+) 
+
+```
+
+#### 3.2.3 Spatial smoothing
+
+Smoothing of continuous variables is possible, too. Use `smooth` and `smooth_span` for that matter. 
+
+```{r}
+
+plotSurface(
+  object = object_t313, 
+  color_by = "HM_HYPOXIA", 
+  smooth = FALSE, # the default
+  pt_clrsp = "Greens 3", 
+  outline = TRUE
+) 
+
+plotSurface(
+  object = object_t313, 
+  color_by = "HM_HYPOXIA", 
+  pt_clrsp = "Greens 3",
+  smooth = TRUE, 
+  smooth_span = 0.2, 
+  outline = T
+)  
+
+```
+
+## 4. Surface plots in comparison
+
+In order to quickly compare the spatial distribution of a set of variables of the same kind use `plotSurfaceComparison()`. 
+
+```{r out.width = "100%"}
+
+# compare gene expression on the surface
+plotSurfaceComparison(
+  object = object_t313, 
+  color_by = c("CSTB", "HM_HYPOXIA", "MYL6", "CCL2"), 
+  pt_clrsp = "Greens 3", 
+  display_image = TRUE, 
+  #smooth = TRUE, 
+  alpha_by = TRUE
+) 
+
+```
+
+
+

@@ -843,6 +843,55 @@ setMethod(
   }
 )
 
+
+
+# plotL -------------------------------------------------------------------
+
+
+
+#' @title Plot Bayes Space logliks
+#'
+#' @description Visualizes the results of `BayesSpace::qTune()` to determine
+#' the optimal number of clusters.
+#'
+#' @inherit argument_dummy params
+#' @inherit ggplot_dummy return
+#'
+#' @details For this function to work the results of [`runBayesSpaceClustering()`]
+#' are required.
+#'
+#' @export
+#'
+plotLoglik <- function(object, elbow = TRUE){
+
+  ma <- getAssay(object, assay_name = "transcriptomics")
+
+  df <- ma@analysis$bayes_space$logliks
+
+  if(purrr::is_empty(df)){
+
+    stop("No logliks found. Use `runBayesSpaceClustering()` first.")
+
+  }
+
+  if(base::isTRUE(elbow)){
+
+    elbow_add_on <- ggplot2::geom_vline(xintercept = find_elbow_point(df))
+
+  } else {
+
+    elbow_add_on <- NULL
+
+  }
+
+  ggplot2::ggplot(data = df, mapping = ggplot2::aes(x = q, y = -loglik)) +
+    elbow_add_on +
+    ggplot2::geom_path() +
+    ggplot2::geom_point() +
+    ggplot2::theme_minimal()
+
+}
+
 # plotM -------------------------------------------------------------------
 
 #' @title Plot Model Comparison Dotplot
@@ -987,5 +1036,7 @@ plotMosaicplot <- function(object,
     )
 
 }
+
+
 
 

@@ -29,12 +29,11 @@ This vignette exemplifies how to use Spatial Annotation Screening in SPATA2. It 
 library(SPATA2)
 library(tidyverse)
 
-# exchange my/path/to with your directory
-object_t313 <- loadSpataObject("my/path/to/object_UKF313T.RDS")
+object_t313 <- downloadFromPublication(pub = "kueckelhaus_et_al_2024", id = "UKF313T")
 
 ```
 
-Spatial Annotation Screening (SAS) pursues the hypothesis that specific genes - or other numeric features 343 for that matter - display non-random expression patterns in relation to spatial reference features, such as spatial annotations. SAS utilizes these reference features to incorporate the integration of potential biological forces in the identification of spatially variable genes, such as the presence of necrosis within a tumor. This allows for a supervised, hypothesis-driven screening for spatial patterns, which, unlike differential expression analysis (DEA), acknowledges the continuous nature of gene expression and avoids the limitations of group-based testing. The algorithm is wrapped up in the function `spatialAnnotationScreening()`. Note that parameters `core` and `distance` are essential for the outcome. Make sure to align either input to your questioning. See the vignette on [Using Spatial Annotations]() for more information. 
+Spatial Annotation Screening (SAS) pursues the hypothesis that specific genes - or other numeric features for that matter - display non-random expression patterns in relation to spatial reference features, such as spatial annotations. SAS utilizes these reference features to incorporate the integration of potential biological forces in the identification of spatially variable genes, such as the presence of necrosis within a tumor. This allows for a supervised, hypothesis-driven screening for spatial patterns, which, unlike differential expression analysis (DEA), acknowledges the continuous nature of gene expression and avoids the limitations of group-based testing. The algorithm is wrapped up in the function `spatialAnnotationScreening()`. Note that parameters `core` and `distance` are essential for the outcome. Make sure to align either input to your questioning. See the vignette on [Using Spatial Annotations]() for more information. 
 
 ```{r echo = T, eval = F}
 

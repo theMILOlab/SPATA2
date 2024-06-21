@@ -64,7 +64,7 @@ objects of classes for which a method has been defined.}
 \item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{img_name}{Character value. The name of the image of interest.
-If \code{NULL}, the active histo image is chosen by default. Either way, must
+If \code{NULL}, the \link[=concept_active]{active} image is chosen by default. Either way, must
 be one of \code{\link[=getImageNames]{getImageNames()}}.}
 
 \item{percentile}{Numeric value between 0 and 100 (inclusive) specifying the percentile

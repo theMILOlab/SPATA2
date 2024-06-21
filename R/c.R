@@ -338,17 +338,33 @@ compute_corr <- function(gradient, model){
 
 #' @keywords internal
 #' @export
-compute_correction_factor_sas <- function(object, ids, distance, core){
+compute_correction_factor_sas <- function(object, ids, distance, core, coords_df_sa = NULL){
 
-  orig_cdf <-
-    getCoordsDfSA(
-      object = object,
-      ids = ids,
-      distance = distance,
-      core = core,
-      periphery = FALSE,
-      verbose = FALSE
+  if(base::is.null(coords_df_sa)){
+
+    orig_cdf <-
+      getCoordsDfSA(
+        object = object,
+        ids = ids,
+        distance = distance,
+        core = core,
+        periphery = FALSE,
+        verbose = FALSE
       )
+
+  } else {
+
+    orig_cdf <-
+      dplyr::filter(coords_df_sa, rel_loc != "periphery")
+
+    if(base::isFALSE(core)){
+
+      orig_cdf <-
+        dplyr::filter(orig_cdf, rel_loc != "core")
+
+    }
+
+  }
 
   smrd_cdf <-
     dplyr::group_by(orig_cdf, id) %>%
@@ -549,6 +565,24 @@ compute_overlap_st_polygon <- function(st_poly1, st_poly2){
 
 }
 
+compute_pairwise_distances <- function(df) {
+
+  coordinates <- df[,c("barcodes", "x", "y")]
+
+  distance_matrix <-
+    stats::dist(x = coordinates[,c("x", "y")]) %>%
+    base::as.matrix()
+
+  result <-
+    S4Vectors::expand.grid(
+      barcodes1 = coordinates$barcodes,
+      barcodes2 = coordinates$barcodes
+    )
+
+  result$dist <- base::as.vector(distance_matrix)
+
+  return(result)
+}
 
 # compute spearmans rho
 compute_rho <- function(gradient, model){
@@ -766,6 +800,7 @@ computeMetaFeatures <- function(object,
 
   name1 <- stringr::str_c("n_counts_", mname)
   name2 <- stringr::str_c("n_distinct_", mname)
+  name3 <- stringr::str_c("avg_cpm_", mname)
 
   confuns::check_none_of(
     input = c(name1, name2),
@@ -794,6 +829,12 @@ computeMetaFeatures <- function(object,
     tibble::as_tibble()
 
   object <- addFeatures(object, feature_df = molecule_df, overwrite = TRUE)
+
+  # average counts per molecule
+  mdf <- getMetaDf(object)
+  mdf[[name3]] <- mdf[[name1]]/mdf[[name2]]
+
+  object <- setMetaDf(object, meta_df = mdf)
 
   returnSpataObject(object)
 

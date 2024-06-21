@@ -8,7 +8,7 @@
 addSpatialTrajectory(
   object,
   id,
-  width,
+  width = NULL,
   traj_df = NULL,
   start = NULL,
   end = NULL,

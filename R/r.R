@@ -335,8 +335,13 @@ renameSpataObject <- function(object, sample_name){
   sp_data@sample <- sample_name
 
   coords_df <- getCoordsDf(sp_data, as_is = TRUE)
-  coords_df$sample <- sample_name
-  sp_data <- setCoordsDf(sp_data, coords_df = coords_df)
+
+  if("sample" %in% base::names(coords_df)){
+
+    coords_df$sample <- sample_name
+    sp_data <- setCoordsDf(sp_data, coords_df = coords_df)
+
+  }
 
   sp_data@annotations <-
     purrr::map(
@@ -483,6 +488,7 @@ setMethod(
                         img_name,
                         unload = TRUE,
                         process = FALSE,
+                        overwrite = FALSE,
                         verbose = TRUE){
 
     sp_data <- getSpatialData(object)
@@ -494,6 +500,7 @@ setMethod(
         img_name = img_name,
         unload = unload,
         process = process,
+        overwrite = overwrite,
         verbose = verbose
       )
 
@@ -514,12 +521,14 @@ setMethod(
                         img_name,
                         unload = FALSE,
                         process = FALSE,
+                        overwrite = FALSE,
                         verbose = TRUE){
 
     confuns::check_none_of(
       input = img_name,
       against = getImageNames(object),
-      ref.against = "registered HistoImages"
+      ref.against = "registered HistoImages",
+      overwrite = overwrite
     )
 
     hist_img <-
@@ -561,7 +570,7 @@ setMethod(
         .x = hist_img_ref@scale_factors,
         .f = function(fct, name){
 
-          if(name == "coords"){
+          if(name == "image"){
 
             fct / img_scale_fct
 
@@ -862,9 +871,9 @@ relevelGroups <- function(object, grouping_variable, new_levels){
     against = getFeatureNames(object, of_class = "factor")
   )
 
-  fdf <- getMetaDf(object)
+  meta_df <- getMetaDf(object)
 
-  var <- fdf[[grouping_variable]]
+  var <- meta_df[[grouping_variable]]
 
   # dont extract levels to drop unused levels silently
   groups <- base::unique(var) %>% base::as.character()
@@ -885,7 +894,7 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
   }
 
-  fdf[[grouping_variable]] <- base::factor(x = var, levels = new_levels)
+  meta_df[[grouping_variable]] <- base::factor(x = var, levels = new_levels)
 
   object <- setMetaDf(object, meta_df = meta_df)
 
@@ -895,7 +904,7 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
     ma@analysis$dea[[grouping_variable]] <-
       purrr::map(
-        .x = object@dea[[1]][[grouping_variable]],
+        .x = ma@analysis$dea[[grouping_variable]],
         .f = function(method_list){
 
           method_list$data[[grouping_variable]] <-
@@ -916,6 +925,56 @@ relevelGroups <- function(object, grouping_variable, new_levels){
       )
 
     object <- setAssay(object, assay = ma)
+
+  }
+
+  returnSpataObject(object)
+
+}
+
+
+#' @title Remove observations with no counts
+#'
+#' @description Identifies and removes observations with no molecule counts
+#' from the `SPATA2` object.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+removeObsNoCounts <- function(object,
+                              assay_name = activeAssay(object),
+                              verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  barcodes <- getBarcodes(object)
+
+  count_mtr <-
+    getCountMatrix(object, assay_name = assay_name) %>%
+    base::as.matrix()
+
+  no_counts <- base::colSums(count_mtr, na.rm = TRUE)
+
+  keep <- base::names(no_counts[no_counts!=0])
+
+  if(base::length(keep) == base::ncol(count_mtr)){
+
+    confuns::give_feedback(
+      msg = "No observations with no counts.",
+      verbose = verbose
+    )
+
+  } else {
+
+    n <- (base::ncol(count_mtr))-(base::length(keep))
+
+    confuns::give_feedback(
+      msg = glue::glue("Removing {n} observation(s)."),
+      verbose = verbose
+    )
+
+    object <- subsetByBarcodes(object, barcodes = keep)
 
   }
 

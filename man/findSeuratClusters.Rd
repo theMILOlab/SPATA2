@@ -6,7 +6,8 @@
 \usage{
 findSeuratClusters(
   object,
-  mtr_name = getActiveMatrixName(object, of_sample = of_sample),
+  NormalizeData = list(),
+  ScaleData = list(),
   FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
   RunPCA = list(npcs = 60),
   FindNeighbors = list(dims = 1:30),
@@ -17,8 +18,12 @@ findSeuratClusters(
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{mtr_name}{Character value. The name of the matrix to extract. If
-\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
+\item{NormalizeData}{A named list of arguments given to \code{Seurat::NormalizeData()}, TRUE or FALSE.}
+
+\item{ScaleData}{A named list of arguments given to \code{Seurat::ScaleData()}, TRUE or FALSE.
+
+Hint: If set to TRUE or the argument-list provided does not specify the argument \code{features} input
+for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
 
 \item{FindVariableFeatures}{A named list of arguments given to \code{Seurat::FindVariableFeatures()}, TRUE or FALSE.}
 

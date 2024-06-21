@@ -616,6 +616,13 @@ dist_units <- c(base::names(dist_unit_abbr))
 
 empty_image <- EBImage::as.Image(x = base::matrix(0))
 
+empty_logfile_df <-
+  tibble::tibble(
+    fn_name = character(),
+    date_time = Sys.time(),
+    pkg_version = character()
+  )
+
 uol_si_abbr <- dist_unit_abbr[dist_unit_abbr != "px"]
 
 
@@ -754,9 +761,29 @@ MERFISH <-
     version = current_spata2_version
   )
 
-
 #' @export
 model_formulas <-
+  list(
+    # descending
+    descending_linear = ~ model_descending(.x, dcl = 1, ro = c(0, 1)),
+    descending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)),
+    descending_instant = ~ model_descending(.x, dcl = 10, ro = c(0, 1)),
+    # ascending
+    ascending_linear = ~ model_ascending(.x, incl = 1, ro = c(0, 1)),
+    ascending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)) %>% rev(),
+    ascending_late = ~ model_descending(.x, dcl = 10, ro = c(0, 1)) %>% rev(),
+    # peak
+    peak_sharp = ~ model_peak(.x, dos = 25, ro  = c(0, 1)),
+    peak_moderate = ~ model_peak(.x, dos = 50, ro = c(0, 1)),
+    peak_gradual = ~ model_peak(.x, dos = 100, ro = c(0, 1)),
+    # trough
+    trough_sharp = ~ model_trough(.x, dos = 25, ro  = c(0, 1)),
+    trough_moderate = ~ model_trough(.x, dos = 50, ro = c(0, 1)),
+    trough_gradual = ~ model_trough(.x, dos = 100, ro = c(0, 1))
+  )
+
+#' @export
+model_formulas_old <-
   list(
     one_peak = ~ confuns::fit_curve(.x, fn = "one_peak"),
     one_peak_rev = ~ confuns::fit_curve(.x, fn = "one_peak", rev = "y"),
@@ -777,26 +804,7 @@ model_formulas <-
     abrupt_descending = ~ confuns::fit_curve(.x, fn = "abrupt_descending")
   )
 
-#' @export
-model_formulas_new <-
-  list(
-    # descending
-    descending_linear = ~ model_descending(.x, dcl = 1, ro = c(0, 1)),
-    descending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)),
-    descending_instant = ~ model_descending(.x, dcl = 10, ro = c(0, 1)),
-    # ascending
-    ascending_linear = ~ model_ascending(.x, incl = 1, ro = c(0, 1)),
-    ascending_gradual = ~ model_descending(.x, dcl = 3.5, ro = c(0, 1)) %>% rev(),
-    ascending_late = ~ model_descending(.x, dcl = 10, ro = c(0, 1)) %>% rev(),
-    # peak
-    peak_sharp = ~ model_peak(.x, dos = 25, ro  = c(0, 1)),
-    peak_moderate = ~ model_peak(.x, dos = 50, ro = c(0, 1)),
-    peak_gradual = ~ model_peak(.x, dos = 100, ro = c(0, 1)),
-    # trough
-    trough_sharp = ~ model_trough(.x, dos = 25, ro  = c(0, 1)),
-    trough_moderate = ~ model_trough(.x, dos = 50, ro = c(0, 1)),
-    trough_gradual = ~ model_trough(.x, dos = 100, ro = c(0, 1))
-  )
+
 
 #' @export
 model_formulas_R2_est <-

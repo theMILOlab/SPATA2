@@ -1006,7 +1006,13 @@ getSasDf <- function(object,
     )
 
   cf <-
-    compute_correction_factor_sas(object, ids = ids, distance = distance, core = core)
+    compute_correction_factor_sas(
+      object = object,
+      ids = ids,
+      distance = distance,
+      core = core,
+      coords_df_sa = coords_df_sa
+      )
 
   binwidth <- as_unit(binwidth, unit = unit, object = object)
   distance <-
@@ -1040,12 +1046,6 @@ getSasDf <- function(object,
     base::diff(c(extract_value(min_dist),extract_value(distance)))
 
   span <- base::as.numeric(binwidth/dist_screened) / cf
-
-  if(base::is.numeric(list(...)[["span"]])){
-
-    span <- list(...)[["span"]]
-
-  }
 
   confuns::give_feedback(
     msg = glue::glue("`span` = {span}"),
@@ -1298,7 +1298,7 @@ getSasExprEst2D <- function(object,
     confuns::lselect(
       lst = exp_list,
       dplyr::any_of(x = "core"),
-      dplyr::all_of(x = base::names(expr_estimates)),
+      dplyr::any_of(x = base::names(expr_estimates)),
       dplyr::any_of(x = "horizon")
     ) %>%
     purrr::map(
@@ -1420,7 +1420,7 @@ setMethod(
     }
 
     getSpatialData(object) %>%
-      getScaleFactor(object = ., fct_name = fct_name)
+      getScaleFactor(object = ., fct_name = fct_name, img_name = img_name)
 
   }
 )
@@ -1569,9 +1569,9 @@ getSegmentationNames <- function(object, fdb_fn = "message", ...){
 
 
 
-#' @title Get Signatures
+#' @title Obtain molecular signatures
 #'
-#' @description Retrieves the signatures present in the given object.
+#' @description Retrieves the signatures present in the [`SPATA2`] object.
 #'
 #' @param object An object containing molecular data.
 #' @param assay_name The name of the assay containing the molecular data (default: active assay in the object).
@@ -1587,9 +1587,27 @@ getSegmentationNames <- function(object, fdb_fn = "message", ...){
 #' signatures <- getSignatures(object)
 #'
 #' @export
-getSignatures <- function(object, assay_name = activeAssay(object)){
+getSignatures <- function(object,
+                          assay_name = activeAssay(object),
+                          class = NULL){
 
-  getAssay(object, assay_name = assay_name)@signatures
+  signatures <- getAssay(object, assay_name = assay_name)@signatures
+
+  if(base::is.character(class)){
+
+    class_inp <-
+      stringr::str_c(class, collapse = "|") %>%
+      stringr::str_c("^(",. ,")")
+
+    signature_names <- base::names(signatures)
+
+    signature_sub <- stringr::str_subset(signature_names, pattern = class_inp)
+
+    signatures <- signatures[signature_sub]
+
+  }
+
+  return(signatures)
 
 }
 

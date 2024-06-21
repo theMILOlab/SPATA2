@@ -8,7 +8,7 @@ joinWithVariables(
   object,
   variables,
   spata_df = getCoordsDf(object),
-  smooth = NULL,
+  smooth = FALSE,
   smooth_span = NULL,
   normalize = NULL,
   uniform_variables = "keep",

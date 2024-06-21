@@ -2,9 +2,9 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSignatures}
 \alias{getSignatures}
-\title{Get Signatures}
+\title{Obtain molecular signatures}
 \usage{
-getSignatures(object, assay_name = activeAssay(object))
+getSignatures(object, assay_name = activeAssay(object), class = NULL)
 }
 \arguments{
 \item{object}{An object containing molecular data.}
@@ -15,7 +15,7 @@ getSignatures(object, assay_name = activeAssay(object))
 A list of character vectors.
 }
 \description{
-Retrieves the signatures present in the given object.
+Retrieves the signatures present in the \code{\link{SPATA2}} object.
 }
 \details{
 This function retrieves the signatures from the provided object. It returns a list of signatures associated with the specified assay in the object.

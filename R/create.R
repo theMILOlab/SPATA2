@@ -2846,6 +2846,7 @@ createNumericAnnotations <- function(object,
       spata_df = .,
       variables = variable,
       method_gs = method_gs,
+      smooth = FALSE,
       verbose = FALSE
     ) %>%
     confuns::transform_df(
@@ -2939,7 +2940,6 @@ createNumericAnnotations <- function(object,
       id = id,
       tags = tags,
       tags_expand = FALSE,
-      inner_borders = inner_borders,
       use_dbscan = use_dbscan,
       inner_borders = inner_borders,
       eps = eps,
@@ -4349,6 +4349,8 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
         }
       )
     )
+
+  returnSpataObject(new_object)
 
 }
 

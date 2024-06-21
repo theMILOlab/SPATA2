@@ -7,7 +7,7 @@
 ggpLayerExprEstimatesSAS(
   object,
   ids,
-  distance = distToEdge(object, id),
+  distance = "dte",
   binwidth = recBinwidth(object),
   core = FALSE,
   alpha_core = 0,

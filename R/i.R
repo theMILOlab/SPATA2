@@ -923,6 +923,8 @@ setMethod(
 #' *'any'*, spots are labeled as outliers if at least one method identifies them
 #' as outliers. If *'all'*, spots are labeled as outliers if both methods identify
 #' them as outliers.
+#' @param min_section Numeric value. The minimum number of observations a spatial cluster must
+#' contain such that the whole cluster is identified as a contiguous tissue section.
 #'
 #' @inherit argument_dummy params
 #' @inherit dbscan::dbscan params
@@ -939,21 +941,24 @@ setMethod(
 #'
 #' This function identifies spatial outliers using a combination of two methods:
 #'
-#' Method *outline*:
-#' The *outline* method involves the image based tissue outline from the
+#' Method *image*:
+#' The *image* method involves the image based tissue outline from the
 #' `identifyTissueOutline()` function. This function has created polygons that
 #' outline the tissue or tissue sections identified in the image. For each data point,
 #' the function checks which polygon it falls within and assigns it to the corresponding
 #' group. If an observation does not fall within any of the tissue polygons, it is
-#' considered a spatial outlier. As this method requires image processing steps, it does not
-#' work for platforms that do not provide images of the analyzed tissue such as
-#' *MERFISH* or *SlideSeq*.
+#' considered a spatial outlier. This method requires an image in the `SPATA2` object.
+#'
+#' (This method is particularly useful if your sample contains artefact spots that
+#' falsely obtained some reads. This might happen, for instance, if fluid transgresses
+#' the border of the tissue carrying mRNA transcripts to adjacent spots that are
+#' actually not covered by the tissue.)
 #'
 #' Method *dbscan*:
 #' The *dbscan* method applies the DBSCAN algorithm to the data points. Please
 #' refer to the documentation of `dbscan::dbscan()` for a more detailed explanation.
 #' The `eps` and `minPts` arguments are passed directly to the
-#' corresponding arguments of the DBSCAN function.Data points that are not assigned
+#' corresponding arguments of the DBSCAN function. Data points that are not assigned
 #' to any spatial cluster, indicated by being assigned to cluster 0, are considered
 #' spatial outliers.
 #'
@@ -967,7 +972,7 @@ setMethod(
 #' by default. This can, of course, be overwritten manually by the user by
 #' specifying the parameters otherwise!
 #'
-#' If `method = c('outline', 'dbscan')`, both algorithms are applied. Whether a
+#' If `method = c('image', 'dbscan')`, both algorithms are applied. Whether a
 #' data point is considered a spatial outlier depends on the `test` argument:
 #'
 #' \itemize{
@@ -977,8 +982,8 @@ setMethod(
 #'   only if both tests classify it as an outlier.
 #' }
 #'
-#' If `method = 'outline'` or `method = 'dbscan'` only one of the two
-#' methods is applied. Note that for `method = 'outline'` the results from the
+#' If `method = 'image'` or `method = 'dbscan'` only one of the two
+#' methods is applied. Note that for `method = 'image'` the results from the
 #' image processing pipeline must be available.
 #'
 #' The results can be visualized using `plotSurface(object, color_by = "section")`.
@@ -1003,9 +1008,10 @@ setMethod(
   definition = function(object,
                         method,
                         img_name = activeImage(object),
-                        buffer = NULL,
+                        buffer = 0,
                         eps = recDbscanEps(object),
                         minPts = recDbscanMinPts(object),
+                        min_section = nBarcodes(object)*0.05,
                         test = "any",
                         verbose = NULL){
 
@@ -1019,6 +1025,7 @@ setMethod(
         img_name = img_name,
         eps = eps,
         minPts = minPts,
+        min_section = min_section,
         test = test,
         verbose = verbose
       )
@@ -1038,9 +1045,10 @@ setMethod(
   definition = function(object,
                         method = c("outline", "dbscan"),
                         img_name = activeImage(object),
-                        buffer = NULL,
+                        buffer = 0,
                         eps = NULL,
                         minPts = 3,
+                        min_section = 1,
                         test = "any",
                         verbose = TRUE){
 
@@ -1051,8 +1059,17 @@ setMethod(
 
     confuns::check_one_of(
       input = method,
-      against = c("outline", "dbscan")
+      against = c("outline", "dbscan", "image")
     )
+
+    # method = outline is deprecated
+    if(method == "outline"){
+
+      method <- "image"
+
+      warning("Please use `method = 'image'` instead of `method = 'outline'`.")
+
+    }
 
     confuns::check_one_of(
       input = test,
@@ -1083,12 +1100,13 @@ setMethod(
           coords_df = coords_df,
           eps = eps,
           minPts = minPts,
-          name = "section_dbscan"
+          name = "section_dbscan",
+          min_cluster_size = min_section
         )
 
     }
 
-    if("outline" %in% method){
+    if("image" %in% method){
 
       containsTissueOutline(object, img_name = img_name, error = TRUE)
 
@@ -1096,17 +1114,12 @@ setMethod(
         getTissueOutlineDf(
           object = object,
           img_name = img_name,
+          method = "image",
           by_section = TRUE
         )
 
       # declare all obs as artefacts
       coords_df[["section_outline"]] <- "artefact"
-
-      if(!base::is.numeric(buffer)){
-
-        buffer <- getCCD(object, unit = "px")
-
-      }
 
       # then set actual section name
       for(section in base::unique(outline_df$section)){
@@ -1136,7 +1149,7 @@ setMethod(
 
     }
 
-    if(base::all(c("dbscan", "outline") %in% method)){
+    if(base::all(c("dbscan", "image") %in% method)){
 
       if(test == "any"){
 
@@ -1173,7 +1186,7 @@ setMethod(
           )
         )
 
-    } else if(method == "outline"){
+    } else if(method == "image"){
 
       coords_df <-
         dplyr::mutate(
@@ -1271,8 +1284,11 @@ setMethod(
   signature = "SPATA2",
   definition = function(object,
                         method,
+                        minPts = recDbscanMinPts(object),
+                        eps = recDbscanEps(object),
                         img_name = activeImage(object),
-                        verbose = NULL){
+                        verbose = NULL,
+                        ...){
 
     hlpr_assign_arguments(object)
 
@@ -1282,8 +1298,11 @@ setMethod(
       identifyTissueOutline(
         object = sp_data,
         method = method,
+        minPts = minPts,
+        eps = eps,
         img_name = img_name,
-        verbose = verbose
+        verbose = verbose,
+        ...
         )
 
     object <- setSpatialData(object, sp_data = sp_data)
@@ -1301,7 +1320,10 @@ setMethod(
   definition = function(object,
                         method,
                         img_name = activeImage(object),
-                        verbose = TRUE){
+                        minPts = recDbscanMinPts(object),
+                        eps = recDbscanEps(object),
+                        verbose = TRUE,
+                        ...){
 
     confuns::check_one_of(
       input = method,
@@ -1331,7 +1353,7 @@ setMethod(
 
         hist_img <- getHistoImage(object, img_name = img_name[i])
 
-        hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose)
+        hist_img <- identifyTissueOutline(object = hist_img, verbose = verbose, ...)
 
         object <- setHistoImage(object, hist_img = hist_img)
 
@@ -1339,6 +1361,9 @@ setMethod(
 
       # sets slot @outline of SpatialData object
     } else if(method == "obs"){
+
+      minPts <- as_pixel(minPts, object = object)
+      eps = as_pixel(eps, object = object)
 
       # for complete tissue
       object@outline[["tissue_whole"]] <-
@@ -1351,8 +1376,8 @@ setMethod(
       coords_df <-
         getCoordsDf(object) %>%
         add_dbscan_variable(
-          eps = as_pixel(input = recDbscanEps(object), object),
-          minPts = recDbscanMinPts(object),
+          eps = eps,
+          minPts = minPts,
           name = "section"
         ) %>%
         dplyr::filter(section != "0") %>%

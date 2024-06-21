@@ -622,7 +622,8 @@ findSDEGS <- function(object,
 #' @return A tidy spata-data.frame containing the cluster variables.
 #' @export
 findSeuratClusters <- function(object,
-                               mtr_name = getActiveMatrixName(object, of_sample = of_sample),
+                               NormalizeData = list(),
+                               ScaleData = list(),
                                FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
                                RunPCA = list(npcs = 60),
                                FindNeighbors = list(dims = 1:30),
@@ -635,8 +636,21 @@ findSeuratClusters <- function(object,
   seurat_object <-
     Seurat::CreateSeuratObject(count = getCountMatrix(object = object))
 
-  seurat_object@assays$RNA@scale.data <-
-    getMatrix(object = object, mtr_name = mtr_name, verbose = TRUE)
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "NormalizeData",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
+
+  seurat_object <-
+    confuns::call_flexibly(
+      fn = "ScaleData",
+      fn.ns = "Seurat",
+      default = list(object = seurat_object),
+      v.fail = seurat_object
+    )
 
   seurat_object <-
     confuns::call_flexibly(

@@ -4,7 +4,7 @@
 \alias{update_spata2v2_to_spata2v3}
 \title{doc}
 \usage{
-update_spata2v2_to_spata2v3(object, method, verbose = TRUE)
+update_spata2v2_to_spata2v3(object, method = NULL, verbose = TRUE)
 }
 \value{
 object

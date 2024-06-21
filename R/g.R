@@ -670,7 +670,7 @@ ggpLayerColorGroupScale <- function(object,
 
 ggpLayerExprEstimatesSAS <- function(object,
                                      ids,
-                                     distance = distToEdge(object, id),
+                                     distance = "dte",
                                      binwidth = recBinwidth(object),
                                      core = FALSE,
                                      alpha_core = 0,
@@ -3193,7 +3193,7 @@ setMethod(
   f = "ggpLayerTissueOutline",
   signature = "SPATA2",
   definition = function(object,
-                        method = NULL,
+                        method = "obs",
                         img_name = activeImage(object),
                         by_section = TRUE,
                         fragments = FALSE,
@@ -3677,7 +3677,7 @@ ggpLayerTrajectories <- function(object = "object",
 
   if(base::is.character(object)){ object <- getSpataObject(obj_name = object) }
 
-  scale_fct <- getScaleFactor(object, fct_name = "coords")
+  scale_fct <- getScaleFactor(object, fct_name = "image")
 
   segment_df <-
     purrr::map(

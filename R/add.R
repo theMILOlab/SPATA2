@@ -337,6 +337,7 @@ add_dbscan_variable <- function(coords_df,
                                 name = "dbscan",
                                 x = "x",
                                 y = "y",
+                                min_cluster_size = 1,
                                 ...){
 
   base::set.seed(123)
@@ -364,10 +365,20 @@ add_dbscan_variable <- function(coords_df,
       y = smrd_df[c(name, "x.X.temp.new_index.X.x")],
       by = name
       ) %>%
+    dplyr::group_by(x.X.temp.new_index.X.x) %>%
+    dplyr::mutate(
+      x.X.temp.count.X.x = dplyr::n(),
+      x.X.temp.new_index.X.x = dplyr::if_else(
+        x.X.temp.count.X.x >= {{min_cluster_size}},
+        true = x.X.temp.new_index.X.x,
+        false = "0"
+        )
+      ) %>%
+    dplyr::ungroup() %>%
     dplyr::mutate(
       {{name}} := dplyr::if_else(!!rlang::sym(name) == "0", true = "0", false = x.X.temp.new_index.X.x)
     ) %>%
-    dplyr::select(-x.X.temp.new_index.X.x)
+    dplyr::select(-x.X.temp.new_index.X.x, -x.X.temp.count.X.x)
 
   return(coords_df)
 
@@ -1683,7 +1694,7 @@ setMethod(
 #'
 addSpatialTrajectory <- function(object,
                                  id,
-                                 width,
+                                 width = NULL,
                                  traj_df = NULL,
                                  start = NULL,
                                  end = NULL,
@@ -1692,19 +1703,6 @@ addSpatialTrajectory <- function(object,
                                  ...){
 
   deprecated(...)
-
-  is_dist(input = width, error = TRUE)
-  width_unit <- extract_unit(width)
-
-  if(width_unit != "px"){
-
-    width <- as_pixel(input = width, object = object, add_attr = FALSE)
-
-  } else {
-
-    width <- extract_value(input = width)
-
-  }
 
   # create trajectory segment df
   if(!base::is.data.frame(traj_df)){
@@ -1756,16 +1754,41 @@ addSpatialTrajectory <- function(object,
 
   }
 
-  scale_fct_coords <- getScaleFactor(object, fct_name = "image")
+  isf <- getScaleFactor(object, fct_name = "image")
+
+  if(base::is.null(width)){
+
+    width <-
+      compute_distance(
+        starting_pos = base::as.numeric(traj_df[1 ,c("x", "y")]),
+        final_pos = base::as.numeric(traj_df[2, c("x", "y")])
+      )
+
+  } else {
+
+    is_dist(input = width, error = TRUE)
+    width_unit <- extract_unit(width)
+
+    if(width_unit != "px"){
+
+      width <- as_pixel(input = width, object = object, add_attr = FALSE)
+
+    } else {
+
+      width <- extract_value(input = width)
+
+    }
+
+  }
 
   traj_df <-
     dplyr::transmute(
       .data = traj_df,
-      x_orig = x / {{scale_fct_coords}},
-      y_orig = y / {{scale_fct_coords}}
+      x_orig = x / {{isf}},
+      y_orig = y / {{isf}}
     )
 
-  width <- width/scale_fct_coords
+  width <- width/isf
 
   # create object
   spat_traj <-
