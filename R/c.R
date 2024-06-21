@@ -27,7 +27,7 @@ center_polygon <- function(polygon, window_size) {
 #' @title Center the Borders of a Spatial Annotation
 #'
 #' @description Shifts the borders of a spatial annotation in a way that
-#' it's center corresponds to the input of `c(center_x, center_y)`.
+#' its center corresponds to the input of `c(center_x, center_y)`.
 #'
 #' @param center_x,center_y Distance measures. The new center of the
 #' spatial annotation.
@@ -781,6 +781,8 @@ computeCnvByChrArm <- function(object,
 #' @details This function computes meta features such as the number of counts
 #' and the number of distinct molecules per observation. The computed meta
 #' features are added to the input object via [`addFeatures()`].
+#'
+#' @export
 #'
 computeMetaFeatures <- function(object,
                                 assay_name = activeAssay(object),

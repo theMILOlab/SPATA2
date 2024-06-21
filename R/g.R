@@ -2647,8 +2647,6 @@ ggpLayerSpatAnnOutline <- function(object,
   # which ids to plot
   ids <- getSpatAnnIds(object, tags = tags, test = test, ids = ids)
 
-  ccd <- getCCD(object, unit = "px")
-
   out_list <-
     purrr::map(
       .x = ids,
@@ -2690,6 +2688,8 @@ ggpLayerSpatAnnOutline <- function(object,
               containsTissueOutline(object, error = TRUE)
 
               tissue_outline_df <- getTissueOutlineDf(object)
+
+              ccd <- getCCD(object, unit = "px")
 
               df_edge_incl <-
                 increase_polygon_vertices(sa_outline_df, avg_dist = ccd/4, skip = !incr_vert) %>%

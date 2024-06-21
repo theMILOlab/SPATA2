@@ -330,16 +330,19 @@ initiateSpataObjectMERFISH <- function(sample_name,
     count_mtr <-
       suppressMessages({
 
-        readr::read_csv(file = file_counts, show_col_types = FALSE)
+        readr::read_csv(file = file_counts, col_types = "c", show_col_types = FALSE)
 
       }) %>%
-      dplyr::mutate(barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_")) %>%
+      dplyr::rename(barcodes = cell) %>% # keep original barcode names for metadata   
       dplyr::select(-dplyr::matches("^\\.")) %>%
       tibble::column_to_rownames("barcodes") %>%
       dplyr::select_if(.predicate = base::is.numeric) %>%
       base::as.matrix() %>%
       base::t() %>%
       Matrix::Matrix()
+
+    original_barcodes <- colnames(count_mtr) # keep original barcode names for metadata
+    colnames(count_mtr) <- stringr::str_c("cell", 1:base::length(colnames(count_mtr)), sep = "_")
 
   } else {
 
@@ -370,8 +373,6 @@ initiateSpataObjectMERFISH <- function(sample_name,
   object <- activateAssay(object, assay_name = "transcriptomics")
   object <- activateMatrix(object, mtr_name = "counts")
 
-  object <- setAssay(object, assay = ma)
-
   # meta
   meta_df <-
     tibble::tibble(
@@ -380,6 +381,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
       )
 
   object <- setMetaDf(object, meta_df = meta_df)
+  object <- setMetaDf(object, cbind(getMetaDf(object), original_barcodes)) # add original barcodes to metadata
 
   # set active content
   object <-
@@ -388,13 +390,6 @@ initiateSpataObjectMERFISH <- function(sample_name,
       display_image = FALSE, # MERFISH does not come with an image
       pt_size = 1, # many obs of small size
       use_scattermore = TRUE # usually to many points for ggplot2 to handle
-    )
-
-  object <-
-    setCaptureArea(
-      object = object,
-      x = getCoordsRange(object)$x %>% round_range() %>% as_millimeter(input = ., object = object),
-      y = getCoordsRange(object)$y %>% round_range() %>% as_millimeter(input = ., object = object)
     )
 
   confuns::give_feedback(
