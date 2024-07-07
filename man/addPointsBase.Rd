@@ -59,3 +59,4 @@ Plots right into the plotting window.
 \description{
 Adds a point layer to a base surface plot.
 }
+\keyword{internal}

@@ -23,24 +23,4 @@ to the x- and y-coordinates.}
 \description{
 Buffers the area of a polygon.
 }
-\examples{
-
- library(ggplot2)
-
- object <- downloadSpataObject("313_T")
-
- object <- setSpatialAnnotation(object, img_ann = image_annotations[["313_T"]][["necrotic_center"]])
-
- outline1 <- getImgAnnOutlineDf(object, ids = "necrotic_center")
-
- print(outline1)
-
- outline2 <- buffer_area(outline1, buffer = 20)
-
- print(outline2)
-
- plotSurface(object) +
-  geom_polygon(data = outline1, mapping = aes(x = x, y = y), color = "black", fill = NA, size = 2) +
-  geom_polygon(data = outline2, mapping = aes(x = x, y = y), color = "red" , fill = NA, size = 2)
-
-}
+\keyword{internal}

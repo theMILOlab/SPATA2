@@ -20,64 +20,7 @@ relateToSpatialAnnotation(
   ...
 )
 }
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{input_df}{Data.frame with at least three columns.
-\itemize{
-\item{\emph{x}: }{numeric. Position of observations on x-axis.}
-\item{\emph{y}: }{numeric. Position of observations on y-axis.}
-}}
-
-\item{input_id_var}{Character value or \code{NULL}. If character, denotes
-the variable in \code{input_df} that uniquely identifies each observation.
-If \code{NULL}, a variable named \emph{inp_id} is created using the prefix *'ID'+
-and the rownumber.}
-
-\item{distance, binwidth, n_bins_circle}{If exactly two of the three arguments
-are not \code{NA_integer_} but valid input as is documented in \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}}
-the output contains binning results.}
-
-\item{calc_dist_to}{Character. One of \emph{'border'} (the default), \emph{'center'} or
-\emph{'none'}. If \emph{'border'}, the distance of every observation to its closest point
-on the spatial annotation \strong{border} is calculated. If \emph{'center'} the distance
-of every observation to the \strong{center} of the spatial annotation is computed,
-as is returned by \code{\link[=getSpatAnnCenter]{getSpatAnnCenter()}}. If \emph{'none'}, distance calculation
-is skipped.}
-
-\item{unit}{Character. The unit in which to calculate the distance.}
-
-\item{inc_outline}{Logical value. If \code{TRUE}, the function \code{\link[=include_tissue_outline]{include_tissue_outline()}}
-is used to remove observations that do not fall on the tissue section of the
-spatial annotation. See examples and documentation of \code{\link[=include_tissue_outline]{include_tissue_outline()}}
-for more information.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
-}
-\value{
-The input data.frame with additional columns:
-
-\itemize{
-\item{\emph{angle} :}{ numeric. The angle between the observation point and the center of the
-spatial annotation.}
-\item{\emph{bins_angle} :} factor. Groups created based on the variable \emph{angle}. Number of levels
-depends on input for argument \code{n_bins_angle}.
-\item{\emph{bins_circle} :} factor. Groups created based on the variable \emph{dist_to_ia}. Number of levels
-dpeends on input for arguments \code{distance}, \code{binwidth} and/or \code{n_bins_circle}.
-\item{\emph{dist_to_ia} :} numeric. Distance to the spatial annotation.
-\item{\emph{dist_unit} :} character. The unit in which distance was measured.
-}
-
-Additionally, if \code{inc_outline} is \code{TRUE}, the output variables of the function
-\code{\link[=include_tissue_outline]{include_tissue_outline()}} are added.
-}
 \description{
-Relates observations in an external data.frame
-to the spatial position and extent of an spatial annotation.
+Deprecated in favor of \code{getCoordsDfSA(..., coords_df = input_df)}
 }
+\keyword{internal}

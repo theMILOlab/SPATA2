@@ -98,11 +98,11 @@ SpatialAnnotation <- setClass(Class = "SpatialAnnotation",
 #' one corner of the rectangle, and the second value represents the diagonally opposite corner.
 #' @slot info list. List of miscellaneous meta data about the method.
 #' @slot method_specific list. List method specific data. Depending on the
-#' method the following slot names are reserved. See section *Method specifics:*
+#' method certain slot names are reserved. See section *Method specifics:*
 #' for more information.
 #' @slot name character. The name of the spatial method. (E.g. *'Visium'*)
 #' @slot observational_unit character. Name with which to refer to
-#' the data points the method focuses on. (E.g. *'barcode_spot'*)
+#' the data points the method focuses on. (E.g. *'barcode_spot'*, or *'cell'*)
 #' @slot unit character. The SI to be used by default.
 #'
 #' @section Method specifics:
@@ -359,7 +359,7 @@ GroupAnnotation <- setClass(Class = "GroupAnnotation",
 #' @slot scale_factors list. List of single numeric values serving as scale factors for
 #' multiple purposes Reserved slot names:
 #' \itemize{
-#'   \item{*coords*:} {Coordinate scale factor to be multiplied by the original x and y variables (*x_orig*, *y_orig*) upon
+#'   \item{*image*:} {Image scale factor with which the original x and y variables (*x_orig*, *y_orig*) are multiplied with upon
 #'   extraction of the coordinates data.frame (resulting in the *x* and *y* variables) ensuring alignment with the image.}
 #'   \item{*pixel*:} {Pixel scale factor used to convert pixel values into SI units. It must have an
 #'   attribute called "unit" conforming to the format "SI-unit/px".}

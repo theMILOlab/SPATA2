@@ -61,3 +61,12 @@ Use argument \code{variables} to denote the numeric variables
 of interest. First one will be mapped on to the x-axis and the second
 one on to the y-axis.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotScatterplot(object, variables = c("HM_HYPOXIA", "METRN"))
+}

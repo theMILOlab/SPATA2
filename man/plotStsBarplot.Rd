@@ -64,3 +64,13 @@ A ggplot.
 \description{
 Displays discrete variables along a trajectory.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+plotStsBarplot(object, grouping = "histology", id = "horizontal_mid")
+
+}

@@ -2,17 +2,20 @@
 % Please edit documentation in R/n.R
 \name{nBarcodes}
 \alias{nBarcodes}
+\alias{nObs}
 \title{Number of barcodes}
 \usage{
 nBarcodes(object)
+
+nObs(object)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 }
 \value{
-Numeriv value.
+Numeric value.
 }
 \description{
-Returns the number of barcodes in the sample.
+Returns the number of observations in the sample.
 }

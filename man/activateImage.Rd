@@ -66,6 +66,29 @@ then used by default in image dependent functions.
 the same way \code{activateImage()} works but never unloads and is always
 silent.
 }
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+getImageNames(object)
+
+activeImage(object)
+plotImage(object)
+
+getCoordsDf(object) # with image1
+
+object <- activateImage(object, img_name = "very_low_res")
+activeImage(object)
+plotImage(object)
+
+# note how x_orig, y_orig remain the same, but x and y differ
+getCoordsDf(object) # with very_low_res
+
+}
 \seealso{
 \code{\link[=activeImage]{activeImage()}}
 }

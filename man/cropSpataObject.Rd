@@ -38,6 +38,24 @@ Creates a subset of the original \code{SPATA2} object
 based on x- and y-range. Data poitns that fall into the
 rectangle given by \code{xrange} and \code{yrange} are kept.
 }
+\examples{
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+orig_frame <- ggpLayerFrameByCoords(object)
+
+plotSurface(object, color_by = "bayes_space")
+
+object_cropped <-
+ cropSpataObject(object, xrange = c("2mm", "4mm"), yrange = c("2mm", "4mm"))
+
+plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
+
+}
 \seealso{
 \code{\link[=ggpLayerRect]{ggpLayerRect()}} to visualize the rectangle based on which
 the subsetting is done.

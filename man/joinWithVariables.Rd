@@ -44,7 +44,7 @@ A data frame containing spatial data joined with additional variables.
 }
 \description{
 Joins data.frames of the \code{SPATA2} objects \link[=concept_observations]{observations} with additional
-variables, such as molecular data, signatures, and meta features.
+\link[=concept_variables]{variables}, such as molecular data, signatures, and meta features.
 }
 \details{
 This function joins spatial data from \code{spata_df} with additional variables specified in 'variables'.

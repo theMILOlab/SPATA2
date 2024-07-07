@@ -19,7 +19,7 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-An updated \code{spata2} object.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Removes unwanted data points from the object without any significant
@@ -27,4 +27,24 @@ post processing.
 }
 \details{
 Unused levels of factor variables in the feature data.frame are dropped.
+}
+\examples{
+library(SPATA2)
+library(dplyr)
+library(patchwork)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+barcodes_keep <-
+ getMetaDf(object) \%>\%
+ filter(bayes_sapce \%in\% c("3", "2", "1")) \%>\%
+ pull(barcodes)
+
+object_sub <- subsetByBarcodes(object, barcodes = barcodes_keep)
+
+plotSurface(object, color_by = "bayes_space") +
+ plotSurface(object_sub, color_by = "bayes_space")
+
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{spatialAnnotationScreening}
 \alias{spatialAnnotationScreening}
-\title{Implementation of the SAS-algorithm}
+\title{The Spatial Annotation Screening algorithm}
 \usage{
 spatialAnnotationScreening(
   object,
@@ -87,6 +87,38 @@ in meaningful, spatial relation to annotated structures/areas, \link[=concept_sp
 For a detailed explanation on how to define the parameters \code{distance},
 \code{n_bins_dist}, \code{binwidth}, \code{angle_span} and \code{n_bins_angle}
 see details section.
+}
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+
+# opt 1 prefiltering by SPARKX is recommended, but not required
+object <- runSPARKX(object)
+genes <- getSparkxGenes(object)
+
+# opt 2
+genes <- getGenes(object)
+
+
+sas_out <-
+ spatialAnnotationScreening(
+   object = object,
+   ids = ids,
+   variables = genes,
+   core = FALSE
+   )
+
 }
 \seealso{
 \code{\link[=createGroupAnnotations]{createGroupAnnotations()}}, \code{\link[=createImageAnnotations]{createImageAnnotations()}},

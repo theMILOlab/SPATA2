@@ -4,7 +4,7 @@
 \alias{addInnerBorder}
 \alias{addInnerBorder,SPATA2-method}
 \alias{addInnerBorder,SpatialAnnotation-method}
-\title{Add Holes to Spatial Annotations}
+\title{Add holes to spatial annotations}
 \usage{
 addInnerBorder(object, ...)
 
@@ -43,6 +43,46 @@ be called \emph{x_orig} and \emph{y_orig} and should be scaled correspondingly. 
 used with the \code{\link{SPATA2}} object, the variables can be called \emph{x} and \emph{y}, too.
 In that case, the function assumes that the coordinates are scaled to the
 image that is currently active and creates \emph{x_orig} and \emph{y_orig} accordingly.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+create_circle_polygon <- function(p, r, n) {
+
+ angles <- seq(0, 2 * pi, length.out = n + 1)
+
+ x_coords <- p[1] + r * cos(angles)
+ y_coords <- p[2] + r * sin(angles)
+
+ polygon_df <- data.frame(x = x_coords, y = y_coords)
+
+ return(polygon_df)
+
+}
+
+center <-
+ getCoordsDf(object)[c("x", "y")] \%>\%
+ map_dbl(.f = mean)
+
+area_circle <- create_circle_polygon(center, r = 75, n = 100)
+
+object <- addSpatialAnnotation(object, area = list(outer = area_circle), id = "circle")
+
+plotSpatialAnnotations(object, ids = "circle")
+
+hole <- create_circle_polygon(center, r = 25, n = 100)
+
+object <- addInnerBorder(object, id = "circle", border_df = hole, new_id = "circle_with_hole")
+
+plotSpatialAnnotations(object, ids = c("circle", "circle_with_hole"))
+
+
 }
 \seealso{
 \code{\link[=activeImage]{activeImage()}}, \code{\link{SpatialAnnotation}}

@@ -154,12 +154,11 @@ setMethod(
   }
 )
 
-#' @title Obtain specific barcodes
+#' @title Obtain barcodes
 #'
 #' @description Returns a character vector of barcode names. See details for more.
 #'
-#' @inherit across_dummy params
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #'
 #' @details If argument \code{across} is specified the output is named according
 #' to the group membership the variable specified assigns the barcode spots to.
@@ -170,17 +169,6 @@ setMethod(
 #'
 #' @return Named character vector or list.
 #' @export
-#'
-#' @examples #Not run:
-#'
-#'   # get barcodes of those barcode spots that are assigned
-#'   # to groups 'cluster_1', 'cluster_3' and 'cluster_5' by
-#'   # the variable 'my_cluster'
-#'
-#'   getBarcodes(object = spata_obj,
-#'               across = "my_cluster",
-#'               across_subset = c("cluster_1", "cluster_3", "cluster_5"),
-#'               simplify = TRUE)
 #'
 
 getBarcodes <- function(object,
@@ -1690,7 +1678,6 @@ getDeaOverview <- function(object, assay_name = activeAssay(object)){
 #' analysis results. Function \code{getDeaGenes()} is a wrapper around
 #' \code{getDeaResultsDf()} and returns only gene names in a character vector.
 #'
-#' @inherit across_dummy params
 #' @inherit check_method params
 #' @inherit check_sample params
 #' @inherit filterDeaDf params details
@@ -2427,19 +2414,12 @@ getGroupingOptions <- function(object, ...){
 #'
 #' @description Extracts the group names of a grouping variable.
 #'
-#' @inherit across_dummy params
 #' @inherit argument_dummy params
-#' @inherit check_sample params
 #'
 #' @return Character vector
 #' @export
 #'
-#' @examples #Not run:
-#'
-#'  # obtain all group names the variable 'my_cluster'
-#'  # contains
-#'
-#'  getGroupNames(object = object, grouping_variable = "my_cluster")
+#' @inherit relevelGroups examples
 #'
 
 getGroupNames <- function(object, grouping,...){
@@ -2472,7 +2452,6 @@ getGroupNames <- function(object, grouping,...){
 #' @description Extracts results from gene set enrichment analysis
 #' in form of a data.frame.
 #'
-#' @inherit across_dummy params
 #' @inherit check_method params
 #' @inherit argument_dummy params
 #'

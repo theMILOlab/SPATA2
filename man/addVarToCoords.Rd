@@ -27,3 +27,4 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Adds variables to the coordinates data.frame in slot @coordinates.
 }
+\keyword{internal}

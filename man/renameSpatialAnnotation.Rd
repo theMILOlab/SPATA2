@@ -22,3 +22,17 @@ renamed.}
 \description{
 Renames spatial annotation.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+plotSpatialAnnotations(object)
+
+object <- renameSpatialAnnotation(object, id = "necrotic_area", new_id = "Necrotic_Area_Cap")
+
+plotSpatialAnnotations(object)
+
+}

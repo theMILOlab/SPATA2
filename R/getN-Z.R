@@ -502,6 +502,60 @@ getPointSize <- function(object,
 
 }
 
+
+#' @title Obtain processed data matrix
+#'
+#' @description Extracts a processed data matrix.
+#'
+#' @param mtr_name Character value. The name of the processed matrix of interest.
+#'
+#' @inherit argument_dummy params
+#' @inherit matrix_dummy return
+#'
+#' @note The argument `mtr_name` must be specified in contrast to `getMatrix()`.
+#'
+#' @seealso [`getCountMatrix()`], [`getMatrix()`], [`getProcessedMatrixNames()'],
+#' [`getMatrixNames()`]
+#'
+#' @export
+
+setGeneric(name = "getProcessedMatrix", def = function(object, ...){
+
+  standardGeneric(f = "getProcessedMatrix")
+
+})
+
+#' @rdname getProcessedMatrix
+#' @export
+
+setMethod(
+  f = "getProcessedMatrix",
+  signature = "SPATA2",
+  definition = function(object, mtr_name, assay_name = activeAssay(object), ...){
+
+    getAssay(object, assay_name = assay_name) %>%
+      getProcessedMatrix(object = ., mtr_name = mtr_name)
+
+  }
+)
+
+#' @rdname getProcessedMatrix
+#' @export
+setMethod(
+  f = "getProcessedMatrix",
+  signature = "MolecularAssay",
+  definition = function(object, mtr_name, ...){
+
+    confuns::check_one_of(
+      input = mtr_name,
+      against = getProcessedMatrixNames(object)
+    )
+
+    object@mtr_proc[[mtr_name]]
+
+  }
+)
+
 #' @title Obtain names of processed matrices
 #'
 #' @description Extract names of processed matrices.
@@ -1484,7 +1538,7 @@ setMethod(
         }
 
     } else { # default if not image or pixel scale factor
-      
+
           if(containsHistoImages(object)){
 
             out <-
@@ -1503,7 +1557,7 @@ setMethod(
             }
 
           }
-      
+
       }
 
     return(out)
@@ -1546,13 +1600,13 @@ setMethod(
 #' @return Character vector.
 #' @export
 #'
-getSegmentationNames <- function(object, fdb_fn = "message", ...){
+getSpatSegmVarNames <- function(object, fdb_fn = "message", ...){
 
-  out <- object@obj_info$segmentation_variable_names
+  out <- object@obj_info$spat_segm_vars
 
   if(!base::length(out) >= 1){
 
-    msg <- "No segmentation variables have been added. Use 'createSegmentation()' for that matter."
+    msg <- "No segmentation variables have been added. Use 'createSpatialSegmentation()' for that matter."
 
     give_feedback(
       msg = msg,
@@ -1658,7 +1712,7 @@ getSignatureTypeList <- function(object, signatures = NULL){
 
 
 
-#' @rdname runSparkx
+#' @rdname runSPARKX
 #' @export
 getSparkxGeneDf <- function(object, threshold_pval = 1, arrange_pval = TRUE){
 
@@ -1672,7 +1726,7 @@ getSparkxGeneDf <- function(object, threshold_pval = 1, arrange_pval = TRUE){
 
 }
 
-#' @rdname runSparkx
+#' @rdname runSPARKX
 #' @export
 getSparkxGenes <- function(object, threshold_pval){
 
@@ -1681,7 +1735,7 @@ getSparkxGenes <- function(object, threshold_pval){
 
 }
 
-#' @rdname runSparkx
+#' @rdname runSPARKX
 #' @export
 getSparkxResults <- function(object,
                              assay_name = activeAssay(object),
@@ -2642,9 +2696,22 @@ getSpatAnnSf <- function(object, id, img_name = activeImage(object)){
 #' have been tagged.
 #'
 #' @inherit argument_dummy
+#' @param simplify Logical value. If `TRUE`, the default, a character vector
+#' of unique tags is returned. If `FALSE`, a list of character vectors is returned
+#' named by the spatial annotation to which the tags belong.
 #'
-#' @return Character vector.
+#' @return Character vector or named list of such.
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' getSpatAnnTags(object, simplify = FALSE)
+#' getSpatAnnTags(object)
 #'
 setGeneric(name = "getSpatAnnTags", def = function(object, ...){
 
@@ -2657,10 +2724,10 @@ setGeneric(name = "getSpatAnnTags", def = function(object, ...){
 setMethod(
   f = "getSpatAnnTags",
   signature = "SPATA2",
-  definition = function(object){
+  definition = function(object, simplify = TRUE){
 
     getSpatialData(object) %>%
-      getSpatAnnTags()
+      getSpatAnnTags(simplify = simplify)
 
   }
 )
@@ -2670,7 +2737,7 @@ setMethod(
 setMethod(
   f = "getSpatAnnTags",
   signature = "SpatialData",
-  definition = function(object){
+  definition = function(object, simplify = TRUE){
 
     if(nSpatialAnnotations(object) >= 1){
 
@@ -2678,9 +2745,15 @@ setMethod(
         purrr::map(
           .x = getSpatialAnnotations(object, add_image = FALSE, add_barcodes = FALSE),
           .f = ~ .x@tags
-        ) %>%
-        purrr::flatten_chr() %>%
-        base::unique()
+        )
+
+      if(base::isTRUE(simplify)){
+
+        out <-
+          purrr::flatten_chr(out) %>%
+          base::unique()
+
+      }
 
     } else {
 
@@ -3021,7 +3094,7 @@ setMethod(
                         class = NULL,
                         tags = NULL,
                         test = "any",
-                        add_image = containsImage(objec),
+                        add_image = containsImage(object),
                         expand = 0,
                         square = FALSE,
                         error = FALSE,

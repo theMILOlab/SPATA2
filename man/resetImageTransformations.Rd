@@ -32,6 +32,29 @@ The updated input object, containing the added, removed or computed results.
 Resets the transformation values of an image defined
 by usage of \code{\link[=alignImage]{alignImage()}}, \code{\link[=alignImageAuto]{alignImageAuto()}} or \code{\link[=alignImageInteractive]{alignImageInteractive()}}.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+plotImage(object)
+
+object <- alignImage(object, img_name = "lowres", angle = 90)
+
+# note that $angle contains instructions to rotate the image to 90°
+getImageTransformations(object, img_name = "lowres")
+
+plotImage(object)
+
+object <- resetImageTransformations(object, img_name = "lowres")
+
+getImageTransformations(object, img_name = "lowres")
+
+plotImage(object)
+
+}
 \seealso{
 \code{\link[=getImageTransformations]{getImageTransformations()}}
 }

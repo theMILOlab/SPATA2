@@ -33,6 +33,21 @@ List of ggpLayer outputs.
 Adds the capture area as a rectangular and/or
 crops the frame of the plot accordingly.
 }
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotImage(object) +
+ ggpLayerCaptureArea(object, opt = "rect")
+
+plotImage(object) +
+ ggpLayerCaptureArea(object, opt = "crop")
+
+}
 \seealso{
 \code{\link[=getCaptureArea]{getCaptureArea()}}
 }

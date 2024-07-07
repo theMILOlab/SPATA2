@@ -132,3 +132,4 @@ Where \code{nl} is the noise level of the simulation, \code{sim_id} corresponds 
 the slot \emph{id} of the simulation list and \code{n} is the index of the simulation
 in case slot \emph{n} of the simulation instruction is bigger than one.
 }
+\keyword{internal}

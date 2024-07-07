@@ -38,13 +38,15 @@ one assay: Denotes the assay of interest. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
 }
 \value{
-A matrix with rownames corresponding to the features and
-column names corresponding to the barcodes. Or a named list of such in
+A numeric matrix with rownames corresponding to molecule names and
+column names corresponding to barcodes. Or a named list of such in
 case of \code{getMatrices()}.
 }
 \description{
-Extracts matrices of molecular data.
+Extracts a matrix or multiple matrices of molecular data.
 }
 \seealso{
-\code{\link[=getMatrixNames]{getMatrixNames()}}, \code{\link[=getProcessedMatrixNames]{getProcessedMatrixNames()}}
+\code{\link[=getCountMatrix]{getCountMatrix()}} to extract raw counts without additional argument
+specification required, \code{\link[=getMatrixNames]{getMatrixNames()}} for a vector of all matrix names of
+an assay, \code{\link[=getProcessedMatrixNames]{getProcessedMatrixNames()}} for a vector of all processed matrix of an assay.
 }

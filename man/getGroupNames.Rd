@@ -22,11 +22,25 @@ Character vector
 Extracts the group names of a grouping variable.
 }
 \examples{
-#Not run:
+library(SPATA2)
+library(patchwork)
 
- # obtain all group names the variable 'my_cluster'
- # contains
+data("example_data")
 
- getGroupNames(object = object, grouping_variable = "my_cluster")
+object <- example_data$object_UKF269T_diet
 
+p_before <- plotSurface(object, color_by = "bayes_space")
+
+plot(p_before)
+
+getGroupNames(object, grouping = "bayes_space")
+
+object <- relevelGroups(object, grouping = "bayes_space", new_levels = c("1", "2", "3", "7", "6", "5", "4"))
+
+getGroupNames(object, grouping = "bayes_space")
+
+p_afterwards <- plotSurface(object, color_by = "bayes_space")
+
+# different levels -> different order -> different color assignment
+p_before + p_afterwards
 }

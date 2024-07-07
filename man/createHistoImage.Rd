@@ -57,18 +57,20 @@ all together in the object which can occupy a lot of unnecessary memory
 storage. The \code{HistoImage} can be created in three ways.
 
 First (recommended): The directory is specified via \code{dir} and \code{img} is \code{NULL}.
-In this case, the function reads the image from the directory and stores both
-in the \code{HistoImage} container. Since the directory is stored, too, the image
-can be conveniently unloaded and loaded in downstream analysis.
+In this case, the function reads the image from the directory and stores both,
+the image as well as the directoryin the \code{HistoImage} container. Since the
+directory is stored, too, the image can be conveniently unloaded and loaded
+in downstream analysis.
 
 Second: The image is provided via \code{img} and the directory \code{dir} is \code{NULL}.
 In this case, the function creates the \code{HistoImage} container and stores the
-image but since no directory is available, loading and unloading later on
+image but since no directory is available, unloading and loading later on
 is not possible.
 
 Third: Both, \code{img} and \code{dir} is specified. In this case, the image is stored
-in the \code{HistoImage} container next to the directory and the directory is used
-to save the image on the device which allows loading and unloading later on.
+in the \code{HistoImage} container next to the directory and if the directory \code{dir}
+does not exist, the directory is used to save the image on the device which
+allows unloading and loading later on.
 }
 \seealso{
 \code{\linkS4class{HistoImage}}

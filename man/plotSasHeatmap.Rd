@@ -94,3 +94,28 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 \code{\link[=concept_distance_measure]{here}} to read it.
 }
 
+\examples{
+library(SPATA2)
+library(ggplot2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+
+object <- normalizeCounts(object, activate = T)
+
+# visualize with lines
+plotSasLineplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+  labs(x = "Distance to Necrosis")
+
+# visualize with ridgeplots
+plotSasRidgeplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+  labs(x = "Distance to Necrosis")
+
+# visualize with a heatmap
+plotSasHeatmap(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+  labs(x = "Distance to Necrosis")
+
+}

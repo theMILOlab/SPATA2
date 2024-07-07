@@ -37,6 +37,27 @@ the computational progress will be printed.
 \description{
 Sets and extracts the active (default) matrix of a \code{\link{MolecularAssay}}.
 }
+\examples{
+
+library(SPATA2)
+library(ggplot2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <- normalizeCounts(object, mtr_name = "LogNormalize")
+
+p1 <- plotSurface(object, color_by = "METRN") + labs(subtitle = activeMatrix(object))
+
+object <- activateMatrix(object, mtr_name = "LogNormalize")
+
+p2 <- plotSurface(object, color_by = "METRN") + labs(subtitle = activeMatrix(object))
+
+plot(p1)
+plot(p2)
+
+}
 \seealso{
 \code{\link[=getMatrix]{getMatrix()}}
 }

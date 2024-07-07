@@ -13,6 +13,14 @@
 #' \code{activeAssay()}: Character value. Name of the default assay.
 #'
 #' @export
+#'
+#' @examples
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' activeAssay(object)
+#'
 activateAssay <- function(object, assay_name, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -55,7 +63,7 @@ activeAssay <- function(object){
 #' \code{activateGrouping()}: Updated `SPATA2` object.
 #' \code{activeGrouping()}: Character value. Name of the default grouping variable.
 #'
-#' @export
+#' @keywords internal
 activateGrouping <- function(object, grouping, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -76,7 +84,7 @@ activateGrouping <- function(object, grouping, verbose = NULL){
 }
 
 #' @rdname activateGrouping
-#' @export
+#' @keywords internal
 activeGrouping <- function(object, verbose = NULL, arg = "across"){
 
   hlpr_assign_arguments(object)
@@ -113,6 +121,28 @@ activeGrouping <- function(object, verbose = NULL, arg = "across"){
 #'
 #' @return Character value.
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' getImageNames(object)
+#'
+#' activeImage(object)
+#' plotImage(object)
+#'
+#' getCoordsDf(object) # with image1
+#'
+#' object <- activateImage(object, img_name = "very_low_res")
+#' activeImage(object)
+#' plotImage(object)
+#'
+#' # note how x_orig, y_orig remain the same, but x and y differ
+#' getCoordsDf(object) # with very_low_res
 #'
 setGeneric(name = "activeImage", def = function(object, ...){
 
@@ -165,6 +195,8 @@ setMethod(
 #' @seealso [`activeImage()`]
 #'
 #' @export
+#'
+#' @inherit activeImage examples
 #'
 setGeneric(name = "activateImage", def = function(object, ...){
 
@@ -358,6 +390,27 @@ setMethod(
 #' @seealso [`getMatrix()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(ggplot2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <- normalizeCounts(object, mtr_name = "LogNormalize")
+#'
+#' p1 <- plotSurface(object, color_by = "METRN") + labs(subtitle = activeMatrix(object))
+#'
+#' object <- activateMatrix(object, mtr_name = "LogNormalize")
+#'
+#' p2 <- plotSurface(object, color_by = "METRN") + labs(subtitle = activeMatrix(object))
+#'
+#' plot(p1)
+#' plot(p2)
+#'
 activateMatrix <- function(object, mtr_name, assay_name = activeAssay(object), verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -443,8 +496,8 @@ affineNumInput <- function(inputId, value){
 #' See details for more.
 #' @param opt Character value. Either *'add'* or *'set'*. Decides whether the
 #' input adjustments are added to the existing ones or set (replacing them).
-#' @param angle Numeric value ranging between 0-359. Determines if the image
-#' is supposed to be rotated in **clockwise** direction.
+#' @param angle Numeric value ranging between 0-359. Determines if/how much the image
+#' is supposed to be rotated. Always rotates in **clockwise** direction.
 #' @param flip_h,flip_v Logical values. Determine if the image is supposed
 #' to be flipped around the **h**orizontal or **v**ertical axis.
 #' @param stretch_h,stretch_v Numeric values. Determine if and how the image
@@ -463,6 +516,63 @@ affineNumInput <- function(inputId, value){
 #' otbain the instructions currently stored.
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' @examples
+#'
+#' # ----- prepare
+#' library(SPATA2)
+#' library(EBImage)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' img_bad <-
+#'   getImage(object) %>%
+#'   translate(v = c(25, 20), bg.col = "green")
+#'
+#' #----- opt = "set" (the default)
+#' object <- registerImage(object, img = img_bad, img_name = "bad", overwrite = T)
+#' object <- activateImage(object, img_name = "bad")
+#'
+#' plotSurface(object, pt_clr = "red", display_image = T)
+#'
+#' object <- alignImage(object, img_name = "bad", opt = "set", transl_h = -25, transl_v = -20)
+#'
+#' plotSurface(object, pt_clr = "red", display_image = T)
+#'
+#' #----- opt = "add"
+#' object <- registerImage(object, img = img_bad, img_name = "bad", overwrite = T)
+#' object <- activateImage(object, img_name = "bad")
+#'
+#' plotSurface(object, pt_clr = "red", display_image = T)
+#'
+#' object <- alignImage(object, img_name = "bad", opt = "add", transl_h = -15, transl_v = -10)
+#'
+#' plotSurface(object, pt_clr = "red", display_image = T)
+#'
+#' object <- alignImage(object, img_name = "bad", opt = "add", transl_h = -10, transl_v = -10)
+#'
+#' plotSurface(object, pt_clr = "red", display_image = T)
+#'
+#' # ----- interactive
+#'
+#' if(FALSE){ # diffused, run separately
+#'
+#'   object <- alignImageInteractive(object)
+#'
+#' }
+#'
 
 setGeneric(name = "alignImage", def = function(object, ...){
 
@@ -704,7 +814,7 @@ setMethod(
 
 
 #' @rdname alignImage
-#' @export
+#' @keywords internal
 setGeneric(name = "alignImageAuto", def = function(object, ...){
 
   standardGeneric(f = "alignImageAuto")
@@ -712,7 +822,7 @@ setGeneric(name = "alignImageAuto", def = function(object, ...){
 })
 
 #' @rdname alignImage
-#' @export
+#' @keywords internal
 setMethod(
   f = "alignImageAuto",
   signature = "SpatialData",
@@ -1445,7 +1555,6 @@ setMethod(
                 expand = FALSE
               ) +
               theme_image(bg_transparent = TRUE)
-
 
           })
 
@@ -2358,6 +2467,13 @@ alignImageInteractiveUI <- function(window_size = "800px"){
 #' or all values are valid area inputs.
 #'
 #' @export
+#'
+#' @examples
+#' are_all_area_or_dist(c("2mm", "2cm", "3px", "4.5mm2")) # TRUE
+#'
+#' are_all_area_or_dist(c("2mm", "2CCm", "3px", "4.5mm2")) # FALSE
+#'
+#' are_all_area_or_dist(c("2mm", "2CCm", "3px", "4.5mm2"), error = T) # FALSE -> error
 #'
 are_all_area_or_dist <- function(input, error = FALSE){
 

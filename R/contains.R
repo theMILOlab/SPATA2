@@ -5,7 +5,7 @@
 #'
 #' @inherit argument_dummy params
 #'
-#' @return TRUE if the assay is found in the object, FALSE otherwise.
+#' @return Logical value.
 #'
 #' @seealso [`getAssayNames()`], [`MolecularAssay`]
 #'
@@ -461,7 +461,7 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
-#' @export
+#' @keywords internal
 setGeneric(name = "containsPseudoImage", def = function(object, ...){
 
   setGeneric(name = "containsPseudoImage")
@@ -469,7 +469,6 @@ setGeneric(name = "containsPseudoImage", def = function(object, ...){
 })
 
 #' @rdname containsPseudoImage
-#' @export
 setMethod(
   f = "containsPseudoImage",
   signature = "ANY",
@@ -561,48 +560,6 @@ setMethod(
   }
 )
 
-
-#' @title Check availability of section variable
-#'
-#' @description Tests if the results of [`identifySpatialOutliers()`] exist
-#' in the object, namely a variable called *section* in the coordinates
-#' data.frame.
-#'
-#' @inherit argument_dummy params
-#'
-#' @seealso [`containsSpatialOutliers()`] to check if the section variable
-#' contains any identified spatial outliers.
-#'
-#' @return Logical value.
-#' @export
-#'
-setGeneric(name = "containsSectionVariable", def = function(object, ...){
-
-  standardGeneric(f = "containsSectionVariable")
-
-})
-
-#' @rdname containsSectionVariable
-#' @export
-setMethod(
-  f = "containsSectionVariable",
-  signature = "ANY",
-  definition = function(object, error = FALSE, ...){
-
-    coords_df <- getCoordsDf(object)
-
-    out <- "section" %in% base::colnames(coords_df)
-
-    feedback_missing(
-      x = out,
-      use_fn = "identifySpatialOutliers",
-      error = error
-    )
-
-    return(out)
-
-  }
-)
 
 #' @title Checks availability of `SpatialData` object
 #'
@@ -704,7 +661,7 @@ setMethod(
   signature = "ANY",
   definition = function(object, error = FALSE){
 
-    out <- getSpatialMethod(object)@observational_unit == "spot"
+    out <- stringr::str_detect(getSpatialMethod(object)@observational_unit, "spot")
 
     if(base::isFALSE(out) && base::isTRUE(error)){
 

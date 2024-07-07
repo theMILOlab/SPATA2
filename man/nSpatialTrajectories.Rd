@@ -17,5 +17,5 @@ objects of classes for which a method has been defined.}
 Numeric value.
 }
 \description{
-Returns the number of \code{SpatialTrajectries}-objects in the sample.
+Returns the number of \code{\link{SpatialTrajectory}} objects in the sample.
 }

@@ -23,3 +23,26 @@ Character value.
 Handy functions to quickly access the name of currently
 activated content.
 }
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+getImageNames(object)
+
+activeImage(object)
+plotImage(object)
+
+getCoordsDf(object) # with image1
+
+object <- activateImage(object, img_name = "very_low_res")
+activeImage(object)
+plotImage(object)
+
+# note how x_orig, y_orig remain the same, but x and y differ
+getCoordsDf(object) # with very_low_res
+
+}

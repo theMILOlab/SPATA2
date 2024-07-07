@@ -102,9 +102,9 @@ setMethod(
 
 # plotP -------------------------------------------------------------------
 
-#' @rdname plotUmap
+#' @rdname plotUMAP
 #' @export
-plotPca <- function(object,
+plotPCA <- function(object,
                     color_by = NULL,
                     n_pcs = NULL,
                     method_gs = NULL,
@@ -239,6 +239,10 @@ plotPca <- function(object,
     )
 
 }
+
+#' @rdname plotUMAP
+#' @export
+plotPca <- plotPCA
 
 
 #' @title Plot Pca Variation
@@ -502,7 +506,18 @@ plotRidgeplot <- function(object,
 #' riverplots check out the website of the package \code{ggalluvial} at
 #' \emph{https://corybrunson.github.io/ggalluvial/articles/ggalluvial.html}.
 #'
-#' @return A ggplot.
+#' @inherit ggplot_dummy return
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotRiverplot(object, grouping_variables = c("seurat_clusters", "bayes_space"), fill_by = "bayes_space")
+#'
+#'
 #' @export
 #'
 plotRiverplot <- function(object,
@@ -536,7 +551,7 @@ plotRiverplot <- function(object,
   )
 
   plot_df <-
-    getFeatureDf(object) %>%
+    getMetaDf(object) %>%
     dplyr::select(dplyr::all_of(all_vars)) %>%
     dplyr::group_by_all() %>%
     dplyr::summarize(n = dplyr::n(), .groups = "keep")
@@ -571,7 +586,8 @@ plotRiverplot <- function(object,
       clrp.adjust = clrp_adjust,
       ...
     ) +
-    ggplot2::theme_void()
+    ggplot2::theme_void() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text())
 
 }
 
@@ -587,6 +603,29 @@ plotRiverplot <- function(object,
 #' @inherit argument_dummy params
 #'
 #' @inheritSection section_dummy Distance measures
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#' plotSurface(object, color_by = "bayes_space") +
+#'   ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann")
+#'
+#' plotSasBarplot(object, grouping = "bayes_space", id = "hypoxia_ann")
 #'
 #' @export
 #'
@@ -617,14 +656,16 @@ plotSasBarplot <- function(object,
       distance = distance,
       binwidth = binwidth,
       angle_span = angle_span,
-      variables = grouping,
       core = FALSE,
       periphery = FALSE
     )
 
+  coords_df_sas <-
+    joinWithVariables(object, variables = grouping, spata_df = coords_df_sas)
+
   p_out <-
     plot_sgs_barplot(
-      coords_df_sgs,
+      coords_df_sas,
       grouping = grouping,
       round = round,
       clrp = clrp,
@@ -637,7 +678,7 @@ plotSasBarplot <- function(object,
 
   p_out +
     ggplot2::labs(
-      x = glue::glue("Distance to Annotation"),
+      x = glue::glue("Distance to Annotation ({unit})"),
       y = c("fill" = "Percentage [%]", "count" = "Count")[position]
     )
 
@@ -658,6 +699,31 @@ plotSasBarplot <- function(object,
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(ggplot2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' object <- normalizeCounts(object, activate = T)
+#'
+#' # visualize with lines
+#' plotSasLineplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+#'   labs(x = "Distance to Necrosis")
+#'
+#' # visualize with ridgeplots
+#' plotSasRidgeplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+#'   labs(x = "Distance to Necrosis")
+#'
+#' # visualize with a heatmap
+#' plotSasHeatmap(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+#'   labs(x = "Distance to Necrosis")
+#'
 
 plotSasHeatmap <- function(object,
                            variables,
@@ -756,11 +822,12 @@ plotSasHeatmap <- function(object,
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
-#' @inherit ggpLayerLineplotAid params
 #'
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
+#'
+#' @inherit plotSasHeatmap examples
 #'
 plotSasLineplot <- function(object,
                             variables,
@@ -866,12 +933,13 @@ plotSasLineplot <- function(object,
 #' @inherit plotTrajectoryLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
-#' @inherit ggpLayerLineplotAid params
 #' @inherit plotSasLineplot
 #'
 #' @inheritSection section_dummy Distance measures
 #'
 #' @export
+#'
+#' @inherit plotSasHeatmap examples
 #'
 plotSasRidgeplot <- function(object,
                              variables,
@@ -975,6 +1043,15 @@ plotSasRidgeplot <- function(object,
 #' @param ... Additional arguments given to \code{ggplot2::geom_smooth()}.
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotScatterplot(object, variables = c("HM_HYPOXIA", "METRN"))
 
 plotScatterplot <- function(object,
                             variables,
@@ -1071,6 +1148,21 @@ plotScatterplot <- function(object,
 #' @seealso [`getSpatialAnnotations()`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' plotSpatialAnnotations(object, ids = ids)
+#'
+#' plotSpatialAnnotations(object, ids = ids, square = T)
+#'
+#' plotSpatialAnnotations(object, id = ids, fill = "orange", square = T, expand = "50%")
 #'
 #'
 setGeneric(name = "plotSpatialAnnotations", def = function(object, ...){
@@ -1381,6 +1473,15 @@ setMethod(
 #'
 #' @export
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotSpatialTrajectories(object, color_by = "histology", pt_clrp = "npg", ids = "horizontal_mid")
+#'
 plotSpatialTrajectories <- function(object,
                                     ids = NULL,
                                     color_by = NULL,
@@ -1540,12 +1641,6 @@ plotStatisticsInteractive <- function(spata_df){
 }
 
 
-
-
-
-
-
-
 #' @title Plot categorical trajectory dynamics
 #'
 #' @description Displays discrete variables along a trajectory.
@@ -1555,6 +1650,16 @@ plotStatisticsInteractive <- function(spata_df){
 #' @inherit ggplot_dummy return
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotStsBarplot(object, grouping = "histology", id = "horizontal_mid")
+#'
 plotStsBarplot <- function(object,
                            grouping,
                            id = idST(object),
@@ -1624,6 +1729,23 @@ plotStsBarplot <- function(object,
 #'
 #' @export
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- normalizeCounts(objcect, activate = TRUE)
+#'
+#' genes <- c("EGFR", "MBP", "MAG", "SNAP25")
+#'
+#' plotStsHeatmap(object, id = "horizontal_mid", variables = genes)
+#'
+#' plotStsLineplot(object, id = "horizontal_mid", variables = genes)
+#'
+#' plotStsRidgeplot(object, id = "horizontal_mid", variables = genes)
+#'
 plotStsHeatmap <- function(object,
                            variables,
                            id = idST(object),
@@ -1689,6 +1811,8 @@ plotStsHeatmap <- function(object,
 #' @inherit ggplot_dummy return
 #'
 #' @export
+#' @inherit plotStsHeatmap examples
+#'
 plotStsLineplot <- function(object,
                             variables,
                             id = idST(object),

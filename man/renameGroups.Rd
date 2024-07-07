@@ -36,13 +36,18 @@ where differential gene expression analysis results are stored. Use \code{rename
 to rename already drawn segments.
 }
 \examples{
-#Not run:
+library(SPATA2)
 
- object <-
-    renameGroups(object = spata_object,
-                 grouping_variable = "seurat_clusters",
-                 "first_new_group" = "1",
-                 "sec_new_group" = "2")
+data("example_data")
 
+object <- example_data$object_UKF269T_diet
 
+plotSurface(object, color_by = "histology")
+
+object <- renameGroups(object, grouping = "histology", "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated")
+
+plotSurface(object, color_by = "histology")
+}
+\seealso{
+\code{\link[=relevelGroups]{relevelGroups()}}
 }

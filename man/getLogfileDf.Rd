@@ -2,7 +2,7 @@
 % Please edit documentation in R/getH-M.R
 \name{getLogfileDf}
 \alias{getLogfileDf}
-\title{Obtain object logfile}
+\title{Obtain object logfile data.frame}
 \usage{
 getLogfileDf(object)
 }

@@ -88,3 +88,41 @@ fill aesthetic of the plot.
 \code{expand_outline} only works if \code{inner} is FALSE (or the spatial annotation
 does not contain any inner borders).
 }
+\examples{
+
+library(SPATA2)
+library(patchwork)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   inner_borders = FALSE,
+   force1 = TRUE
+   )
+
+# range of hypoxia annotation
+hr <- getSpatAnnRange(object, id = "hypoxia_ann")
+
+hr_ggpL <- ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann")
+
+plotSurface(object, "HM_HYPOXIA") + hr_ggpL
+
+p_rect <-
+ plotImage(object) +
+ hr_ggpL +
+ ggpLayerRect(object, xrange = hr$x, yrange = hr$y)
+
+p_zoomed <-
+ plotImage(object) +
+ ggpLayerZoom(object, xrange = hr$x, yrange = hr$y)
+
+p_rect + p_zoomed
+
+}

@@ -75,6 +75,8 @@ plotHistogram <- function(object,
 #'
 #' @export
 #'
+#' @inherit ggpLayerRect examples
+#'
 setGeneric(name = "plotImage", def = function(object, ...){
 
   standardGeneric(f = "plotImage")
@@ -276,7 +278,6 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @return A plot that is immediately plotted.
-#' @export
 #'
 setGeneric(name = "plotImageBase", def = function(object, ...){
 
@@ -567,7 +568,7 @@ setMethod(
 #'
 #' @param img_names Character vector or `NULL`. If character, specifies the images
 #' by name. If `NULL`, all images are plotted.
-#' @param ... Additionel arguments given to `plotImage()`.
+#' @param ... Additional arguments given to `plotImage()`.
 #'
 #' @return A ggplot assembled with via `patchwork::wrap_plots()`.
 #'
@@ -577,6 +578,16 @@ setMethod(
 #' @inheritSection section_dummy Image visualization with ggplot2
 #'
 #' @seealso [`getImageDirectories()`]
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotImages(object)
+#'
 #'
 #' @export
 
@@ -693,7 +704,7 @@ setMethod(
         .f = function(name){
 
           # adjust title
-          if(name == getHistoImageActive(object)@name){
+          if(name == getHistoImage(object)@name){
 
             if(name == ref_name){
 
@@ -705,7 +716,7 @@ setMethod(
 
             }
 
-            hist_img <- getHistoImageActive(object)
+            hist_img <- getHistoImage(object)
 
           } else if(name == ref_name) {
 
@@ -843,8 +854,6 @@ setMethod(
   }
 )
 
-
-
 # plotL -------------------------------------------------------------------
 
 
@@ -859,6 +868,18 @@ setMethod(
 #'
 #' @details For this function to work the results of [`runBayesSpaceClustering()`]
 #' are required.
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' # this might take some time...
+#' object <- runBayesSpaceClustering(object, name = "bspace", qs = 3:15)
+#'
+#' plotLoglik(object)
 #'
 #' @export
 #'
@@ -916,7 +937,7 @@ plotLoglik <- function(object, elbow = TRUE){
 #' pl <- plot_model_comparison_dotplot(screening_1@results, model_remove = c("peak"), label_vars = 3)
 #' pl + coord_cartesian(xlim = c(0.5, 1))
 #'
-#' @export
+#' @keywords internal
 #'
 plot_model_comparison_dotplot <- function(data,
                                           eval = "mae",
@@ -987,7 +1008,7 @@ plot_model_comparison_dotplot <- function(data,
 #'
 #' @description Plots a mosaic plot of two grouping variables.
 #'
-#' @param grouping_variable Character value. The grouping variable that is
+#' @param grouping Character value. The grouping variable that is
 #' plotted on the x-axis.
 #' @param fill_by Character value. The grouping variable that is used to
 #' fill the mosaic.
@@ -996,10 +1017,19 @@ plot_model_comparison_dotplot <- function(data,
 #' @inherit argument_dummy params
 #' @inherit plotBarchart params return
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotMosaicPlot(object, grouping = "seurat_clusters", fill_by = "bayes_space")
+#'
 #' @export
 #'
 plotMosaicplot <- function(object,
-                           grouping_variable,
+                           grouping,
                            fill_by,
                            clrp = NULL,
                            clrp_adjust = NULL,
@@ -1007,19 +1037,21 @@ plotMosaicplot <- function(object,
 
   require(ggmosaic)
 
+  deprecated(...)
+
   hlpr_assign_arguments(object)
 
   confuns::check_one_of(
-    input = c(grouping_variable, fill_by),
+    input = c(grouping, fill_by),
     against = getGroupingOptions(object),
     suggest = TRUE
   )
 
-  df <- getFeatureDf(object)
+  df <- getMetaDf(object)
 
   confuns::plot_mosaic(
     df = df,
-    x = grouping_variable,
+    x = grouping,
     fill.by = fill_by,
     clrp = clrp,
     clrp.adjust = clrp_adjust
@@ -1031,7 +1063,7 @@ plotMosaicplot <- function(object,
       axis.title.y = ggplot2::element_blank()
     ) +
     ggplot2::labs(
-      x = grouping_variable,
+      x = grouping,
       fill = fill_by
     )
 

@@ -70,7 +70,7 @@ identify_zero_inflated_variables <- function(df,
 }
 
 
-#' @title Identify Observations Inside a Polygon
+#' @title Identify observations inside a polygon
 #'
 #' @description This function determines whether points (observations) in a given data
 #' frame are located inside a specified polygon.
@@ -106,7 +106,6 @@ identify_zero_inflated_variables <- function(df,
 #' outside_points <- identify_obs_in_polygon(coords_df, polygon_df, strictly = TRUE, opt = "remove")
 #'
 #' @export
-#' @rdname identify_obs_in_polygon
 identify_obs_in_polygon <- function(coords_df,
                                     polygon_df,
                                     strictly,
@@ -240,7 +239,7 @@ identify_obs_in_spat_ann <- function(coords_df,
 #'
 #' @return Character value.
 #' @export
-#'
+#' @keywords internal
 
 idSA <- function(object, verbose = NULL){
 
@@ -294,32 +293,6 @@ idST <- function(object, verbose = NULL){
 
 }
 
-#' @rdname idSA
-#' @export
-idST <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  id <- getSpatialTrajectoryIds(object)
-
-  if(base::length(id) == 0){
-
-    stop("No spatial trajectories found in this object.")
-
-  } else if(base::length(id) > 1){
-
-    stop("More than one spatial trajectories found in this object. Please specify argument `id`.")
-
-  }
-
-  confuns::give_feedback(
-    msg = glue::glue("Spatial trajectory: '{id}'"),
-    verbose = verbose
-  )
-
-  return(id)
-
-}
 
 #' @title Identifies the background color
 #'
@@ -331,6 +304,7 @@ idST <- function(object, verbose = NULL){
 #' @inherit update_dummy params
 #'
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "identifyBackgroundColor", def = function(object, ...){
 
@@ -574,8 +548,7 @@ setMethod(
 
     return(object)
 
-  }
-)
+  })
 
 #' @rdname identifyPixelContent
 #' @export
@@ -1515,66 +1488,6 @@ img_ann_highlight_group_button <- function(){
 }
 
 
-
-#' @title Convert spatial annotation to segmentation
-#'
-#' @description Converts one or more spatial annotations to a binary
-#' segmentation variable in the feature data.frame.
-#' @param ids Character vector. Specifies the spatial annotation(s) of interest.
-#' data points that fall into the area of these annotations are labeled
-#' with the input for argument \code{inside}.
-#' @param segmentation_name Character value. The name of the new segmentation variable.
-#' @param inside Character value. The group name for the data points that
-#' are located inside the area of the spatial annotation(s).
-#' @param outside Character value. The group name for the data points that
-#' are located outside the area of the spatial annotation(s).
-#' @param overwrite Logical. Set to TRUE to overwrite existing variables with
-#' the same name.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-imageAnnotationToSegmentation <- function(object,
-                                          ids,
-                                          segmentation_name,
-                                          inside = "inside",
-                                          outside = "outside",
-                                          overwrite = FALSE){
-
-  confuns::are_values("inside", "outside", mode = "character")
-
-  confuns::check_none_of(
-    input = segmentation_name,
-    against = getFeatureNames(object),
-    ref.against = "names of the feature data",
-    overwrite = overwrite
-  )
-
-  bcsp_inside <- getSpatAnnBarcodes(object, ids = ids)
-
-  mdata <-
-    getMetaDf(object) %>%
-    dplyr::mutate(
-      {{segmentation_name}} := dplyr::case_when(
-        condition = barcodes %in% {{bcsp_inside}} ~ {{inside}},
-        TRUE ~ {{outside}}
-      ),
-      {{segmentation_name}} := base::factor(
-        x = !!rlang::sym(segmentation_name),
-        levels = c(inside, outside)
-      )
-    )
-
-  object <- setMetaDf(object, meta_df = mdata)
-
-  return(object)
-
-}
-
-
-
 # in ----------------------------------------------------------------------
 
 #' @title Include spatial extent of tissue sections in analysis
@@ -1599,7 +1512,7 @@ imageAnnotationToSegmentation <- function(object,
 #' the tissue outline is computed.
 #' @param buffer Distance measure with which to buffer the tissue outline data.frame.
 #' @return Filtered input data.frame.
-#' @export
+#' @keywords internal
 #'
 include_tissue_outline <- function(input_df,
                                    outline_df = NULL, # hull_df should be used by calling function!
@@ -1811,7 +1724,7 @@ include_tissue_outline <- function(input_df,
 #'
 #' @return A data frame with the increased number of data points.
 #'
-#' @export
+#' @keywords internal
 increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 
   confuns::is_value(fct, mode = "numeric")
@@ -1888,7 +1801,7 @@ increase_n_data_points <- function(coords_df, fct = 10, cvars = c("x", "y")){
 #' @examples
 #' denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
 #'
-#' @export
+#' @keywords internal
 increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 
   if(!base::isTRUE(skip)){
@@ -1950,7 +1863,6 @@ increase_polygon_vertices <- function(polygon_df, avg_dist, skip = FALSE) {
 }
 
 
-#' @export
 #' @keywords internal
 infer_gradient <- function(loess_model,
                            expr_est_pos,
@@ -2044,7 +1956,7 @@ interpolate_points_along_path <- function(data, max_distance = 1) {
 #' @inherit getBarcodesInPolygon params
 #'
 #' @return Logical vector of the same length as the number of rows in `a`.
-#' @export
+#' @keywords internal
 
 intersect_polygons <- function(a, b, strictly = FALSE){
 
@@ -2095,39 +2007,6 @@ intersect_polygons <- function(a, b, strictly = FALSE){
 #'
 #' @return Logical vector of the same length as input and/or an error if `verbose`
 #' is `TRUE`.
-#'
-#' @details Several functions in `SPATA2` have arguments that take *area input*.
-#' To specifically refer to an area the unit must be specified. There are
-#' three ways to create valid input for these arguments.
-#'
-#' **1. In pixel:**
-#'
-#' There are two valid input options to specify an area in pixel:
-#'
-#' \itemize{
-#'  \item{numeric:}{ Single numeric values, e.g. `arg_input = c(2, 3.554, 69, 100.67)`. If no unit
-#'  is specified the input will be interpreted as pixels.}
-#'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
-#'  }
-#'
-#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
-#'  refers to a distance the pixel side length is meant. If pixel refers to an area the
-#'  number of pixels is meant.
-#'
-#' **2. According to the Systeme international d`unites (SI):**
-#'
-#'  Specifying areas in SI units e.g. `arg_input = c('2mm2', '4mm2')` etc.
-#'  requires the input to be a character as the unit must be provided as suffix.
-#'  Between the numeric value and the unit must be no empty space! Valid suffixes
-#'  can be obtained using the function `validUnitsOfAreaSI()`.
-#'
-#'  **3. As vectors of class `unit`:**
-#'
-#' Behind the scenes `SPATA2` works with the `units` package. Input
-#' is converted into vectors of class `units`. Therefore, input can be directly
-#' provided this way: `arg_input = units::set_unit(x = c(2,4), value = 'mm2')`
-#' Note that *pixel* is not a valid unit in the `units` package. If you want
-#' to specify the input in pixel you have to use input option 1. In pixel.
 #'
 #' @examples
 #'
@@ -2386,13 +2265,13 @@ is_dist_si <- function(input, error = FALSE){
 
     test[1] <- base::length(unit_attr$numerator) == 1
 
-    test[2] <- base::all(unit_attr$numerator %in% validEuropeanUnitsOfLength())
+    test[2] <- base::all(unit_attr$numerator %in% validUnitsOfLengthSI())
 
     res <- base::all(test)
 
     if(base::isFALSE(res) & base::isTRUE(error)){
 
-      stop("Input is of class 'units' but can not be interpreted as a distance of European units of length.")
+      stop("Input is of class 'units' but can not be interpreted as a SI unit.")
 
     }
 
@@ -2503,7 +2382,7 @@ is_image_dir <- function(input, error = FALSE){
 #'
 #' @seealso [`sp::point.in.polygon()`]
 #'
-#' @export
+#' @keywords internal
 is_inside_plg <- function(point, polygon_df, strictly = TRUE){
 
   pos <-
@@ -2544,9 +2423,9 @@ is_numeric_input <- function(input){
 }
 
 
-#' Check for Outliers in a Numeric Vector
+#' @title Check for Outliers in a Numeric Vector
 #'
-#' This function identifies outliers in a numeric vector `x`.
+#' @description This function identifies outliers in a numeric vector `x`.
 #'
 #' @param x A numeric vector for which outliers need to be identified.
 #' @param ... Additional arguments passed to `boxplot.stats`.
@@ -2665,6 +2544,7 @@ is_unit_dist <- function(input, error = FALSE){
 # isG ---------------------------------------------------------------------
 
 
+#' @keywords internal
 #' @export
 isGene <- function(object, gene){
 
@@ -2676,6 +2556,7 @@ isGene <- function(object, gene){
 
 }
 
+#' @keywords internal
 #' @export
 isGeneSet <- function(object, gene_set){
 
@@ -2692,7 +2573,7 @@ isGeneSet <- function(object, gene_set){
 # isF ---------------------------------------------------------------------
 
 
-
+#' @keywords internal
 #' @export
 isFeature <- function(object, feature){
 
@@ -2704,21 +2585,11 @@ isFeature <- function(object, feature){
 
 }
 
-#' @export
-isFlipped <- function(object, axis){
-
-  if(axis == "h"){ axis <- "horizontal"}
-  if(axis == "v"){ axis <- "vertical" }
-
-  out <- getImageInfo(object)$flipped[[axis]]
-
-  base::isTRUE(out)
-
-}
 
 
 # isN ---------------------------------------------------------------------
 
+#' @keywords internal
 #' @export
 isNumericVariable <- function(object, variable){
 
@@ -2740,6 +2611,7 @@ isNumericVariable <- function(object, variable){
 
 # isS ---------------------------------------------------------------------
 
+#' @export
 #' @keywords internal
 isSpatialTrajectory <- function(object){
 
@@ -2754,6 +2626,7 @@ isSpatialTrajectory <- function(object){
 
 # isT ---------------------------------------------------------------------
 
+#' @export
 #' @keywords internal
 isTrajectory <- function(object){
 

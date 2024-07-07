@@ -108,3 +108,9 @@ Use arguments \code{across} and \code{across_subset} to visualize CNV difference
 between subgroups of cluster variables or other grouping variables (e.g. based on
 histology created with \code{createSpatialSegmentation()}).
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+

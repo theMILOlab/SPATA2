@@ -1512,13 +1512,12 @@ setMethod(
   }
 )
 
-#' @rdname asHistologyImaging
 #' @export
 if (requireNamespace("anndata", quietly = TRUE)) {
-  
+
   # Register AnnDataR6 class
   setOldClass("AnnDataR6")
-  
+
   setMethod(
     f = "asHistologyImaging",
     signature = "AnnDataR6",
@@ -1528,9 +1527,9 @@ if (requireNamespace("anndata", quietly = TRUE)) {
                           spatial_key = "spatial",
                           scale_with = "lowres",
                           verbose = verbose){
-  
+
       scale_fct <- object$uns[[spatial_key]][[library_id]]$scalefactors[[paste0('tissue_',scale_with,'_scalef')]]
-  
+
       coords <- as.data.frame(object$obsm[[spatial_key]])
       rownames(coords) <- object$obs_names
       colnames(coords) <- c("imagerow", "imagecol")
@@ -1542,14 +1541,14 @@ if (requireNamespace("anndata", quietly = TRUE)) {
         ) %>%
         dplyr::select(barcodes, x, y, dplyr::everything()) %>%
         tibble::as_tibble()
-  
+
       image <-
         EBImage::Image(object$uns[[spatial_key]][[library_id]]$images[[scale_with]]/255,
                        colormode = "Color") %>% # convert RGB 0-255 ints to 0-1 float
         EBImage::transpose()
-  
+
       img_dim <- dim(image)
-  
+
       new_object <-
         createHistologyImaging(
           image = image,
@@ -1557,16 +1556,16 @@ if (requireNamespace("anndata", quietly = TRUE)) {
           coordinates = coordinates,
           verbose = verbose,
         )
-  
+
       return(new_object)
-  
+
     }
   )
-  
+
 } else {
-  
+
   message("R Package 'anndata' is required for compatibility with h5ad files, but not installed.")
-  
+
 }
 
 #' @title Transform to `SpatialTrajectory`
@@ -3914,7 +3913,6 @@ plotDeaPvalues <- function(object,
 #' by providing a named list of arguments.
 #'
 #' @inherit argument_dummy params
-#' @inherit across_dummy params
 #' @inherit check_method params
 #' @inherit check_sample params
 #' @inherit getDeaResultsDf params

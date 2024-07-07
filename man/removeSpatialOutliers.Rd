@@ -23,6 +23,12 @@ Removes data points that were identified as spatial outliers
 and all their related data. If no spatial outliers exist, the input object
 is returned as is.
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+
 \seealso{
 \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}, \code{\link[=containsSpatialOutliers]{containsSpatialOutliers()}}
 }

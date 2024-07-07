@@ -491,6 +491,88 @@ setMethod(
 
 # setI --------------------------------------------------------------------
 
+#' @title Set image directory
+#'
+#' @description Sets the file directory under which an image is read in when
+#' activated.
+#'
+#' @param dir Character value. The directory of the new image.
+#' @inherit argument_dummy return
+#' @inherit update_dummy return
+#'
+#' @note
+#' The function also accepts directories that do not exist! It throws
+#' a warnign if that is the case.
+#'
+#' @seealso [`activateImage()`], [`loadImage()`]
+#'
+#' @export
+#'
+setGeneric(name = "setImageDir", def = function(object, ...){
+
+  standardGeneric(f = "setImageDir")
+
+})
+
+#' @rdname setImageDir
+#' @export
+setMethod(
+  f = "setImageDir",
+  signature = "SPATA2",
+  definition = function(object, img_name, dir){
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- setImageDir(hist_img, dir = dir)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    returnSpataObject(object)
+
+  }
+)
+
+#' @rdname setImageDir
+#' @export
+setMethod(
+  f = "setImageDir",
+  signature = "SpatialData",
+  definition = function(object, img_name, dir){
+
+    hist_img <- getHistoImage(object, img_name = img_name)
+
+    hist_img <- setImageDir(hist_img, dir = dir)
+
+    object <- setHistoImage(object, hist_img = hist_img)
+
+    return(object)
+
+  }
+)
+
+#' @rdname setImageDir
+#' @export
+setMethod(
+  f = "setImageDir",
+  signature = "HistoImage",
+  definition = function(object, dir){
+
+    confuns::is_value(dir, "character")
+
+    if(!base::file.exists(dir)){
+
+      warning(glue::glue("Directory {dir} does not exist. Image loading won't be possible."))
+
+    }
+
+    object@dir <- dir
+
+    return(object)
+
+  }
+)
+
+
 #' @title Set image transformation instructions
 #'
 #' @description Sets image transformation instruction list.
@@ -529,78 +611,6 @@ setMethod(
   }
 )
 
-
-# setH --------------------------------------------------------------------
-
-#' @keywords internal
-#' @export
-setImageObject <- function(object, image_object, ...){
-
-  deprecated(fn = TRUE, ...)
-
-  object <- setSpatialData(object = object, sp_data = image_object)
-
-  return(object)
-
-}
-
-
-#' @title Set initiation information
-#'
-#' @inherit check_object
-#'
-#' @param additional_input A list of named arguments provided by
-#' ... of the calling function.
-#'
-#' @inherit set_dummy return details
-#' @keywords internal
-
-setInitiationInfo <- function(object, additional_input = list()){
-
-  ce <- rlang::caller_env()
-
-  init_fn <- rlang::caller_fn()
-
-  init_frame <- base::sys.parent()
-
-  init_call <- base::sys.call(which = init_frame)
-
-  init_fn_name <- base::as.character(init_call)[1]
-
-  init_args <-
-    rlang::fn_fmls_names(fn = init_fn)
-
-  init_args <- init_args[init_args != "..."]
-
-  init_args_input <-
-    purrr::map(
-      .x = init_args,
-      .f = function(arg){
-
-        base::parse(text = arg) %>%
-          base::eval(envir = ce)
-
-      }
-    ) %>%
-    purrr::set_names(nm = init_args)
-
-  init_args_input <-
-    init_args_input[!base::names(init_args_input) %in% c("cds",  "coords_df", "count_mtr", "expr_mtr", "object", "seurat_object")]
-
-  init_args_input <-
-    c(init_args_input, additional_input)
-
-  initiation_list <- list(
-    init_fn = init_fn_name,
-    input = init_args_input,
-    time = base::Sys.time()
-  )
-
-  object@obj_info$initiation <- initiation_list
-
-  return(object)
-
-}
 
 
 # setL --------------------------------------------------------------------

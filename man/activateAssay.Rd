@@ -30,6 +30,14 @@ the computational progress will be printed.
 Sets and extracts the active (default) assay. Only relevant if the
 \code{SPATA2} object contains more than one molecular assay.
 }
+\examples{
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+activeAssay(object)
+
+}
 \seealso{
 \code{\link{MolecularAssay}}
 }

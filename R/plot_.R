@@ -480,6 +480,8 @@ plot_sgs_barplot <- function(coords_df_sgs,
                              verbose = NULL,
                              ...){
 
+  coords_df_sgs[["bins_dist"]] <- base::droplevels(coords_df_sgs[["bins_dist"]])
+
   breaks <-
     base::levels(coords_df_sgs[["bins_dist"]]) %>%
     reduce_vec(nth = 7)

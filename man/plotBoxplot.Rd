@@ -232,9 +232,6 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
-
 \item{...}{Additional arguments given to the respective \code{ggplot2::geom_<plot_type>()}
 function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
 
@@ -250,4 +247,30 @@ These functions display the distribution of numeric
 variables for the whole sample or in a comparative manner if argument
 \code{across} is specified. \code{plotViolinplot()} and \code{plotBoxplot()}
 allow for statistical tests such as t-test or ANOVA.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotBoxplot(object, variables = c("METRN", "MBP", "CA11"))
+plotBoxplot(object, variables = c("METRN", "MBP", "CA11"), across = "bayes_space")
+
+plotViolinplot(object, variables = c("METRN", "MBP", "CA11"))
+plotViolinplot(object, variables = c("METRN", "MBP", "CA11"), across = "bayes_space")
+
+# works the same for all functions....
+
+plotBoxplot(
+   object = object,
+   variables = "METRN",
+   across = "bayes_space",
+   across_subset = c("2", "3"),
+   test_pairwise = "t.test"
+   )
+
 }

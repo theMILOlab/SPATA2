@@ -27,7 +27,7 @@ getSpatialAnnotations(object, ...)
   class = NULL,
   tags = NULL,
   test = "any",
-  add_image = containsImage(objec),
+  add_image = containsImage(object),
   expand = 0,
   square = FALSE,
   error = FALSE,

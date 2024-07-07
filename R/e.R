@@ -355,7 +355,7 @@ estimate_r2_for_sts_run <- function(object,
 
 # evaluate ----------------------------------------------------------------
 
-
+#' @keywords internal
 #' @export
 evaluate_model_fits <- function(input_df,
                                 var_order ){
@@ -403,7 +403,7 @@ evaluate_model_fits <- function(input_df,
 #' @note `excludeTissueFragments()` requires the output of [`identifyTissueOutline()`] and
 #' `excludeSpatialOutliers()` requires the output of [`identifySpatialOutliers()`]
 #'
-#' @export
+#' @keywords internal
 #'
 setGeneric(name = "exclude", def = function(object, ...){
 
@@ -644,8 +644,20 @@ extract_unit <- function(input){
 #' @inherit is_dist params details
 #'
 #' @return Numeric value.
+#'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' dist_vals <- c("2mm", "2.3mm")
+#'
+#' extrat_unit(dist_vals)
+#'
+#' pixels <- c(2,5, 500)
+#'
+#' extract_unit(pixels)
 extract_value <- function(input){
 
   # regex works for area and distance values
@@ -854,6 +866,22 @@ expand_image_side <- function(expand_with,
 #'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "vessel1", line_color = "red")
+#' plotSpatialAnnotations(object, "vessel1")
+#'
+#' object <- expandSpatialAnnotation(object, id = "vessel1", expand = "50um", new_id = "vessel1_exp")
+#'
+#' plotSpatialAnnotations(object, ids = c("vessel1", "vessel1_exp"))
+#'
 expandSpatialAnnotation <- function(object,
                                     id,
                                     expand,
@@ -877,14 +905,14 @@ expandSpatialAnnotation <- function(object,
   outline_df <-
     getSpatAnnOutlineDf(object, ids = id, outer = TRUE, inner = FALSE)
 
-  csf <- getScaleFactor(object, fct_name = "coords")
+  isf <- getScaleFactor(object, fct_name = "image")
 
   expand <- as_pixel(input = expand, object = object)
 
   outer_df_new <-
     dplyr::select(spat_ann@area$outer, x, y) %>%
     buffer_area(df = ., buffer = expand) %>%
-    dplyr::mutate(x_orig = x / {{csf}}, y_orig = y / {{csf}}) %>%
+    dplyr::mutate(x_orig = x / {{isf}}, y_orig = y / {{isf}}) %>%
     dplyr::select(-x, -y)
 
   spat_ann@area$outer <- outer_df_new

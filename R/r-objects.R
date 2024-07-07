@@ -221,11 +221,13 @@ bcsp_dist <- 7
 chrom_levels <- base::as.character(1:22)
 
 chrom_arm_levels <-
-  purrr::map(
-    .x = chrom_levels,
-    .f = ~ stringr::str_c(., c("p", "q"))
-  ) %>%
-  purrr::flatten_chr()
+  purrr::flatten_chr(
+    purrr::map(
+      .x = chrom_levels,
+      .f = ~ stringr::str_c(., c("p", "q"))
+    )
+  )
+
 
 cnv_heatmap_list <-
   list(
@@ -467,7 +469,7 @@ depr_info <-
       "flipCoords" = "flipCoordinates",
       "getDefaultGrouping" = "activeGrouping",
       "getDefaultTrajectory" = "getDefaultTrajectoryId",
-      "getExpressionMatrix" = "getMatrix",
+      "getExpressionMatrix" = "getProcessedMatrix() or getMatrix",
       "getFeatureDf" = "getMetaDf",
       "getHistoImaging" = "getSpatialData",
       "getImageAnnotationAreaDf" = "getImgAnnBorderDf",
@@ -497,6 +499,7 @@ depr_info <-
       "ggpLayerImageAnnotation" = "ggpLayerImgAnnBorder",
       "ggpLayerImgAnnBorder" = "ggpLayerImgAnnOutline",
       "ggpLayerSampleMask" = "ggpLayerTissueOutline",
+      "imageAnnotationToSegmentation" = "spatialAnnotationToSegmentation",
       "incorporate_tissue_outline" = "include_tissue_outline",
       "is_euol_dist" = "is_dist_euol",
       "is_dist_euol" = "is_dist_si",
@@ -550,6 +553,7 @@ depr_info <-
       "expr_mtr" = "proc_mtr",
       "discrete_feature" = "grouping_variable",
       "display_trajectory_parts" = NA_character_,
+      "grouping_variable" = "grouping",
       "inc_outline" = "incl_edge",
       "linealpha" = "line_alpha",
       "linecolor" = "line_color",
@@ -1149,7 +1153,7 @@ spatial_methods <-
   list(
     "MERFISH" = MERFISH,
     "SlideSeqV1" = SlideSeqV1,
-    "Undefined" = SpatialMethod(name = "Undefined", version = current_spata2_version, unit = "px"),
+    "Undefined" = SpatialMethod(name = "Undefined", observational_unit = "undefined", version = current_spata2_version, unit = "px"),
     "VisiumSmall" = VisiumSmall,
     "VisiumLarge" = VisiumLarge,
     "Xenium" = Xenium

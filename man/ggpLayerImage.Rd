@@ -88,3 +88,17 @@ If you prefer to view your image in the regular orientation, you can use the \co
 specifying \code{axis = "horizontal"}, to reverse this effect.
 }
 
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+ggplot() +
+ ggpLayerImage(object)
+
+
+}

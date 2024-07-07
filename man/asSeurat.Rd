@@ -39,3 +39,16 @@ An object of class \code{Seurat}.
 Transforms an \code{SPATA2} object to an object of class \code{Seurat}.
 See details for more information.
 }
+\examples{
+library(SPATA2)
+library(Seurat)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+seurat_obj <- asSeurat(object)
+
+class(seurat_obj)
+
+}

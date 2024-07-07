@@ -24,3 +24,4 @@ It ensures that the polygon remains closed and that the new vertices are evenly 
 denser_polygon <- increase_polygon_vertices(polygon_df, avg_dist = 10, skip = FALSE)
 
 }
+\keyword{internal}

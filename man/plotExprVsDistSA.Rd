@@ -16,7 +16,7 @@ plotExprVsDistSA(
   pt_color = "black",
   pt_clrp = NULL,
   pt_size = 1.5,
-  line_alpha = 0.9,
+  line_alpha = 0,
   line_color = "forestgreen",
   line_size = 1.75,
   border_linealpha = 1,
@@ -29,10 +29,8 @@ plotExprVsDistSA(
   ee_linesize = 1,
   ee_linetype = "solid",
   se_fill = ggplot2::alpha("lightgrey", 0.5),
-  normalize = FALSE,
   unit = getDefaultUnit(object),
   ggpLayers = NULL,
-  outlier_rm = FALSE,
   ncol = NULL,
   nrow = NULL,
   ...
@@ -90,10 +88,6 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 
 \item{se_fill}{The fill color for the smoothing line's standard error area (default: "lightgrey").}
 
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
-
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 
@@ -108,5 +102,30 @@ A ggplot.
 }
 \description{
 Generates a scatterplot to visualize the relationship between gene expression and
-the distance of data points to an annotation's outline.
+the distance of data points to a spatial reference. Set \code{line_alpha} > 0 to visualize the
+inferred expression pattern used for spatial gradient screening.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <- normalizeCounts(object, activate = TRUE)
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   inner_borders = FALSE,
+   force1 = TRUE
+   )
+
+ plotExprVsDistSA(object, variables = c("HM_HYPOXIA", "METRN"), ids = "hypoxia_ann", core = T)
+
 }

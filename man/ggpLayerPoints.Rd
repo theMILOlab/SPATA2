@@ -192,5 +192,19 @@ family.
 }
 \description{
 Adds the data points (beads, cells, spots, etc.) of the object
-to the plot.
+to the plot. (The working horse of \code{\link[=plotSurface]{plotSurface()}}).
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+ggplot() +
+ ggpLayerPoints(object, color_by = "HM_HYPOXIA")
+
+
 }

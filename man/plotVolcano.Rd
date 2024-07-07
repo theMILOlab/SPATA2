@@ -81,3 +81,4 @@ Plots a volcano plot by using the model evaluation
 of spatial fitting as implemented by \code{spatialAnnotationScreening()}
 and \code{spatialTrajectoryScreening()}.
 }
+\keyword{internal}

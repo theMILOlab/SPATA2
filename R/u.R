@@ -68,7 +68,7 @@ setMethod(
   signature = "HistoImage",
   definition = function(object, verbose = TRUE, ...){
 
-    if(containsImage(object)){
+    if(containsImage(object) & !purrr::is_empty(object@dir)){
 
       confuns::give_feedback(
         msg = glue::glue("Unloading image {object@name}."),
@@ -170,7 +170,7 @@ setMethod(
 #' @title doc
 #'
 #' @return object
-#' @export
+#' @keywords internal
 #'
 update_spata2v2_to_spata2v3 <- function(object, method = NULL, verbose = TRUE){
 

@@ -44,6 +44,20 @@ A wrapper around the Kmeans clustering algorithm. Iterates over all
 combinations of \code{ks} and \code{methods_kmeans} and stores the resulting clustering
 variables in the feature data.frame.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+object <- runPCA(object, n_pcs = 20)
+
+object <- runKmeansClustering(object, ks = 3:10, n_pcs = 20)
+
+getFeatureNames(object)
+
+}
 \seealso{
 \code{\link[=getFeatureDf]{getFeatureDf()}}, \code{\link[=getFeatureNames]{getFeatureNames()}}, \code{\link[=getGroupingOptions]{getGroupingOptions()}},
 \code{\link[=getGroupNames]{getGroupNames()}}

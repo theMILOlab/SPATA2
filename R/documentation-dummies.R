@@ -1,29 +1,4 @@
 
-#' @title across
-#' @param across Character value or NULL. Specifies the grouping variable of interest.
-#'
-#' Use \code{getGroupingOptions()} to obtain all variable names that group the
-#' barcode spots of your object in a certain manner.
-#'
-#' @param across_subset Character vector or NULL. Specifies the particular groups
-#' of interest the grouping variable specified in argument \code{across} contains.
-#'
-#' If set to NULL all of them are chosen. You can prefix groups you are NOT interested in
-#' with a \emph{'-'}. (Saves writing if there are more groups you are interested in
-#' than groups you are not interested in.)
-#'
-#' Use \code{getGroupNames()} to obtain all valid input options.
-#'
-#' @param relevel Logical value. If set to TRUE the input order of \code{across_subset}
-#' determines the order in which the groups of interest are displayed. Groups that
-#' are not included are dropped which affects the colors with which they are displayed.
-#'
-#' @keywords internal
-across <- function(across, across_subset, relevel){}
-
-#' @keywords internal
-#' @rdname across
-across_dummy <- function(across, across_subset, relevel){}
 
 
 #' @title Argument dummy
@@ -434,6 +409,10 @@ ggplot_dummy <- function(){}
 #' @keywords internal
 image_dummy <- function(image){}
 
+#' @title matrix_dummy
+#' @return A numeric matrix with rownames corresponding to molecule names and column
+#' names corresponding to barcodes.
+matrix_dummy <- function(){}
 
 #' @title method_hclust
 #'
@@ -625,6 +604,14 @@ set_dummy <- function(){}
 #' @keywords internal
 seurat_object_dummy <- function(seurat_object){}
 
+
+#' Title
+#' @section Tutorials:
+#' Extensive tutorials for how to use this function can be found on our website
+#' \url{https://themilolab.github.io/SPATA2/} .
+#'
+#' @keywords internal
+tutorial_hint_dummy <- function(){}
 
 #' @title update
 #' @return The updated input object, containing the added, removed or computed results.

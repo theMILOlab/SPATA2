@@ -1,44 +1,6 @@
 
 # adjust ------------------------------------------------------------------
 
-
-#' @title Adjust Gene Set List
-#'
-#' @description This function adjusts the gene set list (GSL) of a given object based on specified limits.
-#'
-#' @param limits A numeric value representing the threshold percentage for gene set inclusion (default: 50).
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#'
-#' @details This function calculates the proportion of genes in each gene set relative to the total number
-#' of genes in the object. Gene sets with a proportion greater than or equal to the specified limit
-#' are retained, while others are removed.
-#'
-#' @seealso [`getGeneSetList()`], [`getGenes()`], [`getAssay()`], [`setAssay()`]
-#'
-#' @export
-adjustGeneSetList <- function(object, limits = 50){
-
-  gsl <- getGeneSetList(object)
-  genes <- getGenes(object)
-
-  gsl_keep <-
-    purrr::keep(.x = gsl, .p = ~ base::sum(.x %in% genes) / base::length(.x) >= (50/100))
-
-  ma <- getAssay(object, assay_name = "transcriptomics")
-
-  ma@signatures <- gsl_keep
-
-  object <- setAssay(object, assay = assay)
-
-  returnSpataObject(object)
-
-}
-
-
-
 #' @keywords internal
 adjustGseaDf <- function(df,
                          signif_var,
@@ -186,18 +148,10 @@ adjustGseaDf <- function(df,
 }
 
 
-
-
-
-
-
 # align -------------------------------------------------------------------
 
 
-
-
 # append ------------------------------------------------------------------
-
 
 #' @title Append polygon df
 #'
@@ -422,13 +376,27 @@ as_pixel <- function(input, object = NULL, ..., add_attr = TRUE){
 #' @title Distance transformation
 #'
 #' @description Ensures that distance input can be read by `SPATA2` functions
-#' that convert European units of length to pixels and vice versa.
+#' that convert SI units to pixels (loose numeric values) and vice versa.
 #'
 #' @inherit is_dist params details
 #'
 #' @return Character vector of the same length as `input`.
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' x <- "2 cm"
+#'
+#' is_dist_si(x) # FALSE due to empty space...
+#'
+#' x <- as_SPATA2_dist(x)
+#'
+#' print(x)
+#'
+#' is_dist_si(x)
 
 as_SPATA2_dist <- function(input){
 
@@ -474,9 +442,13 @@ as_SPATA2_dist <- function(input){
 #' @examples
 #'
 #' library(SPATA2)
-#' library(SPATAData)
+#' library(tidyverse)
 #'
-#' object <- downloadSpataObject("269_T")
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' containsPixelScaleFactor(object) # must be TRUE
 #'
 #' pixel_values <- c(200, 450, 500)
 #'
@@ -870,6 +842,18 @@ asGiotto <- function(object,
 #' @return An object of class `Seurat`.
 #' @export
 #'
+#' @examples
+#' library(SPATA2)
+#' library(Seurat)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' seurat_obj <- asSeurat(object)
+#'
+#' class(seurat_obj)
+#'
 
 asSeurat <- function(object,
                      process = TRUE,
@@ -878,7 +862,7 @@ asSeurat <- function(object,
                      image_name = "slice1",
                      verbose = NULL){
 
-  stop("to do")
+  message("to do")
 
 }
 
@@ -897,13 +881,25 @@ asSeurat <- function(object,
 #' renames the coordinate variables to *'image_col'* and *'image_row'*.
 #'
 #' @details Output object contains the count matrix in slot @@assays and
-#' feature data.frame combined with barcode-spot coordinates
+#' feature data.frame combined with coordinates
 #' in slot @@colData.
 #'
 #' Slot @@metadata is a list that contains the image object.
 #'
 #' @return An object of class `SingleCellExperiment`.
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(SingleCellExperiment)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' sce <- asSingleCellExperiment(object)
+#'
+#' class(sce)
 
 asSingleCellExperiment <- function(object,
                                    assay_name = activeAssay(object),
@@ -1441,7 +1437,6 @@ setMethod(
 # Register Class to prevent warnings when loading SPATA
 setOldClass("AnnDataR6")
 
-#' @rdname asSPATA2
 #' @export
 if (requireNamespace("anndata", quietly = TRUE)) {
 
@@ -1750,7 +1745,7 @@ if (requireNamespace("anndata", quietly = TRUE)) {
   )
 
 } else {
-  
+
   message("Package 'anndata' is required but not installed. Please see https://cran.r-project.org/web/packages/anndata/index.html.")
 
 }
@@ -1787,8 +1782,6 @@ if (requireNamespace("anndata", quietly = TRUE)) {
 #' attachUnit(mm_num)
 #'
 #' @keywords internal
-#' @export
-#'
 attachUnit <- function(input){
 
   is_dist(input, error = TRUE)

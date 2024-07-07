@@ -4,7 +4,7 @@
 \alias{getSparkxGeneDf}
 \alias{getSparkxGenes}
 \alias{getSparkxResults}
-\alias{runSparkx}
+\alias{runSPARKX}
 \title{Identify spatially significant features with SPARKX}
 \usage{
 getSparkxGeneDf(object, threshold_pval = 1, arrange_pval = TRUE)
@@ -13,7 +13,7 @@ getSparkxGenes(object, threshold_pval)
 
 getSparkxResults(object, assay_name = activeAssay(object), error = TRUE, ...)
 
-runSparkx(
+runSPARKX(
   object,
   assay_name = activeAssay(object),
   numCores = 1,
@@ -45,6 +45,21 @@ The updated input object, containing the added, removed or computed results.
 \description{
 A wrapper around the algorithm introduced by \emph{Zhu et al. 2021}
 to identify features with non-random spatial expression pattern with SPARK-X.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+object <- runSPARKX(object)
+
+sparkx_genes <- getSparkxGenes(object, threshold = 0.05)
+
+sparkx_df <- getSparkxGenesDf(object)
+
+
 }
 \author{
 Zhu, J., Sun, S. & Zhou, X. SPARK-X: non-parametric modeling enables

@@ -118,4 +118,14 @@ drawn with \code{createSpatialTrajectories()} on a surface plot.
 Increase the transparency via argument \code{pt_alpha} to highlight
 the trajectory's course.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+plotSpatialTrajectories(object, color_by = "histology", pt_clrp = "npg", ids = "horizontal_mid")
+
+}
 \keyword{internal}

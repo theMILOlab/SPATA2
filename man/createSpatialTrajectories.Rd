@@ -53,13 +53,15 @@ To set them precisely with code use \code{addSpatialTrajectory()}.
 \examples{
 
 library(SPATA2)
-library(SPATAData)
+library(tidyverse)
 
-object_t269 <- loadSpataObject(sample_name = "269_T")
+data("example_data")
 
-object_t269 <-
+object <- example_data$object_UKF275T_diet
+
+object <-
    addSpatialTrajectory(
-     object = object_t269,
+     object = object,
      id = "cross_sample",
      width = "1.5mm",
      start = c(x = "1.35mm", y = "4mm"),
@@ -67,6 +69,20 @@ object_t269 <-
      overwrite = TRUE
    )
 
- plotSpatialTrajectories(object_t269, ids = "cross_sample")
+ plotSpatialTrajectories(object, ids = "cross_sample")
+
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+if(FALSE){
+
+ object <- createSpatialTrajectories(object)
+
+ }
 
 }

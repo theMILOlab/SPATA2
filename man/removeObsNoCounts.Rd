@@ -26,3 +26,14 @@ The updated input object, containing the added, removed or computed results.
 Identifies and removes observations with no molecule counts
 from the \code{SPATA2} object.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+# the function tells you if / how many observations were removed
+object <- removeObsNoCounts(object, verbose = TRUE)
+
+}

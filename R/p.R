@@ -216,45 +216,6 @@ pixel_df_to_image <- function(pxl_df){
 # print -------------------------------------------------------------------
 
 
-#' @title Print overview of all conducted de-analysis
-#'
-#' @inherit check_sample params
-#' @inherit print_family return
-#'
-#' @export
-
-printDeaOverview <- function(object, of_sample = NA){
-
-  check_object(object)
-
-  of_sample <- check_sample(object, of_sample = of_sample, of.length = 1)
-
-  dea_list <- object@dea[[of_sample]]
-
-  check_availability(
-    test = !base::is.null(base::names(dea_list)),
-    ref_x = "any DEA results",
-    ref_fns = "runDeaAnalysis()"
-  )
-
-  msg_dea <-
-    purrr::map(
-      .x = dea_list,
-      .f = ~ base::names(.x) %>%
-        glue::glue_collapse( sep = "', '", last = "' and '") %>%
-        base::as.character()
-    ) %>%
-    confuns::glue_list_report(prefix = "- '", separator = "' with methods: ")
-
-  msg <-
-    glue::glue(
-      "DEA results exist for grouping {ref1}:\n{msg_dea}",
-      ref1 = confuns::adapt_reference(base::names(dea_list), sg = "variable", pl = "variables"))
-
-  base::print(msg)
-
-}
-
 
 #' @title Print current default settings
 #'
@@ -262,7 +223,6 @@ printDeaOverview <- function(object, of_sample = NA){
 #' @inherit print_family return
 #'
 #' @export
-
 printDefaultInstructions <- function(object){
 
   check_object(object)
@@ -313,16 +273,10 @@ printGeneSetOverview <- function(object){
     getSignatures(object, assay_name = "transcriptomics") %>%
     base::names()
 
-  gene_set_classes <- stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)")
-
-  dplyr::mutate(gene_sets_df, gs_type = gene_set_classes) %>%
-    dplyr::select(-gene) %>%
-    dplyr::distinct() %>%
-    dplyr::pull(gs_type) %>%
+  stringr::str_extract(string = gene_sets, pattern = "^.+?(?=_)") %>%
     base::table() %>%
     base::as.data.frame() %>%
     magrittr::set_colnames(value = c("Class", "Available Gene Sets"))
-
 
 }
 
@@ -531,11 +485,12 @@ process_coords_df_sa2 <- function(coords_df,
 
 
 #' @title Process expand input
+#'
 #' @return Returns always a list of length two. Two slots named h (height)
 #' and x (width).
 #'
-#'
 #' @export
+#'
 #' @keywords internal
 process_expand_input <- function(expand){
 

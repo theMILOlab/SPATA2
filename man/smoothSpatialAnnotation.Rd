@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{smoothSpatialAnnotation}
 \alias{smoothSpatialAnnotation}
-\title{Smooth the Borders of a Spatial Annotation}
+\title{Smooth the border of a spatial annotation}
 \usage{
 smoothSpatialAnnotation(
   object,
@@ -36,7 +36,7 @@ spatial annotation is stored under a new ID.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
-\item{...}{Additional arguments passed to the smoothing function.}
+\item{...}{Additional arguments passed to the smoothing function \code{smoothr::ksmooth()}, \code{smoothr::chaikin()}, etc.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
@@ -44,6 +44,27 @@ The updated input object, containing the added, removed or computed results.
 \description{
 This function applies a smoothing algorithm to the borders of a
 \code{\link{SpatialAnnotation}} object. It can smooth both outer and inner borders using various methods.
+}
+\note{
+Requires the package 'terra' and 'smoothr'.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+
+plotSpatialAnnotations(object, ids = "necrotic_edge")
+
+object <-
+ smoothSpatialAnnotation(object, id = "necrotic_edge", method = "ksmooth", new_id = "necrotic_edge_sm", smoothness = 50)
+
+plotSpatialAnnotations(object, ids = c("necrotic_edge", "necrotic_edge_sm"))
+
+
 }
 \seealso{
 \code{\link[=expandSpatialAnnotation]{expandSpatialAnnotation()}}, \code{\link[=shiftSpatialAnnotation]{shiftSpatialAnnotation()}}, \code{\link{SpatialAnnotation}}

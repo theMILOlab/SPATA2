@@ -663,7 +663,7 @@ compute_relative_variation <- function(gradient){
 #'
 #' @export
 #'
-computeChromosomalDamage <- function(object, chr_vars = stringr::str_c("Chr", 1:22)){
+computeChromosomalInstability <- function(object, chr_vars = stringr::str_c("Chr", 1:22)){
 
   containsCNV(object, error = TRUE)
 
@@ -675,12 +675,13 @@ computeChromosomalDamage <- function(object, chr_vars = stringr::str_c("Chr", 1:
   new_feat <-
     dplyr::group_by(chr_df, barcodes) %>%
     dplyr::summarize(
-      chrom_damage = stats::var(x = cnv_val, na.rm = T)
+      chrom_instab = stats::var(x = cnv_val, na.rm = T)
     )
 
-  new_feat$chrom_damage[is.na(new_feat$chrom_damage)] <- base::mean(new_feat$chrom_damage, na.rm = TRUE)
+  new_feat$chrom_instab[is.na(new_feat$chrom_instab)] <- base::mean(new_feat$chrom_instab, na.rm = TRUE)
 
   object <- addFeatures(object, feature_df = new_feat, overwrite = TRUE)
+  object <- addFeatures(object, feature_df = chrom_instab_zscore, overwrite = TRUE)
 
   returnSpataObject(object)
 
@@ -860,6 +861,21 @@ computeMetaFeatures <- function(object,
 #'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' containsCDD(object) # must be TRUE
+#'
+#' object <- computePixelScaleFactor(object)
+#'
+#' getPixelScaleFactor(object, unit = "mm")
+#'
+#'
 setGeneric(name = "computePixelScaleFactor", def = function(object, ...){
 
   standardGeneric(f = "computePixelScaleFactor")
@@ -1031,7 +1047,7 @@ container <- function(...){
 #'  \code{sttringr::str_c()} if input for argument \code{tags} is a list.
 #'
 #' @return A data.frame with two variables: \emph{tags} and \emph{n}
-#' @export
+#' @keywords internal
 #'
 countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 
@@ -1090,7 +1106,7 @@ countImageAnnotationTags <- function(object, tags = NULL, collapse = " & "){
 #' @param image Object of class `Image` from the `ÈBIMage` package.
 #'
 #' @return Cropped input object.
-#' @export
+#' @keywords internal
 crop_image <- function(image,
                        xrange = NULL,
                        yrange = NULL,
@@ -1115,8 +1131,24 @@ crop_image <- function(image,
 #' @seealso [`ggpLayerRect()`] to visualize the rectangle based on which
 #' the subsetting is done.
 #'
-#'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' orig_frame <- ggpLayerFrameByCoords(object)
+#'
+#' plotSurface(object, color_by = "bayes_space")
+#'
+#' object_cropped <-
+#'  cropSpataObject(object, xrange = c("2mm", "4mm"), yrange = c("2mm", "4mm"))
+#'
+#' plotSurface(object_cropped, color_by = "bayes_space") + orig_frame
 #'
 cropSpataObject <- function(object,
                             xrange,
@@ -1141,7 +1173,7 @@ cropSpataObject <- function(object,
 
   object_cropped <- subsetByBarcodes(object, barcodes = barcodes, verbose = verbose)
 
-  object_cropped@information$cropped <- list(xrange = xrange, yrange = yrange)
+  object_cropped@obj_info$cropped <- list(xrange = xrange, yrange = yrange)
 
   if(base::isTRUE(adjust_capture_area)){
 

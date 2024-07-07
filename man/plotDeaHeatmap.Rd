@@ -86,7 +86,7 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{pheatmap::pheatmap()}.}
 }
 \value{
-A heatmap of class 'pheatmap'.
+A ggplot.
 }
 \description{
 Visualizes DEA results across subgroups in a heatmap. It either takes the results
@@ -108,6 +108,12 @@ group.
 \item{Arranges the genes according to the highest \emph{avg_logFC}-values}
 }
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+
 \seealso{
 \code{\link[=runDEA]{runDEA()}}
 }

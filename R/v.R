@@ -119,7 +119,7 @@ validColorSpectra <- function(flatten = FALSE){
 
 #' @rdname validActivationFunctions
 #' @export
-validDeAnalysisMethods <- function(){
+validDeaMethods <- function(){
 
   return(de_methods)
 
@@ -130,22 +130,6 @@ validDeAnalysisMethods <- function(){
 validDefaultInstructionSlots <- function(){
 
   return(methods::slotNames(methods::new("default_instructions")))
-
-}
-
-#' @rdname validActivationFunctions
-#' @export
-validDimRedMethods <- function(){
-
-  return(gene_set_emthods)
-
-}
-
-#' @rdname validActivationFunctions
-#' @export
-validDirectoryInstructionSlots <- function(){
-
-  return(directory_options)
 
 }
 
@@ -165,7 +149,6 @@ validHierarchicalClusterMethods <- function(){
 
 }
 
-
 #' @rdname validActivationFunctions
 #' @export
 validModelNames <- function(){
@@ -173,16 +156,6 @@ validModelNames <- function(){
   base::names(model_formulas)
 
 }
-
-
-#' @rdname validActivationFunctions
-#' @export
-validPatternRecognitionMethods <- function(){
-
-  return(pr_methods)
-
-}
-
 
 #' @rdname validActivationFunctions
 #' @export
@@ -194,42 +167,11 @@ validPadjMethods <- function(){
 
 #' @rdname validActivationFunctions
 #' @export
-validPlotTypes <- function(fn_name){
-
-  confuns::is_value(fn_name, mode = "character")
-
-  confuns::check_one_of(
-    input = fn_name,
-    against = base::names(plot_types_in_functions)
-  )
-
-  plot_types_in_functions[[fn_name]]
-
-}
-
-#' @rdname validActivationFunctions
-#' @export
-validPubExamples <- function(){
-
-  base::names(pub_dropbox_links)
-
-}
-
-#' @rdname validActivationFunctions
-#' @export
 validSpatialMethods <- function(){
 
   base::names(spatial_methods)
 
 }
-
-#' @rdname validActivationFunctions
-validTrajectoryTrends <- function(){
-
-  return(trajectory_patterns)
-
-}
-
 
 #' @rdname validActivationFunctions
 #' @export
@@ -272,22 +214,6 @@ validUnitsOfLength <- function(){
 validUnitsOfLengthSI <- function(){
 
   uol_si_abbr
-
-}
-
-#' @rdname validActivationFunctions
-#' @export
-validEuropeanUnitsOfLength <- function(name = T){
-
-  out <- uol_si_abbr
-
-  if(base::isFALSE(name)){
-
-    out <- base::unname(out)
-
-  }
-
-  return(out)
 
 }
 

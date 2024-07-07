@@ -131,7 +131,6 @@ initiateSpataObject <- function(sample_name,
     sp_data <-
       SpatialData(
         coordinates = coords_df,
-        meta = meta,
         method = spatial_method,
         sample = sample_name,
         scale_factors = scale_factors,
@@ -333,7 +332,7 @@ initiateSpataObjectMERFISH <- function(sample_name,
         readr::read_csv(file = file_counts, col_types = "c", show_col_types = FALSE)
 
       }) %>%
-      dplyr::rename(barcodes = cell) %>% # keep original barcode names for metadata   
+      dplyr::rename(barcodes = cell) %>% # keep original barcode names for metadata
       dplyr::select(-dplyr::matches("^\\.")) %>%
       tibble::column_to_rownames("barcodes") %>%
       dplyr::select_if(.predicate = base::is.numeric) %>%

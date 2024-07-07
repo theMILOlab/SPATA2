@@ -62,3 +62,27 @@ and spatial trajectories.}
 \item{\code{flipSpatialTrajectories()}:}{ Flips spatial trajectories.}
 }
 }
+\examples{
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotSurface(object, display_image = T)
+
+object <- flipImage(object, axis = "h")
+
+plotSurface(object, display_image = T)
+
+object <- flipCoordinates(object, axis = "h")
+
+plotSurface(object, display_image = T)
+
+object <- flipAll(object, axis = "v")
+
+plotSurface(object, display_image = T)
+
+
+}

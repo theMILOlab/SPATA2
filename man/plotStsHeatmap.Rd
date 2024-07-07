@@ -57,3 +57,21 @@ A ggplot.
 Displays variable-expression values along a trajectory
 direction with a smoothed heatmap (from left to right).
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+object <- normalizeCounts(objcect, activate = TRUE)
+
+genes <- c("EGFR", "MBP", "MAG", "SNAP25")
+
+plotStsHeatmap(object, id = "horizontal_mid", variables = genes)
+
+plotStsLineplot(object, id = "horizontal_mid", variables = genes)
+
+plotStsRidgeplot(object, id = "horizontal_mid", variables = genes)
+
+}

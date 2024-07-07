@@ -25,3 +25,4 @@ A data.frame with two variables: \emph{tags} and \emph{n}
 Counts image annotations by tags. See details for more
 information.
 }
+\keyword{internal}

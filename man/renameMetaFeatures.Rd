@@ -19,8 +19,19 @@ An upated spata-object.
 Allows to rename features stored inside the @fdata slot.
 }
 \examples{
-#Not run:
+library(SPATA2)
 
- object <- renameMetaFeatures(object, "clusters_new" = "clusters")
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+getFeatureNames(object)
+
+object <- renameMetaFeatures(object, "histology_new" = "histology")
+
+getFeatureNames(object)
+
+plotSurface(object, color_by = "histology") # fails
+potSurface(object, color_by = "histology_new")
 
 }

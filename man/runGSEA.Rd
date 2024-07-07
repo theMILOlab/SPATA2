@@ -28,7 +28,8 @@ runGSEA(
 )
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{across}{Character vector. All grouping variables of interest.}
 
@@ -100,4 +101,18 @@ skipped.
 If gene sets are provided via \code{gene_set_list} argument \code{gene_set_names}
 is ignored. Else the latter determines the gene sets used which are then taken
 from the \code{SPATA2} object's gene set data.frame.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+# requires the results of runDEA(object, across = "histology")!
+
+object <- runGSEA(object, across = "histology")
+
+plotGseaDotplot(object, across = "histology")
+
 }

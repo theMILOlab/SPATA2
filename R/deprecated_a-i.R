@@ -2000,16 +2000,7 @@ getGeneCounts <- function(object, return = "tibble", ...){
 
 
 
-#' @export
-#' @keywords internal
-getProcessedMatrix <- function(object,
-                               ...){
 
-  deprecated(fn = TRUE, ...)
-
-  getMatrix(object, ...)
-
-}
 
 
 #' @title Obtain IAS results (data.frame)
@@ -2520,17 +2511,6 @@ getPubExample <- function(...){
 
 }
 
-#' @export
-#' @keywords internal
-getSampleNames <- function(object){
-
-  #deprecated(fn = TRUE)
-
-  check_object(object)
-
-  object@samples
-
-}
 
 
 #' @export
@@ -3249,6 +3229,43 @@ hlpr_filter_trend <- function(atdf, limit, poi){
 
 }
 
+
+#' Make sure that barcodes are spata-like
+#'
+#' @param input A matrix with columns = barcodes, or a data.frame with a barcode-variable
+#' @param sample_name Character value.
+#' @keywords internal
+hlpr_add_barcode_suffix <- function(input, sample_name){
+
+  pattern <- stringr::str_c("_", sample_name, "$", sep = "")
+
+  if(base::is.data.frame(input)){
+
+    input <-
+      dplyr::mutate(.data = input,
+                    barcodes = dplyr::case_when(
+                      stringr::str_detect(barcodes, pattern = pattern) ~ barcodes,
+                      !stringr::str_detect(barcodes, pattern = pattern) ~ stringr::str_c(barcodes, {{sample_name}}, sep = "_")
+                    ))
+
+
+  } else {
+
+    barcodes <- base::colnames(input)
+
+    barcodes <-
+      dplyr::case_when(
+        stringr::str_detect(barcodes, pattern = pattern) ~ barcodes,
+        !stringr::str_detect(barcodes, pattern = pattern) ~ stringr::str_c(barcodes, {{sample_name}}, sep = "_")
+      )
+
+    base::colnames(input) <- barcodes
+
+  }
+
+  return(input)
+
+}
 
 
 

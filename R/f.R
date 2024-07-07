@@ -211,11 +211,10 @@ filter_by_thresholds <- function(df,
 
 
 
-#' @title Postprocess de-analysis results
+#' @title Postprocess DEA results
 #'
 #' @description Processes the results of \code{getDeaResultsDf()}. See details.
 #'
-#' @inherit across_dummy params
 #' @inherit check_dea_df params
 #' @param max_adj_pval Numeric value. Sets the threshold for adjusted p-values. All genes
 #' with adjusted p-values above that threshold are ignored.
@@ -366,6 +365,8 @@ filterDeaDf <- function(dea_df,
 }
 
 
+#' @keywords internal
+#' @export
 find_elbow_point <- function(df){
 
   x <- df[[1]]
@@ -383,13 +384,6 @@ find_elbow_point <- function(df){
   return(as.integer(df[[1]][elbow_index]))
 
 }
-
-
-
-
-
-
-
 
 
 
@@ -620,7 +614,7 @@ findSDEGS <- function(object,
 #' @inherit initiateSpataObject_CountMtr params
 #'
 #' @return A tidy spata-data.frame containing the cluster variables.
-#' @export
+#' @keywords internal
 findSeuratClusters <- function(object,
                                NormalizeData = list(),
                                ScaleData = list(),
@@ -814,6 +808,29 @@ flip_coords_df <- function(df,
 #'  }
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotSurface(object, display_image = T)
+#'
+#' object <- flipImage(object, axis = "h")
+#'
+#' plotSurface(object, display_image = T)
+#'
+#' object <- flipCoordinates(object, axis = "h")
+#'
+#' plotSurface(object, display_image = T)
+#'
+#' object <- flipAll(object, axis = "v")
+#'
+#' plotSurface(object, display_image = T)
+#'
 #'
 flipAll <- function(object, axis, verbose = FALSE){
 

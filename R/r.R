@@ -319,6 +319,16 @@ recDbscanMinPts <- function(object){
 #' to the new name.
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- renameSpataObject(object, sample_name = "my_new_name")
+#'
 renameSpataObject <- function(object, sample_name){
 
   confuns::is_value(sample_name, mode = "character")
@@ -472,6 +482,8 @@ setMethod(
 #'
 #' @export
 #'
+#' @inheritSection tutorial_hint_dummy Tutorials
+#'
 setGeneric(name = "registerImage", def = function(object, ...){
 
   standardGeneric(f = "registerImage")
@@ -484,8 +496,9 @@ setMethod(
   f = "registerImage",
   signature = "SPATA2",
   definition = function(object,
-                        dir,
                         img_name,
+                        img = NULL,
+                        img_dir = NULL,
                         unload = TRUE,
                         process = FALSE,
                         overwrite = FALSE,
@@ -497,6 +510,7 @@ setMethod(
       registerImage(
         object = sp_data,
         dir = dir,
+        img = img,
         img_name = img_name,
         unload = unload,
         process = process,
@@ -517,8 +531,9 @@ setMethod(
   f = "registerImage",
   signature = "SpatialData",
   definition = function(object,
-                        dir,
                         img_name,
+                        img = NULL,
+                        dir = NULL,
                         unload = FALSE,
                         process = FALSE,
                         overwrite = FALSE,
@@ -527,17 +542,20 @@ setMethod(
     confuns::check_none_of(
       input = img_name,
       against = getImageNames(object),
-      ref.against = "registered HistoImages",
+      ref.against = "registered images",
       overwrite = overwrite
     )
+
+    reference <- !containsHistoImages(object)
 
     hist_img <-
       createHistoImage(
         dir = dir,
+        img = img,
         img_name = img_name,
         sample = object@sample,
         active = FALSE,
-        reference = FALSE,
+        reference = reference,
         scale_factors = list(),
         verbose = verbose
       )
@@ -556,35 +574,49 @@ setMethod(
 
     }
 
-    # compute scale factors
-    hist_img_ref <- getHistoImageRef(object)
+    if(!reference){
 
-    img_scale_fct <-
-      compute_img_scale_fct(
-        hist_img1 = hist_img,
-        hist_img2 = hist_img_ref
-      )
+      # compute scale factors
+      hist_img_ref <- getHistoImageRef(object)
 
-    hist_img@scale_factors <-
-      purrr::imap(
-        .x = hist_img_ref@scale_factors,
-        .f = function(fct, name){
+      img_scale_fct <-
+        compute_img_scale_fct(
+          hist_img1 = hist_img,
+          hist_img2 = hist_img_ref
+        )
 
-          if(name == "image"){
+      hist_img@scale_factors <-
+        purrr::imap(
+          .x = hist_img_ref@scale_factors,
+          .f = function(fct, name){
 
-            fct / img_scale_fct
+            if(name == "image"){
 
-          } else if(name == "pixel"){
+              fct / img_scale_fct
 
-            fct * img_scale_fct
+            } else if(name == "pixel"){
+
+              fct * img_scale_fct
+
+            }
 
           }
+        )
 
-        }
-      )
+      # add to SpatialData
+      object@images[[img_name]] <- hist_img
 
-    # add to SpatialData
-    object@images[[img_name]] <- hist_img
+    } else {
+
+      # add to SpatialData
+      object@images[[img_name]] <- hist_img
+
+      object@name_img_ref <- img_name
+      object <- activateImage(object, img_name = img_name)
+
+    }
+
+
 
     return(object)
 
@@ -595,52 +627,9 @@ setMethod(
 
 #' @title Relate observations to a spatial annotation
 #'
-#' @description Relates observations in an external data.frame
-#' to the spatial position and extent of an spatial annotation.
+#' @description Deprecated in favor of `getCoordsDfSA(..., coords_df = input_df)`
 #'
-#' @param input_df Data.frame with at least three columns.
-#' \itemize{
-#'  \item{*x*: }{numeric. Position of observations on x-axis.}
-#'  \item{*y*: }{numeric. Position of observations on y-axis.}
-#'  }
-#' @param input_id_var Character value or `NULL`. If character, denotes
-#' the variable in `input_df` that uniquely identifies each observation.
-#' If `NULL`, a variable named *inp_id* is created using the prefix *'ID'+
-#' and the rownumber.
-#' @param distance,binwidth,n_bins_circle If exactly two of the three arguments
-#' are not `NA_integer_` but valid input as is documented in [`spatialAnnotationScreening()`]
-#' the output contains binning results.
-#' @param calc_dist_to Character. One of *'border'* (the default), *'center'* or
-#' *'none'*. If *'border'*, the distance of every observation to its closest point
-#' on the spatial annotation **border** is calculated. If *'center'* the distance
-#' of every observation to the **center** of the spatial annotation is computed,
-#' as is returned by [`getSpatAnnCenter()`]. If *'none'*, distance calculation
-#' is skipped.
-#' @param inc_outline Logical value. If `TRUE`, the function [`include_tissue_outline()`]
-#' is used to remove observations that do not fall on the tissue section of the
-#' spatial annotation. See examples and documentation of [`include_tissue_outline()`]
-#' for more information.
-#' @param unit Character. The unit in which to calculate the distance.
-#'
-#' @inherit argument_dummy params
-#' @inherit spatialAnnotationScreening params
-#'
-#' @return The input data.frame with additional columns:
-#'
-#' \itemize{
-#'  \item{*angle* :}{ numeric. The angle between the observation point and the center of the
-#'  spatial annotation.}
-#'  \item{*bins_angle* :} factor. Groups created based on the variable *angle*. Number of levels
-#'  depends on input for argument `n_bins_angle`.
-#'  \item{*bins_circle* :} factor. Groups created based on the variable *dist_to_ia*. Number of levels
-#'  dpeends on input for arguments `distance`, `binwidth` and/or `n_bins_circle`.
-#'  \item{*dist_to_ia* :} numeric. Distance to the spatial annotation.
-#'  \item{*dist_unit* :} character. The unit in which distance was measured.
-#' }
-#'
-#' Additionally, if `inc_outline` is `TRUE`, the output variables of the function
-#' [`include_tissue_outline()`] are added.
-#'
+#' @keywords internal
 #' @export
 relateToSpatialAnnotation <- function(object,
                                       id,
@@ -858,22 +847,47 @@ relateToSpatialAnnotation <- function(object,
 #' the new ordering is supposed to be stored. Must contain all groups of the
 #' grouping variable.
 #'
-#' @return An updated spata object.
+#' @inherit update_dummy return
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' p_before <- plotSurface(object, color_by = "bayes_space")
+#'
+#' plot(p_before)
+#'
+#' getGroupNames(object, grouping = "bayes_space")
+#'
+#' object <- relevelGroups(object, grouping = "bayes_space", new_levels = c("1", "2", "3", "7", "6", "5", "4"))
+#'
+#' getGroupNames(object, grouping = "bayes_space")
+#'
+#' p_afterwards <- plotSurface(object, color_by = "bayes_space")
+#'
+#' # different levels -> different order -> different color assignment
+#' p_before + p_afterwards
 
-relevelGroups <- function(object, grouping_variable, new_levels){
+relevelGroups <- function(object, grouping, new_levels, ...){
 
-  is_value(grouping_variable, "character")
+  deprecated(...)
+
+  is_value(grouping, "character")
   is_vec(new_levels, "character")
 
   check_one_of(
-    input = grouping_variable,
+    input = grouping,
     against = getFeatureNames(object, of_class = "factor")
   )
 
   meta_df <- getMetaDf(object)
 
-  var <- meta_df[[grouping_variable]]
+  var <- meta_df[[grouping]]
 
   # dont extract levels to drop unused levels silently
   groups <- base::unique(var) %>% base::as.character()
@@ -888,13 +902,13 @@ relevelGroups <- function(object, grouping_variable, new_levels){
     ref2 <- scollapse(missing)
 
     msg <-
-      glue::glue("{ref1} '{ref2}' of groups in variable '{grouping_variable}' is missing in input for argument 'new_levels'.")
+      glue::glue("{ref1} '{ref2}' of groups in variable '{grouping}' is missing in input for argument 'new_levels'.")
 
     give_feedback(msg = msg, fdb.fn = "stop", with.time = FALSE)
 
   }
 
-  meta_df[[grouping_variable]] <- base::factor(x = var, levels = new_levels)
+  meta_df[[grouping]] <- base::factor(x = var, levels = new_levels)
 
   object <- setMetaDf(object, meta_df = meta_df)
 
@@ -902,14 +916,14 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 
     ma <- getAssay(object, assay_name = assay_name)
 
-    ma@analysis$dea[[grouping_variable]] <-
+    ma@analysis$dea[[grouping]] <-
       purrr::map(
-        .x = ma@analysis$dea[[grouping_variable]],
+        .x = ma@analysis$dea[[grouping]],
         .f = function(method_list){
 
-          method_list$data[[grouping_variable]] <-
+          method_list$data[[grouping]] <-
             base::factor(
-              x = method_list$data[[grouping_variable]],
+              x = method_list$data[[grouping]],
               levels = new_levels
             )
 
@@ -933,55 +947,134 @@ relevelGroups <- function(object, grouping_variable, new_levels){
 }
 
 
-#' @title Remove observations with no counts
-#'
-#' @description Identifies and removes observations with no molecule counts
-#' from the `SPATA2` object.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
+#' @rdname removeMolecules
 #' @export
-removeObsNoCounts <- function(object,
-                              assay_name = activeAssay(object),
-                              verbose = NULL){
+removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
+
+  removeMolecules(
+    object = object,
+    molecules = genes,
+    show_warnings = show_warnings,
+    ref = "gene",
+    verbose = verbose
+  )
+
+}
+
+#' @rdname removeMolecules
+#' @export
+removeGenesStress <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  barcodes <- getBarcodes(object)
+  confuns::give_feedback(
+    msg = "Removing stress genes and mitochondrial genes.",
+    verbose = verbose
+  )
 
-  count_mtr <-
-    getCountMatrix(object, assay_name = assay_name) %>%
-    base::as.matrix()
+  count_mtr <- getCountMatrix(object)
 
-  no_counts <- base::colSums(count_mtr, na.rm = TRUE)
-
-  keep <- base::names(no_counts[no_counts!=0])
-
-  if(base::length(keep) == base::ncol(count_mtr)){
-
-    confuns::give_feedback(
-      msg = "No observations with no counts.",
-      verbose = verbose
+  genes_rm <-
+    c(
+      base::rownames(count_mtr)[base::grepl("^RPL", base::rownames(count_mtr))],
+      base::rownames(count_mtr)[base::grepl("^RPS", base::rownames(count_mtr))],
+      base::rownames(count_mtr)[base::grepl("^MT-", base::rownames(count_mtr))],
+      c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1')
     )
 
-  } else {
+  genes_rm <- genes_rm[genes_rm %in% base::rownames(count_mtr)]
 
-    n <- (base::ncol(count_mtr))-(base::length(keep))
-
-    confuns::give_feedback(
-      msg = glue::glue("Removing {n} observation(s)."),
+  object <-
+    removeGenes(
+      object = object,
+      genes = genes_rm,
+      show_warnings = FALSE,
       verbose = verbose
     )
-
-    object <- subsetByBarcodes(object, barcodes = keep)
-
-  }
 
   returnSpataObject(object)
 
 }
 
+#' @rdname removeMolecules
+#' @export
+removeGenesZeroCounts <- function(object, verbose = NULL){
+
+  hlpr_assign_arguments(object)
+
+  count_mtr <- getCountMatrix(object)
+
+  genes_zero_counts <-
+    base::rownames(count_mtr)[Matrix::rowSums(count_mtr) == 0]
+
+  object <-
+    removeGenes(
+      object = object,
+      genes = genes_zero_counts,
+      show_warnings = TRUE,
+      verbose = verbose
+    )
+
+  returnSpataObject(object)
+
+}
+
+
+
+#' @rdname registerImage
+#' @export
+setGeneric(name = "removeImage", def = function(object, ...){
+
+  standardGeneric(f = "removeImage")
+
+})
+
+#' @rdname registerImage
+#' @export
+setMethod(
+  f = "removeImage",
+  signature = "SPATA2",
+  definition = function(object, img_name){
+
+    sp_data <- getSpatialData(object)
+
+    sp_data <- removeImage(sp_data, img_name = img_name)
+
+    object <- setSpatialData(object, sp_data = sp_data)
+
+    returnSpataObject(object)
+
+  }
+)
+
+#' @rdname registerImage
+#' @export
+setMethod(
+  f = "removeImage",
+  signature = "SpatialData",
+  definition = function(object, img_name){
+
+    confuns::check_one_of(
+      input = img_name,
+      against = getImageNames(object)
+    )
+
+    if(img_name == object@name_img_ref){
+
+      stop("Removing the reference image is not allowed.")
+
+    } else if(img_name == activeImage(object)){
+
+      stop("Removing the active image is not allowed.")
+
+    }
+
+    object@images[[img_name]] <- NULL
+
+    return(object)
+
+  }
+)
 
 #' @title Remove meta features
 #'
@@ -995,6 +1088,20 @@ removeObsNoCounts <- function(object,
 #'
 #' @seealso [`removeMolecules()`], [`getMetaFeatureNames()`]
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' # deafults to only return the meta features
+#' getFeatureNames(object)
+#'
+#' object <- removeMetaFeatures(object, feature_names = "bayes_space")
+#'
+#' getFeatureNames(object)
 #'
 removeMetaFeatures <- function(object, feature_names){
 
@@ -1048,6 +1155,23 @@ removeMetaFeatures <- function(object, feature_names){
 #' step as early as possible in the processing pipeline.
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' genes <- getGenes(object)
+#' head(genes)
+#' length(genes)
+#'
+#' object <- removeGenesZeroCounts(object)
+#' object <- removeGenesStress(object)
+#'
+#' genes_new <- getGenes(object)
+#' length(genes_new)
 #'
 
 removeMolecules <- function(object,
@@ -1125,180 +1249,61 @@ removeMolecules <- function(object,
 
 }
 
-#' @rdname removeMolecules
-#' @export
-removeGenes <- function(object, genes, show_warnings = FALSE, verbose = NULL){
-
-  removeMolecules(
-    object = object,
-    molecules = genes,
-    show_warnings = show_warnings,
-    ref = "gene",
-    verbose = verbose
-    )
-
-}
-
-#' @rdname removeMolecules
-#' @export
-removeGenesStress <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  confuns::give_feedback(
-    msg = "Removing stress genes and mitochondrial genes.",
-    verbose = verbose
-  )
-
-  count_mtr <- getCountMatrix(object)
-
-  genes_rm <-
-    c(
-      base::rownames(count_mtr)[base::grepl("^RPL", base::rownames(count_mtr))],
-      base::rownames(count_mtr)[base::grepl("^RPS", base::rownames(count_mtr))],
-      base::rownames(count_mtr)[base::grepl("^MT-", base::rownames(count_mtr))],
-      c('JUN','FOS','ZFP36','ATF3','HSPA1A","HSPA1B','DUSP1','EGR1','MALAT1')
-    )
-
-  genes_rm <- genes_rm[genes_rm %in% base::rownames(count_mtr)]
-
-  object <-
-    removeGenes(
-      object = object,
-      genes = genes_rm,
-      show_warnings = FALSE,
-      verbose = verbose
-    )
-
-  returnSpataObject(object)
-
-}
-
-#' @rdname removeMolecules
-#' @export
-removeGenesZeroCounts <- function(object, verbose = NULL){
-
-  hlpr_assign_arguments(object)
-
-  count_mtr <- getCountMatrix(object)
-
-  genes_zero_counts <-
-    base::rownames(count_mtr)[Matrix::rowSums(count_mtr) == 0]
-
-  object <-
-    removeGenes(
-      object = object,
-      genes = genes_zero_counts,
-      show_warnings = TRUE,
-      verbose = verbose
-    )
-
-  returnSpataObject(object)
-
-}
-
-
-#' @rdname registerImage
-#' @export
-setGeneric(name = "removeImage", def = function(object, ...){
-
-  standardGeneric(f = "removeImage")
-
-})
-
-#' @rdname registerImage
-#' @export
-setMethod(
-  f = "removeImage",
-  signature = "SPATA2",
-  definition = function(object, img_name){
-
-    sp_data <- getSpatialData(object)
-
-    sp_data <- removeImage(sp_data, img_name = img_name)
-
-    object <- setSpatialData(object, sp_data = sp_data)
-
-    returnSpataObject(object)
-
-  }
-)
-
-#' @rdname registerImage
-#' @export
-setMethod(
-  f = "removeImage",
-  signature = "SpatialData",
-  definition = function(object, img_name){
-
-    confuns::check_one_of(
-      input = img_name,
-      against = getImageNames(object)
-    )
-
-    if(img_name == object@name_img_ref){
-
-      stop("Removing the reference image is not allowed.")
-
-    } else if(img_name == activeImage(object)){
-
-      stop("Removing the active image is not allowed.")
-
-    }
-
-    object@images[[img_name]] <- NULL
-
-    return(object)
-
-  }
-)
-
-
-#' @title Remove features
+#' @title Remove observations with no counts
 #'
-#' @description Removes features from the meta feature data.frame.
+#' @description Identifies and removes observations with no molecule counts
+#' from the `SPATA2` object.
 #'
-#' @inherit check_sample params
-#' @param feature_names Character vector. Specifies the meta features to be removed.
-#'
+#' @inherit argument_dummy params
 #' @inherit update_dummy return
+#'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' # the function tells you if / how many observations were removed
+#' object <- removeObsNoCounts(object, verbose = TRUE)
+#'
+removeObsNoCounts <- function(object,
+                              assay_name = activeAssay(object),
+                              verbose = NULL){
 
-removeMetaFeatures <- function(object, feature_names, ...){
+  hlpr_assign_arguments(object)
 
-  check_object(object)
+  barcodes <- getBarcodes(object)
 
-  confuns::check_one_of(
-    input = feature_names,
-    against = getFeatureNames(object)
-  )
+  count_mtr <-
+    getCountMatrix(object, assay_name = assay_name) %>%
+    base::as.matrix()
 
-  mdf <- getMetaDf(object = object)
+  no_counts <- base::colSums(count_mtr, na.rm = TRUE)
 
-  for(feature in feature_names){
+  keep <- base::names(no_counts[no_counts!=0])
 
-    mdf[[feature]] <- NULL
+  if(base::length(keep) == base::ncol(count_mtr)){
 
-    object@assays <-
-      purrr::map(
-        .x = object@assays,
-        .f = function(ma){
+    confuns::give_feedback(
+      msg = "No observations with no counts.",
+      verbose = verbose
+    )
 
-          ma@analysis$dea[[feature]] <- NULL
-          ma@analysis$gsea[[feature]] <- NULL
+  } else {
 
-          return(ma)
+    n <- (base::ncol(count_mtr))-(base::length(keep))
 
-        }
-      )
+    confuns::give_feedback(
+      msg = glue::glue("Removing {n} observation(s)."),
+      verbose = verbose
+    )
 
-    svn <- object@obj_info$segmentation_variable_names
-    svn <- svn[svn != feature]
-    object@obj_info$segmentation_variable_names <- svn
+    object <- subsetByBarcodes(object, barcodes = keep)
 
   }
-
-  object <- setMetaDf(object, meta_df = mdf)
 
   returnSpataObject(object)
 
@@ -1315,6 +1320,25 @@ removeMetaFeatures <- function(object, feature_names, ...){
 #' is defined as the last element of [`getMatrixNames()`].
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' getMatrixNames(object)
+#' getProcessedMatrixNames(object)
+#'
+#' object <- normalizeCounts(object, method = "LogNormalize")
+#'
+#' getProcessedMatrixNames(object)
+#'
+#' object <- removeProcessedMatrix(object, mtr_name = "LogNormalize")
+#'
+#' getProcessedMatrixNames(object)
+#'
 removeProcessedMatrix <- function(object,
                                   mtr_name,
                                   assay_name = activeAssay(object)){
@@ -1350,17 +1374,34 @@ removeProcessedMatrix <- function(object,
 #'
 #' @description Removes spatial annotations from the SPATA2 object.
 #'
-#' @param ids Character value. The IDs of the spatial annotations to
+#' @param ids Character vector. The IDs of the spatial annotations to
 #' remove.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
-
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' getSpatAnnIds(object)
+#' plotSpatialAnnotations(object)
+#'
+#' # get IDs tagged with both 'necrotic' and 'compr'
+#' ids_rm <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "all")
+#'
+#' print(ids_rm)
+#'
+#' object <- removeSpatialAnnotations(object, ids = ids_rm)
+#'
+#' plotSpatialAnnotations(object)
+#'
 removeSpatialAnnotations <- function(object, ids){
-
-  containsSpatialAnnotations(object, error = TRUE)
 
   confuns::check_one_of(
     input = ids,
@@ -1391,6 +1432,8 @@ removeSpatialAnnotations <- function(object, ids){
 #' @seealso [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
 #'
 #' @export
+#'
+#' @inheritSection tutorial_hint_dummy Tutorials
 #'
 removeSpatialOutliers <- function(object, verbose = NULL){
 
@@ -1423,6 +1466,48 @@ removeSpatialOutliers <- function(object, verbose = NULL){
 
 }
 
+#' @title Remove spatial trajectories
+#'
+#' @description Removes spatial trajectories from the SPATA2 object.
+#'
+#' @param id Character vector. The IDs of the spatial trajectories to remove.
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' getTrajectoryIds(object)
+#'
+#' object <- removeSpatialTrajectories(object, ids = "horizontal_mid")
+#'
+#' getTrajectoryIds(object)
+#'
+
+removeSpatialTrajectories <- function(object, ids){
+
+  confuns::check_one_of(
+    input = ids,
+    against = getTrajectoryIds(object)
+  )
+
+  sp_data <- getSpatialData(object)
+
+  sp_data@trajectories <-
+    sp_data@trajectories[!base::names(sp_data@trajectories) %in% ids]
+
+  object <- setSpatialData(object, sp_data)
+
+  returnSpataObject(object)
+
+}
+
 #' @title Remove data points from tissue fragments
 #'
 #' @description Removes data points that fall on tissue fragments as
@@ -1438,6 +1523,8 @@ removeSpatialOutliers <- function(object, verbose = NULL){
 #' @seealso [`removeSpatialOutliers()`], [`identifyTissueOutline()`] and [`identifySpatialOutliers()`]
 #'
 #' @export
+#'
+#' @inheritSection tutorial_hint_dummy Tutorials
 #'
 removeTissueFragments <- function(object,
                                   fragments = NULL,
@@ -1511,9 +1598,22 @@ removeTissueFragments <- function(object,
 #' @return An upated spata-object.
 #' @export
 #'
-#' @examples #Not run:
 #'
-#'  object <- renameMetaFeatures(object, "clusters_new" = "clusters")
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' getFeatureNames(object)
+#'
+#' object <- renameMetaFeatures(object, "histology_new" = "histology")
+#'
+#' getFeatureNames(object)
+#'
+#' plotSurface(object, color_by = "histology") # fails
+#' potSurface(object, color_by = "histology_new")
 #'
 
 renameMetaFeatures <- function(object, ...){
@@ -1530,10 +1630,25 @@ renameMetaFeatures <- function(object, ...){
 
   valid_rename_input <- rename_input
 
+  new_names <- base::names(valid_rename_input)
+  old_names <- base::unname(valid_rename_input)
+
   # rename feature df
   meta_df <-
     getMetaDf(object) %>%
     dplyr::rename(!!! valid_rename_input)
+
+  # rename spat segm vars
+  for(ssv in object@obj_info$spat_segm_vars){
+
+    if(ssv %in% valid_rename_input){
+
+      object@obj_info$spat_segm_vars[object@obj_info$spat_segm_vars == ssv] <-
+        new_names[old_names == ssv]
+
+    }
+
+  }
 
   for(assay_name in getAssayNames(object)){
 
@@ -1614,15 +1729,20 @@ renameMetaFeatures <- function(object, ...){
 #' @return An updated spata-object.
 #' @export
 #'
-#' @examples #Not run:
+#' @seealso [`relevelGroups()`]
 #'
-#'  object <-
-#'     renameGroups(object = spata_object,
-#'                  grouping_variable = "seurat_clusters",
-#'                  "first_new_group" = "1",
-#'                  "sec_new_group" = "2")
+#' @examples
+#' library(SPATA2)
 #'
+#' data("example_data")
 #'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotSurface(object, color_by = "histology")
+#'
+#' object <- renameGroups(object, grouping = "histology", "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated")
+#'
+#' plotSurface(object, color_by = "histology")
 
 renameGroups <- function(object,
                          grouping_variable,
@@ -1669,7 +1789,7 @@ renameGroups <- function(object,
       {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
     )
 
-  if(grouping_variable %in% getSegmentationNames(object, verbose = FALSE)){
+  if(grouping_variable %in% getSpatSegmVarNames(object, verbose = FALSE)){
 
     keep_levels <- c(keep_levels, "unnamed")
 
@@ -1749,6 +1869,19 @@ renameGroups <- function(object,
 #' @inherit argument_dummy params
 #' @export
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' plotSpatialAnnotations(object)
+#'
+#' object <- renameSpatialAnnotation(object, id = "necrotic_area", new_id = "Necrotic_Area_Cap")
+#'
+#' plotSpatialAnnotations(object)
+#'
 renameSpatialAnnotation <- function(object, id, new_id, overwrite = FALSE){
 
   confuns::are_values(c("id", "new_id"), mode = "character")
@@ -1795,6 +1928,8 @@ renameSpatAnn <- function(...){
 #' @export
 renameSegments <- function(object, ...){
 
+  deprecated(fn = T, ...)
+
   renameGroups(object, ...)
 
 }
@@ -1811,6 +1946,28 @@ renameSegments <- function(object, ...){
 #' @seealso [`getImageTransformations()`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' plotImage(object)
+#'
+#' object <- alignImage(object, img_name = "lowres", angle = 90)
+#'
+#' # note that $angle contains instructions to rotate the image to 90°
+#' getImageTransformations(object, img_name = "lowres")
+#'
+#' plotImage(object)
+#'
+#' object <- resetImageTransformations(object, img_name = "lowres")
+#'
+#' getImageTransformations(object, img_name = "lowres")
+#'
+#' plotImage(object)
 #'
 setGeneric(name = "resetImageTransformations", def = function(object, ...){
 
@@ -1919,7 +2076,7 @@ returnSpataObject <- function(object){
       if(fn_name == ".local"){
 
         fn_name <- base::as.character(sc)[1]
-        fn_name <- confuns::str_extract_before(fn_name, pattern = "\\(")
+        fn_name <- stringr::str_extract(fn_name, pattern = "^[A-Za-z]*")
 
       }
 

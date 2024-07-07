@@ -59,7 +59,10 @@ number of minimum points required in the eps neighborhood for core points
 must have in order not to be discarded as a spatial outlier.}
 
 \item{force1}{Logical value. If \code{TRUE}, spatial sub groups identified by DBSCAN
-are merged into one cluster.}
+are merged into one cluster. \strong{Note}: If \code{FALSE} (the default), the input for \code{ìd} is suffixed
+with an index to label each spatial annotation created uniquely, regardless of
+how many are eventually created. E.g. if \code{id = "my_ann"} and the algorithm
+created two spatial annotations, they are named \emph{my_ann_1} and \emph{my_ann_2}.}
 
 \item{concavity}{Numeric value. Given to argument \code{concavity} of
 \code{\link[concaveman:concaveman]{concaveman::concaveman()}}. Determines the relative measure of concavity.
@@ -119,58 +122,27 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 \examples{
 
 library(SPATA2)
-data(spatial_segmentations)
+library(tidyverse)
 
-object <- downloadSpataObject("313_T")
+data("example_data")
 
-# add 'histology' variable
+object <- example_data$object_UKF275T_diet
+
+barcodes <-
+  getMetaDf(object) \%>\%
+  filter(bayes_space == "1") \%>\%
+  pull(barcodes)
+
 object <-
- addFeatures(
-  object = object,
-  feature_df = spatial_segmentations[["313_T"]]
-   )
-
-plotImageGgplot(object) + plotSurface(object, color_by = "histology", pt_alpha = 0.5)
-
-# obtain list of barcodes that cover necrotic areas
-necrotic_barcodes <-
- getFeatureDf(object) \%>\%
- dplyr::filter(histology == "necrosis") \%>\%
- dplyr::pull("barcodes")
-
-print(necrotic_barcodes)
-
-# convert list of barcodes to spatial annotations with default setting
-object_ex1 <-
  barcodesToSpatialAnnotation(
   object = object,
-  barcodes = necrotic_barcodes,
-  id = "necrosis",
+  barcodes = barcodes,
+  id = "example",
+  overwrite = TRUE
   )
 
-plotSpatialAnnotations(object_ex1, expand = "1mm")
-
-# skip algorithm to detect multiple areas
-object_ex2 <-
- barcodesToSpatialAnnotation(
-  object = object,
-  barcodes = necrotic_barcodes,
-  id = "necrosis",
-  force1 = TRUE
-  )
-
-plotSpatialAnnotations(object_ex2, expand = "1mm")
-
-# manipulate the outline via `expand_outline`
-object_ex3 <-
- barcodesToSpatialAnnotation(
-  object = object,
-  barcodes = necrotic_barcodes,
-  id = "necrosis",
-  expand_outline = getCCD(object)*4.5 # *4.5 is too high, defaults to *1.25
-  )
-
-plotSpatialAnnotations(object_ex3, expand = "1mm")
+plotSurface(object, color_by = "bayes_space") +
+  ggpLayerSpatAnnOutline(object, ids = "example")
 
 }
 \seealso{

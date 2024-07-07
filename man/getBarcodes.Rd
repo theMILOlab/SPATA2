@@ -2,12 +2,13 @@
 % Please edit documentation in R/getA-G.R
 \name{getBarcodes}
 \alias{getBarcodes}
-\title{Obtain specific barcodes}
+\title{Obtain barcodes}
 \usage{
 getBarcodes(object, across = NULL, across_subset = NULL, simplify = TRUE)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{across}{Character value or NULL. Specifies the grouping variable of interest.
 
@@ -22,6 +23,9 @@ with a \emph{'-'}. (Saves writing if there are more groups you are interested in
 than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
+
+\item{simplify}{Logical. If set to TRUE the output list is simplified to a vector if possible. If set
+to FALSE a list is returned.}
 }
 \value{
 Named character vector or list.
@@ -36,17 +40,4 @@ If simplify is set to FALSE a list is returned.
 
 Not specifying \code{across} makes the function return an unnamed character
 vector containing all barcodes.
-}
-\examples{
-#Not run:
-
-  # get barcodes of those barcode spots that are assigned
-  # to groups 'cluster_1', 'cluster_3' and 'cluster_5' by
-  # the variable 'my_cluster'
-
-  getBarcodes(object = spata_obj,
-              across = "my_cluster",
-              across_subset = c("cluster_1", "cluster_3", "cluster_5"),
-              simplify = TRUE)
-
 }

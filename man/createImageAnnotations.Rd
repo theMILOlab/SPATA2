@@ -22,6 +22,22 @@ used to create a \code{\link{SpatialAnnotation}} of subclass \code{\link{ImageAn
 
 Not to confuse with \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
 }
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+if(FALSE){ # diffuse
+
+ object <- createImageAnnotations(object)
+
+}
+
+
+}
 \seealso{
 \code{\link[=addSpatialAnnotation]{addSpatialAnnotation()}}, \code{\link[=mergeWithTissueOutline]{mergeWithTissueOutline()}}
 }

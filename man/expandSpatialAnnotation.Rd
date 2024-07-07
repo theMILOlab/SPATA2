@@ -26,6 +26,23 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Expands or shrinks the outer border of a spatial annotation.
 }
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "vessel1", line_color = "red")
+plotSpatialAnnotations(object, "vessel1")
+
+object <- expandSpatialAnnotation(object, id = "vessel1", expand = "50um", new_id = "vessel1_exp")
+
+plotSpatialAnnotations(object, ids = c("vessel1", "vessel1_exp"))
+
+}
 \seealso{
 \code{\link[=smoothSpatialAnnotation]{smoothSpatialAnnotation()}}, \code{\link[=shiftSpatialAnnotation]{shiftSpatialAnnotation()}}, \code{\link{SpatialAnnotation}}
 }

@@ -236,6 +236,23 @@ steps are skipped. Eventually, the remaining spatial annotations are submitted t
 whatever the respective function does.
 }
 
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+
+plotSpatialAnnotations(object, ids = ids)
+
+plotSpatialAnnotations(object, ids = ids, square = T)
+
+plotSpatialAnnotations(object, id = ids, fill = "orange", square = T, expand = "50\%")
+
+
+}
 \seealso{
 \code{\link[=getSpatialAnnotations]{getSpatialAnnotations()}}
 }

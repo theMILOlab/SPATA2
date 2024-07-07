@@ -8,6 +8,7 @@ normalizeCounts(
   object,
   method = "LogNormalize",
   mtr_name_new = method,
+  sct_clip_range = c(-sqrt(x = ncol(x = umi)/30), sqrt(x = ncol(x = umi)/30)),
   activate = TRUE,
   assay_name = activeAssay(object),
   overwrite = FALSE,
@@ -19,7 +20,7 @@ normalizeCounts(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{method}{Character value. The normalization method. One of c(\emph{'LogNormaize'},
+\item{method}{Character value. The normalization method. One of c(\emph{'LogNormalize'},
 \emph{'CLR'}, \emph{'RC'}).}
 
 \item{mtr_name_new}{Character value. The name under which the new processed matrix
@@ -50,4 +51,16 @@ Normalizes the count matrix of a molecular assay.
 The function creates a temporary \code{Seurat} object and calls \code{\link[Seurat:NormalizeData]{Seurat::NormalizeData()}}
 with the corresponding method. Afterwards, the normalized matrix is extracted and
 stored in the \code{SPATA2} object.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <- normalizeData(object)
+
 }

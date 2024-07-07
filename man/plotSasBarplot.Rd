@@ -129,4 +129,28 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 \code{\link[=concept_distance_measure]{here}} to read it.
 }
 
+\examples{
+
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   inner_borders = FALSE,
+   force1 = TRUE
+   )
+
+plotSurface(object, color_by = "bayes_space") +
+  ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann")
+
+plotSasBarplot(object, grouping = "bayes_space", id = "hypoxia_ann")
+
+}
 \keyword{internal}

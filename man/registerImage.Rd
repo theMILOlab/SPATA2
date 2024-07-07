@@ -13,8 +13,9 @@ registerImage(object, ...)
 
 \S4method{registerImage}{SPATA2}(
   object,
-  dir,
   img_name,
+  img = NULL,
+  img_dir = NULL,
   unload = TRUE,
   process = FALSE,
   overwrite = FALSE,
@@ -23,8 +24,9 @@ registerImage(object, ...)
 
 \S4method{registerImage}{SpatialData}(
   object,
-  dir,
   img_name,
+  img = NULL,
+  dir = NULL,
   unload = FALSE,
   process = FALSE,
   overwrite = FALSE,
@@ -43,10 +45,10 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{dir}{Character value. The directory from where to retrieve the image.}
-
 \item{img_name}{Character value. The image to remove. Must neither be
 the active nor the reference image.}
+
+\item{img}{An image. Must be usable with \code{EBImage::as.Image()}.}
 
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
@@ -54,6 +56,8 @@ the active nor the reference image.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{dir}{Character value. The directory from where to retrieve the image.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.
@@ -67,3 +71,9 @@ that are no longer needed.
 
 Do not confuse with \code{\link[=loadImage]{loadImage()}} and \code{\link[=unloadImage]{unloadImage()}}.
 }
+\section{Tutorials}{
+
+Extensive tutorials for how to use this function can be found on our website
+\url{https://themilolab.github.io/SPATA2/} .
+}
+

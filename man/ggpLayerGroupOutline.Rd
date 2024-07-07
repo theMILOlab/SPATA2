@@ -7,7 +7,7 @@
 ggpLayerGroupOutline(
   object,
   grouping,
-  groups_subset = NULL,
+  group_subset = NULL,
   plot_type = "surface",
   line_alpha = 1,
   line_color = "black",
@@ -34,12 +34,12 @@ objects of classes for which a method has been defined.}
 \item{grouping}{Character value. The grouping variable of interest. Use
 \code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
-\item{groups_subset}{Character value or NULL. If character,
-specifies the exact groups that are encircled. If NULL, all groups
+\item{group_subset}{Character value or \code{NULL}. If character,
+specifies the exact groups that are outlined. If \code{NULL}, all groups
 are encircled.}
 
-\item{plot_type}{Character value. Either \emph{'surface', 'tsne'} or
-\emph{'umap'}.}
+\item{plot_type}{Character value. Either \emph{'surface'} or the name of a conducted
+dimensional reduction.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 
@@ -74,7 +74,7 @@ You can use values lower than 1, but they can produce pretty crazy shapes.}
 \item{expand_outline}{Distance measure with which to expand the outline. Must be
 provided in pixel units!}
 
-\item{...}{Additional arguments given to \code{ggforce::geom_mark_hull()}. Affects
+\item{...}{Additional arguments given to \code{ggforce::geom_polygon()}. Affects
 the encircling.}
 }
 \value{
@@ -90,15 +90,15 @@ or a dimensional reduction plot.
 }
 \examples{
 
- object <- downloadPubExample("269_T")
+library(SPATA2)
+library(tidyverse)
 
- plotImageGgplot(object) +
-  ggpLayerGroupOutline(
-    object = object,
-    plot_type = "surface",
-    grouping = "histology",
-    groups_subset = "tumor",
-    line_color = color_vector("npg")[1]
-    )
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotSurface(object, color_by = "bayes_space") +
+ ggpLayerGroupOutline(object, grouping = "bayes_space", group_subset = c("1", "2"))
+
 
 }

@@ -31,11 +31,14 @@ A wrapper around the Seurat clustering pipeline suggested by
 \emph{Hao and Hao et al., 2021}.
 }
 \examples{
+library(SPATA2)
 
- object <- SPATAData::downloadSpataObject("275_T")
+data("example_data")
 
- object <- runSeuratClustering(object, name = "seurat_clusters")
+object <- example_data$object_UKF269T_diet
 
- plotSurface(object, color_by = "seurat_clusters")
+object <- runSeuratClustering(object, name = "new_seurat_clst")
+
+plotSurface(object, color_by = "new_seurat_clst")
 
 }

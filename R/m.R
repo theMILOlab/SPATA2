@@ -340,7 +340,7 @@ make_sf_polygon <- function(poly){
 
 # map ---------------------------------------------------------------------
 
-#' @title Image annotation and barcode intersection
+#' @title Spatial annotation and barcode intersection
 #'
 #' @description Creates a data.frame that maps the tags of spatial annotations
 #' to the barcodes that were covered by the spatial extent of the respective
@@ -377,14 +377,14 @@ mapSpatialAnnotationTags <- function(object,
       add_barcodes = TRUE
     )
 
-  img_ann_tags <- getSpatialAnnotationTags(object)
+  img_ann_tags <- getSpatAnnTags(object)
 
   spata_df <- getSpataDf(object)
 
   for(img_ann_tag in img_ann_tags){
 
     barcodes <-
-      getSpatialAnnotationBarcodes(
+      getSpatAnnBarcodes(
         object = object,
         tags = img_ann_tag,
         test = "any"
@@ -477,7 +477,7 @@ merge_cnv_bins <- function(chr, start_pos, end_pos, ref_bins, verbose = TRUE){
 }
 
 #' @title Merge polygons
-#' This function merges intersecting polygons by inserting the sub-polygon into
+#' @description This function merges intersecting polygons by inserting the sub-polygon into
 #' the main polygon where they intersect.
 #'
 #' @param main_poly The main polygon(s) as a data frame.
@@ -499,6 +499,7 @@ merge_cnv_bins <- function(chr, start_pos, end_pos, ref_bins, verbose = TRUE){
 #' sub_poly <- data.frame(x = c(0.5, 1.5, 1.5, 0.5), y = c(0.5, 0.5, 1.5, 1.5))
 #' merge_intersecting_polygon(main_poly, sub_poly)
 #'
+#' @keywords internal
 #' @export
 merge_intersecting_polygons <- function(main_poly,
                                         sub_poly,
@@ -714,40 +715,56 @@ merge_intersecting_polygons <- function(main_poly,
 #' @description Merge groups into one group.
 #'
 #' @inherit argument_dummy params
-#' @param grouping_variable Character value. The grouping variable whose
+#' @param grouping Character value. The grouping variable whose
 #' groups are supposed to be merged.
-#' @param grouping_variable_new Character value or NULL. If character,
+#' @param grouping_new Character value or NULL. If character,
 #' the results are stored in a new variable named accordingly. If NULL,
-#' the grouping variable is updated - DE analysis results will be discarded.
-#' @param keep Character vector or NULL. If character, specifies the groups
-#' that are supposed to remain as they are. Every other group is lumped together.
+#' the grouping variable is updated - DEA results will be discarded.
 #' @param merge Character vector or NULL. If character, specifies the groups
 #' that are merged together.
 #' @param new_group Character value. The new group name of the merge.
 #'
 #' @details Only one argument of \code{keep} or \code{merge} must be specified.
-#' If \code{grouping_variable_new} is NULL DE analysis results of the specified
+#' If \code{grouping_new} is NULL DEA results of the specified
 #' grouping variable is resetted.
 #'
 #' @export
 #'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'   mergeGroups(
+#'     object = object,
+#'     grouping = "bayes_space",
+#'     grouping_new = "bayes_space_merged",
+#'     merge = c("2", "4"),
+#'     new_group = "2.4.merged"
+#'    )
+#'
+#' plotSurface(object, color_by = "bayes_space")
+#' plotSurface(object, color_by = "bayes_space_merged")
+#'
 mergeGroups <- function(object,
-                        grouping_variable,
-                        grouping_variable_new,
-                        keep = NULL,
-                        drop = NULL,
-                        new_group = "other",
+                        grouping,
+                        grouping_new,
+                        merge,
+                        new_group,
                         verbose = NULL){
-
-  sample_name <- getSampleNames(object)[1]
 
   object <-
     getMetaDf(object) %>%
     lump_groups(
-      grouping.variable = grouping_variable,
-      grouping.variable.new = grouping_variable_new,
-      lump.keep = keep,
-      lump.drop = drop,
+      grouping.variable = grouping,
+      grouping.variable.new = grouping_new,
+      lump.keep = NULL,
+      lump.drop = merge,
       lump.to = new_group,
       verbose = verbose
     ) %>%
@@ -755,17 +772,6 @@ mergeGroups <- function(object,
       object = object,
       meta_df = .
     )
-
-  if(!base::is.character(grouping_variable_new)){
-
-    give_feedback(
-      msg = glue::glue("Removing DE analysis results of gropuing '{grouping_variable}'."),
-      verbose = verbose
-    )
-
-    object@dea[[sample_name]][[grouping_variable]] <- list()
-
-  }
 
   returnSpataObject(object)
 
@@ -778,7 +784,8 @@ mergeGroups <- function(object,
 #' into one.
 #'
 #' @param ids Character vector of ids from spatial annotations to merge.
-#' @param id Character value. The ID of the new spatial annotation
+#' @param id Character value. The ID of the new spatial annotation that results
+#' from the merging.
 #' @param remove_old Logical value. If `TRUE`, the *old* spatial annotations
 #' denoted in `ids` are removed from the object.
 #'
@@ -788,6 +795,32 @@ mergeGroups <- function(object,
 #' @seealso [`getSpatAnnIds()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' r <- getSpatAnnRange(object, id = "img_ann_1")
+#'
+#' plotImage(object) +
+#'  ggpLayerSpatAnnOutline(object, ids = c("vessel2", "img_ann_1"), use_colors = T)
+#'
+#' plotImage(object, xrange = r$x, yrange = r$y) +
+#'  ggpLayerSpatAnnOutline(object, ids = c("vessel2", "img_ann_1"), use_colors = T)
+#'
+#' object <-
+#'  mergeSpatialAnnotations(
+#'    object = object,
+#'    ids = c("img_ann_1", "vessel2"),
+#'    id = "new_img_ann",
+#'    )
+#'
+#' plotSpatialAnnotations(object)
 #'
 mergeSpatialAnnotations <- function(object,
                                     ids,
@@ -869,20 +902,41 @@ mergeSpatialAnnotations <- function(object,
 
 #' @title Integrate tissue outline in spatial annotation
 #'
-#' @description Ensures that the outline of a spatial annotaiton does not
+#' @description Ensures that the outline of a spatial annotation does not
 #' transgresses the outline of the tissue.
 #'
 #' @inherit argument_dummy params
 #' @param id Character value. The ID of the spatial annotation whose outline
 #' is supposed to be cut at the tissue edge.
 #' @param new_id If character, gives the resulting spatial annotation a new
-#' id. If `NULL`, the spatial annotaiton is effectively overwritten.
+#' id. If `NULL`, the spatial annotation is overwritten!
 #'
 #' @inherit update_dummy return
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' if(!containsTissueOutline(object)){
+#'
+#'   object <- identifyTissueOutline(object)
+#'
+#' }
+#'
+#' # image annotation which transgresses the tissue edge
+#' plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr"))
+#'
+#' object <- mergeWithTissueOutline(object, id = "necrotic_edge2_transgr", new_id = "merged")
+#'
+#' plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr", "merged"))
+#'
 mergeWithTissueOutline <- function(object,
                                    id,
-                                   new_id = NULL){
+                                   new_id){
 
   spat_ann <- getSpatialAnnotation(object, add_image = FALSE, id = id)
 

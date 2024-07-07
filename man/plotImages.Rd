@@ -57,7 +57,7 @@ plotImages(object, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{...}{Additionel arguments given to \code{plotImage()}.}
+\item{...}{Additional arguments given to \code{plotImage()}.}
 
 \item{img_names}{Character vector or \code{NULL}. If character, specifies the images
 by name. If \code{NULL}, all images are plotted.}
@@ -117,6 +117,17 @@ If you prefer to view your image in the regular orientation, you can use the \co
 specifying \code{axis = "horizontal"}, to reverse this effect.
 }
 
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+plotImages(object)
+
+
+}
 \seealso{
 \code{\link[=getImageDirectories]{getImageDirectories()}}
 }

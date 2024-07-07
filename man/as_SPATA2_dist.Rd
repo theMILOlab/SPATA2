@@ -16,7 +16,7 @@ Character vector of the same length as \code{input}.
 }
 \description{
 Ensures that distance input can be read by \code{SPATA2} functions
-that convert European units of length to pixels and vice versa.
+that convert SI units to pixels (loose numeric values) and vice versa.
 }
 \details{
 Several functions in \code{SPATA2} have arguments that take \emph{distance input}.
@@ -51,4 +51,18 @@ is converted into vectors of class \code{units}. Therefore, input can be directl
 provided this way: \code{arg_input <- units::set_unit(x = c(2,4), value = 'mm')}
 Note that \emph{pixel} is not a valid unit in the \code{units} package. If you want
 to specify the input in pixel you have to use input option 1. In pixel.
+}
+\examples{
+
+library(SPATA2)
+
+x <- "2 cm"
+
+is_dist_si(x) # FALSE due to empty space...
+
+x <- as_SPATA2_dist(x)
+
+print(x)
+
+is_dist_si(x)
 }

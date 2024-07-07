@@ -27,3 +27,22 @@ Removes a processed matrix from the \code{SPATA2} object.
 If the removed matrix was the active matrix the new active matrix
 is defined as the last element of \code{\link[=getMatrixNames]{getMatrixNames()}}.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+getMatrixNames(object)
+getProcessedMatrixNames(object)
+
+object <- normalizeCounts(object, method = "LogNormalize")
+
+getProcessedMatrixNames(object)
+
+object <- removeProcessedMatrix(object, mtr_name = "LogNormalize")
+
+getProcessedMatrixNames(object)
+
+}

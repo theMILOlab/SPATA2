@@ -44,20 +44,40 @@ is taken as is.}
 }
 \value{
 Apart from their side effect (saving the object of interest) all three functions
-return the provided, updated spata-object.
+return the provided, updated \code{SPATA2} object.
 }
 \description{
 Family of functions to save corresponding objects of different analysis
 platforms. See details and value for more information.
 }
 \details{
-If \code{directory_<platform>} is set to NULL (the default) all functions first check if the spata-object contains any
+If \code{directory_<platform>} is set to NULL (the default) all functions first check if the \code{SPATA2} object contains any
 deposited default directories. If so the specified object to be saved is saved under
 that direction. If \code{directory_<platform>} is specified as a character it's input is taken as the
 directory under which to store the object and the deposited directory is overwritten
-such that the next time you load the spata-object it contains the updated directory.
+such that the next time you load the \code{SPATA2} object it contains the updated directory.
 In order for that to work the \code{saveCorresponding*()}-functions - apart from saving the object of interest -  return the
-updated spata-object while \code{saveSpataObject()} simply returns an invisible TRUE
+updated \code{SPATA2} object while \code{saveSpataObject()} simply returns an invisible TRUE
 as the  new directory (if provided) is stored inside the object before it is saved.
+}
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+getSpataDir(object) # fails, no directory set
+
+# opt 1
+object <- setSpataDir(object, directory_spata = "my_folder/object_UKF269T.RDS")
+
+saveSpataObject(object)
+
+# opt 2
+object <- saveSpataObject(object, directory_spata = "my_folder/object_UKF269T.RDS")
+
+getSpataDir(object)
+
 }
 \keyword{internal}

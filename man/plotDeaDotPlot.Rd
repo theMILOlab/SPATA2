@@ -117,3 +117,16 @@ A ggplot.
 Visualizes results of DE analysis with
 dot plots.
 }
+\examples{
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+object <- runDEA(object, across = "histology")
+
+plotDeaDotplot(object, across = "histology")
+plotDeaDotplot(object, across = "histology", across_subset = c("tumor", "transition"))
+
+}

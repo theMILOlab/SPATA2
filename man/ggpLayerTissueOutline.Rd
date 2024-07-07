@@ -136,13 +136,18 @@ Adds a hull that outlines the tissue.
 }
 \examples{
 
-object <- download("MCD_LMU")
+library(SPATA2)
+library(tidyverse)
 
-plotImage(object, unit = "mm") +
- ggpLayerTissueOutline(object, incl_edge = TRUE)
+data("example_data")
 
-plotImage(object, unit = "mm") +
- ggpLayerTissueOutline(object, incl_edge = FALSE)
+object <- example_data$object_UKF275T_diet
+
+plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3") +
+ ggpLayerTissueOutline(object)
+
+# alternative
+plotSurface(object, color_by = "HM_HYPOXIA", pt_clrsp = "Reds 3", outline = TRUE)
 
 }
 \seealso{

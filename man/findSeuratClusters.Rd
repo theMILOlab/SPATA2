@@ -41,3 +41,4 @@ A tidy spata-data.frame containing the cluster variables.
 \description{
 Cluster sample via Seurat
 }
+\keyword{internal}

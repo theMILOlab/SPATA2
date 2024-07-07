@@ -31,8 +31,8 @@ Defaults to a distance that covers the whole tissue using \code{\link[=distToEdg
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
-\item{line_size}{Numeric. The size with which to display encircling lines
-of the area expansion.}
+\item{line_size}{Numeric. The size with which to display lines
+of the expression estimates.}
 
 \item{line_type}{Character. The line type. One of \emph{'blank'}, \emph{'solid'},
 \emph{'dashed'}, \emph{'dotted'}, \emph{'dotdash'}, \emph{'longdash'} and \emph{'twodash'}.}
@@ -59,4 +59,27 @@ family.
 \description{
 Visualizes the border between screened tissue (environment)
 and everything beyond that is not included in the screening (periphery).
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+object <-
+ createNumericAnnotations(
+   object = object,
+   variable = "HM_HYPOXIA",
+   threshold = "kmeans_high",
+   id = "hypoxia_ann",
+   force1 = TRUE
+   )
+
+plotSurface(object, color_by = "HM_HYPOXIA", outline = T, pt_clrsp = "Reds 3") +
+ ggpLayerHorizonSAS(object, id = "hypoxia_ann", distance = "3mm") +
+ ggpLayerScaleBarSI(object, sb_pos = c("3mm", "2mm"))
+
 }

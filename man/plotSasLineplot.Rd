@@ -147,10 +147,6 @@ x-axis becomes too high \code{x_nth} can be used to reduce it. If \code{x_nth} i
 every label is kept. If 2, every second label is kept. If 3, every
 third label is kept. And so on.}
 
-\item{xi}{Distance measures of where to add vertical lines. Intercepts on x-axis.}
-
-\item{yi}{Expression values of where to add horizontal lines. Intercepts on y-axis.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
@@ -188,3 +184,28 @@ The vignette on distance measures in SPATA2 has been replaced. Click
 \code{\link[=concept_distance_measure]{here}} to read it.
 }
 
+\examples{
+library(SPATA2)
+library(ggplot2)
+
+data("example_data")
+
+object <- example_data$object_UKF313T_diet
+
+ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+
+object <- normalizeCounts(object, activate = T)
+
+# visualize with lines
+plotSasLineplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+  labs(x = "Distance to Necrosis")
+
+# visualize with ridgeplots
+plotSasRidgeplot(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+  labs(x = "Distance to Necrosis")
+
+# visualize with a heatmap
+plotSasHeatmap(object, ids = ids, variables = c("VEGFA", "HM_HYPOXIA", "RCTM_TCR_SIGNALING", "CD74")) +
+  labs(x = "Distance to Necrosis")
+
+}

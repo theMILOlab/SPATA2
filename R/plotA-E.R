@@ -18,7 +18,18 @@
 #' @param variables Character vector. The discrete features whose group count or
 #' proportion you want to display. Must not contain the feature specified in
 #' \code{across} - if \code{across} is not set to NULL.
-
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotBarchart(object, grouping_variables = c("seurat_clusters", "bayes_space"))
+#'
 #' @export
 
 plotBarchart <- function(object,
@@ -28,7 +39,7 @@ plotBarchart <- function(object,
                          relevel = NULL,
                          clrp = NULL,
                          clrp_adjust = NULL,
-                         position = NULL,
+                         position = "stack",
                          display_facets = NULL,
                          ncol = NULL,
                          nrow = NULL,
@@ -56,18 +67,21 @@ plotBarchart <- function(object,
     dplyr::select(-barcodes, -sample)
 
 
-  confuns::plot_barplot(df = spata_df,
-                        variables = grouping_variables,
-                        across = across,
-                        across.subset = across_subset,
-                        relevel = relevel,
-                        display.facets = display_facets,
-                        nrow = nrow,
-                        ncol = ncol,
-                        clrp = clrp,
-                        clrp.adjust = clrp_adjust,
-                        position = position,
-                        ...)
+  confuns::plot_barplot(
+    df = spata_df,
+    variables = grouping_variables,
+    across = across,
+    across.subset = across_subset,
+    relevel = relevel,
+    display.facets = display_facets,
+    nrow = nrow,
+    ncol = ncol,
+    clrp = clrp,
+    clrp.adjust = clrp_adjust,
+    position = position,
+    ...
+  ) +
+    ggplot2::labs(x = "Group Names")
 
 }
 
@@ -79,10 +93,8 @@ plotBarchart <- function(object,
 #' \code{across} is specified. \code{plotViolinplot()} and \code{plotBoxplot()}
 #' allow for statistical tests such as t-test or ANOVA.
 #'
-#' @inherit across_dummy params
 #' @inherit argument_dummy params
 #' @inherit check_pt params
-#' @inherit check_sample params
 #' @inherit joinWith params
 #' @inherit variables_num params
 #'
@@ -106,8 +118,32 @@ plotBarchart <- function(object,
 #'
 #' @inherit ggplot_family return
 #'
-#' @export
+#' @examples
 #'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' plotBoxplot(object, variables = c("METRN", "MBP", "CA11"))
+#' plotBoxplot(object, variables = c("METRN", "MBP", "CA11"), across = "bayes_space")
+#'
+#' plotViolinplot(object, variables = c("METRN", "MBP", "CA11"))
+#' plotViolinplot(object, variables = c("METRN", "MBP", "CA11"), across = "bayes_space")
+#'
+#' # works the same for all functions....
+#'
+#' plotBoxplot(
+#'    object = object,
+#'    variables = "METRN",
+#'    across = "bayes_space",
+#'    across_subset = c("2", "3"),
+#'    test_pairwise = "t.test"
+#'    )
+#'
+#' @export
 
 plotBoxplot <- function(object,
                         variables,
@@ -494,6 +530,8 @@ plotCnvDotplot <- function(object,
 #'
 #' @return A plot of class \code{aplot}.
 #'
+#' @inheritSection tutorial_hint_dummy Tutorials
+#'
 #' @export
 #'
 plotCnvHeatmap <- function(object,
@@ -515,7 +553,7 @@ plotCnvHeatmap <- function(object,
                            text_color = "black",
                            text_position = "top",
                            text_size = 3.5,
-                           display_hlines = TRUE,
+                           display_hlines = is.character(across),
                            hline_alpha = 0.75,
                            hline_color = "black",
                            hline_size = 0.5,
@@ -532,17 +570,30 @@ plotCnvHeatmap <- function(object,
                            clrp_adjust = NULL,
                            clrsp = "Blue-Red 3",
                            limits = NULL,
-                           annotation_size_top = 0.0125,
-                           annotation_size_side = 0.0125,
+                           meta_vars = NULL,
+                           meta_vars_clrs = list(),
+                           normalize = NULL,
+                           arrange_by = across,
+                           arrange_desc = FALSE,
+                           annotation_size_top = 0.025,
+                           annotation_size_side = 0.025,
                            pretty_name = TRUE,
                            ggpLayers = list(),
-                           verbose = NULL){
+                           bcs_rm = NULL,
+                           verbose = NULL,
+                           ...){
 
   hlpr_assign_arguments(object)
 
   # extract and prepare data ------------------------------------------------
 
   cnv_df <- getCnvGenesDf(object)
+
+  if(base::is.character(bcs_rm)){
+
+    cnv_df <- dplyr::filter(cnv_df, !barcodes %in% {{bcs_rm}})
+
+  }
 
   confuns::give_feedback(
     msg = "Extracting and merging CNV data. This might take a few seconds.",
@@ -557,8 +608,66 @@ plotCnvHeatmap <- function(object,
         x = cnv_df,
         y = getMetaDf(object) %>% dplyr::select(barcodes, !!rlang::sym(across)),
         by = "barcodes"
-      ) %>%
-      dplyr::arrange(!!rlang::sym(across))
+      )
+
+  }
+
+  if(base::is.character(meta_vars)){
+
+    numeric_vars <- purrr::keep(meta_vars, ~ isNumericVariable(object, .x))
+
+    grouping_vars <- meta_vars[!meta_vars %in% numeric_vars]
+
+    cnv_df <-
+      joinWithVariables(
+        object = object,
+        variables = grouping_vars,
+        spata_df = cnv_df,
+        verbose = verbose,
+        normalize = normalize
+      )
+
+    if(base::length(numeric_vars) >= 1){
+
+      num_df <-
+        joinWithVariables(object, variables = numeric_vars)
+
+      cnv_df <-
+        dplyr::left_join(x = cnv_df, y = num_df[, c("barcodes", numeric_vars)], by = "barcodes")
+
+    }
+
+    # add control for meta_vars_clrs
+
+  }
+
+  if(base::is.character(arrange_by) && !arrange_by %in% c(meta_vars, across)){
+
+    num_df <- joinWithVariables(object, variables = arrange_by)
+
+    cnv_df <-
+      dplyr::left_join(x = cnv_df, y = num_df[, c("barcodes", arrange_by)], by = "barcodes")
+
+  }
+
+  if(base::isFALSE(arrange_by == across)){
+
+    display_hlines <- FALSE
+
+  }
+
+  if(base::is.character(arrange_by)){
+
+    if(base::isTRUE(arrange_desc)){
+
+      cnv_df <-
+        dplyr::arrange(cnv_df, dplyr::desc(!!rlang::sym(arrange_by)))
+
+    } else {
+
+      cnv_df <- dplyr::arrange(cnv_df, !!rlang::sym(arrange_by))
+
+    }
 
   }
 
@@ -634,28 +743,57 @@ plotCnvHeatmap <- function(object,
       gene_bins = base::cut(genes_num, breaks = n_bins_genes) %>% base::as.numeric()
     )
 
+
+  # require binning?
+  vars_to_keep <- c(across, meta_vars)
+
+  vars_to_keep_fct <-
+    purrr::keep(vars_to_keep, .p = ~ base::is.factor(binned_cnv_df[[.x]]))
+
+  vars_to_keep_num <-
+    purrr::keep(vars_to_keep, .p = ~ base::is.numeric(binned_cnv_df[[.x]]))
+
   # summarize by bin
-  smrd_cnv_df <-
-    dplyr::group_by(binned_cnv_df, chrom, chrom_arm, arm, bcsp_bins, gene_bins) %>%
-    {
-      if(base::is.character(across)){
+  grouped_df <-
+    dplyr::group_by(binned_cnv_df, chrom, chrom_arm, arm, bcsp_bins, gene_bins)
 
-        dplyr::group_by(.data = ., !!rlang::sym(across), .add = TRUE)
+  if(base::length(vars_to_keep_fct) >= 1){
 
-      } else {
+    for(vtk in vars_to_keep_fct){
 
-        .
+      grouped_df <- dplyr::group_by(.data = grouped_df, !!rlang::sym(vtk), .add = TRUE)
 
-      }
+    }
 
-    } %>%
-    dplyr::summarise(
-      dplyr::across(
-        .cols = values,
-        .fns = summarize_formulas[[summarize_with]]
+  }
+
+  if(base::length(vars_to_keep_num) >= 1){
+
+    smrd_cnv_df <-
+      dplyr::summarise(
+        .data = grouped_df,
+        dplyr::across(
+          .cols = values,
+          .fns = summarize_formulas[[summarize_with]]
+        ),
+        dplyr::across(
+          .cols = dplyr::all_of(vars_to_keep_num),
+          .fns = ~ base::mean(.x)
+        )
       )
-    )
 
+  } else {
+
+    smrd_cnv_df <-
+      dplyr::summarise(
+        .data = grouped_df,
+        dplyr::across(
+          .cols = values,
+          .fns = summarize_formulas[[summarize_with]]
+        )
+      )
+
+  }
 
   # assemble plot -----------------------------------------------------------
 
@@ -724,7 +862,7 @@ plotCnvHeatmap <- function(object,
       ggplot2::theme(
         panel.border = ggplot2::element_rect(
           color = border_color,
-          size = border_size,
+          linewidth = border_size,
           fill = ggplot2::alpha("white", 0)
         )
       )
@@ -780,11 +918,56 @@ plotCnvHeatmap <- function(object,
       pull_slot(border_add_on, slot = border["grouping"]) +
       pull_slot(ggpLayers_add_on, slot = "grouping")
 
-
   } else {
 
     p_grouping_annotation <- NULL
 
+  }
+
+  # create meta annotation
+  if(base::is.character(meta_vars)){
+
+    p_meta_annotations <-
+      purrr::map(
+        .x = meta_vars,
+        .f = function(mv){
+
+          meta_df <- dplyr::distinct(smrd_cnv_df, bcsp_bins, !!rlang::sym(mv))
+
+          clr <- meta_vars_clrs[[mv]]
+
+          if(base::is.null(clr)){
+
+            clr <- "inferno"
+
+            warning(glue::glue("No color code specified for meta var {mv}. Using inferno."))
+
+          }
+
+          ggplot2::ggplot(
+            data = meta_df,
+            mapping = ggplot2::aes(x = 1, y = bcsp_bins, fill = .data[[mv]])
+          ) +
+            ggplot2::geom_raster() +
+            ggplot2::theme_void() +
+            scale_color_add_on(
+              aes = "fill",
+              variable = meta_df[[mv]],
+              clrp = clr,
+              clrsp = clr
+            ) +
+            pull_slot(border_add_on, slot = border["grouping"]) +
+            #ggplot2::scale_x_continuous(expand = c(0,0)) +
+            ggplot2::scale_y_continuous(expand = c(0,0)) +
+            #ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE)) +
+            ggplot2::labs(fill = confuns::make_pretty_name(mv, make.pretty = pretty_name))
+
+        }
+      )
+
+  } else {
+
+    p_meta_annotations <- NULL
   }
 
   # create chrom arm annotation
@@ -908,7 +1091,7 @@ plotCnvHeatmap <- function(object,
       dplyr::distinct(bcsp_bins, !!rlang::sym(across)) %>%
       dplyr::group_by(!!rlang::sym(across)) %>%
       dplyr::filter(bcsp_bins == base::min(bcsp_bins)) %>%
-      dplyr::mutate(bcsp_bins = bcsp_bins - 1) %>%
+      dplyr::mutate(bcsp_bins = bcsp_bins) %>%
       dplyr::ungroup() %>%
       dplyr::filter(bcsp_bins != base::min(bcsp_bins)) # remove lowest
 
@@ -1074,6 +1257,21 @@ plotCnvHeatmap <- function(object,
 
   }
 
+  if(!base::is.null(p_meta_annotations)){
+
+    for(pma in p_meta_annotations){
+
+      p_main <-
+        aplot::insert_left(
+          .data = p_main,
+          plot = pma,
+          width = annotation_size_side
+        )
+
+    }
+
+  }
+
   confuns::give_feedback(
     msg = "Done.",
     verbose = verbose
@@ -1101,6 +1299,8 @@ plotCnvHeatmap <- function(object,
 #' @inherit ggplot_dummy return
 #'
 #' @export
+#'
+#' @inheritSection tutorial_hint_dummy Tutorials
 #'
 plotCnvLineplot <- function(object,
                             across = NULL,
@@ -1381,6 +1581,18 @@ plotCnvLineplot <- function(object,
 #' variable a single dot plot is created. If FALSE one plot for all groups and all
 #' gene sets is created.
 #'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' object <- runDEA(object, across = "histology")
+#'
+#' plotDeaDotplot(object, across = "histology")
+#' plotDeaDotplot(object, across = "histology", across_subset = c("tumor", "transition"))
+#'
 #' @export
 plotDeaDotPlot <- function(object,
                            across = getDefaultGrouping(object),
@@ -1555,7 +1767,6 @@ plotDeaDotPlot <- function(object,
 #' @description Visualizes DEA results across subgroups in a heatmap. It either takes the results
 #' from previously conducted DEA or uses specified genes to plot a heatmap.
 #'
-#' @inherit across_dummy params
 #' @inherit argument_dummy params
 #' @inherit getDeaResultsDf params details
 #' @param n_bcs The number of barcodes (observations) belonging to each cluster you want to
@@ -1575,7 +1786,9 @@ plotDeaDotPlot <- function(object,
 #'
 #' @seealso [`runDEA()`]
 #'
-#' @return A heatmap of class 'pheatmap'.
+#' @inheritSection tutorial_hint_dummy Tutorials
+#' @inherit ggplot_dummy return
+#'
 #' @export
 
 plotDeaHeatmap <- function(object,
@@ -1810,6 +2023,8 @@ plotDeaHeatmap <- function(object,
 #'
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
+#'
+#' @inheritSection tutorial_hint_dummy Tutorials
 #'
 #' @export
 #'
@@ -2459,7 +2674,8 @@ plotDensityplot <- function(object,
 #' @title Plot Expression as a function of distance to a spatial references
 #'
 #' @description Generates a scatterplot to visualize the relationship between gene expression and
-#' the distance of data points to an annotation's outline.
+#' the distance of data points to a spatial reference. Set `line_alpha` > 0 to visualize the
+#' inferred expression pattern used for spatial gradient screening.
 #'
 #' @param id Character value. The ID of the spatial trajectory.
 #' @param variables Character vector. All numeric variables hat are supposed to be plotted.
@@ -2469,6 +2685,31 @@ plotDensityplot <- function(object,
 #'
 #' @param distance A numeric vector of distances to the annotation's edge.
 #' @param se_fill The fill color for the smoothing line's standard error area (default: "lightgrey").
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <- normalizeCounts(object, activate = TRUE)
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#'  plotExprVsDistSA(object, variables = c("HM_HYPOXIA", "METRN"), ids = "hypoxia_ann", core = T)
 #'
 
 plotExprVsDistSA <- function(object,
@@ -2481,7 +2722,7 @@ plotExprVsDistSA <- function(object,
                              pt_color = "black",
                              pt_clrp = NULL,
                              pt_size = 1.5,
-                             line_alpha = 0.9,
+                             line_alpha = 0,
                              line_color = "forestgreen",
                              line_size = 1.75,
                              border_linealpha = 1,
@@ -2494,16 +2735,17 @@ plotExprVsDistSA <- function(object,
                              ee_linesize = 1,
                              ee_linetype = "solid",
                              se_fill = ggplot2::alpha("lightgrey", 0.5),
-                             normalize = FALSE,
                              unit = getDefaultUnit(object),
                              ggpLayers = NULL,
-                             outlier_rm = FALSE,
                              ncol = NULL,
                              nrow = NULL,
                              ...){
 
   hlpr_assign_arguments(object)
   deprecated(...)
+
+  outlier_rm <- FALSE
+  normalize <- TRUE
 
   if(base::isFALSE(core)){border_linealpha <- 0}
 
@@ -2534,9 +2776,9 @@ plotExprVsDistSA <- function(object,
       core = core,
       outlier_rm = outlier_rm,
       ro = NULL,
-      verbose = FALSE,
-      ...
+      verbose = FALSE
     ) %>%
+    normalize_variables(variables = variables) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(variables), names_to = "variables", values_to = "values")
 
 

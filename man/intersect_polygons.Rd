@@ -20,3 +20,4 @@ Logical vector of the same length as the number of rows in \code{a}.
 \description{
 Tests which vertices of polygon \code{a} lay inside polygon \code{b}.
 }
+\keyword{internal}

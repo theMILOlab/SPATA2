@@ -3,7 +3,7 @@
 \name{mapSpatialAnnotationTags}
 \alias{mapSpatialAnnotationTags}
 \alias{mapImageAnnotationTags}
-\title{Image annotation and barcode intersection}
+\title{Spatial annotation and barcode intersection}
 \usage{
 mapSpatialAnnotationTags(
   object,

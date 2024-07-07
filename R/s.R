@@ -14,19 +14,39 @@
 #' @inherit seurat_object_dummy params
 #' @param directory_spata,directory_cds_directory_seurat_object Character value or NULL. Set details for more.
 #'
-#' @details If \code{directory_<platform>} is set to NULL (the default) all functions first check if the spata-object contains any
+#' @details If \code{directory_<platform>} is set to NULL (the default) all functions first check if the `SPATA2` object contains any
 #' deposited default directories. If so the specified object to be saved is saved under
 #' that direction. If \code{directory_<platform>} is specified as a character it's input is taken as the
 #' directory under which to store the object and the deposited directory is overwritten
-#' such that the next time you load the spata-object it contains the updated directory.
+#' such that the next time you load the `SPATA2` object it contains the updated directory.
 #' In order for that to work the \code{saveCorresponding*()}-functions - apart from saving the object of interest -  return the
-#' updated spata-object while \code{saveSpataObject()} simply returns an invisible TRUE
+#' updated `SPATA2` object while \code{saveSpataObject()} simply returns an invisible TRUE
 #' as the  new directory (if provided) is stored inside the object before it is saved.
 #'
 #' @return Apart from their side effect (saving the object of interest) all three functions
-#' return the provided, updated spata-object.
+#' return the provided, updated `SPATA2` object.
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' getSpataDir(object) # fails, no directory set
+#'
+#' # opt 1
+#' object <- setSpataDir(object, directory_spata = "my_folder/object_UKF269T.RDS")
+#'
+#' saveSpataObject(object)
+#'
+#' # opt 2
+#' object <- saveSpataObject(object, directory_spata = "my_folder/object_UKF269T.RDS")
+#'
+#' getSpataDir(object)
+#'
 saveSpataObject <- function(object,
                             directory_spata = NULL,
                             verbose = NULL,
@@ -49,7 +69,7 @@ saveSpataObject <- function(object,
 
     }, error = function(error){
 
-      base::warning(glue::glue("Attempting to extract a valid directory from the spata-object resulted in the following error: {error}"))
+      base::warning(glue::glue("Attempting to extract a valid directory from the `SPATA2` object resulted in the following error: {error}"))
 
       NULL
 
@@ -69,7 +89,7 @@ saveSpataObject <- function(object,
 
     }, error = function(error){
 
-      base::warning(glue::glue("Attempting to save the spata-object under {directory_spata} resulted in the following error: {error} "))
+      base::warning(glue::glue("Attempting to save the `SPATA2` object under {directory_spata} resulted in the following error: {error} "))
 
     })
 
@@ -80,7 +100,7 @@ saveSpataObject <- function(object,
 
   } else {
 
-    base::warning("Could not save the spata-object.")
+    base::warning("Could not save the `SPATA2` object.")
 
   }
 
@@ -90,8 +110,6 @@ saveSpataObject <- function(object,
 }
 
 # scale -------------------------------------------------------------------
-
-
 
 #' @title Scale coordinate variable pairs
 #'
@@ -399,7 +417,7 @@ shift_smrd_projection_df <- function(smrd_projection_df,
 
 
 
-#' @title Shift the borders of a Spatial Annotation
+#' @title Shift the borders of a spatial annotation
 #'
 #' @description This function moves a spatial annotation
 #' either in the x or y direction, or both. It allows for selective shifting of
@@ -419,6 +437,27 @@ shift_smrd_projection_df <- function(smrd_projection_df,
 #' @seealso [`expandSpatialAnnotation()`], [`smoothSpatialAnnotation()`], [`SpatialAnnotation`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(patchwork)
+#' library(stringr)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' p1 <- plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "necrotic_area")
+#'
+#' plot(p1)
+#'
+#' object <- shiftSpatialAnnotation(object, id = "necrotic_area", shift_x = "0.5mm", shift_y = "0.25mm", new_id = "na_shifted")
+#'
+#' p2 <- plotImage(object) + ggpLayerSpatAnnOutline(object, ids = "na_shifted")
+#'
+#' # compare both
+#' p1 + p2
+#'
 
 shiftSpatialAnnotation <- function(object,
                                    id,
@@ -429,7 +468,7 @@ shiftSpatialAnnotation <- function(object,
                                    new_id = FALSE,
                                    overwrite = FALSE){
 
-  csf <- getScaleFactor(object, fct_name = "coords")
+  csf <- getScaleFactor(object, fct_name = "image")
 
   shift_x <- as_pixel(shift_x, object = object)/csf
   shift_y <- as_pixel(shift_y, object = object)/csf
@@ -463,7 +502,7 @@ shiftSpatialAnnotation <- function(object,
         .f = function(plg){
 
           plg$x_orig <- plg$x_orig + shift_x
-          plg$y_orig <- plt$y_orig + shift_y
+          plg$y_orig <- plg$y_orig + shift_y
 
           return(plg)
 
@@ -500,6 +539,20 @@ setMethod(f = "show", signature = "ANY", definition = function(object){
 
   stringr::str_c("An object of class '", base::class(object), "'.") %>%
     base::writeLines()
+
+})
+
+#' @export
+setMethod(f = "show", signature = "SpatialMethod", definition = function(object){
+
+  out <-
+    purrr::map(
+      .x = methods::slotNames(object),
+      .f = ~ methods::slot(object, name = .x)
+    ) %>%
+    purrr::set_names(nm = methods::slotNames(object))
+
+  return(out)
 
 })
 
@@ -949,6 +1002,7 @@ simulate_complete_coords_st <- function(object, id){
 #' in case slot *n* of the simulation instruction is bigger than one.
 #'
 #' @export
+#' @keywords internal
 #'
 
 simulate_expression_pattern_sas <- function(object,
@@ -1709,6 +1763,7 @@ simulate_random_expression <- function(object,
 #' computes gradients, LDS, loess models, and total variation for each simulation, and returns the results in a named list.
 #'
 #' @export
+#' @keywords internal
 
 simulate_random_gradients <- function(coords_df,
                                       span,
@@ -1887,7 +1942,7 @@ simulate_spatial_niches <- function(coords_df,
 
 # smooth ------------------------------------------------------------------
 
-#' @title Smooth the Borders of a Spatial Annotation
+#' @title Smooth the border of a spatial annotation
 #'
 #' @description This function applies a smoothing algorithm to the borders of a
 #' [`SpatialAnnotation`] object. It can smooth both outer and inner borders using various methods.
@@ -1896,15 +1951,35 @@ simulate_spatial_niches <- function(coords_df,
 #' @param outer Logical; if TRUE, the outer border of the annotation is smoothed.
 #' @param inner Logical or numeric; if TRUE, all inner borders are smoothed.
 #'              If a numeric value is provided, only the specified inner border is smoothed.
-#' @param ... Additional arguments passed to the smoothing function.
+#' @param ... Additional arguments passed to the smoothing function `smoothr::ksmooth()`, `smoothr::chaikin()`, etc.
 #'
 #' @inherit shiftSpatialAnnotation params
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
+#' @note Requires the package 'terra' and 'smoothr'.
+#'
 #' @seealso [`expandSpatialAnnotation()`], [`shiftSpatialAnnotation()`], [`SpatialAnnotation`]
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' plotSpatialAnnotations(object, ids = "necrotic_edge")
+#'
+#' object <-
+#'  smoothSpatialAnnotation(object, id = "necrotic_edge", method = "ksmooth", new_id = "necrotic_edge_sm", smoothness = 50)
+#'
+#' plotSpatialAnnotations(object, ids = c("necrotic_edge", "necrotic_edge_sm"))
+#'
+#'
 smoothSpatialAnnotation <- function(object,
                                     id,
                                     method,
@@ -1913,6 +1988,22 @@ smoothSpatialAnnotation <- function(object,
                                     new_id = FALSE,
                                     overwrite = FALSE,
                                     ...){
+
+  if(!"terra" %in% base::rownames(installed.packages())){
+
+    install <- utils::askYesNo(msg = "Package 'terra' and/or 'smoothr' is not installed. Do you want to install it?")
+
+    if(base::isTRUE(install)){
+
+      install.packages(c("smoothr", "terra"))
+
+    } else {
+
+      stop("Can not continue with 'terra' package.")
+
+    }
+
+  }
 
   spat_ann <- getSpatialAnnotation(object, id = id)
 
@@ -2068,8 +2159,6 @@ smoothSpatially <- function(coords_df,
 
 
 # spatial -----------------------------------------------------------------
-
-
 
 #' @title Low level implementation of the spatial gradient screening
 #'
@@ -2368,7 +2457,7 @@ spatial_gradient_screening <- function(coords_df,
 }
 
 
-#' @title Implementation of the SAS-algorithm
+#' @title The Spatial Annotation Screening algorithm
 #'
 #' @description Screens the sample for numeric variables that stand
 #' in meaningful, spatial relation to annotated structures/areas, \link[=concept_spatial_annotation]{spatial annotations}.
@@ -2411,6 +2500,33 @@ spatial_gradient_screening <- function(coords_df,
 #' [`plotSasLineplot()`] for visualization of inferred expression gradients.
 #'
 #' @export
+#'
+#' @inheritSection tutorial_hint_dummy Tutorials
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- getSpatAnnIds(object, tags = c("necrotic", "compr"), test = "identical")
+#'
+#' # opt 1 prefiltering by SPARKX is recommended, but not required
+#' object <- runSPARKX(object)
+#' genes <- getSparkxGenes(object)
+#'
+#' # opt 2
+#' genes <- getGenes(object)
+#'
+#'
+#' sas_out <-
+#'  spatialAnnotationScreening(
+#'    object = object,
+#'    ids = ids,
+#'    variables = genes,
+#'    core = FALSE
+#'    )
 #'
 
 spatialAnnotationScreening <- function(object,
@@ -2699,6 +2815,95 @@ spatialTrajectoryScreening <- function(object,
 
 
 
+
+#' @title Convert spatial annotation to grouping variable
+#'
+#' @description Converts one or more spatial annotations to a binary
+#' segmentation variable in the feature data.frame.
+#' @param ids Character vector. Specifies the spatial annotation(s) of interest.
+#' data points that fall into the area of these annotations are labeled
+#' with the input for argument \code{inside}.
+#' @param grouping_name Character value. The name of the new segmentation variable.
+#' @param inside Character value. The group name for the data points that
+#' are located inside the area of the spatial annotation(s).
+#' @param outside Character value. The group name for the data points that
+#' are located outside the area of the spatial annotation(s).
+#' @param overwrite Logical. Set to TRUE to overwrite existing variables with
+#' the same name.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#'
+#'  object <-
+#'    spatialAnnotationToGrouping(
+#'      object = object,
+#'      ids = "hypoxia_ann",
+#'      grouping_name = "hyp_group"
+#'      )
+#'
+#'  plotSurface(object, "hyp_group")
+#'
+#'  plotBoxplot(object, variables = "HM_HYPOXIA", group_by = "hyp_group")
+#'
+spatialAnnotationToGrouping <- function(object,
+                                        ids,
+                                        grouping_name,
+                                        inside = "inside",
+                                        outside = "outside",
+                                        overwrite = FALSE){
+
+  confuns::are_values("inside", "outside", mode = "character")
+
+  confuns::check_none_of(
+    input = grouping_name,
+    against = getFeatureNames(object),
+    ref.against = "names of the feature data",
+    overwrite = overwrite
+  )
+
+  bcsp_inside <- getSpatAnnBarcodes(object, ids = ids)
+
+  mdata <-
+    getMetaDf(object) %>%
+    dplyr::mutate(
+      {{grouping_name}} := dplyr::case_when(
+        condition = barcodes %in% {{bcsp_inside}} ~ {{inside}},
+        TRUE ~ {{outside}}
+      ),
+      {{grouping_name}} := base::factor(
+        x = !!rlang::sym(grouping_name),
+        levels = c(inside, outside)
+      )
+    )
+
+  object <- setMetaDf(object, meta_df = mdata)
+
+  return(object)
+
+}
+
 # split -------------------------------------------------------------------
 
 #' @keywords internal
@@ -2794,11 +2999,28 @@ strongH5 <- function(text){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @return An updated \code{spata2} object.
-#'
 #' @details Unused levels of factor variables in the feature data.frame are dropped.
 #'
 #' @export
+#'
+#' @examples
+#' library(SPATA2)
+#' library(dplyr)
+#' library(patchwork)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' barcodes_keep <-
+#'  getMetaDf(object) %>%
+#'  filter(bayes_sapce %in% c("3", "2", "1")) %>%
+#'  pull(barcodes)
+#'
+#' object_sub <- subsetByBarcodes(object, barcodes = barcodes_keep)
+#'
+#' plotSurface(object, color_by = "bayes_space") +
+#'  plotSurface(object_sub, color_by = "bayes_space")
 #'
 subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
@@ -2879,7 +3101,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 #' are **not** subsetted. Stored results are kept as they are. To update them run
 #' the algorithms again.
 #'
-#' @export
+#' @keywords internal
 subsetByGenes <- function(object, genes, verbose = NULL){
 
   confuns::check_one_of(
@@ -2906,7 +3128,6 @@ subsetByGenes <- function(object, genes, verbose = NULL){
 }
 
 
-#' @rdname export
 subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NULL, verbose = TRUE){
 
   if(purrr::map_lgl(c(angle_span, angle_bins, variables), .f = base::is.null)){
@@ -2976,7 +3197,7 @@ subsetIAS <- function(ias, angle_span = NULL, angle_bins = NULL, variables = NUL
 # summarize ---------------------------------------------------------------
 
 
-#' @export
+#' @keywords internal
 summarize_and_shift_variable_df <- function(grouped_df, variables){
 
   dplyr::summarise(

@@ -57,3 +57,4 @@ various metrics for evaluating the inferred expression gradients.
 This function generates random expression patterns with specified randomness levels, fits loess curves to the data,
 computes gradients, LDS, loess models, and total variation for each simulation, and returns the results in a named list.
 }
+\keyword{internal}

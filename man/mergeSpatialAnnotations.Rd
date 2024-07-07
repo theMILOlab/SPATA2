@@ -21,7 +21,8 @@ objects of classes for which a method has been defined.}
 
 \item{ids}{Character vector of ids from spatial annotations to merge.}
 
-\item{id}{Character value. The ID of the new spatial annotation}
+\item{id}{Character value. The ID of the new spatial annotation that results
+from the merging.}
 
 \item{tags}{A character vector of tags for the spatial annotation.}
 
@@ -45,6 +46,33 @@ The updated input object, containing the added, removed or computed results.
 \description{
 Merges the spatial extent of two or more spatial annotations
 into one.
+}
+\examples{
+
+library(SPATA2)
+library(tidyverse)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+r <- getSpatAnnRange(object, id = "img_ann_1")
+
+plotImage(object) +
+ ggpLayerSpatAnnOutline(object, ids = c("vessel2", "img_ann_1"), use_colors = T)
+
+plotImage(object, xrange = r$x, yrange = r$y) +
+ ggpLayerSpatAnnOutline(object, ids = c("vessel2", "img_ann_1"), use_colors = T)
+
+object <-
+ mergeSpatialAnnotations(
+   object = object,
+   ids = c("img_ann_1", "vessel2"),
+   id = "new_img_ann",
+   )
+
+plotSpatialAnnotations(object)
+
 }
 \seealso{
 \code{\link[=getSpatAnnIds]{getSpatAnnIds()}}

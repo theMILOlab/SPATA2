@@ -35,8 +35,20 @@ Transforms an \code{SPATA2} object to an object of class
 }
 \details{
 Output object contains the count matrix in slot @assays and
-feature data.frame combined with barcode-spot coordinates
+feature data.frame combined with coordinates
 in slot @colData.
 
 Slot @metadata is a list that contains the image object.
+}
+\examples{
+library(SPATA2)
+library(SingleCellExperiment)
+
+data("example_data")
+
+object <- example_data$object_UKF275T_diet
+
+sce <- asSingleCellExperiment(object)
+
+class(sce)
 }

@@ -38,9 +38,9 @@ add_benchmarking_variables <- function(df){
 }
 
 
-#' Add Grid Variable to Coordinate Data Frame
+#' @title Add grid variable to coordinate data.rame
 #'
-#' This function adds a grid variable to a data frame containing x and y coordinates.
+#' @description This function adds a grid variable to a data frame containing x and y coordinates.
 #' The grid variable represents the grid cell in which each coordinate point falls.
 #'
 #' @param coords_df A data frame containing x and y coordinates.
@@ -52,6 +52,18 @@ add_benchmarking_variables <- function(df){
 #'  used in the process (x_bins.temp and y_bins.temp) are retained in the output data frame. Default is FALSE.
 #'
 #' @return A data frame with the added grid variable.
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' coords_df <-
+#'  getCoordsDf(object) %>%
+#'  add_grid_variable(nr = 50)
+#'
+#' print(coords_df)
 #'
 #' @export
 
@@ -233,27 +245,19 @@ add_noise_to_model <- function(model, random, nl){
 #'
 #' @examples
 #'
-#'  library(ggplot2)
+#' library(SPATA2)
 #'
-#'  object <- downloadPubExample("313_T")
+#' data("example_data")
 #'
-#'  pt_size <- getDefault(object, "pt_size")
+#' object <- example_data$object_UKF275T_diet
 #'
-#'  coords_df <- getCoordsDf(object)[, c("barcodes", "x", "y")]
+#' coords_df <-
+#'  getCoordsDf(object) %>%
+#'  add_edge_variable()
 #'
-#'  head(coords_df)
+#' plotSurface(coords_df, color_by = "edge")
 #'
-#'  ggplot(data = coords_df) +
-#'   geom_point_fixed(mapping = aes(x = x, y = y), size = pt_size) +
-#'   theme_void()
-#'
-#'  coords_df2 <- add_outline_variable(coords_df, id_var = "barcodes")
-#'
-#'  ggplot(data = coords_df2) +
-#'   geom_point_fixed(mapping = aes(x = x, y = y, color = outline), size = pt_size) +
-#'   theme_void()
-#'
-add_outline_variable <- function(input_df, id_var = "barcodes"){
+add_edge_variable <- function(input_df, id_var = "barcodes"){
 
   coords_mtr <-
     tibble::column_to_rownames(input_df, id_var) %>%
@@ -281,7 +285,7 @@ add_outline_variable <- function(input_df, id_var = "barcodes"){
     dplyr::filter(dist == base::min(dist)) %>%
     dplyr::ungroup()
 
-  input_df[["outline"]] <- input_df[[id_var]] %in% map_to_bcsp[[id_var]]
+  input_df[["edge"]] <- input_df[[id_var]] %in% map_to_bcsp[[id_var]]
 
   return(input_df)
 
@@ -312,21 +316,17 @@ add_outline_variable <- function(input_df, id_var = "barcodes"){
 #'
 #' @examples
 #'
-#' # --- identify tissue sections
-#' object <- downloadPubExample("MCI_LMU", verbose = FALSE)
+#' library(SPATA2)
+#' library(EBImage)
+#' library(tidyverse)
 #'
-#' coords_df <- getCoordsDf(object)
+#' data("example_data")
 #'
-#' coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+#' object <- example_data$object_MCD_LMU_diet
 #'
-#' plotSurface(coords_df, color_by = "section")
-#'
-#' # --- identify artefact spots
-#' object <- SPATAData::downloadSpataObject("269_T", verbose = FALSE)
-#'
-#' coords_df <- getCoordsDf(object)
-#'
-#' coords_df <- add_tissue_section_variable(coords_df, ccd = getCCD(object, "px"))
+#' coords_df <-
+#'  getCoordsDf(object) %>%
+#'  add_dbscan_variable(eps = getCCD(object, unit = "px"), name = "section")
 #'
 #' plotSurface(coords_df, color_by = "section")
 #'
@@ -411,7 +411,8 @@ add_tissue_section_variable <- function(coords_df,
 #'
 #' @return Input data.frame with two additional variables named *width* and *height*
 #' or *x* and *y*.
-#' @export
+#'
+#' @keywords internal
 #'
 add_wh <- function(df, hrange = NULL){
 
@@ -433,7 +434,7 @@ add_wh <- function(df, hrange = NULL){
 }
 
 #' @rdname add_wh
-#' @export
+#' @keywords internal
 add_xy <- function(df, x = "x", y = "y"){
 
   dplyr::mutate(
@@ -470,29 +471,6 @@ addAutoencoderSetUp <- function(object, mtr_name, set_up_list, ...){
 
 }
 
-# addE --------------------------------------------------------------------
-
-
-
-#' @rdname addProcessedMatrix
-#' @export
-addExpressionMatrix <- function(...){
-
-  deprecated(fn = TRUE)
-
-  addProcessedMatrix(...)
-
-}
-
-
-
-
-
-
-
-
-
-
 
 # addF --------------------------------------------------------------------
 
@@ -521,6 +499,30 @@ addExpressionMatrix <- function(...){
 #'
 #' @inherit update_dummy return
 #' @export
+#'
+#' @examples
+
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' meta_df <- getMetaDf(object)
+#'
+#' names(meta_df)
+#'
+#' new_meta_df <-
+#'  dplyr::transmute(
+#'    .data = meta_df,
+#'    barcodes = barcodes,
+#'    new_feat = sample(letters[1:5], size = nrow(meta_df), replace = T) %>% as.factor()
+#'    )
+#'
+#' object <- addFeatures(object, feature_df = new_meta_df)
+#'
+#' plotSurface(object, color_by = "new_feat")
 
 addFeatures <- function(object,
                         feature_df,
@@ -721,124 +723,7 @@ addFeatures <- function(object,
 # addG --------------------------------------------------------------------
 
 
-#' @title Add a new gene set
-#'
-#' @description Stores a new gene set in the `SPATA2` object.
-#'
-#' @inherit argument_dummy params
-#' @param class_name Character value. The class the gene set belongs to..
-#' @param gs_name Character value. The name of the new gene set.
-#'
-#' @inherit check_genes params
-#'
-#' @inherit update_dummy return
-#'
-#' @details Combines \code{class_name} and \code{gs_name} to the final gene set name.
-#' Gene set classes and gene set names are separated by '_' and handled like this
-#' in all additional gene set related functions which is why \code{class_name} must
-#' not contain any '_'.
-#'
-#' @export
 
-addGeneSet <- function(object,
-                       class_name,
-                       gs_name,
-                       genes,
-                       overwrite = FALSE,
-                       check_genes = TRUE){
-
-  # lazy control
-  check_object(object)
-
-  gsl <- getGeneSetList(object)
-
-  if(base::isTRUE(check_genes)){
-
-    confuns::check_one_of(
-      input = genes,
-      against = getGenes(object)
-    )
-
-  }
-
-  if(base::any(!base::sapply(X = list(class_name, gs_name, genes), FUN = base::is.character))){
-
-    stop("Arguments 'class_name', 'gs_name' and 'genes' must be of class character.")
-
-  }
-
-  if(base::length(class_name) != 1 | base::length(gs_name) != 1){
-
-    stop("Arguments 'class_name' and 'gs_name' must be of length one.")
-
-  }
-
-  if(stringr::str_detect(string = class_name, pattern = "_")){
-
-    stop("Invalid input for argument 'class_name'. Must not contain '_'.")
-
-  }
-
-  name <- stringr::str_c(class_name, gs_name, sep = "_")
-
-  # make sure not to overwrite if overwrite == FALSE
-  if(name %in% base::names(gsl) && base::isFALSE(overwrite)){
-
-    stop(stringr::str_c("Gene set '", name, "' already exists.",
-                              " Set argument 'overwrite' to TRUE in order to overwrite existing gene set."))
-
-  } else if(name %in% base::names(gsl) && base::isTRUE(overwrite)) {
-
-    object <- discardGeneSets(object, gs_names = name)
-
-  }
-
-  ma <- getAssay(object, "transcriptomics")
-  ma@signatures[[name]] <- genes
-
-  object <- setAssay(object, assay = ma)
-
-  returnSpataObject(object)
-
-}
-
-
-#' @rdname addGeneSet
-#' @export
-addGeneSetsInteractive <- function(object){
-
-  check_object(object)
-
-  new_object <-
-    shiny::runApp(
-      shiny::shinyApp(
-        ui = function(){
-
-          shiny::fluidPage(
-            moduleAddGeneSetsUI(id = "add_gs"),
-            shiny::HTML("<br><br>"),
-            shiny::actionButton("close_app", label = "Close application")
-          )
-
-        },
-        server = function(input, output, session){
-
-          module_return <-
-            moduleAddGeneSetsServer(id = "add_gs", object = object)
-
-          oe <- shiny::observeEvent(input$close_app, {
-
-            shiny::stopApp(returnValue = module_return())
-
-          })
-
-        }
-      )
-    )
-
-  return(new_object)
-
-}
 
 
 
@@ -898,7 +783,7 @@ setMethod(
 
 
 
-#' @title Add Holes to Spatial Annotations
+#' @title Add holes to spatial annotations
 #'
 #' @description These methods allow the addition of an inner border to spatial annotations, creating
 #' holes.
@@ -924,6 +809,8 @@ setMethod(
 #' @seealso [`activeImage()`], [`SpatialAnnotation`]
 #'
 #' @export
+#'
+#' @inherit addSpatialAnnotation examples
 #'
 setGeneric(name = "addInnerBorder", def = function(object, ...){
 
@@ -1191,7 +1078,7 @@ addMolecularAssay <- function(object,
 #' @inherit argument_dummy params
 #' @inherit plotSurfaceBase params return
 #'
-#' @export
+#' @keywords internal
 
 addPointsBase <- function(object,
                           color_by,
@@ -1283,6 +1170,7 @@ addPointsBase <- function(object,
 
 }
 
+
 add_polygon <- function(x, y, poly = NULL, color = "black", size = 2, scale_fct = 1) {
 
   if(base::is.data.frame(poly)){
@@ -1335,7 +1223,8 @@ add_polygon <- function(x, y, poly = NULL, color = "black", size = 2, scale_fct 
 #' @param scale_fct A factor with which the vertice positions are scaled.
 #'
 #' @return Output of `graphics::polygon()` is directly plotted.
-#' @export
+#'
+#' @keywords internal
 #'
 addPolygonBase <- function(x,
                            y,
@@ -1392,6 +1281,35 @@ addPolygonBase <- function(x,
 #'
 #' @inherit update_dummy return
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' library(Seurat)
+#'
+#' scaled_mtr <-
+#'  CreateSeuratObject(getCountMatrix(object)) %>%
+#'  NormalizeData() %>%
+#'  ScaleData() %>%
+#'  GetAssayData(layer = "scale.data")
+#'
+#' object <- addProcessedMatrix(object, proc_mtr = scaled_mtr, mtr_name = "scaled")
+#'
+#' p1 <- plotSurface(object, color_by = "METRN")
+#'
+#' object <- activateMatrix(object, mtr_name = "scaled")
+#'
+#' p2 <- plotSurface(object, color_by = "METRN")
+#'
+#' plot(p1)
+#' plot(p2)
+#'
 addProcessedMatrix <- function(object,
                                proc_mtr,
                                mtr_name,
@@ -1426,23 +1344,27 @@ addProcessedMatrix <- function(object,
 
 #' @title Add Segmentation Variable
 #'
-#' @description This function adds a segmentation variable to the metadata of the given object.
+#' @description This function adds a new, empty segmentation variable to the metadata of the given object for
+#' further naming within [`createSpatialSegmentation()`].
 #'
 #' @param name A character string specifying the name of the segmentation variable to add.
+#' @param init_value A character string specifying the initial value of each observation.
+#' Defaults to *unnnamed*.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy params
 #'
 #' @details This function checks if the provided segmentation variable name is not already used
-#' by a feature, gene, or gene set in the object. If the name is unique, it adds the segmentation variable
-#' to the object's metadata.
+#' by a different meta feature, molecule or molecular signature in the object. If the name is
+#' unique, it adds the segmentation variable to the object's metadata.
 #'
-#' @seealso [`getSegmentationNames()`], [`getFeatureNames()`], [`getMetaDf()`], [`setMetaDf()`]
+#' @seealso [`getSegmVarNames()`], [`getFeatureNames()`], [`getMetaDf()`], [`setMetaDf()`]
 #'
-#' @export
+#' @keywords internal
 
 addSegmentationVariable <- function(object,
                                     name,
+                                    init_value = "unnamed",
                                     verbose = NULL,
                                     ...){
 
@@ -1463,12 +1385,12 @@ addSegmentationVariable <- function(object,
 
   }
 
-  object@obj_info$segmentation_variable_names <-
-    c(object@obj_info$segmentation_variable_names, name)
+  object@obj_info$spat_segm_vars <-
+    c(object@obj_info$spat_segm_vars, name)
 
   mdata <- getMetaDf(object)
 
-  mdata[[name]] <- base::factor(x = "unnamed")
+  mdata[[name]] <- base::factor(x = init_value)
 
   object <- setMetaDf(object, meta_df = mdata)
 
@@ -1487,14 +1409,11 @@ addSegmentationVariable <- function(object,
 #'
 #' @description Adds spatial annotations using a polygon.
 #'
-#' @param area A named list of data.frames with the numeric variables \emph{x_orig} and \emph{y_orig}.
+#' @param area A named list of data.frames with the numeric variables *x* and *y* or *x_orig* and *y_orig*.
 #' Observations correspond to the vertices of the polygons that are needed to represent the
 #' spatial annotation. **Must** contain exactly one slot named *outer* which sets the outer border
 #' of the spatial annotation. **Can** contain multiple slots named *inner* (suffixed)
 #' with numbers that correspond to inner polygons - holes within the annotation.
-#'
-#' The scale of the two variables must correspond to the scale of the *x_orig* and
-#' *y_orig* variables of the coordinates data.frame.
 #' @param id Character value. The ID of the spatial annotation. If `NULL`,
 #' the ID of the annotation is created by combining the string *'spat_ann'* with
 #' the index the new annotation has in the list of all annotations.
@@ -1508,6 +1427,45 @@ addSegmentationVariable <- function(object,
 #' @seealso [`getCoordsDf()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF275T_diet
+#'
+#' create_circle_polygon <- function(p, r, n) {
+#'
+#'  angles <- seq(0, 2 * pi, length.out = n + 1)
+#'
+#'  x_coords <- p[1] + r * cos(angles)
+#'  y_coords <- p[2] + r * sin(angles)
+#'
+#'  polygon_df <- data.frame(x = x_coords, y = y_coords)
+#'
+#'  return(polygon_df)
+#'
+#' }
+#'
+#' center <-
+#'  getCoordsDf(object)[c("x", "y")] %>%
+#'  map_dbl(.f = mean)
+#'
+#' area_circle <- create_circle_polygon(center, r = 75, n = 100)
+#'
+#' object <- addSpatialAnnotation(object, area = list(outer = area_circle), id = "circle")
+#'
+#' plotSpatialAnnotations(object, ids = "circle")
+#'
+#' hole <- create_circle_polygon(center, r = 25, n = 100)
+#'
+#' object <- addInnerBorder(object, id = "circle", border_df = hole, new_id = "circle_with_hole")
+#'
+#' plotSpatialAnnotations(object, ids = c("circle", "circle_with_hole"))
+#'
 #'
 setGeneric(name = "addSpatialAnnotation", def = function(object, ...){
 
@@ -1590,6 +1548,7 @@ setMethod(
     }
 
     # check area input
+
     area <-
       purrr::imap(
         .x = area,
@@ -1597,11 +1556,21 @@ setMethod(
 
           df <- tibble::as_tibble(df)
 
-          confuns::check_data_frame(
-            df = df,
-            ref = glue::glue("area data.frame {name}"),
-            var.class = list(x_orig = "numeric", y_orig = "numeric")
-          )
+          if(!all(c("x", "y") %in% colnames(df)) &
+             !all(c("x_orig", "y_orig") %in% colnames(df))){
+
+            stop(glue::glue("Invalid coordinates input in data.frame '{name}'"))
+
+          }
+
+          if(!all(c("x_orig", "y_orig") %in% colnames(df))){
+
+            isf <- getScaleFactor(object, fct_name = "image")
+
+            df$x_orig <- df$x/isf
+            df$y_orig <- df$y/isf
+
+          }
 
           return(df)
 
@@ -1676,13 +1645,15 @@ setMethod(
 #' @examples
 #'
 #' library(SPATA2)
-#' library(SPATAData)
+#' library(tidyverse)
 #'
-#' object_t269 <- loadSpataObject(sample_name = "269_T")
+#' data("example_data")
 #'
-#' object_t269 <-
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <-
 #'    addSpatialTrajectory(
-#'      object = object_t269,
+#'      object = object,
 #'      id = "cross_sample",
 #'      width = "1.5mm",
 #'      start = c(x = "1.35mm", y = "4mm"),
@@ -1690,7 +1661,7 @@ setMethod(
 #'      overwrite = TRUE
 #'    )
 #'
-#'  plotSpatialTrajectories(object_t269, ids = "cross_sample")
+#'  plotSpatialTrajectories(object, ids = "cross_sample")
 #'
 addSpatialTrajectory <- function(object,
                                  id,
@@ -1831,7 +1802,7 @@ addSpatialTrajectory <- function(object,
 #' @param scale_fct A factor with which the vertice positions are scaled.
 #'
 #' @return Output of `graphics::polygon()` is directly plotted.
-#' @export
+#' @keywords internal
 #'
 setGeneric(name = "addTissueOutlineBase", def = function(object, ...){
 
@@ -1947,7 +1918,7 @@ setMethod(
 #'
 #' @inherit update_dummy return
 #'
-#' @export
+#' @keywords internal
 #'
 setGeneric(name = "addVarToCoords", def = function(object, ...){
 
@@ -1956,7 +1927,7 @@ setGeneric(name = "addVarToCoords", def = function(object, ...){
 })
 
 #' @rdname addVarToCoords
-#' @export
+#' @keywords internal
 setMethod(
   f = "addVarToCoords",
   signature = "SpatialData",

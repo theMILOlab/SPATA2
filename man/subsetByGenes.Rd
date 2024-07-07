@@ -29,3 +29,4 @@ Gene dependent analysis results such as DEA or SPARKX
 are \strong{not} subsetted. Stored results are kept as they are. To update them run
 the algorithms again.
 }
+\keyword{internal}
