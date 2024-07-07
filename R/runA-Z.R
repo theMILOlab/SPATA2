@@ -1554,7 +1554,7 @@ runGSEA <- function(object,
 
   check_one_of(
     input = methods_de,
-    against = validDeAnalysisMethods()
+    against = validDeaMethods()
   )
 
   ma <- getAssay(object, assay_name = assay_name)

@@ -498,7 +498,7 @@ setMethod(
   definition = function(object,
                         img_name,
                         img = NULL,
-                        img_dir = NULL,
+                        dir = NULL,
                         unload = TRUE,
                         process = FALSE,
                         overwrite = FALSE,

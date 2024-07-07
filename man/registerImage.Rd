@@ -15,7 +15,7 @@ registerImage(object, ...)
   object,
   img_name,
   img = NULL,
-  img_dir = NULL,
+  dir = NULL,
   unload = TRUE,
   process = FALSE,
   overwrite = FALSE,
@@ -50,14 +50,14 @@ the active nor the reference image.}
 
 \item{img}{An image. Must be usable with \code{EBImage::as.Image()}.}
 
+\item{dir}{Character value. The directory from where to retrieve the image.}
+
 \item{overwrite}{Logical value. Must be \code{TRUE} to allow overwriting.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{dir}{Character value. The directory from where to retrieve the image.}
 }
 \value{
 The updated input object, containing the added, removed or computed results.

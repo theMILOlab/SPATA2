@@ -1987,8 +1987,7 @@ plotDeaHeatmap <- function(object,
     annotation_names_col = FALSE,
     annotation_colors = annotation_colors,
     gaps_row = gaps_row,
-    gaps_col = gaps_col,
-    ...
+    gaps_col = gaps_col
   )
 
 }
