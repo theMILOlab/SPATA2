@@ -22,11 +22,6 @@ getSpatAnnSummaryDf(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
 \item{area}{Logical. If \code{TRUE}, the area of each spatial annotation
 is added in a variable named \emph{area}.}
 

@@ -13,7 +13,11 @@ objects of classes for which a method has been defined.}
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}
 
-\item{unit}{Character value. Specifies the desired unit.}
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
 
 \item{round}{Numeric value or \code{FALSE}. If numeric, given to \code{digits}
 of \code{base::round()}. Rounds transformed values before they are returned.}

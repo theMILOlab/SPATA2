@@ -56,7 +56,7 @@ this argument must be explicitly specified to identify the target annotation.}
 \item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
 the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
 
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent
@@ -64,6 +64,12 @@ recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
 
 \item{color_by}{Character value. The \link[=concept_variable]{variables} by which
 to color the data points.}
+
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of the spatial annotation.

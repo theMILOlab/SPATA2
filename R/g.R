@@ -699,7 +699,7 @@ ggpLayerColorGroupScale <- function(object,
 ggpLayerExprEstimatesSAS <- function(object,
                                      ids,
                                      distance = "dte",
-                                     binwidth = recBinwidth(object),
+                                     resolution = recSgsRes(object),
                                      core = FALSE,
                                      alpha_core = 0,
                                      fill_core = NA,
@@ -749,7 +749,7 @@ ggpLayerExprEstimatesSAS <- function(object,
                 object = object,
                 id = id,
                 distance = distance,
-                binwidth = binwidth,
+                resolution = resolution,
                 core = core,
                 direction = direction,
                 incl_edge = FALSE,
@@ -812,7 +812,7 @@ ggpLayerExprEstimatesSAS <- function(object,
                 object = object,
                 id = id,
                 distance = distance,
-                binwidth = binwidth,
+                resolution = resolution,
                 direction = direction,
                 incl_edge = TRUE,
                 verbose = verbose
@@ -1270,7 +1270,7 @@ ggpLayerGroupOutline <- function(object,
                 .x = base::unique(group_df[["group_outline"]]),
                 .f = function(go){
 
-                  avg_dist <- recBinwidth(object, unit = "px")
+                  avg_dist <- recSgsRes(object, unit = "px")
 
                   df <-
                     dplyr::filter(group_df, group_outline == {{go}}) %>%
@@ -2168,7 +2168,7 @@ ggpLayerSasEvaluation <- function(object,
                                   core,
                                   variables,
                                   distance = distToEdge(object, id),
-                                  binwidth = recBinwidth(object),
+                                  resolution = recSgsRes(object),
                                   angle_span = c(0, 360),
                                   unit = getDefaultUnit(object),
                                   model_subset = NULL,
@@ -2189,7 +2189,7 @@ ggpLayerSasEvaluation <- function(object,
       variables = variables,
       id = id,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       core = core,
       angle_span = angle_span,
       model_add = model_add,
@@ -2204,7 +2204,7 @@ ggpLayerSasEvaluation <- function(object,
       object = object,
       id = id,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       core = core,
       verbose = FALSE
     )
@@ -2249,7 +2249,7 @@ ggpLayerSasEvaluation <- function(object,
       y = pos_y
     )
 
-  bw <- as_unit(binwidth, unit = unit, object = object)
+  bw <- as_unit(resolution, unit = unit, object = object)
 
   bw_val_half <- extract_value(bw)/2
 
@@ -3241,7 +3241,7 @@ setMethod(
                         smooth_with = "none",
                         scale_fct = 1,
                         outline_fct = c(1.75, 2.75),
-                        expand_outline = recBinwidth(object, "px")/1.25,
+                        expand_outline = recSgsRes(object, "px")/1.25,
                         ...){
 
     hlpr_assign_arguments(object)
@@ -3814,7 +3814,7 @@ ggpLayerTrajectoryFrame <- function(object,
 #' @keywords internal
 ggpLayerTrajectoryBins <- function(object,
                                    id,
-                                   binwidth = getCCD(object, unit = "px"),
+                                   resolution = getCCD(object, unit = "px"),
                                    line_color = "black",
                                    line_size = 1.5){
 
@@ -3822,9 +3822,9 @@ ggpLayerTrajectoryBins <- function(object,
   width <- traj@width
   tl <- getTrajectoryLength(object, id = id)
 
-  binwidth <- as_pixel(binwidth, object_t269)
+  resolution <- as_pixel(resolution, object_t269)
 
-  vline_pos <- seq(from = 0, to = tl, length.out = tl/binwidth)
+  vline_pos <- seq(from = 0, to = tl, length.out = tl/resolution)
 
   trajectory_name <- id
 
@@ -3838,7 +3838,7 @@ ggpLayerTrajectoryBins <- function(object,
     make_orthogonal_segments(
       sp = base::as.numeric(traj@segment[1, ]),
       ep = base::as.numeric(traj@segment[2, ]),
-      binwidth = binwidth,
+      resolution = resolution,
       out_length = width
     )
 

@@ -30,24 +30,25 @@ estimate_r2_for_sas_run <- function(object,
                                     ids,
                                     distance,
                                     core,
-                                    binwidth,
+                                    resolution,
                                     angle_span = c(0, 360),
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 25,
                                     control = SPATA2::sgs_loess_control,
                                     verbose = NULL){
 
+  deprecated(...)
   hlpr_assign_arguments(object)
 
   unit <- getDefaultUnit(object)
 
-  if(base::length(binwidth) == 1){
+  if(base::length(resolution) == 1){
 
-    binwidth <- rep(binwidth, 2)
+    resolution <- rep(resolution, 2)
 
   }
 
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
 
 
 
@@ -73,7 +74,7 @@ estimate_r2_for_sas_run <- function(object,
       ids = ids,
       simulations = simulations,
       core = core,
-      binwidth = binwidth[2],
+      resolution = resolution[2],
       distance = distance,
       noise_levels = noise_levels,
       noise_types = "ed",
@@ -82,7 +83,7 @@ estimate_r2_for_sas_run <- function(object,
       verbose = verbose
     )
 
-  binwidth <- binwidth[1]
+  resolution <- resolution[1]
 
   object <-
     addProcessedMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
@@ -98,7 +99,7 @@ estimate_r2_for_sas_run <- function(object,
       object = object,
       ids = ids,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       angle_span = angle_span,
       dist_unit = unit,
       core = core,
@@ -117,7 +118,7 @@ estimate_r2_for_sas_run <- function(object,
 
   }
 
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
 
   cf <-
     compute_correction_factor_sas(
@@ -127,7 +128,7 @@ estimate_r2_for_sas_run <- function(object,
       core = core
       )
 
-  span <- base::as.numeric(binwidth/tot_dist) / cf
+  span <- base::as.numeric(resolution/tot_dist) / cf
 
   expr_est_pos <- compute_expression_estimates(coords_df)
 
@@ -210,7 +211,7 @@ estimate_r2_for_sas_run <- function(object,
 
 estimate_r2_for_sts_run <- function(object,
                                     id,
-                                    binwidth,
+                                    resolution,
                                     width,
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 20,
@@ -242,7 +243,7 @@ estimate_r2_for_sts_run <- function(object,
       object = object,
       id = id,
       simulations = simulations,
-      binwidth = binwidth,
+      resolution = resolution,
       width = width,
       noise_levels = noise_levels,
       noise_types = "ed",
@@ -263,7 +264,7 @@ estimate_r2_for_sts_run <- function(object,
     getCoordsDfST(
       object = object,
       id = id,
-      binwidth = binwidth,
+      resolution = resolution,
       width = width,
       variables = variables,
       dist_unit = unit,
@@ -275,15 +276,15 @@ estimate_r2_for_sts_run <- function(object,
   # max_dist does not depend on `core` option
   min_dist <- as_unit(input = 0, unit = unit, object = object)
   max_dist <- getTrajectoryLength(object, id = id, unit = unit)
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
   tot_dist <- max_dist - min_dist
-  span <- base::as.numeric(binwidth/tot_dist)
+  span <- base::as.numeric(resolution/tot_dist)
 
   expr_est_pos <-
     compute_positions_expression_estimates(
       min_dist = min_dist,
       max_dist = max_dist,
-      amccd = binwidth
+      amccd = resolution
     )
 
   pb <- confuns::create_progress_bar(total = base::length(variables))

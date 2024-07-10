@@ -177,28 +177,97 @@ read_coords_xenium <- function(dir_coords){
 
 }
 
-#' @title Platform dependent binwidth recommendation
+#' @keywords internal
+recBinwidth <- function(...){
+
+  deprecated(fn = T, ...)
+  recSgsRes(...)
+
+}
+
+#' @rdname recSgsRes
+#' @export
+recDbscanEps <- function(object){
+
+  if(containsCCD(object)){
+
+    out <- getCCD(object)*1.25
+
+  } else {
+
+    coords_mtr <-
+      getCoordsDf(object) %>%
+      dplyr::select(x, y) %>%
+      base::as.matrix()
+
+    knn_out <-
+      FNN::knn.dist(data = coords_mtr, k = 1) %>%
+      base::mean()
+
+    out <- knn_out*10
+
+  }
+
+  return(out)
+
+}
+
+#' @rdname recSgsRes
+#' @export
+recDbscanMinPts <- function(object){
+
+  if(containsMethod(object, method = "Visium")){
+
+    out <- 4
+
+  } else {
+
+    warning("Recommendation might be suboptimal.")
+
+    out <- 12
+
+  }
+
+  return(out)
+
+}
+
+
+#' @title Platform dependent input recommendations
 #'
-#' @description Recommends a binwidth parameter for the spatial screening algorithms
-#' based on the platform used.
+#' @description A collection of functions that return the recommended default input
+#' of certain arguments depending on the \link[=SpatialMethod]{spatial method}
+#' (the platform) the `SPATA2` object derived from.
 #'
 #' @inherit argument_dummy params
 #'
 #' @details
-#' For objects derived from the Visium platform we recommend a binwidth equal
-#' to the center to center distance as obtained by `getCCD()`.
 #'
-#' For objects derived from platforms that do not rely on a fixed grid of
-#' data points (MERFISH, SlideSeq, etc.) we recommend the average minimal
-#' distance between the data points.
+#' \itemize{
+#'  \item{`recDbscanEps`}{ The default input for the `eps` argument of [`dbscan::dbscan()`].
+#'  For objects derived from the Visium platform, we recommend
+#'   a binwidth equal to the center-to-center distance as obtained by [`getCCD()`] multiplied
+#'   by *1.25*.
+#'   For objects derived from platforms that do not rely on a fixed grid of data points
+#'   (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
+#'   data points multiplied by *1.25*. }
+#'  \item{`recDbscanMinPts`}{ The default input for the `minPts` argument of [`dbscan::dbscan()`].
+#'  For objects derived from the Visium platform, we recommend `minPts = 3`.
+#'   For objects derived from platforms that do not rely on a fixed grid of data points
+#'   (MERFISH, SlideSeq, etc.), we recommend `minPts = 12`. }
+#'  \item{`recSgsRes()`}{ The default input for the `resolution` argument of the spatial
+#'  gradient screening algorithm. For objects derived from the Visium platform, we recommend
+#'   a binwidth equal to the center-to-center distance as obtained by [`getCCD()`].
+#'   For objects derived from platforms that do not rely on a fixed grid of data points
+#'   (MERFISH, SlideSeq, etc.), we recommend the average minimal distance between the
+#'   data points.}
+#' }
 #'
-#' `recBinwidth()` is a wrapper around these recommendations.
-#'
-#' @return Distance measure.
+#' @return Single values of different classes depending on the function. See details for more.
 #'
 #' @export
 #'
-recBinwidth <- function(object, unit = getDefaultUnit(object)){
+recSgsRes <- function(object, unit = getDefaultUnit(object)){
 
   if(containsCCD(object)){
 
@@ -226,75 +295,6 @@ recBinwidth <- function(object, unit = getDefaultUnit(object)){
   return(out)
 
 }
-
-
-#' @title DBSCAN parameter recommendations
-#'
-#' @description Suggests a value for DBSCAN applications within `SPATA2`.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Numeric value in case of `recDbscanMinPts()`. Distance measure
-#' in case of `recDbscanEps()`.
-#'
-#' @details
-#' For objects derived from the Visium platform with a fixed center to center
-#' distance, we recommend to set `eps = getCCD(object, unit = "px")*1.25`
-#' and `minPts = 3`.
-#'
-#' For objects derived from platforms that do not rely on a fixed grid of
-#' data points (MERFISH, SlideSeq, etc.) we recommend the average minimal
-#' distance between the data points times 10 for `eps` and `minPts = 12`.
-#'
-#' `recDbscanEps()` and `recDbscanMinPts()` are wrappers around these recommendations.
-#'
-#' @export
-#'
-recDbscanEps <- function(object){
-
-  if(containsCCD(object)){
-
-    out <- getCCD(object)*1.25
-
-  } else {
-
-    coords_mtr <-
-      getCoordsDf(object) %>%
-      dplyr::select(x, y) %>%
-      base::as.matrix()
-
-    knn_out <-
-      FNN::knn.dist(data = coords_mtr, k = 1) %>%
-      base::mean()
-
-    out <- knn_out*10
-
-  }
-
-  return(out)
-
-}
-
-#' @rdname recDbscanEps
-#' @export
-recDbscanMinPts <- function(object){
-
-  if(containsMethod(object, method = "Visium")){
-
-    out <- 4
-
-  } else {
-
-    warning("Recommendation might be suboptimal.")
-
-    out <- 12
-
-  }
-
-  return(out)
-
-}
-
 
 #' @title Rename the object
 #'

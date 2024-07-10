@@ -37,9 +37,11 @@ of interest.}
 gene-sets and numeric features) that are supposed to be included in
 the screening process.}
 
-\item{binwidth}{Distance value. The width of the bins to which
-the barcode-spots are assigned. Defaults to the center-center
-distance: \code{binwidth = getCCD(object)}.}
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
 
 \item{model_add}{Named list. Every slot in the list must be either a formula
 containing a function that takes a numeric vector as input and returns a numeric

@@ -56,11 +56,6 @@ simulate_random_expression(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
 \item{simulations}{A list of \emph{simulation lists}. A simulations list is a list
 that contains at least three slots that provide instructions for a set of
 simulations:
@@ -78,7 +73,7 @@ if present, overwrites the input for \code{noise_levels} for the specific simula
 \item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
 the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
 
 \item{binwidth}{Distance value. The width of the distance bins to which
 each data point is assigned. Defaults to our platform dependent

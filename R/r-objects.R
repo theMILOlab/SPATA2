@@ -526,6 +526,7 @@ depr_info <-
       "plotTrajectoryGeneSets" = "plotTrajectoryLineplot",
       "plotTrajectoryHeatmap" = "plotStsHeatmap",
       "plotTrajectoryLineplot" = "plotStsLineplot",
+      "recBinwidth" = "resSgsRes",
       "runCnvAnalysis" = "runCNV",
       "runDeAnalysis" = "runDEA",
       "setActiveExpressionMatrix" = "setActiveMatrix",
@@ -548,6 +549,7 @@ depr_info <-
     ),
     args = list(
       "average_genes" = NA_character_,
+      "binwidth" = "resolution",
       "combine_with_wd" = "add_wd",
       "euol" = "unit",
       "expr_mtr" = "proc_mtr",

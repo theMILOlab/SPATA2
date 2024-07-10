@@ -42,29 +42,6 @@ correspond to the genes and column names must correspond to the barcodes.}
 analyzing with the spata-object. The future input for SPATA's \code{of_sample}-argument.}
 
 \item{image}{An Image of the sample that can be displayed as the surface plot's background.}
-
-\item{SCTransform}{A named list of arguments given to \code{Seurat::SCTransform()}, TRUE or FALSE.}
-
-\item{NormalizeData}{A named list of arguments given to \code{Seurat::NormalizeData()}, TRUE or FALSE.}
-
-\item{FindVariableFeatures}{A named list of arguments given to \code{Seurat::FindVariableFeatures()}, TRUE or FALSE.}
-
-\item{ScaleData}{A named list of arguments given to \code{Seurat::ScaleData()}, TRUE or FALSE.
-
-Hint: If set to TRUE or the argument-list provided does not specify the argument \code{features} input
-for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
-
-\item{RunPCA}{A named list of arguments given to \code{Seurat::RunPCA()}, TRUE or FALSE.}
-
-\item{FindNeighbors}{A named list of arguments given to \code{Seurat::FindNeighbors()}, TRUE or FALSE.}
-
-\item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
-
-\item{RunTSNE}{A named list of arguments given to \code{Seurat::RunTSNE()}, TRUE or FALSE.}
-
-\item{RunUMAP}{A named list of arguments given to \code{Seurat::RunUMAP()}, TRUE or FALSE.}
-
-\item{...}{Additional parameters given to \code{Seurat::CreateSeuratObject()}.}
 }
 \value{
 A \code{SPATA2} object.

@@ -798,11 +798,14 @@ setMethod(
 #' @title Relate points to spatial annotations
 #'
 #' @description Adds the spatial relation to a spatial
-#' annotation to the coordinates data.frame. See details for more.
+#' annotation to the coordinates data.frame. See details and examples for more.
 #'
-#' @inherit spatialAnnotationScreening params
+#' @param ids Character vector. Specifies the IDs of the spatial annotations of interest.
 #' @param dist_unit Character value. Unit in which the distance is computed.
 #' Defaults to *pixel*.
+#' @param binwidth Distance measure or `NULL`. If \link[=concept_distance_measure]{distance measure},
+#' spots are categorized by their distance value according to the binwidth specified. The categorization is
+#' provided in an **additional** variable named *bins_dist*.
 #' @param core0 Logical value. If `TRUE`, *dist* valus of core data points are
 #' set to 0.
 #' @param coords_df Data.frame. If `NULL`, the default, the coordinates data.frame obtained
@@ -811,36 +814,203 @@ setMethod(
 #' pixel units.
 #' @param core Logical value. If `FALSE`, data points that lie inside the core of the
 #' spatial annotation are removed.
+#' @param incl_edge Logical value. If `TRUE`, the default, the edges of the
+#' tissue sections identified by [`identifyTissueOutline()`] are used to ensure
+#' that the only data points are related to the spatial annotation that are located on
+#' the same tissue section as the spatial annotation. Data points that do not share
+#' the same tissue section obtain NAs for the created variables.
+#' @param drop_na Logical value (only relevant if `incl_edge = TRUE`). If `TRUE`,
+#' the default, data points that do not share the same tissue section with the spatial
+#' annotation are dropped!
+#'
 #' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
 #' if not empty and `coords_df` is `NULL`.
 #' @inherit argument_dummy params
 #'
-#' @return Data.frame.
+#' @return Data.frame. See details for more.
 #'
-#' @details The coordinates data.frame as returned by [`getCoordsDf()`] with six
-#' additional variables:
+#' @details The coordinates data.frame as returned by [`getCoordsDf()`] with additional variables:
 #'
 #' \itemize{
 #'  \item{*dist*:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
 #'  \item{*dist_unit*:}{ Character. The unit in which the distance is computed.}
-#'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `binwidth`.}
+#'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `binwidth`.
+#'   Only present if `binwidth` is not `NULL`}
 #'  \item{*angle*:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
 #'  \item{*bins_angle*:}{ Factor. The bin the data point was assigned to based on its *angle* value.}
 #'  \item{*rel_loc*:}{ Character. Possible values are *'core'*, if the data point lies inside the spatial annotation,
 #'  *'periphery'* if the data point lies outside of the boundaries of the spatial annotation but inside
 #'  the area denoted via `distance` and *outside*, if the data point lies beyond the screening area (it's
 #'  distance to the spatial annotation boundaries is bigger than the value denoted in `distance`).}
-#'  \item{*id*}{ Character. The ID of the spatial annotation the data points lies closes to. (only relevant
+#'  \item{*id*}{ Character. The ID of the spatial annotation the data points lies closest to. (only relevant
 #'  in case of `length(ids) > 1`)}
+#'  \item{*tissue_section*}{ Character. The tissue section on which the spatial annotation of variable *id* is located.}
 #'  }
 #'
+#'
+#' @note In most scenarious, it does **not** make sense to relate data points from
+#' tissue sections to a spatial annotation that is located on a different
+#' tissue section. Hence, the default of this function (`incl_edge = TRUE`, `drop_na = TRUE`)
+#' is set to simply remove these data points from the output. See examples.
+#'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#' library(patchwork)
+#' library(tidyverse)
+#'
+#' data("example_data")
+#'
+#' # Example 1 - One spatial annotation on one tissue section
+#' object <- example_data$object_UKF275T_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' object <-
+#'  createNumericAnnotations(
+#'    object = object,
+#'    variable = "HM_HYPOXIA",
+#'    threshold = "kmeans_high",
+#'    id = "hypoxia_ann",
+#'    inner_borders = FALSE,
+#'    force1 = TRUE
+#'    )
+#'
+#' # default distance = "dte" -> uses distToEdge()
+#' coords_df <- getCoordsDfSA(object, ids = "hypoxia_ann", binwidth = "1mm")
+#'
+#' p1 <-
+#'   plotSurface(object, "HM_HYPOXIA", pt_clrsp = "inferno") +
+#'   ggpLayerSpatAnnOutline(object, ids = "hypoxia_ann", line_color = "white")
+#'
+#' p2 <- plotSurface(coords_df, "dist")
+#'
+#' p1 + p2
+#'
+#' plotSurface(coords_df, color_by = "bins_dist", pt_clrp = "inferno")
+#' plotSurface(coords_df, color_by = "rel_loc", pt_clrp = "npg")
+#'
+#' coords_df_3mm <- getCoordsDfSA(object, ids = "hypoxia_ann", distance = "3mm")
+#'
+#' plotSurface(coords_df_3mm, color_by = "dist") +
+#'   plotSurface(coords_df_3mm, color_by = "rel_loc", pt_clrp = "npg")
+#'
+#'
+#' ## Example 2 - Multiple spatial annotations on one tissue section
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' necr_ids <- getSpatAnnIds(object, tags = c("compr", "necrotic"), test = "all")
+#'
+#' plotSpatialAnnotations(object, ids = necr_ids, line_size = 1, fill = NA)
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' # considered individually
+#'
+#' map(
+#' .x = necr_ids,
+#' .f = function(id){
+#'
+#'   coords_df <- getCoordsDfSA(object, ids = id, distance = "dte")
+#'
+#'   p1 <-
+#'     plotSurface(coords_df, color_by = "dist") +
+#'     ggpLayerSpatAnnOutline(object, ids = id, line_color = "white") +
+#'     labs(caption = id)
+#'
+#'   return(p1)
+#'
+#' }
+#' ) %>% wrap_plots(., nrow = 2)
+#'
+#' # considered alltogether
+#'
+#' coords_df <- getCoordsDfSA(object, ids = necr_ids)
+#'
+#' plotSurface(coords_df, color_by = "dist") +
+#'   ggpLayerSpatAnnOutline(object, ids = necr_ids)
+#'
+#' coords_df <- getCoordsDfSA(object, ids = necr_ids, core0 = TRUE)
+#'
+#' plotSurface(coords_df, color_by = "dist") +
+#'   ggpLayerSpatAnnOutline(object, ids = necr_ids)
+#'
+#'
+#' ## Example 3 - single or multiple annotations and multiple tissue sections
+#'
+#' object <- example_data$object_lmu_mci_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section") +
+#'   ggpLayerTissueOutline(object)
+#'
+#' plotSpatialAnnotations(object, ids = c("inj1", "inj2"))
+#'
+#' # the default
+#' coords_df <- getCoordsDfSA(object, ids = "inj1", incl_edge = T, drop_na = T)
+#'
+#' plotSurface(coords_df, color_by = "dist") +
+#'   ggpLayerTissueOutline(object)
+#'
+#' # drop_na = FALSE
+#' coords_df <- getCoordsDfSA(object, ids = "inj1", incl_edge = T, drop_na = F)
+#'
+#' plotSurface(coords_df, color_by = "dist") +
+#'   ggpLayerTissueOutline(object) +
+#'   ggpLayerSpatAnnOutline(object, ids = c("inj1", "inj2"))
+#'
+#' # incl_edge = FALSE (does not make sense in this scenario)
+#' coords_df <- getCoordsDfSA(object, ids = "inj1", incl_edge = F)
+#'
+#' plotSurface(coords_df, color_by = "dist") +
+#'   ggpLayerTissueOutline(object)
+#'
+#' ## Example 4 - using external coordinate data.frames
+#'
+#' # get mouse data
+#' object <- example_data$object_lmu_mci_diet
+#' object <- identifyTissueOutline(object)
+#'
+#' hemispheres <- ggpLayerTissueOutline(object)
+#' injuries <- ggpLayerSpatAnnOutline(object, ids = c("inj1", "inj2"))
+#'
+#' # get sc deconvolution data
+#' sc_input <- example_data$sc_input_mci_lmu
+#'
+#' # plot space
+#' p_visium <-
+#'   plotSurface(object, "tissue_section") +
+#'   hemispheres +
+#'   injuries
+#'
+#' p_sc <-
+#'   plotSurface(sc_input, color_by = "cell_type", pt_size = 1) +
+#'   hemispheres +
+#'   injuries
+#'
+#' p_visium + p_sc
+#'
+#' # relate cells to spatial annotations
+#' sc_input_rel <- getCoordsDfSA(object, ids = "inj1", coords_df = sc_input, binwidth = "250um")
+#'
+#' plotSurface(sc_input_rel, color_by = "dist", pt_size = 1) +
+#'   hemispheres
+#'
+#' ggplot(sc_input_rel, mapping = aes(x = bins_dist)) +
+#'  geom_bar(mapping = aes(fill = cell_type), color = "black", position = "fill") +
+#'  theme_classic() +
+#'  scale_color_add_on(aes = "fill", variable = sc_input_rel$cell_type, clrp = "tab20b")
+#'
 #'
 
 getCoordsDfSA <- function(object,
                           ids = idSA(object),
                           distance = "dte",
-                          binwidth = recBinwidth(object),
+                          binwidth = NULL,
                           core = TRUE,
                           core0 = FALSE,
                           periphery = TRUE,
@@ -850,11 +1020,25 @@ getCoordsDfSA <- function(object,
                           coords_df = NULL,
                           variables = NULL,
                           format = "wide",
+                          incl_edge = TRUE,
+                          drop_na = TRUE,
                           verbose = NULL,
                           ...){
 
+  bw_null <- base::is.null(binwidth)
+
   hlpr_assign_arguments(object)
   deprecated(...)
+
+  if(bw_null){ binwidth <- NULL }
+
+  res <- list(...)[["resolution"]]
+  if(!base::is.null(res)){
+
+    binwidth <- res
+    warning("Overwriting binwidth with resolution input.")
+
+  }
 
   pb <- confuns::create_progress_bar(total = base::length(ids))
 
@@ -905,6 +1089,8 @@ getCoordsDfSA <- function(object,
           dist_unit = dist_unit,
           coords_df = coords_df,
           format = format,
+          incl_edge = incl_edge,
+          drop_na = drop_na,
           verbose = FALSE
           ) %>%
           dplyr::mutate(id = {{id}})
@@ -960,7 +1146,7 @@ getCoordsDfSA <- function(object,
 get_coords_df_sa <- function(object,
                              id = idSA(object),
                              distance = distToEdge(object, id),
-                             binwidth = recBinwidth(object),
+                             binwidth = NULL,
                              core = TRUE,
                              core0 = FALSE,
                              periphery = TRUE,
@@ -971,16 +1157,23 @@ get_coords_df_sa <- function(object,
                              coords_df = getCoordsDf(object),
                              variables = NULL,
                              format = "wide",
+                             incl_edge = TRUE,
+                             drop_na = TRUE,
                              verbose = NULL,
                              ...){
+
+  bw_null <- base::is.null(binwidth)
 
   deprecated(...)
   hlpr_assign_arguments(object)
 
+  if(bw_null){ binwidth <- NULL}
+
   # check and process input -------------------------------------------------
 
+  ts <- whichTissueSection(object, id = id)
+
   distance <- as_unit(distance, unit = dist_unit, object = object)
-  binwidth  <- as_unit(binwidth, unit = dist_unit, object = object)
 
   angle_span <- c(from = angle_span[1], to = angle_span[2])
   range_span <- base::range(angle_span)
@@ -1004,11 +1197,19 @@ get_coords_df_sa <- function(object,
 
   } else {
 
+    if(base::is.character(variables)){ warning("External coords: Setting `variables = NULL`.")}
+
+    variables <- NULL
+
     external_coords <- TRUE
     confuns::check_data_frame(
       df = coords_df,
       var.class = list(x = "numeric", y = "numeric", barcodes = "character")
     )
+
+    coords_df <-
+      map_to_tissue_section(object, coords_df = coords_df) %>%
+      dplyr::filter(tissue_section != "tissue_section_0")
 
   }
 
@@ -1019,7 +1220,7 @@ get_coords_df_sa <- function(object,
   # distance ----------------------------------------------------------------
 
   # increase number of vertices
-  avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"))
+  avg_dist <- compute_avg_dp_distance(object, vars = c("x", "y"), coords_df = coords_df)
 
   borders <- base::unique(outline_df_orig[["border"]])
 
@@ -1066,9 +1267,15 @@ get_coords_df_sa <- function(object,
     if(dist_unit %in% validUnitsOfLengthSI()){
 
       # provide as numeric value cause dist is scaled down
-      binwidth <-
-        as_unit(input = binwidth, unit = dist_unit, object = object) %>%
-        extract_value()
+      if(!base::is.null(binwidth)){
+
+        binwidth  <- as_unit(binwidth, unit = dist_unit, object = object)
+
+        binwidth <-
+          as_unit(input = binwidth, unit = dist_unit, object = object) %>%
+          extract_value()
+
+      }
 
       distance <-
         as_unit(input = distance, unit = dist_unit, object = object) %>%
@@ -1090,7 +1297,7 @@ get_coords_df_sa <- function(object,
   # bin pos dist
   coords_df_pos <- dplyr::filter(coords_df, dist >= 0)
 
-  if(base::nrow(coords_df_pos) != 0){
+  if(base::nrow(coords_df_pos) != 0 & !base::is.null(binwidth)){
 
     coords_df_pos <-
       dplyr::mutate(
@@ -1109,7 +1316,7 @@ get_coords_df_sa <- function(object,
   # bin neg dist
   coords_df_neg <- dplyr::filter(coords_df, dist < 0)
 
-  if(base::nrow(coords_df_neg) != 0){
+  if(base::nrow(coords_df_neg) != 0 & !base::is.null(binwidth)){
 
     coords_df_neg <-
       dplyr::mutate(
@@ -1131,15 +1338,24 @@ get_coords_df_sa <- function(object,
   coords_df_merged <-
     base::rbind(coords_df_neg, coords_df_pos) %>%
     dplyr::mutate(
-      bins_dist = base::as.character(bins_dist),
-      bins_dist =
-        dplyr::case_when(
-          dist > {{distance}} ~ "periphery",
-          TRUE ~ bins_dist
-        ),
-      bins_dist = base::factor(bins_dist, levels = new_levels),
       rel_loc = dplyr::if_else(dist < 0, true = "core", false = "environment")
     )
+
+  if(!base::is.null(binwidth)){
+
+    coords_df_merged <-
+      dplyr::mutate(
+        .data = coords_df_merged,
+        bins_dist = base::as.character(bins_dist),
+        bins_dist =
+          dplyr::case_when(
+            dist > {{distance}} ~ "periphery",
+            TRUE ~ bins_dist
+          ),
+        bins_dist = base::factor(bins_dist, levels = new_levels),
+      )
+
+  }
 
   # angle -------------------------------------------------------------------
 
@@ -1287,6 +1503,43 @@ get_coords_df_sa <- function(object,
 
   }
 
+  coords_df_sa$tissue_section_id <- ts
+
+  if(base::isTRUE(incl_edge)){
+
+    sa_vars <- c("sample", "x", "y", "x_orig", "y_orig", "tissue_section_id")
+
+    complete_df <- dplyr::select(coords_df_sa, barcodes, dplyr::any_of(sa_vars))
+
+    if(!external_coords){
+
+      coords_df_sa <-
+        joinWithVariables(
+          object = object,
+          variables = "tissue_section",
+          spata_df = coords_df_sa
+        )
+
+    }
+
+    coords_df_sa <-
+      dplyr::filter(coords_df_sa, tissue_section_id == tissue_section)
+
+    coords_df_sa <-
+      dplyr::left_join(
+        x = complete_df,
+        y = dplyr::select(coords_df_sa, -dplyr::any_of(sa_vars)),
+        by = "barcodes"
+        )
+
+    if(base::isTRUE(drop_na)){
+
+      coords_df_sa <- tidyr::drop_na(coords_df_sa, dist, dist_unit, border, rel_loc, angle, bins_angle)
+
+    }
+
+  }
+
   if(!external_coords && !base::is.null(variables)){
 
     coords_df_sa <-
@@ -1331,15 +1584,16 @@ get_coords_df_sa <- function(object,
 #' @export
 getCoordsDfST <- function(object,
                           id = idST(object),
-                          binwidth = recBinwidth(object),
-                          n_bins = NA_integer_,
                           width = getTrajectoryLength(object, id = id),
                           dist_unit = getDefaultUnit(object),
+                          binwidth = NULL,
                           outside = TRUE,
                           variables = NULL,
                           format = "wide",
                           verbose = NULL,
                           ...){
+
+  deprecated(...)
 
   # scale distance
   if(dist_unit %in% validUnitsOfLengthSI()){
@@ -1354,10 +1608,6 @@ getCoordsDfST <- function(object,
 
   }
 
-  binwidth <- as_unit(binwidth, unit = dist_unit, object = object)
-
-  binwidth_num <- base::as.numeric(binwidth)
-
   projection_df <- getProjectionDf(object, id = id, width = width)
 
   # merge data.frames
@@ -1370,22 +1620,22 @@ getCoordsDfST <- function(object,
     dplyr::mutate(
       dist = projection_length * scale_fct,
       dist_unit = {{dist_unit}},
-      rel_loc = dplyr::if_else(base::is.na(dist), true = "outside", false = "inside"),
-      bins_dist = make_bins(dist, binwidth = {{binwidth_num}}, neg = FALSE)
+      rel_loc = dplyr::if_else(base::is.na(dist), true = "outside", false = "inside")
     )
 
-  # how many bins
-  if(base::is.na(n_bins)){
 
-    binwidth <-
-      as_unit(input = binwidth, object = object, unit = dist_unit) %>%
-      base::as.numeric()
+  if(!base::is.null(binwidth)){
 
-    n_bins <- base::ceiling(base::max(coords_df[["dist"]], na.rm = TRUE) / binwidth)
+    binwidth <- as_unit(binwidth, unit = dist_unit, object = object)
+
+    binwidth_num <- base::as.numeric(binwidth)
+
+    coords_df$bins_dist <- make_bins(coords_df$dist, binwidth = {{binwidth_num}}, neg = FALSE)
+
+    coords_df[["bins_order"]] <- base::as.numeric(coords_df[["bins_dist"]])
 
   }
 
-  coords_df[["bins_order"]] <- base::as.numeric(coords_df[["bins_dist"]])
 
   if(base::isFALSE(outside)){
 

@@ -32,6 +32,12 @@ are displayed in order to highlight patterns. Currently either \emph{'maxima'},
 \emph{'minima'} or \emph{'input'}. If \emph{'input'}, variables are displayed
 in the same order as they are provided in the argument \code{variables}.}
 
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
+
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 

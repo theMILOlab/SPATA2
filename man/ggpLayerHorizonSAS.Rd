@@ -25,7 +25,7 @@ objects of classes for which a method has been defined.}
 \item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
 the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue using \code{\link[=distToEdge]{distToEdge()}}.}
+Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 

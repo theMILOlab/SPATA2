@@ -998,7 +998,7 @@ getSampleName <- function(object){
 #'  object = object,
 #'  id = "necrotic_center",
 #'  distance = 200,
-#'  binwidth = getCCD(object)*4, # lower resolution by increasing binwidth for visualization
+#'  resolution = getCCD(object)*4, # lower resolution by increasing resolution for visualization
 #'  n_bins_angle = 12,
 #'  display_angle = TRUE
 #'  )
@@ -1029,7 +1029,7 @@ getSampleName <- function(object){
 getSasDf <- function(object,
                      ids,
                      distance = "dte",
-                     binwidth = recBinwidth(object),
+                     resolution = recSasRes(object),
                      core = FALSE,
                      angle_span = c(0,360),
                      n_bins_angle = 1,
@@ -1051,7 +1051,7 @@ getSasDf <- function(object,
       distance = distance,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
-      binwidth = binwidth,
+      resolution = resolution,
       variables = variables,
       dist_unit = unit,
       core = core,
@@ -1068,7 +1068,7 @@ getSasDf <- function(object,
       coords_df_sa = coords_df_sa
       )
 
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
   distance <-
     stringr::str_c(base::max(coords_df_sa$dist), unit) %>%
     as_unit(input = ., unit = unit, object = object)
@@ -1099,7 +1099,7 @@ getSasDf <- function(object,
   dist_screened <-
     base::diff(c(extract_value(min_dist),extract_value(distance)))
 
-  span <- base::as.numeric(binwidth/dist_screened) / cf
+  span <- base::as.numeric(resolution/dist_screened) / cf
 
   confuns::give_feedback(
     msg = glue::glue("`span` = {span}"),
@@ -1154,112 +1154,11 @@ getSasDf <- function(object,
 
 }
 
-
-#' @title Obtain expanded spatial annotation polygons
-#'
-#' @description Expands polygons of spatial annotations according
-#' to `distance`, `binwidth` and `n_bins_dist` input.
-#'
-#' @inherit spatialAnnotationScreening params
-#'
-#' @return List of data.frames.
-#' @export
-#'
-getSasExpansion <- function(object,
-                            id,
-                            distance = NA_integer_,
-                            binwidth = getCCD(object),
-                            n_bins_dist = NA_integer_,
-                            direction = "outwards",
-                            incl_edge = TRUE, # rename to inc_tissue_edge?
-                            verbose = NULL,
-                            ...){
-
-  deprecated(...)
-  hlpr_assign_arguments(object)
-
-  unit <- "px"
-  min_dist <- 0
-  max_dist <- as_pixel(distance, object = object)
-  binwidth <- as_pixel(binwidth, object = object)
-
-  expr_estimates <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = max_dist,
-      amccd = binwidth
-    )
-
-  nee <- base::length(expr_estimates)
-
-  area_df <- getSpatAnnOutlineDf(object, ids = id)
-
-  ee_names <- stringr::str_c("ExprEst", 2:nee, sep = "_")
-
-  ees <-
-    purrr::set_names(
-      x = expr_estimates[2:nee],
-      nm = ee_names
-    )
-
-  ee_vec <- c("Core" = 0, ees)
-
-  if(direction == "outwards"){
-
-    area_df <- dplyr::filter(area_df, border == "outer")
-
-    expansions <-
-      purrr::imap(
-        .x = ee_vec,
-        .f = ~
-          buffer_area(df = area_df[c("x", "y")], buffer = .x) %>%
-          dplyr::mutate(ee = .y)
-      )
-
-    if(base::isTRUE(incl_edge)){
-
-      ccd <- getCCD(object, unit = "px")
-
-      expansions <-
-        purrr::map(
-          .x = expansions,
-          .f = ~ include_tissue_outline(
-            coords_df = getCoordsDf(object),
-            outline_df = getTissueOutlineDf(object),
-            input_df = .x,
-            spat_ann_center = getSpatAnnCenter(object, id = id),
-            remove = FALSE,
-            sas_circles = TRUE,
-            ccd = ccd,
-            buffer = ccd*0.5
-          )
-        ) %>%
-        purrr::discard(.p = base::is.null)
-
-    }
-
-  } else if(direction == "inwards"){
-
-    area_df <- dplyr::filter(area_df, border == "outer")
-
-    expansions <-
-      purrr::imap(
-        .x = binwidth_vec,
-        .f = ~
-          buffer_area(df = area_df[c("x", "y")], buffer = -(.x)) %>%
-          dplyr::mutate(bins_circle = .y)
-      )
-
-  }
-
-  return(expansions)
-
-}
-
+#' @keywords internal
 getSasExprEst1D <- function(object,
                             id = idSA(object),
                             distance = distToEdge(object, id),
-                            binwidth = recBinwidth(object),
+                            resolution = recSasRes(object),
                             core = FALSE,
                             unit = "px"){
 
@@ -1271,7 +1170,7 @@ getSasExprEst1D <- function(object,
       dist_unit = unit,
       core = core,
       periphery = FALSE,
-      binwidth = binwidth
+      resolution = resolution
     ) %>%
     compute_expression_estimates()
 
@@ -1288,7 +1187,7 @@ getSasExprEst1D <- function(object,
 getSasExprEst2D <- function(object,
                             id,
                             distance = distToEdge(object, id),
-                            binwidth = getCCD(object),
+                            resolution = getCCD(object),
                             core = FALSE,
                             add_core_outline = FALSE,
                             add_horizon_outline = FALSE,
@@ -1305,7 +1204,7 @@ getSasExprEst2D <- function(object,
       object = object,
       id = id,
       distance = distance,
-      binwidth = binwidth,
+      resolution = resolution,
       core = core,
       unit = "px"
     )
@@ -3361,7 +3260,7 @@ setMethod(
 getStsDf <- function(object,
                      variables,
                      id = idST(object),
-                     binwidth = recBinwidth(object),
+                     resolution = recSasRes(object),
                      width = NULL,
                      unit = getDefaultUnit(object),
                      ro = c(0, 1),
@@ -3375,7 +3274,7 @@ getStsDf <- function(object,
 
   # ensure that both values are of the same unit
   distance <- getTrajectoryLength(object, id = id, unit = unit)
-  binwidth <- as_unit(binwidth, unit = unit, object = object)
+  resolution <- as_unit(resolution, unit = unit, object = object)
 
   coords_df_st <-
     getCoordsDfST(
@@ -3403,7 +3302,7 @@ getStsDf <- function(object,
 
   dist_screened <- compute_dist_screened(coords_df_st)
 
-  span <- base::as.numeric(binwidth/dist_screened) / cf
+  span <- base::as.numeric(resolution/dist_screened) / cf
 
   for(var in variables){
 
@@ -3669,6 +3568,33 @@ setMethod(
 
   }
 )
+
+
+#' @title Obtain tissue section name
+#'
+#' @description Extracts unique tissue sections from the metadata of the given object.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return A character vector of unique tissue sections, excluding "tissue_section_0".
+#'
+#' @export
+#'
+#' @seealso [`identifyTissueOutline()`]
+#'
+#' @examples
+#'
+#' tissue_sections <- getTissueSections(object)
+#'
+getTissueSections <- function(object){
+
+  out <-
+    getMetaDf(object)[["tissue_section"]] %>%
+    base::unique()
+
+  out[out != "tissue_section_0"]
+
+}
 
 #' @export
 getTrajectory <- function(object, id){

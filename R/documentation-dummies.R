@@ -96,11 +96,6 @@
 #' \code{ggplot2::geom_hline()} that control the appearance of vertical lines
 #' of the plot.
 #'
-#' @param ids Character vector or `NULL`. If character, specifies the IDs
-#' of the image annotations of interest. If numeric, the image annotations are picked by number.
-#' If `NULL`, all image annotations are included - subsequent selection with `tags` and
-#' `test` is possible.
-#'
 #' @param img_name Character value. The name of the image of interest.
 #' If `NULL`, the \link[=concept_active]{active} image is chosen by default. Either way, must
 #' be one of [`getImageNames()`].
@@ -265,6 +260,12 @@
 #' Useful if you want to apply more than one transformation on variables mapped to
 #' plotting aesthetics. Input for \code{transform_with} is applied before the
 #' respective \code{<aes>_trans} argument.
+#'
+#' @param unit Character value. Specifies the desired unit in
+#' which \link[=concept_distance_measure]{distance measures}
+#' or  \link[=concept_area_measure]{area measures} are provided.
+#' Run [`validUnitsOfLength()`] or [`validUnitsOfArea()'] for valid
+#' input options.
 #'
 #' @param use_scattermore Logical value. If `TRUE`, data points are plotted with
 #' `scattermore::geom_scattermore()` which allows quick plotting of several

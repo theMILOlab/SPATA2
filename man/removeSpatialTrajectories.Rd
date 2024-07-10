@@ -10,11 +10,6 @@ removeSpatialTrajectories(object, ids)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
 \item{id}{Character vector. The IDs of the spatial trajectories to remove.}
 }
 \value{

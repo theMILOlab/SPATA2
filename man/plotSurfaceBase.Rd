@@ -79,6 +79,12 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
+
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{

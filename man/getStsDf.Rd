@@ -8,7 +8,7 @@ getStsDf(
   object,
   variables,
   id = idST(object),
-  binwidth = recBinwidth(object),
+  resolution = recSasRes(object),
   width = NULL,
   unit = getDefaultUnit(object),
   ro = c(0, 1),
@@ -29,9 +29,15 @@ of interest.}
 \item{id}{Character value. Denotes the spatial trajectory
 of interest.}
 
-\item{binwidth}{Distance value. The width of the bins to which
+\item{resolution}{Distance value. The width of the bins to which
 the barcode-spots are assigned. Defaults to the center-center
-distance: \code{binwidth = getCCD(object)}.}
+distance: \code{resolution = getCCD(object)}.}
+
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

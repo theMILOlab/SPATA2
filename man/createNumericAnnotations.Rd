@@ -17,7 +17,7 @@ createNumericAnnotations(
   minPts = recDbscanMinPts(object),
   force1 = FALSE,
   fct_incr = 1,
-  min_size = nBarcodes(object) * 0.01,
+  min_size = nObs(object) * 0.01,
   concavity = 2,
   method_gs = NULL,
   transform_with = NULL,

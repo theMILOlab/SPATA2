@@ -45,27 +45,6 @@ Must have the character-variables
 
 If set to NULL the default gene-set data.frame will used. Run \code{?gsdf} to get more information.}
 
-\item{SCTransform}{A named list of arguments given to \code{Seurat::SCTransform()}, TRUE or FALSE.}
-
-\item{NormalizeData}{A named list of arguments given to \code{Seurat::NormalizeData()}, TRUE or FALSE.}
-
-\item{FindVariableFeatures}{A named list of arguments given to \code{Seurat::FindVariableFeatures()}, TRUE or FALSE.}
-
-\item{ScaleData}{A named list of arguments given to \code{Seurat::ScaleData()}, TRUE or FALSE.
-
-Hint: If set to TRUE or the argument-list provided does not specify the argument \code{features} input
-for argument \code{features} is set to \code{base::rownames(seurat_object)}.}
-
-\item{RunPCA}{A named list of arguments given to \code{Seurat::RunPCA()}, TRUE or FALSE.}
-
-\item{FindNeighbors}{A named list of arguments given to \code{Seurat::FindNeighbors()}, TRUE or FALSE.}
-
-\item{FindClusters}{A named list of arguments given to \code{Seurat::FindClusters()}, TRUE or FALSE.}
-
-\item{RunTSNE}{A named list of arguments given to \code{Seurat::RunTSNE()}, TRUE or FALSE.}
-
-\item{RunUMAP}{A named list of arguments given to \code{Seurat::RunUMAP()}, TRUE or FALSE.}
-
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 

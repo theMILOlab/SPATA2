@@ -9,6 +9,8 @@ whichTissueSection(object, id)
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
+
+\item{id}{Character value. The spatial annotation ID of interest.}
 }
 \value{
 Character value.
@@ -16,4 +18,20 @@ Character value.
 \description{
 Checks to which tissue section the spatial annotation
 belongs. (Only required in case of multiple tissue sections per sample.)
+}
+\examples{
+
+library(SPATA2)
+
+object <- example_data$object_lmu_mci_diet
+
+object <- identifyTissueOutline(object)
+
+plotSurface(object, color_by = "tissue_section") +
+  ggpLayerSpatAnnOutline(object, ids = c("inj1", "inj2"))
+
+whichTissueSection(object, id = "inj1")
+
+whichTissueSection(object, id = "inj2")
+
 }

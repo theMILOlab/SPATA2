@@ -24,7 +24,7 @@ ggpLayerTissueOutline(object, ...)
   smooth_with = "none",
   scale_fct = 1,
   outline_fct = c(1.75, 2.75),
-  expand_outline = recBinwidth(object, "px")/1.25,
+  expand_outline = recSgsRes(object, "px")/1.25,
   ...
 )
 

@@ -16,8 +16,8 @@ setImageDirLowres(object, dir, check = TRUE, verbose = NULL, ...)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{dir}{Character value. Directory to specific image. Should end
-with either \emph{.png}, \emph{.jpeg} or \emph{.tiff}. (Capital endings work, too.)}
+\item{dir}{Character value. The chosen directory. See details for possible
+requirements.}
 
 \item{check}{Logical value. If set to TRUE the input directory is checked
 for validity and it is checked if the file actually exists.}

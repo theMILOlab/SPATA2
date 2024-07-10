@@ -53,3 +53,4 @@ but standard is usually faster for exact searches. radius only searches for neig
 within a specified radius of the point. If there are no neighbours then nn.idx will
 contain 0 and nn.dists will contain 1.340781e+154 for that point.
 }
+\keyword{internal}

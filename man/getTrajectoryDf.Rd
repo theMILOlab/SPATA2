@@ -8,7 +8,7 @@ getTrajectoryDf(
   object,
   id,
   variables,
-  binwidth = getCCD(object),
+  resolution = getCCD(object),
   n_bins = NA_integer_,
   method_gs = NULL,
   normalize = TRUE,
@@ -29,9 +29,9 @@ of interest.}
 \item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
 of interest.}
 
-\item{binwidth}{Distance value. The width of the bins to which
+\item{resolution}{Distance value. The width of the bins to which
 the barcode-spots are assigned. Defaults to the center-center
-distance: \code{binwidth = getCCD(object)}.}
+distance: \code{resolution = getCCD(object)}.}
 
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}

@@ -1314,11 +1314,31 @@ setMethod(
         add_dbscan_variable(
           eps = eps,
           minPts = minPts,
-          name = "tissue_section"
+          name = "ts"
         ) %>%
-        dplyr::mutate(tissue_section = stringr::str_c("tissue_section", tissue_section, sep = "_"))
+        dplyr::mutate(ts = stringr::str_c("tissue_section", ts, sep = "_"))
 
-      coords_df_flt <- dplyr::filter(coords_df, tissue_section != "tissue_section_0")
+      sections_ordered <-
+        dplyr::filter(coords_df, ts != "tissue_section") %>%
+        dplyr::group_by(ts) %>%
+        dplyr::summarise(min_y = base::min(y, na.rm = TRUE)) %>%
+        dplyr::arrange(min_y) %>%
+        dplyr::pull(ts)
+
+      coords_df$tissue_section <- character(1)
+
+      for(i in seq_along(sections_ordered)){
+
+        section <- sections_ordered[i]
+
+        coords_df$tissue_section[coords_df$ts == section] <-
+          stringr::str_c("tissue_section", i, sep = "_")
+
+      }
+
+      coords_df$ts <- NULL
+
+      coords_df_flt <- dplyr::filter(coords_df, ts != "tissue_section_0")
 
       object@outline[["tissue_section"]] <-
         purrr::map_df(
@@ -1338,6 +1358,7 @@ setMethod(
           }
         )
 
+      # return coords_df! ; not coords_df_flt
       object <-
         setCoordsDf(
           object = object,

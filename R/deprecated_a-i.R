@@ -1727,7 +1727,7 @@ createSpatialTrajectoriesOld <- function(object){
 examineTrajectoryAssessment <- function(atdf,
                                         limits = c(0, 10),
                                         plot_type = "histogram",
-                                        binwidth = 0.5,
+                                        resolution = 0.5,
                                         clrp = "milo",
                                         ...){
 
@@ -1751,7 +1751,7 @@ examineTrajectoryAssessment <- function(atdf,
 
     display_add_on <- list(
       ggplot2::geom_histogram(mapping = ggplot2::aes(x = auc, fill = pattern),
-                              binwidth = binwidth, color = "black", data = atdf),
+                              resolution = resolution, color = "black", data = atdf),
       ggplot2::facet_wrap(facets = . ~ pattern, ...)
     )
 
@@ -2722,7 +2722,7 @@ ggpLayerEncirclingSAS <- function(object,
                                   id,
                                   distance = distToEdge(object, id),
                                   n_bins_dist = NA_integer_,
-                                  binwidth = recBinwidth(object),
+                                  resolution = recBinwidth(object),
                                   alpha_core = 0,
                                   fill_core = NA,
                                   line_color = "black",
@@ -2779,9 +2779,9 @@ ggpLayerSampleMask <- function(...){
 #' @inherit argument_dummy params
 #' @inherit variables_num params
 #' @inherit getSpatialTrajectory params
-#' @param binwidth Distance value. The width of the bins to which
+#' @param resolution Distance value. The width of the bins to which
 #' the barcode-spots are assigned. Defaults to the center-center
-#' distance: \code{binwidth = getCCD(object)}.
+#' distance: \code{resolution = getCCD(object)}.
 #'
 #' @return Data.frame. (See details for more.)
 #'
@@ -2791,7 +2791,7 @@ ggpLayerSampleMask <- function(...){
 getTrajectoryDf <- function(object,
                             id,
                             variables,
-                            binwidth = getCCD(object),
+                            resolution = getCCD(object),
                             n_bins = NA_integer_,
                             method_gs = NULL,
                             normalize = TRUE,
@@ -2805,9 +2805,9 @@ getTrajectoryDf <- function(object,
 
   hlpr_assign_arguments(object)
 
-  binwidth <- as_pixel(input = binwidth, object = object, as_numeric = TRUE)
+  resolution <- as_pixel(input = resolution, object = object, as_numeric = TRUE)
 
-  check_binwidth_n_bins(n_bins = n_bins, binwidth = binwidth, object = object)
+  check_binwidth_n_bins(n_bins = n_bins, resolution = resolution, object = object)
 
   confuns::are_values(c("normalize"), mode = "logical")
 
@@ -2850,7 +2850,7 @@ getTrajectoryDf <- function(object,
     out <-
       summarize_projection_df(
         projection_df = out,
-        binwidth = binwidth,
+        resolution = resolution,
         n_bins = n_bins,
         summarize_with = summarize_with
       ) %>%

@@ -317,7 +317,9 @@ distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object))
 
   section <- whichTissueSection(object, id)
 
-  coords_df <- getCoordsDf(object)
+  coords_df <-
+    joinWithVariables(object, variables = "tissue_section") %>%
+    dplyr::filter(tissue_section == {{section}})
 
   spat_ann_mtr <-
     getSpatAnnOutlineDf(object, id = id) %>%

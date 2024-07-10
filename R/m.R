@@ -340,6 +340,50 @@ make_sf_polygon <- function(poly){
 
 # map ---------------------------------------------------------------------
 
+#' @title Map observations to tissue sections
+#'
+#' @description Maps observations in a data frame to their respective tissue sections
+#' based on the results of [`identifyTissueOutline()`].
+#'
+#' @inherit argument_dummy params
+#' @param coords_df A data frame containing coordinates to be mapped. Must contain columns specified in `cvars`
+#' and a column named *variables*.
+#' @param cvars A character vector of length 2 specifying the column names for x and y coordinates in `coords_df`. Default is `c("x", "y")`.
+#' @return A data frame with the input coordinates and an additional column `tissue_section` indicating the mapped tissue section.
+#' @export
+map_to_tissue_section <- function(object, coords_df, cvars = c("x", "y")){
+
+  coords_df$tissue_section <- "tissue_section_0"
+
+  tissue_sections <- getTissueSections(object)
+
+  to_df <- getTissueOutlineDf(object)
+
+  xvar <- cvars[1]
+  yvar <- cvars[2]
+
+  for(ts in tissue_sections){
+
+    outline_df <- dplyr::filter(to_df, section == {{ts}})
+
+    inside <-
+      identify_obs_in_polygon(
+        coords_df = coords_df,
+        polygon_df = outline_df,
+        strictly = FALSE,
+        cvars = cvars,
+        opt = "keep"
+      )[["barcodes"]]
+
+    coords_df$tissue_section[coords_df$barcodes %in% inside] <- ts
+
+  }
+
+  return(coords_df)
+
+}
+
+
 #' @title Spatial annotation and barcode intersection
 #'
 #' @description Creates a data.frame that maps the tags of spatial annotations
@@ -431,16 +475,6 @@ mapSpatialAnnotationTags <- function(object,
   }
 
   return(spata_df)
-
-}
-
-#' @rdname mapSpatialAnnotationTags
-#' @export
-mapImageAnnotationTags <- function(...){
-
-  deprecated(fn = TRUE)
-
-  mapSpatialAnnotationTags(...)
 
 }
 

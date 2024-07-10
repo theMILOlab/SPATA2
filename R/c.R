@@ -280,17 +280,19 @@ compute_area <- function(poly){
 }
 
 
+#' @keywords internal
+compute_avg_dp_distance <- function(object, vars = c("x_orig", "y_orig"), coords_df = NULL){
 
-compute_avg_dp_distance <- function(object, vars = c("x_orig", "y_orig")){
+  if(base::is.null(coords_df)){ coords_df <- getCoordsDf(object)}
 
-  getCoordsDf(object) %>%
-    dplyr::select(dplyr::all_of(vars)) %>%
+    dplyr::select(coords_df, dplyr::all_of(vars)) %>%
     base::as.matrix() %>%
     FNN::knn.dist(data = ., k = 1) %>%
     base::mean()
 
 }
 
+#' @keywords internal
 compute_avg_vertex_distance <- function(polygon_df) {
 
   # ensure the polygon is closed (first and last point are the same)

@@ -62,11 +62,6 @@ objects of classes for which a method has been defined.}
 
 \item{variables}{Character vector. All numeric variables hat are supposed to be plotted.}
 
-\item{ids}{Character vector or \code{NULL}. If character, specifies the IDs
-of the image annotations of interest. If numeric, the image annotations are picked by number.
-If \code{NULL}, all image annotations are included - subsequent selection with \code{tags} and
-\code{test} is possible.}
-
 \item{distance}{A numeric vector of distances to the annotation's edge.}
 
 \item{binwidth}{Distance value. The width of the distance bins to which
@@ -87,6 +82,12 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{se_fill}{The fill color for the smoothing line's standard error area (default: "lightgrey").}
+
+\item{unit}{Character value. Specifies the desired unit in
+which \link[=concept_distance_measure]{distance measures}
+or  \link[=concept_area_measure]{area measures} are provided.
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+input options.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}

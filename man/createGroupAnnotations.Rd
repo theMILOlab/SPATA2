@@ -15,7 +15,7 @@ createGroupAnnotations(
   inner_borders = TRUE,
   eps = recDbscanEps(object),
   minPts = recDbscanMinPts(object),
-  min_size = nBarcodes(object) * 0.01,
+  min_size = nObs(object) * 0.01,
   force1 = FALSE,
   concavity = 2,
   overwrite = FALSE,
