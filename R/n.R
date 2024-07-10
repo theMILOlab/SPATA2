@@ -1,24 +1,6 @@
 
-#' @title Number of barcodes
-#'
-#' @description Returns the number of observations in the sample.
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Numeric value.
-#'
-#' @export
-nBarcodes <- function(object){
-
-  getCoordsDf(object) %>%
-    base::nrow()
-
-}
-
-#' @rdname nBarcodes
-#' @export
-nObs <- function(object){ nBarcodes(object) }
-
+#' @keywords internal
+nBarcodes <- function(object){ deprecated(fn = T); nObs(object)}
 
 #' @keywords internal
 #' @export
@@ -153,6 +135,24 @@ normalizeCounts <- function(object,
   }
 
   returnSpataObject(object)
+
+}
+
+
+#' @title Number of observations
+#'
+#' @description Returns the number of \link[=concept_observations]{observations}
+#' in the sample.
+#'
+#' @inherit argument_dummy params
+#'
+#' @return Numeric value.
+#'
+#' @export
+nObs <- function(object){
+
+  getCoordsDf(object) %>%
+    base::nrow()
 
 }
 

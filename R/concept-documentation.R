@@ -446,13 +446,13 @@ NULL
 #'
 #' **Note:** In previous versions of SPATA2 we used the term features and feature
 #' data.frame and the slot @@fdata to refer to variables that were not related
-#' to molecular counts such as gene expression or gene sets. This resulted in
+#' to molecular counts like gene expression or gene sets. This resulted in
 #' confusion as many other platforms such as Seurat use the term features in general
-#' to refer to what we refer to as variables. Therefore, the slot has been renamed
+#' to refer to what we refer to as variables. Therefore, the slot @@fdata has been renamed
 #' to @@meta_obs and the corresponding data.frame has been renamed to meta data.frame,
 #' as obtained by [`getMetaDf()`].
 #'
-#' Next to the obligatory variable *barcodes* which uniquely identifies each observation
+#' Next to the obligatory variable *barcodes* - which uniquely identifies each observation -
 #' different kind of variables exist in the [`SPATA2`] object.
 #'
 #' @section Numeric variables:

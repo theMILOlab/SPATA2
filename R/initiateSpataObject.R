@@ -619,7 +619,8 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @title Initiate `SPATA2` object from platform Visium
 #'
 #' @description Wrapper function around the necessary content to create a
-#' `SPATA2` object from standardized output of the Visium platform.
+#' `SPATA2` object from standardized output of the Visium platform. See details
+#' section for more.
 #'
 #' @param directory_visium Character value. Directory to a visium folder. Should contain
 #' the subdirectory *'.../spatial'*.
@@ -629,6 +630,26 @@ initiateSpataObjectSlideSeqV1 <- function(sample_name,
 #' @inherit createSpatialDataVisium params
 #'
 #' @seealso [`createSpatialDataVisium()`]
+#'
+#' @details
+#' This function expects `directory_visium` to lead to a folder in which the
+#' following subdirectories exist:
+#'
+#'  \itemize{
+#'   \item{*spatial/*}{The folder in which image and coordinates are located.}
+#'   \item{*filtered_feature_bc_matrix.h5*}{The filtered count matrix.}
+#'   \item{*raw_feature_bc_matrix.h5*}{The filtered count matrix.}
+#'   }
+#'
+#' Depending on the input for `mtr` only the requested file has to exist. Given
+#' the content and subsequent filenames, the function differentiates between
+#'
+#'  \itemize{
+#'   \item{VisiumSmall}{Visium data set with capture area of 6.5mm x 6.5mm.}
+#'   \item{VisiumLarge}{Visium data set with capture area of 11mm x 11m. }
+#'   }
+#'
+#' In any case, the output is an object of class `SPATA2`.
 #'
 #' @export
 #'

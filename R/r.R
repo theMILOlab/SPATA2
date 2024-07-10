@@ -102,11 +102,7 @@ read_coords_merfish <- function(dir_coords){
       readr::read_csv(file = dir_coords, show_col_types = FALSE, col_names = TRUE)
 
     }) %>%
-    dplyr::mutate(
-      barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_"),
-      exclude = FALSE,
-      exclude_reason = ""
-    ) %>%
+    dplyr::mutate(barcodes = stringr::str_c("cell", 1:base::nrow(.), sep = "_")) %>%
     dplyr::select(
       barcodes, x_orig = center_x, y_orig = center_y,
       dplyr::everything(),
@@ -128,7 +124,6 @@ read_coords_slide_seq_v1 <- function(dir_coords){
 
     }) %>%
     magrittr::set_colnames(value = c("barcodes", "x_orig", "y_orig")) %>%
-    dplyr::mutate(exclude = FALSE, exclude_reason = "") %>%
     tibble::as_tibble()
 
 }
@@ -148,12 +143,9 @@ read_coords_visium <- function(dir_coords){
       }) %>%
       tibble::as_tibble() %>%
       magrittr::set_colnames(value = c("barcodes", "tissue", "row", "col", "imagerow", "imagecol")) %>%
-      dplyr::mutate(
-        exclude = (tissue != 1),
-        exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
-      ) %>%
+      dplyr::filter(tissue == 1) %>%
       dplyr::rename(x_orig = imagecol, y_orig = imagerow) %>%
-      dplyr::select(barcodes, x_orig, y_orig, row, col, exclude, exclude_reason)
+      dplyr::select(barcodes, x_orig, y_orig, row, col)
 
     # space ranger v2
   } else if(stringr::str_detect(dir_coords, pattern = "tissue_positions.csv")){
@@ -161,12 +153,9 @@ read_coords_visium <- function(dir_coords){
     coords_df <-
       readr::read_csv(file = dir_coords, col_names = TRUE, show_col_types = FALSE) %>%
       tibble::as_tibble() %>%
-      dplyr::mutate(
-        exclude = (in_tissue != 1),
-        exclude_reason = dplyr::if_else(exclude, true = "no_tissue", false = "")
-      ) %>%
+      dplyr::filter(in_tissue = 1) %>%
       dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres, row = array_row, col = array_col) %>%
-      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col, exclude, exclude_reason)
+      dplyr::select(barcodes = barcode, x_orig, y_orig, row, col)
 
   }
 
@@ -182,7 +171,7 @@ read_coords_xenium <- function(dir_coords){
     utils::read.csv(dir_coords) %>%
     tibble::as_tibble() %>%
     dplyr::select(barcodes = cell_id, x_orig = x_centroid, y_orig = y_centroid, cell_area) %>%
-    dplyr::mutate(exclude = FALSE, exclude_reason = "", cell_area = units::set_units(cell_area, value = "um2"))
+    dplyr::mutate(cell_area = units::set_units(cell_area, value = "um2"))
 
   return(coords_df)
 
@@ -1429,29 +1418,50 @@ removeSpatialAnnotations <- function(object, ids){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @seealso [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
+#' @seealso [`identifyTissueOutline()`], [`identifySpatialOutliers()`], [`containsSpatialOutliers()`]
 #'
 #' @export
 #'
-#' @inheritSection tutorial_hint_dummy Tutorials
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' # spatial outliers have not been labeled histologically (= NA)
+#' plotSurface(object, color_by = "histology")
+#'
+#' object <- identifyTissueOutline(object) # step 1
+#'
+#' plotSurface(object, color_by = "tissue_section")
+#'
+#' object <- identifySpatialOutliers(object) # step 2
+#'
+#' plotSurface(object, color_by = "sp_outlier")
+#'
+#' nObs(object) # before removal
+#'
+#' object <- removeSpatialOutliers(object) # step 3
+#'
+#' plotSurface(object, color_by = "histology")
+#'
+#' nObs(object) # after removal
+#'
 #'
 removeSpatialOutliers <- function(object, verbose = NULL){
 
   hlpr_assign_arguments(object)
 
-  containsSectionVariable(object, error = TRUE)
-
   if(containsSpatialOutliers(object, fdb_fn = "message")){
 
     bcs_keep <-
-      getCoordsDf(object, as_is = TRUE) %>%
-      dplyr::filter(section != "outlier") %>%
+      getMetaDf(object) %>%
+      dplyr::filter(!sp_outlier) %>%
       dplyr::pull(barcodes)
 
-    n_rm <-
-      getCoordsDf(object, as_is = TRUE) %>%
-      dplyr::filter(section == "outlier") %>%
-      base::nrow()
+    n_rm <- nObs(object) - length(bcs_keep)
 
     confuns::give_feedback(
       msg = glue::glue("Spatial outliers to remove: {n_rm}."),

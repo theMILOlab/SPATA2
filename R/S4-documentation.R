@@ -151,7 +151,8 @@ SpatialMethod <- setClass(Class = "SpatialMethod",
 #' @slot annotations list. List of objects of class [`SpatialAnnotation`].
 #' @slot coordinates data.frame. Data.frame that stores information about identified
 #' or known entities located on the imaged tissue, such as cells or capture spots.
-#' @slot images list. List of objects of class [`HistoImage`].
+#' @slot images list. List of objects of class [`HistoImage`] - the container objects
+#' for images.
 #' @slot method SpatialMethod. Object of class [`SpatialMethod`].
 #' @slot meta list. List for meta data regarding the imaged tissue portion.
 #' @slot misc list. A flexible list for miscellaneous input.

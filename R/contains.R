@@ -589,50 +589,34 @@ containsSpatialData <- function(object, error = FALSE){
 #'
 #' @inherit argument_dummy params
 #'
-#' @seealso [`excludeSpatialOutliers()`] to exclude spatial outliers from further
+#' @seealso [`removeSpatialOutliers()`] to exclude spatial outliers from further
 #' analysis.
 #'
 #' @return Logical value.
 #' @export
 #'
-setGeneric(name = "containsSpatialOutliers", def = function(object, ...){
+containsSpatialOutliers <- function(object, ...){
 
-  standardGeneric(f = "containsSpatialOutliers")
+  meta_df <- getMetaDf(object)
+  n_outlier <- base::sum(meta_df[["sp_outlier"]])
 
-})
+  out <- n_outlier >= 1
 
-#' @rdname containsSpatialOutliers
-#' @export
-setMethod(
-  f = "containsSpatialOutliers",
-  signature = "ANY",
-  definition = function(object, ...){
+  fdb_fn <- list(...)[["fdb_fn"]]
 
-    containsSectionVariable(object, error = TRUE)
+  if(base::isFALSE(out) & base::is.character(fdb_fn)){
 
-    n_outlier <-
-      getCoordsDf(object) %>%
-      dplyr::filter(section == "outlier") %>%
-      base::nrow()
-
-    out <- n_outlier >= 1
-
-    fdb_fn <- list(...)[["fdb_fn"]]
-
-    if(base::isFALSE(out) & base::is.character(fdb_fn)){
-
-      confuns::give_feedback(
-        msg = "No spatial outliers in this object.",
-        fdb.fn = fdb_fn,
-        with.time = FALSE
-      )
-
-    }
-
-    return(out)
+    confuns::give_feedback(
+      msg = "No spatial outliers in this object.",
+      fdb.fn = fdb_fn,
+      with.time = FALSE
+    )
 
   }
-)
+
+  return(out)
+
+}
 
 
 #' @title Check availability of spots

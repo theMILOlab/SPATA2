@@ -23,12 +23,35 @@ Removes data points that were identified as spatial outliers
 and all their related data. If no spatial outliers exist, the input object
 is returned as is.
 }
-\section{Tutorials}{
+\examples{
 
-Extensive tutorials for how to use this function can be found on our website
-\url{https://themilolab.github.io/SPATA2/} .
+library(SPATA2)
+
+data("example_data")
+
+object <- example_data$object_UKF269T_diet
+
+# spatial outliers have not been labeled histologically (= NA)
+plotSurface(object, color_by = "histology")
+
+object <- identifyTissueOutline(object) # step 1
+
+plotSurface(object, color_by = "tissue_section")
+
+object <- identifySpatialOutliers(object) # step 2
+
+plotSurface(object, color_by = "sp_outlier")
+
+nObs(object) # before removal
+
+object <- removeSpatialOutliers(object) # step 3
+
+plotSurface(object, color_by = "histology")
+
+nObs(object) # after removal
+
+
 }
-
 \seealso{
-\code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}, \code{\link[=containsSpatialOutliers]{containsSpatialOutliers()}}
+\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}, \code{\link[=containsSpatialOutliers]{containsSpatialOutliers()}}
 }

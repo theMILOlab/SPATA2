@@ -263,7 +263,38 @@ check_coords_df <- function(coords_df){
 
 }
 
+#' @keywords internal
+check_cran_packages <- function(pkgs_req){
 
+  installed_pkgs <-
+    utils::installed.packages() %>%
+    base::rownames()
+
+  pkgs_missing <- pkgs_req[!pkgs_req %in% installed_pkgs]
+
+  if(base::length(pkgs_missing) >= 1){
+
+    ref1 <- confuns::adapt_reference(pkgs_missing, "Package")
+    ref2 <- confuns::adapt_reference(pkgs_missing, "is", "are")
+    ref3 <- confuns::adapt_reference(pkgs_missing, "it", "them")
+
+    msg <- glue::glue("{ref1} {ref2} missing. Do you want to install {ref3} from CRAN?")
+
+    install <- utils::askYesNo(msg = msg)
+
+    if(base::isTRUE(install)){
+
+      utils::install.packages(pkgs = pkgs_missing)
+
+    } else {
+
+      stop("Please install required packages manually.")
+
+    }
+
+  }
+
+}
 # check_d -----------------------------------------------------------------
 
 #' @title Check de data.frame

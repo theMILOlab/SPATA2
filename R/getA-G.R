@@ -732,7 +732,6 @@ setMethod(
   signature = "SpatialData",
   definition = function(object,
                         img_name = activeImage(object),
-                        exclude = TRUE,
                         scale = TRUE,
                         wh = FALSE,
                         as_is = FALSE,
@@ -745,14 +744,6 @@ setMethod(
       out <- coords_df
 
     } else {
-
-      if("exclude" %in% base::colnames(coords_df) & base::isTRUE(exclude)){
-
-        coords_df <-
-          dplyr::filter(coords_df, !exclude) %>%
-          dplyr::select(-dplyr::any_of(c("exclude", "exclude_reason")))
-
-      }
 
       if(base::isTRUE(scale)){
 

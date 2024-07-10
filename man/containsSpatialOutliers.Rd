@@ -2,12 +2,9 @@
 % Please edit documentation in R/contains.R
 \name{containsSpatialOutliers}
 \alias{containsSpatialOutliers}
-\alias{containsSpatialOutliers,ANY-method}
 \title{Check if spatial outliers exist}
 \usage{
 containsSpatialOutliers(object, ...)
-
-\S4method{containsSpatialOutliers}{ANY}(object, ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -23,6 +20,6 @@ Checks if \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}} has 
 spatial outliers.
 }
 \seealso{
-\code{\link[=excludeSpatialOutliers]{excludeSpatialOutliers()}} to exclude spatial outliers from further
+\code{\link[=removeSpatialOutliers]{removeSpatialOutliers()}} to exclude spatial outliers from further
 analysis.
 }

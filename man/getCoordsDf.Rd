@@ -19,7 +19,6 @@ getCoordsDf(object, ...)
 \S4method{getCoordsDf}{SpatialData}(
   object,
   img_name = activeImage(object),
-  exclude = TRUE,
   scale = TRUE,
   wh = FALSE,
   as_is = FALSE,

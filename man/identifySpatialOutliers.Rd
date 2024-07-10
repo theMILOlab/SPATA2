@@ -3,14 +3,13 @@
 \name{identifySpatialOutliers}
 \alias{identifySpatialOutliers}
 \alias{identifySpatialOutliers,SPATA2-method}
-\alias{identifySpatialOutliers,SpatialData-method}
 \title{Identify spatial outliers}
 \usage{
 identifySpatialOutliers(object, ...)
 
 \S4method{identifySpatialOutliers}{SPATA2}(
   object,
-  method,
+  method = "obs",
   img_name = activeImage(object),
   buffer = 0,
   eps = recDbscanEps(object),
@@ -19,18 +18,6 @@ identifySpatialOutliers(object, ...)
   test = "any",
   verbose = NULL
 )
-
-\S4method{identifySpatialOutliers}{SpatialData}(
-  object,
-  method = c("outline", "dbscan"),
-  img_name = activeImage(object),
-  buffer = 0,
-  eps = NULL,
-  minPts = 3,
-  min_section = 1,
-  test = "any",
-  verbose = TRUE
-)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
@@ -38,22 +25,22 @@ objects of classes for which a method has been defined.}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
 
-\item{method}{Character vector. The method(s) to use. A combination of \emph{'outline'}
-and/or \emph{'dbscan'}. See details for more.}
+\item{method}{Character vector. The method(s) to use. A combination of \emph{'obs'}
+and/or \emph{'image'}. Defaults to \emph{'obs'}. See details for more.}
 
 \item{img_name}{Character value. The name of the image whose tissue outline
-is used if \code{method} contains \emph{'outline'}.}
+is used if \code{method} contains \emph{'image'}.}
 
 \item{buffer}{Numeric value. Expands the tissue outline to include observations
 that lie on the edge of the outline and are mistakenly removed.}
 
 \item{eps, minPts}{Given to the corresponding arguments of
-\code{\link[dbscan:dbscan]{dbscan::dbscan()}} if \code{method} contains \emph{'dbscan'}.}
+\code{\link[dbscan:dbscan]{dbscan::dbscan()}} if \code{method} contains \emph{'obs'}.}
 
 \item{min_section}{Numeric value. The minimum number of observations a spatial cluster must
 contain such that the whole cluster is identified as a contiguous tissue section.}
 
-\item{test}{Character value. Only required if \code{method = c('dbscan', 'outline')}. If
+\item{test}{Character value. Only required if \code{method = c('obs', 'image')}. If
 \emph{'any'}, spots are labeled as outliers if at least one method identifies them
 as outliers. If \emph{'all'}, spots are labeled as outliers if both methods identify
 them as outliers.}
@@ -67,54 +54,24 @@ the computational progress will be printed.
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Assigns data points to the tissue sections or
-fragments they are located on or labels them as spatial outliers and saves
-the results in a new variable of the coordinates data.frame called \emph{section}.
-See details for more.
+Labels data points as spatial outliers depending on certain
+criteria with a new meta variable called \emph{sp_outlier}. See details for more.
+
+Requires the results of \code{\link[=identifyTissueOutline]{identifyTissueOutline()}}.
 }
 \details{
-This function categorizes the data points of the object based on their spatial
-proximity, grouping those that are close enough to be deemed part of a single
-contiguous tissue section. Data points that are isolated and situated at a
-significant distance from others are identified as spatial outliers.
+In case of \code{method = 'obs'}, the results from \code{identifyTissueOutline(object, method = 'obs')}
+are directly transferred to the new meta feature \emph{sp_outlier}, which declares
+whether an observation is a spatial outlier or not.
 
-The resulting classifications are saved in a \emph{section} variable within the
-object's coordinates data.frame.
-
-This function identifies spatial outliers using a combination of two methods:
-
-Method \emph{image}:
-The \emph{image} method involves the image based tissue outline from the
-\code{identifyTissueOutline()} function. This function has created polygons that
+In case of \code{method = 'image'}, the image based tissue outline from the
+\code{identifyTissueOutline()} function is used. This function has created polygons that
 outline the tissue or tissue sections identified in the image. For each data point,
 the function checks which polygon it falls within and assigns it to the corresponding
 group. If an observation does not fall within any of the tissue polygons, it is
-considered a spatial outlier. This method requires an image in the \code{SPATA2} object.
+considered a spatial outlier.
 
-(This method is particularly useful if your sample contains artefact spots that
-falsely obtained some reads. This might happen, for instance, if fluid transgresses
-the border of the tissue carrying mRNA transcripts to adjacent spots that are
-actually not covered by the tissue.)
-
-Method \emph{dbscan}:
-The \emph{dbscan} method applies the DBSCAN algorithm to the data points. Please
-refer to the documentation of \code{dbscan::dbscan()} for a more detailed explanation.
-The \code{eps} and \code{minPts} arguments are passed directly to the
-corresponding arguments of the DBSCAN function. Data points that are not assigned
-to any spatial cluster, indicated by being assigned to cluster 0, are considered
-spatial outliers.
-
-For objects derived from the Visium platform with a fixed center to center
-distance, we recommend to set \code{eps = getCCD(object, unit = "px")*1.25}
-and \code{minPts = 3} which has worked well for us. For objects derived
-from platforms that do notrely on a fixed grid of data points (MERFISH, SlideSeq, etc.)
-we recommend the average minimal distance between the data points times 10 for
-\code{eps} and \code{minPts = 2}. The function
-defaults to these recommendations using \code{\link[=recDbscanEps]{recDbscanEps()}} and \code{\link[=recDbscanMinPts]{recDbscanMinPts()}}
-by default. This can, of course, be overwritten manually by the user by
-specifying the parameters otherwise!
-
-If \code{method = c('image', 'dbscan')}, both algorithms are applied. Whether a
+If \code{method = c('obs', 'image')}, the results of both methods are used Whether a
 data point is considered a spatial outlier depends on the \code{test} argument:
 
 \itemize{
@@ -124,15 +81,10 @@ either of the two tests classifies it as an outlier.
 only if both tests classify it as an outlier.
 }
 
-If \code{method = 'image'} or \code{method = 'dbscan'} only one of the two
-methods is applied. Note that for \code{method = 'image'} the results from the
-image processing pipeline must be available.
-
-The results can be visualized using \code{plotSurface(object, color_by = "section")}.
+The results can be visualized using \code{plotSurface(object, color_by = "sp_outlier")}.
 In case of bad results the function can be run over and over again with
 changing parameters as the results are simply overwritten.
 }
 \seealso{
-\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, \code{\link[=runImagePipeline]{runImagePipeline()}},
-\code{\link[=mergeTissueSections]{mergeTissueSections()}}
+\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}, \code{\link[=mergeTissueSections]{mergeTissueSections()}}
 }

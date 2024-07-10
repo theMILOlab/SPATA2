@@ -824,10 +824,6 @@ simulate_complete_coords_sa <- function(object, id, distance){
 
   if(containsMethod(object, method_name = "Visium")){
 
-    pixel_df <-
-      getPixelDf(object) %>%
-      dplyr::mutate(barcodes = pixel, x = width, y = height)
-
     sa_range <-
       getSpatAnnRange(object, id = id) %>%
       map(.f = function(r){
@@ -842,8 +838,6 @@ simulate_complete_coords_sa <- function(object, id, distance){
     tot_dist <-
       as_pixel(distance, object = object, add_attr = F) %>%
       ceiling()
-
-    tot_dist <- tot_dist
 
     ccd <- getCCD(object, unit = "px")
 
@@ -3075,7 +3069,7 @@ subsetByBarcodes <- function(object, barcodes, verbose = NULL){
 
 
 
-  n_bcsp <- nBarcodes(object)
+  n_bcsp <- nObs(object)
 
   confuns::give_feedback(
     msg = glue::glue("{n_bcsp} barcodes remaining."),
