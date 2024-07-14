@@ -22,14 +22,14 @@ getSasBinAreas(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
 \item{use_outline}{Logical value. If \code{TRUE}, uses the outline variable
 set with \code{setOutlineVarName()} or if none is set DBSCAN to identify the

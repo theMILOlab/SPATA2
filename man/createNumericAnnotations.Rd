@@ -34,7 +34,7 @@ objects of classes for which a method has been defined.}
 
 \item{threshold}{Character value. Determines the method and/or the threshold
 by which the data points are filtered. Valid input options are \emph{'kmeans_high'},
-\emph{'kmeans_low'} and \emph{operator.value} combinations such as \emph{'>0.75'} or \emph{'<=0.5'}.
+\emph{'kmeans_low'} and operator-value combinations such as \emph{'>0.75'} or \emph{'<=0.5'}.
 See details for more.}
 
 \item{id}{Character value. The ID of the spatial annotation. If \code{NULL},

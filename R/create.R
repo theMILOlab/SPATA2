@@ -2293,6 +2293,158 @@ createImageAnnotations <- function(object, ...){
 }
 
 
+# createM -----------------------------------------------------------------
+
+#' @title Add a molecular assay
+#'
+#' @description Creates and adds an object of class [`MolecularAssay`]
+#' to the [`SPATA2`] object.
+#'
+#' @param active_mtr Character value. The name of the matrix chosen as
+#' the \link[=concept_active]{active} matrix. If `mtr_proc` is an empty
+#' list, this value defaults to *'counts'*
+#'
+#' @param mtr_counts A count matrix. Column names correspond to the barcodes of
+#' the \link[=concept_observations]{observations}.
+#' Rownames correspond to the names of the molecular features (genes, proteins, metabolites etc.).
+#' @param mtr_proc A list of processed matrices set in slot @@mtr_proc.
+#' @param ... Gives access to set remaining slots of the [`MolecularAssay`]
+#' object.
+#'
+#' @inherit initiateSpataObject params
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @details
+#' Creating an assay only with processed matrices (`mtr_proc`) while not specifying
+#' `mtr_counts` is possible. In that case, `mtr_counts` is populated with an empty
+#' matrix that contains all unique molecule names found in the matrices as rownames
+#' and barcodes as colnames.
+#'
+#' @export
+#'
+createMolecularAssay <- function(object,
+                                 omic,
+                                 active_mtr = NULL,
+                                 mtr_counts = Matrix::Matrix(),
+                                 mtr_proc = list(),
+                                 overwrite = FALSE,
+                                 activate = FALSE,
+                                 verbose = NULL,
+                                 ...){
+
+  hlpr_assign_arguments(object)
+
+  # check validity
+  confuns::check_none_of(
+    input = omic,
+    against = getAssayNames(object),
+    ref.against = "existing assays",
+    overwrite = overwrite
+  )
+
+  # check validity
+  if(!purrr::is_empty(mtr_proc)){
+
+    confuns::is_named(input = mtr_proc)
+    mtr_proc <- confuns::discard_unnamed(input = mtr_proc)
+
+    for(i in base::seq_along(mtr_proc)){
+
+      if(!base::is.matrix(mtr_proc[[i]]) & !methods::is(mtr_proc[[i]], class2 = "Matrix")){
+
+        list_slot <- base::names(mtr_proc)[i]
+
+        stop(glue::glue("Slot '{list_slot}' of `mtr_proc` does not contain a matrix."))
+
+      }
+
+    }
+
+  }
+
+  if(base::identical(x = mtr_counts, y = Matrix::Matrix()) &
+     !base::identical(x = mtr_proc, y = list())){
+
+    confuns::give_feedback(
+      msg = "Populating empty count matrix with barcodes and molecule names from `mtr_proc`.",
+      verbose = verbose
+    )
+
+    barcodes <-
+      purrr::map(mtr_proc, .f = base::colnames) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    molecule_names <-
+      purrr::map(mtr_proc, .f = base::rownames) %>%
+      purrr::flatten_chr() %>%
+      base::unique()
+
+    mtr_counts <-
+      Matrix::Matrix(
+        data = 0L ,
+        nrow = base::length(molecule_names),
+        ncol = base::length(barcodes)
+        ) %>%
+      magrittr::set_rownames(molecule_names) %>%
+      magrittr::set_colnames(barcodes)
+
+  }
+
+  if(base::is.null(active_mtr)){
+
+    active_mtr <- "counts"
+
+  } else {
+
+    confuns::check_one_of(
+      input = active_mtr,
+      against = c("counts", base::names(mtr_proc))
+    )
+
+  }
+
+  ma <-
+    MolecularAssay(
+      mtr_counts = mtr_counts,
+      mtr_proc = mtr_proc,
+      omic = omic,
+      ...
+    )
+
+  object <- setAssay(object, assay = ma)
+
+  if(base::isTRUE(activate)){
+
+    object <-
+      activateAssay(
+        object = object,
+        assay_name = omic,
+        verbose = verbose
+      )
+
+  }
+
+  if(purrr::is_empty(active_mtr)){
+
+    warning("No active matrix specified. Define with `activateMatrix()`.")
+
+  } else {
+
+    object <-
+      activateMatrix(
+        object = object,
+        mtr_name = active_mtr,
+        assay_name = omic,
+        verbose = verbose
+      )
+
+  }
+
+  returnSpataObject(object)
+
+}
 
 # createN -----------------------------------------------------------------
 
@@ -2304,7 +2456,7 @@ createImageAnnotations <- function(object, ...){
 #'
 #' @param threshold Character value. Determines the method and/or the threshold
 #' by which the data points are filtered. Valid input options are *'kmeans_high'*,
-#' *'kmeans_low'* and *operator.value* combinations such as *'>0.75'* or *'<=0.5'*.
+#' *'kmeans_low'* and operator-value combinations such as *'>0.75'* or *'<=0.5'*.
 #' See details for more.
 #' @param tags_expand Logical value. If `TRUE`, the tags with which the image
 #' annotations are tagged are expanded by the unsuffixed `id`, the `variable`,

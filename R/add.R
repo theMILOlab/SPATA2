@@ -6,10 +6,10 @@ add_benchmarking_variables <- function(df){
   dplyr::mutate(
     .data = df,
     noise_perc =
-      str_extract_after(variables, pattern = "\\.NP", match = "\\d*") %>%
+      confuns::str_extract_after(variables, pattern = "\\.NP", match = "\\d*") %>%
       base::as.numeric(),
     noise_type_id =
-      str_extract_after(variables, pattern = "\\.NT", match = "[A-Z]*"),
+      confuns::str_extract_after(variables, pattern = "\\.NT", match = "[A-Z]*"),
     noise_type =
       dplyr::case_when(
         noise_type_id == "ED" ~ "Equally Distributed",
@@ -18,7 +18,7 @@ add_benchmarking_variables <- function(df){
         noise_type_id == "CB" ~ "Combined",
       ),
     simul_model_id =
-      str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"),
+      confuns::str_extract_after(variables, pattern = "SE\\.", match = "[A-Z]*"),
     simul_index = str_extract(variables, pattern = "\\d*$"),
     model_sim = case_when(
       simul_model_id == "LINDESC" ~ "linear_descending",
@@ -31,7 +31,7 @@ add_benchmarking_variables <- function(df){
   ) %>%
     dplyr::select(dplyr::any_of(c("variables", "models", "model_sim")), dplyr::everything()) %>%
     dplyr::mutate(
-      simul_model_id = factor(simul_model_id, levels = c("LINDESC", "EARLYDESC", "INSTDESC", "GRADUALPEAK", "MEDIUMPEAK", "SMALLPEAK")),
+      #simul_model_id = factor(simul_model_id, levels = c("LINDESC", "EARLYDESC", "INSTDESC", "GRADUALPEAK", "MEDIUMPEAK", "SMALLPEAK")),
       noise_type = factor(noise_type, levels = c("Equally Distributed", "Equally Punctuated", "Focally Punctuated", "Combined"))
     )
 
@@ -960,114 +960,6 @@ setMethod(
 
 # addM --------------------------------------------------------------------
 
-#' @title Add a molecular assay
-#'
-#' @description Creates and adds an object of class [`MolecularAssay`]
-#' to the [`SPATA2`] object.
-#'
-#' @param active_mtr Character value. The name of the matrix chosen as
-#' the \link[=concept_active]{active} matrix. If `mtr_proc` is an empty
-#' list, this value defaults to *'counts'*
-#'
-#' @param mtr_proc A list of processed matrices set in slot @@mtr_proc.
-#' @param ... Gives access to set remaining slots of the [`MolecularAssay`]
-#' object.
-#'
-#' @inherit initiateSpataObject params
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-addMolecularAssay <- function(object,
-                              omic,
-                              active_mtr = NULL,
-                              count_mtr = Matrix::Matrix(),
-                              mtr_proc = list(),
-                              overwrite = FALSE,
-                              ...){
-
-  # check validity
-  confuns::check_none_of(
-    input = omic,
-    against = getAssayNames(object),
-    ref.against = "existing assays",
-    overwrite = overwrite
-  )
-
-  # check validity
-  if(!purrr::is_empty(mtr_proc)){
-
-    confuns::is_named(input = mtr_proc)
-    mtr_proc <- confuns::discard_unnamed(input = mtr_proc)
-
-    for(i in base::seq_along(mtr_proc)){
-
-      if(!base::is.matrix(mtr_proc[[i]])){
-
-        list_slot <- base::names(mtr_proc)[i]
-
-        stop(glue::glue("Slot '{list_slot}' of `mtr_proc` does not contain a matrix."))
-
-      }
-
-    }
-
-  }
-
-  if(base::is.null(active_mtr)){
-
-    active_mtr <- "counts"
-
-  } else {
-
-    confuns::check_one_of(
-      input = active_mtr,
-      against = c("counts", base::names(mtr_proc))
-    )
-
-  }
-
-  ma <-
-    MolecularAssay(
-      mtr_counts = count_mtr,
-      mtr_proc = mtr_proc,
-      omic = omic,
-      ...
-    )
-
-  object <- setAssay(object, assay = ma)
-
-  if(base::isTRUE(activate)){
-
-    object <-
-      activateAssay(
-        object = object,
-        assay_name = omic,
-        verbose = verbose
-      )
-
-  }
-
-  if(purrr::is_empty(active_mtr)){
-
-    warning("No active matrix specified. Define with `activateMatrix()`.")
-
-  } else {
-
-    object <-
-      activateMatrix(
-        object = object,
-        mtr_name = active_mtr,
-        assay_name = omic,
-        verbose = verbose
-      )
-
-  }
-
-  returnSpataObject(object)
-
-}
 
 # addP --------------------------------------------------------------------
 

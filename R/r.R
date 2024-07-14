@@ -411,6 +411,97 @@ reduce_vec <- function(x, nth, start.with = 1){
 }
 
 
+#' @title Reduce SPATA2 object to minimal version
+#'
+#' @description This function reduces a [`SPATA2`] object to a minimal version by
+#' removing analysis progress and other non-essential data.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#' @details
+#' The following components are removed or reduced:
+#' \itemize{
+#'   \item{@@assays:}{ The @@analysis and @@mtr_proc slots are cleared, and @@meta_var is reduced to only include molecule names.}
+#'   \item{@@data_add:}{ Cleared completely.}
+#'   \item{@@dim_red:}{ Cleared completely.}
+#'   \item{@@meta:}{ Only the *barcodes* column is retained in the metadata.}
+#'   \item{@@spatial:}{
+#'     \itemize{
+#'       \item{@@annotations:}{ Cleared completely.}
+#'       \item{@@images:}{ The @@outline and @@pixel_content slots are cleared.}
+#'       \item{@@trajectories:}{ Cleared completely.}
+#'       \item{@@outline:}{ Cleared completely.}
+#'     }
+#'   }
+#'
+#'  Furthermore, all images are unload with [`unlaodImages()`].
+#'
+#' }
+#' @export
+#' @examples
+#'
+#' # Assuming 'object' is a valid SPATA2 object
+#' reduced_object <- reduceSpataObject(object)
+#'
+reduceSpataObject <- function(object){
+
+  # assays
+  object@assays <-
+    purrr::map(
+      .x = object@assays,
+      .f = function(ma){
+
+        ma@analysis <- list()
+        ma@mtr_proc <- list()
+        ma@meta_var <- tibble::tibble(molecules = base::rownames(ma@mtr_counts))
+
+        return(ma)
+
+      }
+    )
+
+  # data add
+  object@data_add <- list()
+
+  # dim_red
+  object@dim_red <- list()
+
+  # meta
+  object <- setMetaDf(object, getMetaDf(object)[,c("barcodes")])
+
+  # obj_info
+  object <- activateMatrix(object, mtr_name = "counts", verbose = FALSE)
+
+  # spatial
+  sp_data <- getSpatialData(object)
+
+  sp_data@annotations <- list()
+
+  sp_data@images <-
+    purrr::map(
+      .x = sp_data@images,
+      .f = function(hist_img){
+
+        hist_img@outline <- list()
+        hist_img@pixel_content <- factor()
+
+        return(hist_img)
+
+      }
+    )
+
+  sp_data@trajectories <- list()
+  sp_data@outline <- list()
+
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  # misc
+  object <- unloadImages(object, active = FALSE, verbose = FALSE)
+
+  returnSpataObject(object)
+
+}
+
 #' @title Obtain name of reference content
 #'
 #' @description Handy functions to quickly access the name of reference content.
@@ -1726,17 +1817,13 @@ renameMetaFeatures <- function(object, ...){
 
 #' @title Rename cluster/group names
 #'
-#' @description Allows to rename groups within a discrete grouping variable (such as
-#' cluster variables) of the feature data in slot @@fdata as well as in slot @@dea
-#' where differential gene expression analysis results are stored. Use \code{renameSegments()}
-#' to rename already drawn segments.
+#' @description Allows to rename groups within a grouping variable. Make sure
+#' to rename tissue sections with `renameTissueSection()`!
 #'
-#' @inherit check_sample params
-#' @param grouping_variable Character value. The grouping variable of interest.
+#' @inherit argument_dummy params
 #' @param ... The groups to be renamed specified according to the following
 #' syntax: \emph{'new_group_name'} \code{=} \emph{'old_group_name'}.
 #'
-#' @return An updated spata-object.
 #' @export
 #'
 #' @seealso [`relevelGroups()`]
@@ -1746,23 +1833,44 @@ renameMetaFeatures <- function(object, ...){
 #'
 #' data("example_data")
 #'
+#' ## Example 1 - rename normal grouping variables
+#'
 #' object <- example_data$object_UKF269T_diet
 #'
 #' plotSurface(object, color_by = "histology")
 #'
-#' object <- renameGroups(object, grouping = "histology", "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated")
+#' object <-
+#'  renameGroups(
+#'   object = object,
+#'   grouping = "histology",
+#'   "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated"
+#'   )
 #'
 #' plotSurface(object, color_by = "histology")
+#'
+#' ## Example 2 - rename tissue secions
+#'
+#' object <- example_data$object_lmu_mci_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section")
+#'
+#' object <-
+#'  renameTissueSection(
+#'    object = object,
+#'    "lower_hemisphere" = "tissue_section_1", "upper_hemisphere" = "tissue_section_2"
+#'    )
+#'
+#' plotSurface(object, color_by = "tissue_section")
+
 
 renameGroups <- function(object,
-                         grouping_variable,
+                         grouping,
                          ...,
-                         keep_levels = NULL,
-                         of_sample = NA){
+                         keep_levels = NULL){
 
   deprecated(...)
-
-  check_object(object)
 
   rename_input <- confuns::keep_named(c(...))
 
@@ -1782,13 +1890,13 @@ renameGroups <- function(object,
   valid_rename_input <-
     confuns::check_vector(
       input = base::unname(rename_input),
-      against = base::levels(feature_df[[grouping_variable]]),
+      against = base::levels(feature_df[[grouping]]),
       fdb.fn = "warning",
       ref.input = "groups to rename",
-      ref.against = glue::glue("all groups of feature '{grouping_variable}'. ({renaming_hint})")
+      ref.against = glue::glue("all groups of feature '{grouping}'. ({renaming_hint})")
     )
 
-  group_names <- getGroupNames(object, grouping_variable)
+  group_names <- getGroupNames(object, grouping)
 
   rename_input <- rename_input[rename_input %in% valid_rename_input]
 
@@ -1796,10 +1904,10 @@ renameGroups <- function(object,
   renamed_feature_df <-
     dplyr::mutate(
       .data = feature_df,
-      {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
+      {{grouping}} := forcats::fct_recode(.f = !!rlang::sym(grouping), !!!rename_input)
     )
 
-  if(grouping_variable %in% getSpatSegmVarNames(object, verbose = FALSE)){
+  if(grouping %in% getSpatSegmVarNames(object, verbose = FALSE)){
 
     keep_levels <- c(keep_levels, "unnamed")
 
@@ -1810,11 +1918,11 @@ renameGroups <- function(object,
     keep_levels <- base::unique(keep_levels)
 
     all_levels <-
-      c(base::levels(renamed_feature_df[[grouping_variable]]), keep_levels) %>%
+      c(base::levels(renamed_feature_df[[grouping]]), keep_levels) %>%
       base::unique()
 
-    renamed_feature_df[[grouping_variable]] <-
-      base::factor(x = renamed_feature_df[[grouping_variable]], levels = all_levels)
+    renamed_feature_df[[grouping]] <-
+      base::factor(x = renamed_feature_df[[grouping]], levels = all_levels)
 
   }
 
@@ -1824,17 +1932,17 @@ renameGroups <- function(object,
 
     ma <- getAssay(object, assay_name = assay_name)
 
-    if(!purrr::is_empty(ma@analysis$dea[[grouping_variable]])){
+    if(!purrr::is_empty(ma@analysis$dea[[grouping]])){
 
-      ma@analysis$dea[[grouping_variable]] <-
+      ma@analysis$dea[[grouping]] <-
         purrr::map(
-          .x = ma@analysis$dea[[grouping_variable]],
+          .x = ma@analysis$dea[[grouping]],
           .f = function(method){
 
             new_df <-
               dplyr::mutate(
                 .data = method$data,
-                {{grouping_variable}} := forcats::fct_recode(.f = !!rlang::sym(grouping_variable), !!!rename_input)
+                {{grouping}} := forcats::fct_recode(.f = !!rlang::sym(grouping), !!!rename_input)
               )
 
             out <- list(data = new_df, adjustments = method$adjustments)
@@ -1925,22 +2033,41 @@ renameSpatialAnnotation <- function(object, id, new_id, overwrite = FALSE){
 
 }
 
-#' @keywords internal
-renameSpatAnn <- function(...){
-
-  deprecated(fn = TRUE)
-
-  renameSpatialAnnotation(...)
-
-}
 
 #' @rdname renameGroups
 #' @export
-renameSegments <- function(object, ...){
+renameTissueSection <- function(object, ...){
 
-  deprecated(fn = T, ...)
+  object <- renameGroups(object, grouping = "tissue_section", ...)
 
-  renameGroups(object, ...)
+  sp_data <- getSpatialData(object)
+
+  old_sections <- purrr::flatten_chr(list(...))
+  new_sections <- base::names(list(...))
+
+  for(i in seq_along(old_sections)){
+
+    os <- old_sections[i]
+    ns <- new_sections[i]
+
+    if(os %in% base::names(sp_data@outline$tissue_section)){
+
+      sp_data@outline$tissue_section[[ns]] <-
+        sp_data@outline$tissue_section[[os]]
+
+    }
+
+  }
+
+  for(os in old_sections){
+
+    sp_data@outline$tissue_section[[os]] <- NULL
+
+  }
+
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  returnSpataObject(object)
 
 }
 

@@ -2134,7 +2134,7 @@ runSPARKX <- function(object,
   hlpr_assign_arguments(object)
 
   # install if required
-  if(!"SPARK" %in% base::rownames(installed.packages)){
+  if(!"SPARK" %in% base::rownames(installed.packages())){
 
     install <- utils::askYesNo(msg = "SPARK is not installed. Do you want to install it?")
 

@@ -7,5 +7,6 @@
 setActiveExpressionMatrix(...)
 }
 \description{
-Deprecated
+Deprecated in favor of \code{\link[=activateMatrix]{activateMatrix()}}.
 }
+\keyword{internal}

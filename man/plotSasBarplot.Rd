@@ -30,10 +30,15 @@ objects of classes for which a method has been defined.}
 \item{grouping}{Character value. The grouping variable of interest. Use
 \code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
+
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{unit}{Character value. The unit in which the distance
 to the spatial annotation is displayed on the x-axis.
@@ -41,8 +46,7 @@ to the spatial annotation is displayed on the x-axis.
 If \code{FALSE}, plots the bin numbers instead.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent
 groups of discrete variables. Run \code{validColorPalettes()} to obtain valid

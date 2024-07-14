@@ -819,7 +819,7 @@ plotSasHeatmap <- function(object,
 #' @inherit as_unit params
 #' @inherit getSasDf params
 #' @inherit plotSasHeatmap params details
-#' @inherit plotTrajectoryLineplot params
+#' @inherit plotStsLineplot params
 #' @inherit argument_dummy params
 #' @inherit ggplot_dummy return
 #'
@@ -1599,7 +1599,7 @@ plotSpatialTrajectories <- function(object,
       data = df,
       mapping = ggplot2::aes(x = x, y = y, alpha = rel_loc, color = .data[[color_by]])
     ) +
-    ggpLayerTrajectories(
+    ggpLayerSpatialTrajectories(
       object = object,
       ids = ids,
       arrow = arrow,

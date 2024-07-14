@@ -239,8 +239,8 @@ function. E.g. \code{plotViolinplot()} relies on \code{ggplot2::geom_violin()}.}
 can be set to prevent overplotting.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 These functions display the distribution of numeric

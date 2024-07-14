@@ -60,8 +60,8 @@ the computational progress will be printed.
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Identifies the spatial boundaries of the tissue section(s) and
-assigns \link[=concept_observations]{observations} to their respective section.
+Identifies and stores the spatial boundaries of the tissue section(s).
+Then it assigns \link[=concept_observations]{observations} to their respective section.
 See details for more.
 }
 \details{
@@ -123,14 +123,14 @@ plotSurface(obj2, color_by = "tissue_section") # two contiguous sections
 
 ## visualize the outline
 
-df1 <- getTissueOutlineDf(obj1)
+df1_obs <- getTissueOutlineDf(obj1)
 
-ggplot(df1, mapping = aes(x, y, group = section)) +
+ggplot(df1_obs, mapping = aes(x, y, group = section)) +
  geom_polygon(fill = NA, color = "black")
 
-df2 <- getTissueOutlineDf(obj2)
+df2_obs <- getTissueOutlineDf(obj2)
 
-ggplot(df2, mapping = aes(x, y, group = section)) +
+ggplot(df2_obs, mapping = aes(x, y, group = section)) +
  geom_polygon(fill = NA, color = "black")
 
 # example 'method = image'
@@ -144,11 +144,12 @@ plotImage(obj1, outline = T)
 
 df1_img <- getTissueOutlineDf(obj1, method = "image")
 
-ggplot(df1, mapping = aes(x, y, group = section)) +
- geom_polygon(fill = NA, color = "black") +
+ggplot(mapping = aes(x, y, group = section)) +
+ geom_polygon(fill = NA, color = "black", data = df1_obs) +
  geom_polygon(fill = NA, color = "red", data = df1_img)
 
 }
 \seealso{
-\code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}, \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}}
+\code{\link[=getTissueOutlineDf]{getTissueOutlineDf()}}, \code{\link[=ggpLayerTissueOutline]{ggpLayerTissueOutline()}}, \code{\link[=identifySpatialOutliers]{identifySpatialOutliers()}},
+\code{\link[=useVarForTissueOutline]{useVarForTissueOutline()}}
 }

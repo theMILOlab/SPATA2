@@ -23,21 +23,32 @@ getStsDf(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
-of interest.}
+\item{variables}{Character vector. All numeric variables to be included in
+the screening process.}
 
-\item{id}{Character value. Denotes the spatial trajectory
-of interest.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
-\item{resolution}{Distance value. The width of the bins to which
-the barcode-spots are assigned. Defaults to the center-center
-distance: \code{resolution = getCCD(object)}.}
+\item{width}{Distance measure. The width of the trajectory frame. Defaults
+to the trajectory length.}
 
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
+
+\item{ro}{The numeric range to which the output gradients is scaled. Defaults
+to c(0,1).}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
+
+\item{format}{Character value. Either \emph{'long'} or \emph{'wide'}. Defaults to
+\emph{'wide'}. If \emph{'wide'} each variable gets a column.  If \emph{'long'}, the data.frame
+is organized such that a column called \emph{variables} contains the variable names
+and a column called \emph{'values'} contains the values.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

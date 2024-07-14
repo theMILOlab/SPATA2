@@ -2,51 +2,62 @@
 % Please edit documentation in R/r.R
 \name{renameGroups}
 \alias{renameGroups}
-\alias{renameSegments}
+\alias{renameTissueSection}
 \title{Rename cluster/group names}
 \usage{
-renameGroups(
-  object,
-  grouping_variable,
-  ...,
-  keep_levels = NULL,
-  of_sample = NA
-)
+renameGroups(object, grouping, ..., keep_levels = NULL)
 
-renameSegments(object, ...)
+renameTissueSection(object, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{grouping_variable}{Character value. The grouping variable of interest.}
+\item{grouping}{Character value. The grouping variable of interest. Use
+\code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
 \item{...}{The groups to be renamed specified according to the following
 syntax: \emph{'new_group_name'} \code{=} \emph{'old_group_name'}.}
-
-\item{of_sample}{This argument is currently inactive. It might be reactivated when
-spata-objects can store more than one sample.}
-}
-\value{
-An updated spata-object.
 }
 \description{
-Allows to rename groups within a discrete grouping variable (such as
-cluster variables) of the feature data in slot @fdata as well as in slot @dea
-where differential gene expression analysis results are stored. Use \code{renameSegments()}
-to rename already drawn segments.
+Allows to rename groups within a grouping variable. Make sure
+to rename tissue sections with \code{renameTissueSection()}!
 }
 \examples{
 library(SPATA2)
 
 data("example_data")
 
+## Example 1 - rename normal grouping variables
+
 object <- example_data$object_UKF269T_diet
 
 plotSurface(object, color_by = "histology")
 
-object <- renameGroups(object, grouping = "histology", "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated")
+object <-
+ renameGroups(
+  object = object,
+  grouping = "histology",
+  "hist1" = "tumor", "hist2" = "transition", "hist3" = "infiltrated"
+  )
 
 plotSurface(object, color_by = "histology")
+
+## Example 2 - rename tissue secions
+
+object <- example_data$object_lmu_mci_diet
+
+object <- identifyTissueOutline(object)
+
+plotSurface(object, color_by = "tissue_section")
+
+object <-
+ renameTissueSection(
+   object = object,
+   "lower_hemisphere" = "tissue_section_1", "upper_hemisphere" = "tissue_section_2"
+   )
+
+plotSurface(object, color_by = "tissue_section")
 }
 \seealso{
 \code{\link[=relevelGroups]{relevelGroups()}}

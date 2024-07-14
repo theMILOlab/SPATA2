@@ -2,32 +2,30 @@
 % Please edit documentation in R/s.R
 \name{saveSpataObject}
 \alias{saveSpataObject}
-\title{Save corresponding objects}
+\title{Save a SPATA2 object with a default}
 \usage{
-saveSpataObject(object, directory_spata = NULL, verbose = NULL, ...)
+saveSpataObject(object, dir = NULL, verbose = NULL, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
-\item{directory_spata, directory_cds_directory_seurat_object}{Character value or NULL. Set details for more.}
+\item{dir}{Character value. The directory under which to store
+the \code{SPATA2} object. If \code{NULL}, defaults to the directory set with \code{\link[=setSpataDir]{setSpataDir()}}.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 Apart from their side effect (saving the object of interest) all three functions
 return the provided, updated \code{SPATA2} object.
 }
 \description{
-Family of functions to save corresponding objects of different analysis
-platforms. See details and value for more information.
-}
-\details{
-If \code{directory_<platform>} is set to NULL (the default) all functions first check if the \code{SPATA2} object contains any
-deposited default directories. If so the specified object to be saved is saved under
-that direction. If \code{directory_<platform>} is specified as a character it's input is taken as the
-directory under which to store the object and the deposited directory is overwritten
-such that the next time you load the \code{SPATA2} object it contains the updated directory.
-In order for that to work the \code{saveCorresponding*()}-functions - apart from saving the object of interest -  return the
-updated \code{SPATA2} object while \code{saveSpataObject()} simply returns an invisible TRUE
-as the  new directory (if provided) is stored inside the object before it is saved.
+Saves the \code{\link{SPATA2}} object under a default directory.
 }
 \examples{
 library(SPATA2)
@@ -48,4 +46,7 @@ object <- saveSpataObject(object, directory_spata = "my_folder/object_UKF269T.RD
 
 getSpataDir(object)
 
+}
+\seealso{
+\code{\link[=setSpataDir]{setSpataDir()}}, \code{\link[=getSpataDir]{getSpataDir()}}
 }

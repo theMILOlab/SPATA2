@@ -32,10 +32,6 @@ barcodes (IDs) of the observations to which the molecule counts were mapped.}
 \item{\code{mtr_proc}}{List of processed metrics, potentially including normalized
 values or transformed data.}
 
-\item{\code{molecules}}{Data.frame. Meta data for the molecules including, x- and y-coordinates
-in 2d space as well as summary statistics. Name (identifier) of each molecule is
-stored in variable \emph{mol_id}.}
-
 \item{\code{omic}}{Character value. A string that best characterizes the type of molecular data
 the assay carries (e.g., "transcriptomics", "proteomics").}
 

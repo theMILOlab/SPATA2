@@ -10,8 +10,8 @@ plotPcaVariation(object, n_pcs = NULL, ...)
 \item{object}{A valid spata-object.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Displays a scree plot of the current principal component

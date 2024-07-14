@@ -2,7 +2,7 @@
 % Please edit documentation in R/c.R
 \name{cropSpataObject}
 \alias{cropSpataObject}
-\title{Subset by x- and y-range}
+\title{Subset SPATA2 object}
 \usage{
 cropSpataObject(
   object,

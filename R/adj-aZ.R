@@ -1033,29 +1033,11 @@ asSummarizedExperiment <- function(object, ...){
 
 
 
-#' @title Transform to `SPATA2` object object
+#' @title Transform to SPATA2 object object
 #'
 #' @description Transforms input object to object of class `SPATA2` object.
 #'
-#' @param object An object of either one of the following classes: \code{Seurat}, \code{SingleCellExperiment}, \code{AnnDataR6}
-#' @param sample_name A character string specifying the name of the sample
-#' @param count_mtr_name A character string specifying the name of the count matrix
-#' @param normalized_mtr_name A character string specifying the name of the normalized matrix (anndata only currently)
-#' @param scaled_mtr_name A character string specifying the name of the scaled matrix
-#' @param transfer_meta_data Logical or character. Specifies
-#' if meta data, e.g clustering, from the input object is transferred
-#' to the output object. If TRUE, all variables of the meta data.frame
-#' are transferred. If character, named variables are transferred. If FALSE,
-#' none are transferred.
-#' @param transfer_dim_red A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
-#' tSNE) from the input object to the output object.
-#'
-#' @inherit argument_dummy params
-#' @inherit initiateSpataObject_CountMtr params
-#' @inherit object_dummy params
-#' @param ... Additional arguments given to \code{initiateSpataObject_CountMtr()}.
-#'
-#' @return An object of class `SPATA2` object.
+#' @return An object of class [`SPATA2`].
 #'
 #' @export
 

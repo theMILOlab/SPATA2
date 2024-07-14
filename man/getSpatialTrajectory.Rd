@@ -3,7 +3,7 @@
 \name{getSpatialTrajectory}
 \alias{getSpatialTrajectory}
 \alias{getSpatialTrajectories}
-\title{Obtain objects of class \code{SpatialTrajectory}.}
+\title{Obtain spatial trajectories}
 \usage{
 getSpatialTrajectory(object, id)
 
@@ -25,5 +25,5 @@ or a named list of \code{SpatialTrajectory} objects in case of \code{getSpatialT
 An empty list if \code{nSpatialTrajectories() == 0}.
 }
 \description{
-Obtain objects of class \code{SpatialTrajectory}.
+Extracts objects of class \code{\link{SpatialTrajectory}}.
 }

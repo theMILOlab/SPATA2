@@ -141,7 +141,7 @@ filter_by_best <- function(df,
 
     df <-
       dplyr::group_by(.data = df, !!rlang::sym(group_by)) %>%
-      dplyr::slice_max(order_by = !!rlang::sym(eval), n = 1) %>%
+      dplyr::slice_min(order_by = !!rlang::sym(eval), n = 1) %>%
       dplyr::ungroup() %>%
       dplyr::group_by(models) %>%
       dplyr::arrange(dplyr::desc(!!rlang::sym(eval)), .by_group = TRUE)
@@ -204,7 +204,7 @@ filter_by_thresholds <- function(df,
   dplyr::filter(
     .data = df,
     !!rlang::sym(pval) <= {{threshold_pval}} &
-    !!rlang::sym(eval) >= {{threshold_eval}}
+    !!rlang::sym(eval) <= {{threshold_eval}}
   )
 
 }
@@ -602,86 +602,6 @@ findSDEGS <- function(object,
 
 }
 
-
-
-
-
-
-#' @title Cluster sample via Seurat
-#'
-#' @inherit check_sample params
-#' @inherit getExpressionMatrix params
-#' @inherit initiateSpataObject_CountMtr params
-#'
-#' @return A tidy spata-data.frame containing the cluster variables.
-#' @keywords internal
-findSeuratClusters <- function(object,
-                               NormalizeData = list(),
-                               ScaleData = list(),
-                               FindVariableFeatures = list(selection.method = "vst", nfeatures = 2000),
-                               RunPCA = list(npcs = 60),
-                               FindNeighbors = list(dims = 1:30),
-                               FindClusters = list(resolution = 0.8),
-                               ...){
-
-  deprecated(...)
-  hlpr_assign_arguments(object)
-
-  seurat_object <-
-    Seurat::CreateSeuratObject(count = getCountMatrix(object = object))
-
-  seurat_object <-
-    confuns::call_flexibly(
-      fn = "NormalizeData",
-      fn.ns = "Seurat",
-      default = list(object = seurat_object),
-      v.fail = seurat_object
-    )
-
-  seurat_object <-
-    confuns::call_flexibly(
-      fn = "ScaleData",
-      fn.ns = "Seurat",
-      default = list(object = seurat_object),
-      v.fail = seurat_object
-    )
-
-  seurat_object <-
-    confuns::call_flexibly(
-      fn = "FindVariableFeatures",
-      fn.ns = "Seurat",
-      default = list(object = seurat_object),
-      v.fail = seurat_object
-    )
-
-  seurat_object <-
-    confuns::call_flexibly(
-      fn = "RunPCA",
-      fn.ns = "Seurat",
-      default = list(object = seurat_object),
-      v.fail = seurat_object
-    )
-
-  seurat_object <-
-    confuns::call_flexibly(
-      fn = "FindNeighbors",
-      fn.ns = "Seurat",
-      default = list(object = seurat_object),
-      v.fail = seurat_object
-    )
-
-  seurat_object <-
-    confuns::call_flexibly(
-      fn = "FindClusters",
-      fn.ns = "Seurat",
-      default = list(object = seurat_object)
-    )
-
-  seurat_object@meta.data %>%
-    tibble::rownames_to_column(var = "barcodes") %>%
-    dplyr::select(barcodes, seurat_clusters)
-
-}
 
 
 

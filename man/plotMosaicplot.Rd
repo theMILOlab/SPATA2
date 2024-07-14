@@ -28,8 +28,8 @@ represent the group.}
 \item{...}{Additional arguments given to \code{ggmosaic::geom_mosaic()}}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Plots a mosaic plot of two grouping variables.

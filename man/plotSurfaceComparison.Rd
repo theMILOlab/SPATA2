@@ -81,8 +81,8 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 \item{display_image}{Logical. If set to TRUE the histology image of the specified sample
 is displayed underneath the plot.}
 
-\item{image}{An image of class \emph{Image} to be displayed in the background.
-Easily accessible via \code{SPATA::image()}.}
+\item{image}{An image of class \emph{Image} to be displayed in the background
+as obtained by \code{\link[=getImage]{getImage()}}.}
 }
 \description{
 Displays a surface plot for every variable specified

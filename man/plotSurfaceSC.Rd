@@ -67,8 +67,8 @@ represent the group.}
 subsets the cell types that are included in the plots.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Plots single cell input on the sample surface.

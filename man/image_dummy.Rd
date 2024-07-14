@@ -7,8 +7,8 @@
 image_dummy(image)
 }
 \arguments{
-\item{image}{An image of class \emph{Image} to be displayed in the background.
-Easily accessible via \code{SPATA::image()}.}
+\item{image}{An image of class \emph{Image} to be displayed in the background
+as obtained by \code{\link[=getImage]{getImage()}}.}
 }
 \description{
 image_dummy

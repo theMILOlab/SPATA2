@@ -21,7 +21,11 @@ is specified the input will be interpreted as pixels.}
 \item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
 }
 
-Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+Note:
+The unit pixel and its abbreviaton \emph{'px'} is also used for numeric values which refer
+to area measures without any unit at all.
+
+Furthermore, the unit pixel (px) is used for distances as well as for areas. If pixel
 refers to a distance the pixel side length is meant. If pixel refers to an area the
 number of pixels is meant.
 }

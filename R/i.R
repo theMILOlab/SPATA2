@@ -1092,8 +1092,8 @@ setMethod(
 
 #' @title Identify tissue outline
 #'
-#' @description Identifies the spatial boundaries of the tissue section(s) and
-#' assigns \link[=concept_observations]{observations} to their respective section.
+#' @description Identifies and stores the spatial boundaries of the tissue section(s).
+#' Then it assigns \link[=concept_observations]{observations} to their respective section.
 #' See details for more.
 #'
 #' @param method Character value. Defines the origin based on which the outline
@@ -1136,7 +1136,8 @@ setMethod(
 #' and repeat the process with different parameter input to overwrite the last
 #' results untill you are satisfied with the output.
 #'
-#' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`], [`identifySpatialOutliers()`]
+#' @seealso [`getTissueOutlineDf()`], [`ggpLayerTissueOutline()`], [`identifySpatialOutliers()`],
+#' [`useVarForTissueOutline()`]
 #'
 #' @export
 #'
@@ -1165,14 +1166,14 @@ setMethod(
 #'
 #' ## visualize the outline
 #'
-#' df1 <- getTissueOutlineDf(obj1)
+#' df1_obs <- getTissueOutlineDf(obj1)
 #'
-#' ggplot(df1, mapping = aes(x, y, group = section)) +
+#' ggplot(df1_obs, mapping = aes(x, y, group = section)) +
 #'  geom_polygon(fill = NA, color = "black")
 #'
-#' df2 <- getTissueOutlineDf(obj2)
+#' df2_obs <- getTissueOutlineDf(obj2)
 #'
-#' ggplot(df2, mapping = aes(x, y, group = section)) +
+#' ggplot(df2_obs, mapping = aes(x, y, group = section)) +
 #'  geom_polygon(fill = NA, color = "black")
 #'
 #' # example 'method = image'
@@ -1186,8 +1187,8 @@ setMethod(
 #'
 #' df1_img <- getTissueOutlineDf(obj1, method = "image")
 #'
-#' ggplot(df1, mapping = aes(x, y, group = section)) +
-#'  geom_polygon(fill = NA, color = "black") +
+#' ggplot(mapping = aes(x, y, group = section)) +
+#'  geom_polygon(fill = NA, color = "black", data = df1_obs) +
 #'  geom_polygon(fill = NA, color = "red", data = df1_img)
 #'
 
@@ -1319,7 +1320,7 @@ setMethod(
         dplyr::mutate(ts = stringr::str_c("tissue_section", ts, sep = "_"))
 
       sections_ordered <-
-        dplyr::filter(coords_df, ts != "tissue_section") %>%
+        dplyr::filter(coords_df, ts != "tissue_section_0") %>%
         dplyr::group_by(ts) %>%
         dplyr::summarise(min_y = base::min(y, na.rm = TRUE)) %>%
         dplyr::arrange(min_y) %>%
@@ -1336,9 +1337,9 @@ setMethod(
 
       }
 
-      coords_df$ts <- NULL
-
       coords_df_flt <- dplyr::filter(coords_df, ts != "tissue_section_0")
+
+      coords_df$ts <- NULL
 
       object@outline[["tissue_section"]] <-
         purrr::map_df(
@@ -1357,6 +1358,8 @@ setMethod(
 
           }
         )
+
+      coords_df$tissue_section <- base::factor(coords_df$tissue_section)
 
       # return coords_df! ; not coords_df_flt
       object <-

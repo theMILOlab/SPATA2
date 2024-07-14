@@ -10,7 +10,7 @@ plotExprVsDistSA(
   variables,
   ids = idSA(object),
   distance = "dte",
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   core = FALSE,
   pt_alpha = 0.1,
   pt_color = "black",
@@ -40,7 +40,7 @@ plotExprVsDistST(
   object,
   variables,
   id = idST(object),
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   width = NULL,
   pt_alpha = 0.5,
   pt_color = "black",
@@ -62,11 +62,13 @@ objects of classes for which a method has been defined.}
 
 \item{variables}{Character vector. All numeric variables hat are supposed to be plotted.}
 
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
+
 \item{distance}{A numeric vector of distances to the annotation's edge.}
 
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
 
@@ -86,7 +88,7 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.

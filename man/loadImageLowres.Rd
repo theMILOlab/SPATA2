@@ -4,7 +4,7 @@
 \alias{loadImageDefault}
 \alias{loadImageHighres}
 \alias{loadImageLowres}
-\title{Load known images}
+\title{Deprecated}
 \usage{
 loadImageDefault(object, ...)
 
@@ -12,24 +12,7 @@ loadImageHighres(object, ...)
 
 loadImageLowres(object, ...)
 }
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{...}{Additional arguments given to \code{exchangeImage()}.}
-
-\item{name}{Character value. Name of the image directory.}
-}
-\value{
-The updated input object, containing the added, removed or computed results.
-}
 \description{
-Wrapper around the required \verb{getImageDir*()} function and
-\code{exchangeImage()}. Exchanges the image of the \code{SPATA2} object by using
-the directories that have been set with \code{setImageDir*()} family
-or with \code{addImageDir()}.
+Deprecated in favor of \code{\link[=activateImage]{activateImage()}} and/or \code{\link[=loadImage]{loadImage()}}.
 }
-\seealso{
-\code{\link[=setImageDirLowres]{setImageDirLowres()}}, \code{\link[=setImageDirHighres]{setImageDirHighres()}},
-\code{\link[=setImageDirDefault]{setImageDirDefault()}}, \code{\link[=addImageDir]{addImageDir()}},  \code{\link[=exchangeImage]{exchangeImage()}}, \code{\link[=getImagaDirectories]{getImagaDirectories()}}
-}
+\keyword{internal}

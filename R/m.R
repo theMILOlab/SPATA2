@@ -22,6 +22,8 @@ make_angle_bins <- function(n){
 
 }
 
+#' @keywords internal
+#' @export
 make_bins <- function(numeric_vector, binwidth, neg = FALSE) {
 
   numeric_vector <- base::abs(numeric_vector)

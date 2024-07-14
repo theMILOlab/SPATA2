@@ -17,6 +17,10 @@
 #'
 #' Use \code{getGroupNames()} to obtain all valid input options.
 #'
+#' @param angle_span Numeric vector of length two. Defines the range of angle values
+#' an observation might have when related to the center of the spatial annotation,
+#' to be included.
+#'
 #' @param assay_name Only relevant if the `SPATA2` object contains more than
 #' one assay: Denotes the assay of interest. Defaults to the active assay,
 #' as set by [`activateAssay()`].
@@ -81,6 +85,12 @@
 #' *Expansion of cropped image sections* for more information.
 #'
 #' @param expand_outline Distance measure by which the outline of the area is expanded.
+#'
+#' @param format Character value. Either *'long'* or *'wide'*. Defaults to
+#' *'wide'*. If *'wide'* each variable gets a column.  If *'long'*, the data.frame
+#' is organized such that a column called *variables* contains the variable names
+#' and a column called *'values'* contains the values.
+#'
 #' @param ggpLayers List of \code{ggproto}-objects that are added to each plot.
 #' Skim \code{ggpLayer*()}-functions for more options.
 #'
@@ -134,6 +144,9 @@
 #' @param mtr_name Character value. The name of the matrix of interest. Defaults
 #' to the active matrix of the assay, as denoted by [`activateMatrix()`].
 #'
+#' @param n_bins_angle Numeric value. The number of bins in which observations
+#' are categorized in the variable *bins_angle*.
+#'
 #' @param n_bcsp Numeric value. Specifies the sample size of barcode-spots and
 #' can be set to prevent overplotting.
 #'
@@ -186,6 +199,10 @@
 #' @param relevel Logical value. If set to TRUE the input order of \code{across_subset}
 #' determines the order in which the groups of interest are displayed. Groups that
 #' are not included are dropped which affects the colors with which they are displayed.
+#'
+#' @param resolution \link[=concept_distance_measure]{Distance measure}. The resolution
+#' with which the expression gradient is inferred. Defaults are platform specific.
+#' See more in detail section of [`recSgsRes()`].
 #'
 #' @param sc_input Data.frame that contains the results from single cell deconvolution.
 #' Must have at least three columns:
@@ -264,7 +281,7 @@
 #' @param unit Character value. Specifies the desired unit in
 #' which \link[=concept_distance_measure]{distance measures}
 #' or  \link[=concept_area_measure]{area measures} are provided.
-#' Run [`validUnitsOfLength()`] or [`validUnitsOfArea()'] for valid
+#' Run [`validUnitsOfLength()`] or [`validUnitsofArea()`] for valid
 #' input options.
 #'
 #' @param use_scattermore Logical value. If `TRUE`, data points are plotted with
@@ -393,8 +410,8 @@ get_names_dummy <- function(){}
 ggpLayer_dummy <- function(){}
 
 #' @title ggplot_family
-#' @return Returns a ggplot-object that can be additionally customized according
-#' to the rules of the ggplot2-framework.
+#' @return Returns a ggplot that can be additionally customized according
+#' to the rules of the ggplot2 framework.
 #' @keywords internal
 ggplot_family <- function(){}
 
@@ -405,8 +422,9 @@ ggplot_dummy <- function(){}
 
 
 #' @title image_dummy
-#' @param image An image of class \emph{Image} to be displayed in the background.
-#' Easily accessible via \code{SPATA::image()}.
+#' @param image An image of class \emph{Image} to be displayed in the background
+#' as obtained by [`getImage()`].
+#'
 #' @keywords internal
 image_dummy <- function(image){}
 

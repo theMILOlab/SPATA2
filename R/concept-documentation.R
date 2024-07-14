@@ -43,7 +43,11 @@ NULL
 #'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
 #'  }
 #'
-#'  Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#' Note:
+#' The unit pixel and its abbreviaton *'px'* is also used for numeric values which refer
+#' to area measures without any unit at all.
+#'
+#'  Furthermore, the unit pixel (px) is used for distances as well as for areas. If pixel
 #'  refers to a distance the pixel side length is meant. If pixel refers to an area the
 #'  number of pixels is meant.
 #'
@@ -81,10 +85,6 @@ NULL
 #' To test if the input is a valid distance measure use [`is_dist()`].
 #'
 #' @section Pixel and undefined units:
-#'
-#' (The term and the concept pixel is used, too, for data sets where the coordinates do not
-#' have a specified unit and are just numeric values.)
-#'
 #' There are two valid input options to specify the distance in pixel:
 #'
 #' \itemize{
@@ -93,7 +93,11 @@ NULL
 #'  \item{character:}{ Suffixed with *'px'*, e.g. `arg_input = c('2px', '3.554px', '69px', '100.67px')`}
 #'  }
 #'
-#' Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+#' Note:
+#' The unit pixel and its abbreviaton *'px'* is also used for numeric values which refer
+#' to distance measures without any unit at all.
+#'
+#' Furthermore, the unit pixel (px) is used for distances as well as for areas. If pixel
 #' refers to a distance the pixel side length is meant. If pixel refers to an area the
 #' number of pixels is meant.
 #'

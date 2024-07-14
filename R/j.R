@@ -328,12 +328,13 @@ joinWithVariables <- function(object,
   variables <- base::unique(variables)
   spata_df <- dplyr::select(spata_df, -dplyr::any_of(variables))
 
-  confuns::check_one_of(
-    input = variables,
-    against = getVariableNames(object),
-    fdb.opt = 2,
-    ref.opt.2 = "variables"
-  )
+  against <- getVariableNames(object)
+
+  if(base::any(!variables %in% against)){
+
+    not_found <- variables[!variables %in% against]
+
+  }
 
   # stratify variables
   var_types <- getVarTypeList(object, variables = variables)

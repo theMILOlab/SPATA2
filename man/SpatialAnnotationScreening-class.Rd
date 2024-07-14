@@ -7,44 +7,16 @@
 \title{The \code{SpatialAnnotationScreening} - Class}
 \description{
 S4 class that contains input for and output of the
-function \code{SpatialAnnotationScreening()}.
+function \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}}.
+}
+\details{
+This class is an extension of class \code{\link{SpatialGradientScreening}} and inherits
+all of its slots.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{angle_span}}{numeric. Vector of length two. Confines the area of interest
-by angle relative to the center of the image annotation.}
-
-\item{\code{binwidth}}{numeric. The value with which the polygon that encircles
-the image annotation is consecutively expanded via \code{sf::st_buffer()},}
-
-\item{\code{coords}}{data.frame. Coordinates data.frame of the sample.}
-
-\item{\code{annotation}}{SpatialAnnotation. The spatial annotation chosen for the
-screening.}
-
-\item{\code{info}}{list. Miscellaneous information.}
-
-\item{\code{method_padj}}{character. The method with which p-values were adjusted.}
-
-\item{\code{models}}{data.frame. The model data.frame that has been used for the
-screening.}
-
-\item{\code{n_bins_angle}}{numeric. Number of bins that were created anglewise.}
-
-\item{\code{n_bins_circle}}{numeric. Number of bins that were created circlewise.}
-
-\item{\code{results_primary}}{data.frame. Data.frame that contains the results of
-the model fitting per angle bin.}
-
-\item{\code{results}}{data.frame. Data.frame that contains the summary of
-all gene-model fits across all angle bins.}
-
-\item{\code{sample}}{character. The sample name.}
-
-\item{\code{significance}}{data.frame. Data.frame that contains the p-values for
-each variable.}
-
-\item{\code{summarize_with}}{character. Either \emph{'mean'} or \emph{'median'}.}
+\item{\code{annotations}}{list. A list of the \code{\link{SpatialAnnotation}} objects used in
+the screening.}
 }}
 

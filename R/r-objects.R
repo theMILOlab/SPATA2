@@ -490,6 +490,7 @@ depr_info <-
       "getMethodName" = "getSpatialMethod()@name",
       "getProcessedMatrix" = "getMatrix",
       "getPubExample" = "downloadPubExample",
+      "getResultsDf" = "getSgsResultsDf",
       "getSampleNames" = "getSampleName",
       "getTrajectoryDf" = "getTrajectoryScreeningDf",
       "getTrajectoryNames" = "getTrajectoryIds",
@@ -508,15 +509,10 @@ depr_info <-
       "joinWithFeatures" = "joinWithVariables",
       "joinWithGenes" = "joinWithVariables",
       "joinWithGeneSets" = "joinWithVariables",
-
       "lastImageAnnotation" = "lastSpatialAnnotation",
-
       "mapImageAnnotationTags" = "mapSpatialAnnotationTags",
-
       "plotCnvResults" = "plotCnvLineplot() or plotCnvHeatmap",
-
       "plotImageAnnotations" = "plotSpatialAnnotations",
-
       "plotTrajectory" = "plotSpatialTrajectories",
       "ploTrajectoryFeatures" = "plotTrajectoryLineplot",
       "plotTrajectoryFeaturesDiscrete" = "plotTrajectoryBarplot",
@@ -598,6 +594,7 @@ depr_info <-
       "project_on_trajectory" = list("segment_df" = "traj_df"),
       "runBayesSpaceClustering" = list("dirname" = "directory_10X"),
       "runGSEA" = list("gene_set_list" = NA_character_, "gene_sets" = "signatures"),
+      "saveSpataObject" = list("directory_spata" = "dir"),
       "setDefaultGrouping" = list("grouping_variable" = "grouping"),
       "setImageDirHighres" = list("dir_highres" = "dir"),
       "setImageDirLowres" = list("dir_lowres" = "dir"),

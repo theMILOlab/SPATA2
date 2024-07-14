@@ -803,9 +803,6 @@ setMethod(
 #' @param ids Character vector. Specifies the IDs of the spatial annotations of interest.
 #' @param dist_unit Character value. Unit in which the distance is computed.
 #' Defaults to *pixel*.
-#' @param binwidth Distance measure or `NULL`. If \link[=concept_distance_measure]{distance measure},
-#' spots are categorized by their distance value according to the binwidth specified. The categorization is
-#' provided in an **additional** variable named *bins_dist*.
 #' @param core0 Logical value. If `TRUE`, *dist* valus of core data points are
 #' set to 0.
 #' @param coords_df Data.frame. If `NULL`, the default, the coordinates data.frame obtained
@@ -825,6 +822,8 @@ setMethod(
 #'
 #' @param ... Additional arguments given to [`joinWithVariables()`]. Only used
 #' if not empty and `coords_df` is `NULL`.
+#'
+#' @inherit spatialAnnotationScreening params
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame. See details for more.
@@ -834,8 +833,8 @@ setMethod(
 #' \itemize{
 #'  \item{*dist*:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
 #'  \item{*dist_unit*:}{ Character. The unit in which the distance is computed.}
-#'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `binwidth`.
-#'   Only present if `binwidth` is not `NULL`}
+#'  \item{*bins_dist*:}{ Factor. The bin the data point was assigned to based on its *dist* value and the `resolution`
+#'  parameter. Binwidth is equal to the value of `resolution`.}
 #'  \item{*angle*:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
 #'  \item{*bins_angle*:}{ Factor. The bin the data point was assigned to based on its *angle* value.}
 #'  \item{*rel_loc*:}{ Character. Possible values are *'core'*, if the data point lies inside the spatial annotation,
@@ -892,7 +891,7 @@ setMethod(
 #' plotSurface(coords_df, color_by = "bins_dist", pt_clrp = "inferno")
 #' plotSurface(coords_df, color_by = "rel_loc", pt_clrp = "npg")
 #'
-#' coords_df_3mm <- getCoordsDfSA(object, ids = "hypoxia_ann", distance = "3mm")
+#' coords_df_3mm <- getCoordsDfSA(object, ids = "hypoxia_ann", resolution = "2mm")
 #'
 #' plotSurface(coords_df_3mm, color_by = "dist") +
 #'   plotSurface(coords_df_3mm, color_by = "rel_loc", pt_clrp = "npg")
@@ -939,7 +938,7 @@ setMethod(
 #'   ggpLayerSpatAnnOutline(object, ids = necr_ids)
 #'
 #'
-#' ## Example 3 - single or multiple annotations and multiple tissue sections
+#' ## Example 3 - Multiple tissue sections
 #'
 #' object <- example_data$object_lmu_mci_diet
 #'
@@ -969,7 +968,7 @@ setMethod(
 #' plotSurface(coords_df, color_by = "dist") +
 #'   ggpLayerTissueOutline(object)
 #'
-#' ## Example 4 - using external coordinate data.frames
+#' ## Example 4 - Using external coordinate data.frames
 #'
 #' # get mouse data
 #' object <- example_data$object_lmu_mci_diet
@@ -1005,12 +1004,11 @@ setMethod(
 #'  theme_classic() +
 #'  scale_color_add_on(aes = "fill", variable = sc_input_rel$cell_type, clrp = "tab20b")
 #'
-#'
 
 getCoordsDfSA <- function(object,
                           ids = idSA(object),
                           distance = "dte",
-                          binwidth = NULL,
+                          resolution = recSgsRes(object),
                           core = TRUE,
                           core0 = FALSE,
                           periphery = TRUE,
@@ -1025,20 +1023,8 @@ getCoordsDfSA <- function(object,
                           verbose = NULL,
                           ...){
 
-  bw_null <- base::is.null(binwidth)
-
   hlpr_assign_arguments(object)
   deprecated(...)
-
-  if(bw_null){ binwidth <- NULL }
-
-  res <- list(...)[["resolution"]]
-  if(!base::is.null(res)){
-
-    binwidth <- res
-    warning("Overwriting binwidth with resolution input.")
-
-  }
 
   pb <- confuns::create_progress_bar(total = base::length(ids))
 
@@ -1080,7 +1066,7 @@ getCoordsDfSA <- function(object,
           object = object,
           id = id,
           distance = dist,
-          binwidth = binwidth,
+          resolution = resolution,
           core = TRUE,
           core0 = core0,
           periphery = TRUE,
@@ -1105,7 +1091,14 @@ getCoordsDfSA <- function(object,
     coords_df <-
       dplyr::group_by(coords_df, barcodes) %>%
       dplyr::slice_min(dist, n = 1, with_ties = FALSE) %>%
-      dplyr::ungroup()
+      dplyr::ungroup() %>%
+      dplyr::mutate(bins_angle = base::droplevels(bins_angle))
+
+    if(!base::is.null(resolution)){
+
+      coords_df$bins_dist <- base::droplevels(coords_df$bins_dist)
+
+    }
 
   }
 
@@ -1146,7 +1139,7 @@ getCoordsDfSA <- function(object,
 get_coords_df_sa <- function(object,
                              id = idSA(object),
                              distance = distToEdge(object, id),
-                             binwidth = NULL,
+                             resolution = NULL,
                              core = TRUE,
                              core0 = FALSE,
                              periphery = TRUE,
@@ -1162,18 +1155,29 @@ get_coords_df_sa <- function(object,
                              verbose = NULL,
                              ...){
 
-  bw_null <- base::is.null(binwidth)
-
   deprecated(...)
   hlpr_assign_arguments(object)
-
-  if(bw_null){ binwidth <- NULL}
 
   # check and process input -------------------------------------------------
 
   ts <- whichTissueSection(object, id = id)
-
+  dte <- distToEdge(object, id = id, unit = dist_unit)
   distance <- as_unit(distance, unit = dist_unit, object = object)
+
+  if(distance > dte){
+
+    dte_ref <- stringr::str_c(extract_value(dte), extract_unit(dte))
+    distance_ref <- stringr::str_c(extract_value(distance), extract_unit(dte))
+
+    warning(
+      glue::glue(
+        "Parameter `distance` equals {distance_ref} and exceeds the distance from spatial annotation '{id}' to the edge of the tissue section its located on: {dte_ref}. The parameter was adjusted accordingly."
+        )
+    )
+
+    distance <- dte
+
+  }
 
   angle_span <- c(from = angle_span[1], to = angle_span[2])
   range_span <- base::range(angle_span)
@@ -1267,12 +1271,12 @@ get_coords_df_sa <- function(object,
     if(dist_unit %in% validUnitsOfLengthSI()){
 
       # provide as numeric value cause dist is scaled down
-      if(!base::is.null(binwidth)){
+      if(!base::is.null(resolution)){
 
-        binwidth  <- as_unit(binwidth, unit = dist_unit, object = object)
+        resolution  <- as_unit(resolution, unit = dist_unit, object = object)
 
-        binwidth <-
-          as_unit(input = binwidth, unit = dist_unit, object = object) %>%
+        resolution <-
+          as_unit(input = resolution, unit = dist_unit, object = object) %>%
           extract_value()
 
       }
@@ -1297,12 +1301,12 @@ get_coords_df_sa <- function(object,
   # bin pos dist
   coords_df_pos <- dplyr::filter(coords_df, dist >= 0)
 
-  if(base::nrow(coords_df_pos) != 0 & !base::is.null(binwidth)){
+  if(base::nrow(coords_df_pos) != 0 & !base::is.null(resolution)){
 
     coords_df_pos <-
       dplyr::mutate(
         .data = coords_df_pos,
-        bins_dist = make_bins(dist, binwidth = {{binwidth}})
+        bins_dist = make_bins(dist, binwidth = {{resolution}})
       )
 
     pos_levels <- base::levels(coords_df_pos$bins_dist)
@@ -1316,12 +1320,12 @@ get_coords_df_sa <- function(object,
   # bin neg dist
   coords_df_neg <- dplyr::filter(coords_df, dist < 0)
 
-  if(base::nrow(coords_df_neg) != 0 & !base::is.null(binwidth)){
+  if(base::nrow(coords_df_neg) != 0 & !base::is.null(resolution)){
 
     coords_df_neg <-
       dplyr::mutate(
         .data = coords_df_neg,
-        bins_dist = make_bins(dist, binwidth = {{binwidth}}, neg = TRUE)
+        bins_dist = make_bins(dist, binwidth = {{resolution}}, neg = TRUE)
       )
 
     neg_levels <- base::levels(coords_df_neg$bins_dist)
@@ -1341,7 +1345,7 @@ get_coords_df_sa <- function(object,
       rel_loc = dplyr::if_else(dist < 0, true = "core", false = "environment")
     )
 
-  if(!base::is.null(binwidth)){
+  if(!base::is.null(resolution)){
 
     coords_df_merged <-
       dplyr::mutate(
@@ -1586,7 +1590,7 @@ getCoordsDfST <- function(object,
                           id = idST(object),
                           width = getTrajectoryLength(object, id = id),
                           dist_unit = getDefaultUnit(object),
-                          binwidth = NULL,
+                          resolution = recSgsRes(object),
                           outside = TRUE,
                           variables = NULL,
                           format = "wide",
@@ -1624,13 +1628,13 @@ getCoordsDfST <- function(object,
     )
 
 
-  if(!base::is.null(binwidth)){
+  if(!base::is.null(resolution)){
 
-    binwidth <- as_unit(binwidth, unit = dist_unit, object = object)
+    resolution <- as_unit(resolution, unit = dist_unit, object = object)
 
-    binwidth_num <- base::as.numeric(binwidth)
+    resolution_num <- base::as.numeric(resolution)
 
-    coords_df$bins_dist <- make_bins(coords_df$dist, binwidth = {{binwidth_num}}, neg = FALSE)
+    coords_df$bins_dist <- make_bins(coords_df$dist, binwidth = {{resolution_num}}, neg = FALSE)
 
     coords_df[["bins_order"]] <- base::as.numeric(coords_df[["bins_dist"]])
 

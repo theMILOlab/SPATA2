@@ -28,10 +28,14 @@ objects of classes for which a method has been defined.}
 \item{grouping}{Character value. The grouping variable of interest. Use
 \code{\link[=getGroupingOptions]{getGroupingOptions()}} to obtain all valid input options.}
 
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
+
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
 \item{clrp}{Character value. Specifies the color palette to be used to represent

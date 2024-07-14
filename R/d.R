@@ -302,15 +302,18 @@ dissolveGroups <- function(object,
 
 
 
-#' @title Distance to cover the whole tissue
+#' @title Distance to edge of tissue section
 #'
-#' @description Computes the distance from the center of a spatial annotation
-#' to the **farest** point of the tissue outline.
+#' @description Computes the distance from the border of a spatial annotation
+#' to the **farest** data point of the tissue section it is located on.
 #'
-#' @inherit spatialAnnotationScreening params
+#' @inherit getSpatialAnnotation params
 #' @param unit The output unit of the distance measure.
 #'
 #' @return Distance measure.
+#'
+#' @seealso [`whichTissueSection()`]
+#'
 #' @export
 #'
 distToEdge <- function(object, id = idSA(object), unit = getDefaultUnit(object)){

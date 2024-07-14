@@ -622,7 +622,7 @@ getProjectionDf <- function(object,
                             img_name = activeImage(object),
                             ...){
 
-  traj_obj <- getTrajectory(object = object, id = id)
+  traj_obj <- getSpatialTrajectory(object = object, id = id)
 
   if(base::is.null(width)){
 
@@ -643,7 +643,7 @@ getProjectionDf <- function(object,
   if(base::is.character(list(...)[["variables"]])){
 
     out <-
-      joinWith(
+      joinWithVariables(
         object = object,
         spata_df = projection_df,
         ...
@@ -667,15 +667,39 @@ getProjectionDf <- function(object,
 # getR --------------------------------------------------------------------
 
 
-#' @title Obtain results stored in data.frames
+#' @title Obtain spatial gradient screening results
 #'
 #' @description Extracts content of slot @@results of screening S4 objects. For
-#' a more detailed explanation of what the slot contains check the description
-#' of the respective S4 class. E.g. with \code{?SpatialTrajectoryScreening}.
+#' a more detailed explanation of what the slot contains see the documentation
+#' of [`SpatialGradientScreening`].
 #'
 #' @inherit object_dummy params
+#' @param eval Character value. The evaluation variable to use. Either *'mae'* (Mean
+#' Absolute Error) or *'rmse'* (Root Mean Squared Error).
+#' @param pval Character value. The p-value variable. Defaults to *'fdr'* (False Discovery
+#' Rate).
+#' @param threshold_pval,threshold_eval Numeric values. The threshold with which
+#' the results are filtered. Default is 1. Since p-values and model fit evaluation
+#' scores range from 0-1 (with 1 being worst), the default includes everything.
+#' @param best_only Logical value. If `TRUE`, only the best gradient-model fit according
+#' to the chosen evaluation metric (`eval`) for each screened variable is kept.
 #'
-#' @details Without any argument specification the function \code{getResultsDf()} returns
+#' @return A data.frame with results of the spatial gradient screening conducted.
+#' Column names are:
+#'
+#'  \itemize{
+#'    \item{variables}{ The name of the variable to which the row corresponds.}
+#'    \item{models}{ The name of the model which fits best to the inferred gradient.}
+#'    \item{mae}{ The mean absolute error of the gradient-model fit.}
+#'    \item{rmse}{ The root mean squared error of the gradient-model fit.}
+#'    \item{p_value}{ The p-value regarding the hypothesis whether such a gradient
+#'    can be obtained under random circumstances (= the spatial reference feature
+#'    has no impact on the spatial expression pattern.)
+#'    }
+#'    \item{fdr}{ The adjusted p-value using false discovery rate.}
+#'    }
+#'
+#' @details Without any argument specification the function \code{getSgsResultsDf()} returns
 #' the complete data.frame. The arguments can be used to filter the results. Filtering
 #' works as follows:
 #'
@@ -684,41 +708,42 @@ getProjectionDf <- function(object,
 #'  \item{}{ Model-fits are filtered according to the \code{threshold_} arguments. }
 #'  \item{}{ If \code{best_only} is set to TRUE, model-fits are filtered such that the best model-fit
 #'   (among the remaining models from 1.) for every gene remains. E.g. if gene GFAP fits to model
-#'  \emph{linear_descending} with a score of 0.9 and to \emph{immediate_descending} with a score of
-#'   0.75 the model-fit \emph{GFAP-linear_descending} remains in the output.
+#'  \emph{descending_linear} with a score of 0.2 and to \emph{descending_gradual} with an MAE score of
+#'   0.15 the model-fit \emph{GFAP-descending_gradual} remains in the output.
 #'   }
 #'  }
 #'
-#' The output is arranged by the evaluation.
+#' The output is arranged by the evaluation score.
 #'
 #' @return Data.frame.
 #'
 #' @export
 
-setGeneric(name = "getResultsDf", def = function(object, ...){
+setGeneric(name = "getSgsResultsDf", def = function(object, ...){
 
-  standardGeneric(f = "getResultsDf")
+  standardGeneric(f = "getSgsResultsDf")
 
 })
 
-#' @rdname getResultsDf
+#' @rdname getSgsResultsDf
 #' @export
 setMethod(
-  f = "getResultsDf",
+  f = "getSgsResultsDf",
   signature = "SpatialAnnotationScreening",
   definition = function(object,
-                        eval = "ias_score",
-                        pval = "p_value_mean_adjusted",
+                        eval = "mae",
+                        pval = "fdr",
                         arrange_by = eval,
-                        threshold_eval = 0,
+                        threshold_eval = 1,
                         threshold_pval = 1,
                         model_subset = NULL,
                         model_remove = NULL,
                         best_only = FALSE){
 
     rdf <-
+      dplyr::left_join(x = object@results$model_fits, y = object@results$significance, by = "variables") %>%
       filter_by_model(
-        df = object@results,
+        df = .,
         model_subset = model_subset,
         model_remove = model_remove
       ) %>%
@@ -730,36 +755,39 @@ setMethod(
       ) %>%
       filter_by_best(
         eval = eval,
-        best_only = TRUE
-      )
+        best_only = best_only
+      ) %>%
+      dplyr::select(dplyr::everything(), dplyr::contains("_var"))
 
     return(rdf)
 
   }
 )
 
-#' @rdname getResultsDf
+#' @rdname getSgsResultsDf
 #' @export
 setMethod(
-  f = "getResultsDf",
+  f = "getSgsResultsDf",
   signature = "SpatialTrajectoryScreening",
   definition = function(object,
-                        eval = "sts_score",
-                        pval = "p_value",
+                        eval = "mae",
+                        pval = "fdr",
                         arrange_by = eval,
-                        threshold_eval = 0,
+                        threshold_eval = 1,
                         threshold_pval = 1,
                         model_subset = NULL,
                         model_remove = NULL,
                         best_only = FALSE){
 
     rdf <-
+      dplyr::left_join(x = object@results$model_fits, y = object@results$significance, by = "variables") %>%
       filter_by_model(
-        df = object@results,
+        df = .,
         model_subset = model_subset,
         model_remove = model_remove
       ) %>%
       filter_by_thresholds(
+        df = .,
         eval = eval,
         pval = pval,
         threshold_eval = threshold_eval,
@@ -767,7 +795,7 @@ setMethod(
       ) %>%
       filter_by_best(
         eval = eval,
-        best_only = TRUE
+        best_only = best_only
       )
 
     return(rdf)
@@ -785,7 +813,7 @@ setMethod(
 #' @return Named character vector. Values are the variable/gene names. Names
 #' correspond to the model that fitted best.
 #'
-#' @details Extraction works similar to `getResultsDf()`. Argument \code{best_only}, however,
+#' @details Extraction works similar to `getSgsResultsDf()`. Argument \code{best_only}, however,
 #' is always set to TRUE.
 #'
 #' @export
@@ -812,7 +840,7 @@ setMethod(
                         model_remove = NULL){
 
     rdf <-
-      getResultsDf(
+      getSgsResultsDf(
         object = object,
         pval = pval,
         eval = eval,
@@ -847,7 +875,7 @@ setMethod(
                         model_remove = NULL){
 
     rdf <-
-      getResultsDf(
+      getSgsResultsDf(
         object = object,
         pval = pval,
         eval = eval,
@@ -877,15 +905,50 @@ setMethod(
 #'
 #' @description Computes and extracts the size of the area covered by the tissue.
 #'
+#' @inherit identifyTissueOutline params
 #' @inherit getTissueOutlineDf params details
+#' @inherit argumnet_dummy params
 #' @param unit Character value. Output unit. Must be one of `validUnitsOfArea()`.
 #'
-#' @return Single value. Numeric if `unit` is *px*. Else value of class `unit`.
+#' @return A vector of \link[=concept_area_measures]{area measures}. Length is equal to the number
+#' of tissue sections.
+#'
+#' @seealso [`getTissueSections()`], [`identifyTissueOutline()`]
+#'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' ## Example 1 - image based
+#' object <- example_data$object_UKF313T_diet
+#'
+#' object <- identifyPixelContent(object)
+#' object <- identifyTissueOutline(object, method = "image")
+#'
+#' plotImage(object, outline = TRUE) +
+#'  ggpLayerAxesSI(object, unit = "mm")
+#'
+#' getTissueArea(object, unit = "mm")
+#'
+#' ## Example 2 - coordinates based
+#' object <- example_data$object_lmu_mci_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section") +
+#'  ggpLayerTissueOutline(object)
+#'
+#' area_out <- getTissueArea(object)
+#'
+#' print(area_out)
+#'
+#' sum(area_out)
 #'
 getTissueArea <- function(object,
                           unit,
-                          method = NULL,
+                          method = "obs",
                           img_name = activeImage(object)){
 
   confuns::is_value(x = unit, mode = "character")
@@ -895,46 +958,32 @@ getTissueArea <- function(object,
     against = validUnitsOfArea()
   )
 
-  coords_df <- getCoordsDf(object)
+  outline_df <-
+    getTissueOutlineDf(object, img_name = img_name, method = method)
 
-  hull_coords <- getTissueOutlineDf(object, img_name = img_name, method = method)
+  sections <- getTissueSections(object)
 
-  pixel_df <- getPixelDf(object)
+  areas <-
+    purrr::map_dbl(
+      .x = sections,
+      .f = function(s){
 
-  pixel_loc <-
-    sp::point.in.polygon(
-      point.x = pixel_df[["width"]],
-      point.y = pixel_df[["height"]],
-      pol.x = hull_coords[["x"]],
-      pol.y = hull_coords[["y"]]
-    )
+        dplyr::filter(outline_df, section == {s}) %>%
+          dplyr::select(x, y) %>%
+          make_sf_polygon() %>%
+          sf::st_area(x = .)
 
-  pixel_inside <- pixel_loc != 0
+      }
+    ) %>%
+    purrr::set_names(nm = sections)
 
-  if(unit == "px"){
+  if(unit != "px"){
 
-    out <-
-      magrittr::set_attr(
-        x = base::sum(pixel_inside),
-        which = "unit",
-        value = "px"
-      )
-
-  } else {
-
-    pixel_df_inside <- pixel_df[pixel_inside, ]
-
-    n_pixel_inside <- base::nrow(pixel_df_inside)
-
-    scale_fct <- getPixelScaleFactor(object, unit = unit, add_attr = FALSE)
-
-    out_val <- n_pixel_inside * scale_fct
-
-    out <- units::set_units(x = out_val, value = unit, mode = "standard")
+    areas <- as_unit(areas, unit = unit, object = object)
 
   }
 
-  return(out)
+  return(areas)
 
 }
 
@@ -964,9 +1013,9 @@ getSampleName <- function(object){
 #' @description Extracts a data.frame of inferred gradients of numeric
 #' variables as a function of distance to spatial annotations.
 #'
-#' @inherit bin_by_expansion params
-#' @inherit bin_by_angle params
-#'
+#' @param ro The numeric range to which the output gradients is scaled. Defaults
+#' to c(0,1).
+#' @param outlier_rm Deprecated.
 #' @inherit getSpatAnnOutlineDf params
 #' @inherit spatialAnnotationScreening params
 #' @inherit joinWithVariables params
@@ -974,57 +1023,6 @@ getSampleName <- function(object){
 #' @return Data.frame.
 #'
 #' @export
-#'
-#' @examples
-#'
-#' library(SPATA2)
-#' library(SPATAData)
-#'
-#' data("image_annotations")
-#'
-#' necrotic_spat_ann <- image_annotations[["313_T"]][["necrotic_center"]]
-#'
-#' object <- downloadSpataObject(sample_name = "313_T")
-#'
-#' object <- setSpatialAnnotation(object = object, spat_ann = necrotic_spat_ann)
-#'
-#' plotSurfaceIAS(
-#'  object = object,
-#'  id = "necrotic_center",
-#'  distance = 200
-#'  )
-#'
-#' plotSurfaceIAS(
-#'  object = object,
-#'  id = "necrotic_center",
-#'  distance = 200,
-#'  resolution = getCCD(object)*4, # lower resolution by increasing resolution for visualization
-#'  n_bins_angle = 12,
-#'  display_angle = TRUE
-#'  )
-#'
-#' getSasDf(
-#'   object = object,
-#'   id = "necrotic_center",
-#'   distance = 200,
-#'   variables = "VEGFA"
-#'   )
-#'
-#' getSasDf(
-#'   object = object,
-#'    id = "necrotic_center",
-#'    distance = 200,
-#'    variables = "VEGFA"
-#'    )
-#'
-#' getSasDf(
-#'   object = object,
-#'    id = "necrotic_center",
-#'    distance = 200,
-#'    variables = "VEGFA",
-#'    n_bins_angle = 12
-#'    )
-#'
 
 getSasDf <- function(object,
                      ids,
@@ -1051,7 +1049,6 @@ getSasDf <- function(object,
       distance = distance,
       angle_span = angle_span,
       n_bins_angle = n_bins_angle,
-      resolution = resolution,
       variables = variables,
       dist_unit = unit,
       core = core,
@@ -1069,6 +1066,7 @@ getSasDf <- function(object,
       )
 
   resolution <- as_unit(resolution, unit = unit, object = object)
+
   distance <-
     stringr::str_c(base::max(coords_df_sa$dist), unit) %>%
     as_unit(input = ., unit = unit, object = object)
@@ -3100,7 +3098,10 @@ setMethod(
 )
 
 
-#' @title Obtain objects of class \code{SpatialTrajectory}.
+#' @title Obtain spatial trajectories
+#'
+#' @description
+#' Extracts objects of class [`SpatialTrajectory`].
 #'
 #' @inherit argument_dummy params
 #' @param id Character value. Denotes the spatial trajectory
@@ -3119,7 +3120,7 @@ getSpatialTrajectory <- function(object, id){
 
   confuns::check_one_of(
     input = id,
-    against = getSpatialTrajectoryIds(object)
+    against = getTrajectoryIds(object)
   )
 
   sp_data <- getSpatialData(object)
@@ -3131,6 +3132,15 @@ getSpatialTrajectory <- function(object, id){
     ref_x = glue::glue("spatial trajectory '{id}'"),
     ref_fns = "createSpatialTrajectories()"
   )
+
+  isf <- getScaleFactor(object, fct_name = "image")
+
+  out@segment <-
+    dplyr::mutate(
+      .data = out@segment,
+      x = x_orig * isf,
+      y = y_orig * isf
+    )
 
   out@coords <- getCoordsDf(object)
 
@@ -3150,7 +3160,7 @@ getSpatialTrajectories <- function(object, ids = NULL){
 
       confuns::check_one_of(
         input = ids,
-        against = getSpatialTrajectoryIds(object)
+        against = getTrajectoryIds(object)
       )
 
       out <- sp_data@trajectories[ids]
@@ -3164,38 +3174,6 @@ getSpatialTrajectories <- function(object, ids = NULL){
   } else {
 
     out <- list()
-
-  }
-
-  return(out)
-
-}
-
-
-#' @title Obtain spatial trajectory IDs
-#'
-#' @description Extracts IDs of spatial trajectories that were
-#' drawn with `createSpatialTrajectories()`
-#'
-#' @inherit argument_dummy params
-#'
-#' @return Character vector.
-#'
-#' @export
-getSpatialTrajectoryIds <- function(object){
-
-  sp_data <- getSpatialData(object)
-
-  out <-
-    purrr::keep(
-      .x = sp_data@trajectories,
-      .p = ~ base::class(.x) == "SpatialTrajectory"
-    ) %>%
-    base::names()
-
-  if(base::is.null(out)){
-
-    out <- base::character(0)
 
   }
 
@@ -3250,8 +3228,9 @@ setMethod(
 #' @description Extracts a data.frame of inferred gradients related to the
 #' course of a trajectory.
 #'
+#' @inherit spatialTrajectoryScreening params
+#' @inherit getSasDf params
 #' @inherit argument_dummy params
-#' @inherit getTrajectoryDf params
 #'
 #' @return Data.frame.
 #'
@@ -3590,29 +3569,11 @@ getTissueSections <- function(object){
 
   out <-
     getMetaDf(object)[["tissue_section"]] %>%
-    base::unique()
+    base::levels()
 
   out[out != "tissue_section_0"]
 
 }
-
-#' @export
-getTrajectory <- function(object, id){
-
-  sp_data <- getSpatialData(object)
-
-  tobj <- sp_data@trajectories[[id]]
-
-  check_availability(
-    test = !base::is.null(tobj),
-    ref_x = glue::glue("spatial trajectory '{id}'"),
-    ref_fns = "createSpatialTrajectories()"
-  )
-
-  return(tobj)
-
-}
-
 
 
 #' @title Obtain trajectory IDs
@@ -3636,14 +3597,15 @@ getTrajectoryIds <- function(object){
 }
 
 
-#' @title Obtain length of trajectory
+#' @title Obtain length of spatial trajectory
 #'
-#' @description Computes and returns the length of a trajectory.
+#' @description Computes and returns the length of a spatial trajectory.
 #'
 #' @inherit argument_dummy params
-#' @inherit getTrajectoryDf params
-#' @inherit as_unit params return
-#' @inherit is_dist details
+#' @inherit getStsDf params
+#'
+#' @return The length of the spatial directory as a single \link[=concept_distance_measure]{distance value}.
+#'
 #' @export
 #'
 getTrajectoryLength <- function(object,
@@ -3654,7 +3616,7 @@ getTrajectoryLength <- function(object,
 
   csf <- getScaleFactor(object, fct_name = "image")
 
-  tobj <- getTrajectory(object, id = id)
+  tobj <- getSpatialTrajectory(object, id = id)
 
   if(base::nrow(tobj@segment) == 2){
 
@@ -3698,6 +3660,7 @@ getTrajectoryLength <- function(object,
 #' @description Extracts data.frame that contains the course
 #' of a spatial trajectory.
 #'
+#' @inherit getSpatialTrajectory params
 #' @inherit argument_dummy params
 #'
 #' @return Data.frame.
@@ -3708,7 +3671,7 @@ getTrajectorySegmentDf <- function(object,
 
   deprecated(...)
 
-  traj_obj <- getTrajectory(object, id)
+  traj_obj <- getSpatialTrajectory(object, id)
 
   csf <- getScaleFactor(object, fct_name = "image")
 
@@ -3732,19 +3695,19 @@ getTrajectorySegmentDf <- function(object,
 #' @inherit spatialTrajectoryScreening params
 #' @inherit argument_dummy params
 #'
-#' @return Distance value.
+#' @return \linky[=concept_distance_measure]{Distance value}.
 #' @export
 
 getTrajectoryWidth <- function(object, id = idST(object), unit = "px", orig = FALSE){
 
-  traj <- getTrajectory(object, id = id)
+  traj <- getSpatialTrajectory(object, id = id)
 
   out <- stringr::str_c(traj@width, traj@width_unit)
 
   if(traj@width_unit == "px" && !base::isTRUE(orig)){
 
-    csf <- getScaleFactor(object, fct_name = "image")
-    out <- extract_value(out)*csf
+    isf <- getScaleFactor(object, fct_name = "image")
+    out <- extract_value(out)*isf
 
   }
 
@@ -3828,7 +3791,6 @@ getVariableNames <- function(object, protected = FALSE){
     getMetaDf(object) %>%
     dplyr::select(-barcodes, -sample) %>%
     base::colnames()
-
 
   out <- base::unique(c(cnames, mnames, snames, fnames))
 
@@ -3926,7 +3888,7 @@ getVarTypeList <- function(object, variables = NULL){
 #' @inherit argument_dummy params
 #'
 #' @return Numeric value.
-#' @export
+#' @keywords internal
 #'
 setGeneric(name = "getWindowSize", def = function(object, ...){
 

@@ -7,16 +7,11 @@
 compute_expression_estimates(coords_df)
 }
 \arguments{
-\item{min_dist}{Minimum distance for estimation.}
-
-\item{max_dist}{Maximum distance for estimation.}
-
-\item{amccd}{Average Minimum Center-to-Center Distance (AMCCD).}
+\item{coords_df}{A coordinates data.frame as obtained by \code{\link[=getCoordsDfSA]{getCoordsDfSA()}}
+or \code{\link{getCoordsDfST}}.}
 }
 \value{
 A numeric vector representing position-based expression estimates.
-
-A numeric vector representing positions for expression estimates.
 }
 \description{
 This function computes position-based expression estimates given the minimum

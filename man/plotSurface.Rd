@@ -4,6 +4,8 @@
 \alias{plotSurface}
 \alias{plotSurface,SPATA2-method}
 \alias{plotSurface,data.frame-method}
+\alias{plotSurface,SpatialAnnotationScreening-method}
+\alias{plotSurface,SpatialGradientScreening-method}
 \alias{plotSurfaceInteractive}
 \title{Plot the surface of the sample}
 \usage{
@@ -58,6 +60,24 @@ plotSurface(object, ...)
   ...
 )
 
+\S4method{plotSurface}{SpatialAnnotationScreening}(
+  object,
+  color_by = "rel_loc",
+  line_color = "black",
+  line_size = 1,
+  pt_clrp = "npg",
+  ...
+)
+
+\S4method{plotSurface}{SpatialGradientScreening}(
+  object,
+  color_by = "rel_loc",
+  line_color = "black",
+  line_size = 1,
+  pt_clrp = "npg",
+  ...
+)
+
 plotSurfaceInteractive(object)
 }
 \arguments{
@@ -95,9 +115,6 @@ color palette that is used to represent the groups. Names of the input vector mu
 to the group and the respective named element denotes the color with which to
 represent the group.}
 
-\item{display_image}{Logical. If set to TRUE the histology image of the specified sample
-is displayed underneath the plot.}
-
 \item{transform_with}{List or \code{NULL.} If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
 E.g if the variable of interest is \emph{GFAP} gene expression, the following would work:
@@ -131,9 +148,6 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{image}{An image of class \emph{Image} to be displayed in the background.
-Easily accessible via \code{SPATA::image()}.}
-
 \item{sctm_interpolate, sctm_pixels}{Given to the corresponding arguments
 of \code{scattermore::geom_scattermore()}. Note: With increasing \code{sctm_pixels}
 the point size must be adjusted with the argument \code{pt_size}.}
@@ -144,13 +158,17 @@ variable is used to order the data points.}
 \item{order_desc}{Logical value. If \code{TRUE}, reverses the arrangement specified
 via \code{order_by} and/or \code{order}.}
 
+\item{line_color}{Character. Affects color of the main lines of the plot.}
+
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
+
 \item{outline_width}{Numeric vector of length 2, specifying the factor with which
 the \code{pt_size} is multiplied to create the white layer (first value) and the
 black layer (second value).}
-
-\item{complete}{Logical. If the provided \code{SPATA2} object has been subsetted by
-\code{subsetBySegment()} the original sample is completed with grey barcode
-spots.}
+}
+\value{
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Displays the spatial dimension of the sample and colors the
@@ -158,15 +176,20 @@ surface according to the expression of genes, gene sets or features. There
 are methods for multiple classes:
 
 \itemize{
-\item{\code{spata2}:}{ The most versatile method with which all sorts of spatial
+\item{\code{SPATA2}:}{ The most versatile method with which all sorts of spatial
 data can be visualized.}
 \item{\code{data.frame}:}{ Method for a data.frame that contains at least the
 variables \emph{x} and \emph{y}.}
-\item{\code{SDEGS}:}{ Method to visualize the surface based on the set up with
-which \code{\link[=findSDEGS]{findSDEGS()}} was run.}
 \item{\code{\link{SpatialAnnotationScreening}}:}{ Method to visualize the surface based
 on the setup with which \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}} was run.}
 \item{\code{\link{SpatialTrajectoryScreening}}:}{ Method to visualize the surface based
 on the setup with which \code{\link[=spatialAnnotationScreening]{spatialAnnotationScreening()}} was run.}
 }
+}
+\note{
+The methods for \code{SpatialAnnotationScreening}- and \code{SpatialTrajectoryScreening}
+exist to quickly visualize the set up with which the screening was conducted. The ...
+can be used to reach the \code{plotSurface()} method for data.frames with all its
+plotting parameters. For more controll, please use a combination of \code{plotSurface()} with the
+\code{SPATA2} object and \verb{ggpLayer*} functions.
 }

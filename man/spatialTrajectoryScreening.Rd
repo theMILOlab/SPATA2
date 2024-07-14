@@ -8,7 +8,7 @@ spatialTrajectoryScreening(
   object,
   id,
   variables,
-  binwidth = recBinwidth(object),
+  resolution = recSgsRes(object),
   width = getTrajectoryLength(object, id),
   unit = getDefaultUnit(object),
   bcs_exclude = character(0),
@@ -30,17 +30,20 @@ spatialTrajectoryScreening(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. Denotes the spatial trajectory
-of interest.}
-
-\item{variables}{Character vector. All numeric variables (meaning genes,
-gene-sets and numeric features) that are supposed to be included in
+\item{variables}{Character vector. All numeric variables to be included in
 the screening process.}
+
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
+
+\item{width}{Distance measure. The width of the trajectory frame. Defaults
+to the trajectory length.}
 
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
 \item{model_add}{Named list. Every slot in the list must be either a formula
@@ -61,12 +64,6 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
-
-\item{n_bins}{Numeric value or vector of length 2. Specifies exactly how many bins are
-created. (See details for more.)}
-
-\item{summarize_with}{Character value. Either \emph{'mean'} or \emph{'median'}.
-Specifies the function with which the bins are summarized.}
 }
 \value{
 An object of class \code{SpatialTrajectoryScreening}. See documentation
@@ -75,6 +72,32 @@ with \code{?ImageAnnotationScreening} for more information.
 \description{
 Screens the sample for numeric variables that follow specific expression
 changes along the course of the spatial trajectory.
+}
+\examples{
+
+library(SPATA2)
+
+object <- example_data$object_UKF269T_diet
+
+object <- identifyTissueOutline(object)
+
+object <- runSPARKX(object)
+genes <- getSparkxGenes(object, threshold_pval = 0.05)
+
+id <- "horizontal_mid"
+
+plotImage(object) +
+  ggpLayerSpatialTrajectories(object, ids = id)
+
+plotSpatialTrajectories(object, ids = id)
+
+sts_out <-
+  spatialTrajectoryScreening(
+    object = object,
+    id = id,
+    variables = genes
+    )
+
 }
 \seealso{
 \code{\link[=createSpatialTrajectories]{createSpatialTrajectories()}}

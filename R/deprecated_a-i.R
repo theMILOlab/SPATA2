@@ -73,31 +73,6 @@ check_atdf <- function(atdf){
 }
 
 
-#' @title Check compiled trajectory data.frame
-#'
-#' @param ctdf A compiled trajectory data.frame containing the variables
-#' \emph{'barcodes', 'sample', 'x', 'y', 'projection_length', 'trajectory_part'}.
-#' @keywords internal
-check_compiled_trajectory_df <- function(ctdf){
-
-  check_spata_df(spata_df = ctdf)
-  check_coordinate_variables(data = ctdf, x = "x", y = "y")
-
-  vc <- confuns::variable_classes2(data = ctdf)
-
-  if(!base::all(c("projection_length", "trajectory_part") %in% base::names(vc))){
-    base::stop("Variables must contain 'projection_length' and 'trajectory_part'.")
-  }
-
-  if(vc["projection_length"] != "numeric"){
-    base::stop("Variable 'projection_length' needs to be of class numeric.")
-  }
-
-  if(vc["trajectory_part"] != "character"){
-    base::stop("Variable 'projection_length' needs to be of class character.")
-  }
-
-}
 
 #' @title Check customized trend list
 #'
@@ -913,45 +888,6 @@ check_slot_used_genesets <- function(object){
 check_slot_version <- function(object){
 
   base::return("(Currently not in use!)")
-
-}
-
-#' @keywords internal
-compute_positions_expression_estimates <- function(min_dist, max_dist, amccd){
-
-  deprecated(fn = TRUE)
-
-  base::stopifnot(
-    base::identical(
-      x = extract_unit(min_dist),
-      y = extract_unit(max_dist)
-    )
-  )
-
-  unit_dist <- base::unique(extract_unit(max_dist))
-  unit_amccd <- extract_unit(amccd)
-
-  if(unit_dist != unit_amccd){
-
-    stop("Units of `amccd`, `min_dist` and `max_dist` do not match.")
-
-  }
-
-  # remove unit suffix and force numeric class
-  amccd_val <- extract_value(amccd)
-  min_dist_val <- extract_value(min_dist)
-  max_dist_val <- extract_value(max_dist)
-
-  dist_screened <- base::diff(x = c(min_dist_val, max_dist_val))
-
-  out <-
-    base::seq(
-      from = min_dist_val,
-      to = max_dist_val,
-      length.out = base::ceiling(dist_screened/amccd_val)
-    )
-
-  return(out)
 
 }
 
@@ -2770,165 +2706,49 @@ ggpLayerSampleMask <- function(...){
 
 }
 
+#' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getSgsResultsDf()`].
+#' @export
+#' @keywords internal
+#'
+getResultsDf <- function(...){
 
-#' @title Obtain a trajectory data.frame
-#'
-#' @description Extracts a data.frame that contains information about barcode-spots
-#' needed for analysis related to \code{spatialTrajectoryScreening()}.
-#'
-#' @inherit argument_dummy params
-#' @inherit variables_num params
-#' @inherit getSpatialTrajectory params
-#' @param resolution Distance value. The width of the bins to which
-#' the barcode-spots are assigned. Defaults to the center-center
-#' distance: \code{resolution = getCCD(object)}.
-#'
-#' @return Data.frame. (See details for more.)
+  deprecated(fn = T, ...)
+
+  getSgsResultsDf(...)
+
+}
+
+
+#' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getSpatialTrajectory()`].
 #'
 #' @export
-#'
-
-getTrajectoryDf <- function(object,
-                            id,
-                            variables,
-                            resolution = getCCD(object),
-                            n_bins = NA_integer_,
-                            method_gs = NULL,
-                            normalize = TRUE,
-                            summarize_with = FALSE,
-                            smooth_span = 0,
-                            format = "wide",
-                            verbose = NULL,
-                            ...){
+#' @keywords internal
+getTrajectory <- function(object, id, ...){
 
   deprecated(fn = TRUE, ...)
 
-  hlpr_assign_arguments(object)
-
-  resolution <- as_pixel(input = resolution, object = object, as_numeric = TRUE)
-
-  check_binwidth_n_bins(n_bins = n_bins, resolution = resolution, object = object)
-
-  confuns::are_values(c("normalize"), mode = "logical")
-
-  if(base::is.character(summarize_with)){
-
-    check_one_of(
-      input = summarize_with,
-      against = c("mean", "median")
-    )
-
-  }
-
-  check_one_of(
-    input = format,
-    against = c("long", "wide")
-  )
-
-  trajectory <- getTrajectory(object, id = id)
-
-  if(base::length(normalize) == 1){
-
-    normalize <- base::rep(normalize, 2)
-
-  }
-
-  out <-
-    joinWithVariables(
-      object = object,
-      variables = variables,
-      method_gs = method_gs,
-      normalize = normalize[1],
-      smooth = FALSE,
-      verbose = verbose
-    ) %>%
-    dplyr::select(barcodes, dplyr::all_of(variables)) %>%
-    dplyr::left_join(x = trajectory@projection, y = ., by = "barcodes")
-
-  if(base::is.character(summarize_with)){
-
-    out <-
-      summarize_projection_df(
-        projection_df = out,
-        resolution = resolution,
-        n_bins = n_bins,
-        summarize_with = summarize_with
-      ) %>%
-      normalize_smrd_projection_df(normalize = normalize[2]) %>%
-      tibble::as_tibble()
-
-    if(smooth_span > 0){
-
-      traj_order <- out[["trajectory_order"]]
-
-      confuns::give_feedback(
-        msg = glue::glue("Smoothing with `span` = {smooth_span}."),
-        verbose = verbose
-      )
-
-      out <-
-        dplyr::mutate(
-          .data = out,
-          dplyr::across(
-            .cols = dplyr::all_of(variables),
-            .fns = function(var){
-
-              stats::loess(formula = var ~ traj_order, span = smooth_span) %>%
-                stats::predict() %>%
-                confuns::normalize()
-
-            }
-          )
-        )
-
-    }
-
-    if(format == "long"){
-
-      out <- shift_smrd_projection_df(out)
-
-    }
-
-  }
-
-  return(out)
+  getSpatialTrajectory(object = object, id = id)
 
 }
 
-
-#' @rdname setDefaultTrajectory
+#' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getStsDf()`].
+#'
+#' @keywords internal
 #' @export
-getDefaultTrajectory <- function(object, ...){
+getTrajectoryDf <- function(...){
 
-  deprecated(fn = TRUE)
+  deprecated(fn = TRUE, ...)
 
-  t <- object@obj_info$default_trajectory
-
-  x <- c(...)
-
-  if(!base::is.character(t)){
-
-    if(base::is.character(x)){
-
-      stop(glue::glue("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()' or specify with argument `id`."))
-
-    } else {
-
-      stop("Default trajectory is not set. Set it with 'setDefaultTrajectoryId()'.")
-
-    }
-
-  }
-
-  give_feedback(msg = glue::glue("Using default trajectory: '{t}'"))
-
-  return(t)
+  getStsDf(...)
 
 }
 
-#' @rdname setDefaultTrajectory
-#' @export
-getDefaultTrajectoryId <- getDefaultTrajectory
 
 # h -----------------------------------------------------------------------
 

@@ -55,9 +55,6 @@ color is categorical/discrete. Run \code{validColorPalettes()} to see valid inpu
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
 
-\item{display_image}{Logical. If set to TRUE the histology image of the specified sample
-is displayed underneath the plot.}
-
 \item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with
 \code{scattermore::geom_scattermore()} which allows quick plotting of several
 thousand data points. If the number of data points plotted is bigger than
@@ -75,7 +72,8 @@ the computational progress will be printed.
 \item{...}{Additional arguments given to \code{scale_color_add_on()}.}
 }
 \value{
-A ggplot.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 This function calculates the quantiles specified in \code{n_qntl}

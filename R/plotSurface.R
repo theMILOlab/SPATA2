@@ -7,12 +7,10 @@
 #' are methods for multiple classes:
 #'
 #' \itemize{
-#'  \item{`spata2`:}{ The most versatile method with which all sorts of spatial
+#'  \item{`SPATA2`:}{ The most versatile method with which all sorts of spatial
 #'  data can be visualized.}
 #'  \item{`data.frame`:}{ Method for a data.frame that contains at least the
 #'  variables *x* and *y*.}
-#'  \item{`SDEGS`:}{ Method to visualize the surface based on the set up with
-#'  which [`findSDEGS()`] was run.}
 #'  \item{[`SpatialAnnotationScreening`]:}{ Method to visualize the surface based
 #'  on the setup with which [`spatialAnnotationScreening()`] was run.}
 #'  \item{[`SpatialTrajectoryScreening`]:}{ Method to visualize the surface based
@@ -30,20 +28,14 @@
 #' black layer (second value).
 #'
 #' @inherit argument_dummy params
-#' @inherit check_color_to params
-#' @inherit check_coords_df params
-#' @inherit check_display params
-#' @inherit image_dummy params
-#' @inherit check_method params
-#' @inherit check_pt params
-#' @inherit check_sample params
-#' @inherit check_smooth params
-
-#' @param complete Logical. If the provided `SPATA2` object has been subsetted by
-#'  \code{subsetBySegment()} the original sample is completed with grey barcode
-#'  spots.
 #'
-#' @inherit ggplot_family params
+#' @note The methods for `SpatialAnnotationScreening`- and `SpatialTrajectoryScreening`
+#' exist to quickly visualize the set up with which the screening was conducted. The ...
+#' can be used to reach the `plotSurface()` method for data.frames with all its
+#' plotting parameters. For more controll, please use a combination of `plotSurface()` with the
+#' `SPATA2` object and `ggpLayer*` functions.
+#'
+#' @inherit ggplot_family return
 #'
 #' @export
 
@@ -262,8 +254,99 @@ setMethod(
   }
 )
 
+#' @rdname plotSurface
+#' @export
+setMethod(
+  f = "plotSurface",
+  signature = "SpatialAnnotationScreening",
+  definition = function(object,
+                        color_by = "rel_loc",
+                        line_color = "black",
+                        line_size = 1,
+                        pt_clrp = "npg",
+                        ...){
 
+    add_ons <-
+      purrr::map(
+        .x = object@annotations,
+        .f = function(spat_ann){
 
+          id <- spat_ann@id
+
+          df <-
+            purrr::imap_dfr(
+              .x = spat_ann@area,
+              .f = ~ dplyr::mutate(.x, border = .y, id = {{id}})
+              )
+
+          ggplot2::geom_polygon(
+            data = df,
+            mapping = ggplot2::aes(x = x, y = y, group = border),
+            fill = NA,
+            color = line_color,
+            linewidth = line_size
+          )
+
+        }
+      )
+
+    if(color_by == "dist"){
+
+      unit <- extract_unit(object@set_up$resolution)
+      add_ons$lab <- ggplot2::labs(color = glue::glue("Dist. ({unit})"))
+
+    }
+
+    plotSurface(
+      object = object@coordinates,
+      color_by = color_by,
+      pt_clrp = pt_clrp,
+      ...
+    ) +
+      add_ons
+
+  }
+)
+
+#' @rdname plotSurface
+#' @export
+setMethod(
+  f = "plotSurface",
+  signature = "SpatialGradientScreening",
+  definition = function(object,
+                        color_by = "rel_loc",
+                        line_color = "black",
+                        line_size = 1,
+                        pt_clrp = "npg",
+                        ...){
+
+    add_ons <- list()
+
+    add_ons$trajectory <-
+      ggplot2::geom_path(
+        data = dplyr::mutate(object@trajectory@segment, id = "traj"),
+        mapping = ggplot2::aes(x = x, y = y, group = id),
+        linewidth = line_size,
+        color = line_color
+      )
+
+    if(color_by == "dist"){
+
+      unit <- extract_unit(object@set_up$resolution)
+      add_ons$lab <- ggplot2::labs(color = glue::glue("Dist. ({unit})"))
+
+    }
+
+    plotSurface(
+      object = object@coordinates,
+      color_by = color_by,
+      pt_clrp = pt_clrp,
+      ...
+    ) +
+      add_ons
+
+  }
+)
 
 # plotSurfaceA ------------------------------------------------------------
 

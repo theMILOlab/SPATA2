@@ -340,7 +340,11 @@ compute_corr <- function(gradient, model){
 
 #' @keywords internal
 #' @export
-compute_correction_factor_sas <- function(object, ids, distance, core, coords_df_sa = NULL){
+compute_correction_factor_sas <- function(object,
+                                          ids,
+                                          distance,
+                                          core,
+                                          coords_df_sa = NULL){
 
   if(base::is.null(coords_df_sa)){
 
@@ -491,17 +495,14 @@ compute_distance <- function(starting_pos, final_pos){
 #' This function computes position-based expression estimates given the minimum
 #' and maximum distances and the average minimum center-to-center distance (AMCCD).
 #'
-#' @param min_dist Minimum distance for estimation.
-#' @param max_dist Maximum distance for estimation.
-#' @param amccd Average Minimum Center-to-Center Distance (AMCCD).
+#' @param coords_df A coordinates data.frame as obtained by [`getCoordsDfSA()`]
+#' or [`getCoordsDfST`].
 #'
 #' @return A numeric vector representing position-based expression estimates.
 #'
 #' @note This function validates that the units of \code{amccd}, \code{min_dist},
 #' and \code{max_dist} match to ensure consistent unit measurements.
 
-#' @return A numeric vector representing positions for expression estimates.
-#'
 #' @export
 #'
 
@@ -1119,7 +1120,7 @@ crop_image <- function(image,
 
 }
 
-#' @title Subset by x- and y-range
+#' @title Subset SPATA2 object
 #'
 #' @description Creates a subset of the original `SPATA2` object
 #' based on x- and y-range. Data poitns that fall into the
@@ -1193,7 +1194,75 @@ cropSpataObject <- function(object,
 }
 
 
+#' @title Split SPATA2 object
+#'
+#' @description This function splits a [`SPATA2`] object into multiple sub-objects based on a
+#' specified grouping variable.
+#'
+#' @inherit argument_dummy params
+#' @param reduce A logical value indicating whether to reduce the `SPATA2` sub-objects after splitting.
+#' Default is `FALSE`.
+#'
+#' @return A named list of `SPATA2` sub-objects split by the specified grouping.
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_lmu_mci_object
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section")
+#'
+#' obj_list <- splitSpataObject(object, grouping = "tissue_section")
+#'
+#' purrr::map(obj_list, .f = ~ .x)
+#'
+splitSpataObject <- function(object,
+                             grouping,
+                             reduce = FALSE,
+                             verbose = NULL){
 
+  confuns::is_value(x = grouping, mode = "character")
+
+  confuns::check_one_of(
+    input = grouping,
+    against = getGroupingOptions(object)
+  )
+
+  groups <- getGroupNames(object, grouping = grouping)
+
+  out <-
+    purrr::map(
+      .x = groups,
+      .f = function(g){
+
+        barcodes_keep <-
+          getMetaDf(object) %>%
+          dplyr::filter(!!rlang::sym(grouping) == {{g}}) %>%
+          dplyr::pull(barcodes)
+
+        object_sub <-
+          subsetByBarcodes(object, barcode = barcodes_keep, verbose = FALSE) %>%
+          renameSpataObject(sample_name = stringr::str_c(object@sample, g, sep = "_"))
+
+        if(base::isTRUE(reduce)){
+
+          object_sub <- reduceSpataObject(object_sub)
+
+        }
+
+        return(object_sub)
+
+      }
+    ) %>% purrr::set_names(nm = groups)
+
+  return(out)
+
+}
 
 
 # cu ----------------------------------------------------------------------

@@ -12,10 +12,6 @@ To test if the input is a valid distance measure use \code{\link[=is_dist]{is_di
 }
 \section{Pixel and undefined units}{
 
-
-(The term and the concept pixel is used, too, for data sets where the coordinates do not
-have a specified unit and are just numeric values.)
-
 There are two valid input options to specify the distance in pixel:
 
 \itemize{
@@ -24,7 +20,11 @@ is specified the input will be interpreted as pixels.}
 \item{character:}{ Suffixed with \emph{'px'}, e.g. \code{arg_input = c('2px', '3.554px', '69px', '100.67px')}}
 }
 
-Note: The unit pixel (px) is used for distances as well as for areas. If pixel
+Note:
+The unit pixel and its abbreviaton \emph{'px'} is also used for numeric values which refer
+to distance measures without any unit at all.
+
+Furthermore, the unit pixel (px) is used for distances as well as for areas. If pixel
 refers to a distance the pixel side length is meant. If pixel refers to an area the
 number of pixels is meant.
 }

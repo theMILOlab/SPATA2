@@ -7,5 +7,6 @@
 setActiveMatrix(object, mtr_name, verbose = NULL)
 }
 \description{
-Deprecated
+Deprecated in favor of \code{\link[=activateMatrix]{activateMatrix()}}.
 }
+\keyword{internal}

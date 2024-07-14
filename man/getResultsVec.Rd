@@ -41,6 +41,6 @@ correspond to the model that fitted best.
 Extracts results in form of character vectors.
 }
 \details{
-Extraction works similar to \code{getResultsDf()}. Argument \code{best_only}, however,
+Extraction works similar to \code{getSgsResultsDf()}. Argument \code{best_only}, however,
 is always set to TRUE.
 }

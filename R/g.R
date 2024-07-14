@@ -3689,11 +3689,11 @@ setMethod(
 )
 
 
-#' @title Add trajectory layer
+#' @title Add spatial trajectory layer
 #'
-#' @description Adds trajectories in form of arrows to a surface plot.
+#' @description Adds spatial trajectories in form of arrows to a surface plot.
 #'
-#' @param trajectories Character vector. The name of the trajectories
+#' @param ids Character vector. The IDs of the trajectories
 #' that should be plotted.
 #' @param arrow A list of arguments given to \code{ggplot2::arrow()}. Based
 #' on which the trajectories are plotted.
@@ -3704,10 +3704,10 @@ setMethod(
 #'
 #' @export
 #'
-ggpLayerTrajectories <- function(object = "object",
-                                 ids,
-                                 arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
-                                 ...){
+ggpLayerSpatialTrajectories <- function(object = "object",
+                                        ids,
+                                        arrow = ggplot2::arrow(length = ggplot2::unit(x = 0.125, "inches")),
+                                        ...){
 
   hlpr_assign_arguments(object)
 
@@ -3723,7 +3723,7 @@ ggpLayerTrajectories <- function(object = "object",
     purrr::set_names(nm = ids) %>%
     purrr::imap_dfr(
       .f = ~ dplyr::mutate(.x@segment, ids = .y, x = x_orig * scale_fct, y = y_orig * scale_fct)
-      ) %>%
+    ) %>%
     tibble::as_tibble()
 
   out <-

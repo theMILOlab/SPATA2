@@ -2,64 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{getTrajectoryDf}
 \alias{getTrajectoryDf}
-\title{Obtain a trajectory data.frame}
+\title{Deprecated}
 \usage{
-getTrajectoryDf(
-  object,
-  id,
-  variables,
-  resolution = getCCD(object),
-  n_bins = NA_integer_,
-  method_gs = NULL,
-  normalize = TRUE,
-  summarize_with = FALSE,
-  smooth_span = 0,
-  format = "wide",
-  verbose = NULL,
-  ...
-)
-}
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{id}{Character value. Denotes the spatial trajectory
-of interest.}
-
-\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
-of interest.}
-
-\item{resolution}{Distance value. The width of the bins to which
-the barcode-spots are assigned. Defaults to the center-center
-distance: \code{resolution = getCCD(object)}.}
-
-\item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
-are binned into.}
-
-\item{method_gs}{Character value. The method according to which gene sets will
-be handled specified as a character of length one. This can be either 'mean
-or one of 'gsva', 'ssgsea', 'zscore', or 'plage'. The latter four will be given to gsva::GSVA().}
-
-\item{normalize}{Logical. If set to TRUE values will be scaled to 0-1.
-
-Hint: Variables that are uniformly expressed can not be scaled and are discarded.}
-
-\item{summarize_with}{Character value. Name of the function with which to summarize.}
-
-\item{smooth_span}{Numeric value. Controls the degree of smoothing.
-Given to argument \code{span} of \code{stats::loess()}.}
-
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
-}
-\value{
-Data.frame. (See details for more.)
+getTrajectoryDf(...)
 }
 \description{
-Extracts a data.frame that contains information about barcode-spots
-needed for analysis related to \code{spatialTrajectoryScreening()}.
+Deprecated in favor of \code{\link[=getStsDf]{getStsDf()}}.
 }
+\keyword{internal}

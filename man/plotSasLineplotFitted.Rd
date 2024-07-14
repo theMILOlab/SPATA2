@@ -40,14 +40,11 @@ this argument must be explicitly specified to identify the target annotation.}
 \item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
 of interest.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
-
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
 \item{n_bins}{Numeric value. Specifies the exact number of bins the barcodes
 are binned into.}

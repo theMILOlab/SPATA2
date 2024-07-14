@@ -22,10 +22,11 @@ ggpLayerHorizonSAS(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
 \item{line_alpha}{Numeric. Affects alpha of main lines of the plot.}
 

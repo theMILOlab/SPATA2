@@ -36,18 +36,23 @@ plotSasRidgeplot(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{variables}{Character vector. All numeric variables (meaning genes,
-gene-sets and numeric features) that are supposed to be included in
+\item{variables}{Character vector. The numeric variables to be included in
 the screening process.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
+
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
+
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
 \item{smooth_span}{Numeric value. Controls the degree of smoothing.
 Given to argument \code{span} of \code{stats::loess()}.}
@@ -65,8 +70,7 @@ represent the group.}
 
 \item{line_color}{Character. Affects color of the main lines of the plot.}
 
-\item{line_size}{Numeric value. Specifies the thicknes of the lines with which
-the trajectory dynamics are displayed.}
+\item{line_size}{Numeric. Affects size of the main lines of the plot.}
 
 \item{border_linealpha, border_linecolor, border_linesize, border_linetype}{Given
 to \code{ggplot2::geom_vline()}. Adjusts appearance of the vertical line that

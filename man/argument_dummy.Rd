@@ -21,6 +21,10 @@ than groups you are not interested in.)
 
 Use \code{getGroupNames()} to obtain all valid input options.}
 
+\item{angle_span}{Numeric vector of length two. Defines the range of angle values
+an observation might have when related to the center of the spatial annotation,
+to be included.}
+
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest. Defaults to the active assay,
 as set by \code{\link[=activateAssay]{activateAssay()}}.}
@@ -89,6 +93,11 @@ and nothing more. Using \code{expand}, the cropped image section can be adjusted
 
 \item{expand_outline}{Distance measure by which the outline of the area is expanded.}
 
+\item{format}{Character value. Either \emph{'long'} or \emph{'wide'}. Defaults to
+\emph{'wide'}. If \emph{'wide'} each variable gets a column.  If \emph{'long'}, the data.frame
+is organized such that a column called \emph{variables} contains the variable names
+and a column called \emph{'values'} contains the values.}
+
 \item{ggpLayers}{List of \code{ggproto}-objects that are added to each plot.
 Skim \code{ggpLayer*()}-functions for more options.}
 
@@ -142,6 +151,9 @@ number of minimum points required in the eps neighborhood for core points
 
 \item{mtr_name}{Character value. The name of the matrix of interest. Defaults
 to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+
+\item{n_bins_angle}{Numeric value. The number of bins in which observations
+are categorized in the variable \emph{bins_angle}.}
 
 \item{n_bcsp}{Numeric value. Specifies the sample size of barcode-spots and
 can be set to prevent overplotting.}
@@ -209,6 +221,10 @@ color is continuous. Run \code{validColorSpectra()} to see valid input.}
 \item{relevel}{Logical value. If set to TRUE the input order of \code{across_subset}
 determines the order in which the groups of interest are displayed. Groups that
 are not included are dropped which affects the colors with which they are displayed.}
+
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{sc_input}{Data.frame that contains the results from single cell deconvolution.
 Must have at least three columns:
@@ -290,7 +306,7 @@ respective \code{<aes>_trans} argument.}
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
 \item{use_scattermore}{Logical value. If \code{TRUE}, data points are plotted with

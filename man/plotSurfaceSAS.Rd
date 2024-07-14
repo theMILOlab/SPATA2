@@ -53,14 +53,11 @@ If there is only one spatial annotation in the object, the function
 will default to using it. However, if there are multiple annotations,
 this argument must be explicitly specified to identify the target annotation.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
-
-\item{binwidth}{Distance value. The width of the distance bins to which
-each data point is assigned. Defaults to our platform dependent
-recommendation using \code{\link[=recBinwidth]{recBinwidth()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
 \item{color_by}{Character value. The \link[=concept_variable]{variables} by which
 to color the data points.}
@@ -68,12 +65,14 @@ to color the data points.}
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
+
+\item{n_bins_angle}{Numeric value. The number of bins in which observations
+are categorized in the variable \emph{bins_angle}.}
 
 \item{show_plots}{Logical value. If TRUE, the plots are immediately
 plotted. If FALSE, only a list of plots is returned (invisibly).}

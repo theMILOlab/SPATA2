@@ -10,17 +10,14 @@ getTrajectoryWidth(object, id = idST(object), unit = "px", orig = FALSE)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{id}{Character value. Denotes the spatial trajectory
-of interest.}
-
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 }
 \value{
-Distance value.
+\linky[=concept_distance_measure]{Distance value}.
 }
 \description{
 Computes and extracts the default width of the trajectory.

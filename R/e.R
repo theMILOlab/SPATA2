@@ -34,11 +34,15 @@ estimate_r2_for_sas_run <- function(object,
                                     angle_span = c(0, 360),
                                     noise_levels = base::seq(from = 0, to = 100, length.out = 11),
                                     n_sim = 25,
-                                    control = SPATA2::sgs_loess_control,
-                                    verbose = NULL){
+                                    control = NULL,
+                                    bcs_exclude = character(),
+                                    verbose = NULL,
+                                    ...){
 
   deprecated(...)
   hlpr_assign_arguments(object)
+
+  if(is.null(control)){ control <- sgs_loess_control}
 
   unit <- getDefaultUnit(object)
 
@@ -49,8 +53,6 @@ estimate_r2_for_sas_run <- function(object,
   }
 
   resolution <- as_unit(resolution, unit = unit, object = object)
-
-
 
   # step 1 data simulation
   simulations <-
@@ -83,15 +85,22 @@ estimate_r2_for_sas_run <- function(object,
       verbose = verbose
     )
 
-  resolution <- resolution[1]
-
   object <-
-    addProcessedMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
-    activateMatrix(object, mtr_name = "simR2")
+    createMolecularAssay(
+      object = object,
+      omic = "simR2",
+      active_mtr = "sim",
+      mtr_proc = list(sim = sim_mtr),
+      activate = TRUE,
+      overwrite = TRUE,
+      verbose = FALSE
+      )
 
   variables <- base::rownames(sim_mtr)
 
   gc()
+
+  resolution <- resolution[1]
 
   # step 2 screening
   coords_df <-
@@ -106,7 +115,8 @@ estimate_r2_for_sas_run <- function(object,
       variables = variables,
       periphery = FALSE,
       verbose = FALSE
-    )
+    ) %>%
+    dplyr::filter(!barcodes %in% {{bcs_exclude}})
 
   variables <- variables[variables %in% base::names(coords_df)]
 
@@ -125,7 +135,8 @@ estimate_r2_for_sas_run <- function(object,
       object = object,
       id = ids,
       distance = distance,
-      core = core
+      core = core,
+      coords_df_sa = coords_df
       )
 
   span <- base::as.numeric(resolution/tot_dist) / cf
@@ -140,7 +151,6 @@ estimate_r2_for_sas_run <- function(object,
   )
 
   pb <- confuns::create_progress_bar(total = nv)
-
 
   sas_df <-
     purrr::map_df(
@@ -253,8 +263,15 @@ estimate_r2_for_sts_run <- function(object,
     )
 
   object <-
-    addExpressionMatrix(object, expr_mtr = sim_mtr, mtr_name = "simR2", overwrite = TRUE) %>%
-    setActiveMatrix(object = ., mtr_name = "simR2", verbose = FALSE)
+    createMolecularAssay(
+      object = object,
+      omic = "simR2",
+      active_mtr = "sim",
+      mtr_proc = list(sim = sim_mtr),
+      activate = TRUE,
+      overwrite = TRUE,
+      verbose = FALSE
+    )
 
   variables <- base::rownames(sim_mtr)
 
@@ -280,12 +297,7 @@ estimate_r2_for_sts_run <- function(object,
   tot_dist <- max_dist - min_dist
   span <- base::as.numeric(resolution/tot_dist)
 
-  expr_est_pos <-
-    compute_positions_expression_estimates(
-      min_dist = min_dist,
-      max_dist = max_dist,
-      amccd = resolution
-    )
+  expr_est_pos <- compute_expression_estimates(coords_df)
 
   pb <- confuns::create_progress_bar(total = base::length(variables))
 
@@ -304,9 +316,7 @@ estimate_r2_for_sts_run <- function(object,
             formula = x.var.x ~ dist,
             data = coords_df,
             span = span,
-            family = "gaussian",
-            statistics = "none",
-            surface = "direct"
+            control = base::do.call(stats::loess.control, args = control)
           )
 
         gradient <-

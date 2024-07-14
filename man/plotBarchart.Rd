@@ -63,8 +63,8 @@ proportion you want to display. Must not contain the feature specified in
 \code{across} - if \code{across} is not set to NULL.}
 }
 \value{
-Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.
+Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.
 }
 \description{
 Visualizes the count or the proportion of barcode spots falling

@@ -9,7 +9,7 @@ getCoordsDfSA(
   object,
   ids = idSA(object),
   distance = "dte",
-  binwidth = NULL,
+  resolution = recSgsRes(object),
   core = TRUE,
   core0 = FALSE,
   periphery = TRUE,
@@ -30,7 +30,7 @@ getCoordsDfST(
   id = idST(object),
   width = getTrajectoryLength(object, id = id),
   dist_unit = getDefaultUnit(object),
-  binwidth = NULL,
+  resolution = recSgsRes(object),
   outside = TRUE,
   variables = NULL,
   format = "wide",
@@ -44,15 +44,27 @@ objects of classes for which a method has been defined.}
 
 \item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
 
-\item{binwidth}{Distance measure or \code{NULL}. If \link[=concept_distance_measure]{distance measure},
-spots are categorized by their distance value according to the binwidth specified. The categorization is
-provided in an \strong{additional} variable named \emph{bins_dist}.}
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
+the distance from the border of the spatial annotation to the \emph{horizon} in
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
+
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{core}{Logical value. If \code{FALSE}, data points that lie inside the core of the
 spatial annotation are removed.}
 
 \item{core0}{Logical value. If \code{TRUE}, \emph{dist} valus of core data points are
 set to 0.}
+
+\item{angle_span}{Numeric vector of length 2. Confines the area screened by
+an angle span relative to the center of its closest spatial annotation.}
+
+\item{n_bins_angle}{Numeric value. The number of bins in which observations
+are categorized in the variable \emph{bins_angle}.}
 
 \item{dist_unit}{Character value. Unit in which the distance is computed.
 Defaults to \emph{pixel}.}
@@ -62,8 +74,13 @@ via \code{getCoordsDf()} is used. Else other data.frame of observations can be p
 relation to the spatial annotation. Requires numeric variables named \emph{x} and \emph{y} in
 pixel units.}
 
-\item{variables}{Character vector. The names of the \emph{\link[=concept_variables]{data variables}}
-of interest.}
+\item{variables}{Character vector. The numeric variables to be included in
+the screening process.}
+
+\item{format}{Character value. Either \emph{'long'} or \emph{'wide'}. Defaults to
+\emph{'wide'}. If \emph{'wide'} each variable gets a column.  If \emph{'long'}, the data.frame
+is organized such that a column called \emph{variables} contains the variable names
+and a column called \emph{'values'} contains the values.}
 
 \item{incl_edge}{Logical value. If \code{TRUE}, the default, the edges of the
 tissue sections identified by \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} are used to ensure
@@ -96,8 +113,8 @@ The coordinates data.frame as returned by \code{\link[=getCoordsDf]{getCoordsDf(
 \itemize{
 \item{\emph{dist}:}{ Numeric. The distance of the data point to the outline of the spatial annotation.}
 \item{\emph{dist_unit}:}{ Character. The unit in which the distance is computed.}
-\item{\emph{bins_dist}:}{ Factor. The bin the data point was assigned to based on its \emph{dist} value and the \code{binwidth}.
-Only present if \code{binwidth} is not \code{NULL}}
+\item{\emph{bins_dist}:}{ Factor. The bin the data point was assigned to based on its \emph{dist} value and the \code{resolution}
+parameter. Binwidth is equal to the value of \code{resolution}.}
 \item{\emph{angle}:}{ Numeric. The angle of the data point to the center of the spatial annotation.}
 \item{\emph{bins_angle}:}{ Factor. The bin the data point was assigned to based on its \emph{angle} value.}
 \item{\emph{rel_loc}:}{ Character. Possible values are \emph{'core'}, if the data point lies inside the spatial annotation,
@@ -152,7 +169,7 @@ p1 + p2
 plotSurface(coords_df, color_by = "bins_dist", pt_clrp = "inferno")
 plotSurface(coords_df, color_by = "rel_loc", pt_clrp = "npg")
 
-coords_df_3mm <- getCoordsDfSA(object, ids = "hypoxia_ann", distance = "3mm")
+coords_df_3mm <- getCoordsDfSA(object, ids = "hypoxia_ann", resolution = "2mm")
 
 plotSurface(coords_df_3mm, color_by = "dist") +
   plotSurface(coords_df_3mm, color_by = "rel_loc", pt_clrp = "npg")
@@ -199,7 +216,7 @@ plotSurface(coords_df, color_by = "dist") +
   ggpLayerSpatAnnOutline(object, ids = necr_ids)
 
 
-## Example 3 - single or multiple annotations and multiple tissue sections
+## Example 3 - Multiple tissue sections
 
 object <- example_data$object_lmu_mci_diet
 
@@ -229,7 +246,7 @@ coords_df <- getCoordsDfSA(object, ids = "inj1", incl_edge = F)
 plotSurface(coords_df, color_by = "dist") +
   ggpLayerTissueOutline(object)
 
-## Example 4 - using external coordinate data.frames
+## Example 4 - Using external coordinate data.frames
 
 # get mouse data
 object <- example_data$object_lmu_mci_diet
@@ -264,6 +281,5 @@ ggplot(sc_input_rel, mapping = aes(x = bins_dist)) +
  geom_bar(mapping = aes(fill = cell_type), color = "black", position = "fill") +
  theme_classic() +
  scale_color_add_on(aes = "fill", variable = sc_input_rel$cell_type, clrp = "tab20b")
-
 
 }

@@ -44,7 +44,6 @@ under which each simulation was conducted.
 The output list contains the following components:
 \describe{
 \item{gradient}{A numeric vector representing the inferred expression gradient.}
-\item{lds}{A numeric value representing the Loess Deviation Score (LDS) for the inferred gradient.}
 \item{model}{A loess model object fitted to the simulated data.}
 \item{tot_var}{A numeric value representing the total variation of the inferred gradient.}
 }
@@ -52,9 +51,5 @@ The output list contains the following components:
 \description{
 This function simulates random expression patterns, computes gradients, and calculates
 various metrics for evaluating the inferred expression gradients.
-}
-\details{
-This function generates random expression patterns with specified randomness levels, fits loess curves to the data,
-computes gradients, LDS, loess models, and total variation for each simulation, and returns the results in a named list.
 }
 \keyword{internal}

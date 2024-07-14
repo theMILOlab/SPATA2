@@ -26,26 +26,37 @@ getSasDf(
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{distance}{\code{\link[=concept_distance_measure]{Distance value}}. Specifies
+\item{ids}{Character vector. Specifies the IDs of the spatial annotations of interest.}
+
+\item{distance}{\code{\link[=concept_distance_measure]{Distance measure}}. Specifies
 the distance from the border of the spatial annotation to the \emph{horizon} in
-the periphery up to which the screening is conducted. (See details for more.)
-Defaults to a distance that covers the whole tissue section using \code{\link[=distToEdge]{distToEdge()}}.}
+the periphery up to which the screening is conducted. Defaults to a distance
+that covers the whole tissue section the spatial annotation is located
+on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
+
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
 
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
-an angle span relative to the center of the spatial annotation.
-(See details fore more.)}
+an angle span relative to the center of its closest spatial annotation.}
 
-\item{variables}{Character vector. All numeric variables (meaning genes,
-gene-sets and numeric features) that are supposed to be included in
+\item{variables}{Character vector. The numeric variables to be included in
 the screening process.}
 
 \item{unit}{Character value. Specifies the desired unit in
 which \link[=concept_distance_measure]{distance measures}
 or  \link[=concept_area_measure]{area measures} are provided.
-Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \link{`validUnitsOfArea()'} for valid
+Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=validUnitsofArea]{validUnitsofArea()}} for valid
 input options.}
 
-\item{bcs_exclude}{Character value containing name(s) of data points to be excluded from the analysis.}
+\item{ro}{The numeric range to which the output gradients is scaled. Defaults
+to c(0,1).}
+
+\item{bcs_exclude}{Character value containing the barcodes of observations to be excluded
+from the analysis.}
+
+\item{outlier_rm}{Deprecated.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -60,55 +71,4 @@ Data.frame.
 \description{
 Extracts a data.frame of inferred gradients of numeric
 variables as a function of distance to spatial annotations.
-}
-\examples{
-
-library(SPATA2)
-library(SPATAData)
-
-data("image_annotations")
-
-necrotic_spat_ann <- image_annotations[["313_T"]][["necrotic_center"]]
-
-object <- downloadSpataObject(sample_name = "313_T")
-
-object <- setSpatialAnnotation(object = object, spat_ann = necrotic_spat_ann)
-
-plotSurfaceIAS(
- object = object,
- id = "necrotic_center",
- distance = 200
- )
-
-plotSurfaceIAS(
- object = object,
- id = "necrotic_center",
- distance = 200,
- resolution = getCCD(object)*4, # lower resolution by increasing resolution for visualization
- n_bins_angle = 12,
- display_angle = TRUE
- )
-
-getSasDf(
-  object = object,
-  id = "necrotic_center",
-  distance = 200,
-  variables = "VEGFA"
-  )
-
-getSasDf(
-  object = object,
-   id = "necrotic_center",
-   distance = 200,
-   variables = "VEGFA"
-   )
-
-getSasDf(
-  object = object,
-   id = "necrotic_center",
-   distance = 200,
-   variables = "VEGFA",
-   n_bins_angle = 12
-   )
-
 }
