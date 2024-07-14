@@ -542,12 +542,25 @@ setMethod(
 #'
 #' @inherit argument_dummy params
 #'
-#' @return Character value.
+#' @return Character value or vector in case of `getImageDirectories()`.
 #'
 #' @export
 getImageDir <- function(object, img_name = activeImage(object)){
 
   getHistoImage(object, img_name = img_name)@dir
+
+}
+
+#' @rdname getImageDir
+#' @export
+getImageDirectories <- function(object){
+
+  containsHistoImages(object, error = TRUE)
+
+  sp_data <- getSpatialData(object)
+
+  sp_data@images %>%
+    purrr::map_chr(.f = ~ .x@dir)
 
 }
 

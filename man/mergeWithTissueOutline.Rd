@@ -39,8 +39,12 @@ if(!containsTissueOutline(object)){
 # image annotation which transgresses the tissue edge
 plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr"))
 
-object <- mergeWithTissueOutline(object, id = "necrotic_edge2_transgr", new_id = "merged")
+object <-
+  mergeWithTissueOutline(object, id = "necrotic_edge2_transgr", new_id = "necrotic_edge2", overwrite = TRUE)
 
-plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr", "merged"))
+plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr", "necrotic_edge2"))
 
+}
+\seealso{
+\code{\link[=identifyTissueOutline]{identifyTissueOutline()}}
 }

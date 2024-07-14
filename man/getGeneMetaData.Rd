@@ -12,8 +12,6 @@ getGeneMetaDf(object, ...)
 \arguments{
 \item{object}{A valid spata-object.}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
-
 \item{only_df}{Logical. If set to TRUE only the data.frame is returned.
 If set to FALSE (the default) the whole list is returned.}
 }

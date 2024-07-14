@@ -899,95 +899,6 @@ setMethod(
 
 # getS --------------------------------------------------------------------
 
-
-
-#' @title Obtain tissue area size
-#'
-#' @description Computes and extracts the size of the area covered by the tissue.
-#'
-#' @inherit identifyTissueOutline params
-#' @inherit getTissueOutlineDf params details
-#' @inherit argumnet_dummy params
-#' @param unit Character value. Output unit. Must be one of `validUnitsOfArea()`.
-#'
-#' @return A vector of \link[=concept_area_measures]{area measures}. Length is equal to the number
-#' of tissue sections.
-#'
-#' @seealso [`getTissueSections()`], [`identifyTissueOutline()`]
-#'
-#' @export
-#'
-#' @examples
-#'
-#' library(SPATA2)
-#'
-#' ## Example 1 - image based
-#' object <- example_data$object_UKF313T_diet
-#'
-#' object <- identifyPixelContent(object)
-#' object <- identifyTissueOutline(object, method = "image")
-#'
-#' plotImage(object, outline = TRUE) +
-#'  ggpLayerAxesSI(object, unit = "mm")
-#'
-#' getTissueArea(object, unit = "mm")
-#'
-#' ## Example 2 - coordinates based
-#' object <- example_data$object_lmu_mci_diet
-#'
-#' object <- identifyTissueOutline(object)
-#'
-#' plotSurface(object, color_by = "tissue_section") +
-#'  ggpLayerTissueOutline(object)
-#'
-#' area_out <- getTissueArea(object)
-#'
-#' print(area_out)
-#'
-#' sum(area_out)
-#'
-getTissueArea <- function(object,
-                          unit,
-                          method = "obs",
-                          img_name = activeImage(object)){
-
-  confuns::is_value(x = unit, mode = "character")
-
-  confuns::check_one_of(
-    input = unit,
-    against = validUnitsOfArea()
-  )
-
-  outline_df <-
-    getTissueOutlineDf(object, img_name = img_name, method = method)
-
-  sections <- getTissueSections(object)
-
-  areas <-
-    purrr::map_dbl(
-      .x = sections,
-      .f = function(s){
-
-        dplyr::filter(outline_df, section == {s}) %>%
-          dplyr::select(x, y) %>%
-          make_sf_polygon() %>%
-          sf::st_area(x = .)
-
-      }
-    ) %>%
-    purrr::set_names(nm = sections)
-
-  if(unit != "px"){
-
-    areas <- as_unit(areas, unit = unit, object = object)
-
-  }
-
-  return(areas)
-
-}
-
-
 #' @title Obtain name of \code{SPATA2} object
 #'
 #' @description Extracts the name/ID of the \code{SPATA2} object
@@ -1663,33 +1574,36 @@ getSparkxResults <- function(object,
 
 #' @title Obtain area of spatial annotation
 #'
-#' @description Computes the area of an spatial annotation in SI units of area.
+#' @description Computes the area of spatial annotations.
 #'
 #' @inherit argument_dummy params
 #' @inherit as_unit params
 #' @inherit getSpatialAnnotation params
 #'
-#' @return Numeric vector of the same length as `ids`. Named accordingly.
-#' Contains the area of the spatial annotations in the unit that is specified in `unit`.
+#' @return Contains the area of the spatial annotations in the unit that is specified in `unit`.
 #' The unit is attached to the output as an attribute named *unit*. E.g. if
 #' `unit = *mm2*` the output value has the unit *mm^2*.
 #'
-#' @details First, the side length of each pixel is calculated and based on that the area.
-#'
-#' Second, the number of pixels that fall in the area given by the outer border
-#' of the spatial annotation is computed with `sp::point.in.polygon()`.
-#'
-#' Third, if the spatial annotation contains holes the pixel that fall in these
-#' holes are removed.
-#'
-#' Fourth, the number of remaining pixels s multiplied with
-#' the area per pixel.
-#'
-#' @inheritSection section_dummy Selection of spatial annotations
+#' @note The area is computed solely based on the outline of the annotation even
+#' if the annotation transgresses the tissue outline! If you only want the area
+#' of the annotation on the tissue section adjust the annotation with [`mergeWithTissueOutline()`].
+#' See examples.
 #'
 #' @seealso [`getSpatAnnOutlineDf()`], [`getCCD()`], [`as_unit()`]
 #'
 #' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' object <- example_data$object_UKF313T_diet
+#'
+#' ids <- c("necrotic_edge2", "necrotic_edge2_transgr")
+#'
+#' plotSpatialAnnotations(object, ids = ids)
+#'
+#' getSpatAnnArea(object, ids = ids)
 #'
 setGeneric(name = "getSpatAnnArea", def = function(object, ...){
 
@@ -1749,104 +1663,45 @@ setMethod(
       against = validUnitsOfArea()
     )
 
-    if(base::is.character(ids)){
-
-      confuns::check_one_of(
-        input = ids,
-        against = getSpatAnnIds(object)
-      )
-
-    } else {
-
-      ids <-
-        getSpatAnnIds(
-          object = object,
-          ...
-        )
-
-    }
-
-    unit_length <- stringr::str_extract(string = unit, pattern = "[a-z]*")
-
-    # determine pixel area
-    scale_fct <- getPixelScaleFactor(object, unit = unit)
-
-    # determine how many pixels lay inside the spatial annotation
-
-    pixel_df <- getPixelDf(object = object)
-
-    n_ids <- base::length(ids)
-
-    ref_ia <- confuns::adapt_reference(ids, sg = "spatial annotation")
-
-    pb <- confuns::create_progress_bar(total = n_ids)
-
-    confuns::give_feedback(
-      msg = glue::glue("Computing area for {n_ids} {ref_ia}."),
-      verbose = verbose
-    )
+    ids <- getSpatAnnIds(object, ids = ids, tags = tags, test = test)
 
     out <-
       purrr::map_dbl(
         .x = ids,
         .f = function(id){
 
-          if(base::isTRUE(verbose)){
+          spat_ann <- getSpatialAnnotation(object, id = id, add_image = FALSE)
 
-            pb$tick()
+          area_list <- spat_ann@area
 
-          }
+          area <-
+            area_list[["outer"]][,c("x", "y")] %>%
+            close_area_df() %>%
+            make_sf_polygon() %>%
+            sf::st_area(outer)
 
-          border_df <- getSpatAnnOutlineDf(object, ids = id)
+          if(containsInnerBorders(spat_ann)){
 
-          outer_df <- dplyr::filter(border_df, border == "outer")
+            for(i in 2:base::length(area_list)){
 
-          pixel_loc <-
-            sp::point.in.polygon(
-              point.x = pixel_df[["width"]],
-              point.y = pixel_df[["height"]],
-              pol.x = outer_df[["x"]],
-              pol.y = outer_df[["y"]]
-            )
+              area_hole <-
+                area_list[[i]][,c("x", "y")] %>%
+                close_area_df() %>%
+                make_sf_polygon() %>%
+                sf::st_area()
 
-          pixel_inside <- pixel_df[pixel_loc != 0, ]
-
-          # remove pixel that fall into inner holes
-          inner_holes <- dplyr::filter(border_df, border != "outer")
-
-          if(base::nrow(inner_holes) != 0){
-
-            # consecutively reduce the number of rows in the pixel_inside data.frame
-            for(hole in base::unique(inner_holes$border)){
-
-              hole_df <- dplyr::filter(border_df, border == {{hole}})
-
-              pixel_loc <-
-                sp::point.in.polygon(
-                  point.x = pixel_inside[["width"]],
-                  point.y = pixel_inside[["height"]],
-                  pol.x = hole_df[["x"]],
-                  pol.y = hole_df[["y"]]
-                )
-
-              # keep those that are NOT inside the holes
-              pixel_inside <- pixel_inside[pixel_loc == 0, ]
+              area <- area - area_hole
 
             }
 
           }
 
-          n_pixel_inside <- base::nrow(pixel_inside)
-
-          # multiply number of pixels with area per pixel
-          area_spat_ann <- n_pixel_inside * scale_fct
-
-          base::as.numeric(area_spat_ann)
+          return(area)
 
         }
-      ) %>%
-      purrr::set_names(nm = ids) %>%
-      units::set_units(value = unit, mode = "standard")
+      ) %>% purrr::set_names(nm = ids)
+
+    out <- as_unit(out, unit = unit, object = object)
 
     return(out)
 
@@ -3325,6 +3180,91 @@ getStsDf <- function(object,
 
 # getT --------------------------------------------------------------------
 
+#' @title Obtain tissue area size
+#'
+#' @description Computes and extracts the size of the area covered by the tissue.
+#'
+#' @inherit identifyTissueOutline params
+#' @inherit getTissueOutlineDf params details
+#' @inherit argumnet_dummy params
+#' @param unit Character value. Output unit. Must be one of `validUnitsOfArea()`.
+#'
+#' @return A vector of \link[=concept_area_measures]{area measures}. Length is equal to the number
+#' of tissue sections.
+#'
+#' @seealso [`getTissueSections()`], [`identifyTissueOutline()`]
+#'
+#' @export
+#'
+#' @examples
+#'
+#' library(SPATA2)
+#'
+#' ## Example 1 - image based
+#' object <- example_data$object_UKF313T_diet
+#'
+#' object <- identifyPixelContent(object)
+#' object <- identifyTissueOutline(object, method = "image")
+#'
+#' plotImage(object, outline = TRUE) +
+#'  ggpLayerAxesSI(object, unit = "mm")
+#'
+#' getTissueArea(object, unit = "mm")
+#'
+#' ## Example 2 - coordinates based
+#' object <- example_data$object_lmu_mci_diet
+#'
+#' object <- identifyTissueOutline(object)
+#'
+#' plotSurface(object, color_by = "tissue_section") +
+#'  ggpLayerTissueOutline(object)
+#'
+#' area_out <- getTissueArea(object)
+#'
+#' print(area_out)
+#'
+#' sum(area_out)
+#'
+getTissueArea <- function(object,
+                          unit,
+                          method = "obs",
+                          img_name = activeImage(object)){
+
+  confuns::is_value(x = unit, mode = "character")
+
+  confuns::check_one_of(
+    input = unit,
+    against = validUnitsOfArea()
+  )
+
+  outline_df <-
+    getTissueOutlineDf(object, img_name = img_name, method = method)
+
+  sections <- getTissueSections(object)
+
+  areas <-
+    purrr::map_dbl(
+      .x = sections,
+      .f = function(s){
+
+        dplyr::filter(outline_df, section == {s}) %>%
+          dplyr::select(x, y) %>%
+          make_sf_polygon() %>%
+          sf::st_area(x = .)
+
+      }
+    ) %>%
+    purrr::set_names(nm = sections)
+
+  if(unit != "px"){
+
+    areas <- as_unit(areas, unit = unit, object = object)
+
+  }
+
+  return(areas)
+
+}
 
 #' @title Obtain tissue outline centroid
 #'
@@ -3586,9 +3526,7 @@ getTissueSections <- function(object){
 #' @return Character vector.
 #' @export
 #'
-getTrajectoryIds <- function(object){
-
-  check_object(object)
+getSpatialTrajectoryIds <- function(object){
 
   sp_data <- getSpatialData(object)
 

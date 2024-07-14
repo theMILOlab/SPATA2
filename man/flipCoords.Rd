@@ -7,6 +7,6 @@
 flipCoords(...)
 }
 \description{
-Use \code{flipCoordinates()}.
+Deprecated in favor of \code{\link[=flipCoordinates]{flipCoordinates()}}.
 }
 \keyword{internal}

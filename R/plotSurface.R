@@ -1019,19 +1019,18 @@ setMethod(
   definition = function(object,
                         id,
                         distance = distToEdge(object, id),
-                        binwidth = recBinwidth(object),
-                        n_bins_dist = NA_integer_,
+                        resolution = recBinwidth(object),
                         color_by = c("dist", "bins_dist", "angle", "bins_angle"),
-                        unit = extract_unit(binwidth),
+                        unit = getDefaultUnit(object),
                         angle_span = c(0,360),
-                        n_bins_angle = 1,
                         color_outside = ggplot2::alpha("lightgrey", 0.25),
                         show_plots = TRUE,
                         ggpLayers = list(),
-                        bcsp_exclude = NULL,
+                        bcs_eclude = NULL,
                         verbose = NULL,
                         ...){
 
+    deprecated(...)
     hlpr_assign_arguments(object)
 
     sas_df <-
@@ -1111,144 +1110,38 @@ setMethod(
   f = "plotSurfaceSAS",
   signature = "SpatialAnnotationScreening",
   definition = function(object,
-                        pt_alpha = NA_integer_,
-                        pt_clrp = c("inferno", "default"),
-                        pt_clrsp = "inferno",
-                        pt_size = 2.25,
-                        color_core = ggplot2::alpha("grey", 0),
-                        color_outside = ggplot2::alpha("lightgrey", 0.25),
                         show_plots = TRUE,
                         display_angle = FALSE,
                         display_bins_angle = TRUE,
-                        display_bins_circle = TRUE,
+                        display_bins_dist = TRUE,
                         ggpLayers = list(),
                         ...){
 
-    max_circles <- base::max(object@n_bins_circle)
-    min_circles <- base::min(object@n_bins_circle)
+    deprecated(...)
 
-    img_ann <- object@img_annotation
-    img_ann_center <- getImgAnnCenter(img_ann)
+    color_by <-
+      c("rel_loc", "dist", "bins_dist", "angle", "bins_angle")
+
+    use <- c(TRUE, TRUE, display_bins_dist, display_angle, display_bins_angle)
+
+    color_by <- color_by[use]
 
     coords_df <- object@coords
 
-    binwidth <- object@binwidth
-    n_bins_angle <- object@n_bins_angle
-
-    sas_df <-
-      bin_by_area(
-        coords_df = coords_df,
-        area_df = img_ann@area,
-        binwidth = binwidth,
-        n_bins_circle = max_circles,
-        remove = "Core",
-        bcsp_exclude = object@bcsp_exclude
-      ) %>%
-      bin_by_angle(
-        center = img_ann_center,
-        angle_span = object@angle_span,
-        n_bins_angle = n_bins_angle,
-        min_bins_circle = min_circles,
-        rename = TRUE,
-        remove = FALSE
+    plots <-
+      plotSurfaceComparison(
+        object = coords_df,
+        color_by = color_by,
+        ...
       )
-
-    if(base::length(pt_clrp) == 1){ pt_clrp <- base::rep(pt_clrp, 2) }
-
-    circle_levels <- base::levels(sas_df$bins_circle)
-    angle_levels <- base::levels(sas_df$bins_angle)
-
-    circle_clrp_adjust <-
-      confuns::color_vector(
-        clrp = pt_clrp[1],
-        names = circle_levels,
-        n.colors = base::length(circle_levels),
-        clrp.adjust = c("Core" = color_core, "Outside" = color_outside)
-      )
-
-    angle_clrp_adjust <-
-      confuns::color_vector(
-        clrp = pt_clrp[2],
-        names = angle_levels,
-        n.colors = base::length(angle_levels),
-        clrp.adjust = c("Core" = color_core, "Outside" = color_outside)
-      )
-
-    p <- list()
-
-    if(base::isTRUE(display_bins_circle)){
-
-      p$bins_circle <-
-        base::suppressWarnings({
-
-          plotSurface(
-            object = sas_df,
-            color_by = "bins_circle",
-            pt_clrp = "milo",
-            pt_size = pt_size,
-            clrp_adjust = circle_clrp_adjust,
-            pt_alpha = NA_integer_
-          ) + ggpLayers
-
-        })
-
-    }
-
-    if(base::isTRUE(display_bins_angle)){
-
-      p$bins_angle <-
-        base::suppressWarnings({
-
-          plotSurface(
-            object = sas_df,
-            color_by = "bins_angle",
-            pt_clrp = "milo",
-            pt_size = pt_size,
-            clrp_adjust = angle_clrp_adjust,
-            pt_alpha = NA_integer_
-          ) + ggpLayers
-
-        })
-
-    }
-
-    if(base::isTRUE(display_angle)){
-
-      p$angle <-
-        plotSurface(
-          object = dplyr::filter(sas_df, !bins_circle %in% c("Core", "Outside")),
-          color_by = "angle",
-          pt_size = pt_size,
-          pt_clrsp = pt_clrsp,
-          pt_alpha = pt_alpha
-        ) +
-        geom_point_fixed(
-          data = dplyr::filter(sas_df, bins_circle == "Core"),
-          mapping = ggplot2::aes(x = x, y = y),
-          size = pt_size,
-          color = color_core,
-          alpha = pt_alpha
-        ) +
-        geom_point_fixed(
-          data = dplyr::filter(sas_df, bins_circle == "Outside"),
-          mapping = ggplot2::aes(x = x, y = y),
-          size = pt_size,
-          color = color_outside,
-          alpha = pt_alpha
-        )  +
-        ggpLayers
-
-    }
 
     if(base::isTRUE(show_plots)){
 
-      p_plot <- p[["bins_circle"]] + p[["bins_angle"]] + p[["angle"]]
-
-      plot(p_plot)
+      plot(plots)
 
     }
 
-    base::invisible(p)
+    return(plots)
 
   }
 )
@@ -1713,31 +1606,10 @@ plotSurfaceInteractiveDiet <- function(object){
 
 # plotSurfaceQ ------------------------------------------------------------
 
-#' @title Plot a surface plot colored by binned numeric variables
-#'
-#' @description This function calculates the quantiles specified in \code{n_qntl}
-#' of the numeric variable specified in \code{color_by} and divides the barcode
-#' spots accordingly. If you want to grey-out certain quantiles use argument \code{keep_qntls}.
-#'
-#' @inherit plotSurface params return
-#'
-#' @param color_by Character value. Specifies the numeric variable of interest:
-#'
-#'  \itemize{
-#'   \item{ \strong{Gene set} as a single character value. Must be in \code{getGeneSets()}}
-#'   \item{ \strong{Genes} as a character vector. If more than one gene is specified the average
-#'   expression of those genes will be calculated and displayed. Must be in \code{getGenes()}}
-#'   \item{ \strong{Feature} as a single character value. Must be in \code{getFeaturenNames(..., of_class = "numeric")}}
-#'   }
-#'
-#' @param n_qntls Numeric value. Specifies the number of bins in which
-#' to distribute the barcode spots.
-#' @param keep_qntls Numeric vector. Specifies the quantiles to highlight by
-#' color. The remaining ones are displayed in grey.
-#'
-#' @inherit ggplot_dummy return
-#'
+#' @title Deprecated
+#' @description Deprecated in favor of [`plotSurface()`].
 #' @export
+#' @keywords internal
 
 plotSurfaceQuantiles <- function(object,
                                  color_by,
@@ -1851,20 +1723,6 @@ plotSurfaceQuantiles <- function(object,
 #' @inherit ggplot_family return
 #'
 #' @export
-#'
-#' @examples
-#'
-#' object <- downloadPubExample("MCI_LMU", verbose = FALSE)
-#'
-#' data("sc_deconvolution")
-#'
-#' plotSurfaceSC(
-#'  object = object,
-#'  sc_input = sc_deconvolution$MCI_LMU,
-#'  cell_types = c("Astrocytes", "Neurons", "Microglia", "Macrophages/Monocytes"),
-#'  clrp = "sifre"
-#'  )
-#'
 plotSurfaceSC <- function(object,
                           sc_input,
                           cell_types = NULL,

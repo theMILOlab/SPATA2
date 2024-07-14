@@ -948,6 +948,9 @@ mergeSpatialAnnotations <- function(object,
 #' id. If `NULL`, the spatial annotation is overwritten!
 #'
 #' @inherit update_dummy return
+#'
+#' @seealso [`identifyTissueOutline()`]
+#'
 #' @export
 #'
 #' @examples
@@ -966,9 +969,10 @@ mergeSpatialAnnotations <- function(object,
 #' # image annotation which transgresses the tissue edge
 #' plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr"))
 #'
-#' object <- mergeWithTissueOutline(object, id = "necrotic_edge2_transgr", new_id = "merged")
+#' object <-
+#'   mergeWithTissueOutline(object, id = "necrotic_edge2_transgr", new_id = "necrotic_edge2", overwrite = TRUE)
 #'
-#' plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr", "merged"))
+#' plotSpatialAnnotations(object, ids = c("necrotic_edge2_transgr", "necrotic_edge2"))
 #'
 mergeWithTissueOutline <- function(object,
                                    id,

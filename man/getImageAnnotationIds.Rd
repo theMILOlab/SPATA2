@@ -2,18 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{getImageAnnotationIds}
 \alias{getImageAnnotationIds}
-\title{Obtain unit of method}
+\title{Deprecated}
 \usage{
 getImageAnnotationIds(...)
 }
-\arguments{
-\item{...}{Used to absorb deprecated arguments or functions.}
-}
-\value{
-Character value.
-}
 \description{
-Extracts the European unit of length in which the size of
-the fiducial frame of the underlying spatial method is specified.
+Deprecated in favor of \code{\link[=getSpatAnnIds]{getSpatAnnIds()}}.
 }
 \keyword{internal}

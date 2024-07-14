@@ -2,11 +2,11 @@
 % Please edit documentation in R/deprecated_a-i.R
 \name{createSegmentation}
 \alias{createSegmentation}
-\title{Deprecated in favor of \code{createSpatialSegmentation()}}
+\title{Deprecated}
 \usage{
 createSegmentation(...)
 }
 \description{
-Deprecated in favor of \code{createSpatialSegmentation()}
+Deprecated in favor of \code{\link[=createSpatialSegmentation]{createSpatialSegmentation()}}.
 }
 \keyword{internal}

@@ -12,32 +12,24 @@ plotSurfaceSAS(object, ...)
   object,
   id,
   distance = distToEdge(object, id),
-  binwidth = recBinwidth(object),
-  n_bins_dist = NA_integer_,
+  resolution = recBinwidth(object),
   color_by = c("dist", "bins_dist", "angle", "bins_angle"),
-  unit = extract_unit(binwidth),
+  unit = getDefaultUnit(object),
   angle_span = c(0, 360),
-  n_bins_angle = 1,
   color_outside = ggplot2::alpha("lightgrey", 0.25),
   show_plots = TRUE,
   ggpLayers = list(),
-  bcsp_exclude = NULL,
+  bcs_eclude = NULL,
   verbose = NULL,
   ...
 )
 
 \S4method{plotSurfaceSAS}{SpatialAnnotationScreening}(
   object,
-  pt_alpha = NA_integer_,
-  pt_clrp = c("inferno", "default"),
-  pt_clrsp = "inferno",
-  pt_size = 2.25,
-  color_core = ggplot2::alpha("grey", 0),
-  color_outside = ggplot2::alpha("lightgrey", 0.25),
   show_plots = TRUE,
   display_angle = FALSE,
   display_bins_angle = TRUE,
-  display_bins_circle = TRUE,
+  display_bins_dist = TRUE,
   ggpLayers = list(),
   ...
 )
@@ -59,6 +51,10 @@ the periphery up to which the screening is conducted. Defaults to a distance
 that covers the whole tissue section the spatial annotation is located
 on using \code{\link[=distToEdge]{distToEdge()}}. (This distance must not be exceeded.)}
 
+\item{resolution}{\link[=concept_distance_measure]{Distance measure}. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of \code{\link[=recSgsRes]{recSgsRes()}}.}
+
 \item{color_by}{Character value. The \link[=concept_variable]{variables} by which
 to color the data points.}
 
@@ -71,9 +67,6 @@ input options.}
 \item{angle_span}{Numeric vector of length 2. Confines the area screened by
 an angle span relative to the center of its closest spatial annotation.}
 
-\item{n_bins_angle}{Numeric value. The number of bins in which observations
-are categorized in the variable \emph{bins_angle}.}
-
 \item{show_plots}{Logical value. If TRUE, the plots are immediately
 plotted. If FALSE, only a list of plots is returned (invisibly).}
 
@@ -85,23 +78,13 @@ the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{pt_alpha}{Numeric value. Specifies the degree of transparency of all points.}
-
-\item{pt_clrp}{The color palette to be used if the specified variable displayed by
-color is categorical/discrete. Run \code{validColorPalettes()} to see valid input.}
-
-\item{pt_clrsp}{The color spectrum to be used if the specified variable displayed by
-color is continuous. Run \code{validColorSpectra()} to see valid input.}
-
-\item{pt_size}{Numeric value. Specifies the size of all points.}
+\item{display_angle, display_bins_angle, display_circle}{Logical value.
+If TRUE, the plot is included. If FALSE, plotting is skipped.}
 
 \item{color_core, color_outside}{Character value. Denotes
 the colors with which the area of image annotation (\code{color_core})
 and the area that is not included in the screening (\code{color_outside})
 is displayed.}
-
-\item{display_angle, display_bins_angle, display_circle}{Logical value.
-If TRUE, the plot is included. If FALSE, plotting is skipped.}
 }
 \value{
 An invisible list of ggplots.

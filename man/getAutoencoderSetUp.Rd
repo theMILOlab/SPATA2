@@ -6,13 +6,6 @@
 \usage{
 getAutoencoderSetUp(object, mtr_name, of_sample = NA)
 }
-\arguments{
-\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
-\item{mtr_name}{Character value. The name of the matrix to extract. If
-\code{NULL}, defaults to the active matrix of the provided or specified \link[=MolecularAssay]{assay}.}
-}
 \value{
 A named list.
 }
