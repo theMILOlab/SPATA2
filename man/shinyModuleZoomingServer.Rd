@@ -33,6 +33,7 @@ a numeric value.}
 \value{
 A reactive expression which, if called with \verb{<reactiveExpression>()}
 returns a list of three slots:
+
 \itemize{
 \item{\emph{x}:}{ Numeric vector of length two corresponding to the xrange of the zoom.}
 \item{\emph{y}:}{ Numeric vector of length two corresponging to the yrange of the zoom.}
@@ -42,3 +43,4 @@ returns a list of three slots:
 \description{
 The server logical for shiny module \emph{Zooming}.
 }
+\keyword{internal}

@@ -13,7 +13,10 @@ setCoordsDf(object, ...)
 \S4method{setCoordsDf}{SpatialData}(object, coords_df, force = FALSE)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{coords_df}{A data.frame containing information about every barcode-spot. Must contain the variables:
 \itemize{

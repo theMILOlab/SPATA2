@@ -2,7 +2,7 @@
 % Please edit documentation in R/adj-aZ.R
 \name{asSeurat}
 \alias{asSeurat}
-\title{Transform \code{SPATA2} to \code{Seurat}}
+\title{Transform SPATA2 object to Seurat object}
 \usage{
 asSeurat(
   object,

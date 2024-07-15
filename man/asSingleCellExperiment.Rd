@@ -2,7 +2,7 @@
 % Please edit documentation in R/adj-aZ.R
 \name{asSingleCellExperiment}
 \alias{asSingleCellExperiment}
-\title{Transform to \code{SingleCellExperiment}}
+\title{Transform SPATA2 object to SingleCellExperiment object}
 \usage{
 asSingleCellExperiment(
   object,

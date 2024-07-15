@@ -13,11 +13,14 @@ setTsneDf(object, tsne_df, ...)
 setUmapDf(object, umap_df, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{pca_df, tsne_df, umap_df}{The data.frame composed of the variables
 \emph{barcodes}, \emph{sample} and the variables containing the barcode-
 spot embedding.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A spata object containing the set input.

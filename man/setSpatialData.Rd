@@ -2,7 +2,7 @@
 % Please edit documentation in R/setA-Z.R
 \name{setSpatialData}
 \alias{setSpatialData}
-\title{Set spatial data}
+\title{Set SpatialData object}
 \usage{
 setSpatialData(object, sp_data)
 }

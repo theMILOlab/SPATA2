@@ -17,7 +17,7 @@ Run \code{\link[=validUnitsOfLength]{validUnitsOfLength()}} or \code{\link[=vali
 input options.}
 }
 \value{
-\linky[=concept_distance_measure]{Distance value}.
+\link[=concept_distance_measure]{Distance value}.
 }
 \description{
 Computes and extracts the default width of the trajectory.

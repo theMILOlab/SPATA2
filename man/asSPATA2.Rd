@@ -4,7 +4,7 @@
 \alias{asSPATA2}
 \alias{asSPATA2,giotto-method}
 \alias{asSPATA2,Seurat-method}
-\title{Transform to SPATA2 object object}
+\title{Transform objects to SPATA2 object}
 \usage{
 asSPATA2(object, ...)
 

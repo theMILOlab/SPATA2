@@ -52,3 +52,4 @@ is then denoted as the active matrix.
 This function constructs and uses a neural network to denoise
 expression levels spatially.
 }
+\keyword{internal}

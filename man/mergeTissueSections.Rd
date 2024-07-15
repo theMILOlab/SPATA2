@@ -4,7 +4,7 @@
 \alias{mergeTissueSections}
 \title{Merge tissue sections}
 \usage{
-mergeTissueSections(object, ...)
+mergeTissueSections(object, sep = "_", ...)
 }
 \arguments{
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,

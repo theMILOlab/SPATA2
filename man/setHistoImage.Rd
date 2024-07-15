@@ -4,7 +4,7 @@
 \alias{setHistoImage}
 \alias{setHistoImage,SPATA2-method}
 \alias{setHistoImage,SpatialData-method}
-\title{Set histo image}
+\title{Set HistoImage object}
 \usage{
 setHistoImage(object, ...)
 

@@ -2,16 +2,19 @@
 % Please edit documentation in R/getA-G.R
 \name{getCnvResults}
 \alias{getCnvResults}
-\title{Obtain copy-number-variations results}
+\title{Obtain CNV results}
 \usage{
 getCnvResults(object, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A named list.
 }
 \description{
-Provides convenient access to the results of \code{runCnvAnalysis()}.
+Provides convenient access to the results of \code{\link[=runCNV]{runCNV()}}.
 }

@@ -863,7 +863,7 @@ setMethod(
 
 # getS --------------------------------------------------------------------
 
-#' @title Obtain name of \code{SPATA2} object
+#' @title Obtain name of SPATA2 object
 #'
 #' @description Extracts the name/ID of the \code{SPATA2} object
 #' in form of a single character value.
@@ -2576,7 +2576,7 @@ getSpataObject <- function(obj_name, envir = .GlobalEnv){
 
 
 
-#' @title Obtain object of class \code{SpatialAnnotation}
+#' @title Obtain a SpatialAnnotation object
 #'
 #' @description Extracts object of class [`SpatialAnnotation`] by
 #' it's ID.
@@ -2733,7 +2733,7 @@ setMethod(
 )
 
 
-#' @title Obtain list of \code{SpatialAnnotation}-objects
+#' @title Obtain list of SpatialAnnotation objects
 #'
 #' @description Extracts a list of objects of class [`SpatialAnnotation`].
 #'
@@ -2850,7 +2850,7 @@ setMethod(
 
 
 
-#' @title Obtain object of class \code{SpatialData}
+#' @title Obtain SpatialData object
 #'
 #' @description Extracts the S4-object used as a container for
 #' images.
@@ -2918,7 +2918,7 @@ setMethod(
 )
 
 
-#' @title Obtain spatial trajectories
+#' @title Obtain SpatialTrajectory objects
 #'
 #' @description
 #' Extracts objects of class [`SpatialTrajectory`].
@@ -3598,7 +3598,7 @@ getTrajectorySegmentDf <- function(object,
 #' @inherit spatialTrajectoryScreening params
 #' @inherit argument_dummy params
 #'
-#' @return \linky[=concept_distance_measure]{Distance value}.
+#' @return \link[=concept_distance_measure]{Distance value}.
 #' @export
 
 getTrajectoryWidth <- function(object, id = idST(object), unit = "px", orig = FALSE){

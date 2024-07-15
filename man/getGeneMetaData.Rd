@@ -10,7 +10,10 @@ getGeneMetaData(object, ...)
 getGeneMetaDf(object, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 
 \item{only_df}{Logical. If set to TRUE only the data.frame is returned.
 If set to FALSE (the default) the whole list is returned.}

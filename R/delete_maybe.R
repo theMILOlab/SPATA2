@@ -423,7 +423,7 @@ getSasExpansion <- function(object,
 #'
 #' @description Transforms old spatial trajectory class to new one.
 #'
-#' @export
+#' @keywords internal
 asSpatialTrajectory <- function(object, ...){
 
   SpatialTrajectory(

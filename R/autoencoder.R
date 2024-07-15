@@ -170,8 +170,7 @@ printAutoencoderSummary <- function(object, mtr_name = "denoised", of_sample = "
 #'
 #' @return ggplot_family return
 #' @export
-#'
-
+#' @keywords internal
 plotAutoencoderAssessment <- function(object, activation_subset = NULL, clrp = NULL, verbose = NULL){
 
   hlpr_assign_arguments(object)
@@ -228,6 +227,7 @@ plotAutoencoderAssessment <- function(object, activation_subset = NULL, clrp = N
 #' by \code{runAutoEncoderDenoising()} as well as a scaled matrix.
 #'
 #' @export
+#' @keywords internal
 
 plotAutoencoderResults <- function(object,
                                    genes,
@@ -363,6 +363,7 @@ runAutoencoderAssessment <- function(object,
 #' @importFrom Seurat ScaleData
 #'
 #' @export
+#' @keywords internal
 
 runAutoencoderDenoising <- function(object,
                                     activation = "relu",

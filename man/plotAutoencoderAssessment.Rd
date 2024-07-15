@@ -24,3 +24,4 @@ and the number of bottleneck neurons.
 
 The results depend on further adjustments like number of layers, dropout and number of epochs.
 }
+\keyword{internal}

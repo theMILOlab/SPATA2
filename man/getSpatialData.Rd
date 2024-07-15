@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSpatialData}
 \alias{getSpatialData}
-\title{Obtain object of class \code{SpatialData}}
+\title{Obtain SpatialData object}
 \usage{
 getSpatialData(object)
 }

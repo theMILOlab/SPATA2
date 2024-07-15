@@ -8,7 +8,7 @@
 
 
 
-#' @title Set molecular assay
+#' @title Set MolecularAssay objects
 #'
 #' @description Function to set a [`MolecularAssay`] object.
 #'
@@ -35,7 +35,7 @@ setAssay <- function(object, assay){
 #' @param barcodes Character vector. Barcode ids.
 #'
 #' @inherit set_dummy params return details
-#' @export
+#' @keywords internal
 
 setBarcodes <- function(object, barcodes){
 
@@ -123,9 +123,9 @@ setCCD <- function(object, ccd){
 }
 
 
-#' @title Set cnv-results
+#' @title Set CNV results
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #' @inherit set_dummy details
 #'
 #' @param cnv_list The list containing the results from \code{runCnvAnalysis()}.
@@ -150,7 +150,7 @@ setCnvResults <- function(object, cnv_list, ...){
 #' @title Set the coordinates
 #'
 #' @inherit check_coords_df params
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #'
 #' @inherit set_dummy params return details
 #' @export
@@ -436,7 +436,7 @@ setMetaDf <- function(object, meta_df){
 
 # setH --------------------------------------------------------------------
 
-#' @title Set histo image
+#' @title Set HistoImage object
 #'
 #' @description Sets object of class `HistoImage`.
 #'
@@ -655,7 +655,7 @@ setLogfileDf <- function(object, lf_df){
 #'   \item{ \code{umap_df}: \emph{umap1, umap2, ...}}
 #'  }
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #' @param pca_df,tsne_df,umap_df The data.frame composed of the variables
 #' \emph{barcodes}, \emph{sample} and the variables containing the barcode-
 #' spot embedding.
@@ -851,7 +851,7 @@ setSpataDir <- function(object, dir, add_wd = FALSE, ...){
 
 }
 
-#' @title Set spatial annotations
+#' @title Set SpatialAnnotation objects
 #'
 #' @description Sets spatial annotations in the correct slot. Expects a
 #' valid spatial annotation and does not conduct any further checks or
@@ -915,7 +915,7 @@ setMethod(
   }
 )
 
-#' @title Set spatial data
+#' @title Set SpatialData object
 #'
 #' @description Sets the image container class `SpatialData`
 #' in the corresponding slot of the `SPATA2` object.
@@ -933,7 +933,7 @@ setSpatialData <- function(object, sp_data){
 
 }
 
-#' @title Set spatial method
+#' @title Set SpatialMethod object
 #'
 #' @description Sets the [`SpatialMethod`] object containing information
 #' of the platform used.
@@ -977,7 +977,7 @@ setMethod(
 )
 
 
-#' @title Set slot content of `SpatialMethod` object
+#' @title Set slot content of SpatialMethod object
 #'
 #' @description Sets content of slot in the `SpatialMethod` object. Use with
 #' caution.
@@ -1002,7 +1002,7 @@ setSpatialMethodSlot <- function(object, slot, content){
 
 }
 
-#' @title Set information of `SpatialMethod` object
+#' @title Set information of SpatialMethod object
 #'
 #' @description Sets information in slot `@info` of the
 #' `SpatialMethod`-object.
@@ -1043,20 +1043,19 @@ setSpatialMethodInfo <- function(object, slot, content){
 
 
 
-#' @title Set trajectories
+#' @title Set SpatialTrajectory objects
 #'
 #' @description Sets trajectories in the correct slot.
 #'
-#' @param trajectory An object of class `Trajectory.`
-#' @param trajectories List of objects of class `Trajectory`.
+#' @param trajectory An object of class `SpatialTrajectory.`
+#' @param trajectories List of objects of class `SpatialTrajectory`.
 #'
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @export
-#' @keywords internal
 
-setSpatialSpatialTrajectory <- function(object, trajectory, overwrite = FALSE){
+setSpatialTrajectory <- function(object, trajectory, overwrite = FALSE){
 
   if(nTrajectories(object) != 0 ){
 

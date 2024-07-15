@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getSampleName}
 \alias{getSampleName}
-\title{Obtain name of \code{SPATA2} object}
+\title{Obtain name of SPATA2 object}
 \usage{
 getSampleName(object)
 }

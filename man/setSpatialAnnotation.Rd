@@ -5,7 +5,7 @@
 \alias{setSpatialAnnotation,SPATA2-method}
 \alias{setSpatialAnnotations}
 \alias{setSpatialAnnotations,SPATA2-method}
-\title{Set spatial annotations}
+\title{Set SpatialAnnotation objects}
 \usage{
 setSpatialAnnotation(object, ...)
 
