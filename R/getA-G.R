@@ -548,7 +548,7 @@ getChrRegionsDf <- function(object, format = "long"){
 #' @description Returns a character vector of feature names referring to the
 #' barcode-spots chromosomal gains and losses as computed by \code{runCnvAnalysis()}.
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #'
 #' @return Character vector.
 #' @export
@@ -609,11 +609,11 @@ getCnvGenesDf <- function(object, add_meta = TRUE){
 }
 
 
-#' @title Obtain copy-number-variations results
+#' @title Obtain CNV results
 #'
-#' @description Provides convenient access to the results of \code{runCnvAnalysis()}.
+#' @description Provides convenient access to the results of [`runCNV()`].
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #'
 #' @return A named list.
 #' @export
@@ -1926,7 +1926,7 @@ getDeaOverview <- function(object, assay_name = activeAssay(object)){
 #' \code{getDeaResultsDf()} and returns only gene names in a character vector.
 #'
 #' @inherit check_method params
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #' @inherit filterDeaDf params details
 #'
 #' @return A data.frame:
@@ -2215,7 +2215,7 @@ getFromSeurat <- function(return_value, error_handling, error_value, error_ref){
 
 #' @title Obtain gene meta data
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #' @inherit getExpressionMatrix params
 #' @param only_df Logical. If set to TRUE only the data.frame is returned.
 #' If set to FALSE (the default) the whole list is returned.

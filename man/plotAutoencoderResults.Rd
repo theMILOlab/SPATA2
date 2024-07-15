@@ -45,3 +45,4 @@ between the scaled matrix and the denoised matrix.
 This function requires a denoised matrix in slot @data generated
 by \code{runAutoEncoderDenoising()} as well as a scaled matrix.
 }
+\keyword{internal}

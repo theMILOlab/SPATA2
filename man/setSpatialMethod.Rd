@@ -3,7 +3,7 @@
 \name{setSpatialMethod}
 \alias{setSpatialMethod}
 \alias{setSpatialMethod,SPATA2-method}
-\title{Set spatial method}
+\title{Set SpatialMethod object}
 \usage{
 setSpatialMethod(object, ...)
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/setA-Z.R
 \name{setAssay}
 \alias{setAssay}
-\title{Set molecular assay}
+\title{Set MolecularAssay objects}
 \usage{
 setAssay(object, assay)
 }

@@ -3,7 +3,7 @@
 \name{getSpatialTrajectory}
 \alias{getSpatialTrajectory}
 \alias{getSpatialTrajectories}
-\title{Obtain spatial trajectories}
+\title{Obtain SpatialTrajectory objects}
 \usage{
 getSpatialTrajectory(object, id)
 

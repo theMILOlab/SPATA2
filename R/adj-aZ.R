@@ -821,7 +821,7 @@ asGiotto <- function(object,
 # asM-asS -----------------------------------------------------------------
 
 
-#' @title Transform `SPATA2` to `Seurat`
+#' @title Transform SPATA2 object to Seurat object
 #'
 #' @description Transforms an `SPATA2` object to an object of class `Seurat`.
 #' See details for more information.
@@ -867,7 +867,7 @@ asSeurat <- function(object,
 }
 
 
-#' @title Transform to `SingleCellExperiment`
+#' @title Transform SPATA2 object to SingleCellExperiment object
 #'
 #' @description Transforms an `SPATA2` object to an object of class
 #' `SingleCellExperiment`. See details for more information.
@@ -977,7 +977,7 @@ asSingleCellExperiment <- function(object,
 
 
 
-#' @title Transform to `SummarizedExperiment`
+#' @title Transform SPATA2 object to SummarizedExperiment object
 #'
 #' @description Transforms an `SPATA2` object to an object of class
 #' `SummarizedExperiment`. See details for more information.
@@ -1033,7 +1033,7 @@ asSummarizedExperiment <- function(object, ...){
 
 
 
-#' @title Transform to SPATA2 object object
+#' @title Transform objects to SPATA2 object
 #'
 #' @description Transforms input object to object of class `SPATA2` object.
 #'

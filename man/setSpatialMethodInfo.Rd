@@ -2,7 +2,7 @@
 % Please edit documentation in R/setA-Z.R
 \name{setSpatialMethodInfo}
 \alias{setSpatialMethodInfo}
-\title{Set information of \code{SpatialMethod} object}
+\title{Set information of SpatialMethod object}
 \usage{
 setSpatialMethodInfo(object, slot, content)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/adj-aZ.R
 \name{asSummarizedExperiment}
 \alias{asSummarizedExperiment}
-\title{Transform to \code{SummarizedExperiment}}
+\title{Transform SPATA2 object to SummarizedExperiment object}
 \usage{
 asSummarizedExperiment(object, ...)
 }

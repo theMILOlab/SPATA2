@@ -1032,13 +1032,13 @@ mergeWithTissueOutline <- function(object,
 #' \dontrun{ object <- mergeTissueSections(object, c(1,2,3), c(4,5,6)) }
 #'
 #'
-mergeTissueSections <- function(object, ...){
+mergeTissueSections <- function(object, sep = "_", ...){
 
   containsTissueOutline(object)
 
   merge_input <- purrr::keep(.x = list(...), .p = base::is.numeric)
 
-  coords_df <- getCoordsDf(object)
+  meta_df <- getMetaDf(object)
 
   # check input
   sections_to_merge <-
@@ -1047,7 +1047,7 @@ mergeTissueSections <- function(object, ...){
 
   confuns::check_one_of(
     input = sections_to_merge,
-    against = base::unique(coords_df[["section"]]),
+    against = base::unique(meta_df[["section"]]),
     ref.input = "sections to merge"
   )
 
@@ -1061,16 +1061,16 @@ mergeTissueSections <- function(object, ...){
 
     sections <- base::sort(sections)
 
-    coords_df[["section"]] <-
+    meta_df[["tissue_section"]] <-
       stringr::str_replace_all(
-        string = coords_df[["section"]],
+        string = meta_df[["tissue_section"]],
         pattern = stringr::str_c(sections, collapse = "|"),
-        replacement = stringr::str_c(sections, collapse = "_")
+        replacement = stringr::str_c(sections, collapse = sep)
       )
 
   }
 
-  object <- setCoordsDf(object, coords_df = coords_df)
+  object <- setMetaDf(object, meta_df = meta_df)
 
   returnSpataObject(object)
 

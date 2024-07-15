@@ -9,3 +9,4 @@ asSpatialTrajectory(object, ...)
 \description{
 Transforms old spatial trajectory class to new one.
 }
+\keyword{internal}

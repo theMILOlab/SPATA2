@@ -4,7 +4,7 @@
 \alias{getSpatialAnnotation}
 \alias{getSpatialAnnotation,SPATA2-method}
 \alias{getSpatialAnnotation,SpatialData-method}
-\title{Obtain object of class \code{SpatialAnnotation}}
+\title{Obtain a SpatialAnnotation object}
 \usage{
 getSpatialAnnotation(object, ...)
 

@@ -1,9 +1,5 @@
 
 
-
-
-
-
 #' @title Shiny module *Zooming*
 #'
 #' @description The server logical for shiny module *Zooming*.
@@ -18,6 +14,7 @@
 #'
 #' @return A reactive expression which, if called with `<reactiveExpression>()`
 #' returns a list of three slots:
+#'
 #' \itemize{
 #'  \item{*x*:}{ Numeric vector of length two corresponding to the xrange of the zoom.}
 #'  \item{*y*:}{ Numeric vector of length two corresponging to the yrange of the zoom.}
@@ -25,6 +22,7 @@
 #'  }
 #'
 #' @export
+#' @keywords internal
 #'
 shinyModuleZoomingServer <- function(id = "m1",
                                      default = list(),
@@ -136,6 +134,7 @@ shinyModuleZoomingServer <- function(id = "m1",
 }
 
 #' @rdname shinyModuleZoomingServer
+#' @keywords internal
 shinyModuleZoomingUI <- function(id = "m1"){
 
   ns <- shiny::NS(id)

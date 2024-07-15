@@ -2,20 +2,23 @@
 % Please edit documentation in R/setA-Z.R
 \name{setCnvResults}
 \alias{setCnvResults}
-\title{Set cnv-results}
+\title{Set CNV results}
 \usage{
 setCnvResults(object, cnv_list, ...)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
 
 \item{cnv_list}{The list containing the results from \code{runCnvAnalysis()}.}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 A spata object containing the set input.
 }
 \description{
-Set cnv-results
+Set CNV results
 }
 \details{
 All \code{set*()}-functions offer a save way to set certain
