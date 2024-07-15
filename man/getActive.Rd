@@ -21,3 +21,4 @@ Character value.
 \description{
 Gets the name of currently active content in the object.
 }
+\keyword{internal}

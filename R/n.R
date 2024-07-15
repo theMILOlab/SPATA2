@@ -156,7 +156,7 @@ nObs <- function(object){
 
 }
 
-#' @title Number of image annotations
+#' @title Number of spatial annotations
 #'
 #' @description Returns the number of [`SpatialAnnotation`] objects in the sample.
 #'
@@ -195,6 +195,7 @@ setMethod(
   }
 )
 
+#' @keywords internal
 #' @export
 nImageDims <- function(object){
 

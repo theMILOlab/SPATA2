@@ -2,7 +2,7 @@
 % Please edit documentation in R/w.R
 \name{whichTissueSection}
 \alias{whichTissueSection}
-\title{Tissue section belonging}
+\title{Tissue section belonging of spatial annotations}
 \usage{
 whichTissueSection(object, id)
 }

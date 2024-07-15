@@ -25,3 +25,4 @@ default in case of \code{getDefault()}.
 \description{
 Obtain default argument inputs
 }
+\keyword{internal}

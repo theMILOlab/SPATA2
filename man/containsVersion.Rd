@@ -19,3 +19,4 @@ Logical value.
 \description{
 Tests if slot @version exists.
 }
+\keyword{internal}

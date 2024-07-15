@@ -245,12 +245,12 @@ plotPCA <- function(object,
 plotPca <- plotPCA
 
 
-#' @title Plot Pca Variation
+#' @title Plot PCA Variation
 #'
 #' @description Displays a scree plot of the current principal component
 #' analysis data stored in the object.
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #' @inherit getPcaMtr params
 #'
 #' @inherit ggplot_family return
@@ -1448,7 +1448,7 @@ setMethod(
 )
 
 
-#' @title Plot spatial trajectory
+#' @title Plot spatial trajectories
 #'
 #' @description Displays the spatial course of spatial trajectory that was
 #' drawn with \code{createSpatialTrajectories()} on a surface plot.
@@ -1641,7 +1641,7 @@ plotStatisticsInteractive <- function(spata_df){
 }
 
 
-#' @title Plot categorical trajectory dynamics
+#' @title Plot STS barplot
 #'
 #' @description Displays discrete variables along a trajectory.
 #'
@@ -1709,7 +1709,7 @@ plotStsBarplot <- function(object,
 
 }
 
-#' @title Plot trajectory expression dynamic in heatmap
+#' @title Plot STS heatmap
 #'
 #' @description Displays variable-expression values along a trajectory
 #' direction with a smoothed heatmap (from left to right).
@@ -1795,7 +1795,7 @@ plotStsHeatmap <- function(object,
 
 
 
-#' @title Plot continuous trajectory dynamics
+#' @title Plot STS line- and ridgeplot
 #'
 #' @description Displays values along a trajectory direction with
 #' a smoothed lineplot or ridgeplot.

@@ -214,6 +214,8 @@ add_models_to_shifted_projection_df <- function(shifted_projection_df,
 #' It then merges these scaled vectors to create the final data with the desired
 #' noise level.
 #'
+#'
+#' @keywords internal
 
 add_noise_to_model <- function(model, random, nl){
 
@@ -230,9 +232,9 @@ add_noise_to_model <- function(model, random, nl){
 }
 
 
-#' @title Add outline variable
+#' @title Add edge variable
 #'
-#' @description Adds a variable called *outline* to the input data.frame
+#' @description Adds a variable called *edge* to the input data.frame
 #' that tells if the observation belongs to the points that lie on the
 #' edge of the covered area.
 #'
@@ -240,7 +242,7 @@ add_noise_to_model <- function(model, random, nl){
 #' and a variable as denoted in `id_var`.
 #' @param id_var Character. Variable that identifies each observation.
 #'
-#' @return Input data.frame with additional logical variable *outline*.
+#' @return Input data.frame with additional logical variable *edge*.
 #' @export
 #'
 #' @examples
@@ -257,10 +259,10 @@ add_noise_to_model <- function(model, random, nl){
 #'
 #' plotSurface(coords_df, color_by = "edge")
 #'
-add_edge_variable <- function(input_df, id_var = "barcodes"){
+add_edge_variable <- function(coords_df, id_var = "barcodes"){
 
   coords_mtr <-
-    tibble::column_to_rownames(input_df, id_var) %>%
+    tibble::column_to_rownames(coords_df, id_var) %>%
     dplyr::select(x, y) %>%
     base::as.matrix()
 
@@ -274,9 +276,9 @@ add_edge_variable <- function(input_df, id_var = "barcodes"){
   map_to_bcsp <-
     tidyr::expand_grid(
       id = out$id,
-      barcodes = input_df$barcodes
+      barcodes = coords_df$barcodes
     ) %>%
-    dplyr::left_join(y = input_df[,c(id_var, "x", "y")], by = id_var) %>%
+    dplyr::left_join(y = coords_df[,c(id_var, "x", "y")], by = id_var) %>%
     dplyr::left_join(y = out, by = "id") %>%
     dplyr::group_by(id, barcodes) %>%
     dplyr::mutate(dist = compute_distance(starting_pos = c(x = x, y = y), final_pos = c(x = xp, y = yp))) %>%
@@ -285,9 +287,9 @@ add_edge_variable <- function(input_df, id_var = "barcodes"){
     dplyr::filter(dist == base::min(dist)) %>%
     dplyr::ungroup()
 
-  input_df[["edge"]] <- input_df[[id_var]] %in% map_to_bcsp[[id_var]]
+  coords_df[["edge"]] <- coords_df[[id_var]] %in% map_to_bcsp[[id_var]]
 
-  return(input_df)
+  return(coords_df)
 
 }
 
@@ -457,6 +459,7 @@ add_xy <- function(df, x = "x", y = "y"){
 #' @param set_up_list A named list with slots \code{$activation, $bottleneck, $dropout, $epochs, $layers}.
 #'
 #' @return A `SPATA2` object.
+#' @keywords internal
 
 addAutoencoderSetUp <- function(object, mtr_name, set_up_list, ...){
 

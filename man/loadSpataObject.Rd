@@ -2,7 +2,7 @@
 % Please edit documentation in R/l.R
 \name{loadSpataObject}
 \alias{loadSpataObject}
-\title{Load corresponding objects}
+\title{Load SPATA2 object}
 \usage{
 loadSpataObject(directory_spata, verbose = TRUE, update = TRUE)
 }

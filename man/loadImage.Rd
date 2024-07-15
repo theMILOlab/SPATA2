@@ -8,7 +8,7 @@
 \alias{loadImages}
 \alias{loadImages,SPATA2-method}
 \alias{loadImages,SpatialData-method}
-\title{Load image}
+\title{Load image slot content}
 \usage{
 loadImage(object, ...)
 

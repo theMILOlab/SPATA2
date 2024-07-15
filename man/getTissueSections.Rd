@@ -2,7 +2,7 @@
 % Please edit documentation in R/getN-Z.R
 \name{getTissueSections}
 \alias{getTissueSections}
-\title{Obtain tissue section name}
+\title{Obtain the names of tissue sections}
 \usage{
 getTissueSections(object)
 }

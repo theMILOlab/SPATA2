@@ -1,16 +1,19 @@
 
-#' @title Default assay
+#' @title Default assay name
 #'
-#' @description Sets and extracts the active (default) assay. Only relevant if the
-#' `SPATA2` object contains more than one molecular assay.
+#' @description Sets and extracts the active (default) assay name.
 #'
 #' @inherit argument_dummy params
-#'
-#' @seealso [`MolecularAssay`]
+#' @param assay_name Character value. The name of the assay to activate as
+#' the default assay
 #'
 #' @return
-#' \code{activateAssay()}: Updated `SPATA2` object.
-#' \code{activeAssay()}: Character value. Name of the default assay.
+#'  \itemize{
+#'     \item{activateAssay()}: Updated `SPATA2` object.
+#'     \item{activateAssay()}: Character value. Name of the currently active assay.
+#'  }
+#'
+#' @seealso [`getAssay()`], [`getAssayNames()`]
 #'
 #' @export
 #'
@@ -111,15 +114,57 @@ activeGrouping <- function(object, verbose = NULL, arg = "across"){
 
 }
 
-#' @title Obtain name of active content
+
+#' @rdname activateImage
+#' @export
+setGeneric(name = "activeImage", def = function(object, ...){
+
+  standardGeneric(f = "activeImage")
+
+})
+
+
+#' @rdname activateImage
+#' @export
+setMethod(
+  f = "activeImage",
+  signature = "SPATA2",
+  definition = function(object){
+
+    getSpatialData(object) %>%
+      activeImage()
+
+  }
+)
+
+#' @rdname activateImage
+#' @export
+setMethod(
+  f = "activeImage",
+  signature = "SpatialData",
+  definition = function(object){
+
+    object@name_img_active
+
+  }
+)
+
+#' @title Default image name
 #'
-#' @description Handy functions to quickly access the name of currently
-#' activated content.
+#' @description Sets and extracts the active (default) image name.
 #'
-#' @param object An object that contains activated aspects such as
-#' assays, images and matrices.
+#' @inherit argument_dummy params
+#' @param img_name Character value. The name of the image to activate as
+#' the default image.
 #'
-#' @return Character value.
+#' @return
+#'  \itemize{
+#'     \item{activateImage()}: Updated `SPATA2` object.
+#'     \item{activeImage()}: Character value. Name of the currently active image.
+#'  }
+#'
+#' @seealso [`getImage()`], [`getHistoImage()`], [`getImageNames()`]
+#'
 #' @export
 #'
 #' @examples
@@ -143,60 +188,6 @@ activeGrouping <- function(object, verbose = NULL, arg = "across"){
 #'
 #' # note how x_orig, y_orig remain the same, but x and y differ
 #' getCoordsDf(object) # with very_low_res
-#'
-setGeneric(name = "activeImage", def = function(object, ...){
-
-  standardGeneric(f = "activeImage")
-
-})
-
-
-#' @rdname activeImage
-#' @export
-setMethod(
-  f = "activeImage",
-  signature = "SPATA2",
-  definition = function(object){
-
-    getSpatialData(object) %>%
-      activeImage()
-
-  }
-)
-
-#' @rdname activeImage
-#' @export
-setMethod(
-  f = "activeImage",
-  signature = "SpatialData",
-  definition = function(object){
-
-    object@name_img_active
-
-  }
-)
-
-#' @title Activate an image
-#'
-#' @description Sets the active image of the input object which is
-#' then used by default in image dependent functions.
-#'
-#' @param unload Logical value. If `TRUE`, ensures that @@image slots of
-#' the inactive registered images are empty to prevent the input object
-#' from becoming too big.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @note `activateImageInt()` exists mainly for internal use. It works
-#' the same way `activateImage()` works but never unloads and is always
-#' silent.
-#'
-#' @seealso [`activeImage()`]
-#'
-#' @export
-#'
-#' @inherit activeImage examples
 #'
 setGeneric(name = "activateImage", def = function(object, ...){
 
@@ -377,17 +368,21 @@ setMethod(
 
 
 
-#' @title Default matrix
+#' @title Default matrix name
 #'
-#' @description Sets and extracts the active (default) matrix of a [`MolecularAssay`].
+#' @description Sets and extracts the active (default) matrix name of a [`MolecularAssay`].
 #'
 #' @inherit argument_dummy params
+#' @param mtr_name Character value. The name of the matrix to activate as
+#' the default matrix.
 #'
 #' @return
-#' \code{activateMatrix()}: Updated `SPATA2` object.
-#' \code{activeMatrix()}: Character value. Name of the currently active matrix in the respective assay.
+#'  \itemize{
+#'     \item{activateMatrix()}: Updated `SPATA2` object.
+#'     \item{activeMatrix()}: Character value. Name of the currently active matrix in the respective assay.
+#'  }
 #'
-#' @seealso [`getMatrix()`]
+#' @seealso [`getMatrix()`], [`getMatrixNames()`]
 #'
 #' @export
 #'

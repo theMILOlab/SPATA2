@@ -250,6 +250,7 @@ filter_by_thresholds <- function(df,
 #'   }
 #'
 #' @export
+#' @keywords internal
 
 filterDeaDf <- function(dea_df,
                         max_adj_pval = 0.05,

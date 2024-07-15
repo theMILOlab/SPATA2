@@ -8,6 +8,7 @@
 #'
 #' @return Character value.
 #' @export
+#' @keywords internal
 #'
 setGeneric(name = "getActive", def = function(object, ...){
 
@@ -1881,6 +1882,7 @@ getDeaGenes <- function(object,
 #' @return Character value.
 #'
 #' @export
+#' @keywords internal
 
 getDeaLfcName <- function(object,
                           across = getDefaultGrouping(object) ,
@@ -2098,7 +2100,7 @@ getDimRedDf <- function(object,
 }
 
 #' @rdname getDefaultInstructions
-#' @export
+#' @keywords internal
 getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_object", "spata_object")){
 
   check_object(object)
@@ -2125,35 +2127,6 @@ getDirectoryInstructions <- function(object, to = c("cell_data_set", "seurat_obj
 
 
 
-
-
-#' @title Obtain names of stored expression matrices
-#'
-#' @inherit check_sample params
-#'
-#' @return Character vector.
-#' @export
-
-getExpressionMatrixNames <- function(object, assay_name = activeAssay(object), ...){
-
-  check_object(object)
-
-  ma <- getAssay(object, assay_name = assay_name)
-  mtr_names <- base::names(ma@mtr_proc)
-
-  if(base::is.null(mtr_names) | base::identical(mtr_names, base::character(0))){
-
-    out <- character(0)
-
-  } else {
-
-    out <- mtr_names
-
-  }
-
-  return(out)
-
-}
 
 
 # getF --------------------------------------------------------------------

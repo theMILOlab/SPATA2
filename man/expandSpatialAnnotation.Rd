@@ -2,7 +2,7 @@
 % Please edit documentation in R/e.R
 \name{expandSpatialAnnotation}
 \alias{expandSpatialAnnotation}
-\title{Expand the borders of a Spatial Annotations}
+\title{Expand the outline of spatial annotations}
 \usage{
 expandSpatialAnnotation(object, id, expand, new_id = FALSE, overwrite = FALSE)
 }
@@ -24,7 +24,7 @@ spatial annotation is stored under a new ID.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Expands or shrinks the outer border of a spatial annotation.
+Expands or shrinks the outer outline of a spatial annotation.
 }
 \examples{
 

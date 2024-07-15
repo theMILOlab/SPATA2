@@ -4,7 +4,7 @@
 \alias{plotSurfaceSAS}
 \alias{plotSurfaceSAS,SPATA2-method}
 \alias{plotSurfaceSAS,SpatialAnnotationScreening-method}
-\title{Plot screening area of SAS-algorithm}
+\title{Plot screening area of SAS set up}
 \usage{
 plotSurfaceSAS(object, ...)
 

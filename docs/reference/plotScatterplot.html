@@ -67,9 +67,6 @@ one on to the y-axis."><!-- mathjax --><script src="https://cdnjs.cloudflare.com
       <a href="../articles/newslog.html">Newslog</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-spatial-trajectories.html">Creating Spatial Trajectories</a>
-    </li>
-    <li>
       <a href="../articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
     </li>
     <li>
@@ -86,9 +83,6 @@ one on to the y-axis."><!-- mathjax --><script src="https://cdnjs.cloudflare.com
     </li>
     <li>
       <a href="../articles/using-spatial-annotations.html">Using Spatial Annotations</a>
-    </li>
-    <li>
-      <a href="../articles/using-spatial-trajectories.html">Spatial Trajectory Screening</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -189,19 +183,21 @@ the computational progress will be printed.</p>
     <h2>Value</h2>
     
 
-<p>Returns a ggplot-object that can be additionally customized according
-to the rules of the ggplot2-framework.</p>
+<p>Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example_data"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_UKF275T_diet</span></span>
-<span></span>
-<span><span class="fu">plotScatterplot</span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HM_HYPOXIA"</span>, <span class="st">"METRN"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"example_data"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_UKF275T_diet</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">plotScatterplot</span><span class="op">(</span><span class="va">object</span>, variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HM_HYPOXIA"</span>, <span class="st">"METRN"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::flatten_chr(variables):</span> `.x` must be a list, not a character vector.</span>
+</code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

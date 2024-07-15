@@ -977,7 +977,7 @@ setMethod(
 
 
 
-#' @title Plot screening area of SAS-algorithm
+#' @title Plot screening area of SAS set up
 #'
 #' @description Plots the surface of the sample three times with different
 #' coloring to visualize how [`spatialAnnotationScreening()`] screens

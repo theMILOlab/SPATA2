@@ -39,6 +39,53 @@ addSpCorCluster <- function(object,
 }
 
 
+#' @title Center tissue
+#'
+#' @description Computes the necessary translations in order to center
+#' the identified tissue outline in the center of the image.
+#'
+#' @inherit argument_dummy params
+#' @inherit update_dummy return
+#'
+#' @keywords internal
+#'
+setGeneric(name = "centerTissueOutline", def = function(object, ...){
+
+  standardGeneric(f = "centerTissueOutline")
+
+})
+
+#' @rdname centerTissueOutline
+#' @export
+setMethod(
+  f = "centerTissueOutline",
+  signature = "HistoImage",
+  definition = function(object, verbose = TRUE, ...){
+
+    confuns::give_feedback(
+      msg = "Centering tissue outline.",
+      verbose = verbose
+    )
+
+    center <- getImageCenter(object)
+
+    outline_centroid <- getTissueOutlineCentroid(object, transform = FALSE)[c("x", "y")]
+
+    req_translation <- center - outline_centroid
+
+    object@transformations$translate$centroid_alignment$horizontal <-
+      base::unname(object@transformations$translate$centroid_alignment$horizontal + req_translation["x"])
+
+    object@transformations$translate$centroid_alignment$vertical <-
+      base::unname(object@transformations$translate$centroid_alignment$vertical - req_translation["y"])
+
+    object@centered <- TRUE
+
+    return(object)
+
+  }
+)
+
 #' @title Cluster genes according to their expression profile
 #' @keywords internal
 #'

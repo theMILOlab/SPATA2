@@ -2418,7 +2418,7 @@ is_numeric_input <- function(input){
 }
 
 
-#' @title Check for Outliers in a Numeric Vector
+#' @title Check for outliers in a numeric vector
 #'
 #' @description This function identifies outliers in a numeric vector `x`.
 #'

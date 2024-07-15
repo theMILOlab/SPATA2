@@ -2,7 +2,7 @@
 % Please edit documentation in R/g.R
 \name{ggpLayerSpatialTrajectories}
 \alias{ggpLayerSpatialTrajectories}
-\title{Add spatial trajectory layer}
+\title{Add spatial trajectories}
 \usage{
 ggpLayerSpatialTrajectories(
   object = "object",

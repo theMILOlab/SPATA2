@@ -70,3 +70,4 @@ group.
 \item{Arranges the genes according to the highest \emph{avg_logFC}-values}
 }
 }
+\keyword{internal}

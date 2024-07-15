@@ -895,28 +895,6 @@ protected_variable_names <- c(
   "y_orig"
 )
 
-#' @title Pseudo `HistoImage`
-#'
-#' @description A [`HistoImage`] object that serves as the container for some
-#' spatial related functions that are applicable to spatial methods even if they
-#' do not come with an image (e.g. MERFISH, SlideSeq).
-#'
-#' This is necessary, as `SPATA2` stores a variety of spatial information
-#' in the [`HistoImaging`] and [`HistoImage`] containers. Therefore, code relies
-#' on the presence of a `HistoImage` object inside the `spata2` object even though
-#' there is no actual image of the tissue.
-#'
-#' @export
-PseudoHistoImage <-
-  HistoImage(
-    active = TRUE,
-    image = empty_image,
-    name = "pseudo",
-    reference = TRUE,
-    scale_factors = list(coords = 1),
-    transformations = default_image_transformations
-  )
-
 
 pub_dropbox_links <- list(
   "269_T" = "https://www.dropbox.com/s/kgu6c93wd08otxd/269_T.RDS?dl=1",

@@ -97,3 +97,4 @@ the function \code{spatialAnnotationScreening()}) can be used
 to show the area on which the results are based on. Therefore, it does not have
 arguments \code{binwidth}, \code{n_bins_circle} and \code{n_bins_angle}.
 }
+\keyword{internal}

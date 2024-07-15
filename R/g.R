@@ -1618,7 +1618,7 @@ setMethod(
 
 
 
-#' @title Adds data points to the surface plot
+#' @title Add the observations to the surface plot
 #'
 #' @description Adds the data points (beads, cells, spots, etc.) of the object
 #' to the plot. (The working horse of [`plotSurface()`]).
@@ -3689,7 +3689,7 @@ setMethod(
 )
 
 
-#' @title Add spatial trajectory layer
+#' @title Add spatial trajectories
 #'
 #' @description Adds spatial trajectories in form of arrows to a surface plot.
 #'
@@ -3742,7 +3742,7 @@ ggpLayerSpatialTrajectories <- function(object = "object",
 
 
 
-#' @title Create a Trajectory Frame Layer for ggplot
+#' @title Add the screening frame of a spatial trajectory
 #'
 #' @description This function generates a ggplot layer representing a trajectory
 #' frame based on a specified trajectory segment in a `spata2` object. It creates

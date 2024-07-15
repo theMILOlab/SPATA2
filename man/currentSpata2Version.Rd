@@ -2,7 +2,7 @@
 % Please edit documentation in R/c.R
 \name{currentSpata2Version}
 \alias{currentSpata2Version}
-\title{The current version of \code{SPATA2}}
+\title{The current version of SPATA2}
 \usage{
 currentSpata2Version()
 }

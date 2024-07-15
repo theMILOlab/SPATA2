@@ -3,7 +3,7 @@
 \name{plotStsLineplot}
 \alias{plotStsLineplot}
 \alias{plotStsRidgeplot}
-\title{Plot continuous trajectory dynamics}
+\title{Plot STS line- and ridgeplot}
 \usage{
 plotStsLineplot(
   object,

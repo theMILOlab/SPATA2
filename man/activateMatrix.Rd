@@ -3,7 +3,7 @@
 \name{activateMatrix}
 \alias{activateMatrix}
 \alias{activeMatrix}
-\title{Default matrix}
+\title{Default matrix name}
 \usage{
 activateMatrix(
   object,
@@ -18,8 +18,8 @@ activeMatrix(object, assay_name = activeAssay(object))
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{mtr_name}{Character value. The name of the matrix of interest. Defaults
-to the active matrix of the assay, as denoted by \code{\link[=activateMatrix]{activateMatrix()}}.}
+\item{mtr_name}{Character value. The name of the matrix to activate as
+the default matrix.}
 
 \item{assay_name}{Only relevant if the \code{SPATA2} object contains more than
 one assay: Denotes the assay of interest. Defaults to the active assay,
@@ -31,11 +31,13 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 }
 \value{
-\code{activateMatrix()}: Updated \code{SPATA2} object.
-\code{activeMatrix()}: Character value. Name of the currently active matrix in the respective assay.
+\itemize{
+\item{activateMatrix()}: Updated \code{SPATA2} object.
+\item{activeMatrix()}: Character value. Name of the currently active matrix in the respective assay.
+}
 }
 \description{
-Sets and extracts the active (default) matrix of a \code{\link{MolecularAssay}}.
+Sets and extracts the active (default) matrix name of a \code{\link{MolecularAssay}}.
 }
 \examples{
 
@@ -59,5 +61,5 @@ plot(p2)
 
 }
 \seealso{
-\code{\link[=getMatrix]{getMatrix()}}
+\code{\link[=getMatrix]{getMatrix()}}, \code{\link[=getMatrixNames]{getMatrixNames()}}
 }

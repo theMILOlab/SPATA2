@@ -22,3 +22,4 @@ by computing the variance of copy number variations across chromosomes 1-22.
 
 (Requires the results of \code{\link[=runCNV]{runCNV()}}).
 }
+\keyword{internal}

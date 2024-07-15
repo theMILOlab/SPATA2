@@ -102,7 +102,7 @@ setMethod(
 
 # getImage ----------------------------------------------------------------
 
-#' @title Obtain `Image` object
+#' @title Obtain object of class `Image`
 #'
 #' @description Extracts the image as an object of class `Image`
 #' as specified in the package `EBImage`.

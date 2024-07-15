@@ -2,7 +2,7 @@
 % Please edit documentation in R/r.R
 \name{renameSpatialAnnotation}
 \alias{renameSpatialAnnotation}
-\title{Rename a Spatial Annotation}
+\title{Rename a spatial annotation}
 \usage{
 renameSpatialAnnotation(object, id, new_id, overwrite = FALSE)
 }

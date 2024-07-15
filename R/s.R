@@ -3,7 +3,7 @@
 
 # save --------------------------------------------------------------------
 
-#' @title Save a SPATA2 object with a default
+#' @title Save a SPATA2 object with a default directory
 #'
 #' @description Saves the [`SPATA2`] object under a default directory.
 #'
@@ -2145,9 +2145,9 @@ smoothSpatially <- function(coords_df,
 
 # spatial -----------------------------------------------------------------
 
-#' @title Low level implementation of the spatial gradient screening
+#' @title Low level implementation of the spatial gradient screening algorithm
 #'
-#' @description Conducts spatial gradient screening. See details for more information.
+#' @description Conducts spatial gradient screening.
 #'
 #' @param coords_df A data.frame that contains at least a numeric variable named
 #' *dist* as well the numeric variables denoted in `variables`.
@@ -3027,17 +3027,18 @@ strongH5 <- function(text){
 # subset ------------------------------------------------------------------
 
 
-#' @title Subsetting by barcodes
+#' @title Subset SPATA2 object
 #'
-#' @description Removes unwanted data points from the object without any significant
-#' post processing.
+#' @description Keeps only specified observations.
 #'
-#' @param barcodes Character vector. The barcodes of the data points that are
+#' @param barcodes Character vector. The barcodes of the observations that are
 #' supposed to be \bold{kept}.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
 #' @details Unused levels of factor variables in the feature data.frame are dropped.
+#'
+#' @seealso [`removeObs()`]
 #'
 #' @export
 #'

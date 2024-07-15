@@ -4,7 +4,7 @@
 \alias{centerSpatialAnnotation}
 \alias{centerSpatialAnnotation,SPATA2-method}
 \alias{centerSpatialAnnotation,SpatialData-method}
-\title{Center the Borders of a Spatial Annotation}
+\title{Center the borders of a spatial annotation}
 \usage{
 centerSpatialAnnotation(object, ...)
 

@@ -436,7 +436,7 @@ setMetaDf <- function(object, meta_df){
 
 # setH --------------------------------------------------------------------
 
-#' @title Set `HistoImage`
+#' @title Set histo image
 #'
 #' @description Sets object of class `HistoImage`.
 #'
@@ -915,7 +915,7 @@ setMethod(
   }
 )
 
-#' @title Set `SpatialData`
+#' @title Set spatial data
 #'
 #' @description Sets the image container class `SpatialData`
 #' in the corresponding slot of the `SPATA2` object.
@@ -1054,8 +1054,9 @@ setSpatialMethodInfo <- function(object, slot, content){
 #' @inherit update_dummy return
 #'
 #' @export
+#' @keywords internal
 
-setTrajectory <- function(object, trajectory, overwrite = FALSE){
+setSpatialSpatialTrajectory <- function(object, trajectory, overwrite = FALSE){
 
   if(nTrajectories(object) != 0 ){
 
@@ -1085,9 +1086,9 @@ setTrajectory <- function(object, trajectory, overwrite = FALSE){
 
 }
 
-#' @rdname setTrajectory
+#' @rdname setSpatialTrajectory
 #' @export
-setTrajectories <- function(object, trajectories, overwrite = FALSE){
+setSpatialTrajectories <- function(object, trajectories, overwrite = FALSE){
 
   trajectories <- purrr::keep(.x = trajectories, .p = isTrajectory)
 

@@ -108,7 +108,7 @@ setMethod(
   }
 )
 
-#' @title Check availability of miscellaneous content
+#' @title Check availability CNV results
 #'
 #' @description Logical tests that check if content exists in the `SPATA2` object.
 #'
@@ -597,6 +597,8 @@ containsSpatialData <- function(object, error = FALSE){
 #'
 containsSpatialOutliers <- function(object, ...){
 
+  containsTissueOutline(object, error = TRUE)
+
   meta_df <- getMetaDf(object)
   n_outlier <- base::sum(meta_df[["sp_outlier"]])
 
@@ -863,7 +865,7 @@ setMethod(
 #' @inherit argument_dummy params
 #'
 #' @return Logical value.
-#' @export
+#' @keywords internal
 #'
 containsVersion <- function(object, check_not_empty = FALSE){
 

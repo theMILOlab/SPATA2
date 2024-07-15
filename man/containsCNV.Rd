@@ -2,7 +2,7 @@
 % Please edit documentation in R/contains.R
 \name{containsCNV}
 \alias{containsCNV}
-\title{Check availability of miscellaneous content}
+\title{Check availability CNV results}
 \usage{
 containsCNV(object, error = FALSE)
 }

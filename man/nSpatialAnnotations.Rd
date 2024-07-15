@@ -4,7 +4,7 @@
 \alias{nSpatialAnnotations}
 \alias{nSpatialAnnotations,SPATA2-method}
 \alias{nSpatialAnnotations,SpatialData-method}
-\title{Number of image annotations}
+\title{Number of spatial annotations}
 \usage{
 nSpatialAnnotations(object, ...)
 

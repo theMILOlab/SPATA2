@@ -3,7 +3,7 @@
 \name{addSpatialTrajectory}
 \alias{addSpatialTrajectory}
 \alias{createSpatialTrajectories}
-\title{Add spatial trajectories}
+\title{Create and add spatial trajectories}
 \usage{
 addSpatialTrajectory(
   object,
@@ -46,7 +46,7 @@ sets additional vertices along the trajectory.}
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Functions to add spatial trajectories to the \code{spata2}
+Functions to add spatial trajectories to the \code{SPATA2}
 object. For interactive drawing use \code{createSpatialTrajectories()}.
 To set them precisely with code use \code{addSpatialTrajectory()}.
 }

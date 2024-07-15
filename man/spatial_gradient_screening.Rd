@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{spatial_gradient_screening}
 \alias{spatial_gradient_screening}
-\title{Low level implementation of the spatial gradient screening}
+\title{Low level implementation of the spatial gradient screening algorithm}
 \usage{
 spatial_gradient_screening(
   coords_df,
@@ -67,5 +67,5 @@ the fit.
 }
 }
 \description{
-Conducts spatial gradient screening. See details for more information.
+Conducts spatial gradient screening.
 }

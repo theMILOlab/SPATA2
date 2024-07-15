@@ -65,9 +65,6 @@
       <a href="../articles/newslog.html">Newslog</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-spatial-trajectories.html">Creating Spatial Trajectories</a>
-    </li>
-    <li>
       <a href="../articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
     </li>
     <li>
@@ -85,9 +82,6 @@
     <li>
       <a href="../articles/using-spatial-annotations.html">Using Spatial Annotations</a>
     </li>
-    <li>
-      <a href="../articles/using-spatial-trajectories.html">Spatial Trajectory Screening</a>
-    </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -98,7 +92,7 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Transform to <code>SPATA2</code> object object</h1>
+    <h1>Transform to SPATA2 object object</h1>
     
     <div class="hidden name"><code>asSPATA2.Rd</code></div>
     </div>
@@ -137,67 +131,11 @@
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
-    <div id="arguments">
-    <h2>Arguments</h2>
-    <dl><dt>object</dt>
-<dd><p>An object of either one of the following classes: <code>Seurat</code>, <code>SingleCellExperiment</code>, <code>AnnDataR6</code></p></dd>
-
-
-<dt>...</dt>
-<dd><p>Additional arguments given to <code><a href="initiateSpataObject_CountMtr.html">initiateSpataObject_CountMtr()</a></code>.</p></dd>
-
-
-<dt>sample_name</dt>
-<dd><p>A character string specifying the name of the sample</p></dd>
-
-
-<dt>spatial_method</dt>
-<dd><p>Character value. The name of the spatial method that underlies
-the experiment. Must be one of <code><a href="validActivationFunctions.html">validSpatialMethods()</a></code>. Defaults to <em>'Unknown'</em>.</p></dd>
-
-
-<dt>transfer_meta_data</dt>
-<dd><p>Logical or character. Specifies
-if meta data, e.g clustering, from the input object is transferred
-to the output object. If TRUE, all variables of the meta data.frame
-are transferred. If character, named variables are transferred. If FALSE,
-none are transferred.</p></dd>
-
-
-<dt>verbose</dt>
-<dd><p>Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.</p>
-<p>(Warning messages will always be printed.)</p></dd>
-
-
-<dt>assay_name</dt>
-<dd><p>Only relevant if the <code>SPATA2</code> object contains more than
-one assay: Denotes the assay of interest. Defaults to the active assay,
-as set by <code><a href="activateAssay.html">activateAssay()</a></code>.</p></dd>
-
-
-<dt>transfer_dim_red</dt>
-<dd><p>A logical specifying whether to transfer dimensional reduction data (PCA, UMAP,
-tSNE) from the input object to the output object.</p></dd>
-
-
-<dt>count_mtr_name</dt>
-<dd><p>A character string specifying the name of the count matrix</p></dd>
-
-
-<dt>scaled_mtr_name</dt>
-<dd><p>A character string specifying the name of the scaled matrix</p></dd>
-
-
-<dt>normalized_mtr_name</dt>
-<dd><p>A character string specifying the name of the normalized matrix (anndata only currently)</p></dd>
-
-</dl></div>
     <div id="value">
     <h2>Value</h2>
     
 
-<p>An object of class <code>SPATA2</code> object.</p>
+<p>An object of class <code><a href="SPATA2.html">SPATA2</a></code>.</p>
     </div>
 
   </div>

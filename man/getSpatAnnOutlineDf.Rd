@@ -5,7 +5,7 @@
 \alias{getSpatAnnOutlineDf,SPATA2-method}
 \alias{getSpatAnnOutlineDf,SpatialData-method}
 \alias{getSpatAnnOutlineDf,SpatialAnnotation-method}
-\title{Obtain spatial annotation border data.frame}
+\title{Obtain the outline of a spatial annotation}
 \usage{
 getSpatAnnOutlineDf(object, ...)
 

@@ -1197,7 +1197,7 @@ createHistoImage <- function(img_name,
 
 # createI -----------------------------------------------------------------
 
-#' @title Add spatial annotations based on histo-morphological features
+#' @title Create spatial annotations based on histo-morphological features
 #'
 #' @description Opens an interface in which the user can interactively outline
 #' histomorphological features of an image. The outline created this way is
@@ -4597,9 +4597,9 @@ createSpatialSegmentation <- function(object, height = 500, break_add = NULL, bo
 }
 
 
-#' @title Add spatial trajectories
+#' @title Create and add spatial trajectories
 #'
-#' @description Functions to add spatial trajectories to the `spata2`
+#' @description Functions to add spatial trajectories to the `SPATA2`
 #' object. For interactive drawing use `createSpatialTrajectories()`.
 #' To set them precisely with code use `addSpatialTrajectory()`.
 #'

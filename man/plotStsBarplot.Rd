@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotStsBarplot}
 \alias{plotStsBarplot}
-\title{Plot categorical trajectory dynamics}
+\title{Plot STS barplot}
 \usage{
 plotStsBarplot(
   object,

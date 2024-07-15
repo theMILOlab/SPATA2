@@ -26,3 +26,4 @@ Character value.
 Extracts name of variable that contains log fold change results
 of DEA.
 }
+\keyword{internal}

@@ -3,8 +3,8 @@
 \docType{data}
 \name{visium_spots}
 \alias{visium_spots}
-\title{A list of a slot named \emph{small}, which contains the data.frame of all
-barcoded spots of 6.5mm capture area and a slot named \emph{large} which
+\title{A list of a slot named \emph{VisiumSmall}, which contains the data.frame of all
+barcoded spots of 6.5mm capture area and a slot named \emph{VisiumLarge} which
 contains the barcoded spots of the 11mm capture area.}
 \format{
 An object of class \code{list} of length 2.

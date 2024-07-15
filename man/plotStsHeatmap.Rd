@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotStsHeatmap}
 \alias{plotStsHeatmap}
-\title{Plot trajectory expression dynamic in heatmap}
+\title{Plot STS heatmap}
 \usage{
 plotStsHeatmap(
   object,

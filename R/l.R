@@ -173,7 +173,7 @@ load_adata_matrix_converter <- function(adata, mname, matrix, verbose){
 
 
 
-#' @title Load image
+#' @title Load image slot content
 #'
 #' @description Reads the image based on the directory stored in slot @@dir
 #' of the `HistoImage` object. This makes the image availble quicker but
@@ -311,7 +311,7 @@ setMethod(
 )
 
 
-#' @title Load corresponding objects
+#' @title Load SPATA2 object
 #'
 #' @description Reads an .RDS file, checks if it is an object of class [`SPATA2`]
 #' and checks whether it must be updated.

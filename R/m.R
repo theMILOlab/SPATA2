@@ -1081,7 +1081,7 @@ mergeTissueSections <- function(object, ...){
 
 # model -------------------------------------------------------------------
 
-#' @title Generate Model-Based Ascending or Descending Sequence
+#' @title Generate model-based ascending or descending sequence
 #'
 #' @description Generates a sequence of values based on a model for ascending or descending patterns.
 #'

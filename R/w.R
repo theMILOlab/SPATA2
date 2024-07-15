@@ -15,7 +15,7 @@ waive_if_null <- function(x, to_pxl = FALSE){
 }
 
 
-#' @title Tissue section belonging
+#' @title Tissue section belonging of spatial annotations
 #'
 #' @description Checks to which tissue section the spatial annotation
 #' belongs. (Only required in case of multiple tissue sections per sample.)

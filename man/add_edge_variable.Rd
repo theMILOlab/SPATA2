@@ -2,21 +2,21 @@
 % Please edit documentation in R/add.R
 \name{add_edge_variable}
 \alias{add_edge_variable}
-\title{Add outline variable}
+\title{Add edge variable}
 \usage{
-add_edge_variable(input_df, id_var = "barcodes")
+add_edge_variable(coords_df, id_var = "barcodes")
 }
 \arguments{
+\item{id_var}{Character. Variable that identifies each observation.}
+
 \item{input_df}{A data.frame with two numeric variables called \emph{x} and \emph{y}
 and a variable as denoted in \code{id_var}.}
-
-\item{id_var}{Character. Variable that identifies each observation.}
 }
 \value{
-Input data.frame with additional logical variable \emph{outline}.
+Input data.frame with additional logical variable \emph{edge}.
 }
 \description{
-Adds a variable called \emph{outline} to the input data.frame
+Adds a variable called \emph{edge} to the input data.frame
 that tells if the observation belongs to the points that lie on the
 edge of the covered area.
 }

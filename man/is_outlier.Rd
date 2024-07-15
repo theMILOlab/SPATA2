@@ -2,7 +2,7 @@
 % Please edit documentation in R/i.R
 \name{is_outlier}
 \alias{is_outlier}
-\title{Check for Outliers in a Numeric Vector}
+\title{Check for outliers in a numeric vector}
 \usage{
 is_outlier(x, ...)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{createImageAnnotations}
 \alias{createImageAnnotations}
-\title{Add spatial annotations based on histo-morphological features}
+\title{Create spatial annotations based on histo-morphological features}
 \usage{
 createImageAnnotations(object, ...)
 }

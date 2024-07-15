@@ -66,9 +66,6 @@ changes along the course of the spatial trajectory."><!-- mathjax --><script src
       <a href="../articles/newslog.html">Newslog</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-spatial-trajectories.html">Creating Spatial Trajectories</a>
-    </li>
-    <li>
       <a href="../articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
     </li>
     <li>
@@ -85,9 +82,6 @@ changes along the course of the spatial trajectory."><!-- mathjax --><script src
     </li>
     <li>
       <a href="../articles/using-spatial-annotations.html">Using Spatial Annotations</a>
-    </li>
-    <li>
-      <a href="../articles/using-spatial-trajectories.html">Spatial Trajectory Screening</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -114,7 +108,7 @@ changes along the course of the spatial trajectory.</p>
 <span>  <span class="va">object</span>,</span>
 <span>  <span class="va">id</span>,</span>
 <span>  <span class="va">variables</span>,</span>
-<span>  binwidth <span class="op">=</span> <span class="fu"><a href="recBinwidth.html">recBinwidth</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
+<span>  resolution <span class="op">=</span> <span class="fu"><a href="recSgsRes.html">recSgsRes</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  width <span class="op">=</span> <span class="fu"><a href="getTrajectoryLength.html">getTrajectoryLength</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">id</span><span class="op">)</span>,</span>
 <span>  unit <span class="op">=</span> <span class="fu"><a href="getDefaultUnit.html">getDefaultUnit</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>  bcs_exclude <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
@@ -140,21 +134,28 @@ changes along the course of the spatial trajectory.</p>
 objects of classes for which a method has been defined.</p></dd>
 
 
-<dt>id</dt>
-<dd><p>Character value. Denotes the spatial trajectory
-of interest.</p></dd>
-
-
 <dt>variables</dt>
-<dd><p>Character vector. All numeric variables (meaning genes,
-gene-sets and numeric features) that are supposed to be included in
+<dd><p>Character vector. All numeric variables to be included in
 the screening process.</p></dd>
 
 
-<dt>binwidth</dt>
-<dd><p>Distance value. The width of the bins to which
-the barcode-spots are assigned. Defaults to the center-center
-distance: <code>binwidth = getCCD(object)</code>.</p></dd>
+<dt>resolution</dt>
+<dd><p><a href="concept_distance_measure.html">Distance measure</a>. The resolution
+with which the expression gradient is inferred. Defaults are platform specific.
+See more in detail section of <code><a href="recSgsRes.html">recSgsRes()</a></code>.</p></dd>
+
+
+<dt>width</dt>
+<dd><p>Distance measure. The width of the trajectory frame. Defaults
+to the trajectory length.</p></dd>
+
+
+<dt>unit</dt>
+<dd><p>Character value. Specifies the desired unit in
+which <a href="concept_distance_measure.html">distance measures</a>
+or  <a href="concept_area_measure.html">area measures</a> are provided.
+Run <code><a href="validActivationFunctions.html">validUnitsOfLength()</a></code> or <code>validUnitsofArea()</code> for valid
+input options.</p></dd>
 
 
 <dt>model_add</dt>
@@ -184,16 +185,6 @@ the computational progress will be printed.</p>
 <dt>...</dt>
 <dd><p>Used to absorb deprecated arguments or functions.</p></dd>
 
-
-<dt>n_bins</dt>
-<dd><p>Numeric value or vector of length 2. Specifies exactly how many bins are
-created. (See details for more.)</p></dd>
-
-
-<dt>summarize_with</dt>
-<dd><p>Character value. Either <em>'mean'</em> or <em>'median'</em>.
-Specifies the function with which the bins are summarized.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -207,6 +198,57 @@ with <code>?ImageAnnotationScreening</code> for more information.</p>
     <div class="dont-index"><p><code><a href="createSpatialTrajectories.html">createSpatialTrajectories()</a></code></p></div>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://themilolab.com/" class="external-link">SPATA2</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">object</span> <span class="op">&lt;-</span> <span class="va">example_data</span><span class="op">$</span><span class="va">object_UKF269T_diet</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="identifyTissueOutline.html">identifyTissueOutline</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="runSPARKX.html">runSPARKX</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## ===== SPARK-X INPUT INFORMATION ==== </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## number of total samples: 3217 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## number of total genes: 2000 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Running with single core, may take some time </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Projection Kernel</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Gaussian Kernel 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Gaussian Kernel 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Gaussian Kernel 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Gaussian Kernel 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Gaussian Kernel 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Cosine Kernel 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Cosine Kernel 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Cosine Kernel 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Cosine Kernel 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ## Testing With Cosine Kernel 5</span>
+<span class="r-in"><span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="runSPARKX.html">getSparkxGenes</a></span><span class="op">(</span><span class="va">object</span>, threshold_pval <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">id</span> <span class="op">&lt;-</span> <span class="st">"horizontal_mid"</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plotImage.html">plotImage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">+</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="ggpLayerSpatialTrajectories.html">ggpLayerSpatialTrajectories</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">id</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in purrr::map(.x = ids, .f = ~getSpatialTrajectory(object, id = .x)):</span> <span style="color: #00BBBB;">ℹ</span> In index: 1.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `fdb.fn == "stop"`:</span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> comparison (==) is possible only for atomic and list types</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plotSpatialTrajectories.html">plotSpatialTrajectories</a></span><span class="op">(</span><span class="va">object</span>, ids <span class="op">=</span> <span class="va">id</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in map(.x, .f, ...):</span> <span style="color: #00BBBB;">ℹ</span> In index: 1.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `fdb.fn == "stop"`:</span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> comparison (==) is possible only for atomic and list types</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">sts_out</span> <span class="op">&lt;-</span></span></span>
+<span class="r-in"><span>  <span class="fu">spatialTrajectoryScreening</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    object <span class="op">=</span> <span class="va">object</span>,</span></span>
+<span class="r-in"><span>    id <span class="op">=</span> <span class="va">id</span>,</span></span>
+<span class="r-in"><span>    variables <span class="op">=</span> <span class="va">genes</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 20:01:25 Estimating R2 between total variation and noise ratio.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in fdb.fn == "stop":</span> comparison (==) is possible only for atomic and list types</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

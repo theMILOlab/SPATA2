@@ -1,5 +1,5 @@
 
-#' @title Empty image slot
+#' @title Unload image slot content
 #'
 #' @description Removes the image from slot @@image of a `HistoImage`.
 #' Useful for efficient data storing.

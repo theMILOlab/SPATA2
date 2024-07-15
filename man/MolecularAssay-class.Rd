@@ -4,7 +4,7 @@
 \name{MolecularAssay-class}
 \alias{MolecularAssay-class}
 \alias{MolecularAssay}
-\title{The \code{MolecularAssay} - class}
+\title{The \code{MolecularAssay} - Class}
 \description{
 A class to represent molecular assay data, including analysis results, metrics, and
 statistical summaries. The \code{MolecularAssay} class encapsulates various components

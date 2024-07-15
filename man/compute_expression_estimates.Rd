@@ -2,7 +2,7 @@
 % Please edit documentation in R/c.R
 \name{compute_expression_estimates}
 \alias{compute_expression_estimates}
-\title{Compute Position-Based Expression Estimates}
+\title{Compute}
 \usage{
 compute_expression_estimates(coords_df)
 }
@@ -17,7 +17,4 @@ A numeric vector representing position-based expression estimates.
 This function computes position-based expression estimates given the minimum
 and maximum distances and the average minimum center-to-center distance (AMCCD).
 }
-\note{
-This function validates that the units of \code{amccd}, \code{min_dist},
-and \code{max_dist} match to ensure consistent unit measurements.
-}
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{subsetByBarcodes}
 \alias{subsetByBarcodes}
-\title{Subsetting by barcodes}
+\title{Subset SPATA2 object}
 \usage{
 subsetByBarcodes(object, barcodes, verbose = NULL)
 }
@@ -10,7 +10,7 @@ subsetByBarcodes(object, barcodes, verbose = NULL)
 \item{object}{An object of class \code{\link{SPATA2}} or, in case of S4 generics,
 objects of classes for which a method has been defined.}
 
-\item{barcodes}{Character vector. The barcodes of the data points that are
+\item{barcodes}{Character vector. The barcodes of the observations that are
 supposed to be \bold{kept}.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
@@ -22,8 +22,7 @@ the computational progress will be printed.
 The updated input object, containing the added, removed or computed results.
 }
 \description{
-Removes unwanted data points from the object without any significant
-post processing.
+Keeps only specified observations.
 }
 \details{
 Unused levels of factor variables in the feature data.frame are dropped.
@@ -47,4 +46,7 @@ object_sub <- subsetByBarcodes(object, barcodes = barcodes_keep)
 plotSurface(object, color_by = "bayes_space") +
  plotSurface(object_sub, color_by = "bayes_space")
 
+}
+\seealso{
+\code{\link[=removeObs]{removeObs()}}
 }

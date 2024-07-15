@@ -876,6 +876,7 @@ transform_coords <- function(coords_df, transformations, center, ranges, ...){
 #' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
+#' @keywords internal
 #'
 transform_dist_si_to_pixel <- function(input,
                                        object = NULL,
@@ -914,6 +915,7 @@ transform_dist_si_to_pixel <- function(input,
 }
 
 
+#' @keywords internal
 #' @rdname transform_dist_si_to_pixel
 #' @export
 transform_dist_si_to_pixels <- function(input,
@@ -986,7 +988,8 @@ transform_dist_si_to_pixels <- function(input,
 #' transforms vectors of lengths one or more.
 #'
 #' @export
-#'
+#' @keywords internal
+
 transform_pixel_to_dist_si <- function(input,
                                        unit,
                                        object = NULL,
@@ -1036,6 +1039,7 @@ transform_pixel_to_dist_si <- function(input,
 
 }
 
+#' @keywords internal
 #' @rdname transform_pixel_to_dist_si
 #' @export
 transform_pixels_to_dist_si <- function(input,
@@ -1080,7 +1084,7 @@ transform_pixels_to_dist_si <- function(input,
 #' @inherit transform_pixel_to_dist_si params return
 #'
 #' @export
-#'
+#' @keywords internal
 transform_pixel_to_area_si <- function(input,
                                        unit,
                                        object,
@@ -1125,6 +1129,7 @@ transform_pixel_to_area_si <- function(input,
 }
 
 
+#' @keywords internal
 #' @rdname transform_pixel_to_si
 #' @export
 transform_pixels_to_area_si <- function(input,
@@ -1170,7 +1175,7 @@ transform_pixels_to_area_si <- function(input,
 #' is `FALSE`, the output is a string suffixed with *px*.
 #'
 #' @export
-#'
+#' @keywords internal
 transform_area_si_to_pixel <- function(input,
                                   object,
                                   round = FALSE){
@@ -1208,6 +1213,7 @@ transform_area_si_to_pixel <- function(input,
 
 }
 
+#' @keywords internal
 #' @rdname transform_area_si_to_pixel
 #' @export
 transform_area_si_to_pixels <- function(input,

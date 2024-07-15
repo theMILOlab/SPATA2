@@ -3,12 +3,10 @@
 surface according to the expression of genes, gene sets or features. There
 are methods for multiple classes:
 
-spata2: The most versatile method with which all sorts of spatial
+SPATA2: The most versatile method with which all sorts of spatial
 data can be visualized.
 data.frame: Method for a data.frame that contains at least the
 variables x and y.
-SDEGS: Method to visualize the surface based on the set up with
-which findSDEGS() was run.
 SpatialAnnotationScreening: Method to visualize the surface based
 on the setup with which spatialAnnotationScreening() was run.
 SpatialTrajectoryScreening: Method to visualize the surface based
@@ -80,9 +78,6 @@ on the setup with which spatialAnnotationScreening() was run.
       <a href="../articles/newslog.html">Newslog</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-spatial-trajectories.html">Creating Spatial Trajectories</a>
-    </li>
-    <li>
       <a href="../articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
     </li>
     <li>
@@ -99,9 +94,6 @@ on the setup with which spatialAnnotationScreening() was run.
     </li>
     <li>
       <a href="../articles/using-spatial-annotations.html">Using Spatial Annotations</a>
-    </li>
-    <li>
-      <a href="../articles/using-spatial-trajectories.html">Spatial Trajectory Screening</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -122,12 +114,10 @@ on the setup with which spatialAnnotationScreening() was run.
     <p>Displays the spatial dimension of the sample and colors the
 surface according to the expression of genes, gene sets or features. There
 are methods for multiple classes:</p>
-<ul><li><p><code>spata2</code>: The most versatile method with which all sorts of spatial
+<ul><li><p><code>SPATA2</code>: The most versatile method with which all sorts of spatial
 data can be visualized.</p></li>
 <li><p><code>data.frame</code>: Method for a data.frame that contains at least the
 variables <em>x</em> and <em>y</em>.</p></li>
-<li><p><code>SDEGS</code>: Method to visualize the surface based on the set up with
-which <code><a href="findSDEGS.html">findSDEGS()</a></code> was run.</p></li>
 <li><p><code><a href="SpatialAnnotationScreening-class.html">SpatialAnnotationScreening</a></code>: Method to visualize the surface based
 on the setup with which <code><a href="spatialAnnotationScreening.html">spatialAnnotationScreening()</a></code> was run.</p></li>
 <li><p><code><a href="SpatialTrajectoryScreening-class.html">SpatialTrajectoryScreening</a></code>: Method to visualize the surface based
@@ -185,6 +175,26 @@ on the setup with which <code><a href="spatialAnnotationScreening.html">spatialA
 <span>  order_by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  order_desc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  na_rm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for SpatialAnnotationScreening</span></span>
+<span><span class="fu">plotSurface</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  color_by <span class="op">=</span> <span class="st">"rel_loc"</span>,</span>
+<span>  line_color <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  line_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  pt_clrp <span class="op">=</span> <span class="st">"npg"</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for SpatialGradientScreening</span></span>
+<span><span class="fu">plotSurface</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  color_by <span class="op">=</span> <span class="st">"rel_loc"</span>,</span>
+<span>  line_color <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  line_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  pt_clrp <span class="op">=</span> <span class="st">"npg"</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -251,11 +261,6 @@ to the group and the respective named element denotes the color with which to
 represent the group.</p></dd>
 
 
-<dt>display_image</dt>
-<dd><p>Logical. If set to TRUE the histology image of the specified sample
-is displayed underneath the plot.</p></dd>
-
-
 <dt>transform_with</dt>
 <dd><p>List or <code>NULL.</code> If list, can be used to transform continuous variables before usage.
 Names of the list slots refer to the variable. The content of the slot refers to the transforming functions.
@@ -294,11 +299,6 @@ the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
 
 
-<dt>image</dt>
-<dd><p>An image of class <em>Image</em> to be displayed in the background.
-Easily accessible via <code>SPATA::image()</code>.</p></dd>
-
-
 <dt>sctm_interpolate, sctm_pixels</dt>
 <dd><p>Given to the corresponding arguments
 of <code><a href="https://rdrr.io/pkg/scattermore/man/geom_scattermore.html" class="external-link">scattermore::geom_scattermore()</a></code>. Note: With increasing <code>sctm_pixels</code>
@@ -315,18 +315,35 @@ variable is used to order the data points.</p></dd>
 via <code>order_by</code> and/or <code>order</code>.</p></dd>
 
 
+<dt>line_color</dt>
+<dd><p>Character. Affects color of the main lines of the plot.</p></dd>
+
+
+<dt>line_size</dt>
+<dd><p>Numeric. Affects size of the main lines of the plot.</p></dd>
+
+
 <dt>outline_width</dt>
 <dd><p>Numeric vector of length 2, specifying the factor with which
 the <code>pt_size</code> is multiplied to create the white layer (first value) and the
 black layer (second value).</p></dd>
 
-
-<dt>complete</dt>
-<dd><p>Logical. If the provided <code>SPATA2</code> object has been subsetted by
-<code>subsetBySegment()</code> the original sample is completed with grey barcode
-spots.</p></dd>
-
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>Returns a ggplot that can be additionally customized according
+to the rules of the ggplot2 framework.</p>
+    </div>
+    <div id="note">
+    <h2>Note</h2>
+    <p>The methods for <code>SpatialAnnotationScreening</code>- and <code>SpatialTrajectoryScreening</code>
+exist to quickly visualize the set up with which the screening was conducted. The ...
+can be used to reach the <code>plotSurface()</code> method for data.frames with all its
+plotting parameters. For more controll, please use a combination of <code>plotSurface()</code> with the
+<code>SPATA2</code> object and <code>ggpLayer*</code> functions.</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -66,9 +66,6 @@ is usually faster but can not make use of the mechanism ggplot2 offers."><!-- ma
       <a href="../articles/newslog.html">Newslog</a>
     </li>
     <li>
-      <a href="../articles/spata-v2-spatial-trajectories.html">Creating Spatial Trajectories</a>
-    </li>
-    <li>
       <a href="../articles/spatial-annotation-screening.html">Spatial Annotation Screening</a>
     </li>
     <li>
@@ -85,9 +82,6 @@ is usually faster but can not make use of the mechanism ggplot2 offers."><!-- ma
     </li>
     <li>
       <a href="../articles/using-spatial-annotations.html">Using Spatial Annotations</a>
-    </li>
-    <li>
-      <a href="../articles/using-spatial-trajectories.html">Spatial Trajectory Screening</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -185,11 +179,6 @@ represent the group.</p></dd>
 Given to argument <code>span</code> of <code><a href="https://rdrr.io/r/stats/loess.html" class="external-link">stats::loess()</a></code>.</p></dd>
 
 
-<dt>display_image</dt>
-<dd><p>Logical. If set to TRUE the histology image of the specified sample
-is displayed underneath the plot.</p></dd>
-
-
 <dt>xrange, yrange</dt>
 <dd><p><a href="concept_distance_measure.html">Distance vector</a> of length
 two or <code>NULL</code>. If not <code>NULL</code>, specifies the x- and y-range to which
@@ -210,6 +199,14 @@ and nothing more. Using <code>expand</code>, the cropped image section can be ad
 <dd><p>Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.</p>
 <p>(Warning messages will always be printed.)</p></dd>
+
+
+<dt>unit</dt>
+<dd><p>Character value. Specifies the desired unit in
+which <a href="concept_distance_measure.html">distance measures</a>
+or  <a href="concept_area_measure.html">area measures</a> are provided.
+Run <code><a href="validActivationFunctions.html">validUnitsOfLength()</a></code> or <code>validUnitsofArea()</code> for valid
+input options.</p></dd>
 
 
 <dt>...</dt>

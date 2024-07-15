@@ -861,9 +861,9 @@ expand_image_side <- function(expand_with,
 }
 
 
-#' @title Expand the borders of a Spatial Annotations
+#' @title Expand the outline of spatial annotations
 #'
-#' @description Expands or shrinks the outer border of a spatial annotation.
+#' @description Expands or shrinks the outer outline of a spatial annotation.
 #'
 #' @param id Character value. The ID of the spatial annotation of interest.
 #' @param expand Distance measure with which to expand the border. Negative

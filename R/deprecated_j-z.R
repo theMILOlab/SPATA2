@@ -113,6 +113,18 @@ plotTrajectoryLineplot <- function(...){
 # r -----------------------------------------------------------------------
 
 #' @title Deprecated
+#' @description Deprecated in favor of [`getCoordsDfSA()`]
+#' @export
+#' @keywords internal
+relateToSpatialAnnotation <- function(object, input_df, ...){
+
+  deprecated(fn = TRUE, ...)
+
+  getCoordsDfSA(object = object, coords_df = input_df, ...)
+
+}
+
+#' @title Deprecated
 #' @description Deprecated in favor of [`resetImageTransformations()`].
 #' @export
 #' @keywords internal
@@ -209,6 +221,29 @@ setImageAnnotations <- function(object, img_anns, ...){
 
 }
 
+
+#' @title Deprecated
+#' @description Deprecated in favor of [`setSpatialTrajectory()`] and [`setSpatialTrajectories()`].
+#' @export
+#' @keywords internal
+setTrajectory <- function(...){
+
+  deprecated(fn = TRUE)
+
+  setSpatialTrajectory(...)
+
+}
+
+#' @rdname setTrajectory
+#' @export
+#' @keywords internal
+setTrajectories <- function(...){
+
+  deprecated(fn = TRUE)
+
+  setSpatialTrajectories(...)
+
+}
 
 # t -----------------------------------------------------------------------
 

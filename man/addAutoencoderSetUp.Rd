@@ -17,3 +17,4 @@ A \code{SPATA2} object.
 \description{
 Add the set up of a neural network
 }
+\keyword{internal}

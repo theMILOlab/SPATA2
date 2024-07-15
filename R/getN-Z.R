@@ -804,7 +804,7 @@ setMethod(
 )
 
 
-#' @title Obtain screening results stored in vectors
+#' @title Obtain spatial gradient screening results
 #'
 #' @description Extracts results in form of character vectors.
 #'
@@ -817,57 +817,21 @@ setMethod(
 #' is always set to TRUE.
 #'
 #' @export
-#'
 
-setGeneric(name = "getResultsVec", def = function(object, ...){
+setGeneric(name = "getSgsResultsVec", def = function(object, ...){
 
-  standardGeneric(f = "getResultsVec")
+  standardGeneric(f = "getSgsResultsVec")
 
 })
 
-#' @rdname getResultsVec
+#' @rdname getSgsResultsVec
 #' @export
 setMethod(
-  f = "getResultsVec",
-  signature = "SpatialAnnotationScreening",
+  f = "getSgsResultsVec",
+  signature = "SpatialGradientScreening",
   definition = function(object,
-                        eval = "ias_score",
-                        pval = "p_value_mean_adjusted",
-                        arrange_by = eval,
-                        threshold_eval = 0.5,
-                        threshold_pval = 0.05,
-                        model_subset = NULL,
-                        model_remove = NULL){
-
-    rdf <-
-      getSgsResultsDf(
-        object = object,
-        pval = pval,
-        eval = eval,
-        threshold_pval = threshold_pval,
-        threshold_eval = threshold_eval,
-        model_subset = model_subset,
-        model_remove = model_remove,
-        best_only = TRUE
-      )
-
-    out <- rdf[["variables"]]
-
-    base::names(out) <- rdf[["models"]]
-
-    return(out)
-
-  }
-)
-
-#' @rdname getResultsVec
-#' @export
-setMethod(
-  f = "getResultsVec",
-  signature = "SpatialTrajectoryScreening",
-  definition = function(object,
-                        eval = "sts_score",
-                        pval = "p_value",
+                        eval = "mae",
+                        pval = "fdr",
                         arrange_by = eval,
                         threshold_eval = 0.5,
                         threshold_pval = 0.05,
@@ -2181,7 +2145,7 @@ setMethod(
 )
 
 
-#' @title Obtain spatial annotation border data.frame
+#' @title Obtain the outline of a spatial annotation
 #'
 #' @description Extracts the coordinates of the vertices of the polygon that represents
 #' the borders of the spatial annotation.
@@ -2409,7 +2373,7 @@ setMethod(
 
 
 
-#' @title Obtain simple feature
+#' @title Obtain the outline of a spatial anontation
 #'
 #' @description Exracts an object as created by `sf::st_polygon()` that
 #' corresponds to the spatial annotation.
@@ -2518,14 +2482,14 @@ setMethod(
   }
 )
 
-#' @title Obtain a spata-data.frame
+#' @title Obtain a data.frame of observations
 #'
 #' @description This function is the most basic start if you want
 #' to extract data for your individual analysis.
 #'
 #' (In order to extract the coordinates as well use \code{getCoordsDf()}.)
 #'
-#' @inherit check_sample params
+#' @inherit argument_dummy params
 #'
 #' @return A tidy data.frame containing the character variables \emph{barcodes}
 #' and \emph{sample}.
@@ -2533,6 +2497,7 @@ setMethod(
 #' @seealso joinWith
 #'
 #' @export
+#' @keywords internal
 #'
 
 getSpataDf <- function(object, ...){
@@ -3319,7 +3284,7 @@ setMethod(
 
   })
 
-#' @title Obtain tissue outline
+#' @title Obtain the outline of tissue sections
 #'
 #' @description Extracts the polygons necessary to outline the tissue. See
 #' vignette about \link[=concept_tissue_outline]{tissue outline} for more
@@ -3489,7 +3454,7 @@ setMethod(
 )
 
 
-#' @title Obtain tissue section name
+#' @title Obtain the names of tissue sections
 #'
 #' @description Extracts unique tissue sections from the metadata of the given object.
 #'

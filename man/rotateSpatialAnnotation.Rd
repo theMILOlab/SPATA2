@@ -4,7 +4,7 @@
 \alias{rotateSpatialAnnotation}
 \alias{rotateSpatialAnnotation,SPATA2-method}
 \alias{rotateSpatialAnnotation,SpatialData-method}
-\title{Rotate Borders of a Spatial Annotation}
+\title{Rotate the outline of a spatial annotation}
 \usage{
 rotateSpatialAnnotation(object, ...)
 

@@ -502,9 +502,9 @@ reduceSpataObject <- function(object){
 
 }
 
-#' @title Obtain name of reference content
+#' @title Obtain name of reference iamge
 #'
-#' @description Handy functions to quickly access the name of reference content.
+#' @description Handy functions to quickly access the name of the reference image.
 #'
 #' @inherit argument_dummy params
 #'
@@ -705,217 +705,7 @@ setMethod(
 
 
 
-#' @title Relate observations to a spatial annotation
-#'
-#' @description Deprecated in favor of `getCoordsDfSA(..., coords_df = input_df)`
-#'
-#' @keywords internal
-#' @export
-relateToSpatialAnnotation <- function(object,
-                                      id,
-                                      input_df,
-                                      input_id_var = NULL,
-                                      distance = NA_integer_,
-                                      binwidth = NA_integer_,
-                                      n_bins_circle = NA_integer_,
-                                      n_bins_angle = 12,
-                                      calc_dist_to = "border",
-                                      unit = "px",
-                                      inc_outline = TRUE,
-                                      verbose = NULL,
-                                      ...){
 
-  deprecated(...)
-  hlpr_assign_arguments(object)
-
-  confuns::is_value(id, mode = "character")
-
-  if(base::is.null(input_id_var)){
-
-    input_id_var <- "inp_id"
-
-    input_df[["inp_id"]] <- stringr::str_c("ID", 1:base::nrow(input_df))
-
-  }
-
-  confuns::check_data_frame(
-    df = input_df,
-    var.class = purrr::set_names(
-      x = list("numeric", "numeric", "character"),
-      nm = c("x", "y", input_id_var)
-    )
-  )
-
-  input_names <- base::names(input_df)
-
-  if(base::any(input_names %in% rtia_names)){
-
-    stop(
-      glue::glue(
-        "Input data.frame must not contain columns '{cols}'.",
-        cols = confuns::scollapse(rtia_names)
-      )
-    )
-
-  }
-
-  confuns::is_key_variable(
-    df = input_df,
-    key.name = input_id_var,
-    stop.if.false = TRUE
-  )
-
-  spat_ann_center <- getSpatAnnCenter(object, id = id)
-  spat_ann_border <- getSpatAnnBorderDf(object, ids = id)
-
-  if(base::isTRUE(inc_outline)){
-
-    out_df <-
-      include_tissue_outline(
-        coords_df = getCoordsDf(object),
-        input_df = input_df,
-        spat_ann_center = spat_ann_center,
-        remove = TRUE
-      )
-
-  } else {
-
-    out_df <- input_df
-
-  }
-
-  spat_ann_border[["bp_id"]] <- stringr::str_c("ID", 1:base::nrow(spat_ann_border))
-
-  if(base::sum(base::is.na(c(distance, binwidth, n_bins_circle))) == 1){
-
-    ias_input <-
-      check_ias_input(
-        distance = distance,
-        binwidth = binwidth,
-        n_bins_circle = n_bins_circle,
-        object = object
-      )
-
-    out_df_bbe <-
-      bin_by_expansion(
-        coords_df = out_df,
-        area_df = spat_ann_border,
-        binwidth = ias_input$binwidth,
-        n_bins_circle = ias_input$n_bins_circle
-      )
-
-  } else {
-
-    out_df[["bins_circle"]] <- base::factor("none")
-    out_df[["bins_order"]] <- NA_integer_
-    out_df[["border"]] <- "none"
-
-    out_df_bbe <- out_df
-
-  }
-
-  # use bin_by_angle to bin border points as prefiltering
-  spat_ann_border[["bins_circle"]] <- base::factor("none")
-  spat_ann_border[["bins_order"]] <- NA_integer_
-  spat_ann_border[["border"]] <- "none"
-
-  # use angle bins for prefiltering
-  out_df_bba <-
-    bin_by_angle(
-      coords_df = out_df_bbe,
-      center = spat_ann_center,
-      var_to_bin = input_id_var,
-      n_bins_angle = n_bins_angle,
-      verbose = FALSE
-    )
-
-  if(calc_dist_to == "border"){
-
-    spat_ann_border_bba <-
-      bin_by_angle(
-        coords_df = spat_ann_border,
-        center = spat_ann_center,
-        var_to_bin = "bp_id",
-        n_bins_angle = n_bins_angle,
-        verbose = FALSE
-      )
-
-    dist_to_border <-
-      # create empty data.frame with all input obs/border points combinations
-      tidyr::expand_grid(
-        bp_id = base::unique(spat_ann_border[["bp_id"]]),
-        {{input_id_var}} := base::unique(input_df[[input_id_var]])
-      ) %>%
-      # merge required information
-      dplyr::left_join(
-        x = .,
-        y = dplyr::select(img_ann_border_bba, xb = x, yb = y, bins_angle_b = bins_angle, bp_id),
-        by = "bp_id"
-      ) %>%
-      dplyr::left_join(
-        x = .,
-        y = dplyr::select(out_df_bba, xo = x, yo = y, bins_angle_o = bins_angle, !!rlang::sym(input_id_var)),
-        by = input_id_var
-      ) %>%
-      # prefilter based on angle to the center of the image annoation
-      dplyr::mutate(
-        bins_angle_b = base::as.character(bins_angle_b),
-        bins_angle_o = base::as.character(bins_angle_o)
-      ) %>%
-      dplyr::filter(bins_angle_b == bins_angle_o) %>%
-      # compute distance for each remaining input obs/border point pair
-      dplyr::group_by(!!rlang::sym(input_id_var), bp_id) %>%
-      dplyr::mutate(
-        dist_to_ia = compute_distance(starting_pos = c(xo, yo), final_pos = c(xb, yb))
-      ) %>%
-      dplyr::ungroup() %>%
-      dplyr::group_by(!!rlang::sym(input_id_var)) %>%
-      # keep input obs/border points pair with lowest distance
-      dplyr::filter(dist_to_ia == base::min(dist_to_ia)) %>%
-      dplyr::ungroup()
-
-    out_df_bba <-
-      dplyr::left_join(
-        x = out_df_bba,
-        y = dplyr::select(dist_to_border, !!rlang::sym(input_id_var), dist_to_ia),
-        by = input_id_var
-      )
-
-  } else if(calc_dist_to == "center"){
-
-    out_df_bba <-
-      dplyr::group_by(.data = out_df_bba, !!rlang::sym(input_id_var)) %>%
-      dplyr::mutate(
-        dist_to_ia = compute_distance(starting_pos = c(x, y), final_pos = img_ann_center)
-      ) %>%
-      dplyr::ungroup()
-
-  } else {
-
-    confuns::give_feedback(
-      msg = "Skipping distance calculation.",
-      verbose = verbose
-    )
-
-  }
-
-  if("dist_to_ia" %in% base::names(out_df_bba)){
-
-    out_df_bba[["dist_unit"]] <- unit
-
-    if(unit != "px"){
-
-      out_df_bba[["dist_to_ia"]] <-
-        as_unit(input = out_df_bba[["dist_to_ia"]], unit = unit, object = object) %>%
-        base::as.numeric()
-
-    }
-
-  }
-
-  return(out_df_bba)
-
-}
 
 #' @title Relevel groups of grouping variable
 #'
@@ -1329,11 +1119,13 @@ removeMolecules <- function(object,
 
 }
 
-#' @title Remove observations with no counts
+#' @title Remove observations
 #'
-#' @description Identifies and removes observations with no molecule counts
-#' from the `SPATA2` object.
+#' @description `removeObsNoCounts()` dentifies and removes observations with no molecule counts
+#' from the `SPATA2` object. `removeObs()` allows to specify the observations to remove
+#' manually.
 #'
+#' @param barcodes Character vector or barcodes that are **removed**.
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
@@ -1349,6 +1141,23 @@ removeMolecules <- function(object,
 #' # the function tells you if / how many observations were removed
 #' object <- removeObsNoCounts(object, verbose = TRUE)
 #'
+
+removeObs <- function(object, barcodes, verbose = NULL){
+
+  confuns::is_vec(x = "barcodes", mode = "character")
+
+  barcodes_all <- getBarcodes(object)
+
+  barcodes_keep <- barcodes_all[!barcodes_all %in% barcodes]
+
+  object <- subsetByBarcodes(object, barcodes = barcodes_keep, verbose = verbose)
+
+  returnSpataObject(object)
+
+}
+
+#' @rdname removeObs
+#' @export
 removeObsNoCounts <- function(object,
                               assay_name = activeAssay(object),
                               verbose = NULL){
@@ -1975,7 +1784,7 @@ renameGroups <- function(object,
 }
 
 
-#' @title Rename a Spatial Annotation
+#' @title Rename a spatial annotation
 #'
 #' @description Renames spatial annotation.
 #'
@@ -2033,6 +1842,64 @@ renameSpatialAnnotation <- function(object, id, new_id, overwrite = FALSE){
 
 }
 
+
+#' @title Rename a spatial trajectory.
+#'
+#' @description Renames spatial trajectory.
+#'
+#' @param id Character value. The current ID of the spatial trajectory to be
+#' renamed.
+#' @param new_id Character value. The new ID of the spatial trajectory.
+#' @param inherit argument_dummy params
+#'
+#' @inherit argument_dummy params
+#' @export
+#'
+#' @examples
+#' library(SPATA2)
+#'
+#' data("example_data")
+#'
+#' object <- example_data$object_UKF269T_diet
+#'
+#' plotSpatialTrajectories(object)
+#'
+#' object <- renameSpatialTrajectory(object, id = "horizontal_mid", new_id = "Horizontal_Mid_Cap")
+#'
+#' plotSpatialTrajectories(object)
+#'
+renameSpatialTrajectory <- function(object, id, new_id, overwrite = FALSE){
+
+  confuns::are_values(c("id", "new_id"), mode = "character")
+
+  traj_ids <- getSpatialTrajectoryIds(object)
+
+  confuns::check_none_of(
+    input = new_id,
+    against = traj_ids,
+    ref.against = "spatial trajectory IDs",
+    overwrite = overwrite
+  )
+
+  sp_data <- getSpatialData(object)
+
+  traj_names <- base::names(sp_data@trajectories)
+
+  traj_pos <- base::which(traj_names == id)
+
+  traj <- sp_data@trajectories[[id]]
+
+  traj@id <- new_id
+
+  sp_data@annotations[[traj_pos]] <- traj
+
+  base::names(sp_data@annotations)[traj_pos] <- new_id
+
+  object <- setSpatialData(object, sp_data = sp_data)
+
+  returnSpataObject(object)
+
+}
 
 #' @rdname renameGroups
 #' @export
@@ -2633,7 +2500,7 @@ rotateCoordsDf <- function(object,
 }
 
 
-#' @title Rotate Borders of a Spatial Annotation
+#' @title Rotate the outline of a spatial annotation
 #'
 #' @description Rotates the outline of a spatial annotation to a specific
 #' degree.

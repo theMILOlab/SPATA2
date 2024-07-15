@@ -398,6 +398,7 @@ gene_set_path <- function(gene_set_path){}
 #' @title get_names
 #' @return Character vector of names. If no content is present the character
 #' vector is of length 0.
+#' @keywords internal
 get_names_dummy <- function(){}
 
 #' @title ggpLayer

@@ -148,6 +148,20 @@ getExpressionMatrix <- function(object,
 }
 
 #' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getProcessedMatrixNames()`].
+#'
+#' @keywords internal
+#' @export
+getExpressionMatrixNames <- function(object, assay_name = activeAssay(object), ...){
+
+  deprecated(fn = TRUE)
+
+  getProcessedMatrixNames(object, assay_name = assay_name, ...)
+
+}
+
+#' @title Deprecated
 #' @description Deprecated in favor of [`getMetaDf()`].
 #' @export
 #' @keywords internal
@@ -158,19 +172,6 @@ getFeatureDf <- function(...){
   getMetaDf(...)
 
 }
-
-#' @title Deprecated
-#' @description Deprecated in favor of [`getSgsResults()`].
-#' @export
-#' @keywords internal
-getSmrdResultsDf <-  function(ias, ...){
-
-  deprecated(fn = TRUE)
-
-  getSgsResultsDf(object = ias, ...)
-
-}
-
 
 #' @title Deprecated
 #' @description Deprecated in favor of [`getImageDir()`].
@@ -451,6 +452,31 @@ getResultsDf <- function(...){
 
 }
 
+#' @title Deprecated
+#' @description
+#' Deprecated in favor of [`getSgsResultsVec()`].
+#' @export
+#' @keywords internal
+#'
+getResultsVec <- function(...){
+
+  deprecated(fn = T, ...)
+
+  getSgsResultsVec(...)
+
+}
+
+#' @title Deprecated
+#' @description Deprecated in favor of [`getSgsResults()`].
+#' @export
+#' @keywords internal
+getSmrdResultsDf <-  function(ias, ...){
+
+  deprecated(fn = TRUE)
+
+  getSgsResultsDf(object = ias, ...)
+
+}
 
 #' @title Deprecated
 #' @description

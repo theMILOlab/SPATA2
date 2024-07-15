@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotN-S.R
 \name{plotSpatialTrajectories}
 \alias{plotSpatialTrajectories}
-\title{Plot spatial trajectory}
+\title{Plot spatial trajectories}
 \usage{
 plotSpatialTrajectories(
   object,

@@ -5,7 +5,7 @@
 \alias{ggpLayerPoints,SPATA2-method}
 \alias{ggpLayerPoints,SpatialData-method}
 \alias{ggpLayerPoints,data.frame-method}
-\title{Adds data points to the surface plot}
+\title{Add the observations to the surface plot}
 \usage{
 ggpLayerPoints(object, ...)
 

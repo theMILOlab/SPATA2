@@ -989,6 +989,7 @@ process_transform_with <- function(transform_with, var_names){
 #' @inherit update_dummy return
 #'
 #' @export
+#' @keywords internal
 processImage <- function(object,
                          img_name = activeImage(object),
                          verbose = NULL,

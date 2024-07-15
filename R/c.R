@@ -24,7 +24,7 @@ center_polygon <- function(polygon, window_size) {
 }
 
 
-#' @title Center the Borders of a Spatial Annotation
+#' @title Center the borders of a spatial annotation
 #'
 #' @description Shifts the borders of a spatial annotation in a way that
 #' its center corresponds to the input of `c(center_x, center_y)`.
@@ -140,52 +140,7 @@ setMethod(
 )
 
 
-#' @title Center tissue
-#'
-#' @description Computes the necessary translations in order to center
-#' the identified tissue outline in the center of the image.
-#'
-#' @inherit argument_dummy params
-#' @inherit update_dummy return
-#'
-#' @export
-#'
-setGeneric(name = "centerTissueOutline", def = function(object, ...){
 
-  standardGeneric(f = "centerTissueOutline")
-
-})
-
-#' @rdname centerTissueOutline
-#' @export
-setMethod(
-  f = "centerTissueOutline",
-  signature = "HistoImage",
-  definition = function(object, verbose = TRUE, ...){
-
-    confuns::give_feedback(
-      msg = "Centering tissue outline.",
-      verbose = verbose
-    )
-
-    center <- getImageCenter(object)
-
-    outline_centroid <- getTissueOutlineCentroid(object, transform = FALSE)[c("x", "y")]
-
-    req_translation <- center - outline_centroid
-
-    object@transformations$translate$centroid_alignment$horizontal <-
-      base::unname(object@transformations$translate$centroid_alignment$horizontal + req_translation["x"])
-
-    object@transformations$translate$centroid_alignment$vertical <-
-      base::unname(object@transformations$translate$centroid_alignment$vertical - req_translation["y"])
-
-    object@centered <- TRUE
-
-    return(object)
-
-  }
-)
 
 # cl ----------------------------------------------------------------------
 
@@ -490,7 +445,7 @@ compute_distance <- function(starting_pos, final_pos){
 
 }
 
-#' Compute Position-Based Expression Estimates
+#' Compute
 #'
 #' This function computes position-based expression estimates given the minimum
 #' and maximum distances and the average minimum center-to-center distance (AMCCD).
@@ -500,12 +455,8 @@ compute_distance <- function(starting_pos, final_pos){
 #'
 #' @return A numeric vector representing position-based expression estimates.
 #'
-#' @note This function validates that the units of \code{amccd}, \code{min_dist},
-#' and \code{max_dist} match to ensure consistent unit measurements.
-
-#' @export
+#' @keywords internal
 #'
-
 compute_expression_estimates <- function(coords_df){
 
   out <-
@@ -664,7 +615,7 @@ compute_relative_variation <- function(gradient){
 #' @inherit argument_dummy params
 #' @inherit update_dummy return
 #'
-#' @export
+#' @keywords internal
 #'
 computeChromosomalInstability <- function(object, chr_vars = stringr::str_c("Chr", 1:22)){
 
@@ -1267,7 +1218,7 @@ splitSpataObject <- function(object,
 
 # cu ----------------------------------------------------------------------
 
-#' @title The current version of `SPATA2`
+#' @title The current version of SPATA2
 #' @description Outputs the current version of the package.
 #'
 #' @return List of three numeric slots: *major*, *minor*, *patch*

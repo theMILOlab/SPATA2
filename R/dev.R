@@ -489,7 +489,7 @@ whichSpaceRangerVersion <- function(dir){
 #'
 #' @inherit ggplot_dummy return
 #'
-#' @export
+#' @keywords internal
 #'
 plotSasLineplotFitted <- function(object,
                                   id,
